@@ -25,7 +25,6 @@ import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Descriptors.PackageRef;
-import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.Packages;
 import aQute.lib.osgi.Processor;
 import aQute.libg.header.Attrs;
