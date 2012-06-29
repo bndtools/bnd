@@ -208,7 +208,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                             if (showAsText)
                                 readAsText(zipFile, zipEntry, charsets[selectedCharset], writer, 1024 * 20, monitor);
                             else
-                                readAsHex(zipFile, zipEntry, writer, 1024 * 20, monitor);
+                                readAsHex(zipFile, zipEntry, writer, 1024 * 20, 2, monitor);
 
                             display.asyncExec(new Runnable() {
                                 public void run() {
@@ -296,16 +296,28 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         }
     }
 
-    protected static void readAsHex(ZipFile zipFile, ZipEntry entry, Writer out, long limit, IProgressMonitor monitor) throws IOException {
+    private static char byteToChar(byte b) {
+        if ((b < 32) || (b == 127) || (b == 255)) {
+            return '.';
+        }
+
+        return (char) b;
+    }
+
+    protected static void readAsHex(ZipFile zipFile, ZipEntry entry, Writer out, long limit, int groupsOf8BytesPerLine, IProgressMonitor monitor) throws IOException {
         SubMonitor progress = createProgressMonitor(entry, limit, monitor);
 
         boolean limitReached = false;
+        int bytesPerLine = groupsOf8BytesPerLine * 8;
+        int asciiPosition = 0;
+        char[] asciiBuffer = new char[bytesPerLine + (2 * (groupsOf8BytesPerLine - 1))];
+        int bytePosition = 0;
+        byte[] buffer = new byte[1024];
+
         InputStream stream = zipFile.getInputStream(entry);
         try {
-            byte[] buffer = new byte[1024];
             long total = 0;
 
-            long charsWritten = 0;
             while (true) {
                 if (progress.isCanceled())
                     return;
@@ -314,12 +326,29 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                     break;
 
                 for (int i = 0; i < bytesRead; i++) {
+                    asciiBuffer[asciiPosition] = byteToChar(buffer[i]);
+                    asciiPosition++;
+
                     out.write(pseudo[(buffer[i] & 0xf0) >>> 4]); // Convert to a string character
                     out.write(pseudo[(buffer[i] & 0x0f)]); // convert the nibble to a String Character
                     out.write(' ');
-                    charsWritten += 3;
-                    if (charsWritten % 75 == 0)
+                    bytePosition++;
+
+                    /* do a linebreak after the required number of bytes */
+                    if (bytePosition >= bytesPerLine) {
+                        out.write(' ');
+                        out.write(asciiBuffer);
                         out.write('\n');
+                        asciiPosition = 0;
+                        bytePosition = 0;
+                    }
+
+                    /* put 2 extra spaces between bytes */
+                    if ((bytePosition > 0) && (bytePosition % 8 == 0)) {
+                        asciiBuffer[asciiPosition++] = ' ';
+                        asciiBuffer[asciiPosition++] = ' ';
+                        out.write(' ');
+                    }
                 }
 
                 total += bytesRead;
@@ -330,6 +359,17 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                 }
             }
         } finally {
+            while (bytePosition < bytesPerLine) {
+                out.write("   ");
+                bytePosition++;
+
+                /* put 2 extra spaces between bytes */
+                if ((bytePosition > 0) && (bytePosition % 8 == 0)) {
+                    out.write(' ');
+                }
+            }
+            out.write(asciiBuffer, 0, asciiPosition);
+
             if (limitReached) {
                 out.write("\nLimit of " + (limit >> 10) + "Kb reached, the rest of the entry is not shown.");
             }
