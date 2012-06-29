@@ -6,3 +6,4 @@
 	biz.aQute.repository;version=snapshot,\
 	ee.j2se;version=${javac.ee},\
 	org.mockito.mockito-all
+Private-Package: aQute.lib.deployer.repository
