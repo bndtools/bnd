@@ -21,7 +21,7 @@ public class ResizeExpansionAdapter extends ExpansionAdapter {
 
     @Override
     public void expansionStateChanged(ExpansionEvent e) {
-        Object layoutData = (e.data == Boolean.TRUE) ? PageLayoutUtils.createExpanded() : PageLayoutUtils.createCollapsed();
+        Object layoutData = (Boolean.TRUE.equals(e.data)) ? PageLayoutUtils.createExpanded() : PageLayoutUtils.createCollapsed();
         control.setLayoutData(layoutData);
         layoutParent.layout(true, true);
     }
