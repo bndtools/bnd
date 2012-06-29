@@ -39,9 +39,6 @@
        <Package name="bndtools.editor.completion" />
      </Match>
      <Match>
-       <Package name="bndtools.editor.components" />
-     </Match>
-     <Match>
        <Package name="bndtools.editor.contents" />
      </Match>
      <Match>
@@ -69,6 +66,9 @@
        <Package name="bndtools.editor.workspace" />
      </Match>
      <Match>
+       <Package name="bndtools.internal.decorator" />
+     </Match>
+     <Match>
        <Package name="bndtools.internal.libs" />
      </Match>
      <Match>
@@ -76,6 +76,9 @@
      </Match>
      <Match>
        <Package name="bndtools.internal.testcaseselection" />
+     </Match>
+     <Match>
+       <Package name="bndtools.internal.ui" />
      </Match>
      <Match>
        <Package name="bndtools.jareditor.internal" />
@@ -88,6 +91,9 @@
      </Match>
      <Match>
        <Package name="bndtools.launch.ui" />
+     </Match>
+     <Match>
+       <Package name="bndtools.launch.ui.internal" />
      </Match>
      <Match>
        <Package name="bndtools.model.clauses" />
@@ -133,6 +139,9 @@
      </Match>
      <Match>
        <Package name="bndtools.templates" />
+     </Match>
+     <Match>
+       <Package name="bndtools.templates.dm" />
      </Match>
      <Match>
        <Package name="bndtools.types" />
@@ -211,21 +220,6 @@
      </Match>
      <Match>
        <Package name="org.bndtools.core.utils.workspace" />
-     </Match>
-     <Match>
-       <Package name="org.osgi.impl.bundle.bindex" />
-     </Match>
-     <Match>
-       <Package name="org.osgi.impl.bundle.bindex.ant" />
-     </Match>
-     <Match>
-       <Package name="org.osgi.impl.bundle.obr.resource" />
-     </Match>
-     <Match>
-       <Package name="org.osgi.service.bindex" />
-     </Match>
-     <Match>
-       <Package name="test" />
      </Match>
      <Match>
        <Package name="test.bndtools.bndplugins.repo.git" />
