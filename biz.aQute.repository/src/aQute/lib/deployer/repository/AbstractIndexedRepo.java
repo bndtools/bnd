@@ -3,9 +3,20 @@ package aQute.lib.deployer.repository;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.*;
+
+import org.osgi.framework.namespace.*;
+import org.osgi.resource.*;
+import org.osgi.resource.Resource;
+import org.osgi.service.log.*;
+import org.osgi.service.repository.*;
+
+import aQute.bnd.service.*;
+import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.service.url.*;
 import aQute.lib.deployer.http.*;
-import aQute.lib.deployer.repository.CachingURLResourceHandle.CachingMode;
+import aQute.lib.deployer.repository.CachingUriResourceHandle.CachingMode;
 import aQute.lib.deployer.repository.api.*;
 import aQute.lib.deployer.repository.providers.*;
 import aQute.lib.filter.*;
