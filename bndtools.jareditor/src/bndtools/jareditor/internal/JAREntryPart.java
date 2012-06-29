@@ -264,6 +264,8 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
 
     protected static void readAsText(ZipFile zipFile, ZipEntry entry, String encoding, Writer out, long limit, IProgressMonitor monitor) throws IOException {
         SubMonitor progress = createProgressMonitor(entry, limit, monitor);
+
+        boolean limitReached = false;
         InputStream stream = zipFile.getInputStream(entry);
         try {
             long total = 0;
@@ -280,10 +282,16 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
 
                 total += bytesRead;
                 progress.worked(bytesRead);
-                if (limit >= 0 && total >= limit)
+                if (limit >= 0 && total >= limit) {
+                    limitReached = true;
                     return;
+                }
             }
         } finally {
+            if (limitReached) {
+                out.write("\nLimit of " + (limit >> 10) + "Kb reached, the rest of the entry is not shown.");
+            }
+
             stream.close();
         }
     }
@@ -291,6 +299,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
     protected static void readAsHex(ZipFile zipFile, ZipEntry entry, Writer out, long limit, IProgressMonitor monitor) throws IOException {
         SubMonitor progress = createProgressMonitor(entry, limit, monitor);
 
+        boolean limitReached = false;
         InputStream stream = zipFile.getInputStream(entry);
         try {
             byte[] buffer = new byte[1024];
@@ -315,10 +324,16 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
 
                 total += bytesRead;
                 progress.worked(bytesRead);
-                if (limit >= 0 && total >= limit)
+                if (limit >= 0 && total >= limit) {
+                    limitReached = true;
                     return;
+                }
             }
         } finally {
+            if (limitReached) {
+                out.write("\nLimit of " + (limit >> 10) + "Kb reached, the rest of the entry is not shown.");
+            }
+
             stream.close();
         }
     }
