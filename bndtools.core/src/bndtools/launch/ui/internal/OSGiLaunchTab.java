@@ -30,8 +30,8 @@ public class OSGiLaunchTab extends GenericStackedLaunchTab {
             if (image == null) {
                 image = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
             }
+            return image;
         }
-        return image;
     }
 
     @Override
