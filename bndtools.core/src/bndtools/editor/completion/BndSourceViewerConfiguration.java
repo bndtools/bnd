@@ -25,17 +25,6 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
     static final String SINGLELINE_COMMENT_TYPE = "___slc";
     static Properties syntax = null;
 
-    class BndPartitionScanner extends RuleBasedPartitionScanner {
-        public BndPartitionScanner() {
-            IToken singleLineComment = new Token(SINGLELINE_COMMENT_TYPE);
-
-            IPredicateRule[] rules = new IPredicateRule[] {
-                new EndOfLineRule("#", singleLineComment),
-            };
-            setPredicateRules(rules);
-        }
-    }
-
     BndScanner scanner;
     MultiLineCommentScanner multiLineCommentScanner;
     ISharedTextColors colors;
