@@ -29,7 +29,7 @@ public class CopyOnWriteTextStore implements ITextStore {
 		/**
 		 * Create an empty text store.
 		 */
-		private StringTextStore() {
+		StringTextStore() {
 			super();
 		}
 
@@ -39,7 +39,7 @@ public class CopyOnWriteTextStore implements ITextStore {
 		 * @param text
 		 *            the initial content
 		 */
-		private StringTextStore(String text) {
+		StringTextStore(String text) {
 			super();
 			set(text);
 		}
