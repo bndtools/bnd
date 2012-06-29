@@ -1,5 +1,3 @@
-/* Copyright 2006 aQute SARL 
- * Licensed under the Apache License, Version 2.0, see http://www.apache.org/licenses/LICENSE-2.0 */
 package aQute.libg.classdump;
 
 import java.io.*;

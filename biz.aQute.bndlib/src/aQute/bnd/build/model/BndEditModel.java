@@ -1,13 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2010 Neil Bartlett.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Neil Bartlett - initial API and implementation
- *******************************************************************************/
 package aQute.bnd.build.model;
 
 import java.beans.*;
@@ -15,14 +5,13 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
-import org.osgi.framework.*;
-
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.build.model.conversions.*;
+import aQute.lib.osgi.*;
 import aQute.lib.properties.*;
 import aQute.libg.header.*;
 import aQute.libg.tuple.*;
-import aQute.libg.version.Version;
+import aQute.libg.version.*;
 
 /**
  * A model for a Bnd file. In the first iteration, use a simple Properties
