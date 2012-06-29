@@ -59,8 +59,7 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
         File folder = new File(folderPath);
         File bundleFolder = new File(folder, "bundles");
 
-        bundleFolder.mkdirs();
-        if (!bundleFolder.exists()) {
+        if (!bundleFolder.exists() && !bundleFolder.mkdirs()) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to create folder.", null));
             return status;
         }
