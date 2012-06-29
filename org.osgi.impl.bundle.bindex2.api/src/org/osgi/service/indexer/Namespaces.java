@@ -13,6 +13,11 @@ public final class Namespaces {
 	public static final String NS_WIRING_SERVICE = "osgi.wiring.service";
 	public static final String NS_WIRING_EE = "osgi.wiring.ee";
 	
+	// Non-core namespaces
+	public static final String NS_EXTENDER = "osgi.extender";
+	public static final String NS_SERVICE = "osgi.service";
+	public static final String NS_CONTRACT = "osgi.contract";
+	
 	// Generic attributes
 	public static final String ATTR_VERSION = "version";
 	
@@ -37,5 +42,8 @@ public final class Namespaces {
 
 	public static final String EFFECTIVE_RESOLVE = "resolve";
 	public static final String EFFECTIVE_ACTIVE = "active";
+
+	// Known contracts and extenders
+	public static final String CONTRACT_OSGI_FRAMEWORK = "OSGiFramework";
 
 }

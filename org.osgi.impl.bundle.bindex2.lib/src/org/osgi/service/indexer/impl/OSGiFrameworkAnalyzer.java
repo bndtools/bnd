@@ -2,7 +2,9 @@ package org.osgi.service.indexer.impl;
 
 import java.util.List;
 
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
+import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.service.indexer.Builder;
 import org.osgi.service.indexer.Capability;
 import org.osgi.service.indexer.Namespaces;
@@ -14,42 +16,39 @@ import org.osgi.service.indexer.ResourceAnalyzer;
  * Detects JARs that are OSGi Frameworks, using the presence of META-INF/services/org.osgi.framework.launch.FrameworkFactory
  */
 public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
+	
+	private static final String RESOURCE_PATH_SERVICES = "META-INF/services/";
+	private static final String FRAMEWORK_PACKAGE = BundleContext.class.getPackage().getName();
+	
 
 	public void analyzeResource(Resource resource, List<Capability> caps, List<Requirement> reqs) throws Exception {
-		Resource fwkFactorySvc = resource.getChild("META-INF/services/org.osgi.framework.launch.FrameworkFactory");
+		Resource fwkFactorySvc = resource.getChild(RESOURCE_PATH_SERVICES + FrameworkFactory.class.getName());
 		if (fwkFactorySvc != null) {
-			Builder builder = new Builder().setNamespace("osgi.framework");
+			Builder builder = new Builder().setNamespace(Namespaces.NS_CONTRACT).addAttribute(Namespaces.NS_CONTRACT, Namespaces.CONTRACT_OSGI_FRAMEWORK);
 
-			String identity = null;
-			Version version = null;
 			Version specVersion = null;
 			StringBuilder uses = new StringBuilder();
 			boolean firstPkg = true;
 			
 			for (Capability cap : caps) {
-				if (Namespaces.NS_IDENTITY.equals(cap.getNamespace())) {
-					identity = (String) cap.getAttributes().get(Namespaces.NS_IDENTITY);
-					version = (Version) cap.getAttributes().get(Namespaces.ATTR_VERSION);
-				} else if (Namespaces.NS_WIRING_PACKAGE.equals(cap.getNamespace())) {
+				if (Namespaces.NS_WIRING_PACKAGE.equals(cap.getNamespace())) {
+					// Add to the uses directive
 					if (!firstPkg)
 						uses.append(',');
 					String pkgName = (String) cap.getAttributes().get(Namespaces.NS_WIRING_PACKAGE);
 					uses.append(pkgName);
 					firstPkg = false;
 					
-					if ("org.osgi.framework".equals(pkgName)) {
+					// If it's org.osgi.framework, get the package version and map to OSGi spec version
+					if (FRAMEWORK_PACKAGE.equals(pkgName)) {
 						Version frameworkPkgVersion = (Version) cap.getAttributes().get(Namespaces.ATTR_VERSION);
 						specVersion = mapFrameworkPackageVersion(frameworkPkgVersion);
 					}
 				}
 			}
 			
-			if (identity != null)
-				builder.addAttribute("osgi.framework", identity);
-			if (version != null)
-				builder.addAttribute(Namespaces.ATTR_VERSION, version);
 			if (specVersion != null)
-				builder.addAttribute("specification-version", specVersion);
+				builder.addAttribute(Namespaces.ATTR_VERSION, specVersion);
 			
 			builder.addDirective(Namespaces.DIRECTIVE_USES, uses.toString());
 			caps.add(builder.buildCapability());
