@@ -1,6 +1,5 @@
 package test;
 
-
 import junit.framework.*;
 import aQute.bnd.build.*;
 

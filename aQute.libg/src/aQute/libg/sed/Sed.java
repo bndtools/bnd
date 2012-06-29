@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
-import aQute.lib.io.IO;
+import aQute.lib.io.*;
 
 public class Sed {
 	final File					file;
