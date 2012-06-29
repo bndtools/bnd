@@ -53,6 +53,7 @@ public class JAREditorContributor extends MultiPageEditorActionBarContributor {
      * (non-JavaDoc) Method declared in AbstractMultiPageEditorActionBarContributor.
      */
 
+    @Override
     public void setActivePage(IEditorPart part) {
         if (activeEditorPart == part)
             return;
@@ -79,6 +80,7 @@ public class JAREditorContributor extends MultiPageEditorActionBarContributor {
 
     private void createActions() {
         sampleAction = new Action() {
+            @Override
             public void run() {
                 MessageDialog.openInformation(null, "JAR Editor Plug-in", "Sample Action Executed");
             }
@@ -88,12 +90,14 @@ public class JAREditorContributor extends MultiPageEditorActionBarContributor {
         sampleAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(IDE.SharedImages.IMG_OBJS_TASK_TSK));
     }
 
+    @Override
     public void contributeToMenu(IMenuManager manager) {
         IMenuManager menu = new MenuManager("Editor &Menu");
         manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
         menu.add(sampleAction);
     }
 
+    @Override
     public void contributeToToolBar(IToolBarManager manager) {
         manager.add(new Separator());
         manager.add(sampleAction);
