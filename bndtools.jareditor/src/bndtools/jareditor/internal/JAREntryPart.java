@@ -297,7 +297,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
     }
 
     private static char byteToChar(byte b) {
-        if ((b < 32) || (b == 127) || (b == 255)) {
+        if ((b < 32) || (b == 127)) {
             return '.';
         }
 
