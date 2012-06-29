@@ -36,6 +36,7 @@ public class BIndex2 implements ResourceIndexer {
 	
 	private final BundleAnalyzer bundleAnalyzer = new BundleAnalyzer();
 	private final OSGiFrameworkAnalyzer frameworkAnalyzer = new OSGiFrameworkAnalyzer();
+	private final SCRAnalyzer scrAnalyzer = new SCRAnalyzer();
 	
 	private final List<Pair<ResourceAnalyzer, Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer,Filter>>();
 	
@@ -47,7 +48,7 @@ public class BIndex2 implements ResourceIndexer {
 			
 			addAnalyzer(bundleAnalyzer, allFilter);
 			addAnalyzer(frameworkAnalyzer, allFilter);
-			
+			addAnalyzer(scrAnalyzer, allFilter);
 		} catch (InvalidSyntaxException e) {
 			// Can't happen...?
 			throw new RuntimeException("Unexpected internal error compiling filter");

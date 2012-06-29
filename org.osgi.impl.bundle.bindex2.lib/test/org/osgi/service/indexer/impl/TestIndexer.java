@@ -83,6 +83,10 @@ public class TestIndexer extends TestCase {
 	public void testFragmentProvideRequireCap() throws Exception {
 		assertFragmentMatch("testdata/fragment-14.txt", "testdata/14-provide-require-cap.jar");
 	}
+	
+	public void testFragmentRequireSCR() throws Exception {
+		assertFragmentMatch("testdata/fragment-15.txt", "testdata/15-scr.jar");
+	}
 
 	private static void assertFragmentMatch(String expectedPath, String jarPath) throws Exception {
 		BIndex2 indexer = new BIndex2();

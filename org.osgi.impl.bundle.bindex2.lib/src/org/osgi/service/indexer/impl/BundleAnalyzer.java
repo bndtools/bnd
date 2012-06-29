@@ -300,7 +300,7 @@ class BundleAnalyzer implements ResourceAnalyzer {
 			if (versionStr != null) {
 				VersionRange version = new VersionRange(versionStr);
 				filter.insert(0, "(&");
-				addVersionFilter(filter, version, VersionKey.PackageVersion);
+				Util.addVersionFilter(filter, version, VersionKey.PackageVersion);
 				filter.append(")");
 			}
 			
@@ -343,7 +343,7 @@ class BundleAnalyzer implements ResourceAnalyzer {
 			if (versionStr != null) {
 				VersionRange version = new VersionRange(versionStr);
 				filter.insert(0, "(&");
-				addVersionFilter(filter, version, VersionKey.BundleVersion);
+				Util.addVersionFilter(filter, version, VersionKey.BundleVersion);
 				filter.append(")");
 			}
 			
@@ -371,7 +371,7 @@ class BundleAnalyzer implements ResourceAnalyzer {
 			
 			String versionStr = entry.getValue().get(Constants.BUNDLE_VERSION_ATTRIBUTE);
 			VersionRange version = versionStr != null ? new VersionRange(versionStr) : new VersionRange(Version.emptyVersion.toString());
-			addVersionFilter(filter, version, VersionKey.BundleVersion);
+			Util.addVersionFilter(filter, version, VersionKey.BundleVersion);
 			filter.append(")");
 			
 			Builder builder = new Builder()
@@ -523,38 +523,6 @@ class BundleAnalyzer implements ResourceAnalyzer {
 			return new Version(value);
 		default:
 			throw new IllegalArgumentException(typeStr);
-		}
-	}
-
-	private void addVersionFilter(StringBuilder filter, VersionRange version, VersionKey key) {
-		if (version.isRange()) {
-			if (version.includeLow()) {
-				filter.append("(").append(key.getKey());
-				filter.append(">=");
-				filter.append(version.getLow());
-				filter.append(")");
-			} else {
-				filter.append("(!(").append(key.getKey());
-				filter.append("<=");
-				filter.append(version.getLow());
-				filter.append("))");
-			}
-
-			if (version.includeHigh()) {
-				filter.append("(").append(key.getKey());
-				filter.append("<=");
-				filter.append(version.getHigh());
-				filter.append(")");
-			} else {
-				filter.append("(!(").append(key.getKey());
-				filter.append(">=");
-				filter.append(version.getHigh());
-				filter.append("))");
-			}
-		} else {
-			filter.append("(").append(key.getKey()).append(">=");
-			filter.append(version);
-			filter.append(")");
 		}
 	}
 
