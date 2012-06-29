@@ -6,10 +6,49 @@ import java.util.*;
 import aQute.libg.reporter.Messages.ERROR;
 import aQute.libg.reporter.Messages.WARNING;
 import aQute.service.reporter.*;
+import aQute.service.reporter.Reporter.SetLocation;
 
 public class ReporterMessages {
 
-	public static <T> T base(final Reporter reporter, Class<T> messages ) {
+	static class WARNINGImpl implements ERROR {
+		Reporter.SetLocation	loc;
+
+		public SetLocation file(String file) {
+			return loc.file(file);
+		}
+
+		public SetLocation header(String header) {
+			return loc.header(header);
+		}
+
+		public SetLocation context(String context) {
+			return loc.context(context);
+		}
+
+		public SetLocation method(String methodName) {
+			return loc.method(methodName);
+		}
+
+		public SetLocation line(int n) {
+			return loc.line(n);
+		}
+
+		public SetLocation reference(String reference) {
+			return loc.reference(reference);
+		}
+
+		public WARNINGImpl(Reporter.SetLocation loc) {
+			this.loc = loc;
+		}
+	}
+
+	static class ERRORImpl extends WARNINGImpl implements WARNING {
+		public ERRORImpl(SetLocation e) {
+			super(e);
+		}
+	}
+
+	public static <T> T base(final Reporter reporter, Class<T> messages) {
 		return (T) Proxy.newProxyInstance(messages.getClassLoader(), new Class[] {
 			messages
 		}, new InvocationHandler() {
@@ -42,9 +81,10 @@ public class ReporterMessages {
 
 				try {
 					if (method.getReturnType() == ERROR.class) {
-						reporter.error(format, args);
+						return new ERRORImpl(reporter.error(format, args));
+
 					} else if (method.getReturnType() == WARNING.class) {
-						reporter.warning(format, args);
+						return new WARNINGImpl(reporter.warning(format, args));
 					} else
 						reporter.trace(format, args);
 				}

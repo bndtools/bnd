@@ -1,10 +1,12 @@
 package aQute.libg.reporter;
 
+import aQute.service.reporter.*;
+
 
 public interface Messages {
-	static public class ERROR {}
+	static public interface ERROR extends Reporter.SetLocation {}
 
-	static public class WARNING {}
+	static public interface WARNING extends Reporter.SetLocation {}
 
 	ERROR NoSuchFile_(Object r);
 
