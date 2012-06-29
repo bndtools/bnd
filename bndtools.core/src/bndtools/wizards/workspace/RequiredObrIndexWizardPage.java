@@ -43,7 +43,7 @@ public class RequiredObrIndexWizardPage extends WizardPage {
         this.urls = urls;
         this.checkedUrls = new ArrayList<String>(urls);
 
-        infoMessage = String.format("Project \"%s\" requires the following OBR repositories to satisfy its\n" + "dependencies. Checked repository indexes will be added to the Workspace.", project.getName());
+        infoMessage = String.format("Project \"%s\" requires the following OBR repositories to satisfy its%n" + "dependencies. Checked repository indexes will be added to the Workspace.", project.getName());
     }
 
     public void setCheckedUrls(List<String> checkedUrls) {
