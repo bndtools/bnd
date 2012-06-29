@@ -110,10 +110,16 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
 
         IFile buildXmlFile = project.getFile("build.xml");
         InputStream buildXmlInput = getClass().getResourceAsStream("template_bnd_build.xml");
-        if (buildXmlFile.exists()) {
-            buildXmlFile.setContents(buildXmlInput, false, false, progress.newChild(1));
-        } else {
-            buildXmlFile.create(buildXmlInput, false, progress.newChild(1));
+        try {
+            if (buildXmlFile.exists()) {
+                buildXmlFile.setContents(buildXmlInput, false, false, progress.newChild(1));
+            } else {
+                buildXmlFile.create(buildXmlInput, false, progress.newChild(1));
+            }
+        } finally {
+            try {
+                buildXmlInput.close();
+            } catch (IOException e) {}
         }
 
         BndProject proj = generateBndProject(project, progress.newChild(1));

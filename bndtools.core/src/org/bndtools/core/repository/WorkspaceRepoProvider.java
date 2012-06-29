@@ -104,13 +104,18 @@ public class WorkspaceRepoProvider implements IndexProvider {
         config.put(ResourceIndexer.PRETTY, "true");
         config.put(ResourceIndexer.URL_TEMPLATE, baseUrl + "%p%f");
 
+        FileOutputStream fos = null;
         try {
-
-            indexer.index(jars, new FileOutputStream(indexFile), config);
+            fos = new FileOutputStream(indexFile);
+            indexer.index(jars, fos, config);
         } finally {
             long timeTaken = System.currentTimeMillis() - startingTime;
             if (timeTaken >= WARNING_THRESHOLD_TIME)
                 logger.logWarning(String.format("Workspace index generation took longer than %dms (time taken was %dms).", WARNING_THRESHOLD_TIME, timeTaken), null);
+
+            if (fos != null) {
+                fos.close();
+            }
         }
     }
 
