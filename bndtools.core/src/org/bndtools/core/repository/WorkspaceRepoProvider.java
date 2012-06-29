@@ -109,13 +109,15 @@ public class WorkspaceRepoProvider implements IndexProvider {
             fos = new FileOutputStream(indexFile);
             indexer.index(jars, fos, config);
         } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (IOException e) {}
+
             long timeTaken = System.currentTimeMillis() - startingTime;
             if (timeTaken >= WARNING_THRESHOLD_TIME)
                 logger.logWarning(String.format("Workspace index generation took longer than %dms (time taken was %dms).", WARNING_THRESHOLD_TIME, timeTaken), null);
-
-            if (fos != null) {
-                fos.close();
-            }
         }
     }
 
