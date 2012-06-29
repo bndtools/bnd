@@ -69,7 +69,6 @@ public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule 
             Map<String,SortedSet<Version>> allExports = new HashMap<String,SortedSet<Version>>();
 
             for (Builder builder : builders) {
-                Jar jar = null;
                 try {
                     builder.build();
                     Packages exports = builder.getExports();
@@ -93,9 +92,6 @@ public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule 
                     }
                 } catch (Exception e) {
                     Plugin.getDefault().getLogger().logWarning(MessageFormat.format("Unable to process exported packages for builder of {0}.", builder.getPropertiesFile()), e);
-                } finally {
-                    if (jar != null)
-                        jar.close();
                 }
             }
             Central.setExportedPackageModel(project, allExports);
