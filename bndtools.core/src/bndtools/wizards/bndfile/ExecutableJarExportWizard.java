@@ -116,6 +116,8 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
             launcherJar.write(new File(folder, "launch.jar"));
         } catch (Exception e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating launch JAR.", e));
+        } finally {
+            launcherJar.close();
         }
     }
 
