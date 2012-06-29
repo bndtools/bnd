@@ -252,7 +252,7 @@ public class ReporterAdapter implements Reporter, Report {
 
 	public Location getLocation(String msg) {
 		for ( LocationImpl loc : locations ) {
-			if ( loc.message == msg)
+			if ((loc.message != null) && loc.message.equals(msg))
 				return loc;
 		}
 		return null;

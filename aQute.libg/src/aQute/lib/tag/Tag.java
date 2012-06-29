@@ -392,7 +392,7 @@ public class Tag {
 		}
 		String suri = sn == null ? mapping.getAttribute("xmlns") : mapping.getAttribute("xmlns:" + sn);
 		String turi = tn == null ? child.findRecursiveAttribute("xmlns") : child.findRecursiveAttribute("xmlns:" + tn);
-		return turi == suri || (turi != null && suri != null && turi.equals(suri));
+		return ((turi == null) && (suri == null)) || ((turi != null) && turi.equals(suri));
 	}
 
 	public String getString(String path) {

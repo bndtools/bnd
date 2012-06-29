@@ -1657,7 +1657,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public Location getLocation(String msg) {
 		for (Location l : locations)
-			if (l.message == msg)
+			if ((l.message != null) && l.message.equals(msg))
 				return l;
 
 		return null;
