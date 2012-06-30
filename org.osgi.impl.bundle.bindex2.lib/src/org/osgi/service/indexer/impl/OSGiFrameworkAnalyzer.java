@@ -2,9 +2,7 @@ package org.osgi.service.indexer.impl;
 
 import java.util.List;
 
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
-import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.service.indexer.Builder;
 import org.osgi.service.indexer.Capability;
 import org.osgi.service.indexer.Namespaces;
@@ -17,12 +15,11 @@ import org.osgi.service.indexer.ResourceAnalyzer;
  */
 public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
 	
-	private static final String RESOURCE_PATH_SERVICES = "META-INF/services/";
-	private static final String FRAMEWORK_PACKAGE = BundleContext.class.getPackage().getName();
-	
+	private static final String SERVICE_FRAMEWORK_FACTORY = "META-INF/services/org.osgi.framework.launch.FrameworkFactory";
+	private static final String FRAMEWORK_PACKAGE = "org.osgi.framework";
 
 	public void analyzeResource(Resource resource, List<Capability> caps, List<Requirement> reqs) throws Exception {
-		Resource fwkFactorySvc = resource.getChild(RESOURCE_PATH_SERVICES + FrameworkFactory.class.getName());
+		Resource fwkFactorySvc = resource.getChild(SERVICE_FRAMEWORK_FACTORY);
 		if (fwkFactorySvc != null) {
 			Builder builder = new Builder().setNamespace(Namespaces.NS_CONTRACT).addAttribute(Namespaces.NS_CONTRACT, Namespaces.CONTRACT_OSGI_FRAMEWORK);
 
