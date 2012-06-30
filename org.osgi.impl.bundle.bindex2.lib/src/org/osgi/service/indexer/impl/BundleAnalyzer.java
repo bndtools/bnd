@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,13 +20,11 @@ import org.osgi.service.indexer.Namespaces;
 import org.osgi.service.indexer.Requirement;
 import org.osgi.service.indexer.Resource;
 import org.osgi.service.indexer.ResourceAnalyzer;
-import org.osgi.service.indexer.impl.types.ScalarType;
 import org.osgi.service.indexer.impl.types.SymbolicName;
 import org.osgi.service.indexer.impl.types.VersionKey;
 import org.osgi.service.indexer.impl.types.VersionRange;
 import org.osgi.service.indexer.impl.util.Hex;
 import org.osgi.service.indexer.impl.util.OSGiHeader;
-import org.osgi.service.indexer.impl.util.QuotedTokenizer;
 import org.osgi.service.indexer.impl.util.Yield;
 
 class BundleAnalyzer implements ResourceAnalyzer {
@@ -64,10 +61,10 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		String fragmentHost = attribs.getValue(Constants.FRAGMENT_HOST);
 		String identity = (fragmentHost == null) ? Namespaces.RESOURCE_TYPE_BUNDLE : Namespaces.RESOURCE_TYPE_FRAGMENT;
 		
-		SymbolicName bsn = getSymbolicName(resource);
+		SymbolicName bsn = Util.getSymbolicName(resource);
 		boolean singleton = Boolean.TRUE.toString().equalsIgnoreCase(bsn.getAttributes().get(Constants.SINGLETON_DIRECTIVE + ":"));
 		
-		Version version = getVersion(resource);
+		Version version = Util.getVersion(resource);
 		
 		Builder builder = new Builder()
 				.setNamespace(Namespaces.NS_IDENTITY)
@@ -79,32 +76,6 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		caps.add(builder.buildCapability());
 	}
 
-	private static Version getVersion(Resource resource) throws IOException {
-		Manifest manifest = resource.getManifest();
-		if (manifest == null)
-			throw new IllegalArgumentException(String.format("Cannot identify version for resource %s: manifest unavailable", resource.getLocation()));
-		String versionStr = manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
-		Version version = (versionStr != null) ? new Version(versionStr) : Version.emptyVersion;
-		return version;
-	}
-	
-	SymbolicName getSymbolicName(Resource resource) throws IOException {
-		Manifest manifest = resource.getManifest();
-		if (manifest == null)
-			throw new IllegalArgumentException(String.format("Cannot identify symbolic name for resource %s: manifest unavailable", resource.getLocation()));
-
-		String header = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
-		if (header == null)
-			throw new IllegalArgumentException("Not an OSGi R4+ bundle: missing 'Bundle-SymbolicName' entry from manifest.");
-
-		Map<String, Map<String, String>> map = OSGiHeader.parseHeader(header);
-		if (map.size() != 1)
-			throw new IllegalArgumentException("Invalid format for Bundle-SymbolicName header.");
-
-		Entry<String, Map<String, String>> entry = map.entrySet().iterator().next();
-		return new SymbolicName(entry.getKey(), entry.getValue());
-	}
-	
 	void setStateLocal(GeneratorState state) {
 		this.state.set(state);
 	}
@@ -174,10 +145,10 @@ class BundleAnalyzer implements ResourceAnalyzer {
 			
 			String urlTemplate = state.getUrlTemplate();
 			if (urlTemplate != null) {
-				result = urlTemplate.replaceAll("%s", getSymbolicName(resource).getName());
+				result = urlTemplate.replaceAll("%s", Util.getSymbolicName(resource).getName());
 				result = result.replaceAll("%f", fileName);
 				result = result.replaceAll("%p", dir);
-				result = result.replaceAll("%v", "" + getVersion(resource));
+				result = result.replaceAll("%v", "" + Util.getVersion(resource));
 			} else {
 				result = dir + fileName;
 			}
@@ -228,8 +199,8 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		if (attribs.getValue(Constants.FRAGMENT_HOST) != null)
 			return;
 		
-		SymbolicName bsn = getSymbolicName(resource);
-		Version version = getVersion(resource);
+		SymbolicName bsn = Util.getSymbolicName(resource);
+		Version version = Util.getVersion(resource);
 		
 		bundleBuilder.addAttribute(Namespaces.NS_WIRING_BUNDLE, bsn.getName())
 			.addAttribute(Constants.BUNDLE_VERSION_ATTRIBUTE, version);
@@ -459,70 +430,9 @@ class BundleAnalyzer implements ResourceAnalyzer {
 			String namespace = OSGiHeader.removeDuplicateMarker(entry.getKey());
 			Builder builder = new Builder().setNamespace(namespace);
 			
-			for (Entry<String, String> attrib : entry.getValue().entrySet()) {
-				String key = attrib.getKey();
-				
-				if (key.endsWith(":")) {
-					String directiveName = key.substring(0, key.length() - 1);
-					builder.addDirective(directiveName, attrib.getValue());
-				} else {
-					int colonIndex = key.lastIndexOf(":");
-					
-					String name;
-					String typeStr;
-					if (colonIndex > -1) {
-						name = key.substring(0, colonIndex);
-						typeStr = key.substring(colonIndex + 1);
-					} else {
-						name = key;
-						typeStr = ScalarType.String.name();
-					}
-					
-					Object value = parseValue(attrib.getValue(), typeStr);
-					builder.addAttribute(name, value);
-				}
-			}
+			Map<String, String> attribs = entry.getValue();
+			Util.copyAttribsToBuilder(builder, attribs);
 			output.yield(builder);
-		}
-	}
-	
-	static Object parseValue(String value, String typeStr) {
-		Object result;
-		
-		if (typeStr.startsWith("List<")) {
-			typeStr = typeStr.substring("List<".length(), typeStr.length() - 1);
-			result = parseListValue(value, typeStr);
-		} else {
-			result = parseScalarValue(value, typeStr);
-		}
-		
-		return result;
-	}
-
-	static List<?> parseListValue(String value, String typeStr) throws IllegalArgumentException {
-		
-		QuotedTokenizer tokenizer = new QuotedTokenizer(value, ",");
-		String[] tokens = tokenizer.getTokens();
-		List<Object> result = new ArrayList<Object>(tokens.length);
-		for (String token : tokens)
-			result.add(parseScalarValue(token, typeStr));
-		
-		return result;
-	}
-
-	static Object parseScalarValue(String value, String typeStr) throws IllegalArgumentException {
-		ScalarType type = Enum.valueOf(ScalarType.class, typeStr);
-		switch (type) {
-		case String:
-			return value;
-		case Long:
-			return Long.valueOf(value);
-		case Double:
-			return Double.valueOf(value);
-		case Version:
-			return new Version(value);
-		default:
-			throw new IllegalArgumentException(typeStr);
 		}
 	}
 

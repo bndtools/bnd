@@ -8,16 +8,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import junit.framework.TestCase;
 
 import org.mockito.ArgumentCaptor;
+import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 import org.osgi.service.indexer.Capability;
 import org.osgi.service.indexer.Requirement;
 import org.osgi.service.indexer.Resource;
@@ -90,7 +94,10 @@ public class TestIndexer extends TestCase {
 
 	private static void assertFragmentMatch(String expectedPath, String jarPath) throws Exception {
 		BIndex2 indexer = new BIndex2();
-		
+		assertFragmentMatch(indexer, expectedPath, jarPath);
+	}
+	
+	private static void assertFragmentMatch(BIndex2 indexer, String expectedPath, String jarPath) throws Exception {
 		StringWriter writer = new StringWriter();
 		indexer.indexFragment(Collections.singleton(new File(jarPath)), writer, null);
 		
@@ -263,5 +270,22 @@ public class TestIndexer extends TestCase {
 		
 		verify(log).log(eq(LogService.LOG_ERROR), anyString(), isA(UnsupportedOperationException.class));
 	}
-
+	
+	public void testRecogniseFelixSCR() throws Exception {
+		Properties props = new Properties();
+		props.load(new FileInputStream("testdata/known-bundles.properties"));
+		
+		BIndex2 indexer = new BIndex2();
+		indexer.addAnalyzer(new KnownBundleAnalyzer(props), FrameworkUtil.createFilter("(name=*)"));
+		assertFragmentMatch(indexer, "testdata/org.apache.felix.scr-1.6.0.xml", "testdata/org.apache.felix.scr-1.6.0.jar");
+	}
+	
+	public void testMacroExpansion() throws Exception {
+		Properties props = new Properties();
+		props.load(new FileInputStream("testdata/known-bundles.properties"));
+		
+		BIndex2 indexer = new BIndex2();
+		indexer.addAnalyzer(new KnownBundleAnalyzer(props), FrameworkUtil.createFilter("(name=*)"));
+		assertFragmentMatch(indexer, "testdata/org.apache.felix.eventadmin.xml", "testdata/org.apache.felix.eventadmin-1.2.14.jar");
+	}
 }

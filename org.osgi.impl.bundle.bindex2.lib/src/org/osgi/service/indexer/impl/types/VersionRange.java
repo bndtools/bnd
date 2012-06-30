@@ -121,4 +121,20 @@ public class VersionRange implements Comparable<VersionRange> {
 	public Version getLow() {
 		return low;
 	}
+	
+	public boolean match(Version version) {
+		int lowmatch = version.compareTo(low);
+		if (lowmatch < 0)
+			return false;
+		if (lowmatch == 0 && !includeLow())
+			return false;
+		
+		int highmatch = version.compareTo(high);
+		if (highmatch > 0)
+			return false;
+		if (highmatch == 0 && !includeHigh())
+			return false;
+		
+		return true;
+	}
 }
