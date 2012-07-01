@@ -308,6 +308,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         SubMonitor progress = createProgressMonitor(entry, limit, monitor);
 
         boolean limitReached = false;
+        long offsetInFile = 0;
         int bytesPerLine = groupsOf8BytesPerLine * 8;
         int asciiPosition = 0;
         char[] asciiBuffer = new char[bytesPerLine + (2 * (groupsOf8BytesPerLine - 1))];
@@ -326,6 +327,12 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                     break;
 
                 for (int i = 0; i < bytesRead; i++) {
+                    if (bytePosition == 0) {
+                        String s = String.format("0x%04x ", offsetInFile);
+                        out.write(s);
+                        offsetInFile += bytesPerLine;
+                    }
+
                     asciiBuffer[asciiPosition] = byteToChar(buffer[i]);
                     asciiPosition++;
 
