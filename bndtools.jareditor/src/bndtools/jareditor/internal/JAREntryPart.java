@@ -359,16 +359,18 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                 }
             }
         } finally {
-            while (bytePosition < bytesPerLine) {
-                out.write("   ");
-                bytePosition++;
+            if (bytePosition > 0) {
+                while (bytePosition < bytesPerLine) {
+                    out.write("   ");
+                    bytePosition++;
 
-                /* put 2 extra spaces between bytes */
-                if ((bytePosition > 0) && (bytePosition % 8 == 0)) {
-                    out.write(' ');
+                    /* put 2 extra spaces between bytes */
+                    if ((bytePosition > 0) && (bytePosition % 8 == 0)) {
+                        out.write(' ');
+                    }
                 }
+                out.write(asciiBuffer, 0, asciiPosition);
             }
-            out.write(asciiBuffer, 0, asciiPosition);
 
             if (limitReached) {
                 out.write("\nLimit of " + (limit >> 10) + "Kb reached, the rest of the entry is not shown.");
