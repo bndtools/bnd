@@ -5,16 +5,15 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
-import org.osgi.framework.*;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.build.model.conversions.*;
-import aQute.lib.osgi.*;
+import aQute.lib.osgi.Constants;
 import aQute.lib.properties.*;
 import aQute.libg.header.*;
 import aQute.libg.tuple.*;
-import aQute.libg.version.*;
+import aQute.libg.version.Version;
 
 /**
  * A model for a Bnd file. In the first iteration, use a simple Properties
@@ -455,7 +454,7 @@ public class BndEditModel {
 		doSetObject(Constants.EXPORT_PACKAGE, oldValue, exports, headerClauseListFormatter);
 
 		if (referencesBundleVersion && getBundleVersionString() == null) {
-			setBundleVersion(new Version(0, 0, 0).toString());
+			setBundleVersion(Version.emptyVersion.toString());
 		}
 	}
 
