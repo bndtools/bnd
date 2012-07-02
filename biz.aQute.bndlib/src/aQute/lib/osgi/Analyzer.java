@@ -383,6 +383,10 @@ public class Analyzer extends Processor {
 			}
 		}
 
+		// Copy old values into new manifest, when they
+		// exist in the old one, but not in the new one
+		merge(manifest, dot.getManifest());
+
 		//
 		// Calculate the bundle symbolic name if it is
 		// not set.
@@ -406,16 +410,14 @@ public class Analyzer extends Processor {
 		if (main.getValue(BUNDLE_VERSION) == null)
 			main.putValue(BUNDLE_VERSION, "0");
 
-		// Copy old values into new manifest, when they
-		// exist in the old one, but not in the new one
-		merge(manifest, dot.getManifest());
-
 		// Remove all the headers mentioned in -removeheaders
 		Instructions instructions = new Instructions(getProperty(REMOVEHEADERS));
 		Collection<Object> result = instructions.select(main.keySet(), false);
 		main.keySet().removeAll(result);
 
-		dot.setManifest(manifest);
+		// We should not set the manifest here, this is in general done
+		// by the caller.
+		// dot.setManifest(manifest);
 		return manifest;
 	}
 
@@ -2328,8 +2330,10 @@ public class Analyzer extends Processor {
 		} else
 			outputDir = getBase();
 
-		if (getBundleSymbolicName() != null) {
-			String bsn = getBundleSymbolicName();
+		
+		Entry<String,Attrs> name = getBundleSymbolicName();
+		if (name != null) {
+			String bsn = name.getKey();
 			String version = getBundleVersion();
 			Version v = Version.parseVersion(version);
 			String outputName = bsn + "-" + v.getWithoutQualifier() + Constants.DEFAULT_JAR_EXTENSION;
