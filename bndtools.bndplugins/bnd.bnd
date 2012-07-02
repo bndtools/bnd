@@ -7,7 +7,6 @@
 	junit.osgi,\
 	biz.aQute.repository,\
 	org.osgi.impl.bundle.bindex,\
-	osgi.r5,\
 	ee.j2se;version=${javac.ee}
 
 -sub: *.bnd
