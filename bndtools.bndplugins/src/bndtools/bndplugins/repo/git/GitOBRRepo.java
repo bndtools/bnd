@@ -171,10 +171,12 @@ public class GitOBRRepo extends LocalIndexedRepo {
         return newFile;
     }
 
+    @Override
     public String getLocation() {
         return gitUri;
     }
 
+    @Override
     public synchronized File getCacheDirectory() {
         return null;
     }

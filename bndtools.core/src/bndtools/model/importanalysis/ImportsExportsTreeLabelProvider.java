@@ -140,6 +140,8 @@ public class ImportsExportsTreeLabelProvider extends StyledCellLabelProvider {
             case 1 :
                 cell.setText(formatAttribs(rb.getAttribs()));
                 break;
+            default :
+                break;
             }
         } else if (cell.getElement() instanceof ImportPackage || cell.getElement() instanceof ExportPackage) {
             HeaderClause entry = (HeaderClause) cell.getElement();
@@ -179,6 +181,8 @@ public class ImportsExportsTreeLabelProvider extends StyledCellLabelProvider {
                 break;
             case 1 :
                 cell.setText(formatAttribs(entry.getAttribs()));
+                break;
+            default :
                 break;
             }
         }

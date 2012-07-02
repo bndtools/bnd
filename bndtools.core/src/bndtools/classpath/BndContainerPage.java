@@ -155,6 +155,8 @@ public class BndContainerPage extends WizardPage implements IClasspathContainerP
                     return c.getError();
                 case 3 :
                     return c.getFile() + " (" + (c.getFile() != null && c.getFile().exists() ? "exists" : "?") + ")";
+                default :
+                    break;
                 }
                 return null;
             }

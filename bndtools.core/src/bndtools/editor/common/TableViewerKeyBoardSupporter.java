@@ -167,6 +167,9 @@ class CellEditorKeyListener extends KeyAdapter {
             e.doit = false;
             fEditor.deactivate();
             break;
+
+        default :
+            break;
         }
     }
 }

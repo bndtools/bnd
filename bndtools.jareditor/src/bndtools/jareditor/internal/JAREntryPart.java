@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -34,8 +34,10 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.IPartSelectionListener;
@@ -182,45 +184,56 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
             displayJob.cancel();
 
         if (zipEntry != null && !zipEntry.isDirectory()) {
-            final IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
+            IEditorInput input = editor.getEditorInput();
             final Display display = text.getDisplay();
-            displayJob = new Job("Load zip content") {
-                @Override
-                protected IStatus run(IProgressMonitor monitor) {
-                    File ioFile = new File(file.getLocationURI());
-                    ZipFile zipFile = null;
-                    try {
-                        zipFile = new ZipFile(ioFile);
-                        final StringWriter writer = new StringWriter();
-                        if (showAsText)
-                            readAsText(zipFile, zipEntry, charsets[selectedCharset], writer, 1024 * 20, monitor);
-                        else
-                            readAsHex(zipFile, zipEntry, writer, 1024 * 10, monitor);
+            final URI uri;
 
-                        display.asyncExec(new Runnable() {
-                            public void run() {
-                                setContent(writer.toString());
-                            }
-                        });
+            if (input instanceof IFileEditorInput) {
+                uri = ((IFileEditorInput) input).getFile().getLocationURI();
+            } else if (input instanceof IURIEditorInput) {
+                uri = ((IURIEditorInput) input).getURI();
+            } else {
+                uri = null;
+            }
 
-                        return Status.OK_STATUS;
-                    } catch (IOException e) {
-                        Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
-                        // ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, status);
-                        return status;
-                    } finally {
+            if (uri != null) {
+                displayJob = new Job("Load zip content") {
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        File ioFile = new File(uri);
+                        ZipFile zipFile = null;
                         try {
-                            if (zipFile != null)
-                                zipFile.close();
+                            zipFile = new ZipFile(ioFile);
+                            final StringWriter writer = new StringWriter();
+                            if (showAsText)
+                                readAsText(zipFile, zipEntry, charsets[selectedCharset], writer, 1024 * 20, monitor);
+                            else
+                                readAsHex(zipFile, zipEntry, writer, 1024 * 20, 2, monitor);
+
+                            display.asyncExec(new Runnable() {
+                                public void run() {
+                                    setContent(writer.toString());
+                                }
+                            });
+
+                            return Status.OK_STATUS;
                         } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
+                            Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
+                            // ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, status);
+                            return status;
+                        } finally {
+                            try {
+                                if (zipFile != null)
+                                    zipFile.close();
+                            } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
                         }
                     }
-                }
-            };
-
-            displayJob.schedule();
+                };
+                displayJob.schedule();
+            }
         } else {
             setContent("");
         }
@@ -251,6 +264,8 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
 
     protected static void readAsText(ZipFile zipFile, ZipEntry entry, String encoding, Writer out, long limit, IProgressMonitor monitor) throws IOException {
         SubMonitor progress = createProgressMonitor(entry, limit, monitor);
+
+        boolean limitReached = false;
         InputStream stream = zipFile.getInputStream(entry);
         try {
             long total = 0;
@@ -267,23 +282,43 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
 
                 total += bytesRead;
                 progress.worked(bytesRead);
-                if (limit >= 0 && total >= limit)
+                if (limit >= 0 && total >= limit) {
+                    limitReached = true;
                     return;
+                }
             }
         } finally {
+            if (limitReached) {
+                out.write("\nLimit of " + (limit >> 10) + "Kb reached, the rest of the entry is not shown.");
+            }
+
             stream.close();
         }
     }
 
-    protected static void readAsHex(ZipFile zipFile, ZipEntry entry, Writer out, long limit, IProgressMonitor monitor) throws IOException {
+    private static char byteToChar(byte b) {
+        if ((b < 32) || (b == 127)) {
+            return '.';
+        }
+
+        return (char) b;
+    }
+
+    protected static void readAsHex(ZipFile zipFile, ZipEntry entry, Writer out, long limit, int groupsOf8BytesPerLine, IProgressMonitor monitor) throws IOException {
         SubMonitor progress = createProgressMonitor(entry, limit, monitor);
+
+        boolean limitReached = false;
+        long offsetInFile = 0;
+        int bytesPerLine = groupsOf8BytesPerLine * 8;
+        int asciiPosition = 0;
+        char[] asciiBuffer = new char[bytesPerLine + (2 * (groupsOf8BytesPerLine - 1))];
+        int bytePosition = 0;
+        byte[] buffer = new byte[1024];
 
         InputStream stream = zipFile.getInputStream(entry);
         try {
-            byte[] buffer = new byte[1024];
             long total = 0;
 
-            long charsWritten = 0;
             while (true) {
                 if (progress.isCanceled())
                     return;
@@ -292,20 +327,62 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                     break;
 
                 for (int i = 0; i < bytesRead; i++) {
+                    if (bytePosition == 0) {
+                        String s = String.format("0x%04x ", offsetInFile);
+                        out.write(s);
+                        offsetInFile += bytesPerLine;
+                    }
+
+                    asciiBuffer[asciiPosition] = byteToChar(buffer[i]);
+                    asciiPosition++;
+
                     out.write(pseudo[(buffer[i] & 0xf0) >>> 4]); // Convert to a string character
                     out.write(pseudo[(buffer[i] & 0x0f)]); // convert the nibble to a String Character
                     out.write(' ');
-                    charsWritten += 3;
-                    if (charsWritten % 75 == 0)
+                    bytePosition++;
+
+                    /* do a linebreak after the required number of bytes */
+                    if (bytePosition >= bytesPerLine) {
+                        out.write(' ');
+                        out.write(asciiBuffer);
                         out.write('\n');
+                        asciiPosition = 0;
+                        bytePosition = 0;
+                    }
+
+                    /* put 2 extra spaces between bytes */
+                    if ((bytePosition > 0) && (bytePosition % 8 == 0)) {
+                        asciiBuffer[asciiPosition++] = ' ';
+                        asciiBuffer[asciiPosition++] = ' ';
+                        out.write(' ');
+                    }
                 }
 
                 total += bytesRead;
                 progress.worked(bytesRead);
-                if (limit >= 0 && total >= limit)
+                if (limit >= 0 && total >= limit) {
+                    limitReached = true;
                     return;
+                }
             }
         } finally {
+            if (bytePosition > 0) {
+                while (bytePosition < bytesPerLine) {
+                    out.write("   ");
+                    bytePosition++;
+
+                    /* put 2 extra spaces between bytes */
+                    if ((bytePosition > 0) && (bytePosition % 8 == 0)) {
+                        out.write(' ');
+                    }
+                }
+                out.write(asciiBuffer, 0, asciiPosition);
+            }
+
+            if (limitReached) {
+                out.write("\nLimit of " + (limit >> 10) + "Kb reached, the rest of the entry is not shown.");
+            }
+
             stream.close();
         }
     }

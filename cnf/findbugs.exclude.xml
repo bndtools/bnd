@@ -1,2 +1,12 @@
 <FindBugsFilter>
+	<Match>
+		<Class name="bndtools.editor.model.ServiceComponentAttribs" />
+		<Method name="parseNullableBoolean" />
+		<Bug pattern="NP_BOOLEAN_RETURN_NULL" />
+	</Match>
+	<Match>
+		<Class name="bndtools.jareditor.internal.Printer" />
+		<Method name="doPrint" />
+		<Bug pattern="WMI_WRONG_MAP_ITERATOR" />
+	</Match>
 </FindBugsFilter>

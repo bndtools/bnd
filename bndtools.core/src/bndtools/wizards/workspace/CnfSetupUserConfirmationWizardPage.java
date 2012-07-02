@@ -79,7 +79,7 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
         btnNever.setText(Messages.CnfSetupNever);
 
         grpLocation.setText("Location");
-        btnCreateInEclipseWorkspace.setText(String.format("Create in Eclipse Workspace\n(%s).", ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()));
+        btnCreateInEclipseWorkspace.setText(String.format("Create in Eclipse Workspace%n(%s).", ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()));
         btnCreateExternal.setText("Create in:");
         btnBrowseExternalLocation.setText("Browse");
 

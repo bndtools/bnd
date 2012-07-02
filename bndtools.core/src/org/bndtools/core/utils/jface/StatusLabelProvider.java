@@ -35,6 +35,10 @@ public class StatusLabelProvider extends StyledCellLabelProvider {
                 imgInfo = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/information.gif").createImage();
             cell.setImage(imgInfo);
             break;
+        case IStatus.OK :
+        case IStatus.CANCEL :
+        default :
+            break;
         }
 
         StyledString label = new StyledString(status.getMessage());

@@ -30,7 +30,6 @@ public class DummyBundle implements Bundle {
 
     private Properties props;
 
-    @SuppressWarnings("deprecation")
     DummyBundle(long id, BundleContext context, File jar) throws IOException {
         this.id = id;
         this.context = context;

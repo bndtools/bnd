@@ -1,10 +1,12 @@
 package bndtools.model.obr;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.apache.felix.bundlerepository.Property;
 
-public class PropertyComparator implements Comparator<Property> {
+public class PropertyComparator implements Comparator<Property>, Serializable {
+    private static final long serialVersionUID = 1323790007669584551L;
 
     public int compare(Property prop1, Property prop2) {
         int diff;
@@ -20,5 +22,4 @@ public class PropertyComparator implements Comparator<Property> {
 
         return diff;
     }
-
 }

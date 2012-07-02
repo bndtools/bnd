@@ -18,11 +18,14 @@
  */
 package org.bndtools.core.obr.model;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.apache.felix.bundlerepository.Resource;
 
-class ResourceComparator implements Comparator<Resource> {
+class ResourceComparator implements Comparator<Resource>, Serializable {
+    private static final long serialVersionUID = -1024310463155368274L;
+
     public int compare(Resource r1, Resource r2) {
         String name1 = r1.getPresentationName();
         String name2 = r2.getPresentationName();

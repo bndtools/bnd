@@ -115,7 +115,7 @@ public class VersionPolicyPart extends SectionPart implements PropertyChangeList
                     updateEnablement();
                 }
                 markDirty();
-            };
+            }
         });
         SelectionAdapter markDirtyListener = new SelectionAdapter() {
             @Override

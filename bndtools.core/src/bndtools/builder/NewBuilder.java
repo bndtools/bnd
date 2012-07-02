@@ -696,6 +696,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 IJavaProject targetJavaProject = JavaCore.create(targetProject);
                 accumulateClasspath(files, targetJavaProject, true, containerFilters);
                 break;
+            default :
+                logger.logError("Unhandled IPath entryKind of " + entry.getEntryKind(), null);
+                break;
             }
         }
     }

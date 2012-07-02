@@ -827,6 +827,8 @@ public class JarDiff {
 						break;
 					case '=':
 						break;
+					default:
+						break;
 					}
 					result = Integer.toString(x);
 				}

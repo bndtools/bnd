@@ -37,6 +37,8 @@ public class MDSashForm extends SashForm {
             case SWT.Resize :
                 hookSashListeners();
                 break;
+            default :
+                break;
             }
         }
     };

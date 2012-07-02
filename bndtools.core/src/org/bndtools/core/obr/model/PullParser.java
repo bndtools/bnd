@@ -195,6 +195,8 @@ public class PullParser {
                             }
                             sb.append(reader.getText());
                             break;
+                        default :
+                            break;
                         }
                     }
                     if (sb != null) {
@@ -294,6 +296,8 @@ public class PullParser {
                     sb = new StringBuffer();
                 }
                 sb.append(reader.getText());
+                break;
+            default :
                 break;
             }
         }

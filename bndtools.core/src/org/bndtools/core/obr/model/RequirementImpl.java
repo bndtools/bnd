@@ -115,8 +115,9 @@ public class RequirementImpl implements Requirement {
         if (o instanceof Requirement) {
             Requirement r = (Requirement) o;
             return m_name.equals(r.getName()) && (m_optional == r.isOptional()) && (m_multiple == r.isMultiple()) && m_filter.toString().equals(r.getFilter())
-                    && ((m_comment == r.getComment()) || ((m_comment != null) && (m_comment.equals(r.getComment()))));
+                    && (((m_comment == null) && (r.getComment() == null)) || ((m_comment != null) && (m_comment.equals(r.getComment()))));
         }
+
         return false;
     }
 

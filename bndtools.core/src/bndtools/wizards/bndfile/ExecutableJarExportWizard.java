@@ -59,8 +59,7 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
         File folder = new File(folderPath);
         File bundleFolder = new File(folder, "bundles");
 
-        bundleFolder.mkdirs();
-        if (!bundleFolder.exists()) {
+        if (!bundleFolder.exists() && !bundleFolder.mkdirs()) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to create folder.", null));
             return status;
         }
@@ -82,14 +81,8 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
 
     private IStatus generateJar(String jarPath) {
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Errors occurred during exporting.", null);
-        ProjectLauncher launcher = null;
         try {
-            launcher = bndProject.getProjectLauncher();
-        } catch (Exception e) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting project launcher.", e));
-        }
-
-        try {
+            ProjectLauncher launcher = bndProject.getProjectLauncher();
             Jar jar = launcher.executable();
             jar.write(jarPath);
         } catch (Exception e) {
@@ -122,6 +115,8 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
             launcherJar.write(new File(folder, "launch.jar"));
         } catch (Exception e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating launch JAR.", e));
+        } finally {
+            launcherJar.close();
         }
     }
 
@@ -142,13 +137,21 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
             }
         }
 
+        Properties launcherProps = new Properties();
+        launcherProps.put(aQute.lib.osgi.Constants.RUNBUNDLES, Processor.join(names, ",\\\n  "));
+
+        FileOutputStream fos = null;
         try {
-            Properties launcherProps = new Properties();
-            launcherProps.put(aQute.lib.osgi.Constants.RUNBUNDLES, Processor.join(names, ",\\\n  "));
-            launcherProps.store(new FileOutputStream(new File(folder, "launch.properties")), "launch.properties");
+            fos = new FileOutputStream(new File(folder, "launch.properties"));
+            launcherProps.store(fos, "launch.properties");
         } catch (IOException e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating launch properties file.", e));
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (IOException e) {}
         }
     }
-
 }

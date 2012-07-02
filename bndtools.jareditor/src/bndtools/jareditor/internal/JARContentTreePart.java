@@ -12,14 +12,14 @@ package bndtools.jareditor.internal;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Enumeration;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -38,6 +38,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -169,21 +170,33 @@ public class JARContentTreePart extends AbstractFormPart {
         public void dispose() {}
 
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            entryMap = new LinkedHashMap<String,ZipTreeNode>();
+            entryMap = new TreeMap<String,ZipTreeNode>();
+            URI uri = null;
             if (newInput instanceof IFileEditorInput) {
-                IFile file = ((IFileEditorInput) newInput).getFile();
+                uri = ((IFileEditorInput) newInput).getFile().getLocationURI();
+            } else if (newInput instanceof IURIEditorInput) {
+                uri = ((IURIEditorInput) newInput).getURI();
+            }
+
+            if (uri != null) {
+                JarFile jarFile = null;
                 try {
-                    File ioFile = new File(file.getLocationURI());
-                    JarFile jarFile = new JarFile(ioFile);
+                    File ioFile = new File(uri);
+                    jarFile = new JarFile(ioFile);
 
                     Enumeration<JarEntry> entries = jarFile.entries();
                     while (entries.hasMoreElements()) {
                         ZipTreeNode.addEntry(entryMap, entries.nextElement());
                     }
-                    jarFile.close();
                 } catch (IOException e) {
                     Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
                     ErrorDialog.openError(managedForm.getForm().getShell(), "Error", null, status);
+                } finally {
+                    try {
+                        if (jarFile != null) {
+                            jarFile.close();
+                        }
+                    } catch (IOException e) {}
                 }
             }
         }
