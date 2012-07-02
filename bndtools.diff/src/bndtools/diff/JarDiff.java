@@ -664,12 +664,11 @@ public class JarDiff {
 			}
 
 			Jar currentJar = null;
-			VersionRange range = new VersionRange("[" + projectVersion.toString() + "," + projectVersion.toString() + "]");
 			try {
 				if (baselineRepository != null) {
-					File files =  baselineRepository.get(symbolicName, range.toString(), Strategy.LOWEST, null);
-					if (files != null) {
-						currentJar = new Jar(files);
+					File file =  baselineRepository.get(symbolicName, projectVersion.toString(), Strategy.EXACT, null);
+					if (file != null) {
+						currentJar = new Jar(file);
 					}
 				}
 			} catch (Exception e) {
