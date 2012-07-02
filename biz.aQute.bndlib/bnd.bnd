@@ -7,7 +7,7 @@ Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 									description="Apache Software License 2.0"; \
 									link=http://www.apache.org/licenses/LICENSE-2.0.html
 Bundle-DocURL:          		http://www.aQute.biz/Code/Bnd
-Bundle-Name: 					bnd - Bundle Tool
+Bundle-Name: 					bndlib
 Bundle-Description:				A Swiss Army Knife for OSGi
 Bundle-SymbolicName: 	        biz.aQute.bndlib
 Private-Package: 				aQute.bnd.*, aQute.lib.*, org.osgi.service.component.annotations
