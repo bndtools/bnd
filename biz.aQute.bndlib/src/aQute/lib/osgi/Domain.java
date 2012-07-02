@@ -234,8 +234,11 @@ public abstract class Domain implements Iterable<String> {
 		return Processor.isTrue(get(SOURCES));
 	}
 
-	public String getBundleSymbolicName() {
-		return get(BUNDLE_SYMBOLICNAME);
+	public Map.Entry<String,Attrs> getBundleSymbolicName() {
+		Parameters p = getParameters(BUNDLE_SYMBOLICNAME);
+		if ( p.isEmpty())
+			return null;
+		return p.entrySet().iterator().next();
 	}
 
 	public void setBundleSymbolicName(String s) {
