@@ -37,15 +37,15 @@ import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Jar;
-import aQute.libg.reporter.Reporter;
+import aQute.service.reporter.Reporter;
 import bndtools.diff.JarDiff;
 import bndtools.diff.PackageInfo;
 import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.release.api.IReleaseParticipant;
-import bndtools.release.api.ReleaseUtils;
 import bndtools.release.api.IReleaseParticipant.Scope;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseContext.Error;
+import bndtools.release.api.ReleaseUtils;
 
 public class ReleaseHelper {
 
