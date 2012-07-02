@@ -22,13 +22,11 @@ Private-Package: bndtools,\
 	bndtools.*,\
 	org.bndtools.core.*,\
 	org.ardverk.collection,\
-	org.osgi.impl.bundle.obr.resource,\
 	org.osgi.service.obr,\
-	aQute.libg.generics,\
-	aQute.libg.sax.filters,\
-	aQute.libg.tuple,\
-	aQute.lib.io,\
-	aQute.lib.filter,\
+	aQute.libg.generics;-split-package:=merge-first,\
+	aQute.libg.tuple;-split-package:=merge-first,\
+	aQute.lib.io;-split-package:=merge-first,\
+	aQute.lib.filter;-split-package:=merge-first,\
 	org.kxml2.io,\
 	org.xmlpull.v1
 
