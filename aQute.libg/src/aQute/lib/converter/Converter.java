@@ -471,4 +471,17 @@ public class Converter {
 		}
 		return sb.toString();
 	}
+
+
+
+	public static <T> T cnv(TypeReference<T> tr, Object source) throws Exception {
+		return new Converter().convert(tr, source);
+	}
+	public static <T> T cnv(Class<T> tr, Object source) throws Exception {
+		return new Converter().convert(tr, source);
+	}
+	public static Object cnv(Type tr, Object source) throws Exception {
+		return new Converter().convert(tr, source);
+	}
+
 }
