@@ -30,7 +30,7 @@ import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
 import bndtools.api.IPersistableBndModel;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
 import bndtools.utils.FileUtils;
 
 public class EnableSubBundlesOperation implements IWorkspaceRunnable {
@@ -66,7 +66,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
             throw newCoreException("Container path does not exist", null);
 
         // Create new project model
-        IPersistableBndModel newBundleModel = new BndtoolsEditModel();
+        IPersistableBndModel newBundleModel = new BndEditModel();
 
         // Load project file and model
         IFile projectFile = container.getProject().getFile(Project.BNDFILE);
@@ -76,7 +76,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
             projectDocument = FileUtils.readFully(projectFile);
             if (projectDocument == null)
                 projectDocument = new Document();
-            projectModel = new BndtoolsEditModel();
+            projectModel = new BndEditModel();
             projectModel.loadFrom(projectDocument);
         } catch (IOException e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, e.getMessage(), e));

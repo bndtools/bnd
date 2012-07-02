@@ -23,11 +23,11 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.osgi.framework.Constants;
 
-import aQute.bnd.build.model.clauses.ExportedPackage;
-import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.libg.header.Attrs;
 import bndtools.Plugin;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
+import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.VersionedClause;
 import bndtools.utils.FileUtils;
 import bndtools.wizards.bndfile.JarListWizardPage;
 
@@ -72,8 +72,8 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
     }
 
     @Override
-    protected BndtoolsEditModel generateBndModel(IProgressMonitor monitor) {
-        BndtoolsEditModel model = super.generateBndModel(null);
+    protected BndEditModel generateBndModel(IProgressMonitor monitor) {
+        BndEditModel model = super.generateBndModel(null);
 
         List<ExportedPackage> exports = new ArrayList<ExportedPackage>();
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
@@ -100,7 +100,7 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
         List<IPath> selectedPackages = packageListPage.getSelectedPackages();
         for (IPath pkg : selectedPackages) {
             Attrs props = new Attrs();
-            props.put(Constants.VERSION_ATTRIBUTE, BndtoolsEditModel.BUNDLE_VERSION_MACRO);
+            props.put(Constants.VERSION_ATTRIBUTE, BndEditModel.BUNDLE_VERSION_MACRO);
             ExportedPackage export = new ExportedPackage(pkg.toString().replace('/', '.'), props);
 
             exports.add(export);
@@ -113,7 +113,7 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
     }
 
     @Override
-    protected void processGeneratedProject(BndtoolsEditModel bndModel, IProject project, IProgressMonitor monitor) throws CoreException {
+    protected void processGeneratedProject(BndEditModel bndModel, IProject project, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 2);
         super.processGeneratedProject(bndModel, project, progress.newChild(1));
 

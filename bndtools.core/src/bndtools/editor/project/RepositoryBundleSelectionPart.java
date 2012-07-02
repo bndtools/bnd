@@ -8,10 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -54,12 +51,12 @@ import org.eclipse.ui.part.ResourceTransfer;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
 import bndtools.Central;
 import bndtools.Plugin;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
+import bndtools.model.clauses.VersionedClause;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
@@ -76,7 +73,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
     private Table table;
     protected TableViewer viewer;
 
-    private BndtoolsEditModel model;
+    private BndEditModel model;
     protected List<VersionedClause> bundles;
     protected ToolItem removeItemTool;
 
@@ -356,10 +353,8 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
     Project getProject() {
         Project project = null;
         try {
-            BndtoolsEditModel model = (BndtoolsEditModel) getManagedForm().getInput();
-            File bndFile = model.getBndResource();
-            IPath path = Central.toPath(bndFile);
-            IFile resource = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+            BndEditModel model = (BndEditModel) getManagedForm().getInput();
+            IResource resource = model.getBndResource();
             File projectDir = resource.getProject().getLocation().toFile();
             if (Project.BNDFILE.equals(resource.getName())) {
                 project = Workspace.getProject(projectDir);
@@ -399,9 +394,9 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         saveToModel(model, bundles);
     }
 
-    protected abstract void saveToModel(BndtoolsEditModel model, List<VersionedClause> bundles);
+    protected abstract void saveToModel(BndEditModel model, List<VersionedClause> bundles);
 
-    protected abstract List<VersionedClause> loadFromModel(BndtoolsEditModel model);
+    protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
 
     protected final RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
         // Need to get the project from the input model...
@@ -428,7 +423,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        model = (BndtoolsEditModel) form.getInput();
+        model = (BndEditModel) form.getInput();
         model.addPropertyChangeListener(propertyName, this);
     }
 

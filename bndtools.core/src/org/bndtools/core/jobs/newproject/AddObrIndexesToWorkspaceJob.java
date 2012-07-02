@@ -20,11 +20,11 @@ import org.eclipse.ui.texteditor.DocumentProviderRegistry;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.build.model.clauses.HeaderClause;
-import aQute.bnd.build.model.conversions.CollectionFormatter;
 import aQute.libg.header.Attrs;
 import bndtools.Plugin;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
+import bndtools.editor.model.conversions.CollectionFormatter;
+import bndtools.model.clauses.HeaderClause;
 
 public class AddObrIndexesToWorkspaceJob extends WorkspaceJob {
 
@@ -46,7 +46,7 @@ public class AddObrIndexesToWorkspaceJob extends WorkspaceJob {
         try {
             docProvider.connect(input);
             IDocument document = docProvider.getDocument(input);
-            BndtoolsEditModel model = new BndtoolsEditModel();
+            BndEditModel model = new BndEditModel();
             model.loadFrom(document);
 
             List<HeaderClause> plugins = model.getPlugins();

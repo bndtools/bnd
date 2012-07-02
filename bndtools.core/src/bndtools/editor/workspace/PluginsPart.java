@@ -47,11 +47,11 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
 import bndtools.Plugin;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
+import bndtools.model.clauses.HeaderClause;
 
 public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
@@ -68,7 +68,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
     private ToolItem editItemTool;
     private ToolItem removeItemTool;
 
-    private BndtoolsEditModel model;
+    private BndEditModel model;
 
     public PluginsPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
@@ -189,7 +189,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        model = (BndtoolsEditModel) form.getInput();
+        model = (BndEditModel) form.getInput();
         model.addPropertyChangeListener(Constants.PLUGIN, this);
     }
 

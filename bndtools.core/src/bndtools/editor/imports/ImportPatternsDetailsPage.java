@@ -17,9 +17,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 
-import aQute.bnd.build.model.clauses.ImportPattern;
 import bndtools.editor.pkgpatterns.PkgPatternsDetailsPage;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
+import bndtools.model.clauses.ImportPattern;
 import bndtools.utils.ModificationLock;
 
 public class ImportPatternsDetailsPage extends PkgPatternsDetailsPage<ImportPattern> {

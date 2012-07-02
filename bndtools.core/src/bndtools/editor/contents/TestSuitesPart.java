@@ -69,14 +69,14 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
 import bndtools.internal.testcaseselection.ITestCaseFilter;
 import bndtools.internal.testcaseselection.JavaSearchScopeTestCaseLister;
 import bndtools.internal.testcaseselection.TestCaseSelectionDialog;
 
 public class TestSuitesPart extends SectionPart implements PropertyChangeListener {
 
-    private BndtoolsEditModel model;
+    private BndEditModel model;
     private List<String> testSuites;
 
     private TableViewer viewer;
@@ -310,7 +310,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        this.model = (BndtoolsEditModel) form.getInput();
+        this.model = (BndEditModel) form.getInput();
         this.model.addPropertyChangeListener(Constants.TESTCASES, this);
     }
 

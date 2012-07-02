@@ -13,11 +13,11 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
-import aQute.bnd.build.model.clauses.HeaderClause;
 import bndtools.api.IBndModel;
 import bndtools.editor.workspace.PluginPathPart;
 import bndtools.editor.workspace.PluginsPart;
 import bndtools.editor.workspace.WorkspaceMainPart;
+import bndtools.model.clauses.HeaderClause;
 import bndtools.utils.MessageHyperlinkAdapter;
 
 public class WorkspacePage extends FormPage {

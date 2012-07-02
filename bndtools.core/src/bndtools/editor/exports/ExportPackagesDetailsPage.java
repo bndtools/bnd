@@ -7,9 +7,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 
-import aQute.bnd.build.model.clauses.ExportedPackage;
 import bndtools.editor.pkgpatterns.PkgPatternsDetailsPage;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
+import bndtools.model.clauses.ExportedPackage;
 import bndtools.utils.ModificationLock;
 
 public class ExportPackagesDetailsPage extends PkgPatternsDetailsPage<ExportedPackage> {

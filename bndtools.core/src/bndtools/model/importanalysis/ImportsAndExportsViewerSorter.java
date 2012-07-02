@@ -13,7 +13,7 @@ package bndtools.model.importanalysis;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 
-import aQute.bnd.build.model.clauses.HeaderClause;
+import bndtools.model.clauses.HeaderClause;
 import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ImportUsedByClass;
 import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ImportUsedByPackage;
 

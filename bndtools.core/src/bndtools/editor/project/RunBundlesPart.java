@@ -32,7 +32,8 @@ import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
+import bndtools.model.clauses.VersionedClause;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.utils.EditorUtils;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
@@ -74,7 +75,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void setBundles(List<aQute.bnd.build.model.clauses.VersionedClause> bundles) {
+    protected void setBundles(List<VersionedClause> bundles) {
         this.bundles = bundles;
 
         @SuppressWarnings("rawtypes")
@@ -143,12 +144,12 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
     }
 
     @Override
-    protected void saveToModel(BndtoolsEditModel model, List<aQute.bnd.build.model.clauses.VersionedClause> bundles) {
+    protected void saveToModel(BndEditModel model, List<VersionedClause> bundles) {
         model.setRunBundles(bundles);
     }
 
     @Override
-    protected List<aQute.bnd.build.model.clauses.VersionedClause> loadFromModel(BndtoolsEditModel model) {
+    protected List<VersionedClause> loadFromModel(BndEditModel model) {
         return model.getRunBundles();
     }
 

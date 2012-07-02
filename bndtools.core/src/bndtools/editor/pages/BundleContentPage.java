@@ -33,8 +33,6 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
-import aQute.bnd.build.model.clauses.ExportedPackage;
-import aQute.bnd.build.model.clauses.ImportPattern;
 import bndtools.api.IBndModel;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.common.SaneDetailsPart;
@@ -46,6 +44,8 @@ import bndtools.editor.exports.ExportPatternsListPart;
 import bndtools.editor.imports.ImportPatternsDetailsPage;
 import bndtools.editor.imports.ImportPatternsListPart;
 import bndtools.editor.pkgpatterns.PkgPatternsDetailsPage;
+import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.ImportPattern;
 import bndtools.utils.MessageHyperlinkAdapter;
 
 public class BundleContentPage extends FormPage {

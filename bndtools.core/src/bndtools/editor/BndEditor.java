@@ -65,7 +65,7 @@ import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 import bndtools.api.ResolveMode;
 import bndtools.editor.common.IPriority;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
@@ -90,7 +90,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     private final Map<String,IFormPageFactory> pageFactories = new LinkedHashMap<String,IFormPageFactory>();
 
-    private final BndtoolsEditModel model = new BndtoolsEditModel();
+    private final BndEditModel model = new BndEditModel();
     private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
 
     private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
@@ -412,10 +412,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         try {
             model.loadFrom(document);
             model.setProjectFile(Project.BNDFILE.equals(input.getName()));
-
-            if (resource != null) {
-                model.setBndResource(resource.getLocation().toFile());
-            }
+            model.setBndResource(resource);
             // model.addPropertyChangeListener(modelListener);
         } catch (IOException e) {
             throw new PartInitException("Error reading editor input.", e);
@@ -476,7 +473,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         buildFileImg.dispose();
     }
 
-    public BndtoolsEditModel getBndModel() {
+    public BndEditModel getBndModel() {
         return this.model;
     }
 

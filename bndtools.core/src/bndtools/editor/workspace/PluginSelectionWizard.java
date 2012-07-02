@@ -6,7 +6,7 @@ import java.beans.PropertyChangeListener;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.wizard.Wizard;
 
-import aQute.bnd.build.model.clauses.HeaderClause;
+import bndtools.model.clauses.HeaderClause;
 
 public class PluginSelectionWizard extends Wizard {
 

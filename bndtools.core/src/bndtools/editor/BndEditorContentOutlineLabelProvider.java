@@ -15,9 +15,9 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import aQute.bnd.build.model.clauses.ExportedPackage;
-import aQute.bnd.build.model.clauses.ImportPattern;
 import bndtools.Plugin;
+import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.ImportPattern;
 
 public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvider {
 

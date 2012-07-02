@@ -17,8 +17,6 @@ import org.bndtools.core.utils.filters.ObrConstants;
 import org.bndtools.core.utils.filters.ObrFilterUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -61,7 +59,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
@@ -69,7 +66,8 @@ import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.Requirement;
 import bndtools.api.ResolveMode;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
+import bndtools.model.clauses.VersionedClause;
 import bndtools.model.obr.RequirementLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
@@ -82,7 +80,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     private Table table;
     private TableViewer viewer;
     private Button btnAutoResolve;
-    private BndtoolsEditModel model;
+    private BndEditModel model;
 
     private List<Requirement> requires;
     private ResolveMode resolveMode;
@@ -348,7 +346,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        model = (BndtoolsEditModel) form.getInput();
+        model = (BndEditModel) form.getInput();
 
         model.addPropertyChangeListener(BndConstants.RUNREQUIRE, this);
         model.addPropertyChangeListener(BndConstants.RESOLVE_MODE, this);
@@ -439,10 +437,8 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     Project getProject() {
         Project project = null;
         try {
-            BndtoolsEditModel model = (BndtoolsEditModel) getManagedForm().getInput();
-            File bndFile = model.getBndResource();
-            IPath path = Central.toPath(bndFile);
-            IFile resource = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+            BndEditModel model = (BndEditModel) getManagedForm().getInput();
+            IResource resource = model.getBndResource();
             File projectDir = resource.getProject().getLocation().toFile();
             if (Project.BNDFILE.equals(resource.getName())) {
                 project = Workspace.getProject(projectDir);

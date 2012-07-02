@@ -7,13 +7,13 @@ import java.util.List;
 
 import org.osgi.framework.Constants;
 
-import aQute.bnd.build.model.clauses.ExportedPackage;
-import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.libg.header.Attrs;
 import bndtools.api.EE;
 import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
+import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.VersionedClause;
 
 public class IntegrationTestingTemplate implements IProjectTemplate {
 

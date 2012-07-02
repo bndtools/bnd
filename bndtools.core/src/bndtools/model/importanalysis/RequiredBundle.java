@@ -1,7 +1,7 @@
 package bndtools.model.importanalysis;
 
-import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.libg.header.Attrs;
+import bndtools.model.clauses.HeaderClause;
 
 public class RequiredBundle extends HeaderClause {
     private boolean satisfied;

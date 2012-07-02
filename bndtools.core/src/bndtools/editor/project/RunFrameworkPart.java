@@ -30,7 +30,7 @@ import bndtools.BndConstants;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.EE;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
 import bndtools.utils.ModificationLock;
 
 public class RunFrameworkPart extends SectionPart implements PropertyChangeListener {
@@ -38,7 +38,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     private final ModificationLock lock = new ModificationLock();
     private final OSGiFrameworkContentProvider fwkContentProvider = new OSGiFrameworkContentProvider();
 
-    private BndtoolsEditModel model;
+    private BndEditModel model;
     private String selectedFramework = null;
     private EE selectedEE = null;
 
@@ -152,7 +152,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     @Override
     public void initialize(IManagedForm form) {
         super.initialize(form);
-        model = (BndtoolsEditModel) form.getInput();
+        model = (BndEditModel) form.getInput();
 
         model.addPropertyChangeListener(BndConstants.RUNFRAMEWORK, this);
         model.addPropertyChangeListener(BndConstants.RUNEE, this);

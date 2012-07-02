@@ -45,8 +45,6 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.build.model.clauses.ExportedPackage;
-import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
@@ -66,6 +64,8 @@ import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.EE;
 import bndtools.api.IBndModel;
+import bndtools.model.clauses.ExportedPackage;
+import bndtools.model.clauses.VersionedClause;
 
 public class ResolveOperation implements IRunnableWithProgress {
 

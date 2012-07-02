@@ -14,7 +14,7 @@ public class VersionedClauseLabelProvider extends StyledCellLabelProvider {
 
     @Override
     public void update(ViewerCell cell) {
-        aQute.bnd.build.model.clauses.VersionedClause clause = (aQute.bnd.build.model.clauses.VersionedClause) cell.getElement();
+        VersionedClause clause = (VersionedClause) cell.getElement();
         StyledString label = new StyledString(clause.getName());
         String version = clause.getVersionRange();
         if (version != null) {

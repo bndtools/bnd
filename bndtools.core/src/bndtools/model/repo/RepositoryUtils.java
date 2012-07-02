@@ -5,13 +5,13 @@ import java.util.Collections;
 import java.util.List;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.WorkspaceObrProvider;
+import bndtools.model.clauses.VersionedClause;
 
 public class RepositoryUtils {
 

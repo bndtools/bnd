@@ -28,7 +28,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
@@ -52,17 +51,16 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
-import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.editor.contents.PackageInfoDialog;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import bndtools.internal.pkgselection.IPackageFilter;
 import bndtools.internal.pkgselection.JavaSearchScopePackageLister;
 import bndtools.internal.pkgselection.PackageSelectionDialog;
+import bndtools.model.clauses.ExportedPackage;
 import bndtools.preferences.BndPreferences;
 
 public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage> {
@@ -225,23 +223,20 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
     }
 
     @Override
-    protected List<ExportedPackage> loadFromModel(BndtoolsEditModel model) {
+    protected List<ExportedPackage> loadFromModel(BndEditModel model) {
         return model.getExportedPackages();
     }
 
     @Override
-    protected void saveToModel(BndtoolsEditModel model, List< ? extends ExportedPackage> clauses) {
+    protected void saveToModel(BndEditModel model, List< ? extends ExportedPackage> clauses) {
         model.setExportedPackages(clauses);
     }
 
     Project getProject() {
         Project project = null;
         try {
-            BndtoolsEditModel model = (BndtoolsEditModel) getManagedForm().getInput();
-            File bndFile = model.getBndResource();
-            IPath path = Central.toPath(bndFile);
-            IFile resource = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
-            File projectDir = resource.getProject().getLocation().toFile();
+            BndEditModel model = (BndEditModel) getManagedForm().getInput();
+            File projectDir = model.getBndResource().getProject().getLocation().toFile();
             project = Workspace.getProject(projectDir);
         } catch (Exception e) {
             Plugin.logError("Error getting project from editor model", e);

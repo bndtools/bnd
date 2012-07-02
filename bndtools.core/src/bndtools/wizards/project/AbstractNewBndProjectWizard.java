@@ -38,7 +38,7 @@ import org.eclipse.ui.ide.IDE;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
 import bndtools.editor.model.BndProject;
 import bndtools.utils.FileUtils;
 
@@ -68,8 +68,8 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
      * @param monitor
      */
     @SuppressWarnings("static-method")
-    protected BndtoolsEditModel generateBndModel(IProgressMonitor monitor) {
-        return new BndtoolsEditModel();
+    protected BndEditModel generateBndModel(IProgressMonitor monitor) {
+        return new BndEditModel();
     }
 
     /**
@@ -88,7 +88,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
      * 
      * @throws CoreException
      */
-    protected void processGeneratedProject(BndtoolsEditModel bndModel, IProject project, IProgressMonitor monitor) throws CoreException {
+    protected void processGeneratedProject(BndEditModel bndModel, IProject project, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 3);
 
         Document document = new Document();
@@ -169,7 +169,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                             SubMonitor progress = SubMonitor.convert(monitor, 3);
 
                             // Generate the Bnd model
-                            final BndtoolsEditModel bndModel = generateBndModel(progress.newChild(1));
+                            final BndEditModel bndModel = generateBndModel(progress.newChild(1));
 
                             // Make changes to the project
                             final IWorkspaceRunnable op = new IWorkspaceRunnable() {

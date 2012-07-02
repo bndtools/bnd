@@ -64,7 +64,7 @@ import org.eclipse.ui.part.ResourceTransfer;
 
 import aQute.lib.osgi.Constants;
 import bndtools.editor.common.PrivatePackageTableLabelProvider;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.BndEditModel;
 import bndtools.internal.pkgselection.IPackageFilter;
 import bndtools.internal.pkgselection.JavaSearchScopePackageLister;
 import bndtools.internal.pkgselection.PackageSelectionDialog;
@@ -72,7 +72,7 @@ import bndtools.utils.PackageDropAdapter;
 
 public class PrivatePackagesPart extends SectionPart implements PropertyChangeListener {
 
-    private BndtoolsEditModel model;
+    private BndEditModel model;
     private List<String> packages = new ArrayList<String>();
 
     private Table table;
@@ -267,7 +267,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
     public void initialize(IManagedForm form) {
         super.initialize(form);
         this.managedForm = form;
-        model = (BndtoolsEditModel) form.getInput();
+        model = (BndEditModel) form.getInput();
         model.addPropertyChangeListener(Constants.PRIVATE_PACKAGE, this);
     }
 
