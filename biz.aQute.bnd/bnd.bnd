@@ -13,4 +13,6 @@ Conditional-Package: 			aQute.libg.*, aQute.lib.*,aQute.configurable
 	osgi.cmpn;version=4.3,\
 	osgi.core;version=4.1,\
 	junit.osgi,\
-	org.osgi.impl.bundle.bindex
+	org.osgi.impl.bundle.bindex,\
+	osgi.r5
+	

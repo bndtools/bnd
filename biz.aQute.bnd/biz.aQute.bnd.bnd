@@ -7,7 +7,10 @@ Private-Package: aQute.bnd.*,\
 
 Export-Package: aQute.bnd.service.*,\
 	org.osgi.service.bindex,\
-	aQute.service.reporter
+	aQute.service.reporter,\
+	aQute.lib.osgi.resource,\
+	org.osgi.resource
+
 Import-Package: org.apache.tools.ant.*;resolution:=optional,\
 	junit.framework;resolution:=optional;version='[3.8,4)',\
 	*
