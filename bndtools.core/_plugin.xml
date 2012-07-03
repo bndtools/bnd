@@ -625,6 +625,10 @@
    <extension point="buildListeners">
       <listener name="Workspace Setup" class="bndtools.wizards.workspace.CnfSetupBuildListener"/>
    </extension>
+   
+   <extension point="bndtoolsStartupParticipant">
+      <startupParticipant class="org.bndtools.core.jobs.startup.KickBundles"/>
+   </extension>
 
    <extension point="bndtools.core.projectTemplates">
       <template name="Empty Project"
