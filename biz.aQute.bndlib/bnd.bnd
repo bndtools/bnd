@@ -41,7 +41,7 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	osgi.cmpn;version=4.3,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.1,\
-	osgi.r5,\
+	osgi.r5;version=1.0.1,\
 	ee.j2se;version=${javac.ee}
 
 Bundle-Version: 2.0.0.${tstamp;yyyyMMdd-HHmmss}
