@@ -42,7 +42,7 @@ import org.eclipse.ui.ide.IDE;
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.api.IPersistableBndModel;
-import bndtools.editor.model.BndEditModel;
+import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.preferences.BndPreferences;
 import bndtools.utils.FileUtils;
 
@@ -122,7 +122,7 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
         if (projectDoc == null)
             projectDoc = new Document();
 
-        IPersistableBndModel model = new BndEditModel();
+        IPersistableBndModel model = new BndtoolsEditModel();
         model.loadFrom(projectDoc);
         Collection<String> subBndFiles = model.getSubBndFiles();
         final boolean enableSubs;

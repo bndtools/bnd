@@ -5,14 +5,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import aQute.bnd.build.model.clauses.ServiceComponent;
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.libg.header.Attrs;
 import bndtools.api.EE;
 import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
 import bndtools.api.Requirement;
-import bndtools.model.clauses.ServiceComponent;
-import bndtools.model.clauses.VersionedClause;
 
 public class ComponentTemplate implements IProjectTemplate {
 

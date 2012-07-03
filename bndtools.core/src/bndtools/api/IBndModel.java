@@ -4,10 +4,10 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Map;
 
-import bndtools.model.clauses.ExportedPackage;
-import bndtools.model.clauses.HeaderClause;
-import bndtools.model.clauses.ServiceComponent;
-import bndtools.model.clauses.VersionedClause;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.clauses.ServiceComponent;
+import aQute.bnd.build.model.clauses.VersionedClause;
 
 public interface IBndModel {
 

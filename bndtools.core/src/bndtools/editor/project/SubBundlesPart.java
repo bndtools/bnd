@@ -22,7 +22,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.lib.osgi.Constants;
-import bndtools.editor.model.BndEditModel;
+import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.utils.ModificationLock;
 
 public class SubBundlesPart extends SectionPart implements PropertyChangeListener {
@@ -32,7 +32,7 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
 
     private final ModificationLock lock = new ModificationLock();
 
-    private BndEditModel model;
+    private BndtoolsEditModel model;
     private List<String> subBundleList;
     private Button button;
 
@@ -115,7 +115,7 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        model = (BndEditModel) form.getInput();
+        model = (BndtoolsEditModel) form.getInput();
         model.addPropertyChangeListener(Constants.SUB, this);
     }
 

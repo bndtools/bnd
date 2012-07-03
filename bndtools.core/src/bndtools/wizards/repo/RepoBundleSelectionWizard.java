@@ -5,7 +5,7 @@ import java.util.List;
 import org.eclipse.jface.wizard.Wizard;
 
 import aQute.bnd.build.Project;
-import bndtools.model.clauses.VersionedClause;
+import aQute.bnd.build.model.clauses.VersionedClause;
 
 public class RepoBundleSelectionWizard extends Wizard {
 

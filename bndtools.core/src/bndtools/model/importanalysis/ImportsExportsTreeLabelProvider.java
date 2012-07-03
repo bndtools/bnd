@@ -24,10 +24,10 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.UIConstants;
-import bndtools.model.clauses.HeaderClause;
 import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ExportUsesPackage;
 import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ImportUsedByClass;
 import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ImportUsedByPackage;

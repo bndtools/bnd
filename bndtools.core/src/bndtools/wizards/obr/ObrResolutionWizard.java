@@ -18,6 +18,7 @@ import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.lib.io.IO;
 import aQute.libg.header.Attrs;
 import aQute.libg.version.VersionRange;
@@ -25,7 +26,6 @@ import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.WorkspaceObrProvider;
 import bndtools.api.IBndModel;
-import bndtools.model.clauses.VersionedClause;
 
 public class ObrResolutionWizard extends Wizard {
 
