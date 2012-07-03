@@ -13,4 +13,5 @@ Conditional-Package: aQute.libg.*
 			com.springsource.org.objectweb.asm.tree,\
 			bndtools.core;version=project,\
 			osgi.core, \
+			ee.j2se;version=${javac.ee},\
 			${junit}

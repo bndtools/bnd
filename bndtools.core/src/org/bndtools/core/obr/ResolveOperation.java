@@ -45,14 +45,16 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.service.url.URLConnector;
-import aQute.lib.deployer.repository.CachingURLResourceHandle;
-import aQute.lib.deployer.repository.CachingURLResourceHandle.CachingMode;
+import aQute.lib.deployer.repository.CachingUriResourceHandle;
+import aQute.lib.deployer.repository.CachingUriResourceHandle.CachingMode;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Processor;
@@ -64,8 +66,6 @@ import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.EE;
 import bndtools.api.IBndModel;
-import bndtools.model.clauses.ExportedPackage;
-import bndtools.model.clauses.VersionedClause;
 
 public class ResolveOperation implements IRunnableWithProgress {
 
@@ -205,7 +205,7 @@ public class ResolveOperation implements IRunnableWithProgress {
 
     private void addRepository(URL index, Set<URL> visited, List< ? super Repository> repos, int hopCount, URLConnector connector, File cacheDir) throws Exception {
         if (visited.add(index)) {
-            CachingURLResourceHandle handle = new CachingURLResourceHandle(index.toExternalForm(), null, cacheDir, connector, CachingMode.PreferRemote);
+            CachingUriResourceHandle handle = new CachingUriResourceHandle(index.toExternalForm(), null, cacheDir, connector, CachingMode.PreferRemote);
             handle.setReporter(Central.getWorkspace());
             File file = handle.request();
 

@@ -18,18 +18,6 @@ public interface BndConstants extends Constants {
     public static final String RUNFRAMEWORK = "-runfw";
     public static final String REQUIRE_OBR = "-requireobr";
 
-    /**
-     * @deprecated Use {@link Constants#RUNVM}.
-     */
-    @Deprecated
-    public static final String RUNVMARGS = "-vmargs";
-
-    /**
-     * @deprecated Use {@link Constants#TESTCASES}.
-     */
-    @Deprecated
-    public static final String TESTSUITES = "Test-Suites";
-
     public static final String RUNREQUIRE = "-runrequire";
     public static final String RUNEE = "-runee";
     public static final String BACKUP_RUNBUNDLES = "-runbundles-old";

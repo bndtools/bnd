@@ -56,9 +56,9 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Constants;
 
+import aQute.bnd.build.model.clauses.HeaderClause;
 import bndtools.Plugin;
-import bndtools.editor.model.BndEditModel;
-import bndtools.model.clauses.HeaderClause;
+import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.utils.PackageDropAdapter;
 
 public abstract class PkgPatternsListPart<C extends HeaderClause> extends SectionPart implements PropertyChangeListener {
@@ -69,7 +69,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 
     private IManagedForm managedForm;
     private TableViewer viewer;
-    private BndEditModel model;
+    private BndtoolsEditModel model;
 
     private final Image imgAnalyse = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/cog_go.png").createImage();
     private final Image imgInsert = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/table_row_insert.png").createImage();
@@ -225,9 +225,9 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 
     protected abstract C newHeaderClause(String text);
 
-    protected abstract List<C> loadFromModel(BndEditModel model);
+    protected abstract List<C> loadFromModel(BndtoolsEditModel model);
 
-    protected abstract void saveToModel(BndEditModel model, List< ? extends C> clauses);
+    protected abstract void saveToModel(BndtoolsEditModel model, List< ? extends C> clauses);
 
     protected List<C> getClauses() {
         return clauses;
@@ -346,7 +346,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         super.initialize(form);
 
         this.managedForm = form;
-        this.model = (BndEditModel) form.getInput();
+        this.model = (BndtoolsEditModel) form.getInput();
         this.model.addPropertyChangeListener(Constants.IMPORT_PACKAGE, this);
     }
 

@@ -54,8 +54,8 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.model.clauses.HeaderClause;
 import bndtools.Plugin;
-import bndtools.model.clauses.HeaderClause;
 import bndtools.model.importanalysis.ImportPackage;
 import bndtools.model.importanalysis.ImportTreeContentProvider;
 import bndtools.model.importanalysis.ImportsAndExportsViewerSorter;

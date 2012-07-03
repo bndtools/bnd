@@ -2,9 +2,9 @@ package bndtools.editor.imports;
 
 import org.eclipse.jface.viewers.StyledString;
 
+import aQute.bnd.build.model.clauses.ImportPattern;
 import bndtools.UIConstants;
 import bndtools.editor.pkgpatterns.HeaderClauseLabelProvider;
-import bndtools.model.clauses.ImportPattern;
 
 public class ImportPatternLabelProvider extends HeaderClauseLabelProvider<ImportPattern> {
 

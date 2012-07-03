@@ -11,11 +11,11 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 
-import bndtools.editor.model.BndEditModel;
+import bndtools.editor.model.BndtoolsEditModel;
 
 public abstract class BndEditorPart extends SectionPart implements PropertyChangeListener {
 
-    protected BndEditModel model;
+    protected BndtoolsEditModel model;
 
     private List<String> subscribedProps = new LinkedList<String>();
 
@@ -32,7 +32,7 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
     @Override
     public void initialize(IManagedForm form) {
         super.initialize(form);
-        model = (BndEditModel) form.getInput();
+        model = (BndtoolsEditModel) form.getInput();
 
         for (String prop : getProperties()) {
             subscribedProps.add(prop);

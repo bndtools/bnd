@@ -1,7 +1,7 @@
 plugindir: ${workspace}/cnf/plugins
 
 -pluginpath:\
-	${plugindir}/biz.aQute.repository/biz.aQute.repository-1.0.0.jar,\
+	${plugindir}/biz.aQute.repository/biz.aQute.repository-2.0.0.jar,\
 	${plugindir}/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar
 
 -plugin:\

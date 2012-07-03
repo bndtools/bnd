@@ -22,7 +22,6 @@ public class Syntax implements Constants {
 
     static Syntax path_version = new Syntax(VERSION_ATTRIBUTE, "Specifies the range in the repository, project, or file", "version=project", "project,type", Pattern.compile("project|type|" + Verifier.VERSIONRANGE.toString()));
 
-    @SuppressWarnings("deprecation")
     static Syntax[] syntaxes = new Syntax[] {
             new Syntax(BUNDLE_ACTIVATIONPOLICY, "The Bundle-ActivationPolicy specifies how the framework should activate the bundle once started. ", "Bundle-ActivationPolicy: lazy", "lazy", Pattern.compile("lazy")),
 
@@ -170,8 +169,6 @@ public class Syntax implements Constants {
 
             new Syntax(NOUSES, "Do not calculate the uses: directive on exports", "-nouses=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
-            new Syntax(NOPE, "Deprecated, use -nobundles. ", "-nope=true", "true,false", Verifier.TRUEORFALSEPATTERN),
-
             new Syntax(PEDANTIC, "Warn about things that are not really wrong but still not right", "-nope=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
             new Syntax(PLUGIN, "Define the plugins", "-plugin=aQute.lib.spring.SpringComponent,aQute.lib.deployer.FileRepo;location=${repo}", null, null),
@@ -193,10 +190,8 @@ public class Syntax implements Constants {
                     "-runbundles=osgi;version=\"[4.1,4.2)\", junit.junit, com.acme.foo;version=project", null, Verifier.SYMBOLICNAME, path_version),
             new Syntax(RUNPATH, "Additional JARs for the VM path, should include the framework", "-runpath=org.eclipse.osgi;version=3.5", null, null, path_version),
             new Syntax(RUNVM, "Additional arguments for the VM invokation. Keys that start with a - are added as options, otherwise they are treated as -D properties for the VM", "-runvm=-Xmax=30", null, null),
-            new Syntax(VERSIONPOLICY, "Provides a version policy to imports that are calculated from exports", "-versionpolicy = \"[${version;==;${@}},${version;+;${@}})\"", null, null)
 
     };
-
     public final static Map<String,Syntax> HELP = new HashMap<String,Syntax>();
 
     static {

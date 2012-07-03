@@ -68,16 +68,15 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.lib.osgi.Constants;
-import bndtools.BndConstants;
 import bndtools.Plugin;
-import bndtools.editor.model.BndEditModel;
+import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.internal.testcaseselection.ITestCaseFilter;
 import bndtools.internal.testcaseselection.JavaSearchScopeTestCaseLister;
 import bndtools.internal.testcaseselection.TestCaseSelectionDialog;
 
 public class TestSuitesPart extends SectionPart implements PropertyChangeListener {
 
-    private BndEditModel model;
+    private BndtoolsEditModel model;
     private List<String> testSuites;
 
     private TableViewer viewer;
@@ -311,8 +310,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        this.model = (BndEditModel) form.getInput();
-        this.model.addPropertyChangeListener(BndConstants.TESTSUITES, this);
+        this.model = (BndtoolsEditModel) form.getInput();
         this.model.addPropertyChangeListener(Constants.TESTCASES, this);
     }
 
@@ -329,11 +327,9 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     @Override
     public void commit(boolean onSave) {
         try {
-            model.removePropertyChangeListener(BndConstants.TESTSUITES, this);
             model.removePropertyChangeListener(Constants.TESTCASES, this);
             model.setTestSuites(testSuites.isEmpty() ? null : testSuites);
         } finally {
-            model.addPropertyChangeListener(BndConstants.TESTSUITES, this);
             model.addPropertyChangeListener(Constants.TESTCASES, this);
             super.commit(onSave);
         }
@@ -341,7 +337,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
-        if (BndConstants.TESTSUITES.equals(propertyName) || Constants.TESTCASES.equals(propertyName)) {
+        if (Constants.TESTCASES.equals(propertyName)) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();
             if (page.isActive()) {
                 refresh();

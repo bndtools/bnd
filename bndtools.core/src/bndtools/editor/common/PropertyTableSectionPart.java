@@ -27,13 +27,13 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
-import bndtools.editor.model.BndEditModel;
+import bndtools.editor.model.BndtoolsEditModel;
 
 public abstract class PropertyTableSectionPart extends SectionPart implements PropertyChangeListener {
 
     private final String propertyName;
     private Map<String,String> properties;
-    private BndEditModel model;
+    private BndtoolsEditModel model;
 
     private Table table;
     private TableViewer viewer;
@@ -141,7 +141,7 @@ public abstract class PropertyTableSectionPart extends SectionPart implements Pr
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        model = (BndEditModel) form.getInput();
+        model = (BndtoolsEditModel) form.getInput();
         model.addPropertyChangeListener(propertyName, this);
     }
 
@@ -179,7 +179,7 @@ public abstract class PropertyTableSectionPart extends SectionPart implements Pr
         saveProperties(model, properties);
     }
 
-    protected abstract Map<String,String> loadProperties(BndEditModel model);
+    protected abstract Map<String,String> loadProperties(BndtoolsEditModel model);
 
-    protected abstract void saveProperties(BndEditModel model, Map<String,String> props);
+    protected abstract void saveProperties(BndtoolsEditModel model, Map<String,String> props);
 }

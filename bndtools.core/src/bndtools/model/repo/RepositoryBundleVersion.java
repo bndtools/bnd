@@ -9,6 +9,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 
+import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.libg.version.Version;
 import bndtools.Plugin;
 
@@ -35,8 +36,7 @@ public class RepositoryBundleVersion implements IAdaptable {
         return "RepositoryBundleVersion [version=" + version + ", bundle=" + bundle + "]";
     }
 
-    public Object getAdapter(@SuppressWarnings("rawtypes")
-    Class adapter) {
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         Object result = null;
 
         if (IFile.class.equals(adapter)) { // ||
@@ -55,19 +55,14 @@ public class RepositoryBundleVersion implements IAdaptable {
     }
 
     private File getFile() {
-        StringBuilder range = new StringBuilder();
-        range.append("[");
-        range.append(version).append(',').append(version);
-        range.append("]");
-
-        File[] files = null;
+        File files = null;
         try {
-            files = bundle.getRepo().get(bundle.getBsn(), range.toString());
+            files = bundle.getRepo().get(bundle.getBsn(), version.toString(), Strategy.EXACT, null);
         } catch (Exception e) {
             Plugin.logError(MessageFormat.format("Failed to query repository {0} for bundle {1} version {2}.", bundle.getRepo().getName(), bundle.getBsn(), version), e);
         }
-        if (files != null && files.length > 0) {
-            return files[files.length - 1];
+        if (files != null) {
+            return files;
         }
 
         return null;

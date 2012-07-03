@@ -2,9 +2,13 @@
 base-version: 1.1.0.RC2
 master-version: ${base-version}-${tstamp;yyyyMMdd-HHmmss}
 
-bndlib-version-base:    1.55
-bndlib-version-ceiling: 1.56
+bndlib-version-base:    2.0
+bndlib-version-ceiling: 2.1
 bndlib: biz.aQute.bndlib;version='[${bndlib-version-base},${bndlib-version-ceiling})'
+
+aQute-repository-base: 2.0
+aQute-repository-ceiling: 2.1
+aQute-repository: biz.aQute.repository;version='[${aQute-repository-base},${aQute-repository-ceiling})'
 
 # We use git
 Git-Descriptor: ${system-allow-fail;git describe --dirty --always}

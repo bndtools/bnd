@@ -8,7 +8,7 @@ import org.eclipse.core.runtime.Status;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.BndListener;
 import aQute.lib.osgi.Processor;
-import aQute.libg.reporter.Reporter;
+import aQute.service.reporter.Reporter;
 
 public final class WorkspaceListener extends BndListener {
 

@@ -20,12 +20,12 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.clauses.ImportPattern;
 import aQute.lib.osgi.Constants;
-import bndtools.editor.model.BndEditModel;
+import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.launch.LaunchConstants;
-import bndtools.model.clauses.ExportedPackage;
-import bndtools.model.clauses.HeaderClause;
-import bndtools.model.clauses.ImportPattern;
 
 public class BndEditorContentOutlineProvider implements ITreeContentProvider, PropertyChangeListener {
 
@@ -34,7 +34,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
     static final String IMPORT_PATTERNS = "__import_patterns";
     static final String PLUGINS = "__plugins";
 
-    BndEditModel model;
+    BndtoolsEditModel model;
     private final TreeViewer viewer;
 
     public BndEditorContentOutlineProvider(TreeViewer viewer) {
@@ -72,7 +72,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
         if (model != null)
             model.removePropertyChangeListener(this);
 
-        model = (BndEditModel) newInput;
+        model = (BndtoolsEditModel) newInput;
         if (model != null)
             model.addPropertyChangeListener(this);
     }

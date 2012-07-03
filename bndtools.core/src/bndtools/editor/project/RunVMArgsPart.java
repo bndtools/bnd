@@ -16,15 +16,15 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
-import bndtools.BndConstants;
-import bndtools.editor.model.BndEditModel;
+import aQute.lib.osgi.Constants;
+import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.utils.ModificationLock;
 
 public class RunVMArgsPart extends SectionPart implements PropertyChangeListener {
 
     private final ModificationLock lock = new ModificationLock();
 
-    private BndEditModel model;
+    private BndtoolsEditModel model;
     private String vmargs = null;
     private Text textField;
 
@@ -71,15 +71,15 @@ public class RunVMArgsPart extends SectionPart implements PropertyChangeListener
     @Override
     public void initialize(IManagedForm form) {
         super.initialize(form);
-        model = (BndEditModel) form.getInput();
-        model.addPropertyChangeListener(BndConstants.RUNVMARGS, this);
+        model = (BndtoolsEditModel) form.getInput();
+        model.addPropertyChangeListener(Constants.RUNVM, this);
     }
 
     @Override
     public void dispose() {
         super.dispose();
         if (model != null)
-            model.removePropertyChangeListener(BndConstants.RUNVMARGS, this);
+            model.removePropertyChangeListener(Constants.RUNVM, this);
     }
 
     @Override

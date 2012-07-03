@@ -37,6 +37,7 @@ import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.Resource;
@@ -663,12 +664,11 @@ public class JarDiff {
 			}
 
 			Jar currentJar = null;
-			VersionRange range = new VersionRange("[" + projectVersion.toString() + "," + projectVersion.toString() + "]");
 			try {
 				if (baselineRepository != null) {
-					File[] files =  baselineRepository.get(symbolicName, range.toString());
-					if (files != null && files.length > 0) {
-						currentJar = new Jar(files[0]);
+					File file =  baselineRepository.get(symbolicName, projectVersion.toString(), Strategy.EXACT, null);
+					if (file != null) {
+						currentJar = new Jar(file);
 					}
 				}
 			} catch (Exception e) {
