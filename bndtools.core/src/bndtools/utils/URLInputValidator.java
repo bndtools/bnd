@@ -8,13 +8,14 @@ import org.eclipse.jface.dialogs.IInputValidator;
 public class URLInputValidator implements IInputValidator {
 
     public String isValid(String newText) {
+        String s = null;
         try {
-            @SuppressWarnings("unused")
-            URL url = new URL(newText);
-            return null;
+            if (new URL(newText) == null)
+                s = "Invalid URL " + newText;
         } catch (MalformedURLException e) {
-            return "Invalid URL: " + e.getMessage();
+            s = "Invalid URL " + newText + ": " + e.getMessage();
         }
-    }
 
+        return s;
+    }
 }
