@@ -118,10 +118,12 @@ public class BndtoolsEditModel extends BndEditModel implements IPersistableBndMo
         doSetObject(BndConstants.BACKUP_RUNBUNDLES, oldValue, paths, headerClauseListFormatter);
     }
 
+    @Override
     public String getRunFramework() {
         return doGetObject(BndConstants.RUNFRAMEWORK, stringConverter);
     }
 
+    @Override
     public void setRunFramework(String clause) {
         String oldValue = getRunFramework();
         doSetObject(BndConstants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
@@ -154,10 +156,12 @@ public class BndtoolsEditModel extends BndEditModel implements IPersistableBndMo
         doSetObject(BndConstants.RUNEE, old, ee, eeFormatter);
     }
 
+    @Override
     public List<String> getRunRepos() {
         return doGetObject(BndConstants.RUNREPOS, listConverter);
     }
 
+    @Override
     public void setRunRepos(List<String> repos) {
         List<String> old = getRunRepos();
         doSetObject(BndConstants.RUNREPOS, old, repos, runReposFormatter);
