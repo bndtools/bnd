@@ -1,10 +1,12 @@
 package bndtools.utils;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 
-public class PriorityConfigurationElementCompator implements Comparator<IConfigurationElement> {
+public class PriorityConfigurationElementCompator implements Comparator<IConfigurationElement>, Serializable {
+    private static final long serialVersionUID = -6344234922378864566L;
 
     private final boolean invert;
 
@@ -33,5 +35,4 @@ public class PriorityConfigurationElementCompator implements Comparator<IConfigu
         }
         return number;
     }
-
 }
