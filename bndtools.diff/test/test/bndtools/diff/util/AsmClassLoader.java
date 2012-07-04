@@ -18,6 +18,7 @@ public class AsmClassLoader extends ClassLoader {
 
 	private final Map<String, byte[]> asmClasses = Collections.synchronizedMap(new HashMap<String, byte[]>());
 	
+	@Override
 	public Class<?> findClass(String name) {
 		if (!asmClasses.containsKey(name)) {
 			return null;

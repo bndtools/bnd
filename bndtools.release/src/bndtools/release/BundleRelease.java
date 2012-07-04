@@ -105,6 +105,7 @@ public class BundleRelease {
 		treeColumn.getColumn().setText(Messages.symbNamePackage);
 		treeColumn.getColumn().setWidth(450);
 		treeColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				if (element instanceof JarDiff) {
 					return ((JarDiff) element).getSymbolicName();
@@ -129,6 +130,7 @@ public class BundleRelease {
 				return "";
 			}
 
+			@Override
 			public Image getImage(Object element) {
 
 				if (element instanceof JarDiff) {
@@ -387,6 +389,7 @@ public class BundleRelease {
 		currentVersion.getColumn().setText(Messages.version);
 		currentVersion.getColumn().setWidth(80);
 		currentVersion.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				if (element instanceof JarDiff) {
 					return ((JarDiff) element).getCurrentVersion();
@@ -406,6 +409,7 @@ public class BundleRelease {
 				return "";
 			}
 
+			@Override
 			public Image getImage(Object element) {
 				return null;
 			}
@@ -416,6 +420,7 @@ public class BundleRelease {
 		suggestedVersion.getColumn().setText(Messages.newVersion);
 		suggestedVersion.getColumn().setWidth(80);
 		suggestedVersion.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				if (element instanceof JarDiff) {
 					return ((JarDiff) element).getSuggestedVersion();
@@ -435,6 +440,7 @@ public class BundleRelease {
 				return "";
 			}
 
+			@Override
 			public Image getImage(Object element) {
 				return null;
 			}
@@ -448,6 +454,7 @@ public class BundleRelease {
 		versionRange.getColumn().setText(Messages.versionRange);
 		versionRange.getColumn().setWidth(100);
 		versionRange.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				if (element instanceof JarDiff) {
 					return "";
@@ -467,6 +474,7 @@ public class BundleRelease {
 				return "";
 			}
 
+			@Override
 			public Image getImage(Object element) {
 				return null;
 			}
@@ -477,6 +485,7 @@ public class BundleRelease {
 		suggestedVersionRange.getColumn().setText(Messages.newRange);
 		suggestedVersionRange.getColumn().setWidth(100);
 		suggestedVersionRange.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				if (element instanceof JarDiff) {
 					return "";
@@ -496,6 +505,7 @@ public class BundleRelease {
 				return "";
 			}
 
+			@Override
 			public Image getImage(Object element) {
 				return null;
 			}
@@ -517,6 +527,7 @@ public class BundleRelease {
 		data.horizontalIndent = -1;
 		showAll.setLayoutData(data);
 		showAll.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent event) {
 				Widget widget = event.widget;
 				if (widget == showAll) {
@@ -573,6 +584,7 @@ public class BundleRelease {
 			});
 		}
 
+		@Override
 		protected boolean canEdit(Object element) {
 			if (element instanceof JarDiff) {
 				return true;
@@ -593,6 +605,7 @@ public class BundleRelease {
 			return false;
 		}
 
+		@Override
 		protected CellEditor getCellEditor(Object element) {
 			
 //			String suggestedVersion = null;
@@ -641,15 +654,18 @@ public class BundleRelease {
 			return editor;
 		}
 
+		@Override
 		protected Object getValue(Object element) {
 			return null;
 			//Not needed
 		}
 
+		@Override
 		protected void setValue(Object element, Object value) {
 			//Not needed
 		}
 
+		@Override
 		protected void initializeCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
 			
 			String selectedVersion;
@@ -674,6 +690,7 @@ public class BundleRelease {
 
 		}
 
+		@Override
 		protected void saveCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
 			int idx = ((Integer)cellEditor.getValue()).intValue();
 			String[] items = ((ComboBoxCellEditor)cellEditor).getItems();

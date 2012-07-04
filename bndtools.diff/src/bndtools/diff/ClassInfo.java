@@ -42,6 +42,7 @@ public class ClassInfo extends ClassNode implements Comparable<ClassInfo> {
 		}
 		return name.compareTo(o.name);
 	}
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) {
 			return false;
@@ -57,6 +58,7 @@ public class ClassInfo extends ClassNode implements Comparable<ClassInfo> {
 		return ((ClassInfo) obj).name.equals(name);
 	}
 	
+	@Override
 	public int hashCode() {
 		return name.hashCode();
 	}
@@ -160,6 +162,7 @@ public class ClassInfo extends ClassNode implements Comparable<ClassInfo> {
 		return packageInfo;
 	}
 	
+	@Override
 	public String toString() {
 		return name;
 	}

@@ -55,6 +55,7 @@ public class FieldInfo implements Comparable<FieldInfo> {
 		return classInfo.getPackageInfo();
 	}
 	
+	@Override
 	public String toString() {
 		return getName();
 	}
