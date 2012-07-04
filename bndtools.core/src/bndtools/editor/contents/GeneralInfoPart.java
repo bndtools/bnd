@@ -117,7 +117,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         }
     }
 
-    @SuppressWarnings("deprecation")
     private static final ServiceComponent SERVICE_COMPONENT_STAR = new ServiceComponent("*", new Attrs());
     private static final String DSANNOTATIONS_STAR = "*";
 
