@@ -9,4 +9,9 @@
 		<Method name="doPrint" />
 		<Bug pattern="WMI_WRONG_MAP_ITERATOR" />
 	</Match>
+	<Match>
+		<Class name="org.bndtools.core.obr.DummyBundle" />
+		<Method name="DummyBundle" />
+		<Bug pattern="SE_BAD_FIELD_INNER_CLASS" />
+	</Match>
 </FindBugsFilter>
