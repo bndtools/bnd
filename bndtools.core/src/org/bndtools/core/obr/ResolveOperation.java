@@ -132,7 +132,7 @@ public class ResolveOperation implements IRunnableWithProgress {
 
             try {
                 for (URI indexUrl : prov.getIndexLocations()) {
-                    addRepository(indexUrl.toURL(), repos, cacheDir);
+                    addRepository(indexUrl, repos, cacheDir);
                 }
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorProcessingIndex + repoName, e));
@@ -197,29 +197,29 @@ public class ResolveOperation implements IRunnableWithProgress {
         result = new ObrResolutionResult(resolver, resolved, Status.OK_STATUS, filterGlobalResource(resolver.getRequiredResources()), filterGlobalResource(resolver.getOptionalResources()));
     }
 
-    private void addRepository(URL index, List< ? super Repository> repos, File cacheDir) throws Exception {
+    private void addRepository(URI index, List< ? super Repository> repos, File cacheDir) throws Exception {
         URLConnector connector = getConnector();
 
-        addRepository(index, new HashSet<URL>(), repos, Integer.MAX_VALUE, connector, cacheDir);
+        addRepository(index, new HashSet<URI>(), repos, Integer.MAX_VALUE, connector, cacheDir);
     }
 
-    private void addRepository(URL index, Set<URL> visited, List< ? super Repository> repos, int hopCount, URLConnector connector, File cacheDir) throws Exception {
+    private void addRepository(URI index, Set<URI> visited, List< ? super Repository> repos, int hopCount, URLConnector connector, File cacheDir) throws Exception {
         if (visited.add(index)) {
-            CachingUriResourceHandle handle = new CachingUriResourceHandle(index.toExternalForm(), null, cacheDir, connector, CachingMode.PreferRemote);
+            CachingUriResourceHandle handle = new CachingUriResourceHandle(index.toURL().toExternalForm(), null, cacheDir, connector, CachingMode.PreferRemote);
             handle.setReporter(Central.getWorkspace());
             File file = handle.request();
 
             RepositoryImpl repo = PullParser.parseRepository(new FileInputStream(file));
-            repo.setURI(index.toExternalForm());
+            repo.setURI(index.toString());
             repos.add(repo);
 
             hopCount--;
             if (hopCount > 0 && repo.getReferrals() != null) {
                 for (Referral referral : repo.getReferrals()) {
-                    URL referralUrl = new URL(index, referral.getUrl());
+                    URI referralUri = new URL(index.toURL(), referral.getUrl()).toURI();
                     hopCount = (referral.getDepth() > hopCount) ? hopCount : referral.getDepth();
 
-                    addRepository(referralUrl, visited, repos, hopCount, connector, cacheDir);
+                    addRepository(referralUri, visited, repos, hopCount, connector, cacheDir);
                 }
             }
         }
