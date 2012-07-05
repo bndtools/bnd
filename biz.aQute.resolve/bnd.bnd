@@ -1,6 +1,6 @@
 -buildpath:\
 	osgi.core;version=4.2,\
-	osgi.r5,\
+	osgi.r5;version=1.0.1,\
 	junit.osgi,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
