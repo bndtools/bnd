@@ -49,6 +49,7 @@ public class BIndex2 implements ResourceIndexer {
 			addAnalyzer(bundleAnalyzer, allFilter);
 			addAnalyzer(frameworkAnalyzer, allFilter);
 			addAnalyzer(scrAnalyzer, allFilter);
+
 		} catch (InvalidSyntaxException e) {
 			// Can't happen...?
 			throw new RuntimeException("Unexpected internal error compiling filter");

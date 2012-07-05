@@ -16,15 +16,25 @@
 package org.osgi.impl.bundle.bindex.cli;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.launch.Framework;
+import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
+import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
 import org.osgi.util.tracker.ServiceTracker;
 
 import de.kalpatec.pojosr.framework.PojoServiceRegistryFactoryImpl;
@@ -61,8 +71,20 @@ public class Index {
 			ResourceIndexer index = (ResourceIndexer) tracker.waitForService(1000);
 			if (index == null)
 				throw new IllegalStateException("Timed out waiting for ResourceIndexer service.");
-			run(args, index);
+
+			// Process arguments
+			Set<File> fileList = new LinkedHashSet<File>();
+			Map<String, String> config = new HashMap<String, String>();
+			File outputFile = processArgs(args, config, fileList, framework.getBundleContext());
 			
+			// Run
+			if (fileList.isEmpty())
+				printUsage();
+			else try {
+				index.index(fileList, new FileOutputStream(outputFile), config);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
@@ -72,10 +94,11 @@ public class Index {
 		System.exit(0);
 	}
 	
-	private static void run(String[] args, ResourceIndexer index) {
+	private static File processArgs(String[] args, Map<String, String> config, Collection<? super File> fileList, BundleContext context) throws Exception {
 		File output = new File(DEFAULT_FILENAME_COMPRESSED);
-		Set<File> fileList = new HashSet<File>();
-		Map<String, String> config = new HashMap<String, String>();
+		
+		File knownBundles = null;
+		File knownBundlesExtra = null;
 		
 		for (int i = 0; i < args.length; i++) {
 			try {
@@ -100,6 +123,8 @@ public class Index {
 				} else if (args[i].equalsIgnoreCase("--pretty")) {
 					output = new File(DEFAULT_FILENAME_UNCOMPRESSED);
 					config.put(ResourceIndexer.PRETTY, Boolean.toString(true));
+				} else if (args[i].equals("-k")) {
+					knownBundlesExtra = new File(args[++i]);
 				} else if(args[i].equalsIgnoreCase("--noincrement")) {
 					config.put("-repository.increment.override", "");
 				} else if (args[i].startsWith("-h")) {
@@ -114,14 +139,36 @@ public class Index {
 				System.exit(1);
 			}
 		}
-
-		if (fileList.isEmpty())
-			printUsage();
-		else try {
-			index.index(fileList, new FileOutputStream(output), config);
-		} catch (Exception e) {
-			e.printStackTrace();
+		
+		final KnownBundleAnalyzer knownBundleAnalyzer;
+		if (knownBundles == null) {
+			knownBundleAnalyzer = new KnownBundleAnalyzer();
+		} else {
+			Properties props = loadPropertiesFile(knownBundles);
+			knownBundleAnalyzer = new KnownBundleAnalyzer(props);
 		}
+		
+		if (knownBundlesExtra != null) {
+			Properties props = loadPropertiesFile(knownBundlesExtra);
+			knownBundleAnalyzer.setKnownBundlesExtra(props);
+		}
+		
+		context.registerService(ResourceAnalyzer.class.getName(), knownBundleAnalyzer, null);
+		
+		return output;
+	}
+
+	private static Properties loadPropertiesFile(File knownBundles)
+			throws FileNotFoundException, IOException {
+		Properties props = new Properties();
+		FileInputStream stream = null;
+		try {
+			stream = new FileInputStream(knownBundles);
+			props.load(stream);
+		} finally {
+			if (stream != null) stream.close();
+		}
+		return props;
 	}
 	
 	public static void printCopyright(PrintStream out) {

@@ -150,8 +150,13 @@ public class Util {
 	
 	private static final Pattern MACRO_PATTERN = Pattern.compile("\\$\\{([^\\{\\}]*)\\}");
 	
-	public static String readProcessedProperty(Properties props, String propName) {
-		String value = props.getProperty(propName);
+	public static String readProcessedProperty(String propName, Properties... propsList) {
+		String value = null;
+		for (Properties props : propsList) {
+			value = props.getProperty(propName);
+			if (value != null)
+				break;
+		}
 		if (value == null)
 			return null;
 		
@@ -162,8 +167,8 @@ public class Util {
 			int start = matcher.start();
 			int end = matcher.end();
 			
-			String var = matcher.group(1);
-			String processed = readProcessedProperty(props, var);
+			String varName = matcher.group(1);
+			String processed = readProcessedProperty(varName, propsList);
 			if (processed != null) {
 				builder.replace(start, end, processed);
 				matcher.reset(builder);

@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
 import junit.framework.TestCase;
@@ -133,4 +134,41 @@ public class TestCommandLine extends TestCase {
 		String actual = Utils.readStream(new FileInputStream("generated/index.xml"));
 		assertEquals(expected, actual);
 	}
+	
+	public void testKnownBundleRecognition() throws Exception {
+		File tempFile = copyToTempFile(tempDir, "testdata/org.eclipse.equinox.ds-1.4.0.jar");
+		String[] args = new String[] {
+				"--pretty",
+				"--noincrement",
+				tempFile.getAbsolutePath()
+		};
+		execute(args);
+		assertTrue(new File("generated/index.xml").exists());
+		
+ 		String expected = Utils.readStream(getClass().getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0.xml"));
+		String actual = Utils.readStream(new FileInputStream("generated/index.xml"));
+		assertEquals(expected, actual);
+	}
+	
+	public void testKnownBundleExtra() throws Exception {
+		Properties props = new Properties();
+		props.setProperty("org.eclipse.equinox.ds;[1.4,1.5)", "cap@extra;extra=wibble");
+		File knownBundlesFile = File.createTempFile("known", ".properties", new File("generated"));
+		knownBundlesFile.deleteOnExit();
+		props.store(new FileOutputStream(knownBundlesFile), "");
+		
+		File tempFile = copyToTempFile(tempDir, "testdata/org.eclipse.equinox.ds-1.4.0.jar");
+		String[] args = new String[] {
+				"--pretty",
+				"--noincrement",
+				"-k",
+				knownBundlesFile.getName(),
+				tempFile.getAbsolutePath()
+		};
+		execute(args);
+		assertTrue(new File("generated/index.xml").exists());
+		
+ 		String expected = Utils.readStream(getClass().getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0-extra.xml"));
+		String actual = Utils.readStream(new FileInputStream("generated/index.xml"));
+		assertEquals(expected, actual);	}
 }
