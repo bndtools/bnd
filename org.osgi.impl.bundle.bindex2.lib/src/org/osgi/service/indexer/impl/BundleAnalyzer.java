@@ -34,6 +34,9 @@ class BundleAnalyzer implements ResourceAnalyzer {
 	// Duplicate these constants here to avoid a compile-time dependency on OSGi R4.3
 	private static final String PROVIDE_CAPABILITY = "Provide-Capability";
 	private static final String REQUIRE_CAPABILITY = "Require-Capability";
+
+	// The mime-type of an OSGi bundle
+	private static final String MIME_TYPE_OSGI_BUNDLE = "application/vnd.osgi.bundle";
 	
 	private final ThreadLocal<GeneratorState> state = new ThreadLocal<GeneratorState>();
 
@@ -96,6 +99,8 @@ class BundleAnalyzer implements ResourceAnalyzer {
 
 		long size = resource.getSize();
 		if (size > 0L) builder.addAttribute(Namespaces.ATTR_CONTENT_SIZE, size);
+		
+		builder.addAttribute(Namespaces.ATTR_CONTENT_MIME, MIME_TYPE_OSGI_BUNDLE);
 		
 		capabilities.add(builder.buildCapability());
 	}

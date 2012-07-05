@@ -6,6 +6,7 @@
   </capability>
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='9b91a6e582c29f2060bb1a892705d3f4937307abdee7fefd2b40232cf88cfd55'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
     <attribute name='url' value='testdata/org.apache.felix.eventadmin-1.2.14.jar'/>
     <attribute name='size' type='Long' value='205242'/>
   </capability>

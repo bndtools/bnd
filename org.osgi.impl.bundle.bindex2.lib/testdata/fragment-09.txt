@@ -7,6 +7,7 @@
   </capability>
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='45aa24e1ba9a0d637ecab9cfe31d9ca83e67e1822e468c726c43f6765f51da41'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
     <attribute name='url' value='testdata/09-singleton.jar'/>
     <attribute name='size' type='Long' value='1111'/>
   </capability>

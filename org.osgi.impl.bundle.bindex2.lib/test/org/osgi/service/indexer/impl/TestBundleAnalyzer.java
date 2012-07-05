@@ -33,6 +33,7 @@ public class TestBundleAnalyzer extends TestCase {
 		assertEquals("osgi.content", content.getNamespace());
 		assertEquals("64f661eea43334dc5d38d7f16dbcacd02c799e68332b40e72da8021828e3329c", content.getAttributes().get("osgi.content"));
 		assertEquals("testdata/01-bsn+version.jar", content.getAttributes().get("url"));
+		assertEquals("application/vnd.osgi.bundle", content.getAttributes().get("mime"));
 		assertEquals(1104L, content.getAttributes().get("size"));
 	}
 	

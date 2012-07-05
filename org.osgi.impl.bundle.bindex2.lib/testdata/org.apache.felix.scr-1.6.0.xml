@@ -6,6 +6,7 @@
   </capability>
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='a1491c209969495b4f5f1f7f9387194f2d5109b0e768e9788ae98cf82b335c11'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
     <attribute name='url' value='testdata/org.apache.felix.scr-1.6.0.jar'/>
     <attribute name='size' type='Long' value='192368'/>
   </capability>

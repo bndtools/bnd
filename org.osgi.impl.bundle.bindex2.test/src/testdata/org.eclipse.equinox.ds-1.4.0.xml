@@ -9,6 +9,7 @@
     </capability>
     <capability namespace='osgi.content'>
       <attribute name='osgi.content' value='5766436c3ab47ed7e7517be295b39f6ba896db18985a4034b472d701b866be79'/>
+      <attribute name='mime' value='application/vnd.osgi.bundle'/>
       <attribute name='url' value='testdata/org.eclipse.equinox.ds-1.4.0.jar'/>
       <attribute name='size' type='Long' value='194031'/>
     </capability>

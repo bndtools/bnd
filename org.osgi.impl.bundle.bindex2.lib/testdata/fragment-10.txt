@@ -6,6 +6,7 @@
   </capability>
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='da8fd19944e942b616a5705adc2975e1b38c9031b658fed9fd9896bb7f4a38de'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
     <attribute name='url' value='testdata/10-exportservice.jar'/>
     <attribute name='size' type='Long' value='1119'/>
   </capability>
