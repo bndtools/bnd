@@ -42,12 +42,13 @@ import bndtools.api.ResolveMode;
 public class BndtoolsEditModel extends BndEditModel implements IPersistableBndModel {
 
     private static final String[] LOCAL_PROPERTIES = new String[] {
-            BndConstants.RUNFRAMEWORK, aQute.lib.osgi.Constants.RUNVM, BndConstants.RUNREQUIRE, BndConstants.RUNEE, BndConstants.RUNREPOS, BndConstants.RESOLVE_MODE
+            BndConstants.RUNREQUIRE, BndConstants.RUNEE, BndConstants.RESOLVE_MODE
     };
     static {
         String[] merged = new String[KNOWN_PROPERTIES.length + LOCAL_PROPERTIES.length];
         System.arraycopy(KNOWN_PROPERTIES, 0, merged, 0, KNOWN_PROPERTIES.length);
         System.arraycopy(LOCAL_PROPERTIES, 0, merged, KNOWN_PROPERTIES.length, LOCAL_PROPERTIES.length);
+        KNOWN_PROPERTIES = merged;
     }
 
     // CONVERTERS
@@ -88,15 +89,14 @@ public class BndtoolsEditModel extends BndEditModel implements IPersistableBndMo
     Converter<String,ResolveMode> resolveModeFormatter = EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
 
     public BndtoolsEditModel() {
+        super();
+
         // register converters
-        converters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesConverter);
-        converters.put(BndConstants.RUNREQUIRE, requirementListConverter);
         converters.put(BndConstants.RUNEE, new NoopConverter<String>());
         converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 
         formatters.put(BndConstants.RUNREQUIRE, requirementListFormatter);
         formatters.put(BndConstants.RUNEE, new NoopConverter<String>());
-        formatters.put(BndConstants.RUNREPOS, runReposFormatter);
         formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
     }
 
