@@ -14,7 +14,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.jface.text.IDocument;
 
@@ -25,7 +24,6 @@ import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.EnumConverter;
 import aQute.bnd.build.model.conversions.EnumFormatter;
 import aQute.bnd.build.model.conversions.NoopConverter;
-import aQute.bnd.build.model.conversions.PropertiesConverter;
 import aQute.bnd.build.model.conversions.SimpleListConverter;
 import bndtools.BndConstants;
 import bndtools.api.EE;
@@ -42,17 +40,16 @@ import bndtools.api.ResolveMode;
 public class BndtoolsEditModel extends BndEditModel implements IPersistableBndModel {
 
     private static final String[] LOCAL_PROPERTIES = new String[] {
-            BndConstants.RUNFRAMEWORK, aQute.lib.osgi.Constants.RUNVM, BndConstants.RUNREQUIRE, BndConstants.RUNEE, BndConstants.RUNREPOS, BndConstants.RESOLVE_MODE
+            BndConstants.RUNREQUIRE, BndConstants.RUNEE, BndConstants.RESOLVE_MODE
     };
     static {
         String[] merged = new String[KNOWN_PROPERTIES.length + LOCAL_PROPERTIES.length];
         System.arraycopy(KNOWN_PROPERTIES, 0, merged, 0, KNOWN_PROPERTIES.length);
         System.arraycopy(LOCAL_PROPERTIES, 0, merged, KNOWN_PROPERTIES.length, LOCAL_PROPERTIES.length);
+        KNOWN_PROPERTIES = merged;
     }
 
     // CONVERTERS
-    Converter<Map<String,String>,String> propertiesConverter = new PropertiesConverter();
-
     Converter<List<Requirement>,String> requirementListConverter = SimpleListConverter.create(new Converter<Requirement,String>() {
         public Requirement convert(String input) throws IllegalArgumentException {
             int index = input.indexOf(":");
@@ -88,15 +85,14 @@ public class BndtoolsEditModel extends BndEditModel implements IPersistableBndMo
     Converter<String,ResolveMode> resolveModeFormatter = EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
 
     public BndtoolsEditModel() {
+        super();
+
         // register converters
-        converters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesConverter);
-        converters.put(BndConstants.RUNREQUIRE, requirementListConverter);
         converters.put(BndConstants.RUNEE, new NoopConverter<String>());
         converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 
         formatters.put(BndConstants.RUNREQUIRE, requirementListFormatter);
         formatters.put(BndConstants.RUNEE, new NoopConverter<String>());
-        formatters.put(BndConstants.RUNREPOS, runReposFormatter);
         formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
     }
 
