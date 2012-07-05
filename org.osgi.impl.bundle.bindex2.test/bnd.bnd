@@ -6,6 +6,10 @@
 	org.osgi.impl.bundle.bindex2.lib;version=project,\
 	ee.j2se;version='[1.5,1.6)'
 
+# This is required to ensure the bindex2.cli JAR is built before
+# running the integration tests
+-dependson: org.osgi.impl.bundle.bindex2.cli
+
 Conditional-Package: org.example.tests.utils
 
 -runbundles: org.mockito.mockito-all,\
