@@ -19,6 +19,8 @@
     <attribute name='bundle-version' type='Version' value='1.2.14'/>
   </capability>
   <capability namespace='osgi.wiring.package'>
+    <attribute name='bundle-version' type='Version' value='1.2.14'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.felix.eventadmin'/>
     <attribute name='osgi.wiring.package' value='org.osgi.service.event'/>
     <attribute name='version' type='Version' value='1.2.0'/>
     <directive name='uses' value='org.osgi.framework'/>

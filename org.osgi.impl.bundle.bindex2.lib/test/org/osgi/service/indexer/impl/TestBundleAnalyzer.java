@@ -64,6 +64,27 @@ public class TestBundleAnalyzer extends TestCase {
 		assertEquals("org.example.a", exports.get(1).getAttributes().get("osgi.wiring.package"));
 	}
 	
+	// bundle-symbolic-name and bundle-version must be on package capabilities, for the idiots
+	// who add this to their imports...
+	public void testPackageExportBundleSymbolicNameAndVersion() throws Exception {
+		BundleAnalyzer a = new BundleAnalyzer();
+		LinkedList<Capability> caps = new LinkedList<Capability>();
+		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		
+		a.analyzeResource(new JarResource(new File("testdata/04-export+uses.jar")), caps, reqs);
+		
+		List<Capability> exports = findCaps("osgi.wiring.package", caps);
+		assertEquals(2, exports.size());
+
+		assertEquals("org.example.b", exports.get(0).getAttributes().get("osgi.wiring.package"));
+		assertEquals("org.example.d", exports.get(0).getAttributes().get("bundle-symbolic-name"));
+		assertEquals(new Version(0,0,0), exports.get(0).getAttributes().get("bundle-version"));
+		
+		assertEquals("org.example.a", exports.get(1).getAttributes().get("osgi.wiring.package"));
+		assertEquals("org.example.d", exports.get(0).getAttributes().get("bundle-symbolic-name"));
+		assertEquals(new Version(0,0,0), exports.get(0).getAttributes().get("bundle-version"));
+	}
+	
 	public void testPackageImports() throws Exception {
 		BundleAnalyzer a = new BundleAnalyzer();
 		LinkedList<Capability> caps = new LinkedList<Capability>();

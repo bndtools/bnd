@@ -33,6 +33,10 @@ public final class Namespaces {
 	public static final String ATTR_CONTENT_SIZE = "size";
 	public static final String ATTR_CONTENT_MIME = "mime";
 	
+	// Package export attributes
+	public static final String ATTR_BUNDLE_SYMBOLIC_NAME = "bundle-symbolic-name";
+	public static final String ATTR_BUNDLE_VERSION = "bundle-version";
+	
 	// Common directives
 	public static final String DIRECTIVE_FILTER = "filter";
 	public static final String DIRECTIVE_SINGLETON = "singleton";

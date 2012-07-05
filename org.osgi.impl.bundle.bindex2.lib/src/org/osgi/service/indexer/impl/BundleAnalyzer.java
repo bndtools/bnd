@@ -257,6 +257,11 @@ class BundleAnalyzer implements ResourceAnalyzer {
 				}
 			}
 			
+			SymbolicName bsn = Util.getSymbolicName(resource);
+			builder.addAttribute(Namespaces.ATTR_BUNDLE_SYMBOLIC_NAME, bsn.getName());
+			Version bundleVersion = Util.getVersion(resource);
+			builder.addAttribute(Namespaces.ATTR_BUNDLE_VERSION, bundleVersion);
+			
 			caps.add(builder.buildCapability());
 		}
 	}

@@ -19,6 +19,8 @@
     <attribute name='bundle-version' type='Version' value='0.0.0'/>
   </capability>
   <capability namespace='osgi.wiring.package'>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+    <attribute name='bundle-symbolic-name' value='org.example.c'/>
     <attribute name='osgi.wiring.package' value='org.example.a'/>
     <attribute name='version' type='Version' value='1.0.0'/>
   </capability>
