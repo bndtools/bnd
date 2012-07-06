@@ -20,7 +20,10 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import bndtools.api.ILogger;
+
 public class OpenExtConfigsContributionItem extends CompoundContributionItem {
+    private static final ILogger logger = Logger.getLogger();
 
     private static final IContributionItem[] EMPTY = new IContributionItem[0];
     private static final ImageDescriptor extFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bullet_go.png");
@@ -63,7 +66,7 @@ public class OpenExtConfigsContributionItem extends CompoundContributionItem {
 
             return result.toArray(new IContributionItem[result.size()]);
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError("Unable to find default config files", e);
+            logger.logError("Unable to find default config files", e);
             return EMPTY;
         }
 

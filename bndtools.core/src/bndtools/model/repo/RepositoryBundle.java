@@ -14,9 +14,11 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 
 public class RepositoryBundle implements IAdaptable {
+    private static final ILogger logger = Logger.getLogger();
 
     private final RepositoryPlugin repo;
     private final String bsn;
@@ -52,7 +54,7 @@ public class RepositoryBundle implements IAdaptable {
                     result = root.getFileForLocation(new Path(file.getAbsolutePath()));
                 }
             } catch (Exception e) {
-                Plugin.getDefault().getLogger().logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
+                logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
             }
         } else if (File.class.equals(adapter)) {
             result = getFile();
@@ -75,7 +77,7 @@ public class RepositoryBundle implements IAdaptable {
             }
             return file;
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
+            logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
             return null;
         }
     }

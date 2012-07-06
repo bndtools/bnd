@@ -47,6 +47,7 @@ import aQute.bnd.build.Workspace;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import bndtools.Central;
+import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.IValidator;
@@ -58,6 +59,7 @@ import bndtools.preferences.EclipseClasspathPreference;
 import bndtools.utils.Predicate;
 
 public class NewBuilder extends IncrementalProjectBuilder {
+    private static final ILogger logger = Logger.getLogger();
 
     public static final String BUILDER_ID = Plugin.PLUGIN_ID + ".bndbuilder";
     public static final String MARKER_BND_PROBLEM = Plugin.PLUGIN_ID + ".bndproblem";
@@ -65,8 +67,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private static final int LOG_FULL = 2;
     private static final int LOG_BASIC = 1;
     private static final int LOG_NONE = 0;
-
-    private final ILogger logger = Plugin.getDefault().getLogger();
 
     private Project model;
     private BuildListeners listeners;
@@ -94,7 +94,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         try {
             // Prepare build listeners
-            listeners = new BuildListeners(logger);
+            listeners = new BuildListeners();
 
             // Get the initial project
             IProject myProject = getProject();
@@ -522,7 +522,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         File[] built;
 
         // Validate
-        List<IValidator> validators = loadValidators(logger);
+        List<IValidator> validators = loadValidators();
         if (validators != null) {
             Collection< ? extends Builder> builders = model.getSubBuilders();
             for (Builder builder : builders) {
@@ -534,7 +534,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         model.clear();
 
         // Update the exported packages for the project
-        ExportedPackageDecoratorJob.scheduleForProject(getProject(), logger);
+        ExportedPackageDecoratorJob.scheduleForProject(getProject());
 
         // Load Eclipse classpath containers
         model.clearClasspath();
@@ -606,7 +606,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return built.length > 0;
     }
 
-    static List<IValidator> loadValidators(ILogger logger) {
+    static List<IValidator> loadValidators() {
         List<IValidator> validators = null;
         IConfigurationElement[] validatorElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "validators");
         if (validatorElems != null && validatorElems.length > 0) {

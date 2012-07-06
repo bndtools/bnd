@@ -65,7 +65,9 @@ import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
 import bndtools.Central;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.api.Requirement;
 import bndtools.api.ResolveMode;
 import bndtools.editor.model.BndtoolsEditModel;
@@ -77,6 +79,7 @@ import bndtools.wizards.obr.ObrResolutionWizard;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunRequirementsPart extends SectionPart implements PropertyChangeListener {
+    private static final ILogger logger = Logger.getLogger();
 
     private Table table;
     private TableViewer viewer;
@@ -449,7 +452,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
                 project = new Project(Central.getWorkspace(), projectDir, resource.getLocation().toFile());
             }
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError("Error getting project from editor model", e);
+            logger.logError("Error getting project from editor model", e);
         }
         return project;
     }

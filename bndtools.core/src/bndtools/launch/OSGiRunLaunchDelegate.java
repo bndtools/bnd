@@ -30,9 +30,12 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.lib.osgi.Jar;
 import bndtools.Central;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 
 public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
+    private static final ILogger logger = Logger.getLogger();
 
     private ProjectLauncher bndLauncher = null;
 
@@ -201,8 +204,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                         bndLauncher.update();
                     }
                 } catch (Exception e) {
-                    IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error updating launch properties file.", e);
-                    Plugin.getDefault().getLogger().logStatus(status);
+                    logger.logError("Error updating launch properties file.", e);
                 }
             }
         };

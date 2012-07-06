@@ -23,11 +23,13 @@ import aQute.lib.io.IO;
 import aQute.libg.header.Attrs;
 import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
-import bndtools.Plugin;
+import bndtools.Logger;
 import bndtools.WorkspaceObrProvider;
 import bndtools.api.IBndModel;
+import bndtools.api.ILogger;
 
 public class ObrResolutionWizard extends Wizard {
+    private static final ILogger logger = Logger.getLogger();
 
     private static final String PATHS_EXTENSION = ".resolved";
 
@@ -79,7 +81,7 @@ public class ObrResolutionWizard extends Wizard {
             File pathsFile = new File(targetDir, file.getName() + PATHS_EXTENSION);
             pathsStream = new PrintStream(pathsFile, "UTF-8");
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError("Unable to write resolved path list in target directory for project " + file.getProject().getName(), e);
+            logger.logError("Unable to write resolved path list in target directory for project " + file.getProject().getName(), e);
         }
 
         // Generate -runbundles and path list

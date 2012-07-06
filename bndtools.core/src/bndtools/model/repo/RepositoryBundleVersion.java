@@ -11,9 +11,11 @@ import org.eclipse.core.runtime.Path;
 
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.libg.version.Version;
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 
 public class RepositoryBundleVersion implements IAdaptable {
+    private static final ILogger logger = Logger.getLogger();
 
     private final Version version;
     private final RepositoryBundle bundle;
@@ -59,7 +61,7 @@ public class RepositoryBundleVersion implements IAdaptable {
         try {
             files = bundle.getRepo().get(bundle.getBsn(), version.toString(), Strategy.EXACT, null);
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError(MessageFormat.format("Failed to query repository {0} for bundle {1} version {2}.", bundle.getRepo().getName(), bundle.getBsn(), version), e);
+            logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1} version {2}.", bundle.getRepo().getName(), bundle.getBsn(), version), e);
         }
         if (files != null) {
             return files;

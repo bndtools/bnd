@@ -34,9 +34,12 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 
 public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunchShortcut2 {
+    private static final ILogger logger = Logger.getLogger();
 
     private final String launchId;
 
@@ -195,7 +198,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
 
             return result.toArray(new ILaunchConfiguration[result.size()]);
         } catch (CoreException e) {
-            Plugin.getDefault().getLogger().logError("Error retrieving launch configurations.", e);
+            logger.logError("Error retrieving launch configurations.", e);
             return null;
         }
     }

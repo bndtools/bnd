@@ -9,8 +9,6 @@ import java.util.Arrays;
 
 import org.bndtools.core.utils.jface.ConfigElementLabelProvider;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -35,12 +33,15 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.osgi.framework.Bundle;
 
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.utils.BundleUtils;
 import bndtools.utils.FileUtils;
 import bndtools.utils.PriorityConfigurationElementCompator;
 
 public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
+    private static final ILogger logger = Logger.getLogger();
 
     public static final String PROP_ELEMENT = "selectedElement";
     protected final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
@@ -106,7 +107,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
                     IWebBrowser externalBrowser = browserSupport.getExternalBrowser();
                     externalBrowser.openURL(new URL((String) event.getHref()));
                 } catch (PartInitException e) {
-                    Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening external browser.", e));
+                    logger.logError("Error opening external browser.", e);
                 } catch (MalformedURLException e) {
                     // Ignore
                 }
@@ -157,7 +158,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
                         byte[] bytes = FileUtils.readFully(htmlUrl.openStream());
                         browserText = new String(bytes, "UTF-8");
                     } catch (IOException e) {
-                        Plugin.getDefault().getLogger().logError("Error reading template description document.", e);
+                        logger.logError("Error reading template description document.", e);
                     }
                 }
             }

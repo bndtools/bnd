@@ -56,7 +56,9 @@ import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
 import bndtools.Central;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.editor.contents.PackageInfoDialog;
 import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
@@ -66,6 +68,7 @@ import bndtools.internal.pkgselection.PackageSelectionDialog;
 import bndtools.preferences.BndPreferences;
 
 public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage> {
+    private static final ILogger logger = Logger.getLogger();
 
     private static final String PACKAGEINFO = "packageinfo";
 
@@ -244,7 +247,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
             File projectDir = resource.getProject().getLocation().toFile();
             project = Workspace.getProject(projectDir);
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError("Error getting project from editor model", e);
+            logger.logError("Error getting project from editor model", e);
         }
         return project;
     }

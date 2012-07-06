@@ -10,11 +10,6 @@
  *******************************************************************************/
 package bndtools;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -25,7 +20,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -48,6 +42,7 @@ import bndtools.api.ILogger;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
+    private static final ILogger logger = Logger.getLogger();
 
     public static final String PLUGIN_ID = "bndtools.core";
     public static final String BND_EDITOR_ID = PLUGIN_ID + ".bndEditor";
@@ -72,58 +67,12 @@ public class Plugin extends AbstractUIPlugin {
 
     private volatile Central central;
 
-    private volatile ILogger logger = new ILogger() {
-        private String getStackTrace(Throwable t) {
-            if (t == null) {
-                return "No exception trace is available";
-            }
-
-            final Writer sw = new StringWriter();
-            final PrintWriter pw = new PrintWriter(sw);
-            t.printStackTrace(pw);
-            return sw.toString();
-        }
-
-        private String constructSysErrString(IStatus status) {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd HHmmss.SSS");
-            String formattedDate = formatter.format(new Date());
-            return String.format("%s - %s - %s - %s%n%s", formattedDate, status.getSeverity(), status.getPlugin(), status.getMessage(), getStackTrace(status.getException()));
-        }
-
-        private Status constructStatus(int status, String message, Throwable exception) {
-            return new Status(status, PLUGIN_ID, 0, message, exception);
-        }
-
-        private void log(int status, String message, Throwable exception) {
-            logStatus(constructStatus(status, message, exception));
-        }
-
-        public void logStatus(IStatus status) {
-            if (plugin == null) {
-                System.err.println(constructSysErrString(status));
-                return;
-            }
-            getLog().log(status);
-        }
-
-        public void logError(String message, Throwable exception) {
-            log(IStatus.ERROR, message, exception);
-        }
-
-        public void logWarning(String message, Throwable exception) {
-            log(IStatus.WARNING, message, exception);
-        }
-
-        public void logInfo(String message, Throwable exception) {
-            log(IStatus.INFO, message, exception);
-        }
-    };
-
     @Override
     public void start(BundleContext context) throws Exception {
         registerWorkspaceURLHandler(context);
         super.start(context);
         plugin = this;
+        Logger.setPlugin(this);
         this.bundleContext = context;
 
         scheduler = Executors.newScheduledThreadPool(1);
@@ -208,6 +157,7 @@ public class Plugin extends AbstractUIPlugin {
         resourceIndexerTracker.close();
         indexerTracker.close();
         this.bundleContext = null;
+        Logger.setPlugin(null);
         plugin = null;
         super.stop(context);
         unregisterWorkspaceURLHandler();
@@ -318,10 +268,6 @@ public class Plugin extends AbstractUIPlugin {
                 ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
             }
         });
-    }
-
-    public ILogger getLogger() {
-        return logger;
     }
 
     public Central getCentral() {

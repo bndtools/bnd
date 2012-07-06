@@ -42,7 +42,8 @@ import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
 import bndtools.Central;
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
@@ -52,6 +53,7 @@ import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.RepositoryUtils;
 
 public class RepoBundleSelectionWizardPage extends WizardPage {
+    private static final ILogger logger = Logger.getLogger();
 
     public static final String PROP_SELECTION = "selection";
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
@@ -123,7 +125,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             refreshBundleList();
         } catch (Exception e) {
             setErrorMessage("Error querying repository configuration.");
-            Plugin.getDefault().getLogger().logError("Error querying repository configuration.", e);
+            logger.logError("Error querying repository configuration.", e);
         }
 
         // Listeners

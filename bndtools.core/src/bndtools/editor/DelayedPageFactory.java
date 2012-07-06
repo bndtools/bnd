@@ -10,11 +10,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.ui.forms.editor.IFormPage;
 
-import bndtools.Plugin;
+import bndtools.Logger;
 import bndtools.api.IBndModel;
+import bndtools.api.ILogger;
 
 public class DelayedPageFactory implements IFormPageFactory {
-
+    private static final ILogger logger = Logger.getLogger();
     private final IConfigurationElement configElem;
     private final Set<Mode> modes = EnumSet.noneOf(Mode.class);
 
@@ -32,7 +33,7 @@ public class DelayedPageFactory implements IFormPageFactory {
                     if (mode != null)
                         modes.add(mode);
                 } catch (Exception e) {
-                    Plugin.getDefault().getLogger().logError("Invalid editor page mode: " + token, e);
+                    logger.logError("Invalid editor page mode: " + token, e);
                 }
             }
         }
@@ -43,7 +44,7 @@ public class DelayedPageFactory implements IFormPageFactory {
             IFormPageFactory factory = (IFormPageFactory) configElem.createExecutableExtension("class");
             return factory.createPage(editor, model, id);
         } catch (CoreException e) {
-            Plugin.getDefault().getLogger().logError("Unable to create extension form page", e);
+            logger.logError("Unable to create extension form page", e);
             throw new IllegalArgumentException("Error loading extension form page", e);
         }
     }

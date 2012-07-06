@@ -57,11 +57,14 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Jar;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.utils.ClassPathLabelProvider;
 import bndtools.utils.FileExtensionFilter;
 
 public class JarListWizardPage extends WizardPage {
+    private static final ILogger logger = Logger.getLogger();
 
     public static final String PROP_PATHS = "paths";
 
@@ -273,7 +276,7 @@ public class JarListWizardPage extends WizardPage {
                     }
                 }
             } catch (Exception e) {
-                Plugin.getDefault().getLogger().logError("Error inspecting JAR file: " + path.toString(), e);
+                logger.logError("Error inspecting JAR file: " + path.toString(), e);
             } finally {
                 if (jar != null)
                     jar.close();

@@ -16,10 +16,13 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.libg.version.Version;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.utils.BundleUtils;
 
 public class OSGiFrameworkContentProvider implements IStructuredContentProvider {
+    private static final ILogger logger = Logger.getLogger();
 
     List<OSGiFramework> frameworks = new ArrayList<OSGiFramework>();
 
@@ -52,11 +55,11 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
                                 if (framework != null)
                                     frameworks.add(new OSGiFramework(frameworkName, bsn, version, iconUrl));
                             } catch (Exception e) {
-                                Plugin.getDefault().getLogger().logError(String.format("Error finding repository entry for OSGi framework %s, version %s.", bsn, version.toString()), e);
+                                logger.logError(String.format("Error finding repository entry for OSGi framework %s, version %s.", bsn, version.toString()), e);
                             }
                         }
                 } catch (Exception e) {
-                    Plugin.getDefault().getLogger().logError(String.format("Error searching repository for OSGi framework %s.", bsn), e);
+                    logger.logError(String.format("Error searching repository for OSGi framework %s.", bsn), e);
                 }
             }
         }

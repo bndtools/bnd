@@ -11,8 +11,6 @@ import java.util.Set;
 import org.bndtools.core.utils.collections.CollectionUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -68,13 +66,16 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.lib.osgi.Constants;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.internal.testcaseselection.ITestCaseFilter;
 import bndtools.internal.testcaseselection.JavaSearchScopeTestCaseLister;
 import bndtools.internal.testcaseselection.TestCaseSelectionDialog;
 
 public class TestSuitesPart extends SectionPart implements PropertyChangeListener {
+    private static final ILogger logger = Logger.getLogger();
 
     private BndtoolsEditModel model;
     private List<String> testSuites;
@@ -413,7 +414,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
                                 }
                             }
                         } catch (JavaModelException e) {
-                            Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.TestSuitesPart_errorJavaType, e));
+                            logger.logError(Messages.TestSuitesPart_errorJavaType, e);
                         }
                     }
                 }

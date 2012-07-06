@@ -31,13 +31,16 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.utils.EditorUtils;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunBundlesPart extends RepositoryBundleSelectionPart {
+    private static final ILogger logger = Logger.getLogger();
 
     private final List<Builder> projectBuilders = new ArrayList<Builder>();
     private Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
@@ -68,7 +71,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
             if (model != null)
                 projectBuilders.addAll(model.getSubBuilders());
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError(Messages.RunBundlesPart_errorGettingBuilders, e);
+            logger.logError(Messages.RunBundlesPart_errorGettingBuilders, e);
         }
     }
 

@@ -42,9 +42,11 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.libg.header.Parameters;
 import bndtools.Central;
+import bndtools.Logger;
 import bndtools.ModelListener;
 import bndtools.Plugin;
 import bndtools.RefreshFileJob;
+import bndtools.api.ILogger;
 import bndtools.utils.JarUtils;
 
 /**
@@ -56,6 +58,7 @@ import bndtools.utils.JarUtils;
  * Bnd Builder in different places, the Bnd Model is centralized and available from the Activator.
  */
 public class BndContainerInitializer extends ClasspathContainerInitializer implements ModelListener {
+    private static final ILogger logger = Logger.getLogger();
 
     public static final Path PATH_ID = new Path("aQute.bnd.classpath.container");
     public static final String MARKER_BND_CLASSPATH_PROBLEM = Plugin.PLUGIN_ID + ".bnd_classpath_problem";
@@ -136,7 +139,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
             setClasspathEntries(project, entries);
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError("Error requesting bnd classpath update.", e);
+            logger.logError("Error requesting bnd classpath update.", e);
         }
     }
 
@@ -306,7 +309,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             try {
                 mf = JarUtils.loadJarManifest(new FileInputStream(c.getFile()));
             } catch (IOException e) {
-                Plugin.getDefault().getLogger().logError("Unable to generate access rules from bundle " + c.getFile(), e);
+                logger.logError("Unable to generate access rules from bundle " + c.getFile(), e);
                 return;
             }
             Parameters exportPkgs = new Parameters(mf.getMainAttributes().getValue(new Name(Constants.EXPORT_PACKAGE)));
@@ -348,8 +351,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         assert project != null;
 
         if (!project.exists() || !project.isOpen()) {
-            Plugin.getDefault().getLogger()
-                    .logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Cannot replace bnd classpath problem markers: project %s is not in the Eclipse workspace or is not open.", project.getName()), null));
+            logger.logError(String.format("Cannot replace bnd classpath problem markers: project %s is not in the Eclipse workspace or is not open.", project.getName()), null);
             return;
         }
 

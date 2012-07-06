@@ -10,7 +10,10 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
 
+import bndtools.api.ILogger;
+
 public class OpenMainConfigHandler extends AbstractHandler {
+    private static final ILogger logger = Logger.getLogger();
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
         try {
@@ -24,7 +27,7 @@ public class OpenMainConfigHandler extends AbstractHandler {
         } catch (PartInitException e) {
             ErrorDialog.openError(HandlerUtil.getActiveWorkbenchWindowChecked(event).getShell(), "Error", "Unable to open editor", e.getStatus());
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError("Error retrieving bnd configuration file", e);
+            logger.logError("Error retrieving bnd configuration file", e);
         }
 
         return null;

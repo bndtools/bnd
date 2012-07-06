@@ -58,7 +58,9 @@ import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
 import bndtools.Central;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.ProjectBundle;
@@ -71,6 +73,7 @@ import bndtools.wizards.repo.RepoBundleSelectionWizard;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
+    private static final ILogger logger = Logger.getLogger();
 
     private final String propertyName;
     private Table table;
@@ -367,7 +370,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                 project = new Project(Central.getWorkspace(), projectDir, resource.getLocation().toFile());
             }
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError("Error getting project from editor model", e);
+            logger.logError("Error getting project from editor model", e);
         }
         return project;
     }

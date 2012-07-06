@@ -22,11 +22,13 @@ import org.eclipse.swt.widgets.Table;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Central;
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 
 class LocalRepositorySelectionPage extends WizardPage {
+    private static final ILogger logger = Logger.getLogger();
 
     public static final String PROP_SELECTED_REPO = "selectedRepository";
 
@@ -68,7 +70,7 @@ class LocalRepositorySelectionPage extends WizardPage {
 
             validate(workspace);
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError("Error querying local repositories", e);
+            logger.logError("Error querying local repositories", e);
             setErrorMessage("Error querying local repositories, see log for details.");
         }
 

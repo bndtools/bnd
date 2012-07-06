@@ -2,15 +2,14 @@ package bndtools;
 
 import java.io.File;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.BndListener;
 import aQute.lib.osgi.Processor;
 import aQute.service.reporter.Reporter;
+import bndtools.api.ILogger;
 
 public final class WorkspaceListener extends BndListener {
+    private static final ILogger logger = Logger.getLogger();
 
     private final Workspace workspace;
     private final Processor errorProcessor = new Processor();
@@ -27,7 +26,7 @@ public final class WorkspaceListener extends BndListener {
                 job.schedule();
             }
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError("Error refreshing workspace", e);
+            logger.logError("Error refreshing workspace", e);
         }
     }
 
@@ -37,10 +36,10 @@ public final class WorkspaceListener extends BndListener {
         errorProcessor.getInfo(workspace);
 
         for (String warning : errorProcessor.getWarnings()) {
-            Plugin.getDefault().getLogger().logStatus(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, warning, null));
+            logger.logWarning(warning, null);
         }
         for (String error : errorProcessor.getErrors()) {
-            Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, error, null));
+            logger.logError(error, null);
         }
     }
 

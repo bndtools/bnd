@@ -8,9 +8,11 @@ import org.eclipse.jface.viewers.Viewer;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 
 public class RepositoryBundlesContentProvider implements ITreeContentProvider {
+    private static final ILogger logger = Logger.getLogger();
 
     public Object[] getElements(Object inputElement) {
         Workspace workspace = (Workspace) inputElement;
@@ -30,7 +32,7 @@ public class RepositoryBundlesContentProvider implements ITreeContentProvider {
         try {
             bsns = repoPlugin.list(null);
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError("Error querying repository " + repoPlugin.getName(), e);
+            logger.logError("Error querying repository " + repoPlugin.getName(), e);
             bsns = Collections.emptyList();
         }
         return bsns.toArray(new String[bsns.size()]);

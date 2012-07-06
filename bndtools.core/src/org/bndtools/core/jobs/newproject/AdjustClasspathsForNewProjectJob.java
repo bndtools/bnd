@@ -17,10 +17,12 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import aQute.bnd.build.Project;
 import bndtools.Central;
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 import bndtools.classpath.BndContainerInitializer;
 
 public class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
+    private static final ILogger logger = Logger.getLogger();
 
     private final IProject addedProject;
 
@@ -52,7 +54,7 @@ public class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
                         BndContainerInitializer.resetClasspaths(project, eclipseProject, errors);
                         BndContainerInitializer.replaceClasspathProblemMarkers(eclipseProject, errors);
                     } catch (CoreException e) {
-                        Plugin.getDefault().getLogger().logStatus(e.getStatus());
+                        logger.logStatus(e.getStatus());
                         return Status.CANCEL_STATUS;
                     }
                 }

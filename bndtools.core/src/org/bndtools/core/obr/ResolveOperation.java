@@ -66,8 +66,10 @@ import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.EE;
 import bndtools.api.IBndModel;
+import bndtools.api.ILogger;
 
 public class ResolveOperation implements IRunnableWithProgress {
+    private static final ILogger logger = bndtools.Logger.getLogger();
 
     private final DataModelHelperImpl helper = new DataModelHelperImpl();
 
@@ -303,7 +305,7 @@ public class ResolveOperation implements IRunnableWithProgress {
                         result.add(resource);
                         resolver.add(resource);
                     } catch (IOException e) {
-                        Plugin.getDefault().getLogger().logError(Messages.ResolveOperation_errorReadingBundle + file, e);
+                        logger.logError(Messages.ResolveOperation_errorReadingBundle + file, e);
                     } finally {
                         if (stream != null)
                             stream.close();
@@ -311,7 +313,7 @@ public class ResolveOperation implements IRunnableWithProgress {
                 }
             }
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError(Messages.ResolveOperation_errorGettingBuilders + runFile.getProject(), e);
+            logger.logError(Messages.ResolveOperation_errorGettingBuilders + runFile.getProject(), e);
         }
         return result;
     }

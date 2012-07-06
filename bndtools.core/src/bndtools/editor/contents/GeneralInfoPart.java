@@ -76,6 +76,7 @@ import aQute.bnd.build.model.clauses.ServiceComponent;
 import aQute.libg.header.Attrs;
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
+import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.api.ILogger;
@@ -87,6 +88,7 @@ import bndtools.utils.JavaTypeContentProposal;
 import bndtools.utils.ModificationLock;
 
 public class GeneralInfoPart extends SectionPart implements PropertyChangeListener {
+    private static final ILogger logger = Logger.getLogger();
 
     private static final String[] EDITABLE_PROPERTIES = new String[] {
             Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, BndConstants.SOURCES, BndConstants.OUTPUT, aQute.lib.osgi.Constants.SERVICE_COMPONENT, aQute.lib.osgi.Constants.DSANNOTATIONS
@@ -251,7 +253,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                             }
                         }
                     } catch (JavaModelException e) {
-                        ILogger logger = Plugin.getDefault().getLogger();
                         logger.logError("Error looking up activator class name: " + activatorClassName, e);
                     }
                 }
@@ -520,8 +521,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 window.run(false, false, runnable);
                 return result;
             } catch (InvocationTargetException e) {
-                IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e.getTargetException());
-                Plugin.getDefault().getLogger().logStatus(status);
+                logger.logError("Error searching for BundleActivator types", e.getTargetException());
                 return Collections.emptyList();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

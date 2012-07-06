@@ -18,9 +18,7 @@ import java.util.TreeSet;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
@@ -34,11 +32,13 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 import bndtools.javamodel.IJavaSearchContext;
 import bndtools.utils.CachingContentProposalProvider;
 
 public class PkgPatternsProposalProvider extends CachingContentProposalProvider {
+    private static final ILogger logger = Logger.getLogger();
 
     private final IJavaSearchContext searchContext;
 
@@ -107,7 +107,7 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
             }
             return result;
         } catch (InvocationTargetException e) {
-            Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for packages.", e));
+            logger.logError("Error searching for packages.", e);
             return Collections.emptyList();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

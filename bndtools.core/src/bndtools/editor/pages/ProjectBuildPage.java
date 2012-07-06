@@ -34,8 +34,10 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.IBndModel;
+import bndtools.api.ILogger;
 import bndtools.builder.NewBuilder;
 import bndtools.classpath.BndContainerInitializer;
 import bndtools.editor.common.IPriority;
@@ -46,6 +48,7 @@ import bndtools.editor.project.SubBundlesPart;
 import bndtools.utils.MessageHyperlinkAdapter;
 
 public class ProjectBuildPage extends FormPage implements IPriority, IResourceChangeListener {
+    private static final ILogger logger = Logger.getLogger();
 
     private final IBndModel model;
     private final Image imgError = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK);
@@ -154,7 +157,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
                 markers = resource.findMarkers(NewBuilder.MARKER_BND_PROBLEM, true, 0);
                 loadMarkers(markers);
             } catch (CoreException e) {
-                Plugin.getDefault().getLogger().logError("Error retrieving problem markers", e);
+                logger.logError("Error retrieving problem markers", e);
             }
         }
 

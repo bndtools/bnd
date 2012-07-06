@@ -9,10 +9,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 import bndtools.perspective.BndPerspective;
 
 public class JUnitViewOpenerStatusHandler implements IStatusHandler {
+    private static final ILogger logger = Logger.getLogger();
 
     public Object handleStatus(IStatus status, Object source) throws CoreException {
         Runnable runnable = new Runnable() {
@@ -21,7 +23,7 @@ public class JUnitViewOpenerStatusHandler implements IStatusHandler {
                     IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
                     window.getActivePage().showView(BndPerspective.VIEW_ID_JUNIT_RESULTS, null, IWorkbenchPage.VIEW_VISIBLE);
                 } catch (PartInitException e) {
-                    Plugin.getDefault().getLogger().logError("Error showing JUnit Results view", e);
+                    logger.logError("Error showing JUnit Results view", e);
                 }
             }
         };

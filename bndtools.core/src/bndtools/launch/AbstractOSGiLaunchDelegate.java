@@ -24,10 +24,13 @@ import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.preferences.BndPreferences;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
+    private static final ILogger logger = Logger.getLogger();
 
     protected Project model;
 
@@ -115,7 +118,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
                                 try {
                                     launcher.cleanup();
                                 } catch (Throwable t) {
-                                    Plugin.getDefault().getLogger().logError("Error cleaning launcher temporary files", t);
+                                    logger.logError("Error cleaning launcher temporary files", t);
                                 }
                             }
                         }

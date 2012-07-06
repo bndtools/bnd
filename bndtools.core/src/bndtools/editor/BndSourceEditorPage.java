@@ -15,8 +15,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Image;
@@ -31,10 +29,13 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
 
 public class BndSourceEditorPage extends TextEditor implements IFormPage {
+    private static final ILogger logger = Logger.getLogger();
 
     private final Image icon;
 
@@ -142,7 +143,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
             if (!currentContent.equals(lastLoaded))
                 formEditor.getBndModel().loadFrom(getDocument());
         } catch (IOException e) {
-            Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
+            logger.logError("Error loading model from document.", e);
         }
     }
 

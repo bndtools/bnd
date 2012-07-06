@@ -28,12 +28,14 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import bndtools.BndConstants;
 import bndtools.Central;
-import bndtools.Plugin;
+import bndtools.Logger;
 import bndtools.api.EE;
+import bndtools.api.ILogger;
 import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.utils.ModificationLock;
 
 public class RunFrameworkPart extends SectionPart implements PropertyChangeListener {
+    private static final ILogger logger = Logger.getLogger();
 
     private final ModificationLock lock = new ModificationLock();
     private final OSGiFrameworkContentProvider fwkContentProvider = new OSGiFrameworkContentProvider();
@@ -76,7 +78,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         try {
             frameworkViewer.setInput(Central.getWorkspace());
         } catch (Exception e) {
-            Plugin.getDefault().getLogger().logError("Error accessing bnd workspace.", e);
+            logger.logError("Error accessing bnd workspace.", e);
         }
 
         Label lblExecEnv = tk.createLabel(composite, "Execution Env.:");
