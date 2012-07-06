@@ -8,9 +8,9 @@
     </capability>
     <capability namespace='osgi.content'>
       <attribute name='osgi.content' value='805edded7fe1d6cd060347818257270277dfaa2a99bf747065da61639a89984e'/>
-      <attribute name='mime' value='application/vnd.osgi.bundle'/>
       <attribute name='url' value='testdata/03-export.jar'/>
       <attribute name='size' type='Long' value='1100'/>
+      <attribute name='mime' value='application/vnd.osgi.bundle'/>
     </capability>
     <capability namespace='osgi.wiring.bundle'>
       <attribute name='osgi.wiring.bundle' value='org.example.c'/>
@@ -21,10 +21,10 @@
       <attribute name='bundle-version' type='Version' value='0.0.0'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
-      <attribute name='bundle-version' type='Version' value='0.0.0'/>
-      <attribute name='bundle-symbolic-name' value='org.example.c'/>
       <attribute name='osgi.wiring.package' value='org.example.a'/>
       <attribute name='version' type='Version' value='1.0.0'/>
+      <attribute name='bundle-symbolic-name' value='org.example.c'/>
+      <attribute name='bundle-version' type='Version' value='0.0.0'/>
     </capability>
   </resource>
   <resource>
@@ -35,9 +35,9 @@
     </capability>
     <capability namespace='osgi.content'>
       <attribute name='osgi.content' value='bc9acc2341bbebedff6213c6f581e6e9f4c03963f64e73f42c831c94a4251a01'/>
-      <attribute name='mime' value='application/vnd.osgi.bundle'/>
       <attribute name='url' value='testdata/06-requirebundle.jar'/>
       <attribute name='size' type='Long' value='1128'/>
+      <attribute name='mime' value='application/vnd.osgi.bundle'/>
     </capability>
     <capability namespace='osgi.wiring.bundle'>
       <attribute name='osgi.wiring.bundle' value='org.example.f'/>

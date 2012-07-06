@@ -6,9 +6,9 @@
   </capability>
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='801e50621aba2e62138559b3e50742abf045bf70d7092b49defdd78cef219c36'/>
-    <attribute name='mime' value='application/vnd.osgi.bundle'/>
     <attribute name='url' value='testdata/07-optionalimport.jar'/>
     <attribute name='size' type='Long' value='978'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
   </capability>
   <capability namespace='osgi.wiring.bundle'>
     <attribute name='osgi.wiring.bundle' value='org.example.g'/>
@@ -19,7 +19,7 @@
     <attribute name='bundle-version' type='Version' value='0.0.0'/>
   </capability>
   <requirement namespace='osgi.wiring.package'>
-    <directive name='resolution' value='optional'/>
     <directive name='filter' value='(&amp;(osgi.wiring.package=org.example.a)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+    <directive name='resolution' value='optional'/>
   </requirement>
 </resource>

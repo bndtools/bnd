@@ -6,9 +6,9 @@
   </capability>
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='67d366b7705690f65e0efca396d0862d33874a9ddd64672390593694ce77bef2'/>
-    <attribute name='mime' value='application/vnd.osgi.bundle'/>
     <attribute name='url' value='testdata/02-localization.jar'/>
     <attribute name='size' type='Long' value='1544'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
   </capability>
   <capability namespace='osgi.wiring.bundle'>
     <attribute name='osgi.wiring.bundle' value='org.example.b'/>

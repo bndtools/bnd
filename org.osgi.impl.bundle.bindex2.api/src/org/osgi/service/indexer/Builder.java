@@ -1,13 +1,14 @@
 package org.osgi.service.indexer;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Builder {
 
 	private String namespace = null;
-	private final Map<String, Object> attributes = new HashMap<String, Object>();
-	private final Map<String, String> directives = new HashMap<String, String>();
+	private final Map<String, Object> attributes = new LinkedHashMap<String, Object>();
+	private final Map<String, String> directives = new LinkedHashMap<String, String>();
 
 	public Builder setNamespace(String namespace) {
 		this.namespace = namespace;
@@ -28,14 +29,14 @@ public class Builder {
 		if (namespace == null)
 			throw new IllegalStateException("Namespace not set");
 
-		return new Capability(namespace, new HashMap<String, Object>(attributes), new HashMap<String, String>(directives));
+		return new Capability(namespace, new LinkedHashMap<String, Object>(attributes), new LinkedHashMap<String, String>(directives));
 	}
 
 	public Requirement buildRequirement() throws IllegalStateException {
 		if (namespace == null)
 			throw new IllegalStateException("Namespace not set");
 
-		return new Requirement(namespace, new HashMap<String, Object>(attributes), new HashMap<String, String>(directives));
+		return new Requirement(namespace, new LinkedHashMap<String, Object>(attributes), new LinkedHashMap<String, String>(directives));
 	}
 
 }

@@ -6,9 +6,9 @@
   </capability>
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='ac0caea013b4e876a5c880c1ff9c75aa9bed9d2290180b18864efe66a9625274'/>
-    <attribute name='mime' value='application/vnd.osgi.bundle'/>
     <attribute name='url' value='testdata/12-nofragments.jar'/>
     <attribute name='size' type='Long' value='1119'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
   </capability>
   <capability namespace='osgi.wiring.bundle'>
     <attribute name='osgi.wiring.bundle' value='org.example.l'/>

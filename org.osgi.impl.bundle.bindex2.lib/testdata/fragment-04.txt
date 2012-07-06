@@ -6,9 +6,9 @@
   </capability>
   <capability namespace='osgi.content'>
     <attribute name='osgi.content' value='f15fdd9cfb0ebe6d501ca273929a4c52ab5171715581997717a6151244e54466'/>
-    <attribute name='mime' value='application/vnd.osgi.bundle'/>
     <attribute name='url' value='testdata/04-export+uses.jar'/>
     <attribute name='size' type='Long' value='1494'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
   </capability>
   <capability namespace='osgi.wiring.bundle'>
     <attribute name='osgi.wiring.bundle' value='org.example.d'/>
@@ -19,16 +19,16 @@
     <attribute name='bundle-version' type='Version' value='0.0.0'/>
   </capability>
   <capability namespace='osgi.wiring.package'>
-    <attribute name='bundle-version' type='Version' value='0.0.0'/>
-    <attribute name='bundle-symbolic-name' value='org.example.d'/>
     <attribute name='osgi.wiring.package' value='org.example.b'/>
     <attribute name='version' type='Version' value='0.0.0'/>
+    <attribute name='bundle-symbolic-name' value='org.example.d'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
     <directive name='uses' value='org.example.a'/>
   </capability>
   <capability namespace='osgi.wiring.package'>
-    <attribute name='bundle-version' type='Version' value='0.0.0'/>
-    <attribute name='bundle-symbolic-name' value='org.example.d'/>
     <attribute name='osgi.wiring.package' value='org.example.a'/>
     <attribute name='version' type='Version' value='1.0.0'/>
+    <attribute name='bundle-symbolic-name' value='org.example.d'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
   </capability>
 </resource>

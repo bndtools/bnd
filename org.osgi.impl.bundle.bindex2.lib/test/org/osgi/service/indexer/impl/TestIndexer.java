@@ -134,7 +134,8 @@ public class TestIndexer extends TestCase {
 		config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
 		indexer.index(files, out, config);
 		
-		String expected = Utils.readStream(new FileInputStream("testdata/packed.txt"));
+		String unpackedXML = Utils.readStream(new FileInputStream("testdata/unpacked.xml"));
+		String expected = unpackedXML.replaceAll("[\\n\\t]*", "");
 		assertEquals(expected, Utils.decompress(out.toByteArray()));
 	}
 	

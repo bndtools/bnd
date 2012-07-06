@@ -8,7 +8,7 @@
 		</capability>
 		<capability namespace='osgi.content'>
 			<attribute name='osgi.content' value='64f661eea43334dc5d38d7f16dbcacd02c799e68332b40e72da8021828e3329c'/>
-			<attribute name='url' value='01-bsn+version.jar'/>
+			<attribute name='url' value='testdata/01-bsn+version.jar'/>
 			<attribute name='size' type='Long' value='1104'/>
 			<attribute name='mime' value='application/vnd.osgi.bundle'/>
 		</capability>

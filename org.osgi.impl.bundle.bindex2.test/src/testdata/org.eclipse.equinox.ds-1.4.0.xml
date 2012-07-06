@@ -9,9 +9,9 @@
     </capability>
     <capability namespace='osgi.content'>
       <attribute name='osgi.content' value='5766436c3ab47ed7e7517be295b39f6ba896db18985a4034b472d701b866be79'/>
-      <attribute name='mime' value='application/vnd.osgi.bundle'/>
       <attribute name='url' value='testdata/org.eclipse.equinox.ds-1.4.0.jar'/>
       <attribute name='size' type='Long' value='194031'/>
+      <attribute name='mime' value='application/vnd.osgi.bundle'/>
     </capability>
     <capability namespace='osgi.wiring.bundle'>
       <attribute name='osgi.wiring.bundle' value='org.eclipse.equinox.ds'/>
@@ -22,71 +22,71 @@
       <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
-      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
       <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.ds'/>
       <attribute name='version' type='Version' value='0.0.0'/>
+      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
+      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
       <directive name='x-internal' value='true'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
-      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
       <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.ds.impl'/>
       <attribute name='version' type='Version' value='0.0.0'/>
+      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
+      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
       <directive name='x-internal' value='true'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
-      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
       <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.ds.model'/>
       <attribute name='version' type='Version' value='0.0.0'/>
+      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
+      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
       <directive name='x-internal' value='true'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
-      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
       <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.ds.storage.file'/>
       <attribute name='version' type='Version' value='0.0.0'/>
+      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
+      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
       <directive name='x-internal' value='true'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
-      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
       <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.util.io'/>
       <attribute name='version' type='Version' value='0.0.0'/>
+      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
+      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
       <directive name='x-internal' value='true'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
-      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
       <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.util.xml'/>
       <attribute name='version' type='Version' value='0.0.0'/>
+      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
+      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
       <directive name='x-internal' value='true'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
-      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
       <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.util.xml.impl'/>
       <attribute name='version' type='Version' value='0.0.0'/>
+      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
+      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
       <directive name='x-internal' value='true'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
-      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
       <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.util.string'/>
       <attribute name='version' type='Version' value='0.0.0'/>
+      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
+      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
       <directive name='x-internal' value='true'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
-      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
       <attribute name='osgi.wiring.package' value='org.apache.felix.scr'/>
       <attribute name='version' type='Version' value='1.6.0'/>
+      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
+      <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
     </capability>
     <capability namespace='osgi.extender'>
       <attribute name='osgi.extender' value='osgi.scr'/>
-      <attribute name='uses' value='org.osgi.service.component'/>
       <attribute name='version' type='Version' value='1.2.0'/>
+      <directive name='uses' value='org.osgi.service.component'/>
     </capability>
     <requirement namespace='osgi.wiring.package'>
       <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.equinox.internal.util.event)(version&gt;=1.0.0))'/>
@@ -107,8 +107,8 @@
       <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.equinox.internal.util.timer)(version&gt;=1.0.0))'/>
     </requirement>
     <requirement namespace='osgi.wiring.package'>
-      <directive name='resolution' value='optional'/>
       <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.osgi.framework.console)(version&gt;=1.0.0))'/>
+      <directive name='resolution' value='optional'/>
     </requirement>
     <requirement namespace='osgi.wiring.package'>
       <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.osgi.framework.log)(version&gt;=1.0.0))'/>
