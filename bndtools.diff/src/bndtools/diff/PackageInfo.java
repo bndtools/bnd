@@ -190,6 +190,7 @@ public class PackageInfo implements Comparable<PackageInfo> {
 		return null;
 	}
 	
+	@Override
 	public String toString() {
 		return packageName + "[" + currentVersion + "]";
 	}

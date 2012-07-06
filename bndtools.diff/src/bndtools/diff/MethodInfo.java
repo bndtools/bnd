@@ -58,6 +58,7 @@ public class MethodInfo implements Comparable<MethodInfo> {
 		return classInfo.getPackageInfo();
 	}
 	
+	@Override
 	public String toString() {
 		return getName() + getDesc();
 	}

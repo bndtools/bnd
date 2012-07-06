@@ -67,6 +67,7 @@ public class Activator extends AbstractUIPlugin {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
+	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
@@ -78,6 +79,7 @@ public class Activator extends AbstractUIPlugin {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
+	@Override
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		workspaceTracker.close();
@@ -125,6 +127,7 @@ public class Activator extends AbstractUIPlugin {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 	
+	@Override
 	protected void initializeImageRegistry(ImageRegistry reg) {
 		
 		// Images
@@ -356,7 +359,6 @@ public class Activator extends AbstractUIPlugin {
 		reg.put("static_method_minor_remove", oid);
 	}
 	
-    @SuppressWarnings("unchecked")
 	public static <T> T getService(Class<T> clazz) {
     	 if (clazz == Workspace.class) {
     		 try {

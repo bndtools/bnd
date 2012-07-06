@@ -131,6 +131,7 @@ public class BundleReleaseDialog extends Dialog {
 		return composite;
 	}
 	
+	@Override
 	protected void buttonPressed(int buttonId) {
 		if (CANCEL_BUTTON == buttonId) {
 			cancelPressed();
