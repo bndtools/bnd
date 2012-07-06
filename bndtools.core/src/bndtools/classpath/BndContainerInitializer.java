@@ -136,7 +136,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
             setClasspathEntries(project, entries);
         } catch (Exception e) {
-            Plugin.logError("Error requesting bnd classpath update.", e);
+            Plugin.getDefault().getLogger().logError("Error requesting bnd classpath update.", e);
         }
     }
 
@@ -306,7 +306,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             try {
                 mf = JarUtils.loadJarManifest(new FileInputStream(c.getFile()));
             } catch (IOException e) {
-                Plugin.logError("Unable to generate access rules from bundle " + c.getFile(), e);
+                Plugin.getDefault().getLogger().logError("Unable to generate access rules from bundle " + c.getFile(), e);
                 return;
             }
             Parameters exportPkgs = new Parameters(mf.getMainAttributes().getValue(new Name(Constants.EXPORT_PACKAGE)));
@@ -348,7 +348,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         assert project != null;
 
         if (!project.exists() || !project.isOpen()) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Cannot replace bnd classpath problem markers: project %s is not in the Eclipse workspace or is not open.", project.getName()), null));
+            Plugin.getDefault().getLogger()
+                    .logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Cannot replace bnd classpath problem markers: project %s is not in the Eclipse workspace or is not open.", project.getName()), null));
             return;
         }
 

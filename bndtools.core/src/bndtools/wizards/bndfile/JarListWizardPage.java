@@ -273,7 +273,7 @@ public class JarListWizardPage extends WizardPage {
                     }
                 }
             } catch (Exception e) {
-                Plugin.logError("Error inspecting JAR file: " + path.toString(), e);
+                Plugin.getDefault().getLogger().logError("Error inspecting JAR file: " + path.toString(), e);
             } finally {
                 if (jar != null)
                     jar.close();

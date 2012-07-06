@@ -123,7 +123,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             refreshBundleList();
         } catch (Exception e) {
             setErrorMessage("Error querying repository configuration.");
-            Plugin.logError("Error querying repository configuration.", e);
+            Plugin.getDefault().getLogger().logError("Error querying repository configuration.", e);
         }
 
         // Listeners

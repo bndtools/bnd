@@ -72,7 +72,7 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                     }
                 }
             } catch (Exception e) {
-                Plugin.logError("Error querying Bnd Dependency source containers.", e);
+                Plugin.getDefault().getLogger().logError("Error querying Bnd Dependency source containers.", e);
             }
         }
 

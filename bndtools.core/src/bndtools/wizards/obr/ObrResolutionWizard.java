@@ -79,7 +79,7 @@ public class ObrResolutionWizard extends Wizard {
             File pathsFile = new File(targetDir, file.getName() + PATHS_EXTENSION);
             pathsStream = new PrintStream(pathsFile, "UTF-8");
         } catch (Exception e) {
-            Plugin.logError("Unable to write resolved path list in target directory for project " + file.getProject().getName(), e);
+            Plugin.getDefault().getLogger().logError("Unable to write resolved path list in target directory for project " + file.getProject().getName(), e);
         }
 
         // Generate -runbundles and path list

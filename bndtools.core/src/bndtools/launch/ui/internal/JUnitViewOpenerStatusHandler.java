@@ -21,7 +21,7 @@ public class JUnitViewOpenerStatusHandler implements IStatusHandler {
                     IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
                     window.getActivePage().showView(BndPerspective.VIEW_ID_JUNIT_RESULTS, null, IWorkbenchPage.VIEW_VISIBLE);
                 } catch (PartInitException e) {
-                    Plugin.logError("Error showing JUnit Results view", e);
+                    Plugin.getDefault().getLogger().logError("Error showing JUnit Results view", e);
                 }
             }
         };

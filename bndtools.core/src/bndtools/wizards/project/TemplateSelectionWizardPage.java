@@ -32,7 +32,7 @@ public class TemplateSelectionWizardPage extends AbstractTemplateSelectionWizard
                         template = (IProjectTemplate) configElem.createExecutableExtension("class");
                     } catch (CoreException e) {
                         error = e.getMessage();
-                        Plugin.logError("Error loading project template", e);
+                        Plugin.getDefault().getLogger().logError("Error loading project template", e);
                     }
                     propSupport.firePropertyChange(PROP_TEMPLATE, oldTemplate, template);
                     setErrorMessage(error);

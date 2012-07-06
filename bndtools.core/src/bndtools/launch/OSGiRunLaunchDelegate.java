@@ -202,7 +202,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                     }
                 } catch (Exception e) {
                     IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error updating launch properties file.", e);
-                    Plugin.log(status);
+                    Plugin.getDefault().getLogger().logStatus(status);
                 }
             }
         };

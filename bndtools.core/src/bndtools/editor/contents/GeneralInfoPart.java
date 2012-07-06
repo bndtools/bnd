@@ -521,7 +521,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 return result;
             } catch (InvocationTargetException e) {
                 IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e.getTargetException());
-                Plugin.log(status);
+                Plugin.getDefault().getLogger().logStatus(status);
                 return Collections.emptyList();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

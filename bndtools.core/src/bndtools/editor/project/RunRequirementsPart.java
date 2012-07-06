@@ -449,7 +449,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
                 project = new Project(Central.getWorkspace(), projectDir, resource.getLocation().toFile());
             }
         } catch (Exception e) {
-            Plugin.logError("Error getting project from editor model", e);
+            Plugin.getDefault().getLogger().logError("Error getting project from editor model", e);
         }
         return project;
     }

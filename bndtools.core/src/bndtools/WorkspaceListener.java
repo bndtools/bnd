@@ -27,7 +27,7 @@ public final class WorkspaceListener extends BndListener {
                 job.schedule();
             }
         } catch (Exception e) {
-            Plugin.logError("Error refreshing workspace", e);
+            Plugin.getDefault().getLogger().logError("Error refreshing workspace", e);
         }
     }
 
@@ -37,10 +37,10 @@ public final class WorkspaceListener extends BndListener {
         errorProcessor.getInfo(workspace);
 
         for (String warning : errorProcessor.getWarnings()) {
-            Plugin.log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, warning, null));
+            Plugin.getDefault().getLogger().logStatus(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, warning, null));
         }
         for (String error : errorProcessor.getErrors()) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, error, null));
+            Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, error, null));
         }
     }
 

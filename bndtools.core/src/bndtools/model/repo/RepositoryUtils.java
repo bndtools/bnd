@@ -38,7 +38,7 @@ public class RepositoryUtils {
             }
             return repos;
         } catch (Exception e) {
-            Plugin.logError("Error loading repositories", e);
+            Plugin.getDefault().getLogger().logError("Error loading repositories", e);
             return Collections.emptyList();
         }
     }

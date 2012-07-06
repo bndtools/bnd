@@ -68,7 +68,7 @@ class LocalRepositorySelectionPage extends WizardPage {
 
             validate(workspace);
         } catch (Exception e) {
-            Plugin.logError("Error querying local repositories", e);
+            Plugin.getDefault().getLogger().logError("Error querying local repositories", e);
             setErrorMessage("Error querying local repositories, see log for details.");
         }
 

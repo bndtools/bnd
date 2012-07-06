@@ -156,7 +156,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         try {
             Central.getWorkspace().refresh();
         } catch (Exception e) {
-            Plugin.logError("Unable to refresh Bnd workspace", e);
+            Plugin.getDefault().getLogger().logError("Unable to refresh Bnd workspace", e);
         }
     }
 

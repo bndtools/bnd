@@ -76,7 +76,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         try {
             frameworkViewer.setInput(Central.getWorkspace());
         } catch (Exception e) {
-            Plugin.logError("Error accessing bnd workspace.", e);
+            Plugin.getDefault().getLogger().logError("Error accessing bnd workspace.", e);
         }
 
         Label lblExecEnv = tk.createLabel(composite, "Execution Env.:");

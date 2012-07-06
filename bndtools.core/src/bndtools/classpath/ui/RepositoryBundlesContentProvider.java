@@ -30,7 +30,7 @@ public class RepositoryBundlesContentProvider implements ITreeContentProvider {
         try {
             bsns = repoPlugin.list(null);
         } catch (Exception e) {
-            Plugin.logError("Error querying repository " + repoPlugin.getName(), e);
+            Plugin.getDefault().getLogger().logError("Error querying repository " + repoPlugin.getName(), e);
             bsns = Collections.emptyList();
         }
         return bsns.toArray(new String[bsns.size()]);

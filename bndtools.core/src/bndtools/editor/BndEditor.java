@@ -109,7 +109,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 String id = configElem.getAttribute("id");
                 if (id != null) {
                     if (pageFactories.containsKey(id))
-                        Plugin.logError("Duplicate form page ID: " + id, null);
+                        Plugin.getDefault().getLogger().logError("Duplicate form page ID: " + id, null);
                     else
                         pageFactories.put(id, new DelayedPageFactory(configElem));
                 }
@@ -194,7 +194,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 }
                 existingPointer++;
             } catch (PartInitException e) {
-                Plugin.logError("Error adding page(s) to the editor.", e);
+                Plugin.getDefault().getLogger().logError("Error adding page(s) to the editor.", e);
             }
             requiredPointer++;
         }
@@ -296,7 +296,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         try {
             boolean saveLocked = this.saving.compareAndSet(false, true);
             if (!saveLocked) {
-                Plugin.logError("Tried to save while already saving", null);
+                Plugin.getDefault().getLogger().logError("Tried to save while already saving", null);
                 return;
             }
             sourcePage.doSave(monitor);
@@ -433,7 +433,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 try {
                     model.loadFrom(docProvider.getDocument(element));
                 } catch (IOException e) {
-                    Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
+                    Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
                 }
             }
 
@@ -530,7 +530,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                             model.loadFrom(document);
                             updatePages();
                         } catch (IOException e) {
-                            Plugin.logError("Failed to reload document", e);
+                            Plugin.getDefault().getLogger().logError("Failed to reload document", e);
                         }
                     }
                 });
@@ -539,8 +539,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     }
 
     @Override
-    public Object getAdapter(@SuppressWarnings("rawtypes")
-    Class adapter) {
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         if (IContentOutlinePage.class == adapter) {
             return new BndEditorContentOutlinePage(this, model);
         }

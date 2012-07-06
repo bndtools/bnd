@@ -19,7 +19,7 @@ public class OpenBrowserActionDelegate implements IWorkbenchWindowActionDelegate
             IWebBrowser browser = browserSupport.createBrowser(6, null, null, null);
             browser.openURL(null);
         } catch (Exception e) {
-            Plugin.logError("Error opening browser", e);
+            Plugin.getDefault().getLogger().logError("Error opening browser", e);
         }
     }
 

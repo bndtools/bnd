@@ -34,8 +34,7 @@ public class ProjectBundle implements IAdaptable {
         return "ProjectBundle [project=" + project + ", bsn=" + bsn + "]";
     }
 
-    public Object getAdapter(@SuppressWarnings("rawtypes")
-    Class adapter) {
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         Object result = null;
 
         if (IFile.class.equals(adapter) || IResource.class.equals(adapter)) {
@@ -47,7 +46,7 @@ public class ProjectBundle implements IAdaptable {
                     result = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
                 }
             } catch (Exception e) {
-                Plugin.logError(MessageFormat.format("Error retrieving bundle {0} from project {1}.", bsn, project.getName()), e);
+                Plugin.getDefault().getLogger().logError(MessageFormat.format("Error retrieving bundle {0} from project {1}.", bsn, project.getName()), e);
             }
         }
         return result;

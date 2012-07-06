@@ -142,7 +142,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
             if (!currentContent.equals(lastLoaded))
                 formEditor.getBndModel().loadFrom(getDocument());
         } catch (IOException e) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
+            Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
         }
     }
 

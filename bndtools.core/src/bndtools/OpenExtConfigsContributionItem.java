@@ -63,7 +63,7 @@ public class OpenExtConfigsContributionItem extends CompoundContributionItem {
 
             return result.toArray(new IContributionItem[result.size()]);
         } catch (Exception e) {
-            Plugin.logError("Unable to find default config files", e);
+            Plugin.getDefault().getLogger().logError("Unable to find default config files", e);
             return EMPTY;
         }
 

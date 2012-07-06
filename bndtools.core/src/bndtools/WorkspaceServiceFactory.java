@@ -10,7 +10,7 @@ public class WorkspaceServiceFactory implements ServiceFactory {
         try {
             return Central.getWorkspace();
         } catch (Exception e) {
-            Plugin.logError("Unable to initialise bnd workspace.", e);
+            Plugin.getDefault().getLogger().logError("Unable to initialise bnd workspace.", e);
             throw new IllegalArgumentException("Unable to initialise bnd workspace.", e);
         }
     }

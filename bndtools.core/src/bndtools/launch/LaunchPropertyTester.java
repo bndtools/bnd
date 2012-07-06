@@ -22,7 +22,7 @@ public class LaunchPropertyTester extends PropertyTester {
 
                 return javaProject != null && javaProject.exists() && javaProject.getProject().isOpen() && javaProject.getProject().hasNature(BndProjectNature.NATURE_ID);
             } catch (CoreException e) {
-                Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error testing '" + PROP_IS_IN_BND_JAVA_PROJECT + "' property on java element.", e));
+                Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error testing '" + PROP_IS_IN_BND_JAVA_PROJECT + "' property on java element.", e));
                 return false;
             }
         }

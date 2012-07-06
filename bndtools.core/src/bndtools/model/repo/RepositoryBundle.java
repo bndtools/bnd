@@ -39,8 +39,7 @@ public class RepositoryBundle implements IAdaptable {
         return "RepositoryBundle [repo=" + repo + ", bsn=" + bsn + "]";
     }
 
-    public Object getAdapter(@SuppressWarnings("rawtypes")
-    Class adapter) {
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         Object result = null;
 
         if (IFile.class.equals(adapter)) { // ||
@@ -53,7 +52,7 @@ public class RepositoryBundle implements IAdaptable {
                     result = root.getFileForLocation(new Path(file.getAbsolutePath()));
                 }
             } catch (Exception e) {
-                Plugin.logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
+                Plugin.getDefault().getLogger().logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
             }
         } else if (File.class.equals(adapter)) {
             result = getFile();
@@ -76,7 +75,7 @@ public class RepositoryBundle implements IAdaptable {
             }
             return file;
         } catch (Exception e) {
-            Plugin.logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
+            Plugin.getDefault().getLogger().logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
             return null;
         }
     }

@@ -154,7 +154,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
                 markers = resource.findMarkers(NewBuilder.MARKER_BND_PROBLEM, true, 0);
                 loadMarkers(markers);
             } catch (CoreException e) {
-                Plugin.logError("Error retrieving problem markers", e);
+                Plugin.getDefault().getLogger().logError("Error retrieving problem markers", e);
             }
         }
 

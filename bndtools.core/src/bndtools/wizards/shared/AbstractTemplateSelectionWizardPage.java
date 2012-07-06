@@ -106,7 +106,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
                     IWebBrowser externalBrowser = browserSupport.getExternalBrowser();
                     externalBrowser.openURL(new URL((String) event.getHref()));
                 } catch (PartInitException e) {
-                    Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening external browser.", e));
+                    Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening external browser.", e));
                 } catch (MalformedURLException e) {
                     // Ignore
                 }
@@ -157,7 +157,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
                         byte[] bytes = FileUtils.readFully(htmlUrl.openStream());
                         browserText = new String(bytes, "UTF-8");
                     } catch (IOException e) {
-                        Plugin.logError("Error reading template description document.", e);
+                        Plugin.getDefault().getLogger().logError("Error reading template description document.", e);
                     }
                 }
             }

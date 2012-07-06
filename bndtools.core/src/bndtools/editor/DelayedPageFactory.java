@@ -32,7 +32,7 @@ public class DelayedPageFactory implements IFormPageFactory {
                     if (mode != null)
                         modes.add(mode);
                 } catch (Exception e) {
-                    Plugin.logError("Invalid editor page mode: " + token, e);
+                    Plugin.getDefault().getLogger().logError("Invalid editor page mode: " + token, e);
                 }
             }
         }
@@ -43,7 +43,7 @@ public class DelayedPageFactory implements IFormPageFactory {
             IFormPageFactory factory = (IFormPageFactory) configElem.createExecutableExtension("class");
             return factory.createPage(editor, model, id);
         } catch (CoreException e) {
-            Plugin.logError("Unable to create extension form page", e);
+            Plugin.getDefault().getLogger().logError("Unable to create extension form page", e);
             throw new IllegalArgumentException("Error loading extension form page", e);
         }
     }

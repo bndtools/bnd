@@ -24,7 +24,7 @@ public class OpenMainConfigHandler extends AbstractHandler {
         } catch (PartInitException e) {
             ErrorDialog.openError(HandlerUtil.getActiveWorkbenchWindowChecked(event).getShell(), "Error", "Unable to open editor", e.getStatus());
         } catch (Exception e) {
-            Plugin.logError("Error retrieving bnd configuration file", e);
+            Plugin.getDefault().getLogger().logError("Error retrieving bnd configuration file", e);
         }
 
         return null;

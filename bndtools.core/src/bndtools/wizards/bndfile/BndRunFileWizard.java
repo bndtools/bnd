@@ -101,7 +101,7 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
             URL entry = bundle.getEntry(path);
             return entry != null ? entry.openStream() : null;
         } catch (IOException e) {
-            Plugin.logError(String.format("Unable to open template entry: %s in bundle %s", path, bsn), e);
+            Plugin.getDefault().getLogger().logError(String.format("Unable to open template entry: %s in bundle %s", path, bsn), e);
             return null;
         }
     }

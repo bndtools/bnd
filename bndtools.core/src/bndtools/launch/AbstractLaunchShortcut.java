@@ -195,7 +195,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
 
             return result.toArray(new ILaunchConfiguration[result.size()]);
         } catch (CoreException e) {
-            Plugin.logError("Error retrieving launch configurations.", e);
+            Plugin.getDefault().getLogger().logError("Error retrieving launch configurations.", e);
             return null;
         }
     }

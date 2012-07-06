@@ -91,7 +91,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
 
             bsnMap.put(file, Pair.newInstance(bsn, version));
         } catch (Exception e) {
-            Plugin.logError("Error reading JAR file content", e);
+            Plugin.getDefault().getLogger().logError("Error reading JAR file content", e);
         } finally {
             if (jar != null)
                 jar.close();

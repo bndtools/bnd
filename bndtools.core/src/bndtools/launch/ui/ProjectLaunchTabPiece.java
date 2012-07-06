@@ -168,7 +168,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
             Workspace workspace = Central.getWorkspace();
             projects = workspace.getAllProjects();
         } catch (Exception e) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Internal error querying projects.", e));
+            Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Internal error querying projects.", e));
             return Collections.emptyList();
         }
         List<IProject> result = new ArrayList<IProject>(projects.size());
@@ -230,7 +230,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
                     return MessageFormat.format("Project {0} is not a Bnd OSGi project.", targetName);
                 }
             } catch (CoreException e) {
-                Plugin.logError("Error checking for Bnd OSGi project nature", e);
+                Plugin.getDefault().getLogger().logError("Error checking for Bnd OSGi project nature", e);
                 return "Error checking for Bnd OSGi project nature";
             }
         } else if (targetResource.getType() == IResource.FILE) {

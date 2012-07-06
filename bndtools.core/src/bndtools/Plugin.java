@@ -10,6 +10,11 @@
  *******************************************************************************/
 package bndtools;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -67,21 +72,50 @@ public class Plugin extends AbstractUIPlugin {
 
     private volatile Central central;
 
-    private final ILogger logger = new ILogger() {
-        public void logError(String message, Throwable exception) {
-            getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
+    private volatile ILogger logger = new ILogger() {
+        private String getStackTrace(Throwable t) {
+            if (t == null) {
+                return "No exception trace is available";
+            }
+
+            final Writer sw = new StringWriter();
+            final PrintWriter pw = new PrintWriter(sw);
+            t.printStackTrace(pw);
+            return sw.toString();
         }
 
-        public void logWarning(String message, Throwable exception) {
-            getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, 0, message, exception));
+        private String constructSysErrString(IStatus status) {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd HHmmss.SSS");
+            String formattedDate = formatter.format(new Date());
+            return String.format("%s - %s - %s - %s%n%s", formattedDate, status.getSeverity(), status.getPlugin(), status.getMessage(), getStackTrace(status.getException()));
         }
 
-        public void logInfo(String message, Throwable exception) {
-            getLog().log(new Status(IStatus.INFO, PLUGIN_ID, 0, message, exception));
+        private Status constructStatus(int status, String message, Throwable exception) {
+            return new Status(status, PLUGIN_ID, 0, message, exception);
+        }
+
+        private void log(int status, String message, Throwable exception) {
+            logStatus(constructStatus(status, message, exception));
         }
 
         public void logStatus(IStatus status) {
+            if (plugin == null) {
+                System.err.println(constructSysErrString(status));
+                return;
+            }
             getLog().log(status);
+        }
+
+        public void logError(String message, Throwable exception) {
+            log(IStatus.ERROR, message, exception);
+        }
+
+        public void logWarning(String message, Throwable exception) {
+            log(IStatus.WARNING, message, exception);
+        }
+
+        public void logInfo(String message, Throwable exception) {
+            log(IStatus.INFO, message, exception);
         }
     };
 
@@ -145,7 +179,7 @@ public class Plugin extends AbstractUIPlugin {
                     isp.start();
                 }
             } catch (CoreException e) {
-                logError("Error executing startup participant", e);
+                logger.logError("Error executing startup participant", e);
             }
         }
     }
@@ -155,7 +189,7 @@ public class Plugin extends AbstractUIPlugin {
             try {
                 isp.stop();
             } catch (Exception e) {
-                logError("Error stopping startup participant", e);
+                logger.logError("Error stopping startup participant", e);
             }
         }
     }
@@ -288,29 +322,6 @@ public class Plugin extends AbstractUIPlugin {
 
     public ILogger getLogger() {
         return logger;
-    }
-
-    /**
-     * @deprecated Use {@link #getLogger() instead}
-     * @param status
-     */
-    @Deprecated
-    public static void log(IStatus status) {
-        Plugin instance = plugin;
-        if (instance != null) {
-            instance.getLog().log(status);
-        } else {
-            System.err.println(String.format("Unable to print to log for %s: bundle has been stopped.", Plugin.PLUGIN_ID));
-        }
-    }
-
-    /**
-     * @deprecated Use {@link #getLogger() instead}
-     * @param status
-     */
-    @Deprecated
-    public static void logError(String message, Throwable exception) {
-        log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
     }
 
     public Central getCentral() {

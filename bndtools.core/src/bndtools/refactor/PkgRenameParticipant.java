@@ -100,7 +100,7 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                     bndFileText = FileUtils.readFully(resource).get();
                 } catch (Exception e) {
                     String str = "Could not read file " + proxy.getName();
-                    Plugin.logError(str, e);
+                    Plugin.getDefault().getLogger().logError(str, e);
                     throw new OperationCanceledException(str);
                 }
 

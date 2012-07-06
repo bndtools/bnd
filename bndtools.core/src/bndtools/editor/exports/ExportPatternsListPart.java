@@ -244,7 +244,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
             File projectDir = resource.getProject().getLocation().toFile();
             project = Workspace.getProject(projectDir);
         } catch (Exception e) {
-            Plugin.logError("Error getting project from editor model", e);
+            Plugin.getDefault().getLogger().logError("Error getting project from editor model", e);
         }
         return project;
     }

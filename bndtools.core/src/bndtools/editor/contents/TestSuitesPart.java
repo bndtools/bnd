@@ -413,7 +413,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
                                 }
                             }
                         } catch (JavaModelException e) {
-                            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.TestSuitesPart_errorJavaType, e));
+                            Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.TestSuitesPart_errorJavaType, e));
                         }
                     }
                 }

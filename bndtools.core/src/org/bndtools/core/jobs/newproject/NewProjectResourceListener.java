@@ -53,7 +53,7 @@ public class NewProjectResourceListener implements IResourceChangeListener {
             }
 
         } catch (CoreException e) {
-            Plugin.logError("An error occurred while analysing the resource change", e);
+            Plugin.getDefault().getLogger().logError("An error occurred while analysing the resource change", e);
         }
     }
 

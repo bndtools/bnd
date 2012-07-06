@@ -170,7 +170,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
                             try {
                                 IDE.openEditor(page, file);
                             } catch (PartInitException e) {
-                                Plugin.logError("Error opening editor for " + file, e);
+                                Plugin.getDefault().getLogger().logError("Error opening editor for " + file, e);
                             }
                         }
                     }

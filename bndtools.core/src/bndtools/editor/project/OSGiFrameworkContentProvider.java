@@ -52,11 +52,11 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
                                 if (framework != null)
                                     frameworks.add(new OSGiFramework(frameworkName, bsn, version, iconUrl));
                             } catch (Exception e) {
-                                Plugin.logError(String.format("Error finding repository entry for OSGi framework %s, version %s.", bsn, version.toString()), e);
+                                Plugin.getDefault().getLogger().logError(String.format("Error finding repository entry for OSGi framework %s, version %s.", bsn, version.toString()), e);
                             }
                         }
                 } catch (Exception e) {
-                    Plugin.logError(String.format("Error searching repository for OSGi framework %s.", bsn), e);
+                    Plugin.getDefault().getLogger().logError(String.format("Error searching repository for OSGi framework %s.", bsn), e);
                 }
             }
         }

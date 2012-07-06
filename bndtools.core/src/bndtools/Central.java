@@ -155,7 +155,7 @@ public class Central {
         IFile[] matches = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(file.toURI());
 
         if (matches == null || matches.length != 1) {
-            Plugin.logError("Cannot find workspace location for bnd configuration file " + file, null);
+            Plugin.getDefault().getLogger().logError("Cannot find workspace location for bnd configuration file " + file, null);
             return null;
         }
 

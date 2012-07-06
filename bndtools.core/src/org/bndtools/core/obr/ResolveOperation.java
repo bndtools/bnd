@@ -303,7 +303,7 @@ public class ResolveOperation implements IRunnableWithProgress {
                         result.add(resource);
                         resolver.add(resource);
                     } catch (IOException e) {
-                        Plugin.logError(Messages.ResolveOperation_errorReadingBundle + file, e);
+                        Plugin.getDefault().getLogger().logError(Messages.ResolveOperation_errorReadingBundle + file, e);
                     } finally {
                         if (stream != null)
                             stream.close();
@@ -311,7 +311,7 @@ public class ResolveOperation implements IRunnableWithProgress {
                 }
             }
         } catch (Exception e) {
-            Plugin.logError(Messages.ResolveOperation_errorGettingBuilders + runFile.getProject(), e);
+            Plugin.getDefault().getLogger().logError(Messages.ResolveOperation_errorGettingBuilders + runFile.getProject(), e);
         }
         return result;
     }

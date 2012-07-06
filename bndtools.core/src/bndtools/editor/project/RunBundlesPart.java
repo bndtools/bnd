@@ -68,7 +68,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
             if (model != null)
                 projectBuilders.addAll(model.getSubBuilders());
         } catch (Exception e) {
-            Plugin.logError(Messages.RunBundlesPart_errorGettingBuilders, e);
+            Plugin.getDefault().getLogger().logError(Messages.RunBundlesPart_errorGettingBuilders, e);
         }
     }
 

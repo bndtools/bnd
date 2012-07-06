@@ -90,9 +90,9 @@ public class AnalyseBundleResolutionJob extends Job {
                     builderMap.put(inputFile, builder);
                     mergeCapabilities(exports, usedBy, bundleVersions, builder);
                 } catch (CoreException e) {
-                    Plugin.logError("Error in bnd resolution analysis.", e);
+                    Plugin.getDefault().getLogger().logError("Error in bnd resolution analysis.", e);
                 } catch (Exception e) {
-                    Plugin.logError("Error in bnd resolution analysis.", e);
+                    Plugin.getDefault().getLogger().logError("Error in bnd resolution analysis.", e);
                 }
             }
         }
@@ -223,7 +223,7 @@ public class AnalyseBundleResolutionJob extends Job {
                 try {
                     version = new Version(versionStr);
                 } catch (IllegalArgumentException e) {
-                    Plugin.logError("Error parsing version of bundle: " + bsn, e);
+                    Plugin.getDefault().getLogger().logError("Error parsing version of bundle: " + bsn, e);
                 }
             }
             if (version == null)
@@ -268,7 +268,7 @@ public class AnalyseBundleResolutionJob extends Job {
             try {
                 classes = builder.getClasses("", "IMPORTING", pkgName);
             } catch (Exception e) {
-                Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying importing classes.", e));
+                Plugin.getDefault().getLogger().logStatus(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying importing classes.", e));
             }
             for (Clazz clazz : classes) {
                 String fqn = clazz.getFQN();
