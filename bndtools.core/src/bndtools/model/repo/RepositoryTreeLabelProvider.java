@@ -39,12 +39,11 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
 
     @Override
     public void update(ViewerCell cell) {
-        @SuppressWarnings("unused")
-        WorkspaceObrProvider workspaceObr;
         try {
-            workspaceObr = Central.getWorkspaceObrProvider();
+            /* initialise WorkspaceObrProvider */
+            Central.getWorkspaceObrProvider();
         } catch (Exception e) {
-            workspaceObr = null;
+            /* ignore */
         }
 
         Object element = cell.getElement();
