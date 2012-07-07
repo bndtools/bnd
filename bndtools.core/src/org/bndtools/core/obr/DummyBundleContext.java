@@ -127,13 +127,13 @@ public class DummyBundleContext implements BundleContext {
         return null;
     }
 
-    public ServiceRegistration registerService(String[] arg0, Object arg1, Dictionary arg2) {
+    public ServiceRegistration registerService(String[] arg0, Object arg1, @SuppressWarnings("rawtypes") Dictionary arg2) {
         if (DEBUG)
             System.out.println("--- registerService(String[], Object, Dictionary)");
         return null;
     }
 
-    public ServiceRegistration registerService(String arg0, Object arg1, Dictionary arg2) {
+    public ServiceRegistration registerService(String arg0, Object arg1, @SuppressWarnings("rawtypes") Dictionary arg2) {
         if (DEBUG)
             System.out.println("--- registerService(String, Object, Dictionary)");
         return null;

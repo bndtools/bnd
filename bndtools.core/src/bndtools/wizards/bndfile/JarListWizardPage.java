@@ -206,6 +206,7 @@ public class JarListWizardPage extends WizardPage {
             }
         });
         btnRemove.addSelectionListener(new SelectionAdapter() {
+            @SuppressWarnings("unchecked")
             @Override
             public void widgetSelected(SelectionEvent e) {
                 removeFromPaths(((IStructuredSelection) viewer.getSelection()).toList());
