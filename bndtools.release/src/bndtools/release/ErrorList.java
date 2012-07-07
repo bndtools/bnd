@@ -52,10 +52,10 @@ public class ErrorList {
 		container.setLayout(gridLayout);
 		container.setLayoutData(new GridData(GridData.FILL, GridData.FILL,
 				true, true));
-		addErrorItems(container);
+		addErrorItems();
 	}
 
-	private void addErrorItems(Composite parent) {
+	private void addErrorItems() {
 		
 		Composite comp = new Composite(container, SWT.NONE);
 		GridLayout gridLayout = new GridLayout();

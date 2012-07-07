@@ -37,7 +37,6 @@ public class ProjectListControl {
 		projects.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent e) {
 				selectionListener.widgetSelected(e);
-				handleTableSelection(e);
 			}
 			public void widgetDefaultSelected(SelectionEvent e) {
 				selectionListener.widgetDefaultSelected(e);
@@ -61,10 +60,6 @@ public class ProjectListControl {
 		tableCol.setWidth(50);
 	}
 
-	protected void handleTableSelection(SelectionEvent e) {
-		/* ignore */
-	}
-	
 	public void addItemToTable(ProjectDiff projectDiff) {
 		TableItem ti = new TableItem(projects, SWT.NONE, projects.getItemCount());
 		ti.setChecked(projectDiff.isRelease());

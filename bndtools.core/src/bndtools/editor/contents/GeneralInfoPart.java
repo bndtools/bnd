@@ -54,7 +54,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -167,7 +166,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         txtActivator = toolkit.createText(composite, "", SWT.BORDER);
         txtActivator.setMessage("Enter activator class name");
 
-        Label lblComponents = toolkit.createLabel(composite, "Declarative Services:");
+        toolkit.createLabel(composite, "Declarative Services:");
         cmbComponents = new Combo(composite, SWT.READ_ONLY);
         cmbComponents.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 

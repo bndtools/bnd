@@ -134,7 +134,7 @@ public class ReleaseHelper {
 
 		if (!preUpdateProjectVersions(context, participants)) {
 			postRelease(context, participants, false);
-			displayErrors(context, Scope.PRE_UPDATE_VERSIONS);
+			displayErrors(context);
 			return false;
 		}
 
@@ -149,7 +149,7 @@ public class ReleaseHelper {
 		
 		if (!preRelease(context, participants)) {
 			postRelease(context, participants, false);
-			displayErrors(context, Scope.PRE_RELEASE);
+			displayErrors(context);
 			return false;
 		}
 
@@ -191,7 +191,7 @@ public class ReleaseHelper {
 		}
 	}
 
-	private static void displayErrors(ReleaseContext context, Scope scope) {
+	private static void displayErrors(ReleaseContext context) {
 
 		final String name = context.getProject().getName();
 		final List<Error> errors = context.getErrorHandler().getErrors();
@@ -229,7 +229,7 @@ public class ReleaseHelper {
 		boolean proceed = preJarRelease(context, participants, jar);
 		if (!proceed) {
 			postRelease(context, participants, false);
-			displayErrors(context, Scope.PRE_JAR_RELEASE);
+			displayErrors(context);
 			return false;
 		}
 
@@ -249,7 +249,7 @@ public class ReleaseHelper {
 			handleReleaseErrors(context, context.getProject(), symbName, version);
 
 			postRelease(context, participants, false);
-			displayErrors(context, Scope.POST_JAR_RELEASE);
+			displayErrors(context);
 			return false;
 		}
 		context.addReleasedJar(releasedJar);
