@@ -58,7 +58,7 @@ public class CapabilityImpl implements Capability {
     }
 
     public Property[] getProperties() {
-        return (Property[]) m_list.toArray(new Property[m_list.size()]);
+        return m_list.toArray(new Property[m_list.size()]);
     }
 
     public void addProperty(Property prop) {

@@ -51,7 +51,7 @@ public class RepositoryImpl implements Repository {
 
     public Resource[] getResources() {
         if (m_resources == null) {
-            m_resources = (Resource[]) m_resourceSet.toArray(new Resource[m_resourceSet.size()]);
+            m_resources = m_resourceSet.toArray(new Resource[m_resourceSet.size()]);
             Arrays.sort(m_resources, new ResourceComparator());
 
         }

@@ -111,7 +111,7 @@ public class ResourceImpl implements Resource {
     }
 
     public Requirement[] getRequirements() {
-        return (Requirement[]) m_reqList.toArray(new Requirement[m_reqList.size()]);
+        return m_reqList.toArray(new Requirement[m_reqList.size()]);
     }
 
     public void addRequire(Requirement req) {
@@ -119,7 +119,7 @@ public class ResourceImpl implements Resource {
     }
 
     public Capability[] getCapabilities() {
-        return (Capability[]) m_capList.toArray(new Capability[m_capList.size()]);
+        return m_capList.toArray(new Capability[m_capList.size()]);
     }
 
     public void addCapability(Capability cap) {
@@ -132,7 +132,7 @@ public class ResourceImpl implements Resource {
         if (catList == null) {
             return new String[0];
         }
-        return (String[]) catList.toArray(new String[catList.size()]);
+        return catList.toArray(new String[catList.size()]);
     }
 
     public void addCategory(String category) {
@@ -184,8 +184,8 @@ public class ResourceImpl implements Resource {
     private void convertURIs() {
         if (m_uris != null) {
             for (Iterator<String> it = m_uris.keySet().iterator(); it.hasNext();) {
-                String key = (String) it.next();
-                String val = (String) m_uris.get(key);
+                String key = it.next();
+                String val = m_uris.get(key);
                 m_map.put(key, resolveUri(val));
             }
             m_uris = null;

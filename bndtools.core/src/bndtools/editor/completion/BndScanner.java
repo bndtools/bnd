@@ -56,7 +56,7 @@ public class BndScanner extends RuleBasedScanner {
                 } while (c != ICharacterScanner.EOF && isWordPart((char) c));
                 scanner.unread();
 
-                IToken token = (IToken) keyWords.get(sb.toString());
+                IToken token = keyWords.get(sb.toString());
                 if (token != null)
                     return token;
                 return bsvc.T_DEFAULT;
