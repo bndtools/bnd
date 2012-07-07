@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 
 public class CnfSetupUserConfirmationWizardPage extends WizardPage {
@@ -144,8 +145,12 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dialog = new DirectoryDialog(getShell());
                 String path = dialog.open();
-                if (path != null)
+                if (path != null) {
+                    String cnf = System.getProperty("file.separator") + Workspace.CNFDIR;
+                    if (!path.endsWith(cnf))
+                        path = path + cnf;
                     txtExternalLocation.setText(path);
+                }
             }
         });
 
