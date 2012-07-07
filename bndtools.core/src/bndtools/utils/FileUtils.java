@@ -71,9 +71,13 @@ public class FileUtils {
     }
 
     public static void writeFully(IDocument document, IFile file, boolean createIfAbsent) throws CoreException {
+        writeFully(document.get(), file, createIfAbsent);
+    }
+
+    public static void writeFully(String text, IFile file, boolean createIfAbsent) throws CoreException {
         ByteArrayInputStream inputStream;
         try {
-            inputStream = new ByteArrayInputStream(document.get().getBytes("UTF-8"));
+            inputStream = new ByteArrayInputStream(text.getBytes(file.getCharset(true)));
         } catch (UnsupportedEncodingException e) {
             return;
         }

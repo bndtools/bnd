@@ -10,8 +10,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.ui.forms.editor.IFormPage;
 
+import aQute.bnd.build.model.BndEditModel;
 import bndtools.Logger;
-import bndtools.api.IBndModel;
 import bndtools.api.ILogger;
 
 public class DelayedPageFactory implements IFormPageFactory {
@@ -39,7 +39,7 @@ public class DelayedPageFactory implements IFormPageFactory {
         }
     }
 
-    public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
+    public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
         try {
             IFormPageFactory factory = (IFormPageFactory) configElem.createExecutableExtension("class");
             return factory.createPage(editor, model, id);

@@ -41,15 +41,15 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
 import aQute.lib.osgi.Constants;
 import bndtools.Central;
 import bndtools.Plugin;
-import bndtools.api.IBndModel;
 
 public class PluginPathPart extends SectionPart implements PropertyChangeListener {
 
     private TableViewer viewer;
-    private IBndModel model;
+    private BndEditModel model;
     private List<String> data;
     private ToolItem removeItem;
 
@@ -134,7 +134,7 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        model = (IBndModel) form.getInput();
+        model = (BndEditModel) form.getInput();
         model.addPropertyChangeListener(Constants.PLUGINPATH, this);
     }
 

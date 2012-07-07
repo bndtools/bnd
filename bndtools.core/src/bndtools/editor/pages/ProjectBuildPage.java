@@ -34,9 +34,9 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.model.BndEditModel;
 import bndtools.Logger;
 import bndtools.Plugin;
-import bndtools.api.IBndModel;
 import bndtools.api.ILogger;
 import bndtools.builder.NewBuilder;
 import bndtools.classpath.BndContainerInitializer;
@@ -50,7 +50,7 @@ import bndtools.utils.MessageHyperlinkAdapter;
 public class ProjectBuildPage extends FormPage implements IPriority, IResourceChangeListener {
     private static final ILogger logger = Logger.getLogger();
 
-    private final IBndModel model;
+    private final BndEditModel model;
     private final Image imgError = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK);
     private final Image imgWarning = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_WARN_TSK);
 
@@ -64,7 +64,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
     private ExtendedFormEditor editor;
 
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
-        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new ProjectBuildPage(editor, model, id, "Build");
         }
 
@@ -73,7 +73,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         }
     };
 
-    private ProjectBuildPage(ExtendedFormEditor editor, IBndModel model, String id, String title) {
+    private ProjectBuildPage(ExtendedFormEditor editor, BndEditModel model, String id, String title) {
         super(editor, id, title);
         this.editor = editor;
         this.model = model;

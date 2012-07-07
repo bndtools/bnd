@@ -62,12 +62,16 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.conversions.Converter;
+import aQute.bnd.build.model.conversions.EnumConverter;
+import bndtools.BndConstants;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.ResolveMode;
 import bndtools.editor.common.IPriority;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.editor.model.IDocumentWrapper;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
@@ -93,10 +97,12 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     private final Map<String,IFormPageFactory> pageFactories = new LinkedHashMap<String,IFormPageFactory>();
 
-    private final BndtoolsEditModel model = new BndtoolsEditModel();
+    private final BndEditModel model = new BndEditModel();
     private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
 
     private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
+
+    private final Converter<ResolveMode,String> resolveModeConverter = EnumConverter.create(ResolveMode.class, ResolveMode.manual);
 
     public BndEditor() {
         pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
@@ -234,7 +240,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             commitPages(true);
             sourcePage.refresh();
         }
-        ResolveMode resolveMode = model.getResolveMode();
+
+        ResolveMode resolveMode = resolveModeConverter.convert((String) model.genericGet(BndConstants.RESOLVE_MODE));
 
         // If auto resolve, then resolve and save in background thread.
         if (resolveMode == ResolveMode.auto && !PlatformUI.getWorkbench().isClosing()) {
@@ -413,7 +420,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
         IDocument document = docProvider.getDocument(input);
         try {
-            model.loadFrom(document);
+            model.loadFrom(new IDocumentWrapper(document));
             model.setProjectFile(Project.BNDFILE.equals(input.getName()));
 
             if (resource != null) {
@@ -434,7 +441,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
             public void elementContentReplaced(Object element) {
                 try {
-                    model.loadFrom(docProvider.getDocument(element));
+                    model.loadFrom(new IDocumentWrapper(docProvider.getDocument(element)));
                 } catch (IOException e) {
                     logger.logError("Error loading model from document.", e);
                 }
@@ -479,7 +486,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         buildFileImg.dispose();
     }
 
-    public BndtoolsEditModel getBndModel() {
+    public BndEditModel getEditModel() {
         return this.model;
     }
 
@@ -530,7 +537,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, new Runnable() {
                     public void run() {
                         try {
-                            model.loadFrom(document);
+                            model.loadFrom(new IDocumentWrapper(document));
                             updatePages();
                         } catch (IOException e) {
                             logger.logError("Failed to reload document", e);

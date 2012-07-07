@@ -1,8 +1,10 @@
 package bndtools.api;
 
+import aQute.bnd.build.model.BndEditModel;
+
 public class EmptyTemplate implements IProjectTemplate {
 
-    public void modifyInitialBndModel(IBndModel model) {
+    public void modifyInitialBndModel(BndEditModel model) {
         // noop
     }
 

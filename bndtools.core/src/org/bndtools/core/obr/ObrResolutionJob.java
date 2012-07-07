@@ -6,18 +6,18 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
 import bndtools.Plugin;
-import bndtools.api.EE;
-import bndtools.api.IBndModel;
 
 public class ObrResolutionJob extends Job {
 
     private final IFile runFile;
-    private final IBndModel model;
+    private final BndEditModel model;
 
     private ObrResolutionResult result;
 
-    public ObrResolutionJob(IFile runFile, IBndModel model) {
+    public ObrResolutionJob(IFile runFile, BndEditModel model) {
         super(Messages.ObrResolutionJob_jobName);
         this.runFile = runFile;
         this.model = model;

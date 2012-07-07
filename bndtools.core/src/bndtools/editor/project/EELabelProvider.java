@@ -2,7 +2,7 @@ package bndtools.editor.project;
 
 import org.eclipse.jface.viewers.LabelProvider;
 
-import bndtools.api.EE;
+import aQute.bnd.build.model.EE;
 
 public class EELabelProvider extends LabelProvider {
     @Override

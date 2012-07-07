@@ -33,9 +33,9 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.ImportPattern;
-import bndtools.api.IBndModel;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.common.SaneDetailsPart;
 import bndtools.editor.contents.BundleCalculatedImportsPart;
@@ -50,7 +50,7 @@ import bndtools.utils.MessageHyperlinkAdapter;
 
 public class BundleContentPage extends FormPage {
 
-    private final IBndModel model;
+    private final BndEditModel model;
 
     private Color greyTitleBarColour;
 
@@ -63,7 +63,7 @@ public class BundleContentPage extends FormPage {
     private ImportPatternsDetailsPage importDetailsPage;
 
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
-        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new BundleContentPage(editor, model, id, "Contents");
         }
 
@@ -72,7 +72,7 @@ public class BundleContentPage extends FormPage {
         }
     };
 
-    public BundleContentPage(FormEditor editor, IBndModel model, String id, String title) {
+    public BundleContentPage(FormEditor editor, BndEditModel model, String id, String title) {
         super(editor, id, title);
         this.model = model;
     }

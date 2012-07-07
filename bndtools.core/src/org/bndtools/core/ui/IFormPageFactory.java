@@ -2,7 +2,7 @@ package org.bndtools.core.ui;
 
 import org.eclipse.ui.forms.editor.IFormPage;
 
-import bndtools.api.IBndModel;
+import aQute.bnd.build.model.BndEditModel;
 
 public interface IFormPageFactory {
 
@@ -10,7 +10,7 @@ public interface IFormPageFactory {
         build, run, bundle, workspace
     }
 
-    IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException;
+    IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException;
 
     boolean supportsMode(Mode mode);
 }

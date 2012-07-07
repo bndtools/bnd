@@ -18,12 +18,12 @@ import org.eclipse.jface.wizard.Wizard;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.model.BndEditModel;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Jar;
 import aQute.lib.osgi.Processor;
 import aQute.lib.osgi.URLResource;
 import bndtools.Plugin;
-import bndtools.api.IBndModel;
 
 public class ExecutableJarExportWizard extends Wizard implements IRunDescriptionExportWizard {
 
@@ -35,7 +35,7 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
         addPage(destinationPage);
     }
 
-    public void setBndModel(IBndModel model, Project bndProject) {
+    public void setBndModel(BndEditModel model, Project bndProject) {
         this.bndProject = bndProject;
     }
 

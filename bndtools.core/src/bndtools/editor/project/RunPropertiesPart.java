@@ -5,9 +5,9 @@ import java.util.Map;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.lib.osgi.Constants;
 import bndtools.editor.common.PropertyTableSectionPart;
-import bndtools.editor.model.BndtoolsEditModel;
 
 public class RunPropertiesPart extends PropertyTableSectionPart {
 
@@ -19,12 +19,12 @@ public class RunPropertiesPart extends PropertyTableSectionPart {
     }
 
     @Override
-    protected Map<String,String> loadProperties(BndtoolsEditModel model) {
+    protected Map<String,String> loadProperties(BndEditModel model) {
         return model.getRunProperties();
     }
 
     @Override
-    protected void saveProperties(BndtoolsEditModel model, Map<String,String> props) {
+    protected void saveProperties(BndEditModel model, Map<String,String> props) {
         model.setRunProperties(props);
     }
 }

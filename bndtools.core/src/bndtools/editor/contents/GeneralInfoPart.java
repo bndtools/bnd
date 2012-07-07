@@ -70,6 +70,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Constants;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.ServiceComponent;
 import aQute.libg.header.Attrs;
@@ -79,7 +80,6 @@ import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.api.ILogger;
-import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.utils.CachingContentProposalProvider;
 import bndtools.utils.JavaContentProposal;
 import bndtools.utils.JavaContentProposalLabelProvider;
@@ -124,7 +124,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     private final Set<String> editablePropertySet;
     private final Set<String> dirtySet = new HashSet<String>();
 
-    private BndtoolsEditModel model;
+    private BndEditModel model;
     private ComponentChoice componentChoice;
 
     private Text txtVersion;
@@ -457,7 +457,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        this.model = (BndtoolsEditModel) form.getInput();
+        this.model = (BndEditModel) form.getInput();
         this.model.addPropertyChangeListener(this);
     }
 

@@ -23,10 +23,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ImportPattern;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
-import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 
 public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
@@ -114,12 +114,12 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
     }
 
     @Override
-    protected List<ImportPattern> loadFromModel(BndtoolsEditModel model) {
+    protected List<ImportPattern> loadFromModel(BndEditModel model) {
         return model.getImportPatterns();
     }
 
     @Override
-    protected void saveToModel(BndtoolsEditModel model, List< ? extends ImportPattern> clauses) {
+    protected void saveToModel(BndEditModel model, List< ? extends ImportPattern> clauses) {
         model.setImportPatterns(clauses);
     }
 }

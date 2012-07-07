@@ -25,22 +25,22 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.IO;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Jar;
+import aQute.lib.properties.Document;
 import aQute.service.reporter.Reporter;
 import bndtools.diff.JarDiff;
 import bndtools.diff.PackageInfo;
-import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.release.api.IReleaseParticipant;
 import bndtools.release.api.IReleaseParticipant.Scope;
 import bndtools.release.api.ReleaseContext;
@@ -82,10 +82,16 @@ public class ReleaseHelper {
 				file = context.getProject().getPropertiesFile();
 			}
 			final IFile resource = (IFile) ReleaseUtils.toResource(file);
+			
+			final Document document;
+			if (resource.exists()) {
+				byte[] bytes = FileUtils.readFully(resource.getContents());
+				document = new Document(new String(bytes, resource.getCharset()));
+			} else {
+				document = new Document("");
+			}
 
-			IDocument document = FileUtils.readFully(resource);
-
-			final BndtoolsEditModel model = new BndtoolsEditModel();
+			final BndEditModel model = new BndEditModel();
 			model.loadFrom(document);
 
 			String savedVersion = model.getBundleVersionString();
@@ -94,14 +100,13 @@ public class ReleaseHelper {
 			}
 			model.setBundleVersion(bundleVersion);
 
-			final IDocument finalDoc = document;
+			final Document finalDoc = document;
 			Runnable run = new Runnable() {
-
 				public void run() {
 					model.saveChangesTo(finalDoc);
 
 					try {
-						FileUtils.writeFully(finalDoc, resource, false);
+						FileUtils.writeFully(finalDoc.get(), resource, false);
 						resource.refreshLocal(IResource.DEPTH_ZERO, null);
 					} catch (CoreException e) {
 						throw new RuntimeException(e);

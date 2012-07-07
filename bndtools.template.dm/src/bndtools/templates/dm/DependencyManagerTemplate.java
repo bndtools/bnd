@@ -5,16 +5,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
+
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.lib.osgi.resource.CapReqBuilder;
 import aQute.libg.header.Attrs;
-import bndtools.api.EE;
-import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
-import bndtools.api.Requirement;
 
 public class DependencyManagerTemplate implements IProjectTemplate {
-    public void modifyInitialBndModel(IBndModel model) {
+    public void modifyInitialBndModel(BndEditModel model) {
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
         List<VersionedClause> tmp;
 
@@ -46,7 +49,7 @@ public class DependencyManagerTemplate implements IProjectTemplate {
         addRunBundle("org.apache.felix.log", runPath, requires, false);
 
         model.setBundleActivator("org.example.Activator");
-        model.setRunRequire(requires);
+        model.setRunRequires(requires);
         model.setRunBundles(runPath);
         model.setRunFramework("org.apache.felix.framework");
         model.setEE(EE.JavaSE_1_6);
@@ -57,7 +60,8 @@ public class DependencyManagerTemplate implements IProjectTemplate {
     private static void addRunBundle(String bsn, Collection<? super VersionedClause> runPath, Collection<? super Requirement> requires, boolean inferred) {
         runPath.add(new VersionedClause(bsn, new Attrs()));
         if (!inferred) {
-            requires.add(new Requirement("bundle", "(symbolicname=" + bsn + ")"));
+            Requirement req = new CapReqBuilder("bundle").addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(symbolicname=" + bsn + ")").buildSyntheticRequirement();
+            requires.add(req);
         }
     }
 

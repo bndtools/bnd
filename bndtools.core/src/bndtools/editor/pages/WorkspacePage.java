@@ -13,8 +13,8 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
-import bndtools.api.IBndModel;
 import bndtools.editor.workspace.PluginPathPart;
 import bndtools.editor.workspace.PluginsPart;
 import bndtools.editor.workspace.WorkspaceMainPart;
@@ -22,11 +22,11 @@ import bndtools.utils.MessageHyperlinkAdapter;
 
 public class WorkspacePage extends FormPage {
 
-    private final IBndModel model;
+    private final BndEditModel model;
     private PluginsPart pluginsPart;
 
     public static final IFormPageFactory MAIN_FACTORY = new IFormPageFactory() {
-        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(true, editor, model, id, "Workspace");
         }
 
@@ -36,7 +36,7 @@ public class WorkspacePage extends FormPage {
     };
 
     public static final IFormPageFactory EXT_FACTORY = new IFormPageFactory() {
-        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(false, editor, model, id, "Workspace");
         }
 
@@ -47,7 +47,7 @@ public class WorkspacePage extends FormPage {
 
     private final boolean mainBuildFile;
 
-    private WorkspacePage(boolean mainBuildFile, FormEditor editor, IBndModel model, String id, String title) {
+    private WorkspacePage(boolean mainBuildFile, FormEditor editor, BndEditModel model, String id, String title) {
         super(editor, id, title);
         this.mainBuildFile = mainBuildFile;
         this.model = model;

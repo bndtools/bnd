@@ -17,18 +17,18 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.ImportPattern;
-import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.editor.pages.BundleContentPage;
 import bndtools.editor.pages.WorkspacePage;
 
 public class BndEditorContentOutlinePage extends ContentOutlinePage {
 
-    private final BndtoolsEditModel model;
+    private final BndEditModel model;
     private final BndEditor editor;
 
-    public BndEditorContentOutlinePage(BndEditor editor, BndtoolsEditModel model) {
+    public BndEditorContentOutlinePage(BndEditor editor, BndEditModel model) {
         this.editor = editor;
         this.model = model;
     }

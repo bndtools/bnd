@@ -6,9 +6,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.lib.osgi.Constants;
-import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class BuildPathPart extends RepositoryBundleSelectionPart {
@@ -29,12 +29,12 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
     }
 
     @Override
-    protected void saveToModel(BndtoolsEditModel model, List<VersionedClause> bundles) {
+    protected void saveToModel(BndEditModel model, List<VersionedClause> bundles) {
         model.setBuildPath(bundles);
     }
 
     @Override
-    protected List<VersionedClause> loadFromModel(BndtoolsEditModel model) {
+    protected List<VersionedClause> loadFromModel(BndEditModel model) {
         return model.getBuildPath();
     }
 

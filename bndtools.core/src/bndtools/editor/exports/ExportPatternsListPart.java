@@ -52,6 +52,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
@@ -60,7 +61,6 @@ import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.editor.contents.PackageInfoDialog;
-import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import bndtools.internal.pkgselection.IPackageFilter;
 import bndtools.internal.pkgselection.JavaSearchScopePackageLister;
@@ -228,19 +228,19 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
     }
 
     @Override
-    protected List<ExportedPackage> loadFromModel(BndtoolsEditModel model) {
+    protected List<ExportedPackage> loadFromModel(BndEditModel model) {
         return model.getExportedPackages();
     }
 
     @Override
-    protected void saveToModel(BndtoolsEditModel model, List< ? extends ExportedPackage> clauses) {
+    protected void saveToModel(BndEditModel model, List< ? extends ExportedPackage> clauses) {
         model.setExportedPackages(clauses);
     }
 
     Project getProject() {
         Project project = null;
         try {
-            BndtoolsEditModel model = (BndtoolsEditModel) getManagedForm().getInput();
+            BndEditModel model = (BndEditModel) getManagedForm().getInput();
             File bndFile = model.getBndResource();
             IPath path = Central.toPath(bndFile);
             IFile resource = ResourcesPlugin.getWorkspace().getRoot().getFile(path);

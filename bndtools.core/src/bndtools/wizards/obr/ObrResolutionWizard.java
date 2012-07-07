@@ -18,6 +18,7 @@ import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.lib.io.IO;
 import aQute.libg.header.Attrs;
@@ -25,7 +26,6 @@ import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
 import bndtools.Logger;
 import bndtools.WorkspaceObrProvider;
-import bndtools.api.IBndModel;
 import bndtools.api.ILogger;
 
 public class ObrResolutionWizard extends Wizard {
@@ -45,10 +45,10 @@ public class ObrResolutionWizard extends Wizard {
         }
     };
 
-    private final IBndModel model;
+    private final BndEditModel model;
     private final IFile file;
 
-    public ObrResolutionWizard(IBndModel model, IFile file, ObrResolutionResult result) {
+    public ObrResolutionWizard(BndEditModel model, IFile file, ObrResolutionResult result) {
         this.model = model;
         this.file = file;
 

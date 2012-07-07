@@ -13,19 +13,19 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
-import bndtools.api.IBndModel;
 
 public class RunExportWizardNode implements IWizardNode {
 
     private final Shell shell;
     private final IConfigurationElement config;
-    private final IBndModel model;
+    private final BndEditModel model;
     private final Project bndProject;
 
     private final AtomicReference<IRunDescriptionExportWizard> wizardRef = new AtomicReference<IRunDescriptionExportWizard>(null);
 
-    public RunExportWizardNode(Shell shell, IConfigurationElement config, IBndModel model, Project bndProject) {
+    public RunExportWizardNode(Shell shell, IConfigurationElement config, BndEditModel model, Project bndProject) {
         this.shell = shell;
         this.config = config;
         this.model = model;

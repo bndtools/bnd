@@ -7,11 +7,11 @@ import java.util.List;
 
 import org.osgi.framework.Constants;
 
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.libg.header.Attrs;
-import bndtools.api.EE;
-import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
 
@@ -19,7 +19,7 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
 
     private static final String ALL_TEST_CASES_MACRO = "${classes;CONCRETE;EXTENDS;junit.framework.TestCase}"; //$NON-NLS-1$
 
-    public void modifyInitialBndModel(IBndModel model) {
+    public void modifyInitialBndModel(BndEditModel model) {
         List<VersionedClause> newBuildPath = new ArrayList<VersionedClause>();
 
         List<VersionedClause> oldBuildPath = model.getBuildPath();
