@@ -62,11 +62,11 @@ public class TestJarDiff extends TestCase {
 		String qualifiedName = getQualifiedName(packageName, className);
 		
 		ClassWriter ver1 = ClassBuilder.createInterface(qualifiedName);
-		ClassBuilder.addStaticFinalField(qualifiedName, ver1, "STRING1", String.class, "S1");
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "method1", String.class, String.class);
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "method2", String.class, String.class, String.class);
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "method3", String.class, String.class);
-		ByteArrayResource unmodified = new ByteArrayResource(ClassBuilder.endClass(qualifiedName, ver1));
+		ClassBuilder.addStaticFinalField(ver1, "STRING1", String.class);
+		ClassBuilder.addMethod(ver1, void.class, "method1", String.class, String.class);
+		ClassBuilder.addMethod(ver1, void.class, "method2", String.class, String.class, String.class);
+		ClassBuilder.addMethod(ver1, void.class, "method3", String.class, String.class);
+		ByteArrayResource unmodified = new ByteArrayResource(ClassBuilder.endClass(ver1));
 		newJar.putResource(qualifiedName.replace('.', '/') + ".class", unmodified);
 		oldJar.putResource(qualifiedName.replace('.', '/') + ".class", unmodified);
 		
@@ -74,20 +74,20 @@ public class TestJarDiff extends TestCase {
 		qualifiedName = getQualifiedName(packageName, className);
 		
 		ver1 = ClassBuilder.createInterface(qualifiedName);
-		ClassBuilder.addStaticFinalField(qualifiedName, ver1, "STRING1", String.class, "S1");
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "newParam", String.class, String.class);
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "removedParam", String.class, String.class, String.class);
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "overloaded", String.class, String.class);
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "overloaded", String.class, String.class, String.class);
-		newJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(qualifiedName, ver1)));
+		ClassBuilder.addStaticFinalField(ver1, "STRING1", String.class);
+		ClassBuilder.addMethod(ver1, void.class, "newParam", String.class, String.class);
+		ClassBuilder.addMethod(ver1, void.class, "removedParam", String.class, String.class, String.class);
+		ClassBuilder.addMethod(ver1, void.class, "overloaded", String.class, String.class);
+		ClassBuilder.addMethod(ver1, void.class, "overloaded", String.class, String.class, String.class);
+		newJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(ver1)));
 		
 		ClassWriter ver2 = ClassBuilder.createInterface(qualifiedName);
-		ClassBuilder.addStaticFinalField(qualifiedName, ver2, "STRING1", String.class, "S1");
-		ClassBuilder.addStaticFinalField(qualifiedName, ver2, "STRING2", String.class, "S2");
-		ClassBuilder.addMethod(qualifiedName, ver2, void.class, "newParam", String.class, String.class, String.class);
-		ClassBuilder.addMethod(qualifiedName, ver2, void.class, "removedParam", String.class, String.class);
-		ClassBuilder.addMethod(qualifiedName, ver2, void.class, "overloaded", String.class, String.class);
-		oldJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(qualifiedName, ver2)));
+		ClassBuilder.addStaticFinalField(ver2, "STRING1", String.class);
+		ClassBuilder.addStaticFinalField(ver2, "STRING2", String.class);
+		ClassBuilder.addMethod(ver2, void.class, "newParam", String.class, String.class, String.class);
+		ClassBuilder.addMethod(ver2, void.class, "removedParam", String.class, String.class);
+		ClassBuilder.addMethod(ver2, void.class, "overloaded", String.class, String.class);
+		oldJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(ver2)));
 
 		
 		// Minor change
@@ -96,11 +96,11 @@ public class TestJarDiff extends TestCase {
 		qualifiedName = getQualifiedName(packageName, className);
 		
 		ver1 = ClassBuilder.createInterface(qualifiedName);
-		ClassBuilder.addStaticFinalField(qualifiedName, ver1, "STRING1", String.class, "S1");
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "method1", String.class, String.class);
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "method2", String.class, String.class, String.class);
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "method3", String.class, String.class);
-		unmodified = new ByteArrayResource(ClassBuilder.endClass(qualifiedName, ver1));
+		ClassBuilder.addStaticFinalField(ver1, "STRING1", String.class);
+		ClassBuilder.addMethod(ver1, void.class, "method1", String.class, String.class);
+		ClassBuilder.addMethod(ver1, void.class, "method2", String.class, String.class, String.class);
+		ClassBuilder.addMethod(ver1, void.class, "method3", String.class, String.class);
+		unmodified = new ByteArrayResource(ClassBuilder.endClass(ver1));
 		newJar.putResource(qualifiedName.replace('.', '/') + ".class", unmodified);
 		oldJar.putResource(qualifiedName.replace('.', '/') + ".class", unmodified);
 		
@@ -108,16 +108,16 @@ public class TestJarDiff extends TestCase {
 		qualifiedName = getQualifiedName(packageName, className);
 		
 		ver1 = ClassBuilder.createInterface(qualifiedName);
-		ClassBuilder.addStaticFinalField(qualifiedName, ver1, "STRING1", String.class, "S1");
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "overloaded", String.class, String.class);
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "overloaded", String.class, String.class, String.class);
-		newJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(qualifiedName, ver1)));
+		ClassBuilder.addStaticFinalField(ver1, "STRING1", String.class);
+		ClassBuilder.addMethod(ver1, void.class, "overloaded", String.class, String.class);
+		ClassBuilder.addMethod(ver1, void.class, "overloaded", String.class, String.class, String.class);
+		newJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(ver1)));
 		
 		ver2 = ClassBuilder.createInterface(qualifiedName);
-		ClassBuilder.addStaticFinalField(qualifiedName, ver2, "STRING1", String.class, "S1");
-		//ClassBuilder.addStaticFinalField(qualifiedName, ver2, "STRING2", String.class, "S2");
-		ClassBuilder.addMethod(qualifiedName, ver2, void.class, "overloaded", String.class, String.class);
-		oldJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(qualifiedName, ver2)));
+		ClassBuilder.addStaticFinalField(ver2, "STRING1", String.class);
+		//ClassBuilder.addStaticFinalField(ver2, "STRING2", String.class);
+		ClassBuilder.addMethod(ver2, void.class, "overloaded", String.class, String.class);
+		oldJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(ver2)));
 
 		
 		// New package
@@ -126,9 +126,9 @@ public class TestJarDiff extends TestCase {
 		qualifiedName = getQualifiedName(packageName, className);
 
 		ver1 = ClassBuilder.createInterface(qualifiedName);
-		ClassBuilder.addStaticFinalField(qualifiedName, ver1, "STRING1", String.class, "S1");
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "method", String.class, String.class);
-		newJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(qualifiedName, ver1)));
+		ClassBuilder.addStaticFinalField(ver1, "STRING1", String.class);
+		ClassBuilder.addMethod(ver1, void.class, "method", String.class, String.class);
+		newJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(ver1)));
 
 		// Deleted package
 		packageName = "test.deletedPackage";
@@ -136,9 +136,9 @@ public class TestJarDiff extends TestCase {
 		qualifiedName = getQualifiedName(packageName, className);
 		
 		ver1 = ClassBuilder.createInterface(qualifiedName);
-		ClassBuilder.addStaticFinalField(qualifiedName, ver1, "STRING1", String.class, "S1");
-		ClassBuilder.addMethod(qualifiedName, ver1, void.class, "method", String.class, String.class);
-		newJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(qualifiedName, ver1)));
+		ClassBuilder.addStaticFinalField(ver1, "STRING1", String.class);
+		ClassBuilder.addMethod(ver1, void.class, "method", String.class, String.class);
+		newJar.putResource(qualifiedName.replace('.', '/') + ".class", new ByteArrayResource(ClassBuilder.endClass(ver1)));
 
 		
 		JarDiff diff = new JarDiff(newJar, oldJar);

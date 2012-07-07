@@ -47,25 +47,25 @@ public class WorkspaceAnalyserJob extends Job {
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-
-		if (monitor == null) {
-			monitor = new NullProgressMonitor();
+		IProgressMonitor mon = monitor;
+		if (mon == null) {
+			mon = new NullProgressMonitor();
 		}
 
 		try {
 			Collection<Project> projects = Activator.getWorkspace()
 					.getAllProjects();
 
-			monitor.beginTask(Messages.workspaceReleaseJob, projects.size() * 2);
+			mon.beginTask(Messages.workspaceReleaseJob, projects.size() * 2);
 
-			List<Project> orderedProjects = getBuildOrder(monitor,
+			List<Project> orderedProjects = getBuildOrder(mon,
 					Activator.getWorkspace());
-			if (monitor.isCanceled()) {
+			if (mon.isCanceled()) {
 				return Status.CANCEL_STATUS;
 			}
 
 			final List<ProjectDiff> projectDiffs = new ArrayList<ProjectDiff>();
-			monitor.setTaskName("Processing Projects...");
+			mon.setTaskName("Processing Projects...");
 			for (Project project : orderedProjects) {
 				IProject eProject = ReleaseUtils.getProject(project);
 				if (!eProject.isOpen() || !eProject.isAccessible()) {
@@ -75,7 +75,7 @@ public class WorkspaceAnalyserJob extends Job {
 						.getSubBuilders();
 				List<JarDiff> jarDiffs = null;
 				for (Builder b : builders) {
-					monitor.subTask("Processing " + b.getBsn() + "...");
+					mon.subTask("Processing " + b.getBsn() + "...");
 
 					RepositoryPlugin baselineRepository = ReleaseHelper
 							.getBaselineRepository(project, b.getBsn(),
@@ -95,10 +95,10 @@ public class WorkspaceAnalyserJob extends Job {
 				if (jarDiffs != null && jarDiffs.size() > 0) {
 					projectDiffs.add(new ProjectDiff(project, jarDiffs));
 				}
-				if (monitor.isCanceled()) {
+				if (mon.isCanceled()) {
 					return Status.CANCEL_STATUS;
 				}
-				monitor.worked(1);
+				mon.worked(1);
 			}
 
 			if (projectDiffs.size() == 0) {
