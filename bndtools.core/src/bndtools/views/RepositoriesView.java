@@ -200,7 +200,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         registration = Activator.getDefault().getBundleContext().registerService(RepositoryListenerPlugin.class.getName(), this, null);
     }
 
-    private File[] convertSelectionToFiles(ISelection selection) {
+    private static File[] convertSelectionToFiles(ISelection selection) {
         if (!(selection instanceof IStructuredSelection))
             return new File[0];
 
