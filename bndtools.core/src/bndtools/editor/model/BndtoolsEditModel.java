@@ -50,7 +50,7 @@ public class BndtoolsEditModel extends BndEditModel implements IPersistableBndMo
     }
 
     // CONVERTERS
-    Converter<List<Requirement>,String> requirementListConverter = SimpleListConverter.create(new Converter<Requirement,String>() {
+    Converter<List<Requirement>,String> requirementListConverterBndtools = SimpleListConverter.create(new Converter<Requirement,String>() {
         public Requirement convert(String input) throws IllegalArgumentException {
             int index = input.indexOf(":");
             if (index < 0)
@@ -71,7 +71,7 @@ public class BndtoolsEditModel extends BndEditModel implements IPersistableBndMo
     Converter<ResolveMode,String> resolveModeConverter = EnumConverter.create(ResolveMode.class, ResolveMode.manual);
 
     // FORMATTERS
-    Converter<String,Collection< ? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(LIST_SEPARATOR, new Converter<String,Requirement>() {
+    Converter<String,Collection< ? extends Requirement>> requirementListFormatterBndtools = new CollectionFormatter<Requirement>(LIST_SEPARATOR, new Converter<String,Requirement>() {
         public String convert(Requirement input) throws IllegalArgumentException {
             return new StringBuilder().append(input.getName()).append(':').append(input.getFilter()).toString();
         }
@@ -91,7 +91,7 @@ public class BndtoolsEditModel extends BndEditModel implements IPersistableBndMo
         converters.put(BndConstants.RUNEE, new NoopConverter<String>());
         converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 
-        formatters.put(BndConstants.RUNREQUIRE, requirementListFormatter);
+        formatters.put(BndConstants.RUNREQUIRE, requirementListFormatterBndtools);
         formatters.put(BndConstants.RUNEE, new NoopConverter<String>());
         formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
     }
@@ -126,12 +126,12 @@ public class BndtoolsEditModel extends BndEditModel implements IPersistableBndMo
     }
 
     public List<Requirement> getRunRequire() {
-        return doGetObject(BndConstants.RUNREQUIRE, requirementListConverter);
+        return doGetObject(BndConstants.RUNREQUIRE, requirementListConverterBndtools);
     }
 
     public void setRunRequire(List<Requirement> requires) {
         List<Requirement> old = getRunRequire();
-        doSetObject(BndConstants.RUNREQUIRE, old, requires, requirementListFormatter);
+        doSetObject(BndConstants.RUNREQUIRE, old, requires, requirementListFormatterBndtools);
     }
 
     public ResolveMode getResolveMode() {
