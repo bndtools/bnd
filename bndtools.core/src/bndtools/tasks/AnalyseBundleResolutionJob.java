@@ -194,7 +194,7 @@ public class AnalyseBundleResolutionJob extends Job {
         MultiMap<PackageRef,PackageRef> uses = builder.getUses();
         for (Entry<String,Attrs> entry : exportsMap.entrySet()) {
             String pkgName = Processor.removeDuplicateMarker(entry.getKey());
-            ExportPackage export = new ExportPackage(pkgName, entry.getValue(), uses.get(pkgName));
+            ExportPackage export = new ExportPackage(pkgName, entry.getValue(), (List<PackageRef>) uses.get(pkgName));
             List<ExportPackage> exportList = exports.get(export.getName());
             if (exportList == null) {
                 exportList = new LinkedList<ExportPackage>();
