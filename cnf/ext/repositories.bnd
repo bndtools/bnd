@@ -15,7 +15,7 @@ eclipse-repo: aQute.lib.deployer.obr.OBR;locations='file:${workspace}/cnf/eclips
 #eclipse-repo: aQute.lib.deployer.obr.OBR;locations='https://s3.amazonaws.com/eclipse-obr-4.2RC4/repository.xml';name=Eclipse SDK 4.2RC4
 
 # Local OBR
-#-plugin:\
+#plugin:\
 #	aQute.lib.deployer.obr.OBR;locations='file:${repo}/jars/repository.xml';name=Bnd Build Repository,\
 #	aQute.lib.deployer.obr.OBR;locations='file:${repo}/bundles/repository.xml';name=Bnd Repository,\
 #	${eclipse-repo}

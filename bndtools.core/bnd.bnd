@@ -79,7 +79,7 @@ eclipse.deps: \
 
 -buildpath: ee.j2se;version=${javac.ee},\
 	${bndlib},\
-	biz.aQute.repository;version=2.0.0,\
+	${aQute-repository},\
 	patricia-trie,\
 	junit.osgi,\
 	${eclipse.deps},\
