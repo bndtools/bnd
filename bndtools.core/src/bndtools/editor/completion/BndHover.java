@@ -74,7 +74,7 @@ public class BndHover implements ITextHover {
                 break;
             case ' ' :
             case '\t' :
-                if (n > 20) {
+                if (n > width) {
                     sb.append("\n");
                     n = 0;
                 } else {
