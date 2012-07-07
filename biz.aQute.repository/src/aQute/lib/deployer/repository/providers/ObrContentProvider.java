@@ -52,8 +52,14 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 	private static final String	TAG_CAPABILITY				= "capability";
 	private static final String	TAG_PROPERTY				= "p";
 
+	private BundleIndexer		indexer;
+
 	private static enum ParserState {
 		beforeRoot, inRoot, inResource, inCapability
+	}
+	
+	public ObrContentProvider(BundleIndexer indexer) {
+		this.indexer = indexer;
 	}
 
 	public String getName() {
@@ -235,12 +241,10 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return true;
 	}
 
-	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI rootUri, boolean pretty,
-			Registry registry, LogService log) throws Exception {
+	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI rootUri, boolean pretty, Registry registry, LogService log) throws Exception {
 		if (!files.isEmpty()) {
-			BundleIndexer indexer = (registry != null) ? registry.getPlugin(BundleIndexer.class) : null;
 			if (indexer == null)
-				throw new IllegalStateException("Cannot index repository: no Bundle Indexer service or plugin found.");
+				throw new IllegalStateException("Cannot index repository: no Bundle Indexer provided.");
 
 			Map<String,String> config = new HashMap<String,String>();
 

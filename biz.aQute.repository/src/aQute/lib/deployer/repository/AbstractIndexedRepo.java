@@ -7,8 +7,10 @@ import java.util.Map.Entry;
 import java.util.regex.*;
 
 import org.osgi.framework.namespace.*;
+import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
 import org.osgi.resource.*;
 import org.osgi.resource.Resource;
+import org.osgi.service.bindex.BundleIndexer;
 import org.osgi.service.log.*;
 import org.osgi.service.repository.*;
 
@@ -48,8 +50,9 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	private static final int									READ_AHEAD_MAX					= 5 * 1024 * 1024;
 
-	protected final Map<String,IRepositoryContentProvider>		allContentProviders				= new HashMap<String,IRepositoryContentProvider>(5);
-	protected final List<IRepositoryContentProvider>			generatingProviders				= new LinkedList<IRepositoryContentProvider>();
+	private final BundleIndexer								obrIndexer						= new BundleIndexerImpl();
+	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new HashMap<String,IRepositoryContentProvider>(5);
+	protected final List<IRepositoryContentProvider>		generatingProviders				= new LinkedList<IRepositoryContentProvider>();
 
 	protected Registry											registry;
 	protected Reporter											reporter;
@@ -68,7 +71,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	protected AbstractIndexedRepo() {
 		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
-		allContentProviders.put(REPO_TYPE_OBR, new ObrContentProvider());
+		allContentProviders.put(REPO_TYPE_OBR, new ObrContentProvider(obrIndexer));
 
 		generatingProviders.add(allContentProviders.get(REPO_TYPE_R5));
 	}

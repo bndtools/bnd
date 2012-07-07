@@ -1,3 +1,5 @@
+Bundle-Version: 2.0.1.${tstamp;yyyyMMdd-HHmmss}
+
 jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	lib/jetty-continuation-7.6.3.v20120416.jar;version=file,\
 	lib/jetty-http-7.6.3.v20120416.jar;version=file,\
@@ -19,8 +21,6 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	ee.j2se;version=${javac.ee},\
 	${jetty.libs}
 
-Bundle-Version: 2.0.0.${tstamp;yyyyMMdd-HHmmss}
-
 Bnd-Plugins: aQute.lib.repository.FixedIndexedRepo,\
 	aQute.lib.repository.LocalIndexedRepo,\
 	aQute.lib.deployer.obr.OBR,\
@@ -37,30 +37,44 @@ Export-Package: aQute.lib.deployer.http,\
 	org.osgi.service.coordinator;-split-package:=merge-first,\
 	org.osgi.service.log;-split-package:=merge-first
 
-# NB: `org.osgi.framework` API is included in Private-Package for running outside of OSGi.
-Private-Package: aQute.lib.io;-split-package:=first,\
-	aQute.lib.filter;-split-package:=first,\
-	aQute.lib.base64;-split-package:=first,\
+bindex-pkgs: \
+	org.osgi.service.obr,\
+	org.osgi.impl.bundle.bindex,\
+	org.osgi.impl.bundle.obr.resource,\
+	org.kxml2.io,\
+	org.xmlpull.v1
+
+bindex2-pkgs: \
 	org.osgi.service.indexer.impl,\
 	org.osgi.service.indexer.impl.types,\
 	org.osgi.service.indexer.impl.util,\
-	org.osgi.framework;-split-package:=first,\
-	aQute.libg.filerepo,\
-	aQute.libg.generics;-split-package:=first,\
-	aQute.libg.glob,\
-	aQute.libg.gzip,\
-	aQute.libg.tuple;-split-package:=first,\
-	aQute.libg.filters;-split-package:=first,\
 	aQute.lib.osgi.resource,\
-	org.osgi.resource,\
+	org.osgi.resource;-split-package:=first,\
 	org.osgi.service.repository
 
-# We must also explicitly import `org.osgi.framework` for when we *are* running in OSGi.
+libg-pkgs: \
+	aQute.lib.io;-split-package:=first,\
+	aQute.lib.filter;-split-package:=first,\
+	aQute.lib.base64;-split-package:=first,\
+	aQute.libg.filerepo,\
+	aQute.libg.generics;-split-package:=first,\
+	aQute.libg.glob;-split-package:=first,\
+	aQute.libg.gzip;-split-package:=first,\
+	aQute.libg.tuple;-split-package:=first,\
+	aQute.libg.filters;-split-package:=first
+
+# NB: `org.osgi.framework` API is included in Private-Package for running outside of OSGi.
+Private-Package:\
+	${libg-pkgs},\
+	${bindex-pkgs},\
+	${bindex2-pkgs},\
+	org.osgi.framework;-split-package:=first,\
+
+# We must also explicitly import `org.osgi.framework` etc. for when we *are* running in OSGi.
 Import-Package:\
 	org.osgi.service.bindex;version='[1,2)',\
 	org.osgi.framework;version='[1.5,2)',\
-	aQute.lib.osgi.resource;version='[1,2)',\
-	org.osgi.resource;version='[1,2)',\
+	aQute.lib.osgi.resource,\
+	org.osgi.resource,\
 	org.osgi.service.log;version='[1.3,1.4)',\
 	*
-

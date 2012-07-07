@@ -32,12 +32,6 @@ public class TestLocalObrGeneration extends TestCase {
 		config.put("type", "OBR");
 		repo.setProperties(config);
 		repo.setReporter(reporter);
-
-		// Add the BundleIndexer plugin
-		MockRegistry registry = new MockRegistry();
-		BundleIndexerImpl obrIndexer = new BundleIndexerImpl();
-		registry.addPlugin(obrIndexer);
-		repo.setRegistry(registry);
 	}
 
 	@Override
@@ -63,6 +57,7 @@ public class TestLocalObrGeneration extends TestCase {
 		
 		File indexFile = IO.getFile("generated/testoutput/repository.xml");
 		assertTrue(indexFile.exists());
+		assertTrue(IO.collect(indexFile).length() > 0);
 
 		AbstractIndexedRepo repo2 = createRepoForIndex(indexFile);
 		File[] files = repo2.get("name.njbartlett.osgi.emf.minimal", null);
