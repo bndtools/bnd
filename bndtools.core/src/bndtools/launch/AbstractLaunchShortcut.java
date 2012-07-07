@@ -18,7 +18,6 @@ import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.DebugUITools;
-import org.eclipse.debug.ui.ILaunchShortcut;
 import org.eclipse.debug.ui.ILaunchShortcut2;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -38,7 +37,7 @@ import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 
-public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunchShortcut2 {
+public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
     private static final ILogger logger = Logger.getLogger();
 
     private final String launchId;

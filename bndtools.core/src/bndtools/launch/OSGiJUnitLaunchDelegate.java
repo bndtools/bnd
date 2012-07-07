@@ -13,7 +13,6 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.IStatusHandler;
-import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.SocketUtil;
 import org.osgi.framework.Bundle;
@@ -26,7 +25,7 @@ import aQute.bnd.service.EclipseJUnitTester;
 import bndtools.Plugin;
 import bndtools.utils.BundleUtils;
 
-public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate implements ILaunchConfigurationDelegate2 {
+public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
     private static final String JDT_JUNIT_BSN = "org.eclipse.jdt.junit";
     private static final String ATTR_JUNIT_PORT = "org.eclipse.jdt.junit.PORT";
