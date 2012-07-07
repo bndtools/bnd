@@ -41,7 +41,7 @@ public class BndEditModel {
 			// BndConstants.RUNVMARGS,
 			// BndConstants.TESTSUITES,
 			aQute.lib.osgi.Constants.TESTCASES, aQute.lib.osgi.Constants.PLUGIN, aQute.lib.osgi.Constants.PLUGINPATH,
-			aQute.lib.osgi.Constants.RUNREPOS, aQute.lib.osgi.Constants.RUNREQUIRE, aQute.lib.osgi.Constants.RUNEE};
+			aQute.lib.osgi.Constants.RUNREPOS, aQute.lib.osgi.Constants.RUNREQUIRES, aQute.lib.osgi.Constants.RUNEE};
 
 	public static final String										BUNDLE_VERSION_MACRO		= "${"
 																										+ Constants.BUNDLE_VERSION
@@ -195,7 +195,7 @@ public class BndEditModel {
 		converters.put(aQute.lib.osgi.Constants.TESTSUITES, listConverter);
 		converters.put(aQute.lib.osgi.Constants.TESTCASES, listConverter);
 		converters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
-		converters.put(aQute.lib.osgi.Constants.RUNREQUIRE, requirementListConverter);
+		converters.put(aQute.lib.osgi.Constants.RUNREQUIRES, requirementListConverter);
 		converters.put(aQute.lib.osgi.Constants.RUNEE, eeConverter);
 		converters.put(aQute.lib.osgi.Constants.RUNREPOS, listConverter);
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
@@ -221,7 +221,7 @@ public class BndEditModel {
 		// formatters.put(BndConstants.TESTSUITES, stringListFormatter);
 		formatters.put(aQute.lib.osgi.Constants.TESTCASES, stringListFormatter);
 		formatters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListFormatter);
-		formatters.put(aQute.lib.osgi.Constants.RUNREQUIRE, requirementListFormatter);
+		formatters.put(aQute.lib.osgi.Constants.RUNREQUIRES, requirementListFormatter);
 		formatters.put(aQute.lib.osgi.Constants.RUNEE, eeFormatter);
 		formatters.put(aQute.lib.osgi.Constants.RUNREPOS, runReposFormatter);
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
@@ -634,12 +634,12 @@ public class BndEditModel {
     }
     
     public List<Requirement> getRunRequires() {
-    	return doGetObject(aQute.lib.osgi.Constants.RUNREQUIRE, requirementListConverter);
+    	return doGetObject(aQute.lib.osgi.Constants.RUNREQUIRES, requirementListConverter);
     }
     
     public void setRunRequires(List<Requirement> requires) {
     	List<Requirement> oldValue = getRunRequires();
-    	doSetObject(aQute.lib.osgi.Constants.RUNREQUIRE, oldValue, requires, requirementListFormatter);
+    	doSetObject(aQute.lib.osgi.Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
     }
 
 
