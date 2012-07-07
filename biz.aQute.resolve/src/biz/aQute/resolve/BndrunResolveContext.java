@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.namespace.contract.ContractNamespace;
@@ -69,7 +70,7 @@ public class BndrunResolveContext extends ResolveContext {
     }
 
     private void loadRepositories() {
-        // Get the rest of the repositories from the plugin registry
+        // Get all of the repositories from the plugin registry
         List<Repository> allRepos = registry.getPlugins(Repository.class);
 
         // Reorder/filter if specified by the run model
@@ -192,11 +193,6 @@ public class BndrunResolveContext extends ResolveContext {
         if (inputRequirementsResource != null)
             resources.add(inputRequirementsResource);
         return resources;
-    }
-
-    @Override
-    public Collection<Resource> getOptionalResources() {
-        throw new UnsupportedOperationException("TODO");
     }
 
     @Override

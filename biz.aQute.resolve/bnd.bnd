@@ -6,4 +6,8 @@
 	biz.aQute.repository;version=snapshot,\
 	ee.j2se;version=${javac.ee},\
 	org.mockito.mockito-all
-Private-Package: aQute.lib.deployer.repository
+
+Bundle-Version: 0.0.0.${tstamp;yyyyMMdd-HHmmss}
+Export-Package: biz.aQute.resolve
+Private-Package: aQute.lib.osgi.resource
+Conditional-Package: aQute.libg.*
