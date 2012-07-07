@@ -114,6 +114,7 @@ public class RepositoryImpl implements Repository {
     /**
      * Default setter method when setting parsed data from the XML file, which currently ignores everything.
      **/
+    @SuppressWarnings("unused")
     protected static Object put(Object key, Object value) {
         // Ignore everything for now.
         return null;
