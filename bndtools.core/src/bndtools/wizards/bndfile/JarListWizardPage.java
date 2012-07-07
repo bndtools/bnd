@@ -119,18 +119,16 @@ public class JarListWizardPage extends WizardPage {
             public boolean performDrop(Object data) {
                 if (data instanceof String[]) {
                     String[] newPaths = (String[]) data;
-                    if (newPaths != null) {
-                        List<IPath> added = new ArrayList<IPath>(newPaths.length);
-                        for (String path : newPaths) {
-                            added.add(new Path(path));
-                        }
+                    List<IPath> added = new ArrayList<IPath>(newPaths.length);
+                    for (String path : newPaths) {
+                        added.add(new Path(path));
+                    }
 
-                        if (!added.isEmpty()) {
-                            addToPaths(added);
-                            viewer.add(added.toArray(new IPath[added.size()]));
+                    if (!added.isEmpty()) {
+                        addToPaths(added);
+                        viewer.add(added.toArray(new IPath[added.size()]));
 
-                            update();
-                        }
+                        update();
                     }
                 }
 

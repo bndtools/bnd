@@ -83,7 +83,7 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
 
         IWorkbenchWindow dw = workbench.getActiveWorkbenchWindow();
         try {
-            if (dw != null && file != null) {
+            if (dw != null) {
                 IWorkbenchPage page = dw.getActivePage();
                 if (page != null) {
                     IDE.openEditor(page, file, true);

@@ -109,7 +109,7 @@ public class BundleUtils {
 
     public static String getBundleSymbolicName(Attributes attribs) {
         Parameters header = new Parameters(attribs.getValue(Constants.BUNDLE_SYMBOLICNAME));
-        if (header == null || header.size() != 1)
+        if (header.size() != 1)
             return null;
 
         return header.keySet().iterator().next();

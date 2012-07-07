@@ -288,18 +288,16 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 }
             }
         });
-        if (activatorProposalAdapter != null) {
-            activatorProposalAdapter.addContentProposalListener(new IContentProposalListener() {
-                public void proposalAccepted(IContentProposal proposal) {
-                    if (proposal instanceof JavaContentProposal) {
-                        String selectedPackageName = ((JavaContentProposal) proposal).getPackageName();
-                        if (!model.isIncludedPackage(selectedPackageName)) {
-                            model.addPrivatePackage(selectedPackageName);
-                        }
+        activatorProposalAdapter.addContentProposalListener(new IContentProposalListener() {
+            public void proposalAccepted(IContentProposal proposal) {
+                if (proposal instanceof JavaContentProposal) {
+                    String selectedPackageName = ((JavaContentProposal) proposal).getPackageName();
+                    if (!model.isIncludedPackage(selectedPackageName)) {
+                        model.addPrivatePackage(selectedPackageName);
                     }
                 }
-            });
-        }
+            }
+        });
 
         // Layout
         GridLayout layout = new GridLayout(2, false);
