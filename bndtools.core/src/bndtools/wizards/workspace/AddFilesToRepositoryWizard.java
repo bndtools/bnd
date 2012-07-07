@@ -93,10 +93,9 @@ public class AddFilesToRepositoryWizard extends Wizard {
 
         if (status.isOK()) {
             return true;
-        } else {
-            ErrorDialog.openError(getShell(), "Error", null, status);
-            return false;
         }
+        ErrorDialog.openError(getShell(), "Error", null, status);
+        return false;
     }
 
     public List<Pair<String,String>> getSelectedBundles() {

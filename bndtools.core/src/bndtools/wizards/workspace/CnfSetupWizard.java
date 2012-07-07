@@ -202,9 +202,8 @@ public class CnfSetupWizard extends Wizard {
             if (confirmNever()) {
                 setDisabled(true);
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
         if (decision == CnfSetupDecision.SKIP) {
             return true;

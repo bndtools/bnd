@@ -357,9 +357,8 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         IFile file = ResourceUtil.getFile(input);
         if (file != null) {
             return JavaCore.create(file.getProject());
-        } else {
-            return null;
         }
+        return null;
     }
 
     private class TestSuiteListDropAdapter extends ViewerDropAdapter {

@@ -144,11 +144,10 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 if (BndContainerInitializer.resetClasspaths(model, myProject, classpathErrors)) {
                     log(LOG_BASIC, "classpaths were changed");
                     return dependsOn;
-                } else {
-                    log(LOG_FULL, "classpaths were not changed");
-                    rebuildIfLocalChanges(dependsOn);
-                    return dependsOn;
                 }
+                log(LOG_FULL, "classpaths were not changed");
+                rebuildIfLocalChanges(dependsOn);
+                return dependsOn;
             }
             // (NB: from now on the delta cannot be null, due to the check in
             // isLocalBndFileChange)
@@ -161,9 +160,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 if (BndContainerInitializer.resetClasspaths(model, myProject, classpathErrors)) {
                     log(LOG_BASIC, "classpaths were changed");
                     return dependsOn;
-                } else {
-                    log(LOG_FULL, "classpaths were not changed");
                 }
+                log(LOG_FULL, "classpaths were not changed");
             }
 
             // CASE 4: local file changes

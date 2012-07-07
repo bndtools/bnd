@@ -24,12 +24,10 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
                     found[0].apply(viewer.getDocument());
                     viewer.setSelectedRange(offset + (found[0].getDisplayString().length() - prefix.length() + 2), 0);
                     return new ICompletionProposal[0];
-                } else {
-                    return found;
                 }
-            } else {
-                return proposals(null, offset);
+                return found;
             }
+            return proposals(null, offset);
         } catch (BadLocationException e) {
             return proposals(null, offset);
         }
