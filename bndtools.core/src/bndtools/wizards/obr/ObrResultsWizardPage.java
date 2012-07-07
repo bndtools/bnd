@@ -59,7 +59,6 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.lib.osgi.resource.CapReqBuilder;
 import aQute.lib.osgi.resource.Filters;
 import aQute.libg.filters.AndFilter;
-import aQute.libg.filters.Filter;
 import aQute.libg.filters.SimpleFilter;
 import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
