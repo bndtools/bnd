@@ -159,12 +159,13 @@ public class TreeContentProvider implements ITreeContentProvider {
 	 * @see org.eclipse.jface.viewers.IContentProvider#dispose()
 	 */
 	public void dispose() {
+		/* ignore */
 	}
 	/*
 	 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
 	 */
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		
+		/* ignore */
 	}
 	
 	public boolean isShowAll() {

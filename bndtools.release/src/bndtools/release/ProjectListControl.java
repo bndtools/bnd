@@ -62,7 +62,7 @@ public class ProjectListControl {
 	}
 
 	protected void handleTableSelection(SelectionEvent e) {
-
+		/* ignore */
 	}
 	
 	public void addItemToTable(ProjectDiff projectDiff) {
@@ -93,6 +93,7 @@ public class ProjectListControl {
 		try {
 			bundles = projectDiff.getProject().getSubBuilders().size();
 		} catch (Exception e) {
+			/* ignore */
 		}
 		ti.setText(2, String.valueOf(bundles));
 	}

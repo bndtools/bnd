@@ -580,7 +580,9 @@ public class BundleRelease {
 					editor.deactivate();
 				}
 				
-				public void widgetDefaultSelected(SelectionEvent e) {}
+				public void widgetDefaultSelected(SelectionEvent e) {
+					/* ignore */
+				}
 			});
 		}
 

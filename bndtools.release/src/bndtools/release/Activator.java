@@ -394,6 +394,7 @@ public class Activator extends AbstractUIPlugin {
 				return (File) m.invoke(repository);
 			}
 		} catch (Exception e) {
+			/* ignore */
 		}
  		return null;
 	}

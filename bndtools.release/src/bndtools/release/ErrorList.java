@@ -249,9 +249,11 @@ public class ErrorList {
 		}
 
 		public void dispose() {
+			/* ignore */
 		}
 
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			/* ignore */
 		}
 		
 	}

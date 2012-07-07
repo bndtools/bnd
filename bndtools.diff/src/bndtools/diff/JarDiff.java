@@ -857,7 +857,9 @@ public class JarDiff {
 			throw new RuntimeException(e);
 		} finally {
 			if (is != null) {
-				try {is.close();} catch (Exception e) {}
+				try {is.close();} catch (Exception e) {
+					/* ignore */
+				}
 			}
 		}
 		String version = packageInfo.getProperty(VERSION);
