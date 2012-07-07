@@ -44,7 +44,7 @@ public class DummyBundle implements Bundle {
                 private static final long serialVersionUID = 5052119501163411765L;
 
                 @Override
-                public Object get(Object key) {
+                public synchronized Object get(Object key) {
                     Object value = super.get(key);
                     if (DEBUG)
                         System.out.println("=== getHeaders --> " + key + " = " + value);
