@@ -359,7 +359,8 @@ public class Activator extends AbstractUIPlugin {
 		reg.put("static_method_minor_remove", oid);
 	}
 	
-	public static <T> T getService(Class<T> clazz) {
+	@SuppressWarnings("unchecked")
+    public static <T> T getService(Class<T> clazz) {
     	 if (clazz == Workspace.class) {
     		 try {
 				return (T) Workspace.getWorkspace(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile());

@@ -99,7 +99,7 @@ public class ReleaseAction implements IObjectActionDelegate {
 			StructuredSelection ss = (StructuredSelection) selection;
 			IFile[] result = new IFile[ss.size()];
 			int n = 0;
-			for (Iterator<IFile> i = ss.iterator(); i.hasNext();) {
+			for (@SuppressWarnings("unchecked") Iterator<IFile> i = ss.iterator(); i.hasNext();) {
 				result[n++] = i.next();
 			}
 			return result;
