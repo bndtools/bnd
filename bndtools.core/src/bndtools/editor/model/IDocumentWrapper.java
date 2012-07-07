@@ -75,7 +75,7 @@ public class IDocumentWrapper implements aQute.lib.properties.IDocument {
         }
     }
 
-    public class IRegionWrapper implements aQute.lib.properties.IRegion {
+    public static class IRegionWrapper implements aQute.lib.properties.IRegion {
 
         private final IRegion region;
 
