@@ -111,6 +111,7 @@ public interface Constants {
 	String							RUNBUNDLES									= "-runbundles";
 	String							RUNREPOS									= "-runrepos";
 	String							RUNREQUIRE									= "-runrequire";
+	String							RUNEE										= "-runee";
 	String							RUNPATH										= "-runpath";
 	String							RUNSTORAGE									= "-runstorage";
 	String							RUNBUILDS									= "-runbuilds";

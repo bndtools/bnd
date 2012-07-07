@@ -41,10 +41,7 @@ public class BndEditModel {
 			// BndConstants.RUNVMARGS,
 			// BndConstants.TESTSUITES,
 			aQute.lib.osgi.Constants.TESTCASES, aQute.lib.osgi.Constants.PLUGIN, aQute.lib.osgi.Constants.PLUGINPATH,
-			aQute.lib.osgi.Constants.RUNREPOS, aQute.lib.osgi.Constants.RUNREQUIRE,
-																								// BndConstants.RUNEE,
-																								// BndConstants.RESOLVE_MODE
-																								};
+			aQute.lib.osgi.Constants.RUNREPOS, aQute.lib.osgi.Constants.RUNREQUIRE, aQute.lib.osgi.Constants.RUNEE};
 
 	public static final String										BUNDLE_VERSION_MACRO		= "${"
 																										+ Constants.BUNDLE_VERSION
@@ -139,13 +136,8 @@ public class BndEditModel {
 	protected Converter<Map<String,String>,String>					propertiesConverter			= new PropertiesConverter();
 	
 	protected Converter<List<Requirement>,String>					requirementListConverter	= new RequirementListConverter();
+	protected Converter<EE,String>									eeConverter					= new EEConverter();
 
-	// Converter<EE, String> eeConverter = new Converter<EE, String>() {
-	// public EE convert(String input) throws IllegalArgumentException {
-	// return EE.parse(input);
-	// }
-	// };
-	//
 	// Converter<ResolveMode, String> resolveModeConverter =
 	// EnumConverter.create(ResolveMode.class, ResolveMode.manual);
 
@@ -166,13 +158,12 @@ public class BndEditModel {
 																										new PropertiesEntryFormatter(),
 																										null);
 	
-	protected Converter<String,Collection<? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(LIST_SEPARATOR, new RequirementFormatter(), null);
-	
-	// Converter<String, EE> eeFormatter = new Converter<String, EE>() {
-	// public String convert(EE input) throws IllegalArgumentException {
-	// return input != null ? input.getEEName() : null;
-	// }
-	// };
+	protected Converter<String,Collection< ? extends Requirement>>	requirementListFormatter	= new CollectionFormatter<Requirement>(
+																										LIST_SEPARATOR,
+																										new RequirementFormatter(),
+																										null);
+
+	protected Converter<String,EE>									eeFormatter					= new EEFormatter();
 	Converter<String,Collection< ? extends String>>					runReposFormatter			= new CollectionFormatter<String>(
 																										LIST_SEPARATOR,
 																										aQute.lib.osgi.Constants.EMPTY_HEADER);
@@ -205,7 +196,7 @@ public class BndEditModel {
 		converters.put(aQute.lib.osgi.Constants.TESTCASES, listConverter);
 		converters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
 		converters.put(aQute.lib.osgi.Constants.RUNREQUIRE, requirementListConverter);
-		// converters.put(BndConstants.RUNEE, new NoopConverter<String>());
+		converters.put(aQute.lib.osgi.Constants.RUNEE, eeConverter);
 		converters.put(aQute.lib.osgi.Constants.RUNREPOS, listConverter);
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 
@@ -231,7 +222,7 @@ public class BndEditModel {
 		formatters.put(aQute.lib.osgi.Constants.TESTCASES, stringListFormatter);
 		formatters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListFormatter);
 		formatters.put(aQute.lib.osgi.Constants.RUNREQUIRE, requirementListFormatter);
-		// formatters.put(BndConstants.RUNEE, new NoopConverter<String>());
+		formatters.put(aQute.lib.osgi.Constants.RUNEE, eeFormatter);
 		formatters.put(aQute.lib.osgi.Constants.RUNREPOS, runReposFormatter);
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
 	}
@@ -627,6 +618,16 @@ public class BndEditModel {
         return doGetObject(aQute.lib.osgi.Constants.RUNFRAMEWORK, stringConverter);
     }
 
+    public EE getEE() {
+        return doGetObject(aQute.lib.osgi.Constants.RUNEE, eeConverter);
+    }
+
+    public void setEE(EE ee) {
+        EE old = getEE();
+        doSetObject(aQute.lib.osgi.Constants.RUNEE, old, ee, eeFormatter);
+    }
+
+    
     public void setRunFramework(String clause) {
         String oldValue = getRunFramework();
         doSetObject(aQute.lib.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
