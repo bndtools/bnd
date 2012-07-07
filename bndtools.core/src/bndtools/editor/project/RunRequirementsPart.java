@@ -66,6 +66,8 @@ import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.EnumConverter;
 import aQute.bnd.build.model.conversions.EnumFormatter;
+import aQute.bnd.build.model.conversions.SimpleListConverter;
+import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.resource.CapReqBuilder;
 import aQute.lib.osgi.resource.Filters;
 import aQute.libg.filters.AndFilter;
@@ -103,6 +105,8 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
     private final Converter<ResolveMode,String> resolveModeConverter = EnumConverter.create(ResolveMode.class, ResolveMode.manual);
     private final Converter<String,ResolveMode> resolveModeFormatter = EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
+
+    private final Converter<List<Requirement>,String> legacyRequireListConverter = SimpleListConverter.create(new LegacyRunRequiresConverter());
 
     private ToolItem addBundleTool;
     private ToolItem removeTool;
@@ -357,12 +361,14 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         model = (BndEditModel) form.getInput();
 
         model.addPropertyChangeListener(BndConstants.RUNREQUIRE, this);
+        model.addPropertyChangeListener(BndConstants.RUNREQUIRES, this);
         model.addPropertyChangeListener(BndConstants.RESOLVE_MODE, this);
     }
 
     @Override
     public void dispose() {
         model.removePropertyChangeListener(BndConstants.RUNREQUIRE, this);
+        model.removePropertyChangeListener(BndConstants.RUNREQUIRES, this);
         model.removePropertyChangeListener(BndConstants.RESOLVE_MODE, this);
 
         super.dispose();
@@ -377,6 +383,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         try {
             committing = true;
             model.setRunRequires(requires);
+            model.genericSet(Constants.RUNREQUIRE, null);
             model.genericSet(BndConstants.RESOLVE_MODE, resolveModeFormatter.convert(resolveMode));
         } finally {
             committing = false;
@@ -386,6 +393,12 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     @Override
     public void refresh() {
         List<Requirement> tmp = model.getRunRequires();
+        if (tmp == null) {
+            String legacyReqStr = (String) model.genericGet(Constants.RUNREQUIRE);
+            if (legacyReqStr != null) {
+                tmp = legacyRequireListConverter.convert(legacyReqStr);
+            }
+        }
 
         requires = new ArrayList<Requirement>(tmp != null ? tmp : Collections.<Requirement> emptyList());
         viewer.setInput(requires);

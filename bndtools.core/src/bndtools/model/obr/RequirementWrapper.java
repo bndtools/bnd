@@ -17,7 +17,10 @@ public class RequirementWrapper implements Requirement {
     }
 
     public String getFilter() {
-        return delegate.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+        String filter = delegate.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+        if (filter == null)
+            filter = "";
+        return filter;
     }
 
     public boolean isMultiple() {

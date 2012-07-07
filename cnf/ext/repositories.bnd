@@ -14,14 +14,14 @@ eclipse-repo: aQute.lib.deployer.obr.OBR;locations='file:${workspace}/cnf/eclips
 ## Eclipse SDK 4.2RC4
 #eclipse-repo: aQute.lib.deployer.obr.OBR;locations='https://s3.amazonaws.com/eclipse-obr-4.2RC4/repository.xml';name=Eclipse SDK 4.2RC4
 
-# Local OBR
+## Local OBR
 #-plugin:\
 #	aQute.lib.deployer.obr.OBR;locations='file:${repo}/jars/repository.xml';name=Bnd Build Repository,\
 #	aQute.lib.deployer.obr.OBR;locations='file:${repo}/bundles/repository.xml';name=Bnd Repository,\
 #	${eclipse-repo}
 
 
-# Remote OBR
+## Remote OBR
 -plugin: aQute.lib.deployer.obr.OBR;locations=https://raw.github.com/bndtools/repo/master/jars/repository.xml;name=Bnd Build Repository,\
 	aQute.lib.deployer.obr.OBR;locations=https://raw.github.com/bndtools/repo/master/bundles/repository.xml;name=Bnd Repository,\
 	${eclipse-repo}
