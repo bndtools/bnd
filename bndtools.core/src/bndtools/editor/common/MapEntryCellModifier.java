@@ -68,11 +68,12 @@ public class MapEntryCellModifier<K, V> implements ICellModifier {
         @SuppressWarnings("unchecked")
         Map<K,V> map = (Map<K,V>) viewer.getInput();
 
-        if (element instanceof Item) {
-            element = ((Item) element).getData();
+        Object e = element;
+        if (e instanceof Item) {
+            e = ((Item) e).getData();
         }
         @SuppressWarnings("unchecked")
-        K key = (K) element;
+        K key = (K) e;
 
         boolean changed = false;
         if (PROP_VALUE.equals(property)) {
@@ -83,7 +84,7 @@ public class MapEntryCellModifier<K, V> implements ICellModifier {
             changed = (newValue == null && previous != null) || (newValue != null && !newValue.equals(previous));
             viewer.refresh(key);
         } else if (PROP_NAME.equals(property)) {
-            if (!element.equals(editResult)) {
+            if (!e.equals(editResult)) {
                 V value = map.remove(key);
                 viewer.remove(key);
 

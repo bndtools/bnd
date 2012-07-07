@@ -113,11 +113,11 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
     }
 
     void launch(IPath targetPath, String mode) {
-        targetPath = targetPath.makeRelative();
+        IPath tp = targetPath.makeRelative();
         try {
-            ILaunchConfiguration config = findLaunchConfig(targetPath);
+            ILaunchConfiguration config = findLaunchConfig(tp);
             if (config == null) {
-                ILaunchConfigurationWorkingCopy wc = createConfiguration(targetPath);
+                ILaunchConfigurationWorkingCopy wc = createConfiguration(tp);
                 config = wc.doSave();
             }
             DebugUITools.launch(config, mode);

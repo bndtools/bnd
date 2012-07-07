@@ -94,10 +94,10 @@ public class FileUtils {
     public static boolean isAncestor(File dir, File child) {
         if (child == null)
             return false;
-        child = child.getAbsoluteFile();
-        if (child.equals(dir))
+        File c = child.getAbsoluteFile();
+        if (c.equals(dir))
             return true;
-        return isAncestor(dir, child.getParentFile());
+        return isAncestor(dir, c.getParentFile());
     }
 
     public static IResource toWorkspaceResource(File file) {

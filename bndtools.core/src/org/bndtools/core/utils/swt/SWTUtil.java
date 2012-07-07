@@ -14,17 +14,18 @@ public class SWTUtil {
 
     public static void recurseEnable(boolean enable, Control control) {
         Object data = control.getData();
+        boolean en = enable;
         if (data != null && data instanceof OverrideEnablement)
-            enable = ((OverrideEnablement) data).override(enable);
+            en = ((OverrideEnablement) data).override(en);
         else {
             data = control.getData(OVERRIDE_ENABLEMENT);
             if (data != null && data instanceof OverrideEnablement)
-                enable = ((OverrideEnablement) data).override(enable);
+                en = ((OverrideEnablement) data).override(en);
         }
-        control.setEnabled(enable);
+        control.setEnabled(en);
         if (control instanceof Composite) {
             for (Control child : ((Composite) control).getChildren()) {
-                recurseEnable(enable, child);
+                recurseEnable(en, child);
             }
         }
     }

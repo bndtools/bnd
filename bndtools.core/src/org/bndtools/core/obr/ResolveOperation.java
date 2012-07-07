@@ -217,13 +217,13 @@ public class ResolveOperation implements IRunnableWithProgress {
             repo.setURI(index.toString());
             repos.add(repo);
 
-            hopCount--;
-            if (hopCount > 0 && repo.getReferrals() != null) {
+            int hc = hopCount - 1;
+            if (hc > 0 && repo.getReferrals() != null) {
                 for (Referral referral : repo.getReferrals()) {
                     URI referralUri = new URL(index.toURL(), referral.getUrl()).toURI();
-                    hopCount = (referral.getDepth() > hopCount) ? hopCount : referral.getDepth();
+                    hc = (referral.getDepth() > hc) ? hc : referral.getDepth();
 
-                    addRepository(referralUri, visited, repos, hopCount, connector, cacheDir);
+                    addRepository(referralUri, visited, repos, hc, connector, cacheDir);
                 }
             }
         }
