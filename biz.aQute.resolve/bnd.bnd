@@ -9,5 +9,5 @@
 
 Bundle-Version: 0.0.0.${tstamp;yyyyMMdd-HHmmss}
 Export-Package: biz.aQute.resolve
-Private-Package: aQute.lib.osgi.resource
+Private-Package: biz.aQute.resolve.internal,aQute.lib.osgi.resource
 Conditional-Package: aQute.libg.*

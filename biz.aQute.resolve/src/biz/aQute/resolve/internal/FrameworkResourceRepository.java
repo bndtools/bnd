@@ -1,4 +1,4 @@
-package biz.aQute.resolve;
+package biz.aQute.resolve.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;

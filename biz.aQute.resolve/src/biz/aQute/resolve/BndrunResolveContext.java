@@ -23,6 +23,8 @@ import org.osgi.service.repository.Repository;
 import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolveContext;
 
+import biz.aQute.resolve.internal.FrameworkResourceRepository;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.service.Registry;
@@ -48,11 +50,11 @@ public class BndrunResolveContext extends ResolveContext {
 
     private boolean initialised = false;
 
-    private Resource frameworkResource = null;
-    private Version frameworkResourceVersion = null;
+    Resource frameworkResource = null;
+    Version frameworkResourceVersion = null;
     private Repository frameworkResourceRepo;
 
-    private Resource inputRequirementsResource = null;
+    Resource inputRequirementsResource = null;
     private EE ee;
 
     public BndrunResolveContext(BndEditModel runModel, Registry registry) {
