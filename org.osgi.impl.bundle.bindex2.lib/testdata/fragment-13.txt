@@ -18,10 +18,10 @@
     <attribute name='osgi.wiring.host' value='org.example.m'/>
     <attribute name='bundle-version' type='Version' value='0.0.0'/>
   </capability>
-  <requirement namespace='osgi.wiring.ee'>
-    <directive name='filter' value='(ee=J2SE-1.4)'/>
+  <requirement namespace='osgi.ee'>
+    <directive name='filter' value='(osgi.ee=J2SE-1.4)'/>
   </requirement>
-  <requirement namespace='osgi.wiring.ee'>
-    <directive name='filter' value='(ee=OSGi/Minimum-1.1)'/>
+  <requirement namespace='osgi.ee'>
+    <directive name='filter' value='(osgi.ee=OSGi/Minimum-1.1)'/>
   </requirement>
 </resource>

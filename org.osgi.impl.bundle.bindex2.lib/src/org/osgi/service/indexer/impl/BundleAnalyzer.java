@@ -396,19 +396,15 @@ class BundleAnalyzer implements ResourceAnalyzer {
 	}
 	
 	private void doBREE(Resource resource, List<? super Requirement> reqs) throws Exception {
-		@SuppressWarnings("deprecation")
 		String breeStr = resource.getManifest().getMainAttributes().getValue(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT);
 		Map<String, Map<String, String>> brees = OSGiHeader.parseHeader(breeStr);
 		
 		for (String bree : brees.keySet()) {
-			StringBuilder filter = new StringBuilder();
-			filter.append("(ee=");
-			filter.append(OSGiHeader.removeDuplicateMarker(bree));
-			filter.append(')');
+			String filter = String.format("(%s=%s)", Namespaces.NS_EE, OSGiHeader.removeDuplicateMarker(bree));
 			
 			Builder builder = new Builder()
-				.setNamespace(Namespaces.NS_WIRING_EE)
-				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
+				.setNamespace(Namespaces.NS_EE)
+				.addDirective(Namespaces.DIRECTIVE_FILTER, filter);
 			
 			reqs.add(builder.buildRequirement());
 		}
