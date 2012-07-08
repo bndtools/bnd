@@ -13,17 +13,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.resource.Resource;
 import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.indexer.impl.BIndex2;
+import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
 import org.osgi.service.log.LogService;
 import org.osgi.service.repository.ContentNamespace;
 
@@ -261,6 +261,8 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI baseUri, boolean pretty,
 			Registry registry, LogService log) throws Exception {
 		BIndex2 indexer = new BIndex2();
+		indexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
+		
 		if (log != null)
 			indexer.setLog(log);
 
