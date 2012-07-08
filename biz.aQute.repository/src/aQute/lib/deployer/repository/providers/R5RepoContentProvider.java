@@ -203,11 +203,11 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 					case END_ELEMENT :
 						localName = reader.getLocalName();
 						if (TAG_CAPABILITY.equals(localName)) {
-							if (resourceBuilder != null)
+							if (resourceBuilder != null && capReqBuilder != null)
 								resourceBuilder.addCapability(capReqBuilder);
 							capReqBuilder = null;
 						} else if (TAG_REQUIREMENT.equals(localName)) {
-							if (resourceBuilder != null)
+							if (resourceBuilder != null && capReqBuilder != null)
 								resourceBuilder.addRequirement(capReqBuilder);
 							capReqBuilder = null;
 						} else if (TAG_RESOURCE.equals(localName)) {
