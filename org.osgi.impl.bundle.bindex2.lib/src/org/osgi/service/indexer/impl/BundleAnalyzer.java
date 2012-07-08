@@ -399,14 +399,26 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		String breeStr = resource.getManifest().getMainAttributes().getValue(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT);
 		Map<String, Map<String, String>> brees = OSGiHeader.parseHeader(breeStr);
 		
-		for (String bree : brees.keySet()) {
-			String filter = String.format("(%s=%s)", Namespaces.NS_EE, OSGiHeader.removeDuplicateMarker(bree));
+		final String filter;
+		if (!brees.isEmpty()) {
+			if (brees.size() == 1) {
+				String bree = brees.keySet().iterator().next();
+				filter = String.format("(%s=%s)", Namespaces.NS_EE, bree);
+			} else {
+				StringBuilder builder = new StringBuilder().append("(|");
+				for (String bree : brees.keySet()) {
+					bree = OSGiHeader.removeDuplicateMarker(bree);
+					builder.append(String.format("(%s=%s)", Namespaces.NS_EE, bree));
+				}
+				builder.append(')');
+				filter = builder.toString();
+			}
 			
-			Builder builder = new Builder()
-				.setNamespace(Namespaces.NS_EE)
-				.addDirective(Namespaces.DIRECTIVE_FILTER, filter);
-			
-			reqs.add(builder.buildRequirement());
+			Requirement requirement = new Builder()
+			.setNamespace(Namespaces.NS_EE)
+			.addDirective(Namespaces.DIRECTIVE_FILTER, filter)
+			.buildRequirement();
+			reqs.add(requirement);
 		}
 	}
 	
