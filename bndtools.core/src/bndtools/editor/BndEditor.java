@@ -20,8 +20,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.bndtools.core.obr.ObrResolutionJob;
-import org.bndtools.core.obr.ObrResolutionResult;
+import org.bndtools.core.resolve.ResolutionResult;
+import org.bndtools.core.resolve.ResolveJob;
+import org.bndtools.core.resolve.ui.ResolutionWizard;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.core.resources.IFile;
@@ -80,7 +81,6 @@ import bndtools.editor.pages.WorkspacePage;
 import bndtools.launch.LaunchConstants;
 import bndtools.types.Pair;
 import bndtools.utils.SWTConcurrencyUtil;
-import bndtools.wizards.obr.ObrResolutionWizard;
 
 public class BndEditor extends ExtendedFormEditor implements IResourceChangeListener {
     private static final ILogger logger = Logger.getLogger();
@@ -253,7 +253,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             }
 
             // Create resolver job and pre-validate
-            final ObrResolutionJob job = new ObrResolutionJob(file, model);
+            final ResolveJob job = new ResolveJob(file, model);
             IStatus validation = job.validateBeforeRun();
             if (!validation.isOK()) {
                 String message = "Unable to run the OBR resolver. NB.: the file will still be saved.";
@@ -267,9 +267,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             final UIJob completionJob = new UIJob(shell.getDisplay(), "Display Resolution Results") {
                 @Override
                 public IStatus runInUIThread(IProgressMonitor monitor) {
-                    ObrResolutionResult result = job.getResolutionResult();
-                    ObrResolutionWizard wizard = new ObrResolutionWizard(model, file, result);
-                    if (!result.isResolved() || !result.getOptional().isEmpty()) {
+                    ResolutionResult result = job.getResolutionResult();
+                    ResolutionWizard wizard = new ResolutionWizard(model, file, result);
+                    if (result.getOutcome() != ResolutionResult.Outcome.Resolved || !result.getOptional().isEmpty()) {
                         WizardDialog dialog = new WizardDialog(shell, wizard);
                         if (dialog.open() != Window.OK) {
                             if (!wizard.performFinish()) {
