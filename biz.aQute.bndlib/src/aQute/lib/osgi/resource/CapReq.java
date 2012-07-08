@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
@@ -90,8 +91,18 @@ class CapReq implements Capability, Requirement {
 
 	@Override
 	public String toString() {
-		return mode + " [namespace=" + namespace + ", resource=" + System.identityHashCode(resource) + ", directives="
-				+ directives + ", attributes=" + attributes + "]";
+		StringBuilder builder = new StringBuilder();
+		if (mode == MODE.Capability) {
+			Object value = attributes.get(namespace);
+			builder.append(namespace).append('=').append(value);
+		} else {
+			String filter = directives.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+			builder.append(filter);
+			if (Namespace.RESOLUTION_OPTIONAL.equals(directives.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE))) {
+				builder.append("%OPT");
+			}
+		}
+		return builder.toString();
 	}
 
 }

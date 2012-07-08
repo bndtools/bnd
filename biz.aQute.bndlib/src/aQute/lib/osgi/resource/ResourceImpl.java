@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -55,12 +56,22 @@ class ResourceImpl implements Resource {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("ResourceImpl [caps=");
-		builder.append(allCapabilities);
-		builder.append(", reqs=");
-		builder.append(allRequirements);
-		builder.append("]");
+		final StringBuilder builder = new StringBuilder();
+		List<Capability> identities = getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
+		if (identities != null && identities.size() == 1) {
+			Capability idCap = identities.get(0);
+			Object id = idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+			Object version = idCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+			
+			builder.append(id).append(" ver=").append(version);
+		} else {
+			// Generic toString
+			builder.append("ResourceImpl [caps=");
+			builder.append(allCapabilities);
+			builder.append(", reqs=");
+			builder.append(allRequirements);
+			builder.append("]");
+		}
 		return builder.toString();
 	}
 
