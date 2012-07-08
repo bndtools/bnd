@@ -15,9 +15,11 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.service.resolver.HostedCapability;
 
 import test.lib.MockRegistry;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
 import aQute.lib.osgi.resource.CapReqBuilder;
 import biz.aQute.resolve.BndrunResolveContext;
 
@@ -199,5 +201,22 @@ public class BndrunResolveContextTest extends TestCase {
         Iterator<Resource> iter = mandRes.iterator();
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(iter.next()));
         assertEquals("__INITIAL__", iter.next().getCapabilities("osgi.identity").get(0).getAttributes().get("osgi.identity"));
+    }
+
+    public void testEERequirementResolvesFramework() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFramework("org.apache.felix.framework");
+        runModel.setEE(EE.JavaSE_1_6);
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+
+        Requirement req = new CapReqBuilder("osgi.ee").addDirective("filter", "(osgi.ee=J2SE-1.5)").buildSyntheticRequirement();
+        List<Capability> providers = context.findProviders(req);
+
+        assertEquals(1, providers.size());
+        assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
     }
 }

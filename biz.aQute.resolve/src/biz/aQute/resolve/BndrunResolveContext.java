@@ -24,6 +24,7 @@ import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolveContext;
 
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.service.Registry;
 import aQute.lib.osgi.resource.CapReqBuilder;
 import aQute.lib.osgi.resource.Filters;
@@ -52,6 +53,7 @@ public class BndrunResolveContext extends ResolveContext {
     private Repository frameworkResourceRepo;
 
     private Resource inputRequirementsResource = null;
+    private EE ee;
 
     public BndrunResolveContext(BndEditModel runModel, Registry registry) {
         this.runModel = runModel;
@@ -62,11 +64,17 @@ public class BndrunResolveContext extends ResolveContext {
         if (initialised)
             return;
 
+        loadEE();
         loadRepositories();
         findFramework();
         constructInputRequirements();
 
         initialised = true;
+    }
+
+    private void loadEE() {
+        EE tmp = runModel.getEE();
+        ee = (tmp != null) ? tmp : EE.JavaSE_1_6;
     }
 
     private void loadRepositories() {
@@ -128,7 +136,7 @@ public class BndrunResolveContext extends ResolveContext {
                             if (frameworkResourceVersion == null || (foundVersion.compareTo(frameworkResourceVersion) > 0)) {
                                 frameworkResource = frameworkCap.getResource();
                                 frameworkResourceVersion = foundVersion;
-                                frameworkResourceRepo = new SingletonResourceRepository(frameworkResource);
+                                frameworkResourceRepo = new FrameworkResourceRepository(frameworkResource, ee);
                             }
                         }
                     }
@@ -152,6 +160,11 @@ public class BndrunResolveContext extends ResolveContext {
 
             inputRequirementsResource = resBuilder.build();
         }
+    }
+
+    public boolean isInputRequirementResource(Resource resource) {
+        Capability id = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0);
+        return IDENTITY_INITIAL_RESOURCE.equals(id.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE));
     }
 
     private Version toVersion(Object object) throws IllegalArgumentException {
@@ -204,7 +217,7 @@ public class BndrunResolveContext extends ResolveContext {
         if (frameworkResourceRepo != null) {
             Map<Requirement,Collection<Capability>> providers = frameworkResourceRepo.findProviders(Collections.singleton(requirement));
             Collection<Capability> capabilities = providers.get(requirement);
-            if (capabilities != null) {
+            if (capabilities != null && !capabilities.isEmpty()) {
                 result.addAll(capabilities);
                 // scoreResource
             }
@@ -214,7 +227,7 @@ public class BndrunResolveContext extends ResolveContext {
         for (Repository repo : repos) {
             Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singleton(requirement));
             Collection<Capability> capabilities = providers.get(requirement);
-            if (capabilities != null) {
+            if (capabilities != null && !capabilities.isEmpty()) {
                 result.ensureCapacity(result.size() + capabilities.size());
                 for (Capability capability : capabilities) {
                     // filter out OSGi frameworks
