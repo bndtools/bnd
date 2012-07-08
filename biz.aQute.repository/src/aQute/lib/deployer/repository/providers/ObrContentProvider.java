@@ -13,8 +13,12 @@ import javax.xml.transform.stream.*;
 
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.namespace.service.ServiceNamespace;
+import org.osgi.resource.Namespace;
 import org.osgi.resource.Resource;
 import org.osgi.service.bindex.*;
 import org.osgi.service.log.*;
@@ -50,7 +54,19 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 	private static final String	ATTR_REFERRAL_DEPTH			= "depth";
 
 	private static final String	TAG_CAPABILITY				= "capability";
+	private static final String TAG_REQUIRE 				= "require";
+	private static final String ATTR_NAME					= "name";
+	private static final String ATTR_EXTEND					= "extend";
+	private static final String ATTR_OPTIONAL				= "optional";
+	private static final String ATTR_FILTER					= "filter";
+	
 	private static final String	TAG_PROPERTY				= "p";
+	private static final String ATTR_PROPERTY_NAME			= "n";
+	private static final String ATTR_PROPERTY_TYPE			= "t";
+	private static final String ATTR_PROPERTY_VALUE			= "v";
+	
+	private static final String PROPERTY_USES				= "uses";
+	private static final String TYPE_VERSION				= "version";
 
 	private BundleIndexer		indexer;
 
@@ -81,6 +97,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		XMLStreamReader reader = inputFactory.createXMLStreamReader(source);
 		
 		ResourceBuilder resourceBuilder = null;
+		CapReqBuilder capReqBuilder = null;
 
 		while (reader.hasNext()) {
 			int type = reader.next();
@@ -96,12 +113,42 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 					} else if (TAG_RESOURCE.equals(localName)) {
 						resourceBuilder = new ResourceBuilder();
 						
+						
 						String bsn = reader.getAttributeValue(null, ATTR_RESOURCE_SYMBOLIC_NAME);
 						String versionStr = reader.getAttributeValue(null, ATTR_RESOURCE_VERSION);
 						Version version = Version.parseVersion(versionStr);
 						String uri = reader.getAttributeValue(null, ATTR_RESOURCE_URI);
 						URI resolvedUri = resolveUri(uri, baseUri);
 						addBasicCapabilities(resourceBuilder, bsn, version, resolvedUri);
+						addUnresolvableRequirement(resourceBuilder);
+					} else if (TAG_CAPABILITY.equals(localName)) {
+						String obrName = reader.getAttributeValue(null, ATTR_NAME);
+						String namespace = mapObrNameToR5Namespace(obrName, false);
+						capReqBuilder = new CapReqBuilder(namespace);
+					} else if (TAG_REQUIRE.equals(localName)) {
+						String obrName = reader.getAttributeValue(null, ATTR_NAME);
+						boolean extend = "true".equalsIgnoreCase(reader.getAttributeValue(null,  ATTR_EXTEND));
+						String namespace = mapObrNameToR5Namespace(obrName, extend);
+						boolean optional = "true".equalsIgnoreCase(reader.getAttributeValue(null, ATTR_OPTIONAL));
+						
+						capReqBuilder = new CapReqBuilder(namespace);
+						if (optional)
+							capReqBuilder.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Namespace.RESOLUTION_OPTIONAL);
+						String filter = translateObrFilter(namespace, reader.getAttributeValue(null, ATTR_FILTER));
+						capReqBuilder.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
+					} else if (TAG_PROPERTY.equals(localName)) {
+						String name = reader.getAttributeValue(null, ATTR_PROPERTY_NAME);
+						String typeStr = reader.getAttributeValue(null, ATTR_PROPERTY_TYPE);
+						String valueStr = reader.getAttributeValue(null, ATTR_PROPERTY_VALUE);
+						if (capReqBuilder != null) {
+							name = mapObrPropertyToR5(capReqBuilder.getNamespace(), name);
+							if (PROPERTY_USES.equals(name))
+								capReqBuilder.addDirective(PROPERTY_USES, valueStr);
+							else {
+								Object value = convertProperty(valueStr, typeStr);
+								capReqBuilder.addAttribute(name, value);
+							}
+						}
 					}
 					break;
 				case END_ELEMENT:
@@ -111,11 +158,80 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 							Resource resource = resourceBuilder.build();
 							listener.processResource(resource);
 						}
+					} else if (TAG_CAPABILITY.equals(localName)) {
+						if (resourceBuilder != null && capReqBuilder != null)
+							resourceBuilder.addCapability(capReqBuilder);
+						capReqBuilder = null;
+					} else if (TAG_REQUIRE.equals(localName)) {
+						if (resourceBuilder != null && capReqBuilder != null)
+							resourceBuilder.addRequirement(capReqBuilder);
+						capReqBuilder = null;
 					}
 			}
 		}
 	}
 	
+	private Object convertProperty(String value, String typeName) {
+		final Object result;
+		if (TYPE_VERSION.equals(typeName))
+			result = Version.parseVersion(value);
+		else
+			result = value;
+		return result;
+	}
+	
+	private String mapObrNameToR5Namespace(String obrName, boolean extend) {
+		if ("bundle".equals(obrName))
+			return extend ? HostNamespace.HOST_NAMESPACE : BundleNamespace.BUNDLE_NAMESPACE;
+		if ("package".equals(obrName))
+			return PackageNamespace.PACKAGE_NAMESPACE;
+		if ("service".equals(obrName))
+			return ServiceNamespace.SERVICE_NAMESPACE;
+		if ("ee".equals(obrName))
+			return ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE;
+		
+		return obrName;
+	}
+	
+	private String translateObrFilter(String namespace, String filter) {
+		if (PackageNamespace.PACKAGE_NAMESPACE.equals(namespace))
+			return filter.replaceAll("\\(package", "(" + PackageNamespace.PACKAGE_NAMESPACE);
+		
+		if (ServiceNamespace.SERVICE_NAMESPACE.equals(namespace))
+			return filter.replaceAll("\\(service", "(" + ServiceNamespace.SERVICE_NAMESPACE);
+		
+		if (BundleNamespace.BUNDLE_NAMESPACE.equals(namespace)) {
+			filter = filter.replaceAll("\\(symbolicname", "(" + BundleNamespace.BUNDLE_NAMESPACE);
+			return filter.replaceAll("\\(version", "(" + BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+		}
+		
+		if (ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE.equals(namespace))
+			return filter.replaceAll("\\(ee", "(" + ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+		
+		return filter;
+	}
+	
+	private String mapObrPropertyToR5(String namespace, String propName) {
+		if (BundleNamespace.BUNDLE_NAMESPACE.equals(namespace)) {
+			if ("symbolicname".equals(propName))
+				return BundleNamespace.BUNDLE_NAMESPACE;
+			if ("version".equals(propName))
+				return BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+		}
+		
+		if (PackageNamespace.PACKAGE_NAMESPACE.equals(namespace)) {
+			if ("package".equals(propName))
+				return PackageNamespace.PACKAGE_NAMESPACE;
+		}
+		
+		if (ServiceNamespace.SERVICE_NAMESPACE.equals(namespace)) {
+			if ("service".equals(propName))
+				return ServiceNamespace.SERVICE_NAMESPACE;
+		}
+		
+		return propName;
+	}
+
 	private URI resolveUri(String uriStr, URI baseUri) throws URISyntaxException {
 		URI resolved;
 		
@@ -138,18 +254,19 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 			.addAttribute(ContentNamespace.CONTENT_NAMESPACE, "DUMMY")
 			.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, resolvedUri);
 		
-		CapReqBuilder bundle = new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE)
-			.addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn)
-			.addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
-		
 		CapReqBuilder host = new CapReqBuilder(HostNamespace.HOST_NAMESPACE)
 			.addAttribute(HostNamespace.HOST_NAMESPACE, bsn)
 			.addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
 		
 		builder.addCapability(identity)
 			.addCapability(content)
-			.addCapability(bundle)
 			.addCapability(host);
+	}
+	
+	private void addUnresolvableRequirement(ResourceBuilder builder) {
+		CapReqBuilder noresolve = new CapReqBuilder("bnd.noresolve").
+				addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(bnd.noresolve=true)");
+		builder.addRequirement(noresolve);
 	}
 
 	private static int parseInt(String value) {
