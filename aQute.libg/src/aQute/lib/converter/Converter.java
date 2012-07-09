@@ -38,8 +38,8 @@ public class Converter {
 	public Object convert(Type type, Object o) throws Exception {
 		Class resultType = getRawClass(type);
 		if (o == null) {
-			if (resultType.isPrimitive()||  Number.class.isAssignableFrom(resultType)) 
-				return convert(type,0);
+			if (resultType.isPrimitive() || Number.class.isAssignableFrom(resultType))
+				return convert(type, 0);
 
 			return null; // compatible with any
 		}
@@ -231,26 +231,39 @@ public class Converter {
 		}
 
 		if (o instanceof Map) {
+			String key = null;
 			try {
 				Map<Object,Object> map = (Map) o;
 				Object instance = resultType.newInstance();
 				for (Map.Entry e : map.entrySet()) {
-					String key = (String) e.getKey();
-					Field f = resultType.getField(key);
-					Object value = convert(f.getGenericType(), e.getValue());
-					f.set(instance, value);
+					key = (String) e.getKey();
+					try {
+						Field f = resultType.getField(key);
+						Object value = convert(f.getGenericType(), e.getValue());
+						f.set(instance, value);
+					}
+					catch (Exception ee) {
+						
+						// We cannot find the key, so try the __extra field
+						Field f = resultType.getField("__extra");
+						Map<String,Object> extra = (Map<String,Object>) f.get(instance);
+						if ( extra == null) {
+							extra = new HashMap<String,Object>();
+							f.set(instance, extra);
+						}
+						extra.put(key, convert(Object.class,e.getValue()));
+						
+					}
 				}
 				return instance;
 			}
 			catch (Exception e) {
-				// fall through
+				return error("No conversion found for " + o.getClass() + " to " + type + ", error " + e + " on key " + key);
 			}
 		}
 
 		return error("No conversion found for " + o.getClass() + " to " + type);
 	}
-
-
 
 	private Number number(Object o) {
 		if (o instanceof Number)
@@ -446,10 +459,10 @@ public class Converter {
 
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				Object o = properties.get(method.getName());
-				if ( o == null)
+				if (o == null)
 					o = properties.get(mangleMethodName(method.getName()));
 
-				return convert( method.getGenericReturnType(), o);
+				return convert(method.getGenericReturnType(), o);
 			}
 
 		});
@@ -472,14 +485,14 @@ public class Converter {
 		return sb.toString();
 	}
 
-
-
 	public static <T> T cnv(TypeReference<T> tr, Object source) throws Exception {
 		return new Converter().convert(tr, source);
 	}
+
 	public static <T> T cnv(Class<T> tr, Object source) throws Exception {
 		return new Converter().convert(tr, source);
 	}
+
 	public static Object cnv(Type tr, Object source) throws Exception {
 		return new Converter().convert(tr, source);
 	}
