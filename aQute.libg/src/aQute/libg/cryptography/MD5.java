@@ -35,4 +35,7 @@ public class MD5 extends Digest {
 		return ALGORITHM;
 	}
 
+	public static MD5 digest(byte [] data) throws Exception {
+		return getDigester().digest(data);
+	}
 }

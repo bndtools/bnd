@@ -35,4 +35,7 @@ public class SHA1 extends Digest {
 		return ALGORITHM;
 	}
 
+	public static SHA1 digest(byte [] data) throws Exception {
+		return getDigester().digest(data);
+	}
 }

@@ -35,4 +35,7 @@ public class SHA256 extends Digest {
 		return ALGORITHM;
 	}
 
+	public static SHA256 digest(byte [] data) throws Exception {
+		return getDigester().digest(data);
+	}
 }
