@@ -28,8 +28,7 @@ public class SearchUtils {
         Object element = match.getElement();
         if (element instanceof IJavaElement)
             return (IJavaElement) element;
-        else
-            return null;
+        return null;
     }
 
     /**

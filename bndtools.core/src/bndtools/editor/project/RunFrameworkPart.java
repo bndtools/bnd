@@ -26,19 +26,21 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
 import bndtools.BndConstants;
 import bndtools.Central;
-import bndtools.Plugin;
-import bndtools.api.EE;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 import bndtools.utils.ModificationLock;
 
 public class RunFrameworkPart extends SectionPart implements PropertyChangeListener {
+    private static final ILogger logger = Logger.getLogger();
 
     private final ModificationLock lock = new ModificationLock();
     private final OSGiFrameworkContentProvider fwkContentProvider = new OSGiFrameworkContentProvider();
 
-    private BndtoolsEditModel model;
+    private BndEditModel model;
     private String selectedFramework = null;
     private EE selectedEE = null;
 
@@ -76,7 +78,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         try {
             frameworkViewer.setInput(Central.getWorkspace());
         } catch (Exception e) {
-            Plugin.logError("Error accessing bnd workspace.", e);
+            logger.logError("Error accessing bnd workspace.", e);
         }
 
         Label lblExecEnv = tk.createLabel(composite, "Execution Env.:");
@@ -152,7 +154,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     @Override
     public void initialize(IManagedForm form) {
         super.initialize(form);
-        model = (BndtoolsEditModel) form.getInput();
+        model = (BndEditModel) form.getInput();
 
         model.addPropertyChangeListener(BndConstants.RUNFRAMEWORK, this);
         model.addPropertyChangeListener(BndConstants.RUNEE, this);

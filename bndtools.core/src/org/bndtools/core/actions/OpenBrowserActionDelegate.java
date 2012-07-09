@@ -7,9 +7,11 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 
 public class OpenBrowserActionDelegate implements IWorkbenchWindowActionDelegate {
+    private static final ILogger logger = Logger.getLogger();
 
     private IWorkbenchWindow window;
 
@@ -19,7 +21,7 @@ public class OpenBrowserActionDelegate implements IWorkbenchWindowActionDelegate
             IWebBrowser browser = browserSupport.createBrowser(6, null, null, null);
             browser.openURL(null);
         } catch (Exception e) {
-            Plugin.logError("Error opening browser", e);
+            logger.logError("Error opening browser", e);
         }
     }
 

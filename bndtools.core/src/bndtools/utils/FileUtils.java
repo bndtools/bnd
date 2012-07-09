@@ -71,9 +71,13 @@ public class FileUtils {
     }
 
     public static void writeFully(IDocument document, IFile file, boolean createIfAbsent) throws CoreException {
+        writeFully(document.get(), file, createIfAbsent);
+    }
+
+    public static void writeFully(String text, IFile file, boolean createIfAbsent) throws CoreException {
         ByteArrayInputStream inputStream;
         try {
-            inputStream = new ByteArrayInputStream(document.get().getBytes("UTF-8"));
+            inputStream = new ByteArrayInputStream(text.getBytes(file.getCharset(true)));
         } catch (UnsupportedEncodingException e) {
             return;
         }
@@ -90,10 +94,10 @@ public class FileUtils {
     public static boolean isAncestor(File dir, File child) {
         if (child == null)
             return false;
-        child = child.getAbsoluteFile();
-        if (child.equals(dir))
+        File c = child.getAbsoluteFile();
+        if (c.equals(dir))
             return true;
-        return isAncestor(dir, child.getParentFile());
+        return isAncestor(dir, c.getParentFile());
     }
 
     public static IResource toWorkspaceResource(File file) {

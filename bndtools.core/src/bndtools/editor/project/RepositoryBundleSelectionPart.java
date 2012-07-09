@@ -54,12 +54,14 @@ import org.eclipse.ui.part.ResourceTransfer;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
 import bndtools.Central;
+import bndtools.Logger;
 import bndtools.Plugin;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.api.ILogger;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
@@ -71,12 +73,13 @@ import bndtools.wizards.repo.RepoBundleSelectionWizard;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
+    private static final ILogger logger = Logger.getLogger();
 
     private final String propertyName;
     private Table table;
     protected TableViewer viewer;
 
-    private BndtoolsEditModel model;
+    private BndEditModel model;
     protected List<VersionedClause> bundles;
     protected ToolItem removeItemTool;
 
@@ -356,7 +359,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
     Project getProject() {
         Project project = null;
         try {
-            BndtoolsEditModel model = (BndtoolsEditModel) getManagedForm().getInput();
+            BndEditModel model = (BndEditModel) getManagedForm().getInput();
             File bndFile = model.getBndResource();
             IPath path = Central.toPath(bndFile);
             IFile resource = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
@@ -367,7 +370,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                 project = new Project(Central.getWorkspace(), projectDir, resource.getLocation().toFile());
             }
         } catch (Exception e) {
-            Plugin.logError("Error getting project from editor model", e);
+            logger.logError("Error getting project from editor model", e);
         }
         return project;
     }
@@ -399,9 +402,9 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         saveToModel(model, bundles);
     }
 
-    protected abstract void saveToModel(BndtoolsEditModel model, List<VersionedClause> bundles);
+    protected abstract void saveToModel(BndEditModel model, List<VersionedClause> bundles);
 
-    protected abstract List<VersionedClause> loadFromModel(BndtoolsEditModel model);
+    protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
 
     protected final RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
         // Need to get the project from the input model...
@@ -428,7 +431,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        model = (BndtoolsEditModel) form.getInput();
+        model = (BndEditModel) form.getInput();
         model.addPropertyChangeListener(propertyName, this);
     }
 

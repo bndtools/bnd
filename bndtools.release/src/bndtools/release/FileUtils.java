@@ -44,20 +44,24 @@ public class FileUtils {
 		}
 	}
 
-	public static void writeFully(IDocument document, IFile file, boolean createIfAbsent) throws CoreException {
-		ByteArrayInputStream inputStream;
-		try {
-			inputStream = new ByteArrayInputStream(document.get().getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			return;
-		}
-		if(file.exists()) {
-			file.setContents(inputStream, false, true, null);
-		} else {
-			if(createIfAbsent)
-				file.create(inputStream, false, null);
-			else
-				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "File does not exist: " + file.getFullPath().toString(), null));
-		}
-	}
+    public static void writeFully(IDocument document, IFile file, boolean createIfAbsent) throws CoreException {
+        writeFully(document.get(), file, createIfAbsent);
+    }
+
+    public static void writeFully(String text, IFile file, boolean createIfAbsent) throws CoreException {
+        ByteArrayInputStream inputStream;
+        try {
+            inputStream = new ByteArrayInputStream(text.getBytes(file.getCharset(true)));
+        } catch (UnsupportedEncodingException e) {
+            return;
+        }
+        if (file.exists()) {
+            file.setContents(inputStream, false, true, null);
+        } else {
+            if (createIfAbsent)
+                file.create(inputStream, false, null);
+            else
+                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "File does not exist: " + file.getFullPath().toString(), null));
+        }
+    }
 }

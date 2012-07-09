@@ -24,10 +24,13 @@ import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.preferences.BndPreferences;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
+    private static final ILogger logger = Logger.getLogger();
 
     protected Project model;
 
@@ -115,7 +118,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
                                 try {
                                     launcher.cleanup();
                                 } catch (Throwable t) {
-                                    Plugin.getDefault().getLogger().logError("Error cleaning launcher temporary files", t);
+                                    logger.logError("Error cleaning launcher temporary files", t);
                                 }
                             }
                         }
@@ -179,13 +182,14 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
     }
 
     protected String addJavaLibraryPath(ILaunchConfiguration configuration, String args) throws CoreException {
+        String a = args;
         // Following code copied from AbstractJavaLaunchConfigurationDelegate
-        int libraryPath = args.indexOf("-Djava.library.path"); //$NON-NLS-1$
+        int libraryPath = a.indexOf("-Djava.library.path"); //$NON-NLS-1$
         if (libraryPath < 0) {
             // if a library path is already specified, do not override
             String[] javaLibraryPath = getJavaLibraryPath(configuration);
             if (javaLibraryPath != null && javaLibraryPath.length > 0) {
-                StringBuffer path = new StringBuffer(args);
+                StringBuffer path = new StringBuffer(a);
                 path.append(" -Djava.library.path="); //$NON-NLS-1$
                 path.append("\""); //$NON-NLS-1$
                 for (int i = 0; i < javaLibraryPath.length; i++) {
@@ -195,10 +199,10 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
                     path.append(javaLibraryPath[i]);
                 }
                 path.append("\""); //$NON-NLS-1$
-                args = path.toString();
+                a = path.toString();
             }
         }
-        return args;
+        return a;
     }
 
     @SuppressWarnings("deprecation")

@@ -51,7 +51,7 @@ public class RepositoryImpl implements Repository {
 
     public Resource[] getResources() {
         if (m_resources == null) {
-            m_resources = (Resource[]) m_resourceSet.toArray(new Resource[m_resourceSet.size()]);
+            m_resources = m_resourceSet.toArray(new Resource[m_resourceSet.size()]);
             Arrays.sort(m_resources, new ResourceComparator());
 
         }
@@ -114,6 +114,7 @@ public class RepositoryImpl implements Repository {
     /**
      * Default setter method when setting parsed data from the XML file, which currently ignores everything.
      **/
+    @SuppressWarnings("unused")
     protected static Object put(Object key, Object value) {
         // Ignore everything for now.
         return null;

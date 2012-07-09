@@ -29,31 +29,29 @@ import aQute.lib.osgi.Packages;
 import aQute.lib.osgi.Processor;
 import aQute.libg.header.Attrs;
 import bndtools.Central;
-import bndtools.Plugin;
+import bndtools.Logger;
 import bndtools.api.ILogger;
 import bndtools.utils.SWTConcurrencyUtil;
 
 public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule {
+    private static final ILogger logger = Logger.getLogger();
 
     private static final ConcurrentMap<String,ExportedPackageDecoratorJob> instances = new ConcurrentHashMap<String,ExportedPackageDecoratorJob>();
 
     private final IProject project;
-    private final ILogger logger;
 
-    public static void scheduleForProject(IProject project, ILogger logger) {
-        ExportedPackageDecoratorJob job = new ExportedPackageDecoratorJob(project, logger);
+    public static void scheduleForProject(IProject project) {
+        ExportedPackageDecoratorJob job = new ExportedPackageDecoratorJob(project);
 
         if (instances.putIfAbsent(project.getFullPath().toPortableString(), job) == null) {
             job.schedule(1000);
         }
     }
 
-    ExportedPackageDecoratorJob(IProject project, ILogger logger) {
+    ExportedPackageDecoratorJob(IProject project) {
         super("Update exported packages: " + project.getName());
 
         this.project = project;
-        this.logger = logger;
-
         setRule(this);
     }
 
@@ -90,7 +88,7 @@ public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule 
                         }
                     }
                 } catch (Exception e) {
-                    Plugin.getDefault().getLogger().logWarning(MessageFormat.format("Unable to process exported packages for builder of {0}.", builder.getPropertiesFile()), e);
+                    logger.logWarning(MessageFormat.format("Unable to process exported packages for builder of {0}.", builder.getPropertiesFile()), e);
                 }
             }
             Central.setExportedPackageModel(project, allExports);

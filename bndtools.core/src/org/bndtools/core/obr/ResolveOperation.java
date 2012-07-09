@@ -40,11 +40,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.osgi.framework.Constants;
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.service.IndexProvider;
@@ -64,19 +68,19 @@ import aQute.libg.version.Version;
 import bndtools.BndConstants;
 import bndtools.Central;
 import bndtools.Plugin;
-import bndtools.api.EE;
-import bndtools.api.IBndModel;
+import bndtools.api.ILogger;
 
 public class ResolveOperation implements IRunnableWithProgress {
+    private static final ILogger logger = bndtools.Logger.getLogger();
 
     private final DataModelHelperImpl helper = new DataModelHelperImpl();
 
     private final IFile runFile;
-    private final IBndModel model;
+    private final BndEditModel model;
 
     private ObrResolutionResult result = null;
 
-    public ResolveOperation(IFile runFile, IBndModel model) {
+    public ResolveOperation(IFile runFile, BndEditModel model) {
         this.runFile = runFile;
         this.model = model;
     }
@@ -186,10 +190,10 @@ public class ResolveOperation implements IRunnableWithProgress {
             addSystemPackagesExtraCapabilities(resolver, systemPackages);
 
         // Add requirements
-        List<bndtools.api.Requirement> requirements = model.getRunRequire();
+        List<Requirement> requirements = model.getRunRequires();
         if (requirements != null)
-            for (bndtools.api.Requirement req : requirements) {
-                resolver.add(helper.requirement(req.getName(), req.getFilter()));
+            for (Requirement req : requirements) {
+                resolver.add(helper.requirement(req.getNamespace(), req.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE)));
             }
 
         boolean resolved = resolver.resolve();
@@ -213,13 +217,13 @@ public class ResolveOperation implements IRunnableWithProgress {
             repo.setURI(index.toString());
             repos.add(repo);
 
-            hopCount--;
-            if (hopCount > 0 && repo.getReferrals() != null) {
+            int hc = hopCount - 1;
+            if (hc > 0 && repo.getReferrals() != null) {
                 for (Referral referral : repo.getReferrals()) {
                     URI referralUri = new URL(index.toURL(), referral.getUrl()).toURI();
-                    hopCount = (referral.getDepth() > hopCount) ? hopCount : referral.getDepth();
+                    hc = (referral.getDepth() > hc) ? hc : referral.getDepth();
 
-                    addRepository(referralUri, visited, repos, hopCount, connector, cacheDir);
+                    addRepository(referralUri, visited, repos, hc, connector, cacheDir);
                 }
             }
         }
@@ -303,7 +307,7 @@ public class ResolveOperation implements IRunnableWithProgress {
                         result.add(resource);
                         resolver.add(resource);
                     } catch (IOException e) {
-                        Plugin.logError(Messages.ResolveOperation_errorReadingBundle + file, e);
+                        logger.logError(Messages.ResolveOperation_errorReadingBundle + file, e);
                     } finally {
                         if (stream != null)
                             stream.close();
@@ -311,7 +315,7 @@ public class ResolveOperation implements IRunnableWithProgress {
                 }
             }
         } catch (Exception e) {
-            Plugin.logError(Messages.ResolveOperation_errorGettingBuilders + runFile.getProject(), e);
+            logger.logError(Messages.ResolveOperation_errorGettingBuilders + runFile.getProject(), e);
         }
         return result;
     }

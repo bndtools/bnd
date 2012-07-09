@@ -19,18 +19,14 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
     Token T_INSTRUCTION;
     Token T_OPTION;
     Token T_DIRECTIVE;
-    Token T_PROPERTY;
-    Token T_COMPONENT;
 
     static final String SINGLELINE_COMMENT_TYPE = "___slc";
     static Properties syntax = null;
 
     BndScanner scanner;
     MultiLineCommentScanner multiLineCommentScanner;
-    ISharedTextColors colors;
 
     public BndSourceViewerConfiguration(ISharedTextColors colors) {
-        this.colors = colors;
         T_DEFAULT = new Token(new TextAttribute(colors.getColor(new RGB(0, 0, 0))));
         T_MACRO = new Token(new TextAttribute(colors.getColor(new RGB(0, 255, 0)), null, SWT.BOLD));
         T_ERROR = new Token(new TextAttribute(colors.getColor(new RGB(255, 0, 0)), null, SWT.BOLD));
@@ -38,8 +34,6 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
         T_INSTRUCTION = new Token(new TextAttribute(colors.getColor(new RGB(0, 0, 255)), null, SWT.BOLD));
         T_OPTION = new Token(new TextAttribute(colors.getColor(new RGB(0, 0, 255))));
         T_DIRECTIVE = new Token(new TextAttribute(colors.getColor(new RGB(60, 60, 255)), null, SWT.BOLD));
-        T_PROPERTY = new Token(new TextAttribute(colors.getColor(new RGB(60, 60, 255)), null, SWT.BOLD));
-        T_COMPONENT = new Token(new TextAttribute(colors.getColor(new RGB(60, 60, 255)), null, SWT.BOLD));
     }
 
     @Override

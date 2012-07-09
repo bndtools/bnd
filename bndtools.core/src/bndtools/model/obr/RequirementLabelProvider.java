@@ -98,8 +98,8 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
         Requirement requirement;
         if (element instanceof Requirement)
             requirement = (Requirement) element;
-        else if (element instanceof bndtools.api.Requirement)
-            requirement = new RequirementWrapper((bndtools.api.Requirement) element);
+        else if (element instanceof org.osgi.resource.Requirement)
+            requirement = new RequirementWrapper((org.osgi.resource.Requirement) element);
         else
             return;
 

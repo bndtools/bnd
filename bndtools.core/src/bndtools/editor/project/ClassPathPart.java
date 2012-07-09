@@ -47,9 +47,9 @@ import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.lib.osgi.Constants;
 import bndtools.Plugin;
-import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.utils.ClassFolderFilter;
 import bndtools.utils.ClassPathLabelProvider;
 import bndtools.utils.FileExtensionFilter;
@@ -62,7 +62,7 @@ public class ClassPathPart extends SectionPart implements PropertyChangeListener
     private List<IPath> classPath;
 
     private TableViewer viewer;
-    private BndtoolsEditModel model;
+    private BndEditModel model;
 
     public ClassPathPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
@@ -244,7 +244,7 @@ public class ClassPathPart extends SectionPart implements PropertyChangeListener
     @Override
     public void initialize(IManagedForm form) {
         super.initialize(form);
-        model = (BndtoolsEditModel) form.getInput();
+        model = (BndEditModel) form.getInput();
         model.addPropertyChangeListener(Constants.CLASSPATH, this);
     }
 

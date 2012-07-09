@@ -5,18 +5,21 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
+
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ServiceComponent;
 import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.lib.osgi.resource.CapReqBuilder;
 import aQute.libg.header.Attrs;
-import bndtools.api.EE;
-import bndtools.api.IBndModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
-import bndtools.api.Requirement;
 
 public class ComponentTemplate implements IProjectTemplate {
 
-    public void modifyInitialBndModel(IBndModel model) {
+    public void modifyInitialBndModel(BndEditModel model) {
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
         List<VersionedClause> tmp;
 
@@ -43,7 +46,7 @@ public class ComponentTemplate implements IProjectTemplate {
         addRunBundle("org.apache.felix.gogo.command", runPath, requires, false);
         addRunBundle("org.apache.felix.gogo.runtime", runPath, requires, true);
 
-        model.setRunRequire(requires);
+        model.setRunRequires(requires);
         model.setRunBundles(runPath);
         model.setRunFramework("org.apache.felix.framework");
         model.setEE(EE.JavaSE_1_6);
@@ -58,8 +61,10 @@ public class ComponentTemplate implements IProjectTemplate {
 
     private static void addRunBundle(String bsn, Collection< ? super VersionedClause> runPath, Collection< ? super Requirement> requires, boolean inferred) {
         runPath.add(new VersionedClause(bsn, new Attrs()));
-        if (!inferred)
-            requires.add(new Requirement("bundle", "(symbolicname=" + bsn + ")"));
+        if (!inferred) {
+            Requirement req = new CapReqBuilder("bundle").addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(symbolicname=" + bsn + ")").buildSyntheticRequirement();
+            requires.add(req);
+        }
     }
 
     public void modifyInitialBndProject(IBndProject project) {

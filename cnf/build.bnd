@@ -6,7 +6,7 @@ bndlib-version-base:    2.0
 bndlib-version-ceiling: 2.1
 bndlib: biz.aQute.bndlib;version='[${bndlib-version-base},${bndlib-version-ceiling})'
 
-aQute-repository-base: 2.0
+aQute-repository-base: 2.0.1
 aQute-repository-ceiling: 2.1
 aQute-repository: biz.aQute.repository;version='[${aQute-repository-base},${aQute-repository-ceiling})'
 

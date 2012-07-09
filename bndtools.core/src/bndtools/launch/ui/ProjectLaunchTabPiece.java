@@ -41,12 +41,15 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.Central;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.builder.BndProjectNature;
 import bndtools.launch.LaunchConstants;
 import bndtools.utils.FileExtensionFilter;
 
 public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
+    private static final ILogger logger = Logger.getLogger();
 
     private static final String PROP_LAUNCH_TARGET = "targetName";
     private static final String PROP_ENABLE_TRACE = "enableTrace";
@@ -168,7 +171,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
             Workspace workspace = Central.getWorkspace();
             projects = workspace.getAllProjects();
         } catch (Exception e) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Internal error querying projects.", e));
+            logger.logError("Internal error querying projects.", e);
             return Collections.emptyList();
         }
         List<IProject> result = new ArrayList<IProject>(projects.size());
@@ -230,7 +233,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
                     return MessageFormat.format("Project {0} is not a Bnd OSGi project.", targetName);
                 }
             } catch (CoreException e) {
-                Plugin.logError("Error checking for Bnd OSGi project nature", e);
+                logger.logError("Error checking for Bnd OSGi project nature", e);
                 return "Error checking for Bnd OSGi project nature";
             }
         } else if (targetResource.getType() == IResource.FILE) {

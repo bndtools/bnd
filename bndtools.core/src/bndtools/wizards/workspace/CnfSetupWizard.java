@@ -86,8 +86,6 @@ public class CnfSetupWizard extends Wizard {
         if (confirmPage == page) {
             if (decision == CnfSetupDecision.SETUP)
                 next = operation.getType() == CnfSetupOperation.Type.Import ? importPage : templatePage;
-            else
-                next = null;
         } else if (importPage == page)
             next = operation.getType() == CnfSetupOperation.Type.Create ? templatePage : null;
 
@@ -202,9 +200,8 @@ public class CnfSetupWizard extends Wizard {
             if (confirmNever()) {
                 setDisabled(true);
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
         if (decision == CnfSetupDecision.SKIP) {
             return true;

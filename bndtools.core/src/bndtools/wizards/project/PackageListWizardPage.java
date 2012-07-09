@@ -326,6 +326,7 @@ public class PackageListWizardPage extends WizardPage {
         propSupport.removePropertyChangeListener(propertyName, listener);
     }
 
+    @SuppressWarnings("unchecked")
     void doAddSelection() {
         IStructuredSelection sel = (IStructuredSelection) availableViewer.getSelection();
         availablePackages.removeAll(sel.toList());
@@ -345,6 +346,7 @@ public class PackageListWizardPage extends WizardPage {
         updateUI();
     }
 
+    @SuppressWarnings("unchecked")
     void doRemoveSelection() {
         IStructuredSelection sel = (IStructuredSelection) selectedViewer.getSelection();
         selectedPackages.removeAll(sel.toList());

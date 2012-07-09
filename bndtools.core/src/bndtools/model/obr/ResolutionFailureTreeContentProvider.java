@@ -102,14 +102,14 @@ public class ResolutionFailureTreeContentProvider implements ITreeContentProvide
             PotentialMatch match = findPotentialMatch(requirement);
             matches.add(match);
         }
-        return (PotentialMatch[]) matches.toArray(new PotentialMatch[matches.size()]);
+        return matches.toArray(new PotentialMatch[matches.size()]);
     }
 
     public Object[] getChildren(Object parentElem) {
         Object[] children;
         if (parentElem instanceof PotentialMatch) {
             Collection<Resource> resources = ((PotentialMatch) parentElem).getResources();
-            children = (Resource[]) resources.toArray(new Resource[resources.size()]);
+            children = resources.toArray(new Resource[resources.size()]);
         } else if (parentElem instanceof Resource) {
             List<Reason> reasons = unresolved.get(parentElem);
             List<PotentialMatch> matches = new LinkedList<PotentialMatch>();

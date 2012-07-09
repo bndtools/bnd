@@ -47,7 +47,9 @@ import aQute.libg.header.Attrs;
 import aQute.libg.header.Parameters;
 import aQute.libg.version.Version;
 import aQute.libg.version.VersionRange;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.model.importanalysis.ExportPackage;
 import bndtools.model.importanalysis.ImportPackage;
 import bndtools.model.importanalysis.RequiredBundle;
@@ -55,6 +57,7 @@ import bndtools.utils.BundleUtils;
 import bndtools.utils.FileUtils;
 
 public class AnalyseBundleResolutionJob extends Job {
+    private static final ILogger logger = Logger.getLogger();
 
     private final File[] files;
 
@@ -90,9 +93,9 @@ public class AnalyseBundleResolutionJob extends Job {
                     builderMap.put(inputFile, builder);
                     mergeCapabilities(exports, usedBy, bundleVersions, builder);
                 } catch (CoreException e) {
-                    Plugin.logError("Error in bnd resolution analysis.", e);
+                    logger.logError("Error in bnd resolution analysis.", e);
                 } catch (Exception e) {
-                    Plugin.logError("Error in bnd resolution analysis.", e);
+                    logger.logError("Error in bnd resolution analysis.", e);
                 }
             }
         }
@@ -223,7 +226,7 @@ public class AnalyseBundleResolutionJob extends Job {
                 try {
                     version = new Version(versionStr);
                 } catch (IllegalArgumentException e) {
-                    Plugin.logError("Error parsing version of bundle: " + bsn, e);
+                    logger.logError("Error parsing version of bundle: " + bsn, e);
                 }
             }
             if (version == null)
@@ -268,7 +271,7 @@ public class AnalyseBundleResolutionJob extends Job {
             try {
                 classes = builder.getClasses("", "IMPORTING", pkgName);
             } catch (Exception e) {
-                Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying importing classes.", e));
+                logger.logError("Error querying importing classes.", e);
             }
             for (Clazz clazz : classes) {
                 String fqn = clazz.getFQN();

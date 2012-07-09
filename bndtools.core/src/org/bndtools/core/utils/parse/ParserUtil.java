@@ -8,9 +8,10 @@ public class ParserUtil {
      * @return
      */
     public static String stripTrailingTildes(String pkgName) {
-        while (pkgName.length() > 0 && pkgName.charAt(pkgName.length() - 1) == '~')
-            pkgName = pkgName.substring(0, pkgName.length() - 1);
-        return pkgName;
+        String p = pkgName;
+        while (p.length() > 0 && p.charAt(p.length() - 1) == '~')
+            p = p.substring(0, p.length() - 1);
+        return p;
     }
 
 }

@@ -2,21 +2,25 @@ package bndtools.model.obr;
 
 import org.apache.felix.bundlerepository.Capability;
 import org.apache.felix.bundlerepository.Requirement;
+import org.osgi.resource.Namespace;
 
 public class RequirementWrapper implements Requirement {
 
-    private final bndtools.api.Requirement delegate;
+    private final org.osgi.resource.Requirement delegate;
 
-    public RequirementWrapper(bndtools.api.Requirement delegate) {
+    public RequirementWrapper(org.osgi.resource.Requirement delegate) {
         this.delegate = delegate;
     }
 
     public String getName() {
-        return delegate.getName();
+        return delegate.getNamespace();
     }
 
     public String getFilter() {
-        return delegate.getFilter();
+        String filter = delegate.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+        if (filter == null)
+            filter = "";
+        return filter;
     }
 
     public boolean isMultiple() {

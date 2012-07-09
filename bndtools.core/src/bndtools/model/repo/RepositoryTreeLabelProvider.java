@@ -18,10 +18,13 @@ import aQute.bnd.build.Project;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Central;
+import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.WorkspaceObrProvider;
+import bndtools.api.ILogger;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
+    private static final ILogger logger = Logger.getLogger();
 
     final Image localRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database.png").createImage();
     final Image remoteRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database_link.png").createImage();
@@ -36,12 +39,11 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
 
     @Override
     public void update(ViewerCell cell) {
-        @SuppressWarnings("unused")
-        WorkspaceObrProvider workspaceObr;
         try {
-            workspaceObr = Central.getWorkspaceObrProvider();
+            /* initialise WorkspaceObrProvider */
+            Central.getWorkspaceObrProvider();
         } catch (Exception e) {
-            workspaceObr = null;
+            /* ignore */
         }
 
         Object element = cell.getElement();
@@ -109,7 +111,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             try {
                 locations = ((IndexProvider) repository).getIndexLocations();
             } catch (Exception e) {
-                Plugin.getDefault().getLogger().logError("Unable to get repository index list", e);
+                logger.logError("Unable to get repository index list", e);
             }
         }
 

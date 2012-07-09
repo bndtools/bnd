@@ -20,9 +20,11 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContai
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 
 public class BndDependencySourceContainer extends CompositeSourceContainer {
+    private static final ILogger logger = Logger.getLogger();
 
     public static final String TYPE_ID = "org.bndtools.core.launch.sourceContainerTypes.bndDependencies";
 
@@ -72,7 +74,7 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                     }
                 }
             } catch (Exception e) {
-                Plugin.logError("Error querying Bnd Dependency source containers.", e);
+                logger.logError("Error querying Bnd Dependency source containers.", e);
             }
         }
 

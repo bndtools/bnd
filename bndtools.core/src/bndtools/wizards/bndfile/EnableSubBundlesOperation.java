@@ -20,17 +20,14 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.model.BndEditModel;
 import aQute.lib.osgi.Constants;
+import aQute.lib.properties.Document;
 import bndtools.Plugin;
-import bndtools.api.IBndModel;
-import bndtools.api.IPersistableBndModel;
-import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.utils.FileUtils;
 
 public class EnableSubBundlesOperation implements IWorkspaceRunnable {
@@ -66,17 +63,20 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
             throw newCoreException("Container path does not exist", null);
 
         // Create new project model
-        IPersistableBndModel newBundleModel = new BndtoolsEditModel();
+        BndEditModel newBundleModel = new BndEditModel();
 
         // Load project file and model
         IFile projectFile = container.getProject().getFile(Project.BNDFILE);
-        IPersistableBndModel projectModel;
-        IDocument projectDocument;
+        BndEditModel projectModel;
+        final Document projectDocument;
         try {
-            projectDocument = FileUtils.readFully(projectFile);
-            if (projectDocument == null)
-                projectDocument = new Document();
-            projectModel = new BndtoolsEditModel();
+            if (projectFile.exists()) {
+                byte[] bytes = FileUtils.readFully(projectFile.getContents());
+                projectDocument = new Document(new String(bytes, projectFile.getCharset()));
+            } else {
+                projectDocument = new Document("");
+            }
+            projectModel = new BndEditModel();
             projectModel.loadFrom(projectDocument);
         } catch (IOException e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, e.getMessage(), e));
@@ -115,11 +115,11 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
 
             // Save the project model
             projectModel.saveChangesTo(projectDocument);
-            FileUtils.writeFully(projectDocument, projectFile, false);
+            FileUtils.writeFully(projectDocument.get(), projectFile, false);
         }
 
         // Generate the new bundle model
-        Document newBundleDocument = new Document();
+        Document newBundleDocument = new Document("");
         newBundleModel.saveChangesTo(newBundleDocument);
 
         try {
@@ -151,7 +151,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
         return result;
     }
 
-    public static void moveBundleContentProperties(IBndModel sourceModel, IBndModel destModel, List<String> properties) {
+    public static void moveBundleContentProperties(BndEditModel sourceModel, BndEditModel destModel, List<String> properties) {
         for (String property : properties) {
             Object value = sourceModel.genericGet(property);
             destModel.genericSet(property, value);

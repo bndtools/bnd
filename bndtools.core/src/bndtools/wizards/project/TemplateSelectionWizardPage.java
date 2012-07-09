@@ -7,11 +7,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.api.IProjectTemplate;
 import bndtools.wizards.shared.AbstractTemplateSelectionWizardPage;
 
 public class TemplateSelectionWizardPage extends AbstractTemplateSelectionWizardPage {
+    private static final ILogger logger = Logger.getLogger();
 
     public static final String PROP_TEMPLATE = "template";
 
@@ -32,7 +35,7 @@ public class TemplateSelectionWizardPage extends AbstractTemplateSelectionWizard
                         template = (IProjectTemplate) configElem.createExecutableExtension("class");
                     } catch (CoreException e) {
                         error = e.getMessage();
-                        Plugin.logError("Error loading project template", e);
+                        logger.logError("Error loading project template", e);
                     }
                     propSupport.firePropertyChange(PROP_TEMPLATE, oldTemplate, template);
                     setErrorMessage(error);

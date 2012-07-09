@@ -24,7 +24,6 @@ import bndtools.internal.decorator.ExportedPackageDecoratorJob;
  * @author duckAsteroid
  */
 public class ExportedPackageDecorator extends LabelProvider implements ILightweightLabelDecorator {
-
     private ImageDescriptor plusIcon;
 
     public ExportedPackageDecorator() {
@@ -51,7 +50,7 @@ public class ExportedPackageDecorator extends LabelProvider implements ILightwei
                         decoration.addSuffix(" " + versions.toString());
                 }
             } else {
-                ExportedPackageDecoratorJob.scheduleForProject(project, Plugin.getDefault().getLogger());
+                ExportedPackageDecoratorJob.scheduleForProject(project);
             }
         }
     }

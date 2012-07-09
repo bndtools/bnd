@@ -54,7 +54,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -71,15 +70,16 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Constants;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.ServiceComponent;
 import aQute.libg.header.Attrs;
 import aQute.libg.version.Version;
 import bndtools.BndConstants;
+import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.api.ILogger;
-import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.utils.CachingContentProposalProvider;
 import bndtools.utils.JavaContentProposal;
 import bndtools.utils.JavaContentProposalLabelProvider;
@@ -87,6 +87,7 @@ import bndtools.utils.JavaTypeContentProposal;
 import bndtools.utils.ModificationLock;
 
 public class GeneralInfoPart extends SectionPart implements PropertyChangeListener {
+    private static final ILogger logger = Logger.getLogger();
 
     private static final String[] EDITABLE_PROPERTIES = new String[] {
             Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, BndConstants.SOURCES, BndConstants.OUTPUT, aQute.lib.osgi.Constants.SERVICE_COMPONENT, aQute.lib.osgi.Constants.DSANNOTATIONS
@@ -123,7 +124,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     private final Set<String> editablePropertySet;
     private final Set<String> dirtySet = new HashSet<String>();
 
-    private BndtoolsEditModel model;
+    private BndEditModel model;
     private ComponentChoice componentChoice;
 
     private Text txtVersion;
@@ -165,7 +166,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         txtActivator = toolkit.createText(composite, "", SWT.BORDER);
         txtActivator.setMessage("Enter activator class name");
 
-        Label lblComponents = toolkit.createLabel(composite, "Declarative Services:");
+        toolkit.createLabel(composite, "Declarative Services:");
         cmbComponents = new Combo(composite, SWT.READ_ONLY);
         cmbComponents.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
@@ -251,7 +252,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                             }
                         }
                     } catch (JavaModelException e) {
-                        ILogger logger = Plugin.getDefault().getLogger();
                         logger.logError("Error looking up activator class name: " + activatorClassName, e);
                     }
                 }
@@ -288,18 +288,16 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 }
             }
         });
-        if (activatorProposalAdapter != null) {
-            activatorProposalAdapter.addContentProposalListener(new IContentProposalListener() {
-                public void proposalAccepted(IContentProposal proposal) {
-                    if (proposal instanceof JavaContentProposal) {
-                        String selectedPackageName = ((JavaContentProposal) proposal).getPackageName();
-                        if (!model.isIncludedPackage(selectedPackageName)) {
-                            model.addPrivatePackage(selectedPackageName);
-                        }
+        activatorProposalAdapter.addContentProposalListener(new IContentProposalListener() {
+            public void proposalAccepted(IContentProposal proposal) {
+                if (proposal instanceof JavaContentProposal) {
+                    String selectedPackageName = ((JavaContentProposal) proposal).getPackageName();
+                    if (!model.isIncludedPackage(selectedPackageName)) {
+                        model.addPrivatePackage(selectedPackageName);
                     }
                 }
-            });
-        }
+            }
+        });
 
         // Layout
         GridLayout layout = new GridLayout(2, false);
@@ -457,7 +455,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        this.model = (BndtoolsEditModel) form.getInput();
+        this.model = (BndEditModel) form.getInput();
         this.model.addPropertyChangeListener(this);
     }
 
@@ -520,8 +518,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 window.run(false, false, runnable);
                 return result;
             } catch (InvocationTargetException e) {
-                IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error searching for BundleActivator types", e.getTargetException());
-                Plugin.log(status);
+                logger.logError("Error searching for BundleActivator types", e.getTargetException());
                 return Collections.emptyList();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

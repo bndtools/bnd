@@ -57,11 +57,14 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import aQute.lib.osgi.Constants;
 import aQute.lib.osgi.Jar;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.utils.ClassPathLabelProvider;
 import bndtools.utils.FileExtensionFilter;
 
 public class JarListWizardPage extends WizardPage {
+    private static final ILogger logger = Logger.getLogger();
 
     public static final String PROP_PATHS = "paths";
 
@@ -116,18 +119,16 @@ public class JarListWizardPage extends WizardPage {
             public boolean performDrop(Object data) {
                 if (data instanceof String[]) {
                     String[] newPaths = (String[]) data;
-                    if (newPaths != null) {
-                        List<IPath> added = new ArrayList<IPath>(newPaths.length);
-                        for (String path : newPaths) {
-                            added.add(new Path(path));
-                        }
+                    List<IPath> added = new ArrayList<IPath>(newPaths.length);
+                    for (String path : newPaths) {
+                        added.add(new Path(path));
+                    }
 
-                        if (!added.isEmpty()) {
-                            addToPaths(added);
-                            viewer.add(added.toArray(new IPath[added.size()]));
+                    if (!added.isEmpty()) {
+                        addToPaths(added);
+                        viewer.add(added.toArray(new IPath[added.size()]));
 
-                            update();
-                        }
+                        update();
                     }
                 }
 
@@ -203,6 +204,7 @@ public class JarListWizardPage extends WizardPage {
             }
         });
         btnRemove.addSelectionListener(new SelectionAdapter() {
+            @SuppressWarnings("unchecked")
             @Override
             public void widgetSelected(SelectionEvent e) {
                 removeFromPaths(((IStructuredSelection) viewer.getSelection()).toList());
@@ -273,7 +275,7 @@ public class JarListWizardPage extends WizardPage {
                     }
                 }
             } catch (Exception e) {
-                Plugin.logError("Error inspecting JAR file: " + path.toString(), e);
+                logger.logError("Error inspecting JAR file: " + path.toString(), e);
             } finally {
                 if (jar != null)
                     jar.close();

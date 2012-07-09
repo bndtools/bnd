@@ -18,16 +18,18 @@ import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.lib.io.IO;
 import aQute.libg.header.Attrs;
 import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
-import bndtools.Plugin;
+import bndtools.Logger;
 import bndtools.WorkspaceObrProvider;
-import bndtools.api.IBndModel;
+import bndtools.api.ILogger;
 
 public class ObrResolutionWizard extends Wizard {
+    private static final ILogger logger = Logger.getLogger();
 
     private static final String PATHS_EXTENSION = ".resolved";
 
@@ -43,10 +45,10 @@ public class ObrResolutionWizard extends Wizard {
         }
     };
 
-    private final IBndModel model;
+    private final BndEditModel model;
     private final IFile file;
 
-    public ObrResolutionWizard(IBndModel model, IFile file, ObrResolutionResult result) {
+    public ObrResolutionWizard(BndEditModel model, IFile file, ObrResolutionResult result) {
         this.model = model;
         this.file = file;
 
@@ -79,7 +81,7 @@ public class ObrResolutionWizard extends Wizard {
             File pathsFile = new File(targetDir, file.getName() + PATHS_EXTENSION);
             pathsStream = new PrintStream(pathsFile, "UTF-8");
         } catch (Exception e) {
-            Plugin.logError("Unable to write resolved path list in target directory for project " + file.getProject().getName(), e);
+            logger.logError("Unable to write resolved path list in target directory for project " + file.getProject().getName(), e);
         }
 
         // Generate -runbundles and path list

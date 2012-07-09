@@ -19,26 +19,22 @@ import org.objectweb.asm.Type;
 public class ClassBuilder implements Opcodes {
 
 	public static ClassWriter createInterface(String className) {
-		className = className.replace('.', '/');
 		ClassWriter cw = new ClassWriter(0);
-		cw.visit(V1_5, ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, className, null, "java/lang/Object", null);
+		cw.visit(V1_5, ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, className.replace('.', '/'), null, "java/lang/Object", null);
 
 		return cw;
 	}
 
-	public static void addStaticFinalField(String className, ClassWriter cw, String fieldName, Class<?> type,
-			Object data) {
-		className = className.replace('.', '/');
+	public static void addStaticFinalField(ClassWriter cw, String fieldName, Class<?> type) {
 		String typeName = Type.getDescriptor(type);
 
 		FieldVisitor fv;
 
 		fv = cw.visitField(ACC_PUBLIC + ACC_FINAL + ACC_STATIC, fieldName, typeName, null, "S1");
 		fv.visitEnd();
-
 	}
 
-	public static void addMethod(String className, ClassWriter cw, Class<?> returnType, String methodName,
+	public static void addMethod(ClassWriter cw, Class<?> returnType, String methodName,
 			Class<?>... params) {
 
 		Class<?> returnTypei = returnType;
@@ -56,12 +52,10 @@ public class ClassBuilder implements Opcodes {
 		MethodVisitor mv;
 		mv = cw.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, methodName, sb.toString(), null, null);
 		mv.visitCode();
-
 	}
 
-	public static byte[] endClass(String className, ClassWriter cw) {
+	public static byte[] endClass(ClassWriter cw) {
 		cw.visitEnd();
 		return cw.toByteArray();
-
 	}
 }

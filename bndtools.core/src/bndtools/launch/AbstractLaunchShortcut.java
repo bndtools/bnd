@@ -18,7 +18,6 @@ import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.DebugUITools;
-import org.eclipse.debug.ui.ILaunchShortcut;
 import org.eclipse.debug.ui.ILaunchShortcut2;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -34,9 +33,12 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 
-public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunchShortcut2 {
+public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
+    private static final ILogger logger = Logger.getLogger();
 
     private final String launchId;
 
@@ -111,11 +113,11 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
     }
 
     void launch(IPath targetPath, String mode) {
-        targetPath = targetPath.makeRelative();
+        IPath tp = targetPath.makeRelative();
         try {
-            ILaunchConfiguration config = findLaunchConfig(targetPath);
+            ILaunchConfiguration config = findLaunchConfig(tp);
             if (config == null) {
-                ILaunchConfigurationWorkingCopy wc = createConfiguration(targetPath);
+                ILaunchConfigurationWorkingCopy wc = createConfiguration(tp);
                 config = wc.doSave();
             }
             DebugUITools.launch(config, mode);
@@ -195,7 +197,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut, ILaunch
 
             return result.toArray(new ILaunchConfiguration[result.size()]);
         } catch (CoreException e) {
-            Plugin.logError("Error retrieving launch configurations.", e);
+            logger.logError("Error retrieving launch configurations.", e);
             return null;
         }
     }

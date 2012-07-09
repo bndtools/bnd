@@ -47,7 +47,9 @@ import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Jar;
 import bndtools.Activator;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryTreeContentProvider;
@@ -58,6 +60,8 @@ import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public class RepositoriesView extends FilteredViewPart implements RepositoryListenerPlugin {
+    private static final ILogger logger = Logger.getLogger();
+
     private TreeViewer viewer;
 
     private Action collapseAllAction;
@@ -170,7 +174,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
                             try {
                                 IDE.openEditor(page, file);
                             } catch (PartInitException e) {
-                                Plugin.logError("Error opening editor for " + file, e);
+                                logger.logError("Error opening editor for " + file, e);
                             }
                         }
                     }
@@ -196,7 +200,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         registration = Activator.getDefault().getBundleContext().registerService(RepositoryListenerPlugin.class.getName(), this, null);
     }
 
-    private File[] convertSelectionToFiles(ISelection selection) {
+    private static File[] convertSelectionToFiles(ISelection selection) {
         if (!(selection instanceof IStructuredSelection))
             return new File[0];
 

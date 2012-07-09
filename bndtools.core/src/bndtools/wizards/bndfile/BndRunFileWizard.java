@@ -30,10 +30,13 @@ import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
 import org.eclipse.ui.ide.IDE;
 import org.osgi.framework.Bundle;
 
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.utils.BundleUtils;
 
 public class BndRunFileWizard extends Wizard implements INewWizard {
+    private static final ILogger logger = Logger.getLogger();
 
     protected IStructuredSelection selection;
     protected IWorkbench workbench;
@@ -101,7 +104,7 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
             URL entry = bundle.getEntry(path);
             return entry != null ? entry.openStream() : null;
         } catch (IOException e) {
-            Plugin.logError(String.format("Unable to open template entry: %s in bundle %s", path, bsn), e);
+            logger.logError(String.format("Unable to open template entry: %s in bundle %s", path, bsn), e);
             return null;
         }
     }

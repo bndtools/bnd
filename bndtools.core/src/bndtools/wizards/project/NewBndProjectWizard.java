@@ -17,8 +17,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 
+import aQute.bnd.build.model.BndEditModel;
 import bndtools.api.IProjectTemplate;
-import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.editor.model.BndProject;
 
 class NewBndProjectWizard extends AbstractNewBndProjectWizard {
@@ -48,8 +48,8 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
      * @param monitor
      */
     @Override
-    protected BndtoolsEditModel generateBndModel(IProgressMonitor monitor) {
-        BndtoolsEditModel model = super.generateBndModel(monitor);
+    protected BndEditModel generateBndModel(IProgressMonitor monitor) {
+        BndEditModel model = super.generateBndModel(monitor);
 
         IProjectTemplate template = templatePage.getTemplate();
         if (template != null) {

@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -43,6 +42,7 @@ import bndtools.api.ILogger;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
+    private static final ILogger logger = Logger.getLogger();
 
     public static final String PLUGIN_ID = "bndtools.core";
     public static final String BND_EDITOR_ID = PLUGIN_ID + ".bndEditor";
@@ -67,29 +67,12 @@ public class Plugin extends AbstractUIPlugin {
 
     private volatile Central central;
 
-    private final ILogger logger = new ILogger() {
-        public void logError(String message, Throwable exception) {
-            getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
-        }
-
-        public void logWarning(String message, Throwable exception) {
-            getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, 0, message, exception));
-        }
-
-        public void logInfo(String message, Throwable exception) {
-            getLog().log(new Status(IStatus.INFO, PLUGIN_ID, 0, message, exception));
-        }
-
-        public void logStatus(IStatus status) {
-            getLog().log(status);
-        }
-    };
-
     @Override
     public void start(BundleContext context) throws Exception {
         registerWorkspaceURLHandler(context);
         super.start(context);
         plugin = this;
+        Logger.setPlugin(this);
         this.bundleContext = context;
 
         scheduler = Executors.newScheduledThreadPool(1);
@@ -145,7 +128,7 @@ public class Plugin extends AbstractUIPlugin {
                     isp.start();
                 }
             } catch (CoreException e) {
-                logError("Error executing startup participant", e);
+                logger.logError("Error executing startup participant", e);
             }
         }
     }
@@ -155,7 +138,7 @@ public class Plugin extends AbstractUIPlugin {
             try {
                 isp.stop();
             } catch (Exception e) {
-                logError("Error stopping startup participant", e);
+                logger.logError("Error stopping startup participant", e);
             }
         }
     }
@@ -174,6 +157,7 @@ public class Plugin extends AbstractUIPlugin {
         resourceIndexerTracker.close();
         indexerTracker.close();
         this.bundleContext = null;
+        Logger.setPlugin(null);
         plugin = null;
         super.stop(context);
         unregisterWorkspaceURLHandler();
@@ -284,33 +268,6 @@ public class Plugin extends AbstractUIPlugin {
                 ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
             }
         });
-    }
-
-    public ILogger getLogger() {
-        return logger;
-    }
-
-    /**
-     * @deprecated Use {@link #getLogger() instead}
-     * @param status
-     */
-    @Deprecated
-    public static void log(IStatus status) {
-        Plugin instance = plugin;
-        if (instance != null) {
-            instance.getLog().log(status);
-        } else {
-            System.err.println(String.format("Unable to print to log for %s: bundle has been stopped.", Plugin.PLUGIN_ID));
-        }
-    }
-
-    /**
-     * @deprecated Use {@link #getLogger() instead}
-     * @param status
-     */
-    @Deprecated
-    public static void logError(String message, Throwable exception) {
-        log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
     }
 
     public Central getCentral() {

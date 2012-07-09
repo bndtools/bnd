@@ -12,16 +12,18 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 
+import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.utils.Function;
 
 public class BuildListeners {
+    private static final ILogger logger = Logger.getLogger();
 
     private final List<BuildListener> listeners;
     private final ServiceTracker listenerTracker;
 
-    public BuildListeners(ILogger logger) {
+    public BuildListeners() {
         IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "buildListeners");
         listeners = new ArrayList<BuildListener>(elements.length);
 

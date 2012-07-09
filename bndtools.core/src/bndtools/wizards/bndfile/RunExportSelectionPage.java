@@ -23,12 +23,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 
 import aQute.bnd.build.Project;
-import bndtools.api.IBndModel;
+import aQute.bnd.build.model.BndEditModel;
 
 public class RunExportSelectionPage extends WizardSelectionPage {
 
     private final IConfigurationElement[] elements;
-    private final IBndModel model;
+    private final BndEditModel model;
     private final Project bndProject;
 
     private final Map<IConfigurationElement,IWizardNode> nodeCache = new HashMap<IConfigurationElement,IWizardNode>();
@@ -36,7 +36,7 @@ public class RunExportSelectionPage extends WizardSelectionPage {
     private Table table;
     private TableViewer viewer;
 
-    protected RunExportSelectionPage(String pageName, IConfigurationElement[] elements, IBndModel model, Project bndProject) {
+    protected RunExportSelectionPage(String pageName, IConfigurationElement[] elements, BndEditModel model, Project bndProject) {
         super(pageName);
         setDescription("Select a wizard for exporting this Run Descriptor");
         setTitle("Export Wizard Selection");

@@ -111,7 +111,7 @@ public class ResourceImpl implements Resource {
     }
 
     public Requirement[] getRequirements() {
-        return (Requirement[]) m_reqList.toArray(new Requirement[m_reqList.size()]);
+        return m_reqList.toArray(new Requirement[m_reqList.size()]);
     }
 
     public void addRequire(Requirement req) {
@@ -119,7 +119,7 @@ public class ResourceImpl implements Resource {
     }
 
     public Capability[] getCapabilities() {
-        return (Capability[]) m_capList.toArray(new Capability[m_capList.size()]);
+        return m_capList.toArray(new Capability[m_capList.size()]);
     }
 
     public void addCapability(Capability cap) {
@@ -132,7 +132,7 @@ public class ResourceImpl implements Resource {
         if (catList == null) {
             return new String[0];
         }
-        return (String[]) catList.toArray(new String[catList.size()]);
+        return catList.toArray(new String[catList.size()]);
     }
 
     public void addCategory(String category) {
@@ -158,34 +158,34 @@ public class ResourceImpl implements Resource {
     }
 
     public void put(String key, String value, String type) {
-        key = key.toLowerCase();
+        String k = key.toLowerCase();
         m_hash = 0;
-        if (Property.URI.equals(type) || URI.equals(key)) {
+        if (Property.URI.equals(type) || URI.equals(k)) {
             if (m_uris == null) {
                 m_uris = new HashMap<String,String>();
             }
-            m_uris.put(key, value);
-        } else if (Property.VERSION.equals(type) || VERSION.equals(key)) {
-            m_map.put(key, VersionTable.getVersion(value));
-        } else if (Property.LONG.equals(type) || SIZE.equals(key)) {
-            m_map.put(key, Long.valueOf(value));
-        } else if (Property.SET.equals(type) || CATEGORY.equals(key)) {
+            m_uris.put(k, value);
+        } else if (Property.VERSION.equals(type) || VERSION.equals(k)) {
+            m_map.put(k, VersionTable.getVersion(value));
+        } else if (Property.LONG.equals(type) || SIZE.equals(k)) {
+            m_map.put(k, Long.valueOf(value));
+        } else if (Property.SET.equals(type) || CATEGORY.equals(k)) {
             StringTokenizer st = new StringTokenizer(value, ",");
             Set<String> s = new HashSet<String>();
             while (st.hasMoreTokens()) {
                 s.add(st.nextToken().trim());
             }
-            m_map.put(key, s);
+            m_map.put(k, s);
         } else {
-            m_map.put(key, value);
+            m_map.put(k, value);
         }
     }
 
     private void convertURIs() {
         if (m_uris != null) {
             for (Iterator<String> it = m_uris.keySet().iterator(); it.hasNext();) {
-                String key = (String) it.next();
-                String val = (String) m_uris.get(key);
+                String key = it.next();
+                String val = m_uris.get(key);
                 m_map.put(key, resolveUri(val));
             }
             m_uris = null;

@@ -15,10 +15,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -31,10 +28,15 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import aQute.lib.properties.IDocument;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
+import bndtools.editor.model.IDocumentWrapper;
 
 public class BndSourceEditorPage extends TextEditor implements IFormPage {
+    private static final ILogger logger = Logger.getLogger();
 
     private final Image icon;
 
@@ -58,14 +60,14 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
         this.formEditor = formEditor;
         setSourceViewerConfiguration(new BndSourceViewerConfiguration(getSharedColors()));
 
-        formEditor.getBndModel().addPropertyChangeListener(propChangeListener);
+        formEditor.getEditModel().addPropertyChangeListener(propChangeListener);
         ImageDescriptor iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_white_text.png");
         icon = iconDescriptor.createImage();
     }
 
     @Override
     public void dispose() {
-        this.formEditor.getBndModel().removePropertyChangeListener(propChangeListener);
+        this.formEditor.getEditModel().removePropertyChangeListener(propChangeListener);
         super.dispose();
         icon.dispose();
     }
@@ -140,22 +142,21 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
             IDocument doc = getDocument();
             String currentContent = doc.get();
             if (!currentContent.equals(lastLoaded))
-                formEditor.getBndModel().loadFrom(getDocument());
+                formEditor.getEditModel().loadFrom(getDocument());
         } catch (IOException e) {
-            Plugin.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading model from document.", e));
+            logger.logError("Error loading model from document.", e);
         }
     }
 
     void refresh() {
         IDocument document = getDocument();
-        formEditor.getBndModel().saveChangesTo(document);
+        formEditor.getEditModel().saveChangesTo(document);
     }
 
     private IDocument getDocument() {
         IDocumentProvider docProvider = getDocumentProvider();
         IEditorInput input = getEditorInput();
-        IDocument doc = docProvider.getDocument(input);
-        return doc;
+        return new IDocumentWrapper(docProvider.getDocument(input));
     }
 
     @Override

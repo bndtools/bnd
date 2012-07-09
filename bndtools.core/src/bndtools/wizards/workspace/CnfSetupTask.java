@@ -36,11 +36,14 @@ import org.osgi.framework.Bundle;
 
 import aQute.bnd.build.Workspace;
 import bndtools.Central;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.utils.BundleUtils;
 import bndtools.wizards.workspace.CnfInfo.Existence;
 
 public class CnfSetupTask extends WorkspaceModifyOperation {
+    private static final ILogger logger = Logger.getLogger();
 
     private final IConfigurationElement templateConfig;
     private final CnfSetupOperation operation;
@@ -156,7 +159,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         try {
             Central.getWorkspace().refresh();
         } catch (Exception e) {
-            Plugin.logError("Unable to refresh Bnd workspace", e);
+            logger.logError("Unable to refresh Bnd workspace", e);
         }
     }
 

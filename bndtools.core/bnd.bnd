@@ -25,6 +25,7 @@ Private-Package: bndtools,\
 	org.osgi.service.obr,\
 	aQute.libg.generics;-split-package:=merge-first,\
 	aQute.libg.tuple;-split-package:=merge-first,\
+	aQute.libg.filters,\
 	aQute.lib.io;-split-package:=merge-first,\
 	aQute.lib.filter;-split-package:=merge-first,\
 	org.kxml2.io,\
@@ -79,7 +80,7 @@ eclipse.deps: \
 
 -buildpath: ee.j2se;version=${javac.ee},\
 	${bndlib},\
-	biz.aQute.repository;version=2.0.0,\
+	${aQute-repository},\
 	patricia-trie,\
 	junit.osgi,\
 	${eclipse.deps},\

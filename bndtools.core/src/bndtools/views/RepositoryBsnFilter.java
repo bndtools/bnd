@@ -34,23 +34,24 @@ public class RepositoryBsnFilter extends ViewerFilter {
     private boolean searchPackage;
 
     public RepositoryBsnFilter(String filterStr) {
-        if (filterStr != null) {
-            if (filterStr.startsWith(IMPORTED)) {
+        String fs = filterStr;
+        if (fs != null) {
+            if (fs.startsWith(IMPORTED)) {
                 imported = true;
                 searchPackage = true;
-                filterStr = filterStr.substring(IMPORTED.length());
-            } else if (filterStr.startsWith(EXPORTED)) {
+                fs = fs.substring(IMPORTED.length());
+            } else if (fs.startsWith(EXPORTED)) {
                 exported = true;
                 searchPackage = true;
-                filterStr = filterStr.substring(EXPORTED.length());
-            } else if (filterStr.startsWith(PACKAGE)) {
+                fs = fs.substring(EXPORTED.length());
+            } else if (fs.startsWith(PACKAGE)) {
                 imported = true;
                 exported = true;
                 searchPackage = true;
-                filterStr = filterStr.substring(PACKAGE.length());
+                fs = fs.substring(PACKAGE.length());
             }
         }
-        this.filterStr = filterStr;
+        this.filterStr = fs;
     }
 
     @Override

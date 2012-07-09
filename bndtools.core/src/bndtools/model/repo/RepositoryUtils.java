@@ -10,10 +10,12 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
 import bndtools.Central;
-import bndtools.Plugin;
+import bndtools.Logger;
 import bndtools.WorkspaceObrProvider;
+import bndtools.api.ILogger;
 
 public class RepositoryUtils {
+    private static final ILogger logger = Logger.getLogger();
 
     private static final Object CACHE_REPO = "cache";
     private static final String VERSION_LATEST = "latest";
@@ -38,7 +40,7 @@ public class RepositoryUtils {
             }
             return repos;
         } catch (Exception e) {
-            Plugin.logError("Error loading repositories", e);
+            logger.logError("Error loading repositories", e);
             return Collections.emptyList();
         }
     }

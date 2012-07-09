@@ -114,14 +114,14 @@ public class JarDiff {
 					if (pi == null) {
 						pi = new PackageInfo(this, packageName);
 					}
-					Set<ClassInfo> projectClasses = getClassesFromPackage(pi, projectJar, packageName, null);
+					Set<ClassInfo> projectClasses = getClassesFromPackage(pi, projectJar, packageName);
 					if (projectClasses.size() == 0) {
 						continue;
 					}
 					if (!packages.containsKey(packageName)) {
 						packages.put(packageName, pi);
 					}
-					Set<ClassInfo> previousClasses = getClassesFromPackage(pi, previousJar, packageName, null);
+					Set<ClassInfo> previousClasses = getClassesFromPackage(pi, previousJar, packageName);
 
 					Set<ClassInfo> cis = pi.getClasses();
 
@@ -251,7 +251,7 @@ public class JarDiff {
 			String packageVersion = removeVersionQualifier(packageMap.get(VERSION));
 
 			/* can't be null */
-			Set<ClassInfo> projectClasses = getClassesFromPackage(pi, projectJar, packageName, packageVersion);
+			Set<ClassInfo> projectClasses = getClassesFromPackage(pi, projectJar, packageName);
 
 			Set<ClassInfo> cis = pi.getClasses();
 
@@ -261,7 +261,7 @@ public class JarDiff {
 			if (previousExportedPackages.containsKey(packageName)) {
 				Map<String, String> prevPackageMap = previousExportedPackages.get(packageName);
 				previousVersion = prevPackageMap.get(VERSION);
-				previousClasses = getClassesFromPackage(pi, previousJar, packageName, previousVersion);
+				previousClasses = getClassesFromPackage(pi, previousJar, packageName);
 			}
 
 			for (ClassInfo ci : projectClasses) {
@@ -338,7 +338,7 @@ public class JarDiff {
 				pi.setExported(true);
 				pi.setChangeCode(PackageInfo.CHANGE_CODE_REMOVED);
 
-				Set<ClassInfo> previousClasses = getClassesFromPackage(pi, previousJar, packageName, previousVersion);
+				Set<ClassInfo> previousClasses = getClassesFromPackage(pi, previousJar, packageName);
 				pi.setClasses(previousClasses);
 				pi.setSeverity(PKG_SEVERITY_MAJOR);
 				for (ClassInfo prevCi : previousClasses) {
@@ -452,13 +452,13 @@ public class JarDiff {
 	}
 
 	private static Set<ClassInfo> getClassesFromPackage(PackageInfo pi, Jar jar,
-			String packageName, String version) {
-		packageName = packageName.replace('.', '/');
+			String packageName) {
+		String pn = packageName.replace('.', '/');
 		Map<String, Map<String, Resource>> dirs = jar.getDirectories();
 		if (dirs == null) {
 			return Collections.emptySet();
 		}
-		Map<String, Resource> res = dirs.get(packageName);
+		Map<String, Resource> res = dirs.get(pn);
 		if (res == null) {
 			return Collections.emptySet();
 		}
@@ -857,7 +857,9 @@ public class JarDiff {
 			throw new RuntimeException(e);
 		} finally {
 			if (is != null) {
-				try {is.close();} catch (Exception e) {}
+				try {is.close();} catch (Exception e) {
+					/* ignore */
+				}
 			}
 		}
 		String version = packageInfo.getProperty(VERSION);

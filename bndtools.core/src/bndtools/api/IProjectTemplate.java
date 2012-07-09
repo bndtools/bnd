@@ -1,7 +1,10 @@
 package bndtools.api;
 
+import aQute.bnd.build.model.BndEditModel;
+
 public interface IProjectTemplate {
-    void modifyInitialBndModel(IBndModel model);
+
+    void modifyInitialBndModel(BndEditModel model);
 
     void modifyInitialBndProject(IBndProject project);
 

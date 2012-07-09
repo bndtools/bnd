@@ -32,10 +32,13 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 import bndtools.utils.FileUtils;
 
 public class PkgRenameParticipant extends RenameParticipant implements ISharableParticipant {
+    private static final ILogger logger = Logger.getLogger();
+
     private Map<IPackageFragment,RenameArguments> pkgFragments = new HashMap<IPackageFragment,RenameArguments>();
     private String changeTitle = null;
 
@@ -100,7 +103,7 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                     bndFileText = FileUtils.readFully(resource).get();
                 } catch (Exception e) {
                     String str = "Could not read file " + proxy.getName();
-                    Plugin.logError(str, e);
+                    logger.logError(str, e);
                     throw new OperationCanceledException(str);
                 }
 

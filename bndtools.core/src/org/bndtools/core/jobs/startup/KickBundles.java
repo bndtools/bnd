@@ -6,7 +6,8 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkUtil;
 
 import bndtools.IStartupParticipant;
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 import bndtools.utils.BundleUtils;
 
 /**
@@ -22,6 +23,7 @@ import bndtools.utils.BundleUtils;
  * @author Neil Bartlett <njbartlett@gmail.com>
  */
 public class KickBundles implements IStartupParticipant {
+    private static final ILogger logger = Logger.getLogger();
 
     private static final BundleContext CONTEXT = FrameworkUtil.getBundle(KickBundles.class).getBundleContext();
 
@@ -36,7 +38,7 @@ public class KickBundles implements IStartupParticipant {
             if (bindex != null)
                 bindex.start();
         } catch (BundleException e) {
-            Plugin.getDefault().getLogger().logError("Unable to start BIndex bundle", e);
+            logger.logError("Unable to start BIndex bundle", e);
         }
     }
 

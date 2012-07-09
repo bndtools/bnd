@@ -205,9 +205,8 @@ public class RepositorySelectionPart extends BndEditorPart {
                         // Both included => sort on position in included list
                         if (includedRepos != null) {
                             return includedRepos.indexOf(r1.getName()) - includedRepos.indexOf(r2.getName());
-                        } else {
-                            return allRepos.indexOf(r1) - allRepos.indexOf(r2);
                         }
+                        return allRepos.indexOf(r1) - allRepos.indexOf(r2);
                     }
                     // r1 included but r2 not => r1 comes first
                     return -1;

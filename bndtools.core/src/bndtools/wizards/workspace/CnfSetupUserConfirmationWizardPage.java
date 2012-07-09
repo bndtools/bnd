@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 
 public class CnfSetupUserConfirmationWizardPage extends WizardPage {
@@ -52,18 +53,19 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
     }
 
     public void createControl(Composite parent) {
-        setControl(parent = new Composite(parent, SWT.NONE));
+        Composite p = new Composite(parent, SWT.NONE);
+        setControl(p);
 
-        Text text = new Text(parent, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-        text.setBackground(parent.getBackground());
+        Text text = new Text(p, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
+        text.setBackground(p.getBackground());
         text.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
 
-        Group grpSetup = new Group(parent, SWT.NONE);
+        Group grpSetup = new Group(p, SWT.NONE);
         final Button btnSetup = new Button(grpSetup, SWT.RADIO);
         final Button btnSkip = new Button(grpSetup, SWT.RADIO);
         final Button btnNever = new Button(grpSetup, SWT.RADIO);
 
-        Group grpLocation = new Group(parent, SWT.NONE);
+        Group grpLocation = new Group(p, SWT.NONE);
         final Button btnCreateInEclipseWorkspace = new Button(grpLocation, SWT.RADIO);
         final Button btnCreateExternal = new Button(grpLocation, SWT.RADIO);
         txtExternalLocation = new Text(grpLocation, SWT.BORDER);
@@ -144,8 +146,12 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dialog = new DirectoryDialog(getShell());
                 String path = dialog.open();
-                if (path != null)
+                if (path != null) {
+                    String cnf = System.getProperty("file.separator") + Workspace.CNFDIR;
+                    if (!path.endsWith(cnf))
+                        path = path + cnf;
                     txtExternalLocation.setText(path);
+                }
             }
         });
 
@@ -154,7 +160,7 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
 
         gl = new GridLayout();
         gl.verticalSpacing = 20;
-        parent.setLayout(gl);
+        p.setLayout(gl);
 
         GridDataFactory.fillDefaults().grab(true, true).hint(250, SWT.DEFAULT).applyTo(text);
         GridDataFactory.fillDefaults().grab(true, false).applyTo(grpSetup);

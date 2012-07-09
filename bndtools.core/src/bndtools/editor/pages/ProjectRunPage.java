@@ -16,8 +16,8 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
-import bndtools.api.IBndModel;
 import bndtools.editor.project.AvailableBundlesPart;
 import bndtools.editor.project.RepositorySelectionPart;
 import bndtools.editor.project.RunBundlesPart;
@@ -29,10 +29,10 @@ import bndtools.utils.MessageHyperlinkAdapter;
 
 public class ProjectRunPage extends FormPage {
 
-    private final IBndModel model;
+    private final BndEditModel model;
 
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
-        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new ProjectRunPage(editor, model, id, "Run");
         }
 
@@ -41,7 +41,7 @@ public class ProjectRunPage extends FormPage {
         }
     };
 
-    public ProjectRunPage(FormEditor editor, IBndModel model, String id, String title) {
+    public ProjectRunPage(FormEditor editor, BndEditModel model, String id, String title) {
         super(editor, id, title);
         this.model = model;
     }

@@ -10,9 +10,12 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 
 import aQute.bnd.build.Project;
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 
 public class ProjectBundle implements IAdaptable {
+    private static final ILogger logger = Logger.getLogger();
+
     private final Project project;
     private final String bsn;
 
@@ -34,8 +37,7 @@ public class ProjectBundle implements IAdaptable {
         return "ProjectBundle [project=" + project + ", bsn=" + bsn + "]";
     }
 
-    public Object getAdapter(@SuppressWarnings("rawtypes")
-    Class adapter) {
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         Object result = null;
 
         if (IFile.class.equals(adapter) || IResource.class.equals(adapter)) {
@@ -47,7 +49,7 @@ public class ProjectBundle implements IAdaptable {
                     result = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
                 }
             } catch (Exception e) {
-                Plugin.logError(MessageFormat.format("Error retrieving bundle {0} from project {1}.", bsn, project.getName()), e);
+                logger.logError(MessageFormat.format("Error retrieving bundle {0} from project {1}.", bsn, project.getName()), e);
             }
         }
         return result;

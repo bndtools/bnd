@@ -17,10 +17,12 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import aQute.bnd.build.Project;
 import bndtools.Central;
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 import bndtools.classpath.BndContainerInitializer;
 
 public class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
+    private static final ILogger logger = Logger.getLogger();
 
     private final IProject addedProject;
 
@@ -46,15 +48,13 @@ public class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
             IProject eclipseProject = WorkspaceUtils.findOpenProject(wsroot, project);
             if (eclipseProject != null && !eclipseProject.equals(addedProject)) {
                 List<String> errors = new LinkedList<String>();
-                if (eclipseProject != null) {
-                    try {
-                        project.propertiesChanged();
-                        BndContainerInitializer.resetClasspaths(project, eclipseProject, errors);
-                        BndContainerInitializer.replaceClasspathProblemMarkers(eclipseProject, errors);
-                    } catch (CoreException e) {
-                        Plugin.log(e.getStatus());
-                        return Status.CANCEL_STATUS;
-                    }
+                try {
+                    project.propertiesChanged();
+                    BndContainerInitializer.resetClasspaths(project, eclipseProject, errors);
+                    BndContainerInitializer.replaceClasspathProblemMarkers(eclipseProject, errors);
+                } catch (CoreException e) {
+                    logger.logStatus(e.getStatus());
+                    return Status.CANCEL_STATUS;
                 }
                 progress.worked(1);
             }

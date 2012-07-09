@@ -12,7 +12,6 @@ import org.apache.felix.bundlerepository.Resource;
 import org.bndtools.core.obr.ObrResolutionResult;
 import org.bndtools.core.obr.ResolveOperation;
 import org.bndtools.core.utils.filters.ObrConstants;
-import org.bndtools.core.utils.filters.ObrFilterUtil;
 import org.bndtools.core.utils.swt.SWTUtil;
 import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
 import org.bndtools.core.utils.swt.SashHighlightForm;
@@ -53,11 +52,16 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.osgi.framework.Version;
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
 
+import aQute.bnd.build.model.BndEditModel;
+import aQute.lib.osgi.resource.CapReqBuilder;
+import aQute.lib.osgi.resource.Filters;
+import aQute.libg.filters.AndFilter;
+import aQute.libg.filters.SimpleFilter;
 import aQute.libg.version.VersionRange;
 import bndtools.Plugin;
-import bndtools.api.IBndModel;
-import bndtools.api.Requirement;
 import bndtools.model.obr.ReasonSorter;
 import bndtools.model.obr.ResolutionFailureFlatLabelProvider;
 import bndtools.wizards.workspace.ResourceLabelProvider;
@@ -66,7 +70,7 @@ public class ObrResultsWizardPage extends WizardPage {
 
     public static final String PROP_RESULT = "result";
 
-    private final IBndModel model;
+    private final BndEditModel model;
     private final IFile file;
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
@@ -89,7 +93,7 @@ public class ObrResultsWizardPage extends WizardPage {
     /**
      * Create the wizard.
      */
-    public ObrResultsWizardPage(IBndModel model, IFile file) {
+    public ObrResultsWizardPage(BndEditModel model, IFile file) {
         super("resultsPage");
         this.model = model;
         this.file = file;
@@ -310,7 +314,7 @@ public class ObrResultsWizardPage extends WizardPage {
     }
 
     private void doAddResolve() {
-        List<Requirement> oldRequires = model.getRunRequire();
+        List<Requirement> oldRequires = model.getRunRequires();
         if (oldRequires == null)
             oldRequires = Collections.emptyList();
 
@@ -322,24 +326,21 @@ public class ObrResultsWizardPage extends WizardPage {
             newRequires.add(req);
         }
 
-        model.setRunRequire(newRequires);
+        model.setRunRequires(newRequires);
         reresolve();
     }
 
     private static Requirement resourceToRequirement(Resource resource) {
-        StringBuilder filterBuilder = new StringBuilder();
 
-        filterBuilder.append("(&");
-
-        ObrFilterUtil.appendBsnFilter(filterBuilder, resource.getSymbolicName());
+        AndFilter filter = new AndFilter();
+        filter.addChild(new SimpleFilter(ObrConstants.FILTER_BSN, resource.getSymbolicName()));
 
         Version version = resource.getVersion();
         VersionRange versionRange = new VersionRange(version.toString());
-        ObrFilterUtil.appendVersionFilter(filterBuilder, versionRange);
+        filter.addChild(Filters.fromVersionRange(versionRange));
 
-        filterBuilder.append(")");
-
-        return new Requirement(ObrConstants.REQUIREMENT_BUNDLE, filterBuilder.toString());
+        Requirement req = new CapReqBuilder(ObrConstants.REQUIREMENT_BUNDLE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
+        return req;
     }
 
     private void updateUi() {

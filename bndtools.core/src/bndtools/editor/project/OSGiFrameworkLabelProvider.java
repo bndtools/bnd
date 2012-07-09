@@ -33,7 +33,7 @@ public class OSGiFrameworkLabelProvider extends LabelProvider {
 
         Image image = null;
 
-        if (fwkIcon != null && fwkIconURI != null) {
+        if (fwkIconURI != null) {
             image = images.get(fwkIconURI);
             if (image == null) {
                 InputStream stream = null;

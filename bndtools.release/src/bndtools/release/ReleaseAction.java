@@ -30,9 +30,8 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 
 public class ReleaseAction implements IObjectActionDelegate {
-
-	@SuppressWarnings("unused")
-	private IWorkbenchPart targetPart;
+//	@SuppressWarnings("unused")
+//	private IWorkbenchPart targetPart;
 
 	private Map<Project, List<File>> bndFiles;
 	
@@ -100,7 +99,7 @@ public class ReleaseAction implements IObjectActionDelegate {
 			StructuredSelection ss = (StructuredSelection) selection;
 			IFile[] result = new IFile[ss.size()];
 			int n = 0;
-			for (Iterator<IFile> i = ss.iterator(); i.hasNext();) {
+			for (@SuppressWarnings("unchecked") Iterator<IFile> i = ss.iterator(); i.hasNext();) {
 				result[n++] = i.next();
 			}
 			return result;
@@ -109,7 +108,7 @@ public class ReleaseAction implements IObjectActionDelegate {
 	}
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
-		this.targetPart = targetPart;
+		// this.targetPart = targetPart;
 	}
 
 }

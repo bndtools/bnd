@@ -92,9 +92,8 @@ public class JavaSearchScopeTestCaseLister implements ITestCaseLister {
         String packageName = pkgFragment.getElementName();
         if (packageName.length() > 0) {
             return packageName + '.' + element.getElementName();
-        } else {
-            return element.getElementName();
         }
+        return element.getElementName();
     }
 
     public void search(List<String> types, final List<IJavaElement> testCaseList) throws TestCaseListException {

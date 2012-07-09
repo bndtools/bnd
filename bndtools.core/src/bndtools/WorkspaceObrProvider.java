@@ -49,6 +49,7 @@ import bndtools.types.Pair;
 
 @ThreadSafe
 public class WorkspaceObrProvider implements RepositoryPlugin, IndexProvider {
+    private static final ILogger logger = Logger.getLogger();
 
     private static final String RANGE_SNAPSHOT = "snapshot";
     private static final String RANGE_LATEST = "latest";
@@ -61,13 +62,11 @@ public class WorkspaceObrProvider implements RepositoryPlugin, IndexProvider {
 
     public static final String CATEGORY_WORKSPACE = "__WORKSPACE";
 
-    private final ILogger logger;
     private final File stateDir;
     private final File indexFile;
     private Workspace workspace;
 
-    WorkspaceObrProvider(ILogger logger) {
-        this.logger = logger;
+    WorkspaceObrProvider() {
         this.stateDir = Plugin.getDefault().getStateLocation().toFile();
         this.indexFile = new File(stateDir, INDEX_FILENAME);
     }

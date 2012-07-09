@@ -20,8 +20,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
-import bndtools.api.IBndModel;
 import bndtools.launch.LaunchUtils;
 import bndtools.wizards.bndfile.RunExportSelectionWizard;
 
@@ -29,11 +29,11 @@ public class ExportAction extends Action {
 
     private final Shell parentShell;
     private final IEditorPart editor;
-    private final IBndModel model;
+    private final BndEditModel model;
 
     private final IConfigurationElement[] configElems;
 
-    public ExportAction(Shell parentShell, IEditorPart editor, IBndModel model) {
+    public ExportAction(Shell parentShell, IEditorPart editor, BndEditModel model) {
         super("Export", SWT.RIGHT);
         this.parentShell = parentShell;
         this.editor = editor;

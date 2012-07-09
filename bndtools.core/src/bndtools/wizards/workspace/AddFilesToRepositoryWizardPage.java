@@ -44,11 +44,14 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Constants;
 
 import aQute.lib.osgi.Jar;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.types.Pair;
 import bndtools.utils.FileExtensionFilter;
 
 public class AddFilesToRepositoryWizardPage extends WizardPage {
+    private static final ILogger logger = Logger.getLogger();
 
     private final Image jarImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/jar_obj.gif").createImage();
     private final Image warnImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/warning_obj.gif").createImage();
@@ -91,7 +94,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
 
             bsnMap.put(file, Pair.newInstance(bsn, version));
         } catch (Exception e) {
-            Plugin.logError("Error reading JAR file content", e);
+            logger.logError("Error reading JAR file content", e);
         } finally {
             if (jar != null)
                 jar.close();

@@ -90,7 +90,7 @@ public class MDSashForm extends SashForm {
 
     private void purgeSashes() {
         for (Iterator<Sash> iter = sashes.iterator(); iter.hasNext();) {
-            Sash sash = (Sash) iter.next();
+            Sash sash = iter.next();
             if (sash.isDisposed())
                 iter.remove();
         }

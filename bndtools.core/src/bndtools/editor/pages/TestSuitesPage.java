@@ -17,8 +17,8 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
-import bndtools.api.IBndModel;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.common.SaneDetailsPart;
 import bndtools.editor.contents.TestSuitesPart;
@@ -26,11 +26,11 @@ import bndtools.utils.MessageHyperlinkAdapter;
 
 public class TestSuitesPage extends FormPage {
 
-    private final IBndModel model;
+    private final BndEditModel model;
     private final Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/junit.gif").createImage();
 
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
-        public IFormPage createPage(ExtendedFormEditor editor, IBndModel model, String id) throws IllegalArgumentException {
+        public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new TestSuitesPage(editor, model, id, "Tests");
         }
 
@@ -39,7 +39,7 @@ public class TestSuitesPage extends FormPage {
         }
     };
 
-    public TestSuitesPage(FormEditor editor, IBndModel model, String id, String title) {
+    public TestSuitesPage(FormEditor editor, BndEditModel model, String id, String title) {
         super(editor, id, title);
         this.model = model;
     }

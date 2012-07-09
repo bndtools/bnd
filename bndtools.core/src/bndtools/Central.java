@@ -29,11 +29,14 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.osgi.framework.Version;
 
+import bndtools.api.ILogger;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.Refreshable;
 
 public class Central {
+    private static final ILogger logger = Logger.getLogger();
 
     static Workspace workspace = null;
     static WorkspaceObrProvider workspaceObr = null;
@@ -155,7 +158,7 @@ public class Central {
         IFile[] matches = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(file.toURI());
 
         if (matches == null || matches.length != 1) {
-            Plugin.logError("Cannot find workspace location for bnd configuration file " + file, null);
+            logger.logError("Cannot find workspace location for bnd configuration file " + file, null);
             return null;
         }
 
@@ -167,7 +170,7 @@ public class Central {
             return workspaceRepo;
 
         File wsIndexFile = new File(Plugin.getDefault().getStateLocation().toFile(), "ws-index.xml");
-        workspaceRepo = new WorkspaceRepoProvider(wsIndexFile, Plugin.getDefault().getResourceIndexer(), Plugin.getDefault().getLogger());
+        workspaceRepo = new WorkspaceRepoProvider(wsIndexFile, Plugin.getDefault().getResourceIndexer(), logger);
         workspaceRepo.setWorkspace(getWorkspace());
 
         return workspaceRepo;
@@ -177,7 +180,7 @@ public class Central {
         if (workspaceObr != null)
             return workspaceObr;
 
-        workspaceObr = new WorkspaceObrProvider(Plugin.getDefault().getLogger());
+        workspaceObr = new WorkspaceObrProvider();
         workspaceObr.setWorkspace(getWorkspace());
         return workspaceObr;
     }

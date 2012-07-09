@@ -29,15 +29,18 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
 import aQute.lib.osgi.Builder;
 import aQute.lib.osgi.Constants;
+import bndtools.Logger;
 import bndtools.Plugin;
-import bndtools.editor.model.BndtoolsEditModel;
+import bndtools.api.ILogger;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.utils.EditorUtils;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunBundlesPart extends RepositoryBundleSelectionPart {
+    private static final ILogger logger = Logger.getLogger();
 
     private final List<Builder> projectBuilders = new ArrayList<Builder>();
     private Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
@@ -68,7 +71,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
             if (model != null)
                 projectBuilders.addAll(model.getSubBuilders());
         } catch (Exception e) {
-            Plugin.logError(Messages.RunBundlesPart_errorGettingBuilders, e);
+            logger.logError(Messages.RunBundlesPart_errorGettingBuilders, e);
         }
     }
 
@@ -143,12 +146,12 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
     }
 
     @Override
-    protected void saveToModel(BndtoolsEditModel model, List<aQute.bnd.build.model.clauses.VersionedClause> bundles) {
+    protected void saveToModel(BndEditModel model, List<aQute.bnd.build.model.clauses.VersionedClause> bundles) {
         model.setRunBundles(bundles);
     }
 
     @Override
-    protected List<aQute.bnd.build.model.clauses.VersionedClause> loadFromModel(BndtoolsEditModel model) {
+    protected List<aQute.bnd.build.model.clauses.VersionedClause> loadFromModel(BndEditModel model) {
         return model.getRunBundles();
     }
 

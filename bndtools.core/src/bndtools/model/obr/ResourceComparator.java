@@ -8,6 +8,7 @@ import org.apache.felix.bundlerepository.Resource;
 public class ResourceComparator implements Comparator<Resource>, Serializable {
     private static final long serialVersionUID = 3013988551450867308L;
 
+    @SuppressWarnings("unchecked")
     public int compare(Resource res1, Resource res2) {
         int diff;
 

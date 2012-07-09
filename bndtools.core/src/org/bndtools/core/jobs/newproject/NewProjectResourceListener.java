@@ -11,10 +11,12 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 
-import bndtools.Plugin;
+import bndtools.Logger;
+import bndtools.api.ILogger;
 import bndtools.builder.BndProjectNature;
 
 public class NewProjectResourceListener implements IResourceChangeListener {
+    private static final ILogger logger = Logger.getLogger();
 
     public void resourceChanged(IResourceChangeEvent event) {
         IResourceDelta delta = event.getDelta();
@@ -44,16 +46,13 @@ public class NewProjectResourceListener implements IResourceChangeListener {
             });
 
             for (IProject project : newProjects) {
-                RequiredObrCheckingJob requiredObrJob = new RequiredObrCheckingJob(project);
-                requiredObrJob.schedule();
-
                 AdjustClasspathsForNewProjectJob adjustClasspathsJob = new AdjustClasspathsForNewProjectJob(project);
                 adjustClasspathsJob.setSystem(true);
                 adjustClasspathsJob.schedule();
             }
 
         } catch (CoreException e) {
-            Plugin.logError("An error occurred while analysing the resource change", e);
+            logger.logError("An error occurred while analysing the resource change", e);
         }
     }
 

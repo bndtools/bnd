@@ -42,10 +42,10 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.lib.osgi.Constants;
 import bndtools.UIConstants;
-import bndtools.editor.model.BndtoolsEditModel;
 import bndtools.javamodel.FormPartJavaSearchContext;
 import bndtools.utils.ModificationLock;
 
@@ -55,7 +55,7 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
     private final ModificationLock modifyLock = new ModificationLock();
     protected List<C> selectedClauses = Collections.emptyList();
 
-    private BndtoolsEditModel model;
+    private BndEditModel model;
 
     private Composite mainComposite;
     private Text txtName;
@@ -191,7 +191,7 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        this.model = (BndtoolsEditModel) form.getInput();
+        this.model = (BndEditModel) form.getInput();
         this.model.addPropertyChangeListener(Constants.IMPORT_PACKAGE, this);
     }
 
