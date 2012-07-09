@@ -3,6 +3,7 @@ package aQute.lib.osgi;
 import static aQute.lib.io.IO.*;
 
 import java.io.*;
+import java.net.*;
 import java.security.*;
 import java.util.*;
 import java.util.jar.*;
@@ -778,5 +779,35 @@ public class Jar implements Closeable {
 	void check() {
 		if (closed)
 			throw new RuntimeException("Already closed " + name);
+	}
+
+	/**
+	 * Return a data uri from the JAR. The data must be less than 32k
+	 * 
+	 * @param jar
+	 *            The jar to load the data from
+	 * @param path
+	 *            the path in the jar
+	 * @param mime
+	 *            the mime type
+	 * @return a URI or null if conversion could not take place
+	 */
+
+	public URI getDataURI(String path, String mime, int max) throws Exception {
+		Resource r = getResource(path);
+
+		if (r.size() >= max || r.size() <= 0)
+			return null;
+
+		byte[] data = new byte[(int) r.size()];
+		DataInputStream din = new DataInputStream(r.openInputStream());
+		try {
+			din.readFully(data);
+			String encoded = Base64.encodeBase64(data);
+			return new URI("data:" + mime + ";base64," + encoded);
+		}
+		finally {
+			din.close();
+		}
 	}
 }

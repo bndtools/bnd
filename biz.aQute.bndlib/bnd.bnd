@@ -35,7 +35,7 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.service.reporter
 
 Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*, aQute.configurable
-Include-Resource: 				LICENSE
+Include-Resource: 				LICENSE, img/=img/
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 
 -buildpath: com.springsource.junit,\
@@ -50,3 +50,8 @@ Import-Package: junit.framework;resolution:=optional,\
 	org.osgi.resource;resolution:=optional,\
 	org.osgi.framework;version='[1.5,2)',\
 	*
+
+Bundle-Icon: img/bnd-64.png;size=64
+Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
+Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com
+Bundle-SCM: git@github.com:bndtools/bnd.git

@@ -3,8 +3,10 @@ package aQute.lib.osgi;
 import static aQute.lib.osgi.Constants.*;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 
+import aQute.lib.converter.*;
 import aQute.libg.header.*;
 import aQute.libg.version.*;
 import aQute.service.reporter.*;
@@ -236,7 +238,7 @@ public abstract class Domain implements Iterable<String> {
 
 	public Map.Entry<String,Attrs> getBundleSymbolicName() {
 		Parameters p = getParameters(BUNDLE_SYMBOLICNAME);
-		if ( p.isEmpty())
+		if (p.isEmpty())
 			return null;
 		return p.entrySet().iterator().next();
 	}
@@ -264,5 +266,35 @@ public abstract class Domain implements Iterable<String> {
 
 	public boolean isFailOk() {
 		return Processor.isTrue(get(FAIL_OK));
+	}
+
+	/**
+	 * Find an icon with the requested size in the list of icons.
+	 * 
+	 * @param requestedSize
+	 *            the number of pixels desired
+	 * @return null or a the selected URI (which may be relative)
+	 */
+	public String getIcon(int requestedSize) throws Exception {
+		String spec = get(Constants.BUNDLE_ICON);
+		if (spec == null)
+			return null;
+
+		Parameters p = OSGiHeader.parseHeader(spec);
+		int dist = Integer.MAX_VALUE;
+		String selected = null;
+
+		for (Entry<String,Attrs> e : p.entrySet()) {
+			String url = e.getKey();
+			if (selected == null)
+				selected = url;
+
+			int size = Converter.cnv(Integer.class, e.getValue().get("size"));
+			if (size != 0 && Math.abs(requestedSize - size) < dist) {
+				dist = Math.abs(requestedSize - size);
+				selected = url;
+			}
+		}
+		return selected;
 	}
 }
