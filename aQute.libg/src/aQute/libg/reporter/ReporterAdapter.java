@@ -10,7 +10,7 @@ import aQute.service.reporter.*;
 /**
  * Mainly used for testing where reporters are needed.
  */
-public class ReporterAdapter implements Reporter, Report {
+public class ReporterAdapter implements Reporter, Report, Runnable {
 	final List<String>	errors		= new ArrayList<String>();
 	final List<String>	warnings	= new ArrayList<String>();
 	final List<LocationImpl> locations = new ArrayList<LocationImpl>();
@@ -204,8 +204,9 @@ public class ReporterAdapter implements Reporter, Report {
 			return true;
 
 		if (!missed.isEmpty())
-			error("Missed the following patterns in the warnings or errors: %s", missed);
+			System.err.println("Missed the following patterns in the warnings or errors: " + missed);
 
+		report(System.err);
 		return false;
 	}
 
@@ -258,4 +259,19 @@ public class ReporterAdapter implements Reporter, Report {
 		return null;
 	}
 
+	/**
+	 * Handy routine that can be extended by subclasses
+	 * so they can run inside the context
+	 */
+	public void run() {
+		throw new UnsupportedOperationException("Must be implemented by subclass");
+	}
+
+	/**
+	 * Return a messages object bound to this adapter
+	 */
+	
+	public <T> T getMessages(Class<T> c) {
+		return ReporterMessages.base(this, c);
+	}
 }

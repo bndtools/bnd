@@ -10,7 +10,7 @@ import aQute.service.reporter.Reporter.SetLocation;
 
 public class ReporterMessages {
 
-	static class WARNINGImpl implements ERROR {
+	static class WARNINGImpl implements WARNING {
 		Reporter.SetLocation	loc;
 
 		public SetLocation file(String file) {
@@ -42,7 +42,7 @@ public class ReporterMessages {
 		}
 	}
 
-	static class ERRORImpl extends WARNINGImpl implements WARNING {
+	static class ERRORImpl extends WARNINGImpl implements ERROR {
 		public ERRORImpl(SetLocation e) {
 			super(e);
 		}
