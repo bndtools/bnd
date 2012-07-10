@@ -114,9 +114,6 @@ class JarResource implements Resource {
 	}
 
 	public List<String> listChildren(String prefix) throws IOException {
-		if (!prefix.endsWith("/"))
-			return null;
-		
 		List<JarEntry> entries = prefixMap.get(prefix);
 		if (entries == null)
 			return null;

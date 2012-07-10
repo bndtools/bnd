@@ -35,6 +35,13 @@ public class TestJarResource extends TestCase {
 		assertNull(resource.listChildren("org/example/a"));
 	}
 	
+	public void testJarListingRoot() throws Exception {
+		JarResource resource = new JarResource(new File("testdata/org.eclipse.osgi_3.7.2.v20120110-1415.jar"));
+		List<String> children = resource.listChildren("");
+		assertEquals(21, children.size());
+		assertEquals("META-INF/", children.get(0));
+	}
+	
 	public void testJarFileContent() throws Exception {
 		JarResource resource = new JarResource(new File("testdata/01-bsn+version.jar"));
 		Resource pkgInfoResource = resource.getChild("org/example/a/packageinfo");
