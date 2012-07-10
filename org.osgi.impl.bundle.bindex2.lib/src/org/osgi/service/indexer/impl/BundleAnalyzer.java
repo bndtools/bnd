@@ -26,6 +26,7 @@ import org.osgi.service.indexer.impl.types.VersionRange;
 import org.osgi.service.indexer.impl.util.Hex;
 import org.osgi.service.indexer.impl.util.OSGiHeader;
 import org.osgi.service.indexer.impl.util.Yield;
+import org.osgi.service.log.LogService;
 
 class BundleAnalyzer implements ResourceAnalyzer {
 	
@@ -39,6 +40,11 @@ class BundleAnalyzer implements ResourceAnalyzer {
 	private static final String MIME_TYPE_OSGI_BUNDLE = "application/vnd.osgi.bundle";
 	
 	private final ThreadLocal<GeneratorState> state = new ThreadLocal<GeneratorState>();
+	private final LogService log;
+
+	public BundleAnalyzer(LogService log) {
+		this.log = log;
+	}
 
 	public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements) throws Exception {
 		doIdentity(resource, capabilities);

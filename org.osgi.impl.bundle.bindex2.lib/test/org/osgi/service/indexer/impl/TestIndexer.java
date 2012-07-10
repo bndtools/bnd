@@ -221,12 +221,10 @@ public class TestIndexer extends TestCase {
 		};
 		ResourceAnalyzer goodAnalyzer = mock(ResourceAnalyzer.class);
 		
-		BIndex2 indexer = new BIndex2();
+		LogService log = mock(LogService.class);
+		BIndex2 indexer = new BIndex2(log);
 		indexer.addAnalyzer(badAnalyzer, null);
 		indexer.addAnalyzer(goodAnalyzer, null);
-		
-		LogService log = mock(LogService.class);
-		indexer.setLog(log);
 		
 		// Run the indexer
 		Map<String, String> props = new HashMap<String, String>();
@@ -244,9 +242,8 @@ public class TestIndexer extends TestCase {
 	}
 	
 	public void testBundleOutsideRootDirectory() throws Exception {
-		BIndex2 indexer = new BIndex2();
 		LogService log = mock(LogService.class);
-		indexer.setLog(log);
+		BIndex2 indexer = new BIndex2(log);
 		
 		Map<String, String> props = new HashMap<String, String>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata/subdir").getAbsoluteFile().toURI().toURL().toString());
@@ -258,10 +255,9 @@ public class TestIndexer extends TestCase {
 	}
 	
 	public void testRemoveDisallowed() throws Exception {
-		BIndex2 indexer = new BIndex2();
-		indexer.addAnalyzer(new NaughtyAnalyzer(), null);
 		LogService log = mock(LogService.class);
-		indexer.setLog(log);
+		BIndex2 indexer = new BIndex2(log);
+		indexer.addAnalyzer(new NaughtyAnalyzer(), null);
 		
 		Map<String, String> props = new HashMap<String, String>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString());

@@ -15,7 +15,7 @@ import org.osgi.service.indexer.Requirement;
 public class TestBundleAnalyzer extends TestCase {
 	
 	public void testContentAndIdentity() throws Exception {
-		BundleAnalyzer a = new BundleAnalyzer();
+		BundleAnalyzer a = new BundleAnalyzer(new NullLogSvc());
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
@@ -38,7 +38,7 @@ public class TestBundleAnalyzer extends TestCase {
 	}
 	
 	public void testPackageExports() throws Exception {
-		BundleAnalyzer a = new BundleAnalyzer();
+		BundleAnalyzer a = new BundleAnalyzer(new NullLogSvc());
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
@@ -50,7 +50,7 @@ public class TestBundleAnalyzer extends TestCase {
 	}
 	
 	public void testPackageExportUses() throws Exception {
-		BundleAnalyzer a = new BundleAnalyzer();
+		BundleAnalyzer a = new BundleAnalyzer(new NullLogSvc());
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
@@ -67,7 +67,7 @@ public class TestBundleAnalyzer extends TestCase {
 	// bundle-symbolic-name and bundle-version must be on package capabilities, for the idiots
 	// who add this to their imports...
 	public void testPackageExportBundleSymbolicNameAndVersion() throws Exception {
-		BundleAnalyzer a = new BundleAnalyzer();
+		BundleAnalyzer a = new BundleAnalyzer(new NullLogSvc());
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
@@ -86,7 +86,7 @@ public class TestBundleAnalyzer extends TestCase {
 	}
 	
 	public void testPackageImports() throws Exception {
-		BundleAnalyzer a = new BundleAnalyzer();
+		BundleAnalyzer a = new BundleAnalyzer(new NullLogSvc());
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
@@ -97,7 +97,7 @@ public class TestBundleAnalyzer extends TestCase {
 	}
 	
 	public void testRequireBundle() throws Exception {
-		BundleAnalyzer a = new BundleAnalyzer();
+		BundleAnalyzer a = new BundleAnalyzer(new NullLogSvc());
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
@@ -109,7 +109,7 @@ public class TestBundleAnalyzer extends TestCase {
 	}
 	
 	public void testPackageImportOptional() throws Exception {
-		BundleAnalyzer a = new BundleAnalyzer();
+		BundleAnalyzer a = new BundleAnalyzer(new NullLogSvc());
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		
@@ -121,7 +121,7 @@ public class TestBundleAnalyzer extends TestCase {
 	}
 	
 	public void testFragmentHost() throws Exception {
-		BundleAnalyzer a = new BundleAnalyzer();
+		BundleAnalyzer a = new BundleAnalyzer(new NullLogSvc());
 		LinkedList<Capability> caps = new LinkedList<Capability>();
 		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
 		

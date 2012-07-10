@@ -34,15 +34,25 @@ public class BIndex2 implements ResourceIndexer {
 	
 	static final String REPOSITORY_INCREMENT_OVERRIDE = "-repository.increment.override";
 	
-	private final BundleAnalyzer bundleAnalyzer = new BundleAnalyzer();
-	private final OSGiFrameworkAnalyzer frameworkAnalyzer = new OSGiFrameworkAnalyzer();
-	private final SCRAnalyzer scrAnalyzer = new SCRAnalyzer();
+	private final BundleAnalyzer bundleAnalyzer;
+	private final OSGiFrameworkAnalyzer frameworkAnalyzer;
+	private final SCRAnalyzer scrAnalyzer;
+	
+	private final LogService log;
 	
 	private final List<Pair<ResourceAnalyzer, Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer,Filter>>();
 	
-	private LogService log;
-	
 	public BIndex2() {
+		this(new ConsoleLogSvc());
+	}
+	
+	public BIndex2(LogService log) {
+		this.log = log;
+
+		this.bundleAnalyzer = new BundleAnalyzer(log);
+		this.frameworkAnalyzer = new OSGiFrameworkAnalyzer(log);
+		this.scrAnalyzer = new SCRAnalyzer(log);
+		
 		try {
 			Filter allFilter = createFilter("(name=*.jar)");
 			
@@ -54,14 +64,6 @@ public class BIndex2 implements ResourceIndexer {
 			// Can't happen...?
 			throw new RuntimeException("Unexpected internal error compiling filter");
 		}
-	}
-	
-	public synchronized LogService getLog() {
-		return log;
-	}
-	
-	public synchronized void setLog(LogService log) {
-		this.log = log;
 	}
 	
 	public final void addAnalyzer(ResourceAnalyzer analyzer, Filter filter) {
@@ -196,7 +198,6 @@ public class BIndex2 implements ResourceIndexer {
 	}
 
 	private void log(int level, String message, Throwable t) {
-		LogService log = getLog();
 		if (log != null)
 			log.log(level, message, t);
 	}

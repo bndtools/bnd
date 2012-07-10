@@ -9,6 +9,7 @@ import org.osgi.service.indexer.Namespaces;
 import org.osgi.service.indexer.Requirement;
 import org.osgi.service.indexer.Resource;
 import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.log.LogService;
 
 /**
  * Detects JARs that are OSGi Frameworks, using the presence of META-INF/services/org.osgi.framework.launch.FrameworkFactory
@@ -17,6 +18,12 @@ public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
 	
 	private static final String SERVICE_FRAMEWORK_FACTORY = "META-INF/services/org.osgi.framework.launch.FrameworkFactory";
 	private static final String FRAMEWORK_PACKAGE = "org.osgi.framework";
+	
+	private final LogService log;
+	
+	public OSGiFrameworkAnalyzer(LogService log) {
+		this.log = log;
+	}
 
 	public void analyzeResource(Resource resource, List<Capability> caps, List<Requirement> reqs) throws Exception {
 		Resource fwkFactorySvc = resource.getChild(SERVICE_FRAMEWORK_FACTORY);

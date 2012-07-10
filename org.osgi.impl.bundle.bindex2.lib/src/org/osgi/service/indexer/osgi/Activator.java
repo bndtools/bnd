@@ -11,15 +11,13 @@ public class Activator implements BundleActivator {
 	private LogTracker logTracker;
 	private AnalyzerTracker analyzerTracker;
 	
-	@SuppressWarnings("rawtypes")
 	private ServiceRegistration registration;
 
 	public void start(BundleContext context) throws Exception {
 		logTracker = new LogTracker(context);
 		logTracker.open();
 
-		BIndex2 indexer = new BIndex2();
-		indexer.setLog(logTracker);
+		BIndex2 indexer = new BIndex2(logTracker);
 		
 		analyzerTracker = new AnalyzerTracker(context, indexer, logTracker);
 		analyzerTracker.open();
