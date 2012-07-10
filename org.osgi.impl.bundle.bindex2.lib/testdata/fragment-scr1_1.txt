@@ -1,0 +1,24 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.scr1_1'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='c3ece8b5260b2666486dfb1236711adbbe04481320cb4a1fb619d02520c16695'/>
+    <attribute name='url' value='testdata/scr1_1.jar'/>
+    <attribute name='size' type='Long' value='2661'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.example.scr1_1'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.example.scr1_1'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <requirement namespace='osgi.extender'>
+    <directive name='filter' value='(&amp;(osgi.extender=osgi.scr)(version&gt;=1.1.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+</resource>

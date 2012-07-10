@@ -2,6 +2,7 @@ package org.osgi.service.indexer.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -177,4 +178,47 @@ public class Util {
 		
 		return builder.toString();
 	}
+	
+	/**
+	 * Returns a list of resource paths matching the glob pattern, e.g.
+	 * {@code OSGI-INF/blueprint/*.xml}. Wildcards only permitted in the final
+	 * path segment.
+	 * 
+	 * @return
+	 * @throws IOException 
+	 */
+	public static final List<String> findMatchingPaths(Resource resource, String globPattern) throws IOException {
+		String prefix;
+		String suffix;
+		
+		int index = globPattern.lastIndexOf('/');
+		if (index == -1) {
+			prefix = "";
+			suffix = globPattern;
+		} else {
+			int next = index + 1;
+			prefix = globPattern.substring(0, next);
+			if (globPattern.length() <= next)
+				suffix = "";
+			else
+				suffix = globPattern.substring(next);
+		}
+		
+		String regexp = suffix.replaceAll("\\*", ".*");
+		Pattern pattern = Pattern.compile(regexp);
+		
+		List<String> children = resource.listChildren(prefix);
+		if (children == null)
+			return Collections.emptyList();
+		
+		List<String> result = new ArrayList<String>(children.size());
+		
+		for (String child : children) {
+			if (pattern.matcher(child).matches())
+				result.add(prefix + child);
+		}
+		
+		return result;
+	}
+
 }

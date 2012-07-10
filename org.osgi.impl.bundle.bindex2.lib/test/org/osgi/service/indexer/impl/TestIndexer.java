@@ -91,6 +91,18 @@ public class TestIndexer extends TestCase {
 	public void testFragmentRequireSCR() throws Exception {
 		assertFragmentMatch("testdata/fragment-15.txt", "testdata/15-scr.jar");
 	}
+	
+	public void testFragmentRequireSCR1_0() throws Exception {
+		assertFragmentMatch("testdata/fragment-scr1_0.txt", "testdata/scr1_0.jar");
+	}
+	
+	public void testFragmentRequireSCR1_1() throws Exception {
+		assertFragmentMatch("testdata/fragment-scr1_1.txt", "testdata/scr1_1.jar");
+	}
+
+	public void testFragmentRequireSCR1_2() throws Exception {
+		assertFragmentMatch("testdata/fragment-scr1_2.txt", "testdata/scr1_2.jar");
+	}
 
 	private static void assertFragmentMatch(String expectedPath, String jarPath) throws Exception {
 		BIndex2 indexer = new BIndex2();
