@@ -34,6 +34,11 @@ public class Baseline {
 	final Differ	differ;
 	final Reporter	bnd;
 	Diff			diff;
+	Set<Info>		infos;
+	String 			bsn;
+	Version			newerVersion;
+	Version			olderVersion;
+	Version			suggestedVersion;
 
 	public Baseline(Reporter bnd, Differ differ) throws IOException {
 		this.differ = differ;
@@ -66,8 +71,14 @@ public class Baseline {
 			throws Exception {
 		diff = n.diff(o);
 		Diff apiDiff = diff.get("<api>");
-		Set<Info> infos = Create.set();
+		infos = Create.set();
 
+		bsn = getBsn(n);
+
+		newerVersion = getVersion(n);
+		olderVersion = getVersion(o);
+		
+		Delta highestDelta = Delta.MICRO;
 		for (Diff pdiff : apiDiff.getChildren()) {
 			if (pdiff.getType() != Type.PACKAGE) // Just packages
 				continue;
@@ -91,7 +102,7 @@ public class Baseline {
 			if (pdiff.getDelta() == Delta.UNCHANGED) {
 				info.suggestedVersion = info.olderVersion;
 				if (!info.newerVersion.equals(info.olderVersion)) {
-					info.warning += "No difference but versions are equal";
+					info.warning += "No difference but versions are not equal";
 				}
 			} else if (pdiff.getDelta() == Delta.REMOVED) {
 				info.suggestedVersion = null;
@@ -135,6 +146,13 @@ public class Baseline {
 					}
 				}
 			}
+			if (pdiff.getDelta().compareTo(highestDelta) > 0) {
+				highestDelta = pdiff.getDelta();
+			}
+		}
+		suggestedVersion = bumpBundle(highestDelta, olderVersion, 1, 0);
+		if (suggestedVersion.getMajor() == 0) {
+			suggestedVersion = Version.ONE;
 		}
 		return infos;
 	}
@@ -146,6 +164,32 @@ public class Baseline {
 	 */
 	public Diff getDiff() {
 		return diff;
+	}
+
+	public Set<Info> getPackageInfos() {
+		if (infos == null)
+			return Collections.emptySet();
+		return infos;
+	}
+
+	public String getBsn() {
+		return bsn;
+	}
+
+	public Version getSuggestedVersion() {
+		return suggestedVersion;
+	}
+
+	public void setSuggestedVersion(Version suggestedVersion) {
+		this.suggestedVersion = suggestedVersion;
+	}
+
+	public Version getNewerVersion() {
+		return newerVersion;
+	}
+
+	public Version getOlderVersion() {
+		return olderVersion;
 	}
 
 	private Version bump(Delta delta, Version last, int offset, int base) {
@@ -177,5 +221,43 @@ public class Baseline {
 
 		return OSGiHeader.parseHeader(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 	}
+	
+	private Version getVersion(Tree top) {
+		Tree manifest = top.get("<manifest>");
+		if (manifest == null) {
+			return Version.emptyVersion;
+		}
+		for (Tree tree : manifest.getChildren()) {
+			if (tree.getName().startsWith(Constants.BUNDLE_VERSION)) {
+				return Version.parseVersion(tree.getName().substring(15));
+			}
+		}
+		return Version.emptyVersion;
+	}
 
+	private String getBsn(Tree top) {
+		Tree manifest = top.get("<manifest>");
+		if (manifest == null) {
+			return "";
+		}
+		for (Tree tree : manifest.getChildren()) {
+			if (tree.getName().startsWith(Constants.BUNDLE_SYMBOLICNAME) && tree.getChildren().length > 0) {
+				return tree.getChildren()[0].getName();
+			}
+		}
+		return "";
+	}
+
+	private Version bumpBundle(Delta delta, Version last, int offset, int base) {
+		switch (delta) {
+			case MINOR :
+				return new Version(last.getMajor(), last.getMinor() + offset, base);
+			case MAJOR :
+				return new Version(last.getMajor() + 1, base, base);
+			case ADDED :
+				return new Version(last.getMajor(), last.getMinor() + offset, base);
+			default :
+				return new Version(last.getMajor(), last.getMinor(), last.getMicro() + offset);
+		}
+	}
 }

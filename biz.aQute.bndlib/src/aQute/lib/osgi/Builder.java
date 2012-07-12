@@ -15,6 +15,7 @@ import aQute.bnd.make.component.*;
 import aQute.bnd.make.metatype.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.diff.*;
 import aQute.lib.collections.*;
 import aQute.lib.osgi.Descriptors.PackageRef;
@@ -1504,23 +1505,17 @@ public class Builder extends Analyzer {
 
 		System.err.printf("baseline %s%n", diffs);
 
+		Jar other = getBaselineJar();
+		if (other == null) {
+			return;
+		}
 		Baseline baseline = new Baseline(this, differ);
-
-		for (Entry<String,Attrs> entry : diffs.entrySet()) {
-			String path = entry.getKey();
-			File file = getFile(path);
-			if (!file.isFile()) {
-				error("Diffing against %s that is not a file", file);
-				continue;
-			}
-			Jar other = new Jar(file);
-			Set<Info> infos = baseline.baseline(dot, other, null);
-			for (Info info : infos) {
-				if (info.mismatch) {
-					error("%s %-50s %-10s %-10s %-10s %-10s %-10s\n", info.mismatch ? '*' : ' ', info.packageName,
-							info.packageDiff.getDelta(), info.newerVersion, info.olderVersion, info.suggestedVersion,
-							info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
-				}
+		Set<Info> infos = baseline.baseline(dot, other, null);
+		for (Info info : infos) {
+			if (info.mismatch) {
+				error("%s %-50s %-10s %-10s %-10s %-10s %-10s\n", info.mismatch ? '*' : ' ', info.packageName,
+						info.packageDiff.getDelta(), info.newerVersion, info.olderVersion, info.suggestedVersion,
+						info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 			}
 		}
 	}
@@ -1531,4 +1526,50 @@ public class Builder extends Analyzer {
 		}
 	}
 
+	public Jar getBaselineJar() throws Exception {
+
+		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
+
+		Parameters diffs = parseHeader(getProperty("-baseline"));
+		File baselineFile = null;
+		if (diffs.isEmpty()) {
+			String repoName = getProperty("-baseline-repo");
+			if (repoName == null) {
+				return null;
+			}
+			for (RepositoryPlugin repo : repos) {
+				if (repoName.equals(repo.getName())) {
+					baselineFile = repo.get(getBsn(), null, Strategy.HIGHEST, null);
+					break;
+				}
+			}
+		} else {
+
+			String bsn = null;
+			String version = null;
+			for (Entry<String,Attrs> entry : diffs.entrySet()) {
+				bsn = entry.getKey();
+				if ("@".equals(bsn)) {
+					bsn = getBsn();
+				}
+				version = entry.getValue().get(Constants.VERSION_ATTRIBUTE);
+				break;
+			}
+	
+			for (RepositoryPlugin repo : repos) {
+				if (version == null) {
+					baselineFile = repo.get(bsn, null, Strategy.HIGHEST, null);
+				} else {
+					baselineFile = repo.get(bsn, version, Strategy.EXACT, null);
+				}
+				if (baselineFile != null) {
+					break;
+				}
+			}
+		}
+		if (baselineFile == null) {
+			return new Jar(".");
+		}
+		return new Jar(baselineFile);
+	}
 }
