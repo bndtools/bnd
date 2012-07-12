@@ -33,13 +33,13 @@ import java.util.Map;
 public class FixedIndexedRepo extends AbstractIndexedRepo {
 
 	private static final String	EMPTY_LOCATION	= "";
-	private static final String DEFAULT_CACHE_DIR = ".bnd" + System.getProperty("file.separator") + "cache";
+	private static final String DEFAULT_CACHE_DIR = ".bnd" + File.separator + "cache";
 
 	public static final String	PROP_LOCATIONS	= "locations";
 	public static final String	PROP_CACHE		= "cache";
 
 	private String				locations;
-	protected File				cacheDir = new File(System.getProperty("user.home") + System.getProperty("file.separator") + DEFAULT_CACHE_DIR);
+	protected File				cacheDir = new File(System.getProperty("user.home") + File.separator + DEFAULT_CACHE_DIR);
 
 	public synchronized void setProperties(Map<String,String> map) {
 		super.setProperties(map);
