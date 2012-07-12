@@ -4,6 +4,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -160,11 +162,11 @@ public class ResolutionResultsWizardPage extends WizardPage {
 
         ISelectionChangedListener reasonSelectionListener = new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
-                /*
-                 * TODO IStructuredSelection sel = (IStructuredSelection) event.getSelection(); Resource resource =
-                 * (Resource) sel.getFirstElement(); Reason[] reasons = (resource != null) ? result.getReason(resource)
-                 * : new Reason[0]; reasonsViewer.setInput(reasons);
-                 */
+                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
+                Resource resource = (Resource) sel.getFirstElement();
+                Collection<Requirement> reasons = result.getResolve().getReasons(resource);
+                //                Reason[] reasons = (resource != null) ? result.getReason(resource) : new Reason[0];
+                reasonsViewer.setInput(reasons);
             }
         };
         requiredViewer.addSelectionChangedListener(reasonSelectionListener);
@@ -256,6 +258,7 @@ public class ResolutionResultsWizardPage extends WizardPage {
 
         reasonsViewer = new TableViewer(tblReasons);
         reasonsViewer.setContentProvider(ArrayContentProvider.getInstance());
+        reasonsViewer.setLabelProvider(new UnresolvedRequirementsLabelProvider());
         // reasonsViewer.setSorter(new ReasonSorter());
         // reasonsViewer.setLabelProvider(new ResolutionFailureFlatLabelProvider());
         reasonsViewer.addDoubleClickListener(new IDoubleClickListener() {
@@ -338,8 +341,8 @@ public class ResolutionResultsWizardPage extends WizardPage {
     }
 
     private void updateUi() {
-        requiredViewer.setInput(result != null ? result.getRequired() : null);
-        // optionalViewer.setInput(result != null ? result.getOptional() : null);
+        requiredViewer.setInput(result != null ? result.getResolve().getRequiredResources() : null);
+        optionalViewer.setInput(result != null ? result.getResolve().getOptionalResources() : null);
         resolutionFailurePanel.setInput(result);
 
         boolean resolved = result != null && result.getOutcome().equals(ResolutionResult.Outcome.Resolved);

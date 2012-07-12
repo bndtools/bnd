@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -63,11 +64,11 @@ public class ResolutionWizard extends Wizard {
 
     @Override
     public boolean performFinish() {
-        List<Resource> resources;
+        Collection<Resource> resources;
 
         ResolutionResult result = resultsPage.getResult();
         if (result != null && result.getOutcome() == ResolutionResult.Outcome.Resolved)
-            resources = result.getRequired();
+            resources = result.getResolve().getRequiredResources();
         else
             resources = Collections.emptyList();
 

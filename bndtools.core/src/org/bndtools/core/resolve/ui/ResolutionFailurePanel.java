@@ -1,6 +1,7 @@
 package org.bndtools.core.resolve.ui;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.apache.felix.bundlerepository.Reason;
 import org.apache.felix.bundlerepository.Resource;
@@ -130,7 +131,7 @@ public class ResolutionFailurePanel {
         else if (sashForm.isDisposed())
             throw new IllegalStateException("Control already disposed");
 
-        unresolvedViewer.setInput(resolutionResult.getUnresolved());//resolutionResult != null ? resolutionResult.getResolver() : null);
+        unresolvedViewer.setInput(Collections.emptyList());//resolutionResultgetUnresolved());//resolutionResult != null ? resolutionResult.getResolver() : null);
         processingErrorsViewer.setInput(resolutionResult.getStatus());
 
         unresolvedViewer.expandToLevel(2);

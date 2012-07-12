@@ -269,7 +269,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 public IStatus runInUIThread(IProgressMonitor monitor) {
                     ResolutionResult result = job.getResolutionResult();
                     ResolutionWizard wizard = new ResolutionWizard(model, file, result);
-                    if (result.getOutcome() != ResolutionResult.Outcome.Resolved || !result.getOptional().isEmpty()) {
+                    if (result.getOutcome() != ResolutionResult.Outcome.Resolved || !result.getResolve().getOptionalResources().isEmpty()) {
                         WizardDialog dialog = new WizardDialog(shell, wizard);
                         if (dialog.open() != Window.OK) {
                             if (!wizard.performFinish()) {
