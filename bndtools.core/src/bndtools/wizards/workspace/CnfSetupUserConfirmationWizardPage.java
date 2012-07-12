@@ -147,7 +147,7 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
                 DirectoryDialog dialog = new DirectoryDialog(getShell());
                 String path = dialog.open();
                 if (path != null) {
-                    String cnf = System.getProperty("file.separator") + Workspace.CNFDIR;
+                    String cnf = File.separator + Workspace.CNFDIR;
                     if (!path.endsWith(cnf))
                         path = path + cnf;
                     txtExternalLocation.setText(path);
