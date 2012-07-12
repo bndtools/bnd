@@ -291,12 +291,12 @@ public class NanoHTTPD {
 			new NanoHTTPD(port, wwwroot, ssl, keyStoreFile, keyStorePass);
 		}
 		catch (Exception ioe) {
-			System.err.println("Couldn't start server:%n" + ioe);
+			System.err.printf("Couldn't start server:%n" + ioe + "%n");
 			System.exit(-1);
 		}
 
 		myOut.println("Now serving files in port " + port + " from \"" + wwwroot + "\"");
-		myOut.println("Hit Enter to stop.\n");
+		myOut.printf("Hit Enter to stop.%n");
 
 		try {
 			System.in.read();

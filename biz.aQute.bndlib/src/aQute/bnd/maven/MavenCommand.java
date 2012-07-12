@@ -77,9 +77,9 @@ public class MavenCommand extends Processor {
 	}
 
 	private void help() {
-		System.err.println("Usage:%n");
+		System.err.printf("Usage:%n");
 		System.err
-				.println("  maven %n" //
+				.printf("  maven %n" //
 						+ "  [-temp <dir>]            use as temp directory%n" //
 						+ "  settings                 show maven settings%n" //
 						+ "  bundle                   turn a bundle into a maven bundle%n" //
@@ -93,7 +93,7 @@ public class MavenCommand extends Processor {
 						+ "    [-developer <email>]   developer email%n" //
 						+ "    [-nodelete]            do not delete temp files%n" //
 						+ "    [-passphrase <gpgp passphrase>] signer password%n"//
-						+ "        <file|url> ");
+						+ "        <file|url>%n");
 	}
 
 	/**

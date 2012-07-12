@@ -30,7 +30,7 @@ public class MavenDeployCmd extends Processor {
 	 */
 	void run(String args[], int i) throws Exception {
 		if (i >= args.length) {
-			System.err.println("Usage:%n");
+			System.err.printf("Usage:%n");
 			System.err
 					.println("  deploy [-url repo] [-passphrase passphrase] [-homedir homedir] [-keyname keyname] bundle ...");
 			System.err.println("  settings");
