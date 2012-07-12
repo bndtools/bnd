@@ -221,6 +221,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		switch (mode) {
 			case PreferCache :
 				if (!cachedFile.exists()) {
+					ensureCacheDirExists();
 					try {
 						TaggedData data = connector.connectTagged(url);
 
@@ -229,7 +230,6 @@ public class CachingUriResourceHandle implements ResourceHandle {
 							saveETag(data.getTag());
 
 						// Download to the cache
-						cacheDir.mkdirs();
 						IO.copy(data.getInputStream(), cachedFile);
 					}
 					catch (IOException e) {
@@ -262,7 +262,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 						saveETag(data.getTag());
 
 					// Save the data to the cache
-					cacheDir.mkdirs();
+					ensureCacheDirExists();
 					IO.copy(data.getInputStream(), cachedFile);
 					return cachedFile;
 				}
@@ -287,6 +287,25 @@ public class CachingUriResourceHandle implements ResourceHandle {
 				}
 			default :
 				throw new IllegalArgumentException("Invalid caching mode");
+		}
+	}
+	
+	private void ensureCacheDirExists() throws IOException {
+		if (cacheDir.isDirectory())
+			return;
+		
+		if (cacheDir.exists()) {
+			String message = String.format("Cannot create cache directory in path %s: the path exists but is not a directory", cacheDir);
+			if (reporter != null)
+				reporter.error(message);
+			throw new IOException(message);
+		}
+		
+		if (!cacheDir.mkdirs()) {
+			String message = String.format("Failed to create cache directory in path %s");
+			if (reporter != null)
+				reporter.error(message);
+			throw new IOException(message);
 		}
 	}
 

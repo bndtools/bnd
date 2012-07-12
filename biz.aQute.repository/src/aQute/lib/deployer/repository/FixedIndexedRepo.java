@@ -1,10 +1,11 @@
 package aQute.lib.deployer.repository;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-
-import aQute.bnd.service.*;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simple read-only OBR-based repository that uses a list of index locations
@@ -31,16 +32,24 @@ import aQute.bnd.service.*;
 public class FixedIndexedRepo extends AbstractIndexedRepo {
 
 	private static final String	EMPTY_LOCATION	= "";
+	private static final String DEFAULT_CACHE_DIR = ".bnd" + System.getProperty("file.separator") + "cache";
 
 	public static final String	PROP_LOCATIONS	= "locations";
+	public static final String	PROP_CACHE		= "cache";
 
 	private String				locations;
-	protected File				cacheDir;
+	protected File				cacheDir = new File(System.getProperty("user.home") + System.getProperty("file.separator") + DEFAULT_CACHE_DIR);
 
 	public synchronized void setProperties(Map<String,String> map) {
 		super.setProperties(map);
 
 		locations = map.get(PROP_LOCATIONS);
+		String cachePath = map.get(PROP_CACHE);
+		if (cachePath != null) {
+			cacheDir = new File(cachePath);
+			if (!cacheDir.isDirectory())
+				throw new IllegalArgumentException(String.format("Cache path '%s' does not exist, or is not a directory."));
+		}
 	}
 
 	@Override
@@ -59,32 +68,13 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 		return result;
 	}
 
-	// This is still an ugly hack...
-	private RepositoryPlugin lookupCacheRepo() {
-		if (registry != null) {
-			List<RepositoryPlugin> repos = registry.getPlugins(RepositoryPlugin.class);
-			for (RepositoryPlugin repo : repos) {
-				if ("cache".equals(repo.getName()))
-					return repo;
-			}
-		}
-		return null;
-	}
-
 	public synchronized File getCacheDirectory() {
-		if (cacheDir == null) {
-			RepositoryPlugin cacheRepo = lookupCacheRepo();
-			if (cacheRepo != null) {
-				File temp = new File(cacheRepo.getLocation(), ".obr");
-				temp.mkdirs();
-				if (temp.exists())
-					cacheDir = temp;
-			}
-		}
 		return cacheDir;
 	}
 
 	public void setCacheDirectory(File cacheDir) {
+		if (cacheDir == null)
+			throw new IllegalArgumentException("null cache directory not permitted");
 		this.cacheDir = cacheDir;
 	}
 

@@ -28,6 +28,7 @@ import aQute.libg.version.VersionRange;
 
 public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant {
 
+	private static final String	CACHE_PATH	= ".cache";
 	public static final String			PROP_LOCAL_DIR			= "local";
 	public static final String			PROP_READONLY			= "readonly";
 	public static final String			PROP_PRETTY				= "pretty";
@@ -51,25 +52,23 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		// Load essential properties
 		String localDirPath = map.get(PROP_LOCAL_DIR);
 		if (localDirPath == null)
-			throw new IllegalArgumentException(String.format("Attribute '%s' must be set on %s plugin.",
-					PROP_LOCAL_DIR, getClass().getName()));
+			throw new IllegalArgumentException(String.format("Attribute '%s' must be set on %s plugin.", PROP_LOCAL_DIR, getClass().getName()));
+		
 		storageDir = new File(localDirPath);
 		if (storageDir.exists() && !storageDir.isDirectory())
-			throw new IllegalArgumentException(String.format("Local path '%s' exists and is not a directory.",
-					localDirPath));
-		readOnly = "true".equalsIgnoreCase(map.get(PROP_READONLY));
-		pretty = "true".equalsIgnoreCase(map.get(PROP_PRETTY));
+			throw new IllegalArgumentException(String.format("Local path '%s' exists and is not a directory.", localDirPath));
+		
+		readOnly = Boolean.parseBoolean(map.get(PROP_READONLY));
+		pretty = Boolean.parseBoolean(map.get(PROP_PRETTY));
 		overwrite = map.get(PROP_OVERWRITE) == null ? true : Boolean.parseBoolean(map.get(PROP_OVERWRITE));
 
 		// Configure the storage repository
 		storageRepo = new FileRepo(storageDir);
 
 		// Set the local index and cache directory locations
-		cacheDir = new File(storageDir, ".obrcache");
+		cacheDir = new File(storageDir, CACHE_PATH);
 		if (cacheDir.exists() && !cacheDir.isDirectory())
-			throw new IllegalArgumentException(String.format(
-					"Cannot create repository cache: '%s' already exists but is not directory.",
-					cacheDir.getAbsolutePath()));
+			throw new IllegalArgumentException(String.format("Cannot create repository cache: '%s' already exists but is not directory.", cacheDir.getAbsolutePath()));
 	}
 
 	@Override
