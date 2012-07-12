@@ -39,6 +39,7 @@ public class Baseline {
 	Version			newerVersion;
 	Version			olderVersion;
 	Version			suggestedVersion;
+	String			releaseRepository;
 
 	public Baseline(Reporter bnd, Differ differ) throws IOException {
 		this.differ = differ;
@@ -190,6 +191,14 @@ public class Baseline {
 
 	public Version getOlderVersion() {
 		return olderVersion;
+	}
+
+	public String getReleaseRepository() {
+		return releaseRepository;
+	}
+
+	public void setReleaseRepository(String releaseRepository) {
+		this.releaseRepository = releaseRepository;
 	}
 
 	private Version bump(Delta delta, Version last, int offset, int base) {
