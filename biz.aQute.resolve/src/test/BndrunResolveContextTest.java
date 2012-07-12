@@ -21,7 +21,7 @@ import test.lib.MockRegistry;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.lib.osgi.resource.CapReqBuilder;
-import biz.aQute.resolve.BndrunResolveContext;
+import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class BndrunResolveContextTest extends TestCase {
 

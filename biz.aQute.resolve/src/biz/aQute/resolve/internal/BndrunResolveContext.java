@@ -1,4 +1,4 @@
-package biz.aQute.resolve;
+package biz.aQute.resolve.internal;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.namespace.contract.ContractNamespace;
@@ -22,8 +21,6 @@ import org.osgi.resource.Wiring;
 import org.osgi.service.repository.Repository;
 import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolveContext;
-
-import biz.aQute.resolve.internal.FrameworkResourceRepository;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
@@ -43,18 +40,19 @@ public class BndrunResolveContext extends ResolveContext {
     private static final String CONTRACT_OSGI_FRAMEWORK = "OSGiFramework";
     private static final String IDENTITY_INITIAL_RESOURCE = "__INITIAL__";
 
+    private final List<Repository> repos = new LinkedList<Repository>();
+    private final Map<Requirement,List<Capability>> optionalRequirements = new HashMap<Requirement,List<Capability>>();
+
     private final BndEditModel runModel;
     private final Registry registry;
 
-    private final List<Repository> repos = new LinkedList<Repository>();
-
     private boolean initialised = false;
 
-    Resource frameworkResource = null;
-    Version frameworkResourceVersion = null;
+    private Resource frameworkResource = null;
+    private Version frameworkResourceVersion = null;
     private Repository frameworkResourceRepo;
 
-    Resource inputRequirementsResource = null;
+    private Resource inputRequirementsResource = null;
     private EE ee;
 
     public BndrunResolveContext(BndEditModel runModel, Registry registry) {
@@ -242,7 +240,23 @@ public class BndrunResolveContext extends ResolveContext {
             // score--;
         }
 
-        return result;
+        if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE))) {
+            // Only return the framework's capabilities when asked for optional resources.
+            List<Capability> fwkCaps = new ArrayList<Capability>(result.size());
+            for (Capability capability : result) {
+                if (capability.getResource() == frameworkResource)
+                    fwkCaps.add(capability);
+            }
+
+            // If the framework couldn't provide the requirement then save the list of potential providers
+            // to the side, in order to work out the optional resources later.
+            if (fwkCaps.isEmpty())
+                optionalRequirements.put(requirement, result);
+
+            return fwkCaps;
+        } else {
+            return result;
+        }
     }
 
     @Override
@@ -259,6 +273,18 @@ public class BndrunResolveContext extends ResolveContext {
     @Override
     public Map<Resource,Wiring> getWirings() {
         return Collections.emptyMap();
+    }
+
+    public boolean isInputRequirementsResource(Resource resource) {
+        return resource == inputRequirementsResource;
+    }
+
+    public boolean isFrameworkResource(Resource resource) {
+        return resource == frameworkResource;
+    }
+
+    public Map<Requirement,List<Capability>> getOptionalRequirements() {
+        return optionalRequirements;
     }
 
 }

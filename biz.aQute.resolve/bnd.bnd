@@ -7,7 +7,8 @@
 	ee.j2se;version=${javac.ee},\
 	org.mockito.mockito-all
 
-Bundle-Version: 0.0.0.${tstamp;yyyyMMdd-HHmmss}
+Bundle-Version: 0.0.1.${tstamp;yyyyMMdd-HHmmss}
 Export-Package: biz.aQute.resolve
-Private-Package: biz.aQute.resolve.internal,aQute.lib.osgi.resource
+Private-Package: biz.aQute.resolve.internal,\
+	aQute.lib.osgi.resource;-split-package:=first
 Conditional-Package: aQute.libg.*
