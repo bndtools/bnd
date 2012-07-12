@@ -36,9 +36,9 @@ public abstract class Platform {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		Formatter formatter = new Formatter(sb);
-		formatter.format("Name                %s\n", getName());
-		formatter.format("Local               %s\n", getLocal());
-		formatter.format("Global              %s\n", getGlobal());
+		formatter.format("Name                %s%n", getName());
+		formatter.format("Local               %s%n", getLocal());
+		formatter.format("Global              %s%n", getGlobal());
 		return sb.toString();
 	}
 

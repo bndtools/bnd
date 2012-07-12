@@ -689,7 +689,7 @@ public class bnd extends Processor {
 		Formatter f = new Formatter(sb);
 
 		for (String s : args) {
-			f.format("[%s]\n", s);
+			f.format("[%s]%n", s);
 			Syntax sx = Syntax.HELP.get(s);
 			if (s == null)
 				f.format("Unknown");
@@ -697,7 +697,7 @@ public class bnd extends Processor {
 				print(f, sx, "  ");
 			}
 		}
-		f.format("\n");
+		f.format("%n");
 		f.flush();
 		justif.wrap(sb);
 		err.println(sb);
@@ -707,18 +707,18 @@ public class bnd extends Processor {
 		if (sx == null)
 			return;
 
-		f.format("%s%s\n\n", indent, sx.getLead());
+		f.format("%s%s%n%n", indent, sx.getLead());
 		if (sx.getValues() != null)
-			f.format("%sValues\t3: %s\n", indent, sx.getValues());
+			f.format("%sValues\t3: %s%n", indent, sx.getValues());
 
 		if (sx.getPattern() != null)
-			f.format("%sPattern  \t3: %s\n", indent, sx.getPattern());
+			f.format("%sPattern  \t3: %s%n", indent, sx.getPattern());
 		if (sx.getExample() != null)
-			f.format("%sExample  \t3: %s\n", indent, sx.getExample());
+			f.format("%sExample  \t3: %s%n", indent, sx.getExample());
 		if (sx.getChildren() != null) {
 
 			for (Syntax child : sx.getChildren()) {
-				f.format("\n%s[%s]\n", indent, child.getHeader());
+				f.format("%n%s[%s]%n", indent, child.getHeader());
 				print(f, child, indent + "  ");
 			}
 		}
@@ -1607,7 +1607,7 @@ public class bnd extends Processor {
 		}
 		for (String key : sorted) {
 			Object value = manifest.getMainAttributes().getValue(key);
-			format("%-40s %-40s\r\n", new Object[] {
+			format("%-40s %-40s%n", new Object[] {
 					key, value
 			});
 		}
@@ -1741,7 +1741,7 @@ public class bnd extends Processor {
 			Object key = entry.getKey();
 			Map< ? , ? > clause = Create.copy(entry.getValue());
 			clause.remove("uses:");
-			format("  %-38s %s\r\n", key.toString().trim(), clause.isEmpty() ? "" : clause.toString());
+			format("  %-38s %s%n", key.toString().trim(), clause.isEmpty() ? "" : clause.toString());
 		}
 	}
 
@@ -2422,7 +2422,7 @@ public class bnd extends Processor {
 			}
 		}
 		out.printf("Export-Package:");
-		String del = " \\\n  ";
+		String del = String.format(" %n  ");
 		for (String key : parameters.keySet()) {
 			out.print(del);
 			out.print(key);
@@ -2436,7 +2436,7 @@ public class bnd extends Processor {
 				out.print("=");
 				Processor.quote(out, attrs.get(name));
 			}
-			del = ", \\%n  ";
+			del = String.format(", %n  ");
 		}
 		out.println();
 	}

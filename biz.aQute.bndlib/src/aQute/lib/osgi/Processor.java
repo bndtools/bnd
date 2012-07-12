@@ -1254,15 +1254,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	protected void report(Appendable out) throws IOException {
 		if (errors.size() > 0) {
-			out.append("-----------------\nErrors\n");
+			out.append(String.format("-----------------%nErrors%n"));
 			for (int i = 0; i < errors.size(); i++) {
-				out.append(String.format("%03d: %s\n", i, errors.get(i)));
+				out.append(String.format("%03d: %s%n", i, errors.get(i)));
 			}
 		}
 		if (warnings.size() > 0) {
-			out.append(String.format("-----------------\nWarnings\n"));
+			out.append(String.format("-----------------%nWarnings%n"));
 			for (int i = 0; i < warnings.size(); i++) {
-				out.append(String.format("%03d: %s\n", i, warnings.get(i)));
+				out.append(String.format("%03d: %s%n", i, warnings.get(i)));
 			}
 		}
 	}

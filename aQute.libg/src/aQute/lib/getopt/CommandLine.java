@@ -316,11 +316,11 @@ public class CommandLine {
 
 		String description = descr == null ? "" : descr.value();
 
-		f.format("NAME\n  %s - %s\n\n", cmd, description);
-		f.format("SYNOPSIS\n   %s [options] ", cmd);
+		f.format("NAME%n  %s - %s%n%n", cmd, description);
+		f.format("SYNOPSIS%n   %s [options] ", cmd);
 
 		if (patterns == null)
-			f.format(" ...\n\n");
+			f.format(" ...%n%n");
 		else {
 			String del = " ";
 			for (String pattern : patterns.arg()) {
@@ -330,10 +330,10 @@ public class CommandLine {
 					f.format("%s<%s>", del, pattern);
 				del = " ";
 			}
-			f.format("\n\n");
+			f.format("%n%n");
 		}
 
-		f.format("OPTIONS\n");
+		f.format("OPTIONS%n");
 		for (Entry<String,Method> entry : options.entrySet()) {
 			String optionName = entry.getKey();
 			Method m = entry.getValue();
@@ -344,14 +344,14 @@ public class CommandLine {
 
 			String methodDescription = cfg != null ? cfg.description() : (d == null ? "" : d.value());
 
-			f.format("   %s -%s, --%s %s%s - %s\n", required ? " " : "[", //
+			f.format("   %s -%s, --%s %s%s - %s%n", required ? " " : "[", //
 					optionName.charAt(0), //
 					optionName, //
 					getTypeDescriptor(m.getGenericReturnType()), //
 					required ? " " : "]",//
 					methodDescription);
 		}
-		f.format("\n");
+		f.format("%n");
 	}
 
 	static Pattern	LAST_PART	= Pattern.compile(".*[\\$\\.]([^\\$\\.]+)");
@@ -370,7 +370,7 @@ public class CommandLine {
 		// TODO get help from the class
 		Description descr = target.getClass().getAnnotation(Description.class);
 		if (descr != null) {
-			f.format("%s\n\n", descr.value());
+			f.format("%s%n%n", descr.value());
 		}
 		f.format("Available commands: ");
 
@@ -379,7 +379,7 @@ public class CommandLine {
 			f.format("%s%s", del, name);
 			del = ", ";
 		}
-		f.format("\n");
+		f.format("%n");
 
 	}
 
@@ -390,7 +390,7 @@ public class CommandLine {
 
 		Method m = getCommands(target).get(cmd);
 		if (m == null)
-			f.format("No such command: %s\n", cmd);
+			f.format("No such command: %s%n", cmd);
 		else {
 			Class< ? extends Options> options = (Class< ? extends Options>) m.getParameterTypes()[0];
 			help(f, target, cmd, options);

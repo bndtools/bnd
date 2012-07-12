@@ -254,7 +254,7 @@ public class Index implements Iterable<byte[]> {
 
 		public void toString(StringBuilder sb, String indent) throws IOException {
 			for (int i = 0; i < n; i++) {
-				sb.append(String.format("%s %02d:%02d %20s %s %d\n", indent, number, i, hex(k(i), 0, 4), leaf ? "=="
+				sb.append(String.format("%s %02d:%02d %20s %s %d%n", indent, number, i, hex(k(i), 0, 4), leaf ? "=="
 						: "->", c(i)));
 				if (!leaf) {
 					long c = c(i);

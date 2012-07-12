@@ -140,14 +140,14 @@ public class ReporterAdapter implements Reporter, Report {
 	public void progress(float progress, String s, Object... args) {
 		if (out != null) {
 			out.format(s, args);
-			if (!s.endsWith("\n"))
-				out.format("\n");
+			if (!s.endsWith(String.format("%n")))
+				out.format("%n");
 		}
 	}
 
 	public void trace(String s, Object... args) {
 		if (trace && out != null) {
-			out.format("# " + s + "\n", args);
+			out.format("# " + s + "%n", args);
 			out.flush();
 		}
 	}
@@ -223,10 +223,10 @@ public class ReporterAdapter implements Reporter, Report {
 	void report(String title, Collection<String> list, Formatter f) {
 		if (list.isEmpty())
 			return;
-		f.format(title + (list.size() > 1 ? "s" : "") + "\n");
+		f.format(title + (list.size() > 1 ? "s" : "") + "%n");
 		int n = 0;
 		for (String s : list) {
-			f.format("%3s. %s\n", n++, s);
+			f.format("%3s. %s%n", n++, s);
 		}
 	}
 

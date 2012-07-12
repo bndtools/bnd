@@ -854,7 +854,7 @@ public class Macro implements Replacer {
 				if (patterns[i] != null) {
 					Matcher m = patterns[i].matcher(args[i]);
 					if (!m.matches())
-						message += String.format("Argument %s (%s) does not match %s\n", i, args[i],
+						message += String.format("Argument %s (%s) does not match %s%n", i, args[i],
 								patterns[i].pattern());
 				}
 			}

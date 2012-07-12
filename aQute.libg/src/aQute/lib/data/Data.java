@@ -18,7 +18,7 @@ public class Data {
 			Object value = f.get(o);
 			if (value == null) {
 				if (allowNull == null)
-					formatter.format("Value for %s must not be null\n", f.getName());
+					formatter.format("Value for %s must not be null%n", f.getName());
 			} else {
 
 				if (patternValidator != null) {
@@ -27,10 +27,10 @@ public class Data {
 					if (!m.matches()) {
 						String reason = patternValidator.reason();
 						if (reason.length() == 0)
-							formatter.format("Value for %s=%s does not match pattern %s\n", f.getName(), value,
+							formatter.format("Value for %s=%s does not match pattern %s%n", f.getName(), value,
 									patternValidator.value());
 						else
-							formatter.format("Value for %s=%s %s\n", f.getName(), value, reason);
+							formatter.format("Value for %s=%s %s%n", f.getName(), value, reason);
 					}
 				}
 
@@ -40,7 +40,7 @@ public class Data {
 							o = Double.parseDouble((String) o);
 						}
 						catch (Exception e) {
-							formatter.format("Value for %s=%s %s\n", f.getName(), value, "Not a number");
+							formatter.format("Value for %s=%s %s%n", f.getName(), value, "Not a number");
 						}
 					}
 
@@ -48,12 +48,12 @@ public class Data {
 						Number n = (Number) o;
 						long number = n.longValue();
 						if (number >= numericValidator.min() && number < numericValidator.max()) {
-							formatter.format("Value for %s=%s not in valid range (%s,%s]\n", f.getName(), value,
+							formatter.format("Value for %s=%s not in valid range (%s,%s]%n", f.getName(), value,
 									numericValidator.min(), numericValidator.max());
 						}
 					}
 					catch (ClassCastException e) {
-						formatter.format("Value for %s=%s [%s,%s) is not a number\n", f.getName(), value,
+						formatter.format("Value for %s=%s [%s,%s) is not a number%n", f.getName(), value,
 								numericValidator.min(), numericValidator.max());
 					}
 				}
@@ -74,7 +74,7 @@ public class Data {
 		for (Field f : fields) {
 			String name = f.getName();
 			name = Character.toUpperCase(name.charAt(0)) + name.substring(1);
-			formatter.format("%-40s %s\n", name, f.get(data));
+			formatter.format("%-40s %s%n", name, f.get(data));
 		}
 	}
 }
