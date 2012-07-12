@@ -295,14 +295,14 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			return;
 		
 		if (cacheDir.exists()) {
-			String message = String.format("Cannot create cache directory in path %s: the path exists but is not a directory", cacheDir);
+			String message = String.format("Cannot create cache directory in path %s: the path exists but is not a directory", cacheDir.getCanonicalPath());
 			if (reporter != null)
 				reporter.error(message);
 			throw new IOException(message);
 		}
 		
 		if (!cacheDir.mkdirs()) {
-			String message = String.format("Failed to create cache directory in path %s");
+			String message = String.format("Failed to create cache directory in path %s", cacheDir.getCanonicalPath());
 			if (reporter != null)
 				reporter.error(message);
 			throw new IOException(message);
