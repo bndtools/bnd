@@ -1,6 +1,7 @@
 package aQute.lib.deployer.repository;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Collections;
@@ -48,7 +49,13 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 		if (cachePath != null) {
 			cacheDir = new File(cachePath);
 			if (!cacheDir.isDirectory())
-				throw new IllegalArgumentException(String.format("Cache path '%s' does not exist, or is not a directory."));
+				try {
+					throw new IllegalArgumentException(String.format(
+							"Cache path '%s' does not exist, or is not a directory.", cacheDir.getCanonicalPath()));
+				}
+				catch (IOException e) {
+					throw new IllegalArgumentException("Could not get cacheDir canonical path", e);
+				}
 		}
 	}
 
