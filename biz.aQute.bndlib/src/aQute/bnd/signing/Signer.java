@@ -141,7 +141,7 @@ public class Signer extends Processor {
 					if (algorithms[a] != null) {
 						byte[] digest = algorithms[a].digest();
 						String header = digestNames[a] + "-Digest: " + new Base64(digest) + "\r\n";
-						out.write(header.getBytes());
+						out.write(header.getBytes("UTF-8"));
 					}
 				}
 			}

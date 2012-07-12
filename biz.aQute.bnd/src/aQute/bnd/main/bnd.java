@@ -2081,7 +2081,7 @@ public class bnd extends Processor {
 		if (in == null) {
 			warning("Resource not found: test-report.xsl, no html report");
 		} else {
-			FileWriter out = new FileWriter(html);
+			OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(html), "UTF-8");
 			try {
 				Transformer transformer = fact.newTransformer(new StreamSource(in));
 				transformer.transform(new DOMSource(doc), new StreamResult(out));

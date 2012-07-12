@@ -305,7 +305,7 @@ public class BaselineCommands {
 		String o = opts.output("schema.xml");
 		File of = bnd.getFile(o);
 		of.getParentFile().mkdirs();
-		FileWriter fw = new FileWriter(of);
+		OutputStreamWriter fw = new OutputStreamWriter(new FileOutputStream(of), "UTF-8");
 		try {
 			PrintWriter pw = new PrintWriter(fw);
 			try {
