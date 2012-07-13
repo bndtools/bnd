@@ -8,6 +8,7 @@ import org.bndtools.core.utils.collections.CollectionUtils;
 import org.bndtools.core.utils.jface.StrikeoutStyler;
 import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
@@ -21,7 +22,6 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
@@ -40,17 +40,15 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.service.repository.Repository;
 
-import aQute.bnd.service.IndexProvider;
-import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.ResolutionPhase;
 import bndtools.BndConstants;
+import bndtools.Central;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.WorkspaceR5Repository;
+import bndtools.api.ILogger;
 import bndtools.editor.common.BndEditorPart;
-import bndtools.model.repo.RepositoryBundle;
-import bndtools.model.repo.RepositoryBundleVersion;
-import bndtools.model.repo.RepositoryTreeContentProvider;
-import bndtools.model.repo.RepositoryUtils;
 
 public class RepositorySelectionPart extends BndEditorPart {
 
@@ -64,11 +62,13 @@ public class RepositorySelectionPart extends BndEditorPart {
     private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png").createImage();
     private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
 
+    private final ILogger logger = Logger.getLogger();
+
     private CheckboxTableViewer viewer;
     private ToolItem btnMoveUp;
     private ToolItem btnMoveDown;
 
-    private final ArrayList<RepositoryPlugin> allRepos = new ArrayList<RepositoryPlugin>();
+    private final ArrayList<Repository> allRepos = new ArrayList<Repository>();
     private List<String> includedRepos = null;
 
     /**
@@ -108,18 +108,10 @@ public class RepositorySelectionPart extends BndEditorPart {
         table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         viewer = new CheckboxTableViewer(table);
-        viewer.setContentProvider(new RepositoryTreeContentProvider());
-        viewer.setFilters(new ViewerFilter[] {
-            new ViewerFilter() {
-                @Override
-                public boolean select(Viewer viewer, Object parentElement, Object element) {
-                    return isAvailableRepo(element);
-                }
-            }
-        });
+        viewer.setContentProvider(ArrayContentProvider.getInstance());
         viewer.setCheckStateProvider(new ICheckStateProvider() {
             public boolean isChecked(Object element) {
-                return isIncludedRepo((RepositoryPlugin) element);
+                return isIncludedRepo(element);
             }
 
             public boolean isGrayed(Object element) {
@@ -151,24 +143,16 @@ public class RepositorySelectionPart extends BndEditorPart {
                 Image image = null;
                 Styler styler = null;
 
-                RepositoryPlugin repo = (RepositoryPlugin) element;
-                label = repo.getName();
+                Repository repo = (Repository) element;
+                label = repo.toString();
                 image = repoImg;
 
-                /*
-                 * TODO
-                if (repo instanceof WorkspaceObrProvider) {
+                if (repo instanceof WorkspaceR5Repository) {
                     image = projectImg;
                 }
-                 */
 
-                boolean available = isAvailableRepo(repo);
-                if (available) {
-                    boolean included = isIncludedRepo(repo);
-                    styler = included ? null : strikeoutStyler;
-                } else {
-                    styler = StyledString.QUALIFIER_STYLER;
-                }
+                boolean included = isIncludedRepo(repo);
+                styler = included ? null : strikeoutStyler;
 
                 StyledString styledLabel = new StyledString(label, styler);
                 cell.setText(styledLabel.getString());
@@ -179,7 +163,7 @@ public class RepositorySelectionPart extends BndEditorPart {
             @Override
             public String getToolTipText(Object element) {
                 String tooltip = null;
-                if (isIncludedRepo((RepositoryPlugin) element)) {
+                if (isIncludedRepo(element)) {
                     tooltip = "Included for resolution.";
                 } else {
                     tooltip = "Excluded from resolution.";
@@ -191,42 +175,23 @@ public class RepositorySelectionPart extends BndEditorPart {
         ViewerSorter sorter = new ViewerSorter() {
             @Override
             public int compare(Viewer viewer, Object e1, Object e2) {
-                if (e1 instanceof RepositoryPlugin && e2 instanceof RepositoryPlugin) {
-                    return compareRepos((RepositoryPlugin) e1, (RepositoryPlugin) e2);
-                } else if (e1 instanceof RepositoryBundle && e2 instanceof RepositoryBundle) {
-                    return compareBundles((RepositoryBundle) e1, (RepositoryBundle) e2);
-                } else if (e1 instanceof RepositoryBundleVersion && e2 instanceof RepositoryBundleVersion) {
-                    return compareBundleVersions((RepositoryBundleVersion) e1, (RepositoryBundleVersion) e2);
-                }
-                return 0;
-            }
-
-            public int compareRepos(RepositoryPlugin r1, RepositoryPlugin r2) {
-                if (isIncludedRepo(r1)) {
-                    if (isIncludedRepo(r2)) {
+                if (isIncludedRepo(e1)) {
+                    if (isIncludedRepo(e2)) {
                         // Both included => sort on position in included list
                         if (includedRepos != null) {
-                            return includedRepos.indexOf(r1.getName()) - includedRepos.indexOf(r2.getName());
+                            return includedRepos.indexOf(e1.toString()) - includedRepos.indexOf(e2.toString());
                         }
-                        return allRepos.indexOf(r1) - allRepos.indexOf(r2);
+                        return allRepos.indexOf(e1) - allRepos.indexOf(e2);
                     }
-                    // r1 included but r2 not => r1 comes first
+                    // e1 included but e2 not => 11 comes first
                     return -1;
                 }
-                if (isIncludedRepo(r2)) {
-                    // r1 not included but r2 is => r2 comes first
+                if (isIncludedRepo(e2)) {
+                    // e1 not included but e2 is => e2 comes first
                     return +1;
                 }
                 // Neither included => sort on name
-                return r1.getName().compareTo(r2.getName());
-            }
-
-            public int compareBundles(RepositoryBundle b1, RepositoryBundle b2) {
-                return b1.getBsn().compareTo(b2.getBsn());
-            }
-
-            public int compareBundleVersions(RepositoryBundleVersion v1, RepositoryBundleVersion v2) {
-                return v1.getVersion().compareTo(v2.getVersion());
+                return e1.toString().compareTo(e2.toString());
             }
         };
 
@@ -234,7 +199,7 @@ public class RepositorySelectionPart extends BndEditorPart {
 
         viewer.addCheckStateListener(new ICheckStateListener() {
             public void checkStateChanged(CheckStateChangedEvent event) {
-                RepositoryPlugin repo = (RepositoryPlugin) event.getElement();
+                Object repo = event.getElement();
                 toggleSelection(repo);
             }
         });
@@ -266,12 +231,7 @@ public class RepositorySelectionPart extends BndEditorPart {
         boolean enable = !viewer.getSelection().isEmpty();
         IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
         for (Object elem : sel.toList()) {
-            if (!(elem instanceof RepositoryPlugin)) {
-                enable = false;
-                break;
-            }
-            RepositoryPlugin plugin = (RepositoryPlugin) elem;
-            if (!isIncludedRepo(plugin)) {
+            if (!isIncludedRepo(elem)) {
                 enable = false;
                 break;
             }
@@ -281,26 +241,16 @@ public class RepositorySelectionPart extends BndEditorPart {
         btnMoveDown.setEnabled(enable);
     }
 
-    static boolean isAvailableRepo(Object repoObj) {
-        if (repoObj instanceof IndexProvider) {
-            return ((IndexProvider) repoObj).getSupportedPhases().contains(ResolutionPhase.runtime);
-        }
-        return false;
-    }
-
-    boolean isIncludedRepo(RepositoryPlugin repo) {
+    boolean isIncludedRepo(Object repo) {
         boolean included = false;
-        included = includedRepos == null || includedRepos.contains(repo.getName());
+        included = includedRepos == null || includedRepos.contains(repo.toString());
         return included;
     }
 
-    void toggleSelection(RepositoryPlugin selectedRepo) {
-        if (!isAvailableRepo(selectedRepo))
-            return;
-
+    void toggleSelection(Object selectedRepo) {
         lazyInitIncludedRepos();
-        if (!includedRepos.remove(selectedRepo.getName()))
-            includedRepos.add(selectedRepo.getName());
+        if (!includedRepos.remove(selectedRepo.toString()))
+            includedRepos.add(selectedRepo.toString());
 
         viewer.refresh();
         updateButtons();
@@ -312,17 +262,19 @@ public class RepositorySelectionPart extends BndEditorPart {
     void lazyInitIncludedRepos() {
         if (includedRepos == null) {
             includedRepos = new LinkedList<String>();
-            for (RepositoryPlugin repo : allRepos) {
-                if (isAvailableRepo(repo)) {
-                    includedRepos.add(repo.getName());
-                }
+            for (Repository repo : allRepos) {
+                includedRepos.add(repo.toString());
             }
         }
     }
 
     private void reloadRepos() {
         allRepos.clear();
-        allRepos.addAll(RepositoryUtils.listRepositories(true));
+        try {
+            allRepos.addAll(Central.getWorkspace().getPlugins(Repository.class));
+        } catch (Exception e) {
+            logger.logError("Failed to reload repositories", e);
+        }
         viewer.setInput(allRepos);
         updateButtons();
     }
@@ -333,7 +285,7 @@ public class RepositorySelectionPart extends BndEditorPart {
 
         refreshTool.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent event) {
                 reloadRepos();
             }
         });
@@ -365,8 +317,8 @@ public class RepositorySelectionPart extends BndEditorPart {
         int[] selectionIndexes = new int[selection.length];
 
         for (int i = 0; i < selection.length; i++) {
-            RepositoryPlugin item = (RepositoryPlugin) selection[i];
-            selectionIndexes[i] = includedRepos.indexOf(item.getName());
+            Object item = selection[i];
+            selectionIndexes[i] = includedRepos.indexOf(item.toString());
         }
         return selectionIndexes;
     }

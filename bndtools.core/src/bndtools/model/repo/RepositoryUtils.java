@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.osgi.Constants;
@@ -62,13 +63,8 @@ public class RepositoryUtils {
     }
 
     public static boolean isWorkspaceRepo(RepositoryPlugin repo) {
-        /*
-         * TODO
-         *
-        if (repo instanceof WorkspaceObrProvider) {
+        if (repo.getClass() == WorkspaceRepository.class)
             return true;
-        }
-         */
         return false;
     }
 

@@ -47,13 +47,9 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 cell.setText(repo.getName());
 
                 Image image;
-                /*
-                 * TODO
-                 *
-                if (element instanceof WorkspaceObrProvider)
+                if (RepositoryUtils.isWorkspaceRepo(repo))
                     image = projectImg;
-                else */
-                if (isRemoteRepo((RepositoryPlugin) element))
+                else if (isRemoteRepo((RepositoryPlugin) element))
                     image = remoteRepoImg;
                 else
                     image = localRepoImg;
@@ -140,29 +136,21 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     }
 
     public Image getImage(Object element) {
-        /*
-         * TODO
-        WorkspaceObrProvider workspace;
-        try {
-            workspace = Central.getWorkspaceObrProvider();
-        } catch (Exception e) {
-            workspace = null;
-        }
-
-        if (element == workspace) {
-            return projectImg;
-         
-        } else */
+        Image img = null;
         if (element instanceof RepositoryPlugin) {
-            return isRemoteRepo((RepositoryPlugin) element) ? remoteRepoImg : localRepoImg;
+            RepositoryPlugin repo = (RepositoryPlugin) element;
+            if (RepositoryUtils.isWorkspaceRepo(repo))
+                img = projectImg;
+            else
+                img = isRemoteRepo(repo) ? remoteRepoImg : localRepoImg;
         } else if (element instanceof Project) {
-            return projectImg;
+            img = projectImg;
         } else if (element instanceof ProjectBundle) {
-            return bundleImg;
+            img = bundleImg;
         } else if (element instanceof RepositoryBundle) {
-            return bundleImg;
+            img = bundleImg;
         }
-        return null;
+        return img;
     }
 
     public String getText(Object element) {
