@@ -30,10 +30,10 @@ import aQute.lib.osgi.resource.Filters;
 import aQute.lib.osgi.resource.ResourceBuilder;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
+import aQute.libg.filters.LiteralFilter;
 import aQute.libg.filters.SimpleFilter;
 import aQute.libg.header.Attrs;
 import aQute.libg.header.Parameters;
-import aQute.libg.version.VersionRange;
 
 public class BndrunResolveContext extends ResolveContext {
 
@@ -113,15 +113,12 @@ public class BndrunResolveContext extends ResolveContext {
         Entry<String,Attrs> entry = params.entrySet().iterator().next();
         String identity = entry.getKey();
 
-        VersionRange version = null;
         String versionStr = entry.getValue().get("version");
-        if (versionStr != null)
-            version = new VersionRange(versionStr);
 
         // Construct a filter & requirement to find matches
         Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, identity);
-        if (version != null)
-            filter = new AndFilter().addChild(filter).addChild(Filters.fromVersionRange(version));
+        if (versionStr != null)
+            filter = new AndFilter().addChild(filter).addChild(new LiteralFilter(Filters.fromVersionRange(versionStr)));
         Requirement frameworkReq = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
 
         // Iterate over repos looking for matches

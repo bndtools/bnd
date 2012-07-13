@@ -12,8 +12,8 @@ import org.osgi.resource.Resource;
 import aQute.lib.osgi.resource.CapReq.MODE;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
+import aQute.libg.filters.LiteralFilter;
 import aQute.libg.filters.SimpleFilter;
-import aQute.libg.version.VersionRange;
 
 public class CapReqBuilder {
 
@@ -85,11 +85,11 @@ public class CapReqBuilder {
 		return new CapReq(MODE.Requirement, namespace, null, directives, attributes);
 	}
 	
-	public static final CapReqBuilder createPackageRequirement(String pkgName, VersionRange range) {
+	public static final CapReqBuilder createPackageRequirement(String pkgName, String range) {
 		Filter filter;
 		SimpleFilter pkgNameFilter = new SimpleFilter(PackageNamespace.PACKAGE_NAMESPACE, pkgName);
 		if (range != null)
-			filter = new AndFilter().addChild(pkgNameFilter).addChild(Filters.fromVersionRange(range));
+			filter = new AndFilter().addChild(pkgNameFilter).addChild(new LiteralFilter(Filters.fromVersionRange(range)));
 		else
 			filter = pkgNameFilter;
 		

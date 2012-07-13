@@ -25,7 +25,7 @@ public class FindProvidersTest extends TestCase {
 		props.put("locations", new File("testdata/minir5.xml").toURI().toString());
 		repo.setProperties(props);
 		
-		Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", new VersionRange("[1,2)")).buildSyntheticRequirement();
+		Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", "[1,2)").buildSyntheticRequirement();
 		Map<Requirement,Collection<Capability>> result = repo.findProviders(Collections.singleton(req));
 		
 		assertNotNull(result);
@@ -44,7 +44,7 @@ public class FindProvidersTest extends TestCase {
 		props.put("locations", new File("testdata/minir5.xml").toURI().toString());
 		repo.setProperties(props);
 		
-		Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", new VersionRange("[1,2)")).buildSyntheticRequirement();
+		Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", "[1,2)").buildSyntheticRequirement();
 		Map<Requirement,Collection<Capability>> result = repo.findProviders(Collections.singleton(req));
 		Capability id = result.get(req).iterator().next().getResource().getCapabilities("osgi.identity").get(0);
 		assertEquals(Version.class, id.getAttributes().get("version").getClass());
@@ -79,7 +79,7 @@ public class FindProvidersTest extends TestCase {
 		props.put("locations", new File("testdata/big_index.xml").toURI().toString());
 		repo.setProperties(props);
 		
-		Requirement req = CapReqBuilder.createPackageRequirement("aQute.bnd.annotation", new VersionRange("[1.43,2)")).buildSyntheticRequirement();
+		Requirement req = CapReqBuilder.createPackageRequirement("aQute.bnd.annotation", "[1.43,2)").buildSyntheticRequirement();
 		Map<Requirement,Collection<Capability>> result = repo.findProviders(Collections.singleton(req));
 		Collection<Capability> matchingCaps = result.get(req);
 		
