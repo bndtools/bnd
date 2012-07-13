@@ -40,13 +40,25 @@ public class ResolveProcess {
             }
 
             // Find optional resources
-            optionalResources = new HashMap<Resource,Collection<Requirement>>();
-            for (Entry<Requirement,List<Capability>> entry : resolveContext.getOptionalRequirements().entrySet()) {
-                Requirement req = entry.getKey();
-                Resource requirer = req.getResource();
-                if (requiredResources.contains(requirer)) {
-                    List<Capability> providers = entry.getValue();
-                    for (Capability provider : providers) {
+            processOptionalRequirements(resolveContext);
+
+            return true;
+        } catch (ResolutionException e) {
+            resolutionException = e;
+            return false;
+        }
+    }
+
+    private void processOptionalRequirements(BndrunResolveContext resolveContext) {
+        optionalResources = new HashMap<Resource,Collection<Requirement>>();
+        for (Entry<Requirement,List<Capability>> entry : resolveContext.getOptionalRequirements().entrySet()) {
+            Requirement req = entry.getKey();
+            Resource requirer = req.getResource();
+            if (requiredResources.contains(requirer)) {
+                List<Capability> providers = entry.getValue();
+                for (Capability provider : providers) {
+                    Resource providerResource = provider.getResource();
+                    if (requirer != providerResource && !requiredResources.contains(providerResource)) {
                         Collection<Requirement> reasons = optionalResources.get(provider.getResource());
                         if (reasons == null) {
                             reasons = new LinkedList<Requirement>();
@@ -56,11 +68,6 @@ public class ResolveProcess {
                     }
                 }
             }
-
-            return true;
-        } catch (ResolutionException e) {
-            resolutionException = e;
-            return false;
         }
     }
 
