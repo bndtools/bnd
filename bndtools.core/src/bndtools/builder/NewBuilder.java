@@ -89,9 +89,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
         validationResults = new MultiStatus(Plugin.PLUGIN_ID, 0, "Validation errors in bnd project", null);
         buildLog = new ArrayList<String>(5);
 
-        // Initialise workspace OBR index (should only happen once)
-        boolean builtAny = false;
-
         try {
             // Prepare build listeners
             listeners = new BuildListeners();
@@ -165,21 +162,13 @@ public class NewBuilder extends IncrementalProjectBuilder {
             }
 
             // CASE 4: local file changes
-            builtAny = rebuildIfLocalChanges(dependsOn);
+            rebuildIfLocalChanges(dependsOn);
 
             return dependsOn;
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Build Error!", e));
         } finally {
             listeners.release();
-            if (!builtAny) {
-                try {
-                    Central.getWorkspaceObrProvider().reset();
-                } catch (Exception e) {
-                    logger.logError("Error initialising workspace OBR provider", e);
-                }
-            }
-
             if (!buildLog.isEmpty() && logLevel > 0) {
                 StringBuilder builder = new StringBuilder();
                 builder.append(String.format("BUILD LOG for project %s (%d entries):", getProject(), buildLog.size()));

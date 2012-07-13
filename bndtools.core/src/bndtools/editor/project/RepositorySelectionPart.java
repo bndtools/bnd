@@ -46,7 +46,6 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import bndtools.BndConstants;
 import bndtools.Plugin;
-import bndtools.WorkspaceObrProvider;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
@@ -156,9 +155,12 @@ public class RepositorySelectionPart extends BndEditorPart {
                 label = repo.getName();
                 image = repoImg;
 
+                /*
+                 * TODO
                 if (repo instanceof WorkspaceObrProvider) {
                     image = projectImg;
                 }
+                 */
 
                 boolean available = isAvailableRepo(repo);
                 if (available) {

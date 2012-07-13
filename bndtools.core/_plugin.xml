@@ -626,6 +626,13 @@
       <listener name="Workspace Setup" class="bndtools.wizards.workspace.CnfSetupBuildListener"/>
    </extension>
    
+   <extension point="buildListeners">
+      <listener
+          name="Bundle Index Generation"
+          class="org.bndtools.core.build.indexer.BuiltBundleIndexer"
+      />
+   </extension>
+   
    <extension point="bndtoolsStartupParticipant">
       <startupParticipant class="org.bndtools.core.jobs.startup.KickBundles"/>
    </extension>

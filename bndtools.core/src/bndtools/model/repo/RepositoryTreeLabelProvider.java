@@ -18,10 +18,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import aQute.bnd.build.Project;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
-import bndtools.WorkspaceObrProvider;
 import bndtools.api.ILogger;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
@@ -40,13 +38,6 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
 
     @Override
     public void update(ViewerCell cell) {
-        try {
-            /* initialise WorkspaceObrProvider */
-            Central.getWorkspaceObrProvider();
-        } catch (Exception e) {
-            /* ignore */
-        }
-
         Object element = cell.getElement();
         int index = cell.getColumnIndex();
 
@@ -56,9 +47,13 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 cell.setText(repo.getName());
 
                 Image image;
+                /*
+                 * TODO
+                 *
                 if (element instanceof WorkspaceObrProvider)
                     image = projectImg;
-                else if (isRemoteRepo((RepositoryPlugin) element))
+                else */
+                if (isRemoteRepo((RepositoryPlugin) element))
                     image = remoteRepoImg;
                 else
                     image = localRepoImg;
@@ -145,6 +140,8 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     }
 
     public Image getImage(Object element) {
+        /*
+         * TODO
         WorkspaceObrProvider workspace;
         try {
             workspace = Central.getWorkspaceObrProvider();
@@ -154,7 +151,9 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
 
         if (element == workspace) {
             return projectImg;
-        } else if (element instanceof RepositoryPlugin) {
+         
+        } else */
+        if (element instanceof RepositoryPlugin) {
             return isRemoteRepo((RepositoryPlugin) element) ? remoteRepoImg : localRepoImg;
         } else if (element instanceof Project) {
             return projectImg;

@@ -13,24 +13,27 @@ Bundle-Vendor: Bndtools
 Import-Package: junit.framework;resolution:=optional,\
 	org.apache.felix.shell;resolution:=optional,\
 	com.ctc.wstx.stax,\
-	!net.jcip.annotations,\
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 # Bundle Content
 
-Private-Package: bndtools,\
+Private-Package: \
+	bndtools,\
 	bndtools.*,\
 	org.bndtools.core.*,\
 	org.ardverk.collection,\
 	org.osgi.service.obr,\
+	org.osgi.service.indexer.impl.types,\
+	org.osgi.service.indexer.impl,\
+	org.osgi.service.indexer.impl.util,\
+	org.apache.felix.resolver,\
 	aQute.libg.generics;-split-package:=merge-first,\
 	aQute.libg.tuple;-split-package:=merge-first,\
 	aQute.libg.filters,\
 	aQute.lib.io;-split-package:=merge-first,\
 	aQute.lib.filter;-split-package:=merge-first,\
 	org.kxml2.io,\
-	org.xmlpull.v1,\
-	org.apache.felix.resolver
+	org.xmlpull.v1
 
 Export-Package: bndtools.api.*,\
 	bndtools.types,\

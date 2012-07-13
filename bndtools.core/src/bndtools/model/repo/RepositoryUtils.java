@@ -11,7 +11,6 @@ import aQute.lib.osgi.Constants;
 import aQute.libg.header.Attrs;
 import bndtools.Central;
 import bndtools.Logger;
-import bndtools.WorkspaceObrProvider;
 import bndtools.api.ILogger;
 
 public class RepositoryUtils {
@@ -32,7 +31,7 @@ public class RepositoryUtils {
             List<RepositoryPlugin> plugins = workspace.getPlugins(RepositoryPlugin.class);
             List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>(plugins.size() + 1);
 
-            repos.add(Central.getWorkspaceObrProvider());
+            repos.add(Central.getWorkspaceRepository());
 
             for (RepositoryPlugin plugin : plugins) {
                 if (!hideCache || !CACHE_REPO.equals(plugin.getName()))
@@ -63,9 +62,13 @@ public class RepositoryUtils {
     }
 
     public static boolean isWorkspaceRepo(RepositoryPlugin repo) {
+        /*
+         * TODO
+         *
         if (repo instanceof WorkspaceObrProvider) {
             return true;
         }
+         */
         return false;
     }
 
