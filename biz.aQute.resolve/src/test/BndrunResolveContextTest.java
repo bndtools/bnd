@@ -200,7 +200,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(2, mandRes.size());
         Iterator<Resource> iter = mandRes.iterator();
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(iter.next()));
-        assertEquals("__INITIAL__", iter.next().getCapabilities("osgi.identity").get(0).getAttributes().get("osgi.identity"));
+        assertEquals("<<INITIAL>>", iter.next().getCapabilities("osgi.identity").get(0).getAttributes().get("osgi.identity"));
     }
 
     public void testEERequirementResolvesFramework() {

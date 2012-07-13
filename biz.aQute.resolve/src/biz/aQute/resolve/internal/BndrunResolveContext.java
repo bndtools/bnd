@@ -38,7 +38,7 @@ import aQute.bnd.header.Parameters;
 public class BndrunResolveContext extends ResolveContext {
 
     private static final String CONTRACT_OSGI_FRAMEWORK = "OSGiFramework";
-    private static final String IDENTITY_INITIAL_RESOURCE = "__INITIAL__";
+    private static final String IDENTITY_INITIAL_RESOURCE = "<<INITIAL>>";
 
     private final List<Repository> repos = new LinkedList<Repository>();
     private final Map<Requirement,List<Capability>> optionalRequirements = new HashMap<Requirement,List<Capability>>();
