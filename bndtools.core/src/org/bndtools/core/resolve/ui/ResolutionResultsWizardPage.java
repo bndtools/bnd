@@ -26,9 +26,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -61,9 +59,8 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.lib.osgi.resource.CapReqBuilder;
 import aQute.lib.osgi.resource.Filters;
 import aQute.libg.filters.AndFilter;
+import aQute.libg.filters.LiteralFilter;
 import aQute.libg.filters.SimpleFilter;
-import aQute.libg.version.VersionRange;
-
 import bndtools.Plugin;
 
 public class ResolutionResultsWizardPage extends WizardPage {
@@ -260,19 +257,28 @@ public class ResolutionResultsWizardPage extends WizardPage {
         reasonsViewer.setContentProvider(ArrayContentProvider.getInstance());
         reasonsViewer.setLabelProvider(new UnresolvedRequirementsLabelProvider());
         // reasonsViewer.setSorter(new ReasonSorter());
-        // reasonsViewer.setLabelProvider(new ResolutionFailureFlatLabelProvider());
+
+        /*
+         * TODO: umm, what did this actually do anyway?
+         *
         reasonsViewer.addDoubleClickListener(new IDoubleClickListener() {
             public void doubleClick(DoubleClickEvent event) {
-                /*
-                 * TODO IStructuredSelection sel = (IStructuredSelection) event.getSelection(); Reason reason = (Reason)
-                 * sel.getFirstElement(); TableItem[] items = requiredViewer.getTable().getItems(); for (int idx = 0;
-                 * idx < items.length; idx++) { Resource resource = (Resource) items[idx].getData(); if
-                 * (resource.equals(reason.getResource())) { requiredViewer.getTable().select(idx);
-                 * requiredViewer.getTable().showSelection(); requiredViewer.getTable().notifyListeners(SWT.Selection,
-                 * new Event()); return; } }
-                 */
+                
+                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
+                Reason reason = (Reason) sel.getFirstElement();
+                TableItem[] items = requiredViewer.getTable().getItems();
+                for (int idx = 0; idx < items.length; idx++) {
+                    Resource resource = (Resource) items[idx].getData();
+                    if (resource.equals(reason.getResource())) {
+                        requiredViewer.getTable().select(idx);
+                        requiredViewer.getTable().showSelection();
+                        requiredViewer.getTable().notifyListeners(SWT.Selection, new Event());
+                        return;
+                    }
+                }
             }
         });
+        */
 
         sashForm.setWeights(new int[] {
                 3, 3, 1
@@ -330,11 +336,11 @@ public class ResolutionResultsWizardPage extends WizardPage {
         Capability identity = ResourceUtils.getIdentityCapability(resource);
         String id = ResourceUtils.getIdentity(identity);
         Version version = ResourceUtils.getVersion(identity);
+        Version dropQualifier = new Version(version.getMajor(), version.getMinor(), version.getMicro());
 
         AndFilter filter = new AndFilter();
         filter.addChild(new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, id));
-        VersionRange versionRange = new VersionRange(version.toString());
-        filter.addChild(Filters.fromVersionRange(versionRange));
+        filter.addChild(new LiteralFilter(Filters.fromVersionRange(dropQualifier.toString())));
 
         Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
         return req;

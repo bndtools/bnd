@@ -12,9 +12,9 @@ import java.util.List;
 
 import org.bndtools.core.resolve.ResolveJob;
 import org.bndtools.core.resolve.ui.ResolutionWizard;
+import org.bndtools.core.ui.resource.RequirementLabelProvider;
 import org.bndtools.core.utils.dnd.AbstractViewerDropAdapter;
 import org.bndtools.core.utils.dnd.SupportedTransfer;
-import org.bndtools.core.utils.filters.ObrConstants;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -57,6 +57,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
@@ -73,17 +74,16 @@ import aQute.lib.osgi.resource.CapReqBuilder;
 import aQute.lib.osgi.resource.Filters;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
+import aQute.libg.filters.LiteralFilter;
 import aQute.libg.filters.Operator;
 import aQute.libg.filters.SimpleFilter;
 import aQute.libg.version.Version;
-import aQute.libg.version.VersionRange;
 import bndtools.BndConstants;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.ResolveMode;
-import bndtools.model.obr.RequirementLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
@@ -239,11 +239,11 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         }
 
         if (bsn != null) {
-            Filter filter = new SimpleFilter(ObrConstants.FILTER_BSN, bsn);
+            Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
             if (version != null) {
                 filter = new AndFilter().addChild(filter).addChild(new SimpleFilter("version", Operator.GreaterThanOrEqual, version.toString()));
             }
-            Requirement req = new CapReqBuilder(ObrConstants.REQUIREMENT_BUNDLE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
+            Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
             return req;
         }
         return null;
@@ -261,14 +261,13 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
                 List<VersionedClause> result = wizard.getSelectedBundles();
                 List<Requirement> adding = new ArrayList<Requirement>(result.size());
                 for (VersionedClause bundle : result) {
-                    Filter filter = new SimpleFilter(ObrConstants.FILTER_BSN, bundle.getName());
+                    Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bundle.getName());
 
-                    String versionRangeStr = bundle.getVersionRange();
-                    if (versionRangeStr != null && !"latest".equals(versionRangeStr)) {
-                        VersionRange versionRange = new VersionRange(versionRangeStr);
-                        filter = new AndFilter().addChild(filter).addChild(Filters.fromVersionRange(versionRange));
+                    String versionRange = bundle.getVersionRange();
+                    if (versionRange != null && !"latest".equals(versionRange)) {
+                        filter = new AndFilter().addChild(filter).addChild(new LiteralFilter(Filters.fromVersionRange(versionRange)));
                     }
-                    Requirement req = new CapReqBuilder(ObrConstants.REQUIREMENT_BUNDLE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
+                    Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
                     adding.add(req);
                 }
                 if (!adding.isEmpty()) {

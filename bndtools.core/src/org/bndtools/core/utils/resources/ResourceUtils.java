@@ -6,7 +6,14 @@ import java.net.URL;
 import java.util.List;
 
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.namespace.contract.ContractNamespace;
+import org.osgi.namespace.extender.ExtenderNamespace;
+import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
@@ -78,4 +85,30 @@ public final class ResourceUtils {
 
         throw new IllegalArgumentException("Resource content capability has URL attribute with incorrect type: " + uriObj.getClass());
     }
+
+    public static String getVersionAttributeForNamespace(String ns) {
+        String name;
+
+        if (IdentityNamespace.IDENTITY_NAMESPACE.equals(ns))
+            name = IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+        else if (BundleNamespace.BUNDLE_NAMESPACE.equals(ns))
+            name = BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+        else if (HostNamespace.HOST_NAMESPACE.equals(ns))
+            name = HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+        else if (PackageNamespace.PACKAGE_NAMESPACE.equals(ns))
+            name = PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+        else if (ServiceNamespace.SERVICE_NAMESPACE.equals(ns))
+            name = null;
+        else if (ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE.equals(ns))
+            name = ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+        else if (ExtenderNamespace.EXTENDER_NAMESPACE.equals(ns))
+            name = ExtenderNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+        else if (ContractNamespace.CONTRACT_NAMESPACE.equals(ns))
+            name = ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+        else
+            name = null;
+
+        return name;
+    }
+
 }

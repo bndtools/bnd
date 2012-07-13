@@ -1,12 +1,6 @@
-package bndtools.model.obr;
+package org.bndtools.core.ui.resource;
 
-import org.apache.felix.bundlerepository.Reason;
-import org.apache.felix.bundlerepository.Requirement;
-import org.apache.felix.bundlerepository.Resource;
-import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
-
-import bndtools.UIConstants;
 
 public class ResolutionFailureFlatLabelProvider extends RequirementLabelProvider {
 
@@ -14,6 +8,8 @@ public class ResolutionFailureFlatLabelProvider extends RequirementLabelProvider
 
     @Override
     public void update(ViewerCell cell) {
+        /*
+         * TODO
         Reason reason = (Reason) cell.getElement();
         Resource resource = reason.getResource();
         Requirement requirement = reason.getRequirement();
@@ -30,8 +26,12 @@ public class ResolutionFailureFlatLabelProvider extends RequirementLabelProvider
 
         cell.setText(label.getString());
         cell.setStyleRanges(label.getStyleRanges());
+         */
     }
 
+    /*
+     * TODO
+     * 
     private static StyledString getLabel(Resource resource) {
         StyledString label;
         if (resource == null || resource.getId() == null) {
@@ -43,5 +43,6 @@ public class ResolutionFailureFlatLabelProvider extends RequirementLabelProvider
         }
         return label;
     }
+     */
 
 }

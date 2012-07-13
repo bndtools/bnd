@@ -1,13 +1,6 @@
-package bndtools.model.obr;
+package org.bndtools.core.ui.resource;
 
-import java.util.Collection;
-
-import org.apache.felix.bundlerepository.Resource;
-import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.swt.graphics.Image;
-
-import bndtools.UIConstants;
 
 public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider {
 
@@ -15,6 +8,9 @@ public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider
 
     @Override
     public void update(ViewerCell cell) {
+        /*
+         * TODO
+         * 
         StyledString label;
         Image image;
 
@@ -47,8 +43,11 @@ public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider
         cell.setImage(image);
         cell.setText(label.getString());
         cell.setStyleRanges(label.getStyleRanges());
+         */
     }
 
+    /*
+     * TODO
     private static StyledString getLabel(Resource resource) {
         StyledString label;
         if (resource == null || resource.getId() == null) {
@@ -60,5 +59,6 @@ public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider
         }
         return label;
     }
+     */
 
 }
