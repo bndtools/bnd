@@ -11,9 +11,7 @@ workspace.bundles: \
 	bndtools.jareditor;version=snapshot,\
 	bndtools.diff;version=snapshot,\
 	bndtools.release;version=snapshot,\
-	org.bndtools.embeddedrepo;version=snapshot,\
-	org.bndtools.repos.obr;version=snapshot,\
-	org.osgi.impl.bundle.bindex2.lib
+	org.bndtools.embeddedrepo;version=snapshot
 
 # used by the bndtools.diff and bndtools.release plug-ins	
 asm.bundles: com.springsource.org.objectweb.asm,\

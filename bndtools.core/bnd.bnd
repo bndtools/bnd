@@ -95,7 +95,6 @@ eclipse.deps: \
 	woodstox-core-asl,\
 	javax.xml,\
 	javax.xml.stream,\
-	org.bndtools.repos.obr;version=latest,\
 	osgi.r5;version=1.0.1,\
 	libs/org.osgi.service.obr-1.0.2.jar;version=file,\
 	libs/jcip-annotations.jar;version=file

@@ -607,17 +607,6 @@
          point="org.eclipse.help.contexts">
          <contexts file="contexthelp.xml"/>
     </extension>
-    <extension
-         point="bndtools.core.obr">
-         <obr label="Apache Felix Releases" url="http://felix.apache.org/obr/releases.xml"/>
-    </extension>
-    <extension
-          point="bndtools.core.obr">
-          <obr
-               label="Eclipse Orbit R20100519200754"
-               resource="obr/orbit-R20100519200754.xml"/>
-    </extension>
-
    <extension point="bndtoolsStartupParticipant">
       <startupParticipant class="org.bndtools.core.jobs.newproject.NewProjectJobsStartupParticipant" />
    </extension>

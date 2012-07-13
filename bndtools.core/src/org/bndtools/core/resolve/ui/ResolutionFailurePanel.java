@@ -3,9 +3,6 @@ package org.bndtools.core.resolve.ui;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-
-import org.apache.felix.bundlerepository.Reason;
-import org.apache.felix.bundlerepository.Resource;
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
 import org.bndtools.core.utils.jface.StatusLabelProvider;
@@ -44,12 +41,10 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
-import org.osgi.framework.Version;
 import org.osgi.resource.Requirement;
 import org.osgi.service.resolver.ResolutionException;
 
 import bndtools.Plugin;
-import bndtools.model.obr.PotentialMatch;
 import bndtools.model.obr.SorterComparatorAdapter;
 
 public class ResolutionFailurePanel {
@@ -274,7 +269,7 @@ public class ResolutionFailurePanel {
         for (int i = 0; i < indent; i++)
             builder.append("..");
 
-        builder.append(getClipboardContent(unresolvedTreeElem)).append('\n');
+        //        builder.append(getClipboardContent(unresolvedTreeElem)).append('\n');
 
         Object[] children = contentProvider.getChildren(unresolvedTreeElem);
         if (children == null)
@@ -285,49 +280,6 @@ public class ResolutionFailurePanel {
         for (Object child : children) {
             appendLabels(child, contentProvider, builder, indent + 1);
         }
-    }
-
-    private static String getClipboardContent(Object element) {
-        String label;
-        if (element instanceof Reason) {
-            Reason reason = (Reason) element;
-            label = getClipboardContent(reason.getResource()) + "\trequires\t" + getClipboardContent(reason.getRequirement());
-        } else if (element instanceof Resource) {
-            Resource resource = (Resource) element;
-            label = getClipboardContent(resource);
-        } else if (element instanceof PotentialMatch) {
-            PotentialMatch match = (PotentialMatch) element;
-            String count;
-            if (match.getResources().isEmpty())
-                count = "UNMATCHED";
-            else if (match.getResources().size() == 1)
-                count = "1 potential match";
-            else
-                count = match.getResources().size() + " potential matches";
-            label = getClipboardContent(match.getRequirement()) + "\t" + count;
-        } else {
-            label = "ERROR";
-        }
-        return label;
-    }
-
-    private static String getClipboardContent(Resource resource) {
-        String bsn;
-        Version version;
-        if (resource == null || resource.getId() == null) {
-            bsn = "INITIAL";
-            version = Version.emptyVersion;
-        } else {
-            bsn = resource.getSymbolicName();
-            version = resource.getVersion();
-            if (version == null)
-                version = Version.emptyVersion;
-        }
-        return bsn + " " + version;
-    }
-
-    private static String getClipboardContent(org.apache.felix.bundlerepository.Requirement requirement) {
-        return String.format("%s:%s\toptional=%s", requirement.getName(), requirement.getFilter(), requirement.isOptional());
     }
 
 }
