@@ -6,9 +6,7 @@ import java.util.jar.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.test.*;
-import aQute.lib.collections.*;
 
 class T0 {}
 

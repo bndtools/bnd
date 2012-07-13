@@ -12,9 +12,12 @@ import org.osgi.service.wireadmin.*;
 
 // 000: Export test.referApi,  has private references [org.osgi.service.http, org.osgi.service.component, org.osgi.service.condpermadmin, org.osgi.service.wireadmin, org.osgi.service.event, org.osgi.service.log, org.osgi.service.device], 
 
+@SuppressWarnings("unused")
 public abstract class APIReferrer extends AtomicReference<Device> implements   EventAdmin {
 	// refers to org.osgi.service.device and org.osgi.service.event
 
+	private static final long	serialVersionUID	= 1L;
+	
 	Configuration config;
 	
 	
@@ -33,7 +36,7 @@ public abstract class APIReferrer extends AtomicReference<Device> implements   E
     public void publicFoo( Class<org.osgi.service.condpermadmin.BundleLocationCondition> foo) {} // org.osgi.service.condpermadmin
     protected void protectedFoo( Class<LogService> foo) {} // org.osgi.service.log
     
-    private void privateFoo( Class<Configuration> foo) {}
+	private void privateFoo( Class<Configuration> foo) {}
     void packagePrivateFoo( Class<Configuration> foo) {}
     
     public void foo() {
