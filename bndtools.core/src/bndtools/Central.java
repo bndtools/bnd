@@ -171,6 +171,8 @@ public class Central {
             return r5Repository;
 
         r5Repository = new WorkspaceR5Repository();
+        r5Repository.init();
+
         return r5Repository;
     }
 
