@@ -232,6 +232,36 @@ public class Analyzer extends Processor {
 			doUses(exports, uses, imports);
 
 			//
+			// Verify that no exported package has a reference to a private
+			// package
+			// This can cause a lot of harm.
+			// TODO restrict the check to public API only, but even then
+			// exported packages
+			// should preferably not refer to private packages.
+			//
+			Set<PackageRef> privatePackages = new HashSet<PackageRef>(contained.keySet());
+			privatePackages.removeAll(exports.keySet());
+			privatePackages.removeAll(imports.keySet());
+
+			// References to java are not imported so they would show up as
+			// private
+			// packages, lets kill them as well.
+
+			for (Iterator<PackageRef> p = privatePackages.iterator(); p.hasNext();)
+				if (p.next().isJava())
+					p.remove();
+
+			for (PackageRef exported : exports.keySet()) {
+				List<PackageRef> used = uses.get(exported);
+				if (used != null) {
+					Set<PackageRef> privateReferences = new HashSet<PackageRef>(uses.get(exported));
+					privateReferences.retainAll(privatePackages);
+					if (!privateReferences.isEmpty())
+						msgs.Export_HasPrivateReferences_(exported, privateReferences);
+				}
+			}
+
+			//
 			// Checks
 			//
 			if (referred.containsKey(Descriptors.DEFAULT_PACKAGE)) {
@@ -563,7 +593,8 @@ public class Analyzer extends Processor {
 		return value.trim();
 	}
 
-	public String _bsn(@SuppressWarnings("unused") String args[]) {
+	public String _bsn(@SuppressWarnings("unused")
+	String args[]) {
 		return getBsn();
 	}
 
@@ -1360,7 +1391,8 @@ public class Analyzer extends Processor {
 	 * @param value
 	 * @throws Exception
 	 */
-	void getExportVersionsFromPackageInfo(PackageRef packageRef, Resource r, Packages classpathExports) throws Exception {
+	void getExportVersionsFromPackageInfo(PackageRef packageRef, Resource r, Packages classpathExports)
+			throws Exception {
 		if (r == null)
 			return;
 
@@ -2296,7 +2328,8 @@ public class Analyzer extends Processor {
 		return ees.first();
 	}
 
-	public String _ee(@SuppressWarnings("unused") String args[]) {
+	public String _ee(@SuppressWarnings("unused")
+	String args[]) {
 		return getLowestEE().getEE();
 	}
 
@@ -2330,7 +2363,6 @@ public class Analyzer extends Processor {
 		} else
 			outputDir = getBase();
 
-		
 		Entry<String,Attrs> name = getBundleSymbolicName();
 		if (name != null) {
 			String bsn = name.getKey();

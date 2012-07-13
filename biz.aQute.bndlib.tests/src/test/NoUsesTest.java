@@ -17,7 +17,7 @@ public class NoUsesTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Private-Package", "org.osgi.framework");
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"<<USES>>,not.used\"");
-		String uses = findUses(bmaker, "org.osgi.util.tracker");
+		String uses = findUses(bmaker, "org.osgi.util.tracker", "has private");
 		assertEquals("not.used", uses);
 	}
 
@@ -41,7 +41,7 @@ public class NoUsesTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Private-Package", "org.osgi.framework");
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"not.used,<<USES>>\"");
-		String uses = findUses(bmaker, "org.osgi.util.tracker");
+		String uses = findUses(bmaker, "org.osgi.util.tracker", "has private");
 		assertEquals("not.used", uses);
 	}
 
@@ -78,7 +78,7 @@ public class NoUsesTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Private-Package", "org.osgi.framework");
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker");
-		String uses = findUses(bmaker, "org.osgi.util.tracker");
+		String uses = findUses(bmaker, "org.osgi.util.tracker", "has private");
 		assertNull("org.osgi.framework", uses);
 	}
 
@@ -97,13 +97,13 @@ public class NoUsesTest extends TestCase {
 		assertNull("org.osgi.framework", uses);
 	}
 
-	String findUses(Builder bmaker, String pack) throws Exception {
+	String findUses(Builder bmaker, String pack, String ... ignore) throws Exception {
 		File cp[] = {
 				new File("bin"), new File("jar/osgi.jar")
 		};
 		bmaker.setClasspath(cp);
 		Jar jar = bmaker.build();
-		assertOk(bmaker);
+		assertTrue(bmaker.check(ignore));
 		String exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
 		assertNotNull("exports", exports);
 		Parameters map = Processor.parseHeader(exports, null);
@@ -117,12 +117,4 @@ public class NoUsesTest extends TestCase {
 		return clause.get("uses:");
 	}
 
-	void assertOk(Analyzer bmaker) throws Exception {
-		System.err.println(bmaker.getErrors());
-		System.err.println(bmaker.getWarnings());
-		bmaker.getJar().getManifest().write(System.err);
-		assertEquals(0, bmaker.getErrors().size());
-		assertEquals(0, bmaker.getWarnings().size());
-
-	}
 }

@@ -597,7 +597,7 @@ public class BuilderTest extends BndTestCase {
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.addClasspath(new File("bin"));
 		Jar jar = b.build();
-		assertTrue(b.check());
+		assertTrue(b.check("has private references"));
 
 		Manifest m = jar.getManifest();
 		String imports = m.getMainAttributes().getValue("Import-Package");
@@ -1274,7 +1274,7 @@ public class BuilderTest extends BndTestCase {
 			new File("jar/osgi.jar")
 		});
 		analyzer.build();
-		assertTrue(analyzer.check());
+		assertTrue(analyzer.check("private references"));
 		Jar jar = analyzer.getJar();
 		assertTrue(analyzer.check());
 		assertNotNull(analyzer.getExports().getByFQN("org.osgi.service.log"));

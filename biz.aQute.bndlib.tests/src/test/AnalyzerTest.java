@@ -19,6 +19,21 @@ class T3 extends T2 {}
 public class AnalyzerTest extends BndTestCase {
 
 	/**
+	 * Check if bnd detects references to private packages and 
+	 * gives a warning.
+	 */
+
+	public void testExportReferencesToPrivatePackages() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("jar/osgi.jar"));
+		b.setExportPackage("org.osgi.service.event");
+		b.setPrivatePackage("org.osgi.framework");
+		Jar jar = b.build();
+		assertTrue(b.check("has private references"));
+	}
+
+
+	/**
 	 * Test basic functionality of he BCP
 	 */
 
