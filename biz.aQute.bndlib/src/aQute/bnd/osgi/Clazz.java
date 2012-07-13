@@ -337,8 +337,6 @@ public class Clazz {
 	int					accessx		= 0;
 	String				sourceFile;
 	Set<TypeRef>		xref;
-	Set<Integer>		classes;
-	Set<Integer>		descriptors;
 	Set<TypeRef>		annotations;
 	int					forName		= 0;
 	int					class$		= 0;
@@ -348,8 +346,9 @@ public class Clazz {
 	Resource			resource;
 	FieldDef			last		= null;
 	boolean				deprecated;
-
+	Set<PackageRef>		api;
 	final Analyzer		analyzer;
+
 
 	public Clazz(Analyzer analyzer, String path, Resource resource) {
 		this.path = path;
@@ -389,9 +388,7 @@ public class Clazz {
 
 	Set<TypeRef> parseClassFile(DataInputStream in) throws Exception {
 		xref = new HashSet<TypeRef>();
-		classes = new HashSet<Integer>();
-		descriptors = new HashSet<Integer>();
-
+		
 		boolean crawl = cd != null; // Crawl the byte code if we have a
 		// collector
 		int magic = in.readInt();
@@ -466,16 +463,36 @@ public class Clazz {
 		}
 
 		pool(pool, intPool);
+		
+		// All name& type and class constant records contain descriptors we must treat
+		// as references, though not API
+		
+		for ( Object o : pool ) {
+			if ( o == null)
+				continue;
+			
+			if (o instanceof Assoc && ((Assoc)o).tag ==12 ) {
+				referTo( ((Assoc)o).b, 0); // Descriptor
+			} else if ( o instanceof ClassConstant) {
+				String binaryClassName = (String) pool[((ClassConstant)o).cname];
+				TypeRef typeRef = analyzer.getTypeRef(binaryClassName);
+				referTo( typeRef, 0);
+			}
+		}
+		
 		/*
 		 * Parse after the constant pool, code thanks to Hans Christian
 		 * Falkenberg
 		 */
 
 		accessx = in.readUnsignedShort(); // access
-
+		if ( Modifier.isPublic(accessx))
+			api = new HashSet<PackageRef>();
+		
 		int this_class = in.readUnsignedShort();
 		className = analyzer.getTypeRef((String) pool[intPool[this_class]]);
-
+		referTo(className, Modifier.PUBLIC);
+		
 		try {
 
 			if (cd != null) {
@@ -490,7 +507,7 @@ public class Clazz {
 			}
 
 			if (zuper != null) {
-				referTo(zuper);
+				referTo(zuper, accessx);
 				if (cd != null)
 					cd.extendsClass(zuper);
 			}
@@ -498,8 +515,10 @@ public class Clazz {
 			int interfacesCount = in.readUnsignedShort();
 			if (interfacesCount > 0) {
 				interfaces = new TypeRef[interfacesCount];
-				for (int i = 0; i < interfacesCount; i++)
+				for (int i = 0; i < interfacesCount; i++) {
 					interfaces[i] = analyzer.getTypeRef((String) pool[intPool[in.readUnsignedShort()]]);
+					referTo(interfaces[i],accessx);
+				}
 				if (cd != null)
 					cd.implementsInterfaces(interfaces);
 			}
@@ -526,8 +545,9 @@ public class Clazz {
 				}
 				if (cd != null)
 					cd.field(last = new FieldDef(access_flags, name, pool[descriptor_index].toString()));
-				descriptors.add(Integer.valueOf(descriptor_index));
-				doAttributes(in, ElementType.FIELD, false);
+				
+				referTo( descriptor_index, access_flags);
+				doAttributes(in, ElementType.FIELD, false, access_flags);
 			}
 
 			//
@@ -562,7 +582,7 @@ public class Clazz {
 				int access_flags = in.readUnsignedShort();
 				int name_index = in.readUnsignedShort();
 				int descriptor_index = in.readUnsignedShort();
-				descriptors.add(Integer.valueOf(descriptor_index));
+				referTo(descriptor_index, access_flags);
 				String name = pool[name_index].toString();
 				String descriptor = pool[descriptor_index].toString();
 				if (cd != null) {
@@ -572,40 +592,20 @@ public class Clazz {
 				}
 
 				if ("<init>".equals(name)) {
-					doAttributes(in, ElementType.CONSTRUCTOR, crawl);
+					doAttributes(in, ElementType.CONSTRUCTOR, crawl, access_flags);
 				} else {
-					doAttributes(in, ElementType.METHOD, crawl);
+					doAttributes(in, ElementType.METHOD, crawl, access_flags);
 				}
 			}
 			if (cd != null)
 				cd.memberEnd();
 
-			doAttributes(in, ElementType.TYPE, false);
-
-			//
-			// Now iterate over all classes we found and
-			// parse those as well. We skip duplicates
-			//
-
-			for (int n : classes) {
-				String descr = (String) pool[n];
-
-				TypeRef clazz = analyzer.getTypeRef(descr);
-				referTo(clazz);
-			}
+			doAttributes(in, ElementType.TYPE, false, accessx);
 
 			//
 			// Parse all the descriptors we found
 			//
 
-			for (Iterator<Integer> e = descriptors.iterator(); e.hasNext();) {
-				Integer index = e.next();
-				String prototype = (String) pool[index.intValue()];
-				if (prototype != null)
-					parseDescriptor(prototype);
-				else
-					System.err.println("Unrecognized descriptor: " + index);
-			}
 			Set<TypeRef> xref = this.xref;
 			reset();
 			return xref;
@@ -640,7 +640,6 @@ public class Clazz {
 	protected void nameAndType(DataInputStream in, int poolIndex, byte tag) throws IOException {
 		int name_index = in.readUnsignedShort();
 		int descriptor_index = in.readUnsignedShort();
-		descriptors.add(Integer.valueOf(descriptor_index));
 		pool[poolIndex] = new Assoc(tag, name_index, descriptor_index);
 	}
 
@@ -673,7 +672,6 @@ public class Clazz {
 	 */
 	protected void constantClass(DataInputStream in, int poolIndex) throws IOException {
 		int class_index = in.readUnsignedShort();
-		classes.add(Integer.valueOf(class_index));
 		intPool[poolIndex] = class_index;
 		ClassConstant c = new ClassConstant(class_index);
 		pool[poolIndex] = c;
@@ -755,13 +753,14 @@ public class Clazz {
 	 * 
 	 * @param in
 	 *            The stream
+	 * @param access_flags 
 	 * @throws Exception
 	 */
-	private void doAttributes(DataInputStream in, ElementType member, boolean crawl) throws Exception {
+	private void doAttributes(DataInputStream in, ElementType member, boolean crawl, int access_flags) throws Exception {
 		int attributesCount = in.readUnsignedShort();
 		for (int j = 0; j < attributesCount; j++) {
 			// skip name CONSTANT_Utf8 pointer
-			doAttribute(in, member, crawl);
+			doAttribute(in, member, crawl, access_flags);
 		}
 	}
 
@@ -770,9 +769,10 @@ public class Clazz {
 	 * 
 	 * @param in
 	 *            the data stream
+	 * @param access_flags 
 	 * @throws Exception
 	 */
-	private void doAttribute(DataInputStream in, ElementType member, boolean crawl) throws Exception {
+	private void doAttribute(DataInputStream in, ElementType member, boolean crawl, int access_flags) throws Exception {
 		int attribute_name_index = in.readUnsignedShort();
 		String attributeName = (String) pool[attribute_name_index];
 		long attribute_length = in.readInt();
@@ -797,7 +797,7 @@ public class Clazz {
 		else if ("Code".equals(attributeName) && crawl)
 			doCode(in);
 		else if ("Signature".equals(attributeName))
-			doSignature(in, member);
+			doSignature(in, member, access_flags);
 		else if ("ConstantValue".equals(attributeName))
 			doConstantValue(in);
 		else {
@@ -901,20 +901,14 @@ public class Clazz {
 	 * </pre>
 	 * 
 	 * @param member
+	 * @param access_flags 
 	 */
 
-	void doSignature(DataInputStream in, ElementType member) throws IOException {
+	void doSignature(DataInputStream in, ElementType member, int access_flags) throws IOException {
 		int signature_index = in.readUnsignedShort();
 		String signature = (String) pool[signature_index];
 
-		// s.println("Signature " + signature );
-
-		// // The type signature is kind of weird,
-		// // lets skip it for now. Seems to be some kind of
-		// // type variable name index but it does not seem to
-		// // conform to the language specification.
-		// if (member != ElementType.TYPE)
-		parseDescriptor(signature);
+		parseDescriptor(signature, access_flags);
 
 		if (last != null)
 			last.signature = signature;
@@ -972,7 +966,7 @@ public class Clazz {
 		crawl(code);
 		int exception_table_length = in.readUnsignedShort();
 		in.skipBytes(exception_table_length * 8);
-		doAttributes(in, ElementType.METHOD, false);
+		doAttributes(in, ElementType.METHOD, false, 0);
 	}
 
 	/**
@@ -1027,7 +1021,7 @@ public class Clazz {
 						String fqn = (String) pool[intPool[lastReference]];
 						if (!fqn.equals("class") && fqn.indexOf('.') > 0) {
 							TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
-							referTo(clazz);
+							referTo(clazz, 0);
 						}
 						lastReference = -1;
 					}
@@ -1107,7 +1101,7 @@ public class Clazz {
 		annotations.add(tr);
 
 		if (policy == RetentionPolicy.RUNTIME) {
-			descriptors.add(Integer.valueOf(type_index));
+			referTo(type_index,0);
 			hasRuntimeAnnotations = true;
 		} else {
 			hasClassAnnotations = true;
@@ -1155,14 +1149,14 @@ public class Clazz {
 			case 'e' : // enum constant
 				int type_name_index = in.readUnsignedShort();
 				if (policy == RetentionPolicy.RUNTIME)
-					descriptors.add(Integer.valueOf(type_name_index));
+					referTo(type_name_index,0);
 				int const_name_index = in.readUnsignedShort();
 				return pool[const_name_index];
 
 			case 'c' : // Class
 				int class_info_index = in.readUnsignedShort();
 				if (policy == RetentionPolicy.RUNTIME)
-					descriptors.add(Integer.valueOf(class_info_index));
+					referTo(class_info_index,0);
 				return pool[class_info_index];
 
 			case '@' : // Annotation type
@@ -1187,7 +1181,7 @@ public class Clazz {
 	 * @param packageRef
 	 *            A '.' delimited package name
 	 */
-	void referTo(TypeRef typeRef) {
+	void referTo(TypeRef typeRef, int modifiers) {
 		if (xref != null)
 			xref.add(typeRef);
 		if (typeRef.isPrimitive())
@@ -1198,6 +1192,14 @@ public class Clazz {
 			return;
 
 		imports.add(packageRef);
+		
+		if ( api != null && (Modifier.isPublic(modifiers)||Modifier.isProtected(modifiers)))
+			api.add(packageRef);
+	}
+	
+	void referTo( int index, int modifiers) {
+		String descriptor = (String) pool[index];
+		parseDescriptor(descriptor, modifiers);
 	}
 
 	/**
@@ -1217,19 +1219,20 @@ public class Clazz {
 	 * @param rover
 	 *            The pointer to start at
 	 */
-	public void parseDescriptor(String descriptor) {
+	
+	public void parseDescriptor(String descriptor, int modifiers) {
 		// Some descriptors are weird, they start with a generic
 		// declaration that contains ':', not sure what they mean ...
 		int rover = 0;
 		if (descriptor.charAt(0) == '<') {
-			rover = parseFormalTypeParameters(descriptor, rover);
+			rover = parseFormalTypeParameters(descriptor, rover, modifiers);
 		}
 
 		if (descriptor.charAt(rover) == '(') {
-			rover = parseReferences(descriptor, rover + 1, ')');
+			rover = parseReferences(descriptor, rover + 1, ')', modifiers);
 			rover++;
 		}
-		parseReferences(descriptor, rover, (char) 0);
+		parseReferences(descriptor, rover, (char) 0, modifiers);
 	}
 
 	/**
@@ -1244,10 +1247,10 @@ public class Clazz {
 	 *            The end character or 0
 	 * @return the last index processed, one character after the delimeter
 	 */
-	int parseReferences(String descriptor, int rover, char delimiter) {
+	int parseReferences(String descriptor, int rover, char delimiter, int modifiers) {
 		int r = rover;
 		while (r < descriptor.length() && descriptor.charAt(r) != delimiter) {
-			r = parseReference(descriptor, r);
+			r = parseReference(descriptor, r, modifiers);
 		}
 		return r;
 	}
@@ -1262,14 +1265,14 @@ public class Clazz {
 	 *            The place to start
 	 * @return The return index after the reference
 	 */
-	int parseReference(String descriptor, int rover) {
+	int parseReference(String descriptor, int rover, int modifiers) {
 		int r = rover;
 		char c = descriptor.charAt(r);
 		while (c == '[')
 			c = descriptor.charAt(++r);
 
 		if (c == '<') {
-			r = parseReferences(descriptor, r + 1, '>');
+			r = parseReferences(descriptor, r + 1, '>', modifiers);
 		} else if (c == 'T') {
 			// Type variable name
 			r++;
@@ -1280,7 +1283,7 @@ public class Clazz {
 			r++;
 			while ((c = descriptor.charAt(r)) != ';') {
 				if (c == '<') {
-					r = parseReferences(descriptor, r + 1, '>');
+					r = parseReferences(descriptor, r + 1, '>', modifiers);
 				} else
 					sb.append(c);
 				r++;
@@ -1289,7 +1292,7 @@ public class Clazz {
 			if (cd != null)
 				cd.addReference(ref);
 
-			referTo(ref);
+			referTo(ref, modifiers);
 		} else {
 			if ("+-*BCDFIJSZV".indexOf(c) < 0)
 				;// System.err.println("Should not skip: " + c);
@@ -1308,7 +1311,7 @@ public class Clazz {
 	 * @param index
 	 * @return
 	 */
-	private int parseFormalTypeParameters(String descriptor, int index) {
+	private int parseFormalTypeParameters(String descriptor, int index, int modifiers) {
 		index++;
 		while (descriptor.charAt(index) != '>') {
 			// Skip IDENTIFIER
@@ -1322,14 +1325,14 @@ public class Clazz {
 
 			// Class Bound?
 			if (c == 'L' || c == 'T') {
-				index = parseReference(descriptor, index); // class reference
+				index = parseReference(descriptor, index, modifiers); // class reference
 				c = descriptor.charAt(index);
 			}
 
 			// Interface Bounds
 			while (c == ':') {
 				index++;
-				index = parseReference(descriptor, index);
+				index = parseReference(descriptor, index, modifiers);
 				c = descriptor.charAt(index);
 			} // for each interface
 
@@ -1364,8 +1367,7 @@ public class Clazz {
 		pool = null;
 		intPool = null;
 		xref = null;
-		classes = null;
-		descriptors = null;
+		api = null;
 	}
 
 	public boolean is(QUERY query, Instruction instr, Analyzer analyzer) throws Exception {

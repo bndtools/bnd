@@ -35,11 +35,7 @@ public class ClassReferenceTest extends TestCase {
 			properties.put("Export-Package", packages[i]);
 			builder.setProperties(properties);
 			Jar jar = builder.build();
-			System.err.println(builder.getErrors());
-			System.err.println(builder.getWarnings());
-			assertEquals(0, builder.getErrors().size());
-			assertEquals(0, builder.getWarnings().size());
-
+			assertTrue(builder.check());
 			Manifest manifest = jar.getManifest();
 			String imports = manifest.getMainAttributes().getValue("Import-Package");
 			assertTrue("Package " + packages[i] + "contains swing ref", imports.indexOf("javax.swing") >= 0);

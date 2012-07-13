@@ -195,7 +195,7 @@ public class ClassParserTest extends TestCase {
 		c.parseClassFile(getClass().getResourceAsStream("WithGenerics.class"));
 		System.err.println(c.getReferred());
 		assertEquals("size ", 5, c.getReferred().size());
-		assertTrue(c.getReferred().contains(a.getPackageRef("aQute/lib/osgi")));
+		assertTrue(c.getReferred().contains(a.getPackageRef("aQute/bnd/osgi")));
 		assertTrue(c.getReferred().contains(a.getPackageRef("java/util")));
 		assertTrue(c.getReferred().contains(a.getPackageRef("java/net")));
 		assertTrue(c.getReferred().contains(a.getPackageRef("java/lang")));
@@ -205,7 +205,7 @@ public class ClassParserTest extends TestCase {
 		Clazz c = new Clazz(a, "genericstest", null);
 		c.parseClassFile(getClass().getResourceAsStream("Generics.class"));
 		assertTrue(c.getReferred().contains(a.getPackageRef("test")));
-		assertTrue(c.getReferred().contains(a.getPackageRef("aQute/lib/osgi")));
+		assertTrue(c.getReferred().contains(a.getPackageRef("aQute/bnd/osgi")));
 	}
 
 	public void testGenericsSignature2() throws Exception {
@@ -264,7 +264,7 @@ public class ClassParserTest extends TestCase {
 		clazz.parseClassFile(in);
 
 		System.err.println(clazz.getReferred());
-		clazz.parseDescriptor("(IILcom/linkedin/member2/pub/profile/core/view/I18nPositionViews;)Lcom/linkedin/leo/cloud/overlap/api/OverlapQuery;");
+		clazz.parseDescriptor("(IILcom/linkedin/member2/pub/profile/core/view/I18nPositionViews;)Lcom/linkedin/leo/cloud/overlap/api/OverlapQuery;", 0);
 		assertTrue(clazz.getReferred().contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
 	}
 
