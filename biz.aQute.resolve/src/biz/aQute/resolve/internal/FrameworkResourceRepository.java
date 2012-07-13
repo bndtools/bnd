@@ -24,16 +24,23 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 
 public class FrameworkResourceRepository implements Repository {
 
+    private final Resource framework;
     private final CapabilityIndex capIndex = new CapabilityIndex();
     private final List<Capability> eeCaps = new ArrayList<Capability>(EE.values().length);
 
     public FrameworkResourceRepository(Resource resource, EE ee) {
+        this.framework = resource;
         capIndex.addResource(resource);
 
         eeCaps.add(createEECapability(resource, ee));
         for (EE compat : ee.getCompatible()) {
             eeCaps.add(createEECapability(resource, compat));
         }
+    }
+
+    public void addFrameworkCapability(CapReqBuilder builder) {
+        Capability cap = builder.setResource(framework).buildCapability();
+        capIndex.addCapability(cap);
     }
 
     private Capability createEECapability(Resource resource, EE ee) {
@@ -72,7 +79,7 @@ public class FrameworkResourceRepository implements Repository {
                         result.add(eeCap);
                 }
             } catch (InvalidSyntaxException e) {
-                // Assume not matches
+                // Assume no matches
             }
         }
     }

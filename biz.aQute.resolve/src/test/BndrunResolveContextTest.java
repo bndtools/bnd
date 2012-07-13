@@ -15,7 +15,6 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.service.resolver.HostedCapability;
 
 import test.lib.MockRegistry;
 import aQute.bnd.build.model.BndEditModel;
@@ -218,5 +217,37 @@ public class BndrunResolveContextTest extends TestCase {
 
         assertEquals(1, providers.size());
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+    }
+
+    public void testJREPackageResolvesFramework() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFramework("org.apache.felix.framework");
+        runModel.setEE(EE.JavaSE_1_6);
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+
+        Requirement req = CapReqBuilder.createPackageRequirement("javax.annotation", null).buildSyntheticRequirement();
+        List<Capability> providers = context.findProviders(req);
+
+        assertEquals(1, providers.size());
+        assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+    }
+
+    public void testJREPackageNotResolved() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFramework("org.apache.felix.framework");
+        runModel.setEE(EE.J2SE_1_5); // javax.annotation added in Java 6
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+        Requirement req = CapReqBuilder.createPackageRequirement("javax.annotation", null).buildSyntheticRequirement();
+        List<Capability> providers = context.findProviders(req);
+
+        assertEquals(0, providers.size());
     }
 }

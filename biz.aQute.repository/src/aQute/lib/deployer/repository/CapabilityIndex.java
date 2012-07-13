@@ -20,13 +20,17 @@ public class CapabilityIndex {
 			return;
 
 		for (Capability cap : capabilities) {
-			List<Capability> list = capabilityMap.get(cap.getNamespace());
-			if (list == null) {
-				list = new LinkedList<Capability>();
-				capabilityMap.put(cap.getNamespace(), list);
-			}
-			list.add(cap);
+			addCapability(cap);
 		}
+	}
+	
+	public void addCapability(Capability cap) {
+		List<Capability> list = capabilityMap.get(cap.getNamespace());
+		if (list == null) {
+			list = new LinkedList<Capability>();
+			capabilityMap.put(cap.getNamespace(), list);
+		}
+		list.add(cap);
 	}
 
 	public void appendMatchingCapabilities(Requirement requirement, Collection< ? super Capability> capabilities) {

@@ -1,5 +1,7 @@
 package biz.aQute.resolve.internal;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,9 +11,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.namespace.contract.ContractNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -50,7 +54,7 @@ public class BndrunResolveContext extends ResolveContext {
 
     private Resource frameworkResource = null;
     private Version frameworkResourceVersion = null;
-    private Repository frameworkResourceRepo;
+    private FrameworkResourceRepository frameworkResourceRepo;
 
     private Resource inputRequirementsResource = null;
     private EE ee;
@@ -67,6 +71,8 @@ public class BndrunResolveContext extends ResolveContext {
         loadEE();
         loadRepositories();
         findFramework();
+        loadJREPackages();
+
         constructInputRequirements();
 
         initialised = true;
@@ -75,6 +81,26 @@ public class BndrunResolveContext extends ResolveContext {
     private void loadEE() {
         EE tmp = runModel.getEE();
         ee = (tmp != null) ? tmp : EE.JavaSE_1_6;
+    }
+
+    private void loadJREPackages() {
+        InputStream stream = BndrunResolveContext.class.getResourceAsStream(ee.name() + ".properties");
+        if (stream != null) {
+            try {
+                Properties properties = new Properties();
+                properties.load(stream);
+
+                Parameters params = new Parameters(properties.getProperty("org.osgi.framework.system.packages", ""));
+                for (String packageName : params.keySet()) {
+                    CapReqBuilder builder = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addAttribute(PackageNamespace.PACKAGE_NAMESPACE, packageName).addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE,
+                            new Version(0, 0, 0));
+                    if (frameworkResourceRepo != null)
+                        frameworkResourceRepo.addFrameworkCapability(builder);
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Error loading JRE package properties", e);
+            }
+        }
     }
 
     private void loadRepositories() {
