@@ -256,7 +256,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		return Modifier.isPublic(method.getAccess()) || Modifier.isProtected(method.getAccess());
 	}
 
-	static Pattern	PROPERTY_PATTERN	= Pattern.compile("[^=]+=.+");
+	static Pattern	PROPERTY_PATTERN	= Pattern.compile("\\s*([^=\\s])+\\s*=(.+)");
 
 	private void doProperties(aQute.bnd.osgi.Annotation annotation) {
 		Object[] properties = annotation.get(Component.PROPERTIES);
@@ -264,8 +264,9 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		if (properties != null) {
 			for (Object o : properties) {
 				String p = (String) o;
-				if (PROPERTY_PATTERN.matcher(p).matches())
-					this.properties.add(p);
+				Matcher m = PROPERTY_PATTERN.matcher(p);
+				if (m.matches())
+					this.properties.add(m.group(1)+"="+m.group(2));
 				else
 					throw new IllegalArgumentException("Malformed property '" + p + "' on: "
 							+ annotation.get(Component.NAME));

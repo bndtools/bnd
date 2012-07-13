@@ -197,7 +197,7 @@ public class ComponentTest extends TestCase {
 	}
 
 	@Component(name = "props", properties = {
-			"a=1", "b=3", "c=1|2|3"
+			" a =1", "b=3", "c=1|2|3"
 	}, designate = Config.class, designateFactory = Config.class)
 	static class PropertiesAndConfig {
 		@Activate
