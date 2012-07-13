@@ -1,15 +1,13 @@
 package org.bndtools.core.ui.resource;
 
-import org.eclipse.jface.viewers.ViewerCell;
-
 public class ResolutionFailureFlatLabelProvider extends RequirementLabelProvider {
 
     private static final String LABEL_INITIAL = "INITIAL";
 
+    /*
+     * TODO
     @Override
     public void update(ViewerCell cell) {
-        /*
-         * TODO
         Reason reason = (Reason) cell.getElement();
         Resource resource = reason.getResource();
         Requirement requirement = reason.getRequirement();
@@ -26,8 +24,8 @@ public class ResolutionFailureFlatLabelProvider extends RequirementLabelProvider
 
         cell.setText(label.getString());
         cell.setStyleRanges(label.getStyleRanges());
-         */
     }
+     */
 
     /*
      * TODO

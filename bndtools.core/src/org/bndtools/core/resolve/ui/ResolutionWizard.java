@@ -53,7 +53,7 @@ public class ResolutionWizard extends Wizard {
         this.model = model;
         this.file = file;
 
-        resultsPage = new ResolutionResultsWizardPage(model, file);
+        resultsPage = new ResolutionResultsWizardPage(model);
         resultsPage.setResult(result);
 
         setWindowTitle("Resolve");

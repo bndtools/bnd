@@ -253,7 +253,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             }
 
             // Create resolver job and pre-validate
-            final ResolveJob job = new ResolveJob(file, model);
+            final ResolveJob job = new ResolveJob(model);
             IStatus validation = job.validateBeforeRun();
             if (!validation.isOK()) {
                 String message = "Unable to run the OBR resolver. NB.: the file will still be saved.";

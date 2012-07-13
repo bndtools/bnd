@@ -10,13 +10,13 @@ import java.util.List;
 
 import org.apache.felix.resolver.Logger;
 import org.apache.felix.resolver.ResolverImpl;
-import org.bndtools.core.resolve.R5ResolveOperation;
 import org.bndtools.core.resolve.ResolutionResult;
+import org.bndtools.core.resolve.ResolveOperation;
+import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
 import org.bndtools.core.utils.resources.ResourceUtils;
 import org.bndtools.core.utils.swt.SWTUtil;
 import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
 import org.bndtools.core.utils.swt.SashHighlightForm;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -68,7 +68,6 @@ public class ResolutionResultsWizardPage extends WizardPage {
     public static final String PROP_RESULT = "result";
 
     private final BndEditModel model;
-    private final IFile file;
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
 
@@ -90,10 +89,9 @@ public class ResolutionResultsWizardPage extends WizardPage {
     /**
      * Create the wizard.
      */
-    public ResolutionResultsWizardPage(BndEditModel model, IFile file) {
+    public ResolutionResultsWizardPage(BndEditModel model) {
         super("resultsPage");
         this.model = model;
-        this.file = file;
         setTitle("Resolution Results");
         setDescription("The required resources will be used to create the Run Bundles list. NOTE: The existing content of Run Bundles will be replaced!");
     }
@@ -255,7 +253,7 @@ public class ResolutionResultsWizardPage extends WizardPage {
 
         reasonsViewer = new TableViewer(tblReasons);
         reasonsViewer.setContentProvider(ArrayContentProvider.getInstance());
-        reasonsViewer.setLabelProvider(new UnresolvedRequirementsLabelProvider());
+        reasonsViewer.setLabelProvider(new RequirementWithResourceLabelProvider());
         // reasonsViewer.setSorter(new ReasonSorter());
 
         /*
@@ -301,7 +299,7 @@ public class ResolutionResultsWizardPage extends WizardPage {
     private void reresolve() {
         checkedOptional.clear();
         try {
-            R5ResolveOperation resolver = new R5ResolveOperation(file, model, new ResolverImpl(new Logger(4)));
+            ResolveOperation resolver = new ResolveOperation(model, new ResolverImpl(new Logger(4)));
             getContainer().run(false, true, resolver);
 
             setResult(resolver.getResult());

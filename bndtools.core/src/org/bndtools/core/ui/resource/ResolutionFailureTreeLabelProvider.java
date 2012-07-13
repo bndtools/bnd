@@ -1,16 +1,14 @@
 package org.bndtools.core.ui.resource;
 
-import org.eclipse.jface.viewers.ViewerCell;
-
 public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider {
 
     private static final String LABEL_INITIAL = "INITIAL";
 
+    /*
+     * TODO
+     * 
     @Override
     public void update(ViewerCell cell) {
-        /*
-         * TODO
-         * 
         StyledString label;
         Image image;
 
@@ -43,8 +41,8 @@ public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider
         cell.setImage(image);
         cell.setText(label.getString());
         cell.setStyleRanges(label.getStyleRanges());
-         */
     }
+     */
 
     /*
      * TODO

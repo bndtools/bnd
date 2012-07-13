@@ -316,7 +316,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         final Shell parentShell = page.getEditor().getSite().getShell();
 
         // Create the wizard and pre-validate
-        final ResolveJob job = new ResolveJob(file, model);
+        final ResolveJob job = new ResolveJob(model);
         IStatus validation = job.validateBeforeRun();
         if (!validation.isOK()) {
             ErrorDialog errorDialog = new ErrorDialog(parentShell, "Validation Problem", null, validation, IStatus.ERROR | IStatus.WARNING) {

@@ -1,11 +1,13 @@
 package org.bndtools.core.resolve.ui;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.felix.bundlerepository.Reason;
 import org.apache.felix.bundlerepository.Resource;
 import org.bndtools.core.resolve.ResolutionResult;
+import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
 import org.bndtools.core.utils.jface.StatusLabelProvider;
 import org.bndtools.core.utils.jface.StatusTreeContentProvider;
 import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
@@ -43,6 +45,8 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.osgi.framework.Version;
+import org.osgi.resource.Requirement;
+import org.osgi.service.resolver.ResolutionException;
 
 import bndtools.Plugin;
 import bndtools.model.obr.PotentialMatch;
@@ -120,6 +124,7 @@ public class ResolutionFailurePanel {
 
         unresolvedViewer = new TreeViewer(treeUnresolved);
         unresolvedViewer.setContentProvider(new UnresolvedRequirementsContentProvider());
+        unresolvedViewer.setLabelProvider(new RequirementWithResourceLabelProvider());
         setFailureViewMode();
 
         return sashForm;
@@ -131,7 +136,10 @@ public class ResolutionFailurePanel {
         else if (sashForm.isDisposed())
             throw new IllegalStateException("Control already disposed");
 
-        unresolvedViewer.setInput(Collections.emptyList());//resolutionResultgetUnresolved());//resolutionResult != null ? resolutionResult.getResolver() : null);
+        ResolutionException resolutionException = resolutionResult.getResolve().getResolutionException();
+        Collection<Requirement> unresolved = resolutionException != null ? resolutionException.getUnresolvedRequirements() : Collections.<Requirement> emptyList();
+
+        unresolvedViewer.setInput(unresolved);
         processingErrorsViewer.setInput(resolutionResult.getStatus());
 
         unresolvedViewer.expandToLevel(2);

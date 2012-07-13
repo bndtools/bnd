@@ -1,13 +1,12 @@
 package org.bndtools.core.resolve;
 
 import org.bndtools.core.obr.Messages;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.model.BndEditModel;
@@ -15,23 +14,20 @@ import biz.aQute.resolve.ResolveProcess;
 import bndtools.Central;
 import bndtools.Plugin;
 
-public class R5ResolveOperation implements IRunnableWithProgress {
+public class ResolveOperation implements IRunnableWithProgress {
 
-    private final IFile runFile;
     private final BndEditModel model;
     private final Resolver resolver;
 
     private ResolutionResult result;
 
-    public R5ResolveOperation(IFile runFile, BndEditModel model, Resolver resolver) {
-        this.runFile = runFile;
+    public ResolveOperation(BndEditModel model, Resolver resolver) {
         this.model = model;
         this.resolver = resolver;
     }
 
     public void run(IProgressMonitor monitor) {
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorOverview, null);
-        SubMonitor progress = SubMonitor.convert(monitor, Messages.ResolveOperation_progressLabel, 0);
 
         ResolveProcess resolve = new ResolveProcess();
         try {
@@ -39,7 +35,12 @@ public class R5ResolveOperation implements IRunnableWithProgress {
             if (resolved) {
                 result = new ResolutionResult(ResolutionResult.Outcome.Resolved, resolve, status);
             } else {
-                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Resolution failed.", null));
+                ResolutionException exception = resolve.getResolutionException();
+                if (exception != null)
+                    status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, exception.getLocalizedMessage(), exception));
+                else
+                    status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Resolution failed, reason unknown", null));
+
                 result = new ResolutionResult(ResolutionResult.Outcome.Unresolved, resolve, status);
             }
         } catch (Exception e) {

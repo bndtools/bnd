@@ -2,7 +2,6 @@ package org.bndtools.core.resolve;
 
 import org.apache.felix.resolver.ResolverImpl;
 import org.bndtools.core.obr.Messages;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -14,14 +13,12 @@ import bndtools.Plugin;
 
 public class ResolveJob extends Job {
 
-    private final IFile runFile;
     private final BndEditModel model;
 
     private ResolutionResult result;
 
-    public ResolveJob(IFile runFile, BndEditModel model) {
+    public ResolveJob(BndEditModel model) {
         super("Resolving...");
-        this.runFile = runFile;
         this.model = model;
     }
 
@@ -40,7 +37,7 @@ public class ResolveJob extends Job {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
         ResolverImpl felixResolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4));
-        R5ResolveOperation operation = new R5ResolveOperation(runFile, model, felixResolver);
+        ResolveOperation operation = new ResolveOperation(model, felixResolver);
         operation.run(monitor);
         result = operation.getResult();
 
