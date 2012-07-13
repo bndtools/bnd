@@ -19,11 +19,34 @@ class T2 extends T1 {}
 class T3 extends T2 {}
 
 public class AnalyzerTest extends BndTestCase {
-	
-	
+
 	/**
-	 * Check if bnd detects references to private packages and 
-	 * gives a warning.
+	 * The -removeheaders header can be used as a whitelist.
+	 */
+
+	public void testRemoveheadersAsWhiteList() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("jar/asm.jar"));
+		b.setExportPackage("*");
+		b.setImportPackage("something");
+		b.set("Foo", "Foo");
+		b.set("Bar", "Bar");
+		b.set(Constants.REMOVEHEADERS, "!Bundle-*,!*-Package,!Service-Component,*");
+		b.build();
+		assertTrue(b.check());
+		Manifest m = b.getJar().getManifest();
+
+		assertNotNull(m.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION));
+		assertNotNull(m.getMainAttributes().getValue(Constants.BUNDLE_NAME));
+		assertNotNull(m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME));
+		assertNotNull(m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE));
+		assertNotNull(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+		assertNull(m.getMainAttributes().getValue("Foo"));
+		assertNull(m.getMainAttributes().getValue("Bar"));
+	}
+
+	/**
+	 * Check if bnd detects references to private packages and gives a warning.
 	 */
 
 	public void testExportReferencesToPrivatePackages2() throws Exception {
@@ -32,11 +55,11 @@ public class AnalyzerTest extends BndTestCase {
 		b.setExportPackage("aQute.bnd.signing"); // refers to Event Admin
 		b.setConditionalPackage("aQute.lib*");
 		Jar jar = b.build();
-		assertTrue(b.check());//"((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
+		assertTrue(b.check());// "((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
 	}
+
 	/**
-	 * Check if bnd detects references to private packages and 
-	 * gives a warning.
+	 * Check if bnd detects references to private packages and gives a warning.
 	 */
 
 	public void testExportReferencesToPrivatePackages() throws Exception {
@@ -46,9 +69,9 @@ public class AnalyzerTest extends BndTestCase {
 		b.setExportPackage("test.referApi"); // refers to Event Admin
 		b.setConditionalPackage("org.osgi.service.*");
 		Jar jar = b.build();
-		assertTrue(b.check("((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
+		assertTrue(b
+				.check("((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
 	}
-
 
 	/**
 	 * Test basic functionality of he BCP
