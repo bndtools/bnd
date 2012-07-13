@@ -622,10 +622,6 @@
       />
    </extension>
    
-   <extension point="bndtoolsStartupParticipant">
-      <startupParticipant class="org.bndtools.core.jobs.startup.KickBundles"/>
-   </extension>
-
    <extension point="bndtools.core.projectTemplates">
       <template name="Empty Project"
          priority="-2147483648"
