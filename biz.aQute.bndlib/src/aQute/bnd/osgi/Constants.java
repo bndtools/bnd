@@ -52,11 +52,11 @@ public interface Constants {
 	String							CREATED_BY									= "Created-By";
 	String							TOOL										= "Tool";
 	String							TESTCASES									= "Test-Cases";
-        /**
-         * @deprecated Use {@link Constants#TESTCASES}.
-         */
-        @Deprecated
-        String                                                  TESTSUITES                                                                      = "Test-Suites";
+	/**
+	 * @deprecated Use {@link Constants#TESTCASES}.
+	 */
+	@Deprecated
+	String							TESTSUITES									= "Test-Suites";
 	String							SIGNATURE_TEST								= "-signaturetest";
 
 	String							headers[]									= {
@@ -82,6 +82,7 @@ public interface Constants {
 	String							DSANNOTATIONS								= "-dsannotations";
 	String							DONOTCOPY									= "-donotcopy";
 	String							DEBUG										= "-debug";
+	String							EXPERIMENTS									= "-experiments";
 	String							EXPORT_CONTENTS								= "-exportcontents";
 	String							FAIL_OK										= "-failok";
 	String							INCLUDE										= "-include";
@@ -112,13 +113,14 @@ public interface Constants {
 	String							RUNREPOS									= "-runrepos";
 
 	/**
-	 * @deprecated This is for support of the legacy OBR requirement format, use {@link #RUNREQUIRES} for new format.
+	 * @deprecated This is for support of the legacy OBR requirement format, use
+	 *             {@link #RUNREQUIRES} for new format.
 	 */
 	@Deprecated
 	String							RUNREQUIRE									= "-runrequire";
-	
+
 	String							RUNREQUIRES									= "-runrequires";
-	
+
 	String							RUNEE										= "-runee";
 	String							RUNPATH										= "-runpath";
 	String							RUNSTORAGE									= "-runstorage";
@@ -156,7 +158,7 @@ public interface Constants {
 			PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SOURCES, SOURCEPATH, SUB, RUNBUNDLES,
 			RUNPATH, RUNSYSTEMPACKAGES, RUNPROPERTIES, REPORTNEWER, UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT,
 			VERBOSE, NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM, WAB, WABLIB, RUNFRAMEWORK, RUNTRACE,
-			TESTCONTINUOUS, SNAPSHOT, NAMESECTION, DIGESTS, DSANNOTATIONS
+			TESTCONTINUOUS, SNAPSHOT, NAMESECTION, DIGESTS, DSANNOTATIONS, EXPERIMENTS
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make

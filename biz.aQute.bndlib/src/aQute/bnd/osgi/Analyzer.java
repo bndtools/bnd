@@ -58,8 +58,11 @@ public class Analyzer extends Processor {
 
 	// Global parameters
 	private final MultiMap<PackageRef,PackageRef>	uses					= new MultiMap<PackageRef,PackageRef>(
-																					PackageRef.class, PackageRef.class,
-																					true);
+			PackageRef.class, PackageRef.class,
+			true);
+	private final MultiMap<PackageRef,PackageRef>	apiUses					= new MultiMap<PackageRef,PackageRef>(
+			PackageRef.class, PackageRef.class,
+			true);
 	private final Packages							classpathExports		= new Packages();
 	private final Descriptors						descriptors				= new Descriptors();
 	private final List<Jar>							classpath				= list();
@@ -114,6 +117,7 @@ public class Analyzer extends Processor {
 		if (!analyzed) {
 			analyzed = true;
 			uses.clear();
+			apiUses.clear();
 			classspace.clear();
 			classpathExports.clear();
 
@@ -228,8 +232,11 @@ public class Analyzer extends Processor {
 			// USES
 			//
 			// Add the uses clause to the exports
-			doUses(exports, uses, imports);
-
+			
+			boolean api = isTrue(getProperty(EXPERIMENTS)) || true; // brave, lets see
+			
+			doUses(exports, api ? apiUses : uses, imports);
+			
 			//
 			// Verify that no exported package has a reference to a private
 			// package
@@ -253,10 +260,10 @@ public class Analyzer extends Processor {
 			for (PackageRef exported : exports.keySet()) {
 				List<PackageRef> used = uses.get(exported);
 				if (used != null) {
-					Set<PackageRef> privateReferences = new HashSet<PackageRef>(uses.get(exported));
+					Set<PackageRef> privateReferences = new HashSet<PackageRef>(apiUses.get(exported));
 					privateReferences.retainAll(privatePackages);
 					if (!privateReferences.isEmpty())
-						msgs.Export_HasPrivateReferences_(exported, privateReferences);
+						msgs.Export_Has_PrivateReferences_(exported, privateReferences.size(), privateReferences);
 				}
 			}
 
@@ -668,6 +675,10 @@ public class Analyzer extends Processor {
 
 	public MultiMap<PackageRef,PackageRef> getUses() {
 		return uses;
+	}
+
+	public MultiMap<PackageRef,PackageRef> getAPIUses() {
+		return apiUses;
 	}
 
 	/**
@@ -1734,16 +1745,19 @@ public class Analyzer extends Processor {
 						if (info != null)
 							contained.merge(packageRef, false, info);
 
-						Set<PackageRef> set = Create.set();
 
 						// Look at the referred packages
 						// and copy them to our baseline
+						Set<PackageRef> refs = Create.set();
 						for (PackageRef p : clazz.getReferred()) {
 							referred.put(p);
-							set.add(p);
+							refs.add(p);
 						}
-						set.remove(packageRef);
-						uses.addAll(packageRef, set);
+						refs.remove(packageRef);
+						uses.addAll(packageRef, refs);
+	
+						// Collect the API
+						apiUses.addAll(packageRef, clazz.getAPIUses());
 					}
 				}
 			}
@@ -2445,5 +2459,26 @@ public class Analyzer extends Processor {
 			setBundleSymbolicName(bsn);
 		if (version != null && getBundleVersion() == null)
 			setBundleVersion(version);
+	}
+
+	/**
+	 * Remove the own references and optionall java references from the uses lib
+	 * @param apiUses
+	 * @param removeJava
+	 * @return
+	 */
+	public MultiMap<PackageRef,PackageRef> cleanupUses(MultiMap<PackageRef,PackageRef> apiUses, boolean removeJava) {
+		MultiMap<PackageRef,PackageRef> map = new MultiMap<PackageRef,PackageRef>(apiUses);
+		for ( Entry<PackageRef,List<PackageRef>> e : map.entrySet()) {
+			e.getValue().remove(e.getKey());
+			if (!removeJava)
+				continue;
+			
+			for (Iterator<PackageRef> i = e.getValue().iterator(); i.hasNext(); ) {
+				if ( i.next().isJava())
+					i.remove();
+			}
+		}		
+		return map;
 	}
 }

@@ -6,7 +6,9 @@ import java.util.jar.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.test.*;
+import aQute.lib.collections.*;
 
 class T0 {}
 
@@ -17,7 +19,21 @@ class T2 extends T1 {}
 class T3 extends T2 {}
 
 public class AnalyzerTest extends BndTestCase {
+	
+	
+	/**
+	 * Check if bnd detects references to private packages and 
+	 * gives a warning.
+	 */
 
+	public void testExportReferencesToPrivatePackages2() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("../biz.aQute.bndlib/bin"));
+		b.setExportPackage("aQute.bnd.signing"); // refers to Event Admin
+		b.setConditionalPackage("aQute.lib*");
+		Jar jar = b.build();
+		assertTrue(b.check());//"((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
+	}
 	/**
 	 * Check if bnd detects references to private packages and 
 	 * gives a warning.
@@ -26,10 +42,11 @@ public class AnalyzerTest extends BndTestCase {
 	public void testExportReferencesToPrivatePackages() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
-		b.setExportPackage("org.osgi.service.event");
-		b.setPrivatePackage("org.osgi.framework");
+		b.addClasspath(new File("bin"));
+		b.setExportPackage("test.referApi"); // refers to Event Admin
+		b.setConditionalPackage("org.osgi.service.*");
 		Jar jar = b.build();
-		assertTrue(b.check("has private references"));
+		assertTrue(b.check());//"((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
 	}
 
 

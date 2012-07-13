@@ -1367,7 +1367,6 @@ public class Clazz {
 		pool = null;
 		intPool = null;
 		xref = null;
-		api = null;
 	}
 
 	public boolean is(QUERY query, Instruction instr, Analyzer analyzer) throws Exception {
@@ -1622,5 +1621,11 @@ public class Clazz {
 
 	public boolean isAnnotation() {
 		return (accessx & ACC_ANNOTATION) != 0;
+	}
+
+	public Set<PackageRef> getAPIUses() {
+		if ( api == null)
+			return Collections.emptySet();
+		return  api;
 	}
 }

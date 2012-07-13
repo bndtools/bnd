@@ -17,7 +17,7 @@ public class NoUsesTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Private-Package", "org.osgi.framework");
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"<<USES>>,not.used\"");
-		String uses = findUses(bmaker, "org.osgi.util.tracker", "has private");
+		String uses = findUses(bmaker, "org.osgi.util.tracker", "has 1,  private");
 		assertEquals("not.used", uses);
 	}
 
@@ -41,7 +41,7 @@ public class NoUsesTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Private-Package", "org.osgi.framework");
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"not.used,<<USES>>\"");
-		String uses = findUses(bmaker, "org.osgi.util.tracker", "has private");
+		String uses = findUses(bmaker, "org.osgi.util.tracker", "has 1,  private");
 		assertEquals("not.used", uses);
 	}
 
@@ -78,7 +78,7 @@ public class NoUsesTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Private-Package", "org.osgi.framework");
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker");
-		String uses = findUses(bmaker, "org.osgi.util.tracker", "has private");
+		String uses = findUses(bmaker, "org.osgi.util.tracker", "has 1,  private");
 		assertNull("org.osgi.framework", uses);
 	}
 

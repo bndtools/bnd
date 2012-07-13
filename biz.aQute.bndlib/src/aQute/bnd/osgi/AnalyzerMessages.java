@@ -7,7 +7,7 @@ import aQute.libg.reporter.*;
 
 public interface AnalyzerMessages extends Messages {
 
-	WARNING Export_HasPrivateReferences_(PackageRef exported, Collection<PackageRef> local);
+	WARNING Export_Has_PrivateReferences_(PackageRef exported, int count, Collection<PackageRef> local);
 /**/
 }
 
