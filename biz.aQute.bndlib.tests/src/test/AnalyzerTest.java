@@ -46,7 +46,7 @@ public class AnalyzerTest extends BndTestCase {
 		b.setExportPackage("test.referApi"); // refers to Event Admin
 		b.setConditionalPackage("org.osgi.service.*");
 		Jar jar = b.build();
-		assertTrue(b.check());//"((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
+		assertTrue(b.check("((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
 	}
 
 
