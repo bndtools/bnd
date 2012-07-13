@@ -25,15 +25,15 @@ import org.osgi.service.resolver.ResolveContext;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.service.Registry;
-import aQute.lib.osgi.resource.CapReqBuilder;
-import aQute.lib.osgi.resource.Filters;
-import aQute.lib.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.Filters;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
 import aQute.libg.filters.LiteralFilter;
 import aQute.libg.filters.SimpleFilter;
-import aQute.libg.header.Attrs;
-import aQute.libg.header.Parameters;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 
 public class BndrunResolveContext extends ResolveContext {
 
