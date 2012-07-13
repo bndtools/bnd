@@ -1,7 +1,6 @@
 package org.bndtools.core.resolve;
 
 import org.apache.felix.resolver.ResolverImpl;
-import org.bndtools.core.obr.Messages;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,11 +24,11 @@ public class ResolveJob extends Job {
     public IStatus validateBeforeRun() {
         String runFramework = model.getRunFramework();
         if (runFramework == null)
-            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ObrResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
+            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
 
         EE ee = model.getEE();
         if (ee == null)
-            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ObrResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
+            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
 
         return Status.OK_STATUS;
     }

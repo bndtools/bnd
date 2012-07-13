@@ -1,11 +1,11 @@
-package org.bndtools.core.obr;
+package org.bndtools.core.resolve;
 
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "org.bndtools.core.obr.messages"; //$NON-NLS-1$
-    public static String ObrResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified;
-    public static String ObrResolutionJob_jobName;
+    private static final String BUNDLE_NAME = "org.bndtools.core.resolve.messages"; //$NON-NLS-1$
+    public static String ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified;
+    public static String ResolutionJob_jobName;
     public static String ResolveOperation_errorAddingPackageCaps;
     public static String ResolveOperation_errorFindingFramework;
     public static String ResolveOperation_errorGettingBuilders;
