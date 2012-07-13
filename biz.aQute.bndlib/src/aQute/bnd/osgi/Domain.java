@@ -296,4 +296,9 @@ public abstract class Domain implements Iterable<String> {
 		}
 		return selected;
 	}
+
+	public void setConditionalPackage(String string) {
+		set(CONDITIONAL_PACKAGE, string);
+		
+	}
 }
