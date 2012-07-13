@@ -26,6 +26,7 @@ import aQute.bnd.main.DiffCommand.diffOptions;
 import aQute.bnd.main.RepoCommand.repoOptions;
 import aQute.bnd.maven.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.action.*;
@@ -519,7 +520,7 @@ public class bnd extends Processor {
 				b.close();
 			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION) || path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
 				Jar jar = getJar(path);
-				doPrint(jar, MANIFEST);
+				doPrint(jar, MANIFEST, null);
 			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION))
 				doRun(path);
 			else
@@ -1418,35 +1419,49 @@ public class bnd extends Processor {
 
 	final static int	LIST		= 4;
 
-	final static int	ECLIPSE		= 8;
 	final static int	IMPEXP		= 16;
 	final static int	USES		= 32;
 	final static int	USEDBY		= 64;
 	final static int	COMPONENT	= 128;
 	final static int	METATYPE	= 256;
+	final static int	API			= 512;
 
 	static final int	HEX			= 0;
 
+	@Arguments(arg="jar-file...")
+	@Description("Provides detailed view of the bundle. It will analyze the bundle and then show its contents from different perspectives. If no options are specified, prints the manifest.")
 	interface printOptions extends Options {
+		@Description("Print the api usage. This shows the usage constraints on exported packages when only public API is used.")
+		boolean api();
+		@Description("Before printing, verify that the bundle is correct.")
 		boolean verify();
 
+		@Description("Print the manifest.")
 		boolean manifest();
 
+		@Description("List the resources")
 		boolean list();
 
-		boolean eclipse();
-
+		@Description("List the imports exports, versions and ranges")
 		boolean impexp();
 
+		@Description("Show for each contained package, what other package it uses. Is either an private, exported, or imported package")
 		boolean uses();
 
+		@Description("Transposed uses. Will show for each known package who it is used by.")
 		boolean by();
 
+		@Description("Show components in detail")
 		boolean component();
 
+		@Description("Show any metatype data")
 		boolean typemeta();
 
-		boolean hex();
+		@Description("Keep references to java in --api, --uses, and --usedby.")
+		boolean java();
+		
+		@Description("Show all packages, not just exported, in the API view")
+		boolean xport();
 	}
 
 	public void _print(printOptions options) throws Exception {
@@ -1457,12 +1472,12 @@ public class bnd extends Processor {
 
 			if (options.manifest())
 				opts |= MANIFEST;
+			
+			if (options.api())
+				opts |= API;
 
 			if (options.list())
 				opts |= LIST;
-
-			if (options.eclipse())
-				opts |= ECLIPSE;
 
 			if (options.impexp())
 				opts |= IMPEXP;
@@ -1480,11 +1495,11 @@ public class bnd extends Processor {
 				opts |= METATYPE;
 
 			if (opts == 0)
-				opts = MANIFEST;
+				opts = MANIFEST | IMPEXP;
 
 			Jar jar = getJar(s);
 			try {
-				doPrint(jar, opts);
+				doPrint(jar, opts, options);
 			}
 			finally {
 				jar.close();
@@ -1492,7 +1507,7 @@ public class bnd extends Processor {
 		}
 	}
 
-	private void doPrint(Jar jar, int options) throws ZipException, IOException, Exception {
+	private void doPrint(Jar jar, int options, printOptions po) throws ZipException, IOException, Exception {
 
 		try {
 			if ((options & VERIFY) != 0) {
@@ -1533,20 +1548,44 @@ public class bnd extends Processor {
 					warning("File has no manifest");
 			}
 
-			if ((options & (USES | USEDBY)) != 0) {
+			if ((options & (USES | USEDBY | API)) != 0) {
 				out.println();
 				Analyzer analyzer = new Analyzer();
 				analyzer.setPedantic(isPedantic());
 				analyzer.setJar(jar);
+				Manifest m = jar.getManifest();
+				if ( m != null) {
+					String s = m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+					if ( s != null)
+						analyzer.setExportPackage(s);
+				}
 				analyzer.analyze();
+			
+				boolean java = po.java();
+				
+				
+				if ( (options&API) != 0) {
+					MultiMap<PackageRef,PackageRef> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(), !po.java());
+					if (!po.xport())  {
+						if ( analyzer.getExports().isEmpty())
+							warning("Not filtering on exported only since exports are empty");
+						else
+							apiUses.keySet().retainAll(analyzer.getExports().keySet());
+					}
+					out.println("[API USES]");
+					printMultiMap( apiUses);
+					out.println();					
+				}
+				
+				MultiMap<PackageRef,PackageRef> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
 				if ((options & USES) != 0) {
 					out.println("[USES]");
-					printMultiMap(analyzer.getUses());
+					printMultiMap(uses);
 					out.println();
 				}
 				if ((options & USEDBY) != 0) {
 					out.println("[USEDBY]");
-					printMultiMap(analyzer.getUses().transpose());
+					printMultiMap(uses.transpose());
 				}
 			}
 
@@ -1595,6 +1634,8 @@ public class bnd extends Processor {
 			jar.close();
 		}
 	}
+
+	
 
 	/**
 	 * @param manifest
@@ -1740,7 +1781,7 @@ public class bnd extends Processor {
 			Object key = entry.getKey();
 			Map< ? , ? > clause = Create.copy(entry.getValue());
 			clause.remove("uses:");
-			format("  %-38s %s%n", key.toString().trim(), clause.isEmpty() ? "" : clause.toString());
+			out.printf("  %-38s %s%n", key.toString().trim(), clause.isEmpty() ? "" : clause.toString());
 		}
 	}
 
@@ -2066,7 +2107,9 @@ public class bnd extends Processor {
 		report.addAttribute("coverage-all", all);
 	}
 
-	private void doHtmlReport(@SuppressWarnings("unused") Tag report, File file, Document doc, @SuppressWarnings("unused") XPath xpath) throws Exception {
+	private void doHtmlReport(@SuppressWarnings("unused")
+	Tag report, File file, Document doc, @SuppressWarnings("unused")
+	XPath xpath) throws Exception {
 		String path = file.getAbsolutePath();
 		if (path.endsWith(".xml"))
 			path = path.substring(0, path.length() - 4);
