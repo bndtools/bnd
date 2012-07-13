@@ -120,7 +120,7 @@ public class DiffPluginImpl implements Differ {
 				Digester<SHA1> digester = SHA1.getDigester();
 				IO.copy(in, digester);
 				String value = Hex.toHexString(digester.digest().digest());
-				resources.add(new Element(Type.RESOURCE, entry.getKey() + "=" + value, null, CHANGED, CHANGED, null));
+				resources.add(new Element(Type.RESOURCE, entry.getKey(), Arrays.asList(new Element(Type.SHA,value)), CHANGED, CHANGED, null));
 			}
 			finally {
 				in.close();
