@@ -2,6 +2,7 @@ package aQute.lib.collections;
 
 import java.util.*;
 
+
 public class MultiMap<K, V> extends HashMap<K,List<V>> {
 	private static final long	serialVersionUID	= 1L;
 	final boolean				noduplicates;
@@ -20,6 +21,15 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> {
 		this.noduplicates = noduplicates;
 		this.keyClass = keyClass;
 		this.valueClass = valueClass;
+	}
+
+	public MultiMap(MultiMap<K,V> other) {
+		keyClass = other.keyClass;
+		valueClass  = other.valueClass;
+		noduplicates = other.noduplicates;
+		for ( java.util.Map.Entry<K,List<V>> e : other.entrySet()) {
+			addAll(e.getKey(), e.getValue());
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -57,7 +67,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> {
 			boolean r = false;
 			for (V v : value) {
 				assert valueClass.isInstance(v);
-				if (!set.contains(value))
+				if (!set.contains(v))
 					r |= set.add(v);
 			}
 			return r;
