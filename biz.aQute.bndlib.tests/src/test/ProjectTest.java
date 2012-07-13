@@ -6,12 +6,11 @@ import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.eclipse.*;
-import aQute.libg.version.*;
 
 public class ProjectTest extends TestCase {
 	

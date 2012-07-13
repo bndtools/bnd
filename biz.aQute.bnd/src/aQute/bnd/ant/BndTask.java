@@ -9,9 +9,9 @@ import org.apache.tools.ant.types.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.eclipse.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.eclipse.*;
 import aQute.libg.qtokens.*;
 
 /**

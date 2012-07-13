@@ -6,11 +6,11 @@ import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.lib.osgi.*;
 import aQute.libg.command.*;
 import aQute.libg.generics.*;
-import aQute.libg.header.*;
 
 /**
  * A Project Launcher is a base class to be extended by launchers. Launchers are

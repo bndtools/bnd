@@ -6,9 +6,8 @@ import java.util.*;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 import aQute.libg.qtokens.*;
-import aQute.libg.version.*;
 
 /**
  * Task to wrap a JAR as an OSGi bundle. You can specify the following

@@ -8,8 +8,8 @@ import javax.xml.xpath.*;
 
 import org.w3c.dom.*;
 
+import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
 
 /**
  * Provides a way to parse a maven pom as properties. This provides most of the

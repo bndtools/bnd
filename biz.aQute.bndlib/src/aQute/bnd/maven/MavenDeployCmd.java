@@ -5,9 +5,9 @@ import java.util.*;
 import java.util.jar.*;
 
 import aQute.bnd.build.*;
-import aQute.lib.osgi.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.libg.command.*;
-import aQute.libg.header.*;
 import aQute.service.reporter.*;
 
 public class MavenDeployCmd extends Processor {

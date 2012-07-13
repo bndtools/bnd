@@ -3,10 +3,10 @@ package aQute.bnd.make.metatype;
 import java.util.*;
 
 import aQute.bnd.annotation.metatype.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.service.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.QUERY;
-import aQute.libg.header.*;
 
 /**
  * This class is responsible for meta type types. It is a plugin that can

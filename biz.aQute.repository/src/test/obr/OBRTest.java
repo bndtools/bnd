@@ -6,10 +6,9 @@ import java.util.*;
 
 import junit.framework.*;
 import test.lib.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.deployer.obr.*;
-import aQute.lib.osgi.Processor;
-import aQute.libg.version.*;
 
 public class OBRTest extends TestCase {
 

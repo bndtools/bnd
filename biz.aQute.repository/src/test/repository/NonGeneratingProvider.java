@@ -1,7 +1,7 @@
 package test.repository;
 
 import java.io.*;
-import java.net.URI;
+import java.net.*;
 import java.util.*;
 
 import org.osgi.service.log.*;

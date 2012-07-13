@@ -1,8 +1,8 @@
 package aQute.lib.deployer.repository.api;
 
-import java.net.URI;
+import java.net.*;
 
-import org.osgi.resource.Resource;
+import org.osgi.resource.*;
 
 public interface IRepositoryIndexProcessor {
 

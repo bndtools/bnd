@@ -2,7 +2,7 @@ package aQute.bnd.build.model.conversions;
 
 import java.util.*;
 
-import aQute.libg.header.*;
+import aQute.bnd.header.*;
 
 public class PropertiesConverter implements Converter<Map<String,String>,String> {
 

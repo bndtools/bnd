@@ -2,7 +2,7 @@ package aQute.lib.spring;
 
 import java.util.*;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 /**
  * This component is called when we find a resource in the META-INF/*.xml

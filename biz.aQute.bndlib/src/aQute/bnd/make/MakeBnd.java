@@ -5,8 +5,8 @@ import java.util.*;
 import java.util.regex.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
-import aQute.lib.osgi.*;
 
 public class MakeBnd implements MakePlugin, Constants {
 	final static Pattern	JARFILE	= Pattern.compile("(.+)\\.(jar|ipa)");

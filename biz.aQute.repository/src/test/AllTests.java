@@ -3,7 +3,7 @@ package test;
 import junit.framework.*;
 import test.http.*;
 import test.obr.*;
-import test.r5repository.FindProvidersTest;
+import test.r5repository.*;
 import test.repository.*;
 
 public class AllTests {

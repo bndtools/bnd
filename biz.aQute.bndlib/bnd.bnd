@@ -12,26 +12,19 @@ Bundle-Description:				A Swiss Army Knife for OSGi
 Bundle-SymbolicName: 	        biz.aQute.bndlib
 Private-Package: 				aQute.bnd.*, aQute.lib.*, org.osgi.service.component.annotations
 Export-Package: aQute.bnd.annotation.*,\
-	aQute.lib.osgi,\
-	aQute.lib.osgi.resource,\
-	org.osgi.resource,\
-	org.osgi.service.repository,\
+	aQute.bnd.osgi,\
+	aQute.bnd.osgi.resource,\
 	aQute.bnd.build,\
 	aQute.bnd.differ,\
 	aQute.bnd.service.*,\
 	aQute.bnd.help.*,\
-	aQute.lib.collections,\
-	aQute.lib.properties,\
-	aQute.libg.reporter,\
-	aQute.libg.version,\
-	aQute.libg.sed,\
-	aQute.libg.header,\
-	aQute.libg.qtokens,\
-	aQute.libg.tuple,\
+	org.osgi.service.repository,\
+	org.osgi.resource,\
+	aQute.bnd.header,\
+	aQute.bnd.filerepo, \
 	aQute.bnd.build.model,\
 	aQute.bnd.build.model.clauses,\
 	aQute.bnd.build.model.conversions, \
-	aQute.libg.sax, \
 	aQute.service.reporter
 
 Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*, aQute.configurable

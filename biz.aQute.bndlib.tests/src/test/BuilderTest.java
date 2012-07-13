@@ -1,20 +1,17 @@
 package test;
 
 import java.io.*;
-import java.security.*;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.jar.*;
 
 import test.CompareTest.B;
 import test.CompareTest.B.C;
 import test.genericinterf.a.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
-import aQute.lib.base64.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.libg.header.*;
 
 public class BuilderTest extends BndTestCase {
 

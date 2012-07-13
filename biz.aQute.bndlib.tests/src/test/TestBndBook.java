@@ -3,7 +3,7 @@ package test;
 import java.io.*;
 
 import junit.framework.*;
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 public class TestBndBook extends TestCase {
 

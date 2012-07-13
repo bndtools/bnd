@@ -5,8 +5,7 @@ import java.io.*;
 import junit.framework.*;
 import aQute.bnd.build.*;
 import aQute.bnd.differ.*;
-import aQute.lib.osgi.*;
-import aQute.libg.version.*;
+import aQute.bnd.osgi.*;
 
 public class BaselineTest extends TestCase {
 

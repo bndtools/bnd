@@ -3,9 +3,9 @@ package aQute.junit.plugin;
 import java.util.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.junit.constants.*;
-import aQute.lib.osgi.*;
 
 public class ProjectTesterImpl extends ProjectTester implements TesterConstants, EclipseJUnitTester {
 	int		port	= -1;

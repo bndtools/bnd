@@ -1,13 +1,11 @@
 package test.deployer;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
-import junit.framework.TestCase;
-import aQute.lib.deployer.FileRepo;
-import aQute.lib.osgi.Jar;
+import junit.framework.*;
+import aQute.bnd.osgi.*;
+import aQute.lib.deployer.*;
 
 public class FileRepoTest extends TestCase {
 	

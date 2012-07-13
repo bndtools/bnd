@@ -5,8 +5,8 @@ import java.util.*;
 import java.util.jar.*;
 
 import junit.framework.*;
-import aQute.lib.osgi.*;
-import aQute.libg.header.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 
 public class PropertiesTest extends TestCase {
 	static <T> T notNull(T t) {

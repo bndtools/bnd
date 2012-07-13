@@ -6,11 +6,10 @@ import java.util.regex.*;
 
 import org.osgi.service.component.annotations.*;
 
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.lib.collections.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.MethodDef;
-import aQute.lib.osgi.Descriptors.TypeRef;
-import aQute.libg.version.*;
 
 /**
  * fixup any unbind methods To declare no unbind method, the value "-" must be

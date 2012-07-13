@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.jar.*;
 
 import junit.framework.*;
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 public class ClassReferenceTest extends TestCase {
 	class Inner {

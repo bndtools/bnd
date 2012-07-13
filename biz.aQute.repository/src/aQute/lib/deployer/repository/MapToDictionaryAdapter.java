@@ -1,9 +1,6 @@
 package aQute.lib.deployer.repository;
 
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class MapToDictionaryAdapter extends Dictionary<String,Object> {
 	

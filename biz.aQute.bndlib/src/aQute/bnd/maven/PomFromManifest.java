@@ -6,11 +6,10 @@ import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.regex.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
 import aQute.lib.tag.*;
-import aQute.libg.header.*;
-import aQute.libg.version.*;
 
 public class PomFromManifest extends WriteResource {
 	final Manifest			manifest;

@@ -7,12 +7,12 @@ import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
+import aQute.bnd.osgi.*;
 import aQute.lib.base64.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
 
 /**
- * This class is used with the aQute.lib.osgi package, it signs jars with DSA
+ * This class is used with the aQute.bnd.osgi package, it signs jars with DSA
  * signature. -sign: md5, sha1
  */
 public class Signer extends Processor {

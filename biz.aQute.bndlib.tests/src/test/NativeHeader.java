@@ -3,7 +3,7 @@ package test;
 import java.util.*;
 
 import junit.framework.*;
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 public class NativeHeader extends TestCase {
 	static Builder	b	= new Builder();

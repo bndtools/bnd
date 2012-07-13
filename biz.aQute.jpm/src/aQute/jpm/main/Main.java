@@ -11,14 +11,14 @@ import java.util.regex.*;
 
 import javax.swing.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.jpm.lib.*;
 import aQute.lib.collections.*;
 import aQute.lib.data.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
-import aQute.libg.header.*;
 import aQute.libg.reporter.*;
-import aQute.libg.version.*;
 
 @Description("Just Another Package Manager (for java™)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service.")
 public class Main extends ReporterAdapter {

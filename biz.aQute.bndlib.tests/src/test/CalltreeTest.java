@@ -5,7 +5,7 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.bnd.make.calltree.*;
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 public class CalltreeTest extends TestCase {
 	public void testCalltree() throws Exception {
@@ -65,7 +65,7 @@ public class CalltreeTest extends TestCase {
 	//
 	// Builder c = new Builder();
 	// c.addClasspath(new File("bin"));
-	// c.setProperty("Private-Package", "aQute.lib.osgi");
+	// c.setProperty("Private-Package", "aQute.bnd.osgi");
 	// c.build();
 	// Collection<Clazz> target = c.getClassspace().values();
 	//
@@ -100,7 +100,7 @@ public class CalltreeTest extends TestCase {
 	// "()LaQute/lib/osgi/Jar;")));
 	// assertTrue(xref
 	// .get(
-	// new Clazz.MethodDef(0, "aQute.lib.osgi.Builder", "build",
+	// new Clazz.MethodDef(0, "aQute.bnd.osgi.Builder", "build",
 	// "()LaQute/lib/osgi/Jar;")).contains(
 	// new Clazz.MethodDef(0, "test.CalltreeTest", "testCoverage", "()V")));
 	//

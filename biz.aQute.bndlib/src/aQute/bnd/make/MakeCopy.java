@@ -4,8 +4,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
-import aQute.lib.osgi.*;
 
 public class MakeCopy implements MakePlugin {
 

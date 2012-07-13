@@ -8,13 +8,13 @@ import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
+import aQute.bnd.filerepo.*;
+import aQute.bnd.osgi.*;
 import aQute.jpm.platform.*;
 import aQute.lib.base64.*;
 import aQute.lib.data.*;
 import aQute.lib.io.*;
 import aQute.lib.json.*;
-import aQute.libg.filerepo.*;
-import aQute.libg.version.*;
 import aQute.service.reporter.*;
 
 /**

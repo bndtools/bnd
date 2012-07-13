@@ -7,13 +7,13 @@ import java.util.concurrent.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
+import aQute.bnd.header.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.maven.support.Pom.Dependency;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.libg.header.*;
 import aQute.libg.map.*;
 
 public class MavenTest extends TestCase {

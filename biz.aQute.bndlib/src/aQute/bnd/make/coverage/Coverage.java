@@ -3,9 +3,9 @@ package aQute.bnd.make.coverage;
 import java.io.*;
 import java.util.*;
 
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.MethodDef;
-import aQute.lib.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 
 /**
  * This class can create a coverage table between two classspaces. The

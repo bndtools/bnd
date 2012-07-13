@@ -8,8 +8,8 @@ import java.util.regex.*;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.*;
 
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 
 public class XMLType {
 

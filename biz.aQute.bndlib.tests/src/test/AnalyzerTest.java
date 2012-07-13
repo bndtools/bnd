@@ -4,9 +4,9 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
-import aQute.lib.osgi.*;
-import aQute.libg.header.*;
 
 class T0 {}
 

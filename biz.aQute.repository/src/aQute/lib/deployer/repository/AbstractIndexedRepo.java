@@ -7,13 +7,14 @@ import java.util.Map.Entry;
 import java.util.regex.*;
 
 import org.osgi.framework.namespace.*;
-import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
+import org.osgi.impl.bundle.bindex.*;
 import org.osgi.resource.*;
 import org.osgi.resource.Resource;
-import org.osgi.service.bindex.BundleIndexer;
+import org.osgi.service.bindex.*;
 import org.osgi.service.log.*;
 import org.osgi.service.repository.*;
 
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.service.url.*;
@@ -23,10 +24,8 @@ import aQute.lib.deployer.repository.api.*;
 import aQute.lib.deployer.repository.providers.*;
 import aQute.lib.filter.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
 import aQute.libg.generics.*;
 import aQute.libg.gzip.*;
-import aQute.libg.version.*;
 import aQute.service.reporter.*;
 
 /**

@@ -5,12 +5,11 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
 import aQute.libg.generics.*;
-import aQute.libg.header.*;
-import aQute.libg.version.*;
 import aQute.service.reporter.*;
 
 public class EclipseRepo implements Plugin, RepositoryPlugin {

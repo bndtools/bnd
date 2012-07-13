@@ -3,8 +3,8 @@ package aQute.bnd.build.model.conversions;
 import java.util.*;
 import java.util.Map.Entry;
 
-import aQute.lib.osgi.*;
-import aQute.libg.header.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.libg.tuple.*;
 
 public class ClauseListConverter<R> implements Converter<List<R>,String> {

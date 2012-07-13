@@ -8,8 +8,8 @@ import org.osgi.service.component.*;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.log.*;
 
+import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
-import aQute.lib.osgi.*;
 
 /**
  * #118

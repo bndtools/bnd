@@ -1,24 +1,18 @@
 package test.repository;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
-import org.osgi.framework.Version;
-import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
-import org.osgi.resource.Resource;
+import org.osgi.framework.*;
+import org.osgi.impl.bundle.bindex.*;
+import org.osgi.resource.*;
 
-import aQute.lib.deployer.repository.NullLogService;
-import aQute.lib.deployer.repository.api.IRepositoryIndexProcessor;
-import aQute.lib.deployer.repository.api.Referral;
-import aQute.lib.deployer.repository.providers.ObrContentProvider;
+import aQute.lib.deployer.repository.*;
+import aQute.lib.deployer.repository.api.*;
+import aQute.lib.deployer.repository.providers.*;
 
 public class TestObrCapReqParsing extends TestCase {
 

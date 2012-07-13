@@ -5,15 +5,14 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
-import org.osgi.resource.Requirement;
+import org.osgi.resource.*;
 
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.build.model.conversions.*;
-import aQute.lib.osgi.Constants;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.lib.properties.*;
-import aQute.libg.header.*;
 import aQute.libg.tuple.*;
-import aQute.libg.version.Version;
 
 /**
  * A model for a Bnd file. In the first iteration, use a simple Properties
@@ -31,17 +30,17 @@ public class BndEditModel {
 
 	protected static String[]										KNOWN_PROPERTIES			= new String[] {
 			Constants.BUNDLE_SYMBOLICNAME, Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR,
-			Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE, aQute.lib.osgi.Constants.PRIVATE_PACKAGE,
-			aQute.lib.osgi.Constants.SOURCES,
-			aQute.lib.osgi.Constants.SERVICE_COMPONENT, aQute.lib.osgi.Constants.CLASSPATH,
-			aQute.lib.osgi.Constants.BUILDPATH, aQute.lib.osgi.Constants.BUILDPACKAGES,
-			aQute.lib.osgi.Constants.RUNBUNDLES, aQute.lib.osgi.Constants.RUNPROPERTIES, aQute.lib.osgi.Constants.SUB,
-			aQute.lib.osgi.Constants.RUNFRAMEWORK,
-			aQute.lib.osgi.Constants.RUNVM,
+			Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE, aQute.bnd.osgi.Constants.PRIVATE_PACKAGE,
+			aQute.bnd.osgi.Constants.SOURCES,
+			aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.CLASSPATH,
+			aQute.bnd.osgi.Constants.BUILDPATH, aQute.bnd.osgi.Constants.BUILDPACKAGES,
+			aQute.bnd.osgi.Constants.RUNBUNDLES, aQute.bnd.osgi.Constants.RUNPROPERTIES, aQute.bnd.osgi.Constants.SUB,
+			aQute.bnd.osgi.Constants.RUNFRAMEWORK,
+			aQute.bnd.osgi.Constants.RUNVM,
 			// BndConstants.RUNVMARGS,
 			// BndConstants.TESTSUITES,
-			aQute.lib.osgi.Constants.TESTCASES, aQute.lib.osgi.Constants.PLUGIN, aQute.lib.osgi.Constants.PLUGINPATH,
-			aQute.lib.osgi.Constants.RUNREPOS, aQute.lib.osgi.Constants.RUNREQUIRES, aQute.lib.osgi.Constants.RUNEE};
+			aQute.bnd.osgi.Constants.TESTCASES, aQute.bnd.osgi.Constants.PLUGIN, aQute.bnd.osgi.Constants.PLUGINPATH,
+			aQute.bnd.osgi.Constants.RUNREPOS, aQute.bnd.osgi.Constants.RUNREQUIRES, aQute.bnd.osgi.Constants.RUNEE};
 
 	public static final String										BUNDLE_VERSION_MACRO		= "${"
 																										+ Constants.BUNDLE_VERSION
@@ -166,7 +165,7 @@ public class BndEditModel {
 	protected Converter<String,EE>									eeFormatter					= new EEFormatter();
 	Converter<String,Collection< ? extends String>>					runReposFormatter			= new CollectionFormatter<String>(
 																										LIST_SEPARATOR,
-																										aQute.lib.osgi.Constants.EMPTY_HEADER);
+																										aQute.bnd.osgi.Constants.EMPTY_HEADER);
 
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
@@ -174,56 +173,56 @@ public class BndEditModel {
 	@SuppressWarnings("deprecation")
 	public BndEditModel() {
 		// register converters
-		converters.put(aQute.lib.osgi.Constants.BUILDPATH, buildPathConverter);
-		converters.put(aQute.lib.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
-		converters.put(aQute.lib.osgi.Constants.RUNBUNDLES, clauseListConverter);
+		converters.put(aQute.bnd.osgi.Constants.BUILDPATH, buildPathConverter);
+		converters.put(aQute.bnd.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
+		converters.put(aQute.bnd.osgi.Constants.RUNBUNDLES, clauseListConverter);
 		converters.put(Constants.BUNDLE_SYMBOLICNAME, stringConverter);
 		converters.put(Constants.BUNDLE_VERSION, stringConverter);
 		converters.put(Constants.BUNDLE_ACTIVATOR, stringConverter);
-		converters.put(aQute.lib.osgi.Constants.OUTPUT, stringConverter);
-		converters.put(aQute.lib.osgi.Constants.SOURCES, includedSourcesConverter);
-		converters.put(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, listConverter);
-		converters.put(aQute.lib.osgi.Constants.CLASSPATH, listConverter);
+		converters.put(aQute.bnd.osgi.Constants.OUTPUT, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.SOURCES, includedSourcesConverter);
+		converters.put(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, listConverter);
+		converters.put(aQute.bnd.osgi.Constants.CLASSPATH, listConverter);
 		converters.put(Constants.EXPORT_PACKAGE, exportPackageConverter);
-		converters.put(aQute.lib.osgi.Constants.SERVICE_COMPONENT, serviceComponentConverter);
+		converters.put(aQute.bnd.osgi.Constants.SERVICE_COMPONENT, serviceComponentConverter);
 		converters.put(Constants.IMPORT_PACKAGE, importPatternConverter);
-		converters.put(aQute.lib.osgi.Constants.RUNFRAMEWORK, stringConverter);
-		converters.put(aQute.lib.osgi.Constants.SUB, listConverter);
-		converters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesConverter);
-		converters.put(aQute.lib.osgi.Constants.RUNVM, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.RUNFRAMEWORK, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.SUB, listConverter);
+		converters.put(aQute.bnd.osgi.Constants.RUNPROPERTIES, propertiesConverter);
+		converters.put(aQute.bnd.osgi.Constants.RUNVM, stringConverter);
 		// converters.put(BndConstants.RUNVMARGS, stringConverter);
-		converters.put(aQute.lib.osgi.Constants.TESTSUITES, listConverter);
-		converters.put(aQute.lib.osgi.Constants.TESTCASES, listConverter);
-		converters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
-		converters.put(aQute.lib.osgi.Constants.RUNREQUIRES, requirementListConverter);
-		converters.put(aQute.lib.osgi.Constants.RUNEE, eeConverter);
-		converters.put(aQute.lib.osgi.Constants.RUNREPOS, listConverter);
+		converters.put(aQute.bnd.osgi.Constants.TESTSUITES, listConverter);
+		converters.put(aQute.bnd.osgi.Constants.TESTCASES, listConverter);
+		converters.put(aQute.bnd.osgi.Constants.PLUGIN, headerClauseListConverter);
+		converters.put(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListConverter);
+		converters.put(aQute.bnd.osgi.Constants.RUNEE, eeConverter);
+		converters.put(aQute.bnd.osgi.Constants.RUNREPOS, listConverter);
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 
-		formatters.put(aQute.lib.osgi.Constants.BUILDPATH, headerClauseListFormatter);
-		formatters.put(aQute.lib.osgi.Constants.BUILDPACKAGES, headerClauseListFormatter);
-		formatters.put(aQute.lib.osgi.Constants.RUNBUNDLES, headerClauseListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.BUILDPATH, headerClauseListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.BUILDPACKAGES, headerClauseListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.RUNBUNDLES, headerClauseListFormatter);
 		formatters.put(Constants.BUNDLE_SYMBOLICNAME, newlineEscapeFormatter);
 		formatters.put(Constants.BUNDLE_VERSION, newlineEscapeFormatter);
 		formatters.put(Constants.BUNDLE_ACTIVATOR, newlineEscapeFormatter);
-		formatters.put(aQute.lib.osgi.Constants.OUTPUT, newlineEscapeFormatter);
-		formatters.put(aQute.lib.osgi.Constants.SOURCES, defaultFalseBoolFormatter);
-		formatters.put(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, stringListFormatter);
-		formatters.put(aQute.lib.osgi.Constants.CLASSPATH, stringListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.OUTPUT, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.SOURCES, defaultFalseBoolFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, stringListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.CLASSPATH, stringListFormatter);
 		formatters.put(Constants.EXPORT_PACKAGE, headerClauseListFormatter);
-		formatters.put(aQute.lib.osgi.Constants.SERVICE_COMPONENT, headerClauseListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.SERVICE_COMPONENT, headerClauseListFormatter);
 		formatters.put(Constants.IMPORT_PACKAGE, headerClauseListFormatter);
-		formatters.put(aQute.lib.osgi.Constants.RUNFRAMEWORK, newlineEscapeFormatter);
-		formatters.put(aQute.lib.osgi.Constants.SUB, stringListFormatter);
-		formatters.put(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesFormatter);
-		formatters.put(aQute.lib.osgi.Constants.RUNVM, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.RUNFRAMEWORK, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.SUB, stringListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.RUNPROPERTIES, propertiesFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.RUNVM, newlineEscapeFormatter);
 		// formatters.put(BndConstants.RUNVMARGS, newlineEscapeFormatter);
 		// formatters.put(BndConstants.TESTSUITES, stringListFormatter);
-		formatters.put(aQute.lib.osgi.Constants.TESTCASES, stringListFormatter);
-		formatters.put(aQute.lib.osgi.Constants.PLUGIN, headerClauseListFormatter);
-		formatters.put(aQute.lib.osgi.Constants.RUNREQUIRES, requirementListFormatter);
-		formatters.put(aQute.lib.osgi.Constants.RUNEE, eeFormatter);
-		formatters.put(aQute.lib.osgi.Constants.RUNREPOS, runReposFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.TESTCASES, stringListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.PLUGIN, headerClauseListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.RUNEE, eeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.RUNREPOS, runReposFormatter);
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
 	}
 
@@ -373,42 +372,42 @@ public class BndEditModel {
 	}
 
 	public String getOutputFile() {
-		return doGetObject(aQute.lib.osgi.Constants.OUTPUT, stringConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.OUTPUT, stringConverter);
 	}
 
 	public void setOutputFile(String name) {
-		doSetObject(aQute.lib.osgi.Constants.OUTPUT, getOutputFile(), name, newlineEscapeFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.OUTPUT, getOutputFile(), name, newlineEscapeFormatter);
 	}
 
 	public boolean isIncludeSources() {
-		return doGetObject(aQute.lib.osgi.Constants.SOURCES, includedSourcesConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.SOURCES, includedSourcesConverter);
 	}
 
 	public void setIncludeSources(boolean includeSources) {
 		boolean oldValue = isIncludeSources();
-		doSetObject(aQute.lib.osgi.Constants.SOURCES, oldValue, includeSources, defaultFalseBoolFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.SOURCES, oldValue, includeSources, defaultFalseBoolFormatter);
 	}
 
 	public List<String> getPrivatePackages() {
-		return doGetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, listConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, listConverter);
 	}
 
 	public void setPrivatePackages(List< ? extends String> packages) {
 		List<String> oldPackages = getPrivatePackages();
-		doSetObject(aQute.lib.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages, stringListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages, stringListFormatter);
 	}
 
 	public List<ExportedPackage> getSystemPackages() {
-		return doGetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, exportPackageConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.RUNSYSTEMPACKAGES, exportPackageConverter);
 	}
 
 	public void setSystemPackages(List< ? extends ExportedPackage> packages) {
 		List<ExportedPackage> oldPackages = getSystemPackages();
-		doSetObject(aQute.lib.osgi.Constants.RUNSYSTEMPACKAGES, oldPackages, packages, headerClauseListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.RUNSYSTEMPACKAGES, oldPackages, packages, headerClauseListFormatter);
 	}
 
 	public List<String> getClassPath() {
-		return doGetObject(aQute.lib.osgi.Constants.CLASSPATH, listConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.CLASSPATH, listConverter);
 	}
 
 	public void addPrivatePackage(String packageName) {
@@ -423,7 +422,7 @@ public class BndEditModel {
 
 	public void setClassPath(List< ? extends String> classPath) {
 		List<String> oldClassPath = getClassPath();
-		doSetObject(aQute.lib.osgi.Constants.CLASSPATH, oldClassPath, classPath, stringListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.CLASSPATH, oldClassPath, classPath, stringListFormatter);
 	}
 
 	public List<ExportedPackage> getExportedPackages() {
@@ -457,21 +456,21 @@ public class BndEditModel {
 	}
 
 	public List<String> getDSAnnotationPatterns() {
-		return doGetObject(aQute.lib.osgi.Constants.DSANNOTATIONS, listConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.DSANNOTATIONS, listConverter);
 	}
 
 	public void setDSAnnotationPatterns(List< ? extends String> patterns) {
 		List<String> oldValue = getDSAnnotationPatterns();
-		doSetObject(aQute.lib.osgi.Constants.DSANNOTATIONS, oldValue, patterns, stringListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.DSANNOTATIONS, oldValue, patterns, stringListFormatter);
 	}
 
 	public List<ServiceComponent> getServiceComponents() {
-		return doGetObject(aQute.lib.osgi.Constants.SERVICE_COMPONENT, serviceComponentConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.SERVICE_COMPONENT, serviceComponentConverter);
 	}
 
 	public void setServiceComponents(List< ? extends ServiceComponent> components) {
 		List<ServiceComponent> oldValue = getServiceComponents();
-		doSetObject(aQute.lib.osgi.Constants.SERVICE_COMPONENT, oldValue, components, headerClauseListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.SERVICE_COMPONENT, oldValue, components, headerClauseListFormatter);
 	}
 
 	public List<ImportPattern> getImportPatterns() {
@@ -484,30 +483,30 @@ public class BndEditModel {
 	}
 
 	public List<VersionedClause> getBuildPath() {
-		return doGetObject(aQute.lib.osgi.Constants.BUILDPATH, buildPathConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.BUILDPATH, buildPathConverter);
 	}
 
 	public void setBuildPath(List< ? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
-		doSetObject(aQute.lib.osgi.Constants.BUILDPATH, oldValue, paths, headerClauseListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.BUILDPATH, oldValue, paths, headerClauseListFormatter);
 	}
 
 	public List<VersionedClause> getBuildPackages() {
-		return doGetObject(aQute.lib.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
 	}
 
 	public void setBuildPackages(List< ? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPackages();
-		doSetObject(aQute.lib.osgi.Constants.BUILDPACKAGES, oldValue, paths, headerClauseListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.BUILDPACKAGES, oldValue, paths, headerClauseListFormatter);
 	}
 
 	public List<VersionedClause> getRunBundles() {
-		return doGetObject(aQute.lib.osgi.Constants.RUNBUNDLES, clauseListConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.RUNBUNDLES, clauseListConverter);
 	}
 
 	public void setRunBundles(List< ? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
-		doSetObject(aQute.lib.osgi.Constants.RUNBUNDLES, oldValue, paths, headerClauseListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.RUNBUNDLES, oldValue, paths, headerClauseListFormatter);
 	}
 
 	public boolean isIncludedPackage(String packageName) {
@@ -528,16 +527,16 @@ public class BndEditModel {
 	}
 
 	public List<String> getSubBndFiles() {
-		return doGetObject(aQute.lib.osgi.Constants.SUB, listConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.SUB, listConverter);
 	}
 
 	public void setSubBndFiles(List<String> subBndFiles) {
 		List<String> oldValue = getSubBndFiles();
-		doSetObject(aQute.lib.osgi.Constants.SUB, oldValue, subBndFiles, stringListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.SUB, oldValue, subBndFiles, stringListFormatter);
 	}
 
 	public Map<String,String> getRunProperties() {
-		return doGetObject(aQute.lib.osgi.Constants.RUNPROPERTIES, propertiesConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.RUNPROPERTIES, propertiesConverter);
 	}
 
 	/*
@@ -546,7 +545,7 @@ public class BndEditModel {
 	 */
 	public void setRunProperties(Map<String,String> props) {
 		Map<String,String> old = getRunProperties();
-		doSetObject(aQute.lib.osgi.Constants.RUNPROPERTIES, old, props, propertiesFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.RUNPROPERTIES, old, props, propertiesFormatter);
 	}
 
 	/*
@@ -554,7 +553,7 @@ public class BndEditModel {
 	 * @see bndtools.editor.model.IBndModel#getRunVMArgs()
 	 */
 	public String getRunVMArgs() {
-		return doGetObject(aQute.lib.osgi.Constants.RUNVM, stringConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.RUNVM, stringConverter);
 	}
 
 	/*
@@ -563,15 +562,15 @@ public class BndEditModel {
 	 */
 	public void setRunVMArgs(String args) {
 		String old = getRunVMArgs();
-		doSetObject(aQute.lib.osgi.Constants.RUNVM, old, args, newlineEscapeFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.RUNVM, old, args, newlineEscapeFormatter);
 	}
 
 	@SuppressWarnings("deprecation")
 	public List<String> getTestSuites() {
-		List<String> testCases = doGetObject(aQute.lib.osgi.Constants.TESTCASES, listConverter);
+		List<String> testCases = doGetObject(aQute.bnd.osgi.Constants.TESTCASES, listConverter);
 		testCases = testCases != null ? testCases : Collections.<String> emptyList();
 
-		List<String> testSuites = doGetObject(aQute.lib.osgi.Constants.TESTSUITES, listConverter);
+		List<String> testSuites = doGetObject(aQute.bnd.osgi.Constants.TESTSUITES, listConverter);
 		testSuites = testSuites != null ? testSuites : Collections.<String> emptyList();
 
 		List<String> result = new ArrayList<String>(testCases.size() + testSuites.size());
@@ -583,63 +582,63 @@ public class BndEditModel {
 	@SuppressWarnings("deprecation")
 	public void setTestSuites(List<String> suites) {
 		List<String> old = getTestSuites();
-		doSetObject(aQute.lib.osgi.Constants.TESTCASES, old, suites, stringListFormatter);
-		doSetObject(aQute.lib.osgi.Constants.TESTSUITES, null, null, stringListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.TESTCASES, old, suites, stringListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.TESTSUITES, null, null, stringListFormatter);
 	}
 
 	public List<HeaderClause> getPlugins() {
-		return doGetObject(aQute.lib.osgi.Constants.PLUGIN, headerClauseListConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.PLUGIN, headerClauseListConverter);
 	}
 
 	public void setPlugins(List<HeaderClause> plugins) {
 		List<HeaderClause> old = getPlugins();
-		doSetObject(aQute.lib.osgi.Constants.PLUGIN, old, plugins, headerClauseListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.PLUGIN, old, plugins, headerClauseListFormatter);
 	}
 
 	public List<String> getPluginPath() {
-		return doGetObject(aQute.lib.osgi.Constants.PLUGINPATH, listConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.PLUGINPATH, listConverter);
 	}
 
 	public void setPluginPath(List<String> pluginPath) {
 		List<String> old = getPluginPath();
-		doSetObject(aQute.lib.osgi.Constants.PLUGINPATH, old, pluginPath, stringListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.PLUGINPATH, old, pluginPath, stringListFormatter);
 	}
 	
     public List<String> getRunRepos() {
-        return doGetObject(aQute.lib.osgi.Constants.RUNREPOS, listConverter);
+        return doGetObject(aQute.bnd.osgi.Constants.RUNREPOS, listConverter);
     }
 
     public void setRunRepos(List<String> repos) {
         List<String> old = getRunRepos();
-        doSetObject(aQute.lib.osgi.Constants.RUNREPOS, old, repos, runReposFormatter);
+        doSetObject(aQute.bnd.osgi.Constants.RUNREPOS, old, repos, runReposFormatter);
     }
     
     public String getRunFramework() {
-        return doGetObject(aQute.lib.osgi.Constants.RUNFRAMEWORK, stringConverter);
+        return doGetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, stringConverter);
     }
 
     public EE getEE() {
-        return doGetObject(aQute.lib.osgi.Constants.RUNEE, eeConverter);
+        return doGetObject(aQute.bnd.osgi.Constants.RUNEE, eeConverter);
     }
 
     public void setEE(EE ee) {
         EE old = getEE();
-        doSetObject(aQute.lib.osgi.Constants.RUNEE, old, ee, eeFormatter);
+        doSetObject(aQute.bnd.osgi.Constants.RUNEE, old, ee, eeFormatter);
     }
 
     
     public void setRunFramework(String clause) {
         String oldValue = getRunFramework();
-        doSetObject(aQute.lib.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
+        doSetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
     }
     
     public List<Requirement> getRunRequires() {
-    	return doGetObject(aQute.lib.osgi.Constants.RUNREQUIRES, requirementListConverter);
+    	return doGetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListConverter);
     }
     
     public void setRunRequires(List<Requirement> requires) {
     	List<Requirement> oldValue = getRunRequires();
-    	doSetObject(aQute.lib.osgi.Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
+    	doSetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
     }
 
 

@@ -3,8 +3,7 @@ package aQute.bnd.service;
 import java.io.*;
 import java.util.*;
 
-import aQute.lib.osgi.*;
-import aQute.libg.version.*;
+import aQute.bnd.osgi.*;
 
 public interface RepositoryPlugin {
 	public enum Strategy {

@@ -4,9 +4,8 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
-import aQute.lib.osgi.*;
-import aQute.libg.version.*;
 
 public class WorkspaceRepository implements RepositoryPlugin {
 	private final Workspace	workspace;

@@ -1,7 +1,7 @@
 package test.http;
 
 import java.io.*;
-import java.net.URI;
+import java.net.*;
 
 import junit.framework.*;
 import test.lib.*;

@@ -4,10 +4,10 @@ import java.io.*;
 import java.util.*;
 
 import aQute.bnd.differ.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.diff.*;
 import aQute.configurable.*;
 import aQute.lib.getopt.*;
-import aQute.lib.osgi.*;
 import aQute.lib.tag.*;
 
 public class DiffCommand {

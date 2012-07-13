@@ -1,6 +1,6 @@
 package aQute.bnd.service.diff;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 /**
  * Compare two Jars and report the differences.

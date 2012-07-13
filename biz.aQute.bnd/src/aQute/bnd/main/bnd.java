@@ -18,12 +18,16 @@ import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.header.*;
 import aQute.bnd.help.*;
 import aQute.bnd.main.BaselineCommands.baseLineOptions;
 import aQute.bnd.main.BaselineCommands.schemaOptions;
 import aQute.bnd.main.DiffCommand.diffOptions;
 import aQute.bnd.main.RepoCommand.repoOptions;
 import aQute.bnd.maven.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.settings.*;
 import aQute.configurable.*;
@@ -32,17 +36,12 @@ import aQute.lib.filter.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
 import aQute.lib.justif.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Descriptors.TypeRef;
-import aQute.lib.osgi.eclipse.*;
 import aQute.lib.tag.*;
 import aQute.libg.classdump.*;
 import aQute.libg.generics.*;
 import aQute.libg.glob.*;
-import aQute.libg.header.*;
 import aQute.libg.qtokens.*;
 import aQute.libg.reporter.*;
-import aQute.libg.version.*;
 
 /**
  * Utility to make bundles. Should be areplace for jar and much more.

@@ -2,9 +2,9 @@ package aQute.lib.spring;
 
 import java.util.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
-import aQute.lib.osgi.*;
-import aQute.libg.header.*;
 
 public class XMLTypeProcessor implements AnalyzerPlugin {
 

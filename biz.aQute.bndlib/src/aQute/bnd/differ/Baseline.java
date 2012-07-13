@@ -4,12 +4,11 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.service.diff.Diff.Ignore;
-import aQute.lib.osgi.*;
 import aQute.libg.generics.*;
-import aQute.libg.header.*;
-import aQute.libg.version.*;
 import aQute.service.reporter.*;
 
 /**

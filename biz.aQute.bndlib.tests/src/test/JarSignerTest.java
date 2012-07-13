@@ -5,8 +5,8 @@ import java.util.*;
 import java.util.jar.*;
 
 import junit.framework.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.signing.*;
-import aQute.lib.osgi.*;
 import aQute.libg.generics.*;
 
 public class JarSignerTest extends TestCase {

@@ -2,7 +2,7 @@ package aQute.bnd.build.model.conversions;
 
 import java.util.Map.Entry;
 
-import org.osgi.resource.Requirement;
+import org.osgi.resource.*;
 
 public class RequirementFormatter implements Converter<String,Requirement> {
 

@@ -5,9 +5,9 @@ import java.util.*;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.metatype.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.MethodDef;
-import aQute.lib.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.lib.tag.*;
 import aQute.libg.generics.*;
 

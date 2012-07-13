@@ -4,9 +4,9 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
-import aQute.lib.osgi.*;
-import aQute.libg.header.*;
 
 public class Make {
 	Builder								builder;

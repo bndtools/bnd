@@ -6,10 +6,10 @@ import java.net.*;
 import java.util.*;
 
 import junit.framework.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.service.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.service.reporter.*;
 
 class ConstantValues {
@@ -228,14 +228,14 @@ public class ClassParserTest extends TestCase {
 	 *        The problem is reproducible and I have even rebuilt the library
 	 *        from source and get the same problem. Here's the stack trace:
 	 *        java.lang.ArrayIndexOutOfBoundsException: -29373 at
-	 *        aQute.lib.osgi.Clazz.parseClassFile(Clazz.java:262) at
-	 *        aQute.lib.osgi.Clazz.<init>(Clazz.java:101) at
-	 *        aQute.lib.osgi.Analyzer.analyzeJar(Analyzer.java:1647) at
-	 *        aQute.lib.osgi.Analyzer.analyzeBundleClasspath(Analyzer.java:1563)
-	 *        at aQute.lib.osgi.Analyzer.analyze(Analyzer.java:108) at
-	 *        aQute.lib.osgi.Builder.analyze(Builder.java:192) at
-	 *        aQute.lib.osgi.Builder.doConditional(Builder.java:158) at
-	 *        aQute.lib.osgi.Builder.build(Builder.java:71) at
+	 *        aQute.bnd.osgi.Clazz.parseClassFile(Clazz.java:262) at
+	 *        aQute.bnd.osgi.Clazz.<init>(Clazz.java:101) at
+	 *        aQute.bnd.osgi.Analyzer.analyzeJar(Analyzer.java:1647) at
+	 *        aQute.bnd.osgi.Analyzer.analyzeBundleClasspath(Analyzer.java:1563)
+	 *        at aQute.bnd.osgi.Analyzer.analyze(Analyzer.java:108) at
+	 *        aQute.bnd.osgi.Builder.analyze(Builder.java:192) at
+	 *        aQute.bnd.osgi.Builder.doConditional(Builder.java:158) at
+	 *        aQute.bnd.osgi.Builder.build(Builder.java:71) at
 	 *        aQute.bnd.main.bnd.doBuild(bnd.java:379) at
 	 *        aQute.bnd.main.bnd.run(bnd.java:130) at
 	 *        aQute.bnd.main.bnd.main(bnd.java:39)

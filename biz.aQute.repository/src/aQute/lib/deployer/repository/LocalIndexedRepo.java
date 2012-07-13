@@ -1,30 +1,18 @@
 package aQute.lib.deployer.repository;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import org.osgi.service.coordinator.Coordination;
-import org.osgi.service.coordinator.Coordinator;
-import org.osgi.service.coordinator.Participant;
-import org.osgi.service.log.LogService;
+import org.osgi.service.coordinator.*;
+import org.osgi.service.log.*;
 
-import aQute.bnd.service.Refreshable;
-import aQute.bnd.service.RepositoryListenerPlugin;
-import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
-import aQute.lib.io.IO;
-import aQute.lib.osgi.Jar;
-import aQute.libg.filerepo.FileRepo;
-import aQute.libg.tuple.Pair;
-import aQute.libg.version.Version;
-import aQute.libg.version.VersionRange;
+import aQute.bnd.osgi.*;
+import aQute.bnd.filerepo.FileRepo;
+import aQute.bnd.service.*;
+import aQute.lib.deployer.repository.api.*;
+import aQute.lib.io.*;
+import aQute.libg.tuple.*;
 
 public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant {
 

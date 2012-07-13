@@ -6,8 +6,8 @@ import java.util.*;
 import java.util.jar.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.osgi.*;
 import aQute.launcher.constants.*;
-import aQute.lib.osgi.*;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
 	final private Project	project;

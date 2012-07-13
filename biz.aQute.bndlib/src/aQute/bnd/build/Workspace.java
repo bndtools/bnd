@@ -10,11 +10,11 @@ import java.util.jar.*;
 import javax.naming.*;
 
 import aQute.bnd.maven.support.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
 import aQute.service.reporter.*;
 
 public class Workspace extends Processor {

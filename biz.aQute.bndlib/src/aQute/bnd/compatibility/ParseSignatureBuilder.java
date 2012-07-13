@@ -2,8 +2,8 @@ package aQute.bnd.compatibility;
 
 import java.io.*;
 
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 
 public class ParseSignatureBuilder {
 	final Scope	root;

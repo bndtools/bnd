@@ -6,13 +6,13 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.service.diff.Tree.Data;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
 import aQute.libg.cryptography.*;
-import aQute.libg.header.*;
 
 /**
  * This Diff Plugin Implementation will compare JARs for their API (based on the

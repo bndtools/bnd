@@ -1,8 +1,8 @@
 package aQute.bnd.build.model.clauses;
 
-import org.osgi.framework.Constants;
+import org.osgi.framework.*;
 
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.*;
 
 public class ImportPattern extends VersionedClause implements Cloneable {
 
@@ -11,15 +11,15 @@ public class ImportPattern extends VersionedClause implements Cloneable {
 	}
 
 	public boolean isOptional() {
-		String resolution = attribs.get(aQute.lib.osgi.Constants.RESOLUTION_DIRECTIVE);
+		String resolution = attribs.get(aQute.bnd.osgi.Constants.RESOLUTION_DIRECTIVE);
 		return Constants.RESOLUTION_OPTIONAL.equals(resolution);
 	}
 
 	public void setOptional(boolean optional) {
 		if (optional)
-			attribs.put(aQute.lib.osgi.Constants.RESOLUTION_DIRECTIVE, Constants.RESOLUTION_OPTIONAL);
+			attribs.put(aQute.bnd.osgi.Constants.RESOLUTION_DIRECTIVE, Constants.RESOLUTION_OPTIONAL);
 		else
-			attribs.remove(aQute.lib.osgi.Constants.RESOLUTION_DIRECTIVE);
+			attribs.remove(aQute.bnd.osgi.Constants.RESOLUTION_DIRECTIVE);
 	}
 
 	@Override

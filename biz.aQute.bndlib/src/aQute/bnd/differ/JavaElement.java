@@ -11,17 +11,17 @@ import java.util.concurrent.atomic.*;
 import java.util.jar.*;
 
 import aQute.bnd.annotation.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.JAVA;
+import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Version;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.service.diff.Type;
 import aQute.lib.collections.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.JAVA;
-import aQute.lib.osgi.Clazz.MethodDef;
-import aQute.lib.osgi.Descriptors.PackageRef;
-import aQute.lib.osgi.Descriptors.TypeRef;
 import aQute.libg.generics.*;
-import aQute.libg.header.*;
-import aQute.libg.version.Version;
 
 /**
  * An element that compares the access field in a binary compatible way. This

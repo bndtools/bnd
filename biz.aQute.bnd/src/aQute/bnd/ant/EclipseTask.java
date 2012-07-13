@@ -5,7 +5,7 @@ import java.util.*;
 
 import org.apache.tools.ant.*;
 
-import aQute.lib.osgi.eclipse.*;
+import aQute.bnd.osgi.eclipse.*;
 
 public class EclipseTask extends BaseTask {
 	private String		prefix		= "project.";

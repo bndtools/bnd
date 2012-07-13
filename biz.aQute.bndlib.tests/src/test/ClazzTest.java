@@ -4,8 +4,8 @@ import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 
 public class ClazzTest extends TestCase {
 
@@ -14,12 +14,12 @@ public class ClazzTest extends TestCase {
 	 * 
 	 * <pre>
 	 * [bndwrap] java.lang.ArrayIndexOutOfBoundsException: 15
-	 * [bndwrap]     at aQute.lib.osgi.Clazz.parseClassFile(Clazz.java:387)
-	 * [bndwrap]     at aQute.lib.osgi.Clazz.parseClassFile(Clazz.java:308)
-	 * [bndwrap]     at aQute.lib.osgi.Clazz.parseClassFileWithCollector(Clazz.java:297)
-	 * [bndwrap]     at aQute.lib.osgi.Clazz.parseClassFile(Clazz.java:286)
-	 * [bndwrap]     at aQute.lib.osgi.Analyzer.analyzeJar(Analyzer.java:1489)
-	 * [bndwrap]     at aQute.lib.osgi.Analyzer.analyzeBundleClasspath(Analyzer.java:1387)
+	 * [bndwrap]     at aQute.bnd.osgi.Clazz.parseClassFile(Clazz.java:387)
+	 * [bndwrap]     at aQute.bnd.osgi.Clazz.parseClassFile(Clazz.java:308)
+	 * [bndwrap]     at aQute.bnd.osgi.Clazz.parseClassFileWithCollector(Clazz.java:297)
+	 * [bndwrap]     at aQute.bnd.osgi.Clazz.parseClassFile(Clazz.java:286)
+	 * [bndwrap]     at aQute.bnd.osgi.Analyzer.analyzeJar(Analyzer.java:1489)
+	 * [bndwrap]     at aQute.bnd.osgi.Analyzer.analyzeBundleClasspath(Analyzer.java:1387)
 	 * [bndwrap] Invalid class file: groovy/inspect/swingui/AstNodeToScriptVisitor.class
 	 * [bndwrap] Exception: 15
 	 * </pre>

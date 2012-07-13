@@ -5,7 +5,9 @@ import java.util.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.differ.*;
+import aQute.bnd.header.*;
 import aQute.bnd.maven.support.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.diff.*;
@@ -14,9 +16,6 @@ import aQute.lib.deployer.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
 import aQute.lib.json.*;
-import aQute.lib.osgi.*;
-import aQute.libg.header.*;
-import aQute.libg.version.*;
 
 public class RepoCommand {
 	final static JSONCodec	codec	= new JSONCodec();

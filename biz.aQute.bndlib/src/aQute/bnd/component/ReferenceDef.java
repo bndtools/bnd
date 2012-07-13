@@ -2,9 +2,8 @@ package aQute.bnd.component;
 
 import org.osgi.service.component.annotations.*;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 import aQute.lib.tag.*;
-import aQute.libg.version.*;
 
 /**
  * Holds the information in the reference element.

@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.jar.*;
 
 import junit.framework.*;
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 public class CorruptManifest extends TestCase {
 	static String	ltext	= "bla bla \nbla bla bla bla \nbla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla ";

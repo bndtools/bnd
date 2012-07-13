@@ -2,7 +2,7 @@ package aQute.bnd.build.model.conversions;
 
 import java.util.*;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 import aQute.libg.qtokens.*;
 
 public class SimpleListConverter<R> implements Converter<List<R>,String> {

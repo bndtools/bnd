@@ -1,15 +1,15 @@
 package aQute.bnd.make.component;
 
-import static aQute.lib.osgi.Constants.*;
+import static aQute.bnd.osgi.Constants.*;
 
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.component.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.MethodDef;
-import aQute.lib.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.service.reporter.*;
 
 public class ComponentAnnotationReader extends ClassDataCollector {
@@ -258,7 +258,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 
 	static Pattern	PROPERTY_PATTERN	= Pattern.compile("[^=]+=.+");
 
-	private void doProperties(aQute.lib.osgi.Annotation annotation) {
+	private void doProperties(aQute.bnd.osgi.Annotation annotation) {
 		Object[] properties = annotation.get(Component.PROPERTIES);
 
 		if (properties != null) {

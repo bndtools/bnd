@@ -3,37 +3,22 @@ package aQute.lib.deployer.repository.providers;
 import static aQute.lib.deployer.repository.api.Decision.*;
 import static javax.xml.stream.XMLStreamConstants.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.*;
 
-import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.*;
 import org.osgi.resource.Resource;
-import org.osgi.service.indexer.ResourceAnalyzer;
-import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.BIndex2;
-import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
-import org.osgi.service.log.LogService;
-import org.osgi.service.repository.ContentNamespace;
+import org.osgi.service.indexer.*;
+import org.osgi.service.indexer.impl.*;
+import org.osgi.service.log.*;
+import org.osgi.service.repository.*;
 
-import aQute.bnd.service.Registry;
-import aQute.lib.deployer.repository.api.CheckResult;
-import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
-import aQute.lib.deployer.repository.api.IRepositoryIndexProcessor;
-import aQute.lib.deployer.repository.api.Referral;
-import aQute.lib.osgi.resource.CapReqBuilder;
-import aQute.lib.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.*;
+import aQute.bnd.service.*;
+import aQute.lib.deployer.repository.api.*;
 
 public class R5RepoContentProvider implements IRepositoryContentProvider {
 

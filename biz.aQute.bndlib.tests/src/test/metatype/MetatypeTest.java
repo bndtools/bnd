@@ -15,8 +15,8 @@ import junit.framework.*;
 import org.w3c.dom.*;
 
 import aQute.bnd.annotation.metatype.*;
+import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
 import aQute.libg.generics.*;
 
 public class MetatypeTest extends TestCase {

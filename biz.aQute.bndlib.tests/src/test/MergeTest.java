@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 public class MergeTest extends TestCase {
 

@@ -19,9 +19,9 @@ import org.xml.sax.*;
 
 import aQute.bnd.annotation.component.*;
 import aQute.bnd.annotation.metatype.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Constants;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Constants;
 
 public class ComponentTest extends TestCase {
 	final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();

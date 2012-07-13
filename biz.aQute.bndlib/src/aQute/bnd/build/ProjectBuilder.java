@@ -3,7 +3,7 @@ package aQute.bnd.build;
 import java.io.*;
 import java.util.*;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 public class ProjectBuilder extends Builder {
 	Project	project;

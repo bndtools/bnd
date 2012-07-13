@@ -5,8 +5,8 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
 
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
-import aQute.lib.osgi.*;
 import aQute.libg.command.*;
 import aQute.service.reporter.*;
 

@@ -8,19 +8,18 @@ import java.util.Map.Entry;
 import java.util.concurrent.locks.*;
 import java.util.jar.*;
 
+import aQute.bnd.header.*;
 import aQute.bnd.help.*;
 import aQute.bnd.maven.support.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.action.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.eclipse.*;
 import aQute.libg.generics.*;
-import aQute.libg.header.*;
 import aQute.libg.reporter.*;
 import aQute.libg.sed.*;
-import aQute.libg.version.*;
 
 /**
  * This class is NOT threadsafe

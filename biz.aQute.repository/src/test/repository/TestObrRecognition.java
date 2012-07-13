@@ -6,10 +6,11 @@ import java.io.*;
 
 import javax.xml.stream.*;
 
-import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
-import org.osgi.service.bindex.BundleIndexer;
-
 import junit.framework.*;
+
+import org.osgi.impl.bundle.bindex.*;
+import org.osgi.service.bindex.*;
+
 import aQute.lib.deployer.repository.api.*;
 import aQute.lib.deployer.repository.providers.*;
 

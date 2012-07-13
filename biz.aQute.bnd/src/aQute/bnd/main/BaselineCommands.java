@@ -11,14 +11,13 @@ import javax.xml.transform.stream.*;
 
 import aQute.bnd.differ.*;
 import aQute.bnd.differ.Baseline.Info;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.service.diff.*;
 import aQute.lib.collections.*;
 import aQute.lib.getopt.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.lib.tag.*;
-import aQute.libg.header.*;
-import aQute.libg.version.*;
 
 /**
  * Implements commands to maintain the Package versions db.

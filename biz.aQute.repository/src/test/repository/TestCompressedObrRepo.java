@@ -5,10 +5,9 @@ import java.util.*;
 
 import junit.framework.*;
 import test.lib.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.deployer.repository.*;
-import aQute.lib.osgi.*;
-import aQute.libg.version.*;
 
 public class TestCompressedObrRepo extends TestCase {
 

@@ -5,7 +5,7 @@ import java.util.*;
 
 import org.apache.tools.ant.*;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 public class ExpandPropertiesTask extends BaseTask {
 	File	propertyFile;

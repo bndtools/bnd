@@ -1,8 +1,8 @@
 package aQute.bnd.build.model.clauses;
 
-import org.osgi.framework.Constants;
+import org.osgi.framework.*;
 
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.*;
 
 public class ExportedPackage extends HeaderClause {
 
@@ -24,14 +24,14 @@ public class ExportedPackage extends HeaderClause {
 	}
 
 	public boolean isProvided() {
-		return Boolean.valueOf(attribs.get(aQute.lib.osgi.Constants.PROVIDE_DIRECTIVE));
+		return Boolean.valueOf(attribs.get(aQute.bnd.osgi.Constants.PROVIDE_DIRECTIVE));
 	}
 
 	public void setProvided(boolean provided) {
 		if (provided)
-			attribs.put(aQute.lib.osgi.Constants.PROVIDE_DIRECTIVE, Boolean.toString(true));
+			attribs.put(aQute.bnd.osgi.Constants.PROVIDE_DIRECTIVE, Boolean.toString(true));
 		else
-			attribs.remove(aQute.lib.osgi.Constants.PROVIDE_DIRECTIVE);
+			attribs.remove(aQute.bnd.osgi.Constants.PROVIDE_DIRECTIVE);
 	}
 
 	@Override

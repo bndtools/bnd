@@ -2,8 +2,8 @@ package aQute.jpm.lib;
 
 import java.io.*;
 
+import aQute.bnd.osgi.*;
 import aQute.lib.data.*;
-import aQute.libg.version.*;
 
 public class CommandData {
 	public long		time	= System.currentTimeMillis();

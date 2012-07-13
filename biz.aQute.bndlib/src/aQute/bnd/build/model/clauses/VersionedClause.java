@@ -1,8 +1,8 @@
 package aQute.bnd.build.model.clauses;
 
-import org.osgi.framework.Constants;
+import org.osgi.framework.*;
 
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.*;
 
 public class VersionedClause extends HeaderClause implements Cloneable {
 	public VersionedClause(String name, Attrs attribs) {

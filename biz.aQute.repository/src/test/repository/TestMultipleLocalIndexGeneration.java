@@ -8,9 +8,9 @@ import junit.framework.*;
 import org.osgi.impl.bundle.bindex.*;
 
 import test.lib.*;
+import aQute.bnd.osgi.*;
 import aQute.lib.deployer.repository.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
 
 public class TestMultipleLocalIndexGeneration extends TestCase {
 

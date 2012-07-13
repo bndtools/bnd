@@ -10,8 +10,8 @@ import org.osgi.service.packageadmin.*;
 
 import aQute.bnd.annotation.component.*;
 import aQute.bnd.make.component.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 
 public class AnnotationsTest extends TestCase {
 

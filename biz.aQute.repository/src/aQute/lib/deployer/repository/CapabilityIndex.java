@@ -1,18 +1,9 @@
 package aQute.lib.deployer.repository;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import org.osgi.framework.Filter;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Namespace;
-import org.osgi.resource.Requirement;
-import org.osgi.resource.Resource;
+import org.osgi.framework.*;
+import org.osgi.resource.*;
 
 
 public class CapabilityIndex {

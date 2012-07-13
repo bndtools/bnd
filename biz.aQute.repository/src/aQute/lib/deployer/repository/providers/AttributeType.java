@@ -1,9 +1,7 @@
 package aQute.lib.deployer.repository.providers;
 
-import java.util.LinkedList;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
+import java.util.regex.*;
 
 public class AttributeType {
 	

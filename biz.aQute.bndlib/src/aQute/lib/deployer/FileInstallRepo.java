@@ -5,9 +5,8 @@ import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
-import aQute.lib.osgi.*;
-import aQute.libg.header.*;
-import aQute.libg.version.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.service.reporter.*;
 
 public class FileInstallRepo extends FileRepo {

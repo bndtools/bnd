@@ -2,11 +2,11 @@ package aQute.bnd.build.model.conversions;
 
 import java.util.Map.Entry;
 
-import org.osgi.resource.Requirement;
+import org.osgi.resource.*;
 
-import aQute.lib.osgi.resource.CapReqBuilder;
-import aQute.libg.header.Attrs;
-import aQute.libg.tuple.Pair;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.resource.*;
+import aQute.libg.tuple.*;
 
 public class RequirementListConverter extends ClauseListConverter<Requirement> {
 

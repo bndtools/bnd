@@ -4,8 +4,8 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
+import aQute.bnd.osgi.*;
 import aQute.lib.getopt.*;
-import aQute.lib.osgi.*;
 import aQute.libg.generics.*;
 
 public class PatchCommand {

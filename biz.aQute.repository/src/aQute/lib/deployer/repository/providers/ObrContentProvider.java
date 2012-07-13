@@ -4,32 +4,24 @@ import static aQute.lib.deployer.repository.api.Decision.*;
 import static javax.xml.stream.XMLStreamConstants.*;
 
 import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.*;
 import java.util.*;
 
 import javax.xml.stream.*;
 import javax.xml.transform.stream.*;
 
-import org.osgi.framework.Version;
-import org.osgi.framework.namespace.BundleNamespace;
-import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
-import org.osgi.framework.namespace.HostNamespace;
-import org.osgi.framework.namespace.IdentityNamespace;
-import org.osgi.framework.namespace.PackageNamespace;
-import org.osgi.namespace.service.ServiceNamespace;
-import org.osgi.resource.Namespace;
-import org.osgi.resource.Resource;
+import org.osgi.framework.*;
+import org.osgi.framework.namespace.*;
+import org.osgi.namespace.service.*;
+import org.osgi.resource.*;
 import org.osgi.service.bindex.*;
 import org.osgi.service.log.*;
-import org.osgi.service.repository.ContentNamespace;
+import org.osgi.service.repository.*;
 
-
+import aQute.bnd.osgi.resource.*;
 import aQute.bnd.service.*;
 import aQute.lib.deployer.repository.api.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.resource.CapReqBuilder;
-import aQute.lib.osgi.resource.ResourceBuilder;
 
 public class ObrContentProvider implements IRepositoryContentProvider {
 

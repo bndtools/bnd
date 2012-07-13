@@ -4,8 +4,8 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.lib.osgi.*;
 
 public class Container {
 	public enum TYPE {

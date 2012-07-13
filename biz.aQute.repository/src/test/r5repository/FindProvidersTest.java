@@ -1,21 +1,15 @@
 package test.r5repository;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
-import org.osgi.framework.Version;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
+import org.osgi.framework.*;
+import org.osgi.resource.*;
 
-import aQute.lib.deployer.repository.FixedIndexedRepo;
-import aQute.lib.osgi.resource.CapReqBuilder;
-import aQute.libg.version.VersionRange;
+import aQute.bnd.osgi.resource.*;
+import aQute.lib.deployer.repository.*;
 
 public class FindProvidersTest extends TestCase {
 

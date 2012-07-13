@@ -10,14 +10,14 @@
     <package name="aQute.bnd.service" version="1.44.0" spec="1001">
       <import name="aQute.libg.reporter"/>
       <import name="aQute.libg.version"/>
-      <import name="aQute.lib.osgi"/>
+      <import name="aQute.bnd.osgi"/>
       <import name="aQute.bnd.build"/>
     </package>
     <package name="aQute.bnd.service.action" version="1.43.1" spec="1001">
       <import name="aQute.bnd.build"/>
     </package>
     <package name="aQute.bnd.service.diff" version="1.52.3" spec="1001">
-      <import name="aQute.lib.osgi"/>
+      <import name="aQute.bnd.osgi"/>
     </package>
     <package name="aQute.bnd.service.url" version="1.52.3" spec="1001"/>
     <package name="aQute.bnd.test" version="1.52.3" spec="1002">

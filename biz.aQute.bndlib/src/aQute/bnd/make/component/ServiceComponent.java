@@ -6,13 +6,12 @@ import java.util.Map.Entry;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.component.*;
+import aQute.bnd.header.*;
 import aQute.bnd.make.metatype.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.QUERY;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Clazz.QUERY;
-import aQute.lib.osgi.Descriptors.TypeRef;
-import aQute.libg.header.*;
-import aQute.libg.version.*;
 
 /**
  * This class is an analyzer plugin. It looks at the properties and tries to

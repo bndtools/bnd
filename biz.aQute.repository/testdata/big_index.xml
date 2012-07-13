@@ -1169,19 +1169,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.url"/>
@@ -1195,7 +1195,7 @@
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.help"/>
       <attribute name="version" type="Version" value="1.0.0"/>
-      <directive name="uses" value="aQute.lib.osgi"/>
+      <directive name="uses" value="aQute.bnd.osgi"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.libg.reporter"/>
@@ -1210,7 +1210,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -1891,19 +1891,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.url"/>
@@ -1917,7 +1917,7 @@
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.help"/>
       <attribute name="version" type="Version" value="1.0.0"/>
-      <directive name="uses" value="aQute.lib.osgi"/>
+      <directive name="uses" value="aQute.bnd.osgi"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.libg.reporter"/>
@@ -1932,7 +1932,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -2063,19 +2063,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.url"/>
@@ -2089,7 +2089,7 @@
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.help"/>
       <attribute name="version" type="Version" value="1.0.0"/>
-      <directive name="uses" value="aQute.lib.osgi"/>
+      <directive name="uses" value="aQute.bnd.osgi"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.libg.reporter"/>
@@ -2104,7 +2104,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -2237,19 +2237,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.version,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.action"/>
@@ -2269,7 +2269,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -2491,19 +2491,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.url"/>
@@ -2517,7 +2517,7 @@
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.help"/>
       <attribute name="version" type="Version" value="1.0.0"/>
-      <directive name="uses" value="aQute.lib.osgi"/>
+      <directive name="uses" value="aQute.bnd.osgi"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.libg.reporter"/>
@@ -2532,7 +2532,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -3058,19 +3058,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.action"/>
@@ -3090,7 +3090,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -3420,19 +3420,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.version,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.url"/>
@@ -3456,7 +3456,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -3730,19 +3730,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.version,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.action"/>
@@ -3762,7 +3762,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -4356,19 +4356,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.bnd.build,aQute.libg.reporter,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.bnd.build,aQute.libg.reporter,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.action"/>
@@ -4388,7 +4388,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -4726,19 +4726,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.url"/>
@@ -4752,7 +4752,7 @@
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.help"/>
       <attribute name="version" type="Version" value="1.0.0"/>
-      <directive name="uses" value="aQute.lib.osgi"/>
+      <directive name="uses" value="aQute.bnd.osgi"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.libg.reporter"/>
@@ -4767,7 +4767,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -5499,19 +5499,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.version,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.url"/>
@@ -5535,7 +5535,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -5624,19 +5624,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.bnd.build,aQute.libg.reporter,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.bnd.build,aQute.libg.reporter,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.action"/>
@@ -5656,7 +5656,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -5742,19 +5742,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.url"/>
@@ -5768,7 +5768,7 @@
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.help"/>
       <attribute name="version" type="Version" value="1.0.0"/>
-      <directive name="uses" value="aQute.lib.osgi"/>
+      <directive name="uses" value="aQute.bnd.osgi"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.libg.reporter"/>
@@ -5783,7 +5783,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -5883,19 +5883,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.libg.version,aQute.bnd.help,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.url"/>
@@ -5909,7 +5909,7 @@
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.help"/>
       <attribute name="version" type="Version" value="1.0.0"/>
-      <directive name="uses" value="aQute.lib.osgi"/>
+      <directive name="uses" value="aQute.bnd.osgi"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.libg.reporter"/>
@@ -5924,7 +5924,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -6021,7 +6021,7 @@
       <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.lib.io)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))"/>
     </requirement>
     <requirement namespace="osgi.wiring.package">
-      <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.lib.osgi)(version&gt;=1.43.0)(!(version&gt;=2.0.0)))"/>
+      <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.bnd.osgi)(version&gt;=1.43.0)(!(version&gt;=2.0.0)))"/>
     </requirement>
     <requirement namespace="osgi.wiring.package">
       <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.libg.generics)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))"/>
@@ -6071,19 +6071,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.bnd.build,aQute.libg.reporter,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.bnd.build,aQute.libg.reporter,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.action"/>
@@ -6103,7 +6103,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>
@@ -6302,7 +6302,7 @@
       <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.lib.io)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))"/>
     </requirement>
     <requirement namespace="osgi.wiring.package">
-      <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.lib.osgi)(version&gt;=1.43.0)(!(version&gt;=2.0.0)))"/>
+      <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.bnd.osgi)(version&gt;=1.43.0)(!(version&gt;=2.0.0)))"/>
     </requirement>
     <requirement namespace="osgi.wiring.package">
       <directive name="filter" value="(&amp;(osgi.wiring.package=aQute.libg.generics)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))"/>
@@ -6389,19 +6389,19 @@
       <attribute name="version" type="Version" value="1.43.1"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.lib.osgi"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.osgi"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.libg.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
+      <directive name="uses" value="aQute.bnd.annotation,aQute.libg.version,aQute.bnd.service,aQute.bnd.header,aQute.bnd.annotation.metatype,aQute.libg.reporter,aQute.libg.sed,aQute.libg.qtokens"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.build"/>
       <attribute name="version" type="Version" value="1.43.1"/>
-      <directive name="uses" value="aQute.bnd.service,aQute.lib.osgi,aQute.libg.reporter,aQute.libg.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
+      <directive name="uses" value="aQute.bnd.service,aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.header,aQute.bnd.service.action,aQute.libg.sed,javax.naming"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service"/>
       <attribute name="version" type="Version" value="1.44.0"/>
-      <directive name="uses" value="aQute.lib.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
+      <directive name="uses" value="aQute.bnd.osgi,aQute.libg.reporter,aQute.bnd.build,aQute.libg.version"/>
     </capability>
     <capability namespace="osgi.wiring.package">
       <attribute name="osgi.wiring.package" value="aQute.bnd.service.action"/>
@@ -6421,7 +6421,7 @@
       <attribute name="version" type="Version" value="1.0.0"/>
     </capability>
     <capability namespace="osgi.wiring.package">
-      <attribute name="osgi.wiring.package" value="aQute.libg.header"/>
+      <attribute name="osgi.wiring.package" value="aQute.bnd.header"/>
       <attribute name="version" type="Version" value="1.0.0"/>
       <directive name="uses" value="aQute.libg.reporter,aQute.libg.qtokens"/>
     </capability>

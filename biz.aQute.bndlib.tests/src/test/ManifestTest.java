@@ -7,8 +7,8 @@ import java.util.regex.*;
 import java.util.zip.*;
 
 import junit.framework.*;
+import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
 
 public class ManifestTest extends TestCase {
 

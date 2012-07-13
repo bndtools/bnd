@@ -3,11 +3,10 @@ package aQute.bnd.build;
 import java.io.*;
 import java.util.*;
 
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.lib.osgi.*;
 import aQute.libg.reporter.*;
-import aQute.libg.version.*;
 
 public interface ProjectMessages extends Messages {
 

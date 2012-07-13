@@ -1,7 +1,7 @@
 package test;
 
 import junit.framework.*;
-import aQute.libg.header.*;
+import aQute.bnd.header.*;
 
 public class TestAttrs extends TestCase {
 

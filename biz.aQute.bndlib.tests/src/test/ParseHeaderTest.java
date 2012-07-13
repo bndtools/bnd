@@ -3,8 +3,8 @@ package test;
 import java.util.*;
 
 import junit.framework.*;
-import aQute.lib.osgi.*;
-import aQute.libg.header.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 
 public class ParseHeaderTest extends TestCase {
 

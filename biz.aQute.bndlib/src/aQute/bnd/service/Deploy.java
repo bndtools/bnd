@@ -1,7 +1,7 @@
 package aQute.bnd.service;
 
 import aQute.bnd.build.*;
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 /**
  * Deploy this artifact to maven.

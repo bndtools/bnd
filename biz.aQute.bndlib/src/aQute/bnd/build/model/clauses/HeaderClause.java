@@ -1,17 +1,9 @@
 package aQute.bnd.build.model.clauses;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
 
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.*;
 
 public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 

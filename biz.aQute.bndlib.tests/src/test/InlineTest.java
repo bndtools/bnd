@@ -3,7 +3,7 @@ package test;
 import java.util.jar.*;
 
 import junit.framework.*;
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 public class InlineTest extends TestCase {
 	public void testSimple() throws Exception {

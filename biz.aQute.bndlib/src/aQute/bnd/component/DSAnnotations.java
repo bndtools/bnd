@@ -2,9 +2,9 @@ package aQute.bnd.component;
 
 import java.util.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
-import aQute.lib.osgi.*;
-import aQute.libg.header.*;
 
 /**
  * Analyze the class space for any classes that have an OSGi annotation for DS.

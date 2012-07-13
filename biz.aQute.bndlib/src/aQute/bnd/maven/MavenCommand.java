@@ -8,15 +8,15 @@ import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
+import aQute.bnd.header.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.maven.support.Pom.Scope;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.settings.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.lib.osgi.Descriptors.PackageRef;
 import aQute.libg.command.*;
-import aQute.libg.header.*;
 
 public class MavenCommand extends Processor {
 	final Settings	settings	= new Settings();

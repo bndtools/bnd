@@ -4,8 +4,8 @@ import java.io.*;
 import java.security.*;
 import java.util.*;
 
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
-import aQute.lib.osgi.*;
 
 public class MD5 implements MakePlugin {
 

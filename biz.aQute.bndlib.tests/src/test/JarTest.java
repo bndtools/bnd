@@ -5,7 +5,7 @@ import java.util.jar.*;
 import java.util.zip.*;
 
 import junit.framework.*;
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 public class JarTest extends TestCase {
 
