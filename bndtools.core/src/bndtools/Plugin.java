@@ -58,7 +58,6 @@ public class Plugin extends AbstractUIPlugin {
     private Activator bndActivator;
     private final List<IStartupParticipant> startupParticipants = new LinkedList<IStartupParticipant>();
 
-    private volatile RepositoryModel repositoryModel;
     private volatile ServiceTracker workspaceTracker;
     private volatile ServiceRegistration urlHandlerReg;
     private volatile IndexerTracker indexerTracker;
@@ -90,8 +89,6 @@ public class Plugin extends AbstractUIPlugin {
         registerWorkspaceServiceFactory(context);
 
         central = new Central();
-
-        repositoryModel = new RepositoryModel();
 
         runStartupParticipants();
     }
@@ -171,10 +168,6 @@ public class Plugin extends AbstractUIPlugin {
 
     public BundleContext getBundleContext() {
         return bundleContext;
-    }
-
-    public RepositoryModel getRepositoryModel() {
-        return repositoryModel;
     }
 
     public static void report(boolean warnings, boolean acknowledge, Processor reporter, final String title, final String extra) {

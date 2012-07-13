@@ -21,7 +21,6 @@ Private-Package: \
 	bndtools,\
 	bndtools.*,\
 	org.bndtools.core.*,\
-	org.ardverk.collection,\
 	org.osgi.service.obr,\
 	org.osgi.service.indexer.impl.types,\
 	org.osgi.service.indexer.impl,\
@@ -88,7 +87,6 @@ eclipse.deps: \
 	${aQute-repository},\
 	biz.aQute.resolve;version=latest,\
 	org.apache.felix.resolver,\
-	patricia-trie,\
 	junit.osgi,\
 	${eclipse.deps},\
 	stax2-api,\
