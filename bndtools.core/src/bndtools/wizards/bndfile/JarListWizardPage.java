@@ -55,8 +55,8 @@ import org.eclipse.ui.dialogs.ISelectionStatusValidator;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Jar;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;

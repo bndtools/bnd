@@ -44,8 +44,8 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Builder;
 import aQute.lib.io.IO;
-import aQute.lib.osgi.Builder;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;

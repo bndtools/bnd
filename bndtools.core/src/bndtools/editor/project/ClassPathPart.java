@@ -48,7 +48,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.lib.osgi.Constants;
+import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.utils.ClassFolderFilter;
 import bndtools.utils.ClassPathLabelProvider;

@@ -28,7 +28,7 @@ import org.osgi.framework.launch.FrameworkFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
-import aQute.lib.osgi.Jar;
+import aQute.bnd.osgi.Jar;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;

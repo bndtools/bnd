@@ -10,12 +10,12 @@ import java.util.jar.Manifest;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Jar;
-import aQute.libg.header.Attrs;
-import aQute.libg.header.Parameters;
-import aQute.libg.version.Version;
-import aQute.libg.version.VersionRange;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Version;
+import aQute.bnd.osgi.VersionRange;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;

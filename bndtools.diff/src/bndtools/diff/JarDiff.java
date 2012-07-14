@@ -36,14 +36,14 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.VersionRange;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.lib.osgi.Builder;
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.Resource;
-import aQute.libg.header.Attrs;
-import aQute.libg.header.Parameters;
-import aQute.libg.version.VersionRange;
 
 public class JarDiff {
 
@@ -792,8 +792,8 @@ public class JarDiff {
 	}
 	
 	private static boolean suggestVersionOne(String version) {
-		aQute.libg.version.Version aQuteVersion = new aQute.libg.version.Version(version);
-		if (aQuteVersion.compareTo(new aQute.libg.version.Version("1.0.0")) < 0) {
+		aQute.bnd.osgi.Version aQuteVersion = new aQute.bnd.osgi.Version(version);
+		if (aQuteVersion.compareTo(new aQute.bnd.osgi.Version("1.0.0")) < 0) {
 			return true;
 		}
 		return false;
@@ -803,7 +803,7 @@ public class JarDiff {
 	private static String _version(String[] args) {
 		String mask = args[1];
 
-		aQute.libg.version.Version version = new aQute.libg.version.Version(args[2]);
+		aQute.bnd.osgi.Version version = new aQute.bnd.osgi.Version(args[2]);
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 

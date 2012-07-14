@@ -22,12 +22,12 @@ import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.lib.osgi.Builder;
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Descriptors.PackageRef;
-import aQute.lib.osgi.Packages;
-import aQute.lib.osgi.Processor;
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.Packages;
+import aQute.bnd.osgi.Processor;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.api.ILogger;

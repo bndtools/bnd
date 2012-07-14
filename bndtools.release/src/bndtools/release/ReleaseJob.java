@@ -20,7 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
-import aQute.lib.osgi.Jar;
+import aQute.bnd.osgi.Jar;
 import bndtools.diff.JarDiff;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseUtils;

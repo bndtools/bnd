@@ -7,25 +7,25 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.jar.Manifest;
 import java.util.zip.ZipException;
 
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.Verifier;
 import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
-import aQute.lib.osgi.Analyzer;
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Domain;
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.Processor;
-import aQute.lib.osgi.Resource;
-import aQute.lib.osgi.Verifier;
 import aQute.libg.generics.Create;
-import aQute.libg.header.Attrs;
-import aQute.libg.header.Parameters;
 
 public class Printer extends Processor {
 

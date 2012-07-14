@@ -10,7 +10,7 @@
  *******************************************************************************/
 package bndtools;
 
-import aQute.lib.osgi.Constants;
+import aQute.bnd.osgi.Constants;
 
 public interface BndConstants extends Constants {
 

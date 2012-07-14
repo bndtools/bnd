@@ -40,7 +40,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.libg.header.Parameters;
+import aQute.bnd.header.Parameters;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.ModelListener;

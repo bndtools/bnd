@@ -21,10 +21,10 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
+import aQute.bnd.osgi.Jar;
 import aQute.lib.deployer.repository.LocalIndexedRepo;
 import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
 import aQute.lib.io.IO;
-import aQute.lib.osgi.Jar;
 import aQute.libg.glob.Glob;
 
 public class GitOBRRepo extends LocalIndexedRepo {

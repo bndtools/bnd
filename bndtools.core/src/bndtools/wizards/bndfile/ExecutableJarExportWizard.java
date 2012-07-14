@@ -19,10 +19,10 @@ import org.eclipse.jface.wizard.Wizard;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.URLResource;
 import aQute.lib.io.IO;
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.Processor;
-import aQute.lib.osgi.URLResource;
 import bndtools.Plugin;
 
 public class ExecutableJarExportWizard extends Wizard implements IRunDescriptionExportWizard {
@@ -138,7 +138,7 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
         }
 
         Properties launcherProps = new Properties();
-        launcherProps.put(aQute.lib.osgi.Constants.RUNBUNDLES, Processor.join(names, ",\\\n  "));
+        launcherProps.put(aQute.bnd.osgi.Constants.RUNBUNDLES, Processor.join(names, ",\\\n  "));
 
         FileOutputStream fos = null;
         try {

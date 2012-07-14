@@ -49,8 +49,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
-import aQute.lib.osgi.Constants;
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
 
 public class PluginsPart extends SectionPart implements PropertyChangeListener {

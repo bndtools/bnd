@@ -39,8 +39,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
 import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.lib.osgi.Constants;
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Constants;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.api.ILogger;

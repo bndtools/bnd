@@ -26,8 +26,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Constants;
 import bndtools.diff.JarDiff;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.nl.Messages;

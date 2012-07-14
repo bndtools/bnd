@@ -56,8 +56,8 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.lib.osgi.resource.CapReqBuilder;
-import aQute.lib.osgi.resource.Filters;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.Filters;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.LiteralFilter;
 import aQute.libg.filters.SimpleFilter;

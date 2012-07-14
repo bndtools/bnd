@@ -4,7 +4,7 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.model.conversions.Converter;
-import aQute.lib.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 
 public class LegacyRunRequiresConverter implements Converter<Requirement,String> {
 

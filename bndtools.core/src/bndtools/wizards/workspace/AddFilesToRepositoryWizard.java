@@ -15,9 +15,9 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.wizard.Wizard;
 
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Jar;
 import bndtools.Plugin;
 import bndtools.RefreshFileJob;
 import bndtools.types.Pair;
@@ -29,8 +29,8 @@ public class AddFilesToRepositoryWizard extends Wizard {
     private final File[] files;
     private List<Pair<String,String>> selectedBundles;
 
-    private LocalRepositorySelectionPage repoSelectionPage;
-    private AddFilesToRepositoryWizardPage fileSelectionPage;
+    private final LocalRepositorySelectionPage repoSelectionPage;
+    private final AddFilesToRepositoryWizardPage fileSelectionPage;
 
     public AddFilesToRepositoryWizard(RepositoryPlugin repository, File[] initialFiles) {
         this.repository = repository;

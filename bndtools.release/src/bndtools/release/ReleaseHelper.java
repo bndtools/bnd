@@ -31,12 +31,12 @@ import org.eclipse.ui.PlatformUI;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.IO;
-import aQute.lib.osgi.Builder;
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Jar;
 import aQute.lib.properties.Document;
 import aQute.service.reporter.Reporter;
 import bndtools.diff.JarDiff;

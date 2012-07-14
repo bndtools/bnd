@@ -34,10 +34,10 @@ import org.eclipse.team.core.subscribers.Subscriber;
 import org.eclipse.team.core.synchronize.SyncInfoSet;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Version;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Jar;
-import aQute.libg.version.Version;
 
 public class ReleaseUtils {
 

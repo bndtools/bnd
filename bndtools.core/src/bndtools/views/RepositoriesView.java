@@ -43,9 +43,9 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.ServiceRegistration;
 
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Jar;
 import bndtools.Activator;
 import bndtools.Logger;
 import bndtools.Plugin;

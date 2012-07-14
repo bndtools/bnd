@@ -36,8 +36,8 @@ import org.osgi.service.url.URLStreamHandlerService;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.build.Workspace;
-import aQute.lib.osgi.Processor;
-import aQute.libg.version.Version;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Version;
 import bndtools.api.ILogger;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 

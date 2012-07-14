@@ -14,8 +14,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import aQute.bnd.build.model.clauses.HeaderClause;
-import aQute.lib.osgi.Clazz;
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Clazz;
 
 public class ImportPackage extends HeaderClause {
 

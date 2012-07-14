@@ -6,7 +6,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.lib.osgi.Constants;
+import aQute.bnd.osgi.Constants;
 import bndtools.editor.common.PropertyTableSectionPart;
 
 public class RunPropertiesPart extends PropertyTableSectionPart {

@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import junit.framework.TestCase;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.IO;
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.Processor;
 import bndtools.bndplugins.repo.git.GitOBRRepo;
 
 public class TestGitOBRRepo extends TestCase {

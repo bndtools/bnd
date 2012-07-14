@@ -25,8 +25,8 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ImportPattern;
-import aQute.lib.osgi.Constants;
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Constants;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 
 public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {

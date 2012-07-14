@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import aQute.lib.osgi.Resource;
+import aQute.bnd.osgi.Resource;
 
 public class ByteArrayResource implements Resource {
 	

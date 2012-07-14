@@ -12,8 +12,8 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ServiceComponent;
 import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.lib.osgi.resource.CapReqBuilder;
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
 

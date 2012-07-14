@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 
 import org.eclipse.core.runtime.IPath;
 
-import aQute.lib.osgi.Instruction;
+import aQute.bnd.osgi.Instruction;
 
 public class BndFileModel {
 

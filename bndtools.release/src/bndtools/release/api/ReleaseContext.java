@@ -19,8 +19,8 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Jar;
 import bndtools.diff.JarDiff;
 import bndtools.release.api.IReleaseParticipant.Scope;
 

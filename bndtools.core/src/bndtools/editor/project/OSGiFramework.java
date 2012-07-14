@@ -2,7 +2,7 @@ package bndtools.editor.project;
 
 import java.net.URL;
 
-import aQute.libg.version.Version;
+import aQute.bnd.osgi.Version;
 
 class OSGiFramework {
 

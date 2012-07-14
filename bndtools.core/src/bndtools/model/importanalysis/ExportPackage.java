@@ -13,8 +13,8 @@ package bndtools.model.importanalysis;
 import java.util.List;
 
 import aQute.bnd.build.model.clauses.HeaderClause;
-import aQute.lib.osgi.Descriptors.PackageRef;
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 
 public class ExportPackage extends HeaderClause {
 

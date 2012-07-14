@@ -18,8 +18,8 @@ import org.objectweb.asm.ClassWriter;
 
 import test.bndtools.diff.util.ByteArrayResource;
 import test.bndtools.diff.util.ClassBuilder;
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Jar;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
 import bndtools.diff.JarDiff;
 
 public class TestJarDiff extends TestCase {

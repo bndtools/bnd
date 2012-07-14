@@ -23,8 +23,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import aQute.lib.osgi.Constants;
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Constants;
 
 public class PluginPropertiesPage extends WizardPage {
 

@@ -3,8 +3,8 @@ package bndtools;
 import java.io.File;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.BndListener;
-import aQute.lib.osgi.Processor;
 import aQute.service.reporter.Reporter;
 import bndtools.api.ILogger;
 

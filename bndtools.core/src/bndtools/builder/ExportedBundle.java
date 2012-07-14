@@ -12,7 +12,7 @@ package bndtools.builder;
 
 import org.eclipse.core.runtime.IPath;
 
-import aQute.libg.version.Version;
+import aQute.bnd.osgi.Version;
 
 /**
  * <p>

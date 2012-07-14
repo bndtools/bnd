@@ -1,10 +1,18 @@
 package bndtools.editor.completion;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.eclipse.jface.text.rules.*;
+import org.eclipse.jface.text.rules.EndOfLineRule;
+import org.eclipse.jface.text.rules.ICharacterScanner;
+import org.eclipse.jface.text.rules.IRule;
+import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.text.rules.IWhitespaceDetector;
+import org.eclipse.jface.text.rules.RuleBasedScanner;
+import org.eclipse.jface.text.rules.Token;
+import org.eclipse.jface.text.rules.WhitespaceRule;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.Analyzer;
 
 public class BndScanner extends RuleBasedScanner {
     BndSourceViewerConfiguration bsvc;

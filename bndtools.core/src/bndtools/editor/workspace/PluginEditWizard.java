@@ -3,7 +3,7 @@ package bndtools.editor.workspace;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.wizard.Wizard;
 
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.Attrs;
 
 public class PluginEditWizard extends Wizard {
 

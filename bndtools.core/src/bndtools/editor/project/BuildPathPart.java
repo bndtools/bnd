@@ -8,7 +8,7 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.lib.osgi.Constants;
+import aQute.bnd.osgi.Constants;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class BuildPathPart extends RepositoryBundleSelectionPart {

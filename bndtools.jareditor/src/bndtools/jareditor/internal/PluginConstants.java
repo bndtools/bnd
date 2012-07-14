@@ -10,6 +10,6 @@
  *******************************************************************************/
 package bndtools.jareditor.internal;
 
-class Constants {
+class PluginConstants {
     static final String PLUGIN_ID = "bndtools.jareditor";
 }

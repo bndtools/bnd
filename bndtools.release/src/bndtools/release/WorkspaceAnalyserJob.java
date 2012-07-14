@@ -29,8 +29,8 @@ import org.osgi.framework.Constants;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Builder;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Builder;
 import bndtools.diff.JarDiff;
 import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
