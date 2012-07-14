@@ -1,4 +1,4 @@
-Bundle-Version: 2.0.1.${tstamp;yyyyMMdd-HHmmss}_${Git-Descriptor}
+Bundle-Version: 2.0.2.${tstamp;yyyyMMdd-HHmmss}_${Git-Descriptor}
 
 jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	lib/jetty-continuation-7.6.3.v20120416.jar;version=file,\
