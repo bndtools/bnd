@@ -5,8 +5,8 @@ import java.net.*;
 
 import junit.framework.*;
 import test.lib.*;
-import aQute.lib.deployer.repository.*;
-import aQute.lib.deployer.repository.CachingUriResourceHandle.CachingMode;
+import aQute.bnd.deployer.repository.*;
+import aQute.bnd.deployer.repository.CachingUriResourceHandle.CachingMode;
 import aQute.lib.io.*;
 
 public class CachingUriResourceHandlerTest extends TestCase {

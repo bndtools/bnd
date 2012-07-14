@@ -5,8 +5,8 @@ import java.util.*;
 
 import junit.framework.*;
 import test.lib.*;
+import aQute.bnd.deployer.repository.*;
 import aQute.bnd.osgi.*;
-import aQute.lib.deployer.repository.*;
 import aQute.lib.io.*;
 
 public class TestLocalIndexGeneration extends TestCase {

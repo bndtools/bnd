@@ -8,8 +8,8 @@ import junit.framework.*;
 import org.osgi.framework.*;
 import org.osgi.resource.*;
 
+import aQute.bnd.deployer.repository.*;
 import aQute.bnd.osgi.resource.*;
-import aQute.lib.deployer.repository.*;
 
 public class FindProvidersTest extends TestCase {
 

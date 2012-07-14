@@ -1,14 +1,14 @@
 package test.repository;
 
-import static aQute.lib.deployer.repository.api.Decision.*;
+import static aQute.bnd.deployer.repository.api.Decision.*;
 
 import java.io.*;
 
 import javax.xml.stream.*;
 
 import junit.framework.*;
-import aQute.lib.deployer.repository.api.*;
-import aQute.lib.deployer.repository.providers.*;
+import aQute.bnd.deployer.repository.api.*;
+import aQute.bnd.deployer.repository.providers.*;
 
 public class TestR5Recognition extends TestCase {
 

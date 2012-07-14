@@ -16,8 +16,8 @@ import org.eclipse.jetty.server.ssl.*;
 import org.eclipse.jetty.util.security.*;
 import org.eclipse.jetty.util.ssl.*;
 
+import aQute.bnd.deployer.http.*;
 import aQute.bnd.service.url.*;
-import aQute.lib.deployer.http.*;
 import aQute.lib.io.*;
 
 public class HttpConnectorTest extends TestCase {

@@ -1,6 +1,6 @@
 package test.repository;
 
-import static aQute.lib.deployer.repository.api.Decision.*;
+import static aQute.bnd.deployer.repository.api.Decision.*;
 
 import java.io.*;
 
@@ -11,8 +11,8 @@ import junit.framework.*;
 import org.osgi.impl.bundle.bindex.*;
 import org.osgi.service.bindex.*;
 
-import aQute.lib.deployer.repository.api.*;
-import aQute.lib.deployer.repository.providers.*;
+import aQute.bnd.deployer.repository.api.*;
+import aQute.bnd.deployer.repository.providers.*;
 
 public class TestObrRecognition extends TestCase {
 

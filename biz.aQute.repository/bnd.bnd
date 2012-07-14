@@ -21,17 +21,19 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	ee.j2se;version=${javac.ee},\
 	${jetty.libs}
 
-Bnd-Plugins: aQute.lib.repository.FixedIndexedRepo,\
-	aQute.lib.repository.LocalIndexedRepo,\
-	aQute.lib.deployer.obr.OBR,\
-	aQute.lib.deployer.obr.LocalOBR,\
-	aQute.lib.deployer.http.HttpBasicAuthURLConnector
+Bnd-Plugins:
+	aQute.bnd.deployer.repository.FixedIndexedRepo,\
+	aQute.bnd.deployer.repository.LocalIndexedRepo,\
+	aQute.bnd.deployer.deployer.obr.OBR,\
+	aQute.bnd.deployer.deployer.obr.LocalOBR,\
+	aQute.bnd.deployer.deployer.http.HttpBasicAuthURLConnector
 
-Export-Package: aQute.lib.deployer.http,\
-	aQute.lib.deployer.obr,\
-	aQute.lib.deployer.repository,\
-	aQute.lib.deployer.repository.api,\
-	aQute.lib.deployer.repository.providers,\
+Export-Package:\
+	aQute.bnd.deployer.http,\
+	aQute.bnd.deployer.obr,\
+	aQute.bnd.deployer.repository,\
+	aQute.bnd.deployer.repository.api,\
+	aQute.bnd.deployer.repository.providers,\
 	org.osgi.service.indexer;provide:=true,\
 	org.osgi.service.bindex;version=1.0;provide:=true,\
 	org.osgi.service.coordinator;-split-package:=merge-first,\
@@ -64,10 +66,13 @@ libg-pkgs: \
 
 # NB: `org.osgi.framework` API is included in Private-Package for running outside of OSGi.
 Private-Package:\
-	${libg-pkgs},\
 	${bindex-pkgs},\
 	${bindex2-pkgs},\
 	org.osgi.framework;-split-package:=first,\
+
+Conditional-Package:\
+	aQute.lib.*;-split-package:=first,\
+	aQute.libg.*;-split-package:=first
 
 # We must also explicitly import `org.osgi.framework` etc. for when we *are* running in OSGi.
 Import-Package:\

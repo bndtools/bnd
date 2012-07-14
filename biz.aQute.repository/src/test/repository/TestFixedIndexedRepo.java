@@ -6,9 +6,9 @@ import java.util.concurrent.atomic.*;
 
 import junit.framework.*;
 import test.lib.*;
+import aQute.bnd.deployer.repository.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
-import aQute.lib.deployer.repository.*;
 
 public class TestFixedIndexedRepo extends TestCase {
 

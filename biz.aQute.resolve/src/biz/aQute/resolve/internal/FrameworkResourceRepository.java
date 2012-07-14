@@ -18,9 +18,9 @@ import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.EE;
+import aQute.bnd.deployer.repository.CapabilityIndex;
+import aQute.bnd.deployer.repository.MapToDictionaryAdapter;
 import aQute.bnd.header.Parameters;
-import aQute.lib.deployer.repository.CapabilityIndex;
-import aQute.lib.deployer.repository.MapToDictionaryAdapter;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 
 public class FrameworkResourceRepository implements Repository {

@@ -11,8 +11,8 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
-import aQute.lib.deployer.repository.AbstractIndexedRepo;
-import aQute.lib.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.deployer.repository.AbstractIndexedRepo;
+import aQute.bnd.deployer.repository.FixedIndexedRepo;
 
 public class Utils {
 

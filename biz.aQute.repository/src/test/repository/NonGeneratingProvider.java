@@ -6,8 +6,8 @@ import java.util.*;
 
 import org.osgi.service.log.*;
 
+import aQute.bnd.deployer.repository.api.*;
 import aQute.bnd.service.*;
-import aQute.lib.deployer.repository.api.*;
 
 class NonGeneratingProvider implements IRepositoryContentProvider {
 

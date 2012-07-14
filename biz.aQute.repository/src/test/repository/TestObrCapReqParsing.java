@@ -10,9 +10,9 @@ import org.osgi.framework.*;
 import org.osgi.impl.bundle.bindex.*;
 import org.osgi.resource.*;
 
-import aQute.lib.deployer.repository.*;
-import aQute.lib.deployer.repository.api.*;
-import aQute.lib.deployer.repository.providers.*;
+import aQute.bnd.deployer.repository.*;
+import aQute.bnd.deployer.repository.api.*;
+import aQute.bnd.deployer.repository.providers.*;
 
 public class TestObrCapReqParsing extends TestCase {
 
