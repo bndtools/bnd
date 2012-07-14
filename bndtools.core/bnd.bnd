@@ -21,18 +21,16 @@ Private-Package: \
 	bndtools,\
 	bndtools.*,\
 	org.bndtools.core.*,\
-	org.osgi.service.obr,\
 	org.osgi.service.indexer.impl.types,\
 	org.osgi.service.indexer.impl,\
 	org.osgi.service.indexer.impl.util,\
 	org.apache.felix.resolver,\
-	aQute.libg.generics;-split-package:=merge-first,\
-	aQute.libg.tuple;-split-package:=merge-first,\
-	aQute.libg.filters,\
-	aQute.lib.io;-split-package:=merge-first,\
-	aQute.lib.filter;-split-package:=merge-first,\
 	org.kxml2.io,\
 	org.xmlpull.v1
+
+Conditional-Package:\
+	aQute.lib.*;-split-package:=merge-first,\
+	aQute.libg.*;-split-package:=merge-first
 
 Export-Package: bndtools.api.*,\
 	bndtools.types,\
@@ -41,7 +39,7 @@ Export-Package: bndtools.api.*,\
 	bndtools.model.clauses,\
 	org.bndtools.build.api,\
 	org.bndtools.core.ui,\
-	org.osgi.service.resolver;provide:=true
+	org.osgi.service.resolver;provide:=true;-split-package:=merge-first
 
 Include-Resource: plugin.xml=_plugin.xml,\
 	resources

@@ -21,9 +21,9 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
+import aQute.bnd.deployer.repository.LocalIndexedRepo;
+import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.osgi.Jar;
-import aQute.lib.deployer.repository.LocalIndexedRepo;
-import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
 import aQute.lib.io.IO;
 import aQute.libg.glob.Glob;
 

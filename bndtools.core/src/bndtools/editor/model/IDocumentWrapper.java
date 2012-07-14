@@ -1,15 +1,10 @@
 package bndtools.editor.model;
 
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
+public class IDocumentWrapper implements aQute.bnd.properties.IDocument {
 
-import aQute.lib.properties.BadLocationException;
+    private final org.eclipse.jface.text.IDocument document;
 
-public class IDocumentWrapper implements aQute.lib.properties.IDocument {
-
-    private final IDocument document;
-
-    public IDocumentWrapper(IDocument document) {
+    public IDocumentWrapper(org.eclipse.jface.text.IDocument document) {
         this.document = document;
     }
 
@@ -17,11 +12,11 @@ public class IDocumentWrapper implements aQute.lib.properties.IDocument {
         return document.getNumberOfLines();
     }
 
-    public aQute.lib.properties.IRegion getLineInformation(int lineNum) throws aQute.lib.properties.BadLocationException {
+    public aQute.bnd.properties.IRegion getLineInformation(int lineNum) throws aQute.bnd.properties.BadLocationException {
         try {
             return new IRegionWrapper(document.getLineInformation(lineNum));
         } catch (org.eclipse.jface.text.BadLocationException e) {
-            BadLocationException ex = new BadLocationException(e.getMessage());
+            aQute.bnd.properties.BadLocationException ex = new aQute.bnd.properties.BadLocationException(e.getMessage());
             ex.initCause(e);
             throw ex;
         }
@@ -31,21 +26,21 @@ public class IDocumentWrapper implements aQute.lib.properties.IDocument {
         return document.get();
     }
 
-    public String get(int offset, int length) throws aQute.lib.properties.BadLocationException {
+    public String get(int offset, int length) throws aQute.bnd.properties.BadLocationException {
         try {
             return document.get(offset, length);
         } catch (org.eclipse.jface.text.BadLocationException e) {
-            BadLocationException ex = new BadLocationException(e.getMessage());
+            aQute.bnd.properties.BadLocationException ex = new aQute.bnd.properties.BadLocationException(e.getMessage());
             ex.initCause(e);
             throw ex;
         }
     }
 
-    public String getLineDelimiter(int line) throws aQute.lib.properties.BadLocationException {
+    public String getLineDelimiter(int line) throws aQute.bnd.properties.BadLocationException {
         try {
             return document.getLineDelimiter(line);
         } catch (org.eclipse.jface.text.BadLocationException e) {
-            BadLocationException ex = new BadLocationException(e.getMessage());
+            aQute.bnd.properties.BadLocationException ex = new aQute.bnd.properties.BadLocationException(e.getMessage());
             ex.initCause(e);
             throw ex;
         }
@@ -55,31 +50,31 @@ public class IDocumentWrapper implements aQute.lib.properties.IDocument {
         return document.getLength();
     }
 
-    public void replace(int offset, int length, String data) throws aQute.lib.properties.BadLocationException {
+    public void replace(int offset, int length, String data) throws aQute.bnd.properties.BadLocationException {
         try {
             document.replace(offset, length, data);
         } catch (org.eclipse.jface.text.BadLocationException e) {
-            BadLocationException ex = new BadLocationException(e.getMessage());
+            aQute.bnd.properties.BadLocationException ex = new aQute.bnd.properties.BadLocationException(e.getMessage());
             ex.initCause(e);
             throw ex;
         }
     }
 
-    public char getChar(int offset) throws aQute.lib.properties.BadLocationException {
+    public char getChar(int offset) throws aQute.bnd.properties.BadLocationException {
         try {
             return document.getChar(offset);
         } catch (org.eclipse.jface.text.BadLocationException e) {
-            BadLocationException ex = new BadLocationException(e.getMessage());
+            aQute.bnd.properties.BadLocationException ex = new aQute.bnd.properties.BadLocationException(e.getMessage());
             ex.initCause(e);
             throw ex;
         }
     }
 
-    public static class IRegionWrapper implements aQute.lib.properties.IRegion {
+    public static class IRegionWrapper implements aQute.bnd.properties.IRegion {
 
-        private final IRegion region;
+        private final org.eclipse.jface.text.IRegion region;
 
-        public IRegionWrapper(IRegion region) {
+        public IRegionWrapper(org.eclipse.jface.text.IRegion region) {
             this.region = region;
         }
 

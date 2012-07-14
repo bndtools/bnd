@@ -20,16 +20,15 @@ import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
 import org.osgi.service.repository.Repository;
 
-import bndtools.api.ILogger;
-
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.lib.deployer.repository.CapabilityIndex;
-import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
-import aQute.lib.deployer.repository.api.IRepositoryIndexProcessor;
-import aQute.lib.deployer.repository.api.Referral;
-import aQute.lib.deployer.repository.providers.R5RepoContentProvider;
+import aQute.bnd.deployer.repository.CapabilityIndex;
+import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
+import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
+import aQute.bnd.deployer.repository.api.Referral;
+import aQute.bnd.deployer.repository.providers.R5RepoContentProvider;
 import aQute.lib.io.IO;
+import bndtools.api.ILogger;
 
 public class WorkspaceR5Repository implements Repository {
 

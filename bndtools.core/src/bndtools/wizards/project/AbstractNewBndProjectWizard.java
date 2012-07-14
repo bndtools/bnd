@@ -37,7 +37,7 @@ import org.eclipse.ui.ide.IDE;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
-import aQute.lib.properties.Document;
+import aQute.bnd.properties.Document;
 import bndtools.Plugin;
 import bndtools.editor.model.BndProject;
 import bndtools.utils.FileUtils;

@@ -37,7 +37,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.IO;
-import aQute.lib.properties.Document;
+import aQute.bnd.properties.Document;
 import aQute.service.reporter.Reporter;
 import bndtools.diff.JarDiff;
 import bndtools.diff.PackageInfo;

@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Shell;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
-import aQute.lib.properties.Document;
+import aQute.bnd.properties.Document;
 import bndtools.Plugin;
 import bndtools.utils.FileUtils;
 

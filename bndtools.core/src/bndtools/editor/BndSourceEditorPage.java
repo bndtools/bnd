@@ -28,7 +28,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import aQute.lib.properties.IDocument;
+import aQute.bnd.properties.IDocument;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
