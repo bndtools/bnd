@@ -1,4 +1,4 @@
--runfw: org.apache.felix.framework;version='[4,5)'
+-runframework: org.apache.felix.framework;version='[4,5)'
 -runee: JavaSE-1.6
 
 -runbundles:\

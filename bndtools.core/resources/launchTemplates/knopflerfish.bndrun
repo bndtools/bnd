@@ -1,4 +1,4 @@
--runfw: org.knopflerfish.framework;version='[5.1,6)'
+-runframework: org.knopflerfish.framework;version='[5.1,6)'
 -runee: JavaSE-1.6
 
 -runbundles:\
