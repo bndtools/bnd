@@ -1,4 +1,4 @@
-package aQute.lib.properties;
+package aQute.bnd.properties;
 
 /**
  * Interface for storing and managing text.

@@ -1,4 +1,4 @@
-package aQute.lib.properties;
+package aQute.bnd.properties;
 
 /**
  * Copy-on-write <code>ITextStore</code> wrapper.

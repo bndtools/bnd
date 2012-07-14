@@ -1,6 +1,6 @@
-package aQute.lib.properties;
+package aQute.bnd.properties;
 
-import static aQute.lib.properties.LineType.*;
+import static aQute.bnd.properties.LineType.*;
 
 public class PropertiesLineReader {
 

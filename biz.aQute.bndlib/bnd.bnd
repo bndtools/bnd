@@ -22,6 +22,7 @@ Export-Package: aQute.bnd.annotation.*,\
 	org.osgi.resource,\
 	aQute.bnd.header,\
 	aQute.bnd.filerepo, \
+	aQute.bnd.properties,\
 	aQute.bnd.build.model,\
 	aQute.bnd.build.model.clauses,\
 	aQute.bnd.build.model.conversions, \

@@ -1,4 +1,4 @@
-package aQute.lib.properties;
+package aQute.bnd.properties;
 
 /**
  * Implements a gap managing text store. The gap text store relies on the

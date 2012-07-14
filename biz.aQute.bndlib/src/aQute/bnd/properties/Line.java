@@ -1,4 +1,4 @@
-package aQute.lib.properties;
+package aQute.bnd.properties;
 
 /**
  * Describes a line as a particular number of characters beginning at a

@@ -5,8 +5,8 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.bnd.build.model.*;
+import aQute.bnd.properties.*;
 import aQute.lib.io.*;
-import aQute.lib.properties.*;
 
 public class PropertiesTest extends TestCase {
 

@@ -1,4 +1,4 @@
-package aQute.lib.properties;
+package aQute.bnd.properties;
 
 import java.io.*;
 import java.net.*;

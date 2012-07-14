@@ -11,7 +11,7 @@ import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.build.model.conversions.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
-import aQute.lib.properties.*;
+import aQute.bnd.properties.*;
 import aQute.libg.tuple.*;
 
 /**

@@ -1,9 +1,9 @@
-package aQute.lib.properties;
+package aQute.bnd.properties;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import aQute.lib.properties.Document.DelimiterInfo;
+import aQute.bnd.properties.Document.DelimiterInfo;
 
 public class LineTracker {
 
