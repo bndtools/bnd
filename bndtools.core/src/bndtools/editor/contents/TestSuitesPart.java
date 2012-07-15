@@ -318,7 +318,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     @Override
     public void refresh() {
         List<String> modelList = model.getTestSuites();
-        testSuites = (modelList == null) ? new ArrayList<String>() : new ArrayList<String>(modelList);
+        testSuites = new ArrayList<String>(modelList);
         viewer.setInput(testSuites);
         validate();
     }

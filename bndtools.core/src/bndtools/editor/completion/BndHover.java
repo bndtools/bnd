@@ -19,8 +19,6 @@ public class BndHover implements ITextHover {
                 sb.append(syntax.getExample());
 
                 String text = sb.toString();
-                if (text == null)
-                    return null;
 
                 if (text.length() > 30) {
                     text = wrap(text, 30);
