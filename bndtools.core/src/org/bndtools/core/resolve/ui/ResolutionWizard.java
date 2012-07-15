@@ -32,16 +32,17 @@ import bndtools.Logger;
 import bndtools.api.ILogger;
 
 public class ResolutionWizard extends Wizard {
-    private static final ILogger logger = Logger.getLogger();
 
-    private static final String PATHS_EXTENSION = ".resolved";
+    private static final String VERSION_LATEST = "latest";
+    private static final String CAPABILITY_WORKSPACE = "bndtools.workspace";
+    private static final String RESOLVED_PATHS_EXTENSION = ".resolved";
+
+    private final ILogger logger = Logger.getLogger();
 
     private final ResolutionResultsWizardPage resultsPage;
     private final Comparator<Entry<String,String>> clauseAttributeSorter = new Comparator<Map.Entry<String,String>>() {
         public int compare(Entry<String,String> e1, Entry<String,String> e2) {
-            /*
-             * Reverse lexical ordering on keys
-             */
+            // Reverse lexical ordering on keys
             return e2.getKey().compareTo(e1.getKey());
         }
     };
@@ -79,7 +80,7 @@ public class ResolutionWizard extends Wizard {
             File targetDir = project.getTarget();
             targetDir.mkdirs();
 
-            File pathsFile = new File(targetDir, file.getName() + PATHS_EXTENSION);
+            File pathsFile = new File(targetDir, file.getName() + RESOLVED_PATHS_EXTENSION);
             pathsStream = new PrintStream(pathsFile, "UTF-8");
         } catch (Exception e) {
             logger.logError("Unable to write resolved path list in target directory for project " + file.getProject().getName(), e);
@@ -121,7 +122,7 @@ public class ResolutionWizard extends Wizard {
         Attrs attribs = new Attrs();
         String versionRangeStr;
         if (isWorkspace(resource)) {
-            versionRangeStr = "latest";
+            versionRangeStr = VERSION_LATEST;
         } else {
             Version version = ResourceUtils.getVersion(idCap);
             VersionRange versionRange = createVersionRange(version);
@@ -134,11 +135,8 @@ public class ResolutionWizard extends Wizard {
     }
 
     private static boolean isWorkspace(Resource resource) {
-        /*
-         * TODO String[] categories = resource.getCategories(); for (String category : categories) { if
-         * (WorkspaceObrProvider.CATEGORY_WORKSPACE.equals(category)) return true; }
-         */
-        return false;
+        List<Capability> workspaceCaps = resource.getCapabilities(CAPABILITY_WORKSPACE);
+        return workspaceCaps != null && !workspaceCaps.isEmpty();
     }
 
     private static VersionRange createVersionRange(Version version) {
