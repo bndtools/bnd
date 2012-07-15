@@ -48,7 +48,7 @@ public class WorkspaceRepoProvider implements IndexProvider {
         this.logger = logger;
     }
 
-    public void setWorkspace(Workspace workspace) {
+    public synchronized void setWorkspace(Workspace workspace) {
         this.workspace = workspace;
     }
 
