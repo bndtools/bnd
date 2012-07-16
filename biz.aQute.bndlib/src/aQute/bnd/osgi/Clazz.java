@@ -297,7 +297,9 @@ public class Clazz {
 			return signature;
 		}
 
-		
+		public String toString() {
+			return name;
+		}
 	}
 
 	public class MethodDef extends FieldDef {
