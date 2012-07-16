@@ -1,14 +1,18 @@
--buildpath:\
-	osgi.core;version=4.2,\
+-buildpath: osgi.core;version=4.2,\
 	osgi.r5;version=1.0.1,\
 	junit.osgi,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
 	ee.j2se;version=${javac.ee},\
-	org.mockito.mockito-all
+	org.mockito.mockito-all,\
+	osgi.cmpn
 
 Bundle-Version: 0.0.1.${tstamp;yyyyMMdd-HHmmss}_${Git-Descriptor}
-Export-Package: biz.aQute.resolve
+
+Export-Package: biz.aQute.resolve,\
+	org.osgi.service.log
+
 Private-Package: biz.aQute.resolve.internal,\
 	aQute.lib.osgi.resource;-split-package:=first
+
 Conditional-Package: aQute.libg.*

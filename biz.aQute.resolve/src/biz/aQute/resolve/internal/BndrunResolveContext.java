@@ -18,6 +18,7 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wiring;
+import org.osgi.service.log.LogService;
 import org.osgi.service.repository.Repository;
 import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolveContext;
@@ -45,6 +46,7 @@ public class BndrunResolveContext extends ResolveContext {
 
     private final BndEditModel runModel;
     private final Registry registry;
+    private final LogService log;
 
     private boolean initialised = false;
 
@@ -55,9 +57,10 @@ public class BndrunResolveContext extends ResolveContext {
     private Resource inputRequirementsResource = null;
     private EE ee;
 
-    public BndrunResolveContext(BndEditModel runModel, Registry registry) {
+    public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
         this.runModel = runModel;
         this.registry = registry;
+        this.log = log;
     }
 
     protected synchronized void init() {
@@ -227,8 +230,8 @@ public class BndrunResolveContext extends ResolveContext {
             if (capabilities != null && !capabilities.isEmpty()) {
                 result.ensureCapacity(result.size() + capabilities.size());
                 for (Capability capability : capabilities) {
-                    // filter out OSGi frameworks
-                    if (findFrameworkContractCapability(capability.getResource()) == null)
+                    // filter out OSGi frameworks & other forbidden resource
+                    if (isPermitted(capability.getResource()))
                         result.add(capability);
                 }
                 // for (Capability capability : capabilities)
@@ -254,6 +257,38 @@ public class BndrunResolveContext extends ResolveContext {
         } else {
             return result;
         }
+    }
+
+    private boolean isPermitted(Resource resource) {
+        // OSGi frameworks cannot be selected as ordinary resources
+        Capability fwkCap = findFrameworkContractCapability(resource);
+        if (fwkCap != null) {
+            return false;
+        }
+
+        // Remove osgi.core and any ee JAR
+        List<Capability> idCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
+        if (idCaps == null || idCaps.isEmpty()) {
+            log.log(LogService.LOG_ERROR, "Resource is missing an identity capability (osgi.identity).");
+            return false;
+        }
+        if (idCaps.size() > 1) {
+            log.log(LogService.LOG_ERROR, "Resource has more than one identity capability (osgi.identity).");
+            return false;
+        }
+        String identity = (String) idCaps.get(0).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+        if (identity == null) {
+            log.log(LogService.LOG_ERROR, "Resource is missing an identity capability (osgi.identity).");
+            return false;
+        }
+
+        if ("osgi.core".equals(identity))
+            return false;
+
+        if (identity.startsWith("ee."))
+            return false;
+
+        return true;
     }
 
     @Override

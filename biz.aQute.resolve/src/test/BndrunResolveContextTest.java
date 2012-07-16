@@ -15,8 +15,10 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.service.log.LogService;
 
 import test.lib.MockRegistry;
+import test.lib.NullLogService;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -24,8 +26,10 @@ import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class BndrunResolveContextTest extends TestCase {
 
+    private final LogService log = new NullLogService();
+
     public void testEffective() {
-        BndrunResolveContext context = new BndrunResolveContext(new BndEditModel(), new MockRegistry());
+        BndrunResolveContext context = new BndrunResolveContext(new BndEditModel(), new MockRegistry(), log);
 
         Requirement resolveReq = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, Namespace.EFFECTIVE_RESOLVE).buildSyntheticRequirement();
         Requirement activeReq = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, Namespace.EFFECTIVE_ACTIVE).buildSyntheticRequirement();
@@ -37,7 +41,7 @@ public class BndrunResolveContextTest extends TestCase {
     }
 
     public void testEmptyInitialWirings() {
-        assertEquals(0, new BndrunResolveContext(new BndEditModel(), new MockRegistry()).getWirings().size());
+        assertEquals(0, new BndrunResolveContext(new BndEditModel(), new MockRegistry(), log).getWirings().size());
     }
 
     public void testBasicFindProviders() {
@@ -45,7 +49,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/repo1.index.xml")));
 
         BndEditModel runModel = new BndEditModel();
-        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
 
         Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=org.apache.felix.gogo.api)").buildSyntheticRequirement();
         List<Capability> providers = context.findProviders(req);
@@ -68,7 +72,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/repo1.index.xml")));
         registry.addPlugin(createRepo(new File("testdata/repo2.index.xml")));
 
-        context = new BndrunResolveContext(new BndEditModel(), registry);
+        context = new BndrunResolveContext(new BndEditModel(), registry, log);
         providers = context.findProviders(req);
         assertEquals(2, providers.size());
         resource = providers.get(0).getResource();
@@ -81,7 +85,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/repo2.index.xml")));
         registry.addPlugin(createRepo(new File("testdata/repo1.index.xml")));
 
-        context = new BndrunResolveContext(new BndEditModel(), registry);
+        context = new BndrunResolveContext(new BndEditModel(), registry, log);
         providers = context.findProviders(req);
         assertEquals(2, providers.size());
         resource = providers.get(0).getResource();
@@ -107,7 +111,7 @@ public class BndrunResolveContextTest extends TestCase {
                 "Repository2", "Repository1"
         }));
 
-        context = new BndrunResolveContext(runModel, registry);
+        context = new BndrunResolveContext(runModel, registry, log);
         providers = context.findProviders(req);
         assertEquals(2, providers.size());
         resource = providers.get(0).getResource();
@@ -123,7 +127,7 @@ public class BndrunResolveContextTest extends TestCase {
         BndEditModel runModel = new BndEditModel();
         runModel.setRunFramework("org.apache.felix.framework;version='[4,4.1)'");
 
-        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
         Collection<Resource> resources = context.getMandatoryResources();
         assertEquals(1, resources.size());
         Resource fwkResource = resources.iterator().next();
@@ -144,7 +148,7 @@ public class BndrunResolveContextTest extends TestCase {
         runModel = new BndEditModel();
         runModel.setRunFramework("org.apache.felix.framework;version='[4,4.1)'");
 
-        context = new BndrunResolveContext(runModel, registry);
+        context = new BndrunResolveContext(runModel, registry, log);
         resources = context.getMandatoryResources();
         assertEquals(1, resources.size());
         fwkResource = resources.iterator().next();
@@ -158,7 +162,7 @@ public class BndrunResolveContextTest extends TestCase {
         runModel = new BndEditModel();
         runModel.setRunFramework("org.apache.felix.framework;version='[4,4.1)'");
 
-        context = new BndrunResolveContext(runModel, registry);
+        context = new BndrunResolveContext(runModel, registry, log);
         resources = context.getMandatoryResources();
         assertEquals(1, resources.size());
         fwkResource = resources.iterator().next();
@@ -175,7 +179,7 @@ public class BndrunResolveContextTest extends TestCase {
 
         Requirement requirement = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(&(osgi.wiring.package=org.osgi.util.tracker)(version>=1.5)(!(version>=1.6)))").buildSyntheticRequirement();
 
-        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
         List<Capability> providers = context.findProviders(requirement);
 
         assertEquals(2, providers.size());
@@ -193,7 +197,7 @@ public class BndrunResolveContextTest extends TestCase {
         Requirement req = new CapReqBuilder("osgi.identity").addDirective("filter", "(osgi.identity=org.apache.felix.gogo.command)").buildSyntheticRequirement();
         runModel.setRunRequires(Collections.singletonList(req));
 
-        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
         Collection<Resource> mandRes = context.getMandatoryResources();
 
         assertEquals(2, mandRes.size());
@@ -210,7 +214,7 @@ public class BndrunResolveContextTest extends TestCase {
         runModel.setRunFramework("org.apache.felix.framework");
         runModel.setEE(EE.JavaSE_1_6);
 
-        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
 
         Requirement req = new CapReqBuilder("osgi.ee").addDirective("filter", "(osgi.ee=J2SE-1.5)").buildSyntheticRequirement();
         List<Capability> providers = context.findProviders(req);
@@ -227,7 +231,7 @@ public class BndrunResolveContextTest extends TestCase {
         runModel.setRunFramework("org.apache.felix.framework");
         runModel.setEE(EE.JavaSE_1_6);
 
-        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
 
         Requirement req = CapReqBuilder.createPackageRequirement("javax.annotation", null).buildSyntheticRequirement();
         List<Capability> providers = context.findProviders(req);
@@ -244,10 +248,26 @@ public class BndrunResolveContextTest extends TestCase {
         runModel.setRunFramework("org.apache.felix.framework");
         runModel.setEE(EE.J2SE_1_5); // javax.annotation added in Java 6
 
-        BndrunResolveContext context = new BndrunResolveContext(runModel, registry);
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
         Requirement req = CapReqBuilder.createPackageRequirement("javax.annotation", null).buildSyntheticRequirement();
         List<Capability> providers = context.findProviders(req);
 
         assertEquals(0, providers.size());
+    }
+
+    public void testDontResolveBuildOnlyLibraries() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/buildrepo.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        BndrunResolveContext context;
+
+        context = new BndrunResolveContext(runModel, registry, log);
+        List<Capability> providers1 = context.findProviders(CapReqBuilder.createPackageRequirement("org.osgi.framework", null).buildSyntheticRequirement());
+        assertEquals(0, providers1.size());
+
+        context = new BndrunResolveContext(runModel, registry, log);
+        List<Capability> providers2 = context.findProviders(CapReqBuilder.createPackageRequirement("java.security", null).buildSyntheticRequirement());
+        assertEquals(0, providers2.size());
     }
 }

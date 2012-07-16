@@ -13,6 +13,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
+import org.osgi.service.log.LogService;
 import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
 
@@ -26,8 +27,8 @@ public class ResolveProcess {
     private Map<Resource,Collection<Requirement>> optionalResources;
     private ResolutionException resolutionException;
 
-    public boolean resolve(BndEditModel inputModel, Registry pluginRegistry, Resolver resolver) {
-        BndrunResolveContext resolveContext = new BndrunResolveContext(inputModel, pluginRegistry);
+    public boolean resolve(BndEditModel inputModel, Registry pluginRegistry, Resolver resolver, LogService log) {
+        BndrunResolveContext resolveContext = new BndrunResolveContext(inputModel, pluginRegistry, log);
         try {
             Map<Resource,List<Wire>> result = resolver.resolve(resolveContext);
 
