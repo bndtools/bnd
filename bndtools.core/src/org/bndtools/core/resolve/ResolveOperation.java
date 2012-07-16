@@ -9,6 +9,7 @@ import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.deployer.repository.ReporterLogService;
 import biz.aQute.resolve.ResolveProcess;
 import bndtools.Central;
 import bndtools.Plugin;
@@ -30,7 +31,8 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         ResolveProcess resolve = new ResolveProcess();
         try {
-            boolean resolved = resolve.resolve(model, Central.getWorkspace(), resolver);
+            ReporterLogService log = new ReporterLogService(Central.getWorkspace());
+            boolean resolved = resolve.resolve(model, Central.getWorkspace(), resolver, log);
             if (resolved) {
                 result = new ResolutionResult(ResolutionResult.Outcome.Resolved, resolve, status);
             } else {
