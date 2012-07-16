@@ -23,6 +23,12 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> {
 		this.valueClass = valueClass;
 	}
 
+	public MultiMap(Map<K,List<V>> other) {
+		this();
+		for ( java.util.Map.Entry<K,List<V>> e : other.entrySet()) {
+			addAll(e.getKey(), e.getValue());
+		}
+	}
 	public MultiMap(MultiMap<K,V> other) {
 		keyClass = other.keyClass;
 		valueClass  = other.valueClass;
@@ -163,4 +169,5 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> {
 
 		return inverted;
 	}
+
 }
