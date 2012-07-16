@@ -2,6 +2,7 @@ package aQute.bnd.main;
 
 import aQute.bnd.build.*;
 import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public interface BndMessages extends Messages {
 

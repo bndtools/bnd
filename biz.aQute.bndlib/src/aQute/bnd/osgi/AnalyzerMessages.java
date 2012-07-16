@@ -3,7 +3,7 @@ package aQute.bnd.osgi;
 import java.util.*;
 
 import aQute.bnd.osgi.Descriptors.PackageRef;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public interface AnalyzerMessages extends Messages {
 

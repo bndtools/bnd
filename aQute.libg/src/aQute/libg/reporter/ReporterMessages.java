@@ -3,9 +3,8 @@ package aQute.libg.reporter;
 import java.lang.reflect.*;
 import java.util.*;
 
-import aQute.libg.reporter.Messages.ERROR;
-import aQute.libg.reporter.Messages.WARNING;
 import aQute.service.reporter.*;
+import aQute.service.reporter.Messages.*;
 import aQute.service.reporter.Reporter.SetLocation;
 
 public class ReporterMessages {

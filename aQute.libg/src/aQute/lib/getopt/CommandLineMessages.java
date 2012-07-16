@@ -3,6 +3,7 @@ package aQute.lib.getopt;
 import java.util.*;
 
 import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public interface CommandLineMessages extends Messages {
 

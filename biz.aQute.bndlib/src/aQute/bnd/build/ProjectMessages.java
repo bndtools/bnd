@@ -6,7 +6,7 @@ import java.util.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public interface ProjectMessages extends Messages {
 

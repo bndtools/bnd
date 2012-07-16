@@ -1,6 +1,5 @@
-package aQute.libg.reporter;
+package aQute.service.reporter;
 
-import aQute.service.reporter.*;
 
 
 public interface Messages {

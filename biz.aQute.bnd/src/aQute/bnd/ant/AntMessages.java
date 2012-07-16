@@ -3,6 +3,7 @@ package aQute.bnd.ant;
 import java.io.*;
 
 import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 @Message("bnd messages for Ant")
 public interface AntMessages extends Messages {
