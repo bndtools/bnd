@@ -9,7 +9,6 @@ import java.util.regex.*;
 
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
-import aQute.libg.sed.*;
 
 /**
  * Provide a macro processor. This processor can replace variables in strings
@@ -21,7 +20,7 @@ import aQute.libg.sed.*;
  * Remove largest suffix pattern. ${parameter#word} Remove smallest prefix
  * pattern. ${parameter##word} Remove largest prefix pattern.
  */
-public class Macro implements Replacer {
+public class Macro implements aQute.libg.sed.Replacer {
 	Processor	domain;
 	Object		targets[];
 	boolean		flattening;

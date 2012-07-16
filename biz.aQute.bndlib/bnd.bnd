@@ -26,7 +26,8 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.bnd.build.model,\
 	aQute.bnd.build.model.clauses,\
 	aQute.bnd.build.model.conversions, \
-	aQute.service.reporter
+	aQute.service.reporter, \
+    aQute.bnd.maven.support
 
 Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*, aQute.configurable
 Include-Resource: 				LICENSE, img/=img/

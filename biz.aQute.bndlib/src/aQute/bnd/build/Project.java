@@ -1722,7 +1722,12 @@ public class Project extends Processor {
 	}
 
 	boolean replace(File f, String pattern, String replacement) throws IOException {
-		Sed sed = new Sed(getReplacer(), f);
+		final Macro macro = getReplacer();
+		Sed sed = new Sed( new Replacer() {
+			public String process(String line) {
+				return macro.process(line);
+			}
+		}, f);
 		sed.replace(pattern, replacement);
 		return sed.doIt() > 0;
 	}
