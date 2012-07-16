@@ -1565,7 +1565,7 @@ public class bnd extends Processor {
 				
 				
 				if ( (options&API) != 0) {
-					MultiMap<PackageRef,PackageRef> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(), !po.java());
+					Map<PackageRef,List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(), !po.java());
 					if (!po.xport())  {
 						if ( analyzer.getExports().isEmpty())
 							warning("Not filtering on exported only since exports are empty");
@@ -1577,7 +1577,7 @@ public class bnd extends Processor {
 					out.println();					
 				}
 				
-				MultiMap<PackageRef,PackageRef> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
+				Map<PackageRef,List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
 				if ((options & USES) != 0) {
 					out.println("[USES]");
 					printMultiMap(uses);
@@ -1585,7 +1585,8 @@ public class bnd extends Processor {
 				}
 				if ((options & USEDBY) != 0) {
 					out.println("[USEDBY]");
-					printMultiMap(uses.transpose());
+					MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<Descriptors.PackageRef,Descriptors.PackageRef>(uses).transpose();
+					printMultiMap(usedBy);
 				}
 			}
 

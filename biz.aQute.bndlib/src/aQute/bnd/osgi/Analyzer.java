@@ -673,11 +673,11 @@ public class Analyzer extends Processor {
 		return unreachable;
 	}
 
-	public MultiMap<PackageRef,PackageRef> getUses() {
+	public Map<PackageRef,List<PackageRef>> getUses() {
 		return uses;
 	}
 
-	public MultiMap<PackageRef,PackageRef> getAPIUses() {
+	public Map<PackageRef,List<PackageRef>> getAPIUses() {
 		return apiUses;
 	}
 
@@ -1296,7 +1296,7 @@ public class Analyzer extends Processor {
 	 * @param uses
 	 * @throws MojoExecutionException
 	 */
-	void doUses(Packages exports, MultiMap<PackageRef,PackageRef> uses, Packages imports) {
+	void doUses(Packages exports, Map<PackageRef,List<PackageRef>> uses, Packages imports) {
 		if ("true".equalsIgnoreCase(getProperty(NOUSES)))
 			return;
 
@@ -1320,7 +1320,7 @@ public class Analyzer extends Processor {
 	 * @param uses
 	 * @param imports
 	 */
-	protected void doUses(PackageRef packageRef, Packages exports, MultiMap<PackageRef,PackageRef> uses,
+	protected void doUses(PackageRef packageRef, Packages exports, Map<PackageRef,List<PackageRef>> uses,
 			Packages imports) {
 		Attrs clause = exports.get(packageRef);
 
@@ -2467,7 +2467,7 @@ public class Analyzer extends Processor {
 	 * @param removeJava
 	 * @return
 	 */
-	public MultiMap<PackageRef,PackageRef> cleanupUses(MultiMap<PackageRef,PackageRef> apiUses, boolean removeJava) {
+	public Map<PackageRef,List<PackageRef>> cleanupUses(Map<PackageRef,List<PackageRef>> apiUses, boolean removeJava) {
 		MultiMap<PackageRef,PackageRef> map = new MultiMap<PackageRef,PackageRef>(apiUses);
 		for ( Entry<PackageRef,List<PackageRef>> e : map.entrySet()) {
 			e.getValue().remove(e.getKey());
