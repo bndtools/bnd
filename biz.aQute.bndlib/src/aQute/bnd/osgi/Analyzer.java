@@ -58,11 +58,11 @@ public class Analyzer extends Processor {
 
 	// Global parameters
 	private final MultiMap<PackageRef,PackageRef>	uses					= new MultiMap<PackageRef,PackageRef>(
-			PackageRef.class, PackageRef.class,
-			true);
+																					PackageRef.class, PackageRef.class,
+																					true);
 	private final MultiMap<PackageRef,PackageRef>	apiUses					= new MultiMap<PackageRef,PackageRef>(
-			PackageRef.class, PackageRef.class,
-			true);
+																					PackageRef.class, PackageRef.class,
+																					true);
 	private final Packages							classpathExports		= new Packages();
 	private final Descriptors						descriptors				= new Descriptors();
 	private final List<Jar>							classpath				= list();
@@ -232,11 +232,12 @@ public class Analyzer extends Processor {
 			// USES
 			//
 			// Add the uses clause to the exports
-			
-			boolean api = isTrue(getProperty(EXPERIMENTS)) || true; // brave, lets see
-			
+
+			boolean api = isTrue(getProperty(EXPERIMENTS)) || true; // brave,
+																	// lets see
+
 			doUses(exports, api ? apiUses : uses, imports);
-			
+
 			//
 			// Verify that no exported package has a reference to a private
 			// package
@@ -245,9 +246,7 @@ public class Analyzer extends Processor {
 			// exported packages
 			// should preferably not refer to private packages.
 			//
-			Set<PackageRef> privatePackages = new HashSet<PackageRef>(contained.keySet());
-			privatePackages.removeAll(exports.keySet());
-			privatePackages.removeAll(imports.keySet());
+			Set<PackageRef> privatePackages = getPrivates();
 
 			// References to java are not imported so they would show up as
 			// private
@@ -645,6 +644,13 @@ public class Analyzer extends Processor {
 
 	public Packages getImports() {
 		return imports;
+	}
+
+	public Set<PackageRef> getPrivates() {
+		HashSet<PackageRef> privates = new HashSet<PackageRef>(contained.keySet());
+		privates.removeAll(exports.keySet());
+		privates.removeAll(imports.keySet());
+		return privates;
 	}
 
 	public Jar getJar() {
@@ -1745,7 +1751,6 @@ public class Analyzer extends Processor {
 						if (info != null)
 							contained.merge(packageRef, false, info);
 
-
 						// Look at the referred packages
 						// and copy them to our baseline
 						Set<PackageRef> refs = Create.set();
@@ -1755,7 +1760,7 @@ public class Analyzer extends Processor {
 						}
 						refs.remove(packageRef);
 						uses.addAll(packageRef, refs);
-	
+
 						// Collect the API
 						apiUses.addAll(packageRef, clazz.getAPIUses());
 					}
@@ -2462,23 +2467,94 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Remove the own references and optionall java references from the uses lib
+	 * Remove the own references and optional java references from the uses lib
+	 * 
 	 * @param apiUses
 	 * @param removeJava
 	 * @return
 	 */
 	public Map<PackageRef,List<PackageRef>> cleanupUses(Map<PackageRef,List<PackageRef>> apiUses, boolean removeJava) {
 		MultiMap<PackageRef,PackageRef> map = new MultiMap<PackageRef,PackageRef>(apiUses);
-		for ( Entry<PackageRef,List<PackageRef>> e : map.entrySet()) {
+		for (Entry<PackageRef,List<PackageRef>> e : map.entrySet()) {
 			e.getValue().remove(e.getKey());
 			if (!removeJava)
 				continue;
-			
-			for (Iterator<PackageRef> i = e.getValue().iterator(); i.hasNext(); ) {
-				if ( i.next().isJava())
+
+			for (Iterator<PackageRef> i = e.getValue().iterator(); i.hasNext();) {
+				if (i.next().isJava())
 					i.remove();
 			}
-		}		
+		}
 		return map;
 	}
+
+	/**
+	 * Return the classes for a given source package.
+	 * 
+	 * @param source
+	 *            the source package
+	 * @return a set of classes for the requested package.
+	 */
+	public Set<Clazz> getClassspace(PackageRef source) {
+		Set<Clazz> result = new HashSet<Clazz>();
+		for (Clazz c : getClassspace().values()) {
+			if (c.getClassName().getPackageRef() == source)
+				result.add(c);
+		}
+		return result;
+	}
+
+	public Set<Clazz.Def> getXRef(final Set<PackageRef> source, final Set<PackageRef> dest, final int sourceModifiers)
+			throws Exception {
+		final Set<Clazz.Def> xref = new HashSet<Clazz.Def>();
+
+		for (final Clazz clazz : getClassspace().values()) {
+			if ((clazz.accessx & sourceModifiers) == 0)
+				continue;
+
+			if (!source.contains(clazz.getClassName().getPackageRef()))
+				continue;
+
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				Clazz.Def	member;
+
+				public void extendsClass(TypeRef zuper) throws Exception {
+					if (dest.contains(zuper.getPackageRef()))
+						xref.add(clazz.getExtends(zuper));
+				}
+
+				public void implementsInterfaces(TypeRef[] interfaces) throws Exception {
+					for (TypeRef i : interfaces) {
+						if (dest.contains(i.getPackageRef()))
+							xref.add(clazz.getImplements(i));
+					}
+				}
+
+				public void referTo(TypeRef to, int modifiers) {
+					if (to.isJava())
+						return;
+
+					if (!dest.contains(to.getPackageRef()))
+						return;
+
+					if (member != null && ((modifiers & sourceModifiers) != 0)) {
+						xref.add(member);
+					}
+
+				}
+
+				public void method(Clazz.MethodDef defined) {
+					member = defined;
+				}
+
+				public void field(Clazz.FieldDef defined) {
+					member = defined;
+				}
+
+			});
+
+		}
+		return xref;
+	}
+
 }

@@ -24,9 +24,6 @@ public class ClassDataCollector {
 
 	public void field(@SuppressWarnings("unused") Clazz.FieldDef defined) {}
 
-	public void reference(@SuppressWarnings("unused") Clazz.MethodDef referenced) {}
-
-	public void reference(@SuppressWarnings("unused") Clazz.FieldDef referenced) {}
 
 	public void classEnd() throws Exception {}
 
@@ -81,6 +78,17 @@ public class ClassDataCollector {
 	String method, @SuppressWarnings("unused") String descriptor) {
 		// TODO Auto-generated method stub
 
+	}
+
+	/**
+	 * A reference to a type from method or field. The modifiers indicate the
+	 * access level of the parent method/field.
+	 * 
+	 * @param typeRef
+	 * @param modifiers
+	 */
+	public void referTo(TypeRef typeRef, int modifiers) {
+		
 	}
 
 }
