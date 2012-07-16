@@ -51,9 +51,6 @@
        <Package name="bndtools.editor.model" />
      </Match>
      <Match>
-       <Package name="bndtools.editor.model.conversions" />
-     </Match>
-     <Match>
        <Package name="bndtools.editor.pages" />
      </Match>
      <Match>
@@ -184,6 +181,9 @@
      </Match>
      <Match>
        <Package name="org.bndtools.core.jobs.newproject" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.jobs.startup" />
      </Match>
      <Match>
        <Package name="org.bndtools.core.obr" />
