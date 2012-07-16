@@ -1,6 +1,7 @@
 package aQute.bnd.main;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
@@ -26,6 +27,7 @@ import aQute.bnd.main.DiffCommand.diffOptions;
 import aQute.bnd.main.RepoCommand.repoOptions;
 import aQute.bnd.maven.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.Def;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.eclipse.*;
@@ -227,6 +229,8 @@ public class bnd extends Processor {
 			}
 		}
 		catch (Throwable t) {
+			if ( t instanceof InvocationTargetException)
+				t = t.getCause();
 			messages.Failed__(t, t.getMessage());
 		}
 
@@ -1428,11 +1432,12 @@ public class bnd extends Processor {
 
 	static final int	HEX			= 0;
 
-	@Arguments(arg="jar-file...")
+	@Arguments(arg = "jar-file...")
 	@Description("Provides detailed view of the bundle. It will analyze the bundle and then show its contents from different perspectives. If no options are specified, prints the manifest.")
 	interface printOptions extends Options {
 		@Description("Print the api usage. This shows the usage constraints on exported packages when only public API is used.")
 		boolean api();
+
 		@Description("Before printing, verify that the bundle is correct.")
 		boolean verify();
 
@@ -1459,7 +1464,7 @@ public class bnd extends Processor {
 
 		@Description("Keep references to java in --api, --uses, and --usedby.")
 		boolean java();
-		
+
 		@Description("Show all packages, not just exported, in the API view")
 		boolean xport();
 	}
@@ -1472,7 +1477,7 @@ public class bnd extends Processor {
 
 			if (options.manifest())
 				opts |= MANIFEST;
-			
+
 			if (options.api())
 				opts |= API;
 
@@ -1554,29 +1559,48 @@ public class bnd extends Processor {
 				analyzer.setPedantic(isPedantic());
 				analyzer.setJar(jar);
 				Manifest m = jar.getManifest();
-				if ( m != null) {
+				if (m != null) {
 					String s = m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
-					if ( s != null)
+					if (s != null)
 						analyzer.setExportPackage(s);
 				}
 				analyzer.analyze();
-			
+
 				boolean java = po.java();
-				
-				
-				if ( (options&API) != 0) {
+
+				Packages exports = analyzer.getExports();
+
+				if ((options & API) != 0) {
 					Map<PackageRef,List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(), !po.java());
-					if (!po.xport())  {
-						if ( analyzer.getExports().isEmpty())
+					if (!po.xport()) {
+						if (exports.isEmpty())
 							warning("Not filtering on exported only since exports are empty");
 						else
 							apiUses.keySet().retainAll(analyzer.getExports().keySet());
 					}
 					out.println("[API USES]");
-					printMultiMap( apiUses);
-					out.println();					
+					printMultiMap(apiUses);
+
+					Set<PackageRef> privates = analyzer.getPrivates();
+					Set<Def> xRef = analyzer.getXRef(exports.keySet(),privates, Modifier.PROTECTED + Modifier.PUBLIC);
+					if ( !xRef.isEmpty()) {
+						out.println();
+						out.printf("Exported packages refer Private Packages (not good)\n\n");
+						for ( Clazz.Def def : xRef ) {
+							Set<PackageRef> refs = new HashSet<Descriptors.PackageRef>();
+							refs.add(def.getType().getPackageRef());
+							if ( def.getPrototype() != null)
+								for ( TypeRef ref : def.getPrototype())
+									refs.add(ref.getPackageRef());
+										
+							refs.retainAll(privates);
+							out.printf( "%60s %-40s %s\n", def.getOwnerType().getFQN(), def.getName(), refs);
+						}
+						out.println();
+					}
+					out.println();
 				}
-				
+
 				Map<PackageRef,List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
 				if ((options & USES) != 0) {
 					out.println("[USES]");
@@ -1585,7 +1609,8 @@ public class bnd extends Processor {
 				}
 				if ((options & USEDBY) != 0) {
 					out.println("[USEDBY]");
-					MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<Descriptors.PackageRef,Descriptors.PackageRef>(uses).transpose();
+					MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<Descriptors.PackageRef,Descriptors.PackageRef>(
+							uses).transpose();
 					printMultiMap(usedBy);
 				}
 			}
@@ -1635,8 +1660,6 @@ public class bnd extends Processor {
 			jar.close();
 		}
 	}
-
-	
 
 	/**
 	 * @param manifest
