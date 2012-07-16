@@ -224,6 +224,10 @@ public class Clazz {
 		public abstract String getName();
 		public abstract TypeRef getType();
 		public abstract TypeRef[] getPrototype();
+
+		public Object getClazz() {
+			return Clazz.this;
+		}
 	}
 
 	public class FieldDef extends Def {

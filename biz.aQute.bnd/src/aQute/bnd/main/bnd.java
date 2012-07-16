@@ -229,7 +229,7 @@ public class bnd extends Processor {
 			}
 		}
 		catch (Throwable t) {
-			if ( t instanceof InvocationTargetException)
+			if (t instanceof InvocationTargetException)
 				t = t.getCause();
 			messages.Failed__(t, t.getMessage());
 		}
@@ -1582,21 +1582,24 @@ public class bnd extends Processor {
 					printMultiMap(apiUses);
 
 					Set<PackageRef> privates = analyzer.getPrivates();
-					Set<Def> xRef = analyzer.getXRef(exports.keySet(),privates, Modifier.PROTECTED + Modifier.PUBLIC);
-					if ( !xRef.isEmpty()) {
-						out.println();
-						out.printf("Exported packages refer Private Packages (not good)\n\n");
-						for ( Clazz.Def def : xRef ) {
-							Set<PackageRef> refs = new HashSet<Descriptors.PackageRef>();
-							refs.add(def.getType().getPackageRef());
-							if ( def.getPrototype() != null)
-								for ( TypeRef ref : def.getPrototype())
+					for (PackageRef export : exports.keySet()) {
+						Map<Def,List<TypeRef>> xRef = analyzer.getXRef(export, privates, Modifier.PROTECTED
+								+ Modifier.PUBLIC);
+						if (!xRef.isEmpty()) {
+							out.println();
+							out.printf("%s refers to private Packages (not good)\n\n", export);
+							for (Entry<Def,List<TypeRef>> e : xRef.entrySet()) {
+								TreeSet<PackageRef> refs = new TreeSet<Descriptors.PackageRef>();
+								for (TypeRef ref : e.getValue())
 									refs.add(ref.getPackageRef());
-										
-							refs.retainAll(privates);
-							out.printf( "%60s %-40s %s\n", def.getOwnerType().getFQN(), def.getName(), refs);
+
+								refs.retainAll(privates);
+								out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
+										, e.getKey().getName(),
+										refs);
+							}
+							out.println();
 						}
-						out.println();
 					}
 					out.println();
 				}

@@ -2504,15 +2504,23 @@ public class Analyzer extends Processor {
 		return result;
 	}
 
-	public Set<Clazz.Def> getXRef(final Set<PackageRef> source, final Set<PackageRef> dest, final int sourceModifiers)
+	/**
+	 * Create a cross reference from package source, to packages in dest
+	 * @param source
+	 * @param dest
+	 * @param sourceModifiers
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<Clazz.Def, List<TypeRef>> getXRef(final PackageRef source, final Collection<PackageRef> dest, final int sourceModifiers)
 			throws Exception {
-		final Set<Clazz.Def> xref = new HashSet<Clazz.Def>();
+		final MultiMap<Clazz.Def,TypeRef> xref = new MultiMap<Clazz.Def, TypeRef>(Clazz.Def.class, TypeRef.class, true);
 
 		for (final Clazz clazz : getClassspace().values()) {
 			if ((clazz.accessx & sourceModifiers) == 0)
 				continue;
 
-			if (!source.contains(clazz.getClassName().getPackageRef()))
+			if (source!=null && source != clazz.getClassName().getPackageRef())
 				continue;
 
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
@@ -2520,13 +2528,13 @@ public class Analyzer extends Processor {
 
 				public void extendsClass(TypeRef zuper) throws Exception {
 					if (dest.contains(zuper.getPackageRef()))
-						xref.add(clazz.getExtends(zuper));
+						xref.add(clazz.getExtends(zuper), zuper);
 				}
 
 				public void implementsInterfaces(TypeRef[] interfaces) throws Exception {
 					for (TypeRef i : interfaces) {
 						if (dest.contains(i.getPackageRef()))
-							xref.add(clazz.getImplements(i));
+							xref.add(clazz.getImplements(i), i);
 					}
 				}
 
@@ -2538,7 +2546,7 @@ public class Analyzer extends Processor {
 						return;
 
 					if (member != null && ((modifiers & sourceModifiers) != 0)) {
-						xref.add(member);
+						xref.add(member, to);
 					}
 
 				}

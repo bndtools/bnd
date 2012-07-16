@@ -20,7 +20,7 @@ import aQute.lib.io.*;
  * Remove largest suffix pattern. ${parameter#word} Remove smallest prefix
  * pattern. ${parameter##word} Remove largest prefix pattern.
  */
-public class Macro implements aQute.libg.sed.Replacer {
+public class Macro {
 	Processor	domain;
 	Object		targets[];
 	boolean		flattening;

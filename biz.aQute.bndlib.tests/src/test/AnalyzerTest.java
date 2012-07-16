@@ -1,12 +1,16 @@
 package test;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.jar.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.Def;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.test.*;
+import aQute.lib.io.*;
 
 class T0 {}
 
@@ -17,6 +21,30 @@ class T2 extends T1 {}
 class T3 extends T2 {}
 
 public class AnalyzerTest extends BndTestCase {
+	File	cwd	= new File(System.getProperty("user.dir"));
+
+	/**
+	 * Check the cross references
+	 */
+
+	public void testCrossReference() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(IO.getFile(cwd, "bin"));
+		b.addClasspath(IO.getFile(cwd, "../aQute.libg/bin"));
+		b.addClasspath(IO.getFile(cwd, "../biz.aQute.bndlib/bin"));
+		b.setExportPackage("aQute.bnd.build.model.conversions");
+		b.setConditionalPackage("aQute.lib*");
+		Jar jar = b.build();
+		assertTrue(b.check("((, )?(aQute.libg.tuple)){1,1}"));
+
+		Map<Def,List<TypeRef>> xRef = b.getXRef(b.getPackageRef("aQute.bnd.build.model.conversions"),
+				Arrays.asList(b.getPackageRef("aQute.libg.tuple")), Modifier.PUBLIC + Modifier.PROTECTED);
+
+		for (Clazz.Def def : xRef.keySet())
+			System.out.println(def.getOwnerType() + " " + def.getName() + " " + def.getType() + " : " + xRef.get(def));
+
+		assertEquals(5, xRef.size());
+	}
 
 	/**
 	 * The -removeheaders header can be used as a whitelist.
@@ -41,19 +69,6 @@ public class AnalyzerTest extends BndTestCase {
 		assertNotNull(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 		assertNull(m.getMainAttributes().getValue("Foo"));
 		assertNull(m.getMainAttributes().getValue("Bar"));
-	}
-
-	/**
-	 * Check if bnd detects references to private packages and gives a warning.
-	 */
-
-	public void testExportReferencesToPrivatePackages2() throws Exception {
-		Builder b = new Builder();
-		b.addClasspath(new File("../biz.aQute.bndlib/bin"));
-		b.setExportPackage("aQute.bnd.signing"); // refers to Event Admin
-		b.setConditionalPackage("aQute.lib*");
-		Jar jar = b.build();
-		assertTrue(b.check());// "((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
 	}
 
 	/**
