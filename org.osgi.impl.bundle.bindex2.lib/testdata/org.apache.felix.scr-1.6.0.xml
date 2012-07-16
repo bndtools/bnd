@@ -33,7 +33,7 @@
     <directive name='uses' value='org.osgi.framework'/>
   </capability>
   <capability namespace='osgi.extender'>
-    <attribute name='osgi.extender' value='osgi.scr'/>
+    <attribute name='osgi.extender' value='osgi.ds'/>
     <attribute name='version' type='Version' value='1.1.0'/>
     <directive name='uses' value='org.osgi.service.component'/>
   </capability>

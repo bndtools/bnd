@@ -19,6 +19,6 @@
     <attribute name='bundle-version' type='Version' value='0.0.0'/>
   </capability>
   <requirement namespace='osgi.extender'>
-    <directive name='filter' value='(&amp;(osgi.extender=osgi.scr)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+    <directive name='filter' value='(&amp;(osgi.extender=osgi.ds)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
   </requirement>
 </resource>

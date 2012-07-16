@@ -84,7 +84,7 @@
       <attribute name='bundle-version' type='Version' value='1.4.0.v20120522-1841'/>
     </capability>
     <capability namespace='osgi.extender'>
-      <attribute name='osgi.extender' value='osgi.scr'/>
+      <attribute name='osgi.extender' value='osgi.ds'/>
       <attribute name='version' type='Version' value='1.2.0'/>
       <directive name='uses' value='org.osgi.service.component'/>
     </capability>
