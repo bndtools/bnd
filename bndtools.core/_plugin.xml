@@ -656,11 +656,6 @@
          doc="html/equinox37+gogo+ds.form.xml"
          icon="icons/equinox.gif"/>
       <template
-         name="Knopflerfish 5.1 with Gogo Shell"
-         path="launchTemplates/knopflerfish.bndrun"
-         doc="html/knopflerfish.form.xml"
-         icon="icons/knopflerfish_16x16_inverted.gif"/>
-      <template
          name="«Empty»"
          path="launchTemplates/empty.bndrun"
          doc="html/empty.form.xml"/>

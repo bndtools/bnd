@@ -16,12 +16,12 @@
 ## Uncomment if you need to change the HTTP port
 #-runproperties: org.osgi.service.http.port=8080
 
--runrequire:\
-	bundle:(symbolicname=org.apache.felix.gogo.shell),\
-	bundle:(symbolicname=org.apache.felix.gogo.command),\
-	bundle:(symbolicname=org.apache.felix.webconsole),\
-	bundle:(symbolicname=org.apache.felix.configadmin),\
-	bundle:(symbolicname=org.apache.felix.metatype),\
-	bundle:(symbolicname=org.apache.felix.log),\
-	bundle:(&(symbolicname=osgi.cmpn)(version>=4.2)),\
-	bundle:(&(symbolicname=org.apache.felix.scr)(version>=1.6.0))
+-runrequires:\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.webconsole)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.configadmin)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.metatype)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.log)',\
+	osgi.identity;filter:='(&(osgi.identity=osgi.cmpn)(version>=4.2))',\
+	osgi.identity;filter:='(&(osgi.identity=org.apache.felix.scr)(version>=1.6.0))'
