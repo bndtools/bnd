@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.DecorationContext;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -23,16 +24,14 @@ import bndtools.internal.decorator.ExportedPackageDecoratorJob;
  * 
  * @author duckAsteroid
  */
-public class ExportedPackageDecorator extends LabelProvider implements ILightweightLabelDecorator {
-    private ImageDescriptor plusIcon;
+public class PackageDecorator extends LabelProvider implements ILightweightLabelDecorator {
 
-    public ExportedPackageDecorator() {
-        super();
-        this.plusIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/plus-decorator.png");
-    }
+    private final ImageDescriptor plusIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/plus-decorator.png");
+    private final ImageDescriptor excludedPackageIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/package_excluded.gif");
 
     public void decorate(Object element, IDecoration decoration) {
         if (element instanceof IPackageFragment) {
+
             IPackageFragment pkg = (IPackageFragment) element;
             String pkgName = pkg.getElementName();
 
@@ -40,6 +39,7 @@ public class ExportedPackageDecorator extends LabelProvider implements ILightwei
             IProject project = javaProject.getProject();
 
             Map<String, ? extends Collection<Version>> exports = Central.getExportedPackageModel(project);
+            Collection<String> contained = Central.getContainedPackageModel(project);
             if (exports != null) {
                 Collection<Version> versions = exports.get(pkgName);
                 if (versions != null) {
@@ -48,6 +48,12 @@ public class ExportedPackageDecorator extends LabelProvider implements ILightwei
                         decoration.addSuffix(" " + Collections.singletonList(Version.emptyVersion).toString());
                     else
                         decoration.addSuffix(" " + versions.toString());
+                }
+
+                if (contained == null || !contained.contains(pkgName)) {
+                    ((DecorationContext) decoration.getDecorationContext()).putProperty(IDecoration.ENABLE_REPLACE, Boolean.TRUE);
+                    decoration.addOverlay(excludedPackageIcon, IDecoration.REPLACE);
+                    decoration.addSuffix("<excluded>");
                 }
             } else {
                 ExportedPackageDecoratorJob.scheduleForProject(project);

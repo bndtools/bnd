@@ -3,8 +3,10 @@ package bndtools.internal.decorator;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,6 +66,7 @@ public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule 
             Collection< ? extends Builder> builders = model.getSubBuilders();
 
             Map<String,SortedSet<Version>> allExports = new HashMap<String,SortedSet<Version>>();
+            Set<String> allContained = new HashSet<String>();
 
             for (Builder builder : builders) {
                 try {
@@ -87,21 +90,26 @@ public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule 
                             }
                         }
                     }
+                    Packages contained = builder.getContained();
+                    for (PackageRef pkgRef : contained.keySet()) {
+                        String pkgName = Processor.removeDuplicateMarker(pkgRef.getFQN());
+                        allContained.add(pkgName);
+                    }
                 } catch (Exception e) {
                     logger.logWarning(MessageFormat.format("Unable to process exported packages for builder of {0}.", builder.getPropertiesFile()), e);
                 }
             }
-            Central.setExportedPackageModel(project, allExports);
+            Central.setProjectPackageModel(project, allExports, allContained);
 
             Display display = PlatformUI.getWorkbench().getDisplay();
             SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {
                 public void run() {
-                    PlatformUI.getWorkbench().getDecoratorManager().update("bndtools.exportedPackageDecorator");
+                    PlatformUI.getWorkbench().getDecoratorManager().update("bndtools.packageDecorator");
                 }
             });
 
         } catch (Exception e) {
-            logger.logWarning("Error persisting exported package model.", e);
+            logger.logWarning("Error persisting package model for project: " + project.getName(), e);
         }
 
         return Status.OK_STATUS;

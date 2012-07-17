@@ -1,6 +1,7 @@
 package bndtools;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +45,7 @@ public class Central {
 
     static final AtomicBoolean indexValid = new AtomicBoolean(false);
     static final ConcurrentMap<String,Map<String,SortedSet<Version>>> exportedPackageMap = new ConcurrentHashMap<String,Map<String,SortedSet<Version>>>();
+    static final ConcurrentMap<String,Collection<String>> containedPackageMap = new ConcurrentHashMap<String,Collection<String>>();
 
     final Map<IJavaProject,Project> javaProjectToModel = new HashMap<IJavaProject,Project>();
     final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
@@ -323,9 +325,15 @@ public class Central {
         return exportedPackageMap.get(key);
     }
 
-    public static void setExportedPackageModel(IProject project, Map<String,SortedSet<Version>> exports) {
+    public static Collection<String> getContainedPackageModel(IProject project) {
+        String key = project.getFullPath().toPortableString();
+        return containedPackageMap.get(key);
+    }
+
+    public static void setProjectPackageModel(IProject project, Map<String,SortedSet<Version>> exports, Collection<String> contained) {
         String key = project.getFullPath().toPortableString();
         exportedPackageMap.put(key, exports);
+        containedPackageMap.put(key, contained);
     }
 
 }

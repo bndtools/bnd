@@ -348,14 +348,14 @@
 		
 		<decorator
 			adaptable="true"
-			label="Bndtools OSGi Exported Package"
+			label="Bndtools OSGi Package Decorations"
 			objectClass="org.eclipse.jdt.core.IPackageFragment"
 			state="true"
 			lightweight="true"
-			class="bndtools.internal.ui.ExportedPackageDecorator"
-			id="bndtools.exportedPackageDecorator"
+			class="bndtools.internal.ui.PackageDecorator"
+			id="bndtools.packageDecorator"
 			location="TOP_LEFT"> 
-			<description>Marks Java packages that are exported with a '+' decoration</description>
+			<description>Marks exported packages with a '+' decoration, and excluded packages with a strike-through.</description>
 		</decorator>
 	</extension>
    <extension
