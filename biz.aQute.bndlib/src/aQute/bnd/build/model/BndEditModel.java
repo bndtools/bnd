@@ -26,9 +26,9 @@ public class BndEditModel {
 	public static final String										LINE_SEPARATOR				= " \\\n\t";
 	public static final String										LIST_SEPARATOR				= ",\\\n\t";
 
-	protected static final String									ISO_8859_1					= "ISO-8859-1";												//$NON-NLS-1$
+	private static final String									ISO_8859_1					= "ISO-8859-1";												//$NON-NLS-1$
 
-	protected static String[]										KNOWN_PROPERTIES			= new String[] {
+	private static String[]										KNOWN_PROPERTIES			= new String[] {
 			Constants.BUNDLE_SYMBOLICNAME, Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR,
 			Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE, aQute.bnd.osgi.Constants.PRIVATE_PACKAGE,
 			aQute.bnd.osgi.Constants.SOURCES,
@@ -46,8 +46,8 @@ public class BndEditModel {
 																										+ Constants.BUNDLE_VERSION
 																										+ "}";
 
-	protected final Map<String,Converter< ? extends Object,String>>	converters					= new HashMap<String,Converter< ? extends Object,String>>();
-	protected final Map<String,Converter<String, ? extends Object>>	formatters					= new HashMap<String,Converter<String, ? extends Object>>();
+	private final Map<String,Converter< ? extends Object,String>>	converters					= new HashMap<String,Converter< ? extends Object,String>>();
+	private final Map<String,Converter<String, ? extends Object>>	formatters					= new HashMap<String,Converter<String, ? extends Object>>();
 	// private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
 	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
@@ -60,7 +60,7 @@ public class BndEditModel {
 	private final Map<String,String>								changesToSave				= new HashMap<String,String>();
 
 	// CONVERTERS
-	protected Converter<List<VersionedClause>,String>				buildPathConverter			= new ClauseListConverter<VersionedClause>(
+	private Converter<List<VersionedClause>,String>				buildPathConverter			= new ClauseListConverter<VersionedClause>(
 																										new Converter<VersionedClause,Pair<String,Attrs>>() {
 																											public VersionedClause convert(
 																													Pair<String,Attrs> input)
@@ -70,7 +70,7 @@ public class BndEditModel {
 																														input.getSecond());
 																											}
 																										});
-	protected Converter<List<VersionedClause>,String>				buildPackagesConverter		= new ClauseListConverter<VersionedClause>(
+	private Converter<List<VersionedClause>,String>				buildPackagesConverter		= new ClauseListConverter<VersionedClause>(
 																										new Converter<VersionedClause,Pair<String,Attrs>>() {
 																											public VersionedClause convert(
 																													Pair<String,Attrs> input)
@@ -80,10 +80,10 @@ public class BndEditModel {
 																														input.getSecond());
 																											}
 																										});
-	protected Converter<List<VersionedClause>,String>				clauseListConverter			= new ClauseListConverter<VersionedClause>(
+	private Converter<List<VersionedClause>,String>				clauseListConverter			= new ClauseListConverter<VersionedClause>(
 																										new VersionedClauseConverter());
-	protected Converter<String,String>								stringConverter				= new NoopConverter<String>();
-	protected Converter<Boolean,String>								includedSourcesConverter	= new Converter<Boolean,String>() {
+	private Converter<String,String>								stringConverter				= new NoopConverter<String>();
+	private Converter<Boolean,String>								includedSourcesConverter	= new Converter<Boolean,String>() {
 																									public Boolean convert(
 																											String string)
 																											throws IllegalArgumentException {
@@ -91,10 +91,10 @@ public class BndEditModel {
 																												.valueOf(string);
 																									}
 																								};
-	protected Converter<List<String>,String>						listConverter				= SimpleListConverter
+	private Converter<List<String>,String>						listConverter				= SimpleListConverter
 																										.create();
-	protected Converter<List<HeaderClause>,String>					headerClauseListConverter	= new HeaderClauseListConverter();
-	protected ClauseListConverter<ExportedPackage>					exportPackageConverter		= new ClauseListConverter<ExportedPackage>(
+	private Converter<List<HeaderClause>,String>					headerClauseListConverter	= new HeaderClauseListConverter();
+	private ClauseListConverter<ExportedPackage>					exportPackageConverter		= new ClauseListConverter<ExportedPackage>(
 																										new Converter<ExportedPackage,Pair<String,Attrs>>() {
 																											public ExportedPackage convert(
 																													Pair<String,Attrs> input) {
@@ -103,7 +103,7 @@ public class BndEditModel {
 																														input.getSecond());
 																											}
 																										});
-	protected Converter<List<ServiceComponent>,String>				serviceComponentConverter	= new ClauseListConverter<ServiceComponent>(
+	private Converter<List<ServiceComponent>,String>				serviceComponentConverter	= new ClauseListConverter<ServiceComponent>(
 																										new Converter<ServiceComponent,Pair<String,Attrs>>() {
 																											public ServiceComponent convert(
 																													Pair<String,Attrs> input)
@@ -113,7 +113,7 @@ public class BndEditModel {
 																														input.getSecond());
 																											}
 																										});
-	protected Converter<List<ImportPattern>,String>					importPatternConverter		= new ClauseListConverter<ImportPattern>(
+	private Converter<List<ImportPattern>,String>					importPatternConverter		= new ClauseListConverter<ImportPattern>(
 																										new Converter<ImportPattern,Pair<String,Attrs>>() {
 																											public ImportPattern convert(
 																													Pair<String,Attrs> input)
@@ -124,38 +124,38 @@ public class BndEditModel {
 																											}
 																										});
 
-	protected Converter<Map<String,String>,String>					propertiesConverter			= new PropertiesConverter();
+	private Converter<Map<String,String>,String>					propertiesConverter			= new PropertiesConverter();
 	
-	protected Converter<List<Requirement>,String>					requirementListConverter	= new RequirementListConverter();
-	protected Converter<EE,String>									eeConverter					= new EEConverter();
+	private Converter<List<Requirement>,String>					requirementListConverter	= new RequirementListConverter();
+	private Converter<EE,String>									eeConverter					= new EEConverter();
 
 	// Converter<ResolveMode, String> resolveModeConverter =
 	// EnumConverter.create(ResolveMode.class, ResolveMode.manual);
 
 	// FORMATTERS
-	protected Converter<String,Object>								defaultFormatter			= new DefaultFormatter();
-	protected Converter<String,String>								newlineEscapeFormatter		= new NewlineEscapedStringFormatter();
-	protected Converter<String,Boolean>								defaultFalseBoolFormatter	= new DefaultBooleanFormatter(
+	private Converter<String,Object>								defaultFormatter			= new DefaultFormatter();
+	private Converter<String,String>								newlineEscapeFormatter		= new NewlineEscapedStringFormatter();
+	private Converter<String,Boolean>								defaultFalseBoolFormatter	= new DefaultBooleanFormatter(
 																										false);
-	protected Converter<String,Collection< ? >>						stringListFormatter			= new CollectionFormatter<Object>(
+	private Converter<String,Collection< ? >>						stringListFormatter			= new CollectionFormatter<Object>(
 																										LIST_SEPARATOR,
 																										(String) null);
-	protected Converter<String,Collection< ? extends HeaderClause>>	headerClauseListFormatter	= new CollectionFormatter<HeaderClause>(
+	private Converter<String,Collection< ? extends HeaderClause>>	headerClauseListFormatter	= new CollectionFormatter<HeaderClause>(
 																										LIST_SEPARATOR,
 																										new HeaderClauseFormatter(),
 																										null);
-	protected Converter<String,Map<String,String>>					propertiesFormatter			= new MapFormatter(
+	private Converter<String,Map<String,String>>					propertiesFormatter			= new MapFormatter(
 																										LIST_SEPARATOR,
 																										new PropertiesEntryFormatter(),
 																										null);
 	
-	protected Converter<String,Collection< ? extends Requirement>>	requirementListFormatter	= new CollectionFormatter<Requirement>(
+	private Converter<String,Collection< ? extends Requirement>>	requirementListFormatter	= new CollectionFormatter<Requirement>(
 																										LIST_SEPARATOR,
 																										new RequirementFormatter(),
 																										null);
 
-	protected Converter<String,EE>									eeFormatter					= new EEFormatter();
-	Converter<String,Collection< ? extends String>>					runReposFormatter			= new CollectionFormatter<String>(
+	private Converter<String,EE>									eeFormatter					= new EEFormatter();
+	private Converter<String,Collection< ? extends String>>			runReposFormatter			= new CollectionFormatter<String>(
 																										LIST_SEPARATOR,
 																										aQute.bnd.osgi.Constants.EMPTY_HEADER);
 
@@ -259,7 +259,7 @@ public class BndEditModel {
 		}
 	}
 
-	protected static IRegion findEntry(IDocument document, String name) throws Exception {
+	private static IRegion findEntry(IDocument document, String name) throws Exception {
 		PropertiesLineReader reader = new PropertiesLineReader(document);
 		LineType type = reader.next();
 		while (type != LineType.eof) {
@@ -273,7 +273,7 @@ public class BndEditModel {
 		return null;
 	}
 
-	protected static void updateDocument(IDocument document, String name, String value) {
+	private static void updateDocument(IDocument document, String name, String value) {
 		String newEntry;
 		if (value != null) {
 			StringBuilder buffer = new StringBuilder();
@@ -634,7 +634,7 @@ public class BndEditModel {
     }
 
 
-	protected <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
+	private <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
 		R result;
 		if (objectProperties.containsKey(name)) {
 			R temp = (R) objectProperties.get(name);
@@ -651,7 +651,7 @@ public class BndEditModel {
 		return result;
 	}
 
-	protected <T> void doSetObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {
+	private <T> void doSetObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {
 		objectProperties.put(name, newValue);
 		changesToSave.put(name, formatter.convert(newValue));
 		propChangeSupport.firePropertyChange(name, oldValue, newValue);
