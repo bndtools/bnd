@@ -7,6 +7,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DecorationContext;
 import org.eclipse.jface.viewers.IDecoration;
@@ -28,12 +29,14 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 
     private final ImageDescriptor plusIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/plus-decorator.png");
     private final ImageDescriptor excludedPackageIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/package_excluded.gif");
+    private final ImageDescriptor excludedEmptyPackageIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/package_empty_excluded.gif");
 
     public void decorate(Object element, IDecoration decoration) {
         if (element instanceof IPackageFragment) {
 
             IPackageFragment pkg = (IPackageFragment) element;
             String pkgName = pkg.getElementName();
+            boolean emptyPkg = isEmptyPackage(pkg);
 
             IJavaProject javaProject = pkg.getJavaProject();
             IProject project = javaProject.getProject();
@@ -52,12 +55,20 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 
                 if (contained == null || !contained.contains(pkgName)) {
                     ((DecorationContext) decoration.getDecorationContext()).putProperty(IDecoration.ENABLE_REPLACE, Boolean.TRUE);
-                    decoration.addOverlay(excludedPackageIcon, IDecoration.REPLACE);
+                    decoration.addOverlay(emptyPkg ? excludedEmptyPackageIcon : excludedPackageIcon, IDecoration.REPLACE);
                     decoration.addSuffix("<excluded>");
                 }
             } else {
                 ExportedPackageDecoratorJob.scheduleForProject(project);
             }
+        }
+    }
+
+    private boolean isEmptyPackage(IPackageFragment pkg) {
+        try {
+            return !pkg.containsJavaResources();
+        } catch (JavaModelException e) {
+            return false;
         }
     }
 }
