@@ -91,14 +91,6 @@ public class BndEditModel {
 																												.valueOf(string);
 																									}
 																								};
-	protected Converter<VersionPolicy,String>						versionPolicyConverter		= new Converter<VersionPolicy,String>() {
-																									public VersionPolicy convert(
-																											String string)
-																											throws IllegalArgumentException {
-																										return VersionPolicy
-																												.parse(string);
-																									}
-																								};
 	protected Converter<List<String>,String>						listConverter				= SimpleListConverter
 																										.create();
 	protected Converter<List<HeaderClause>,String>					headerClauseListConverter	= new HeaderClauseListConverter();
