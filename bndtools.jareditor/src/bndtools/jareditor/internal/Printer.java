@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -18,6 +19,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -26,6 +28,7 @@ import aQute.bnd.osgi.Verifier;
 import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
 import aQute.libg.generics.Create;
+import bndtools.utils.CollectionUtil;
 
 public class Printer extends Processor {
 
@@ -111,7 +114,8 @@ public class Printer extends Processor {
                 }
                 if ((options & USEDBY) != 0) {
                     out.println("[USEDBY]");
-                    printMultiMap(analyzer.getUses().transpose());
+                    Map<PackageRef,Set<PackageRef>> usedBy = CollectionUtil.invertMapOfCollection(analyzer.getUses());
+                    printMultiMap(usedBy);
                 }
             }
 

@@ -191,7 +191,7 @@ public class AnalyseBundleResolutionJob extends Job {
         Parameters exportsMap = new Parameters(exportPkgStr);
 
         // Merge the exports
-        MultiMap<PackageRef,PackageRef> uses = builder.getUses();
+        Map<PackageRef,List<PackageRef>> uses = builder.getUses();
         for (Entry<String,Attrs> entry : exportsMap.entrySet()) {
             String pkgName = Processor.removeDuplicateMarker(entry.getKey());
             ExportPackage export = new ExportPackage(pkgName, entry.getValue(), uses.get(pkgName));
@@ -204,8 +204,8 @@ public class AnalyseBundleResolutionJob extends Job {
         }
 
         // Merge the used-by package mappings
-        MultiMap<PackageRef,PackageRef> myUsedBy = CollectionUtils.invertMultiMap(uses);
-        for (Entry<PackageRef,List<PackageRef>> entry : myUsedBy.entrySet()) {
+        Map<PackageRef,Set<PackageRef>> myUsedBy = CollectionUtils.invertMapOfCollection(uses);
+        for (Entry<PackageRef,Set<PackageRef>> entry : myUsedBy.entrySet()) {
             String pkgName = entry.getKey().getFQN();
             List<String> users = getFQNList(entry.getValue());
 
@@ -240,7 +240,7 @@ public class AnalyseBundleResolutionJob extends Job {
         }
     }
 
-    private static List<String> getFQNList(List<PackageRef> pkgRefs) {
+    private static List<String> getFQNList(Collection<PackageRef> pkgRefs) {
         List<String> result = new ArrayList<String>(pkgRefs.size());
         for (PackageRef pkgRef : pkgRefs) {
             result.add(pkgRef.getFQN());
