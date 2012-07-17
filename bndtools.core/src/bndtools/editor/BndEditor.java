@@ -64,8 +64,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.build.model.conversions.Converter;
-import aQute.bnd.build.model.conversions.EnumConverter;
 import bndtools.BndConstants;
 import bndtools.Logger;
 import bndtools.Plugin;
@@ -101,8 +99,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
 
     private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
-
-    private final Converter<ResolveMode,String> resolveModeConverter = EnumConverter.create(ResolveMode.class, ResolveMode.manual);
 
     public BndEditor() {
         pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
@@ -241,7 +237,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             sourcePage.refresh();
         }
 
-        ResolveMode resolveMode = resolveModeConverter.convert((String) model.genericGet(BndConstants.RESOLVE_MODE));
+        ResolveMode resolveMode = getResolveMode();
 
         // If auto resolve, then resolve and save in background thread.
         if (resolveMode == ResolveMode.auto && !PlatformUI.getWorkbench().isClosing()) {
@@ -299,6 +295,18 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             // Not auto-resolving, just save
             reallySave(monitor);
         }
+    }
+
+    private ResolveMode getResolveMode() {
+        ResolveMode resolveMode = ResolveMode.manual;
+        try {
+            String str = (String) model.genericGet(BndConstants.RESOLVE_MODE);
+            if (str != null)
+                resolveMode = Enum.valueOf(ResolveMode.class, str);
+        } catch (Exception e) {
+            logger.logError("Error parsing '-resolve' header.", e);
+        }
+        return resolveMode;
     }
 
     private void reallySave(IProgressMonitor monitor) {

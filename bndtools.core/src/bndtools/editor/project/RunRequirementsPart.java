@@ -65,10 +65,6 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.bnd.build.model.conversions.Converter;
-import aQute.bnd.build.model.conversions.EnumConverter;
-import aQute.bnd.build.model.conversions.EnumFormatter;
-import aQute.bnd.build.model.conversions.SimpleListConverter;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Version;
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -78,6 +74,7 @@ import aQute.libg.filters.Filter;
 import aQute.libg.filters.LiteralFilter;
 import aQute.libg.filters.Operator;
 import aQute.libg.filters.SimpleFilter;
+import aQute.libg.qtokens.QuotedTokenizer;
 import bndtools.BndConstants;
 import bndtools.Central;
 import bndtools.Logger;
@@ -102,11 +99,6 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
     private final Image addBundleIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick_add.png").createImage();
     private final Image resolveIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/wand.png").createImage();
-
-    private final Converter<ResolveMode,String> resolveModeConverter = EnumConverter.create(ResolveMode.class, ResolveMode.manual);
-    private final Converter<String,ResolveMode> resolveModeFormatter = EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
-
-    private final Converter<List<Requirement>,String> legacyRequireListConverter = SimpleListConverter.create(new LegacyRunRequiresConverter());
 
     private ToolItem addBundleTool;
     private ToolItem removeTool;
@@ -383,7 +375,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
             committing = true;
             model.setRunRequires(requires);
             model.genericSet(Constants.RUNREQUIRE, null);
-            model.genericSet(BndConstants.RESOLVE_MODE, resolveModeFormatter.convert(resolveMode));
+            setResolveMode();
         } finally {
             committing = false;
         }
@@ -395,18 +387,64 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         if (tmp == null) {
             String legacyReqStr = (String) model.genericGet(Constants.RUNREQUIRE);
             if (legacyReqStr != null) {
-                tmp = legacyRequireListConverter.convert(legacyReqStr);
+                tmp = convertLegacyRequireList(legacyReqStr);
             }
         }
 
         requires = new ArrayList<Requirement>(tmp != null ? tmp : Collections.<Requirement> emptyList());
         viewer.setInput(requires);
 
-        resolveMode = resolveModeConverter.convert((String) model.genericGet(BndConstants.RESOLVE_MODE));
+        resolveMode = getResolveMode();
         btnAutoResolve.setSelection(resolveMode == ResolveMode.auto);
         updateButtonStates();
 
         super.refresh();
+    }
+
+    private void setResolveMode() {
+        String formatted;
+        if (resolveMode == ResolveMode.manual || resolveMode == null)
+            formatted = null;
+        else
+            formatted = resolveMode.toString();
+        model.genericSet(BndConstants.RESOLVE_MODE, formatted);
+    }
+
+    private ResolveMode getResolveMode() {
+        ResolveMode resolveMode = ResolveMode.manual;
+        try {
+            String str = (String) model.genericGet(BndConstants.RESOLVE_MODE);
+            if (str != null)
+                resolveMode = Enum.valueOf(ResolveMode.class, str);
+        } catch (Exception e) {
+            logger.logError("Error parsing '-resolve' header.", e);
+        }
+        return resolveMode;
+    }
+
+    private List<Requirement> convertLegacyRequireList(String input) throws IllegalArgumentException {
+        List<Requirement> result = new ArrayList<Requirement>();
+        if (Constants.EMPTY_HEADER.equalsIgnoreCase(input.trim()))
+            return result;
+
+        QuotedTokenizer qt = new QuotedTokenizer(input, ",");
+        String token = qt.nextToken();
+
+        while (token != null) {
+            String item = token.trim();
+            int index = item.indexOf(":");
+            if (index < 0)
+                throw new IllegalArgumentException("Invalid format for requirement");
+
+            String name = item.substring(0, index);
+            String filter = item.substring(index + 1);
+            Requirement req = new CapReqBuilder(name).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter).buildSyntheticRequirement();
+            result.add(req);
+
+            token = qt.nextToken();
+        }
+
+        return result;
     }
 
     private void updateButtonStates() {
