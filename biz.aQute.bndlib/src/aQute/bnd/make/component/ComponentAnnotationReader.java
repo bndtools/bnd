@@ -256,7 +256,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		return Modifier.isPublic(method.getAccess()) || Modifier.isProtected(method.getAccess());
 	}
 
-	static Pattern	PROPERTY_PATTERN	= Pattern.compile("\\s*([^=\\s])+\\s*=(.+)");
+	static Pattern	PROPERTY_PATTERN	= Pattern.compile("\\s*([^=\\s]+)\\s*=(.+)");
 
 	private void doProperties(aQute.bnd.osgi.Annotation annotation) {
 		Object[] properties = annotation.get(Component.PROPERTIES);
