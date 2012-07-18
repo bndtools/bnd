@@ -13,6 +13,7 @@ Export-Package: aQute.bnd.service.*,\
 	org.osgi.service.bindex,\
 	aQute.service.reporter,\
 	aQute.bnd.osgi.resource,\
+	org.osgi.service.repository,\
 	org.osgi.resource
 
 Import-Package: org.apache.tools.ant.*;resolution:=optional,\
