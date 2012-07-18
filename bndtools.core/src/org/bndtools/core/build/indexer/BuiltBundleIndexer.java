@@ -53,9 +53,14 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
 
         Set<File> files = new HashSet<File>();
         for (IPath path : paths) {
-            IFile ifile = wsroot.getFile(path);
-            File file = ifile.getLocation().toFile();
-            files.add(file);
+            try {
+                IFile ifile = wsroot.getFile(path);
+                File file = ifile.getLocation().toFile();
+                files.add(file);
+            } catch (IllegalArgumentException e) {
+                System.err.println("### Error processing path: " + path);
+                e.printStackTrace();
+            }
         }
 
         // Generate the index file
@@ -83,7 +88,7 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
 
             Map<String,String> config = new HashMap<String,String>();
             config.put(ResourceIndexer.REPOSITORY_NAME, project.getName());
-            config.put(ResourceIndexer.ROOT_URL, workspaceRootUri.toString());
+            config.put(ResourceIndexer.ROOT_URL, project.getLocationURI().toString());
             config.put(ResourceIndexer.PRETTY, "true");
 
             output = new FileOutputStream(indexFile);
