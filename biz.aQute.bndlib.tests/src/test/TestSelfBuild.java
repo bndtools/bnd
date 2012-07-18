@@ -14,7 +14,7 @@ public class TestSelfBuild extends TestCase {
 		project.action("build");
 
 		File files[] = project.build();
-		assertTrue(project.check("Imports that lack version ranges", "private"));
+		assertTrue(project.check("Imports that lack version ranges"));
 		assertNotNull(files);
 		assertEquals(1, files.length);
 	}
