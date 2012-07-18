@@ -16,7 +16,7 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 public class AnnotationsTest extends TestCase {
 
 	@Component(name = "mycomp", enabled = true, factory = "abc", immediate = false, provide = LogService.class, servicefactory = true,
-			properties = " aprop = a prop ")
+			properties = {" aprop = a prop ", "    aprop2    =    really dumb value   ! "})
 	static class MyComponent implements Serializable {
 		private static final long	serialVersionUID	= 1L;
 		LogService					log;
@@ -56,7 +56,7 @@ public class AnnotationsTest extends TestCase {
 		assertEquals("modifiedx", map.get("modified:"));
 		assertEquals("org.osgi.service.log.LogService(abc=3)~", map.get("log/setLog"));
 		assertEquals("org.osgi.service.packageadmin.PackageAdmin", map.get("packageAdmin/setPackageAdmin"));
-		assertEquals("aprop= a prop ", map.get("properties:"));
+		assertEquals("aprop= a prop ,aprop2=    really dumb value   ! ", map.get("properties:"));
 	}
 
 	public void testSimple() throws Exception {
