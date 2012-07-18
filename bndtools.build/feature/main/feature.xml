@@ -13,7 +13,7 @@
 <feature
       id="bndtools.feature"
       label="Bndtools"
-      version="1.1.0.RC2-qualifier"
+      version="2.0.0.alpha01-qualifier"
       provider-name="Bndtools"
       plugin="bndtools.core">
 
@@ -117,6 +117,13 @@ This Agreement is governed by the laws of the State of New York and the intellec
    
    <plugin
          id="biz.aQute.repository"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="biz.aQute.resolve"
          download-size="0"
          install-size="0"
          version="0.0.0"
