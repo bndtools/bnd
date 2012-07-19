@@ -640,6 +640,10 @@ public class Analyzer extends Processor {
 		return referred;
 	}
 
+	public Map<String, Map<String, String>> getClasspathExports() {
+		return classpathExports;
+	}
+
 	/**
 	 * Return the set of unreachable code depending on exports and the bundle
 	 * activator.
