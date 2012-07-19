@@ -9,6 +9,7 @@ import org.osgi.service.component.annotations.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 
 /**
@@ -26,7 +27,7 @@ import aQute.lib.collections.*;
 public class AnnotationReader extends ClassDataCollector {
 	final static TypeRef[]		EMPTY					= new TypeRef[0];
 	final static Pattern		PROPERTY_PATTERN		= Pattern
-																.compile("\\s*([^=]+(\\s*:\\s*(Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
+																.compile("\\s*([^=\\s:]+)\\s*(?::\\s*(Boolean|Byte|Char|Short|Integer|Long|Float|Double|String)\\s*)?=(.*)");
 
 	public static final Version	V1_1					= new Version("1.1.0");																												// "1.1.0"
 	public static final Version	V1_2					= new Version("1.2.0");																												// "1.1.0"
@@ -308,7 +309,11 @@ public class AnnotationReader extends ClassDataCollector {
 
 				if (m.matches()) {
 					String key = m.group(1);
-					String value = m.group(4);
+					String type = m.group(2);
+					if ( type != null)
+						key += ":" + type;
+					
+					String value = m.group(3);
 					component.property.add(key, value);
 				} else
 					throw new IllegalArgumentException("Malformed property '" + p + "' on component: " + className);

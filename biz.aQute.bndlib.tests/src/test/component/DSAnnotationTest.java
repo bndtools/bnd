@@ -21,9 +21,9 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 
 	@Component(property = {
-			"x:Integer=3.0", "a=1", "a=2", "b=1", "boolean:Boolean=true", "byte:Byte=1", "char:Character=1",
+			"  x : Integer =3.0", "a                   =1", "                       a=2", " b =1", "boolean          :            Boolean   \n\t      =true", "byte:Byte=1", "char:Char=1",
 			"short:Short=3", "integer:Integer=3", "long:Long=3", "float:Float=3.0", "double:Double=3e7",
-			"string:String=%", "wrongInteger:Integer=blabla"
+			"string:String=%", "wrongInteger:Integer=blabla", "\n\r\t \u0343\u0344\u0345\u0346\n:Integer=3"
 	})
 	public static class PropertiesTestx {
 
@@ -52,12 +52,13 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("", "scr:component/property[@name='a']/@value");
 		xt.assertAttribute("Byte", "scr:component/property[@name='byte']/@type");
 		xt.assertAttribute("Boolean", "scr:component/property[@name='boolean']/@type");
-		xt.assertAttribute("Character", "scr:component/property[@name='char']/@type");
+		xt.assertAttribute("Char", "scr:component/property[@name='char']/@type");
 		xt.assertAttribute("Short", "scr:component/property[@name='short']/@type");
 		xt.assertAttribute("Integer", "scr:component/property[@name='integer']/@type");
 		xt.assertAttribute("Long", "scr:component/property[@name='long']/@type");
 		xt.assertAttribute("Float", "scr:component/property[@name='float']/@type");
 		xt.assertAttribute("Double", "scr:component/property[@name='double']/@type");
+		xt.assertAttribute("Integer", "scr:component/property[@name='\u0343\u0344\u0345\u0346']/@type");
 	}
 
 	/**

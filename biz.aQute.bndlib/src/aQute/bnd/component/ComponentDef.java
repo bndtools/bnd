@@ -7,6 +7,7 @@ import org.osgi.service.component.annotations.*;
 
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.tag.*;
 
@@ -183,6 +184,9 @@ class ComponentDef {
 			return v;
 
 		try {
+			if ( type.equals("Char"))
+				type = "Character";
+			
 			Class< ? > c = Class.forName("java.lang." + type);
 			if (c == String.class)
 				return v;
