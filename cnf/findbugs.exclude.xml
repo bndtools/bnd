@@ -1,4 +1,10 @@
 <FindBugsFilter>
+	<!-- ignore all of these -->
+	<Match>
+		<Bug pattern="VA_FORMAT_STRING_USES_NEWLINE" />
+	</Match>
+
+	<!-- some hard coded paths seem to be needed -->
 	<Match>
 		<Class name="~aQute\.jpm\.platform\.(MacOS|Unix)" />
 		<Method name="getGlobal" />
