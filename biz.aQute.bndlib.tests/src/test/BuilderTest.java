@@ -14,6 +14,35 @@ import aQute.lib.collections.*;
 import aQute.lib.io.*;
 
 public class BuilderTest extends BndTestCase {
+	/**
+	 * Check if we can create digests
+	 * @throws Exception 
+	 */
+	
+	public void testDigests() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(IO.getFile(new File(""), "jar/osgi.jar"));
+		b.setExportPackage("org.osgi.framework");
+		b.setProperty(Constants.DIGESTS, "MD5, SHA1");
+		Jar jar = b.build();
+		assertTrue(b.check());
+		File f = File.createTempFile("test", ".jar");
+		jar.write(f);
+		
+		Jar other = new Jar(f);
+		Manifest manifest = other.getManifest();
+		assertNotNull(manifest);
+		Attributes attrs =manifest.getAttributes("org/osgi/framework/BundleActivator.class");
+		assertNotNull(attrs);
+		assertEquals( "RTRhr3kadnulINegRhpmog==", attrs.getValue("MD5-Digest"));
+		assertEquals( "BfVfpnE3Srx/0UWwtzNecrAGf8A=", attrs.getValue("SHA-Digest"));
+	
+		b.close();
+		other.close();
+	}
+	
+	
+	
 
 	/**
 	 * Test the Include-Resource facility to generate resources on the fly. This

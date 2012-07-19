@@ -14,7 +14,6 @@ Bundle-Version: 				0.0.5
 	org.mockito.mockito-all;version=1.9.0
 	
 
--namesection: 					*;MD5-Digest='${md5;${@}}';SHA1-Digest='${sha1;${@}}'
-
+-digests: MD5, SHA1
 
 -sub: *.bnd

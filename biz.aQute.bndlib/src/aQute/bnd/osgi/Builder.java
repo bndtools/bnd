@@ -117,6 +117,8 @@ public class Builder extends Analyzer {
 		dot.updateModified(lastModified(), "Last Modified Processor");
 		dot.setName(getBsn());
 
+		doDigests(dot);
+		
 		sign(dot);
 		doSaveManifest(dot);
 
@@ -138,7 +140,7 @@ public class Builder extends Analyzer {
 			return;
 		trace("digests %s", ps);
 		String[] digests = ps.keySet().toArray(new String[ps.size()]);
-		dot.calcChecksums(digests);
+		dot.setDigestAlgorithms(digests);
 	}
 
 	/**

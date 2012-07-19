@@ -34,6 +34,7 @@ public class Jar implements Closeable {
 	boolean									nomanifest;
 	Compression								compression	= Compression.DEFLATE;
 	boolean									closed;
+	String[]								algorithms;
 
 	public Jar(String name) {
 		this.name = name;
@@ -241,6 +242,40 @@ public class Jar implements Closeable {
 
 	public void write(OutputStream out) throws Exception {
 		check();
+
+		if (!doNotTouchManifest && !nomanifest && algorithms != null) {
+
+			// ok, we have a request to create digests
+			// of the resources. Since we have to output
+			// the manifest first, we have a slight problem.
+			// We can also not make multiple passes over the resource
+			// because some resources are not idempotent and/or can
+			// take significant time. So we just copy the jar
+			// to a temporary file, read it in again, calculate
+			// the checksums and save.
+
+			String[] algs = algorithms;
+			algorithms = null;
+			try {
+				File f = File.createTempFile(getName(), ".jar");
+				System.out.println("Created tmp file " + f);
+				write(f);
+				Jar tmp = new Jar(f);
+				try {
+					tmp.calcChecksums(algorithms);
+					tmp.write(out);
+				}
+				finally {
+					f.delete();
+					tmp.close();
+				}
+			}
+			finally {
+				algorithms = algs;
+			}
+			return;
+		}
+
 		ZipOutputStream jout = nomanifest || doNotTouchManifest ? new ZipOutputStream(out) : new JarOutputStream(out);
 
 		switch (compression) {
@@ -278,6 +313,7 @@ public class Jar implements Closeable {
 			return;
 
 		JarEntry ze = new JarEntry("META-INF/MANIFEST.MF");
+
 		jout.putNextEntry(ze);
 		writeManifest(jout);
 		jout.closeEntry();
@@ -809,5 +845,9 @@ public class Jar implements Closeable {
 		finally {
 			din.close();
 		}
+	}
+
+	public void setDigestAlgorithms(String[] algorithms) {
+		this.algorithms = algorithms;
 	}
 }
