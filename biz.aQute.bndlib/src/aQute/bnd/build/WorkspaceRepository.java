@@ -6,6 +6,7 @@ import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.version.*;
 
 public class WorkspaceRepository implements RepositoryPlugin {
 	private final Workspace	workspace;

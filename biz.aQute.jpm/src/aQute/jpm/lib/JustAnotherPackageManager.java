@@ -9,7 +9,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.filerepo.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 import aQute.jpm.platform.*;
 import aQute.lib.base64.*;
 import aQute.lib.data.*;
@@ -301,6 +301,7 @@ public class JustAnotherPackageManager {
 			}
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 			return "Failed to verify due to exception: " + e.getMessage();
 		}
 		return null;

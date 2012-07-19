@@ -17,9 +17,9 @@ import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.osgi.Version;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.service.diff.Type;
+import aQute.bnd.version.Version;
 import aQute.lib.collections.*;
 import aQute.libg.generics.*;
 

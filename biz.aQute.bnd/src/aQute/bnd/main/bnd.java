@@ -33,6 +33,7 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.settings.*;
+import aQute.bnd.version.*;
 import aQute.configurable.*;
 import aQute.lib.collections.*;
 import aQute.lib.filter.*;
@@ -313,7 +314,7 @@ public class bnd extends Processor {
 		String manifest = options.manifest();
 		if (manifest != null) {
 			if (options.verbose())
-				err.printf("Adding manifest from %s%n", manifest);
+				err.printf("Adding manifest from %s\n", manifest);
 
 			jar.setManifest(getFile(manifest));
 		}
@@ -366,7 +367,7 @@ public class bnd extends Processor {
 		else
 			f = getFile(base, path);
 
-		err.printf("Adding: %s%n", path);
+		err.printf("Adding: %s\n", path);
 
 		if (f.isFile()) {
 			jar.putResource(path, new FileResource(f));
@@ -424,7 +425,7 @@ public class bnd extends Processor {
 			Jar.Compression compression = jar.hasCompression();
 			for (String path : selected) {
 				if (opts.verbose())
-					System.err.printf("%8s: %s%n", compression.toString().toLowerCase(), path);
+					System.err.printf("%8s: %s\n", compression.toString().toLowerCase(), path);
 
 				File f = getFile(store, path);
 				f.getParentFile().mkdirs();
@@ -472,9 +473,9 @@ public class bnd extends Processor {
 			for (String path : selected) {
 				if (opts.verbose()) {
 					Resource r = jar.getResource(path);
-					err.printf("%8s %-32s %s%n", r.size(), new Date(r.lastModified()), path);
+					err.printf("%8s %-32s %s\n", r.size(), new Date(r.lastModified()), path);
 				} else
-					err.printf("%s%n", path);
+					err.printf("%s\n", path);
 			}
 		}
 		finally {
@@ -551,11 +552,11 @@ public class bnd extends Processor {
 
 		List<String> l = new ArrayList<String>(options._());
 		if (l.isEmpty()) {
-			err.printf("Name         %s%n", project.getName());
-			err.printf("Actions      %s%n", project.getActions().keySet());
-			err.printf("Directory    %s%n", project.getBase());
-			err.printf("Depends on   %s%n", project.getDependson());
-			err.printf("Sub builders %s%n", project.getSubBuilders());
+			err.printf("Name         %s\n", project.getName());
+			err.printf("Actions      %s\n", project.getActions().keySet());
+			err.printf("Directory    %s\n", project.getBase());
+			err.printf("Depends on   %s\n", project.getDependson());
+			err.printf("Sub builders %s\n", project.getSubBuilders());
 			return;
 		}
 
@@ -693,7 +694,7 @@ public class bnd extends Processor {
 		Formatter f = new Formatter(sb);
 
 		for (String s : args) {
-			f.format("[%s]%n", s);
+			f.format("[%s]\n", s);
 			Syntax sx = Syntax.HELP.get(s);
 			if (s == null)
 				f.format("Unknown");
@@ -701,7 +702,7 @@ public class bnd extends Processor {
 				print(f, sx, "  ");
 			}
 		}
-		f.format("%n");
+		f.format("\n");
 		f.flush();
 		justif.wrap(sb);
 		err.println(sb);
@@ -711,18 +712,18 @@ public class bnd extends Processor {
 		if (sx == null)
 			return;
 
-		f.format("%s%s%n%n", indent, sx.getLead());
+		f.format("%s%s\n\n", indent, sx.getLead());
 		if (sx.getValues() != null)
-			f.format("%sValues\t3: %s%n", indent, sx.getValues());
+			f.format("%sValues\t3: %s\n", indent, sx.getValues());
 
 		if (sx.getPattern() != null)
-			f.format("%sPattern  \t3: %s%n", indent, sx.getPattern());
+			f.format("%sPattern  \t3: %s\n", indent, sx.getPattern());
 		if (sx.getExample() != null)
-			f.format("%sExample  \t3: %s%n", indent, sx.getExample());
+			f.format("%sExample  \t3: %s\n", indent, sx.getExample());
 		if (sx.getChildren() != null) {
 
 			for (Syntax child : sx.getChildren()) {
-				f.format("%n%s[%s]%n", indent, child.getHeader());
+				f.format("\n%s[%s]\n", indent, child.getHeader());
 				print(f, child, indent + "  ");
 			}
 		}
@@ -909,7 +910,7 @@ public class bnd extends Processor {
 
 		for (Container c : containers) {
 			Version v = new Version(c.getVersion());
-			err.printf("%-40s %8s  %s%n", c.getBundleSymbolicName(), v.getWithoutQualifier(), c.getFile());
+			err.printf("%-40s %8s  %s\n", c.getBundleSymbolicName(), v.getWithoutQualifier(), c.getFile());
 		}
 		getInfo(project);
 	}
@@ -1031,9 +1032,9 @@ public class bnd extends Processor {
 			String first = "";
 			if (row.hasNext())
 				first = row.next().getFQN();
-			err.printf("%40s > %s%n", element.getFQN(), first);
+			err.printf("%40s > %s\n", element.getFQN(), first);
 			while (row.hasNext()) {
-				err.printf("%40s   %s%n", "", row.next().getFQN());
+				err.printf("%40s   %s\n", "", row.next().getFQN());
 			}
 		}
 	}
@@ -1674,7 +1675,7 @@ public class bnd extends Processor {
 		}
 		for (String key : sorted) {
 			Object value = manifest.getMainAttributes().getValue(key);
-			format("%-40s %-40s%n", new Object[] {
+			format("%-40s %-40s\n", new Object[] {
 					key, value
 			});
 		}
@@ -1808,7 +1809,7 @@ public class bnd extends Processor {
 			Object key = entry.getKey();
 			Map< ? , ? > clause = Create.copy(entry.getValue());
 			clause.remove("uses:");
-			out.printf("  %-38s %s%n", key.toString().trim(), clause.isEmpty() ? "" : clause.toString());
+			out.printf("  %-38s %s\n", key.toString().trim(), clause.isEmpty() ? "" : clause.toString());
 		}
 	}
 
@@ -2491,7 +2492,7 @@ public class bnd extends Processor {
 			}
 		}
 		out.printf("Export-Package:");
-		String del = String.format(" %n  ");
+		String del = String.format(" \n  ");
 		for (String key : parameters.keySet()) {
 			out.print(del);
 			out.print(key);
@@ -2505,7 +2506,7 @@ public class bnd extends Processor {
 				out.print("=");
 				Processor.quote(out, attrs.get(name));
 			}
-			del = String.format(", %n  ");
+			del = String.format(", \n  ");
 		}
 		out.println();
 	}
@@ -2578,16 +2579,16 @@ public class bnd extends Processor {
 				catch (Exception ee) {
 					// Ignore
 				}
-				out.printf("%-40s %s%n", "Version", attrs.getValue(Constants.BUNDLE_VERSION));
+				out.printf("%-40s %s\n", "Version", attrs.getValue(Constants.BUNDLE_VERSION));
 				if (lastModified > 0)
-					out.printf("%-40s %s%n", "From", new Date(lastModified));
+					out.printf("%-40s %s\n", "From", new Date(lastModified));
 				Parameters p = OSGiHeader.parseHeader(attrs.getValue(Constants.BUNDLE_LICENSE));
 				for (String l : p.keySet())
-					out.printf("%-40s %s%n", "License", p.get(l).get("description"));
-				out.printf("%-40s %s%n", "Copyright", attrs.getValue(Constants.BUNDLE_COPYRIGHT));
-				out.printf("%-40s %s%n", "Git-SHA", attrs.getValue("Git-SHA"));
-				out.printf("%-40s %s%n", "Git-Descriptor", attrs.getValue("Git-Descriptor"));
-				out.printf("%-40s %s%n", "Sources", attrs.getValue("Bundle-SCM"));
+					out.printf("%-40s %s\n", "License", p.get(l).get("description"));
+				out.printf("%-40s %s\n", "Copyright", attrs.getValue(Constants.BUNDLE_COPYRIGHT));
+				out.printf("%-40s %s\n", "Git-SHA", attrs.getValue("Git-SHA"));
+				out.printf("%-40s %s\n", "Git-Descriptor", attrs.getValue("Git-Descriptor"));
+				out.printf("%-40s %s\n", "Sources", attrs.getValue("Bundle-SCM"));
 				return;
 			}
 		}
@@ -2728,7 +2729,7 @@ public class bnd extends Processor {
 								if (end > value.length())
 									end = value.length();
 
-								out.printf("%40s : %20s ...%s[%s]%s...%n", fileName, name,
+								out.printf("%40s : %20s ...%s[%s]%s...\n", fileName, name,
 										value.substring(start, matcher.start()),
 										value.substring(matcher.start(), matcher.end()),
 										value.substring(matcher.end(), end));

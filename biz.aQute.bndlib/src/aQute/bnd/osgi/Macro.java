@@ -7,6 +7,7 @@ import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
 

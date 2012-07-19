@@ -8,6 +8,7 @@ import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.service.diff.Diff.Ignore;
+import aQute.bnd.version.*;
 import aQute.libg.generics.*;
 import aQute.service.reporter.*;
 

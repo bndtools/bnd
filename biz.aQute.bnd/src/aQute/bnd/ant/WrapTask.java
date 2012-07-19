@@ -7,6 +7,7 @@ import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
 import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 import aQute.libg.qtokens.*;
 
 /**

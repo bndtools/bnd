@@ -22,6 +22,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.service.url.*;
+import aQute.bnd.version.*;
 import aQute.lib.filter.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;

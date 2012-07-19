@@ -7,9 +7,9 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.bnd.differ.*;
-import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.diff.*;
+import aQute.bnd.version.*;
 
 public class RepoTreeTest extends TestCase {
 	public void testSimple() throws Exception {

@@ -11,6 +11,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.diff.*;
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.deployer.*;
 import aQute.lib.getopt.*;

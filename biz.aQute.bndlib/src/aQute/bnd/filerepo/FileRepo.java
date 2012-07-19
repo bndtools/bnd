@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 
 public class FileRepo {
 	File	root;

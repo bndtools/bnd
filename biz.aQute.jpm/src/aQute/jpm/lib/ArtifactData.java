@@ -2,7 +2,7 @@ package aQute.jpm.lib;
 
 import java.util.*;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 
 public class ArtifactData {
 	public long				time	= System.currentTimeMillis();

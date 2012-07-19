@@ -16,6 +16,7 @@ import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.action.*;
+import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
 import aQute.libg.reporter.*;

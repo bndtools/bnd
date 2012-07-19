@@ -9,6 +9,7 @@ Export-Package: aQute.bnd.service.*,\
         aQute.bnd.header, \
         aQute.bnd.osgi, \
         aQute.bnd.build, \
+        aQute.bnd.version, \
         aQute.bnd.maven.support, \
 	org.osgi.service.bindex,\
 	aQute.service.reporter,\

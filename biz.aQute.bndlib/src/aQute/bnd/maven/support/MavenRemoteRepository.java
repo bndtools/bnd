@@ -6,6 +6,7 @@ import java.util.*;
 
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.service.reporter.*;
 

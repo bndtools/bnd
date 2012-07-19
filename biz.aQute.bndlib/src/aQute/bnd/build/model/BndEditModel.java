@@ -12,6 +12,7 @@ import aQute.bnd.build.model.conversions.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.properties.*;
+import aQute.bnd.version.*;
 import aQute.libg.tuple.*;
 
 /**

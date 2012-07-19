@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 
 public class Attrs implements Map<String,String> {

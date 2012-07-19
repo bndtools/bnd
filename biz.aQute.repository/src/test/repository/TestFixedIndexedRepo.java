@@ -9,6 +9,7 @@ import test.lib.*;
 import aQute.bnd.deployer.repository.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.version.*;
 
 public class TestFixedIndexedRepo extends TestCase {
 

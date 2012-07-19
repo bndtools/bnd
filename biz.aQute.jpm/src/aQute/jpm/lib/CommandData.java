@@ -2,7 +2,7 @@ package aQute.jpm.lib;
 
 import java.io.*;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 import aQute.lib.data.*;
 
 public class CommandData {

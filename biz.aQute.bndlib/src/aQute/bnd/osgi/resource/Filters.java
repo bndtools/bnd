@@ -3,6 +3,7 @@ package aQute.bnd.osgi.resource;
 import org.osgi.framework.namespace.*;
 
 import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 import aQute.libg.filters.*;
 
 public class Filters {

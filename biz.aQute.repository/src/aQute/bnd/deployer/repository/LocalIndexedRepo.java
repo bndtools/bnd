@@ -11,6 +11,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.deployer.repository.api.*;
 import aQute.bnd.filerepo.FileRepo;
 import aQute.bnd.service.*;
+import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.libg.tuple.*;
 

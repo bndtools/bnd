@@ -12,7 +12,7 @@ import java.util.regex.*;
 import javax.swing.*;
 
 import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
 import aQute.lib.collections.*;
 import aQute.lib.data.*;
@@ -163,7 +163,7 @@ public class Main extends ReporterAdapter {
 	 * @throws IOException
 	 */
 	public void _jpm(jpmOptions opts) {
-
+System.out.println("hello");
 		try {
 			setExceptions(opts.exceptions());
 			setTrace(opts.trace());
@@ -798,4 +798,13 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
+	/**
+	 * Show the current version
+	 * @throws IOException 
+	 */
+	
+	public void _version(Options options) throws IOException {
+		Manifest m = new Manifest(getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"));
+		out.println( m.getMainAttributes().getValue("Bundle-Version"));
+	}
 }

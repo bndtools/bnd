@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.jar.*;
 
 import aQute.bnd.header.*;
+import aQute.bnd.version.*;
 import aQute.lib.converter.*;
 import aQute.service.reporter.*;
 

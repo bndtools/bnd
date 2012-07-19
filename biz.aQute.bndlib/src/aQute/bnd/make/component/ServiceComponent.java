@@ -12,6 +12,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
+import aQute.bnd.version.*;
 
 /**
  * This class is an analyzer plugin. It looks at the properties and tries to

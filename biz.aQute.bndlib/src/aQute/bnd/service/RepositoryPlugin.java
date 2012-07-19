@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 
 public interface RepositoryPlugin {
 	public enum Strategy {

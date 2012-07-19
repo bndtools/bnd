@@ -1,4 +1,4 @@
-package aQute.bnd.osgi;
+package aQute.bnd.version;
 
 import java.util.regex.*;
 

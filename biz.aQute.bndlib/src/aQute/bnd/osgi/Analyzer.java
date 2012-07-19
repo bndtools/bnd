@@ -35,6 +35,7 @@ import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
+import aQute.bnd.version.Version;
 import aQute.lib.base64.*;
 import aQute.lib.collections.*;
 import aQute.lib.filter.*;

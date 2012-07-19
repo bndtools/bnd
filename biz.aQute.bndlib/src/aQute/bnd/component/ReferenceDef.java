@@ -3,6 +3,7 @@ package aQute.bnd.component;
 import org.osgi.service.component.annotations.*;
 
 import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 import aQute.lib.tag.*;
 
 /**

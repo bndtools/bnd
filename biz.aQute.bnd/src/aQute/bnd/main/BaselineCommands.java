@@ -15,6 +15,7 @@ import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.service.diff.*;
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.getopt.*;
 import aQute.lib.tag.*;

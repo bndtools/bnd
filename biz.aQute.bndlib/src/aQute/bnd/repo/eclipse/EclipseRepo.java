@@ -8,6 +8,7 @@ import java.util.jar.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
 import aQute.service.reporter.*;
