@@ -1,5 +1,6 @@
 Bundle-Version: 				1.52.3.${tstamp;yyyyMMdd-HHmmss}
 Conditional-Package: 			aQute.libg.*, aQute.lib.*,aQute.configurable
+XXXX
 
 -sub: *.bnd
 
