@@ -77,6 +77,7 @@ import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
 import bndtools.editor.pages.WorkspacePage;
 import bndtools.launch.LaunchConstants;
+import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
 import bndtools.utils.SWTConcurrencyUtil;
 
@@ -366,6 +367,12 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     void showHighestPriorityPage() {
         int selectedPrio = Integer.MIN_VALUE;
         String selected = null;
+
+        BndPreferences prefs = new BndPreferences();
+        if (prefs.getEditorOpenSourceTab()) {
+            selected = SOURCE_PAGE;
+            selectedPrio = 0;
+        }
 
         for (Object pageObj : pages) {
             IFormPage page = (IFormPage) pageObj;
