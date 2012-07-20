@@ -1596,8 +1596,7 @@ public class bnd extends Processor {
 
 								refs.retainAll(privates);
 								out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
-										, e.getKey().getName(),
-										refs);
+										, e.getKey().getName(), refs);
 							}
 							out.println();
 						}
@@ -1675,9 +1674,7 @@ public class bnd extends Processor {
 		}
 		for (String key : sorted) {
 			Object value = manifest.getMainAttributes().getValue(key);
-			format("%-40s %-40s\n", new Object[] {
-					key, value
-			});
+			out.printf("%-40s %-40s\n", key, value);
 		}
 	}
 
@@ -1770,7 +1767,7 @@ public class bnd extends Processor {
 
 			SortedList<Object> values = new SortedList<Object>(map.get(key));
 			String list = vertical(40, values);
-			format("%-40s %s", name, list);
+			out.printf("%-40s %s\n", name, list);
 		}
 	}
 
@@ -1811,81 +1808,6 @@ public class bnd extends Processor {
 			clause.remove("uses:");
 			out.printf("  %-38s %s\n", key.toString().trim(), clause.isEmpty() ? "" : clause.toString());
 		}
-	}
-
-	private void format(String string, Object... objects) {
-		if (objects == null || objects.length == 0)
-			return;
-
-		StringBuilder sb = new StringBuilder();
-		int index = 0;
-		for (int i = 0; i < string.length(); i++) {
-			char c = string.charAt(i);
-			switch (c) {
-				case '%' :
-					String s = objects[index++] + "";
-					int width = 0;
-					int justify = -1;
-
-					i++;
-
-					c = string.charAt(i++);
-					switch (c) {
-						case '-' :
-							justify = -1;
-							break;
-						case '+' :
-							justify = 1;
-							break;
-						case '|' :
-							justify = 0;
-							break;
-						default :
-							--i;
-					}
-					c = string.charAt(i++);
-					while (c >= '0' && c <= '9') {
-						width *= 10;
-						width += c - '0';
-						c = string.charAt(i++);
-					}
-					if (c != 's') {
-						throw new IllegalArgumentException("Invalid sprintf format:  " + string);
-					}
-
-					if (s.length() > width)
-						sb.append(s);
-					else {
-						switch (justify) {
-							case -1 :
-								sb.append(s);
-								for (int j = 0; j < width - s.length(); j++)
-									sb.append(" ");
-								break;
-
-							case 1 :
-								for (int j = 0; j < width - s.length(); j++)
-									sb.append(" ");
-								sb.append(s);
-								break;
-
-							case 0 :
-								int spaces = (width - s.length()) / 2;
-								for (int j = 0; j < spaces; j++)
-									sb.append(" ");
-								sb.append(s);
-								for (int j = 0; j < width - s.length() - spaces; j++)
-									sb.append(" ");
-								break;
-						}
-					}
-					break;
-
-				default :
-					sb.append(c);
-			}
-		}
-		out.print(sb);
 	}
 
 	/**
