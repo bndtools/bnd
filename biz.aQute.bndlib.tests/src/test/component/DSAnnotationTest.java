@@ -52,7 +52,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("", "scr:component/property[@name='a']/@value");
 		xt.assertAttribute("Byte", "scr:component/property[@name='byte']/@type");
 		xt.assertAttribute("Boolean", "scr:component/property[@name='boolean']/@type");
-		xt.assertAttribute("Char", "scr:component/property[@name='char']/@type");
+		xt.assertAttribute("Character", "scr:component/property[@name='char']/@type");
 		xt.assertAttribute("Short", "scr:component/property[@name='short']/@type");
 		xt.assertAttribute("Integer", "scr:component/property[@name='integer']/@type");
 		xt.assertAttribute("Long", "scr:component/property[@name='long']/@type");
