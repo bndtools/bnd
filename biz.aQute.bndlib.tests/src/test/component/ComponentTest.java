@@ -631,7 +631,7 @@ public class ComponentTest extends TestCase {
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
-		assertEquals(1, b.getErrors().size());
+		assertEquals(2, b.getErrors().size()); //same error detected twice
 		assertEquals(0, b.getWarnings().size());
 
 		Document doc = doc(b, "wacomp");
@@ -934,7 +934,10 @@ public class ComponentTest extends TestCase {
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 
 		component = setup("test.activator.Activator2", "test.activator.Activator2");
-//		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());//method detection in a later commit.
+		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
+
+		component = setup("test.activator.Activator3", "test.activator.Activator3");
+		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 	}
 
 	public void testCustomVersion() throws Exception {
