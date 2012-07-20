@@ -54,9 +54,14 @@ public class ConfigElementLabelProvider extends StyledCellLabelProvider {
     @Override
     public void dispose() {
         super.dispose();
-        defaultImg.dispose();
+        safeDispose(defaultImg);
         for (Image cached : imgCache.values()) {
-            cached.dispose();
+            safeDispose(cached);
         }
+    }
+
+    private void safeDispose(Image img) {
+        if (img != null && !img.isDisposed())
+            img.dispose();
     }
 }
