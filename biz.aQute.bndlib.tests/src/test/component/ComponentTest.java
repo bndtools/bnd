@@ -1140,7 +1140,7 @@ public class ComponentTest extends TestCase {
 		Element reference = (Element) component.getElementsByTagName("reference").item(0);
 		assertEquals("org.osgi.service.http.HttpService", reference.getAttribute("interface"));
 		assertEquals("setHttp", reference.getAttribute("bind"));
-		assertEquals("unsetHttp", reference.getAttribute("unbind"));
+//		assertEquals("unsetHttp", reference.getAttribute("unbind")); // no such method
 		assertEquals("(|(p=1)(p=2))", reference.getAttribute("target"));
 	}
 
@@ -1158,7 +1158,7 @@ public class ComponentTest extends TestCase {
 		Element reference = (Element) component.getElementsByTagName("reference").item(0);
 		assertEquals("org.osgi.service.http.HttpService", reference.getAttribute("interface"));
 		assertEquals("setHttp", reference.getAttribute("bind"));
-		assertEquals("unsetHttp", reference.getAttribute("unbind"));
+//		assertEquals("unsetHttp", reference.getAttribute("unbind")); //no such method
 		assertEquals("", reference.getAttribute("target"));
 		assertEquals("0..1", reference.getAttribute("cardinality"));
 		assertEquals("dynamic", reference.getAttribute("policy"));

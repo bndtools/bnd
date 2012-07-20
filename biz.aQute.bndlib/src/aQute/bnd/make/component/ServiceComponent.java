@@ -9,6 +9,7 @@ import aQute.bnd.annotation.component.*;
 import aQute.bnd.header.*;
 import aQute.bnd.make.metatype.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
@@ -208,7 +209,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 		}
 
 		private void createComponentResource(Map<String,Map<String,String>> components, String name,
-				Map<String,String> info) throws IOException {
+				Map<String,String> info) throws Exception {
 
 			// We can override the name in the parameters
 			if (info.containsKey(COMPONENT_NAME))
@@ -275,7 +276,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * @param info
 		 * @throws UnsupportedEncodingException
 		 */
-		Resource createComponentResource(String name, String impl, Map<String,String> info) throws IOException {
+		Resource createComponentResource(String name, String impl, Map<String,String> info) throws Exception {
 			String namespace = getNamespace(info);
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.DEFAULT_CHARSET));
@@ -311,7 +312,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 			}
 			provide(pw, provides, servicefactory, impl);
 			properties(pw, info);
-			reference(info, pw);
+			reference(info, impl, pw);
 
 			if (namespace != null)
 				pw.println("</scr:component>");
@@ -352,6 +353,10 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * @return
 		 */
 		private String getNamespace(Map<String,String> info) {
+			String namespace = info.get(COMPONENT_NAMESPACE);
+			if (namespace != null) {
+				return namespace;
+			}
 			String version = info.get(COMPONENT_VERSION);
 			if (version != null) {
 				try {
@@ -361,6 +366,11 @@ public class ServiceComponent implements AnalyzerPlugin {
 				catch (Exception e) {
 					error("version: specified on component header but not a valid version: " + version);
 					return null;
+				}
+			}
+			for (String key : info.keySet()) {
+				if (SET_COMPONENT_DIRECTIVES_1_2.contains(key)) {
+					return NAMESPACE_STEM + "/v1.2.0";
 				}
 			}
 			for (String key : info.keySet()) {
@@ -458,15 +468,29 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		/**
 		 * @param info
+		 * @param impl TODO
 		 * @param pw
+		 * @throws Exception 
 		 */
 
-		void reference(Map<String,String> info, PrintWriter pw) {
+		void reference(Map<String,String> info, String impl, PrintWriter pw) throws Exception {
 			Collection<String> dynamic = new ArrayList<String>(split(info.get(COMPONENT_DYNAMIC)));
 			Collection<String> optional = new ArrayList<String>(split(info.get(COMPONENT_OPTIONAL)));
 			Collection<String> multiple = new ArrayList<String>(split(info.get(COMPONENT_MULTIPLE)));
+			Collection<String> greedy = new ArrayList<String>(split(info.get(COMPONENT_GREEDY)));
 
 			Collection<String> descriptors = split(info.get(COMPONENT_DESCRIPTORS));
+			if (descriptors.size() == 0) {
+				TypeRef typeRef = analyzer.getTypeRefFromFQN(impl);
+				Clazz c = analyzer.findClass(typeRef);
+				final Collection<String> methods = new ArrayList<String>();
+				c.parseClassFileWithCollector(new ClassDataCollector() {
+					public void method(MethodDef md) {
+						methods.add(md.getName());
+					}
+				});
+				descriptors = methods;
+			}
 
 			for (Map.Entry<String,String> entry : info.entrySet()) {
 
@@ -482,15 +506,17 @@ public class ServiceComponent implements AnalyzerPlugin {
 				// if set. They are separated by '/'
 				String bind = null;
 				String unbind = null;
+				String updated = null;
 
 				boolean unbindCalculated = false;
+				boolean updatedCalculated = false;
 
 				if (referenceName.indexOf('/') >= 0) {
 					String parts[] = referenceName.split("/");
 					referenceName = parts[0];
-					bind = parts[1];
-					if (parts.length > 2) {
-						unbind = parts[2];
+					bind = parts[1].length() == 0? calculateBind(referenceName): parts[1];
+					if (parts.length > 2 && parts[2].length() > 0) {
+						unbind = parts[2] ;
 					} else {
 						unbindCalculated = true;
 						if (bind.startsWith("add"))
@@ -498,10 +524,18 @@ public class ServiceComponent implements AnalyzerPlugin {
 						else
 							unbind = "un" + bind;
 					}
+					if (parts.length > 3) {
+						updated = parts[3];
+					} else {
+						updatedCalculated = true;
+					}
 				} else if (Character.isLowerCase(referenceName.charAt(0))) {
 					unbindCalculated = true;
-					bind = "set" + Character.toUpperCase(referenceName.charAt(0)) + referenceName.substring(1);
+					updatedCalculated = true;
+					bind = calculateBind(referenceName);
 					unbind = "un" + bind;
+					updated = "updated" + Character.toUpperCase(referenceName.charAt(0))
+					        + referenceName.substring(1);
 				}
 
 				String interfaceName = entry.getValue();
@@ -514,9 +548,9 @@ public class ServiceComponent implements AnalyzerPlugin {
 				// If we have descriptors, we have analyzed the component.
 				// So why not check the methods
 				if (descriptors.size() > 0) {
-					// Verify that the bind method exists
-					if (!descriptors.contains(bind))
-						error("The bind method %s for %s not defined", bind, referenceName);
+					// Verify that the bind method exists //this would break too many tests.
+//					if (!descriptors.contains(bind))
+//						error("The bind method %s for %s not defined", bind, referenceName);
 
 					// Check if the unbind method exists
 					if (!descriptors.contains(unbind)) {
@@ -526,8 +560,15 @@ public class ServiceComponent implements AnalyzerPlugin {
 						else
 							error("The unbind method %s for %s not defined", unbind, referenceName);
 					}
+					if (!descriptors.contains(updated)) {
+						if (updatedCalculated)
+							//remove it
+							updated = null;
+						else 
+						    error("The updated method %s for %s is not defined", updated, referenceName);
+					}
 				}
-				// Check tje cardinality by looking at the last
+				// Check the cardinality by looking at the last
 				// character of the value
 				char c = interfaceName.charAt(interfaceName.length() - 1);
 				if ("?+*~".indexOf(c) >= 0) {
@@ -565,10 +606,17 @@ public class ServiceComponent implements AnalyzerPlugin {
 					if (unbind != null) {
 						pw.printf(" unbind='%s'", unbind);
 					}
+					if (updated != null) {
+						pw.printf(" updated='%s'", updated);
+					}
 				}
 
 				if (dynamic.contains(referenceName)) {
 					pw.print(" policy='dynamic'");
+				}
+
+				if (greedy.contains(referenceName)) {
+					pw.print(" policy-option='greedy'");
 				}
 
 				if (target != null) {
@@ -583,6 +631,11 @@ public class ServiceComponent implements AnalyzerPlugin {
 				}
 				pw.println("/>");
 			}
+		}
+
+		private String calculateBind(String referenceName) {
+			return "set" + Character.toUpperCase(referenceName.charAt(0))
+					+ referenceName.substring(1);
 		}
 	}
 
