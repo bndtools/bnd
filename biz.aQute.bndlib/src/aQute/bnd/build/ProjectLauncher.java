@@ -2,11 +2,13 @@ package aQute.bnd.build;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.lib.osgi.*;
 import aQute.libg.command.*;
 import aQute.libg.generics.*;
 
@@ -17,42 +19,41 @@ import aQute.libg.generics.*;
  * class is instantiated and cast to a LauncherPlugin. This plug in is then
  * asked to provide a ProjectLauncher. This project launcher is then used by the
  * project to run the code. Launchers must extend this class.
- * 
  */
 public abstract class ProjectLauncher {
-	private final Project						project;
-	private long								timeout				= 0;
-	private final Collection<String>			classpath			= new ArrayList<String>();
-	private List<String>						runbundles			= Create.list();
-	private final List<String>					runvm				= new ArrayList<String>();
-	private Map<String, String>					runproperties;
-	private Command								java;
-	private Map<String, Map<String, String>>	runsystempackages;
-	private final List<String>					activators			= Create.list();
-	private File								storageDir;
-	private final List<String>					warnings			= Create.list();
-	private final List<String>					errors				= Create.list();
+	private final Project		project;
+	private long				timeout				= 0;
+	private final List<String>	classpath			= new ArrayList<String>();
+	private List<String>		runbundles			= Create.list();
+	private final List<String>	runvm				= new ArrayList<String>();
+	private Map<String,String>	runproperties;
+	private Command				java;
+	private Parameters			runsystempackages;
+	private final List<String>	activators			= Create.list();
+	private File				storageDir;
+	private final List<String>	warnings			= Create.list();
+	private final List<String>	errors				= Create.list();
 
-	private boolean								trace;
-	private boolean								keep;
-	private int									framework;
+	private boolean				trace;
+	private boolean				keep;
+	private int					framework;
 
-	public final static int						SERVICES			= 10111;
-	public final static int						NONE				= 20123;
+	public final static int		SERVICES			= 10111;
+	public final static int		NONE				= 20123;
 
 	// MUST BE ALIGNED WITH LAUNCHER
-	public final static int						OK					= 0;
-	public final static int						WARNING				= -1;
-	public final static int						ERROR				= -2;
-	public final static int						TIMEDOUT			= -3;
-	public final static int						UPDATE_NEEDED		= -4;
-	public final static int						CANCELED			= -5;
-	public final static int						DUPLICATE_BUNDLE	= -6;
-	public final static int						RESOLVE_ERROR		= -7;
-	public final static int						ACTIVATOR_ERROR		= -8;
-	public final static int						CUSTOM_LAUNCHER		= -128;
+	public final static int		OK					= 0;
+	public final static int		WARNING				= -1;
+	public final static int		ERROR				= -2;
+	public final static int		TIMEDOUT			= -3;
+	public final static int		UPDATE_NEEDED		= -4;
+	public final static int		CANCELED			= -5;
+	public final static int		DUPLICATE_BUNDLE	= -6;
+	public final static int		RESOLVE_ERROR		= -7;
+	public final static int		ACTIVATOR_ERROR		= -8;
+	public final static int		CUSTOM_LAUNCHER		= -128;
 
-	public final static String					EMBEDDED_ACTIVATOR	= "Embedded-Activator";
+	public final static String	EMBEDDED_ACTIVATOR	= "Embedded-Activator";
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
@@ -71,13 +72,13 @@ public abstract class ProjectLauncher {
 		// project.refresh();
 		runbundles.clear();
 		Collection<Container> run = project.getRunbundles();
-		
+
 		for (Container container : run) {
 			File file = container.getFile();
 			if (file != null && (file.isFile() || file.isDirectory())) {
 				runbundles.add(file.getAbsolutePath());
 			} else {
-				warning("Bundle file \"%s\" does not exist", file.getAbsolutePath());
+				warning("Bundle file \"%s\" does not exist", file);
 			}
 		}
 
@@ -89,7 +90,7 @@ public abstract class ProjectLauncher {
 		}
 
 		Collection<Container> runpath = project.getRunpath();
-		runsystempackages = project.parseHeader(project.getProperty(Constants.RUNSYSTEMPACKAGES));
+		runsystempackages = project.getParameters(Constants.RUNSYSTEMPACKAGES);
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
@@ -124,8 +125,7 @@ public abstract class ProjectLauncher {
 
 	public void addClasspath(Container container) throws Exception {
 		if (container.getError() != null) {
-			project.error("Cannot launch because %s has reported %s", container.getProject(),
-					container.getError());
+			project.error("Cannot launch because %s has reported %s", container.getProject(), container.getError());
 		} else {
 			Collection<Container> members = container.getMembers();
 			for (Container m : members) {
@@ -134,10 +134,11 @@ public abstract class ProjectLauncher {
 					classpath.add(path);
 
 					Manifest manifest = m.getManifest();
+
 					if (manifest != null) {
-						Map<String, Map<String, String>> exports = project.parseHeader(manifest
-								.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
-						for (Map.Entry<String, Map<String, String>> e : exports.entrySet()) {
+						Parameters exports = project.parseHeader(manifest.getMainAttributes().getValue(
+								Constants.EXPORT_PACKAGE));
+						for (Entry<String,Attrs> e : exports.entrySet()) {
 							if (!runsystempackages.containsKey(e.getKey()))
 								runsystempackages.put(e.getKey(), e.getValue());
 						}
@@ -147,8 +148,7 @@ public abstract class ProjectLauncher {
 						// the framework is completely initialized wit the
 						// system
 						// context.
-						String activator = manifest.getMainAttributes()
-								.getValue(EMBEDDED_ACTIVATOR);
+						String activator = manifest.getMainAttributes().getValue(EMBEDDED_ACTIVATOR);
 						if (activator != null)
 							activators.add(activator);
 					}
@@ -169,7 +169,7 @@ public abstract class ProjectLauncher {
 		runvm.add(arg);
 	}
 
-	public Collection<String> getRunpath() {
+	public List<String> getRunpath() {
 		return classpath;
 	}
 
@@ -185,10 +185,10 @@ public abstract class ProjectLauncher {
 		return Collections.emptySet();
 	}
 
-	public Map<String, String> getRunProperties() {
+	public Map<String,String> getRunProperties() {
 		return runproperties;
 	}
-	
+
 	public File getStorageDir() {
 		return storageDir;
 	}
@@ -209,33 +209,46 @@ public abstract class ProjectLauncher {
 		if (timeout != 0)
 			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
 
-		int result = java.execute(System.in, System.out, System.err);
-		if (result == Integer.MIN_VALUE)
-			return TIMEDOUT;
+		try {
+			int result = java.execute(System.in, System.err, System.err);
+			if (result == Integer.MIN_VALUE)
+				return TIMEDOUT;
+			reportResult(result);
+			return result;
+		}
+		finally {
+			cleanup();
+		}
+	}
 
-		reportResult(result);
-		return result;
+	/**
+	 * Is called after the process exists. Can you be used to cleanup the
+	 * properties file.
+	 */
+
+	public void cleanup() {
+		// do nothing by default
 	}
 
 	protected void reportResult(int result) {
 		switch (result) {
-		case OK:
-			project.trace("Command terminated normal %s", java);
-			break;
-		case TIMEDOUT:
-			project.error("Launch timedout: %s", java);
-			break;
+			case OK :
+				project.trace("Command terminated normal %s", java);
+				break;
+			case TIMEDOUT :
+				project.error("Launch timedout: %s", java);
+				break;
 
-		case ERROR:
-			project.error("Launch errored: %s", java);
-			break;
+			case ERROR :
+				project.error("Launch errored: %s", java);
+				break;
 
-		case WARNING:
-			project.warning("Launch had a warning %s", java);
-			break;
-		default:
-			project.warning("Unknown code %d from launcher: %s", result, java);
-			break;
+			case WARNING :
+				project.warning("Launch had a warning %s", java);
+				break;
+			default :
+				project.error("Exit code remote process %d: %s", result, java);
+				break;
 		}
 	}
 
@@ -251,8 +264,8 @@ public abstract class ProjectLauncher {
 		java.cancel();
 	}
 
-	public Map<String, Map<String, String>> getSystemPackages() {
-		return runsystempackages;
+	public Map<String, ? extends Map<String,String>> getSystemPackages() {
+		return runsystempackages.asMapMap();
 	}
 
 	public void setKeep(boolean keep) {
@@ -329,20 +342,20 @@ public abstract class ProjectLauncher {
 	public Jar executable() throws Exception {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	public void clear() {
 		errors.clear();
 		warnings.clear();
 	}
-	
+
 	public List<String> getErrors() {
 		return Collections.unmodifiableList(errors);
 	}
-	
+
 	public List<String> getWarnings() {
 		return Collections.unmodifiableList(warnings);
 	}
-	
+
 	protected void error(String message, Object... args) {
 		String formatted = String.format(message, args);
 		errors.add(formatted);

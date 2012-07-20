@@ -1,9 +1,13 @@
 *.class
 *.bak
+*.findbugs.xml
 /*/tmp
+/*/generated
 /*/bin
+/*/bin_test
 .metadata/
 Archive
 .DS_Store
 .*.swp
 buildfiles
+.ant-targets-build.xml

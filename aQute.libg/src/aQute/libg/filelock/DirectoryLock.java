@@ -3,9 +3,9 @@ package aQute.libg.filelock;
 import java.io.*;
 
 public class DirectoryLock {
-	final File						lock;
-	final long						timeout;
-	final public static String LOCKNAME = ".lock";
+	final File					lock;
+	final long					timeout;
+	final public static String	LOCKNAME	= ".lock";
 
 	public DirectoryLock(File directory, long timeout) {
 		this.lock = new File(directory, LOCKNAME);
@@ -13,7 +13,6 @@ public class DirectoryLock {
 		this.timeout = timeout;
 	}
 
-	
 	public void release() {
 		lock.delete();
 	}
@@ -22,10 +21,10 @@ public class DirectoryLock {
 		if (lock.mkdir())
 			return;
 
-		long deadline = System.currentTimeMillis()+ timeout;
-		while ( System.currentTimeMillis() < deadline) {
+		long deadline = System.currentTimeMillis() + timeout;
+		while (System.currentTimeMillis() < deadline) {
 			if (lock.mkdir())
-				return;	
+				return;
 			Thread.sleep(50);
 		}
 	}

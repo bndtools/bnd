@@ -1,0 +1,434 @@
+<FindBugsFilter>
+     <Match>
+       <Package name="aQute.bnd.annotation" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.annotation.component" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.annotation.metatype" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.ant" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.build" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.build.model" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.build.model.clauses" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.build.model.conversions" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.compatibility" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.component" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.deployer" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.deployer.http" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.deployer.obr" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.deployer.repository" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.deployer.repository.api" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.deployer.repository.providers" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.differ" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.filerepo" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.header" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.help" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.main" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.make" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.make.calltree" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.make.component" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.make.coverage" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.make.metatype" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.maven" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.maven.support" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.osgi" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.osgi.eclipse" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.osgi.resource" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.properties" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.repo.eclipse" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.service" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.service.action" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.service.diff" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.service.url" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.settings" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.signing" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.test" />
+     </Match>
+     <Match>
+       <Package name="aQute.configurable" />
+     </Match>
+     <Match>
+       <Package name="aQute.daemon" />
+     </Match>
+     <Match>
+       <Package name="aQute.jpm.lib" />
+     </Match>
+     <Match>
+       <Package name="aQute.jpm.main" />
+     </Match>
+     <Match>
+       <Package name="aQute.jpm.platform" />
+     </Match>
+     <Match>
+       <Package name="aQute.jpm.service" />
+     </Match>
+     <Match>
+       <Package name="aQute.junit" />
+     </Match>
+     <Match>
+       <Package name="aQute.junit.constants" />
+     </Match>
+     <Match>
+       <Package name="aQute.junit.plugin" />
+     </Match>
+     <Match>
+       <Package name="aQute.junit.runtime" />
+     </Match>
+     <Match>
+       <Package name="aQute.launcher" />
+     </Match>
+     <Match>
+       <Package name="aQute.launcher.constants" />
+     </Match>
+     <Match>
+       <Package name="aQute.launcher.minifw" />
+     </Match>
+     <Match>
+       <Package name="aQute.launcher.plugin" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.base64" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.codec" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.collections" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.converter" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.data" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.deployer" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.filter" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.asn1" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.cafs" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.classdump" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.classloaders" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.clauses" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.command" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.cryptography" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.getopt" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.fileiterator" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.filelock" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.filters" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.forker" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.generics" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.glob" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.gzip" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.log" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.map" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.qtokens" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.reporter" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.sax" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.sax.filters" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.sed" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.tarjan" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.tuple" />
+     </Match>
+     <Match>
+       <Package name="aQute.libg.xslt" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.hex" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.index" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.io" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.json" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.justif" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.putjar" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.spring" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.tag" />
+     </Match>
+     <Match>
+       <Package name="aQute.service.reporter" />
+     </Match>
+     <Match>
+       <Package name="biz.aQute.resolve" />
+     </Match>
+     <Match>
+       <Package name="biz.aQute.resolve.internal" />
+     </Match>
+     <Match>
+       <Package name="com.example.demo" />
+     </Match>
+     <Match>
+       <Package name="eclipse_1_1" />
+     </Match>
+     <Match>
+       <Package name="eclipse_1_2" />
+     </Match>
+     <Match>
+       <Package name="eclipse_1_3" />
+     </Match>
+     <Match>
+       <Package name="eclipse_1_4" />
+     </Match>
+     <Match>
+       <Package name="eclipse_1_5" />
+     </Match>
+     <Match>
+       <Package name="eclipse_1_6" />
+     </Match>
+     <Match>
+       <Package name="eclipse_jsr14" />
+     </Match>
+     <Match>
+       <Package name="sun_1_1" />
+     </Match>
+     <Match>
+       <Package name="sun_1_2" />
+     </Match>
+     <Match>
+       <Package name="sun_1_3" />
+     </Match>
+     <Match>
+       <Package name="sun_1_4" />
+     </Match>
+     <Match>
+       <Package name="sun_1_5" />
+     </Match>
+     <Match>
+       <Package name="sun_1_6" />
+     </Match>
+     <Match>
+       <Package name="sun_jsr14" />
+     </Match>
+     <Match>
+       <Package name="test" />
+     </Match>
+     <Match>
+       <Package name="test.activator" />
+     </Match>
+     <Match>
+       <Package name="test.activator.inherits" />
+     </Match>
+     <Match>
+       <Package name="test.baseline" />
+     </Match>
+     <Match>
+       <Package name="test.classreference" />
+     </Match>
+     <Match>
+       <Package name="test.component" />
+     </Match>
+     <Match>
+       <Package name="test.deployer" />
+     </Match>
+     <Match>
+       <Package name="test.diff" />
+     </Match>
+     <Match>
+       <Package name="test.genericinterf.a" />
+     </Match>
+     <Match>
+       <Package name="test.genericinterf.b" />
+     </Match>
+     <Match>
+       <Package name="test.genericinterf.c" />
+     </Match>
+     <Match>
+       <Package name="test.http" />
+     </Match>
+     <Match>
+       <Package name="test.lib" />
+     </Match>
+     <Match>
+       <Package name="test.make" />
+     </Match>
+     <Match>
+       <Package name="test.metatype" />
+     </Match>
+     <Match>
+       <Package name="test.obr" />
+     </Match>
+     <Match>
+       <Package name="test.packageinfo" />
+     </Match>
+     <Match>
+       <Package name="test.packageinfo.ref" />
+     </Match>
+     <Match>
+       <Package name="test.privateimport" />
+     </Match>
+     <Match>
+       <Package name="test.properties" />
+     </Match>
+     <Match>
+       <Package name="test.r5repository" />
+     </Match>
+     <Match>
+       <Package name="test.refer" />
+     </Match>
+     <Match>
+       <Package name="test.referApi" />
+     </Match>
+     <Match>
+       <Package name="test.repository" />
+     </Match>
+     <Match>
+       <Package name="test.signatures" />
+     </Match>
+     <Match>
+       <Package name="test.top" />
+     </Match>
+     <Match>
+       <Package name="test.top.middle" />
+     </Match>
+     <Match>
+       <Package name="test.top.middle.bottom" />
+     </Match>
+     <Match>
+       <Package name="test.versionpolicy.api" />
+     </Match>
+     <Match>
+       <Package name="test.versionpolicy.implemented" />
+     </Match>
+     <Match>
+       <Package name="test.versionpolicy.implmajor" />
+     </Match>
+     <Match>
+       <Package name="test.versionpolicy.uses" />
+     </Match>
+</FindBugsFilter>

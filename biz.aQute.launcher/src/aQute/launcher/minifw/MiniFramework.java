@@ -8,14 +8,14 @@ import org.osgi.framework.*;
 import org.osgi.framework.launch.*;
 
 public class MiniFramework implements Framework, Bundle, BundleContext {
-	ClassLoader	loader;
-	Properties	properties;
-	Map			bundles	= new HashMap();
-	int			ID		= 1;
-	int			state	= Bundle.INSTALLED;
-	ClassLoader	last;
+	ClassLoader			loader;
+	Properties			properties;
+	Map<Long,Bundle>	bundles	= new HashMap<Long,Bundle>();
+	int					ID		= 1;
+	int					state	= Bundle.INSTALLED;
+	ClassLoader			last;
 
-	public MiniFramework(Map properties) {
+	public MiniFramework(Map<Object,Object> properties) {
 		this.properties = new Properties(System.getProperties());
 		this.properties.putAll(properties);
 
@@ -35,8 +35,6 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 				long wait = deadline - System.currentTimeMillis();
 				if (wait <= 0)
 					return new FrameworkEvent(FrameworkEvent.WAIT_TIMEDOUT, this, null);
-			} else {
-				;
 			}
 			Thread.sleep(100);
 		}
@@ -57,15 +55,15 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return loader.getResource(path);
 	}
 
-	public Enumeration getEntryPaths(String path) {
+	public Enumeration< ? > getEntryPaths(String path) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Dictionary getHeaders() {
-		return new Hashtable();
+	public Dictionary<String,String> getHeaders() {
+		return new Hashtable<String,String>();
 	}
 
-	public Dictionary getHeaders(String locale) {
+	public Dictionary< ? , ? > getHeaders(String locale) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -81,7 +79,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return loader.getResource(name);
 	}
 
-	public Enumeration getResources(String name) throws IOException {
+	public Enumeration<URL> getResources(String name) throws IOException {
 		return loader.getResources(name);
 	}
 
@@ -101,23 +99,20 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return true;
 	}
 
-	public Class loadClass(String name) throws ClassNotFoundException {
+	public Class< ? > loadClass(String name) throws ClassNotFoundException {
 		return loader.loadClass(name);
 	}
 
-	public void start() {
-	}
+	public void start() {}
 
-	public void start(int options) {
-	}
+	public void start(int options) {}
 
 	public synchronized void stop() {
 		state = Bundle.UNINSTALLED;
 		notifyAll();
 	}
 
-	public void stop(int options) throws BundleException {
-	}
+	public void stop(int options) throws BundleException {}
 
 	public Bundle getBundle() {
 		return this;
@@ -125,13 +120,13 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	public Bundle getBundle(long id) {
 		Long l = new Long(id);
-		Bundle b = (Bundle) bundles.get(l);
+		Bundle b = bundles.get(l);
 		return b;
 	}
 
 	public Bundle[] getBundles() {
 		Bundle[] bs = new Bundle[bundles.size()];
-		return (Bundle[]) bundles.values().toArray(bs);
+		return bundles.values().toArray(bs);
 	}
 
 	public File getDataFile(String filename) {
@@ -157,7 +152,8 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			bundles.put(new Long(c.id), c);
 			last = c;
 			return c;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new BundleException("Failed to install", e);
 		}
 	}
@@ -167,8 +163,10 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		try {
 			in.close();
 			try {
+				@SuppressWarnings("unused")
 				URL url = new URL(location);
-			} catch (MalformedURLException e) {
+			}
+			catch (MalformedURLException e) {
 				throw new BundleException(
 						"For the mini framework, the location must be a proper URL even though this is not required by the specification "
 								+ location, e);
@@ -177,12 +175,13 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			bundles.put(new Long(c.id), c);
 			last = c;
 			return c;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new BundleException("Can't install " + location, e);
 		}
 	}
 
-	public Enumeration findEntries(String path, String filePattern, boolean recurse) {
+	public Enumeration< ? > findEntries(String path, String filePattern, boolean recurse) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -194,7 +193,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		throw new UnsupportedOperationException();
 	}
 
-	public Map getSignerCertificates(int signersType) {
+	public Map< ? , ? > getSignerCertificates(int signersType) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -230,8 +229,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return FrameworkUtil.createFilter(filter);
 	}
 
-	public ServiceReference[] getAllServiceReferences(String clazz, String filter)
-			throws InvalidSyntaxException {
+	public ServiceReference[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -243,13 +241,11 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return null;
 	}
 
-	public ServiceReference[] getServiceReferences(String clazz, String filter)
-			throws InvalidSyntaxException {
+	public ServiceReference[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		return null;
 	}
 
-	public ServiceRegistration registerService(String[] clazzes, Object service,
-			Dictionary properties) {
+	public ServiceRegistration registerService(String[] clazzes, Object service, Dictionary properties) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -278,12 +274,12 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	class Loader extends ClassLoader {
-		public Class findClass(String name) throws ClassNotFoundException {
-			for (Iterator i = bundles.values().iterator(); i.hasNext();) {
-				Bundle b = (Bundle) i;
+		public Class< ? > findClass(String name) throws ClassNotFoundException {
+			for (Bundle b : bundles.values()) {
 				try {
 					return b.loadClass(name);
-				} catch (ClassNotFoundException e) {
+				}
+				catch (ClassNotFoundException e) {
 					// Ignore, try next
 				}
 			}

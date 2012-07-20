@@ -1,18 +1,6 @@
-/*******************************************************************************
- * Copyright (c) 2010 Neil Bartlett.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- * Neil Bartlett - initial API and implementation
- ******************************************************************************/
 package aQute.junit.runtime;
 
-import java.lang.reflect.*;
 import java.text.*;
-import java.util.*;
 
 import junit.framework.*;
 
@@ -43,7 +31,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @param filter
 	 *            An additional service filter, which may be {@code null}.
 	 */
-	protected void assertSvcAvail(Class<?> service, String filter) {
+	protected void assertSvcAvail(Class< ? > service, String filter) {
 		assertSvcAvail(null, service, filter);
 	}
 
@@ -58,17 +46,20 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @param filter
 	 *            An additional service filter, which may be {@code null}.
 	 */
-	protected void assertSvcAvail(String message, Class<?> service, String filter) {
+	protected void assertSvcAvail(String message, Class< ? > service, String filter) {
 		BundleContext context = getBundleContext();
 		ServiceReference[] refs = null;
 		try {
 			refs = context.getServiceReferences(service.getName(), filter);
-		} catch (InvalidSyntaxException e) {
+		}
+		catch (InvalidSyntaxException e) {
 			fail("Invalid filter syntax");
 		}
 
-		if (refs == null || refs.length == 0)
+		if (refs == null || refs.length == 0) {
 			fail(message);
+			return;
+		}
 
 		Object svcObj = context.getService(refs[0]);
 		if (svcObj == null)
@@ -77,7 +68,8 @@ public abstract class OSGiTestCase extends TestCase {
 		try {
 			if (!service.isInstance(svcObj))
 				fail(message);
-		} finally {
+		}
+		finally {
 			context.ungetService(refs[0]);
 		}
 	}
@@ -87,17 +79,15 @@ public abstract class OSGiTestCase extends TestCase {
 	 * Perform the specified operation against a service, or fail immediately if
 	 * a matching service is not available.
 	 * </p>
-	 * 
 	 * <p>
 	 * <strong>Example:</strong>
 	 * </p>
-	 * 
 	 * <p>
 	 * <strong>Example:</strong>
 	 * </p>
 	 * 
 	 * <pre>
-	 * String	reply	= withService(HelloService.class, null, new Operation&lt;HelloService, String&gt;() {
+	 * String	reply	= withService(HelloService.class, null, new Operation&lt;HelloService,String&gt;() {
 	 * 					public String call(HelloService service) {
 	 * 						return service.sayHello();
 	 * 					}
@@ -121,8 +111,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @return
 	 * @throws Exception
 	 */
-	protected <S, R> R withService(Class<S> service, String filter,
-			Operation<? super S, R> operation) throws Exception {
+	protected <S, R> R withService(Class<S> service, String filter, Operation< ? super S,R> operation) throws Exception {
 		return withService(service, filter, 0, operation);
 	}
 
@@ -130,13 +119,12 @@ public abstract class OSGiTestCase extends TestCase {
 	 * <p>
 	 * Perform the specified operation against a service, if available.
 	 * </p>
-	 * 
 	 * <p>
 	 * <strong>Example:</strong>
 	 * </p>
 	 * 
 	 * <pre>
-	 * String	reply	= withService(HelloService.class, null, 0, new Operation&lt;HelloService, String&gt;() {
+	 * String	reply	= withService(HelloService.class, null, 0, new Operation&lt;HelloService,String&gt;() {
 	 * 					public String call(HelloService service) {
 	 * 						return service.sayHello();
 	 * 					}
@@ -160,18 +148,20 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @return
 	 * @throws Exception
 	 */
-	protected <S, R> R withService(Class<S> service, String filter, long timeout,
-			Operation<? super S, R> operation) throws Exception {
+	protected <S, R> R withService(Class<S> service, String filter, long timeout, Operation< ? super S,R> operation)
+			throws Exception {
 		BundleContext context = getBundleContext();
 
 		ServiceTracker tracker = null;
 		if (filter != null) {
 			try {
-				Filter combined = FrameworkUtil.createFilter("(" + Constants.OBJECTCLASS + "="
-						+ service.getName() + ")");
+				Filter combined = FrameworkUtil.createFilter("(" + Constants.OBJECTCLASS + "=" + service.getName()
+						+ ")");
 				tracker = new ServiceTracker(context, combined, null);
-			} catch (InvalidSyntaxException e) {
+			}
+			catch (InvalidSyntaxException e) {
 				fail("Invalid filter syntax.");
+				return null;
 			}
 		} else {
 			tracker = new ServiceTracker(context, service.getName(), null);
@@ -188,11 +178,14 @@ public abstract class OSGiTestCase extends TestCase {
 			if (instance == null || !service.isInstance(instance))
 				fail(MessageFormat.format("Service \"{0}\" not available.", service.getName()));
 
+			@SuppressWarnings("unchecked")
 			S casted = (S) instance;
 			return operation.perform(casted);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			fail("Interrupted.");
-		} finally {
+		}
+		finally {
 			tracker.close();
 		}
 

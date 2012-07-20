@@ -1,0 +1,34 @@
+<?xml version='1.0'?>
+
+<jschema>
+  <specification jar="generated/biz.aQute.bnd.annotation.jar" id="1000"/>
+  <specification jar="generated/biz.aQute.bnd.jar" id="1001"/>
+  <specification jar="generated/biz.aQute.bnd.test.jar" id="1002">
+    Contains only the test functions for bnd.
+  </specification>
+  <packages>
+    <package name="aQute.bnd.service" version="1.44.0" spec="1001">
+      <import name="aQute.libg.reporter"/>
+      <import name="aQute.libg.version"/>
+      <import name="aQute.bnd.osgi"/>
+      <import name="aQute.bnd.build"/>
+    </package>
+    <package name="aQute.bnd.service.action" version="1.43.1" spec="1001">
+      <import name="aQute.bnd.build"/>
+    </package>
+    <package name="aQute.bnd.service.diff" version="1.52.3" spec="1001">
+      <import name="aQute.bnd.osgi"/>
+    </package>
+    <package name="aQute.bnd.service.url" version="1.52.3" spec="1001"/>
+    <package name="aQute.bnd.test" version="1.52.3" spec="1002">
+      <import name="javax.xml.xpath"/>
+      <import name="aQute.libg.reporter"/>
+      <import name="junit.framework" version="[3.8,4)"/>
+      <import name="javax.xml.parsers"/>
+      <import name="org.w3c.dom"/>
+      <import name="javax.xml.namespace"/>
+    </package>
+    <package name="org.osgi.service.bindex" version="1.0.0" spec="1001"/>
+  </packages>
+  <baseline/>
+</jschema>

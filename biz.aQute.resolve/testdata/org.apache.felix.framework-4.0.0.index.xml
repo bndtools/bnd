@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='utf-8'?>
+<repository increment='1340619548805' name='Untitled' xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>
+  <resource>
+    <capability namespace='osgi.identity'>
+      <attribute name='osgi.identity' value='org.apache.felix.framework'/>
+      <attribute name='type' value='osgi.bundle'/>
+      <attribute name='version' type='Version' value='4.0.0'/>
+    </capability>
+    <capability namespace='osgi.content'>
+      <attribute name='osgi.content' value='b6c4f46b904163020d83b7198dc420b46708e26acc420937d18277c41dac0d30'/>
+      <attribute name='url' value='org.apache.felix.framework-4.0.0.jar'/>
+      <attribute name='size' type='Long' value='481210'/>
+    </capability>
+    <capability namespace='osgi.wiring.bundle'>
+      <attribute name='osgi.wiring.bundle' value='org.apache.felix.framework'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
+    </capability>
+    <capability namespace='osgi.wiring.host'>
+      <attribute name='osgi.wiring.host' value='org.apache.felix.framework'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.framework.startlevel'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
+      <directive name='uses' value='org.osgi.framework'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.framework.wiring'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
+      <directive name='uses' value='org.osgi.framework'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.framework.hooks.bundle'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
+      <directive name='uses' value='org.osgi.framework'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.framework.hooks.service'/>
+      <attribute name='version' type='Version' value='1.1.0'/>
+      <directive name='uses' value='org.osgi.framework'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.framework.hooks.resolver'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
+      <directive name='uses' value='org.osgi.framework.wiring'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.framework.launch'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
+      <directive name='uses' value='org.osgi.framework'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.framework'/>
+      <attribute name='version' type='Version' value='1.6.0'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.framework.hooks.weaving'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
+      <directive name='uses' value='org.osgi.framework.wiring'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.service.packageadmin'/>
+      <attribute name='version' type='Version' value='1.2.0'/>
+      <directive name='uses' value='org.osgi.framework'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.service.url'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.service.startlevel'/>
+      <attribute name='version' type='Version' value='1.1.0'/>
+      <directive name='uses' value='org.osgi.framework'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.util.tracker'/>
+      <attribute name='version' type='Version' value='1.5.0'/>
+      <directive name='uses' value='org.osgi.framework'/>
+    </capability>
+    <capability namespace='osgi.contract'>
+      <attribute name='osgi.contract' value='OSGiFramework'/>
+      <attribute name='version' type='Version' value='4.3.0'/>
+      <directive name='uses' value='org.osgi.framework.startlevel,org.osgi.framework.wiring,org.osgi.framework.hooks.bundle,org.osgi.framework.hooks.service,org.osgi.framework.hooks.resolver,org.osgi.framework.launch,org.osgi.framework,org.osgi.framework.hooks.weaving,org.osgi.service.packageadmin,org.osgi.service.url,org.osgi.service.startlevel,org.osgi.util.tracker'/>
+    </capability>
+  </resource>
+</repository>

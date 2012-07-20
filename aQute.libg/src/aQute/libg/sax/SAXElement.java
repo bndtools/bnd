@@ -1,16 +1,15 @@
 package aQute.libg.sax;
 
-import org.xml.sax.Attributes;
+import org.xml.sax.*;
 
 public class SAXElement {
 
-	private final String uri;
-	private final String localName;
-	private final String qName;
-	private final Attributes atts;
+	private final String		uri;
+	private final String		localName;
+	private final String		qName;
+	private final Attributes	atts;
 
-	public SAXElement(String uri, String localName, String qName,
-			Attributes atts) {
+	public SAXElement(String uri, String localName, String qName, Attributes atts) {
 		this.uri = uri;
 		this.localName = localName;
 		this.qName = qName;
