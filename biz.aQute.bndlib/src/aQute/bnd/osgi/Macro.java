@@ -590,11 +590,11 @@ public class Macro {
 			throw new IllegalArgumentException(
 					"the ${ls} macro directory parameter points to a file instead of a directory: " + dir);
 
-		List<File> files = new ArrayList<File>(new SortedList<File>(dir.listFiles()));
+		Collection<File> files = new ArrayList<File>(new SortedList<File>(dir.listFiles()));
 
 		for (int i = 2; i < args.length; i++) {
 			Instructions filters = new Instructions(args[i]);
-			filters.select(files, true);
+			files = filters.select(files, true);
 		}
 
 		List<String> result = new ArrayList<String>();

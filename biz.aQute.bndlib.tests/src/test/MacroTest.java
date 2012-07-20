@@ -268,7 +268,8 @@ public class MacroTest extends TestCase {
 		String a = macro.process("${lsr;" + new File("src" + File.separator + "test").getAbsolutePath() + ";*.java}");
 		assertTrue(a.contains("MacroTest.java"));
 		assertTrue(a.contains("ManifestTest.java"));
-		assertTrue(a.contains(".classpath"));
+		assertFalse(a.contains("bnd.info"));
+		assertFalse(a.contains("com.acme"));
 		assertFalse(a.contains("src" + File.separator + "test" + File.separator + "MacroTest.java"));
 		assertFalse(a.contains("src" + File.separator + "test" + File.separator + "ManifestTest.java"));
 
