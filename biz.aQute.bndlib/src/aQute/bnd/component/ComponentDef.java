@@ -22,7 +22,7 @@ class ComponentDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
 	final List<String>				properties		= new ArrayList<String>();
 	final MultiMap<String,String>	property		= new MultiMap<String,String>();
-	final Map<String,ReferenceDef>	references		= new TreeMap<String,ReferenceDef>();
+	final Map<String,ReferenceDef>	references		= new LinkedHashMap<String,ReferenceDef>();
 
 	Version							version			= AnnotationReader.V1_0;
 	String							name;
@@ -109,6 +109,12 @@ class ComponentDef {
 			}
 			propertyTags.add(property);
 		}
+	}
+	
+	void sortReferences() {
+		Map<String, ReferenceDef> temp = new TreeMap(references);
+		references.clear();
+		references.putAll(temp);
 	}
 
 	/**

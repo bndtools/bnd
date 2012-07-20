@@ -32,6 +32,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 					else {
 						ComponentDef definition = AnnotationReader.getDefinition(c, analyzer);
 						if (definition != null) {
+							definition.sortReferences();
 							definition.prepare(analyzer);
 							String name = "OSGI-INF/" + definition.name + ".xml";
 							names.add(name);

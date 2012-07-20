@@ -84,7 +84,7 @@ public class ComponentTest extends TestCase {
 		void setB(@SuppressWarnings("unused") Map<String,Object> map) {}
 	}
 
-	public void testReferenceOrdering() throws Exception {
+	public void testAnnotationReferenceOrdering() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Service-Component", "*TestReferenceOrdering");
@@ -97,6 +97,25 @@ public class ComponentTest extends TestCase {
 		assertEquals("c", nodes.item(2).getAttributes().getNamedItem("name").getTextContent());
 	}
 
+	public static class ReferenceOrder {
+		
+		void setA(ServiceReference sr) {}
+		void unsetA(ServiceReference sr) {}
+		
+		void setZ(ServiceReference sr) {}
+		void unsetZ(ServiceReference sr) {}
+	}
+
+	/**
+	 * 112.5.7 says refeence order is used to order binding services, so from headers we preserve order.
+	 * @throws Exception
+	 */
+	public void testHeaderReferenceOrder() throws Exception {
+		Document doc = setup(ReferenceOrder.class.getName() + ";version:=1.1;z=org.osgi.service.http.HttpService?;a=org.osgi.service.http.HttpService?", ReferenceOrder.class.getName());
+		assertAttribute(doc, "z", "scr:component/reference[1]/@name");
+		assertAttribute(doc, "a", "scr:component/reference[2]/@name");
+	}
+	
 	/**
 	 * Test to see if we ignore scala.ScalaObject as interface
 	 * 
@@ -448,7 +467,7 @@ public class ComponentTest extends TestCase {
 		assertEquals("", xpath.evaluate("component/reference/@unbind", doc));
 	}
 
-	//bnd not DS annotation
+	//this is a bnd annotation not a DS annotation
 	@Component(name = "explicitunbind")
 	static class ExplicitUnbind {
 
@@ -635,7 +654,7 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Document doc = doc(b, "wacomp");
-//		assertAttribute(doc, "whatever", "scr:component/@activate"); //validation removes the non-existent method.
+		assertAttribute(doc, "", "scr:component/@activate"); //validation removes the non-existent method.
 	}
 
 	/**
@@ -913,7 +932,7 @@ public class ComponentTest extends TestCase {
 
 	public void testV1_1Directives() throws Exception {
 		Element component = setup("test.activator.Activator11;factory:=blabla;immediate:=true;enabled:=false;configuration-policy:=optional;activate:=start;deactivate:=stop;modified:=modded",
-				"test.activator.Activator11");
+				"test.activator.Activator11").getDocumentElement();
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 		assertEquals("blabla", component.getAttribute("factory"));
 		assertEquals("false", component.getAttribute("enabled"));
@@ -933,10 +952,10 @@ public class ComponentTest extends TestCase {
 		Element component = setup("test.activator.Activator;activate:='start';deactivate:='stop'");
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 
-		component = setup("test.activator.Activator2", "test.activator.Activator2");
+		component = setup("test.activator.Activator2", "test.activator.Activator2").getDocumentElement();
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 
-		component = setup("test.activator.Activator3", "test.activator.Activator3");
+		component = setup("test.activator.Activator3", "test.activator.Activator3").getDocumentElement();
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 	}
 
@@ -950,7 +969,7 @@ public class ComponentTest extends TestCase {
 		assertEquals("http://www.osgi.org/xmlns/xscr/v2.0.0", component.getNamespaceURI());
 	}
 
-	Element setup(String header, String className) throws Exception {
+	Document setup(String header, String className) throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Analyzer.SERVICE_COMPONENT, header);
 		b.setClasspath(new File[] {
@@ -969,11 +988,11 @@ public class ComponentTest extends TestCase {
 		Document doc = db.parse(new InputSource(b.getJar().getResource(path)
 				.openInputStream()));
 
-		return doc.getDocumentElement();
+		return doc;
 	}
 	
 	Element setup(String header) throws Exception {
-		return setup(header, "test.activator.Activator");
+		return setup(header, "test.activator.Activator").getDocumentElement();
 	}
 
 	private void print(Resource resource, OutputStream out) throws Exception {
@@ -1100,23 +1119,24 @@ public class ComponentTest extends TestCase {
 	 * @throws Exception
 	 */
 	public void testDirectives() throws Exception {
-		// Element component =
-		// setup("test.activator.Activator;http=org.osgi.service.http.HttpService;dynamic:=http;optional:=http;provide:=test.activator.Activator; multiple:=http");
+		Document doc =
+			setup("test.activator.Activator;http=org.osgi.service.http.HttpService;dynamic:=http;optional:=http;provide:=test.activator.Activator; multiple:=http", "test.activator.Activator");
 
-		// assertEquals("test.activator.Activator", xp.evaluate(
-		// "/component/implementation/@class", doc));
-		// assertEquals("org.osgi.service.http.HttpService", xp.evaluate(
-		// "/component/reference[@name='http']/@interface", doc));
-		// assertEquals("setHttp", xp.evaluate(
-		// "/component/reference[@name='http']/@bind", doc));
-		// assertEquals("unsetHttp", xp.evaluate(
-		// "/component/reference[@name='http']/@unbind", doc));
-		// assertEquals("0..n", xp.evaluate(
-		// "/component/reference[@name='http']/@cardinality", doc));
-		// assertEquals("dynamic", xp.evaluate(
-		// "/component/reference[@name='http']/@policy", doc));
-		// assertEquals("test.activator.Activator", xp.evaluate(
-		// "/component/service/provide/@interface", doc));
+		assertEquals("test.activator.Activator", xpath.evaluate(
+				"/component/implementation/@class", doc));
+		assertEquals("org.osgi.service.http.HttpService", xpath.evaluate(
+				"/component/reference[@name='http']/@interface", doc));
+		// there are no bind/unbind methods...
+		assertEquals("", xpath.evaluate(
+				 "/component/reference[@name='http']/@bind", doc));
+		assertEquals("", xpath.evaluate(
+				 "/component/reference[@name='http']/@unbind", doc));
+		assertEquals("0..n", xpath.evaluate(
+				"/component/reference[@name='http']/@cardinality", doc));
+		assertEquals("dynamic", xpath.evaluate(
+				"/component/reference[@name='http']/@policy", doc));
+		assertEquals("test.activator.Activator", xpath.evaluate(
+				"/component/service/provide/@interface", doc));
 	}
 
 	/**
@@ -1125,24 +1145,19 @@ public class ComponentTest extends TestCase {
 	 * @throws Exception
 	 */
 	public void testBadFilter() throws Exception {
-		// java.util.Properties p = new Properties();
-		// p.put(Analyzer.EXPORT_PACKAGE,
-		// "test.activator,org.osgi.service.http");
-		// p.put(Analyzer.IMPORT_PACKAGE, "*");
-		// p
-		// .put(
-		// Analyzer.SERVICE_COMPONENT,
-		// "test.activator.Activator;http=\"org.osgi.service.http.HttpService(|p=1)(p=2))\"");
-		// Builder b = new Builder();
-		// b
-		// .setClasspath(new File[] { new File("bin"),
-		// new File("jar/osgi.jar") });
-		// b.setProperties(p);
-		// b.build();
-		// assertEquals(1, b.getErrors().size());
-		// assertTrue(((String) b.getErrors().get(0))
-		// .indexOf("is not a correct filter") >= 0);
-		// assertEquals(0, b.getWarnings().size());
+		java.util.Properties p = new Properties();
+		p.put(Analyzer.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
+		p.put(Analyzer.IMPORT_PACKAGE, "*");
+		p.put(Analyzer.SERVICE_COMPONENT, "test.activator.Activator;http=\"org.osgi.service.http.HttpService(|p=1)(p=2))\"");
+		Builder b = new Builder();
+		b.setClasspath(new File[] { new File("bin"), new File("jar/osgi.jar") });
+		b.setProperties(p);
+		b.build();
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
+		assertEquals(1, b.getErrors().size());
+		assertTrue(((String) b.getErrors().get(0)).indexOf("Invalid target filter") >= 0);
+		assertEquals(0, b.getWarnings().size());
 	}
 
 	/**
@@ -1216,7 +1231,7 @@ public class ComponentTest extends TestCase {
 		assertEquals("0..1", reference.getAttribute("cardinality"));
 		assertEquals("", reference.getAttribute("policy"));
 	}
-
+	
 	private void print(Node doc, String indent) {
 		System.err.println(indent + doc);
 		NamedNodeMap attributes = doc.getAttributes();
