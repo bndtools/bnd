@@ -7,6 +7,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DecorationContext;
@@ -37,6 +38,7 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
             IPackageFragment pkg = (IPackageFragment) element;
             String pkgName = pkg.getElementName();
             boolean emptyPkg = isEmptyPackage(pkg);
+            boolean isSourcePkg = isSourcePackage(pkg);
 
             IJavaProject javaProject = pkg.getJavaProject();
             IProject project = javaProject.getProject();
@@ -53,10 +55,10 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
                         decoration.addSuffix(" " + versions.toString());
                 }
 
-                if (contained == null || !contained.contains(pkgName)) {
+                if (isSourcePkg && (contained == null || !contained.contains(pkgName))) {
                     ((DecorationContext) decoration.getDecorationContext()).putProperty(IDecoration.ENABLE_REPLACE, Boolean.TRUE);
                     decoration.addOverlay(emptyPkg ? excludedEmptyPackageIcon : excludedPackageIcon, IDecoration.REPLACE);
-                    decoration.addSuffix("<excluded>");
+                    decoration.addSuffix(" <excluded>");
                 }
             } else {
                 ExportedPackageDecoratorJob.scheduleForProject(project);
@@ -67,6 +69,14 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
     private boolean isEmptyPackage(IPackageFragment pkg) {
         try {
             return !pkg.containsJavaResources();
+        } catch (JavaModelException e) {
+            return false;
+        }
+    }
+
+    private boolean isSourcePackage(IPackageFragment pkg) {
+        try {
+            return pkg.getKind() == IPackageFragmentRoot.K_SOURCE;
         } catch (JavaModelException e) {
             return false;
         }
