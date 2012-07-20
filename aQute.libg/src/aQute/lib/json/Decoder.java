@@ -4,6 +4,7 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.security.*;
 import java.util.*;
+import java.util.zip.*;
 
 import aQute.lib.converter.*;
 
@@ -16,6 +17,7 @@ public class Decoder implements Closeable {
 	String				encoding	= "UTF-8";
 
 	boolean				strict;
+	boolean inflate;
 
 	Decoder(JSONCodec codec) {
 		this.codec = codec;
@@ -26,6 +28,10 @@ public class Decoder implements Closeable {
 	}
 
 	public Decoder from(InputStream in) throws Exception {
+	
+		if ( inflate)
+			in  = new InflaterInputStream(in);
+		
 		return from(new InputStreamReader(in, encoding));
 	}
 
@@ -139,5 +145,12 @@ public class Decoder implements Closeable {
 		if (extra == null)
 			extra = new HashMap<String,Object>();
 		return extra;
+	}
+	
+	public Decoder inflate() {
+		if ( reader != null)
+			throw new IllegalStateException("Reader already set, inflate must come before from()");
+		inflate = true;
+		return this;
 	}
 }

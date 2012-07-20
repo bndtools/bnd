@@ -4,6 +4,7 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.security.*;
 import java.util.*;
+import java.util.zip.*;
 
 public class Encoder implements Appendable, Closeable, Flushable {
 	final JSONCodec	codec;
@@ -11,7 +12,8 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	MessageDigest	digest;
 	boolean			writeDefaults;
 	String			encoding	= "UTF-8";
-
+	boolean deflate;
+	
 	Encoder(JSONCodec codec) {
 		this.codec = codec;
 	}
@@ -21,6 +23,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 			to();
 
 		codec.encode(this, object, null, new IdentityHashMap<Object,Type>());
+		flush();
 		return this;
 	}
 
@@ -53,6 +56,9 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	}
 
 	public Encoder to(OutputStream out) throws IOException {
+		if ( deflate)
+			out = new DeflaterOutputStream(out);
+		
 		return to(new OutputStreamWriter(out, encoding));
 	}
 
@@ -108,5 +114,11 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		if (app instanceof Flushable) {
 			((Flushable) app).flush();
 		}
+	}
+	public Encoder deflate() {
+		if ( app != null)
+			throw new IllegalStateException("Writer already set, deflate must come before to(...)");
+		deflate = true;
+		return this;
 	}
 }
