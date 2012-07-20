@@ -21,7 +21,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 
 	@Component(property = {
-			"  x : Integer =3.0", "a                   =1", "                       a=2", " b =1", "boolean          :            Boolean   \n\t      =true", "byte:Byte=1", "char:Char=1",
+			"  x : Integer =3.0", "a                   =1", "                       a=2", " b =1", "boolean          :            Boolean   \n\t      =true", "byte:Byte=1", "char:Character=1",
 			"short:Short=3", "integer:Integer=3", "long:Long=3", "float:Float=3.0", "double:Double=3e7",
 			"string:String=%", "wrongInteger:Integer=blabla", "\n\r\t \u0343\u0344\u0345\u0346\n:Integer=3"
 	})
