@@ -852,7 +852,9 @@ public class Clazz {
 			doSignature(in, member, access_flags);
 		else if ("ConstantValue".equals(attributeName))
 			doConstantValue(in);
-		else {
+        else if ("Exceptions".equals(attributeName))
+             doExceptions(in, access_flags);
+        else {
 			if (attribute_length > 0x7FFFFFFF) {
 				throw new IllegalArgumentException("Attribute > 2Gb");
 			}
@@ -985,6 +987,20 @@ public class Clazz {
 		cd.constant(object);
 	}
 
+	void doExceptions(DataInputStream in, int access_flags) throws IOException {
+		int exception_count = in.readUnsignedShort();
+		for (int i = 0; i < exception_count; i++) {
+			int index = in.readUnsignedShort();
+			if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
+				ClassConstant cc = (ClassConstant) pool[index];
+				String descr = (String) pool[cc.cname];
+
+				TypeRef clazz = analyzer.getTypeRef(descr);
+				referTo(clazz, access_flags);
+			}
+		}
+	}	
+	       
 	/**
 	 * <pre>
 	 * Code_attribute {
