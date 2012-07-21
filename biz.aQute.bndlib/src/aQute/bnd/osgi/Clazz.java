@@ -833,13 +833,13 @@ public class Clazz {
 			if (cd != null)
 				cd.deprecated();
 		} else if ("RuntimeVisibleAnnotations".equals(attributeName))
-			doAnnotations(in, member, RetentionPolicy.RUNTIME);
+			doAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
 		else if ("RuntimeVisibleParameterAnnotations".equals(attributeName))
-			doParameterAnnotations(in, member, RetentionPolicy.RUNTIME);
+			doParameterAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
 		else if ("RuntimeInvisibleAnnotations".equals(attributeName))
-			doAnnotations(in, member, RetentionPolicy.CLASS);
+			doAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
 		else if ("RuntimeInvisibleParameterAnnotations".equals(attributeName))
-			doParameterAnnotations(in, member, RetentionPolicy.CLASS);
+			doParameterAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
 		else if ("InnerClasses".equals(attributeName))
 			doInnerClasses(in);
 		else if ("EnclosingMethod".equals(attributeName))
@@ -852,7 +852,9 @@ public class Clazz {
 			doSignature(in, member, access_flags);
 		else if ("ConstantValue".equals(attributeName))
 			doConstantValue(in);
-		else {
+        else if ("Exceptions".equals(attributeName))
+             doExceptions(in, access_flags);
+        else {
 			if (attribute_length > 0x7FFFFFFF) {
 				throw new IllegalArgumentException("Attribute > 2Gb");
 			}
@@ -985,6 +987,20 @@ public class Clazz {
 		cd.constant(object);
 	}
 
+	void doExceptions(DataInputStream in, int access_flags) throws IOException {
+		int exception_count = in.readUnsignedShort();
+		for (int i = 0; i < exception_count; i++) {
+			int index = in.readUnsignedShort();
+			if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
+				ClassConstant cc = (ClassConstant) pool[index];
+				String descr = (String) pool[cc.cname];
+
+				TypeRef clazz = analyzer.getTypeRef(descr);
+				referTo(clazz, access_flags);
+			}
+		}
+	}	
+	       
 	/**
 	 * <pre>
 	 * Code_attribute {
@@ -1121,29 +1137,29 @@ public class Clazz {
 		this.sourceFile = pool[sourcefile_index].toString();
 	}
 
-	private void doParameterAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy)
+	private void doParameterAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy, int access_flags)
 			throws IOException {
 		int num_parameters = in.readUnsignedByte();
 		for (int p = 0; p < num_parameters; p++) {
 			if (cd != null)
 				cd.parameter(p);
-			doAnnotations(in, member, policy);
+			doAnnotations(in, member, policy, access_flags);
 		}
 	}
 
-	private void doAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy) throws IOException {
+	private void doAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy, int access_flags) throws IOException {
 		int num_annotations = in.readUnsignedShort(); // # of annotations
 		for (int a = 0; a < num_annotations; a++) {
 			if (cd == null)
-				doAnnotation(in, member, policy, false);
+				doAnnotation(in, member, policy, false, access_flags);
 			else {
-				Annotation annotion = doAnnotation(in, member, policy, true);
+				Annotation annotion = doAnnotation(in, member, policy, true, access_flags);
 				cd.annotation(annotion);
 			}
 		}
 	}
 
-	private Annotation doAnnotation(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect)
+	private Annotation doAnnotation(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect, int access_flags)
 			throws IOException {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
@@ -1152,19 +1168,21 @@ public class Clazz {
 		TypeRef tr = analyzer.getTypeRef(pool[type_index].toString());
 		annotations.add(tr);
 
+		TypeRef name = analyzer.getTypeRef((String) pool[type_index]);
 		if (policy == RetentionPolicy.RUNTIME) {
 			referTo(type_index, 0);
 			hasRuntimeAnnotations = true;
+			if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags)))
+				api.add(name.getPackageRef());
 		} else {
 			hasClassAnnotations = true;
 		}
-		TypeRef name = analyzer.getTypeRef((String) pool[type_index]);
 		int num_element_value_pairs = in.readUnsignedShort();
 		Map<String,Object> elements = null;
 		for (int v = 0; v < num_element_value_pairs; v++) {
 			int element_name_index = in.readUnsignedShort();
 			String element = (String) pool[element_name_index];
-			Object value = doElementValue(in, member, policy, collect);
+			Object value = doElementValue(in, member, policy, collect, access_flags);
 			if (collect) {
 				if (elements == null)
 					elements = new LinkedHashMap<String,Object>();
@@ -1176,7 +1194,7 @@ public class Clazz {
 		return null;
 	}
 
-	private Object doElementValue(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect)
+	private Object doElementValue(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect, int access_flags)
 			throws IOException {
 		char tag = (char) in.readUnsignedByte();
 		switch (tag) {
@@ -1200,25 +1218,35 @@ public class Clazz {
 
 			case 'e' : // enum constant
 				int type_name_index = in.readUnsignedShort();
-				if (policy == RetentionPolicy.RUNTIME)
+				if (policy == RetentionPolicy.RUNTIME) {
 					referTo(type_name_index, 0);
+					if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
+						 TypeRef name = analyzer.getTypeRef((String) pool[type_name_index]);
+						 api.add(name.getPackageRef());
+					}
+				}
 				int const_name_index = in.readUnsignedShort();
 				return pool[const_name_index];
 
 			case 'c' : // Class
 				int class_info_index = in.readUnsignedShort();
-				if (policy == RetentionPolicy.RUNTIME)
+				if (policy == RetentionPolicy.RUNTIME) {
 					referTo(class_info_index, 0);
+					if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
+						 TypeRef name = analyzer.getTypeRef((String) pool[class_info_index]);
+						 api.add(name.getPackageRef());
+					}
+				}
 				return pool[class_info_index];
 
 			case '@' : // Annotation type
-				return doAnnotation(in, member, policy, collect);
+				return doAnnotation(in, member, policy, collect, access_flags);
 
 			case '[' : // Array
 				int num_values = in.readUnsignedShort();
 				Object[] result = new Object[num_values];
 				for (int i = 0; i < num_values; i++) {
-					result[i] = doElementValue(in, member, policy, collect);
+					result[i] = doElementValue(in, member, policy, collect, access_flags);
 				}
 				return result;
 
@@ -1475,7 +1503,7 @@ public class Clazz {
 				return false;
 
 			case RUNTIMEANNOTATIONS :
-				return hasClassAnnotations;
+				return hasRuntimeAnnotations;
 			case CLASSANNOTATIONS :
 				return hasClassAnnotations;
 
