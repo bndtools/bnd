@@ -8,6 +8,7 @@ import java.lang.annotation.*;
  * compatible change to this interface requires a major update of the version of
  * this package.
  */
+@Documented
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface ConsumerType {
