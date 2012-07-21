@@ -5,7 +5,7 @@ import java.io.*;
 import aQute.bnd.osgi.*;
 import aQute.lib.tag.*;
 
-class TagResource extends WriteResource {
+public class TagResource extends WriteResource {
 	final Tag	tag;
 
 	public TagResource(Tag tag) {

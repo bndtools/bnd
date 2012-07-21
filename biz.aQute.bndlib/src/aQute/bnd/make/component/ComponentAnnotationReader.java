@@ -12,6 +12,10 @@ import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.service.reporter.*;
 
+/**
+ * This converts bnd style annotations to, roughly, the header format.
+ *
+ */
 public class ComponentAnnotationReader extends ClassDataCollector {
 	String						EMPTY[]					= new String[0];
 	private static final String	V1_1					= "1.1.0";																																// "1.1.0"
@@ -187,6 +191,10 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			String simpleName = name;
 
 			unbind = annotation.get(Reference.UNBIND);
+
+			//this error reporting currently handled in HeaderReader.  If we rewrite this to go directly to ComponentDesc, we'll want this.
+//			if (unbind != null && !descriptors.contains(unbind))
+//				reporter.error("In component %s, for bind method %s, missing unbind method %s", name, bind, unbind);
 
 			if (bind != null) {
 				name = name + "/" + bind;
