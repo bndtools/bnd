@@ -8,6 +8,7 @@ import java.lang.annotation.*;
  * a minor update to the package API version number. This interface is similar
  * to the Eclipse @noextend and @noimplement annotations.
  */
+@Documented
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface ProviderType {
