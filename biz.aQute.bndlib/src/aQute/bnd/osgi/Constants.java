@@ -274,6 +274,7 @@ public interface Constants {
 	public final static String		COMPONENT_ENABLED							= "enabled:";
 	public final static String		COMPONENT_DYNAMIC							= "dynamic:";
 	public final static String		COMPONENT_MULTIPLE							= "multiple:";
+	public final static String		COMPONENT_GREEDY							= "greedy:";
 	public final static String		COMPONENT_PROVIDE							= "provide:";
 	public final static String		COMPONENT_OPTIONAL							= "optional:";
 	public final static String		COMPONENT_PROPERTIES						= "properties:";
@@ -289,6 +290,8 @@ public interface Constants {
 	public final static String		COMPONENT_ACTIVATE							= "activate:";
 	public final static String		COMPONENT_DEACTIVATE						= "deactivate:";
 
+	public final static String			COMPONENT_NAMESPACE				 		= "xmlns:";
+
 	final static Map<String,String>	EMPTY										= Collections.emptyMap();
 
 	public final static String[]	componentDirectives							= new String[] {
@@ -296,7 +299,7 @@ public interface Constants {
 			COMPONENT_PROVIDE, COMPONENT_OPTIONAL, COMPONENT_PROPERTIES, COMPONENT_IMPLEMENTATION,
 			COMPONENT_SERVICEFACTORY, COMPONENT_VERSION, COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED,
 			COMPONENT_ACTIVATE, COMPONENT_DEACTIVATE, COMPONENT_NAME, COMPONENT_DESCRIPTORS, COMPONENT_DESIGNATE,
-			COMPONENT_DESIGNATEFACTORY
+			COMPONENT_DESIGNATEFACTORY, COMPONENT_GREEDY, COMPONENT_NAMESPACE
 																				};
 
 	public final static Set<String>	SET_COMPONENT_DIRECTIVES					= new HashSet<String>(
@@ -310,4 +313,11 @@ public interface Constants {
 																						COMPONENT_ACTIVATE,
 																						COMPONENT_DEACTIVATE));
 
+	public final static Set<String>		SET_COMPONENT_DIRECTIVES_1_2				= new HashSet<String>(
+																							Arrays.asList(COMPONENT_GREEDY));
 }
+
+
+
+
+

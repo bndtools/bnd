@@ -11,7 +11,7 @@ import aQute.lib.tag.*;
  */
 
 class ReferenceDef {
-	Version					version	= AnnotationReader.V1_1;
+	Version					version	= AnnotationReader.V1_0;
 	String					name;
 	String					service;
 	ReferenceCardinality	cardinality;
