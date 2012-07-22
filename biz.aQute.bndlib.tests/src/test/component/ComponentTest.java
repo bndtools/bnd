@@ -273,7 +273,7 @@ public class ComponentTest extends TestCase {
 	}
 
 	/**
-	 * Test if a package private method gives us 1.1 + namespace in the XML
+	 * Test if a package private method gives us 1.1 + namespace in the XML using bnd annotations
 	 */
 
 	@Component(name = "protected")
@@ -314,7 +314,7 @@ public class ComponentTest extends TestCase {
 		public void activatex(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
-	public void testPackagePrivateActivateMethod() throws Exception {
+	public void testPackagePrivateActivateMethodBndAnnos() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -362,7 +362,7 @@ public class ComponentTest extends TestCase {
 		}
 
 	}
-
+	
 	/**
 	 * Test an attribute on an annotation
 	 */
@@ -952,11 +952,22 @@ public class ComponentTest extends TestCase {
 		Element component = setup("test.activator.Activator;activate:='start';deactivate:='stop'");
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 
+		//activate/deactivate with  BundleContext args
 		component = setup("test.activator.Activator2", "test.activator.Activator2").getDocumentElement();
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 
+		//deactivate with a int reason
 		component = setup("test.activator.Activator3", "test.activator.Activator3").getDocumentElement();
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
+
+		//package access activate/deactivate with ComponentContext args
+		component = setup("test.activator.ActivatorPackage", "test.activator.ActivatorPackage").getDocumentElement();
+		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
+
+		//private access activate/deactivate with ComponentContext args
+		component = setup("test.activator.ActivatorPrivate", "test.activator.ActivatorPrivate").getDocumentElement();
+		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
+
 	}
 
 	public void testCustomVersion() throws Exception {

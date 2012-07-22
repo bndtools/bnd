@@ -227,7 +227,9 @@ public class HeaderReader extends Processor {
 		}
 		for (String lifecycle: LIFECYCLE_METHODS) {
 			//lifecycle methods were not specified.... check for non 1.0 signatures.
-			if (descriptors.containsKey(lifecycle) && rateLifecycle(descriptors.get(lifecycle), "deactivate".equals(lifecycle)? allowedDeactivate: allowed) > 1) {
+			MethodDef test = descriptors.get(lifecycle);
+			if (descriptors.containsKey(lifecycle) && (!(test.isPublic() || test.isProtected()) || 
+					rateLifecycle(test, "deactivate".equals(lifecycle)? allowedDeactivate: allowed) > 1)) {
 				return NAMESPACE_STEM + "/v1.1.0";
 			}
 		}
@@ -291,7 +293,7 @@ public class HeaderReader extends Processor {
 	private int rateLifecycle(MethodDef test, Set<String> allowedParams) {
 		TypeRef[] prototype = test.getDescriptor().getPrototype();
 		if (prototype.length == 1 && ComponentContextTR.equals(prototype[0].getFQN()))
-			return 1;
+			    return 1;
 		if (prototype.length == 1 && BundleContextTR.equals(prototype[0].getFQN()))
 			return 2;
 		if (prototype.length == 1 && MapTR.equals(prototype[0].getFQN()))
