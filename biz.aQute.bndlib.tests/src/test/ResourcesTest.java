@@ -242,6 +242,20 @@ public class ResourcesTest extends TestCase {
 //		report(b); //Currently one error is reported "No value after '=' sign for attribute literal" even if we use literal=''
 	}
 
+	//Try to create an empty file using a literal.  Currently fails.
+	public void testLiteralEmptyFile() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-resourceonly", "true");
+		b.setProperty("Include-Resource", "text;literal=''");
+		Jar jar = b.build();
+		Resource resource = jar.getResource("text");
+		assertNotNull(resource);
+		byte buffer[] = new byte[1000];
+		int size = resource.openInputStream().read(buffer);
+		assertEquals(0, size);
+		report(b);
+	}
+
 	/**
 	 * Check if we can create a jar on demand through the make facility.
 	 * 
