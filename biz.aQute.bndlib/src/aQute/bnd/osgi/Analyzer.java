@@ -690,6 +690,10 @@ public class Analyzer extends Processor {
 		return apiUses;
 	}
 
+	public Packages getClasspathExports() {
+		return classpathExports;
+	}
+
 	/**
 	 * Get the version for this bnd
 	 * 
