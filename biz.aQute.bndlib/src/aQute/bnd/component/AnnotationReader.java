@@ -131,17 +131,17 @@ public class AnnotationReader extends ClassDataCollector {
 
 	public void annotation(Annotation annotation) {
 		try {
-			java.lang.annotation.Annotation a = annotation.getAnnotation();
-			if (a instanceof Component)
-				doComponent((Component) a, annotation);
-			else if (a instanceof Activate)
+			String fqn = annotation.getName().getFQN();
+			if (fqn.equals(Component.class.getName()))
+				doComponent((Component) annotation.getAnnotation(), annotation);
+			else if (fqn.equals(Activate.class.getName()))
 				doActivate();
-			else if (a instanceof Deactivate)
+			else if (fqn.equals(Deactivate.class.getName()))
 				doDeactivate();
-			else if (a instanceof Modified)
+			else if (fqn.equals(Modified.class.getName()))
 				doModified();
-			else if (a instanceof Reference)
-				doReference((Reference) a, annotation);
+			else if (fqn.equals(Reference.class.getName()))
+				doReference((Reference) annotation.getAnnotation(), annotation);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
