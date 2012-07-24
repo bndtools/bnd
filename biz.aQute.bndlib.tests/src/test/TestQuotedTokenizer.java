@@ -57,5 +57,18 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("version", s[6]);
 		assertEquals("1.2.34,123", s[7]);
 	}
+	
+	public void testEscapedQuote() {
+		QuotedTokenizer qt = new QuotedTokenizer("'\\'y'", ",");
+		String s = qt.nextToken();
+		assertEquals("'y", s);
+	}
+	
+	//Is this really the desired behavior?
+	public void testExplicitEmptyStringTurnedToNull() {
+		QuotedTokenizer qt = new QuotedTokenizer("literal=''", ";=,");
+		qt.nextToken(); //literal
+		assertNull(qt.nextToken()); //why not an empty string as requested?
+	}
 
 }

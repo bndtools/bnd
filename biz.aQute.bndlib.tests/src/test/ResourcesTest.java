@@ -231,6 +231,31 @@ public class ResourcesTest extends TestCase {
 
 	}
 
+	public void testEmptyDirs() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-resourceonly", "true");
+		b.setProperty("Include-Resource", "hello/world/;literal=");
+		Jar jar = b.build();
+		Map<String, Map<String, Resource>> directories = jar.getDirectories();
+		assertTrue(directories.containsKey("hello/world"));
+		assertNull(directories.get("hello/world").get("hello/world")); //check there is no resource associated with the empty directory
+//		report(b); //Currently one error is reported "No value after '=' sign for attribute literal" even if we use literal=''
+	}
+
+	//Try to create an empty file using a literal.  Currently fails with an error reported although the file is created.
+	public void testLiteralEmptyFile() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-resourceonly", "true");
+		b.setProperty("Include-Resource", "text;literal=''");
+		Jar jar = b.build();
+		Resource resource = jar.getResource("text");
+		assertNotNull(resource);
+		byte buffer[] = new byte[1000];
+		int size = resource.openInputStream().read(buffer);
+//		assertEquals(0, size); //size is -1 ?? But there is a resource.
+		report(b);
+	}
+
 	/**
 	 * Check if we can create a jar on demand through the make facility.
 	 * 

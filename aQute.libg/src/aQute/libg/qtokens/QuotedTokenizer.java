@@ -82,7 +82,7 @@ public class QuotedTokenizer {
 			c = string.charAt(index++);
 			if (c == quote)
 				break;
-			if (c == '\\' && index < string.length() && string.charAt(index + 1) == quote)
+			if (c == '\\' && index < string.length() && string.charAt(index) == quote)
 				c = string.charAt(index++);
 			sb.append(c);
 		}
