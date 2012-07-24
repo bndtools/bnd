@@ -2,7 +2,6 @@ package aQute.bnd.differ;
 
 import java.util.*;
 
-import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.version.*;
