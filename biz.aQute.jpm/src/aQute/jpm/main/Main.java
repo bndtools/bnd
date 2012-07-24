@@ -13,6 +13,8 @@ import javax.swing.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.version.*;
+import aQute.impl.library.cache.*;
+import aQute.impl.library.remote.*;
 import aQute.jpm.lib.*;
 import aQute.lib.collections.*;
 import aQute.lib.data.*;
@@ -25,6 +27,8 @@ public class Main extends ReporterAdapter {
 
 	public final static Pattern	URL_PATTERN	= Pattern.compile("[a-zA-Z][0-9A-Za-z]{1,8}:.+");
 	File						base		= new File(System.getProperty("user.dir"));
+	RemoteLibrary				library;
+	LibraryCache				cache;
 
 	/**
 	 * Show installed binaries
@@ -186,6 +190,14 @@ System.out.println("hello");
 					err.println(help);
 				}
 			}
+		}
+		
+		catch (InvocationTargetException t) {
+			Throwable tt = t;
+			while ( tt instanceof InvocationTargetException)
+				tt = ((InvocationTargetException)tt).getTargetException();
+
+			exception(tt, "%s", tt.getMessage());			
 		}
 		catch (Throwable t) {
 			exception(t, "Failed %s", t);
@@ -602,7 +614,7 @@ System.out.println("hello");
 			if (o == null) {
 				Icon icon = new ImageIcon(Main.class.getResource("/images/jpm.png"), "JPM");
 				int answer = JOptionPane.showOptionDialog(null, "This is a command line application. Setup?",
-						"Package Manager for Java™", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, icon,
+						"Package Manager for Java(r)", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, icon,
 						null, null);
 				if (answer == JOptionPane.OK_OPTION) {
 
@@ -807,4 +819,29 @@ System.out.println("hello");
 		Manifest m = new Manifest(getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"));
 		out.println( m.getMainAttributes().getValue("Bundle-Version"));
 	}
+	
+	/**
+	 * Search files in repository
+	 */
+	
+	interface RepoOptions extends Options {
+		URI url();
+	}
+	public void _repo( RepoOptions opts ) throws Exception {
+		initRepo( opts.url());
+		
+		List<String> cmds = opts._();
+		CommandLine proc = opts._command();
+		proc.execute(new RepoCommand(this), cmds.remove(0), cmds);
+	}
+
+	private void initRepo(URI url) throws Exception {
+		library = new RemoteLibrary();
+		if ( url != null)
+			library.url(url.toString());
+		cache = new LibraryCache(library, null, false);
+		cache.open();
+	}
+	
+	
 }

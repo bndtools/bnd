@@ -11,7 +11,8 @@ Bundle-Version: 				0.0.5
 	biz.aQute.bndlib;version=project,\
 	ee.j2se;version=${javac.ee},\
 	com.springsource.junit,\
-	org.mockito.mockito-all;version=1.9.0
+	org.mockito.mockito-all;version=1.9.0,\
+	aQute.libsync.remote;version=0.0.0
 	
 
 -digests: MD5, SHA1
