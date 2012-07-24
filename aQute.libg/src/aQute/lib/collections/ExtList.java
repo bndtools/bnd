@@ -16,6 +16,10 @@ public class ExtList<T> extends ArrayList<T> {
 		super(size);
 	}
 
+	public ExtList(Collection<T> _) {
+		super(_);
+	}
+
 	public static ExtList<String> from(String s) {
 		// TODO make sure no \ before comma
 		return from(s, "\\s*,\\s*");
