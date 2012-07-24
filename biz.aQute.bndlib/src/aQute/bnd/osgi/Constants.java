@@ -194,6 +194,7 @@ public interface Constants {
 	String							PATH_DIRECTIVE								= "path:";
 	String							SIZE_ATTRIBUTE								= "size";
 	String							LINK_ATTRIBUTE								= "link";
+	String							LITERAL_ATTRIBUTE							= "literal";
 	String							NAME_ATTRIBUTE								= "name";
 	String							DESCRIPTION_ATTRIBUTE						= "description";
 	String							OSNAME_ATTRIBUTE							= "osname";
@@ -219,7 +220,7 @@ public interface Constants {
 			SPLIT_PACKAGE_DIRECTIVE, NO_IMPORT_DIRECTIVE, IMPORT_DIRECTIVE, RESOLUTION_DIRECTIVE, INCLUDE_DIRECTIVE,
 			USES_DIRECTIVE, EXCLUDE_DIRECTIVE, KEYSTORE_LOCATION_DIRECTIVE, KEYSTORE_PROVIDER_DIRECTIVE,
 			KEYSTORE_PASSWORD_DIRECTIVE, SIGN_PASSWORD_DIRECTIVE, COMMAND_DIRECTIVE, NOANNOTATIONS, LIB_DIRECTIVE,
-			RUNPATH_LAUNCHER_DIRECTIVE, FROM_DIRECTIVE, PRIVATE_DIRECTIVE
+			RUNPATH_LAUNCHER_DIRECTIVE, FROM_DIRECTIVE, PRIVATE_DIRECTIVE, LITERAL_ATTRIBUTE
 
 																				// TODO
 																				};
@@ -290,7 +291,7 @@ public interface Constants {
 	public final static String		COMPONENT_ACTIVATE							= "activate:";
 	public final static String		COMPONENT_DEACTIVATE						= "deactivate:";
 
-	public final static String			COMPONENT_NAMESPACE				 		= "xmlns:";
+	public final static String		COMPONENT_NAMESPACE							= "xmlns:";
 
 	final static Map<String,String>	EMPTY										= Collections.emptyMap();
 
@@ -313,11 +314,6 @@ public interface Constants {
 																						COMPONENT_ACTIVATE,
 																						COMPONENT_DEACTIVATE));
 
-	public final static Set<String>		SET_COMPONENT_DIRECTIVES_1_2				= new HashSet<String>(
-																							Arrays.asList(COMPONENT_GREEDY));
+	public final static Set<String>	SET_COMPONENT_DIRECTIVES_1_2				= new HashSet<String>(
+																						Arrays.asList(COMPONENT_GREEDY));
 }
-
-
-
-
-

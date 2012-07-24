@@ -770,8 +770,8 @@ public class Builder extends Analyzer {
 			extractFromJar(jar, source.substring(1), parts.length == 1 ? "" : destination, absentIsOk);
 		} else if (extra.containsKey("cmd")) {
 			doCommand(jar, source, destination, extra, preprocess, absentIsOk);
-		} else if (extra.containsKey("literal")) {
-			String literal = extra.get("literal");
+		} else if (extra.containsKey(LITERAL_ATTRIBUTE)) {
+			String literal = extra.get(LITERAL_ATTRIBUTE);
 			Resource r = new EmbeddedResource(literal.getBytes("UTF-8"), 0);
 			String x = extra.get("extra");
 			if (x != null)
