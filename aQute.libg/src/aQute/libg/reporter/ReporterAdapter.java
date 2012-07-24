@@ -113,7 +113,10 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	}
 
 	public SetLocation exception(Throwable t, String s, Object... args) {
-		String e = String.format(s, args);
+		StackTraceElement[] stackTrace = t.getStackTrace();
+		String method = stackTrace[0].getMethodName();
+		String cname = stackTrace[0].getClassName();
+		String e = String.format("["+shorten(cname) +"."+method+"] " +s, args);
 		errors.add(e);
 		trace("ERROR: %s", e);
 		if (isExceptions() || isTrace())
@@ -122,6 +125,14 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 			else
 				t.printStackTrace(System.err);
 		return location(e);
+	}
+
+	private String shorten(String cname) {
+		int index = cname.lastIndexOf('$');
+		if ( index < 0)
+			index = cname.lastIndexOf('.');
+		
+		return cname.substring(index+1);
 	}
 
 	public SetLocation warning(String s, Object... args) {
