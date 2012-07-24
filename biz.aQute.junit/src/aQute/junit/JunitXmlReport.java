@@ -10,27 +10,21 @@ import junit.framework.*;
 import org.osgi.framework.*;
 
 public class JunitXmlReport implements TestReporter {
-	Tag					testsuite	= new Tag("testsuite");
-	Tag					testcase;
-	static String		hostname;
-	static DateFormat	df			= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-	long				startTime;
-	long				testStartTime;
-	int					tests		= 0;
-	int					failures	= 0;
-	int					errors		= 0;
-	int					skipped     = 0;
-	PrintWriter			out;
-	boolean				finished;
-	boolean				progress;
-	Bundle				bundle;
-	BasicTestReport		basic;
-
-	public class LogEntry {
-		String	clazz;
-		String	name;
-		String	message;
-	}
+	Tag				testsuite	= new Tag("testsuite");
+	Tag				testcase;
+	static String	hostname;
+	DateFormat		df			= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	long			startTime;
+	long			testStartTime;
+	int				tests		= 0;
+	int				failures	= 0;
+	int				errors		= 0;
+	int				skipped		= 0;
+	PrintWriter		out;
+	boolean			finished;
+	boolean			progress;
+	Bundle			bundle;
+	BasicTestReport	basic;
 
 	public JunitXmlReport(Writer report, Bundle bundle, BasicTestReport basic) throws Exception {
 		if (hostname == null)
@@ -62,7 +56,7 @@ public class JunitXmlReport implements TestReporter {
 		Tag properties = new Tag("properties");
 		testsuite.addContent(properties);
 
-		for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
+		for (Map.Entry<Object,Object> entry : System.getProperties().entrySet()) {
 			Tag property = new Tag(properties, "property");
 			property.addAttribute("name", entry.getKey());
 			property.addAttribute("value", entry.getValue());
@@ -85,7 +79,7 @@ public class JunitXmlReport implements TestReporter {
 
 			bundles.addContent(bundle);
 		}
-		if (bundle != null) {
+		if (targetBundle != null) {
 			String header = (String) targetBundle.getHeaders().get("Bnd-AddXMLToTest");
 			if (header != null) {
 				StringTokenizer st = new StringTokenizer(header, " ,");
@@ -118,8 +112,7 @@ public class JunitXmlReport implements TestReporter {
 		}
 	}
 
-	public void begin(List classNames, int realcount) {
-	}
+	public void begin(List<Test> classNames, int realcount) {}
 
 	public void end() {
 		if (!finished) {
@@ -128,15 +121,14 @@ public class JunitXmlReport implements TestReporter {
 			testsuite.addAttribute("failures", failures);
 			testsuite.addAttribute("errors", errors);
 			testsuite.addAttribute("skipped", skipped);
-			testsuite.addAttribute("time",
-					getFraction(System.currentTimeMillis() - startTime, 1000));
+			testsuite.addAttribute("time", getFraction(System.currentTimeMillis() - startTime, 1000));
 			testsuite.addAttribute("timestamp", df.format(new Date()));
 			testsuite.print(0, out);
 			out.close();
 		}
 	}
 
-	private String getFraction(long l, int i) {
+	private String getFraction(long l, @SuppressWarnings("unused") int i) {
 		return (l / 1000) + "." + (l % 1000);
 	}
 
@@ -159,8 +151,7 @@ public class JunitXmlReport implements TestReporter {
 		progress(name);
 	}
 
-	public void setTests(List<Test> flattened) {
-	}
+	public void setTests(@SuppressWarnings("unused") List<Test> flattened) {}
 
 	// <testcase classname="test.AnalyzerTest" name="testMultilevelInheritance"
 	// time="0.772">
@@ -179,12 +170,10 @@ public class JunitXmlReport implements TestReporter {
 		else
 			testcase.addContent(error);
 		progress(" e");
-		
 		errors++;
 	}
 
-	private void progress(String s) {
-	}
+	private void progress(@SuppressWarnings("unused") String s) {}
 
 	private String getTrace(Throwable t) {
 		StringWriter sw = new StringWriter();
@@ -214,7 +203,6 @@ public class JunitXmlReport implements TestReporter {
 		failure.addContent(getTrace(t));
 		testcase.addContent(failure);
 		progress(" f");
-		
 		failures++;
 	}
 
@@ -230,9 +218,8 @@ public class JunitXmlReport implements TestReporter {
 			sysout.addContent(outs[1]);
 		}
 
-		testcase
-				.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
-		
+		testcase.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
+		tests++;
 		tests++;
 	}
 

@@ -5,5 +5,5 @@ import java.util.*;
 import aQute.bnd.build.*;
 
 public interface DependencyContributor {
-    void addDependencies(Project project, Set<String> dependencies);
+	void addDependencies(Project project, Set<String> dependencies);
 }

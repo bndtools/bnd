@@ -15,7 +15,8 @@ public class RSA {
 	static private KeyFactory getKeyFactory() {
 		try {
 			return KeyFactory.getInstance(ALGORITHM);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// built in
 		}
 		return null;
@@ -24,20 +25,23 @@ public class RSA {
 	public static RSAPrivateKey create(RSAPrivateKeySpec keyspec) throws InvalidKeySpecException {
 		return (RSAPrivateKey) factory.generatePrivate(keyspec);
 	}
+
 	public static RSAPublicKey create(RSAPublicKeySpec keyspec) throws InvalidKeySpecException {
 		return (RSAPublicKey) factory.generatePrivate(keyspec);
 	}
-	
+
 	public static RSAPublicKey createPublic(BigInteger m, BigInteger e) throws InvalidKeySpecException {
-		return create( new RSAPublicKeySpec(m,e));
+		return create(new RSAPublicKeySpec(m, e));
 	}
+
 	public static RSAPrivateKey createPrivate(BigInteger m, BigInteger e) throws InvalidKeySpecException {
-		return create( new RSAPrivateKeySpec(m,e));
+		return create(new RSAPrivateKeySpec(m, e));
 	}
-	
-	public static Pair<RSAPrivateKey, RSAPublicKey> generate() throws NoSuchAlgorithmException {
+
+	public static Pair<RSAPrivateKey,RSAPublicKey> generate() throws NoSuchAlgorithmException {
 		KeyPairGenerator kpg = KeyPairGenerator.getInstance(ALGORITHM);
 		KeyPair keypair = kpg.generateKeyPair();
-		return new Pair<RSAPrivateKey,RSAPublicKey>( (RSAPrivateKey) keypair.getPrivate(), (RSAPublicKey) keypair.getPublic());
+		return new Pair<RSAPrivateKey,RSAPublicKey>((RSAPrivateKey) keypair.getPrivate(),
+				(RSAPublicKey) keypair.getPublic());
 	}
 }

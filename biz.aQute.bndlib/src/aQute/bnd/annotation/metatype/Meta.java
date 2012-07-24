@@ -13,16 +13,7 @@ import java.lang.annotation.*;
 
 public interface Meta {
 	enum Type {
-		Boolean,
-		Byte,
-		Character,
-		Short,
-		Integer,
-		Long,
-		Float,
-		Double,
-		String,
-		Password
+		Boolean, Byte, Character, Short, Integer, Long, Float, Double, String, Password
 	}
 
 	/**
@@ -34,9 +25,10 @@ public interface Meta {
 	 * The OCD Annotation maps to the OCD element in the Metatype specification.
 	 * The only difference is that it is possible to create a Designate element
 	 * as well.
-	 * 
 	 */
-	@Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIME) @interface OCD {
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.RUNTIME)
+	@interface OCD {
 		/**
 		 * The name for this component. The default name is a the short class
 		 * name that us un-camel cased to make it more readable.
@@ -48,7 +40,6 @@ public interface Meta {
 		/**
 		 * The id of the component. Default the name of the class in FQN
 		 * notation but with nested classes using the $ as separator (not .).
-		 * 
 		 * The Felix webconsole always uses this id as the PID and not the pid
 		 * in the Designate element. Reported as an error.
 		 * 
@@ -79,9 +70,10 @@ public interface Meta {
 
 	/**
 	 * The AD element in the Metatype specification.
-	 * 
 	 */
-	@Target(ElementType.METHOD) @Retention(RetentionPolicy.RUNTIME) @interface AD {
+	@Target(ElementType.METHOD)
+	@Retention(RetentionPolicy.RUNTIME)
+	@interface AD {
 		/**
 		 * A description of the attribute. Default is empty.
 		 * 
@@ -119,10 +111,9 @@ public interface Meta {
 		/**
 		 * The cardinality of the attribute. If not explicitly set it will be
 		 * derived from the attributes return type. Collections return
-		 * Integer.MIN_VALUE and arrays use Integer.MAX_VALUE.
-		 * 
-		 * If a single string needs to be converted to a Collection or array
-		 * then the | will be used as a separator to split the line.
+		 * Integer.MIN_VALUE and arrays use Integer.MAX_VALUE. If a single
+		 * string needs to be converted to a Collection or array then the | will
+		 * be used as a separator to split the line.
 		 * 
 		 * @return the cardinality of the attribute
 		 */

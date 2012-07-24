@@ -5,29 +5,28 @@ import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.version.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.libg.reporter.*;
-import aQute.libg.version.*;
+import aQute.service.reporter.*;
 
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin {
-	public static String	LOCATION	= "location";
-	public static String	READONLY	= "readonly";
-	public static String	NAME		= "name";
+	public final static String	LOCATION	= "location";
+	public final static String	READONLY	= "readonly";
+	public final static String	NAME		= "name";
 
-	File[]					EMPTY_FILES	= new File[0];
-	protected File			root;
-	Registry				registry;
-	boolean					canWrite	= true;
-	Pattern					REPO_FILE	= Pattern
-												.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
-	Reporter				reporter;
-	boolean					dirty;
-	String					name;
+	File[]						EMPTY_FILES	= new File[0];
+	protected File				root;
+	Registry					registry;
+	boolean						canWrite	= true;
+	Pattern						REPO_FILE	= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
+	Reporter					reporter;
+	boolean						dirty;
+	String						name;
 
-	public FileRepo() {
-	}
+	public FileRepo() {}
 
 	public FileRepo(String name, File location, boolean canWrite) {
 		this.name = name;
@@ -39,27 +38,25 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		// for extensions
 	}
 
-	public void setProperties(Map<String, String> map) {
-		String location = (String) map.get(LOCATION);
+	public void setProperties(Map<String,String> map) {
+		String location = map.get(LOCATION);
 		if (location == null)
 			throw new IllegalArgumentException("Location must be set on a FileRepo plugin");
 
 		root = new File(location);
-		if (!root.isDirectory())
-			throw new IllegalArgumentException("Repository is not a valid directory " + root);
 
-		String readonly = (String) map.get(READONLY);
+		String readonly = map.get(READONLY);
 		if (readonly != null && Boolean.valueOf(readonly).booleanValue())
 			canWrite = false;
 
-		name = (String) map.get(NAME);
+		name = map.get(NAME);
 	}
 
 	/**
 	 * Get a list of URLs to bundles that are constrained by the bsn and
 	 * versionRange.
 	 */
-	public File[] get(String bsn, String versionRange) throws Exception {
+	private File[] get(String bsn, String versionRange) throws Exception {
 		init();
 
 		// If the version is set to project, we assume it is not
@@ -92,7 +89,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		// this list.
 		//
 		File instances[] = f.listFiles();
-		SortedMap<Version, File> versions = new TreeMap<Version, File>();
+		SortedMap<Version,File> versions = new TreeMap<Version,File>();
 		for (int i = 0; i < instances.length; i++) {
 			Matcher m = REPO_FILE.matcher(instances[i].getName());
 			if (m.matches() && m.group(1).equals(bsn)) {
@@ -108,9 +105,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			}
 		}
 
-		File[] files = (File[]) versions.values().toArray(EMPTY_FILES);
+		File[] files = versions.values().toArray(EMPTY_FILES);
 		if ("latest".equals(versionRange) && files.length > 0) {
-			return new File[] { files[files.length - 1] };
+			return new File[] {
+				files[files.length - 1]
+			};
 		}
 		return files;
 	}
@@ -131,7 +130,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (bsn == null)
 			throw new IllegalArgumentException("No Bundle SymbolicName set");
 
-		Map<String, Map<String, String>> b = Processor.parseHeader(bsn, null);
+		Parameters b = Processor.parseHeader(bsn, null);
 		if (b.size() != 1)
 			throw new IllegalArgumentException("Multiple bsn's specified " + b);
 
@@ -148,19 +147,20 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		else
 			version = new Version(versionString);
 
+		reporter.trace("bsn=%s version=%s", bsn, version);
+
 		File dir = new File(root, bsn);
 		dir.mkdirs();
-		String fName = bsn + "-" + version.getMajor() + "." + version.getMinor() + "."
-				+ version.getMicro() + ".jar";
+		String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 		File file = new File(dir, fName);
 
-		reporter.trace("Updating " + file.getAbsolutePath());
+		reporter.trace("updating %s ", file.getAbsolutePath());
 		if (!file.exists() || file.lastModified() < jar.lastModified()) {
 			jar.write(file);
-			reporter.progress("Updated " + file.getAbsolutePath());
+			reporter.progress(-1, "updated " + file.getAbsolutePath());
 			fireBundleAdded(jar, file);
 		} else {
-			reporter.progress("Did not update " + jar + " because repo has a newer version");
+			reporter.progress(-1, "Did not update " + jar + " because repo has a newer version");
 			reporter.trace("NOT Updating " + fName + " (repo is newer)");
 		}
 
@@ -176,12 +176,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected void fireBundleAdded(Jar jar, File file) {
 		if (registry == null)
 			return;
-		List<RepositoryListenerPlugin> listeners = registry
-				.getPlugins(RepositoryListenerPlugin.class);
+		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
 		for (RepositoryListenerPlugin listener : listeners) {
 			try {
 				listener.bundleAdded(this, jar, file);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				if (reporter != null)
 					reporter.warning("Repository listener threw an unexpected exception: %s", e);
 			}
@@ -202,7 +202,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		init();
 		Instruction pattern = null;
 		if (regex != null)
-			pattern = Instruction.getPattern(regex);
+			pattern = new Instruction(regex);
 
 		List<String> result = new ArrayList<String>();
 		if (root == null) {
@@ -238,7 +238,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				if (m.matches()) {
 					String version = m.group(2);
 					if (version.equals("latest"))
-						version = Integer.MAX_VALUE+"";
+						version = Integer.MAX_VALUE + "";
 					list.add(new Version(version));
 				}
 			}
@@ -259,8 +259,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (dirty) {
 			dirty = false;
 			return true;
-		} else
-			return false;
+		}
+		return false;
 	}
 
 	public String getName() {
@@ -270,8 +270,16 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return name;
 	}
 
-	public File get(String bsn, String version, Strategy strategy, Map<String, String> properties)
-			throws Exception {
+	public Jar get(String bsn, Version v) throws Exception {
+		init();
+		File bsns = new File(root, bsn);
+		File version = new File(bsns, bsn + "-" + v.getMajor() + "." + v.getMinor() + "." + v.getMicro() + ".jar");
+		if (version.exists())
+			return new Jar(version);
+		return null;
+	}
+
+	public File get(String bsn, String version, Strategy strategy, Map<String,String> properties) throws Exception {
 		if (version == null)
 			version = "0.0.0";
 
@@ -280,17 +288,15 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (vr.isRange())
 				return null;
 
-			if ( vr.getHigh().getMajor() == Integer.MAX_VALUE)
+			if (vr.getHigh().getMajor() == Integer.MAX_VALUE)
 				version = "latest";
-			
+
 			File file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".jar");
 			if (file.isFile())
 				return file;
-			else {
-				file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".lib");
-				if (file.isFile())
-					return file;
-			}
+			file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".lib");
+			if (file.isFile())
+				return file;
 			return null;
 
 		}
@@ -300,10 +306,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		if (files.length >= 0) {
 			switch (strategy) {
-			case LOWEST:
-				return files[0];
-			case HIGHEST:
-				return files[files.length - 1];
+				case LOWEST :
+					return files[0];
+				case HIGHEST :
+					return files[files.length - 1];
+				case EXACT :
+					// TODO
+					break;
 			}
 		}
 		return null;
@@ -312,4 +321,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
+
+	public String getLocation() {
+		return root.toString();
+	}
+
 }

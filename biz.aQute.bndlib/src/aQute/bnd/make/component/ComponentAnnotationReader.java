@@ -1,17 +1,21 @@
 package aQute.bnd.make.component;
 
-import static aQute.lib.osgi.Constants.*;
+import static aQute.bnd.osgi.Constants.*;
 
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
 
-import aQute.lib.osgi.Annotation;
-
 import aQute.bnd.annotation.component.*;
-import aQute.lib.osgi.*;
-import aQute.libg.reporter.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.service.reporter.*;
 
+/**
+ * This converts bnd style annotations to, roughly, the header format.
+ *
+ */
 public class ComponentAnnotationReader extends ClassDataCollector {
 	String						EMPTY[]					= new String[0];
 	private static final String	V1_1					= "1.1.0";																																// "1.1.0"
@@ -23,22 +27,29 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
 	static Pattern				OLDACTIVATEDESCRIPTOR	= Pattern
 																.compile("\\(Lorg/osgi/service/component/ComponentContext;\\)V");
+
 	static Pattern				OLDBINDDESCRIPTOR		= Pattern.compile("\\(L([^;]*);\\)V");
 	static Pattern				REFERENCEBINDDESCRIPTOR	= Pattern
 																.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
 
+	static String[]				ACTIVATE_ARGUMENTS		= {
+			"org.osgi.service.component.ComponentContext", "org.osgi.framework.BundleContext", Map.class.getName(),
+			"org.osgi.framework.BundleContext"
+														};
+	static String[]				OLD_ACTIVATE_ARGUMENTS	= {
+															"org.osgi.service.component.ComponentContext"
+														};
+
 	Reporter					reporter				= new Processor();
-	String						method;
-	String						methodDescriptor;
-	int							methodAccess;
-	String						className;
+	MethodDef					method;
+	TypeRef						className;
 	Clazz						clazz;
-	String						interfaces[];
+	TypeRef						interfaces[];
 	Set<String>					multiple				= new HashSet<String>();
 	Set<String>					optional				= new HashSet<String>();
 	Set<String>					dynamic					= new HashSet<String>();
 
-	Map<String, String>			map						= new TreeMap<String, String>();
+	Map<String,String>			map						= new TreeMap<String,String>();
 	Set<String>					descriptors				= new HashSet<String>();
 	List<String>				properties				= new ArrayList<String>();
 	String						version					= null;
@@ -57,11 +68,11 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		return this.reporter;
 	}
 
-	public static Map<String, String> getDefinition(Clazz c) throws Exception {
+	public static Map<String,String> getDefinition(Clazz c) throws Exception {
 		return getDefinition(c, new Processor());
 	}
 
-	public static Map<String, String> getDefinition(Clazz c, Reporter reporter) throws Exception {
+	public static Map<String,String> getDefinition(Clazz c, Reporter reporter) throws Exception {
 		ComponentAnnotationReader r = new ComponentAnnotationReader(c);
 		r.setReporter(reporter);
 		c.parseClassFileWithCollector(r);
@@ -70,8 +81,9 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	}
 
 	public void annotation(Annotation annotation) {
+		String fqn = annotation.getName().getFQN();
 
-		if (annotation.getName().equals(Component.RNAME)) {
+		if (fqn.equals(Component.class.getName())) {
 			set(COMPONENT_NAME, annotation.get(Component.NAME), "<>");
 			set(COMPONENT_FACTORY, annotation.get(Component.FACTORY), false);
 			setBoolean(COMPONENT_ENABLED, annotation.get(Component.ENABLED), true);
@@ -108,8 +120,8 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				if (interfaces != null) {
 					List<String> result = new ArrayList<String>();
 					for (int i = 0; i < interfaces.length; i++) {
-						if (!interfaces[i].equals("scala/ScalaObject") )
-							result.add(Clazz.internalToFqn(interfaces[i]));
+						if (!interfaces[i].getBinary().equals("scala/ScalaObject"))
+							result.add(interfaces[i].getFQN());
 					}
 					p = result.toArray(EMPTY);
 				} else
@@ -125,58 +137,64 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				set(COMPONENT_PROVIDE, Processor.join(Arrays.asList(p)), "<>");
 			}
 
-		} else if (annotation.getName().equals(Activate.RNAME)) {
+		} else if (fqn.equals(Activate.class.getName())) {
 			if (!checkMethod())
 				setVersion(V1_1);
 
-			if (!ACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches())
+			// TODO ... use the new descriptor to do better check
+
+			if (!ACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 				reporter.error(
 						"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-						className, methodDescriptor);
+						className, method.getDescriptor());
 
-			if (method.equals("activate")
-					&& OLDACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches()) {
+			if (method.getName().equals("activate")
+					&& OLDACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches()) {
 				// this is the default!
 			} else {
 				setVersion(V1_1);
 				set(COMPONENT_ACTIVATE, method, "<>");
 			}
 
-		} else if (annotation.getName().equals(Deactivate.RNAME)) {
+		} else if (fqn.equals(Deactivate.class.getName())) {
 			if (!checkMethod())
 				setVersion(V1_1);
 
-			if (!ACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches())
+			if (!ACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 				reporter.error(
 						"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-						className, methodDescriptor);
-			if (method.equals("deactivate")
-					&& OLDACTIVATEDESCRIPTOR.matcher(methodDescriptor).matches()) {
+						className, method.getDescriptor());
+			if (method.getName().equals("deactivate")
+					&& OLDACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches()) {
 				// This is the default!
 			} else {
 				setVersion(V1_1);
 				set(COMPONENT_DEACTIVATE, method, "<>");
 			}
-		} else if (annotation.getName().equals(Modified.RNAME)) {
+		} else if (fqn.equals(Modified.class.getName())) {
 			set(COMPONENT_MODIFIED, method, "<>");
 			setVersion(V1_1);
-		} else if (annotation.getName().equals(Reference.RNAME)) {
+		} else if (fqn.equals(Reference.class.getName())) {
 
-			String name = (String) annotation.get(Reference.NAME);
-			String bind = method;
+			String name = (String) annotation.get(Reference.class.getName());
+			String bind = method.getName();
 			String unbind = null;
 
 			if (name == null) {
-				Matcher m = BINDMETHOD.matcher(method);
+				Matcher m = BINDMETHOD.matcher(method.getName());
 				if (m.matches()) {
 					name = m.group(2).toLowerCase() + m.group(3);
 				} else {
-					name = method.toLowerCase();
+					name = method.getName().toLowerCase();
 				}
 			}
 			String simpleName = name;
 
 			unbind = annotation.get(Reference.UNBIND);
+
+			//this error reporting currently handled in HeaderReader.  If we rewrite this to go directly to ComponentDesc, we'll want this.
+//			if (unbind != null && !descriptors.contains(unbind))
+//				reporter.error("In component %s, for bind method %s, missing unbind method %s", name, bind, unbind);
 
 			if (bind != null) {
 				name = name + "/" + bind;
@@ -190,13 +208,13 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			} else {
 				// We have to find the type of the current method to
 				// link it to the referenced service.
-				Matcher m = BINDDESCRIPTOR.matcher(methodDescriptor);
+				Matcher m = BINDDESCRIPTOR.matcher(method.getDescriptor().toString());
 				if (m.matches()) {
-					service = Clazz.internalToFqn(m.group(1));
+					service = Descriptors.binaryToFQN(m.group(1));
 				} else
 					throw new IllegalArgumentException(
 							"Cannot detect the type of a Component Reference from the descriptor: "
-									+ methodDescriptor);
+									+ method.getDescriptor());
 			}
 
 			// Check if we have a target, this must be a filter
@@ -226,8 +244,8 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 
 			if (!checkMethod())
 				setVersion(V1_1);
-			else if (REFERENCEBINDDESCRIPTOR.matcher(methodDescriptor).matches()
-					|| !OLDBINDDESCRIPTOR.matcher(methodDescriptor).matches())
+			else if (REFERENCEBINDDESCRIPTOR.matcher(method.getDescriptor().toString()).matches()
+					|| !OLDBINDDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 				setVersion(V1_1);
 		}
 	}
@@ -243,19 +261,20 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	}
 
 	private boolean checkMethod() {
-		return Modifier.isPublic(methodAccess) || Modifier.isProtected(methodAccess);
+		return Modifier.isPublic(method.getAccess()) || Modifier.isProtected(method.getAccess());
 	}
 
-	static Pattern	PROPERTY_PATTERN	= Pattern.compile("[^=]+=.+");
+	static Pattern	PROPERTY_PATTERN	= Pattern.compile("\\s*([^=\\s]+)\\s*=(.+)");
 
-	private void doProperties(aQute.lib.osgi.Annotation annotation) {
+	private void doProperties(aQute.bnd.osgi.Annotation annotation) {
 		Object[] properties = annotation.get(Component.PROPERTIES);
 
 		if (properties != null) {
 			for (Object o : properties) {
 				String p = (String) o;
-				if (PROPERTY_PATTERN.matcher(p).matches())
-					this.properties.add(p);
+				Matcher m = PROPERTY_PATTERN.matcher(p);
+				if (m.matches())
+					this.properties.add(m.group(1)+"="+m.group(2));
 				else
 					throw new IllegalArgumentException("Malformed property '" + p + "' on: "
 							+ annotation.get(Component.NAME));
@@ -288,9 +307,8 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * Skip L and ; and replace / for . in an object descriptor.
-	 * 
-	 * A string like Lcom/acme/Foo; becomes com.acme.Foo
+	 * Skip L and ; and replace / for . in an object descriptor. A string like
+	 * Lcom/acme/Foo; becomes com.acme.Foo
 	 * 
 	 * @param string
 	 * @return
@@ -307,19 +325,20 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		return sb.toString();
 	}
 
-	@Override public void classBegin(int access, String name) {
+	@Override
+	public void classBegin(int access, TypeRef name) {
 		className = name;
 	}
 
-	@Override public void implementsInterfaces(String[] interfaces) {
+	@Override
+	public void implementsInterfaces(TypeRef[] interfaces) {
 		this.interfaces = interfaces;
 	}
 
-	@Override public void method(int access, String name, String descriptor) {
-		this.method = name;
-		this.methodDescriptor = descriptor;
-		this.methodAccess = access;
-		descriptors.add(method);
+	@Override
+	public void method(Clazz.MethodDef method) {
+		this.method = method;
+		descriptors.add(method.getName());
 	}
 
 	void set(String name, Collection<String> l) {

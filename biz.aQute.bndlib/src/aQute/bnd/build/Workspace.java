@@ -10,12 +10,12 @@ import java.util.jar.*;
 import javax.naming.*;
 
 import aQute.bnd.maven.support.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class Workspace extends Processor {
 	public static final String					BUILDFILE	= "build.bnd";
@@ -23,13 +23,12 @@ public class Workspace extends Processor {
 	public static final String					BNDDIR		= "bnd";
 	public static final String					CACHEDIR	= "cache";
 
-	static Map<File, WeakReference<Workspace>>	cache		= newHashMap();
-	final Map<String, Project>					models		= newHashMap();
-	final Map<String, Action>					commands	= newMap();
-	final CachedFileRepo						cachedRepo;
+	static Map<File,WeakReference<Workspace>>	cache		= newHashMap();
+	final Map<String,Project>					models		= newHashMap();
+	final Map<String,Action>					commands	= newMap();
 	final File									buildDir;
 	final Maven									maven		= new Maven(Processor.getExecutor());
-	private boolean								postpone;
+	private boolean								offline		= true;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -98,7 +97,6 @@ public class Workspace extends Processor {
 		setProperties(buildFile, dir);
 		propertiesChanged();
 
-		cachedRepo = new CachedFileRepo();
 	}
 
 	public Project getProject(String bsn) throws Exception {
@@ -135,16 +133,20 @@ public class Workspace extends Processor {
 		return false;
 	}
 
-	@Override public void propertiesChanged() {
+	@Override
+	public void propertiesChanged() {
 		super.propertiesChanged();
 		File extDir = new File(this.buildDir, "ext");
 		File[] extensions = extDir.listFiles();
 		if (extensions != null) {
 			for (File extension : extensions) {
-				if (extension.getName().endsWith(".bnd")) {
+				String extensionName = extension.getName();
+				if (extensionName.endsWith(".bnd")) {
+					extensionName = extensionName.substring(0, extensionName.length() - ".bnd".length());
 					try {
-						doIncludeFile(extension, false, getProperties());
-					} catch (Exception e) {
+						doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
+					}
+					catch (Exception e) {
 						error("PropertiesChanged: " + e.getMessage());
 					}
 				}
@@ -152,7 +154,7 @@ public class Workspace extends Processor {
 		}
 	}
 
-	public String _workspace(String args[]) {
+	public String _workspace(@SuppressWarnings("unused") String args[]) {
 		return getBase().getAbsolutePath();
 	}
 
@@ -164,7 +166,7 @@ public class Workspace extends Processor {
 		commands.remove(menu);
 	}
 
-	public void fillActions(Map<String, Action> all) {
+	public void fillActions(Map<String,Action> all) {
 		all.putAll(commands);
 	}
 
@@ -187,8 +189,10 @@ public class Workspace extends Processor {
 		List<BndListener> listeners = getPlugins(BndListener.class);
 		for (BndListener l : listeners)
 			try {
+				offline = false;
 				l.changed(f);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 			}
 	}
@@ -201,42 +205,46 @@ public class Workspace extends Processor {
 					l.begin();
 				else
 					l.end();
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				// who cares?
 			}
 	}
 
-	
 	/**
-	 * Signal a BndListener plugin.
-	 * We ran an infinite bug loop :-( 
+	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter> signalBusy = new ThreadLocal<Reporter>();
+	final ThreadLocal<Reporter>	signalBusy	= new ThreadLocal<Reporter>();
+
 	public void signal(Reporter reporter) {
-		if ( signalBusy.get() != null)
+		if (signalBusy.get() != null)
 			return;
-		
+
 		signalBusy.set(reporter);
 		try {
 			List<BndListener> listeners = getPlugins(BndListener.class);
 			for (BndListener l : listeners)
 				try {
 					l.signal(this);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					// who cares?
 				}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// Ignore
-		} finally {
+		}
+		finally {
 			signalBusy.set(null);
 		}
 	}
 
-	@Override public void signal() {
+	@Override
+	public void signal() {
 		signal(this);
 	}
 
-	private void copy(InputStream in, OutputStream out) throws Exception {
+	void copy(InputStream in, OutputStream out) throws Exception {
 		byte data[] = new byte[10000];
 		int size = in.read(data);
 		while (size > 0) {
@@ -253,10 +261,13 @@ public class Workspace extends Processor {
 			super("cache", getFile(buildDir, CACHEDIR), false);
 		}
 
+		public String toString() {
+			return "bnd-cache";
+		}
+
 		protected void init() throws Exception {
 			if (lock.tryLock(50, TimeUnit.SECONDS) == false)
-				throw new TimeLimitExceededException(
-						"Cached File Repo is locked and can't acquire it");
+				throw new TimeLimitExceededException("Cached File Repo is locked and can't acquire it");
 			try {
 				if (!inited) {
 					inited = true;
@@ -268,11 +279,11 @@ public class Workspace extends Processor {
 					if (in != null)
 						unzip(in, root);
 					else {
-						System.out.println("!!!! Couldn't find embedded-repo.jar in bundle ");
 						error("Couldn't find embedded-repo.jar in bundle ");
 					}
 				}
-			} finally {
+			}
+			finally {
 				lock.unlock();
 			}
 		}
@@ -284,20 +295,21 @@ public class Workspace extends Processor {
 				while (jentry != null) {
 					if (!jentry.isDirectory()) {
 						File dest = Processor.getFile(dir, jentry.getName());
-						if (!dest.isFile() || dest.lastModified() < jentry.getTime()
-								|| jentry.getTime() == 0) {
+						if (!dest.isFile() || dest.lastModified() < jentry.getTime() || jentry.getTime() == 0) {
 							dest.getParentFile().mkdirs();
 							FileOutputStream out = new FileOutputStream(dest);
 							try {
 								copy(jin, out);
-							} finally {
+							}
+							finally {
 								out.close();
 							}
 						}
 					}
 					jentry = jin.getNextJarEntry();
 				}
-			} finally {
+			}
+			finally {
 				in.close();
 			}
 		}
@@ -305,6 +317,32 @@ public class Workspace extends Processor {
 
 	public List<RepositoryPlugin> getRepositories() {
 		return getPlugins(RepositoryPlugin.class);
+	}
+
+	public Collection<Project> getBuildOrder() throws Exception {
+		List<Project> result = new ArrayList<Project>();
+		for (Project project : getAllProjects()) {
+			Collection<Project> dependsOn = project.getDependson();
+			getBuildOrder(dependsOn, result);
+			if (!result.contains(project)) {
+				result.add(project);
+			}
+		}
+		return result;
+	}
+
+	private void getBuildOrder(Collection<Project> dependsOn, List<Project> result) throws Exception {
+		for (Project project : dependsOn) {
+			Collection<Project> subProjects = project.getDependson();
+			for (Project subProject : subProjects) {
+				if (!result.contains(subProject)) {
+					result.add(subProject);
+				}
+			}
+			if (!result.contains(project)) {
+				result.add(project);
+			}
+		}
 	}
 
 	public static Workspace getWorkspace(String path) throws Exception {
@@ -316,10 +354,26 @@ public class Workspace extends Processor {
 		return maven;
 	}
 
-	@Override protected void setTypeSpecificPlugins(Set<Object> list) {
+	@Override
+	protected void setTypeSpecificPlugins(Set<Object> list) {
 		super.setTypeSpecificPlugins(list);
 		list.add(maven);
-		list.add(cachedRepo);
+		list.add(new CachedFileRepo());
 	}
 
+	/**
+	 * Return if we're in offline mode. Offline mode is defined as an
+	 * environment where nobody tells us the resources are out of date (refresh
+	 * or changed). This is currently defined as having bndlisteners.
+	 * 
+	 * @return
+	 */
+	public boolean isOffline() {
+		return offline;
+	}
+
+	public Workspace setOffline(boolean on) {
+		this.offline = on;
+		return this;
+	}
 }

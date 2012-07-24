@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?>
+
+<repository lastmodified='20120708085553.753' name='Untitled'>
+  <resource id='org.example.m/0.0.0' presentationname='org.example.m' symbolicname='org.example.m' uri='13-bree.jar' version='0.0.0'>
+    <size>
+      1144
+    </size>
+    <capability name='bundle'>
+      <p n='manifestversion' v='2'/>
+      <p n='presentationname' v='org.example.m'/>
+      <p n='symbolicname' v='org.example.m'/>
+      <p n='version' t='version' v='0.0.0'/>
+    </capability>
+    <require extend='false' filter='(|(ee=J2SE-1.4)(ee=OSGi/Minimum-1.1))' multiple='false' name='ee' optional='false'>
+      Execution Environment (|(ee=J2SE-1.4)(ee=OSGi/Minimum-1.1))
+    </require>
+  </resource>
+</repository>

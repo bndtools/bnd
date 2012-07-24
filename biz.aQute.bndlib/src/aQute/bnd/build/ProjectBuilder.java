@@ -3,71 +3,78 @@ package aQute.bnd.build;
 import java.io.*;
 import java.util.*;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
 
 public class ProjectBuilder extends Builder {
-    Project project;
-    boolean initialized;
+	Project	project;
+	boolean	initialized;
 
-    public ProjectBuilder(Project project) {
-        super(project);
-        this.project = project;
-    }
+	public ProjectBuilder(Project project) {
+		super(project);
+		this.project = project;
+	}
 
-    public ProjectBuilder(ProjectBuilder builder) {
-        super(builder);
-        this.project = builder.project;
-    }
+	public ProjectBuilder(ProjectBuilder builder) {
+		super(builder);
+		this.project = builder.project;
+	}
 
-    @Override
-    public long lastModified() {
-        return Math.max(project.lastModified(), super.lastModified());
-    }
+	@Override
+	public long lastModified() {
+		return Math.max(project.lastModified(), super.lastModified());
+	}
 
-    /**
-     * We put our project and our workspace on the macro path.
-     */
-    protected Object[] getMacroDomains() {
-        return new Object[] { project, project.getWorkspace() };
-    }
+	/**
+	 * We put our project and our workspace on the macro path.
+	 */
+	protected Object[] getMacroDomains() {
+		return new Object[] {
+				project, project.getWorkspace()
+		};
+	}
 
-    public Builder getSubBuilder() throws Exception {
-        return project.getBuilder(this);
-    }
+	public Builder getSubBuilder() throws Exception {
+		return project.getBuilder(this);
+	}
 
-    public Project getProject() {
-        return project;
-    }
+	public Project getProject() {
+		return project;
+	}
 
-    public void init() {
-        try {
-            if (!initialized) {
-                initialized = true;
-                for (Container file : project.getBuildpath()) {
-                    addClasspath(file.getFile());
-                }
+	public void init() {
+		try {
+			if (!initialized) {
+				initialized = true;
+				for (Container file : project.getClasspath()) {
+					addClasspath(file.getFile());
+				}
 
-                for (Container file : project.getBootclasspath()) {
-                    addClasspath(file.getFile());
-                }
+				for (Container file : project.getBuildpath()) {
+					addClasspath(file.getFile());
+				}
 
-                for (File file : project.getAllsourcepath()) {
-                    addSourcepath(file);
-                }
+				for (Container file : project.getBootclasspath()) {
+					addClasspath(file.getFile());
+				}
 
-            }
-        } catch (Exception e) {
-            error("init project builder fails", e);
-        }
-    }
+				for (File file : project.getAllsourcepath()) {
+					addSourcepath(file);
+				}
 
-    public List<Jar> getClasspath() {
-        init();
-        return super.getClasspath();
-    }
+			}
+		}
+		catch (Exception e) {
+			msgs.Unexpected_Error_("ProjectBuilder init", e);
+		}
+	}
 
-    @Override
-    protected void changedFile(File f) {
-        project.getWorkspace().changedFile(f);
-    }
+	public List<Jar> getClasspath() {
+		init();
+		return super.getClasspath();
+	}
+
+	@Override
+	protected void changedFile(File f) {
+		project.getWorkspace().changedFile(f);
+	}
 }

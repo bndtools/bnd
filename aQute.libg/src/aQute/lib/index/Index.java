@@ -12,8 +12,6 @@ import java.util.*;
  *   123 -> 123, 244   -> 2
  *   245 -> 245, ...
  * </pre>
- * 
- * 
  */
 public class Index implements Iterable<byte[]> {
 	final static int					LEAF		= 0;
@@ -23,20 +21,20 @@ public class Index implements Iterable<byte[]> {
 	final static int					MAGIC		= 0x494C4458;
 	final static int					KEYSIZE		= 4;
 
-	private FileChannel					file;
+	FileChannel					file;
 	final int							pageSize	= 4096;
 	final int							keySize;
 	final int							valueSize	= 8;
 	final int							capacity;
 	public Page							root;
-	final LinkedHashMap<Integer, Page>	cache		= new LinkedHashMap<Integer, Index.Page>();
+	final LinkedHashMap<Integer,Page>	cache		= new LinkedHashMap<Integer,Index.Page>();
 	final MappedByteBuffer				settings;
 
 	private int							nextPage;
 
 	class Page {
-		final int				TYPE_OFFSET		= 0;
-		final int				COUNT_OFFSET	= 2;
+		final static int		TYPE_OFFSET		= 0;
+		final static int		COUNT_OFFSET	= 2;
 		final static int		START_OFFSET	= 4;
 		final int				number;
 		boolean					leaf;
@@ -46,7 +44,7 @@ public class Index implements Iterable<byte[]> {
 
 		Page(int number) throws IOException {
 			this.number = number;
-			buffer = file.map(MapMode.READ_WRITE, number * pageSize, pageSize);
+			buffer = file.map(MapMode.READ_WRITE, ((long) number) * pageSize, pageSize);
 			n = buffer.getShort(COUNT_OFFSET);
 			int type = buffer.getShort(TYPE_OFFSET);
 			leaf = type != 0;
@@ -56,7 +54,7 @@ public class Index implements Iterable<byte[]> {
 			this.number = number;
 			this.leaf = leaf;
 			this.n = 0;
-			buffer = file.map(MapMode.READ_WRITE, number * pageSize, pageSize);
+			buffer = file.map(MapMode.READ_WRITE, ((long) number) * pageSize, pageSize);
 		}
 
 		Iterator<byte[]> iterator() {
@@ -76,14 +74,13 @@ public class Index implements Iterable<byte[]> {
 					try {
 						if (leaf)
 							return rover < n;
-						else {
-							while (i == null || i.hasNext() == false) {
-								int c = (int) c(rover++);
-								i = getPage(c).iterator();
-							}
-							return i.hasNext();
+						while (i == null || i.hasNext() == false) {
+							int c = (int) c(rover++);
+							i = getPage(c).iterator();
 						}
-					} catch (IOException e) {
+						return i.hasNext();
+					}
+					catch (IOException e) {
 						throw new RuntimeException(e);
 					}
 
@@ -150,13 +147,11 @@ public class Index implements Iterable<byte[]> {
 			if (leaf) {
 				if (cmp != 0)
 					return -1;
-				else
-					return c(i);
-			} else {
-				long value = c(i);
-				Page child = getPage((int) value);
-				return child.search(k);
+				return c(i);
 			}
+			long value = c(i);
+			Page child = getPage((int) value);
+			return child.search(k);
 		}
 
 		void insert(byte[] k, long v) throws IOException {
@@ -187,7 +182,7 @@ public class Index implements Iterable<byte[]> {
 
 		long c(int i) {
 			if (i < 0) {
-				System.out.println("Arghhh");
+				System.err.println("Arghhh");
 			}
 			int index = pos(i) + keySize;
 			return buffer.getLong(index);
@@ -249,30 +244,32 @@ public class Index implements Iterable<byte[]> {
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			try {
-				toString( sb, "");
-			} catch (IOException e) {
+				toString(sb, "");
+			}
+			catch (IOException e) {
 				e.printStackTrace();
 			}
 			return sb.toString();
 		}
-		
-		public void toString( StringBuilder sb, String indent ) throws IOException {
+
+		public void toString(StringBuilder sb, String indent) throws IOException {
 			for (int i = 0; i < n; i++) {
-				sb.append(String.format("%s %02d:%02d %20s %s %d\n", indent, number, i, hex(k(i), 0, 4), leaf ? "==" : "->", c(i)));
-				if (! leaf ) {
+				sb.append(String.format("%s %02d:%02d %20s %s %d%n", indent, number, i, hex(k(i), 0, 4), leaf ? "=="
+						: "->", c(i)));
+				if (!leaf) {
 					long c = c(i);
-					Page sub = getPage((int)c);
-					sub.toString(sb,indent+" ");
+					Page sub = getPage((int) c);
+					sub.toString(sb, indent + " ");
 				}
 			}
 		}
 
 		private String hex(byte[] k, int i, int j) {
 			StringBuilder sb = new StringBuilder();
-			
-			while ( i < j) {
+
+			while (i < j) {
 				int b = 0xFF & k[i];
-				sb.append(nibble(b>>4));
+				sb.append(nibble(b >> 4));
 				sb.append(nibble(b));
 				i++;
 			}
@@ -281,7 +278,7 @@ public class Index implements Iterable<byte[]> {
 
 		private char nibble(int i) {
 			i = i & 0xF;
-			return (char) ( i >= 10 ? i + 'A' - 10 : i + '0');
+			return (char) (i >= 10 ? i + 'A' - 10 : i + '0');
 		}
 
 	}
@@ -306,8 +303,8 @@ public class Index implements Iterable<byte[]> {
 
 			this.keySize = settings.getInt(KEYSIZE);
 			if (keySize != 0 && this.keySize != keySize)
-				throw new IllegalStateException("Invalid key size for Index file. The file is "
-						+ this.keySize + " and was expected to be " + this.keySize);
+				throw new IllegalStateException("Invalid key size for Index file. The file is " + this.keySize
+						+ " and was expected to be " + this.keySize);
 
 			root = getPage(1);
 			nextPage = (int) (this.file.size() / pageSize);
@@ -340,7 +337,7 @@ public class Index implements Iterable<byte[]> {
 	public String toString() {
 		return root.toString();
 	}
-	
+
 	public void close() throws IOException {
 		file.close();
 		cache.clear();

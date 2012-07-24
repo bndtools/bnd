@@ -1,0 +1,85 @@
+Bundle-Version: 2.0.2.${tstamp;yyyyMMdd-HHmmss}_${Git-Descriptor}
+
+jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
+	lib/jetty-continuation-7.6.3.v20120416.jar;version=file,\
+	lib/jetty-http-7.6.3.v20120416.jar;version=file,\
+	lib/jetty-io-7.6.3.v20120416.jar;version=file,\
+	lib/jetty-security-7.6.3.v20120416.jar;version=file,\
+	lib/jetty-server-7.6.3.v20120416.jar;version=file,\
+	lib/jetty-util-7.6.3.v20120416.jar;version=file
+
+-buildpath: osgi.core;version=4.2,\
+	aQute.libg;version=project,\
+	biz.aQute.bndlib;version=latest,\
+	org.osgi.impl.bundle.bindex2.lib,\
+	org.osgi.impl.bundle.bindex,\
+	junit.osgi,\
+	osgi.cmpn;version=4.3.0,\
+	osgi.r5;version=1.0.1,\
+	javax.xml.stream-1.0.1.jar;version=file,\
+	org.mockito.mockito-all,\
+	ee.j2se;version=${javac.ee},\
+	${jetty.libs}
+
+Bnd-Plugins:
+	aQute.bnd.deployer.repository.FixedIndexedRepo,\
+	aQute.bnd.deployer.repository.LocalIndexedRepo,\
+	aQute.bnd.deployer.deployer.obr.OBR,\
+	aQute.bnd.deployer.deployer.obr.LocalOBR,\
+	aQute.bnd.deployer.deployer.http.HttpBasicAuthURLConnector
+
+Export-Package:\
+	aQute.bnd.deployer.http,\
+	aQute.bnd.deployer.obr,\
+	aQute.bnd.deployer.repository,\
+	aQute.bnd.deployer.repository.api,\
+	aQute.bnd.deployer.repository.providers,\
+	org.osgi.service.indexer;provide:=true,\
+	org.osgi.service.bindex;version=1.0;provide:=true,\
+	org.osgi.service.coordinator;-split-package:=merge-first,\
+	org.osgi.service.log;provide:=true;-split-package:=merge-first
+
+bindex-pkgs: \
+	org.osgi.service.obr,\
+	org.osgi.impl.bundle.bindex,\
+	org.osgi.impl.bundle.obr.resource,\
+	org.kxml2.io,\
+	org.xmlpull.v1
+
+bindex2-pkgs: \
+	org.osgi.service.indexer.impl,\
+	org.osgi.service.indexer.impl.types,\
+	org.osgi.service.indexer.impl.util,\
+	aQute.bnd.osgi.resource,\
+	org.osgi.resource;-split-package:=first
+
+libg-pkgs: \
+	aQute.lib.io;-split-package:=first,\
+	aQute.lib.filter;-split-package:=first,\
+	aQute.lib.base64;-split-package:=first,\
+	aQute.bnd.filerepo,\
+	aQute.libg.generics;-split-package:=first,\
+	aQute.libg.glob;-split-package:=first,\
+	aQute.libg.gzip;-split-package:=first,\
+	aQute.libg.tuple;-split-package:=first,\
+	aQute.libg.filters;-split-package:=first
+
+# NB: `org.osgi.framework` API is included in Private-Package for running outside of OSGi.
+Private-Package:\
+	${bindex-pkgs},\
+	${bindex2-pkgs},\
+	org.osgi.framework;-split-package:=first,\
+
+Conditional-Package:\
+	aQute.lib.*;-split-package:=first,\
+	aQute.libg.*;-split-package:=first
+
+# We must also explicitly import `org.osgi.framework` etc. for when we *are* running in OSGi.
+Import-Package:\
+	org.osgi.framework;version='[1.5,2)',\
+	org.osgi.service.bindex,\
+	org.osgi.service.repository,\
+	org.osgi.resource,\
+	org.osgi.service.log,\
+	aQute.bnd.osgi.resource,\
+	*

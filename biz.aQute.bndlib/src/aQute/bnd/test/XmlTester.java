@@ -20,7 +20,8 @@ public class XmlTester {
 		try {
 			dbf.setNamespaceAware(true);
 			db = dbf.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
+		}
+		catch (ParserConfigurationException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -31,7 +32,7 @@ public class XmlTester {
 	public XmlTester(InputStream in, final String... namespace) throws Exception {
 		xpath.setNamespaceContext(new NamespaceContext() {
 
-			public Iterator getPrefixes(String namespaceURI) {
+			public Iterator<String> getPrefixes(String namespaceURI) {
 				return Arrays.asList("md", "scr").iterator();
 			}
 
@@ -55,12 +56,17 @@ public class XmlTester {
 		document = db.parse(in);
 	}
 
-	public void assertAttribute(String value, String expr)
-			throws XPathExpressionException {
-		System.out.println(expr);
+	public void assertAttribute(String value, String expr) throws XPathExpressionException {
+		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
 		Assert.assertNotNull(o);
 		Assert.assertEquals(value, o);
+	}
+	
+	public void assertNamespace(String namespace) {
+		Element element = document.getDocumentElement();
+		String xmlns = element.getNamespaceURI();
+		Assert.assertEquals(namespace, xmlns);
 	}
 
 }

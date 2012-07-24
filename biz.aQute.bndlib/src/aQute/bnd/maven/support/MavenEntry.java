@@ -13,7 +13,6 @@ import aQute.libg.filelock.*;
 /**
  * An entry (a group/artifact) in the maven cache in the .m2/repository
  * directory. It provides methods to get the pom and the artifact.
- * 
  */
 public class MavenEntry implements Closeable {
 	final Maven					maven;
@@ -21,7 +20,7 @@ public class MavenEntry implements Closeable {
 	final File					dir;
 	final String				path;
 	final DirectoryLock			lock;
-	final Map<URI, CachedPom>	poms	= new HashMap<URI, CachedPom>();
+	final Map<URI,CachedPom>	poms	= new HashMap<URI,CachedPom>();
 	final File					pomFile;
 	final File					artifactFile;
 	final String				pomPath;
@@ -29,7 +28,7 @@ public class MavenEntry implements Closeable {
 	Properties					properties;
 	private boolean				propertiesChanged;
 	FutureTask<File>			artifact;
-	private String				artifactPath;
+	String						artifactPath;
 
 	/**
 	 * Constructor.
@@ -57,7 +56,6 @@ public class MavenEntry implements Closeable {
 	 * @param urls
 	 *            The allowed URLs
 	 * @return a CachedPom for this maven entry
-	 * 
 	 * @throws Exception
 	 *             If something goes haywire
 	 */
@@ -124,7 +122,8 @@ public class MavenEntry implements Closeable {
 				}
 			}
 			return null;
-		} finally {
+		}
+		finally {
 			saveProperties();
 			// lock.release();
 		}
@@ -140,15 +139,16 @@ public class MavenEntry implements Closeable {
 	 * @return
 	 * @throws MalformedURLException
 	 */
-	private boolean download(URI repo, String path) throws MalformedURLException {
+	boolean download(URI repo, String path) throws MalformedURLException {
 		try {
 			URL url = toURL(repo, path);
-			System.out.println("Downloading "  + repo + " path " + path + " url " + url);
+			System.err.println("Downloading " + repo + " path " + path + " url " + url);
 			File file = new File(root, path);
 			IO.copy(url.openStream(), file);
-			System.out.println("Downloaded "  + url);
+			System.err.println("Downloaded " + url);
 			return true;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			System.err.println("debug: " + e);
 			return false;
 		}
@@ -162,7 +162,6 @@ public class MavenEntry implements Closeable {
 	 * @param path
 	 *            The path in the directory + url
 	 * @return a URL that points to the file in the repo
-	 * 
 	 * @throws MalformedURLException
 	 */
 	URL toURL(URI base, String path) throws MalformedURLException {
@@ -181,8 +180,7 @@ public class MavenEntry implements Closeable {
 	 * @return true if valid
 	 */
 	private boolean isValid() {
-		return pomFile.isFile() && pomFile.length() > 100 && artifactFile.isFile()
-				&& artifactFile.length() > 100;
+		return pomFile.isFile() && pomFile.length() > 100 && artifactFile.isFile() && artifactFile.length() > 100;
 	}
 
 	/**
@@ -207,11 +205,16 @@ public class MavenEntry implements Closeable {
 			properties = new Properties();
 			File props = new File(dir, "bnd.properties");
 			if (props.exists()) {
+				FileInputStream in = null;
 				try {
-					FileInputStream in = new FileInputStream(props);
+					in = new FileInputStream(props);
 					properties.load(in);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					// we ignore for now, will handle it on safe
+				}
+				finally {
+					IO.close(in);
 				}
 			}
 		}
@@ -235,7 +238,8 @@ public class MavenEntry implements Closeable {
 			FileOutputStream fout = new FileOutputStream(propertiesFile);
 			try {
 				properties.store(fout, "");
-			} finally {
+			}
+			finally {
 				properties = null;
 				propertiesChanged = false;
 				fout.close();
@@ -295,11 +299,13 @@ public class MavenEntry implements Closeable {
 			File digestFile = new File(root, digestPath);
 			final MessageDigest md = MessageDigest.getInstance(algorithm);
 			IO.copy(actualFile, new OutputStream() {
-				@Override public void write(int c) throws IOException {
+				@Override
+				public void write(int c) throws IOException {
 					md.update((byte) c);
 				}
 
-				@Override public void write(byte[] buffer, int offset, int length) {
+				@Override
+				public void write(byte[] buffer, int offset, int length) {
 					md.update(buffer, offset, length);
 				}
 			});
@@ -307,16 +313,16 @@ public class MavenEntry implements Closeable {
 			String source = IO.collect(digestFile).toUpperCase();
 			String hex = Hex.toHexString(digest).toUpperCase();
 			if (source.startsWith(hex)) {
-				System.out.println("Verified ok " + actualFile + " digest " + algorithm);
+				System.err.println("Verified ok " + actualFile + " digest " + algorithm);
 				return true;
 			}
 		}
-		System.out.println("Failed to verify " + actualFile + " for digest " + algorithm);
+		System.err.println("Failed to verify " + actualFile + " for digest " + algorithm);
 		return false;
 	}
 
 	public File getArtifact() throws Exception {
-		if (artifact == null )
+		if (artifact == null)
 			return artifactFile;
 		return artifact.get();
 	}

@@ -3,28 +3,13 @@ package aQute.bnd.service;
 import java.io.*;
 import java.util.*;
 
-import aQute.lib.osgi.*;
-import aQute.libg.version.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 
 public interface RepositoryPlugin {
 	public enum Strategy {
 		LOWEST, HIGHEST, EXACT
 	}
-
-	/**
-	 * Return a URL to a matching version of the given bundle.
-	 * 
-	 * @param bsn
-	 *            Bundle-SymbolicName of the searched bundle
-	 * @param range
-	 *            Version range for this bundle,"latest" if you only want the
-	 *            latest, or null when you want all.
-	 * @return A list of URLs sorted on version, lowest version is at index 0.
-	 *         null is returned when no files with the given bsn ould be found.
-	 * @throws Exception
-	 *             when anything goes wrong
-	 */
-	@Deprecated File[] get(String bsn, String range) throws Exception;
 
 	/**
 	 * Return a URL to a matching version of the given bundle.
@@ -83,4 +68,9 @@ public interface RepositoryPlugin {
 	 */
 	String getName();
 
+	/**
+	 * Return a location identifier of this repository
+	 */
+
+	String getLocation();
 }

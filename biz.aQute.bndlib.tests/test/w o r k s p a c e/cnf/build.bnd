@@ -1,0 +1,3 @@
+test=abcdef
+override=parent
+-plugin: ${ext.extension.-plugin},ParentPlugin

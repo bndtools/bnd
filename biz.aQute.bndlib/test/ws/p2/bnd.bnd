@@ -1,3 +1,0 @@
-Bundle-Version:	1.2.3.${build}
-Include-Resource:
--runbuilds: false 

@@ -1,13 +1,14 @@
 package aQute.bnd.service;
 
-import java.io.File;
+import java.io.*;
 
-import aQute.lib.osgi.Jar;
+import aQute.bnd.osgi.*;
 
 public interface RepositoryListenerPlugin {
-	
+
 	/**
 	 * Called when a bundle is added to a repository.
+	 * 
 	 * @param repository
 	 * @param jar
 	 * @param file

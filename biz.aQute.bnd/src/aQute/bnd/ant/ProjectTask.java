@@ -13,35 +13,34 @@ import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
 
 public class ProjectTask extends BaseTask {
-    File basedir;
-    boolean underTest;
-    
-    public void execute() throws BuildException {
-        try {
-            if (basedir == null || !basedir.isDirectory())
-                throw new BuildException("The given base dir does not exist "
-                        + basedir);
+	File	basedir;
+	boolean	underTest;
 
-            Project project = Workspace.getProject(basedir);
-            project.build(underTest);
-            report(project);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BuildException(e);
-        }
-    }
+	public void execute() throws BuildException {
+		try {
+			if (basedir == null || !basedir.isDirectory())
+				throw new BuildException("The given base dir does not exist " + basedir);
 
-    /**
-     * Set the base directory of the project. This property MUST be set.
-     * 
-     * @param basedir
-     */
-    public void setBasedir(File basedir) {
-        this.basedir = basedir;
-    }
-    
-    
-    public void setUnderTest(boolean underTest) {
-        this.underTest = underTest;
-    }
+			Project project = Workspace.getProject(basedir);
+			project.build(underTest);
+			report(project);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			throw new BuildException(e);
+		}
+	}
+
+	/**
+	 * Set the base directory of the project. This property MUST be set.
+	 * 
+	 * @param basedir
+	 */
+	public void setBasedir(File basedir) {
+		this.basedir = basedir;
+	}
+
+	public void setUnderTest(boolean underTest) {
+		this.underTest = underTest;
+	}
 }

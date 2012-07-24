@@ -1,25 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="project" default="build"> 
-
-	<macrodef name="iterate">
-                <attribute name="target"/>
-                <sequential>
-                    <subant target="@{target}">
-                        <fileset dir="." includes="*/build.xml" excludes="cnf/*"/>
-                    </subant>
-                </sequential>
-        </macrodef>
-
-        <target name="build">
-                <ant dir="biz.aQute.bnd" target="build"/>
-        </target>
-
-
-	<target name="clean">
-		<iterate target="clean"/>
-	</target>
-
-	<target name="junit">
-		<iterate target="junit"/>
-	</target>
+<project name="project" default="build">
+  <macrodef name="iterate">
+    <attribute name="target"/>
+    <sequential>
+      <subant target="@{target}">
+        <fileset dir="." includes="*/build.xml" excludes="cnf/*"/>
+      </subant>
+    </sequential>
+  </macrodef>
+  <target name="build">
+    <ant dir="biz.aQute.bnd" target="build"/>
+    <ant dir="biz.aQute.repository" target="build"/>
+    <ant dir="biz.aQute.resolve" target="release"/>
+  </target>
+  <target name="release">
+    <ant dir="biz.aQute.bnd" target="release"/>
+    <ant dir="biz.aQute.repository" target="release"/>
+    <ant dir="biz.aQute.resolve" target="release"/>
+  </target>
+  <target name="clean">
+    <iterate target="clean"/>
+  </target>
+  <target name="junit">
+    <iterate target="junit"/>
+  </target>
+  <target name="findbugs">
+    <iterate target="findbugs"/>
+  </target>
 </project>

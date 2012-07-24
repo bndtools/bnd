@@ -12,13 +12,21 @@ import java.util.*;
  * objects or other Tag objects.
  */
 public class Tag {
-	Tag parent; // Parent element
-	String name; // Name of the tag
-	Hashtable<String,String> attributes = new Hashtable<String,String>(); // Attributes name -> value
-	Vector<Object> content = new Vector<Object>(); // Content elements
-	boolean cdata;
+	Tag							parent;													// Parent
+																							// element
+	String						name;														// Name
+																							// of
+																							// the
+																							// tag
+	Hashtable<String,String>	attributes	= new Hashtable<String,String>();				// Attributes
+																							// name
+																							// ->
+																							// value
+	Vector<Object>				content		= new Vector<Object>();						// Content
+																							// elements
+	boolean						cdata;
 
-	static SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	SimpleDateFormat			format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
 	/**
 	 * Construct a new Tag with a name.
@@ -115,7 +123,7 @@ public class Tag {
 	 * Return the attribute value.
 	 */
 	public String getAttribute(String key) {
-		return (String) attributes.get(key);
+		return attributes.get(key);
 	}
 
 	/**
@@ -196,8 +204,8 @@ public class Tag {
 		pw.print(name);
 
 		for (Enumeration<String> e = attributes.keys(); e.hasMoreElements();) {
-			String key = (String) e.nextElement();
-			String value = escape((String) attributes.get(key));
+			String key = e.nextElement();
+			String value = escape(attributes.get(key));
 			pw.print(' ');
 			pw.print(key);
 			pw.print("=");
@@ -220,14 +228,14 @@ public class Tag {
 						pw.print("<![CDATA[");
 						StringBuffer sb = new StringBuffer();
 						sb.append(content);
-						
+
 						// Unbelievable but Richard had cases
 						// where the contents matched the end ]]>
 						// specifier, so clean it up
 						int l = sb.indexOf("]]>");
-						while ( l >=0) {
-							sb.insert(l+2, '\\');
-							l = sb.indexOf("]]>", l+2);
+						while (l >= 0) {
+							sb.insert(l + 2, '\\');
+							l = sb.indexOf("]]>", l + 2);
 						}
 						pw.print(sb);
 						pw.print("]]>");
@@ -250,12 +258,14 @@ public class Tag {
 
 	private void copyURL(PrintWriter pw, URL url) {
 		try {
-			InputStream in = url.openStream();
-			BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF8"));
+			InputStream in = null;
+			BufferedReader rdr = null;
 			try {
+				in = url.openStream();
+				rdr = new BufferedReader(new InputStreamReader(in, "UTF8"));
 				String line = rdr.readLine();
 				if (line != null) {
-					while (line.trim().startsWith("<?"))
+					while (line != null && line.trim().startsWith("<?"))
 						line = rdr.readLine();
 
 					while (line != null) {
@@ -263,11 +273,18 @@ public class Tag {
 						line = rdr.readLine();
 					}
 				}
-			} finally {
-				in.close();
 			}
-		} catch (Exception e) {
-			System.out.println("Problems copying extra XML");
+			finally {
+				if (rdr != null) {
+					rdr.close();
+				}
+				if (in != null) {
+					in.close();
+				}
+			}
+		}
+		catch (Exception e) {
+			System.err.println("Problems copying extra XML");
 		}
 	}
 
@@ -287,22 +304,22 @@ public class Tag {
 				pos = 0;
 			}
 			switch (c) {
-			case '<':
-				pw.print("&lt;");
-				pos += 4;
-				break;
-			case '>':
-				pw.print("&gt;");
-				pos += 4;
-				break;
-			case '&':
-				pw.print("&amp;");
-				pos += 5;
-				break;
-			default:
-				pw.print(c);
-				pos++;
-				break;
+				case '<' :
+					pw.print("&lt;");
+					pos += 4;
+					break;
+				case '>' :
+					pw.print("&gt;");
+					pos += 4;
+					break;
+				case '&' :
+					pw.print("&amp;");
+					pos += 5;
+					break;
+				default :
+					pw.print(c);
+					pos++;
+					break;
 			}
 
 		}
@@ -316,18 +333,18 @@ public class Tag {
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			switch (c) {
-			case '<':
-				sb.append("&lt;");
-				break;
-			case '>':
-				sb.append("&gt;");
-				break;
-			case '&':
-				sb.append("&amp;");
-				break;
-			default:
-				sb.append(c);
-				break;
+				case '<' :
+					sb.append("&lt;");
+					break;
+				case '>' :
+					sb.append("&gt;");
+					break;
+				case '&' :
+					sb.append("&amp;");
+					break;
+				default :
+					sb.append(c);
+					break;
 			}
 		}
 		return sb.toString();
@@ -391,8 +408,7 @@ public class Tag {
 			Object o = e.nextElement();
 			if (o instanceof Tag) {
 				Tag child = (Tag) o;
-				if (child.getName().equals(elementName)
-						|| elementName.equals("*"))
+				if (child.getName().equals(elementName) || elementName.equals("*"))
 					child.select(remainder, results, mapping);
 			}
 		}
@@ -422,14 +438,11 @@ public class Tag {
 
 		if (mapping == null) {
 			return tn == sn || (sn != null && sn.equals(tn));
-		} else {
-			String suri = sn == null ? mapping.getAttribute("xmlns") : mapping
-					.getAttribute("xmlns:" + sn);
-			String turi = tn == null ? child.findRecursiveAttribute("xmlns")
-					: child.findRecursiveAttribute("xmlns:" + tn);
-			return turi == suri
-					|| (turi != null && suri != null && turi.equals(suri));
 		}
+		String suri = sn == null ? mapping.getAttribute("xmlns") : mapping.getAttribute("xmlns:" + sn);
+		String turi = tn == null ? child.findRecursiveAttribute("xmlns") : child.findRecursiveAttribute("xmlns:"
+				+ tn);
+		return ((turi == null) && (suri == null)) || ((turi != null) && turi.equals(suri));
 	}
 
 	public String getString(String path) {
@@ -475,8 +488,8 @@ public class Tag {
 		if (index > 0) {
 			String ns = name.substring(0, index);
 			return findRecursiveAttribute("xmlns:" + ns);
-		} else
-			return findRecursiveAttribute("xmlns");
+		}
+		return findRecursiveAttribute("xmlns");
 	}
 
 	public String findRecursiveAttribute(String name) {

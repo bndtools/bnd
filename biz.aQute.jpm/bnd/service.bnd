@@ -1,0 +1,8 @@
+Bundle-Description: Provides the ServiceMain class that handles a command written with a \
+ static main as a service.
+Bundle-Version: 0.0.2
+Private-Package: aQute.jpm.service
+
+JPM-Service:
+JPM-Command: 
+JPM-Embedded: 

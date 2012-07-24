@@ -1,17 +1,13 @@
 package aQute.launcher.plugin;
 
 import java.io.*;
-import java.text.MessageFormat;
+import java.text.*;
 import java.util.*;
 import java.util.jar.*;
 
 import aQute.bnd.build.*;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.osgi.*;
 import aQute.launcher.constants.*;
-import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.libg.generics.*;
-import static aQute.lib.osgi.Constants.*;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
 	final private Project	project;
@@ -25,8 +21,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		propertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
 		project.trace(MessageFormat.format("launcher plugin using temp launch file {0}",
 				propertiesFile.getAbsolutePath()));
-		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "="
-				+ propertiesFile.getAbsolutePath());
+		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=" + propertiesFile.getAbsolutePath());
 
 		if (project.getRunProperties().get("noframework") != null) {
 			setRunFramework(NONE);
@@ -34,6 +29,15 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		}
 
 		super.addDefault(Constants.DEFAULT_LAUNCHER_BSN);
+	}
+
+	/**
+	 * Cleanup the properties file. Is called after the process terminates.
+	 */
+
+	public void cleanup() {
+		propertiesFile.delete();
+		project.trace("Deleted ", propertiesFile.getAbsolutePath());
 	}
 
 	public String getMainTypeName() {
@@ -62,7 +66,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		OutputStream out = new FileOutputStream(propertiesFile);
 		try {
 			lc.getProperties().store(out, "Launching " + project);
-		} finally {
+		}
+		finally {
 			out.close();
 		}
 	}
@@ -73,8 +78,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private LauncherConstants getConstants(Collection<String> runbundles) throws Exception,
-			FileNotFoundException, IOException {
+	private LauncherConstants getConstants(Collection<String> runbundles) throws Exception, FileNotFoundException,
+			IOException {
 		project.trace("preparing the aQute launcher plugin");
 
 		LauncherConstants lc = new LauncherConstants();
@@ -82,16 +87,18 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.runProperties = getRunProperties();
 		lc.storageDir = getStorageDir();
 		lc.keep = isKeep();
-		lc.runbundles.addAll(getRunBundles());
+		lc.runbundles.addAll(runbundles);
 		lc.trace = getTrace();
 		lc.timeout = getTimeout();
 		lc.services = super.getRunFramework() == SERVICES ? true : false;
 		lc.activators.addAll(getActivators());
+		lc.name = getProject().getName();
 
 		if (!getSystemPackages().isEmpty()) {
 			try {
 				lc.systemPackages = Processor.printClauses(getSystemPackages());
-			} catch (Throwable e) {
+			}
+			catch (Throwable e) {
 				// ignore for now
 			}
 		}
@@ -100,64 +107,74 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	}
 
 	/**
-	 * Create a standalone executable
+	 * Create a standalone executable. All entries on the runpath are rolled out
+	 * into the JAR and the runbundles are copied to a directory in the jar. The
+	 * launcher will see that it starts in embedded mode and will automatically
+	 * detect that it should load the bundles from inside. This is drive by the
+	 * launcher.embedded flag.
 	 * 
 	 * @throws Exception
-	 * @throws IOException
-	 * @throws FileNotFoundException
 	 */
 
 	public Jar executable() throws Exception {
 		Jar jar = new Jar(project.getName());
 
-		Collection<String> runbundles = copyBundles(jar, getRunBundles());
-		LauncherConstants lc = getConstants(runbundles);
-		final Properties p = lc.getProperties();
-		p.setProperty(RUNBUNDLES, Processor.join(runbundles, ", \\\n  "));
+		// Copy the class path of the launched VM to this bundle
+		// but in reverse order so that the order matches the classpath (first
+		// wins).
+		List<String> runpath = getRunpath();
+		Collections.reverse(runpath);
 
-		jar.putResource("descriptor.properties", new WriteResource() {
-			@Override public void write(OutputStream outStream) throws IOException, Exception {
-				p.store(outStream, "comment");
+		for (String path : runpath) {
+			project.trace("embedding runpath %s", path);
+			File file = new File(path);
+			if (!file.isFile())
+				project.error("Invalid entry on runpath %s", file);
+			else {
+				Jar from = new Jar(file);
+				jar.addAll(from);
 			}
-
-			@Override public long lastModified() {
-				return 0L;
-			}
-		});
-
-		List<String> paths = Create.list();
-		paths.addAll(getRunpath());
-		paths.add(project.getBundle("biz.aQute.launcher", null, Strategy.HIGHEST, null).getFile()
-				.getAbsolutePath());
-
-		for (String path : paths) {
-			File f = IO.getFile(project.getBase(), path);
-			Jar roll = new Jar(f);
-			jar.addAll(roll);
 		}
 
+		// Copy the bundles to the JAR
+
+		List<String> runbundles = (List<String>) getRunBundles();
+		List<String> actualPaths = new ArrayList<String>();
+
+		for (String path : runbundles) {
+			project.trace("embedding run bundles %s", path);
+			File file = new File(path);
+			String newPath = "jar/" + file.getName();
+			jar.putResource(newPath, new FileResource(file));
+			actualPaths.add(newPath);
+		}
+
+		LauncherConstants lc = getConstants(actualPaths);
+		lc.embedded = true;
+		lc.storageDir = null; // cannot use local info
+
+		final Properties p = lc.getProperties();
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		p.store(bout, "");
+		jar.putResource(LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES, new EmbeddedResource(bout.toByteArray(), 0L));
+
+		// Remove signer files, we have a different manifest now
+		Set<String> set = new HashSet<String>();
+		for (Object pp : jar.getResources().keySet()) {
+			String path = (String) pp;
+			if (path.matches("META-INF/.*\\.(SF|RSA|DSA)$"))
+				set.add(path);
+		}
+
+		for (String path : set)
+			jar.remove(path);
+
+		// And set the manifest
 		Manifest m = new Manifest();
 		m.getMainAttributes().putValue("Main-Class", "aQute.launcher.Launcher");
 		jar.setManifest(m);
 		return jar;
-	}
-
-	/**
-	 * @param jar
-	 */
-	private Collection<String> copyBundles(Jar jar, Collection<String> runbundles) {
-		List<String> list = Create.list();
-
-		for (String s : runbundles) {
-			File f = IO.getFile(new File("").getAbsoluteFile(), s);
-			if (!f.isFile()) {
-				project.error("In exec, cannot find runbundle %s for project %s", f, project);
-			} else {
-				String path = "jar/" + f.getName();
-				list.add(path);
-			}
-		}
-		return list;
 	}
 
 }

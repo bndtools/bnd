@@ -8,6 +8,7 @@ import aQute.libg.forker.*;
 public class TestForker extends TestCase {
 
 	final Collection<Integer>	EMPTY	= Collections.emptyList();
+	final int					TIMEOUT	= 1000000;
 
 	static class R implements Runnable {
 		final Collection<Integer>	result;
@@ -43,7 +44,10 @@ public class TestForker extends TestCase {
 		forker.doWhen(EMPTY, 2, new R(result, 2));
 		forker.doWhen(EMPTY, 3, new R(result, 3));
 		forker.start(1000);
-		assertEquals(Arrays.asList(1, 2, 3, 4), result);
+
+		assertTrue(result.containsAll(Arrays.asList(1, 2, 3, 4)));
+		Object[] q = result.toArray();
+		assertEquals(Integer.valueOf(4), q[q.length - 1]);
 	}
 
 	public void testInvalid() {
@@ -53,9 +57,10 @@ public class TestForker extends TestCase {
 		try {
 			forker.start(100);
 			fail();
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			assertEquals( IllegalArgumentException.class, e.getClass());
+		}
+		catch (Exception e) {
+			System.err.println(e.getMessage());
+			assertEquals(IllegalArgumentException.class, e.getClass());
 		}
 
 	}
@@ -69,14 +74,16 @@ public class TestForker extends TestCase {
 			public void run() {
 				synchronized (result) {
 					try {
-						System.out.println("starting to wait");
-						result.wait();
-						System.out.println("finished wait");
-					} catch (Exception e) {
-						System.out.println("exception");
+						System.err.println("starting to wait");
+						result.wait(TIMEOUT);
+						System.err.println("finished wait");
+					}
+					catch (Exception e) {
+						System.err.println("exception");
 						e.printStackTrace();
-					} finally {
-						System.out.println("leaving task");
+					}
+					finally {
+						System.err.println("leaving task");
 					}
 				}
 			}
