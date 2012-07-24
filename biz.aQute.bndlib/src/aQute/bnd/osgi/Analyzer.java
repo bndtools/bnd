@@ -336,127 +336,135 @@ public class Analyzer extends Processor {
 	 * @throws IOException
 	 */
 	public Manifest calcManifest() throws Exception {
-		analyze();
-		Manifest manifest = new Manifest();
-		Attributes main = manifest.getMainAttributes();
+		try {
+			analyze();
+			Manifest manifest = new Manifest();
+			Attributes main = manifest.getMainAttributes();
 
-		main.put(Attributes.Name.MANIFEST_VERSION, "1.0");
-		main.putValue(BUNDLE_MANIFESTVERSION, "2");
+			main.put(Attributes.Name.MANIFEST_VERSION, "1.0");
+			main.putValue(BUNDLE_MANIFESTVERSION, "2");
 
-		boolean noExtraHeaders = "true".equalsIgnoreCase(getProperty(NOEXTRAHEADERS));
+			boolean noExtraHeaders = "true".equalsIgnoreCase(getProperty(NOEXTRAHEADERS));
 
-		if (!noExtraHeaders) {
-			main.putValue(CREATED_BY, System.getProperty("java.version") + " (" + System.getProperty("java.vendor")
-					+ ")");
-			main.putValue(TOOL, "Bnd-" + getBndVersion());
-			main.putValue(BND_LASTMODIFIED, "" + System.currentTimeMillis());
-		}
-
-		String exportHeader = printClauses(exports, true);
-
-		if (exportHeader.length() > 0)
-			main.putValue(EXPORT_PACKAGE, exportHeader);
-		else
-			main.remove(EXPORT_PACKAGE);
-
-		// Remove all the Java packages from the imports
-		if (!imports.isEmpty()) {
-			main.putValue(IMPORT_PACKAGE, printClauses(imports));
-		} else {
-			main.remove(IMPORT_PACKAGE);
-		}
-
-		Packages temp = new Packages(contained);
-		temp.keySet().removeAll(exports.keySet());
-
-		if (!temp.isEmpty())
-			main.putValue(PRIVATE_PACKAGE, printClauses(temp));
-		else
-			main.remove(PRIVATE_PACKAGE);
-
-		Parameters bcp = getBundleClasspath();
-		if (bcp.isEmpty() || (bcp.containsKey(".") && bcp.size() == 1))
-			main.remove(BUNDLE_CLASSPATH);
-		else
-			main.putValue(BUNDLE_CLASSPATH, printClauses(bcp));
-
-		doNamesection(dot, manifest);
-
-		for (Enumeration< ? > h = getProperties().propertyNames(); h.hasMoreElements();) {
-			String header = (String) h.nextElement();
-			if (header.trim().length() == 0) {
-				warning("Empty property set with value: " + getProperties().getProperty(header));
-				continue;
+			if (!noExtraHeaders) {
+				main.putValue(CREATED_BY, System.getProperty("java.version") + " (" + System.getProperty("java.vendor")
+						+ ")");
+				main.putValue(TOOL, "Bnd-" + getBndVersion());
+				main.putValue(BND_LASTMODIFIED, "" + System.currentTimeMillis());
 			}
 
-			if (isMissingPlugin(header.trim())) {
-				error("Missing plugin for command %s", header);
-			}
-			if (!Character.isUpperCase(header.charAt(0))) {
-				if (header.charAt(0) == '@')
-					doNameSection(manifest, header);
-				continue;
-			}
+			String exportHeader = printClauses(exports, true);
 
-			if (header.equals(BUNDLE_CLASSPATH) || header.equals(EXPORT_PACKAGE) || header.equals(IMPORT_PACKAGE))
-				continue;
+			if (exportHeader.length() > 0)
+				main.putValue(EXPORT_PACKAGE, exportHeader);
+			else
+				main.remove(EXPORT_PACKAGE);
 
-			if (header.equalsIgnoreCase("Name")) {
-				error("Your bnd file contains a header called 'Name'. This interferes with the manifest name section.");
-				continue;
-			}
-
-			if (Verifier.HEADER_PATTERN.matcher(header).matches()) {
-				String value = getProperty(header);
-				if (value != null && main.getValue(header) == null) {
-					if (value.trim().length() == 0)
-						main.remove(header);
-					else if (value.trim().equals(EMPTY_HEADER))
-						main.putValue(header, "");
-					else
-						main.putValue(header, value);
-				}
+			// Remove all the Java packages from the imports
+			if (!imports.isEmpty()) {
+				main.putValue(IMPORT_PACKAGE, printClauses(imports));
 			} else {
-				// TODO should we report?
+				main.remove(IMPORT_PACKAGE);
 			}
+
+			Packages temp = new Packages(contained);
+			temp.keySet().removeAll(exports.keySet());
+
+			if (!temp.isEmpty())
+				main.putValue(PRIVATE_PACKAGE, printClauses(temp));
+			else
+				main.remove(PRIVATE_PACKAGE);
+
+			Parameters bcp = getBundleClasspath();
+			if (bcp.isEmpty() || (bcp.containsKey(".") && bcp.size() == 1))
+				main.remove(BUNDLE_CLASSPATH);
+			else
+				main.putValue(BUNDLE_CLASSPATH, printClauses(bcp));
+
+			doNamesection(dot, manifest);
+
+			for (Enumeration< ? > h = getProperties().propertyNames(); h.hasMoreElements();) {
+				String header = (String) h.nextElement();
+				if (header.trim().length() == 0) {
+					warning("Empty property set with value: " + getProperties().getProperty(header));
+					continue;
+				}
+
+				if (isMissingPlugin(header.trim())) {
+					error("Missing plugin for command %s", header);
+				}
+				if (!Character.isUpperCase(header.charAt(0))) {
+					if (header.charAt(0) == '@')
+						doNameSection(manifest, header);
+					continue;
+				}
+
+				if (header.equals(BUNDLE_CLASSPATH) || header.equals(EXPORT_PACKAGE) || header.equals(IMPORT_PACKAGE))
+					continue;
+
+				if (header.equalsIgnoreCase("Name")) {
+					error("Your bnd file contains a header called 'Name'. This interferes with the manifest name section.");
+					continue;
+				}
+
+				if (Verifier.HEADER_PATTERN.matcher(header).matches()) {
+					String value = getProperty(header);
+					if (value != null && main.getValue(header) == null) {
+						if (value.trim().length() == 0)
+							main.remove(header);
+						else if (value.trim().equals(EMPTY_HEADER))
+							main.putValue(header, "");
+						else
+							main.putValue(header, value);
+					}
+				} else {
+					// TODO should we report?
+				}
+			}
+
+			// Copy old values into new manifest, when they
+			// exist in the old one, but not in the new one
+			merge(manifest, dot.getManifest());
+
+			//
+			// Calculate the bundle symbolic name if it is
+			// not set.
+			// 1. set
+			// 2. name of properties file (must be != bnd.bnd)
+			// 3. name of directory, which is usualy project name
+			//
+			String bsn = getBsn();
+			if (main.getValue(BUNDLE_SYMBOLICNAME) == null) {
+				main.putValue(BUNDLE_SYMBOLICNAME, bsn);
+			}
+
+			//
+			// Use the same name for the bundle name as BSN when
+			// the bundle name is not set
+			//
+			if (main.getValue(BUNDLE_NAME) == null) {
+				main.putValue(BUNDLE_NAME, bsn);
+			}
+
+			if (main.getValue(BUNDLE_VERSION) == null)
+				main.putValue(BUNDLE_VERSION, "0");
+
+			// Remove all the headers mentioned in -removeheaders
+			Instructions instructions = new Instructions(getProperty(REMOVEHEADERS));
+			Collection<Object> result = instructions.select(main.keySet(), false);
+			main.keySet().removeAll(result);
+
+			// We should not set the manifest here, this is in general done
+			// by the caller.
+			// dot.setManifest(manifest);
+			return manifest;
 		}
-
-		// Copy old values into new manifest, when they
-		// exist in the old one, but not in the new one
-		merge(manifest, dot.getManifest());
-
-		//
-		// Calculate the bundle symbolic name if it is
-		// not set.
-		// 1. set
-		// 2. name of properties file (must be != bnd.bnd)
-		// 3. name of directory, which is usualy project name
-		//
-		String bsn = getBsn();
-		if (main.getValue(BUNDLE_SYMBOLICNAME) == null) {
-			main.putValue(BUNDLE_SYMBOLICNAME, bsn);
+		catch (Exception e) {
+			// This should not really happen. The code should never throw
+			// exceptions in normal situations. So if it happens we need more
+			// information. So to help diagnostics. We do a full property dump
+			throw new IllegalStateException("Calc manifest failed, state=\n"+getFlattenedProperties(), e);
 		}
-
-		//
-		// Use the same name for the bundle name as BSN when
-		// the bundle name is not set
-		//
-		if (main.getValue(BUNDLE_NAME) == null) {
-			main.putValue(BUNDLE_NAME, bsn);
-		}
-
-		if (main.getValue(BUNDLE_VERSION) == null)
-			main.putValue(BUNDLE_VERSION, "0");
-
-		// Remove all the headers mentioned in -removeheaders
-		Instructions instructions = new Instructions(getProperty(REMOVEHEADERS));
-		Collection<Object> result = instructions.select(main.keySet(), false);
-		main.keySet().removeAll(result);
-
-		// We should not set the manifest here, this is in general done
-		// by the caller.
-		// dot.setManifest(manifest);
-		return manifest;
 	}
 
 	/**
@@ -1008,6 +1016,13 @@ public class Analyzer extends Processor {
 		for (Iterator<PackageRef> i = toBeImported.iterator(); i.hasNext();) {
 			PackageRef next = i.next();
 			Collection<PackageRef> usedByExportedPackage = this.uses.get(next);
+
+			// We had an NPE on usedByExportedPackage in GF.
+			// I guess this can happen with hard coded
+			// imports that do not match reality ...
+			if (usedByExportedPackage == null || usedByExportedPackage.isEmpty()) {
+				continue;
+			}
 
 			for (PackageRef privatePackage : privatePackages) {
 				if (usedByExportedPackage.contains(privatePackage)) {
@@ -2509,21 +2524,22 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Create a cross reference from package source, to packages in dest
+	 * 
 	 * @param source
 	 * @param dest
 	 * @param sourceModifiers
 	 * @return
 	 * @throws Exception
 	 */
-	public Map<Clazz.Def, List<TypeRef>> getXRef(final PackageRef source, final Collection<PackageRef> dest, final int sourceModifiers)
-			throws Exception {
-		final MultiMap<Clazz.Def,TypeRef> xref = new MultiMap<Clazz.Def, TypeRef>(Clazz.Def.class, TypeRef.class, true);
+	public Map<Clazz.Def,List<TypeRef>> getXRef(final PackageRef source, final Collection<PackageRef> dest,
+			final int sourceModifiers) throws Exception {
+		final MultiMap<Clazz.Def,TypeRef> xref = new MultiMap<Clazz.Def,TypeRef>(Clazz.Def.class, TypeRef.class, true);
 
 		for (final Clazz clazz : getClassspace().values()) {
 			if ((clazz.accessx & sourceModifiers) == 0)
 				continue;
 
-			if (source!=null && source != clazz.getClassName().getPackageRef())
+			if (source != null && source != clazz.getClassName().getPackageRef())
 				continue;
 
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
