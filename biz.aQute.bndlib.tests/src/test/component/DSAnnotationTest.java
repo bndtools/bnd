@@ -64,13 +64,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	/**
 	 * The basic test. This test will take an all default component and a
-<<<<<<< HEAD
-	 * component that has all values set. It looks like the xml tester needs a namspace, so we set one.
-||||||| parent of 4d94861... fix more tests to reflect slightly changed behavior. still one mysterious error
-	 * component that has all values set.
-=======
-	 * component that has all values set.  It looks like the sml tester needs a namspace, so we set one.
->>>>>>> 4d94861... fix more tests to reflect slightly changed behavior. still one mysterious error
+	 * component that has all values set. It looks like the xml tester needs a namespace, so we set one.
 	 */
 	@Component(xmlns = "http://www.osgi.org/xmlns/scr/v1.1.0")
 	public static class Defaults_basic implements Serializable, Runnable {
@@ -248,7 +242,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Tests all the different enum values. This also tests the ordering.
 	 */
 	@Component(name = "enums")
-	public class Enums {
+	public static class Enums {
 
 		@Reference
 		void setA(@SuppressWarnings("unused") LogService l) {}
@@ -311,7 +305,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Test the - for the unbind and updated parameter.
 	 */
 	@Component(name = "methods")
-	public class Methods {
+	public static class Methods {
 
 		@Reference(unbind = "-", updated = "-")
 		void setA(@SuppressWarnings("unused") LogService l) {}
@@ -384,7 +378,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Test inheritance (this is not official)
 	 */
 
-	public class Top {
+	public static class Top {
 
 		@Reference
 		void setLogService(@SuppressWarnings("unused") LogService l) {}
@@ -405,7 +399,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(name = "bottom")
-	public class Bottom extends Top {
+	public static class Bottom extends Top {
 		void unsetLogService(@SuppressWarnings("unused") LogService l, @SuppressWarnings("unused") Map<Object,Object> map) {
 
 		}
@@ -451,7 +445,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 
 	@Component(name = "prototypes")
-	public class Prototypes {
+	public static class Prototypes {
 		@SuppressWarnings("unused")
 		@Activate
 		private void activate() {}
@@ -508,7 +502,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 
 	@Component(name = "prototypes")
-	public class CheckBinds {
+	public static class CheckBinds {
 		@SuppressWarnings("unused")
 		@Activate
 		private void activate() {}
@@ -561,7 +555,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 	
 	@Component(name="testConfigPolicy", configurationPolicy=ConfigurationPolicy.IGNORE)
-	public class TestConfigPolicy {}
+	public static class TestConfigPolicy {}
 	
 	public void testConfigPolicySetsNamespace() throws Exception {
 		Builder b = new Builder();
