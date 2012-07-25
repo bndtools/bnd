@@ -13,8 +13,8 @@ import javax.swing.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.version.*;
-import aQute.impl.library.cache.*;
-import aQute.impl.library.remote.*;
+//import aQute.impl.library.cache.*;
+//import aQute.impl.library.remote.*;
 import aQute.jpm.lib.*;
 import aQute.lib.collections.*;
 import aQute.lib.data.*;
@@ -27,8 +27,8 @@ public class Main extends ReporterAdapter {
 
 	public final static Pattern	URL_PATTERN	= Pattern.compile("[a-zA-Z][0-9A-Za-z]{1,8}:.+");
 	File						base		= new File(System.getProperty("user.dir"));
-	RemoteLibrary				library;
-	LibraryCache				cache;
+//	RemoteLibrary				library;
+//	LibraryCache				cache;
 
 	/**
 	 * Show installed binaries
@@ -828,19 +828,19 @@ System.out.println("hello");
 		URI url();
 	}
 	public void _repo( RepoOptions opts ) throws Exception {
-		initRepo( opts.url());
-		
-		List<String> cmds = opts._();
-		CommandLine proc = opts._command();
-		proc.execute(new RepoCommand(this), cmds.remove(0), cmds);
+//		initRepo( opts.url());
+//		
+//		List<String> cmds = opts._();
+//		CommandLine proc = opts._command();
+//		proc.execute(new RepoCommand(this), cmds.remove(0), cmds);
 	}
 
 	private void initRepo(URI url) throws Exception {
-		library = new RemoteLibrary();
-		if ( url != null)
-			library.url(url.toString());
-		cache = new LibraryCache(library, null, false);
-		cache.open();
+//		library = new RemoteLibrary();
+//		if ( url != null)
+//			library.url(url.toString());
+//		cache = new LibraryCache(library, null, false);
+//		cache.open();
 	}
 	
 	
