@@ -1,6 +1,11 @@
 package test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.*;
+import java.util.jar.JarInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
@@ -256,6 +261,33 @@ public class ResourcesTest extends TestCase {
 
 	}
 
+	public void testEmptyDirs() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-resourceonly", "true");
+		b.setProperty("Include-Resource", "hello/world/<<EMPTY>>;literal=''");
+		Jar jar = b.build();
+		Map<String, Map<String, Resource>> directories = jar.getDirectories();
+		assertTrue(directories.containsKey("hello/world"));
+//		report(b); //error due to empty literal
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		jar.write(baos);
+		byte[] contents = baos.toByteArray();
+		ByteArrayInputStream bais = new ByteArrayInputStream(contents);
+		ZipInputStream zis = new ZipInputStream(bais);
+		boolean hasDir = false;
+		boolean hasContent = false;
+		ZipEntry ze = zis.getNextEntry();
+		while (null != ze) {
+			if (ze.getName().equals("hello/world/") && ze.isDirectory())
+				hasDir = true;
+			if (ze.getName().startsWith("hello/world/") && ze.getName().length() > "hello/world/".length())
+				hasContent = true;
+			ze = zis.getNextEntry();
+		}
+		assertTrue(hasDir);
+		assertFalse(hasContent);
+	}
+    
 	void report(Processor processor) {
 		System.err.println();
 		for (int i = 0; i < processor.getErrors().size(); i++)
