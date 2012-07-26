@@ -36,6 +36,12 @@
 				</fileset>
 			</classpath>
 		</taskdef>
+		
+		<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
+			<classpath>
+				<pathelement location="${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar"/>
+			</classpath>
+		</taskdef>
 
 		<!-- mark init has been run -->
 		<property name="initialized" value="set" />
@@ -93,6 +99,9 @@
 			<property name="donotrecurse" value="true" />
 		</subant>
 		<bnd command="release" exceptions="true" basedir="${project}"/>
+		<bindex repositoryfile="${workspacedir}/../repo/bundles/repository.xml" root="${workspacedir}/../repo/bundles" quiet="true">
+			<fileset dir="${workspacedir}/../repo/bundles" includes="**/*.jar"/>
+		</bindex>
 	</target>
 
 	<target name="junit" depends="build">
