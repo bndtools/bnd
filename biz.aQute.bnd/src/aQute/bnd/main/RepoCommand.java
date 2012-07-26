@@ -76,6 +76,7 @@ public class RepoCommand {
 
 		// If no repos are set
 		if (repos.isEmpty()) {
+			bnd.trace("getting project repos");
 			Project p = bnd.getProject(opts.project());
 			if (p != null) {
 				repos.addAll(p.getWorkspace().getRepositories());
@@ -388,6 +389,19 @@ public class RepoCommand {
 				return repo;
 		}
 		return null;
+	}
+
+	@Description("Refresh refreshable repositories")
+	interface RefreshOptions extends Options {
+		
+	}
+	public void _refresh(RefreshOptions opts) {
+		for ( Object o : repos) {
+			if ( o instanceof Refreshable) {
+				bnd.trace("refresh %s", o);
+				((Refreshable)o).refresh();
+			}
+		}
 	}
 
 }

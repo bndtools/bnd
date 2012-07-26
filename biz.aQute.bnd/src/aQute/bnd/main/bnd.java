@@ -1400,7 +1400,7 @@ public class bnd extends Processor {
 	 */
 
 	public void _repo(repoOptions opts) throws Exception {
-		new RepoCommand(this, opts).notify();
+		new RepoCommand(this, opts);
 	}
 
 	/**
