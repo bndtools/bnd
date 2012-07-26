@@ -209,11 +209,6 @@ public class Launcher implements ServiceListener {
 
 		systemContext.addServiceListener(this, "(&(objectclass=java.lang.Runnable)(main.thread=true))");
 
-		update();
-
-		if (parms.trace) {
-			report(out);
-		}
 
 		// Start embedded activators
 		trace("start embedded activators");
@@ -231,6 +226,13 @@ public class Launcher implements ServiceListener {
 				}
 			}
 		}
+		
+		update();
+
+		if (parms.trace) {
+			report(out);
+		}
+		
 		int result = LauncherConstants.OK;
 		for (BundleActivator activator : embedded)
 			try {
