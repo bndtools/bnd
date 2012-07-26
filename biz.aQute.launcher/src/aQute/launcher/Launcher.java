@@ -35,6 +35,7 @@ public class Launcher implements ServiceListener {
 	private final Map<File,Bundle>		installedBundles	= new LinkedHashMap<File,Bundle>();
 	private File						home				= new File(System.getProperty("user.home"));
 	private File						bnd					= new File(home, "bnd");
+	private List<Bundle>				wantsToBeStarted	= new ArrayList<Bundle>();
 
 	public static void main(String[] args) {
 		try {
@@ -209,7 +210,6 @@ public class Launcher implements ServiceListener {
 
 		systemContext.addServiceListener(this, "(&(objectclass=java.lang.Runnable)(main.thread=true))");
 
-
 		// Start embedded activators
 		trace("start embedded activators");
 		if (parms.activators != null) {
@@ -226,13 +226,13 @@ public class Launcher implements ServiceListener {
 				}
 			}
 		}
-		
+
 		update();
 
 		if (parms.trace) {
 			report(out);
 		}
-		
+
 		int result = LauncherConstants.OK;
 		for (BundleActivator activator : embedded)
 			try {
@@ -282,6 +282,10 @@ public class Launcher implements ServiceListener {
 		// (unless they're a fragment)
 
 		trace("Will start bundles: %s", tobestarted);
+		List<Bundle> all = new ArrayList<Bundle>(tobestarted);
+		// Add all bundles that we've tried to start but failed
+		all.addAll(wantsToBeStarted);
+		
 		for (Bundle b : tobestarted) {
 			try {
 				trace("starting %s", b.getSymbolicName());
@@ -290,6 +294,7 @@ public class Launcher implements ServiceListener {
 				trace("started  %s", b.getSymbolicName());
 			}
 			catch (BundleException e) {
+				wantsToBeStarted.add(b);
 				error("Failed to start bundle %s-%s, exception %s", b.getSymbolicName(), b.getVersion(), e);
 			}
 		}
