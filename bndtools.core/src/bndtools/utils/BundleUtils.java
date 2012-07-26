@@ -22,8 +22,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Version;
-import aQute.bnd.osgi.VersionRange;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
 
 public class BundleUtils {
     private static final String FILE_URL_PREFIX = "file:";

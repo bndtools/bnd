@@ -36,7 +36,7 @@ import org.eclipse.team.core.synchronize.SyncInfoSet;
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Version;
+import aQute.bnd.version.Version;
 import aQute.bnd.service.RepositoryPlugin;
 
 public class ReleaseUtils {

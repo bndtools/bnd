@@ -25,7 +25,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
-import aQute.bnd.osgi.VersionRange;
+import aQute.bnd.version.VersionRange;
 import aQute.lib.io.IO;
 import bndtools.BndConstants;
 import bndtools.Logger;

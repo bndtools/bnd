@@ -15,10 +15,10 @@ import org.eclipse.jface.viewers.Viewer;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Version;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
+import aQute.bnd.version.Version;
 import bndtools.Logger;
 import bndtools.api.ILogger;
 

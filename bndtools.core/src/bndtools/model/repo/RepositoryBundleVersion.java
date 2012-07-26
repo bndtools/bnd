@@ -9,8 +9,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 
-import aQute.bnd.osgi.Version;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.version.Version;
 import bndtools.Logger;
 import bndtools.api.ILogger;
 

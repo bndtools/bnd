@@ -13,9 +13,9 @@ import org.eclipse.jface.viewers.Viewer;
 import org.osgi.framework.Bundle;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.Version;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.version.Version;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
