@@ -9,8 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -19,7 +22,6 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.deployer.repository.CapabilityIndex;
-import aQute.bnd.deployer.repository.MapToDictionaryAdapter;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 
@@ -39,6 +41,13 @@ public class FrameworkResourceRepository implements Repository {
         for (EE compat : ee.getCompatible()) {
             capIndex.addCapability(createEECapability(compat));
         }
+
+        // Add system.bundle alias
+        Version frameworkVersion = Utils.findIdentityVersion(frameworkResource);
+        capIndex.addCapability(new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE).addAttribute(BundleNamespace.BUNDLE_NAMESPACE, Constants.SYSTEM_BUNDLE_SYMBOLICNAME)
+                .addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, frameworkVersion).setResource(frameworkResource).buildCapability());
+        capIndex.addCapability(new CapReqBuilder(HostNamespace.HOST_NAMESPACE).addAttribute(HostNamespace.HOST_NAMESPACE, Constants.SYSTEM_BUNDLE_SYMBOLICNAME)
+                .addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, frameworkVersion).setResource(frameworkResource).buildCapability());
 
         // Add JRE packages
         loadJREPackages();

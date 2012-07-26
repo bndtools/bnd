@@ -270,4 +270,21 @@ public class BndrunResolveContextTest extends TestCase {
         List<Capability> providers2 = context.findProviders(CapReqBuilder.createPackageRequirement("java.security", null).buildSyntheticRequirement());
         assertEquals(0, providers2.size());
     }
+
+    public void testResolveSystemBundleAlias() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFramework("org.apache.felix.framework");
+        runModel.setEE(EE.JavaSE_1_6);
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+
+        Requirement req = new CapReqBuilder("osgi.wiring.host").addDirective("filter", "(osgi.wiring.host=system.bundle)").buildSyntheticRequirement();
+        List<Capability> providers = context.findProviders(req);
+
+        assertEquals(1, providers.size());
+        assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+    }
 }
