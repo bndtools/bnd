@@ -358,6 +358,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					Class< ? > c = loader.loadClass(key);
 					Object plugin = c.newInstance();
 					customize(plugin, entry.getValue());
+					if ( plugin instanceof Closeable){
+						addClose((Closeable)plugin);
+					}
 					list.add(plugin);
 				}
 				catch (Throwable t) {
