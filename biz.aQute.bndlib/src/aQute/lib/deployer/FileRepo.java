@@ -147,21 +147,26 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		else
 			version = new Version(versionString);
 
-		reporter.trace("bsn=%s version=%s", bsn, version);
+		if (reporter != null)
+			reporter.trace("bsn=%s version=%s", bsn, version);
 
 		File dir = new File(root, bsn);
 		dir.mkdirs();
 		String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 		File file = new File(dir, fName);
 
-		reporter.trace("updating %s ", file.getAbsolutePath());
+		if (reporter != null)
+			reporter.trace("updating %s ", file.getAbsolutePath());
 		if (!file.exists() || file.lastModified() < jar.lastModified()) {
 			jar.write(file);
-			reporter.progress(-1, "updated " + file.getAbsolutePath());
+			if (reporter != null)
+				reporter.progress(-1, "updated " + file.getAbsolutePath());
 			fireBundleAdded(jar, file);
 		} else {
-			reporter.progress(-1, "Did not update " + jar + " because repo has a newer version");
-			reporter.trace("NOT Updating " + fName + " (repo is newer)");
+			if (reporter != null) {
+				reporter.progress(-1, "Did not update " + jar + " because repo has a newer version");
+				reporter.trace("NOT Updating " + fName + " (repo is newer)");
+			}
 		}
 
 		File latest = new File(dir, bsn + "-latest.jar");
