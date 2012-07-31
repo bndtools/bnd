@@ -222,6 +222,38 @@ public class IO {
 		return sw.toString();
 	}
 
+	/**
+	 * Create a temporary file.
+	 *
+	 * @param directory
+	 *            the directory in which to create the file. Can be null, in
+	 *            which case the system TMP directory is used
+	 * @param pattern
+	 *            the filename prefix pattern. Must be at least 3 characters
+	 *            long
+	 * @param suffix
+	 *            the filename suffix. Can be null, in which case (system)
+	 *            default suffix is used
+	 * @return
+	 * @throws IllegalArgumentException
+	 *             when pattern is null or too short
+	 * @throws IOException
+	 *             when the specified (non-null) directory is not a directory
+	 */
+	public static File createTempFile(File directory, String pattern, String suffix) throws IllegalArgumentException,
+			IOException {
+		if ((pattern == null) || (pattern.length() < 3)) {
+			throw new IllegalArgumentException("Pattern must be at least 3 characters long, got "
+					+ ((pattern == null) ? "null" : pattern.length()));
+		}
+
+		if ((directory != null) && !directory.isDirectory()) {
+			throw new FileNotFoundException("Directory " + directory + " is not a directory");
+		}
+
+		return File.createTempFile(pattern, suffix, directory);
+	}
+
 	public static File getFile(String filename) {
 		return new File(filename.replace("/", File.separator));
 	}
