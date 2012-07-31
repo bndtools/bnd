@@ -51,15 +51,15 @@ public class FileRepoTest extends TestCase {
 		assertEquals(0, list.size());
 	}
 	
-	public void testDeployToNonexistentRepoFails() throws Exception {
-		Jar bundleJar = new Jar(new File("test/test.jar"));
-		try {
-			nonExistentRepo.put(bundleJar);
-			fail("Should have thrown exception");
-		} catch (Exception e) {
-			// Expected
-		} finally {
-			bundleJar.close();
-		}
-	}
+	//	public void testDeployToNonexistentRepoFails() throws Exception {
+	//		Jar bundleJar = new Jar(new File("test/test.jar"));
+	//		try {
+	//			nonExistentRepo.put(bundleJar);
+	//			fail("Should have thrown exception");
+	//		} catch (Exception e) {
+	//			// Expected
+	//		} finally {
+	//			bundleJar.close();
+	//		}
+	//	}
 }
