@@ -151,32 +151,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		return !readOnly;
 	}
 
-	private File beginPut(Jar jar) throws Exception {
-		String bsn = jar.getBsn();
-		if (bsn == null)
-			throw new IllegalArgumentException("Jar does not have a Bundle-SymbolicName manifest header");
-
-		File dir = new File(storageDir, bsn);
-		if (dir.exists() && !dir.isDirectory())
-			throw new IllegalArgumentException("Path already exists but is not a directory: " + dir.getAbsolutePath());
-		dir.mkdirs();
-
-		Version version = Version.parseVersion(jar.getVersion());
-		String fileName = String.format("%s-%d.%d.%d.jar", bsn, version.getMajor(), version.getMinor(),
-				version.getMicro());
-		File file = new File(dir, fileName);
-		
-		// check overwrite policy
-		if (!overwrite && file.exists()) return file;
-		
-		jar.write(file);
-
-		synchronized (newFilesInCoordination) {
-			newFilesInCoordination.add(new Pair<Jar,File>(jar, file));
-		}
-		return file;
-	}
-
 	private synchronized void finishPut() throws Exception {
 		reset();
 		regenerateAllIndexes();
@@ -214,13 +188,34 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	public synchronized File put(Jar jar) throws Exception {
 		init();
 
-		File newFile = beginPut(jar);
+		String bsn = jar.getBsn();
+		if (bsn == null)
+			throw new IllegalArgumentException("Jar does not have a Bundle-SymbolicName manifest header");
+
+		File dir = new File(storageDir, bsn);
+		if (dir.exists() && !dir.isDirectory())
+			throw new IllegalArgumentException("Path already exists but is not a directory: " + dir.getAbsolutePath());
+		dir.mkdirs();
+
+		Version version = Version.parseVersion(jar.getVersion());
+		String fileName = String.format("%s-%d.%d.%d.jar", bsn, version.getMajor(), version.getMinor(),
+				version.getMicro());
+		File file = new File(dir, fileName);
+
+		// check overwrite policy
+		if (!overwrite && file.exists()) return file;
+
+		jar.write(file);
+
+		synchronized (newFilesInCoordination) {
+			newFilesInCoordination.add(new Pair<Jar,File>(jar, file));
+		}
 
 		Coordinator coordinator = (registry != null) ? registry.getPlugin(Coordinator.class) : null;
 		if (!(coordinator != null && coordinator.addParticipant(this))) {
 			finishPut();
 		}
-		return newFile;
+		return file;
 	}
 
 	public boolean refresh() {
