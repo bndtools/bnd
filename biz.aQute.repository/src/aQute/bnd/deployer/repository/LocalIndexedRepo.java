@@ -214,12 +214,10 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	public synchronized File put(Jar jar) throws Exception {
 		init();
 
+		File newFile = beginPut(jar);
+
 		Coordinator coordinator = (registry != null) ? registry.getPlugin(Coordinator.class) : null;
-		File newFile;
-		if (coordinator != null && coordinator.addParticipant(this)) {
-			newFile = beginPut(jar);
-		} else {
-			newFile = beginPut(jar);
+		if (!(coordinator != null && coordinator.addParticipant(this))) {
 			finishPut();
 		}
 		return newFile;
