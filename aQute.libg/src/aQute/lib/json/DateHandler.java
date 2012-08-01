@@ -18,14 +18,14 @@ public class DateHandler extends Handler {
 	}
 
 	@Override
-	Object decode(String s) throws Exception {
+	Object decode(Decoder dec, String s) throws Exception {
 		synchronized (sdf) {
 			return sdf.parse(s);
 		}
 	}
 
 	@Override
-	Object decode(Number s) throws Exception {
+	Object decode(Decoder dec, Number s) throws Exception {
 		return new Date(s.longValue());
 	}
 

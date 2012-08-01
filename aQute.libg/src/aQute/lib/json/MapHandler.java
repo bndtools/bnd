@@ -62,7 +62,7 @@ public class MapHandler extends Handler {
 			Object key = r.codec.parseString(r);
 			if (!(keyType == null || keyType == Object.class)) {
 				Handler h = r.codec.getHandler(keyType);
-				key = h.decode((String) key);
+				key = h.decode(r,(String) key);
 			}
 
 			c = r.skipWs();

@@ -59,19 +59,23 @@ public class StringHandler extends Handler {
 		app.append('"');
 	}
 
-	Object decode(String s) throws Exception {
+	@Override
+	Object decode(Decoder dec, String s) throws Exception {
 		return s;
 	}
 
-	Object decode(Number s) {
+	@Override
+	Object decode(Decoder dec, Number s) {
 		return s.toString();
 	}
 
-	Object decode(boolean s) {
+	@Override
+	Object decode(Decoder dec, boolean s) {
 		return Boolean.toString(s);
 	}
 
-	Object decode() {
+	@Override
+	Object decode(Decoder dec ) {
 		return null;
 	}
 
@@ -87,6 +91,7 @@ public class StringHandler extends Handler {
 	 * An array can be assigned to a string. This means that the stream is
 	 * interpreted as the array but stored in its complete in the string.
 	 */
+	@Override
 	Object decodeArray(Decoder r) throws Exception {
 		return collect(r, ']');
 	}

@@ -15,19 +15,19 @@ abstract class Handler {
 		throw new UnsupportedOperationException("Cannot be mapped to array " + this);
 	}
 
-	Object decode(@SuppressWarnings("unused") String s) throws Exception {
+	Object decode(Decoder dec, @SuppressWarnings("unused") String s) throws Exception {
 		throw new UnsupportedOperationException("Cannot be mapped to string " + this);
 	}
 
-	Object decode(@SuppressWarnings("unused") Number s) throws Exception {
+	Object decode(Decoder dec, @SuppressWarnings("unused") Number s) throws Exception {
 		throw new UnsupportedOperationException("Cannot be mapped to number " + this);
 	}
 
-	Object decode(@SuppressWarnings("unused") boolean s) {
+	Object decode(Decoder dec, @SuppressWarnings("unused") boolean s) {
 		throw new UnsupportedOperationException("Cannot be mapped to boolean " + this);
 	}
 
-	Object decode() {
+	Object decode(Decoder dec) {
 		return null;
 	}
 

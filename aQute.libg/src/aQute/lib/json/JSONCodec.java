@@ -51,6 +51,7 @@ public class JSONCodec {
 	private static ByteArrayHandler					byteh				= new ByteArrayHandler();
 
 	boolean											ignorenull;
+	boolean											useHex;
 
 	/**
 	 * Create a new Encoder with the state and appropriate API.
@@ -191,7 +192,8 @@ public class JSONCodec {
 					else if (Map.class.isAssignableFrom(rawClass))
 						h = new MapHandler(rawClass, pt.getActualTypeArguments()[0], pt.getActualTypeArguments()[1]);
 					else if (Dictionary.class.isAssignableFrom(rawClass))
-						h = new MapHandler(Hashtable.class, pt.getActualTypeArguments()[0], pt.getActualTypeArguments()[1]);
+						h = new MapHandler(Hashtable.class, pt.getActualTypeArguments()[0],
+								pt.getActualTypeArguments()[1]);
 					else
 						throw new IllegalArgumentException("Found a parameterized type that is not a map or collection");
 				}
@@ -270,19 +272,19 @@ public class JSONCodec {
 				return h.decodeArray(isr);
 
 			case '"' :
-				return h.decode(parseString(isr));
+				return h.decode(isr, parseString(isr));
 
 			case 'n' :
 				isr.expect("ull");
-				return h.decode();
+				return h.decode(isr);
 
 			case 't' :
 				isr.expect("rue");
-				return h.decode(Boolean.TRUE);
+				return h.decode(isr,Boolean.TRUE);
 
 			case 'f' :
 				isr.expect("alse");
-				return h.decode(Boolean.FALSE);
+				return h.decode(isr,Boolean.FALSE);
 
 			case '0' :
 			case '1' :
@@ -295,7 +297,7 @@ public class JSONCodec {
 			case '8' :
 			case '9' :
 			case '-' :
-				return h.decode(parseNumber(isr));
+				return h.decode(isr,parseNumber(isr));
 
 			default :
 				throw new IllegalArgumentException("Unexpected character in input stream: " + (char) c);
@@ -484,6 +486,21 @@ public class JSONCodec {
 
 	public boolean isIgnorenull() {
 		return ignorenull;
+	}
+
+	/**
+	 * Use hex instead of default base 64 encoding
+	 * 
+	 * @param useHex
+	 * @return
+	 */
+	public JSONCodec setHex(boolean useHex) {
+		this.useHex = useHex;
+		return this;
+	}
+
+	public boolean isHex() {
+		return useHex;
 	}
 
 }

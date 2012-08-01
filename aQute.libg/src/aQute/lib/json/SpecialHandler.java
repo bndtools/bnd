@@ -25,7 +25,7 @@ public class SpecialHandler extends Handler {
 	}
 
 	@Override
-	Object decode(String s) throws Exception {
+	Object decode(Decoder dec, String s) throws Exception {
 		if (type == Pattern.class)
 			return Pattern.compile(s);
 

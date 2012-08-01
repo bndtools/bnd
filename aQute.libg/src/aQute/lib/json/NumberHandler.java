@@ -21,23 +21,23 @@ public class NumberHandler extends Handler {
 	}
 
 	@Override
-	Object decode(boolean s) {
-		return decode(s ? 1d : 0d);
+	Object decode(Decoder dec, boolean s) {
+		return decode(dec,s ? 1d : 0d);
 	}
 
 	@Override
-	Object decode(String s) {
+	Object decode(Decoder dec, String s) {
 		double d = Double.parseDouble(s);
-		return decode(d);
+		return decode(dec, d);
 	}
 
 	@Override
-	Object decode() {
-		return decode(0d);
+	Object decode(Decoder dec) {
+		return decode(dec,0d);
 	}
 
 	@Override
-	Object decode(Number s) {
+	Object decode(Decoder dec, Number s) {
 		double dd = s.doubleValue();
 
 		if (type == double.class || type == Double.class)

@@ -25,7 +25,8 @@ public class FileHandler extends Handler {
 		}
 	}
 
-	Object decode(String s) throws Exception {
+	@Override
+	Object decode(Decoder dec, String s) throws Exception {
 		File tmp = File.createTempFile("json", ".bin");
 		FileOutputStream fout = new FileOutputStream(tmp);
 		try {

@@ -5,12 +5,16 @@ import java.lang.reflect.*;
 import java.util.*;
 
 import aQute.lib.base64.*;
+import aQute.lib.hex.*;
 
 public class ByteArrayHandler extends Handler {
 
 	@Override
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
-		StringHandler.string(app, Base64.encodeBase64((byte[]) object));
+		if ( app.codec.isHex())
+			StringHandler.string(app, Hex.toHexString((byte[]) object));
+		else
+			StringHandler.string(app, Base64.encodeBase64((byte[]) object));
 	}
 
 	@Override
@@ -26,7 +30,10 @@ public class ByteArrayHandler extends Handler {
 	}
 
 	@Override
-	Object decode(String s) throws Exception {
-		return Base64.decodeBase64(s);
+	Object decode(Decoder dec, String s) throws Exception {
+		if ( dec.codec.isHex())
+			return Hex.toByteArray(s);
+		else
+			return Base64.decodeBase64(s);
 	}
 }

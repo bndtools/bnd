@@ -13,22 +13,22 @@ public class CharacterHandler extends Handler {
 	}
 
 	@Override
-	Object decode(boolean s) {
+	Object decode(Decoder dec, boolean s) {
 		return s ? 't' : 'f';
 	}
 
 	@Override
-	Object decode(String s) {
+	Object decode(Decoder dec, String s) {
 		return (char) Integer.parseInt(s);
 	}
 
 	@Override
-	Object decode(Number s) {
+	Object decode(Decoder dec, Number s) {
 		return (char) s.shortValue();
 	}
 
 	@Override
-	Object decode() {
+	Object decode(Decoder dec) {
 		return 0;
 	}
 

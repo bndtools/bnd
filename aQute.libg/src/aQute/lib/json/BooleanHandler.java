@@ -12,22 +12,22 @@ public class BooleanHandler extends Handler {
 	}
 
 	@Override
-	Object decode(boolean s) {
+	Object decode(Decoder dec, boolean s) {
 		return s;
 	}
 
 	@Override
-	Object decode(String s) {
+	Object decode(Decoder dec, String s) {
 		return Boolean.parseBoolean(s);
 	}
 
 	@Override
-	Object decode(Number s) {
+	Object decode(Decoder dec, Number s) {
 		return s.intValue() != 0;
 	}
 
 	@Override
-	Object decode() {
+	Object decode(Decoder dec) {
 		return false;
 	}
 

@@ -17,8 +17,9 @@ public class EnumHandler extends Handler {
 		StringHandler.string(app, object.toString());
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
-	Object decode(String s) throws Exception {
+	Object decode(Decoder dec, String s) throws Exception {
 		return Enum.valueOf(type, s);
 	}
 
