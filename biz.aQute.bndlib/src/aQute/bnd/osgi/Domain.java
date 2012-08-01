@@ -288,11 +288,15 @@ public abstract class Domain implements Iterable<String> {
 			String url = e.getKey();
 			if (selected == null)
 				selected = url;
-
-			int size = Converter.cnv(Integer.class, e.getValue().get("size"));
-			if (size != 0 && Math.abs(requestedSize - size) < dist) {
-				dist = Math.abs(requestedSize - size);
-				selected = url;
+			if (e.getValue() != null) {
+				String s = e.getValue().get("size");
+				if (s != null) {
+					int size = Converter.cnv(Integer.class, s);
+					if (size != 0 && Math.abs(requestedSize - size) < dist) {
+						dist = Math.abs(requestedSize - size);
+						selected = url;
+					}
+				}
 			}
 		}
 		return selected;
@@ -300,6 +304,6 @@ public abstract class Domain implements Iterable<String> {
 
 	public void setConditionalPackage(String string) {
 		set(CONDITIONAL_PACKAGE, string);
-		
+
 	}
 }
