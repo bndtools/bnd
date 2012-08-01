@@ -112,7 +112,7 @@
 		<subant target="_release" inheritAll="false" buildpath="${project.dependson}">
 			<property name="donotrecurse" value="true" />
 		</subant>
-		<bindex repositoryfile="repository.xml" root="bundles" quiet="true">
+		<bindex repositoryfile="bundles/repository.xml" root="bundles" quiet="true">
 			<fileset dir="bundles" includes="**/*.jar" />
 		</bindex>
 	</target>
