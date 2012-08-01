@@ -11,7 +11,7 @@
 	<target name="build">
 		<ant dir="biz.aQute.bnd" target="build" />
 		<ant dir="biz.aQute.repository" target="build" />
-		<ant dir="biz.aQute.resolve" target="release" />
+		<ant dir="biz.aQute.resolve" target="build" />
 	</target>
 	<target name="dist" >
 		<ant dir="dist" target="release" />
