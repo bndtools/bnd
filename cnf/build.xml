@@ -94,13 +94,19 @@
 		<bnd command="build" exceptions="true" basedir="${project}" />
 	</target>
 	
+	<!--
+		Release
+	-->
+	<target name="_release" depends="init">
+		<bnd command="release" exceptions="true" basedir="${project}"/>
+	</target>
+	
 	<target name="release" depends="build">
-		<subant target="release" inheritAll="false" buildpath="${project.dependson}">
+		<subant target="_release" inheritAll="false" buildpath="${project.dependson}">
 			<property name="donotrecurse" value="true" />
 		</subant>
-		<bnd command="release" exceptions="true" basedir="${project}"/>
-		<bindex repositoryfile="${workspacedir}/../repo/bundles/repository.xml" root="${workspacedir}/../repo/bundles" quiet="true">
-			<fileset dir="${workspacedir}/../repo/bundles" includes="**/*.jar"/>
+		<bindex repositoryfile="repository.xml" root="bundles" quiet="false">
+			<fileset dir="bundles" includes="**/*.jar"/>
 		</bindex>
 	</target>
 
