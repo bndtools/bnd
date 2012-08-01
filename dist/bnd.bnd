@@ -5,5 +5,4 @@
 -dependson: biz.aQute.bnd, biz.aQute.resolve, biz.aQute.repository
 -nobundles: true
 
-
-no.junit=true
+no.junit:	true
