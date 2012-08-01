@@ -10,14 +10,14 @@
 
 	<target name="init" unless="initialized">
 		<tstamp>
-			<format property="NOW" pattern="yyyyMMdd-HHmmss" timezone="UTC"/>
+			<format property="NOW" pattern="yyyyMMdd-HHmmss" timezone="UTC" />
 		</tstamp>
-		
+
 		<dirname property="projectdir" file="${ant.file}" />
 		<dirname property="workspacedir" file="${projectdir}" />
 		<taskdef resource="aQute/bnd/ant/taskdef.properties">
 			<classpath>
-				<path location="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar"/>
+				<path location="${workspacedir}/cnf/repo/biz.aQute.bnd/biz.aQute.bnd-latest.jar" />
 			</classpath>
 		</taskdef>
 
@@ -25,7 +25,7 @@
 
 		<taskdef resource="net/sf/antcontrib/antlib.xml">
 			<classpath>
-				<pathelement location="${workspacedir}/cnf/ant-contrib/ant-contrib-1.0b3.jar"/>
+				<pathelement location="${workspacedir}/cnf/ant-contrib/ant-contrib-1.0b3.jar" />
 			</classpath>
 		</taskdef>
 
@@ -36,16 +36,16 @@
 				</fileset>
 			</classpath>
 		</taskdef>
-		
+
 		<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
 			<classpath>
-				<pathelement location="${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar"/>
+				<pathelement location="${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar" />
 			</classpath>
 		</taskdef>
 
 		<!-- mark init has been run -->
 		<property name="initialized" value="set" />
-		<echo message="Enter project ${project.name}"/>
+		<echo message="Enter project ${project.name}" />
 	</target>
 
 	<!-- 
@@ -60,6 +60,8 @@
 
 	<!--
 	     Test
+	     
+	     These are the OSGi tests.
 	-->
 	<target name="test" depends="compile">
 		<bnd command="test" exceptions="true" basedir="${project}" />
@@ -70,7 +72,7 @@
 	     Compile the sources. 
 	-->
 	<target name="compile" depends="dependencies" if="project.sourcepath">
-		<mkdir dir="${project.output}"/>
+		<mkdir dir="${project.output}" />
 		<javac fork="yes" executable="${javac}" srcdir="${project.sourcepath}" destdir="${project.output}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
 		<!-- 
 		  The eclipse compiler copies resources but the Javac compiler does not
@@ -86,111 +88,73 @@
 	</target>
 
 	<!-- 
-		JARS
-		Iterate of the jars to build.
+		build
+		
+		Use bnd to build this project. Assumption is that any projects that
+		this project depends on are already build. See dependencies.
 	-->
 	<target name="build" depends="compile">
-		<mkdir dir="${target}"/>
+		<mkdir dir="${target}" />
 		<bnd command="build" exceptions="true" basedir="${project}" />
 	</target>
-	
+
 	<!--
 		Release
+		
+		First release all dependents (set in bnd.bnd -dependson) and then
+		create an index. 
 	-->
 	<target name="_release" depends="init">
-		<bnd command="release" exceptions="true" basedir="${project}"/>
+		<bnd command="release" exceptions="true" basedir="${project}" />
 	</target>
-	
+
 	<target name="release" depends="build">
 		<subant target="_release" inheritAll="false" buildpath="${project.dependson}">
 			<property name="donotrecurse" value="true" />
 		</subant>
-		<bindex repositoryfile="repository.xml" root="bundles" quiet="false">
-			<fileset dir="bundles" includes="**/*.jar"/>
+		<bindex repositoryfile="repository.xml" root="bundles" quiet="true">
+			<fileset dir="bundles" includes="**/*.jar" />
 		</bindex>
 	</target>
 
-	<target name="junit" depends="build">
+	<!--
+		Junit
+		
+		Run all the tests. If the -nojunit property is set then this project
+		cannot run junit tests and they should not be run. These are normal
+		junit tests, not OSGi junit tests.
+	-->
+	<target name="junit" depends="build" unless="no.junit">
 		<junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
 			<classpath path="${project.buildpath}" />
-			<formatter type="xml"/>
-			<batchtest todir="${target}" >
-			    <fileset dir="${src}">
-			      <include name="test/**.java"/>
-			    </fileset>
+			<formatter type="xml" />
+			<batchtest todir="${target}">
+				<fileset dir="${src}">
+					<include name="test/**.java" />
+				</fileset>
 			</batchtest>
 		</junit>
 	</target>
 
 	<target name="findbugs" depends="init,build">
-		<property name="project.bootclasspath.adjusted" value="${project.bootclasspath}"/>
-		<property name="project.buildpath.adjusted" value="${project.buildpath}"/>
-		<property name="project.testpath.adjusted" value="${project.testpath}"/>
+		<property name="project.bootclasspath.adjusted" value="${project.bootclasspath}" />
+		<property name="project.buildpath.adjusted" value="${project.buildpath}" />
+		<property name="project.testpath.adjusted" value="${project.testpath}" />
 
 		<!-- filter out some jars and directories -->
-		<for
-			list="[^:]+/ee\.j2se-[0-9\.]+\.jar#${project.output}#^:+#:+$"
-			delimiter="#"
-			param="regex">
+		<for list="[^:]+/ee\.j2se-[0-9\.]+\.jar#${project.output}#^:+#:+$" delimiter="#" param="regex">
 			<sequential>
-				<propertyregex
-					property="project.bootclasspath.adjusted"
-					input="${project.bootclasspath.adjusted}"
-					defaultValue="${project.bootclasspath.adjusted}"
-					regexp="@{regex}"
-					replace=""
-					override="true"
-					global="yes" />
-				<propertyregex
-					property="project.buildpath.adjusted"
-					input="${project.buildpath.adjusted}"
-					defaultValue="${project.buildpath.adjusted}"
-					regexp="@{regex}"
-					replace=""
-					override="true"
-					global="yes" />
-				<propertyregex
-					property="project.testpath.adjusted"
-					input="${project.testpath.adjusted}"
-					defaultValue="${project.testpath.adjusted}"
-					regexp="@{regex}"
-					replace=""
-					override="true"
-					global="yes" />
+				<propertyregex property="project.bootclasspath.adjusted" input="${project.bootclasspath.adjusted}" defaultValue="${project.bootclasspath.adjusted}" regexp="@{regex}" replace="" override="true" global="yes" />
+				<propertyregex property="project.buildpath.adjusted" input="${project.buildpath.adjusted}" defaultValue="${project.buildpath.adjusted}" regexp="@{regex}" replace="" override="true" global="yes" />
+				<propertyregex property="project.testpath.adjusted" input="${project.testpath.adjusted}" defaultValue="${project.testpath.adjusted}" regexp="@{regex}" replace="" override="true" global="yes" />
 			</sequential>
 		</for>
 		<!-- fixups -->
-		<propertyregex
-			property="project.bootclasspath.adjusted"
-			input="${project.bootclasspath.adjusted}"
-			defaultValue="${project.bootclasspath.adjusted}"
-			regexp=":+"
-			replace=":"
-			override="true"
-			global="yes" />
-		<propertyregex
-			property="project.buildpath.adjusted"
-			input="${project.buildpath.adjusted}"
-			defaultValue="${project.buildpath.adjusted}"
-			regexp=":+"
-			replace=":"
-			override="true"
-			global="yes" />
-		<propertyregex
-			property="project.testpath.adjusted"
-			input="${project.testpath.adjusted}"
-			defaultValue="${project.testpath.adjusted}"
-			regexp=":+"
-			replace=":"
-			override="true"
-			global="yes" />
+		<propertyregex property="project.bootclasspath.adjusted" input="${project.bootclasspath.adjusted}" defaultValue="${project.bootclasspath.adjusted}" regexp=":+" replace=":" override="true" global="yes" />
+		<propertyregex property="project.buildpath.adjusted" input="${project.buildpath.adjusted}" defaultValue="${project.buildpath.adjusted}" regexp=":+" replace=":" override="true" global="yes" />
+		<propertyregex property="project.testpath.adjusted" input="${project.testpath.adjusted}" defaultValue="${project.testpath.adjusted}" regexp=":+" replace=":" override="true" global="yes" />
 
-		<findbugs
-			home="${workspacedir}/cnf/findbugs"
-			includeFilter="${workspacedir}/cnf/findbugs.include.xml"
-			excludeFilter="${workspacedir}/cnf/findbugs.exclude.xml"
-			output="xml:withMessages"
-			outputFile="${target}/${project.name}.findbugs.xml">
+		<findbugs home="${workspacedir}/cnf/findbugs" includeFilter="${workspacedir}/cnf/findbugs.include.xml" excludeFilter="${workspacedir}/cnf/findbugs.exclude.xml" output="xml:withMessages" outputFile="${target}/${project.name}.findbugs.xml">
 			<sourcePath path="${project.sourcepath}" />
 			<auxClasspath path="${project.bootclasspath.adjusted}:${project.buildpath.adjusted}:${project.testpath.adjusted}" />
 			<class location="${target}" />
@@ -206,12 +170,12 @@
 
 	<target name="clean" depends="init">
 		<bnd command="clean" exceptions="true" basedir="${project}" />
-		<delete dir="bin"/>
-		<delete dir="bin_test"/>
-		<delete dir="${target}"/>
-		
-		<delete dir="${workspacedir}/cnf/tmp"/>
-		<delete dir="${workspacedir}/cnf/p2target"/>
+		<delete dir="bin" />
+		<delete dir="bin_test" />
+		<delete dir="${target}" />
+
+		<delete dir="${workspacedir}/cnf/tmp" />
+		<delete dir="${workspacedir}/cnf/p2target" />
 	</target>
 
 	<!--
@@ -253,7 +217,7 @@
 		<echo>-dependson:             ${-dependson}</echo>
 
 	</target>
-	
+
 	<!--
 	     Default Target
 	-->
