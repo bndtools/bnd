@@ -116,9 +116,11 @@ public interface RepositoryPlugin {
 	/**
 	 * Put a JAR file in the repository.
 	 * 
+	 * @deprecated use {@link #put(InputStream, PutOptions)}
 	 * @param jar
 	 * @throws Exception
 	 */
+	@Deprecated
 	File put(Jar jar) throws Exception;
 
 	/**

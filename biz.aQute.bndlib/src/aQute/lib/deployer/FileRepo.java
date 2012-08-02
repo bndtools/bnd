@@ -213,6 +213,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 	}
 
+	@Deprecated
 	public File put(Jar jar) throws Exception {
 		JarResource jr = new JarResource(jar);
 		InputStream is = new BufferedInputStream(jr.openInputStream());

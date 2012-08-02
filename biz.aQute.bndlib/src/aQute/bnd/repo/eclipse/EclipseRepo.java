@@ -166,6 +166,7 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
 		return result;
 	}
 
+	@Deprecated
 	public File put(Jar jar) throws Exception {
 		return null;
 	}

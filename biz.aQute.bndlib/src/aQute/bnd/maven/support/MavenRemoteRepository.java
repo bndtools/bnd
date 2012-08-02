@@ -68,6 +68,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		return false;
 	}
 
+	@Deprecated
 	public File put(Jar jar) throws Exception {
 		throw new UnsupportedOperationException("cannot do put");
 	}
