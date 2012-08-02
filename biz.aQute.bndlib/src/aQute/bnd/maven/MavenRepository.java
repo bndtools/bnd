@@ -112,11 +112,6 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		}
 	}
 
-	@Deprecated
-	public File put(Jar jar) throws Exception {
-		throw new IllegalStateException("Maven does not support the put command");
-	}
-
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		throw new IllegalStateException("Maven does not support the put command");
 	}

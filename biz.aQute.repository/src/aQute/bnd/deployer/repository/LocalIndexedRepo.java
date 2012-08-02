@@ -247,22 +247,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		}
 	}
 
-	@Override
-	@Deprecated
-	public synchronized File put(Jar jar) throws Exception {
-		JarResource jr = new JarResource(jar);
-		InputStream is = new BufferedInputStream(jr.openInputStream());
-		try {
-			PutResult result = put(is, new PutOptions());
-			if (result.artifact == null)
-				return null;
-
-			return new File(result.artifact);
-		}
-		finally {
-			is.close();
-		}
-	}
 
 	/* NOTE: this is a straight copy of FileRepo.put */
 	@Override

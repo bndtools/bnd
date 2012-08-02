@@ -114,16 +114,6 @@ public interface RepositoryPlugin {
 	boolean canWrite();
 
 	/**
-	 * Put a JAR file in the repository.
-	 * 
-	 * @deprecated use {@link #put(InputStream, PutOptions)}
-	 * @param jar
-	 * @throws Exception
-	 */
-	@Deprecated
-	File put(Jar jar) throws Exception;
-
-	/**
 	 * Put an artifact (from the InputStream) into the repository.<br/>
 	 * <br/>
 	 * There is NO guarantee that the artifact on the input stream has not been

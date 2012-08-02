@@ -293,11 +293,6 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return false;
 	}
 
-	@Deprecated
-	public File put(Jar jar) throws Exception {
-		throw new UnsupportedOperationException("Read-only repository.");
-	}
-
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		throw new UnsupportedOperationException("Read-only repository.");
 	}

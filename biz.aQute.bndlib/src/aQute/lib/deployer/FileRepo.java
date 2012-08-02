@@ -213,22 +213,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 	}
 
-	@Deprecated
-	public File put(Jar jar) throws Exception {
-		JarResource jr = new JarResource(jar);
-		InputStream is = new BufferedInputStream(jr.openInputStream());
-		try {
-			PutResult result = put(is, new PutOptions());
-			if (result.artifact == null)
-				return null;
-
-			return new File(result.artifact);
-		}
-		finally {
-			is.close();
-		}
-	}
-
 	/* a straight copy of this method lives in LocalIndexedRepo */
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		/* both parameters are required */

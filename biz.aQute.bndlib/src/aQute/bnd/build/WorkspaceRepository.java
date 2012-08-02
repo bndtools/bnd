@@ -86,11 +86,6 @@ public class WorkspaceRepository implements RepositoryPlugin {
 		return false;
 	}
 
-	@Deprecated
-	public File put(Jar jar) throws Exception {
-		return null;
-	}
-
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		return null;
 	}
