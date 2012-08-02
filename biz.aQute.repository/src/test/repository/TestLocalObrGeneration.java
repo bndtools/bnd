@@ -6,6 +6,8 @@ import java.util.*;
 import junit.framework.*;
 import aQute.bnd.deployer.repository.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.lib.io.*;
 
 public class TestLocalObrGeneration extends TestCase {
@@ -45,8 +47,8 @@ public class TestLocalObrGeneration extends TestCase {
 	}
 
 	public void testDeployBundle() throws Exception {
-		Jar jar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
-		File deployedFile = repo.put(jar);
+		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		File deployedFile = new File(r.artifact);
 
 		assertEquals(IO.getFile("generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
 			.getAbsolutePath(), deployedFile.getAbsolutePath());

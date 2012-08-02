@@ -7,6 +7,8 @@ import junit.framework.*;
 import test.lib.*;
 import aQute.bnd.deployer.repository.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.lib.io.*;
 
 public class TestLocalIndexGeneration extends TestCase {
@@ -46,8 +48,8 @@ public class TestLocalIndexGeneration extends TestCase {
 	}
 
 	public void testDeployBundle() throws Exception {
-		Jar jar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
-		File deployedFile = repo.put(jar);
+		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		File deployedFile = new File(r.artifact);
 
 		assertEquals(IO.getFile("generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
 			.getAbsolutePath(), deployedFile.getAbsolutePath());
@@ -66,16 +68,18 @@ public class TestLocalIndexGeneration extends TestCase {
 		config.put("overwrite", "false");
 		repo.setProperties(config);
 		
-		Jar jar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
-		File originalFile = repo.put(jar);
+		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		File originalFile = new File(r.artifact);
 		assertEquals(IO.getFile("generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
 				.getAbsolutePath(), originalFile.getAbsolutePath());
 		
 		Jar newJar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
 		Jar dummyJar = new Jar(IO.getFile("testdata/bundles/dummybundle.jar"));
 		newJar.putResource("testOverwrite/dummybundle.jar", new JarResource(dummyJar));
-		File duplicateFile = repo.put(newJar);
-		assertNull(duplicateFile);
+		newJar.write("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar");
+		r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar")), new RepositoryPlugin.PutOptions());
+		IO.delete(new File("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar"));
+		assertNull(r.artifact);
 	}
 
 	public void testInvalidContentProvider() throws Exception {
@@ -86,7 +90,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 
-		repo.put(new Jar(new File("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")));
+		repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
 
 		assertEquals(0, reporter.getErrors().size());
 		assertTrue(reporter.getWarnings().size() > 0);
@@ -106,7 +110,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		config.put("type", "Nongenerating");
 		repo.setProperties(config);
 
-		repo.put(new Jar(new File("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")));
+		repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
 
 		assertEquals(0, reporter.getErrors().size());
 		assertTrue(reporter.getWarnings().size() > 0);
@@ -126,7 +130,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		config.put("type", "Fail");
 		repo.setProperties(config);
 
-		repo.put(new Jar(new File("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")));
+		repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
 
 		assertTrue(reporter.getErrors().size() > 0);
 		assertEquals(0, reporter.getWarnings().size());
