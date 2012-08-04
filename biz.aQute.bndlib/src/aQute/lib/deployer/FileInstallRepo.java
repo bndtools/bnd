@@ -8,6 +8,7 @@ import java.util.regex.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.version.*;
+import aQute.lib.io.*;
 import aQute.service.reporter.*;
 
 public class FileInstallRepo extends FileRepo {
@@ -27,51 +28,90 @@ public class FileInstallRepo extends FileRepo {
 		this.reporter = reporter;
 	}
 
-	public File put(Jar jar) throws Exception {
-		dirty = true;
-		Manifest manifest = jar.getManifest();
-		if (manifest == null)
-			throw new IllegalArgumentException("No manifest in JAR: " + jar);
+	@Override
+	protected PutResult putArtifact(File tmpFile, PutOptions options) throws Exception {
+		assert (tmpFile != null);
+		assert (options != null);
 
-		String bsn = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_SYMBOLICNAME);
-		if (bsn == null)
-			throw new IllegalArgumentException("No Bundle SymbolicName set");
+		Jar jar = null;
+		try {
+			init();
+			dirty = true;
 
-		Parameters b = Processor.parseHeader(bsn, null);
-		if (b.size() != 1)
-			throw new IllegalArgumentException("Multiple bsn's specified " + b);
+			jar = new Jar(tmpFile);
 
-		for (String key : b.keySet()) {
-			bsn = key;
-			if (!Verifier.SYMBOLICNAME.matcher(bsn).matches())
-				throw new IllegalArgumentException("Bundle SymbolicName has wrong format: " + bsn);
+			Manifest manifest = jar.getManifest();
+			if (manifest == null)
+				throw new IllegalArgumentException("No manifest in JAR: " + jar);
+
+			String bsn = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_SYMBOLICNAME);
+			if (bsn == null)
+				throw new IllegalArgumentException("No Bundle SymbolicName set");
+
+			Parameters b = Processor.parseHeader(bsn, null);
+			if (b.size() != 1)
+				throw new IllegalArgumentException("Multiple bsn's specified " + b);
+
+			for (String key : b.keySet()) {
+				bsn = key;
+				if (!Verifier.SYMBOLICNAME.matcher(bsn).matches())
+					throw new IllegalArgumentException("Bundle SymbolicName has wrong format: " + bsn);
+			}
+
+			String versionString = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_VERSION);
+			Version version;
+			if (versionString == null)
+				version = new Version();
+			else
+				version = new Version(versionString);
+
+			if (reporter != null)
+				reporter.trace("bsn=%s version=%s", bsn, version);
+
+			File dir;
+			if (group == null) {
+				dir = getRoot();
+			} else {
+				dir = new File(getRoot(), group);
+				dir.mkdirs();
+			}
+			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
+			File file = new File(dir, fName);
+
+			PutResult result = new PutResult();
+
+			if (reporter != null)
+				reporter.trace("updating %s ", file.getAbsolutePath());
+
+			if (file.exists()) {
+				IO.delete(file);
+			}
+			IO.rename(tmpFile, file);
+			result.artifact = file.toURI();
+
+			if (reporter != null)
+				reporter.progress(-1, "updated " + file.getAbsolutePath());
+
+			fireBundleAdded(jar, file);
+
+			File latest = new File(dir, bsn + "-latest.jar");
+			boolean latestExists = latest.exists() && latest.isFile();
+			boolean latestIsOlder = latestExists && (latest.lastModified() < jar.lastModified());
+			if ((options.createLatest && !latestExists) || latestIsOlder) {
+				if (latestExists) {
+					IO.delete(latest);
+				}
+				IO.copy(file, latest);
+				result.latest = latest.toURI();
+			}
+
+			return result;
 		}
-
-		String versionString = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_VERSION);
-		Version version;
-		if (versionString == null)
-			version = new Version();
-		else
-			version = new Version(versionString);
-
-		File dir;
-		if (group == null) {
-			dir = getRoot();
-		} else {
-			dir = new File(getRoot(), group);
-			dir.mkdirs();
+		finally {
+			if (jar != null) {
+				jar.close();
+			}
 		}
-		String fName = bsn + "-" + version.getMajor() + "." + version.getMinor() + "." + version.getMicro() + ".jar";
-		File file = new File(dir, fName);
-
-		jar.write(file);
-		fireBundleAdded(jar, file);
-
-		file = new File(dir, bsn + "-latest.jar");
-		if (file.isFile() && file.lastModified() < jar.lastModified()) {
-			jar.write(file);
-		}
-		return file;
 	}
 
 	public boolean refresh() {

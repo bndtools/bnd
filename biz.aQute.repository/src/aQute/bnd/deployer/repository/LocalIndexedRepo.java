@@ -2,6 +2,8 @@ package aQute.bnd.deployer.repository;
 
 import java.io.*;
 import java.net.*;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.util.*;
 
 import org.osgi.service.coordinator.*;
@@ -13,7 +15,6 @@ import aQute.bnd.filerepo.FileRepo;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
-import aQute.libg.tuple.*;
 
 public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant {
 
@@ -32,7 +33,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	private File						storageDir;
 
 	// @GuardedBy("newFilesInCoordination")
-	private final List<Pair<Jar,File>>	newFilesInCoordination	= new LinkedList<Pair<Jar,File>>();
+	private final List<URI>	newFilesInCoordination	= new LinkedList<URI>();
 
 	@Override
 	public synchronized void setProperties(Map<String,String> map) {
@@ -155,12 +156,21 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		reset();
 		regenerateAllIndexes();
 
-		List<Pair<Jar,File>> clone = new ArrayList<Pair<Jar,File>>(newFilesInCoordination);
+		List<URI> clone = new ArrayList<URI>(newFilesInCoordination);
 		synchronized (newFilesInCoordination) {
 			newFilesInCoordination.clear();
 		}
-		for (Pair<Jar,File> entry : clone) {
-			fireBundleAdded(entry.getFirst(), entry.getSecond());
+		for (URI entry : clone) {
+			Jar jar = null;
+			try {
+				File file = new File(entry);
+				jar = new Jar(file);
+				fireBundleAdded(jar, file);
+			} finally {
+				if (jar != null) {
+					jar.close();
+				}
+			}
 		}
 	}
 
@@ -169,53 +179,166 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	public void failed(Coordination coordination) throws Exception {
-		ArrayList<Pair<Jar,File>> clone;
+		ArrayList<URI> clone;
 		synchronized (newFilesInCoordination) {
-			clone = new ArrayList<Pair<Jar,File>>(newFilesInCoordination);
+			clone = new ArrayList<URI>(newFilesInCoordination);
 			newFilesInCoordination.clear();
 		}
-		for (Pair<Jar,File> entry : clone) {
+		for (URI entry : clone) {
 			try {
-				entry.getSecond().delete();
+				new File(entry).delete();
 			}
 			catch (Exception e) {
-				reporter.warning("Failed to remove repository entry %s on coordination rollback: %s", entry.getSecond(), e);
+				reporter.warning("Failed to remove repository entry %s on coordination rollback: %s", entry, e);
+			}
+		}
+	}
+
+	protected PutResult putArtifact(File tmpFile, PutOptions options) throws Exception {
+		assert (tmpFile != null);
+		assert (options != null);
+
+		init();
+
+		Jar jar = null;
+		try {
+			jar= new Jar(tmpFile);
+
+			String bsn = jar.getBsn();
+			if (bsn == null)
+				throw new IllegalArgumentException("Jar does not have a Bundle-SymbolicName manifest header");
+
+			File dir = new File(storageDir, bsn);
+			if (dir.exists() && !dir.isDirectory())
+				throw new IllegalArgumentException("Path already exists but is not a directory: "
+						+ dir.getAbsolutePath());
+			dir.mkdirs();
+
+			Version version = Version.parseVersion(jar.getVersion());
+			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
+			File file = new File(dir, fName);
+
+			PutResult result = new PutResult();
+
+			// check overwrite policy
+			if (!overwrite && file.exists())
+				return result;
+
+			if (file.exists()) {
+				IO.delete(file);
+			}
+			IO.rename(tmpFile, file);
+			result.artifact = file.toURI();
+
+			synchronized (newFilesInCoordination) {
+				newFilesInCoordination.add(result.artifact);
+			}
+
+			Coordinator coordinator = (registry != null) ? registry.getPlugin(Coordinator.class) : null;
+			if (!(coordinator != null && coordinator.addParticipant(this))) {
+				finishPut();
+			}
+			return result;
+		}
+		finally {
+			if (jar != null) {
+				jar.close();
 			}
 		}
 	}
 
 	@Override
 	public synchronized File put(Jar jar) throws Exception {
-		init();
+		JarResource jr = new JarResource(jar);
+		InputStream is = new BufferedInputStream(jr.openInputStream());
+		try {
+			PutResult result = put(is, new PutOptions());
+			if (result.artifact == null)
+				return null;
 
-		String bsn = jar.getBsn();
-		if (bsn == null)
-			throw new IllegalArgumentException("Jar does not have a Bundle-SymbolicName manifest header");
+			return new File(result.artifact);
+		}
+		finally {
+			is.close();
+		}
+	}
 
-		File dir = new File(storageDir, bsn);
-		if (dir.exists() && !dir.isDirectory())
-			throw new IllegalArgumentException("Path already exists but is not a directory: " + dir.getAbsolutePath());
-		dir.mkdirs();
-
-		Version version = Version.parseVersion(jar.getVersion());
-		String fileName = String.format("%s-%d.%d.%d.jar", bsn, version.getMajor(), version.getMinor(),
-				version.getMicro());
-		File file = new File(dir, fileName);
-
-		// check overwrite policy
-		if (!overwrite && file.exists()) return file;
-
-		jar.write(file);
-
-		synchronized (newFilesInCoordination) {
-			newFilesInCoordination.add(new Pair<Jar,File>(jar, file));
+	/* NOTE: this is a straight copy of FileRepo.put */
+	@Override
+	public PutResult put(InputStream stream, PutOptions options) throws Exception {
+		/* both parameters are required */
+		if ((stream == null) || (options == null)) {
+			throw new IllegalArgumentException("No stream and/or options specified");
 		}
 
-		Coordinator coordinator = (registry != null) ? registry.getPlugin(Coordinator.class) : null;
-		if (!(coordinator != null && coordinator.addParticipant(this))) {
-			finishPut();
+		/* determine if the put is allowed */
+		if (readOnly) {
+			throw new IOException("Repository is read-only");
 		}
-		return file;
+
+		/* the root directory of the repository has to be a directory */
+		if (!storageDir.isDirectory()) {
+			throw new IOException("Repository directory " + storageDir + " is not a directory");
+		}
+
+		/* determine if the artifact needs to be verified */
+		boolean verifyFetch = (options.digest != null);
+		boolean verifyPut = !options.allowArtifactChange;
+
+		/* determine which digests are needed */
+		boolean needFetchDigest = verifyFetch || verifyPut;
+		boolean needPutDigest = verifyPut || options.generateDigest;
+
+		/*
+		 * setup a new stream that encapsulates the stream and calculates (when
+		 * needed) the digest
+		 */
+		DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
+		dis.on(needFetchDigest);
+
+		File tmpFile = null;
+		try {
+			/*
+			 * copy the artifact from the (new/digest) stream into a temporary
+			 * file in the root directory of the repository
+			 */
+			tmpFile = IO.createTempFile(storageDir, "put", ".bnd");
+			IO.copy(dis, tmpFile);
+
+			/* get the digest if available */
+			byte[] disDigest = needFetchDigest ? dis.getMessageDigest().digest() : null;
+
+			/* verify the digest when requested */
+			if (verifyFetch && !MessageDigest.isEqual(options.digest, disDigest)) {
+				throw new IOException("Retrieved artifact digest doesn't match specified digest");
+			}
+
+			/* put the artifact into the repository (from the temporary file) */
+			PutResult r = putArtifact(tmpFile, options);
+
+			/* calculate the digest when requested */
+			if (needPutDigest && (r.artifact != null)) {
+				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+				IO.copy(new File(r.artifact), sha1);
+				r.digest = sha1.digest();
+			}
+
+			/* verify the artifact when requested */
+			if (verifyPut && (r.digest != null) && !MessageDigest.isEqual(disDigest, r.digest)) {
+				File f = new File(r.artifact);
+				if (f.exists()) {
+					IO.delete(f);
+				}
+				throw new IOException("Stored artifact digest doesn't match specified digest");
+			}
+
+			return r;
+		}
+		finally {
+			if (tmpFile != null && tmpFile.exists()) {
+				IO.delete(tmpFile);
+			}
+		}
 	}
 
 	public boolean refresh() {

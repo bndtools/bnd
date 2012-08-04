@@ -90,6 +90,10 @@ public class WorkspaceRepository implements RepositoryPlugin {
 		return null;
 	}
 
+	public PutResult put(InputStream stream, PutOptions options) throws Exception {
+		return null;
+	}
+
 	public List<String> list(String regex) throws Exception {
 		List<String> names = new ArrayList<String>();
 		Collection<Project> projects = workspace.getAllProjects();

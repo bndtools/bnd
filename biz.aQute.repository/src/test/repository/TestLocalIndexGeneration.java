@@ -70,15 +70,12 @@ public class TestLocalIndexGeneration extends TestCase {
 		File originalFile = repo.put(jar);
 		assertEquals(IO.getFile("generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
 				.getAbsolutePath(), originalFile.getAbsolutePath());
-		int originalSize = jar.getResources().size();
 		
 		Jar newJar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
 		Jar dummyJar = new Jar(IO.getFile("testdata/bundles/dummybundle.jar"));
 		newJar.putResource("testOverwrite/dummybundle.jar", new JarResource(dummyJar));
 		File duplicateFile = repo.put(newJar);
-		Jar jarFromRepo = new Jar(duplicateFile);
-		int fromRepoSize = jarFromRepo.getResources().size();
-		assertEquals("Number of resources should not have changed", originalSize, fromRepoSize);
+		assertNull(duplicateFile);
 	}
 
 	public void testInvalidContentProvider() throws Exception {

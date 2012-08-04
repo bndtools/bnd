@@ -5,7 +5,9 @@ import java.security.*;
 import java.util.*;
 
 import junit.framework.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin.PutOptions;
+import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
 
@@ -68,39 +70,38 @@ public class FileRepoTest extends TestCase {
 	}
 	
 	public void testBundleNotModifiedOnPut() throws Exception {
-		MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-		Jar srcJar = null;
+		MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
 		File dstBundle = null;
 		try {
 			File srcBundle = new File("test/test.jar");
 			byte[] srcSha = calculateHash(sha1, srcBundle);
 
-			srcJar = new Jar(srcBundle);
+			PutOptions options = new RepositoryPlugin.PutOptions();
+			options.digest = srcSha;
+			options.generateDigest = true;
 
-			dstBundle = testRepo.put(srcJar);
-			byte[] dstSha = calculateHash(sha1, dstBundle);
+			PutResult r = testRepo.put(new BufferedInputStream(new FileInputStream(srcBundle)), options);
 
-			assertEquals(hashToString(srcSha), hashToString(dstSha));
-			assertTrue(MessageDigest.isEqual(srcSha, dstSha));
+			dstBundle = new File(r.artifact);
+
+			assertEquals(hashToString(srcSha), hashToString(r.digest));
+			assertTrue(MessageDigest.isEqual(srcSha, r.digest));
 		}
 		finally {
-			if (srcJar != null)
-				srcJar.close();
 			if (dstBundle != null) {
 				IO.delete(dstBundle.getParentFile());
 			}
 		}
 	}
 
-	//	public void testDeployToNonexistentRepoFails() throws Exception {
-	//		Jar bundleJar = new Jar(new File("test/test.jar"));
-	//		try {
-	//			nonExistentRepo.put(bundleJar);
-	//			fail("Should have thrown exception");
-	//		} catch (Exception e) {
-	//			// Expected
-	//		} finally {
-	//			bundleJar.close();
-	//		}
-	//	}
+	public void testDeployToNonexistentRepoFails() throws Exception {
+		try {
+			nonExistentRepo.put(new BufferedInputStream(new FileInputStream("test/test.jar")), new RepositoryPlugin.PutOptions());
+			fail("Should have thrown exception");
+		} catch (Exception e) {
+			assert(e instanceof IOException);
+			String s = "Repository directory " + nonExistentRepo.getRoot() + " is not a directory";
+			assertEquals(s, e.getMessage());
+		}
+	}
 }

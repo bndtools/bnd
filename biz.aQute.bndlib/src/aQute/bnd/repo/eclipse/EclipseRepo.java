@@ -170,6 +170,10 @@ public class EclipseRepo implements Plugin, RepositoryPlugin {
 		return null;
 	}
 
+	public PutResult put(InputStream stream, PutOptions options) throws Exception {
+		return null;
+	}
+
 	public List<Version> versions(String bsn) {
 		Map<String,String> instances = index.get(bsn);
 		if (instances == null)

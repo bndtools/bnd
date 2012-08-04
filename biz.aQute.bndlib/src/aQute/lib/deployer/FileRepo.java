@@ -1,6 +1,7 @@
 package aQute.lib.deployer;
 
 import java.io.*;
+import java.security.*;
 import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
@@ -10,6 +11,8 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
+import aQute.libg.cryptography.Digester;
+import aQute.libg.cryptography.SHA1;
 import aQute.service.reporter.*;
 
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin {
@@ -118,64 +121,188 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return canWrite;
 	}
 
-	public File put(Jar jar) throws Exception {
-		init();
-		dirty = true;
+	protected PutResult putArtifact(File tmpFile, PutOptions options) throws Exception {
+		assert (tmpFile != null);
+		assert (options != null);
 
-		Manifest manifest = jar.getManifest();
-		if (manifest == null)
-			throw new IllegalArgumentException("No manifest in JAR: " + jar);
+		Jar jar = null;
+		try {
+			init();
+			dirty = true;
 
-		String bsn = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_SYMBOLICNAME);
-		if (bsn == null)
-			throw new IllegalArgumentException("No Bundle SymbolicName set");
+			jar = new Jar(tmpFile);
 
-		Parameters b = Processor.parseHeader(bsn, null);
-		if (b.size() != 1)
-			throw new IllegalArgumentException("Multiple bsn's specified " + b);
+			Manifest manifest = jar.getManifest();
+			if (manifest == null)
+				throw new IllegalArgumentException("No manifest in JAR: " + jar);
 
-		for (String key : b.keySet()) {
-			bsn = key;
-			if (!Verifier.SYMBOLICNAME.matcher(bsn).matches())
-				throw new IllegalArgumentException("Bundle SymbolicName has wrong format: " + bsn);
-		}
+			String bsn = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_SYMBOLICNAME);
+			if (bsn == null)
+				throw new IllegalArgumentException("No Bundle SymbolicName set");
 
-		String versionString = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_VERSION);
-		Version version;
-		if (versionString == null)
-			version = new Version();
-		else
-			version = new Version(versionString);
+			Parameters b = Processor.parseHeader(bsn, null);
+			if (b.size() != 1)
+				throw new IllegalArgumentException("Multiple bsn's specified " + b);
 
-		if (reporter != null)
-			reporter.trace("bsn=%s version=%s", bsn, version);
+			for (String key : b.keySet()) {
+				bsn = key;
+				if (!Verifier.SYMBOLICNAME.matcher(bsn).matches())
+					throw new IllegalArgumentException("Bundle SymbolicName has wrong format: " + bsn);
+			}
 
-		File dir = new File(root, bsn);
-		dir.mkdirs();
-		String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
-		File file = new File(dir, fName);
+			String versionString = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_VERSION);
+			Version version;
+			if (versionString == null)
+				version = new Version();
+			else
+				version = new Version(versionString);
 
-		if (reporter != null)
-			reporter.trace("updating %s ", file.getAbsolutePath());
-		if (!file.exists() || file.lastModified() < jar.lastModified()) {
-			jar.write(file);
 			if (reporter != null)
-				reporter.progress(-1, "updated " + file.getAbsolutePath());
-			fireBundleAdded(jar, file);
-		} else {
-			if (reporter != null) {
-				reporter.progress(-1, "Did not update " + jar + " because repo has a newer version");
-				reporter.trace("NOT Updating " + fName + " (repo is newer)");
+				reporter.trace("bsn=%s version=%s", bsn, version);
+
+			File dir = new File(root, bsn);
+			dir.mkdirs();
+			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
+			File file = new File(dir, fName);
+
+			boolean renamed = false;
+			PutResult result = new PutResult();
+
+			if (reporter != null)
+				reporter.trace("updating %s ", file.getAbsolutePath());
+			if (!file.exists() || file.lastModified() < jar.lastModified()) {
+				if (file.exists()) {
+					IO.delete(file);
+				}
+				IO.rename(tmpFile, file);
+				renamed = true;
+				result.artifact = file.toURI();
+
+				if (reporter != null)
+					reporter.progress(-1, "updated " + file.getAbsolutePath());
+
+				fireBundleAdded(jar, file);
+			} else {
+				if (reporter != null) {
+					reporter.progress(-1, "Did not update " + jar + " because repo has a newer version");
+					reporter.trace("NOT Updating " + fName + " (repo is newer)");
+				}
+			}
+
+			File latest = new File(dir, bsn + "-latest.jar");
+			boolean latestExists = latest.exists() && latest.isFile();
+			boolean latestIsOlder = latestExists && (latest.lastModified() < jar.lastModified());
+			if ((options.createLatest && !latestExists) || latestIsOlder) {
+				if (latestExists) {
+					IO.delete(latest);
+				}
+				if (!renamed) {
+					IO.rename(tmpFile, latest);
+				} else {
+					IO.copy(file, latest);
+				}
+				result.latest = latest.toURI();
+			}
+
+			return result;
+		}
+		finally {
+			if (jar != null) {
+				jar.close();
 			}
 		}
+	}
 
-		File latest = new File(dir, bsn + "-latest.jar");
-		if (latest.exists() && latest.lastModified() < jar.lastModified()) {
-			jar.write(latest);
-			file = latest;
+	public File put(Jar jar) throws Exception {
+		JarResource jr = new JarResource(jar);
+		InputStream is = new BufferedInputStream(jr.openInputStream());
+		try {
+			PutResult result = put(is, new PutOptions());
+			if (result.artifact == null)
+				return null;
+
+			return new File(result.artifact);
+		}
+		finally {
+			is.close();
+		}
+	}
+
+	/* a straight copy of this method lives in LocalIndexedRepo */
+	public PutResult put(InputStream stream, PutOptions options) throws Exception {
+		/* both parameters are required */
+		if ((stream == null) || (options == null)) {
+			throw new IllegalArgumentException("No stream and/or options specified");
 		}
 
-		return file;
+		/* determine if the put is allowed */
+		if (!canWrite) {
+			throw new IOException("Repository is read-only");
+		}
+
+		/* the root directory of the repository has to be a directory */
+		if (!root.isDirectory()) {
+			throw new IOException("Repository directory " + root + " is not a directory");
+		}
+
+		/* determine if the artifact needs to be verified */
+		boolean verifyFetch = (options.digest != null);
+		boolean verifyPut = !options.allowArtifactChange;
+
+		/* determine which digests are needed */
+		boolean needFetchDigest = verifyFetch || verifyPut;
+		boolean needPutDigest = verifyPut || options.generateDigest;
+
+		/*
+		 * setup a new stream that encapsulates the stream and calculates (when
+		 * needed) the digest
+		 */
+		DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
+		dis.on(needFetchDigest);
+
+		File tmpFile = null;
+		try {
+			/*
+			 * copy the artifact from the (new/digest) stream into a temporary
+			 * file in the root directory of the repository
+			 */
+			tmpFile = IO.createTempFile(root, "put", ".bnd");
+			IO.copy(dis, tmpFile);
+
+			/* get the digest if available */
+			byte[] disDigest = needFetchDigest ? dis.getMessageDigest().digest() : null;
+
+			/* verify the digest when requested */
+			if (verifyFetch && !MessageDigest.isEqual(options.digest, disDigest)) {
+				throw new IOException("Retrieved artifact digest doesn't match specified digest");
+			}
+
+			/* put the artifact into the repository (from the temporary file) */
+			PutResult r = putArtifact(tmpFile, options);
+
+			/* calculate the digest when requested */
+			if (needPutDigest && (r.artifact != null)) {
+				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+				IO.copy(new File(r.artifact), sha1);
+				r.digest = sha1.digest();
+			}
+
+			/* verify the artifact when requested */
+			if (verifyPut && (r.digest != null) && !MessageDigest.isEqual(disDigest, r.digest)) {
+				File f = new File(r.artifact);
+				if (f.exists()) {
+					IO.delete(f);
+				}
+				throw new IOException("Stored artifact digest doesn't match specified digest");
+			}
+
+			return r;
+		}
+		finally {
+			if (tmpFile != null && tmpFile.exists()) {
+				IO.delete(tmpFile);
+			}
+		}
 	}
 
 	protected void fireBundleAdded(Jar jar, File file) {

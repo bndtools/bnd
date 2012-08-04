@@ -72,6 +72,10 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		throw new UnsupportedOperationException("cannot do put");
 	}
 
+	public PutResult put(InputStream stream, PutOptions options) throws Exception {
+		throw new UnsupportedOperationException("cannot do put");
+	}
+
 	public List<String> list(String regex) throws Exception {
 		throw new UnsupportedOperationException("cannot do list");
 	}
