@@ -1,11 +1,12 @@
 package aQute.bnd.service;
 
+import java.io.InputStream;
+
 import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
 
 /**
  * Deploy this artifact to maven.
  */
 public interface Deploy {
-	boolean deploy(Project project, Jar jar) throws Exception;
+	boolean deploy(Project project, String jarName, InputStream jarStream) throws Exception;
 }

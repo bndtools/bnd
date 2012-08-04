@@ -40,56 +40,62 @@ public class MavenDeploy implements Deploy, Plugin {
 
 	/**
 	 */
-	public boolean deploy(Project project, Jar original) throws Exception {
+	public boolean deploy(Project project, String jarName, InputStream jarStream) throws Exception {
 		Parameters deploy = project.parseHeader(project.getProperty(Constants.DEPLOY));
 
 		Map<String,String> maven = deploy.get(repository);
 		if (maven == null)
 			return false; // we're not playing for this bundle
 
-		project.progress("deploying %s to Maven repo: %s", original, repository);
+		project.progress("deploying %s to Maven repo: %s", jarName, repository);
 		File target = project.getTarget();
 		File tmp = Processor.getFile(target, repository);
 		tmp.mkdirs();
 
-		Manifest manifest = original.getManifest();
-		if (manifest == null)
-			project.error("Jar has no manifest: %s", original);
-		else {
-			project.progress("Writing pom.xml");
-			PomResource pom = new PomResource(manifest);
-			pom.setProperties(maven);
-			File pomFile = write(tmp, pom, "pom.xml");
+		Jar original = new Jar(jarName, jarStream);
+		try {
+			Manifest manifest = original.getManifest();
+			if (manifest == null)
+				project.error("Jar has no manifest: %s", original);
+			else {
+				project.progress("Writing pom.xml");
+				PomResource pom = new PomResource(manifest);
+				pom.setProperties(maven);
+				File pomFile = write(tmp, pom, "pom.xml");
 
-			Jar main = new Jar("main");
-			Jar src = new Jar("src");
-			try {
-				split(original, main, src);
-				Parameters exports = project.parseHeader(manifest.getMainAttributes()
-						.getValue(Constants.EXPORT_PACKAGE));
-				File jdoc = new File(tmp, "jdoc");
-				jdoc.mkdirs();
-				project.progress("Generating Javadoc for: " + exports.keySet());
-				Jar javadoc = javadoc(jdoc, project, exports.keySet());
-				project.progress("Writing javadoc jar");
-				File javadocFile = write(tmp, new JarResource(javadoc), "javadoc.jar");
-				project.progress("Writing main file");
-				File mainFile = write(tmp, new JarResource(main), "main.jar");
-				project.progress("Writing sources file");
-				File srcFile = write(tmp, new JarResource(main), "src.jar");
+				Jar main = new Jar("main");
+				Jar src = new Jar("src");
+				try {
+					split(original, main, src);
+					Parameters exports = project.parseHeader(manifest.getMainAttributes().getValue(
+							Constants.EXPORT_PACKAGE));
+					File jdoc = new File(tmp, "jdoc");
+					jdoc.mkdirs();
+					project.progress("Generating Javadoc for: " + exports.keySet());
+					Jar javadoc = javadoc(jdoc, project, exports.keySet());
+					project.progress("Writing javadoc jar");
+					File javadocFile = write(tmp, new JarResource(javadoc), "javadoc.jar");
+					project.progress("Writing main file");
+					File mainFile = write(tmp, new JarResource(main), "main.jar");
+					project.progress("Writing sources file");
+					File srcFile = write(tmp, new JarResource(main), "src.jar");
 
-				project.progress("Deploying main file");
-				maven_gpg_sign_and_deploy(project, mainFile, null, pomFile);
-				project.progress("Deploying main sources file");
-				maven_gpg_sign_and_deploy(project, srcFile, "sources", null);
-				project.progress("Deploying main javadoc file");
-				maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
+					project.progress("Deploying main file");
+					maven_gpg_sign_and_deploy(project, mainFile, null, pomFile);
+					project.progress("Deploying main sources file");
+					maven_gpg_sign_and_deploy(project, srcFile, "sources", null);
+					project.progress("Deploying main javadoc file");
+					maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
 
+				}
+				finally {
+					main.close();
+					src.close();
+				}
 			}
-			finally {
-				main.close();
-				src.close();
-			}
+		}
+		finally {
+			original.close();
 		}
 		return true;
 	}

@@ -1143,22 +1143,16 @@ public class Project extends Processor {
 		}
 		File[] outputs = getBuildFiles();
 		for (File output : outputs) {
-			Jar jar = new Jar(output);
-			try {
 				for (Deploy d : getPlugins(Deploy.class)) {
-					trace("Deploying %s to: %s", jar, d);
+					trace("Deploying %s to: %s", output.getName(), d);
 					try {
-						if (d.deploy(this, jar))
+						if (d.deploy(this, output.getName(), new BufferedInputStream(new FileInputStream(output))))
 							trace("deployed %s successfully to %s", output, d);
 					}
 					catch (Exception e) {
 						msgs.Deploying(e);
 					}
 				}
-			}
-			finally {
-				jar.close();
-			}
 		}
 	}
 
