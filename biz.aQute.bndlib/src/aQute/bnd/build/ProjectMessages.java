@@ -39,7 +39,7 @@ public interface ProjectMessages extends Messages {
 
 	ERROR ReleaseRepository_NotFoundIn_(String name, List<RepositoryPlugin> plugins);
 
-	ERROR Release_Into_Exception_(Jar jar, RepositoryPlugin rp, Exception e);
+	ERROR Release_Into_Exception_(String jar, RepositoryPlugin rp, Exception e);
 
 	ERROR NoScripters_(String script);
 

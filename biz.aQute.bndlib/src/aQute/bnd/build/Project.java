@@ -816,9 +816,9 @@ public class Project extends Processor {
 		};
 	}
 
-	public File release(Jar jar) throws Exception {
+	public File release(String jarName, InputStream jarStream) throws Exception {
 		String name = getProperty(Constants.RELEASEREPO);
-		return release(name, jar);
+		return release(name, jarName, jarStream);
 	}
 
 	/**
@@ -826,11 +826,12 @@ public class Project extends Processor {
 	 * 
 	 * @param name
 	 *            The repository name
-	 * @param jar
+	 * @param jarName
+	 * @param jarStream
 	 * @return
 	 * @throws Exception
 	 */
-	public File release(String name, Jar jar) throws Exception {
+	public File release(String name, String jarName, InputStream jarStream) throws Exception {
 		trace("release %s", name);
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
 		RepositoryPlugin rp = null;
@@ -849,20 +850,11 @@ public class Project extends Processor {
 
 		if (rp != null) {
 			try {
-				JarResource jr = new JarResource(jar);
-				InputStream is = new BufferedInputStream(jr.openInputStream());
-				try {
-					PutResult r = rp.put(is, new RepositoryPlugin.PutOptions());
-					trace("Released %s to %s in repository %s", jar.getName(), r.artifact, rp);
-				} finally {
-					is.close();
-				}
+				PutResult r = rp.put(jarStream, new RepositoryPlugin.PutOptions());
+				trace("Released %s to %s in repository %s", jarName, r.artifact, rp);
 			}
 			catch (Exception e) {
-				msgs.Release_Into_Exception_(jar, rp, e);
-			}
-			finally {
-				jar.close();
+				msgs.Release_Into_Exception_(jarName, rp, e);
 			}
 		} else if (name == null)
 			msgs.NoNameForReleaseRepository();
@@ -897,15 +889,8 @@ public class Project extends Processor {
 		}
 		trace("build ", Arrays.toString(jars));
 		for (File jar : jars) {
-			Jar j = new Jar(jar);
-			try {
-				release(name, j);
-			}
-			finally {
-				j.close();
-			}
+			release(name, jar.getName(), new BufferedInputStream(new FileInputStream(jar)));
 		}
-
 	}
 
 	/**
