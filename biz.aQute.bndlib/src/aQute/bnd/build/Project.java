@@ -14,6 +14,7 @@ import aQute.bnd.maven.support.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.action.*;
 import aQute.bnd.version.*;
@@ -848,8 +849,14 @@ public class Project extends Processor {
 
 		if (rp != null) {
 			try {
-				File file = rp.put(jar);
-				trace("Released %s to file %s in repository %s", jar.getName(), file, rp);
+				JarResource jr = new JarResource(jar);
+				InputStream is = new BufferedInputStream(jr.openInputStream());
+				try {
+					PutResult r = rp.put(is, new RepositoryPlugin.PutOptions());
+					trace("Released %s to %s in repository %s", jar.getName(), r.artifact, rp);
+				} finally {
+					is.close();
+				}
 			}
 			catch (Exception e) {
 				msgs.Release_Into_Exception_(jar, rp, e);
@@ -1114,16 +1121,12 @@ public class Project extends Processor {
 		}
 
 		if (rp != null) {
-			Jar jar = new Jar(file);
 			try {
-				rp.put(jar);
+				rp.put(new BufferedInputStream(new FileInputStream(file)), new RepositoryPlugin.PutOptions());
 				return;
 			}
 			catch (Exception e) {
 				msgs.DeployingFile_On_Exception_(file, rp.getName(), e);
-			}
-			finally {
-				jar.close();
 			}
 			return;
 		}
