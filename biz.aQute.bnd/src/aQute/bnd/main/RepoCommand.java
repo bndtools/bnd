@@ -9,6 +9,7 @@ import aQute.bnd.header.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.version.*;
@@ -278,16 +279,15 @@ public class RepoCommand {
 		bnd.trace("put %s", file);
 
 		Jar jar = new Jar(file);
-
-		String bsn = jar.getBsn();
-		if (bsn == null) {
-			bnd.error("File %s is not a bundle (it has no bsn) ", file);
-			return;
-		}
-
-		bnd.trace("bsn %s version %s", bsn, jar.getVersion());
-
 		try {
+			String bsn = jar.getBsn();
+			if (bsn == null) {
+				bnd.error("File %s is not a bundle (it has no bsn) ", file);
+				return;
+			}
+
+			bnd.trace("bsn %s version %s", bsn, jar.getVersion());
+
 			if (!opts.force()) {
 				Verifier v = new Verifier(jar);
 				v.setTrace(true);
@@ -296,10 +296,9 @@ public class RepoCommand {
 				bnd.getInfo(v);
 			}
 
-			jar = new Jar(file);
 			if (bnd.isOk()) {
-				File out = writable.put(jar);
-				bnd.trace("put %s in %s (%s) into %s", file, writable.getName(), writable.getLocation(), out);
+				PutResult r = writable.put(new BufferedInputStream(new FileInputStream(file)), new RepositoryPlugin.PutOptions());
+				bnd.trace("put %s in %s (%s) into %s", file, writable.getName(), writable.getLocation(), r.artifact);
 			}
 		}
 		finally {
