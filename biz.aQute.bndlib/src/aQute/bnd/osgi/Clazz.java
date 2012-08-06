@@ -344,8 +344,7 @@ public class Clazz {
 		public String getName() {
 			if (interf)
 				return "<implements>";
-			else
-				return "<extends>";
+			return "<extends>";
 		}
 		
 		@Override

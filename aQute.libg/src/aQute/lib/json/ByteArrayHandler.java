@@ -33,7 +33,6 @@ public class ByteArrayHandler extends Handler {
 	Object decode(Decoder dec, String s) throws Exception {
 		if ( dec.codec.isHex())
 			return Hex.toByteArray(s);
-		else
-			return Base64.decodeBase64(s);
+		return Base64.decodeBase64(s);
 	}
 }

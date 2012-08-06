@@ -228,8 +228,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			Domain parent = source.start.getParent();
 			if (parent != null)
 				return parent.getMap().get(varname);
-			else
-				return null;
+			return null;
 		}
 
 		Domain rover = domain;
@@ -371,8 +370,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 		if (args.length > 3)
 			return args[3];
-		else
-			return "";
+		return "";
 	}
 
 	public String _now(String args[]) {
@@ -520,19 +518,18 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		if (args.length < 2) {
 			reporter.warning("Need at least one file name for ${dir;...}");
 			return null;
-		} else {
-			String del = "";
-			StringBuilder sb = new StringBuilder();
-			for (int i = 1; i < args.length; i++) {
-				File f = IO.getFile(base, args[i]);
-				if (f.exists() && f.getParentFile().exists()) {
-					sb.append(del);
-					sb.append(f.getParentFile().getAbsolutePath());
-					del = ",";
-				}
-			}
-			return sb.toString();
 		}
+		String del = "";
+		StringBuilder sb = new StringBuilder();
+		for (int i = 1; i < args.length; i++) {
+			File f = IO.getFile(base, args[i]);
+			if (f.exists() && f.getParentFile().exists()) {
+				sb.append(del);
+				sb.append(f.getParentFile().getAbsolutePath());
+				del = ",";
+			}
+		}
+		return sb.toString();
 
 	}
 
@@ -540,19 +537,18 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		if (args.length < 2) {
 			reporter.warning("Need at least one file name for ${basename;...}");
 			return null;
-		} else {
-			String del = "";
-			StringBuilder sb = new StringBuilder();
-			for (int i = 1; i < args.length; i++) {
-				File f = IO.getFile(base, args[i]);
-				if (f.exists() && f.getParentFile().exists()) {
-					sb.append(del);
-					sb.append(f.getName());
-					del = ",";
-				}
-			}
-			return sb.toString();
 		}
+		String del = "";
+		StringBuilder sb = new StringBuilder();
+		for (int i = 1; i < args.length; i++) {
+			File f = IO.getFile(base, args[i]);
+			if (f.exists() && f.getParentFile().exists()) {
+				sb.append(del);
+				sb.append(f.getName());
+				del = ",";
+			}
+		}
+		return sb.toString();
 
 	}
 
@@ -560,14 +556,13 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		if (args.length < 2) {
 			reporter.warning("Need at least one file name for ${isfile;...}");
 			return null;
-		} else {
-			boolean isfile = true;
-			for (int i = 1; i < args.length; i++) {
-				File f = new File(args[i]).getAbsoluteFile();
-				isfile &= f.isFile();
-			}
-			return isfile ? "true" : "false";
 		}
+		boolean isfile = true;
+		for (int i = 1; i < args.length; i++) {
+			File f = new File(args[i]).getAbsoluteFile();
+			isfile &= f.isFile();
+		}
+		return isfile ? "true" : "false";
 
 	}
 
@@ -575,14 +570,13 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		if (args.length < 2) {
 			reporter.warning("Need at least one file name for ${isdir;...}");
 			return null;
-		} else {
-			boolean isdir = true;
-			for (int i = 1; i < args.length; i++) {
-				File f = new File(args[i]).getAbsoluteFile();
-				isdir &= f.isDirectory();
-			}
-			return isdir ? "true" : "false";
 		}
+		boolean isdir = true;
+		for (int i = 1; i < args.length; i++) {
+			File f = new File(args[i]).getAbsoluteFile();
+			isdir &= f.isDirectory();
+		}
+		return isdir ? "true" : "false";
 
 	}
 

@@ -29,15 +29,13 @@ public class DSAnnotations implements AnalyzerPlugin {
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					else {
-						ComponentDef definition = AnnotationReader.getDefinition(c, analyzer);
-						if (definition != null) {
-							definition.sortReferences();
-							definition.prepare(analyzer);
-							String name = "OSGI-INF/" + definition.name + ".xml";
-							names.add(name);
-							analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
-						}
+					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer);
+					if (definition != null) {
+						definition.sortReferences();
+						definition.prepare(analyzer);
+						String name = "OSGI-INF/" + definition.name + ".xml";
+						names.add(name);
+						analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
 					}
 				}
 			}
