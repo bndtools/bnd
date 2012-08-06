@@ -8,7 +8,7 @@ import aQute.bnd.make.calltree.*;
 import aQute.bnd.osgi.*;
 
 public class CalltreeTest extends TestCase {
-	public void testCalltree() throws Exception {
+	public static void testCalltree() throws Exception {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		Builder b = new Builder();

@@ -9,7 +9,7 @@ public class ProcessorTest extends TestCase {
 
 	}
 
-	public void testDuplicates() {
+	public static void testDuplicates() {
 		assertEquals("", Processor.removeDuplicateMarker("~"));
 
 		assertTrue(Processor.isDuplicate("abc~"));
@@ -29,7 +29,7 @@ public class ProcessorTest extends TestCase {
 		assertEquals("", Processor.removeDuplicateMarker("~~~~~~~~~~~~~~"));
 	}
 
-	public void appendPathTest() throws Exception {
+	public static void appendPathTest() throws Exception {
 		assertEquals("a/b/c", Processor.appendPath("", "a/b/c/"));
 		assertEquals("a/b/c", Processor.appendPath("", "/a/b/c"));
 		assertEquals("a/b/c", Processor.appendPath("/", "/a/b/c/"));

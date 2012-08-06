@@ -7,7 +7,7 @@ import aQute.service.reporter.*;
 
 public abstract class BndTestCase extends TestCase {
 
-	protected void assertOk(Reporter reporter) {
+	protected static void assertOk(Reporter reporter) {
 		try {
 			assertEquals(0, reporter.getErrors().size());
 			assertEquals(0, reporter.getWarnings().size());
@@ -19,7 +19,7 @@ public abstract class BndTestCase extends TestCase {
 		}
 	}
 
-	private void print(String title, List< ? > strings) {
+	private static void print(String title, List< ? > strings) {
 		System.err.println("-------------------------------------------------------------------------");
 		System.err.println(title + " " + strings.size());
 		System.err.println("-------------------------------------------------------------------------");

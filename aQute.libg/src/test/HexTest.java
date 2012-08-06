@@ -16,7 +16,7 @@ public class HexTest extends TestCase {
 			-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, -1, 10, 11, 12, 13, 14, 15, -1, -1
 								};
 
-	public void testNibble() {
+	public static void testNibble() {
 		for (int i = 0; i<ns.length;i++) {
 			try {
 				assertEquals(nsr[i], Hex.nibble(ns[i]));
@@ -26,7 +26,7 @@ public class HexTest extends TestCase {
 		}
 	}
 
-	public void testHexOddCount() {
+	public static void testHexOddCount() {
 		boolean ex = false;
 		byte[] bytes = null;
 		try {
@@ -39,13 +39,13 @@ public class HexTest extends TestCase {
 		assertNull(bytes);
 	}
 
-	public void testHex() {
+	public static void testHex() {
 		byte[] bytes = Hex.toByteArray("b10a8db164e0754105b7a99be72e3fe5");
 		String s = Hex.toHexString(bytes);
 		assertEquals("b10a8db164e0754105b7a99be72e3fe5", s.toLowerCase());
 	}
 
-	public void testBase64() {
+	public static void testBase64() {
 		assertEquals("", Base64.encodeBase64(new byte[] {}));
 		assertEquals("MQ==", Base64.encodeBase64(new byte[] {
 			'1'

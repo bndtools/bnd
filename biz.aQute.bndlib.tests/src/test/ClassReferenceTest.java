@@ -23,7 +23,7 @@ public class ClassReferenceTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testReference() throws Exception {
+	public static void testReference() throws Exception {
 		Properties properties = new Properties();
 		properties.put("-classpath", "compilerversions/compilerversions.jar");
 		String[] packages = {

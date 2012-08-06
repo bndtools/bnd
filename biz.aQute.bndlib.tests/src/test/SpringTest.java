@@ -77,7 +77,7 @@ public class SpringTest extends TestCase {
 	//
 	// }
 
-	public void checkMessages(Processor processor, int errors, int warnings) {
+	public static void checkMessages(Processor processor, int errors, int warnings) {
 		System.err.println("Errors:    " + processor.getErrors());
 		System.err.println("Warnings:  " + processor.getWarnings());
 		assertEquals(errors, processor.getErrors().size());

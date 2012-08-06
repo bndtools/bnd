@@ -7,7 +7,7 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 
 public class DescriptorsTest extends TestCase {
 
-	public void testReferences() {
+	public static void testReferences() {
 		Descriptors d = new Descriptors();
 		TypeRef r = d.getTypeRef("[B");
 		assertNotNull(r);

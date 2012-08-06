@@ -9,7 +9,7 @@ import aQute.bnd.osgi.*;
 
 public class JarTest extends TestCase {
 
-	public void testNoManifest() throws Exception {
+	public static void testNoManifest() throws Exception {
 		Jar jar = new Jar("dot");
 		jar.setManifest(new Manifest());
 		jar.setDoNotTouchManifest();
@@ -25,7 +25,7 @@ public class JarTest extends TestCase {
 		assertNotNull(r);
 	}
 
-	public void testManualManifest() throws Exception {
+	public static void testManualManifest() throws Exception {
 		Jar jar = new Jar("dot");
 		jar.setManifest(new Manifest());
 		jar.setDoNotTouchManifest();
@@ -43,7 +43,7 @@ public class JarTest extends TestCase {
 		jin.close();
 	}
 
-	public void testSimple() throws ZipException, IOException {
+	public static void testSimple() throws ZipException, IOException {
 		File file = new File("jar/asm.jar");
 		Jar jar = new Jar("asm.jar", file);
 		long jarTime = jar.lastModified();

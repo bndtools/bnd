@@ -50,7 +50,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * The -removeheaders header can be used as a whitelist.
 	 */
 
-	public void testRemoveheadersAsWhiteList() throws Exception {
+	public static void testRemoveheadersAsWhiteList() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/asm.jar"));
 		b.setExportPackage("*");
@@ -75,7 +75,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Check if bnd detects references to private packages and gives a warning.
 	 */
 
-	public void testExportReferencesToPrivatePackages() throws Exception {
+	public static void testExportReferencesToPrivatePackages() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.addClasspath(new File("bin"));
@@ -90,7 +90,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Test basic functionality of he BCP
 	 */
 
-	public void testBundleClasspath() throws Exception {
+	public static void testBundleClasspath() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.BUNDLE_CLASSPATH, "foo");
 		b.setProperty(Constants.INCLUDE_RESOURCE, "foo/test/refer=bin/test/refer");
@@ -105,7 +105,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Very basic sanity test
 	 */
 
-	public void testSanity() throws Exception {
+	public static void testSanity() throws Exception {
 		Builder b = new Builder();
 		b.set("Export-Package", "thinlet;version=1.0");
 		b.addClasspath(new File("jar/thinlet.jar"));
@@ -122,7 +122,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public void testGenerateManifest() throws Exception {
+	public static void testGenerateManifest() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		Jar bin = new Jar(new File("jar/osgi.jar"));
 		bin.setManifest(new Manifest());
@@ -148,7 +148,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Bundle-Classpath are considered during import/export calculation.
 	 */
 
-	public void testExportContentsDirectory() throws Exception {
+	public static void testExportContentsDirectory() throws Exception {
 		Builder b = new Builder();
 		File embedded = new File("bin/test/refer").getCanonicalFile();
 		assertTrue(embedded.isDirectory()); // sanity check
@@ -166,7 +166,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public void testUsesFiltering() throws Exception {
+	public static void testUsesFiltering() throws Exception {
 		Builder b = new Builder();
 		b.setTrace(true);
 		b.addClasspath(new File("jar/osgi.jar"));
@@ -200,7 +200,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public void testRequire() throws Exception {
+	public static void testRequire() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Private-Package", "org.osgi.framework");
@@ -213,7 +213,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	}
 
-	public void testComponentImportReference() throws Exception {
+	public static void testComponentImportReference() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Private-Package", "org.osgi.framework");
@@ -226,7 +226,7 @@ public class AnalyzerTest extends BndTestCase {
 		assertEquals(0, b.getWarnings().size());
 	}
 
-	public void testFindClass() throws Exception {
+	public static void testFindClass() throws Exception {
 		Builder a = new Builder();
 		a.setProperty("Export-Package", "org.osgi.service.io");
 		a.addClasspath(new File("jar/osgi.jar"));
@@ -238,7 +238,7 @@ public class AnalyzerTest extends BndTestCase {
 		System.err.println(c);
 	}
 
-	public void testMultilevelInheritance() throws Exception {
+	public static void testMultilevelInheritance() throws Exception {
 		Analyzer a = new Analyzer();
 		a.setJar(new File("bin"));
 		a.analyze();
@@ -249,7 +249,7 @@ public class AnalyzerTest extends BndTestCase {
 		assertTrue(result.contains("test.T3"));
 	}
 
-	public void testClassQuery() throws Exception {
+	public static void testClassQuery() throws Exception {
 		Analyzer a = new Analyzer();
 		a.setJar(new File("jar/osgi.jar"));
 		a.analyze();
@@ -266,7 +266,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testEmptyHeader() throws Exception {
+	public static void testEmptyHeader() throws Exception {
 		Builder a = new Builder();
 		a.setProperty("Bundle-Blueprint", "  <<EMPTY>> ");
 		a.setProperty("Export-Package", "org.osgi.framework");
@@ -287,7 +287,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Test name section.
 	 */
 
-	public void testNameSection() throws Exception {
+	public static void testNameSection() throws Exception {
 		Builder a = new Builder();
 		a.setProperty("Export-Package", "org.osgi.service.event, org.osgi.service.io");
 		a.addClasspath(new File("jar/osgi.jar"));
@@ -316,7 +316,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Test if mandatory attributes are augmented even when the version is not
 	 * set.
 	 */
-	public void testMandatoryWithoutVersion() throws Exception {
+	public static void testMandatoryWithoutVersion() throws Exception {
 		Builder a = new Builder();
 		Properties p = new Properties();
 		p.put("Import-Package", "*");
@@ -339,7 +339,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testPrivataBundleActivatorNotImported() throws Exception {
+	public static void testPrivataBundleActivatorNotImported() throws Exception {
 		Builder a = new Builder();
 		Properties p = new Properties();
 		p.put("Import-Package", "*");
@@ -366,7 +366,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testBundleActivatorNotImported() throws Exception {
+	public static void testBundleActivatorNotImported() throws Exception {
 		Builder a = new Builder();
 		Properties p = new Properties();
 		p.put("Import-Package", "!org.osgi.framework,*");
@@ -388,7 +388,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testBundleActivatorImport() throws Exception {
+	public static void testBundleActivatorImport() throws Exception {
 		Builder a = new Builder();
 		Properties p = new Properties();
 		p.put("Private-Package", "org.objectweb.*");
@@ -413,7 +413,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * calculated.
 	 */
 
-	public void testRemoveheaders() throws Exception {
+	public static void testRemoveheaders() throws Exception {
 		Analyzer a = new Analyzer();
 		a.setJar(new File("jar/asm.jar"));
 		Manifest m = a.calcManifest();
@@ -430,7 +430,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testExportForJar() throws Exception {
+	public static void testExportForJar() throws Exception {
 		Jar jar = new Jar("dot");
 		jar.putResource("target/aopalliance.jar", new FileResource(new File("jar/asm.jar")));
 		Analyzer an = new Analyzer();
@@ -448,7 +448,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Test if version works
 	 */
 
-	public void testVersion() {
+	public static void testVersion() {
 		Analyzer a = new Analyzer();
 		String v = a.getBndVersion();
 		assertNotNull(v);
@@ -457,7 +457,7 @@ public class AnalyzerTest extends BndTestCase {
 	/**
 	 * asm is a simple library with two packages. No imports are done.
 	 */
-	public void testAsm() throws Exception {
+	public static void testAsm() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
@@ -481,7 +481,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws IOException
 	 */
-	public void testAsm2() throws Exception {
+	public static void testAsm2() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "org.objectweb.asm;name=short, org.objectweb.asm.signature;name=long");
@@ -499,7 +499,7 @@ public class AnalyzerTest extends BndTestCase {
 		assertEquals("long", get(h.getExports(), h.getPackageRef("org.objectweb.asm.signature"), "name"));
 	}
 
-	public void testDs() throws Exception {
+	public static void testDs() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
@@ -520,7 +520,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	}
 
-	public void testDsSkipOsgiImport() throws Exception {
+	public static void testDsSkipOsgiImport() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "!org.osgi.*, *");
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
@@ -541,7 +541,7 @@ public class AnalyzerTest extends BndTestCase {
 				+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
 	}
 
-	public void testDsNoExport() throws Exception {
+	public static void testDsNoExport() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "!*");
@@ -560,7 +560,7 @@ public class AnalyzerTest extends BndTestCase {
 		System.err.println(h.getUnreachable());
 	}
 
-	public void testClasspath() throws Exception {
+	public static void testClasspath() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
@@ -590,7 +590,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws IOException
 	 */
-	public void testSuperfluous() throws Exception {
+	public static void testSuperfluous() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*, =com.foo, com.foo.bar.*");
 		base.put(Analyzer.EXPORT_PACKAGE, "*, com.bar, baz.*");
@@ -607,7 +607,7 @@ public class AnalyzerTest extends BndTestCase {
 		assertTrue(h.getExports().getByFQN("com.bar") != null);
 	}
 
-	void assertNotPresent(Collection< ? > map, String string) {
+	static void assertNotPresent(Collection< ? > map, String string) {
 		Collection<String> ss = new HashSet<String>();
 		for (Object o : map)
 			ss.add(o + "");
@@ -619,7 +619,7 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	void assertPresent(Collection< ? > map, String string) {
+	static void assertPresent(Collection< ? > map, String string) {
 		Collection<String> ss = new HashSet<String>();
 		for (Object o : map)
 			ss.add(o + "");
@@ -631,7 +631,7 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	<K, V> V get(Map<K, ? extends Map<String,V>> headers, K key, String attr) {
+	static <K, V> V get(Map<K, ? extends Map<String,V>> headers, K key, String attr) {
 		Map<String,V> clauses = headers.get(key);
 		if (clauses == null)
 			return null;

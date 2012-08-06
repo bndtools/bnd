@@ -36,27 +36,27 @@ interface WithGenerics<VERYLONGTYPE, X extends Jar> {
 }
 
 class Generics {
-	Map<ClassParserTest, ? > baz() {
+	static Map<ClassParserTest, ? > baz() {
 		return null;
 	}
 
-	Map<ClassParserTest, ? > baz1() {
+	static Map<ClassParserTest, ? > baz1() {
 		return null;
 	}
 
-	Map< ? extends String, ? > baz2() {
+	static Map< ? extends String, ? > baz2() {
 		return null;
 	}
 
-	List<ClassParserTest> foo() {
+	static List<ClassParserTest> foo() {
 		return null;
 	}
 
-	Map<ClassParserTest,Clazz> bar() {
+	static Map<ClassParserTest,Clazz> bar() {
 		return null;
 	}
 
-	WithGenerics<List<Jar>,Jar> xyz() {
+	static WithGenerics<List<Jar>,Jar> xyz() {
 		return null;
 	}
 }
@@ -171,7 +171,7 @@ public class ClassParserTest extends TestCase {
 	/**
 	 * Included an aop alliance class that is not directly referenced.
 	 */
-	public void testUnacceptableReference() throws Exception {
+	public static void testUnacceptableReference() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/nl.fuji.general.jar"));
 		b.addClasspath(new File("jar/spring.jar"));
@@ -244,7 +244,7 @@ public class ClassParserTest extends TestCase {
 	 * @throws Exception
 	 */
 
-	public void testJQuantlib() throws Exception {
+	public static void testJQuantlib() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("test/jquantlib-0.1.2.jar"));
 		b.setProperty("Export-Package", "*");
@@ -305,7 +305,7 @@ public class ClassParserTest extends TestCase {
 	/**
 	 * Still problems with the stuff in ecj
 	 */
-	public void testEcj() throws Exception {
+	public static void testEcj() throws Exception {
 		Builder builder = new Builder();
 		builder.setClasspath(new File[] {
 			new File("jar/ecj_3.2.2.jar")

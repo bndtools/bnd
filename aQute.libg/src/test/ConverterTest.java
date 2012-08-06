@@ -52,7 +52,7 @@ public class ConverterTest extends TestCase {
 	}
 	
 	
-	public void hookTest() throws Exception {
+	public static void hookTest() throws Exception {
 		Converter converter = new Converter().hook(File.class, new Hook() {
 
 			public Object convert(Type dest, Object o) {

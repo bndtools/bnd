@@ -13,7 +13,7 @@ import aQute.service.reporter.*;
 public class PluginTest extends TestCase {
 	static Processor	main	= new Processor();
 
-	public void testMissingPluginNotUsed() throws Exception {
+	public static void testMissingPluginNotUsed() throws Exception {
 		Builder p = new Builder();
 		p.setProperty("-plugin", "missing;command:=\"-abc,-def\"");
 		/* List<?> plugins = */p.getPlugins(Object.class);
@@ -41,7 +41,7 @@ public class PluginTest extends TestCase {
 		}
 	}
 
-	public void testPlugin() {
+	public static void testPlugin() {
 		main.setProperty(Constants.PLUGIN, "test.PluginTest.TPlugin;a=1;b=2");
 
 		for (TPlugin plugin : main.getPlugins(TPlugin.class)) {
@@ -51,14 +51,14 @@ public class PluginTest extends TestCase {
 		}
 	}
 
-	public void testLoadPlugin() {
+	public static void testLoadPlugin() {
 		main.setProperty(Constants.PLUGIN, "thinlet.Thinlet;path:=jar/thinlet.jar");
 		for (Applet applet : main.getPlugins(Applet.class)) {
 			assertEquals("thinlet.Thinlet", applet.getClass().getName());
 		}
 	}
 
-	public void testLoadPluginFailsWithMissingPath() throws Exception {
+	public static void testLoadPluginFailsWithMissingPath() throws Exception {
 		Builder p = new Builder();
 		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");
 
@@ -66,7 +66,7 @@ public class PluginTest extends TestCase {
 		assertEquals(1, p.getErrors().size());
 	}
 
-	public void testLoadPluginWithPath() {
+	public static void testLoadPluginWithPath() {
 		Builder p = new Builder();
 		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet;path:=jar/thinlet.jar");
 
@@ -76,7 +76,7 @@ public class PluginTest extends TestCase {
 		assertEquals("thinlet.Thinlet", plugins.get(0).getClass().getName());
 	}
 
-	public void testLoadPluginWithGlobalPluginPath() {
+	public static void testLoadPluginWithGlobalPluginPath() {
 		Builder p = new Builder();
 		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");
 		p.setProperty(Constants.PLUGINPATH, "jar/thinlet.jar");

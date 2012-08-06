@@ -8,7 +8,7 @@ import aQute.bnd.osgi.*;
 
 public class MergeTest extends TestCase {
 
-	public void testFirst() throws Exception {
+	public static void testFirst() throws Exception {
 		testMerge("first", new String[] {
 				"A", "C"
 		}, new String[] {
@@ -16,7 +16,7 @@ public class MergeTest extends TestCase {
 		}, "first", 0, 0);
 	}
 
-	public void testMergeFirst() throws Exception {
+	public static void testMergeFirst() throws Exception {
 		testMerge("merge-first", new String[] {
 				"A", "B", "C"
 		}, new String[] {
@@ -24,13 +24,13 @@ public class MergeTest extends TestCase {
 		}, "first", 0, 0);
 	}
 
-	public void testDefault() throws Exception {
+	public static void testDefault() throws Exception {
 		testMerge(null, new String[] {
 				"A", "B", "C"
 		}, new String[] {}, "first", 0, 1);
 	}
 
-	public void testMergeLast() throws Exception {
+	public static void testMergeLast() throws Exception {
 		testMerge("merge-last", new String[] {
 				"A", "B", "C"
 		}, new String[] {
@@ -38,11 +38,11 @@ public class MergeTest extends TestCase {
 		}, "last", 0, 0);
 	}
 
-	public void testError() throws Exception {
+	public static void testError() throws Exception {
 		testMerge("error", null, null, null, 1, 1);
 	}
 
-	void testMerge(String type, String[] in, String[] out, String c, int errors, int warnings) throws Exception {
+	static void testMerge(String type, String[] in, String[] out, String c, int errors, int warnings) throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 				new File("src/test/split/split-a.jar"), new File("src/test/split/split-b.jar")

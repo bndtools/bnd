@@ -19,7 +19,7 @@ public class ProjectTest extends TestCase {
 	 * #194 StackOverflowError when -runbundles in bnd.bnd refers to itself
 	 */
 	
-	public void testProjectReferringToItself() throws Exception {
+	public static void testProjectReferringToItself() throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project top = ws.getProject("bug194");
 		top.addClasspath(top.getOutput());
@@ -30,7 +30,7 @@ public class ProjectTest extends TestCase {
 	 * classpath. Originally checked only for files
 	 */
 	
-	public void testAddDirToClasspath() throws Exception {
+	public static void testAddDirToClasspath() throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project top = ws.getProject("p1");
 		top.addClasspath(top.getOutput());
@@ -39,7 +39,7 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Test bnd.bnd of project `foo`: `-runbundles: foo;version=latest`
 	 */
-	public void testRunBundlesContainsSelf() throws Exception {
+	public static void testRunBundlesContainsSelf() throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles", "p1;version=latest");
@@ -55,7 +55,7 @@ public class ProjectTest extends TestCase {
 	 * Test 2 equal bsns but diff. versions
 	 */
 
-	public void testSameBsnRunBundles() throws Exception {
+	public static void testSameBsnRunBundles() throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles",
@@ -70,7 +70,7 @@ public class ProjectTest extends TestCase {
 	 * Duplicates in runbundles gave a bad error, should be ignored
 	 */
 
-	public void testRunbundleDuplicates() throws Exception {
+	public static void testRunbundleDuplicates() throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project top = ws.getProject("p1");
 		top.clear();
@@ -85,7 +85,7 @@ public class ProjectTest extends TestCase {
 	 * Check isStale
 	 */
 
-	public void testIsStale() throws Exception {
+	public static void testIsStale() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		ws.setOffline(false);
 		Project top = ws.getProject("p-stale");
@@ -120,7 +120,7 @@ public class ProjectTest extends TestCase {
 		// assertFalse(bottom.isStale());
 	}
 
-	private void stale(Project project, boolean b) throws Exception {
+	private static void stale(Project project, boolean b) throws Exception {
 		File file = project.getBuildFiles(false)[0];
 		if (b)
 			file.setLastModified(project.lastModified() - 10000);
@@ -133,7 +133,7 @@ public class ProjectTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testMultipleRepos() throws Exception {
+	public static void testMultipleRepos() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p1");
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.EXACT, null));
@@ -145,7 +145,7 @@ public class ProjectTest extends TestCase {
 	 * Check if the getSubBuilders properly predicts the output.
 	 */
 
-	public void testSubBuilders() throws Exception {
+	public static void testSubBuilders() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p4-sub");
 
@@ -182,7 +182,7 @@ public class ProjectTest extends TestCase {
 	 * @throws Exception
 	 */
 
-	public void testSub() throws Exception {
+	public static void testSub() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p4-sub");
 		File[] files = project.build();
@@ -207,7 +207,7 @@ public class ProjectTest extends TestCase {
 		assertEquals("b", mb.getMainAttributes().getValue("Sub-Header"));
 	}
 
-	public void testOutofDate() throws Exception {
+	public static void testOutofDate() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p3");
 		File bnd = new File("test/ws/p3/bnd.bnd");
@@ -245,7 +245,7 @@ public class ProjectTest extends TestCase {
 		}
 	}
 
-	public void testRepoMacro() throws Exception {
+	public static void testRepoMacro() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p2");
 		System.err.println(project.getPlugins(FileRepo.class));
@@ -263,7 +263,7 @@ public class ProjectTest extends TestCase {
 		assertTrue(s.endsWith("org.apache.felix.configadmin-1.0.1.jar"));
 	}
 
-	public void testClasspath() throws Exception {
+	public static void testClasspath() throws Exception {
 		File project = new File("").getAbsoluteFile();
 		File workspace = project.getParentFile();
 		Processor processor = new Processor();
@@ -274,7 +274,7 @@ public class ProjectTest extends TestCase {
 		System.err.println(p.getOutput());
 	}
 
-	public void testBump() throws Exception {
+	public static void testBump() throws Exception {
 		File tmp = new File("tmp-ws");
 		if (tmp.exists())
 			IO.deleteWithException(tmp);
@@ -302,7 +302,7 @@ public class ProjectTest extends TestCase {
 		}
 	}
 
-	public void testBumpIncludeFile() throws Exception {
+	public static void testBumpIncludeFile() throws Exception {
 		File tmp = new File("tmp-ws");
 		if (tmp.exists())
 			IO.deleteWithException(tmp);
@@ -332,7 +332,7 @@ public class ProjectTest extends TestCase {
 		}
 	}
 
-	public void testBumpSubBuilders() throws Exception {
+	public static void testBumpSubBuilders() throws Exception {
 		File tmp = new File("tmp-ws");
 		if (tmp.exists())
 			IO.deleteWithException(tmp);
@@ -360,7 +360,7 @@ public class ProjectTest extends TestCase {
 		}
 	}
 
-	public void testRunBuilds() throws Exception {
+	public static void testRunBuilds() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 
 		// Running a .bnd includes built bundles by default

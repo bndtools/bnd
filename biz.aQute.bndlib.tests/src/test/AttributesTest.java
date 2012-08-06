@@ -16,7 +16,7 @@ public class AttributesTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testRemoveDirective() throws Exception {
+	public static void testRemoveDirective() throws Exception {
 		Jar javax = new Jar("test");
 		Manifest m = new Manifest();
 		m.getMainAttributes().putValue("Export-Package",
@@ -59,7 +59,7 @@ public class AttributesTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testRemoveAttribute() throws Exception {
+	public static void testRemoveAttribute() throws Exception {
 		Jar javax = new Jar("test");
 		Manifest m = new Manifest();
 		m.getMainAttributes().putValue("Export-Package",
@@ -94,7 +94,7 @@ public class AttributesTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testOverrideAttribute() throws Exception {
+	public static void testOverrideAttribute() throws Exception {
 		File cp[] = {
 			new File("jar/osgi.jar")
 		};
@@ -122,7 +122,7 @@ public class AttributesTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 		File cp[] = {
 			new File("jar/osgi.jar")
 		};

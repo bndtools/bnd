@@ -116,7 +116,7 @@ public class JSONTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testPrimitiveArrays() throws Exception {
+	public static void testPrimitiveArrays() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 
 		assertTrue(Arrays.equals(new Boolean[] {
@@ -214,7 +214,7 @@ public class JSONTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testByteArrays() throws Exception {
+	public static void testByteArrays() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		assertEquals("[43,41]", enc.to().put(new Byte[] {
 				43, 41
@@ -240,7 +240,7 @@ public class JSONTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testEncodeBasic() throws Exception {
+	public static void testEncodeBasic() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		assertEquals("49", enc.to().put((byte) 49).toString());
 		assertEquals("49", enc.to().put('1').toString());
@@ -260,7 +260,7 @@ public class JSONTest extends TestCase {
 		A, B;
 	}
 
-	public void testDecodeBasic() throws Exception {
+	public static void testDecodeBasic() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 
 		// Dates
@@ -390,7 +390,7 @@ public class JSONTest extends TestCase {
 		public Short		sh;
 	}
 
-	public void testEncodeTypeA() throws Exception {
+	public static void testEncodeTypeA() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		Data1A data1 = new Data1A();
 		data1.b = false;
@@ -407,7 +407,7 @@ public class JSONTest extends TestCase {
 				.to().put(data1).toString());
 	}
 
-	public void testEncodeType() throws Exception {
+	public static void testEncodeType() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		Data1 data1 = new Data1();
 		data1.b = true;
@@ -427,7 +427,7 @@ public class JSONTest extends TestCase {
 				s);
 	}
 
-	public void testDecodeType() throws Exception {
+	public static void testDecodeType() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 		Data1 d = dec.from(
 				"{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}").get(
@@ -443,7 +443,7 @@ public class JSONTest extends TestCase {
 		assertEquals(-10, d.sh);
 	}
 
-	public void testDecodeTypeA() throws Exception {
+	public static void testDecodeTypeA() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 		Data1A d = dec.from(
 				"{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}").get(
@@ -469,7 +469,7 @@ public class JSONTest extends TestCase {
 		public Map<String,List<Map<Integer,String>>>	map;
 	}
 
-	public void testComplexMaps() throws Exception {
+	public static void testComplexMaps() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 		Data2 d = dec.from("{\"map\": {\"a\":[ {\"1\":1}, {\"2\":2} ]},\"integers\":{\"c\":1}}").get(Data2.class);
 
@@ -497,7 +497,7 @@ public class JSONTest extends TestCase {
 		public Map<String,Object>	__extra;
 	}
 
-	public void testExtra() throws Exception {
+	public static void testExtra() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 		Data3 d = dec.from("{\"a\": 1, \"b\": [1], \"c\": {}}").get(Data3.class);
 
@@ -510,7 +510,7 @@ public class JSONTest extends TestCase {
 	 * Test calling the encoder repeatedly
 	 */
 
-	public void testRepeat() throws Exception {
+	public static void testRepeat() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 		StringReader r = new StringReader("1\t2\r3\n 4      5   \n\r");
 		assertEquals((Integer) 1, dec.from(r).get(Integer.class));
@@ -538,7 +538,7 @@ public class JSONTest extends TestCase {
 		public double[]		doubles;
 	}
 
-	public void testEncodeTypePrimitiveArrays() throws Exception {
+	public static void testEncodeTypePrimitiveArrays() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		Data4 d = new Data4();
 		d.booleans = new boolean[] {
@@ -591,7 +591,7 @@ public class JSONTest extends TestCase {
 		public int	a	= 3;
 	}
 
-	public void testDefaults() throws Exception {
+	public static void testDefaults() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		DataDefaults d = new DataDefaults();
 		// We're not writing out fields with defaults.
@@ -608,7 +608,7 @@ public class JSONTest extends TestCase {
 	/**
 	 * Test the checksum support
 	 */
-	public void testDigest() throws Exception {
+	public static void testDigest() throws Exception {
 		Encoder enc = new JSONCodec().enc();
 		enc.mark().put("Hello World");
 		byte[] original = enc.digest();

@@ -13,7 +13,7 @@ public class ResourcesTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testAbsentIsOk() throws Exception {
+	public static void testAbsentIsOk() throws Exception {
 		{
 			Builder b = new Builder();
 			b.setProperty("Include-Resource", "TargetFolder=-test/ws/p2/Resources");
@@ -56,7 +56,7 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public void testNegativeFilter() throws Exception {
+	public static void testNegativeFilter() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=test/ws/p2/Resources;filter:=!*.txt");
 		b.setProperty("-resourceonly", "true");
@@ -69,7 +69,7 @@ public class ResourcesTest extends TestCase {
 		assertNotNull(r);
 	}
 
-	public void testCopyToRoot() throws Exception {
+	public static void testCopyToRoot() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
@@ -83,7 +83,7 @@ public class ResourcesTest extends TestCase {
 		assertEquals(0, bmaker.getWarnings().size());
 	}
 
-	public void testIncludeResourceDirectivesDefault() throws Exception {
+	public static void testIncludeResourceDirectivesDefault() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=test/ws/p2/Resources");
 		b.setProperty("-resourceonly", "true");
@@ -103,7 +103,7 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public void testIncludeResourceDoNotCopy() throws Exception {
+	public static void testIncludeResourceDoNotCopy() throws Exception {
 		Builder b = new Builder();
 
 		// Use Properties file otherwise -donotcopy is not picked up
@@ -129,7 +129,7 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public void testIncludeResourceDirectivesFilterRecursive() throws Exception {
+	public static void testIncludeResourceDirectivesFilterRecursive() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=test/ws/p2/Resources;filter:=re*.txt");
 		b.setProperty("-resourceonly", "true");
@@ -147,7 +147,7 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public void testIncludeResourceDirectivesFilterRecursive2() throws Exception {
+	public static void testIncludeResourceDirectivesFilterRecursive2() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "test/ws/p2/Resources;filter:=re*.txt");
 		b.setProperty("-resourceonly", "true");
@@ -165,7 +165,7 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public void testIncludeResourceDirectivesFilterNonRecursive() throws Exception {
+	public static void testIncludeResourceDirectivesFilterNonRecursive() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=test/ws/p2/Resources;filter:=re*.txt;recursive:=false");
 		b.setProperty("-resourceonly", "true");
@@ -180,7 +180,7 @@ public class ResourcesTest extends TestCase {
 		assertNull(r);
 	}
 
-	public void testIncludeResourceDirectivesFilterRecursiveFlatten() throws Exception {
+	public static void testIncludeResourceDirectivesFilterRecursiveFlatten() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=test/ws/p2/Resources;filter:=re*.txt;flatten:=true");
 		b.setProperty("-resourceonly", "true");
@@ -199,7 +199,7 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	public void testEmpty() throws Exception {
+	public static void testEmpty() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
@@ -210,7 +210,7 @@ public class ResourcesTest extends TestCase {
 		assertTrue(bmaker.check("The JAR is empty"));
 	}
 
-	public void testLiteral() throws Exception {
+	public static void testLiteral() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
@@ -236,7 +236,7 @@ public class ResourcesTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testOnDemandResource() throws Exception {
+	public static void testOnDemandResource() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
@@ -256,7 +256,7 @@ public class ResourcesTest extends TestCase {
 
 	}
 
-	void report(Processor processor) {
+	static void report(Processor processor) {
 		System.err.println();
 		for (int i = 0; i < processor.getErrors().size(); i++)
 			System.err.println(processor.getErrors().get(i));

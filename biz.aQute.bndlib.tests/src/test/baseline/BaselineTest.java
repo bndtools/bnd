@@ -10,7 +10,7 @@ import aQute.bnd.version.*;
 
 public class BaselineTest extends TestCase {
 
-	public void testBaslineJar() throws Exception {
+	public static void testBaslineJar() throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project top = ws.getProject("p3");
 		
@@ -28,7 +28,7 @@ public class BaselineTest extends TestCase {
 		assertTrue(baseline.getSuggestedVersion().compareTo(Version.parseVersion("1.1.0")) == 0);
 	}
 
-	public void testBaslineRepoJar() throws Exception {
+	public static void testBaslineRepoJar() throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project top = ws.getProject("p3");
 		

@@ -8,14 +8,14 @@ import aQute.bnd.osgi.*;
 
 public class ParseHeaderTest extends TestCase {
 
-	public void testPropertiesSimple() {
+	public static void testPropertiesSimple() {
 		Map<String,String> p = OSGiHeader.parseProperties("a=1, b=\"3   3\", c=c");
 		assertEquals("1", p.get("a"));
 		assertEquals("3   3", p.get("b"));
 		assertEquals("c", p.get("c"));
 	}
 
-	public void testClauseName() {
+	public static void testClauseName() {
 		assertNames("a,b,c;", new String[] {
 				"a", "b", "c"
 		});
@@ -58,11 +58,11 @@ public class ParseHeaderTest extends TestCase {
 		}, null, "Empty clause, usually caused");
 	}
 
-	void assertNames(String header, String[] keys) {
+	static void assertNames(String header, String[] keys) {
 		assertNames(header, keys, null, null);
 	}
 
-	void assertNames(String header, String[] keys, String expectedError, String expectedWarning) {
+	static void assertNames(String header, String[] keys, String expectedError, String expectedWarning) {
 		Processor p = new Processor();
 		p.setPedantic(true);
 		Parameters map = Processor.parseHeader(header, p);
@@ -85,7 +85,7 @@ public class ParseHeaderTest extends TestCase {
 			assertEquals(0, p.getWarnings().size());
 	}
 
-	public void testSimple() {
+	public static void testSimple() {
 		String s = "a;a=a1;b=a2;c=a3, b;a=b1;b=b2;c=b3, c;d;e;a=x1";
 		Parameters map = Processor.parseHeader(s, null);
 		assertEquals(5, map.size());

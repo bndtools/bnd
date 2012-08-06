@@ -16,7 +16,7 @@ public class ExportHeaderTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testImportHeaderWithMessedUpRange() throws Exception {
+	public static void testImportHeaderWithMessedUpRange() throws Exception {
 		Builder builder = new Builder();
 		Jar bin = new Jar(new File("bin"));
 		builder.setClasspath(new Jar[] {
@@ -33,7 +33,7 @@ public class ExportHeaderTest extends TestCase {
 		assertEquals("test.packageinfo;version=\"[1.1.1.SNAPSHOT,1.1.1.SNAPSHOT]\"", imph);
 	}
 
-	public void testPickupExportVersion() throws Exception {
+	public static void testPickupExportVersion() throws Exception {
 		Builder builder = new Builder();
 		Jar bin = new Jar(new File("bin"));
 		builder.setClasspath(new Jar[] {
@@ -49,7 +49,7 @@ public class ExportHeaderTest extends TestCase {
 		assertEquals("test.packageinfo;version=\"[1.0,2)\"", imph);
 	}
 
-	public void testExportVersionWithPackageInfo() throws Exception {
+	public static void testExportVersionWithPackageInfo() throws Exception {
 		Builder builder = new Builder();
 		Jar bin = new Jar(new File("bin"));
 		builder.setClasspath(new Jar[] {

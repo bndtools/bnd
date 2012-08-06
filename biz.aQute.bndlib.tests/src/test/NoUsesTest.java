@@ -13,7 +13,7 @@ public class NoUsesTest extends TestCase {
 	 * Check if we explicitly set a uses directive, prepend the calculated but
 	 * the calculated is empty. This should remove the extraneuous comma
 	 */
-	public void testExplicitUsesWithPrependZeroUses() throws Exception {
+	public static void testExplicitUsesWithPrependZeroUses() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Private-Package", "org.osgi.framework");
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"<<USES>>,not.used\"");
@@ -25,7 +25,7 @@ public class NoUsesTest extends TestCase {
 	 * Check if we explicitly set a uses directive, but append it with the
 	 * calculated directive
 	 */
-	public void testExplicitUsesWithAppend() throws Exception {
+	public static void testExplicitUsesWithAppend() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"not.used,<<USES>>\"");
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
@@ -37,7 +37,7 @@ public class NoUsesTest extends TestCase {
 	 * Check if we explicitly set a uses directive, append the calculated but
 	 * the calculated is empty. This should remove the extraneuous comma
 	 */
-	public void testExplicitUsesWithAppendZeroUses() throws Exception {
+	public static void testExplicitUsesWithAppendZeroUses() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Private-Package", "org.osgi.framework");
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"not.used,<<USES>>\"");
@@ -49,7 +49,7 @@ public class NoUsesTest extends TestCase {
 	 * Check if we explicitly set a uses directive, but append it with the
 	 * calculated directive
 	 */
-	public void testExplicitUsesWithPrepend() throws Exception {
+	public static void testExplicitUsesWithPrepend() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"<<USES>>,not.used\"");
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
@@ -60,21 +60,21 @@ public class NoUsesTest extends TestCase {
 	/*
 	 * Check if we explicitly set a uses directive
 	 */
-	public void testExplicitUses() throws Exception {
+	public static void testExplicitUses() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"not.used\"");
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
 		assertEquals("not.used", uses);
 	}
 
-	public void testExportedUses() throws Exception {
+	public static void testExportedUses() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker, org.osgi.framework");
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
 		assertEquals("org.osgi.framework", uses);
 	}
 
-	public void testPrivateUses() throws Exception {
+	public static void testPrivateUses() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Private-Package", "org.osgi.framework");
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker");
@@ -82,7 +82,7 @@ public class NoUsesTest extends TestCase {
 		assertNull("org.osgi.framework", uses);
 	}
 
-	public void testHasUses() throws Exception {
+	public static void testHasUses() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "test.activator");
 		String uses = findUses(bmaker, "test.activator");
@@ -91,7 +91,7 @@ public class NoUsesTest extends TestCase {
 		assertTrue(usesSet.contains("org.osgi.framework"));
 	}
 
-	public void testNoUses() throws Exception {
+	public static void testNoUses() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "test.activator");
 		bmaker.setProperty("-nouses", "true");
@@ -99,7 +99,7 @@ public class NoUsesTest extends TestCase {
 		assertNull("org.osgi.framework", uses);
 	}
 
-	String findUses(Builder bmaker, String pack, String ... ignore) throws Exception {
+	static String findUses(Builder bmaker, String pack, String ... ignore) throws Exception {
 		File cp[] = {
 				new File("bin"), new File("jar/osgi.jar")
 		};

@@ -13,7 +13,7 @@ public class VersionPolicyTest extends TestCase {
 	/**
 	 * Test disable default package versions.
 	 */
-	public void testDisableDefaultPackageVersion() throws Exception {
+	public static void testDisableDefaultPackageVersion() throws Exception {
 		Builder a = new Builder();
 		a.addClasspath(new File("bin"));
 		a.setProperty("Bundle-Version", "1.2.3");
@@ -31,7 +31,7 @@ public class VersionPolicyTest extends TestCase {
 	/**
 	 * Test default package versions.
 	 */
-	public void testDefaultPackageVersion() throws Exception {
+	public static void testDefaultPackageVersion() throws Exception {
 		Builder a = new Builder();
 		a.addClasspath(new File("bin"));
 		a.setProperty("Bundle-Version", "1.2.3");
@@ -48,7 +48,7 @@ public class VersionPolicyTest extends TestCase {
 	/**
 	 * Test import provide:.
 	 */
-	public void testImportProvided() throws Exception {
+	public static void testImportProvided() throws Exception {
 		Builder a = new Builder();
 		a.addClasspath(new File("jar/osgi.jar"));
 		a.addClasspath(new File("bin"));
@@ -68,7 +68,7 @@ public class VersionPolicyTest extends TestCase {
 	/**
 	 * Test import provide:.
 	 */
-	public void testExportProvided() throws Exception {
+	public static void testExportProvided() throws Exception {
 		Builder a = new Builder();
 		a.addClasspath(new File("jar/osgi.jar"));
 		a.addClasspath(new File("bin"));
@@ -88,7 +88,7 @@ public class VersionPolicyTest extends TestCase {
 	/**
 	 * Test export annotation.
 	 */
-	public void testExportAnnotation() throws Exception {
+	public static void testExportAnnotation() throws Exception {
 		Builder a = new Builder();
 		a.addClasspath(new File("bin"));
 		a.setProperty("build", "xyz");
@@ -105,7 +105,7 @@ public class VersionPolicyTest extends TestCase {
 	 * ProviderType) causes the import of the api package to use the provider
 	 * version policy.
 	 */
-	public void testProviderType() throws Exception {
+	public static void testProviderType() throws Exception {
 		Builder a = new Builder();
 		a.addClasspath(new File("bin"));
 		a.setPrivatePackage("test.versionpolicy.implemented");
@@ -130,7 +130,7 @@ public class VersionPolicyTest extends TestCase {
 	 * ConsumerType) causes the import of the api package to use the consumer
 	 * version policy.
 	 */
-	public void testConsumerType() throws Exception {
+	public static void testConsumerType() throws Exception {
 		Builder a = new Builder();
 		a.addClasspath(new File("bin"));
 		a.setPrivatePackage("test.versionpolicy.uses");
@@ -153,7 +153,7 @@ public class VersionPolicyTest extends TestCase {
 	 * Check implementation version policy. Uses the package
 	 * test.versionpolicy.(uses|implemented)
 	 */
-	void assertPolicy(String pack, String type) throws Exception {
+	static void assertPolicy(String pack, String type) throws Exception {
 		Builder a = new Builder();
 		a.addClasspath(new File("bin"));
 		a.setProperty("Export-Package", "test.versionpolicy.api");
@@ -180,7 +180,7 @@ public class VersionPolicyTest extends TestCase {
 	/**
 	 * hardcoded imports
 	 */
-	public void testHardcodedImports() throws Exception {
+	public static void testHardcodedImports() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("-versionpolicy", "${range;[==,+)}");
@@ -203,7 +203,7 @@ public class VersionPolicyTest extends TestCase {
 	 * Specify the version on the export and verify that the policy is applied
 	 * on the matching import.
 	 */
-	public void testExportsSpecifiesVersion() throws Exception {
+	public static void testExportsSpecifiesVersion() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.addClasspath(new File("bin"));
@@ -219,7 +219,7 @@ public class VersionPolicyTest extends TestCase {
 	 * See if we a can override the version from the export statement and the
 	 * version from the source.
 	 */
-	public void testImportOverridesDiscoveredVersion() throws Exception {
+	public static void testImportOverridesDiscoveredVersion() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.addClasspath(new File("bin"));
@@ -235,7 +235,7 @@ public class VersionPolicyTest extends TestCase {
 	 * Test if we can get the version from the source and apply the default
 	 * policy.
 	 */
-	public void testVersionPolicyImportedExportsDefaultPolicy() throws Exception {
+	public static void testVersionPolicyImportedExportsDefaultPolicy() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.addClasspath(new File("bin"));
@@ -250,7 +250,7 @@ public class VersionPolicyTest extends TestCase {
 	 * The default policy is truncate micro. Check if this is applied to the
 	 * import.
 	 */
-	public void testImportMicroTruncated() throws Exception {
+	public static void testImportMicroTruncated() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Import-Package", "org.osgi.service.event");
@@ -263,7 +263,7 @@ public class VersionPolicyTest extends TestCase {
 	 * Check if we can set a specific version on the import that does not use a
 	 * version policy.
 	 */
-	public void testImportMicroNotTruncated() throws Exception {
+	public static void testImportMicroNotTruncated() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Import-Package",

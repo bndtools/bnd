@@ -16,7 +16,7 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testCleanup() throws Exception {
+	public static void testCleanup() throws Exception {
 		Project project = getProject();
 		File target = project.getTarget();
 		IO.deleteWithException(target);
@@ -51,7 +51,7 @@ public class LauncherTest extends TestCase {
 	 * @param project
 	 * @throws Exception
 	 */
-	private void assertNoProperties(File target) throws Exception {
+	private static void assertNoProperties(File target) throws Exception {
 		if (!target.exists())
 			return;
 
@@ -62,7 +62,7 @@ public class LauncherTest extends TestCase {
 		}
 	}
 
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 		Project project = getProject();
 		project.clear();
 
@@ -76,13 +76,13 @@ public class LauncherTest extends TestCase {
 	 * @return
 	 * @throws Exception
 	 */
-	Project getProject() throws Exception {
+	static Project getProject() throws Exception {
 		Workspace workspace = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile());
 		Project project = workspace.getProject("demo");
 		return project;
 	}
 
-	public void testTester() throws Exception {
+	public static void testTester() throws Exception {
 		Project project = getProject();
 		project.clear();
 		project.build();
@@ -93,7 +93,7 @@ public class LauncherTest extends TestCase {
 		assertEquals(2, pt.test());
 	}
 
-	public void testTimeoutActivator() throws Exception {
+	public static void testTimeoutActivator() throws Exception {
 		Project project = getProject();
 		project.clear();
 
@@ -104,7 +104,7 @@ public class LauncherTest extends TestCase {
 
 	}
 
-	public void testTimeout() throws Exception {
+	public static void testTimeout() throws Exception {
 		Project project = getProject();
 		project.clear();
 
@@ -115,7 +115,7 @@ public class LauncherTest extends TestCase {
 		assertEquals(ProjectLauncher.TIMEDOUT, l.launch());
 	}
 
-	public void testMainThread() throws Exception {
+	public static void testMainThread() throws Exception {
 		Project project = getProject();
 		project.clear();
 

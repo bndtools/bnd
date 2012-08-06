@@ -109,7 +109,7 @@ public class ComponentTest extends TestCase {
 	 * This is from https://github.com/bndtools/bnd/issues#issue/23
 	 */
 
-	public void testProvideFromSuperClass() throws Exception {
+	public static void testProvideFromSuperClass() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -134,7 +134,7 @@ public class ComponentTest extends TestCase {
 	 * and no component
 	 */
 
-	public void testNonFQNAndNoAnnotations() throws Exception {
+	public static void testNonFQNAndNoAnnotations() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource",
 				"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
@@ -248,7 +248,7 @@ public class ComponentTest extends TestCase {
 		return setup(header, "test.activator.Activator").getDocumentElement();
 	}
 
-	private void print(Resource resource, OutputStream out) throws Exception {
+	private static void print(Resource resource, OutputStream out) throws Exception {
 		InputStream in = resource.openInputStream();
 		try {
 			byte[] buffer = new byte[1024];
@@ -397,7 +397,7 @@ public class ComponentTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testBadFilter() throws Exception {
+	public static void testBadFilter() throws Exception {
 		java.util.Properties p = new Properties();
 		p.put(Analyzer.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
 		p.put(Analyzer.IMPORT_PACKAGE, "*");

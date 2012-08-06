@@ -8,7 +8,7 @@ import aQute.bnd.build.*;
 import aQute.launcher.plugin.*;
 
 public class ProjectLaunchImplTest extends TestCase {
-	public void testParseRunProperties() throws Exception {
+	public static void testParseRunProperties() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p1");
 

@@ -75,7 +75,7 @@ public class MetatypeTest extends TestCase {
 		Integer port();
 	}
 
-	public void testConfigurableForNonPrimitives() {
+	public static void testConfigurableForNonPrimitives() {
 		Map<String,String> p = new HashMap<String,String>();
 		C config = Configurable.createConfigurable(C.class, p);
 		assertNull(config.port());
@@ -292,7 +292,7 @@ public class MetatypeTest extends TestCase {
 		MyList<String> myList();
 	}
 
-	public void testCollections() throws Exception {
+	public static void testCollections() throws Exception {
 		CollectionsTest trt = set(CollectionsTest.class, new int[] {
 				1, 2, 3
 		});
@@ -321,7 +321,7 @@ public class MetatypeTest extends TestCase {
 		assertEqualList(source, trt.myList());
 	}
 
-	private void assertEqualList(List< ? > a, Collection< ? > b) {
+	private static void assertEqualList(List< ? > a, Collection< ? > b) {
 		if (a.size() == b.size()) {
 			for (Object x : a) {
 				if (!b.contains(x))
@@ -349,7 +349,7 @@ public class MetatypeTest extends TestCase {
 		URI constructor();
 	}
 
-	public void testSpecialConversions() throws URISyntaxException {
+	public static void testSpecialConversions() throws URISyntaxException {
 		Properties p = new Properties();
 		p.put("enumv", "A");
 		p.put("pattern", ".*");
@@ -369,7 +369,7 @@ public class MetatypeTest extends TestCase {
 	 * @throws URISyntaxException
 	 */
 
-	public void testConverter() throws URISyntaxException {
+	public static void testConverter() throws URISyntaxException {
 		{
 			// Test collections as value
 			TestReturnTypes trt = set(TestReturnTypes.class, Arrays.asList(55));
@@ -579,7 +579,7 @@ public class MetatypeTest extends TestCase {
 		}
 	}
 
-	<T> T set(Class<T> interf, Object value) {
+	static <T> T set(Class<T> interf, Object value) {
 		Properties p = new Properties();
 		Method ms[] = interf.getMethods();
 

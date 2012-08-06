@@ -4,7 +4,7 @@ import junit.framework.*;
 import aQute.libg.glob.*;
 
 public class GlobTest extends TestCase {
-	public void testSimple() {
+	public static void testSimple() {
 		Glob glob = new Glob("*foo*");
 		assertTrue(glob.matcher("foo").find());
 		assertTrue(glob.matcher("food").find());
@@ -13,7 +13,7 @@ public class GlobTest extends TestCase {
 		assertFalse(glob.matcher("ood").find());
 	}
 
-	public void testUrl() {
+	public static void testUrl() {
 		Glob glob;
 
 		glob = new Glob("http://www.example.com/*");

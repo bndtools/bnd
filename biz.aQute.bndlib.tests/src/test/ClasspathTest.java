@@ -15,7 +15,7 @@ public class ClasspathTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testBundleClasspath() throws Exception {
+	public static void testBundleClasspath() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "bin=bin");
 		b.setProperty("Bundle-Classpath", "bin");
@@ -31,7 +31,7 @@ public class ClasspathTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testFindJarOnClasspath() throws Exception {
+	public static void testFindJarOnClasspath() throws Exception {
 		Properties p = new Properties();
 		p.put("Include-Resource", "tb1.jar, @test.jar");
 
@@ -51,7 +51,7 @@ public class ClasspathTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 		Properties p = new Properties();
 		p.put("-classpath", new File("jar/osgi.jar").toURI().toURL().toString());
 		p.put("Export-Package", "org.osgi.service.event");

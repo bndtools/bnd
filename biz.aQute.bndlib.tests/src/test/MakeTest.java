@@ -17,7 +17,7 @@ public class MakeTest extends TestCase {
 	 * Test a make plugin
 	 */
 
-	public void testMakePlugin() throws Exception {
+	public static void testMakePlugin() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Export-Package", "*");
 		b.setProperty("Include-Resource", "jar/asm.jar.md5");
@@ -37,7 +37,7 @@ public class MakeTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testCopy() throws Exception {
+	public static void testCopy() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
@@ -57,7 +57,7 @@ public class MakeTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testJarInJarInJar() throws Exception {
+	public static void testJarInJarInJar() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-plugin", "aQute.bnd.make.MakeBnd, aQute.bnd.make.MakeCopy");
@@ -85,7 +85,7 @@ public class MakeTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testComplexOnDemand() throws Exception {
+	public static void testComplexOnDemand() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
@@ -104,7 +104,7 @@ public class MakeTest extends TestCase {
 
 	}
 
-	void report(Processor processor) {
+	static void report(Processor processor) {
 		System.err.println();
 		for (int i = 0; i < processor.getErrors().size(); i++)
 			System.err.println(processor.getErrors().get(i));

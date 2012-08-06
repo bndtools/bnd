@@ -12,7 +12,7 @@ import aQute.launcher.minifw.*;
 
 public class MiniFrameworkTest extends TestCase {
 
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 		Properties properties = new Properties();
 		MiniFramework framework = new MiniFramework(properties);
 		URL url = new File("test/test/demo.jar").toURI().toURL();

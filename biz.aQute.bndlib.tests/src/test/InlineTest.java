@@ -6,7 +6,7 @@ import junit.framework.*;
 import aQute.bnd.osgi.*;
 
 public class InlineTest extends TestCase {
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 		Builder builder = new Builder();
 		builder.setProperty("Include-Resource", "@jar/osgi.jar");
 		Jar jar = builder.build();

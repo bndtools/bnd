@@ -10,7 +10,7 @@ import aQute.bnd.osgi.*;
 
 public class VerifierTest extends TestCase {
 
-	public void testCapability() throws Exception {
+	public static void testCapability() throws Exception {
 
 		Parameters h = OSGiHeader
 				.parseHeader("test; version.list:List < Version > = \"1.0, 1.1, 1.2\"; effective:=\"resolve\"; test =\"aName\";version : Version=\"1.0\"; long :Long=\"100\"; "
@@ -29,13 +29,13 @@ public class VerifierTest extends TestCase {
 		assertEquals(Attrs.Type.VERSIONS, h.get("test").getType("version.list"));
 	}
 
-	public void testFailedOSGiJar() throws Exception {
+	public static void testFailedOSGiJar() throws Exception {
 		Jar jar = new Jar("jar/osgi.residential-4.3.0.jar");
 		Verifier v = new Verifier(jar);
 		assertTrue(v.check());
 	}
 
-	public void testnativeCode() throws Exception {
+	public static void testnativeCode() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("-resourceonly", "true");
@@ -51,7 +51,7 @@ public class VerifierTest extends TestCase {
 		b.close();
 	}
 
-	public void testFilter() {
+	public static void testFilter() {
 
 		testFilter("(&(a=b)(c=1))");
 		testFilter("(&(a=b)(!(c=1))(&(c=1))(c=1)(c=1)(c=1)(c=1)(c=1)(c=1)(c=1)(c=1))");
@@ -160,7 +160,7 @@ public class VerifierTest extends TestCase {
 		testFilter("(booleanValue =t*ue) ");
 	}
 
-	private void testFilter(String string) {
+	private static void testFilter(String string) {
 		int index = Verifier.verifyFilter(string, 0);
 		while (index < string.length() && Character.isWhitespace(string.charAt(index)))
 			index++;
@@ -169,7 +169,7 @@ public class VerifierTest extends TestCase {
 			throw new IllegalArgumentException("Characters after filter");
 	}
 
-	private void testInvalidFilter(String string) {
+	private static void testInvalidFilter(String string) {
 		try {
 			testFilter(string);
 			fail("Invalid filter");
@@ -177,7 +177,7 @@ public class VerifierTest extends TestCase {
 		catch (Exception e) {}
 	}
 
-	public void testBundleActivationPolicyNone() throws Exception {
+	public static void testBundleActivationPolicyNone() throws Exception {
 		Builder v = new Builder();
 		v.setProperty("Private-Package", "test.activator");
 		v.addClasspath(new File("bin"));
@@ -185,7 +185,7 @@ public class VerifierTest extends TestCase {
 		assertTrue(v.check());
 	}
 
-	public void testBundleActivationPolicyBad() throws Exception {
+	public static void testBundleActivationPolicyBad() throws Exception {
 		Builder v = new Builder();
 		v.setProperty("Private-Package", "test.activator");
 		v.addClasspath(new File("bin"));
@@ -194,7 +194,7 @@ public class VerifierTest extends TestCase {
 		assertTrue(v.check("Bundle-ActivationPolicy set but is not set to lazy: eager"));
 	}
 
-	public void testBundleActivationPolicyGood() throws Exception {
+	public static void testBundleActivationPolicyGood() throws Exception {
 		Builder v = new Builder();
 		v.setProperty("Private-Package", "test.activator");
 		v.addClasspath(new File("bin"));
@@ -203,7 +203,7 @@ public class VerifierTest extends TestCase {
 		assertTrue(v.check());
 	}
 
-	public void testBundleActivationPolicyMultiple() throws Exception {
+	public static void testBundleActivationPolicyMultiple() throws Exception {
 		Builder v = new Builder();
 		v.setProperty("Private-Package", "test.activator");
 		v.addClasspath(new File("bin"));
@@ -212,7 +212,7 @@ public class VerifierTest extends TestCase {
 		assertTrue(v.check("Bundle-ActivationPolicy has too many arguments lazy;hello:=1,2"));
 	}
 
-	public void testInvalidCaseForHeader() throws Exception {
+	public static void testInvalidCaseForHeader() throws Exception {
 		Properties p = new Properties();
 		p.put("Export-package", "org.apache.mina.*");
 		p.put("Bundle-Classpath", ".");
@@ -225,7 +225,7 @@ public class VerifierTest extends TestCase {
 		assertEquals(2, analyzer.getWarnings().size());
 	}
 
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.addClasspath(new File("jar/mina.jar"));
 		bmaker.set("Export-Package", "org.apache.mina.*;version=1");

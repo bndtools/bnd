@@ -10,7 +10,7 @@ import aQute.lib.io.*;
 
 public class PropertiesTest extends TestCase {
 
-	public void testBndEditModel() throws Exception {
+	public static void testBndEditModel() throws Exception {
 		
 		Document doc = new Document("Bundle-Description:\tTest\n" +
 									"Bundle-SymbolicName:\ttest.properties\n" +

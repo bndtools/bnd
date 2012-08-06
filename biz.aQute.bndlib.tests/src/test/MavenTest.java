@@ -67,7 +67,7 @@ public class MavenTest extends TestCase {
 	 * @return
 	 * @throws Exception
 	 */
-	protected Project getProject(String name) throws Exception {
+	protected static Project getProject(String name) throws Exception {
 		File wsf = IO.getFile(cwd, "test/ws");
 		Workspace ws = Workspace.getWorkspace(wsf);
 
@@ -84,7 +84,7 @@ public class MavenTest extends TestCase {
 	 * @throws Exception
 	 */
 
-	public void testMavenRepo() throws Exception {
+	public static void testMavenRepo() throws Exception {
 		Workspace ws = Workspace.getWorkspace(cwd.getParentFile());
 		Maven maven = ws.getMaven();
 
@@ -130,7 +130,7 @@ public class MavenTest extends TestCase {
 	 * @throws Exception
 	 */
 
-	public void testProjectPom() throws Exception {
+	public static void testProjectPom() throws Exception {
 		Maven maven = new Maven(null);
 		ProjectPom pom = maven.createProjectModel(IO.getFile(cwd, "test/ws/maven1/testpom.xml"));
 		assertEquals("artifact", pom.getArtifactId());
@@ -186,7 +186,7 @@ public class MavenTest extends TestCase {
 	 * Test the maven remote repository
 	 */
 
-	public void testMavenRepo1() throws Exception {
+	public static void testMavenRepo1() throws Exception {
 		Maven maven = new Maven(null);
 		MavenRemoteRepository mr = new MavenRemoteRepository();
 		mr.setMaven(maven);
@@ -222,7 +222,7 @@ public class MavenTest extends TestCase {
 		assertEquals("com.springsource.org.apache.commons.beanutils-1.6.1.jar", file.getName());
 	}
 
-	public void testMavenx() throws Exception {
+	public static void testMavenx() throws Exception {
 		Maven maven = new Maven(null);
 		CachedPom pom = maven.getPom("javax.xml.bind", "com.springsource.javax.xml.bind", "2.2.0", new URI(
 				"http://repository.springsource.com/maven/bundles/release"), new URI(
@@ -246,7 +246,7 @@ public class MavenTest extends TestCase {
 	 * @throws Exception
 	 */
 
-	public void testPomParser() throws Exception {
+	public static void testPomParser() throws Exception {
 		PomParser parser = new PomParser();
 		Properties p = parser.getProperties(new File("test/ws/maven1/pom.xml"));
 		p.store(System.err, "testing");

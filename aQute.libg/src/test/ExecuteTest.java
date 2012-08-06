@@ -5,7 +5,7 @@ import aQute.libg.command.*;
 
 public class ExecuteTest extends TestCase {
 
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 		Command c = new Command();
 		c.add("java");
 		c.add("-version");

@@ -30,13 +30,13 @@ public class IncludeHeaderTest extends TestCase {
 	// assertEquals("set", analyzer.getProperty("pom.scope.test")); // Set
 	// }
 
-	public void testTopBottom() throws Exception {
+	public static void testTopBottom() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setProperties(new File("src/test/include.bnd/top.bnd"));
 		assertEquals("0.0.257", analyzer.getProperty("Bundle-Version"));
 	}
 
-	public void testPrecedence() throws Exception {
+	public static void testPrecedence() throws Exception {
 		File base = new File("src/test");
 		String a = "a=a.props\n";
 		String b = "a=b.props\n";
@@ -81,13 +81,13 @@ public class IncludeHeaderTest extends TestCase {
 		bb.delete();
 	}
 
-	private void write(File file, String b) throws Exception {
+	private static void write(File file, String b) throws Exception {
 		FileOutputStream out = new FileOutputStream(file);
 		out.write(b.getBytes());
 		out.close();
 	}
 
-	public void testAbsentIncludes() throws IOException {
+	public static void testAbsentIncludes() throws IOException {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setBase(new File("src/test"));
 		Properties p = new Properties();
@@ -97,7 +97,7 @@ public class IncludeHeaderTest extends TestCase {
 		assertEquals(0, analyzer.getErrors().size());
 	}
 
-	public void testIncludeWithProperty() throws IOException {
+	public static void testIncludeWithProperty() throws IOException {
 		File home = new File(System.getProperty("user.home"));
 		File include = new File(home, "includeheadertest.txt");
 		try {
@@ -123,7 +123,7 @@ public class IncludeHeaderTest extends TestCase {
 		}
 	}
 
-	public void testIncludeHeader() throws IOException {
+	public static void testIncludeHeader() throws IOException {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setBase(new File("src/test"));
 		Properties p = new Properties();

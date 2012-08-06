@@ -11,7 +11,7 @@ import aQute.libg.generics.*;
 
 public class JarSignerTest extends TestCase {
 
-	public void testNoManifest() throws Exception {
+	public static void testNoManifest() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-sign", "test");
 		b.setProperty(Constants.PLUGIN, JartoolSigner.class.getName()
@@ -32,7 +32,7 @@ public class JarSignerTest extends TestCase {
 		assertNotNull(manifest.getAttributes("WEB-INF/classes/org/osgi/framework/BundleContext.class"));
 	}
 
-	public void testError() throws Exception {
+	public static void testError() throws Exception {
 		JartoolSigner signer = new JartoolSigner();
 		Map<String,String> properties = Create.map();
 		properties.put("keystore", "test/keystore");
@@ -50,7 +50,7 @@ public class JarSignerTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 	}
 
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 		JartoolSigner signer = new JartoolSigner();
 		Map<String,String> properties = Create.map();
 		properties.put("keystore", "test/keystore");

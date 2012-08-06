@@ -2,7 +2,7 @@ package test.classreference;
 
 public class ClassReference {
 
-	public void testClassReference() {
+	public static void testClassReference() {
 		System.err.println(javax.swing.Box.class);
 	}
 }

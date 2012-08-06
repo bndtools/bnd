@@ -12,7 +12,7 @@ import aQute.libg.reporter.*;
 public class CommandTest extends TestCase {
 	ReporterAdapter	rp	= new ReporterAdapter(System.err);
 
-	public void testWrap() {
+	public static void testWrap() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Abc \t3Def ghi asoudg gd ais gdiasgd asgd auysgd asyudga8sdga8sydga 8sdg\fSame column\nbegin\n"
 				+ "\t3abc\t5def\nabc");
@@ -60,7 +60,7 @@ public class CommandTest extends TestCase {
 	}
 
 	public static class C1 extends Assert {
-		public String _c1(c1options x) {
+		public static String _c1(c1options x) {
 
 			assertEquals(true, x.flag());
 			assertEquals(33, x.a());

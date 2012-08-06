@@ -43,7 +43,7 @@ public class AnnotationsTest extends TestCase {
 		}
 	}
 
-	public void testComponentReader() throws Exception {
+	public static void testComponentReader() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		File f = new File("bin/test/AnnotationsTest$MyComponent.class");
 		Clazz c = new Clazz(analyzer, "test.AnnotationsTest.MyComponent", new FileResource(f));

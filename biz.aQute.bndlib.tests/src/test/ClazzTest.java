@@ -24,7 +24,7 @@ public class ClazzTest extends TestCase {
 	 * [bndwrap] Exception: 15
 	 * </pre>
 	 */
-	public void testDynamicInstr() throws Exception {
+	public static void testDynamicInstr() throws Exception {
 		Analyzer a = new Analyzer();
 		Clazz c = new Clazz(a, "", null);
 		c.parseClassFile(new FileInputStream("jar/AstNodeToScriptVisitor.jclass"), new ClassDataCollector() {});
@@ -44,7 +44,7 @@ public class ClazzTest extends TestCase {
 	 * actually resemble a class name.
 	 */
 
-	public void testClassForNameFalsePickup() throws Exception {
+	public static void testClassForNameFalsePickup() throws Exception {
 		Analyzer a = new Analyzer();
 		Clazz c = new Clazz(a, "", null);
 		c.parseClassFile(new FileInputStream("jar/DeploymentAdminPermission.1.jclass"), new ClassDataCollector() {});
@@ -58,7 +58,7 @@ public class ClazzTest extends TestCase {
 	 * Test the uncamel
 	 */
 
-	public void testUncamel() throws Exception {
+	public static void testUncamel() throws Exception {
 		assertEquals("New", Clazz.unCamel("_new"));
 		assertEquals("An XMLMessage", Clazz.unCamel("anXMLMessage"));
 		assertEquals("A message", Clazz.unCamel("aMessage"));

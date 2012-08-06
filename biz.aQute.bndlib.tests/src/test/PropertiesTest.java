@@ -14,7 +14,7 @@ public class PropertiesTest extends TestCase {
 		return t;
 	}
 
-	public void testFlattening() throws Exception {
+	public static void testFlattening() throws Exception {
 		Processor p = new Processor();
 		p.setProperty("-versionpolicy", "${version;===;${@}}");
 		p.setProperty("x", "x");
@@ -28,7 +28,7 @@ public class PropertiesTest extends TestCase {
 		assertEquals(2, flattened.size());
 	}
 
-	public void testFilter() {
+	public static void testFilter() {
 		Processor p1 = new Processor();
 		p1.setProperty("dan", "bandera");
 		p1.setProperty("susan", "sarandon");
@@ -42,8 +42,8 @@ public class PropertiesTest extends TestCase {
 		assertEquals("schwarze", p2.getProperty("susan"));
 		assertEquals("bostrom", p2.getProperty("jon"));
 	}
-
-	public void testUnicode() {
+	
+	public static void testUnicode() {
 		StringBuilder sb = new StringBuilder();
 		String s = "Loïc Cotonéa";
 		for (int i = 0; i < s.length(); i++) {
@@ -58,7 +58,7 @@ public class PropertiesTest extends TestCase {
 		System.err.println(sb);
 	}
 
-	public void testSpacesAround() throws Exception {
+	public static void testSpacesAround() throws Exception {
 		String test = "#comment\n" + "   abc    =   abc\r\n" + "def = def\n\r" + " ghi =               ghi\r"
 				+ " jkl =               jkl";
 
@@ -73,7 +73,7 @@ public class PropertiesTest extends TestCase {
 		assertEquals("jkl", p.get("jkl"));
 	}
 
-	public void testInternationalCharacters() throws Exception {
+	public static void testInternationalCharacters() throws Exception {
 		String test = "#comment\n" + "Namex=Lo\u00EFc Coton\u00E9a\n" + "Export-Package: *\n" + "Unicode=\\u0040\n"
 				+ "NameAgain=Loïc Cotonéa";
 
@@ -99,7 +99,7 @@ public class PropertiesTest extends TestCase {
 		assertEquals("Lo\u00EFc Coton\u00E9a", m.getMainAttributes().getValue("Namex"));
 	}
 
-	public void testBadProperties() throws Exception {
+	public static void testBadProperties() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setPedantic(true);
 		analyzer.setProperties(new File("src/test/badproperties.prop"));
@@ -114,7 +114,7 @@ public class PropertiesTest extends TestCase {
 		System.err.println(analyzer.getWarnings());
 	}
 
-	public void testProperties() throws Exception {
+	public static void testProperties() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setProperties(new File("src/test/variables.mf"));
 

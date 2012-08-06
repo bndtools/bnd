@@ -30,7 +30,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public void testProperties() throws Exception {
+	public static void testProperties() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.*x");
 		b.setProperty("Private-Package", "test.component");
@@ -142,7 +142,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	public void testBasic() throws Exception {
+	public static void testBasic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.*_basic");
 		b.setProperty("Private-Package", "test.component");
@@ -263,7 +263,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public void testEnums() throws Exception {
+	public static void testEnums() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Enums");
 		b.setProperty("Private-Package", "test.component");
@@ -339,7 +339,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public void testMethods() throws Exception {
+	public static void testMethods() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Methods");
 		b.setProperty("Private-Package", "test.component");
@@ -411,7 +411,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	public void testInheritance() throws Exception {
+	public static void testInheritance() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Bottom");
 		b.setProperty("-dsannotations-inherit", "true");
@@ -478,7 +478,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public void testPrototypes() throws Exception {
+	public static void testPrototypes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Prototypes");
 		b.setProperty("Private-Package", "test.component");
@@ -535,7 +535,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public void testBinds() throws Exception {
+	public static void testBinds() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*CheckBinds");
 		b.setProperty("Private-Package", "test.component");
@@ -559,7 +559,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component(name="testConfigPolicy", configurationPolicy=ConfigurationPolicy.IGNORE)
 	public class TestConfigPolicy {}
 	
-	public void testConfigPolicySetsNamespace() throws Exception {
+	public static void testConfigPolicySetsNamespace() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*TestConfigPolicy");
 		b.setProperty("Private-Package", "test.component");

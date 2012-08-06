@@ -311,7 +311,7 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public void testAnnotatedWithAttribute() throws Exception {
+	public static void testAnnotatedWithAttribute() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -335,7 +335,7 @@ public class BNDAnnotationTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testJSR14ComponentAnnotations() throws Exception {
+	public static void testJSR14ComponentAnnotations() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource",
 				"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
@@ -472,7 +472,7 @@ public class BNDAnnotationTest extends TestCase {
 		}
 	}
 
-	public void testSameRefName() throws Exception {
+	public static void testSameRefName() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
