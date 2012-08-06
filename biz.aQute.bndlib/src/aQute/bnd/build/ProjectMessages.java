@@ -3,7 +3,6 @@ package aQute.bnd.build;
 import java.io.*;
 import java.util.*;
 
-import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.version.*;

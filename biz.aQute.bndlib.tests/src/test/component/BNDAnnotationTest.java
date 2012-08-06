@@ -15,13 +15,11 @@ import org.osgi.service.component.*;
 import org.osgi.service.event.*;
 import org.osgi.service.log.*;
 import org.w3c.dom.*;
-import org.xml.sax.*;
 
 import aQute.bnd.annotation.component.*;
 import aQute.bnd.annotation.metatype.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Constants;
-import aQute.lib.io.*;
 
 public class BNDAnnotationTest extends TestCase {
 	final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();

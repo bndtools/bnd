@@ -11,11 +11,9 @@ import aQute.bnd.component.*;
 import aQute.bnd.header.*;
 import aQute.bnd.make.metatype.*;
 import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
-import aQute.bnd.version.*;
 import aQute.lib.tag.Tag;
 
 /**

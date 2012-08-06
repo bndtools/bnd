@@ -1,11 +1,5 @@
 package aQute.jpm.main;
 
-import java.io.*;
-import java.text.*;
-
-import aQute.lib.collections.*;
-import aQute.lib.getopt.*;
-
 public class RepoCommand {
 //	final static SimpleDateFormat	date	= new SimpleDateFormat();
 //	final Main						main;
