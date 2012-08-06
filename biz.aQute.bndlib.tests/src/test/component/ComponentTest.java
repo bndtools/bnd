@@ -409,7 +409,7 @@ public class ComponentTest extends TestCase {
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
 		assertEquals(1, b.getErrors().size());
-		assertTrue(((String) b.getErrors().get(0)).indexOf("Invalid target filter") >= 0);
+		assertTrue(b.getErrors().get(0).indexOf("Invalid target filter") >= 0);
 		assertEquals(0, b.getWarnings().size());
 	}
 
