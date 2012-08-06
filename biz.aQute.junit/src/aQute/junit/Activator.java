@@ -56,7 +56,12 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 		if (testcases == null) {
 			trace("automatic testing of all bundles with Test-Cases header");
-			automatic();
+			try {
+				automatic();
+			}
+			catch (IOException e) {
+				// ignore
+			}
 		} else {
 			trace("receivednames of classes to test %s", testcases);
 			try {
@@ -70,13 +75,16 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		}
 	}
 
-	void automatic() {
+	void automatic() throws IOException {
 		String testerDir = context.getProperty(TESTER_DIR);
 		if (testerDir == null)
 			testerDir = "testdir";
 
 		final File reportDir = new File(testerDir);
 		final List<Bundle> queue = new Vector<Bundle>();
+		if (!reportDir.exists() && !reportDir.mkdirs()) {
+			throw new IOException("Could not create directory " + reportDir);
+		}
 		trace("using %s, needed creation %s", reportDir, reportDir.mkdirs());
 
 		trace("adding Bundle Listener for getting test bundle events");

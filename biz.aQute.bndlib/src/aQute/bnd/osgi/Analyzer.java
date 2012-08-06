@@ -2447,7 +2447,10 @@ public class Analyzer extends Processor {
 				jar.lastModified() - output.lastModified());
 
 		if (!output.exists() || output.lastModified() <= jar.lastModified() || force) {
-			output.getParentFile().mkdirs();
+			File op = output.getParentFile();
+			if (!op.exists() && !op.mkdirs()) {
+				throw new IOException("Could not create directory " + op);
+			}
 			if (source != null && output.getCanonicalPath().equals(source.getCanonicalPath())) {
 				File bak = new File(source.getParentFile(), source.getName() + ".bak");
 				if (!source.renameTo(bak)) {

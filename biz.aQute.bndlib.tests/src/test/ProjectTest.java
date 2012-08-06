@@ -214,7 +214,10 @@ public class ProjectTest extends TestCase {
 		assertTrue(bnd.exists());
 
 		project.clean();
-		project.getTarget().mkdirs();
+		File pt = project.getTarget();
+		if (!pt.exists() && !pt.mkdirs()) {
+			throw new IOException("Could not create directory " + pt);
+		}
 		try {
 			// Now we build it.
 			File[] files = project.build();

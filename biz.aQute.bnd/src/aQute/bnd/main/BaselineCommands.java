@@ -304,7 +304,10 @@ public class BaselineCommands {
 
 		String o = opts.output("schema.xml");
 		File of = bnd.getFile(o);
-		of.getParentFile().mkdirs();
+		File pof = of.getParentFile();
+		if (!pof.exists() && !pof.mkdirs()) {
+			throw new IOException("Could not create directory " + pof);
+		}
 		OutputStreamWriter fw = new OutputStreamWriter(new FileOutputStream(of), "UTF-8");
 		try {
 			PrintWriter pw = new PrintWriter(fw);

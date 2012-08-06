@@ -520,7 +520,9 @@ public class Launcher implements ServiceListener {
 			p.setProperty(Constants.FRAMEWORK_STORAGE_CLEAN, "true");
 		}
 
-		workingdir.mkdirs();
+		if (!workingdir.exists() && !workingdir.mkdirs()) {
+			throw new IOException("Could not create directory " + workingdir);
+		}
 		if (!workingdir.isDirectory())
 			throw new IllegalArgumentException("Cannot create a working dir: " + workingdir);
 

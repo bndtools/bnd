@@ -421,14 +421,19 @@ public class bnd extends Processor {
 			if (opts.CDir() != null)
 				store = getFile(opts.CDir());
 
-			store.mkdirs();
+			if (!store.exists() && !store.mkdirs() ) {
+				throw new IOException("Could not create directory " + store);
+			}
 			Jar.Compression compression = jar.hasCompression();
 			for (String path : selected) {
 				if (opts.verbose())
 					System.err.printf("%8s: %s\n", compression.toString().toLowerCase(), path);
 
 				File f = getFile(store, path);
-				f.getParentFile().mkdirs();
+				File pf = f.getParentFile();
+				if (!pf.exists() && !pf.mkdirs()) {
+					throw new IOException("Could not create directory " + pf);
+				}
 				Resource r = jar.getResource(path);
 				IO.copy(r.openInputStream(), f);
 			}
@@ -788,10 +793,16 @@ public class bnd extends Processor {
 		} else
 			output = getBase();
 
-		if (opts._().size() > 1)
-			output.mkdirs();
-		else
-			output.getParentFile().mkdirs();
+		if (opts._().size() > 1) {
+			if (!output.exists() && !output.mkdirs()) {
+				throw new IOException("Could not create directory " + output);
+			}
+		} else {
+			File pf = output.getParentFile();
+			if (!pf.exists() && !pf.mkdirs()) {
+				throw new IOException("Could not create directory " + pf);
+			}
+		}
 
 		project.build();
 
@@ -1859,7 +1870,9 @@ public class bnd extends Processor {
 		if (opts.reportdir() != null) {
 			reportDir = getFile(opts.reportdir());
 		}
-		reportDir.mkdirs();
+		if (!reportDir.exists() && !reportDir.mkdirs()) {
+			throw new IOException("Could not create directory " + reportDir);
+		}
 
 		if (!reportDir.isDirectory())
 			error("reportdir must be a directory %s (tried to create it ...)", reportDir);
@@ -1936,7 +1949,9 @@ public class bnd extends Processor {
 	 */
 	private int runtTest(File testFile, Workspace ws, File reportDir, Tag summary) throws Exception {
 		File tmpDir = new File(reportDir, "tmp");
-		tmpDir.mkdirs();
+		if (!tmpDir.exists() && !tmpDir.mkdirs()) {
+			throw new IOException("Could not create directory " + tmpDir);
+		}
 		tmpDir.deleteOnExit();
 
 		Tag test = new Tag(summary, "test");

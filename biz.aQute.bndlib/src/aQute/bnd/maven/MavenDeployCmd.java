@@ -85,7 +85,9 @@ public class MavenDeployCmd extends Processor {
 		project.progress("deploying %s to Maven repo: %s", original, repository);
 		File target = project.getTarget();
 		File tmp = Processor.getFile(target, repository);
-		tmp.mkdirs();
+		if (!tmp.exists() && !tmp.mkdirs()) {
+			throw new IOException("Could not create directory " + tmp);
+		}
 
 		Manifest manifest = original.getManifest();
 		if (manifest == null)
@@ -103,7 +105,9 @@ public class MavenDeployCmd extends Processor {
 				Parameters exports = project.parseHeader(manifest.getMainAttributes()
 						.getValue(Constants.EXPORT_PACKAGE));
 				File jdoc = new File(tmp, "jdoc");
-				jdoc.mkdirs();
+				if (!jdoc.exists() && !jdoc.mkdirs()) {
+					throw new IOException("Could not create directory " + jdoc);
+				}
 				project.progress("Generating Javadoc for: " + exports.keySet());
 				Jar javadoc = javadoc(jdoc, project, exports.keySet());
 				project.progress("Writing javadoc jar");

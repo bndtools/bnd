@@ -245,7 +245,9 @@ public class RepoCommand {
 			}
 		}
 
-		dir.mkdirs();
+		if (!dir.exists() && !dir.mkdirs()) {
+			throw new IOException("Could not create directory " + dir);
+		}
 		IO.copy(file, new File(dir, name));
 	}
 

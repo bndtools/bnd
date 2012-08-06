@@ -238,7 +238,10 @@ public class Builder extends Analyzer {
 			f = new File(f, "MANIFEST.MF");
 		}
 		f.delete();
-		f.getParentFile().mkdirs();
+		File fp = f.getParentFile();
+		if (!fp.exists() && !fp.mkdirs()) {
+			throw new IOException("Could not create directory " + fp);
+		}
 		OutputStream out = new FileOutputStream(f);
 		try {
 			Jar.writeManifest(dot.getManifest(), out);

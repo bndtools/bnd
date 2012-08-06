@@ -203,7 +203,9 @@ public class Project extends Processor {
 					// Set default bin directory
 					output = getOutput0();
 					if (!output.exists()) {
-						output.mkdirs();
+						if (!output.mkdirs()) {
+							throw new IOException("Could not create directory " + output);
+						}
 						getWorkspace().changedFile(output);
 					}
 					if (!output.isDirectory())
@@ -297,10 +299,12 @@ public class Project extends Processor {
 	/**
 	 * 
 	 */
-	private File getTarget0() {
+	private File getTarget0() throws IOException {
 		File target = getFile(getProperty("target", "generated"));
 		if (!target.exists()) {
-			target.mkdirs();
+			if (!target.mkdirs()) {
+				throw new IOException("Could not create directory " + target);
+			}
 			getWorkspace().changedFile(target);
 		}
 		return target;
@@ -1434,8 +1438,12 @@ public class Project extends Processor {
 			if (!f.exists() || f.lastModified() < jar.lastModified()) {
 				reportNewer(f.lastModified(), jar);
 				f.delete();
-				if (!f.getParentFile().isDirectory())
-					f.getParentFile().mkdirs();
+				File fp = f.getParentFile();
+				if (!fp.isDirectory()) {
+					if (!fp.exists() && !fp.mkdirs()) {
+						throw new IOException("Could not create directory " + fp);
+					}
+				}
 				jar.write(f);
 
 				getWorkspace().changedFile(f);
@@ -1550,12 +1558,16 @@ public class Project extends Processor {
 		File target = getTarget0();
 		if (target.isDirectory() && target.getParentFile() != null) {
 			IO.delete(target);
-			target.mkdirs();
+			if (!target.exists() && !target.mkdirs()) {
+				throw new IOException("Could not create directory " + target);
+			}
 		}
 		File output = getOutput0();
 		if (getOutput().isDirectory())
 			IO.delete(output);
-		output.mkdirs();
+		if (!output.exists() && !output.mkdirs()) {
+			throw new IOException("Could not create directory " + output);
+		}
 	}
 
 	public File[] build() throws Exception {
@@ -2034,7 +2046,10 @@ public class Project extends Processor {
 
 		String path = packageName.replace('.', '/') + "/packageinfo";
 		File binary = IO.getFile(getOutput(), path);
-		binary.getParentFile().mkdirs();
+		File bp = binary.getParentFile();
+		if (!bp.exists() && !bp.mkdirs()) {
+			throw new IOException("Could not create directory " + bp);
+		}
 		IO.copy(file, binary);
 
 		refresh();

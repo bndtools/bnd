@@ -81,7 +81,9 @@ public class Workspace extends Processor {
 
 	public Workspace(File dir) throws Exception {
 		dir = dir.getAbsoluteFile();
-		dir.mkdirs();
+		if (!dir.exists() && !dir.mkdirs()) {
+			throw new IOException("Could not create directory " + dir);
+		}
 		assert dir.isDirectory();
 
 		File buildDir = new File(dir, BNDDIR).getAbsoluteFile();
@@ -271,9 +273,11 @@ public class Workspace extends Processor {
 			try {
 				if (!inited) {
 					inited = true;
-					root.mkdirs();
+					if (!root.exists() && !root.mkdirs()) {
+						throw new IOException("Could not create cache directory " + root);
+					}
 					if (!root.isDirectory())
-						throw new IllegalArgumentException("Cannot create cache dir " + root);
+						throw new IllegalArgumentException("Cache directory " + root + " not a directory");
 
 					InputStream in = getClass().getResourceAsStream(EMBEDDED_REPO);
 					if (in != null)
@@ -296,7 +300,10 @@ public class Workspace extends Processor {
 					if (!jentry.isDirectory()) {
 						File dest = Processor.getFile(dir, jentry.getName());
 						if (!dest.isFile() || dest.lastModified() < jentry.getTime() || jentry.getTime() == 0) {
-							dest.getParentFile().mkdirs();
+							File dp = dest.getParentFile();
+							if (!dp.exists() && !dp.mkdirs()) {
+								throw new IOException("Could not create directory " + dp);
+							}
 							FileOutputStream out = new FileOutputStream(dest);
 							try {
 								copy(jin, out);

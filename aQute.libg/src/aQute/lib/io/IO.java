@@ -152,7 +152,9 @@ public class IO {
 				out.close();
 			}
 		} else if (a.isDirectory()) {
-			b.mkdirs();
+			if (!b.exists() && !b.mkdirs()) {
+				throw new IOException("Could not create directory " + b);
+			}
 			if (!b.isDirectory())
 				throw new IllegalArgumentException("target directory for a directory must be a directory: " + b);
 			File subs[] = a.listFiles();

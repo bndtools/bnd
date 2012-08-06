@@ -768,14 +768,19 @@ public class Jar implements Closeable {
 	public void expand(File dir) throws Exception {
 		check();
 		dir = dir.getAbsoluteFile();
-		dir.mkdirs();
+		if (!dir.exists() && !dir.mkdirs()) {
+			throw new IOException("Could not create directory " + dir);
+		}
 		if (!dir.isDirectory()) {
 			throw new IllegalArgumentException("Not a dir: " + dir.getAbsolutePath());
 		}
 
 		for (Map.Entry<String,Resource> entry : getResources().entrySet()) {
 			File f = getFile(dir, entry.getKey());
-			f.getParentFile().mkdirs();
+			File fp = f.getParentFile();
+			if (!fp.exists() && !fp.mkdirs()) {
+				throw new IOException("Could not create directory " + fp);
+			}
 			IO.copy(entry.getValue().openInputStream(), f);
 		}
 	}

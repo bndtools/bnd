@@ -20,7 +20,9 @@ public class TestLocalObrGeneration extends TestCase {
 		// Ensure output directory exists and is empty
 		outputDir = new File("generated/testoutput");
 		IO.delete(outputDir);
-		outputDir.mkdirs();
+		if (!outputDir.exists() && !outputDir.mkdirs()) {
+			throw new IOException("Could not create directory " + outputDir);
+		}
 
 		// Setup the repo
 		reporter = new Processor();

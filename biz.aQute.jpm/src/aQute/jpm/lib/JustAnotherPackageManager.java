@@ -72,10 +72,14 @@ public class JustAnotherPackageManager {
 		this.reporter = reporter;
 		platform = Platform.getPlatform(reporter);
 		homeDir = platform.getGlobal();
-		homeDir.mkdirs();
+		if (!homeDir.exists() && !homeDir.mkdirs()) {
+			throw new ExceptionInInitializerError("Could not create directory " + homeDir);
+		}
 
 		repoDir = IO.getFile(homeDir, "repo");
-		repoDir.mkdirs();
+		if (!repoDir.exists() && !repoDir.mkdirs()) {
+			throw new ExceptionInInitializerError("Could not create directory " + repoDir);
+		}
 		repo = new FileRepo(repoDir);
 
 		commandDir = new File(homeDir, "commands");
@@ -204,7 +208,9 @@ public class JustAnotherPackageManager {
 	public String createService(ServiceData data) throws Exception, IOException {
 
 		data.sdir = new File(serviceDir, data.name);
-		data.sdir.mkdirs();
+		if (!data.sdir.exists() && !data.sdir.mkdirs()) {
+			throw new IOException("Could not create directory " + data.sdir);
+		}
 		data.lock = new File(data.sdir, "lock");
 		if (data.work == null)
 			data.work = new File(data.sdir, "work");

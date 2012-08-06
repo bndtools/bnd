@@ -163,7 +163,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		return resolved;
 	}
 
-	private File mapRemoteURL(URL url) throws UnsupportedEncodingException {
+	private File mapRemoteURL(URL url) throws UnsupportedEncodingException, IOException {
 
 		String localDirName;
 		String localFileName;
@@ -185,7 +185,9 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			localDir = cacheDir;
 			localFileName = URLEncoder.encode(fullUrl, UTF_8);
 		}
-		localDir.mkdirs();
+		if (!localDir.exists() && !localDir.mkdirs()) {
+			throw new IOException("Could not create directory " + localDir);
+		}
 
 		return new File(localDir, localFileName);
 	}

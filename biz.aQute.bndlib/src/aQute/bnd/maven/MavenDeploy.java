@@ -50,7 +50,9 @@ public class MavenDeploy implements Deploy, Plugin {
 		project.progress("deploying %s to Maven repo: %s", jarName, repository);
 		File target = project.getTarget();
 		File tmp = Processor.getFile(target, repository);
-		tmp.mkdirs();
+		if (!tmp.exists() && !tmp.mkdirs()) {
+			throw new IOException("Could not create directory " + tmp);
+		}
 
 		Jar original = new Jar(jarName, jarStream);
 		try {
