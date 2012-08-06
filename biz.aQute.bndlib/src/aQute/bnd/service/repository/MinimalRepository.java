@@ -10,7 +10,7 @@ import aQute.service.reporter.*;
 public interface MinimalRepository {
 	public enum Gestalt {
 		ADD, REMOTE
-	};
+	}
 
 	Report add(File f) throws Exception;
 
