@@ -11,8 +11,6 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
-import aQute.libg.cryptography.Digester;
-import aQute.libg.cryptography.SHA1;
 import aQute.service.reporter.*;
 
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin {
