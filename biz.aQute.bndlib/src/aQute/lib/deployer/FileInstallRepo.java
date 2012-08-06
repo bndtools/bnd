@@ -73,9 +73,7 @@ public class FileInstallRepo extends FileRepo {
 				dir = getRoot();
 			} else {
 				dir = new File(getRoot(), group);
-				if (!dir.mkdirs()) {
-					throw new IOException("Could not create directory " + dir);
-				}
+				dir.mkdirs();
 			}
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 			File file = new File(dir, fName);

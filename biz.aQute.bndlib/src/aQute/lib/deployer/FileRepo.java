@@ -159,9 +159,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				reporter.trace("bsn=%s version=%s", bsn, version);
 
 			File dir = new File(root, bsn);
-			if (!dir.mkdirs()) {
-				throw new IOException("Could not create directory " + dir);
-			}
+			dir.mkdirs();
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 			File file = new File(dir, fName);
 
