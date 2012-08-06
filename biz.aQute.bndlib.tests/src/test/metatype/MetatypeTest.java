@@ -31,14 +31,17 @@ public class MetatypeTest extends TestCase {
 			db = dbf.newDocumentBuilder();
 			xpath.setNamespaceContext(new NamespaceContext() {
 
+				@Override
 				public Iterator<String> getPrefixes(String namespaceURI) {
 					return Arrays.asList("md").iterator();
 				}
 
+				@Override
 				public String getPrefix(String namespaceURI) {
 					return "md";
 				}
 
+				@Override
 				public String getNamespaceURI(String prefix) {
 					return "http://www.osgi.org/xmlns/metatype/v1.1.0";
 				}

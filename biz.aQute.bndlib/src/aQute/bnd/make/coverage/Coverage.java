@@ -37,6 +37,7 @@ public class Coverage {
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 				MethodDef	source;
 
+				@Override
 				public void implementsInterfaces(TypeRef names[]) {
 					MethodDef def = clazz.getMethodDef(0, "<implements>", "()V");
 					// TODO
@@ -53,6 +54,7 @@ public class Coverage {
 				}
 
 				// Method definitions
+				@Override
 				public void method(MethodDef source) {
 					this.source = source;
 				}
@@ -77,10 +79,12 @@ public class Coverage {
 		for (final Clazz clazz : sources) {
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 
+				@Override
 				public boolean classStart(int access, TypeRef name) {
 					return clazz.isPublic();
 				}
 
+				@Override
 				public void method(MethodDef source) {
 					if (source.isPublic() || source.isProtected())
 						catalog.put(source, new ArrayList<MethodDef>());

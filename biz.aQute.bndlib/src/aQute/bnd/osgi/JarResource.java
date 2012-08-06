@@ -10,10 +10,12 @@ public class JarResource extends WriteResource {
 		this.jar = jar;
 	}
 
+	@Override
 	public long lastModified() {
 		return jar.lastModified();
 	}
 
+	@Override
 	public void write(OutputStream out) throws Exception {
 		try {
 			jar.write(out);
@@ -28,6 +30,7 @@ public class JarResource extends WriteResource {
 		return jar;
 	}
 
+	@Override
 	public String toString() {
 		return ":" + jar.getName() + ":";
 	}

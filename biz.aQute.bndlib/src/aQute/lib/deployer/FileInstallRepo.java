@@ -18,11 +18,13 @@ public class FileInstallRepo extends FileRepo {
 	Reporter	reporter;
 	Pattern		REPO_FILE	= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)\\.(jar|lib)");
 
+	@Override
 	public void setProperties(Map<String,String> map) {
 		super.setProperties(map);
 		group = map.get("group");
 	}
 
+	@Override
 	public void setReporter(Reporter reporter) {
 		super.setReporter(reporter);
 		this.reporter = reporter;
@@ -116,6 +118,7 @@ public class FileInstallRepo extends FileRepo {
 		}
 	}
 
+	@Override
 	public boolean refresh() {
 		if (dirty) {
 			dirty = false;

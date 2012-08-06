@@ -16,6 +16,7 @@ public class Tarjan<T> {
 			this.name = name;
 		}
 
+		@Override
 		public String toString() {
 			return name + "{" + index + "," + low + "}";
 		}

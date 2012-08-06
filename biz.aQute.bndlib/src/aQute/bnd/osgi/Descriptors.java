@@ -95,6 +95,7 @@ public class Descriptors {
 			return java;
 		}
 
+		@Override
 		public String toString() {
 			return fqn;
 		}
@@ -111,11 +112,13 @@ public class Descriptors {
 			return fqn.compareTo(other.fqn);
 		}
 
+		@Override
 		public boolean equals(Object o) {
 			assert o instanceof PackageRef;
 			return o == this;
 		}
 
+		@Override
 		public int hashCode() {
 			return super.hashCode();
 		}
@@ -207,6 +210,7 @@ public class Descriptors {
 			return packageRef.isJava();
 		}
 
+		@Override
 		public String toString() {
 			return fqn;
 		}
@@ -215,6 +219,7 @@ public class Descriptors {
 			return fqn.equals("java.lang.Object");
 		}
 
+		@Override
 		public boolean equals(Object other) {
 			assert other instanceof TypeRef;
 			return this == other;
@@ -268,6 +273,7 @@ public class Descriptors {
 			return component.getClassRef();
 		}
 
+		@Override
 		public boolean equals(Object other) {
 			if (other == null || other.getClass() != getClass())
 				return false;
@@ -287,6 +293,7 @@ public class Descriptors {
 			return component.isJava();
 		}
 
+		@Override
 		public String toString() {
 			return component.toString() + "[]";
 		}
@@ -457,6 +464,7 @@ public class Descriptors {
 			return prototype;
 		}
 
+		@Override
 		public boolean equals(Object other) {
 			if (other == null || other.getClass() != getClass())
 				return false;
@@ -464,10 +472,12 @@ public class Descriptors {
 			return Arrays.equals(prototype, ((Descriptor) other).prototype) && type == ((Descriptor) other).type;
 		}
 
+		@Override
 		public int hashCode() {
 			return prototype == null ? type.hashCode() : type.hashCode() ^ Arrays.hashCode(prototype);
 		}
 
+		@Override
 		public String toString() {
 			return descriptor;
 		}

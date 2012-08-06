@@ -180,10 +180,12 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 		return children;
 	}
 
+	@Override
 	public String toString() {
 		return String.format("%-10s %-10s %s", getDelta(), getType(), getName());
 	}
 
+	@Override
 	public boolean equals(Object other) {
 		if (other instanceof DiffImpl) {
 			DiffImpl o = (DiffImpl) other;
@@ -192,6 +194,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 		return false;
 	}
 
+	@Override
 	public int hashCode() {
 		return getDelta().hashCode() ^ getType().hashCode() ^ getName().hashCode();
 	}

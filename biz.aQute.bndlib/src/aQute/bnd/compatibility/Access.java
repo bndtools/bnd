@@ -19,6 +19,7 @@ public enum Access {
 		return PACKAGE;
 	}
 
+	@Override
 	public String toString() {
 		return super.toString().toLowerCase();
 	}

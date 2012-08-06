@@ -182,6 +182,7 @@ public class NanoHTTPD {
 		this.myRootDir = wwwroot;
 		myServerSocket = new ServerSocket(myTcpPort);
 		myThread = new Thread(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					while (true)
@@ -258,6 +259,7 @@ public class NanoHTTPD {
 			t.start();
 		}
 
+		@Override
 		public void run() {
 			try {
 				InputStream is = mySocket.getInputStream();
@@ -891,6 +893,7 @@ public class NanoHTTPD {
 
 						final long dataLen = newLen;
 						FileInputStream fis = new FileInputStream(f) {
+							@Override
 							public int available() throws IOException {
 								return (int) dataLen;
 							}

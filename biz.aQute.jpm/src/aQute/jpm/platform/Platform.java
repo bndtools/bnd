@@ -33,6 +33,7 @@ public abstract class Platform {
 
 	abstract public void shell(String initial) throws Exception;
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		Formatter formatter = new Formatter(sb);

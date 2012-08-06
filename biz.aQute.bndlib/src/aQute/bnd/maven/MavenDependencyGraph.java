@@ -63,6 +63,7 @@ public class MavenDependencyGraph {
 			dependencies.add(artifact);
 		}
 
+		@Override
 		public String toString() {
 			return groupId + "." + artifactId + "-" + version + "[" + scope + "," + optional + "]";
 		}

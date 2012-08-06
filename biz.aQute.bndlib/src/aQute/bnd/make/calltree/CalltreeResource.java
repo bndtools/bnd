@@ -47,6 +47,7 @@ public class CalltreeResource extends WriteResource {
 	 * We set the last modified to 0 so this resource does not force a new JAR
 	 * if all other resources are up to date.
 	 */
+	@Override
 	public long lastModified() {
 		return 0;
 	}
@@ -55,6 +56,7 @@ public class CalltreeResource extends WriteResource {
 	 * The write method is called to write the resource. We just call the static
 	 * method.
 	 */
+	@Override
 	public void write(OutputStream out) throws Exception {
 		OutputStreamWriter osw = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
 		PrintWriter pw = new PrintWriter(osw);
@@ -87,6 +89,7 @@ public class CalltreeResource extends WriteResource {
 			Clazz.MethodDef	source;
 
 			// Before a method is parsed
+			@Override
 			public void method(Clazz.MethodDef source) {
 				this.source = source;
 				xref(using, source, null);

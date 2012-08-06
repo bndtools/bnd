@@ -147,6 +147,7 @@ public class Project extends Processor {
 		return workspace;
 	}
 
+	@Override
 	public String toString() {
 		return getBase().getName();
 	}
@@ -814,6 +815,7 @@ public class Project extends Processor {
 		return join(list, separator);
 	}
 
+	@Override
 	protected Object[] getMacroDomains() {
 		return new Object[] {
 			workspace
@@ -1481,6 +1483,7 @@ public class Project extends Processor {
 	/**
 	 * Refresh if we are based on stale data. This also implies our workspace.
 	 */
+	@Override
 	public boolean refresh() {
 		boolean changed = false;
 		if (isCnf()) {
@@ -1493,6 +1496,7 @@ public class Project extends Processor {
 		return getBase().getName().equals(Workspace.CNFDIR);
 	}
 
+	@Override
 	public void propertiesChanged() {
 		super.propertiesChanged();
 		preparedPaths = false;

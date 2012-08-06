@@ -22,6 +22,7 @@ public class CommandData {
 	@Validator(JustAnotherPackageManager.MAINCLASS_PATTERN)
 	public String	main;
 
+	@Override
 	public String toString() {
 		return "[" + name + "]";
 	}

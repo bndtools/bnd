@@ -20,19 +20,23 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	class Dict extends Dictionary<String,Object> {
 
+		@Override
 		public Enumeration<Object> elements() {
 			return Collections.enumeration(manifest.getMainAttributes().values());
 		}
 
+		@Override
 		public Object get(Object key) {
 			Object o = manifest.getMainAttributes().getValue((String) key);
 			return o;
 		}
 
+		@Override
 		public boolean isEmpty() {
 			return manifest.getMainAttributes().isEmpty();
 		}
 
+		@Override
 		public Enumeration<String> keys() {
 			Vector<String> v = new Vector<String>();
 			for (Iterator<Object> i = manifest.getMainAttributes().keySet().iterator(); i.hasNext();) {
@@ -42,14 +46,17 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 			return v.elements();
 		}
 
+		@Override
 		public Object put(String key, Object value) {
 			throw new UnsupportedOperationException();
 		}
 
+		@Override
 		public Object remove(Object key) {
 			throw new UnsupportedOperationException();
 		}
 
+		@Override
 		public int size() {
 			return manifest.getMainAttributes().size();
 		}
@@ -318,6 +325,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public String toString() {
 		return id + " " + location;
 	}

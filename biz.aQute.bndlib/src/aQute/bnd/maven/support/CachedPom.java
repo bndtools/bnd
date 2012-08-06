@@ -11,6 +11,7 @@ public class CachedPom extends Pom {
 		this.maven = mavenEntry;
 	}
 
+	@Override
 	public File getArtifact() throws Exception {
 		return maven.getArtifact();
 	}

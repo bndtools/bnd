@@ -14,6 +14,7 @@ import aQute.bnd.osgi.*;
  */
 public class SpringXMLType extends XMLTypeProcessor {
 
+	@Override
 	protected List<XMLType> getTypes(Analyzer analyzer) throws Exception {
 		List<XMLType> types = new ArrayList<XMLType>();
 

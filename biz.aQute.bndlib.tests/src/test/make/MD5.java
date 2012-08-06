@@ -9,6 +9,7 @@ import aQute.bnd.service.*;
 
 public class MD5 implements MakePlugin {
 
+	@Override
 	public Resource make(Builder builder, String source, Map<String,String> arguments) throws Exception {
 		if (!arguments.get("type").equals("md5"))
 			return null;
@@ -16,6 +17,7 @@ public class MD5 implements MakePlugin {
 		final File f = builder.getFile(source);
 		if (f.isFile()) {
 			return new AbstractResource(f.lastModified()) {
+				@Override
 				public byte[] getBytes() throws Exception {
 					return md5(f);
 				}

@@ -895,6 +895,7 @@ public class Macro {
 			return previous.contains(key);
 		}
 
+		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			String del = "[";

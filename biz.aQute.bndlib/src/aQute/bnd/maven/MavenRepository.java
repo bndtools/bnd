@@ -17,6 +17,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	Reporter					reporter;
 	String						name;
 
+	@Override
 	public String toString() {
 		return "maven:" + root;
 	}

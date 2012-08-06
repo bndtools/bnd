@@ -23,6 +23,7 @@ public class EmbeddedResource implements Resource {
 		out.write(data);
 	}
 
+	@Override
 	public String toString() {
 		return ":" + data.length + ":";
 	}

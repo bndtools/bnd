@@ -234,6 +234,7 @@ public class Filter {
 			this.dict = dict;
 		}
 
+		@Override
 		Object getProp(String key) {
 			return dict.get(key);
 		}
@@ -265,14 +266,17 @@ public class Filter {
 		return null;
 	}
 
+	@Override
 	public String toString() {
 		return filter;
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		return obj != null && obj instanceof Filter && filter.equals(((Filter) obj).filter);
 	}
 
+	@Override
 	public int hashCode() {
 		return filter.hashCode();
 	}

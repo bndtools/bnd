@@ -83,6 +83,7 @@ public class StringHandler extends Handler {
 	 * An object can be assigned to a string. This means that the stream is
 	 * interpreted as the object but stored in its complete in the string.
 	 */
+	@Override
 	Object decodeObject(Decoder r) throws Exception {
 		return collect(r, '}');
 	}

@@ -18,6 +18,7 @@ public class URLResource implements Resource {
 		return url.openStream();
 	}
 
+	@Override
 	public String toString() {
 		return ":" + url.getPath() + ":";
 	}

@@ -27,12 +27,14 @@ public class ProjectBuilder extends Builder {
 	/**
 	 * We put our project and our workspace on the macro path.
 	 */
+	@Override
 	protected Object[] getMacroDomains() {
 		return new Object[] {
 				project, project.getWorkspace()
 		};
 	}
 
+	@Override
 	public Builder getSubBuilder() throws Exception {
 		return project.getBuilder(this);
 	}
@@ -41,6 +43,7 @@ public class ProjectBuilder extends Builder {
 		return project;
 	}
 
+	@Override
 	public void init() {
 		try {
 			if (!initialized) {
@@ -68,6 +71,7 @@ public class ProjectBuilder extends Builder {
 		}
 	}
 
+	@Override
 	public List<Jar> getClasspath() {
 		init();
 		return super.getClasspath();

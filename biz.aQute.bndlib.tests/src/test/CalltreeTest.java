@@ -25,31 +25,37 @@ public class CalltreeTest extends TestCase {
 
 	static class Implements implements Resource {
 
+		@Override
 		public String getExtra() {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
+		@Override
 		public long lastModified() {
 			// TODO Auto-generated method stub
 			return 0;
 		}
 
+		@Override
 		public InputStream openInputStream() throws IOException {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
+		@Override
 		public void setExtra(String extra) {
 			// TODO Auto-generated method stub
 
 		}
 
+		@Override
 		public void write(OutputStream out) throws IOException {
 			// TODO Auto-generated method stub
 
 		}
 
+		@Override
 		public long size() throws Exception {
 			// TODO Auto-generated method stub
 			return 0;

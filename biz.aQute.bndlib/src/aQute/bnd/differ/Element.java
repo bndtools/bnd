@@ -100,6 +100,7 @@ class Element implements Tree {
 		return type.compareTo(other.getType());
 	}
 
+	@Override
 	public boolean equals(Object other) {
 		if (other == null || getClass() != other.getClass())
 			return false;
@@ -107,6 +108,7 @@ class Element implements Tree {
 		return compareTo((Element) other) == 0;
 	}
 
+	@Override
 	public int hashCode() {
 		return type.hashCode() ^ name.hashCode();
 	}
@@ -135,6 +137,7 @@ class Element implements Tree {
 		return null;
 	}
 
+	@Override
 	public String toString() {
 		return type + " " + name + " (" + add + "/" + remove + ")";
 	}

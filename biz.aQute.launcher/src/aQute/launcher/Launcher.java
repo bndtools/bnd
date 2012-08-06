@@ -104,6 +104,7 @@ public class Launcher implements ServiceListener {
 			TimerTask watchdog = new TimerTask() {
 				long	begin	= propertiesFile.lastModified();
 
+				@Override
 				public void run() {
 					if (begin < propertiesFile.lastModified()) {
 						try {
@@ -418,6 +419,7 @@ public class Launcher implements ServiceListener {
 		// Ensure we properly close in a separate thread so that
 		// we can leverage the main thread, which is required for macs
 		Thread wait = new Thread("FrameworkWaiter") {
+			@Override
 			public void run() {
 				try {
 					FrameworkEvent result = systemBundle.waitForStop(parms.timeout);
@@ -805,11 +807,13 @@ public class Launcher implements ServiceListener {
 
 	class AllPolicy extends Policy {
 
+		@Override
 		public PermissionCollection getPermissions(CodeSource codesource) {
 			trace("Granting AllPermission to %s", codesource.getLocation());
 			return all;
 		}
 
+		@Override
 		public void refresh() {
 			trace("Policy refresh");
 		}
@@ -827,12 +831,15 @@ public class Launcher implements ServiceListener {
 			setReadOnly();
 		}
 
+		@Override
 		public void add(Permission permission) {}
 
+		@Override
 		public Enumeration<Permission> elements() {
 			return list.elements();
 		}
 
+		@Override
 		public boolean implies(Permission permission) {
 			return true;
 		}

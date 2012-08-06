@@ -92,6 +92,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		return this;
 	}
 
+	@Override
 	public String toString() {
 		return app.toString();
 	}

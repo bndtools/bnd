@@ -35,25 +35,30 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * Cleanup the properties file. Is called after the process terminates.
 	 */
 
+	@Override
 	public void cleanup() {
 		propertiesFile.delete();
 		project.trace("Deleted ", propertiesFile.getAbsolutePath());
 	}
 
+	@Override
 	public String getMainTypeName() {
 		return "aQute.launcher.Launcher";
 	}
 
+	@Override
 	public void update() throws Exception {
 		updateFromProject();
 		writeProperties();
 	}
 
+	@Override
 	public int launch() throws Exception {
 		prepare();
 		return super.launch();
 	}
 
+	@Override
 	public void prepare() throws Exception {
 		if (prepared)
 			return;
@@ -116,6 +121,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * @throws Exception
 	 */
 
+	@Override
 	public Jar executable() throws Exception {
 		Jar jar = new Jar(project.getName());
 

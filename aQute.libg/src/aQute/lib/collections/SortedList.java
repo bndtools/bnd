@@ -364,11 +364,13 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return new SortedList<T>(this, fromIndex, toIndex);
 	}
 
+	@Override
 	@Deprecated
 	public boolean equals(Object other) {
 		return super.equals(other);
 	}
 
+	@Override
 	@Deprecated
 	public int hashCode() {
 		return super.hashCode();
@@ -393,6 +395,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		this.type = type;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");

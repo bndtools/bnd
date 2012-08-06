@@ -18,6 +18,7 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 		this.project = project;
 	}
 
+	@Override
 	public boolean prepare() throws Exception {
 		if (!prepared) {
 			prepared = true;
@@ -46,6 +47,7 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 		return true;
 	}
 
+	@Override
 	public int test() throws Exception {
 		prepare();
 		return getProjectLauncher().launch();

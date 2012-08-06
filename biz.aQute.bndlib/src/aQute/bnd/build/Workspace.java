@@ -125,6 +125,7 @@ public class Workspace extends Processor {
 		return models.values();
 	}
 
+	@Override
 	public boolean refresh() {
 		if (super.refresh()) {
 			for (Project project : getCurrentProjects()) {
@@ -263,10 +264,12 @@ public class Workspace extends Processor {
 			super("cache", getFile(buildDir, CACHEDIR), false);
 		}
 
+		@Override
 		public String toString() {
 			return "bnd-cache";
 		}
 
+		@Override
 		protected void init() throws Exception {
 			if (lock.tryLock(50, TimeUnit.SECONDS) == false)
 				throw new TimeLimitExceededException("Cached File Repo is locked and can't acquire it");

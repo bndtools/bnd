@@ -32,6 +32,7 @@ public class DiffTest extends TestCase {
 			return null;
 		}
 
+		@Override
 		public void foo() {}
 	}
 
@@ -61,6 +62,7 @@ public class DiffTest extends TestCase {
 
 	public abstract class X implements Intf {
 
+		@Override
 		public void foo() {}
 	}
 
@@ -81,6 +83,7 @@ public class DiffTest extends TestCase {
 
 	public class CMP implements Comparable<Number> {
 
+		@Override
 		public int compareTo(Number var0) {
 			// TODO Auto-generated method stub
 			return 0;
@@ -90,16 +93,19 @@ public class DiffTest extends TestCase {
 
 	class SB extends SBB implements Appendable {
 
+		@Override
 		public SB append(char var0) throws IOException {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
+		@Override
 		public SB append(CharSequence var0) throws IOException {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
+		@Override
 		public SB append(CharSequence var0, int var1, int var2) throws IOException {
 			// TODO Auto-generated method stub
 			return null;

@@ -88,6 +88,7 @@ class ReferenceDef {
 		return b;
 	}
 
+	@Override
 	public String toString() {
 		return name;
 	}

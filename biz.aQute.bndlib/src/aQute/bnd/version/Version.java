@@ -106,6 +106,7 @@ public class Version implements Comparable<Version> {
 		return qualifier.compareTo(o.qualifier);
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(major);
@@ -120,6 +121,7 @@ public class Version implements Comparable<Version> {
 		return sb.toString();
 	}
 
+	@Override
 	public boolean equals(Object ot) {
 		if (!(ot instanceof Version))
 			return false;
@@ -127,6 +129,7 @@ public class Version implements Comparable<Version> {
 		return compareTo((Version) ot) == 0;
 	}
 
+	@Override
 	public int hashCode() {
 		return major * 97 ^ minor * 13 ^ micro + (qualifier == null ? 97 : qualifier.hashCode());
 	}

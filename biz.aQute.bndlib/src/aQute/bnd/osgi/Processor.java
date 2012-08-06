@@ -408,6 +408,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return plugin;
 	}
 
+	@Override
 	public boolean isFailOk() {
 		String v = getProperty(Analyzer.FAIL_OK, null);
 		return v != null && v.equalsIgnoreCase("true");
@@ -1184,6 +1185,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			super.addURL(url);
 		}
 
+		@Override
 		public Class< ? > loadClass(String name) throws NoClassDefFoundError {
 			try {
 				Class< ? > c = super.loadClass(name);
@@ -1581,6 +1583,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Printout of the status of this processor for toString()
 	 */
 
+	@Override
 	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();

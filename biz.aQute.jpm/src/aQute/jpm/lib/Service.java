@@ -112,6 +112,7 @@ public class Service {
 		return data.lock.exists();
 	}
 
+	@Override
 	public String toString() {
 		return data.name;
 	}

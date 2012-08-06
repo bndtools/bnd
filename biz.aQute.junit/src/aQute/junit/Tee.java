@@ -21,6 +21,7 @@ public class Tee extends OutputStream {
 		}
 	}
 
+	@Override
 	public void write(int character) throws IOException {
 		if (capture)
 			buffer.write(character);

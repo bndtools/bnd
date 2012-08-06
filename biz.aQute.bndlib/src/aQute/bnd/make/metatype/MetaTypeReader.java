@@ -171,6 +171,7 @@ public class MetaTypeReader extends WriteResource {
 		final List<String> values = Create.list();
 
 		c.parseClassFileWithCollector(new ClassDataCollector() {
+			@Override
 			public void field(Clazz.FieldDef def) {
 				if (def.isEnum()) {
 					values.add(def.getName());
@@ -236,6 +237,7 @@ public class MetaTypeReader extends WriteResource {
 
 	}
 
+	@Override
 	public void write(OutputStream out) throws IOException {
 		try {
 			finish();

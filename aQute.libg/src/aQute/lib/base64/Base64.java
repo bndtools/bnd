@@ -98,6 +98,7 @@ public class Base64 {
 		data = decodeBase64(s);
 	}
 
+	@Override
 	public String toString() {
 		return encodeBase64(data);
 	}

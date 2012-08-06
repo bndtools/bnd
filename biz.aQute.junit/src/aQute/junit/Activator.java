@@ -39,6 +39,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		join(10000);
 	}
 
+	@Override
 	public void run() {
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
 		trace = context.getProperty(TESTER_TRACE) != null;
@@ -201,6 +202,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			try {
 
 				BasicTestReport basic = new BasicTestReport(this, systemOut, systemErr) {
+					@Override
 					public void check() {
 						if (!active)
 							result.stop();

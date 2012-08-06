@@ -10,6 +10,7 @@ public class CombinedResource extends WriteResource {
 	@Override
 	public void write(final OutputStream out) throws IOException, Exception {
 		OutputStream unclosable = new FilterOutputStream(out) {
+			@Override
 			public void close() {
 				// Ignore
 			}

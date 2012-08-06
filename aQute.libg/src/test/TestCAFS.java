@@ -7,6 +7,7 @@ import junit.framework.*;
 public class TestCAFS extends TestCase {
 	File	tmp;
 
+	@Override
 	public void setUp() throws Exception {
 		tmp = new File(System.getProperty("java.io.tmpdir"));
 		assertTrue(tmp.isDirectory());

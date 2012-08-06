@@ -24,6 +24,7 @@ public class ZipResource implements Resource {
 		return zip.getInputStream(entry);
 	}
 
+	@Override
 	public String toString() {
 		return ":" + zip.getName() + "(" + entry.getName() + "):";
 	}

@@ -145,6 +145,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 		return map.values();
 	}
 
+	@Override
 	public String toString() {
 		return map == null ? "{}" : map.toString();
 	}

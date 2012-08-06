@@ -148,6 +148,7 @@ public class Parameters implements Map<String,Attrs> {
 		return map.values();
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		append(sb);
@@ -168,11 +169,13 @@ public class Parameters implements Map<String,Attrs> {
 		}
 	}
 
+	@Override
 	@Deprecated
 	public boolean equals(Object other) {
 		return super.equals(other);
 	}
 
+	@Override
 	@Deprecated
 	public int hashCode() {
 		return super.hashCode();

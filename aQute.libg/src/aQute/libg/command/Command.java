@@ -68,6 +68,7 @@ public class Command {
 
 		if (timeout != 0) {
 			timer = new TimerTask() {
+				@Override
 				public void run() {
 					timedout = true;
 					process.destroy();
@@ -89,6 +90,7 @@ public class Command {
 				if (in != null) {
 					if (in == System.in) {
 						rdInThread = new Thread("Read Input Thread") {
+							@Override
 							public void run() {
 								try {
 									while (!finished.get()) {
@@ -204,6 +206,7 @@ public class Command {
 			setDaemon(true);
 		}
 
+		@Override
 		public void run() {
 			try {
 				int c = in.read();
@@ -255,6 +258,7 @@ public class Command {
 		return variables.get(name);
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		String del = "";

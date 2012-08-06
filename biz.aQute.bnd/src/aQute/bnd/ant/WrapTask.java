@@ -39,6 +39,7 @@ public class WrapTask extends BaseTask {
 	boolean		failok;
 	boolean		exceptions;
 
+	@Override
 	public void execute() throws BuildException {
 		boolean failed = false;
 
@@ -148,6 +149,7 @@ public class WrapTask extends BaseTask {
 		this.force = force;
 	}
 
+	@Override
 	public void setExceptions(boolean exceptions) {
 		this.exceptions = exceptions;
 	}

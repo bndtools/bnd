@@ -12,6 +12,7 @@ public class TagResource extends WriteResource {
 		this.tag = tag;
 	}
 
+	@Override
 	public void write(OutputStream out) throws UnsupportedEncodingException {
 		OutputStreamWriter ow = new OutputStreamWriter(out, "UTF-8");
 		PrintWriter pw = new PrintWriter(ow);
@@ -24,6 +25,7 @@ public class TagResource extends WriteResource {
 		}
 	}
 
+	@Override
 	public long lastModified() {
 		return 0;
 	}

@@ -119,6 +119,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 		final StringBuilder sb = new StringBuilder();
 
 		Thread tin = new Thread() {
+			@Override
 			public void run() {
 				try {
 					BufferedReader rdr = new BufferedReader(new InputStreamReader(in, Constants.DEFAULT_CHARSET));

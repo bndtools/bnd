@@ -145,6 +145,7 @@ public class Instruction {
 		return input;
 	}
 
+	@Override
 	public String toString() {
 		return input;
 	}

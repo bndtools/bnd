@@ -129,6 +129,7 @@ public class AnnotationReader extends ClassDataCollector {
 		return null;
 	}
 
+	@Override
 	public void annotation(Annotation annotation) {
 		try {
 			java.lang.annotation.Annotation a = annotation.getAnnotation();

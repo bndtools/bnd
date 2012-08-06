@@ -19,6 +19,7 @@ public class FileResource implements Resource {
 		traverse(jar, directory.getAbsolutePath().length(), directory, doNotCopy);
 	}
 
+	@Override
 	public String toString() {
 		return ":" + file.getName() + ":";
 	}

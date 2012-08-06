@@ -103,12 +103,14 @@ public class Container {
 		return error;
 	}
 
+	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Container)
 			return file.equals(((Container) other).file);
 		return false;
 	}
 
+	@Override
 	public int hashCode() {
 		return file.hashCode();
 	}
@@ -122,6 +124,7 @@ public class Container {
 	 * 
 	 * @return
 	 */
+	@Override
 	public String toString() {
 		if (getError() != null)
 			return "/error/" + getError();

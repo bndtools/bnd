@@ -241,6 +241,7 @@ public class Index implements Iterable<byte[]> {
 			write();
 		}
 
+		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			try {
@@ -334,6 +335,7 @@ public class Index implements Iterable<byte[]> {
 		return page;
 	}
 
+	@Override
 	public String toString() {
 		return root.toString();
 	}

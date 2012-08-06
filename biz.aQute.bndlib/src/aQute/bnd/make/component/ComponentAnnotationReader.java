@@ -80,6 +80,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		return r.map;
 	}
 
+	@Override
 	public void annotation(Annotation annotation) {
 		String fqn = annotation.getName().getFQN();
 

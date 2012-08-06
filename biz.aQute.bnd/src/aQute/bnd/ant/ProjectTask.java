@@ -16,6 +16,7 @@ public class ProjectTask extends BaseTask {
 	File	basedir;
 	boolean	underTest;
 
+	@Override
 	public void execute() throws BuildException {
 		try {
 			if (basedir == null || !basedir.isDirectory())

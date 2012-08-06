@@ -41,6 +41,7 @@ public class VersionRange {
 		return end == ']';
 	}
 
+	@Override
 	public String toString() {
 		if (high == low)
 			return high.toString();

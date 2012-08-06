@@ -98,6 +98,7 @@ public class DSAnnotationTest extends BndTestCase {
 		//
 		// }
 
+		@Override
 		public void run() {
 			// TODO Auto-generated method stub
 
@@ -140,6 +141,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
+		@Override
 		public void run() {
 			// TODO Auto-generated method stub
 

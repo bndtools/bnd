@@ -91,6 +91,7 @@ public class HeaderReader extends Processor {
 			
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 				
+				@Override
 				public void method(MethodDef md) {
 					Set<String> allowedParams = allowed;
 					String lifecycleName = null;

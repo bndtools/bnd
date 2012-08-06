@@ -26,6 +26,7 @@ public class LauncherTest extends TestCase {
 		l.setTrace(true);
 
 		Thread t = new Thread() {
+			@Override
 			public void run() {
 				try {
 					Thread.sleep(1000);

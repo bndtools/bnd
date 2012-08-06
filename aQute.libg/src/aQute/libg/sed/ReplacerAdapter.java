@@ -801,6 +801,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			return previous.contains(key);
 		}
 
+		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder("[");
 			append(sb);

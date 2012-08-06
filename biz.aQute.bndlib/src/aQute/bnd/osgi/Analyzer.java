@@ -769,6 +769,7 @@ public class Analyzer extends Processor {
 		}
 	}
 
+	@Override
 	public void setBase(File file) {
 		super.setBase(file);
 		getProperties().put("project.dir", getBase().getAbsolutePath());
@@ -840,6 +841,7 @@ public class Analyzer extends Processor {
 		return jar;
 	}
 
+	@Override
 	protected void begin() {
 		if (inited == false) {
 			inited = true;
@@ -1466,6 +1468,7 @@ public class Analyzer extends Processor {
 		}
 	}
 
+	@Override
 	public void close() {
 		if (diagnostics) {
 			PrintStream out = System.err;
@@ -1612,6 +1615,7 @@ public class Analyzer extends Processor {
 		classpath.add(jar);
 	}
 
+	@Override
 	public void clear() {
 		classpath.clear();
 	}
@@ -2548,11 +2552,13 @@ public class Analyzer extends Processor {
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 				Clazz.Def	member;
 
+				@Override
 				public void extendsClass(TypeRef zuper) throws Exception {
 					if (dest.contains(zuper.getPackageRef()))
 						xref.add(clazz.getExtends(zuper), zuper);
 				}
 
+				@Override
 				public void implementsInterfaces(TypeRef[] interfaces) throws Exception {
 					for (TypeRef i : interfaces) {
 						if (dest.contains(i.getPackageRef()))
@@ -2560,6 +2566,7 @@ public class Analyzer extends Processor {
 					}
 				}
 
+				@Override
 				public void referTo(TypeRef to, int modifiers) {
 					if (to.isJava())
 						return;
@@ -2573,10 +2580,12 @@ public class Analyzer extends Processor {
 
 				}
 
+				@Override
 				public void method(Clazz.MethodDef defined) {
 					member = defined;
 				}
 
+				@Override
 				public void field(Clazz.FieldDef defined) {
 					member = defined;
 				}

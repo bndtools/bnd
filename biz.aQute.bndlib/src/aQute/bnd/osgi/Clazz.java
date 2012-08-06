@@ -251,11 +251,13 @@ public class Clazz {
 			this.descriptor = analyzer.getDescriptor(descriptor);
 		}
 
+		@Override
 		public String getName() {
 			return name;
 		}
 		
 
+		@Override
 		public TypeRef getType() {
 			return descriptor.getType();
 		}
@@ -290,6 +292,7 @@ public class Clazz {
 			return objectDescriptorToFQN(returnType);
 		}
 
+		@Override
 		public TypeRef[] getPrototype() {
 			return null;
 		}
@@ -297,6 +300,7 @@ public class Clazz {
 			return signature;
 		}
 
+		@Override
 		public String toString() {
 			return name;
 		}
@@ -311,6 +315,7 @@ public class Clazz {
 			return name.equals("<init>") || name.equals("<clinit>");
 		}
 
+		@Override
 		public TypeRef[] getPrototype() {
 			return descriptor.getPrototype();
 		}
@@ -335,6 +340,7 @@ public class Clazz {
 		}
 		
 
+		@Override
 		public String getName() {
 			if (interf)
 				return "<implements>";
@@ -342,9 +348,11 @@ public class Clazz {
 				return "<extends>";
 		}
 		
+		@Override
 		public TypeRef getType() {
 			return type;
 		}
+		@Override
 		public TypeRef[] getPrototype() {
 			return null;
 		}
@@ -1527,6 +1535,7 @@ public class Clazz {
 		return clazz.is(query, instr, analyzer);
 	}
 
+	@Override
 	public String toString() {
 		return className.getFQN();
 	}

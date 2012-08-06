@@ -69,6 +69,7 @@ public class Selector {
 		return new Selector(sb.toString(), negated);
 	}
 
+	@Override
 	public String toString() {
 		return getPattern();
 	}

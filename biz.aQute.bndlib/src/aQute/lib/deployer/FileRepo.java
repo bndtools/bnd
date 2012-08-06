@@ -364,6 +364,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return null;
 	}
 
+	@Override
 	public String toString() {
 		return String.format("%-40s r/w=%s", root.getAbsolutePath(), canWrite());
 	}

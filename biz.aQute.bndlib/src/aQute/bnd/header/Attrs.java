@@ -220,6 +220,7 @@ public class Attrs implements Map<String,String> {
 		return get("version");
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		append(sb);
@@ -237,11 +238,13 @@ public class Attrs implements Map<String,String> {
 		}
 	}
 
+	@Override
 	@Deprecated
 	public boolean equals(Object other) {
 		return super.equals(other);
 	}
 
+	@Override
 	@Deprecated
 	public int hashCode() {
 		return super.hashCode();

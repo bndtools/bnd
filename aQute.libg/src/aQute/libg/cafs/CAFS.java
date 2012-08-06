@@ -295,6 +295,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 				return size;
 			}
 
+			@Override
 			public int read() throws IOException {
 				int c = super.read();
 				if (c < 0)
@@ -320,6 +321,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 							+ calculatedSha1));
 			}
 
+			@Override
 			public void close() throws IOException {
 				eof();
 				super.close();

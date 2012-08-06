@@ -269,11 +269,13 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public String toString() {
 		return "Mini framework";
 	}
 
 	class Loader extends ClassLoader {
+		@Override
 		public Class< ? > findClass(String name) throws ClassNotFoundException {
 			for (Bundle b : bundles.values()) {
 				try {

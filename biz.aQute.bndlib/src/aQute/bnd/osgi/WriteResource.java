@@ -10,6 +10,7 @@ public abstract class WriteResource implements Resource {
 		PipedInputStream pin = new PipedInputStream();
 		final PipedOutputStream pout = new PipedOutputStream(pin);
 		Thread t = new Thread() {
+			@Override
 			public void run() {
 				try {
 					write(pout);

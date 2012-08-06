@@ -24,10 +24,12 @@ public class BundleId implements Comparable<BundleId> {
 		return Verifier.isVersion(version) && Verifier.isBsn(bsn);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		return this == o || ((o instanceof BundleId) && compareTo((BundleId) o) == 0);
 	}
 
+	@Override
 	public int hashCode() {
 		return bsn.hashCode() ^ version.hashCode();
 	}

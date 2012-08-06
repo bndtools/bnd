@@ -47,6 +47,7 @@ public class Verifier extends Processor {
 			this.target = target;
 		}
 
+		@Override
 		public String toString() {
 			return name + "(" + target + ")";
 		}
@@ -814,6 +815,7 @@ public class Verifier extends Processor {
 		return true;
 	}
 
+	@Override
 	public String getProperty(String key, String deflt) {
 		if (properties == null)
 			return deflt;

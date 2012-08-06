@@ -35,10 +35,12 @@ public class ComponentTest extends TestCase {
 			db = dbf.newDocumentBuilder();
 			xpath.setNamespaceContext(new NamespaceContext() {
 
+				@Override
 				public Iterator<String> getPrefixes(String namespaceURI) {
 					return Arrays.asList("md", "scr").iterator();
 				}
 
+				@Override
 				public String getPrefix(String namespaceURI) {
 					if (namespaceURI.equals("http://www.osgi.org/xmlns/metatype/v1.1.0"))
 						return "md";
@@ -48,6 +50,7 @@ public class ComponentTest extends TestCase {
 					return null;
 				}
 
+				@Override
 				public String getNamespaceURI(String prefix) {
 					if (prefix.equals("md"))
 						return "http://www.osgi.org/xmlns/metatype/v1.1.0";

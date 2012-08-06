@@ -30,10 +30,12 @@ public class PluginTest extends TestCase {
 	static class TPlugin implements Plugin {
 		Map<String,String>	properties;
 
+		@Override
 		public void setProperties(Map<String,String> map) {
 			properties = map;
 		}
 
+		@Override
 		public void setReporter(Reporter processor) {
 			assertEquals(main, processor);
 		}

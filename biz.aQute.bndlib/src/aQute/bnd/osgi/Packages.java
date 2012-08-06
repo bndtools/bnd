@@ -179,6 +179,7 @@ public class Packages implements Map<PackageRef,Attrs> {
 		return getByFQN(s) != null;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		append(sb);
@@ -219,11 +220,13 @@ public class Packages implements Map<PackageRef,Attrs> {
 		return deflt;
 	}
 
+	@Override
 	@Deprecated
 	public boolean equals(Object other) {
 		return super.equals(other);
 	}
 
+	@Override
 	@Deprecated
 	public int hashCode() {
 		return super.hashCode();

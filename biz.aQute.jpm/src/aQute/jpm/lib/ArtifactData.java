@@ -9,6 +9,7 @@ public class ArtifactData {
 	public String			bsn;
 	public List<Version>	version;
 
+	@Override
 	public String toString() {
 		return "[" + bsn + "]";
 	}

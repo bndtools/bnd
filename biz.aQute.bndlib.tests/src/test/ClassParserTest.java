@@ -62,8 +62,10 @@ class Generics {
 }
 
 class Implemented implements Plugin {
+	@Override
 	public void setProperties(Map<String,String> map) {}
 
+	@Override
 	public void setReporter(Reporter processor) {}
 }
 

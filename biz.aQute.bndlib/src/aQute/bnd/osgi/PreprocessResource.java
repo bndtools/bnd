@@ -13,6 +13,7 @@ public class PreprocessResource extends AbstractResource {
 		setExtra(resource.getExtra());
 	}
 
+	@Override
 	protected byte[] getBytes() throws Exception {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream(2000);
 		OutputStreamWriter osw = new OutputStreamWriter(bout, Constants.DEFAULT_CHARSET);

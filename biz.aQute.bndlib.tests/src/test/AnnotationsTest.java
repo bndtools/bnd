@@ -63,29 +63,36 @@ public class AnnotationsTest extends TestCase {
 		Analyzer analyzer = new Analyzer();
 		Clazz clazz = new Clazz(analyzer, "", null);
 		ClassDataCollector cd = new ClassDataCollector() {
+			@Override
 			public void addReference(TypeRef token) {}
 
+			@Override
 			public void annotation(Annotation annotation) {
 				System.err.println("Annotation " + annotation);
 			}
 
+			@Override
 			public void classBegin(int access, TypeRef name) {
 				System.err.println("Class " + name);
 			}
 
+			@Override
 			public void classEnd() {
 				System.err.println("Class end ");
 			}
 
+			@Override
 			public void extendsClass(TypeRef name) {
 				System.err.println("extends " + name);
 			}
 
+			@Override
 			public void implementsInterfaces(TypeRef[] name) {
 				System.err.println("implements " + Arrays.toString(name));
 
 			}
 
+			@Override
 			public void parameter(int p) {
 				System.err.println("parameter " + p);
 			}

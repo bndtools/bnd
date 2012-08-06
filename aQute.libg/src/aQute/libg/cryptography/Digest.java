@@ -28,6 +28,7 @@ public abstract class Digest {
 
 	public abstract String getAlgorithm();
 
+	@Override
 	public boolean equals(Object other) {
 		if (!(other instanceof Digest))
 			return false;
@@ -36,6 +37,7 @@ public abstract class Digest {
 		return Arrays.equals(d.digest, digest);
 	}
 
+	@Override
 	public int hashCode() {
 		return Arrays.hashCode(digest);
 	}

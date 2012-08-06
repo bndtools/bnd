@@ -296,6 +296,7 @@ public abstract class Pom {
 		return in;
 	}
 
+	@Override
 	public String toString() {
 		return groupId + "+" + artifactId + "-" + version;
 	}

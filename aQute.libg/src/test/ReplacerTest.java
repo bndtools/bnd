@@ -45,6 +45,7 @@ public class ReplacerTest extends TestCase {
 			return getReplacer().process(string);
 		}
 		
+		@Override
 		public String toString() {
 			return map.toString();
 		}
