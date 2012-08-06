@@ -124,7 +124,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 		FileOutputStream out = null;
 		try {
-			storageDir.mkdirs();
+			if (!storageDir.exists() && !storageDir.mkdirs()) {
+				throw new IOException("Could not create directory " + storageDir);
+			}
 			out = new FileOutputStream(indexFile);
 
 			URI rootUri = storageDir.getCanonicalFile().toURI();
@@ -212,7 +214,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			if (dir.exists() && !dir.isDirectory())
 				throw new IllegalArgumentException("Path already exists but is not a directory: "
 						+ dir.getAbsolutePath());
-			dir.mkdirs();
+			if (!dir.exists() && !dir.mkdirs()) {
+				throw new IOException("Could not create directory " + dir);
+			}
 
 			Version version = Version.parseVersion(jar.getVersion());
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
