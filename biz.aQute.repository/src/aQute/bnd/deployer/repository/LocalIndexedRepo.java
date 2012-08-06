@@ -250,7 +250,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 	/* NOTE: this is a straight copy of FileRepo.put */
 	@Override
-	public PutResult put(InputStream stream, PutOptions options) throws Exception {
+	public synchronized PutResult put(InputStream stream, PutOptions options) throws Exception {
 		/* both parameters are required */
 		if ((stream == null) || (options == null)) {
 			throw new IllegalArgumentException("No stream and/or options specified");
@@ -331,7 +331,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		return true;
 	}
 
-	public File getRoot() {
+	public synchronized File getRoot() {
 		return storageDir;
 	}
 
@@ -351,7 +351,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	@Override
-	public String getLocation() {
+	public synchronized String getLocation() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(storageDir.getAbsolutePath());
 
