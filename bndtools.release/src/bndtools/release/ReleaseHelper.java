@@ -10,10 +10,12 @@
  *******************************************************************************/
 package bndtools.release;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -34,10 +36,11 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.properties.Document;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.lib.io.IO;
-import aQute.bnd.properties.Document;
 import aQute.service.reporter.Reporter;
 import bndtools.diff.JarDiff;
 import bndtools.diff.PackageInfo;
@@ -238,7 +241,14 @@ public class ReleaseHelper {
 			return false;
 		}
 
-		context.getProject().release(context.getReleaseRepository().getName(), jar);
+		JarResource jr = new JarResource(jar);
+		InputStream is = new BufferedInputStream(jr.openInputStream());
+		try {
+		    context.getProject().release(context.getReleaseRepository().getName(), jar.getName(), is);
+		} finally {
+		    is.close();
+		}
+
 		context.getProject().refresh();
 
 		File file = context.getReleaseRepository().get(symbName, '[' + version + ',' + version + ']', Strategy.HIGHEST, null);

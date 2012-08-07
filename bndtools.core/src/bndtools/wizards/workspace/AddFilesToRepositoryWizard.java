@@ -2,7 +2,9 @@ package bndtools.wizards.workspace;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -79,7 +81,8 @@ public class AddFilesToRepositoryWizard extends Wizard {
             }
 
             try {
-                File newFile = repository.put(jar);
+                RepositoryPlugin.PutResult result = repository.put(new BufferedInputStream(new FileInputStream(file)), new RepositoryPlugin.PutOptions());
+                File newFile = new File(result.artifact);
 
                 RefreshFileJob refreshJob = new RefreshFileJob(newFile, false);
                 if (refreshJob.needsToSchedule())
