@@ -32,14 +32,16 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.action.*;
-import aQute.bnd.settings.*;
 import aQute.bnd.version.*;
 import aQute.configurable.*;
+import aQute.lib.base64.*;
 import aQute.lib.collections.*;
 import aQute.lib.filter.*;
 import aQute.lib.getopt.*;
+import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.justif.*;
+import aQute.lib.settings.*;
 import aQute.lib.tag.*;
 import aQute.libg.classdump.*;
 import aQute.libg.generics.*;
@@ -53,6 +55,7 @@ import aQute.libg.reporter.*;
  * @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
+	static Pattern				ASSIGNMENT	= Pattern.compile("\\s*([-\\w\\d_.]+)\\s*(?:=\\s*([^\\s]+)\\s*)?");
 	Settings					settings	= new Settings();
 	final PrintStream			err			= System.err;
 	final public PrintStream	out			= System.out;
@@ -232,9 +235,10 @@ public class bnd extends Processor {
 		catch (Throwable t) {
 			if (t instanceof InvocationTargetException)
 				t = t.getCause();
-			messages.Failed__(t, t.getMessage());
+			exception(t, t.getMessage());
 		}
-
+		out.flush();
+		err.flush();
 		if (!check(options.ignore())) {
 			System.err.flush();
 			System.err.flush();
@@ -2678,6 +2682,102 @@ public class bnd extends Processor {
 			finally {
 				in.close();
 			}
+		}
+	}
+
+	/**
+	 * Handle the global settings
+	 */
+	interface settingOptions extends Options {
+		boolean clear();
+
+		boolean publicKey();
+		boolean secretKey();
+
+		boolean id();
+
+		boolean mac();
+		
+		boolean hex();
+	}
+
+	public void _settings(settingOptions opts) throws Exception {
+		try {
+			trace("settings %s", opts.clear());
+			List<String> rest = opts._();
+
+			if (opts.clear()) {
+				settings.clear();
+				trace("clear %s", settings.entrySet());
+			}
+
+			if (opts.publicKey()) {
+				out.println(tos(opts.hex(), settings.getPublicKey()));
+				return;
+			}
+			if (opts.secretKey()) {
+				out.println(tos(opts.hex(), settings.getPrivateKey()));
+				return;
+			}
+			if (opts.id()) {
+				out.printf("%s\n", tos(opts.hex(), settings.getPublicKey()));
+			}
+
+			if (opts.mac()) {
+				for (String s : rest) {
+					byte[] data = s.getBytes("UTF-8");
+					byte[] signature = settings.sign(data);
+					out.printf("%s\n", tos(opts.hex(), signature));
+				}
+				return;
+			}
+
+			if (rest.isEmpty()) {
+				list(null, settings);
+			} else {
+				boolean set = false;
+				for (String s : rest) {
+					Matcher m = ASSIGNMENT.matcher(s);
+					trace("try %s", s);
+					if (m.matches()) {
+						trace("matches %s %s %s", s, m.group(1), m.group(2));
+						String key = m.group(1);
+						Instructions instr = new Instructions(key);
+						Collection<String> select = instr.select(settings.keySet(), true);
+
+						String value = m.group(2);
+						if (value == null) {
+							trace("list wildcard " + instr + " " + select + " " + settings.keySet());
+							list(select, settings);
+						} else {
+							trace("assignment 	");
+							settings.put(key, value);
+							set = true;
+						}
+					} else {
+						err.printf("Cannot assign %s\n", s);
+
+					}
+				}
+				if (set) {
+					trace("saving");
+					settings.save();
+				}
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private String tos(boolean hex, byte[] data) {
+		return hex ? Hex.toHexString(data) : Base64.encodeBase64(data);
+	}
+
+	private void list(Collection<String> keys, Map<String,String> map) {
+		for (Entry<String,String> e : map.entrySet()) {
+			if (keys == null || keys.contains(e.getKey()))
+				out.printf("%-40s = %s\n", e.getKey(), e.getValue());
 		}
 	}
 }
