@@ -1677,7 +1677,7 @@ public class BuilderTest extends BndTestCase {
 		bmaker.setClasspath(cp);
 		bmaker.build();
 		assertTrue(bmaker.check("The JAR is empty",
-				"Missing file on classpath: jar.{1}idonotexist.jar"));
+				"Missing file on classpath: .*idonotexist.jar"));
 	}
 
 	public static void testExpandWithNegate() throws Exception {
