@@ -36,6 +36,13 @@ public class MD5 extends Digest {
 	}
 
 	public static MD5 digest(byte [] data) throws Exception {
-		return getDigester().digest(data);
+		return getDigester().from(data);
+	}
+
+	public static MD5 digest(File f) throws NoSuchAlgorithmException, Exception {
+		return getDigester().from(f);
+	}
+	public static MD5 digest(InputStream f) throws NoSuchAlgorithmException, Exception {
+		return getDigester().from(f);
 	}
 }

@@ -35,7 +35,15 @@ public class SHA256 extends Digest {
 		return ALGORITHM;
 	}
 
+
 	public static SHA256 digest(byte [] data) throws Exception {
-		return getDigester().digest(data);
+		return getDigester().from(data);
+	}
+
+	public static SHA256 digest(File f) throws NoSuchAlgorithmException, Exception {
+		return getDigester().from(f);
+	}
+	public static SHA256 digest(InputStream f) throws NoSuchAlgorithmException, Exception {
+		return getDigester().from(f);
 	}
 }

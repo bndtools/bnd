@@ -48,4 +48,13 @@ public abstract class Digester<T extends Digest> extends OutputStream {
 	public abstract T digest(byte[] bytes) throws Exception;
 
 	public abstract String getAlgorithm();
+
+	public T from(File f) throws Exception {
+		IO.copy(f, this);
+		return digest();
+	}
+	public T from(byte[] f) throws Exception {
+		IO.copy(f, this);
+		return digest();
+	}
 }

@@ -36,6 +36,13 @@ public class SHA1 extends Digest {
 	}
 
 	public static SHA1 digest(byte [] data) throws Exception {
-		return getDigester().digest(data);
+		return getDigester().from(data);
+	}
+
+	public static SHA1 digest(File f) throws NoSuchAlgorithmException, Exception {
+		return getDigester().from(f);
+	}
+	public static SHA1 digest(InputStream f) throws NoSuchAlgorithmException, Exception {
+		return getDigester().from(f);
 	}
 }
