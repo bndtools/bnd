@@ -154,7 +154,7 @@ public class HttpConnectorTest extends TestCase {
 	public static void testConnectHTTPS() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
-		config.put("disableServerVerify", "true");
+		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
 
 		InputStream stream = connector.connect(new URL(getUrl(false) + "bundles/dummybundle.jar"));
@@ -182,7 +182,7 @@ public class HttpConnectorTest extends TestCase {
 	public static void testConnectTaggedHTTPS() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
-		config.put("disableServerVerify", "true");
+		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
 
 		TaggedData data = connector.connectTagged(new URL(getUrl(false) + "bundles/dummybundle.jar"));
@@ -256,7 +256,7 @@ public class HttpConnectorTest extends TestCase {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("configs", "testdata/http_auth.properties");
-		config.put("disableServerVerify", "true");
+		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
 
 		try {
@@ -289,7 +289,7 @@ public class HttpConnectorTest extends TestCase {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("configs", "testdata/http_auth_wrong.properties");
-		config.put("disableServerVerify", "true");
+		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
 
 		try {

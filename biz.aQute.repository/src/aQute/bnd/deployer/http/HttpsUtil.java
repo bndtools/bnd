@@ -8,7 +8,7 @@ import javax.net.ssl.*;
 
 public class HttpsUtil {
 
-	static final String	PROP_DISABLE_SERVER_CERT_VERIFY	= "disableServerVerify";
+	public static final String	PROP_DISABLE_SERVER_CERT_VERIFY	= "disableServerVerify";
 
 	static void disableServerVerification(URLConnection connection) throws GeneralSecurityException {
 		if (!(connection instanceof HttpsURLConnection))
