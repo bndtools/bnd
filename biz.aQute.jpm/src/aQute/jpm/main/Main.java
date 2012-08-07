@@ -5,30 +5,45 @@ import static aQute.lib.io.IO.*;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
+import java.security.*;
+import java.security.spec.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
 import javax.swing.*;
 
 import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.version.*;
-//import aQute.impl.library.cache.*;
-//import aQute.impl.library.remote.*;
 import aQute.jpm.lib.*;
+import aQute.lib.base64.*;
 import aQute.lib.collections.*;
+import aQute.lib.converter.*;
 import aQute.lib.data.*;
 import aQute.lib.getopt.*;
+import aQute.lib.hex.*;
 import aQute.lib.io.*;
+import aQute.lib.justif.*;
+import aQute.lib.settings.*;
 import aQute.libg.reporter.*;
+import aQute.library.cache.*;
+import aQute.library.command.*;
+import aQute.library.remote.*;
+import aQute.service.library.Library.StageRequest;
+import aQute.service.library.Library.StageResponse;
 
 @Description("Just Another Package Manager (for java™)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service.")
 public class Main extends ReporterAdapter {
 
-	public final static Pattern	URL_PATTERN	= Pattern.compile("[a-zA-Z][0-9A-Za-z]{1,8}:.+");
-	File						base		= new File(System.getProperty("user.dir"));
-//	RemoteLibrary				library;
-//	LibraryCache				cache;
+	public final static Pattern	URL_PATTERN		= Pattern.compile("[a-zA-Z][0-9A-Za-z]{1,8}:.+");
+	public final static Pattern	BSNID_PATTERN	= Pattern.compile("([-A-Z0-9_.]+?)(-\\d+\\.\\d+.\\d+)?",
+														Pattern.CASE_INSENSITIVE);
+	File						base			= new File(System.getProperty("user.dir"));
+	Settings					settings		= new Settings();
+	RemoteLibrary				library;
+	LibraryCache				cache;
 
 	/**
 	 * Show installed binaries
@@ -139,9 +154,6 @@ public class Main extends ReporterAdapter {
 	@Description("Options valid for all commands. Must be given before sub command")
 	interface jpmOptions extends Options {
 
-		@Description("Use a local jpm directory.")
-		String local();
-
 		@Description("Print exception stack traces when they occur.")
 		boolean exceptions();
 
@@ -156,6 +168,12 @@ public class Main extends ReporterAdapter {
 
 		@Description("Do not return error status for error that match this given regular expression.")
 		String[] failok();
+
+		@Description("Remote library url (can also be permanently set with 'jpm set library.url=...'")
+		String library();
+
+		@Description("Cache directory, can als be permanently set with 'jpm set library.cache=...'")
+		String cache();
 	}
 
 	/**
@@ -167,7 +185,6 @@ public class Main extends ReporterAdapter {
 	 * @throws IOException
 	 */
 	public void _jpm(jpmOptions opts) {
-System.out.println("hello");
 		try {
 			setExceptions(opts.exceptions());
 			setTrace(opts.trace());
@@ -175,6 +192,21 @@ System.out.println("hello");
 
 			if (opts.base() != null)
 				base = IO.getFile(base, opts.base());
+
+			String url = opts.library();
+			if (url == null)
+				url = settings.get("library.url");
+
+			File cacheDir;
+			if (opts.cache() != null) {
+				cacheDir = IO.getFile(base, opts.cache());
+			} else if (settings.containsKey("library.cache")) {
+				cacheDir = IO.getFile(base, settings.get("library.cache"));
+			} else
+				cacheDir = null;
+
+			library = new RemoteLibrary(url);
+			cache = new LibraryCache(library, cacheDir);
 
 			CommandLine handler = opts._command();
 			List<String> arguments = opts._();
@@ -191,13 +223,13 @@ System.out.println("hello");
 				}
 			}
 		}
-		
+
 		catch (InvocationTargetException t) {
 			Throwable tt = t;
-			while ( tt instanceof InvocationTargetException)
-				tt = ((InvocationTargetException)tt).getTargetException();
+			while (tt instanceof InvocationTargetException)
+				tt = ((InvocationTargetException) tt).getTargetException();
 
-			exception(tt, "%s", tt.getMessage());			
+			exception(tt, "%s", tt.getMessage());
 		}
 		catch (Throwable t) {
 			exception(t, "Failed %s", t);
@@ -226,6 +258,12 @@ System.out.println("hello");
 		@Description("Verify digests in the JAR, provide algorithms. Default is MD5 and SHA1. A '-' ignores the digests.")
 		String[] verify();
 
+		@Description("Require a master version even when version is specified")
+		boolean master();
+
+		@Description("Refresh the cache before consulting the JPM registry")
+		boolean sync();
+
 	}
 
 	/**
@@ -240,8 +278,13 @@ System.out.println("hello");
 			return;
 		}
 
+		// We only want to sync once, and only when
+		// we are allowed to sync
+		boolean hasSynchronized = !opts.sync();
+
 		for (String target : opts._()) {
 			try {
+
 				if (URL_PATTERN.matcher(target).matches()) {
 					try {
 						// Download
@@ -269,21 +312,186 @@ System.out.println("hello");
 				// Try as file/directory name
 
 				File file = IO.getFile(base, target);
-				if (file.isFile())
-					install(file, opts);
-				else if (file.isDirectory()) {
-					for (File sub : file.listFiles()) {
-						if (sub.getName().endsWith(".jar")) {
-							install(sub, opts);
+				if (file.exists()) {
+					if (file.isFile())
+						install(file, opts);
+					else if (file.isDirectory()) {
+						for (File sub : file.listFiles()) {
+							if (sub.getName().endsWith(".jar")) {
+								install(sub, opts);
+							}
 						}
 					}
+					continue;
 				}
 
+				// Try to download it from the central registry
+				{
+					String version = null;
+					String bsn = target;
+
+					int n = target.lastIndexOf('-');
+					if (n < 0) {
+						String v = target.substring(n + 1);
+						String b = target.substring(0, n);
+						if (Verifier.isBsn(b) && Verifier.isVersion(v)) {
+							version = v;
+							bsn = b;
+						}
+					}
+					if (!Verifier.isBsn(bsn)) {
+						error("Not a url, file, nor bsn: %s", bsn);
+					}
+					if (version != null && !Verifier.isVersion(version)) {
+						error("Not a valid version: %s", version);
+					}
+
+					if (!isOk())
+						return;
+
+					if (version == null) {
+						SortedSet<Version> versions = Converter.cnv(new TypeReference<SortedSet<Version>>() {},
+								cache.versions(bsn));
+						if (versions.isEmpty()) {
+							error("Cannot find any versions for: %s", bsn);
+							continue;
+						} else
+							version = versions.last().getWithoutQualifier().toString();
+					}
+
+					if (!hasSynchronized) {
+						cache.synchronize();
+						hasSynchronized = true;
+					}
+
+					Future<File> ref = opts.master() ? cache.getMaster(bsn, version) : cache.getStaged(bsn, version);
+					if (ref == null) {
+						error("Cannot locate %s-%s in the JPM registry%?", bsn, version, opts.sync() ? ""
+								: ", try --sync");
+						continue;
+					}
+
+					getInfo(cache);
+					if (!isOk())
+						return;
+
+					File f = ref.get();
+					if (f == null) {
+						getInfo(cache);
+						error("Unable to download %s-%s", bsn, version);
+						continue;
+					}
+
+					install(f, opts);
+					continue;
+				}
 			}
 			catch (IOException e) {
 				exception(e, "Could not install %s because %s", target, e);
 			}
 		}
+	}
+
+	/**
+	 * Publish an artifact by staging it to the registry
+	 * 
+	 * @param opts
+	 */
+	@Description("Stage a file to the repository. This command requires credentials")
+	@Arguments(arg = "file...")
+	interface stageOptions extends Options {
+		@Description("Scan directories only for these extensions")
+		Set<String> extensions();
+
+		@Description("Staging message")
+		String message();
+
+		@Description("Email address to use for staging (default is in settings)")
+		String owner();
+
+		@Description("Identify this machine")
+		String id();
+
+		@Description("Force scanning the artifact, even if it already exists")
+		boolean force();
+	}
+
+	public void _stage(stageOptions opts) throws NoSuchAlgorithmException, Exception {
+		if (!credentials(opts.owner(), opts.id()))
+			return;
+
+		List<File> files = getFiles(opts._(), opts.extensions());
+
+		for (File f : files) {
+			Jar jar = new Jar(f);
+			try {
+				Verifier v = new Verifier(jar);
+				try {
+					v.verify();
+					getInfo(v, f.getName());
+				}
+				finally {
+					v.close();
+				}
+			}
+			finally {
+				jar.close();
+			}
+		}
+		if (!isOk())
+			return;
+
+		for (File f : files) {
+			StageRequest sr = new StageRequest();
+			sr.file = f;
+			sr.force = opts.force();
+			sr.message = opts.message();
+			sr.owner = opts.owner() == null ? settings.getEmail() : opts.owner();
+			StageResponse stage = library.stage(sr);
+			addErrors(f.getName(), stage.errors);
+			addWarnings(f.getName(), stage.warnings);
+		}
+	}
+
+	private List<File> getFiles(List<String> paths, Set<String> extensions) {
+		List<File> files = new ArrayList<File>();
+		for (String p : paths) {
+			traverse(files, IO.getFile(base, p), extensions);
+		}
+		return files;
+	}
+
+	private void traverse(List<File> files, File file, Set<String> extensions) {
+		if (file.isFile()) {
+			files.add(file);
+		} else if (file.isDirectory()) {
+			for (File sub : file.listFiles()) {
+
+				if (extensions != null) {
+					int n = sub.getName().lastIndexOf('.');
+					String ext = sub.getName().substring(n + 1);
+					if (!extensions.contains(ext))
+						continue;
+				} else if (!file.getName().endsWith(".jar"))
+					continue;
+
+				traverse(files, sub, extensions);
+			}
+		}
+	}
+
+	private boolean credentials(String email, String machine) throws Exception {
+		if (email == null)
+			email = settings.getEmail();
+		if (machine == null)
+			machine = InetAddress.getLocalHost() + "";
+
+		if (email == null) {
+			error("email not set, use 'jpm set email=...");
+			return false;
+		}
+		library.credentials(email, machine, settings.getPublicKey(), settings.getPrivateKey());
+		return isOk();
 	}
 
 	/**
@@ -435,7 +643,8 @@ System.out.println("hello");
 		jpm.gc();
 	}
 
-	public void _gc(@SuppressWarnings("unused") GCOptions opts) throws Exception {
+	public void _gc(@SuppressWarnings("unused")
+	GCOptions opts) throws Exception {
 		jpm.gc();
 	}
 
@@ -647,7 +856,8 @@ System.out.println("hello");
 	 * 
 	 * @throws Exception
 	 */
-	public void _init(@SuppressWarnings("unused") Options opts) throws Exception {
+	public void _init(@SuppressWarnings("unused")
+	Options opts) throws Exception {
 		String s = System.getProperty("java.class.path");
 		if (s == null || s.indexOf(File.pathSeparator) > 0) {
 			error("Cannot initialize because not clear what the command jar is from java.class.path: %s", s);
@@ -666,7 +876,8 @@ System.out.println("hello");
 		}
 	}
 
-	public void _platform(@SuppressWarnings("unused") platformOptions opts) {
+	public void _platform(@SuppressWarnings("unused")
+	platformOptions opts) {
 		out.println(jpm);
 	}
 
@@ -812,36 +1023,87 @@ System.out.println("hello");
 
 	/**
 	 * Show the current version
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
-	
+
 	public void _version(Options options) throws IOException {
 		Manifest m = new Manifest(getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"));
-		out.println( m.getMainAttributes().getValue("Bundle-Version"));
-	}
-	
-	/**
-	 * Search files in repository
-	 */
-	
-	interface RepoOptions extends Options {
-		URI url();
-	}
-	public void _repo( RepoOptions opts ) throws Exception {
-//		initRepo( opts.url());
-//		
-//		List<String> cmds = opts._();
-//		CommandLine proc = opts._command();
-//		proc.execute(new RepoCommand(this), cmds.remove(0), cmds);
+		out.println(m.getMainAttributes().getValue("Bundle-Version"));
 	}
 
-	private void initRepo(URI url) throws Exception {
-//		library = new RemoteLibrary();
-//		if ( url != null)
-//			library.url(url.toString());
-//		cache = new LibraryCache(library, null, false);
-//		cache.open();
+	/**
+	 * Manage the interface to the library
+	 * 
+	 * @throws Exception
+	 */
+
+	public void _lib(LibraryCommandOptions options) throws Exception {
+		LibraryCommand library = new LibraryCommand(options, base, out, settings);
+
+		CommandLine cline = options._command();
+		List<String> _ = options._();
+		if (_.isEmpty())
+			cline.execute(library, "info", _);
+		else
+			cline.execute(library, _.remove(0), _);
+
 	}
-	
-	
+
+	/**
+	 * @throws Exception
+	 */
+
+	interface KeysOptions extends Options {
+		boolean secret();
+
+		boolean pem();
+
+		boolean hex();
+
+		boolean extended();
+	}
+
+	public void _keys(KeysOptions opts) throws Exception {
+		boolean any = opts.pem() || opts.extended() || opts.hex();
+		
+		if (opts.extended()) {
+			PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(settings.getPrivateKey());
+			X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(settings.getPublicKey());
+			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+			PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
+			PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+			privateKey.getAlgorithm();
+			if ( opts.secret())
+				out.format("private %s", privateKey);
+			out.format(    "public  %s", publicKey);
+		}
+		if (opts.hex()) {
+			if ( opts.secret())
+				out.format("private %s", Hex.toHexString(settings.getPrivateKey()));
+			out.format(    "public  %s", Hex.toHexString(settings.getPublicKey()));
+		}
+		if (opts.pem() || !any) {
+			formatKey(settings.getPublicKey(), "PUBLIC");
+			if (opts.secret())
+				formatKey(settings.getPrivateKey(), "PRIVATE");
+		}
+	}
+
+	private void formatKey(byte[] data, String type) throws UnknownHostException {
+		String email = settings.getEmail();
+		if (email == null)
+			email = "<no email set>";
+		email += " " + InetAddress.getLocalHost().getHostName();
+		
+		StringBuilder sb = new StringBuilder(Base64.encodeBase64(data));
+		int r = 60;
+		while (r < sb.length()) {
+			sb.insert(r, "\n");
+			r += 60;
+		}
+		out.format("-----BEGIN %s %s KEY-----%n", email, type);
+		out.append(sb.toString()).append("\n");
+		out.format("-----END %s %s KEY-----%n", email, type);
+	}
 }

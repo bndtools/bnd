@@ -10,8 +10,6 @@ import java.util.regex.*;
 
 import aQute.bnd.filerepo.*;
 import aQute.bnd.version.*;
-//import aQute.impl.library.cache.*;
-//import aQute.impl.library.remote.*;
 import aQute.jpm.platform.*;
 import aQute.lib.base64.*;
 import aQute.lib.data.*;
