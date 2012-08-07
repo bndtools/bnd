@@ -68,7 +68,7 @@ public class Command {
 
 		if (timeout != 0) {
 			timer = new TimerTask() {
-				@Override
+				//@Override TODO why did this not work? TimerTask implements Runnable
 				public void run() {
 					timedout = true;
 					process.destroy();
