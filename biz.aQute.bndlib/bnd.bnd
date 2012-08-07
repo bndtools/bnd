@@ -21,13 +21,13 @@ Export-Package: aQute.bnd.annotation.*,\
 	org.osgi.service.repository,\
 	org.osgi.resource,\
 	aQute.bnd.header,\
-	aQute.bnd.version, \
-	aQute.bnd.filerepo, \
+	aQute.bnd.version,\
+	aQute.bnd.filerepo,\
 	aQute.bnd.properties,\
 	aQute.bnd.build.model,\
 	aQute.bnd.build.model.clauses,\
-	aQute.service.reporter, \
-    aQute.bnd.maven.support
+	aQute.service.reporter,\
+	aQute.bnd.maven.support
 
 Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*, aQute.configurable
 Include-Resource: 				LICENSE, img/=img/
