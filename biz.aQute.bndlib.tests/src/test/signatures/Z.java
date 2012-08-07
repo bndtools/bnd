@@ -60,15 +60,15 @@ public class Z<C> extends X<String> implements Y<Integer> {
 	public Collection< ? super Z<C>.V<Integer>>		wildcard_007;
 
 	// test compatibility
-	public <E extends Cloneable> Collection<E> compatibility_001() {
+	public static <E extends Cloneable> Collection<E> compatibility_001() {
 		return null;
 	}
 
-	public <F extends Cloneable> Collection<F> compatibility_002() {
+	public static <F extends Cloneable> Collection<F> compatibility_002() {
 		return null;
 	}
 
-	public <F extends InputStream> Collection<F> compatibility_003() {
+	public static <F extends InputStream> Collection<F> compatibility_003() {
 		return null;
 	}
 

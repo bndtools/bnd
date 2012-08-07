@@ -13,7 +13,7 @@ import aQute.bnd.version.*;
 
 public class TestFixedIndexedRepo extends TestCase {
 
-	private int countBundles(RepositoryPlugin repo) throws Exception {
+	private static int countBundles(RepositoryPlugin repo) throws Exception {
 		int count = 0;
 
 		List<String> list = repo.list(null);
@@ -27,7 +27,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		return count;
 	}
 
-	public void testIndex1() throws Exception {
+	public static void testIndex1() throws Exception {
 		Processor reporter = new Processor();
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
@@ -45,7 +45,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public void testIndex2() throws Exception {
+	public static void testIndex2() throws Exception {
 		Processor reporter = new Processor();
 
 		FixedIndexedRepo repo = new FixedIndexedRepo();
@@ -60,7 +60,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public void testIndex2Compressed() throws Exception {
+	public static void testIndex2Compressed() throws Exception {
 		Processor reporter = new Processor();
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
@@ -74,7 +74,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public void testObr() throws Exception {
+	public static void testObr() throws Exception {
 		Processor reporter = new Processor();
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 
@@ -96,7 +96,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public void testAmbiguous() throws Exception {
+	public static void testAmbiguous() throws Exception {
 		Processor reporter = new Processor();
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
@@ -112,7 +112,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		assertEquals(0, bsns.size());
 	}
 
-	public void testExternalEntitiesNotFetched() throws Exception {
+	public static void testExternalEntitiesNotFetched() throws Exception {
 		final AtomicInteger accessCount = new AtomicInteger(0);
 		NanoHTTPD httpd = new NanoHTTPD(18081, new File("testdata")) {
 			@Override

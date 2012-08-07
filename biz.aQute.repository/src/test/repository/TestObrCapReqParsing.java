@@ -16,7 +16,7 @@ import aQute.bnd.deployer.repository.providers.*;
 
 public class TestObrCapReqParsing extends TestCase {
 
-	private List<Resource> parseIndex(InputStream stream, URI baseUri) throws Exception {
+	private static List<Resource> parseIndex(InputStream stream, URI baseUri) throws Exception {
 		ObrContentProvider parser = new ObrContentProvider(new BundleIndexerImpl());
 		final List<Resource> resources = new LinkedList<Resource>();
 		IRepositoryIndexProcessor processor = new IRepositoryIndexProcessor() {
@@ -30,7 +30,7 @@ public class TestObrCapReqParsing extends TestCase {
 		return resources;
 	}
 
-	public void testObrContentCaps() throws Exception {
+	public static void testObrContentCaps() throws Exception {
 		FileInputStream stream = new FileInputStream("testdata/fullobr.xml");
 		URI baseUri = new File("testdata").toURI();
 		List<Resource> resources = parseIndex(stream, baseUri);
@@ -72,7 +72,7 @@ public class TestObrCapReqParsing extends TestCase {
 		assertEquals("org.ungoverned.osgi.service.shell.ShellService", svcCaps.get(1).getAttributes().get("osgi.service"));
 	}
 	
-	public void testObrContentReqs() throws Exception {
+	public static void testObrContentReqs() throws Exception {
 		FileInputStream stream = new FileInputStream("testdata/fullobr.xml");
 		URI baseUri = new File("testdata").toURI();
 		List<Resource> resources = parseIndex(stream, baseUri);
@@ -97,7 +97,7 @@ public class TestObrCapReqParsing extends TestCase {
 		assertEquals("(osgi.service=org.osgi.service.packageadmin.PackageAdmin)", svcReqs.get(1).getDirectives().get("filter"));
 	}
 	
-	public void testObrEEReq() throws Exception {
+	public static void testObrEEReq() throws Exception {
 		FileInputStream stream = new FileInputStream("testdata/bree-obr.xml");
 		URI baseUri = new File("testdata").toURI();
 		List<Resource> resources = parseIndex(stream, baseUri);

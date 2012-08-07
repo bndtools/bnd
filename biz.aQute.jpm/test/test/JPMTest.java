@@ -9,9 +9,9 @@ import aQute.libg.reporter.*;
 import aQute.service.reporter.*;
 
 public class JPMTest extends TestCase {
-	File	cwd	= new File(System.getProperty("user.dir")).getAbsoluteFile();
+	static File	cwd	= new File(System.getProperty("user.dir")).getAbsoluteFile();
 
-	class PLF extends Unix {
+	static class PLF extends Unix {
 
 		@Override
 		public void shell(String initial) throws Exception {}
@@ -45,7 +45,7 @@ public class JPMTest extends TestCase {
 		}
 	}
 
-	public void testSimple() {
+	public static void testSimple() {
 		Reporter r = new ReporterAdapter();
 		JustAnotherPackageManager jpm = new JustAnotherPackageManager(r);
 		Platform plf = new PLF();

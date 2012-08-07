@@ -16,10 +16,10 @@ import aQute.lib.io.*;
 
 public class TestMultipleLocalIndexGeneration extends TestCase {
 
-	private Processor			reporter;
-	private LocalIndexedRepo	repo;
-	private File				outputDir;
-	private MockRegistry		registry;
+	private static Processor			reporter;
+	private static LocalIndexedRepo	repo;
+	private static File				outputDir;
+	private static MockRegistry		registry;
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
@@ -54,13 +54,13 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public void testInitiallyEmpty() throws Exception {
+	public static void testInitiallyEmpty() throws Exception {
 		List<String> list = repo.list(".*");
 		assertNotNull(list);
 		assertEquals(0, list.size());
 	}
 
-	public void testDeployBundle() throws Exception {
+	public static void testDeployBundle() throws Exception {
 		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
@@ -91,7 +91,7 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 		assertEquals(deployedFile.getAbsoluteFile(), files[0]);
 	}
 
-	public void testReadMixedRepoTypes() throws Exception {
+	public static void testReadMixedRepoTypes() throws Exception {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("locations",

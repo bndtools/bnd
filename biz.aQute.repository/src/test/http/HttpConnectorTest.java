@@ -36,9 +36,9 @@ public class HttpConnectorTest extends TestCase {
 
 	private static final String	EXPECTED_ETAG	= "64035a95";
 
-	private Server				jetty;
+	private static Server				jetty;
 
-	private String getUrl(boolean http) {
+	private static String getUrl(boolean http) {
 		if (http) {
 			return "http://127.0.0.1:" + HTTP_PORT + "/";
 		}
@@ -58,7 +58,7 @@ public class HttpConnectorTest extends TestCase {
 		jetty.stop();
 	}
 
-	private Server startJetty() throws Exception {
+	private static Server startJetty() throws Exception {
 		Server server = new Server();
 
 		// Create the login service
@@ -111,17 +111,22 @@ public class HttpConnectorTest extends TestCase {
 		server.setHandler(securityHandler);
 		server.start();
 
+		while (!server.isRunning()) {
+			Thread.sleep(10);
+		}
+		
 		HTTP_PORT = httpConnector.getLocalPort();
 		HTTPS_PORT = sslConnector.getLocalPort();
 		assertNotSame(new Integer(0), new Integer(HTTP_PORT));
 		assertNotSame(new Integer(-1), new Integer(HTTP_PORT));
 		assertNotSame(new Integer(0), new Integer(HTTPS_PORT));
 		assertNotSame(new Integer(-1), new Integer(HTTPS_PORT));
+		assertNotSame(new Integer(HTTP_PORT), new Integer(HTTPS_PORT));
 
 		return server;
 	}
 
-	public void testConnectTagged() throws Exception {
+	public static void testConnectTagged() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 
 		TaggedData data = connector.connectTagged(new URL(getUrl(true) + "bundles/dummybundle.jar"));
@@ -130,14 +135,14 @@ public class HttpConnectorTest extends TestCase {
 		assertEquals("ETag is incorrect", EXPECTED_ETAG, data.getTag());
 	}
 
-	public void testConnectKnownTag() throws Exception {
+	public static void testConnectKnownTag() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 
 		TaggedData data = connector.connectTagged(new URL(getUrl(true) + "bundles/dummybundle.jar"), EXPECTED_ETAG);
 		assertNull("Data should be null since ETag not modified.", data);
 	}
 
-	public void testConnectTagModified() throws Exception {
+	public static void testConnectTagModified() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 
 		TaggedData data = connector.connectTagged(new URL(getUrl(true) + "bundles/dummybundle.jar"), "00000000");
@@ -146,7 +151,7 @@ public class HttpConnectorTest extends TestCase {
 		assertEquals("ETag is incorrect", EXPECTED_ETAG, data.getTag());
 	}
 
-	public void testConnectHTTPS() throws Exception {
+	public static void testConnectHTTPS() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("disableServerVerify", "true");
@@ -157,7 +162,7 @@ public class HttpConnectorTest extends TestCase {
 		stream.close();
 	}
 
-	public void testConnectHTTPSBadCerficate() throws Exception {
+	public static void testConnectHTTPSBadCerficate() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 
 		InputStream stream = null;
@@ -174,7 +179,7 @@ public class HttpConnectorTest extends TestCase {
 		}
 	}
 
-	public void testConnectTaggedHTTPS() throws Exception {
+	public static void testConnectTaggedHTTPS() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("disableServerVerify", "true");
@@ -185,7 +190,7 @@ public class HttpConnectorTest extends TestCase {
 		data.getInputStream().close();
 	}
 
-	public void testConnectTaggedHTTPSBadCerficate() throws Exception {
+	public static void testConnectTaggedHTTPSBadCerficate() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
 
 		InputStream stream = null;
@@ -202,7 +207,7 @@ public class HttpConnectorTest extends TestCase {
 		}
 	}
 
-	public void testConnectNoUserPass() throws Exception {
+	public static void testConnectNoUserPass() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("configs", "");
@@ -218,7 +223,7 @@ public class HttpConnectorTest extends TestCase {
 		}
 	}
 
-	public void testConnectWithUserPass() throws Exception {
+	public static void testConnectWithUserPass() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("configs", "testdata/http_auth.properties");
@@ -228,7 +233,7 @@ public class HttpConnectorTest extends TestCase {
 		assertNotNull(stream);
 	}
 
-	public void testConnectHTTPSBadCertificate() throws Exception {
+	public static void testConnectHTTPSBadCertificate() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("configs", "testdata/http_auth.properties");
@@ -243,8 +248,11 @@ public class HttpConnectorTest extends TestCase {
 			assertTrue(e instanceof SSLHandshakeException);
 		}
 	}
-
-	public void testConnectWithUserPassHTTPS() throws Exception {
+	
+	// FIXME
+	// run stand-alone this test passes within 0.5 seconds.
+	// run right after testConnectHTTPSBadCertificate it times out, but claims to succeed
+	public static void testConnectWithUserPassHTTPS() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("configs", "testdata/http_auth.properties");
@@ -261,7 +269,7 @@ public class HttpConnectorTest extends TestCase {
 		}
 	}
 
-	public void testConnectWithWrongUserPass() throws Exception {
+	public static void testConnectWithWrongUserPass() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("configs", "testdata/http_auth_wrong.properties");
@@ -277,7 +285,7 @@ public class HttpConnectorTest extends TestCase {
 		}
 	}
 
-	public void testConnectWithWrongUserPassHTTPS() throws Exception {
+	public static void testConnectWithWrongUserPassHTTPS() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("configs", "testdata/http_auth_wrong.properties");
@@ -294,7 +302,7 @@ public class HttpConnectorTest extends TestCase {
 		}
 	}
 
-	public void testConnectWithUserPassAndTag() throws Exception {
+	public static void testConnectWithUserPassAndTag() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("configs", "testdata/http_auth.properties");

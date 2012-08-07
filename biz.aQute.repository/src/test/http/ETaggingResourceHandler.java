@@ -87,7 +87,7 @@ public class ETaggingResourceHandler extends ResourceHandler {
 		resource.writeTo(out, 0, resource.length());
 	}
 
-	protected String calculateETag(Resource resource) {
+	protected static String calculateETag(Resource resource) {
 		return Integer.toHexString(Long.toString(resource.length()).hashCode());
 	}
 

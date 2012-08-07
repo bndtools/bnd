@@ -13,9 +13,9 @@ public class CachingUriResourceHandlerTest extends TestCase {
 
 	private static final String	EXPECTED_ETAG	= "64035a95";
 
-	File						currentDir		= new File(System.getProperty("user.dir"));
+	static File						currentDir		= new File(System.getProperty("user.dir"));
 
-	public void testLoadFromCache() throws Exception {
+	public static void testLoadFromCache() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
 						"testdata/httpcache/1"), CachingMode.PreferRemote);
@@ -27,7 +27,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 				result.getAbsolutePath());
 	}
 
-	public void testFailedLoadFromRemote() throws Exception {
+	public static void testFailedLoadFromRemote() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
 						"testdata/httpcache/2"), CachingMode.PreferRemote);
@@ -41,7 +41,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		}
 	}
 
-	public void testLoadFromRemote() throws Exception {
+	public static void testLoadFromRemote() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
 						"testdata/httpcache/3"), CachingMode.PreferRemote);
@@ -65,7 +65,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		}
 	}
 
-	public void testRemoteUnmodifiedETag() throws Exception {
+	public static void testRemoteUnmodifiedETag() throws Exception {
 		File cached = new File("testdata/httpcache/4/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		long cacheTimestamp = cached.lastModified();
 
@@ -84,7 +84,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		}
 	}
 
-	public void testRemoteModifiedETag() throws Exception {
+	public static void testRemoteModifiedETag() throws Exception {
 		File cached = new File("testdata/httpcache/5/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		long cacheTimestamp = cached.lastModified();
 
@@ -109,7 +109,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		}
 	}
 
-	public void testPreferCacheEmptyCache() throws Exception {
+	public static void testPreferCacheEmptyCache() throws Exception {
 		File cached = new File("testdata/httpcache/6/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		cached.delete();
 
@@ -130,7 +130,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		}
 	}
 
-	public void testPreferCache() throws Exception {
+	public static void testPreferCache() throws Exception {
 		File cached = new File("testdata/httpcache/7/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		long cachedTimestamp = cached.lastModified();
 

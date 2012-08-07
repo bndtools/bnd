@@ -5,7 +5,7 @@ import aQute.bnd.deployer.repository.providers.*;
 
 public class TestAttributeTypeParsing extends TestCase {
 
-	public void testScalarTypeNames() {
+	public static void testScalarTypeNames() {
 		assertEquals(AttributeType.STRING, AttributeType.parseTypeName(null));
 		assertEquals(AttributeType.STRING, AttributeType.parseTypeName("String"));
 		assertEquals(AttributeType.LONG, AttributeType.parseTypeName("Long"));
@@ -13,7 +13,7 @@ public class TestAttributeTypeParsing extends TestCase {
 		assertEquals(AttributeType.VERSION, AttributeType.parseTypeName("Version"));
 	}
 
-	public void testListTypeNames() {
+	public static void testListTypeNames() {
 		assertEquals(AttributeType.STRINGLIST, AttributeType.parseTypeName("List<String>"));
 		assertEquals(AttributeType.LONGLIST, AttributeType.parseTypeName("List<Long>"));
 		assertEquals(AttributeType.DOUBLELIST, AttributeType.parseTypeName("List<Double>"));

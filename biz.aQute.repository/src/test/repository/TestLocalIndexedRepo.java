@@ -12,8 +12,8 @@ import aQute.lib.io.*;
 
 public class TestLocalIndexedRepo extends TestCase {
 
-	private File		outputDir;
-	private NanoHTTPD	httpd;
+	private static File		outputDir;
+	private static NanoHTTPD	httpd;
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
@@ -31,7 +31,7 @@ public class TestLocalIndexedRepo extends TestCase {
 		httpd.stop();
 	}
 
-	public void testLocalIndexLocation() throws Exception {
+	public static void testLocalIndexLocation() throws Exception {
 		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
@@ -45,7 +45,7 @@ public class TestLocalIndexedRepo extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public void testLocalAndRemoteIndexLocations() throws Exception {
+	public static void testLocalAndRemoteIndexLocations() throws Exception {
 		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();

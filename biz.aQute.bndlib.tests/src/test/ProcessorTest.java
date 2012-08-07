@@ -5,7 +5,7 @@ import aQute.bnd.osgi.*;
 
 public class ProcessorTest extends TestCase {
 
-	public void testPlugins() {
+	public static void testPlugins() {
 
 	}
 

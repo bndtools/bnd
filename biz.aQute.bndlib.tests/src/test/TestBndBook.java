@@ -7,7 +7,7 @@ import aQute.bnd.osgi.*;
 
 public class TestBndBook extends TestCase {
 
-	public void testFilterout() throws Exception {
+	public static void testFilterout() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.addClasspath(new File("jar/ds.jar"));

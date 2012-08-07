@@ -26,9 +26,9 @@ import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class BndrunResolveContextTest extends TestCase {
 
-    private final LogService log = new NullLogService();
+    private static final LogService log = new NullLogService();
 
-    public void testEffective() {
+    public static void testEffective() {
         BndrunResolveContext context = new BndrunResolveContext(new BndEditModel(), new MockRegistry(), log);
 
         Requirement resolveReq = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, Namespace.EFFECTIVE_RESOLVE).buildSyntheticRequirement();
@@ -40,11 +40,11 @@ public class BndrunResolveContextTest extends TestCase {
         assertTrue(context.isEffective(noEffectiveDirectiveReq));
     }
 
-    public void testEmptyInitialWirings() {
+    public static void testEmptyInitialWirings() {
         assertEquals(0, new BndrunResolveContext(new BndEditModel(), new MockRegistry(), log).getWirings().size());
     }
 
-    public void testBasicFindProviders() {
+    public static void testBasicFindProviders() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(new File("testdata/repo1.index.xml")));
 
@@ -59,7 +59,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/repo1/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
     }
 
-    public void testProviderPreference() {
+    public static void testProviderPreference() {
         Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=org.apache.felix.gogo.api)").buildSyntheticRequirement();
 
         MockRegistry registry;
@@ -94,7 +94,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/repo1/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
     }
 
-    public void testReorderRepositories() {
+    public static void testReorderRepositories() {
         Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=org.apache.felix.gogo.api)").buildSyntheticRequirement();
 
         MockRegistry registry = new MockRegistry();
@@ -120,7 +120,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/repo1/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
     }
 
-    public void testFrameworkIsMandatory() {
+    public static void testFrameworkIsMandatory() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
@@ -134,7 +134,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(fwkResource));
     }
 
-    public void testChooseHighestFrameworkVersion() {
+    public static void testChooseHighestFrameworkVersion() {
         MockRegistry registry;
         BndEditModel runModel;
         BndrunResolveContext context;
@@ -169,7 +169,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(fwkResource));
     }
 
-    public void testFrameworkCapabilitiesPreferredOverRepository() {
+    public static void testFrameworkCapabilitiesPreferredOverRepository() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml")));
         registry.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml")));
@@ -187,7 +187,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/osgi.cmpn-4.3.0.jar").toURI(), findContentURI(providers.get(1).getResource()));
     }
 
-    public void testInputRequirementsAsMandatoryResource() {
+    public static void testInputRequirementsAsMandatoryResource() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
@@ -206,7 +206,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals("<<INITIAL>>", iter.next().getCapabilities("osgi.identity").get(0).getAttributes().get("osgi.identity"));
     }
 
-    public void testEERequirementResolvesFramework() {
+    public static void testEERequirementResolvesFramework() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
@@ -223,7 +223,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
     }
 
-    public void testJREPackageResolvesFramework() {
+    public static void testJREPackageResolvesFramework() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
@@ -240,7 +240,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
     }
 
-    public void testJREPackageNotResolved() {
+    public static void testJREPackageNotResolved() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
@@ -255,7 +255,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(0, providers.size());
     }
 
-    public void testDontResolveBuildOnlyLibraries() {
+    public static void testDontResolveBuildOnlyLibraries() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(new File("testdata/buildrepo.index.xml")));
 
@@ -271,7 +271,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(0, providers2.size());
     }
 
-    public void testResolveSystemBundleAlias() {
+    public static void testResolveSystemBundleAlias() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 

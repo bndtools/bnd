@@ -18,31 +18,31 @@ public abstract class APIReferrer extends AtomicReference<Device> implements   E
 
 	private static final long	serialVersionUID	= 1L;
 	
-	Configuration config;
+	static Configuration config;
 	
 	
-	public HttpService publicReference() { return null; }		// org.osgi.service.http
-	protected Wire protectedReference() { return null; }        // org.osgi.service.wireadmin
+	public static HttpService publicReference() { return null; }		// org.osgi.service.http
+	protected static Wire protectedReference() { return null; }        // org.osgi.service.wireadmin
 	
-	private Configuration privateReference() { return null; }
-	Configuration packagePrivateReference() { return null; }
+	private static Configuration privateReference() { return null; }
+	static Configuration packagePrivateReference() { return null; }
     
-    public void publicReference( org.osgi.service.component.ComponentConstants ad) {} // org.osgi.service.component
-    protected void protectedReference( BeanArgument ad) {}  // org.osgi.service.blueprint.reflect
+    public static void publicReference( org.osgi.service.component.ComponentConstants ad) {} // org.osgi.service.component
+    protected static void protectedReference( BeanArgument ad) {}  // org.osgi.service.blueprint.reflect
     
-    void packagePrivateReference( Configuration ad) {}
-    private void privateReference( Configuration ad) {}
+    static void packagePrivateReference( Configuration ad) {}
+    private static void privateReference( Configuration ad) {}
 	
-    public void publicFoo( Class<org.osgi.service.condpermadmin.BundleLocationCondition> foo) {} // org.osgi.service.condpermadmin
-    protected void protectedFoo( Class<LogService> foo) {} // org.osgi.service.log
+    public static void publicFoo( Class<org.osgi.service.condpermadmin.BundleLocationCondition> foo) {} // org.osgi.service.condpermadmin
+    protected static void protectedFoo( Class<LogService> foo) {} // org.osgi.service.log
     
-	private void privateFoo( Class<Configuration> foo) {}
-    void packagePrivateFoo( Class<Configuration> foo) {}
+	private static void privateFoo( Class<Configuration> foo) {}
+	static void packagePrivateFoo( Class<Configuration> foo) {}
     
-    public void foo() {
+    public static void foo() {
     	Configuration foo;
     }
-    private void foop() {
+    private static void foop() {
     	Configuration foo;
     }
 }

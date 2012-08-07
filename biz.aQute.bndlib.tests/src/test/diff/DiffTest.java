@@ -8,27 +8,27 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.diff.*;
 
 public class DiffTest extends TestCase {
-	DiffPluginImpl	differ	= new DiffPluginImpl();
+	static DiffPluginImpl	differ	= new DiffPluginImpl();
 
-	public void testAwtGeom() throws Exception {
+	public static void testAwtGeom() throws Exception {
 		Tree newer = differ.tree(new File("../cnf/repo/ee.j2se/ee.j2se-1.5.0.jar"));
 		Tree gp = newer.get("<api>").get("java.awt.geom").get("java.awt.geom.GeneralPath");
 		assertNotNull(gp);
 		show(gp, 0);
 	}
 
-	public final class Final {
+	public static final class Final {
 		public void foo() {}
 	}
 
-	public class II {
+	public static class II {
 		final int	x	= 3;
 
 		public void foo() {}
 	}
 
-	public class I extends II {
-		public I bar() {
+	public static class I extends II {
+		public static I bar() {
 			return null;
 		}
 
@@ -36,7 +36,7 @@ public class DiffTest extends TestCase {
 		public void foo() {}
 	}
 
-	public void testInheritance() throws Exception {
+	public static void testInheritance() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty(Constants.EXPORT_PACKAGE, "test.diff");
@@ -56,21 +56,21 @@ public class DiffTest extends TestCase {
 		b.close();
 	}
 
-	public interface Intf {
+	public static interface Intf {
 		void foo();
 	}
 
-	public abstract class X implements Intf {
+	public static abstract class X implements Intf {
 
 		@Override
 		public void foo() {}
 	}
 
-	interface A extends Comparable<Object>, Serializable {
+	static interface A extends Comparable<Object>, Serializable {
 
 	}
 
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 
 		Tree newer = differ.tree(new Jar(new File("jar/osgi.core-4.3.0.jar")));
 		Tree older = differ.tree(new Jar(new File("jar/osgi.core.jar"))); // 4.2
@@ -79,9 +79,9 @@ public class DiffTest extends TestCase {
 		show(diff, 0);
 	}
 
-	abstract class SBB {}
+	static abstract class SBB {}
 
-	public class CMP implements Comparable<Number> {
+	public static class CMP implements Comparable<Number> {
 
 		@Override
 		public int compareTo(Number var0) {
@@ -91,7 +91,7 @@ public class DiffTest extends TestCase {
 
 	}
 
-	class SB extends SBB implements Appendable {
+	static class SB extends SBB implements Appendable {
 
 		@Override
 		public SB append(char var0) throws IOException {
@@ -112,7 +112,7 @@ public class DiffTest extends TestCase {
 		}
 	}
 
-	void show(Diff diff, int indent) {
+	static void show(Diff diff, int indent) {
 		// if (diff.getDelta() == Delta.UNCHANGED || diff.getDelta() ==
 		// Delta.IGNORED)
 		// return;
@@ -130,7 +130,7 @@ public class DiffTest extends TestCase {
 		}
 	}
 
-	void show(Tree tree, int indent) {
+	static void show(Tree tree, int indent) {
 
 		for (int i = 0; i < indent; i++)
 			System.err.print("   ");

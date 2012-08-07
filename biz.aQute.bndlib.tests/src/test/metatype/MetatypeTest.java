@@ -20,12 +20,12 @@ import aQute.lib.io.*;
 import aQute.libg.generics.*;
 
 public class MetatypeTest extends TestCase {
-	DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
-	XPathFactory			xpathf	= XPathFactory.newInstance();
-	XPath					xpath	= xpathf.newXPath();
+	static DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
+	static XPathFactory			xpathf	= XPathFactory.newInstance();
+	static XPath					xpath	= xpathf.newXPath();
 
-	DocumentBuilder			db;
-	{
+	static DocumentBuilder			db;
+	static {
 		try {
 			dbf.setNamespaceAware(true);
 			db = dbf.newDocumentBuilder();
@@ -48,12 +48,12 @@ public class MetatypeTest extends TestCase {
 			});
 		}
 		catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw new ExceptionInInitializerError(e);
 		}
 	}
 
-	public void testOptions() {
+	public static void testOptions() {
 
 	}
 
@@ -70,7 +70,7 @@ public class MetatypeTest extends TestCase {
 	 *              from aQute/bnd/annotation/metatype/Configurable.java
 	 */
 	@Meta.OCD
-	interface C {
+	static interface C {
 		@Meta.AD(required = false)
 		Integer port();
 	}
@@ -182,7 +182,7 @@ public class MetatypeTest extends TestCase {
 		String nullid();
 	}
 
-	public void testNaming() throws Exception {
+	public static void testNaming() throws Exception {
 		Map<String,Object> map = Create.map();
 
 		map.put("_secret", "_secret");
@@ -271,7 +271,7 @@ public class MetatypeTest extends TestCase {
 		}
 	}
 
-	interface CollectionsTest {
+	static interface CollectionsTest {
 		Collection<String> collection();
 
 		List<String> list();
@@ -335,7 +335,7 @@ public class MetatypeTest extends TestCase {
 	/**
 	 * Test the special conversions.
 	 */
-	interface SpecialConversions {
+	static interface SpecialConversions {
 		enum X {
 			A, B, C
 		}
@@ -606,7 +606,7 @@ public class MetatypeTest extends TestCase {
 		X o();
 	}
 
-	public void testEnum() throws Exception {
+	public static void testEnum() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -658,7 +658,7 @@ public class MetatypeTest extends TestCase {
 	@Meta.OCD(name = "name")
 	public static interface OCDName {}
 
-	public void testOCD() throws Exception {
+	public static void testOCD() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -688,7 +688,7 @@ public class MetatypeTest extends TestCase {
 				"localization");
 	}
 
-	void assertOCD(Builder b, String cname, String id, String name, String description, String designate,
+	static void assertOCD(Builder b, String cname, String id, String name, String description, String designate,
 			boolean factory, String localization) throws Exception {
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/" + cname + ".xml");
 		assertNotNull(r);
@@ -781,7 +781,7 @@ public class MetatypeTest extends TestCase {
 		String notRequired();
 	}
 
-	public void testAD() throws Exception {
+	public static void testAD() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -824,7 +824,7 @@ public class MetatypeTest extends TestCase {
 				});
 	}
 
-	void assertAD(Document d, @SuppressWarnings("unused") String mname, String name, String id, String min, String max, String deflt,
+	static void assertAD(Document d, @SuppressWarnings("unused") String mname, String name, String id, String min, String max, String deflt,
 			int cardinality, String type, String description, @SuppressWarnings("unused") String[] optionvalues, @SuppressWarnings("unused") String optionLabels[])
 			throws XPathExpressionException {
 		assertEquals(name, xpath.evaluate("//OCD/AD[@id='" + id + "']/@name", d, XPathConstants.STRING));
@@ -940,7 +940,7 @@ public class MetatypeTest extends TestCase {
 		URI[] raURI();
 	}
 
-	public void testReturnTypes() throws Exception {
+	public static void testReturnTypes() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -1056,7 +1056,7 @@ public class MetatypeTest extends TestCase {
 		Collection<String> stringCollection();
 	}
 
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");

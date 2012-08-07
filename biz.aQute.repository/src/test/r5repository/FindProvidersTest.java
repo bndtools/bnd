@@ -13,7 +13,7 @@ import aQute.bnd.osgi.resource.*;
 
 public class FindProvidersTest extends TestCase {
 
-	public void testPackageQuery() throws Exception {
+	public static void testPackageQuery() throws Exception {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("locations", new File("testdata/minir5.xml").toURI().toString());
@@ -32,7 +32,7 @@ public class FindProvidersTest extends TestCase {
 		assertEquals("dummybundle", identityAttrValue);
 	}
 	
-	public void testTypedCapabilityAttribute() {
+	public static void testTypedCapabilityAttribute() {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("locations", new File("testdata/minir5.xml").toURI().toString());
@@ -44,7 +44,7 @@ public class FindProvidersTest extends TestCase {
 		assertEquals(Version.class, id.getAttributes().get("version").getClass());
 	}
 
-	public void testReadGZippedStream() throws Exception {
+	public static void testReadGZippedStream() throws Exception {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("locations", new File("testdata/big_index.xml.gz").toURI().toString());
@@ -67,7 +67,7 @@ public class FindProvidersTest extends TestCase {
 		assertEquals(new File("testdata/osgi.cmpn/osgi.cmpn-4.2.0.jar").getAbsoluteFile().toURI(), contentCap.getAttributes().get("url"));
 	}
 
-	public void testMultipleMatches() throws Exception {
+	public static void testMultipleMatches() throws Exception {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("locations", new File("testdata/big_index.xml").toURI().toString());

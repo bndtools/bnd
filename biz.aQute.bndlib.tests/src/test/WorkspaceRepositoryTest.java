@@ -4,10 +4,10 @@ import junit.framework.*;
 import aQute.bnd.build.*;
 
 public class WorkspaceRepositoryTest extends TestCase {
-	Workspace			workspace;
-	WorkspaceRepository	repo;
+	static Workspace			workspace;
+	static WorkspaceRepository	repo;
 
-	public void testIMustBeUpdated() {
+	public static void testIMustBeUpdated() {
 		
 	}
 //	public void setUp() throws Exception {

@@ -70,7 +70,7 @@ class Implemented implements Plugin {
 }
 
 public class ClassParserTest extends TestCase {
-	Analyzer	a	= new Analyzer();
+	static Analyzer	a	= new Analyzer();
 
 	/**
 	 * Test the constant values
@@ -113,7 +113,7 @@ public class ClassParserTest extends TestCase {
 		// values.get("clss")).getName());
 	}
 
-	public void testGeneric() throws Exception {
+	public static void testGeneric() throws Exception {
 		print(System.err, WithGenerics.class.getField("field").getGenericType());
 		System.err.println();
 		print(System.err, Class.class);
@@ -122,7 +122,7 @@ public class ClassParserTest extends TestCase {
 		System.err.println();
 	}
 
-	public void print(Appendable sb, Type t) throws Exception {
+	public static void print(Appendable sb, Type t) throws Exception {
 		if (t instanceof ParameterizedType) {
 			ParameterizedType pt = (ParameterizedType) t;
 			Class< ? > c = (Class< ? >) pt.getRawType();
@@ -210,14 +210,14 @@ public class ClassParserTest extends TestCase {
 		assertTrue(c.getReferred().contains(a.getPackageRef("aQute/bnd/osgi")));
 	}
 
-	public void testGenericsSignature2() throws Exception {
+	public static void testGenericsSignature2() throws Exception {
 		Clazz c = new Clazz(a, "genericstest", new FileResource(new File("src/test/generics.clazz")));
 		c.parseClassFile();
 		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing/table")));
 		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing")));
 	}
 
-	public void testGenericsSignature() throws Exception {
+	public static void testGenericsSignature() throws Exception {
 		Clazz c = new Clazz(a, "genericstest", new FileResource(new File("src/test/generics.clazz")));
 		c.parseClassFile();
 		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing/table")));
@@ -288,7 +288,7 @@ public class ClassParserTest extends TestCase {
 		assertTrue(set.contains(a.getPackageRef("test/annotations")));
 	}
 
-	public void testLargeClass2() throws IOException {
+	public static void testLargeClass2() throws IOException {
 		try {
 			URL url = new URL("jar:file:jar/ecj_3.2.2.jar!/org/eclipse/jdt/internal/compiler/parser/Parser.class");
 			InputStream in = url.openStream();

@@ -12,7 +12,7 @@ import aQute.bnd.deployer.repository.providers.*;
 
 public class TestR5Recognition extends TestCase {
 
-	public void testRejectNamespace() throws Exception {
+	public static void testRejectNamespace() throws Exception {
 		String testdata = "<?xml version='1.0' encoding='utf-8'?>"
 				+ "<repository increment='0' name='index1' xmlns='http://www2.osgi.org/www/obr2html.xsl'>"
 				+ "<resource>";
@@ -20,19 +20,19 @@ public class TestR5Recognition extends TestCase {
 		assertEquals(reject, new R5RepoContentProvider().checkStream("xxx", stream).getDecision());
 	}
 
-	public void testAcceptNamespace() throws Exception {
+	public static void testAcceptNamespace() throws Exception {
 		String testdata = "<?xml version='1.0'?>" + "<repository xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
 		assertEquals(accept, new R5RepoContentProvider().checkStream("xxx", stream).getDecision());
 	}
 
-	public void testRejectRootElementName() throws Exception {
+	public static void testRejectRootElementName() throws Exception {
 		String testdata = "<?xml version='1.0' encoding='utf-8'?>" + "<repo name='index1'/>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
 		assertEquals(reject, new R5RepoContentProvider().checkStream("xxx", stream).getDecision());
 	}
 
-	public void testUndecidable() throws Exception {
+	public static void testUndecidable() throws Exception {
 		String testdata;
 		ByteArrayInputStream stream;
 		CheckResult result;
@@ -52,7 +52,7 @@ public class TestR5Recognition extends TestCase {
 		assertEquals(undecided, result.getDecision());
 	}
 
-	public void testUnparseable() throws Exception {
+	public static void testUnparseable() throws Exception {
 		String testdata = "<?xml version='1.0' encoding='utf-8'?>" + "<repository name='index1'>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
 		CheckResult result = new R5RepoContentProvider().checkStream("xxx", stream);
@@ -60,7 +60,7 @@ public class TestR5Recognition extends TestCase {
 		assertTrue(result.getException() != null && result.getException() instanceof XMLStreamException);
 	}
 
-	public void testAcceptOnCapabilityChildElementNames() throws Exception {
+	public static void testAcceptOnCapabilityChildElementNames() throws Exception {
 		String testdata;
 		ByteArrayInputStream stream;
 		CheckResult result;
@@ -84,7 +84,7 @@ public class TestR5Recognition extends TestCase {
 		assertEquals(accept, result.getDecision());
 	}
 
-	public void testAcceptExtensionElementOtherNamespace() throws Exception {
+	public static void testAcceptExtensionElementOtherNamespace() throws Exception {
 		String testdata;
 		ByteArrayInputStream stream;
 		CheckResult result;

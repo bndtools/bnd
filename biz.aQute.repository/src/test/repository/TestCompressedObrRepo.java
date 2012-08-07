@@ -12,9 +12,9 @@ import aQute.bnd.version.*;
 
 public class TestCompressedObrRepo extends TestCase {
 
-	private FixedIndexedRepo	obr;
-	private NanoHTTPD			httpd;
-	private Processor			reporter;
+	private static FixedIndexedRepo	obr;
+	private static NanoHTTPD			httpd;
+	private static Processor			reporter;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -50,7 +50,7 @@ public class TestCompressedObrRepo extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public void testGetLatest() throws Exception {
+	public static void testGetLatest() throws Exception {
 		File[] files = obr.get("name.njbartlett.osgi.emf.minimal", "latest");
 
 		assertNotNull(files);
@@ -59,7 +59,7 @@ public class TestCompressedObrRepo extends TestCase {
 		assertEquals("name.njbartlett.osgi.emf.minimal-2.7.0.jar", files[0].getName());
 	}
 
-	public void testGetAll() throws Exception {
+	public static void testGetAll() throws Exception {
 		File[] files = obr.get("name.njbartlett.osgi.emf.xmi", null);
 
 		assertNotNull(files);
@@ -69,7 +69,7 @@ public class TestCompressedObrRepo extends TestCase {
 		assertEquals("name.njbartlett.osgi.emf.xmi-2.7.0.jar", files[1].getName());
 	}
 
-	public void testGetHttp() throws Exception {
+	public static void testGetHttp() throws Exception {
 		File[] files = obr.get("org.example.dummy", "latest");
 
 		assertNotNull(files);
@@ -79,37 +79,37 @@ public class TestCompressedObrRepo extends TestCase {
 		assertEquals("dummybundle.jar", files[0].getName());
 	}
 
-	public void testGetBsnLowest() throws Exception {
+	public static void testGetBsnLowest() throws Exception {
 		File result = obr.get("name.njbartlett.osgi.emf.xmi", null, Strategy.LOWEST, null);
 		assertNotNull(result);
 		assertEquals("name.njbartlett.osgi.emf.xmi-2.5.0.jar", result.getName());
 	}
 
-	public void testGetBsnHighest() throws Exception {
+	public static void testGetBsnHighest() throws Exception {
 		File result = obr.get("name.njbartlett.osgi.emf.xmi", null, Strategy.HIGHEST, null);
 		assertNotNull(result);
 		assertEquals("name.njbartlett.osgi.emf.xmi-2.7.0.jar", result.getName());
 	}
 
-	public void testGetBsnLowestWithRange() throws Exception {
+	public static void testGetBsnLowestWithRange() throws Exception {
 		File result = obr.get("name.njbartlett.osgi.emf.xmi", "2.5.1", Strategy.LOWEST, null);
 		assertNotNull(result);
 		assertEquals("name.njbartlett.osgi.emf.xmi-2.7.0.jar", result.getName());
 	}
 
-	public void testGetBsnHighestWithRange() throws Exception {
+	public static void testGetBsnHighestWithRange() throws Exception {
 		File result = obr.get("name.njbartlett.osgi.emf.xmi", "[2.5,2.7)", Strategy.HIGHEST, null);
 		assertNotNull(result);
 		assertEquals("name.njbartlett.osgi.emf.xmi-2.5.0.jar", result.getName());
 	}
 
-	public void testList() throws Exception {
+	public static void testList() throws Exception {
 		List<String> result = obr.list("name\\.njbartlett\\..*");
 		assertNotNull(result);
 		assertEquals(2, result.size());
 	}
 
-	public void testVersions() throws Exception {
+	public static void testVersions() throws Exception {
 		List<Version> result = obr.versions("name.njbartlett.osgi.emf.minimal");
 		assertEquals(2, result.size());
 

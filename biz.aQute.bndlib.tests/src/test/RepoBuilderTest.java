@@ -4,7 +4,7 @@ import junit.framework.*;
 
 public class RepoBuilderTest extends TestCase {
 
-	public void testA() {}
+	public static void testA() {}
 
 	// public void testSimple() {
 	// assertBundles("osgi", RepoBuilder.STRATEGY_LOWEST, new

@@ -9,7 +9,7 @@ import aQute.bnd.osgi.*;
 public class CorruptManifest extends TestCase {
 	static String	ltext	= "bla bla \nbla bla bla bla \nbla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla ";
 
-	public void testCorruptJar() throws Exception {
+	public static void testCorruptJar() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("NL1", "\n");
 		b.setProperty("NL2", "\r\n");

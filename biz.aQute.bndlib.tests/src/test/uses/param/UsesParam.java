@@ -5,11 +5,11 @@ import javax.security.auth.callback.Callback;
 
 public class UsesParam {
 	
-	public void foo(Callback config) {
+	public static void foo(Callback config) {
 		Subject subject = new Subject();
 	}
 	
-	private void bar(Subject subject) {
+	private static void bar(Subject subject) {
 		
 	}
 

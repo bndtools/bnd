@@ -21,13 +21,13 @@ class T2 extends T1 {}
 class T3 extends T2 {}
 
 public class AnalyzerTest extends BndTestCase {
-	File	cwd	= new File(System.getProperty("user.dir"));
+	static File	cwd	= new File(System.getProperty("user.dir"));
 
 	/**
 	 * Check the cross references
 	 */
 
-	public void testCrossReference() throws Exception {
+	public static void testCrossReference() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile(cwd, "bin"));
 		b.addClasspath(IO.getFile(cwd, "../aQute.libg/bin"));

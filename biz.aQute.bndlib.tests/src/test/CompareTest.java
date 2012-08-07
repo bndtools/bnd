@@ -26,22 +26,23 @@ public class CompareTest<O extends Serializable> extends TestCase {
 	class A3<T extends Exception & Serializable> { //
 	}
 
-	public String foo0() {
+	public static String foo0() {
 		return null;
 	}
 
-	public <T> T foo1() {
+	public static <T> T foo1() {
 		return null;
 	}
 
-	public <T extends Serializable> T foo2() {
+	public static <T extends Serializable> T foo2() {
 		return null;
 	}
 
-	public <T extends Exception & I<String>> T foo3() {
+	public static <T extends Exception & I<String>> T foo3() {
 		return null;
 	}
 
+	@SuppressWarnings("static-method")
 	public <T extends O> T foo4() {
 		return null;
 	}
@@ -91,11 +92,12 @@ public class CompareTest<O extends Serializable> extends TestCase {
 
 	public A1<Collection<String>[]>	a1;
 
+	@SuppressWarnings("static-method")
 	<Y, X extends A1<Y>> A1< ? extends X> bar() {
 		return null;
 	}
 
-	public void testSimple() throws IOException {
+	public static void testSimple() throws IOException {
 
 		// Scope root = new Scope(Access.PUBLIC, Kind.ROOT, ".");
 		// RuntimeSignatureBuilder pc = new RuntimeSignatureBuilder(root);

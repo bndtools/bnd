@@ -5,7 +5,7 @@ import aQute.libg.qtokens.*;
 
 public class TestQuotedTokenizer extends TestCase {
 
-	public void testNativeSeps() {
+	public static void testNativeSeps() {
 		String s[] = new QuotedTokenizer("x;c;d=4", ";,=", true).getTokens();
 		assertEquals("Length", 7, s.length);
 		assertEquals("x", s[0]);
@@ -17,7 +17,7 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("4", s[6]);
 	}
 
-	public void testSimple() {
+	public static void testSimple() {
 		String s[] = new QuotedTokenizer("1.jar, 2.jar,    \t   3.jar", ",").getTokens();
 		assertEquals("Length", 3, s.length);
 		assertEquals("1.jar", s[0]);
@@ -25,27 +25,27 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("3.jar", s[2]);
 	}
 
-	public void testQuoted() {
+	public static void testQuoted() {
 		String s[] = new QuotedTokenizer("'1 ,\t.jar'", ",").getTokens();
 		assertEquals("Length", 1, s.length);
 		assertEquals("1 ,\t.jar", s[0]);
 	}
 
-	public void testWhiteSpace() {
+	public static void testWhiteSpace() {
 		String s[] = new QuotedTokenizer("               1.jar,               2.jar         ", ",").getTokens();
 		assertEquals("Length", 2, s.length);
 		assertEquals("1.jar", s[0]);
 		assertEquals("2.jar", s[1]);
 	}
 
-	public void testMultipleSeps() {
+	public static void testMultipleSeps() {
 		String s[] = new QuotedTokenizer("1.jar,,,,,,,,,,,    , ,2.jar", ",").getTokens();
 		assertEquals("Length", 14, s.length);
 		assertEquals("1.jar", s[0]);
 		assertEquals("2.jar", s[13]);
 	}
 
-	public void testNative() {
+	public static void testNative() {
 		String s[] = new QuotedTokenizer("x.dll;y.dll;abc=3;def=5;version=\"1.2.34,123\"", ";,=").getTokens();
 		assertEquals("Length", 8, s.length);
 		assertEquals("x.dll", s[0]);
@@ -58,16 +58,15 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("1.2.34,123", s[7]);
 	}
 	
-	public void testEscapedQuote() {
+	public static void testEscapedQuote() {
 		QuotedTokenizer qt = new QuotedTokenizer("'\\'y'", ",");
 		String s = qt.nextToken();
 		assertEquals("'y", s);
 	}
 	
-	public void testExplicitEmptyStringTurnedToNull() {
+	public static void testExplicitEmptyStringTurnedToNull() {
 		QuotedTokenizer qt = new QuotedTokenizer("literal=''", ";=,");
 		qt.nextToken();
 		assertNull(qt.nextToken());
 	}
-
 }

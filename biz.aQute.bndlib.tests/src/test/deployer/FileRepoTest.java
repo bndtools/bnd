@@ -13,8 +13,8 @@ import aQute.lib.io.*;
 
 public class FileRepoTest extends TestCase {
 	
-	private FileRepo	testRepo;
-	private FileRepo	nonExistentRepo;
+	private static FileRepo	testRepo;
+	private static FileRepo	nonExistentRepo;
 
 	private static String hashToString(byte[] hash) {
 		Formatter formatter = new Formatter();
@@ -41,7 +41,7 @@ public class FileRepoTest extends TestCase {
 		nonExistentRepo = createRepo(nonExistentDir);
 	}
 	
-	private FileRepo createRepo(File root) {
+	private static FileRepo createRepo(File root) {
 		FileRepo repo = new FileRepo();
 		
 		Map<String,String> props = new HashMap<String,String>();
@@ -51,7 +51,7 @@ public class FileRepoTest extends TestCase {
 		return repo;
 	}
 	
-	public void testListBSNs() throws Exception {
+	public static void testListBSNs() throws Exception {
 		List<String> list = testRepo.list(null);
 		assertNotNull(list);
 		assertEquals(4, list.size());
@@ -62,14 +62,14 @@ public class FileRepoTest extends TestCase {
 		assertTrue(list.contains("osgi"));
 	}
 
-	public void testListNonExistentRepo() throws Exception {
+	public static void testListNonExistentRepo() throws Exception {
 		// Listing should succeed and return non-null empty list
 		List<String> list = nonExistentRepo.list(null);
 		assertNotNull(list);
 		assertEquals(0, list.size());
 	}
 	
-	public void testBundleNotModifiedOnPut() throws Exception {
+	public static void testBundleNotModifiedOnPut() throws Exception {
 		MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
 		File dstBundle = null;
 		try {
@@ -94,7 +94,7 @@ public class FileRepoTest extends TestCase {
 		}
 	}
 
-	public void testDeployToNonexistentRepoFails() throws Exception {
+	public static void testDeployToNonexistentRepoFails() throws Exception {
 		try {
 			nonExistentRepo.put(new BufferedInputStream(new FileInputStream("test/test.jar")), new RepositoryPlugin.PutOptions());
 			fail("Should have thrown exception");

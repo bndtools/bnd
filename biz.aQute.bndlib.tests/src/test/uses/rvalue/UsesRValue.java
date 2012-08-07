@@ -5,12 +5,12 @@ import javax.security.auth.callback.Callback;
 
 public class UsesRValue {
 	
-	public Callback foo(){
+	public static Callback foo(){
 		Subject subject = new Subject();
 		return null;
 	}
 	
-	private Subject bar() {
+	private static Subject bar() {
 		return null;
 	}
 

@@ -12,7 +12,7 @@ import aQute.bnd.service.diff.*;
 import aQute.bnd.version.*;
 
 public class RepoTreeTest extends TestCase {
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 		RepositoryPlugin a = mock(RepositoryPlugin.class);
 		RepositoryPlugin b = mock(RepositoryPlugin.class);
 		
@@ -48,7 +48,7 @@ public class RepoTreeTest extends TestCase {
 		
 	}
 	
-	void print(Diff diff , int n) {
+	static void print(Diff diff , int n) {
 		System.out.println("                            ".substring(0,n) + diff.getName() + " " + diff.getType() + "  " + diff.getDelta());
 		for ( Diff c : diff.getChildren()) {
 			print(c, n+1);

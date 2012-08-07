@@ -244,7 +244,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Tests all the different enum values. This also tests the ordering.
 	 */
 	@Component(name = "enums")
-	public class Enums {
+	public static class Enums {
 
 		@Reference
 		void setA(@SuppressWarnings("unused") LogService l) {}
@@ -307,7 +307,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Test the - for the unbind and updated parameter.
 	 */
 	@Component(name = "methods")
-	public class Methods {
+	public static class Methods {
 
 		@Reference(unbind = "-", updated = "-")
 		void setA(@SuppressWarnings("unused") LogService l) {}
@@ -380,7 +380,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Test inheritance (this is not official)
 	 */
 
-	public class Top {
+	public static class Top {
 
 		@Reference
 		void setLogService(@SuppressWarnings("unused") LogService l) {}
@@ -401,7 +401,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(name = "bottom")
-	public class Bottom extends Top {
+	public static class Bottom extends Top {
 		void unsetLogService(@SuppressWarnings("unused") LogService l, @SuppressWarnings("unused") Map<Object,Object> map) {
 
 		}
@@ -447,7 +447,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 
 	@Component(name = "prototypes")
-	public class Prototypes {
+	public static class Prototypes {
 		@SuppressWarnings("unused")
 		@Activate
 		private void activate() {}
@@ -504,7 +504,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 
 	@Component(name = "prototypes")
-	public class CheckBinds {
+	public static class CheckBinds {
 		@SuppressWarnings("unused")
 		@Activate
 		private void activate() {}
@@ -557,7 +557,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 	
 	@Component(name="testConfigPolicy", configurationPolicy=ConfigurationPolicy.IGNORE)
-	public class TestConfigPolicy {}
+	public static class TestConfigPolicy {}
 	
 	public static void testConfigPolicySetsNamespace() throws Exception {
 		Builder b = new Builder();

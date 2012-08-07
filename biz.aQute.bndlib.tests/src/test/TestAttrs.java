@@ -5,7 +5,7 @@ import aQute.bnd.header.*;
 
 public class TestAttrs extends TestCase {
 
-	public void testAttrs() {
+	public static void testAttrs() {
 		Attrs attrs = new Attrs();
 		attrs.put("a", "aa");
 		attrs.put("a:", "ab");

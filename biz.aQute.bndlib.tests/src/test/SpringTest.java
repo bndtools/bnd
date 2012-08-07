@@ -11,7 +11,7 @@ public class SpringTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void testSimple() throws Exception {
+	public static void testSimple() throws Exception {
 
 		// InputStream in = getClass().getResourceAsStream("spring-test1.xml");
 		// Set set = SpringComponent.analyze(in);

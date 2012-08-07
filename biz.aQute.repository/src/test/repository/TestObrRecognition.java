@@ -16,9 +16,9 @@ import aQute.bnd.deployer.repository.providers.*;
 
 public class TestObrRecognition extends TestCase {
 
-	private BundleIndexer indexer = new BundleIndexerImpl();
+	private static BundleIndexer indexer = new BundleIndexerImpl();
 
-	public void testRejectNamespace() throws Exception {
+	public static void testRejectNamespace() throws Exception {
 		String testdata = "<?xml version='1.0' encoding='utf-8'?>"
 				+ "<repository increment='0' name='index1' xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>"
 				+ "<resource>";
@@ -26,25 +26,25 @@ public class TestObrRecognition extends TestCase {
 		assertEquals(reject, new ObrContentProvider(indexer).checkStream("xxx", stream).getDecision());
 	}
 
-	public void testAcceptNamespace() throws Exception {
+	public static void testAcceptNamespace() throws Exception {
 		String testdata = "<?xml version='1.0'?>" + "<repository xmlns='http://www.osgi.org/xmlns/obr/v1.0.0'>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
 		assertEquals(accept, new ObrContentProvider(indexer).checkStream("xxx", stream).getDecision());
 	}
 
-	public void testRejectRootElementName() throws Exception {
+	public static void testRejectRootElementName() throws Exception {
 		String testdata = "<?xml version='1.0' encoding='utf-8'?>" + "<repo name='index1'/>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
 		assertEquals(reject, new ObrContentProvider(indexer).checkStream("xxx", stream).getDecision());
 	}
 
-	public void testUndecidable() throws Exception {
+	public static void testUndecidable() throws Exception {
 		String testdata = "<?xml version='1.0' encoding='utf-8'?>" + "<repository name='index1'/>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
 		assertEquals(undecided, new ObrContentProvider(indexer).checkStream("xxx", stream).getDecision());
 	}
 
-	public void testUnparseable() throws Exception {
+	public static void testUnparseable() throws Exception {
 		String testdata = "<?xml version='1.0' encoding='utf-8'?>" + "<repository name='index1'>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
 		CheckResult result = new ObrContentProvider(indexer).checkStream("xxx", stream);
@@ -52,7 +52,7 @@ public class TestObrRecognition extends TestCase {
 		assertTrue(result.getException() != null && result.getException() instanceof XMLStreamException);
 	}
 
-	public void testAcceptStylesheet() throws Exception {
+	public static void testAcceptStylesheet() throws Exception {
 		String testdata = "<?xml version='1.0' encoding='utf-8'?>"
 				+ "<?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?>" + "<repository...";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
@@ -60,7 +60,7 @@ public class TestObrRecognition extends TestCase {
 		assertEquals(accept, result.getDecision());
 	}
 
-	public void testRejectOnRepositoryChildElementName() throws Exception {
+	public static void testRejectOnRepositoryChildElementName() throws Exception {
 		String testdata;
 		ByteArrayInputStream stream;
 		CheckResult result;
@@ -85,7 +85,7 @@ public class TestObrRecognition extends TestCase {
 		assertEquals(undecided, result.getDecision());
 	}
 
-	public void testRejectOnCapabilityChildElementName() throws Exception {
+	public static void testRejectOnCapabilityChildElementName() throws Exception {
 		String testdata;
 		ByteArrayInputStream stream;
 		CheckResult result;
@@ -110,7 +110,7 @@ public class TestObrRecognition extends TestCase {
 		assertEquals(accept, result.getDecision());
 	}
 
-	public void testAcceptExtensionElementOtherNamespace() throws Exception {
+	public static void testAcceptExtensionElementOtherNamespace() throws Exception {
 		String testdata;
 		ByteArrayInputStream stream;
 		CheckResult result;

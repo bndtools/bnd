@@ -12,9 +12,9 @@ import aQute.lib.io.*;
 
 public class TestLocalObrGeneration extends TestCase {
 
-	private LocalIndexedRepo	repo;
-	private File				outputDir;
-	private Processor			reporter;
+	private static LocalIndexedRepo	repo;
+	private static File				outputDir;
+	private static Processor			reporter;
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
@@ -42,13 +42,13 @@ public class TestLocalObrGeneration extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public void testInitiallyEmpty() throws Exception {
+	public static void testInitiallyEmpty() throws Exception {
 		List<String> list = repo.list(".*");
 		assertNotNull(list);
 		assertEquals(0, list.size());
 	}
 
-	public void testDeployBundle() throws Exception {
+	public static void testDeployBundle() throws Exception {
 		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 

@@ -13,10 +13,10 @@ import aQute.lib.io.*;
 
 public class TestLocalIndexGeneration extends TestCase {
 
-	private Processor				reporter;
-	private LocalIndexedRepo		repo;
-	private File					outputDir;
-	private HashMap<String,String>	config;
+	private static Processor				reporter;
+	private static LocalIndexedRepo		repo;
+	private static File					outputDir;
+	private static HashMap<String,String>	config;
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
@@ -43,13 +43,13 @@ public class TestLocalIndexGeneration extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public void testInitiallyEmpty() throws Exception {
+	public static void testInitiallyEmpty() throws Exception {
 		List<String> list = repo.list(".*");
 		assertNotNull(list);
 		assertEquals(0, list.size());
 	}
 
-	public void testDeployBundle() throws Exception {
+	public static void testDeployBundle() throws Exception {
 		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
@@ -66,7 +66,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		assertEquals(deployedFile.getAbsoluteFile(), files[0]);
 	}
 	
-	public void testOverwrite() throws Exception {
+	public static void testOverwrite() throws Exception {
 		config.put("overwrite", "false");
 		repo.setProperties(config);
 		
@@ -84,7 +84,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		assertNull(r.artifact);
 	}
 
-	public void testInvalidContentProvider() throws Exception {
+	public static void testInvalidContentProvider() throws Exception {
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("local", outputDir.getAbsolutePath());
@@ -99,7 +99,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		reporter.clear();
 	}
 
-	public void testNonGeneratingProvider() throws Exception {
+	public static void testNonGeneratingProvider() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(new NonGeneratingProvider());
 
@@ -119,7 +119,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		reporter.clear();
 	}
 
-	public void testFailToGenerate() throws Exception {
+	public static void testFailToGenerate() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(new FailingGeneratingProvider());
 

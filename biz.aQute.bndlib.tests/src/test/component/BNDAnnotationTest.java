@@ -22,12 +22,12 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Constants;
 
 public class BNDAnnotationTest extends TestCase {
-	final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
-	final XPathFactory				xpathf	= XPathFactory.newInstance();
-	final XPath						xpath	= xpathf.newXPath();
-	DocumentBuilder					db;
+	static final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
+	static final XPathFactory				xpathf	= XPathFactory.newInstance();
+	static final XPath						xpath	= xpathf.newXPath();
+	static DocumentBuilder					db;
 
-	{
+	static {
 		try {
 			dbf.setNamespaceAware(true);
 			db = dbf.newDocumentBuilder();
@@ -60,8 +60,8 @@ public class BNDAnnotationTest extends TestCase {
 			});
 		}
 		catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw new ExceptionInInitializerError(e);
 		}
 	}
 
@@ -85,7 +85,7 @@ public class BNDAnnotationTest extends TestCase {
 		void setB(@SuppressWarnings("unused") Map<String,Object> map) {}
 	}
 
-	public void testAnnotationReferenceOrdering() throws Exception {
+	public static void testAnnotationReferenceOrdering() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Service-Component", "*TestReferenceOrdering");
@@ -116,7 +116,7 @@ public class BNDAnnotationTest extends TestCase {
 		}
 	}
 
-	public void testConfig() throws Exception {
+	public static void testConfig() throws Exception {
 		Builder b = new Builder();
 		b.setExceptions(true);
 		b.setClasspath(new File[] {
@@ -183,7 +183,7 @@ public class BNDAnnotationTest extends TestCase {
 		protected void activate(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
-	public void testPropertiesAndConfig() throws Exception {
+	public static void testPropertiesAndConfig() throws Exception {
 		Builder b = new Builder();
 		b.setExceptions(true);
 		b.setClasspath(new File[] {
@@ -250,7 +250,7 @@ public class BNDAnnotationTest extends TestCase {
 		public void activatex(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
-	public void testPackagePrivateActivateMethodBndAnnos() throws Exception {
+	public static void testPackagePrivateActivateMethodBndAnnos() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -361,7 +361,7 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public void testNoUnbind() throws Exception {
+	public static void testNoUnbind() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -388,7 +388,7 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public void testExplicitUnbind() throws Exception {
+	public static void testExplicitUnbind() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -434,7 +434,7 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public void testNewVersion() throws Exception {
+	public static void testNewVersion() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -499,7 +499,7 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public void testConfigurationPolicy() throws Exception {
+	public static void testConfigurationPolicy() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -552,7 +552,7 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public void testActivateWithActivateWithWrongArguments() throws Exception {
+	public static void testActivateWithActivateWithWrongArguments() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -581,7 +581,7 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public void testActivateWithMultipleArguments() throws Exception {
+	public static void testActivateWithMultipleArguments() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -617,7 +617,7 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public void testMultipleArguments() throws Exception {
+	public static void testMultipleArguments() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -652,7 +652,7 @@ public class BNDAnnotationTest extends TestCase {
 		protected void bind2(@SuppressWarnings("unused") LogService log) {}
 	}
 
-	public void testTypeVersusDetailed() throws Exception {
+	public static void testTypeVersusDetailed() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -684,7 +684,7 @@ public class BNDAnnotationTest extends TestCase {
 		protected void xyz() {}
 	}
 
-	public void testAnnotationsNamespaceVersion() throws Exception {
+	public static void testAnnotationsNamespaceVersion() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -712,7 +712,7 @@ public class BNDAnnotationTest extends TestCase {
 		}
 	}
 
-	public void testAnnotationsStrangeBindMethods() throws Exception {
+	public static void testAnnotationsStrangeBindMethods() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -745,7 +745,7 @@ public class BNDAnnotationTest extends TestCase {
 		}
 	}
 
-	public void testAnnotationsSettingUnbind() throws Exception {
+	public static void testAnnotationsSettingUnbind() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -794,7 +794,7 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public void testAnnotations() throws Exception {
+	public static void testAnnotations() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			new File("bin")
@@ -823,7 +823,7 @@ public class BNDAnnotationTest extends TestCase {
 		assertAttribute(doc, "0..1", "scr:component/reference/@cardinality");
 	}
 
-	public void assertAttribute(Document doc, String value, String expr) throws XPathExpressionException {
+	public static void assertAttribute(Document doc, String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, doc, XPathConstants.STRING);
 		if (o == null) {
@@ -833,7 +833,7 @@ public class BNDAnnotationTest extends TestCase {
 		assertEquals(value, o);
 	}
 
-	Document doc(Builder b, String name) throws Exception {
+	static Document doc(Builder b, String name) throws Exception {
 		Jar jar = b.getJar();
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		assertNotNull(r);
@@ -842,7 +842,7 @@ public class BNDAnnotationTest extends TestCase {
 		return doc;
 	}
 
-	private void print(Node doc, String indent) {
+	private static void print(Node doc, String indent) {
 		System.err.println(indent + doc);
 		NamedNodeMap attributes = doc.getAttributes();
 		if (attributes != null)
