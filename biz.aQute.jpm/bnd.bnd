@@ -12,7 +12,7 @@ Bundle-Version: 				0.0.5
 	ee.j2se;version=${javac.ee},\
 	com.springsource.junit,\
 	org.mockito.mockito-all;version=1.9.0,\
-	../../aQute/aQute.library/generated/aQute.library.client.jar;version=file
+	aQute.library.client;version=1.0.0
 	
 
 -digests: MD5, SHA1
