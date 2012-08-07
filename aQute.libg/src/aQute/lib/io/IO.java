@@ -7,6 +7,8 @@ import java.security.*;
 import java.util.*;
 
 public class IO {
+	static public File	work	= new File(System.getProperty("user.dir"));
+	static public File	home	= new File(System.getProperty("user.home"));
 
 	public static void copy(Reader r, Writer w) throws IOException {
 		try {
@@ -226,7 +228,7 @@ public class IO {
 
 	/**
 	 * Create a temporary file.
-	 *
+	 * 
 	 * @param directory
 	 *            the directory in which to create the file. Can be null, in
 	 *            which case the system TMP directory is used
@@ -257,16 +259,33 @@ public class IO {
 	}
 
 	public static File getFile(String filename) {
-		return new File(filename.replace("/", File.separator));
+		return getFile(work, filename);
 	}
-	
+
 	public static File getFile(File base, String file) {
+
+		if (file.startsWith("~/")) {
+			file = file.substring(2);
+			if (!file.startsWith("~/")) {
+				System.out.println("home " + file + " " + home);
+				return getFile(home, file);
+			}
+		}
+		if (file.startsWith("~")) {
+			file = file.substring(1);
+			return getFile(home.getParentFile(), file);
+		}
+
 		File f = new File(file);
 		if (f.isAbsolute())
 			return f;
 		int n;
 
+		if (base == null)
+			base = work;
+
 		f = base.getAbsoluteFile();
+
 		while ((n = file.indexOf('/')) > 0) {
 			String first = file.substring(0, n);
 			file = file.substring(n + 1);
@@ -280,28 +299,35 @@ public class IO {
 		return new File(f, file).getAbsoluteFile();
 	}
 
-	/** Deletes the specified file.
-	 * Folders are recursively deleted.<br>
+	/**
+	 * Deletes the specified file. Folders are recursively deleted.<br>
 	 * If file(s) cannot be deleted, no feedback is provided (fail silently).
-	 * @param f file to be deleted
+	 * 
+	 * @param f
+	 *            file to be deleted
 	 */
 	public static void delete(File f) {
 		try {
 			deleteWithException(f);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			// Ignore a failed delete
 		}
 	}
-	
-	/** Deletes the specified file.
-	 * Folders are recursively deleted.<br>
+
+	/**
+	 * Deletes the specified file. Folders are recursively deleted.<br>
 	 * Throws exception if any of the files could not be deleted.
-	 * @param f file to be deleted
-	 * @throws IOException if the file (or contents of a folder) could not be deleted
+	 * 
+	 * @param f
+	 *            file to be deleted
+	 * @throws IOException
+	 *             if the file (or contents of a folder) could not be deleted
 	 */
 	public static void deleteWithException(File f) throws IOException {
 		f = f.getAbsoluteFile();
-		if (!f.exists()) return;
+		if (!f.exists())
+			return;
 		if (f.getParentFile() == null)
 			throw new IllegalArgumentException("Cannot recursively delete root for safety reasons");
 
@@ -311,7 +337,8 @@ public class IO {
 			for (File sub : subs) {
 				try {
 					deleteWithException(sub);
-				} catch (IOException e) {
+				}
+				catch (IOException e) {
 					wasDeleted = false;
 				}
 			}
@@ -323,19 +350,25 @@ public class IO {
 		}
 	}
 
-    /** Deletes <code>to</code> file if it exists, and renames <code>from</code> file to <code>to</code>.<br>
-     * Throws exception the rename operation fails.
-     * @param from source file
-     * @param to destination file
-     * @throws IOException if the rename operation fails
-     */
-    public static void rename(File from, File to) throws IOException {
-    	IO.deleteWithException(to);
-    	
-    	boolean renamed = from.renameTo(to);
-    	if (!renamed) throw new IOException("Could not rename " + from.getAbsoluteFile() + " to " + to.getAbsoluteFile());
-    }
+	/**
+	 * Deletes <code>to</code> file if it exists, and renames <code>from</code>
+	 * file to <code>to</code>.<br>
+	 * Throws exception the rename operation fails.
+	 * 
+	 * @param from
+	 *            source file
+	 * @param to
+	 *            destination file
+	 * @throws IOException
+	 *             if the rename operation fails
+	 */
+	public static void rename(File from, File to) throws IOException {
+		IO.deleteWithException(to);
 
+		boolean renamed = from.renameTo(to);
+		if (!renamed)
+			throw new IOException("Could not rename " + from.getAbsoluteFile() + " to " + to.getAbsoluteFile());
+	}
 
 	public static long drain(InputStream in) throws IOException {
 		long result = 0;
