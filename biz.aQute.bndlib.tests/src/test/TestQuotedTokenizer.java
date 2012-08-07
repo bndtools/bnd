@@ -64,11 +64,10 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("'y", s);
 	}
 	
-	//Is this really the desired behavior?
 	public void testExplicitEmptyStringTurnedToNull() {
 		QuotedTokenizer qt = new QuotedTokenizer("literal=''", ";=,");
-		qt.nextToken(); //literal
-		assertNull(qt.nextToken()); //why not an empty string as requested?
+		qt.nextToken();
+		assertNull(qt.nextToken());
 	}
 
 }
