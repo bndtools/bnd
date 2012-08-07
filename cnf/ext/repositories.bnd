@@ -16,8 +16,8 @@ eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo;locations='file:${w
 
 ## Local OBR
 #-plugin:\
-#	aQute.lib.deployer.obr.OBR;locations='file:${repo}/jars/repository.xml';name=Bnd Build Repository,\
-#	aQute.lib.deployer.obr.OBR;locations='file:${repo}/bundles/repository.xml';name=Bnd Repository,\
+#	aQute.bnd.deployer.repository.FixedIndexedRepo;locations='file:${repo}/jars/repository.xml';name=Bnd Build Repository,\
+#	aQute.bnd.deployer.repository.FixedIndexedRepo;locations='file:${repo}/bundles/repository.xml';name=Bnd Repository,\
 #	${eclipse-repo}
 
 
