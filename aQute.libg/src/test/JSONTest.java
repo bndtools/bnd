@@ -15,16 +15,42 @@ import aQute.libg.map.*;
 public class JSONTest extends TestCase {
 	JSONCodec	codec	= new JSONCodec();
 
-	
-	
-	public void testToDictionary() throws Exception {
-		Dictionary<String,String> dictionary = codec.dec().from("{\"x\":3, \"y\":\"\"}").get(new TypeReference<Dictionary<String,String>>(){});
-		assertEquals( "3", dictionary.get("x"));
-		assertEquals( "", dictionary.get("y"));
+	/**
+	 * Test the use of inflate/deflate
+	 */
+
+	static public class X {
+		public String		hello;
+		public int			value;
+		public List<String>	list;
 	}
-	
-	
-	
+
+	public void testZip() throws Exception {
+		X x = new X();
+		x.hello = "hello";
+		x.value = 42;
+		x.list  = Arrays.asList("1", "2");
+		
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		codec.enc().deflate().to(bout).put(x).close();
+		byte[] data = bout.toByteArray();
+
+		
+		X xx = codec.dec().inflate().from(new ByteArrayInputStream(data)).get(X.class);
+		assertNotNull(xx);
+		assertEquals("hello", xx.hello);
+		assertEquals(42, xx.value);
+		assertEquals(Arrays.asList("1", "2"), xx.list);
+		
+	}
+
+	public void testToDictionary() throws Exception {
+		Dictionary<String,String> dictionary = codec.dec().from("{\"x\":3, \"y\":\"\"}")
+				.get(new TypeReference<Dictionary<String,String>>() {});
+		assertEquals("3", dictionary.get("x"));
+		assertEquals("", dictionary.get("y"));
+	}
+
 	/**
 	 * Test conversion of iterable
 	 * 
