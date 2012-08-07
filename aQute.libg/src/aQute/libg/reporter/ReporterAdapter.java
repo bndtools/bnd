@@ -246,20 +246,9 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 		return getInfo(other,null);
 	}
 	public boolean getInfo(Report other, String prefix) {
-		boolean ok = true;
-		if ( prefix == null)
-			prefix = "";
-		else
-			prefix = prefix + ": ";
-		for ( String error : other.getErrors()) {
-			errors.add( prefix + error);
-			ok = false;
-		}
-		
-		for ( String warning : other.getWarnings()) {
-			warnings.add( prefix + warning);
-		}
-		return ok;
+		addErrors(prefix, other.getErrors());
+		addWarnings(prefix, other.getWarnings());
+		return other.isOk();
 	}
 
 	public Location getLocation(String msg) {
@@ -284,5 +273,32 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	
 	public <T> T getMessages(Class<T> c) {
 		return ReporterMessages.base(this, c);
+	}
+	
+	/**
+	 * Add a number of errors
+	 */
+	
+	public void addErrors( String prefix, Collection<String> errors) {
+		if ( prefix == null)
+			prefix = "";
+		else
+			prefix = prefix + ": ";
+		for ( String s: errors) {
+			this.errors.add( prefix + s);
+		}
+	}
+	/**
+	 * Add a number of warnings
+	 */
+	
+	public void addWarnings( String prefix, Collection<String> warnings) {
+		if ( prefix == null)
+			prefix = "";
+		else
+			prefix = prefix + ": ";
+		for ( String s: warnings) {
+			this.warnings.add( prefix  + s);
+		}
 	}
 }
