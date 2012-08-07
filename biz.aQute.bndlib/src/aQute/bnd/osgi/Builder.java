@@ -1159,7 +1159,7 @@ public class Builder extends Analyzer {
 		Parameters subsMap = parseHeader(sub);
 		for (Iterator<String> i = subsMap.keySet().iterator(); i.hasNext();) {
 			File file = getFile(i.next());
-			if (file.isFile()) {
+			if (file.isFile() && !file.getName().startsWith(".")) {
 				builders.add(getSubBuilder(file));
 				i.remove();
 			}
