@@ -1,9 +1,7 @@
 package aQute.bnd.make.component;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.Collection;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.Map.Entry;
 
 import aQute.bnd.annotation.component.*;
@@ -14,7 +12,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
-import aQute.lib.tag.Tag;
+import aQute.lib.tag.*;
 
 /**
  * This class is an analyzer plugin. It looks at the properties and tries to
