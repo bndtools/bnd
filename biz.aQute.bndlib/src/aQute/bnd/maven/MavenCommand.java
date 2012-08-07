@@ -13,9 +13,9 @@ import aQute.bnd.maven.support.*;
 import aQute.bnd.maven.support.Pom.Scope;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Descriptors.PackageRef;
-import aQute.bnd.settings.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
+import aQute.lib.settings.*;
 import aQute.libg.command.*;
 
 public class MavenCommand extends Processor {
@@ -185,7 +185,7 @@ public class MavenCommand extends Processor {
 		}
 
 		if (developers.isEmpty()) {
-			String email = settings.globalGet(Settings.EMAIL, null);
+			String email = settings.remove("email");
 			if (email == null)
 				error("No developer email set, you can set global default email with: bnd global email Peter.Kriens@aQute.biz");
 			else
