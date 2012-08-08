@@ -8,13 +8,15 @@ import java.util.regex.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.libg.command.*;
+import aQute.libg.cryptography.*;
 import aQute.service.reporter.*;
 
-public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin {
+public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable {
 	public final static String	LOCATION		= "location";
 	public final static String	READONLY		= "readonly";
 	public final static String	NAME			= "name";
@@ -25,6 +27,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public static final String	CMD_BEFORE_PUT	= "cmd.before.put";
 	public static final String	CMD_ABORT_PUT	= "cmd.abort.put";
 	public static final String	CMD_SHELL		= "cmd.shell";
+	static final PutOptions		DEFAULTOPTIONS	= new PutOptions();
 
 	String						before;
 	String						refresh;
@@ -59,8 +62,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		inited = true;
 		if (!getRoot().isDirectory()) {
 			getRoot().mkdirs();
-			exec(init, null);
 		}
+		exec(init, null);
 	}
 
 	public void setProperties(Map<String,String> map) {
@@ -68,7 +71,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (location == null)
 			throw new IllegalArgumentException("Location must be set on a FileRepo plugin");
 
-		root = new File(location);
+		root = IO.getFile(IO.home, location);
 
 		String readonly = map.get(READONLY);
 		if (readonly != null && Boolean.valueOf(readonly).booleanValue())
@@ -156,7 +159,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		Jar jar = null;
 		try {
-			init();
 			dirty = true;
 
 			jar = new Jar(tmpFile);
@@ -247,8 +249,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/* a straight copy of this method lives in LocalIndexedRepo */
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 
+		if (options == null)
+			options = DEFAULTOPTIONS;
+
 		/* both parameters are required */
-		if ((stream == null) || (options == null)) {
+		if ((stream == null)) {
 			throw new IllegalArgumentException("No stream and/or options specified");
 		}
 
@@ -261,6 +266,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (!root.isDirectory()) {
 			throw new IOException("Repository directory " + root + " is not a directory");
 		}
+
+		init();
 
 		/* determine if the artifact needs to be verified */
 		boolean verifyFetch = (options.digest != null);
@@ -278,9 +285,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		dis.on(needFetchDigest);
 
 		exec(before, null);
-		
+
 		File tmpFile = null;
 		try {
+
+			// TODO we need to lock?
 			/*
 			 * copy the artifact from the (new/digest) stream into a temporary
 			 * file in the root directory of the repository
@@ -412,10 +421,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return root;
 	}
 
-	public boolean refresh() {
+	public boolean refresh() throws Exception {
+		init();
+		exec(refresh, null);
 		if (dirty) {
 			dirty = false;
-			exec(refresh, null);
 			return true;
 		}
 		return false;
@@ -476,20 +486,18 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return null;
 	}
 
-	
 	public File get(String bsn, Version version, Map<String,String> properties) {
 		File file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".jar");
 		if (file.isFile())
 			return file;
-		
+
 		file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".lib");
 		if (file.isFile())
 			return file;
-		
+
 		return null;
 	}
-	
-	
+
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
@@ -498,6 +506,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return root.toString();
 	}
 
+	/**
+	 * Execute a command. Used in different stages so that the repository can be
+	 * synced.
+	 * 
+	 * @param line
+	 * @param target
+	 */
 	void exec(String line, File target) {
 		if (line == null)
 			return;
@@ -535,5 +550,35 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			else
 				throw new RuntimeException(e);
 		}
+	}
+
+	public Map<String,Runnable> actions(Object target) throws Exception {
+		if (target == null || !(target instanceof File))
+			return null;
+
+		final File f = (File) target;
+		if (!f.getCanonicalPath().startsWith(root.getCanonicalPath()))
+			return null;
+
+		Map<String,Runnable> actions = new HashMap<String,Runnable>();
+		actions.put("Delete", new Runnable() {
+			public void run() {
+				IO.delete(f);
+			};
+		});
+		return null;
+	}
+
+	public String tooltip(Object target) throws Exception {
+		if (target == null)
+			return String.format("File repository %s on location %s", getName(), root);
+
+		if (!(target instanceof File))
+			return null;
+		File f = (File) target;
+		if (!f.getCanonicalPath().startsWith(root.getCanonicalPath()))
+			return null;
+
+		return String.format("%s, %s bytes, %s", f.getAbsolutePath(), f.length(), SHA1.digest(f).asHex());
 	}
 }
