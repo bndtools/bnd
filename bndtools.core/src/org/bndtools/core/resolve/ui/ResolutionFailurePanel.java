@@ -61,7 +61,7 @@ public class ResolutionFailurePanel {
     private TreeViewer unresolvedViewer;
     private SashFormPanelMaximiser unresolvedMaximiser;
 
-    private final boolean failureTreeMode = true;
+    private static final boolean failureTreeMode = true;
 
     public Control createControl(final Composite parent) {
         sashForm = new SashHighlightForm(parent, SWT.VERTICAL);
@@ -220,13 +220,13 @@ public class ResolutionFailurePanel {
         */
     }
 
-    private void switchFailureViewMode() {
-        Object input = unresolvedViewer.getInput();
-        unresolvedViewer.setInput(null);
-        setFailureViewMode();
-        unresolvedViewer.setInput(input);
-        unresolvedViewer.expandToLevel(2);
-    }
+    //    private void switchFailureViewMode() {
+    //        Object input = unresolvedViewer.getInput();
+    //        unresolvedViewer.setInput(null);
+    //        setFailureViewMode();
+    //        unresolvedViewer.setInput(input);
+    //        unresolvedViewer.expandToLevel(2);
+    //    }
 
     private void copyUnresolvedToClipboard() {
         StringBuilder builder = new StringBuilder();
