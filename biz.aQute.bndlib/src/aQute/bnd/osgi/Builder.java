@@ -1538,12 +1538,16 @@ public class Builder extends Analyzer {
 
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
 
-		Parameters diffs = parseHeader(getProperty("-baseline"));
+		String baseline = getProperty(Constants.BASELINE);
+		Parameters params = parseHeader(baseline);
 		File baselineFile = null;
-		if (diffs.isEmpty()) {
-			String repoName = getProperty("-baseline-repo");
+		if (baseline == null) {
+			String repoName = getProperty(Constants.BASELINEREPO);
 			if (repoName == null) {
-				return null;
+				repoName = getProperty(Constants.RELEASEREPO);
+				if (repoName == null) {
+					return null;
+				}
 			}
 			for (RepositoryPlugin repo : repos) {
 				if (repoName.equals(repo.getName())) {
@@ -1555,7 +1559,7 @@ public class Builder extends Analyzer {
 
 			String bsn = null;
 			String version = null;
-			for (Entry<String,Attrs> entry : diffs.entrySet()) {
+			for (Entry<String,Attrs> entry : params.entrySet()) {
 				bsn = entry.getKey();
 				if ("@".equals(bsn)) {
 					bsn = getBsn();
@@ -1563,7 +1567,9 @@ public class Builder extends Analyzer {
 				version = entry.getValue().get(Constants.VERSION_ATTRIBUTE);
 				break;
 			}
-	
+			if ("latest".equals(version)) {
+				version = null;
+			}
 			for (RepositoryPlugin repo : repos) {
 				if (version == null) {
 					baselineFile = repo.get(bsn, null, Strategy.HIGHEST, null);

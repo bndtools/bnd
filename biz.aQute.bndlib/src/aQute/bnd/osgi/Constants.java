@@ -69,6 +69,8 @@ public interface Constants {
 			PROVIDE_CAPABILITY, BUNDLE_ICON
 																				};
 
+	String							BASELINE									= "-baseline";
+	String							BASELINEREPO								= "-baselinerepo";
 	String							BUILDPATH									= "-buildpath";
 	String							BUILDPACKAGES								= "-buildpackages";
 	String							BUMPPOLICY									= "-bumppolicy";
