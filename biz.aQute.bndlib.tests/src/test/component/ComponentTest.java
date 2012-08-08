@@ -485,17 +485,4 @@ public class ComponentTest extends TestCase {
 		assertEquals("", reference.getAttribute("policy"));
 	}
 	
-	private static void print(Node doc, String indent) {
-		System.err.println(indent + doc);
-		NamedNodeMap attributes = doc.getAttributes();
-		if (attributes != null)
-			for (int i = 0; i < attributes.getLength(); i++) {
-				print(attributes.item(i), indent + "  ");
-			}
-		NodeList nl = doc.getChildNodes();
-		for (int i = 0; i < nl.getLength(); i++) {
-			print(nl.item(i), indent + "  ");
-		}
-	}
-
 }

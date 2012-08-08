@@ -34,8 +34,8 @@ public class HeaderReader extends Processor {
 	private final static String BundleContextTR = "org.osgi.framework.BundleContext";
 	private final static String MapTR = Map.class.getName();
 	private final static String IntTR = int.class.getName();
-	private final static Set<String> allowed = new HashSet<String>(Arrays.asList(ComponentContextTR, BundleContextTR, MapTR));
-	private final static Set<String> allowedDeactivate = new HashSet<String>(Arrays.asList(ComponentContextTR, BundleContextTR, MapTR, IntTR));
+	final static Set<String> allowed = new HashSet<String>(Arrays.asList(ComponentContextTR, BundleContextTR, MapTR));
+	final static Set<String> allowedDeactivate = new HashSet<String>(Arrays.asList(ComponentContextTR, BundleContextTR, MapTR, IntTR));
 	
 	private final static String ServiceReferenceTR = "org.osgi.framework.ServiceReference";
 
@@ -291,7 +291,7 @@ public class HeaderReader extends Processor {
 	 * @param allowedParams TODO
 	 * @return rating; 6 if invalid, lower is better
 	 */
-	private int rateLifecycle(MethodDef test, Set<String> allowedParams) {
+	int rateLifecycle(MethodDef test, Set<String> allowedParams) {
 		TypeRef[] prototype = test.getDescriptor().getPrototype();
 		if (prototype.length == 1 && ComponentContextTR.equals(prototype[0].getFQN()))
 			    return 1;
@@ -317,7 +317,7 @@ public class HeaderReader extends Processor {
 	 * @param test
 	 * @return
 	 */
-	private int rateBind(MethodDef test) {
+	int rateBind(MethodDef test) {
 		TypeRef[] prototype = test.getDescriptor().getPrototype();
 		if (prototype.length == 1 && ServiceReferenceTR.equals(prototype[0].getFQN()))
 			return 1;

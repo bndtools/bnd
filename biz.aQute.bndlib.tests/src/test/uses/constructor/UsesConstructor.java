@@ -9,6 +9,7 @@ public class UsesConstructor {
 		Subject subject = new Subject();
 	}
 	
+	@SuppressWarnings("unused")
 	private UsesConstructor(Subject subject) {
 		
 	}
