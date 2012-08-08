@@ -11,6 +11,8 @@ import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.service.reporter.*;
 
+// TODO cant find anybody that uses this and it seems a duplicate of FileRepo
+@Deprecated
 public class FileInstallRepo extends FileRepo {
 
 	String		group;
