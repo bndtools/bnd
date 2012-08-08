@@ -203,11 +203,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			if (reporter != null)
 				reporter.trace("updating %s ", file.getAbsolutePath());
+			
 			if (!file.exists() || file.lastModified() < jar.lastModified()) {
 				if (file.exists()) {
 					IO.delete(file);
 				}
 				IO.rename(tmpFile, file);
+				
 				renamed = true;
 				result.artifact = file.toURI();
 
@@ -215,6 +217,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 					reporter.progress(-1, "updated " + file.getAbsolutePath());
 
 				fireBundleAdded(jar, file);
+				
+				// Eecute the after command
+				exec(after, file);
 			} else {
 				if (reporter != null) {
 					reporter.progress(-1, "Did not update " + jar + " because repo has a newer version");
@@ -324,7 +329,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				throw new IOException("Stored artifact digest doesn't match specified digest");
 			}
 
-			exec(after, new File(r.artifact));
 			return r;
 		}
 		catch (Exception e) {
