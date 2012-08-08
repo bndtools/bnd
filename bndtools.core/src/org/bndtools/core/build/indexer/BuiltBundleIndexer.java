@@ -3,6 +3,7 @@ package org.bndtools.core.build.indexer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.text.MessageFormat;
@@ -102,12 +103,21 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
         }
 
         // Parse the index and add to the workspace repository
+        FileInputStream input = null;
         try {
-            FileInputStream input = new FileInputStream(indexFile);
+            input = new FileInputStream(indexFile);
             WorkspaceR5Repository workspaceRepo = Central.getWorkspaceR5Repository();
             workspaceRepo.loadProjectIndex(project, input);
         } catch (Exception e) {
             logger.logError("Failed to update workspace index.", e);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    /* ignore */
+                }
+            }
         }
     }
 
