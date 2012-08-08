@@ -99,7 +99,8 @@ public interface RepositoryPlugin {
 	 * @param stream
 	 *            The input stream with the artifact
 	 * @param options
-	 *            The put options. See {@link RepositoryPlugin.PutOptions}
+	 *            The put options. See {@link RepositoryPlugin.PutOptions}, can
+	 *            be {@code null}, which will then take the default options like new PutOptions().
 	 * @return The result of the put, never null. See
 	 *         {@link RepositoryPlugin.PutResult}
 	 * @throws Exception
@@ -127,8 +128,8 @@ public interface RepositoryPlugin {
 	 *         null is returned when no files with the given bsn ould be found.
 	 * @throws Exception
 	 *             when anything goes wrong
-	 * @deprecated because bnd only uses {@link #get(String, Version, Map)}. Will
-	 *             be removed in a future revision
+	 * @deprecated because bnd only uses {@link #get(String, Version, Map)}.
+	 *             Will be removed in a future revision
 	 */
 	@Deprecated
 	File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception;
