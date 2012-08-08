@@ -10,7 +10,6 @@ import aQute.bnd.maven.support.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
@@ -230,7 +229,7 @@ public class RepoCommand {
 			v = l.last();
 
 		RepositoryPlugin repo = index.get(v);
-		File file = repo.get(bsn, v.toString(), Strategy.EXACT, null);
+		File file = repo.get(bsn, v, null);
 
 		File dir = bnd.getBase();
 		String name = file.getName();

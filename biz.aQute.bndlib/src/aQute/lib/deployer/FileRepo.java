@@ -11,21 +11,38 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
+import aQute.libg.command.*;
 import aQute.service.reporter.*;
 
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin {
-	public final static String	LOCATION	= "location";
-	public final static String	READONLY	= "readonly";
-	public final static String	NAME		= "name";
+	public final static String	LOCATION		= "location";
+	public final static String	READONLY		= "readonly";
+	public final static String	NAME			= "name";
+	public static final String	CMD_PATH		= "cmd.path";
+	public static final String	CMD_INIT		= "cmd.init";
+	public static final String	CMD_AFTER_PUT	= "cmd.after.put";
+	public static final String	CMD_REFRESH		= "cmd.refresh";
+	public static final String	CMD_BEFORE_PUT	= "cmd.before.put";
+	public static final String	CMD_ABORT_PUT	= "cmd.abort.put";
+	public static final String	CMD_SHELL		= "cmd.shell";
 
-	File[]						EMPTY_FILES	= new File[0];
+	String						before;
+	String						refresh;
+	String						after;
+	String						path;
+	String						init;
+	String						abort;
+	String						shell;
+
+	File[]						EMPTY_FILES		= new File[0];
 	protected File				root;
 	Registry					registry;
-	boolean						canWrite	= true;
-	Pattern						REPO_FILE	= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
+	boolean						canWrite		= true;
+	Pattern						REPO_FILE		= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
 	Reporter					reporter;
 	boolean						dirty;
 	String						name;
+	boolean						inited;
 
 	public FileRepo() {}
 
@@ -36,7 +53,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	protected void init() throws Exception {
-		// for extensions
+		if (inited)
+			return;
+
+		inited = true;
+		if (!getRoot().isDirectory()) {
+			getRoot().mkdirs();
+			exec(init, null);
+		}
 	}
 
 	public void setProperties(Map<String,String> map) {
@@ -51,6 +75,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			canWrite = false;
 
 		name = map.get(NAME);
+		before = map.get(CMD_BEFORE_PUT);
+		refresh = map.get(CMD_REFRESH);
+		after = map.get(CMD_AFTER_PUT);
+		init = map.get(CMD_INIT);
+		path = map.get(CMD_PATH);
+		abort = map.get(CMD_ABORT_PUT);
+		shell = map.get(CMD_SHELL);
 	}
 
 	/**
@@ -215,6 +246,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	/* a straight copy of this method lives in LocalIndexedRepo */
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
+
 		/* both parameters are required */
 		if ((stream == null) || (options == null)) {
 			throw new IllegalArgumentException("No stream and/or options specified");
@@ -245,13 +277,15 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
 		dis.on(needFetchDigest);
 
+		exec(before, null);
+		
 		File tmpFile = null;
 		try {
 			/*
 			 * copy the artifact from the (new/digest) stream into a temporary
 			 * file in the root directory of the repository
 			 */
-			tmpFile = IO.createTempFile(root, "put", ".bnd");
+			tmpFile = IO.createTempFile(root, "put", ".jar");
 			IO.copy(dis, tmpFile);
 
 			/* get the digest if available */
@@ -281,7 +315,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				throw new IOException("Stored artifact digest doesn't match specified digest");
 			}
 
+			exec(after, new File(r.artifact));
 			return r;
+		}
+		catch (Exception e) {
+			exec(abort, null);
+			throw e;
 		}
 		finally {
 			if (tmpFile != null && tmpFile.exists()) {
@@ -376,6 +415,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public boolean refresh() {
 		if (dirty) {
 			dirty = false;
+			exec(refresh, null);
 			return true;
 		}
 		return false;
@@ -436,6 +476,20 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return null;
 	}
 
+	
+	public File get(String bsn, Version version, Map<String,String> properties) {
+		File file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".jar");
+		if (file.isFile())
+			return file;
+		
+		file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".lib");
+		if (file.isFile())
+			return file;
+		
+		return null;
+	}
+	
+	
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
@@ -444,4 +498,42 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return root.toString();
 	}
 
+	void exec(String line, File target) {
+		if (line == null)
+			return;
+
+		try {
+			if (target != null)
+				line = line.replaceAll("\\$\\{@\\}", target.getAbsolutePath());
+
+			System.out.println("Cmd: " + line);
+			Command cmd = new Command("sh");
+			cmd.inherit();
+			String oldpath = cmd.var("PATH");
+
+			if (path != null) {
+				path = path.replaceAll("\\s*,\\s*", File.pathSeparator);
+				path = path.replaceAll("\\$\\{@\\}", oldpath);
+				cmd.var("PATH", path);
+			}
+
+			cmd.setCwd(getRoot());
+			StringBuilder stdout = new StringBuilder();
+			StringBuilder stderr = new StringBuilder();
+			int result = cmd.execute(line, stdout, stderr);
+			if (result != 0) {
+				if (reporter != null)
+					reporter.error("Command %s failed with %s %s %s", line, result, stdout, stderr);
+				else
+					throw new Exception("Command " + line + " failed " + result + " " + stdout + " " + stderr);
+
+			}
+		}
+		catch (Exception e) {
+			if (reporter != null)
+				reporter.exception(e, e.getMessage());
+			else
+				throw new RuntimeException(e);
+		}
+	}
 }

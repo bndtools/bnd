@@ -145,4 +145,8 @@ public class WorkspaceRepository implements RepositoryPlugin {
 		return "Workspace";
 	}
 
+	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
+		return get(bsn, version.toString(), Strategy.EXACT, properties);
+	}
+
 }

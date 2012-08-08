@@ -126,4 +126,8 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 
 		return Arrays.toString(repositories);
 	}
+
+	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
+		return get(bsn, version.toString(), Strategy.EXACT, properties);
+	}
 }
