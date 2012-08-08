@@ -203,29 +203,20 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			if (reporter != null)
 				reporter.trace("updating %s ", file.getAbsolutePath());
-			
-			if (!file.exists() || file.lastModified() < jar.lastModified()) {
-				if (file.exists()) {
-					IO.delete(file);
-				}
-				IO.rename(tmpFile, file);
-				
-				renamed = true;
-				result.artifact = file.toURI();
 
-				if (reporter != null)
-					reporter.progress(-1, "updated " + file.getAbsolutePath());
+			IO.delete(file);
+			IO.rename(tmpFile, file);
 
-				fireBundleAdded(jar, file);
-				
-				// Eecute the after command
-				exec(after, file);
-			} else {
-				if (reporter != null) {
-					reporter.progress(-1, "Did not update " + jar + " because repo has a newer version");
-					reporter.trace("NOT Updating " + fName + " (repo is newer)");
-				}
-			}
+			renamed = true;
+			result.artifact = file.toURI();
+
+			if (reporter != null)
+				reporter.progress(-1, "updated " + file.getAbsolutePath());
+
+			fireBundleAdded(jar, file);
+
+			// Execute the after command
+			exec(after, file);
 
 			File latest = new File(dir, bsn + "-latest.jar");
 			boolean latestExists = latest.exists() && latest.isFile();
