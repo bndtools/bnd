@@ -82,10 +82,11 @@ public class GitOBRRepo extends LocalIndexedRepo {
             }
             File file = new File(localDirPath);
             if (!file.exists()) {
-                file.mkdirs();
+                if (!file.mkdirs()) {
+                    throw new IllegalArgumentException("Could not create directory " + file);
+                }
             }
         }
-
         gitRootDir = new File(localDirPath);
 
         if (!gitRootDir.isDirectory())
@@ -104,7 +105,9 @@ public class GitOBRRepo extends LocalIndexedRepo {
         if (localSubDirPath != null) {
             dir = new File(gitRootDir, localSubDirPath);
             if (!dir.exists()) {
-                dir.mkdirs();
+                if (!dir.mkdirs()) {
+                    throw new IllegalArgumentException("Could not create directory " + dir);
+                }
             }
         } else {
             dir = gitRootDir;
@@ -182,7 +185,7 @@ public class GitOBRRepo extends LocalIndexedRepo {
         return null;
     }
 
-    private static String getRelativePath(File base, File file) throws IOException {
+    private static String getRelativePath(File base, File file) throws Exception {
         return base.toURI().relativize(file.toURI()).getPath();
     }
 

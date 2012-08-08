@@ -2,6 +2,7 @@ package bndtools.builder;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -194,7 +195,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
             File target = model.getTarget();
             if (target.isDirectory() && target.getParentFile() != null) {
                 IO.delete(target);
-                target.mkdirs();
+                if (!target.exists() && !target.mkdirs()) {
+                    throw new IOException("Could not create directory " + target);
+                }
             }
 
             // Tell Eclipse what we did...

@@ -1,6 +1,7 @@
 package org.bndtools.core.resolve.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -78,7 +79,9 @@ public class ResolutionWizard extends Wizard {
         try {
             Project project = Workspace.getProject(file.getProject().getLocation().toFile());
             File targetDir = project.getTarget();
-            targetDir.mkdirs();
+            if (!targetDir.exists() && !targetDir.mkdirs()) {
+                throw new IOException("Could not create directory " + targetDir);
+            }
 
             File pathsFile = new File(targetDir, file.getName() + RESOLVED_PATHS_EXTENSION);
             pathsStream = new PrintStream(pathsFile, "UTF-8");
