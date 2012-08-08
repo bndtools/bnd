@@ -13,7 +13,7 @@ import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.lib.deployer.*;
 
 public class FileRepoTest extends TestCase {
-	
+
 	private static FileRepo	testRepo;
 	private static FileRepo	nonExistentRepo;
 
@@ -36,28 +36,28 @@ public class FileRepoTest extends TestCase {
 		File testRepoDir = new File("src/test/repo");
 		assertTrue(testRepoDir.isDirectory());
 		testRepo = createRepo(testRepoDir);
-		
+
 		File nonExistentDir = new File("definitely/doesnt/exist");
 		delete(nonExistentDir);
 		assertFalse(nonExistentDir.exists());
 		nonExistentRepo = createRepo(nonExistentDir);
 	}
-	
+
 	private static FileRepo createRepo(File root) {
 		FileRepo repo = new FileRepo();
-		
+
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("location", root.getAbsolutePath());
 		repo.setProperties(props);
-		
+
 		return repo;
 	}
-	
+
 	public static void testListBSNs() throws Exception {
 		List<String> list = testRepo.list(null);
 		assertNotNull(list);
 		assertEquals(4, list.size());
-		
+
 		assertTrue(list.contains("ee.minimum"));
 		assertTrue(list.contains("org.osgi.impl.service.cm"));
 		assertTrue(list.contains("org.osgi.impl.service.io"));
@@ -70,7 +70,7 @@ public class FileRepoTest extends TestCase {
 		assertNotNull(list);
 		assertEquals(0, list.size());
 	}
-	
+
 	public static void testBundleNotModifiedOnPut() throws Exception {
 		MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
 		File dstBundle = null;
@@ -103,9 +103,59 @@ public class FileRepoTest extends TestCase {
 			fail("Should have thrown exception");
 		}
 		catch (Exception e) {
-			assert(e instanceof IOException);
+			assert (e instanceof IOException);
 			String s = "Repository directory " + nonExistentRepo.getRoot() + " is not a directory";
 			assertEquals(s, e.getMessage());
 		}
+	}
+
+	public void testCommands() throws Exception {
+		FileRepo repo = new FileRepo();
+		File root = new File("tmp");
+		delete(root);
+		root.mkdirs();
+		try {
+			Map<String,String> props = new HashMap<String,String>();
+			props.put(FileRepo.LOCATION, root.getAbsolutePath());
+			props.put(FileRepo.CMD_INIT, "echo init $PATH >>report");
+			props.put(FileRepo.CMD_BEFORE_PUT, "echo before >>report");
+			props.put(FileRepo.CMD_AFTER_PUT, "echo after ${@} >>report");
+			props.put(FileRepo.CMD_ABORT_PUT, "echo abort >>report");
+			props.put(FileRepo.CMD_REFRESH, "echo refresh >>report");
+			props.put(FileRepo.CMD_PATH, "/xxx,${@},/yyy");
+			repo.setProperties(props);
+
+			repo.refresh();
+			{
+				InputStream in = stream(getFile("jar/osgi.jar"));
+				try {
+					repo.put(in, null);
+
+				}
+				finally {
+					in.close();
+				}
+			}
+			{
+				InputStream in = stream("not a valid zip");
+				try {
+					repo.put(in, null);
+					fail("expected failure");
+				} catch( Exception e) {
+					// ignore
+				}
+				finally {
+					in.close();
+				}
+			}
+			String s = collect(new File(root, "report"));
+			s = s.replaceAll("\r?\n", "@");
+			System.out.println(s);
+			assertTrue(s.matches("init /xxx.+/yyy@refresh@before@after .*tmp/osgi/osgi-4.0.0.jar@before@abort@"));
+		}
+		finally {
+			delete(root);
+		}
+
 	}
 }
