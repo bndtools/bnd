@@ -395,7 +395,8 @@ public class RepoCommand {
 	interface RefreshOptions extends Options {
 		
 	}
-	public void _refresh(RefreshOptions opts) {
+	
+	public void _refresh(RefreshOptions opts) throws Exception {
 		for ( Object o : repos) {
 			if ( o instanceof Refreshable) {
 				bnd.trace("refresh %s", o);
@@ -403,5 +404,4 @@ public class RepoCommand {
 			}
 		}
 	}
-
 }
