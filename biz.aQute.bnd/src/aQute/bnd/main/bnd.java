@@ -235,7 +235,7 @@ public class bnd extends Processor {
 		catch (Throwable t) {
 			if (t instanceof InvocationTargetException)
 				t = t.getCause();
-			exception(t, t.getMessage());
+			exception(t, "%s", t.getMessage());
 		}
 		out.flush();
 		err.flush();
