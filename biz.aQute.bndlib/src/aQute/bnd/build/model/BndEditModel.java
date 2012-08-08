@@ -136,7 +136,6 @@ public class BndEditModel {
 	// EnumConverter.create(ResolveMode.class, ResolveMode.manual);
 
 	// FORMATTERS
-	private Converter<String,Object>								defaultFormatter			= new DefaultFormatter();
 	private Converter<String,String>								newlineEscapeFormatter		= new NewlineEscapedStringFormatter();
 	private Converter<String,Boolean>								defaultFalseBoolFormatter	= new DefaultBooleanFormatter(
 																										false);

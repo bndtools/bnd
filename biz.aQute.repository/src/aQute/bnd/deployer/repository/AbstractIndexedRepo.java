@@ -363,18 +363,18 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		capabilityIndex.addResource(resource);
 	}
 	
-	Capability getIdentityCapability(Resource resource) {
+	static Capability getIdentityCapability(Resource resource) {
 		List<Capability> identityCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (identityCaps == null || identityCaps.isEmpty())
 			throw new IllegalArgumentException("Resource has no identity capability.");
 		return identityCaps.iterator().next();
 	}
 	
-	String getResourceIdentity(Resource resource) {
+	static String getResourceIdentity(Resource resource) {
 		return (String) getIdentityCapability(resource).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
 	}
 
-	Version getResourceVersion(Resource resource) {
+	static Version getResourceVersion(Resource resource) {
 		Version result;
 		
 		Object versionObj = getIdentityCapability(resource).getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
@@ -390,7 +390,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return result;
 	}
 	
-	URI getContentUrl(Resource resource) {
+	static URI getContentUrl(Resource resource) {
 		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
 		if (caps == null || caps.isEmpty())
 			throw new IllegalArgumentException("Resource has no content capability");
@@ -474,7 +474,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		}
 	}
 
-	List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version,Resource> versionMap, Filter filter) {
+	static List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version,Resource> versionMap, Filter filter) {
 		List<Resource> result = new ArrayList<Resource>(versionMap.size());
 
 		Dictionary<String,String> dict = new Hashtable<String,String>();
@@ -489,7 +489,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return result;
 	}
 
-	List<Resource> narrowVersionsByVersionRange(SortedMap<Version,Resource> versionMap, String rangeStr) {
+	static List<Resource> narrowVersionsByVersionRange(SortedMap<Version,Resource> versionMap, String rangeStr) {
 		List<Resource> result;
 		if ("latest".equals(rangeStr)) {
 			Version highest = versionMap.lastKey();
@@ -569,7 +569,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return selected;
 	}
 
-	String listToString(List< ? > list) {
+	static String listToString(List< ? > list) {
 		StringBuilder builder = new StringBuilder();
 
 		int count = 0;
@@ -599,7 +599,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return mapResourceToHandle(resource);
 	}
 
-	Resource findVersion(Version version, SortedMap<Version,Resource> versions) {
+	static Resource findVersion(Version version, SortedMap<Version,Resource> versions) {
 		if (version.getQualifier() != null && version.getQualifier().length() > 0) {
 			return versions.get(version);
 		}
@@ -618,7 +618,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return latest;
 	}
 
-	private int compare(Version v1, Version v2) {
+	private static int compare(Version v1, Version v2) {
 
 		if (v1.getMajor() != v2.getMajor())
 			return v1.getMajor() - v2.getMajor();
@@ -658,4 +658,14 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public String toString() {
 		return getName();
 	}
+
+	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
+		ResourceHandle handle = resolveBundle(bsn,version.toString(), Strategy.EXACT);
+		if ( handle == null)
+			return null;
+
+		return handle.request();
+	}
+
+
 }

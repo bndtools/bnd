@@ -216,7 +216,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		}
 	}
 
-	private URI resolveUri(String uriStr, URI baseUri) throws URISyntaxException {
+	private static URI resolveUri(String uriStr, URI baseUri) throws URISyntaxException {
 		URI resolved;
 		
 		URI resourceUri = new URI(uriStr);
@@ -234,7 +234,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		return Integer.parseInt(value);
 	}
 
-	private Object convertAttribute(String value, String type) {
+	private static Object convertAttribute(String value, String type) {
 		AttributeType attType = AttributeType.parseTypeName(type);
 		return attType.parseString(value);
 	}

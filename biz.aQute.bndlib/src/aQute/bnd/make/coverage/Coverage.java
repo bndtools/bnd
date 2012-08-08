@@ -35,7 +35,7 @@ public class Coverage {
 			throws Exception {
 		for (final Clazz clazz : source) {
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
-				MethodDef	source;
+//				MethodDef	source;
 
 				@Override
 				public void implementsInterfaces(TypeRef names[]) {
@@ -56,15 +56,16 @@ public class Coverage {
 				// Method definitions
 				@Override
 				public void method(MethodDef source) {
-					this.source = source;
+//					this.source = source;
 				}
 
-				public void reference(MethodDef reference) {
-					List<MethodDef> references = catalog.get(reference);
-					if (references != null) {
-						references.add(source);
-					}
-				}
+				// TODO need to use different reference method
+//				public void reference(MethodDef reference) {
+//					List<MethodDef> references = catalog.get(reference);
+//					if (references != null) {
+//						references.add(source);
+//					}
+//				}
 			});
 		}
 	}
