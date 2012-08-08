@@ -29,6 +29,7 @@ import org.osgi.framework.launch.FrameworkFactory;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.osgi.Jar;
+import aQute.lib.io.IO;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
@@ -109,22 +110,13 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
         if (clean) {
             File storage = bndLauncher.getStorageDir();
             if (storage.exists()) {
-                deleteRecursively(storage);
+                IO.delete(storage);
             }
         }
 
         bndLauncher.setKeep(!clean);
 
         bndLauncher.setTrace(enableTraceOption(configuration));
-    }
-
-    private void deleteRecursively(File dir) {
-        for (File f : dir.listFiles()) {
-            if (f.isDirectory()) {
-                deleteRecursively(f);
-            }
-            f.delete();
-        }
     }
 
     /**
