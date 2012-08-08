@@ -36,6 +36,9 @@ public class LogServiceAdapter implements LogService {
         case LogService.LOG_INFO :
             delegate.logInfo(message, exception);
             break;
+        default :
+            delegate.logError("[Unknown level " + level + ", assumed error]" + message, exception);
+            break;
         }
     }
 
