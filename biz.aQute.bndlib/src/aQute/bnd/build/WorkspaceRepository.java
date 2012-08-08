@@ -87,7 +87,7 @@ public class WorkspaceRepository implements RepositoryPlugin {
 	}
 
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
-		return null;
+		throw new UnsupportedOperationException("Read only repository");
 	}
 
 	public List<String> list(String regex) throws Exception {

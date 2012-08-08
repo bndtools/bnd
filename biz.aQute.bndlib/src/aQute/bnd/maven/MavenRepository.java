@@ -114,7 +114,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	}
 
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
-		throw new IllegalStateException("Maven does not support the put command");
+		throw new UnsupportedOperationException("Maven does not support the put command");
 	}
 
 	public List<Version> versions(String bsn) throws Exception {
