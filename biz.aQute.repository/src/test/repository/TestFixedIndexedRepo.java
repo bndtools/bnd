@@ -19,7 +19,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		List<String> list = repo.list(null);
 		if (list != null)
 			for (String bsn : list) {
-				List<Version> versions = repo.versions(bsn);
+				SortedSet<Version> versions = repo.versions(bsn);
 				if (versions != null)
 					count += versions.size();
 			}

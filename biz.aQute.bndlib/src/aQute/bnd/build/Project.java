@@ -832,7 +832,7 @@ public class Project extends Processor {
 			SortedMap<Version,RepositoryPlugin> versions = new TreeMap<Version,RepositoryPlugin>();
 			for (RepositoryPlugin plugin : plugins) {
 				try {
-					List<Version> vs = plugin.versions(bsn);
+					SortedSet<Version> vs = plugin.versions(bsn);
 					if (vs != null) {
 						for (Version v : vs) {
 							if (!versions.containsKey(v) && versionRange.includes(v))
