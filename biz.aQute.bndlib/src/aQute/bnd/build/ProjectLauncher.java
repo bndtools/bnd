@@ -8,7 +8,7 @@ import java.util.jar.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.service.*;
 import aQute.libg.command.*;
 import aQute.libg.generics.*;
 
