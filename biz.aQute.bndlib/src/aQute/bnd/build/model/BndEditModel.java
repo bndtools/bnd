@@ -627,6 +627,8 @@ public class BndEditModel {
 
     
     public void setRunFramework(String clause) {
+        assert (Constants.RUNFRAMEWORK_SERVICES.equals(clause.toLowerCase().trim()) ||
+                Constants.RUNFRAMEWORK_NONE.equals(clause.toLowerCase().trim()));
         String oldValue = getRunFramework();
         doSetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
     }
