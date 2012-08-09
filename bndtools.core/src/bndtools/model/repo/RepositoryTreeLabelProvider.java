@@ -11,11 +11,13 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.service.Actionable;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Logger;
@@ -176,17 +178,18 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         if (element instanceof RepositoryBundleVersion) {
             RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
             return bundleVersion.getTooltip();
+        } else if (element instanceof Actionable) {
+            try {
+                return ((Actionable) element).tooltip();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
 
     @Override
-    public boolean useNativeToolTip(Object object) {
-        return true;
-    }
-
-    @Override
-    public int getToolTipDisplayDelayTime(Object o) {
-        return 1000;
+    public Point getToolTipShift(Object object) {
+        return new Point(5, 5);
     }
 }
