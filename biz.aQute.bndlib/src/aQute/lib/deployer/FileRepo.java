@@ -16,19 +16,111 @@ import aQute.libg.command.*;
 import aQute.libg.cryptography.*;
 import aQute.service.reporter.*;
 
+/**
+ * A FileRepo is the primary and example implementation of a repository based on
+ * a file system. It maintains its files in a bsn/bsn-version.jar style from a
+ * given location. It implements all the functions of the
+ * {@link RepositoryPlugin}, {@link Refreshable}, {@link Actionable}, and
+ * {@link Closeable}. The FileRepo can be extended or used as is. When used as
+ * is, it is possible to add shell commands to the life cycle of the FileRepo.
+ * This life cycle is as follows:
+ * <ul>
+ * <li>{@link #CMD_INIT} - Is only executed when the location did not exist</li>
+ * <li>{@link #CMD_OPEN} - Called (after init if necessary) to open it once</li>
+ * <li>{@link #CMD_REFRESH} - Called when refreshed.</li>
+ * <li>{@link #CMD_BEFORE_PUT} - Before the file system is changed</li>
+ * <li>{@link #CMD_AFTER_PUT} - After the file system has changed, and the put
+ * was a success</li>
+ * <li>{@link #CMD_ABORT_PUT} - When the put is aborted.</li>
+ * <li>{@link #CMD_CLOSE} - To close the repository.</li>
+ * </ul>
+ * Additionally, it is possible to set the {@link #CMD_SHELL} and the
+ * {@link #CMD_PATH}. Notice that you can use the ${global} macro to read global
+ * (that is, machine local) settings from the ~/.bnd/settings.json file (can be
+ * managed with bnd).
+ */
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
+
+	/**
+	 * Property name for the location of the repo, must be a valid path name
+	 * using forward slashes (see {@link IO#getFile(String)}.
+	 */
 	public final static String	LOCATION		= "location";
+
+	/**
+	 * Property name for the readonly state of the repository. If no, will
+	 * read/write, otherwise it must be a boolean value read by
+	 * {@link Boolean#parseBoolean(String)}. Read only repositories will not
+	 * accept writes.
+	 */
 	public final static String	READONLY		= "readonly";
+
+	/**
+	 * Set the name of this repository (optional)
+	 */
 	public final static String	NAME			= "name";
+
+	/**
+	 * Path property for commands. A comma separated path for directories to be
+	 * searched for command. May contain $ @} which will be replaced by the
+	 * system path. If this property is not set, the system path is assumed.
+	 */
 	public static final String	CMD_PATH		= "cmd.path";
+
+	/**
+	 * The name ( and path) of the shell to execute the commands. By default
+	 * this is sh and searched in the path.
+	 */
 	public static final String	CMD_SHELL		= "cmd.shell";
+
+	/**
+	 * Property for commands. The command only runs when the location does not
+	 * exist. The $ @} is replaced with the location and the current work
+	 * directory is also the location.
+	 */
 	public static final String	CMD_INIT		= "cmd.init";
+
+	/**
+	 * Property for commands. Command is run before the repo is first used. The
+	 * $ @} is replaced with the location and the current work directory is also
+	 * the location.
+	 */
 	public static final String	CMD_OPEN		= "cmd.open";
+
+	/**
+	 * Property for commands. The command runs after a put operation.
+	 */
 	public static final String	CMD_AFTER_PUT	= "cmd.after.put";
+
+	/**
+	 * Property for commands. The command runs when the repository is refreshed.
+	 * The $ @} is replaced with the location and the current work directory is
+	 * also the location.
+	 */
 	public static final String	CMD_REFRESH		= "cmd.refresh";
+
+	/**
+	 * Property for commands. The command runs after the file is put. The $ @}
+	 * is replaced with the file name, the working directory is the location.
+	 */
 	public static final String	CMD_BEFORE_PUT	= "cmd.before.put";
+
+	/**
+	 * Property for commands. The command runs when a put is aborted after file
+	 * changes were made. The $ @} is not set, the current working directory is
+	 * the location.
+	 */
 	public static final String	CMD_ABORT_PUT	= "cmd.abort.put";
+
+	/**
+	 * Property for commands. The command runs after the file is put. The $ @}
+	 * is not set, the current working directory is the location.
+	 */
 	public static final String	CMD_CLOSE		= "cmd.cose";
+
+	/**
+	 * Options used when the options are null
+	 */
 	static final PutOptions		DEFAULTOPTIONS	= new PutOptions();
 
 	String						shell;
@@ -60,6 +152,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		this.canWrite = canWrite;
 	}
 
+	/**
+	 * Initialize the repository Subclasses should first call this method and
+	 * then if it returns true, do their own initialization
+	 * 
+	 * @return true if initialized, false if already had been initialized.
+	 * @throws Exception
+	 */
 	protected boolean init() throws Exception {
 		if (inited)
 			return false;
@@ -78,13 +177,15 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return true;
 	}
 
+	/**
+	 * @see aQute.bnd.service.Plugin#setProperties(java.util.Map)
+	 */
 	public void setProperties(Map<String,String> map) {
 		String location = map.get(LOCATION);
 		if (location == null)
 			throw new IllegalArgumentException("Location must be set on a FileRepo plugin");
 
 		root = IO.getFile(IO.home, location);
-
 		String readonly = map.get(READONLY);
 		if (readonly != null && Boolean.valueOf(readonly).booleanValue())
 			canWrite = false;
@@ -104,6 +205,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * Get a list of URLs to bundles that are constrained by the bsn and
 	 * versionRange.
+	 * 
+	 * TODO can be removed
 	 */
 	private File[] get(String bsn, String versionRange) throws Exception {
 		init();
@@ -163,10 +266,21 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return files;
 	}
 
+	/**
+	 * Answer if this repository can write.
+	 */
 	public boolean canWrite() {
 		return canWrite;
 	}
 
+	/**
+	 * Local helper method that tries to insert a file in the repository
+	 * 
+	 * @param tmpFile
+	 * @param options
+	 * @return
+	 * @throws Exception
+	 */
 	protected PutResult putArtifact(File tmpFile, PutOptions options) throws Exception {
 		assert (tmpFile != null);
 		assert (options != null);
@@ -228,10 +342,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				reporter.progress(-1, "updated " + file.getAbsolutePath());
 
 			fireBundleAdded(jar, file);
-
-			// Execute the after command
 			exec(after, file);
 
+			
+			// TODO like to get rid of the latest option. This is only
+			// used to have a constant name for the outside users (like ant)
+			// we should be able to handle this differently?
+			
 			File latest = new File(dir, bsn + "-latest.jar");
 			boolean latestExists = latest.exists() && latest.isFile();
 			boolean latestIsOlder = latestExists && (latest.lastModified() < jar.lastModified());
@@ -256,7 +373,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 	}
 
-	/* a straight copy of this method lives in LocalIndexedRepo */
+	/**
+	 *  a straight copy of this method lives in LocalIndexedRepo 
+	 *  
+	 */
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 
 		if (options == null)
