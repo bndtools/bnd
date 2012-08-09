@@ -103,6 +103,7 @@ public interface Constants {
 	String							PLUGIN										= "-plugin";
 	String							PLUGINPATH									= "-pluginpath";
 	String							POM											= "-pom";
+	String							PROFILE										= "-profile";
 	String							RELEASEREPO									= "-releaserepo";
 	String							REMOVEHEADERS								= "-removeheaders";
 	String							RESOURCEONLY								= "-resourceonly";
@@ -161,7 +162,7 @@ public interface Constants {
 			PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SOURCES, SOURCEPATH, SUB, RUNBUNDLES,
 			RUNPATH, RUNSYSTEMPACKAGES, RUNPROPERTIES, REPORTNEWER, UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT,
 			VERBOSE, NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNTRACE,
-			TESTCONTINUOUS, SNAPSHOT, NAMESECTION, DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO
+			TESTCONTINUOUS, SNAPSHOT, NAMESECTION, DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make
