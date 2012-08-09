@@ -38,6 +38,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private File					base			= new File("").getAbsoluteFile();
 
 	Properties						properties;
+	String							profile;
 	private Macro					replacer;
 	private long					lastModified;
 	private File					propertiesFile;
@@ -138,7 +139,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void progress(float progress, String format, Object... args) {
-		format = String.format("[%2d] %s", (int)progress, format);
+		format = String.format("[%2d] %s", (int) progress, format);
 		trace(format, args);
 	}
 
@@ -354,8 +355,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					Class< ? > c = loader.loadClass(key);
 					Object plugin = c.newInstance();
 					customize(plugin, entry.getValue());
-					if ( plugin instanceof Closeable){
-						addClose((Closeable)plugin);
+					if (plugin instanceof Closeable) {
+						addClose((Closeable) plugin);
 					}
 					list.add(plugin);
 				}
@@ -470,7 +471,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		toBeClosed.clear();
 	}
 
-	public String _basedir(@SuppressWarnings("unused") String args[]) {
+	public String _basedir(@SuppressWarnings("unused")
+	String args[]) {
 		if (base == null)
 			throw new IllegalArgumentException("No base dir set");
 
@@ -656,7 +658,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public boolean refresh() {
 		plugins = null; // We always refresh our plugins
-
+		
+		
 		if (propertiesFile == null)
 			return false;
 
@@ -670,6 +673,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			}
 		}
 
+		profile = getProperty(PROFILE); // Used in property access
+		
 		if (changed) {
 			forceRefresh();
 			return true;
@@ -762,6 +767,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return
 	 */
 	public String getProperty(String key, String deflt) {
+
 		String value = null;
 
 		Instruction ins = new Instruction(key);
@@ -789,6 +795,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		Processor source = this;
 
+		// Use the key as is first, if found ok
+
 		if (filter != null && filter.contains(key)) {
 			value = (String) getProperties().get(key);
 		} else {
@@ -798,6 +806,26 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					break;
 
 				source = source.getParent();
+			}
+		}
+
+		// Check if we found a value, if not, try to prefix
+		// it with a profile if found and search again. profiles
+		// are a simple name that is prefixed like [profile]. This
+		// allows different variables to be used in different profiles.
+
+		if (value == null && profile != null) {
+			String pkey = "[" + profile + "]" + key;
+			if (filter != null && filter.contains(key)) {
+				value = (String) getProperties().get(pkey);
+			} else {
+				while (source != null) {
+					value = (String) source.getProperties().get(pkey);
+					if (value != null)
+						break;
+
+					source = source.getParent();
+				}
 			}
 		}
 
@@ -876,8 +904,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map< ? , ? extends Map< ? , ? >> exports, @SuppressWarnings("unused") boolean checkMultipleVersions)
-			throws IOException {
+	public static String printClauses(Map< ? , ? extends Map< ? , ? >> exports, @SuppressWarnings("unused")
+	boolean checkMultipleVersions) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Entry< ? , ? extends Map< ? , ? >> entry : exports.entrySet()) {
@@ -977,7 +1005,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return result;
 	}
 
-	public boolean updateModified(long time, @SuppressWarnings("unused") String reason) {
+	public boolean updateModified(long time, @SuppressWarnings("unused")
+	String reason) {
 		if (time > lastModified) {
 			lastModified = time;
 			return true;
