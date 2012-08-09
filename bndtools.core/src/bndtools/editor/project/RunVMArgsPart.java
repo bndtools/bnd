@@ -18,6 +18,7 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
+import bndtools.editor.utils.ToolTips;
 import bndtools.utils.ModificationLock;
 
 public class RunVMArgsPart extends SectionPart implements PropertyChangeListener {
@@ -39,6 +40,7 @@ public class RunVMArgsPart extends SectionPart implements PropertyChangeListener
         Composite composite = toolkit.createComposite(section);
 
         textField = toolkit.createText(composite, "", SWT.MULTI | SWT.BORDER);
+        ToolTips.setupHeaderMessageAndToolTip(textField, Constants.RUNVM);
         textField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {

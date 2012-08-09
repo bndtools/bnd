@@ -74,11 +74,11 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.ServiceComponent;
 import aQute.bnd.header.Attrs;
-import aQute.bnd.version.Version;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.api.ILogger;
+import bndtools.editor.utils.ToolTips;
 import bndtools.utils.CachingContentProposalProvider;
 import bndtools.utils.JavaContentProposal;
 import bndtools.utils.JavaContentProposalLabelProvider;
@@ -159,11 +159,11 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
         toolkit.createLabel(composite, "Version:");
         txtVersion = toolkit.createText(composite, "", SWT.BORDER);
-        txtVersion.setMessage(Version.LOWEST.toString());
+        ToolTips.setupHeaderMessageAndToolTip(txtVersion, Constants.BUNDLE_VERSION);
 
         Hyperlink linkActivator = toolkit.createHyperlink(composite, "Activator:", SWT.NONE);
         txtActivator = toolkit.createText(composite, "", SWT.BORDER);
-        txtActivator.setMessage("Enter activator class name");
+        ToolTips.setupHeaderMessageAndToolTip(txtActivator, Constants.BUNDLE_ACTIVATOR);
 
         toolkit.createLabel(composite, "Declarative Services:");
         cmbComponents = new Combo(composite, SWT.READ_ONLY);
