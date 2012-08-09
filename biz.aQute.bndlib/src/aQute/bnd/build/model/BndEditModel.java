@@ -30,6 +30,8 @@ public class BndEditModel {
 	private static final String									ISO_8859_1					= "ISO-8859-1";												//$NON-NLS-1$
 
 	private static String[]										KNOWN_PROPERTIES			= new String[] {
+			Constants.BUNDLE_NAME, Constants.BUNDLE_DESCRIPTION, Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_UPDATELOCATION,
+			Constants.BUNDLE_VENDOR, Constants.BUNDLE_CONTACTADDRESS, Constants.BUNDLE_DOCURL,
 			Constants.BUNDLE_SYMBOLICNAME, Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR,
 			Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE, aQute.bnd.osgi.Constants.PRIVATE_PACKAGE,
 			aQute.bnd.osgi.Constants.SOURCES,
@@ -166,6 +168,13 @@ public class BndEditModel {
 	@SuppressWarnings("deprecation")
 	public BndEditModel() {
 		// register converters
+		converters.put(aQute.bnd.osgi.Constants.BUNDLE_NAME, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.BUNDLE_DESCRIPTION, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.BUNDLE_COPYRIGHT, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.BUNDLE_UPDATELOCATION, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.BUNDLE_VENDOR, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.BUNDLE_CONTACTADDRESS, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.BUNDLE_DOCURL, stringConverter);
 		converters.put(aQute.bnd.osgi.Constants.BUILDPATH, buildPathConverter);
 		converters.put(aQute.bnd.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNBUNDLES, clauseListConverter);
@@ -192,6 +201,14 @@ public class BndEditModel {
 		converters.put(aQute.bnd.osgi.Constants.RUNEE, eeConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNREPOS, listConverter);
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
+
+		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_NAME, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_DESCRIPTION, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_COPYRIGHT, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_UPDATELOCATION, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_VENDOR, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_CONTACTADDRESS, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_DOCURL, newlineEscapeFormatter);
 
 		formatters.put(aQute.bnd.osgi.Constants.BUILDPATH, headerClauseListFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.BUILDPACKAGES, headerClauseListFormatter);
@@ -340,6 +357,62 @@ public class BndEditModel {
 		if (formatter == null)
 			formatter = new DefaultFormatter();
 		doSetObject(propertyName, oldValue, value, formatter);
+	}
+
+	public String getBundleName() {
+		return doGetObject(Constants.BUNDLE_NAME, stringConverter);
+	}
+
+	public void setBundleName(String bundleName) {
+		doSetObject(Constants.BUNDLE_NAME, getBundleName(), bundleName, newlineEscapeFormatter);
+	}
+
+	public String getBundleDescription() {
+		return doGetObject(Constants.BUNDLE_DESCRIPTION, stringConverter);
+	}
+
+	public void setBundleDescription(String bundleDescription) {
+		doSetObject(Constants.BUNDLE_DESCRIPTION, getBundleDescription(), bundleDescription, newlineEscapeFormatter);
+	}
+
+	public String getBundleCopyright() {
+		return doGetObject(Constants.BUNDLE_COPYRIGHT, stringConverter);
+	}
+
+	public void setBundleCopyright(String bundleCopyright) {
+		doSetObject(Constants.BUNDLE_COPYRIGHT, getBundleCopyright(), bundleCopyright, newlineEscapeFormatter);
+	}
+
+	public String getBundleUpdateLocation() {
+		return doGetObject(Constants.BUNDLE_UPDATELOCATION, stringConverter);
+	}
+
+	public void setBundleUpdateLocation(String bundleUpdateLocation) {
+		doSetObject(Constants.BUNDLE_UPDATELOCATION, getBundleUpdateLocation(), bundleUpdateLocation, newlineEscapeFormatter);
+	}
+
+	public String getBundleVendor() {
+		return doGetObject(Constants.BUNDLE_VENDOR, stringConverter);
+	}
+
+	public void setBundleVendor(String bundleVendor) {
+		doSetObject(Constants.BUNDLE_VENDOR, getBundleVendor(), bundleVendor, newlineEscapeFormatter);
+	}
+
+	public String getBundleContactAddress() {
+		return doGetObject(Constants.BUNDLE_CONTACTADDRESS, stringConverter);
+	}
+
+	public void setBundleContactAddress(String bundleContactAddress) {
+		doSetObject(Constants.BUNDLE_CONTACTADDRESS, getBundleContactAddress(), bundleContactAddress, newlineEscapeFormatter);
+	}
+
+	public String getBundleDocUrl() {
+		return doGetObject(Constants.BUNDLE_DOCURL, stringConverter);
+	}
+
+	public void setBundleDocUrl(String bundleDocUrl) {
+		doSetObject(Constants.BUNDLE_DOCURL, getBundleDocUrl(), bundleDocUrl, newlineEscapeFormatter);
 	}
 
 	public String getBundleSymbolicName() {
