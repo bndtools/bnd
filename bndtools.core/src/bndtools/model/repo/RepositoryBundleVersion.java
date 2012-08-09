@@ -63,4 +63,8 @@ public class RepositoryBundleVersion implements IAdaptable {
             return null;
         }
     }
+
+    public String getTooltip() {
+        return bundle.getTooltip(version);
+    }
 }

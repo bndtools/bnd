@@ -170,4 +170,23 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         }
         return null;
     }
+
+    @Override
+    public String getToolTipText(Object element) {
+        if (element instanceof RepositoryBundleVersion) {
+            RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
+            return bundleVersion.getTooltip();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean useNativeToolTip(Object object) {
+        return true;
+    }
+
+    @Override
+    public int getToolTipDisplayDelayTime(Object o) {
+        return 1000;
+    }
 }
