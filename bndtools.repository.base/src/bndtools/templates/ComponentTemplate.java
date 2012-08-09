@@ -48,7 +48,7 @@ public class ComponentTemplate implements IProjectTemplate {
 
         model.setRunRequires(requires);
         model.setRunBundles(runPath);
-        model.setRunFramework("org.apache.felix.framework");
+        model.setRunFw("org.apache.felix.framework");
         model.setEE(EE.JavaSE_1_6);
 
         model.setServiceComponents(Arrays.asList(new ServiceComponent[] {

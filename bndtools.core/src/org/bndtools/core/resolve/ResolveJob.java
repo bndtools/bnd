@@ -22,8 +22,8 @@ public class ResolveJob extends Job {
     }
 
     public IStatus validateBeforeRun() {
-        String runFramework = model.getRunFramework();
-        if (runFramework == null)
+        String runfw = model.getRunFw();
+        if (runfw == null)
             return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
 
         EE ee = model.getEE();

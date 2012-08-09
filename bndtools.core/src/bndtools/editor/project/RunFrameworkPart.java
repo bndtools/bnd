@@ -156,7 +156,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         super.initialize(form);
         model = (BndEditModel) form.getInput();
 
-        model.addPropertyChangeListener(BndConstants.RUNFRAMEWORK, this);
+        model.addPropertyChangeListener(BndConstants.RUNFW, this);
         model.addPropertyChangeListener(BndConstants.RUNEE, this);
     }
 
@@ -165,7 +165,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         super.dispose();
         if (model != null) {
             model.removePropertyChangeListener(BndConstants.RUNEE, this);
-            model.removePropertyChangeListener(BndConstants.RUNFRAMEWORK, this);
+            model.removePropertyChangeListener(BndConstants.RUNFW, this);
         }
     }
 
@@ -173,7 +173,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     public void refresh() {
         lock.modifyOperation(new Runnable() {
             public void run() {
-                selectedFramework = model.getRunFramework();
+                selectedFramework = model.getRunFw();
                 if (selectedFramework == null)
                     selectedFramework = "";
                 cmbFramework.setText(selectedFramework);
@@ -190,7 +190,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         super.commit(onSave);
         try {
             committing = true;
-            model.setRunFramework(selectedFramework.trim().length() > 0 ? selectedFramework.trim() : null);
+            model.setRunFw(selectedFramework.trim().length() > 0 ? selectedFramework.trim() : null);
             model.setEE(selectedEE);
         } finally {
             committing = false;

@@ -1,4 +1,4 @@
--runframework: org.eclipse.osgi;version='[3.7,4)'
+-runfw: org.eclipse.osgi;version='[3.7,4)'
 -runee: JavaSE-1.6
 
 -runbundles:\

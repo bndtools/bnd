@@ -51,7 +51,7 @@ public class DependencyManagerTemplate implements IProjectTemplate {
         model.setBundleActivator("org.example.Activator");
         model.setRunRequires(requires);
         model.setRunBundles(runPath);
-        model.setRunFramework("org.apache.felix.framework");
+        model.setRunFw("org.apache.felix.framework");
         model.setEE(EE.JavaSE_1_6);
 
         model.setPrivatePackages(Arrays.asList(new String[] { "org.example" }));
