@@ -67,7 +67,6 @@ public class RepositoryBundleVersion implements IAdaptable, Actionable {
         }
     }
 
-<<<<<<< HEAD
     public Map<String,Runnable> actions(Object... t) throws Exception {
         RepositoryPlugin p = bundle.getRepo();
         if (p instanceof Actionable)
@@ -80,9 +79,5 @@ public class RepositoryBundleVersion implements IAdaptable, Actionable {
         if (p instanceof Actionable)
             return ((Actionable) p).tooltip(bundle.getBsn(), version);
         return null;
-=======
-    public String getTooltip() {
-        return bundle.getTooltip(version);
->>>>>>> Taking advantage of the new actions and tooltip support
     }
 }

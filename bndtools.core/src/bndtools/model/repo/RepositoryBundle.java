@@ -10,7 +10,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 
-import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResourceHandle;
@@ -87,18 +86,5 @@ public class RepositoryBundle implements IAdaptable {
             logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
             return null;
         }
-    }
-
-    String getTooltip(Version version) {
-        if (repo instanceof Actionable) {
-            try {
-                return ((Actionable) repo).tooltip(new Object[] {
-                        bsn, version
-                });
-            } catch (Exception e) {
-                logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1} for tooltip.", repo.getName(), bsn), e);
-            }
-        }
-        return null;
     }
 }
