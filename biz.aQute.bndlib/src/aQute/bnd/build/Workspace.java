@@ -2,6 +2,7 @@ package aQute.bnd.build;
 
 import java.io.*;
 import java.lang.ref.*;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
@@ -14,7 +15,9 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.lib.deployer.*;
+import aQute.lib.hex.*;
 import aQute.lib.io.*;
+import aQute.lib.settings.*;
 import aQute.service.reporter.*;
 
 public class Workspace extends Processor {
@@ -29,6 +32,7 @@ public class Workspace extends Processor {
 	final File									buildDir;
 	final Maven									maven		= new Maven(Processor.getExecutor());
 	private boolean								offline		= true;
+	Settings									settings	= new Settings();
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -388,5 +392,23 @@ public class Workspace extends Processor {
 	public Workspace setOffline(boolean on) {
 		this.offline = on;
 		return this;
+	}
+	
+	/**
+	 * Provide access to the global settings of this machine.
+	 * @throws Exception 
+	 * @throws UnknownHostException 
+	 */
+	
+	public String _global(String[] args) throws Exception  {
+		Macro.verifyCommand(args, "${global;<name>}, get a global setting from ~/.bnd/settings.json", null, 2, 2);
+		
+		String key = args[1];
+		if ( key.equals("key.public"))
+			return Hex.toHexString(settings.getPublicKey());
+		if ( key.equals("key.private"))
+			return Hex.toHexString(settings.getPrivateKey());
+		
+		return settings.get(key);
 	}
 }
