@@ -307,8 +307,10 @@ public class Builder extends Analyzer {
 				}
 			}
 		}
-		if (jar.getDirectories().size() == 0)
+		if (jar.getDirectories().size() == 0) {
+			trace("extra dirs %s", jar.getDirectories());
 			return null;
+		}
 		return jar;
 	}
 
