@@ -11,11 +11,11 @@ javac.source = 1.5
 javac.target = jsr14
 Private-Package: aQute.junit.*,\
 	junit.*,\
-	org.junit.*,\
-	org.hamcrest.*
+	org.junit.*
 	
 Export-Package: junit.framework; version=3.8,\
-				org.junit.*;version=4.10
+				org.junit.*;version=4.10, \
+				org.hamcrest.*;version=1.0.0
 
 # The dependency on aQute packages is only for the 
 # master side. When launched, those dependencies
