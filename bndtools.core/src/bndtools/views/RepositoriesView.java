@@ -6,6 +6,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bndtools.core.utils.swt.FilterPanelPart;
 import org.eclipse.core.resources.IFile;
@@ -13,6 +15,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
@@ -49,6 +53,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Activator;
@@ -328,6 +333,37 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         viewer.getControl().setMenu(menu);
         mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         getSite().registerContextMenu(mgr, viewer);
+
+        mgr.addMenuListener(new IMenuListener() {
+
+            public void menuAboutToShow(IMenuManager manager) {
+                try {
+                    manager.removeAll();
+                    IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+                    if (!selection.isEmpty()) {
+                        Object firstElement = selection.getFirstElement();
+                        if (firstElement instanceof Actionable) {
+                            Actionable act = (Actionable) firstElement;
+                            Map<String,Runnable> actions = act.actions();
+                            if (actions != null) {
+                                for (final Entry<String,Runnable> e : actions.entrySet()) {
+                                    final String label = e.getKey().replaceAll("\\$\\{@\\}", e.getValue().toString());
+                                    final Action a = new Action(label) {
+                                        @Override
+                                        public void run() {
+                                            e.getValue().run();
+                                        }
+                                    };
+                                    manager.add(a);
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void fillToolBar(IToolBarManager toolBar) {

@@ -11,7 +11,6 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -175,21 +174,12 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
 
     @Override
     public String getToolTipText(Object element) {
-        if (element instanceof RepositoryBundleVersion) {
-            RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
-            return bundleVersion.getTooltip();
-        } else if (element instanceof Actionable) {
+        if (element instanceof Actionable)
             try {
                 return ((Actionable) element).tooltip();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
         return null;
-    }
-
-    @Override
-    public Point getToolTipShift(Object object) {
-        return new Point(5, 5);
     }
 }
