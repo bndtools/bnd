@@ -92,6 +92,7 @@ public interface Constants {
 	String							MAKE										= "-make";
 	String							METATYPE									= "-metatype";
 	String							MANIFEST									= "-manifest";
+	String							PROFILE										= "-profile";
 	String							SAVEMANIFEST								= "-savemanifest";
 	String							NAMESECTION									= "-namesection";
 	String							NODEFAULTVERSION							= "-nodefaultversion";
@@ -103,7 +104,6 @@ public interface Constants {
 	String							PLUGIN										= "-plugin";
 	String							PLUGINPATH									= "-pluginpath";
 	String							POM											= "-pom";
-	String							PROFILE										= "-profile";
 	String							RELEASEREPO									= "-releaserepo";
 	String							REMOVEHEADERS								= "-removeheaders";
 	String							RESOURCEONLY								= "-resourceonly";

@@ -8,7 +8,7 @@ import junit.framework.*;
 import aQute.bnd.build.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.eclipse.*;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;

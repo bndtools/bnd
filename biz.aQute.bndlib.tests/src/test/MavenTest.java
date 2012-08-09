@@ -12,7 +12,7 @@ import aQute.bnd.maven.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.maven.support.Pom.Dependency;
 import aQute.bnd.osgi.*;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.service.*;
 import aQute.lib.io.*;
 import aQute.libg.map.*;
 
