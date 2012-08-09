@@ -7,10 +7,6 @@ import java.util.*;
 import aQute.bnd.version.*;
 
 public interface RepositoryPlugin {
-	public enum Strategy {
-		LOWEST, HIGHEST, EXACT
-	}
-
 	/**
 	 * Options used to steer the put operation
 	 */

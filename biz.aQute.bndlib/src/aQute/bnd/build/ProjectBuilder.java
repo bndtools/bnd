@@ -6,7 +6,7 @@ import java.util.*;
 import aQute.bnd.differ.*;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.osgi.*;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.service.*;
 
 public class ProjectBuilder extends Builder {
 	private final DiffPluginImpl	differ	= new DiffPluginImpl();
