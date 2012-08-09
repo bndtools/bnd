@@ -125,7 +125,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
         BndEditModel runModel = new BndEditModel();
-        runModel.setRunFramework("org.apache.felix.framework;version='[4,4.1)'");
+        runModel.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
 
         BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
         Collection<Resource> resources = context.getMandatoryResources();
@@ -146,7 +146,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
         runModel = new BndEditModel();
-        runModel.setRunFramework("org.apache.felix.framework;version='[4,4.1)'");
+        runModel.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
 
         context = new BndrunResolveContext(runModel, registry, log);
         resources = context.getMandatoryResources();
@@ -160,7 +160,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.0.index.xml")));
 
         runModel = new BndEditModel();
-        runModel.setRunFramework("org.apache.felix.framework;version='[4,4.1)'");
+        runModel.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
 
         context = new BndrunResolveContext(runModel, registry, log);
         resources = context.getMandatoryResources();
@@ -175,7 +175,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml")));
 
         BndEditModel runModel = new BndEditModel();
-        runModel.setRunFramework("org.apache.felix.framework");
+        runModel.setRunFw("org.apache.felix.framework");
 
         Requirement requirement = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(&(osgi.wiring.package=org.osgi.util.tracker)(version>=1.5)(!(version>=1.6)))").buildSyntheticRequirement();
 
@@ -192,7 +192,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
         BndEditModel runModel = new BndEditModel();
-        runModel.setRunFramework("org.apache.felix.framework");
+        runModel.setRunFw("org.apache.felix.framework");
 
         Requirement req = new CapReqBuilder("osgi.identity").addDirective("filter", "(osgi.identity=org.apache.felix.gogo.command)").buildSyntheticRequirement();
         runModel.setRunRequires(Collections.singletonList(req));
@@ -211,7 +211,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
         BndEditModel runModel = new BndEditModel();
-        runModel.setRunFramework("org.apache.felix.framework");
+        runModel.setRunFw("org.apache.felix.framework");
         runModel.setEE(EE.JavaSE_1_6);
 
         BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
@@ -228,7 +228,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
         BndEditModel runModel = new BndEditModel();
-        runModel.setRunFramework("org.apache.felix.framework");
+        runModel.setRunFw("org.apache.felix.framework");
         runModel.setEE(EE.JavaSE_1_6);
 
         BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
@@ -245,7 +245,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
         BndEditModel runModel = new BndEditModel();
-        runModel.setRunFramework("org.apache.felix.framework");
+        runModel.setRunFw("org.apache.felix.framework");
         runModel.setEE(EE.J2SE_1_5); // javax.annotation added in Java 6
 
         BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
@@ -276,7 +276,7 @@ public class BndrunResolveContextTest extends TestCase {
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
 
         BndEditModel runModel = new BndEditModel();
-        runModel.setRunFramework("org.apache.felix.framework");
+        runModel.setRunFw("org.apache.felix.framework");
         runModel.setEE(EE.JavaSE_1_6);
 
         BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);

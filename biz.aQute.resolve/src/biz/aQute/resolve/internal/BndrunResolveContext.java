@@ -105,7 +105,7 @@ public class BndrunResolveContext extends ResolveContext {
     }
 
     private void findFramework() {
-        String header = runModel.getRunFramework();
+        String header = runModel.getRunFw();
         if (header == null)
             return;
 
@@ -198,7 +198,7 @@ public class BndrunResolveContext extends ResolveContext {
     public Collection<Resource> getMandatoryResources() {
         init();
         if (frameworkResource == null)
-            throw new IllegalStateException(MessageFormat.format("Could not find OSGi framework matching {0}.", runModel.getRunFramework()));
+            throw new IllegalStateException(MessageFormat.format("Could not find OSGi framework matching {0}.", runModel.getRunFw()));
 
         List<Resource> resources = new ArrayList<Resource>();
         resources.add(frameworkResource);
