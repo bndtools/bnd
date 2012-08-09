@@ -14,7 +14,7 @@ public interface RepositoryPlugin {
 	/**
 	 * Options used to steer the put operation
 	 */
-	public class PutOptions {
+	class PutOptions {
 		/**
 		 * The <b>SHA1</b> digest of the artifact to put into the repository.<br/>
 		 * <br/>
@@ -55,11 +55,12 @@ public interface RepositoryPlugin {
 		 */
 		public boolean	createLatest		= false;
 	}
+	PutOptions DEFAULTOPTIONS	= new PutOptions();
 
 	/**
 	 * Results returned by the put operation
 	 */
-	public class PutResult {
+	class PutResult {
 		/**
 		 * The artifact as it was put in the repository.<br/>
 		 * <br/>
