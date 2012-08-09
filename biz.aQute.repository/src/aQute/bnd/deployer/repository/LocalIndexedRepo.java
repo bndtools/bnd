@@ -2,23 +2,22 @@ package aQute.bnd.deployer.repository;
 
 import java.io.*;
 import java.net.*;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
+import java.security.*;
 import java.util.*;
 
 import org.osgi.service.coordinator.*;
 import org.osgi.service.log.*;
 
-import aQute.bnd.osgi.*;
 import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.filerepo.FileRepo;
+import aQute.bnd.filerepo.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
 
 public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant {
 
-	private static final String	CACHE_PATH	= ".cache";
+	private static final String			CACHE_PATH				= ".cache";
 	public static final String			PROP_LOCAL_DIR			= "local";
 	public static final String			PROP_READONLY			= "readonly";
 	public static final String			PROP_PRETTY				= "pretty";
@@ -33,7 +32,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	private File						storageDir;
 
 	// @GuardedBy("newFilesInCoordination")
-	private final List<URI>	newFilesInCoordination	= new LinkedList<URI>();
+	private final List<URI>				newFilesInCoordination	= new LinkedList<URI>();
 
 	@Override
 	public synchronized void setProperties(Map<String,String> map) {
@@ -42,12 +41,14 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		// Load essential properties
 		String localDirPath = map.get(PROP_LOCAL_DIR);
 		if (localDirPath == null)
-			throw new IllegalArgumentException(String.format("Attribute '%s' must be set on %s plugin.", PROP_LOCAL_DIR, getClass().getName()));
-		
+			throw new IllegalArgumentException(String.format("Attribute '%s' must be set on %s plugin.",
+					PROP_LOCAL_DIR, getClass().getName()));
+
 		storageDir = new File(localDirPath);
 		if (storageDir.exists() && !storageDir.isDirectory())
-			throw new IllegalArgumentException(String.format("Local path '%s' exists and is not a directory.", localDirPath));
-		
+			throw new IllegalArgumentException(String.format("Local path '%s' exists and is not a directory.",
+					localDirPath));
+
 		readOnly = Boolean.parseBoolean(map.get(PROP_READONLY));
 		pretty = Boolean.parseBoolean(map.get(PROP_PRETTY));
 		overwrite = map.get(PROP_OVERWRITE) == null ? true : Boolean.parseBoolean(map.get(PROP_OVERWRITE));
@@ -58,7 +59,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		// Set the local index and cache directory locations
 		cacheDir = new File(storageDir, CACHE_PATH);
 		if (cacheDir.exists() && !cacheDir.isDirectory())
-			throw new IllegalArgumentException(String.format("Cannot create repository cache: '%s' already exists but is not directory.", cacheDir.getAbsolutePath()));
+			throw new IllegalArgumentException(String.format(
+					"Cannot create repository cache: '%s' already exists but is not directory.",
+					cacheDir.getAbsolutePath()));
 	}
 
 	@Override
@@ -168,7 +171,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				File file = new File(entry);
 				jar = new Jar(file);
 				fireBundleAdded(jar, file);
-			} finally {
+			}
+			finally {
 				if (jar != null) {
 					jar.close();
 				}
@@ -196,18 +200,16 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		}
 	}
 
-	protected PutResult putArtifact(File tmpFile, PutOptions options) throws Exception {
+	protected File putArtifact(File tmpFile) throws Exception {
 		assert (tmpFile != null);
-		assert (options != null);
+		assert (tmpFile.isFile());
 
 		init();
 
-		Jar jar = null;
+		Jar jar = new Jar(tmpFile);
 		try {
-			jar= new Jar(tmpFile);
-
 			String bsn = jar.getBsn();
-			if (bsn == null)
+			if (bsn == null || !Verifier.isBsn(bsn))
 				throw new IllegalArgumentException("Jar does not have a Bundle-SymbolicName manifest header");
 
 			File dir = new File(storageDir, bsn);
@@ -218,72 +220,62 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				throw new IOException("Could not create directory " + dir);
 			}
 
-			Version version = Version.parseVersion(jar.getVersion());
+			String versionString = jar.getVersion();
+			if (versionString == null)
+				versionString = "0";
+			else if (!Verifier.isVersion(versionString))
+				throw new IllegalArgumentException("Invalid version " + versionString + " in file " + tmpFile);
+
+			Version version = Version.parseVersion(versionString);
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 			File file = new File(dir, fName);
 
-			PutResult result = new PutResult();
-
 			// check overwrite policy
 			if (!overwrite && file.exists())
-				return result;
+				return null;
 
-			if (file.exists()) {
-				IO.delete(file);
-			}
 			IO.rename(tmpFile, file);
-			result.artifact = file.toURI();
 
 			synchronized (newFilesInCoordination) {
-				newFilesInCoordination.add(result.artifact);
+				newFilesInCoordination.add(file.toURI());
 			}
 
 			Coordinator coordinator = (registry != null) ? registry.getPlugin(Coordinator.class) : null;
 			if (!(coordinator != null && coordinator.addParticipant(this))) {
 				finishPut();
 			}
-			return result;
+			return file;
 		}
 		finally {
-			if (jar != null) {
-				jar.close();
-			}
+			jar.close();
 		}
 	}
-
 
 	/* NOTE: this is a straight copy of FileRepo.put */
 	@Override
 	public synchronized PutResult put(InputStream stream, PutOptions options) throws Exception {
-		/* both parameters are required */
-		if ((stream == null) || (options == null)) {
-			throw new IllegalArgumentException("No stream and/or options specified");
-		}
-
 		/* determine if the put is allowed */
 		if (readOnly) {
 			throw new IOException("Repository is read-only");
 		}
+
+		if (options == null)
+			options = DEFAULTOPTIONS;
+
+		/* both parameters are required */
+		if (stream == null)
+			throw new IllegalArgumentException("No stream and/or options specified");
 
 		/* the root directory of the repository has to be a directory */
 		if (!storageDir.isDirectory()) {
 			throw new IOException("Repository directory " + storageDir + " is not a directory");
 		}
 
-		/* determine if the artifact needs to be verified */
-		boolean verifyFetch = (options.digest != null);
-		boolean verifyPut = !options.allowArtifactChange;
-
-		/* determine which digests are needed */
-		boolean needFetchDigest = verifyFetch || verifyPut;
-		boolean needPutDigest = verifyPut || options.generateDigest;
-
 		/*
 		 * setup a new stream that encapsulates the stream and calculates (when
 		 * needed) the digest
 		 */
 		DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
-		dis.on(needFetchDigest);
 
 		File tmpFile = null;
 		try {
@@ -294,34 +286,22 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			tmpFile = IO.createTempFile(storageDir, "put", ".bnd");
 			IO.copy(dis, tmpFile);
 
-			/* get the digest if available */
-			byte[] disDigest = needFetchDigest ? dis.getMessageDigest().digest() : null;
+			/* beforeGet the digest if available */
+			byte[] disDigest = dis.getMessageDigest().digest();
 
-			/* verify the digest when requested */
-			if (verifyFetch && !MessageDigest.isEqual(options.digest, disDigest)) {
+			if (options.digest != null && !Arrays.equals(options.digest, disDigest))
 				throw new IOException("Retrieved artifact digest doesn't match specified digest");
-			}
 
 			/* put the artifact into the repository (from the temporary file) */
-			PutResult r = putArtifact(tmpFile, options);
+			File file = putArtifact(tmpFile);
 
-			/* calculate the digest when requested */
-			if (needPutDigest && (r.artifact != null)) {
-				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-				IO.copy(new File(r.artifact), sha1);
-				r.digest = sha1.digest();
+			PutResult result = new PutResult();
+			if (file != null) {
+				result.digest = disDigest;
+				result.artifact = file.toURI();
 			}
 
-			/* verify the artifact when requested */
-			if (verifyPut && (r.digest != null) && !MessageDigest.isEqual(disDigest, r.digest)) {
-				File f = new File(r.artifact);
-				if (f.exists()) {
-					IO.delete(f);
-				}
-				throw new IOException("Stored artifact digest doesn't match specified digest");
-			}
-
-			return r;
+			return result;
 		}
 		finally {
 			if (tmpFile != null && tmpFile.exists()) {
