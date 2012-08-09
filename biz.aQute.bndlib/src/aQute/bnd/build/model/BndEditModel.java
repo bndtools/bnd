@@ -36,7 +36,7 @@ public class BndEditModel {
 			aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.CLASSPATH,
 			aQute.bnd.osgi.Constants.BUILDPATH, aQute.bnd.osgi.Constants.BUILDPACKAGES,
 			aQute.bnd.osgi.Constants.RUNBUNDLES, aQute.bnd.osgi.Constants.RUNPROPERTIES, aQute.bnd.osgi.Constants.SUB,
-			aQute.bnd.osgi.Constants.RUNFRAMEWORK,
+			aQute.bnd.osgi.Constants.RUNFRAMEWORK, aQute.bnd.osgi.Constants.RUNFW,
 			aQute.bnd.osgi.Constants.RUNVM,
 			// BndConstants.RUNVMARGS,
 			// BndConstants.TESTSUITES,
@@ -180,6 +180,7 @@ public class BndEditModel {
 		converters.put(aQute.bnd.osgi.Constants.SERVICE_COMPONENT, serviceComponentConverter);
 		converters.put(Constants.IMPORT_PACKAGE, importPatternConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNFRAMEWORK, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.RUNFW, stringConverter);
 		converters.put(aQute.bnd.osgi.Constants.SUB, listConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNPROPERTIES, propertiesConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNVM, stringConverter);
@@ -206,6 +207,7 @@ public class BndEditModel {
 		formatters.put(aQute.bnd.osgi.Constants.SERVICE_COMPONENT, headerClauseListFormatter);
 		formatters.put(Constants.IMPORT_PACKAGE, headerClauseListFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.RUNFRAMEWORK, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.RUNFW, newlineEscapeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.SUB, stringListFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.RUNPROPERTIES, propertiesFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.RUNVM, newlineEscapeFormatter);
@@ -610,6 +612,10 @@ public class BndEditModel {
         return doGetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, stringConverter);
     }
 
+    public String getRunFw() {
+        return doGetObject(aQute.bnd.osgi.Constants.RUNFW, stringConverter);
+    }
+
     public EE getEE() {
         return doGetObject(aQute.bnd.osgi.Constants.RUNEE, eeConverter);
     }
@@ -625,6 +631,11 @@ public class BndEditModel {
         doSetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
     }
     
+    public void setRunFw(String clause) {
+        String oldValue = getRunFw();
+        doSetObject(aQute.bnd.osgi.Constants.RUNFW, oldValue, clause, newlineEscapeFormatter);
+    }
+
     public List<Requirement> getRunRequires() {
     	return doGetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListConverter);
     }
