@@ -9,6 +9,8 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.lib.collections.*;
+import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.libg.command.*;
 import aQute.libg.cryptography.*;
@@ -29,6 +31,9 @@ import aQute.service.reporter.*;
  * <li>{@link #CMD_REFRESH} - Called when refreshed.</li>
  * <li>{@link #CMD_BEFORE_PUT} - Before the file system is changed</li>
  * <li>{@link #CMD_AFTER_PUT} - After the file system has changed, and the put
+ * <li>{@link #CMD_BEFORE_GET} - Before the file is gotten</li>
+ * <li>{@link #CMD_AFTER_ACTION} - Before the file is gotten</li>
+ * <li>{@link #CMD_CLOSE} - When the repo is closed and no more actions will take place</li>
  * was a success</li>
  * <li>{@link #CMD_ABORT_PUT} - When the put is aborted.</li>
  * <li>{@link #CMD_CLOSE} - To close the repository.</li>
@@ -66,7 +71,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	/**
 	 * Path property for commands. A comma separated path for directories to be
-	 * searched for command. May contain $ @} which will be replaced by the
+	 * searched for command. May contain ${@} which will be replaced by the
 	 * system path. If this property is not set, the system path is assumed.
 	 */
 	public static final String	CMD_PATH		= "cmd.path";
@@ -79,51 +84,75 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	/**
 	 * Property for commands. The command only runs when the location does not
-	 * exist. The $ @} is replaced with the location and the current work
-	 * directory is also the location.
+	 * exist.
+	 * </p>
+	 * @param rootFile the root of the repo (directory exists)
 	 */
 	public static final String	CMD_INIT		= "cmd.init";
 
 	/**
-	 * Property for commands. Command is run before the repo is first used. The
-	 * $ @} is replaced with the location and the current work directory is also
-	 * the location.
+	 * Property for commands. Command is run before the repo is first used.
+	 * </p>
+	 * @param ${@0} rootFile the root of the repo (directory exists)
 	 */
 	public static final String	CMD_OPEN		= "cmd.open";
 
 	/**
 	 * Property for commands. The command runs after a put operation.
+	 * </p>
+	 * @param ${@0} the root of the repo (directory exists)
+	 * @param ${@1} the file that was put
+	 * @param ${@2} the hex checksum of the file
 	 */
 	public static final String	CMD_AFTER_PUT	= "cmd.after.put";
 
 	/**
 	 * Property for commands. The command runs when the repository is refreshed.
-	 * The $ @} is replaced with the location and the current work directory is
-	 * also the location.
+	 * </p>
+	 * @param ${@0} the root of the repo (directory exists)
 	 */
 	public static final String	CMD_REFRESH		= "cmd.refresh";
 
 	/**
-	 * Property for commands. The command runs after the file is put. The $ @}
-	 * is replaced with the file name, the working directory is the location.
+	 * Property for commands. The command runs after the file is put. 
+	 * </p>
+	 * @param ${@0} the root of the repo (directory exists)
+	 * @param ${@1} the path to a temporary file
 	 */
 	public static final String	CMD_BEFORE_PUT	= "cmd.before.put";
 
 	/**
 	 * Property for commands. The command runs when a put is aborted after file
-	 * changes were made. The $ @} is not set, the current working directory is
-	 * the location.
+	 * changes were made.
+	 * </p>
+	 * @param ${@0} the root of the repo (directory exists)
+	 * @param ${@1} the temporary file that was used (optional)
 	 */
 	public static final String	CMD_ABORT_PUT	= "cmd.abort.put";
 
 	/**
-	 * Property for commands. The command runs after the file is put. The $ @}
-	 * is not set, the current working directory is the location.
+	 * Property for commands. The command runs after the file is put.
+	 * </p>
+	 * @param ${@0} the root of the repo (directory exists)
 	 */
-	public static final String	CMD_CLOSE		= "cmd.cose";
+	public static final String	CMD_CLOSE		= "cmd.close";
 
 	/**
-	 * Called before a beforeGet
+	 * Property for commands. Will be run after an action has been executed. 
+	 * </p>
+	 * @param ${@0} the root of the repo (directory exists)
+	 * @param ${@1} the path to the file that the action was executed on
+	 * @param ${@2} the action executed
+	 */
+	public static final String	CMD_AFTER_ACTION		= "cmd.after.action";
+	
+	/**
+	 * Called before a before get.
+	 * 
+	 * @param ${@0} the root of the repo (directory exists)
+	 * @param ${@1} the path to the file that will be returned (might not exist)
+	 * @param ${@2} the bsn
+	 * @param ${@3} the version
 	 */
 	public static final String	CMD_BEFORE_GET	= "cmd.before.get";
 
@@ -142,12 +171,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	String						abortPut;
 	String						beforeGet;
 	String						close;
+	String						action;
 
 	File[]						EMPTY_FILES		= new File[0];
 	protected File				root;
 	Registry					registry;
 	boolean						canWrite		= true;
-	Pattern						REPO_FILE		= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
+	Pattern						REPO_FILE		= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)\\.(jar|lib)");
 	Reporter					reporter;
 	boolean						dirty;
 	String						name;
@@ -217,6 +247,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		afterPut = map.get(CMD_AFTER_PUT);
 		beforeGet = map.get(CMD_BEFORE_GET);
 		close = map.get(CMD_CLOSE);
+		action = map.get(CMD_AFTER_ACTION);
 
 		trace = map.get(TRACE) != null && Boolean.parseBoolean(map.get(TRACE));
 	}
@@ -331,7 +362,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				beforePut(tmpFile);
 				File file = putArtifact(tmpFile);
 				file.setReadOnly();
-				afterPut(file);
+				afterPut(file, Hex.toHexString(digest));
 
 				PutResult result = new PutResult();
 				result.digest = digest;
@@ -389,7 +420,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return result;
 	}
 
-	public List<Version> versions(String bsn) throws Exception {
+	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
 		File dir = new File(root, bsn);
 		if (dir.isDirectory()) {
@@ -404,9 +435,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 					list.add(new Version(version));
 				}
 			}
-			return list;
+			return new SortedList<Version>(list);
 		}
-		return null;
+		return SortedList.empty();
 	}
 
 	@Override
@@ -442,8 +473,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 */
 	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
 		init();
-		beforeGet(bsn, version);
 		File file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".jar");
+		beforeGet(bsn, version, file);
 		if (file.isFile())
 			return file;
 
@@ -478,6 +509,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			actions.put("Delete", new Runnable() {
 				public void run() {
 					IO.delete(f);
+					afterAction(f, "delete");
 				};
 			});
 			return actions;
@@ -487,20 +519,39 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 	}
 
+	protected void afterAction(File f, String key) {
+		exec(action, root, f, key);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see aQute.bnd.service.Actionable#tooltip(java.lang.Object[])
+	 */
 	public String tooltip(Object... target) throws Exception {
 		if (target == null || target.length == 0)
-			return String.format("File repository %s on location %s", getName(), root);
+			return String.format("%s\n%s", getName(), root);
 
 		try {
 			String bsn = (String) target[0];
 			Version version = (Version) target[1];
 			File f = get(bsn, version, null);
-			return String.format("%s, %s bytes, %s", f.getAbsolutePath(), f.length(), SHA1.digest(f).asHex());
+			return String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0), SHA1.digest(f).asHex());
 
 		}
 		catch (Exception e) {
 			return null;
 		}
+	}
+
+	private static String[] names = {"bytes", "Kb", "Mb", "Gb"};
+	private Object readable(long length, int n) {
+		if ( length < 0 )
+			return "<invalid>";
+		
+		if ( length < 1024 || n >= names.length)
+			return length + names[n];
+		
+		return readable(length/1024, n+1);
 	}
 
 	public void close() throws IOException {
@@ -513,19 +564,19 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	protected void beforePut(File tmp) {
-		exec(beforePut, tmp.getAbsolutePath());
+		exec(beforePut, root.getAbsolutePath(), tmp.getAbsolutePath());
 	}
 
-	protected void afterPut(File file) {
-		exec(afterPut, file.getAbsolutePath());
+	protected void afterPut(File file, String sha) {
+		exec(afterPut, root.getAbsolutePath(), file.getAbsolutePath(), sha);
 	}
 
 	protected void abortPut(File tmpFile) {
-		exec(abortPut, tmpFile.getAbsolutePath());
+		exec(abortPut, root.getAbsolutePath(), tmpFile.getAbsolutePath());
 	}
 
-	protected void beforeGet(String bsn, Version version) {
-		exec(beforeGet, bsn + "-" + version.getWithoutQualifier());
+	protected void beforeGet(String bsn, Version version, File file) {
+		exec(beforeGet, root.getAbsolutePath(), file.getAbsolutePath(), bsn, version);
 	}
 
 	protected void fireBundleAdded(Jar jar, File file) {
