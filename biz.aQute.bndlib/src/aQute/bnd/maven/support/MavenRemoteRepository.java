@@ -75,7 +75,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		throw new UnsupportedOperationException("cannot do list");
 	}
 
-	public List<Version> versions(String bsn) throws Exception {
+	public SortedSet<Version> versions(String bsn) throws Exception {
 		throw new UnsupportedOperationException("cannot do versions");
 	}
 
