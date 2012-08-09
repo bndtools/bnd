@@ -431,4 +431,8 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		IteratorList<T> l = new IteratorList<T>(it);
 		return new SortedList<T>(l, cmp);
 	}
+
+	public static <T> SortedSet<T> empty() {
+		return (SortedSet<T>) empty;
+	}
 }
