@@ -75,7 +75,6 @@ import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.ServiceComponent;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.version.Version;
-import bndtools.BndConstants;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.UIConstants;
@@ -90,7 +89,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     private static final ILogger logger = Logger.getLogger();
 
     private static final String[] EDITABLE_PROPERTIES = new String[] {
-            Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, BndConstants.SOURCES, BndConstants.OUTPUT, aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.DSANNOTATIONS
+            Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.DSANNOTATIONS
     };
 
     private static final String UNKNOWN_ACTIVATOR_ERROR_KEY = "ERROR_" + Constants.BUNDLE_ACTIVATOR + "_UNKNOWN";
