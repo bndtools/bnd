@@ -59,6 +59,7 @@ public class Coverage {
 //					this.source = source;
 				}
 
+				// TODO need to use different reference method
 //				public void reference(MethodDef reference) {
 //					List<MethodDef> references = catalog.get(reference);
 //					if (references != null) {
