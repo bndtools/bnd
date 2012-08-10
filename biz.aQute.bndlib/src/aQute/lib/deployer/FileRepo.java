@@ -21,21 +21,21 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public final static String	READONLY		= "readonly";
 	public final static String	NAME			= "name";
 	public static final String	CMD_PATH		= "cmd.path";
+	public static final String	CMD_SHELL		= "cmd.shell";
 	public static final String	CMD_INIT		= "cmd.init";
 	public static final String	CMD_AFTER_PUT	= "cmd.after.put";
 	public static final String	CMD_REFRESH		= "cmd.refresh";
 	public static final String	CMD_BEFORE_PUT	= "cmd.before.put";
 	public static final String	CMD_ABORT_PUT	= "cmd.abort.put";
-	public static final String	CMD_SHELL		= "cmd.shell";
 	static final PutOptions		DEFAULTOPTIONS	= new PutOptions();
 
-	String						before;
-	String						refresh;
-	String						after;
+	String						shell;
 	String						path;
 	String						init;
+	String						refresh;
+	String						before;
+	String						after;
 	String						abort;
-	String						shell;
 
 	File[]						EMPTY_FILES		= new File[0];
 	protected File				root;
@@ -85,13 +85,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			canWrite = false;
 
 		name = map.get(NAME);
-		before = map.get(CMD_BEFORE_PUT);
-		refresh = map.get(CMD_REFRESH);
-		after = map.get(CMD_AFTER_PUT);
-		init = map.get(CMD_INIT);
 		path = map.get(CMD_PATH);
-		abort = map.get(CMD_ABORT_PUT);
 		shell = map.get(CMD_SHELL);
+		init = map.get(CMD_INIT);
+		refresh = map.get(CMD_REFRESH);
+		before = map.get(CMD_BEFORE_PUT);
+		abort = map.get(CMD_ABORT_PUT);
+		after = map.get(CMD_AFTER_PUT);
 	}
 
 	/**
