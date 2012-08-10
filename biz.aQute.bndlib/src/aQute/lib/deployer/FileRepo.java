@@ -500,6 +500,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return root.toString();
 	}
 
+	/**
+	 * Execute a command. Used in different stages so that the repository can be
+	 * synced.
+	 * 
+	 * @param line
+	 * @param target
+	 */
 	void exec(String line, File target) {
 		if (line == null)
 			return;
