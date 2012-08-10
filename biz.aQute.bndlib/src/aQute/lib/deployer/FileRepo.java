@@ -419,7 +419,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				 * file in the root directory of the repository
 				 */
 				IO.copy(dis, tmpFile);
-				beforePut(tmpFile);
 				
 				/* get the digest if available */
 				byte[] digest = needFetchDigest ? dis.getMessageDigest().digest() : null;
@@ -429,7 +428,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 					throw new IOException("Retrieved artifact digest doesn't match specified digest");
 				}
 				
-				/* put the artifact into the repository (from the temporary file) */
+				/*
+				 * put the artifact into the repository (from the temporary
+				 * file)
+				 */
+				beforePut(tmpFile);
 				PutResult r = putArtifact(tmpFile, options);
 				
 				/* calculate the digest when requested */
