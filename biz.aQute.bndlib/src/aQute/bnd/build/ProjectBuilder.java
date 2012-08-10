@@ -101,7 +101,7 @@ public class ProjectBuilder extends Builder {
 		if (diffs.isEmpty())
 			return;
 
-		System.err.printf("baseline %s%n", diffs);
+		trace("baseline %s", diffs);
 
 		Jar other = getBaselineJar();
 		if (other == null) {
