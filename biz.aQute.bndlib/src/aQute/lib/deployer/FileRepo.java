@@ -284,6 +284,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			result.artifact = file.toURI();
 
+			// TODO like to beforeGet rid of the latest option. This is only
+			// used to have a constant name for the outside users (like ant)
+			// we should be able to handle this differently?
+			File latest = new File(dir, bsn + "-latest.jar");
+			IO.copy(file, latest);
+
 			reporter.progress(-1, "updated " + file.getAbsolutePath());
 
 			afterPut(file.getAbsoluteFile());
