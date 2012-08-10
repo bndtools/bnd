@@ -156,7 +156,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		Jar jar = null;
 		try {
-			init();
 			dirty = true;
 
 			jar = new Jar(tmpFile);
@@ -261,6 +260,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (!root.isDirectory()) {
 			throw new IOException("Repository directory " + root + " is not a directory");
 		}
+
+		init();
 
 		/* determine if the artifact needs to be verified */
 		boolean verifyFetch = (options.digest != null);
