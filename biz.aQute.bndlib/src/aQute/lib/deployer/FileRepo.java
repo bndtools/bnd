@@ -284,7 +284,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			File latest = new File(dir, bsn + "-latest.jar");
 			IO.copy(file, latest);
 
-			reporter.progress(-1, "updated " + file.getAbsolutePath());
+			reporter.trace("updated %s", file.getAbsolutePath());
 
 			return file;
 		}
