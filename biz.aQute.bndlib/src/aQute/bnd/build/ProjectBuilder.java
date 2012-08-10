@@ -97,7 +97,7 @@ public class ProjectBuilder extends Builder {
 	 */
 
 	public void doBaseline(Jar dot) throws Exception {
-		Parameters diffs = parseHeader(getProperty("-baseline"));
+		Parameters diffs = parseHeader(getProperty(Constants.BASELINE));
 		if (diffs.isEmpty())
 			return;
 
