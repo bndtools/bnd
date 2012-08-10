@@ -422,10 +422,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				beforePut(tmpFile);
 				
 				/* get the digest if available */
-				byte[] disDigest = needFetchDigest ? dis.getMessageDigest().digest() : null;
+				byte[] digest = needFetchDigest ? dis.getMessageDigest().digest() : null;
 				
 				/* verify the digest when requested */
-				if (options.digest != null && !Arrays.equals(disDigest, options.digest)) {
+				if (options.digest != null && !Arrays.equals(digest, options.digest)) {
 					throw new IOException("Retrieved artifact digest doesn't match specified digest");
 				}
 				
@@ -440,7 +440,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				}
 				
 				/* verify the artifact when requested */
-				if (verifyPut && (r.digest != null) && !MessageDigest.isEqual(disDigest, r.digest)) {
+				if (verifyPut && (r.digest != null) && !MessageDigest.isEqual(digest, r.digest)) {
 					File f = new File(r.artifact);
 					if (f.exists()) {
 						IO.delete(f);
