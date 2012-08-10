@@ -554,33 +554,44 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 	}
 
-	public Map<String,Runnable> actions(Object target) throws Exception {
-		if (target == null || !(target instanceof File))
-			return null;
+	public Map<String,Runnable> actions(Object... target) throws Exception {
+		if (target == null || target.length == 0)
+			return null; // no default actions
 
-		final File f = (File) target;
-		if (!f.getCanonicalPath().startsWith(root.getCanonicalPath()))
-			return null;
+		try {
+			String bsn = (String) target[0];
+			Version version = (Version) target[1];
 
-		Map<String,Runnable> actions = new HashMap<String,Runnable>();
-		actions.put("Delete", new Runnable() {
-			public void run() {
-				IO.delete(f);
-			};
-		});
-		return null;
+			final File f = get(bsn, version, null);
+			if (f == null)
+				return null;
+
+			Map<String,Runnable> actions = new HashMap<String,Runnable>();
+			actions.put("Delete", new Runnable() {
+				public void run() {
+					IO.delete(f);
+				};
+			});
+			return actions;
+		}
+		catch (Exception e) {
+			return null;
+		}
 	}
 
-	public String tooltip(Object target) throws Exception {
-		if (target == null)
+	public String tooltip(Object... target) throws Exception {
+		if (target == null || target.length == 0)
 			return String.format("File repository %s on location %s", getName(), root);
 
-		if (!(target instanceof File))
-			return null;
-		File f = (File) target;
-		if (!f.getCanonicalPath().startsWith(root.getCanonicalPath()))
-			return null;
+		try {
+			String bsn = (String) target[0];
+			Version version = (Version) target[1];
+			File f = get(bsn, version, null);
+			return String.format("%s, %s bytes, %s", f.getAbsolutePath(), f.length(), SHA1.digest(f).asHex());
 
-		return String.format("%s, %s bytes, %s", f.getAbsolutePath(), f.length(), SHA1.digest(f).asHex());
+		}
+		catch (Exception e) {
+			return null;
+		}
 	}
 }
