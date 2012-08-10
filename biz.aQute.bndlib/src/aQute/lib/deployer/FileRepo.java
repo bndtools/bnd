@@ -383,23 +383,15 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 */
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 
-		if (options == null)
-			options = DEFAULTOPTIONS;
-
-		/* both parameters are required */
-		if ((stream == null)) {
-			throw new IllegalArgumentException("No stream and/or options specified");
-		}
-
 		/* determine if the put is allowed */
 		if (!canWrite) {
 			throw new IOException("Repository is read-only");
 		}
 
-		/* the root directory of the repository has to be a directory */
-		if (!root.isDirectory()) {
-			throw new IOException("Repository directory " + root + " is not a directory");
-		}
+		assert stream != null;
+
+		if (options == null)
+			options = DEFAULTOPTIONS;
 
 		init();
 
