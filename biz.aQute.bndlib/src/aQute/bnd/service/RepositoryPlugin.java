@@ -89,30 +89,6 @@ public interface RepositoryPlugin {
 	}
 
 	/**
-	 * Return a URL to a matching version of the given bundle.
-	 * 
-	 * @param bsn
-	 *            Bundle-SymbolicName of the searched bundle
-	 * @param range
-	 *            Version range for this bundle,"latest" if you only want the
-	 *            latest, or null when you want all.
-	 * @param strategy
-	 *            Get the highest or the lowest
-	 * @return A list of URLs sorted on version, lowest version is at index 0.
-	 *         null is returned when no files with the given bsn ould be found.
-	 * @throws Exception
-	 *             when anything goes wrong
-	 */
-	File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception;
-
-	/**
-	 * Answer if this repository can be used to store files.
-	 * 
-	 * @return true if writable
-	 */
-	boolean canWrite();
-
-	/**
 	 * Put an artifact (from the InputStream) into the repository.<br/>
 	 * <br/>
 	 * There is NO guarantee that the artifact on the input stream has not been
@@ -142,6 +118,23 @@ public interface RepositoryPlugin {
 	 * 
 	 * @param bsn
 	 *            Bundle-SymbolicName of the searched bundle
+	 * @param range
+	 *            Version range for this bundle,"latest" if you only want the
+	 *            latest, or null when you want all.
+	 * @param strategy
+	 *            Get the highest or the lowest
+	 * @return A list of URLs sorted on version, lowest version is at index 0.
+	 *         null is returned when no files with the given bsn ould be found.
+	 * @throws Exception
+	 *             when anything goes wrong
+	 */
+	File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception;
+
+	/**
+	 * Return a URL to a matching version of the given bundle.
+	 * 
+	 * @param bsn
+	 *            Bundle-SymbolicName of the searched bundle
 	 * @param version
 	 *            Version requested.
 	 * @return A file to the revision or null if not found
@@ -149,6 +142,13 @@ public interface RepositoryPlugin {
 	 *             when anything goes wrong
 	 */
 	File get(String bsn, Version version, Map<String,String> properties) throws Exception;
+
+	/**
+	 * Answer if this repository can be used to store files.
+	 * 
+	 * @return true if writable
+	 */
+	boolean canWrite();
 
 	/**
 	 * Return a list of bsns that are present in the repository.
