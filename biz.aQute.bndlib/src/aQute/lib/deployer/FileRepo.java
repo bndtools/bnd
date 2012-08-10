@@ -59,8 +59,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		inited = true;
 		if (!getRoot().isDirectory()) {
 			getRoot().mkdirs();
-			exec(init, null);
 		}
+		exec(init, null);
 	}
 
 	public void setProperties(Map<String,String> map) {
