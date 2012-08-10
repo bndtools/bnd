@@ -314,7 +314,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		boolean verifyPut = !options.allowArtifactChange;
 
 		/* determine which digests are needed */
-		boolean needFetchDigest = (options.digest != null) || verifyPut;
 		boolean needPutDigest = verifyPut || options.generateDigest;
 
 		/*
@@ -324,13 +323,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		File tmpFile = IO.createTempFile(root, "put", ".jar");
 		try {
 			DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
-			dis.on(needFetchDigest);
 			
 			try {
 				
 				IO.copy(dis, tmpFile);
 				
-				byte[] digest = needFetchDigest ? dis.getMessageDigest().digest() : null;
+				byte[] digest = dis.getMessageDigest().digest();
 				
 				if (options.digest != null && !Arrays.equals(digest, options.digest)) {
 					throw new IOException("Retrieved artifact digest doesn't match specified digest");
