@@ -404,61 +404,63 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		boolean needPutDigest = verifyPut || options.generateDigest;
 
 		/*
-		 * setup a new stream that encapsulates the stream and calculates (when
-		 * needed) the digest
+		 * copy the artifact from the (new/digest) stream into a temporary file
+		 * in the root directory of the repository
 		 */
-		DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
-		dis.on(needFetchDigest);
-
-		File tmpFile = null;
+		File tmpFile = IO.createTempFile(root, "put", ".jar");
 		try {
-
-			// TODO we need to lock?
-			/*
-			 * copy the artifact from the (new/digest) stream into a temporary
-			 * file in the root directory of the repository
-			 */
-			tmpFile = IO.createTempFile(root, "put", ".jar");
-			IO.copy(dis, tmpFile);
-			beforePut(tmpFile);
-
-			/* get the digest if available */
-			byte[] disDigest = needFetchDigest ? dis.getMessageDigest().digest() : null;
-
-			/* verify the digest when requested */
-			if (verifyFetch && !MessageDigest.isEqual(options.digest, disDigest)) {
-				throw new IOException("Retrieved artifact digest doesn't match specified digest");
-			}
-
-			/* put the artifact into the repository (from the temporary file) */
-			PutResult r = putArtifact(tmpFile, options);
-
-			/* calculate the digest when requested */
-			if (needPutDigest && (r.artifact != null)) {
-				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-				IO.copy(new File(r.artifact), sha1);
-				r.digest = sha1.digest();
-			}
-
-			/* verify the artifact when requested */
-			if (verifyPut && (r.digest != null) && !MessageDigest.isEqual(disDigest, r.digest)) {
-				File f = new File(r.artifact);
-				if (f.exists()) {
-					IO.delete(f);
+			DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
+			dis.on(needFetchDigest);
+			
+			try {
+				
+				// TODO we need to lock?
+				/*
+				 * copy the artifact from the (new/digest) stream into a temporary
+				 * file in the root directory of the repository
+				 */
+				IO.copy(dis, tmpFile);
+				beforePut(tmpFile);
+				
+				/* get the digest if available */
+				byte[] disDigest = needFetchDigest ? dis.getMessageDigest().digest() : null;
+				
+				/* verify the digest when requested */
+				if (verifyFetch && !MessageDigest.isEqual(options.digest, disDigest)) {
+					throw new IOException("Retrieved artifact digest doesn't match specified digest");
 				}
-				throw new IOException("Stored artifact digest doesn't match specified digest");
+				
+				/* put the artifact into the repository (from the temporary file) */
+				PutResult r = putArtifact(tmpFile, options);
+				
+				/* calculate the digest when requested */
+				if (needPutDigest && (r.artifact != null)) {
+					MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+					IO.copy(new File(r.artifact), sha1);
+					r.digest = sha1.digest();
+				}
+				
+				/* verify the artifact when requested */
+				if (verifyPut && (r.digest != null) && !MessageDigest.isEqual(disDigest, r.digest)) {
+					File f = new File(r.artifact);
+					if (f.exists()) {
+						IO.delete(f);
+					}
+					throw new IOException("Stored artifact digest doesn't match specified digest");
+				}
+				
+				return r;
 			}
-
-			return r;
+			finally {
+				dis.close();
+			}
 		}
 		catch (Exception e) {
 			abortPut(tmpFile);
 			throw e;
 		}
 		finally {
-			if (tmpFile != null && tmpFile.exists()) {
-				IO.delete(tmpFile);
-			}
+			IO.delete(tmpFile);
 		}
 	}
 
