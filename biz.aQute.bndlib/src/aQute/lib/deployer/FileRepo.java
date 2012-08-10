@@ -152,7 +152,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	boolean						dirty;
 	String						name;
 	boolean						inited;
-	boolean						needsInit;
 	boolean						trace;
 
 	public FileRepo() {}
