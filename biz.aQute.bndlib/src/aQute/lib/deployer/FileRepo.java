@@ -470,21 +470,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 	}
 
-	protected void fireBundleAdded(Jar jar, File file) {
-		if (registry == null)
-			return;
-		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
-		for (RepositoryListenerPlugin listener : listeners) {
-			try {
-				listener.bundleAdded(this, jar, file);
-			}
-			catch (Exception e) {
-				if (reporter != null)
-					reporter.warning("Repository listener threw an unexpected exception: %s", e);
-			}
-		}
-	}
-
 	public void setLocation(String string) {
 		root = IO.getFile(string);
 		if (root.isDirectory())
@@ -638,6 +623,21 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public void close() throws IOException {
 		if (inited)
 			exec(close, root.getAbsoluteFile());
+	}
+
+	protected void fireBundleAdded(Jar jar, File file) {
+		if (registry == null)
+			return;
+		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
+		for (RepositoryListenerPlugin listener : listeners) {
+			try {
+				listener.bundleAdded(this, jar, file);
+			}
+			catch (Exception e) {
+				if (reporter != null)
+					reporter.warning("Repository listener threw an unexpected exception: %s", e);
+			}
+		}
 	}
 
 	/**
