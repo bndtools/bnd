@@ -98,9 +98,11 @@ public class FileRepoTest extends TestCase {
 
 	public static void testDeployToNonexistentRepoFails() throws Exception {
 		try {
-			nonExistentRepo.put(new BufferedInputStream(new FileInputStream("test/test.jar")), new RepositoryPlugin.PutOptions());
+			nonExistentRepo.put(new BufferedInputStream(new FileInputStream("test/test.jar")),
+					new RepositoryPlugin.PutOptions());
 			fail("Should have thrown exception");
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			assert(e instanceof IOException);
 			String s = "Repository directory " + nonExistentRepo.getRoot() + " is not a directory";
 			assertEquals(s, e.getMessage());
