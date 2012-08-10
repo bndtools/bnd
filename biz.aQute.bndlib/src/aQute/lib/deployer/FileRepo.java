@@ -231,9 +231,15 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	/**
-	 * Local helper method that tries to insert a file in the repository
+	 * Local helper method that tries to insert a file in the repository. This
+	 * method can be overridden but MUST not change the content of the tmpFile.
+	 * This method should also create a latest version of the artifact for
+	 * reference by tools like ant etc. </p> It is allowed to rename the file,
+	 * the tmp file must be beneath the root directory to prevent rename
+	 * problems.
 	 * 
 	 * @param tmpFile
+	 *            source file
 	 * @param options
 	 * @return
 	 * @throws Exception
