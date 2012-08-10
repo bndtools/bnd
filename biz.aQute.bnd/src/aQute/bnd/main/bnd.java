@@ -3,6 +3,7 @@ package aQute.bnd.main;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
+import java.security.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.*;
@@ -25,11 +26,13 @@ import aQute.bnd.main.BaselineCommands.baseLineOptions;
 import aQute.bnd.main.BaselineCommands.schemaOptions;
 import aQute.bnd.main.DiffCommand.diffOptions;
 import aQute.bnd.main.RepoCommand.repoOptions;
+import aQute.bnd.main.bnd.hashOptions.Alg;
 import aQute.bnd.maven.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.Def;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.version.*;
@@ -44,6 +47,7 @@ import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 import aQute.lib.tag.*;
 import aQute.libg.classdump.*;
+import aQute.libg.cryptography.*;
 import aQute.libg.generics.*;
 import aQute.libg.glob.*;
 import aQute.libg.qtokens.*;
@@ -425,7 +429,7 @@ public class bnd extends Processor {
 			if (opts.CDir() != null)
 				store = getFile(opts.CDir());
 
-			if (!store.exists() && !store.mkdirs() ) {
+			if (!store.exists() && !store.mkdirs()) {
 				throw new IOException("Could not create directory " + store);
 			}
 			Jar.Compression compression = jar.hasCompression();
@@ -2692,12 +2696,13 @@ public class bnd extends Processor {
 		boolean clear();
 
 		boolean publicKey();
+
 		boolean secretKey();
 
 		boolean id();
 
 		boolean mac();
-		
+
 		boolean hex();
 	}
 
@@ -2778,6 +2783,95 @@ public class bnd extends Processor {
 		for (Entry<String,String> e : map.entrySet()) {
 			if (keys == null || keys.contains(e.getKey()))
 				out.printf("%-40s = %s\n", e.getKey(), e.getValue());
+		}
+	}
+
+	/**
+	 * hash a file
+	 * 
+	 * @throws Exception
+	 * @throws NoSuchAlgorithmException
+	 */
+	@Description("Hashes a number of files")
+	@Arguments(arg = "file...")
+	interface hashOptions extends Options {
+		enum Alg {
+			SHA1, MD5
+		};
+
+		@Description("Show hex output (default)")
+		boolean hex();
+
+		@Description("Show base64 output")
+		boolean b64();
+
+		@Description("Show process info")
+		boolean process();
+
+		@Description("Show the file name")
+		boolean name();
+
+		@Description("Specify the algorithms")
+		List<Alg> algorithm();
+	}
+
+	public void _hash(hashOptions o) throws NoSuchAlgorithmException, Exception {
+		long start = System.currentTimeMillis();
+		long total = 0;
+		List<Alg> algs = o.algorithm();
+		if (algs == null)
+			algs = Arrays.asList(Alg.SHA1);
+
+		for (String s : o._()) {
+			File f = getFile(s);
+			if (f.isFile()) {
+
+				outer: for (Alg alg : algs) {
+					long now = System.currentTimeMillis();
+					Digest digest;
+					
+					switch(alg) {
+						default:
+							error("no such algorithm %s", alg);
+							continue outer;
+							
+						case SHA1:
+							digest = SHA1.digest(f);
+							break;
+						case MD5:
+							digest = MD5.digest(f);
+							break;
+					}
+					
+					StringBuilder sb = new StringBuilder();
+					String del = "";
+
+					if (o.hex() || !o.b64()) {
+						sb.append(del).append(digest.asHex());
+						del = " ";
+					}
+					if (o.b64()) {
+						sb.append(del).append(Base64.encodeBase64(digest.digest()));
+						del = " ";
+					}
+					if (o.name()) {
+						sb.append(del).append(f.getAbsolutePath());
+						del = " ";
+					}
+					if (o.process()) {
+						sb.append(del).append(System.currentTimeMillis() - now).append(" ms ")
+								.append(f.length() / 1000).append(" Kb");
+						total += f.length();
+					}
+					out.println(sb);
+				}
+			} else
+				error("file does not exist %s", f);
+		}
+		if (o.process()) {
+			long time = (System.currentTimeMillis() - start);
+			float mb = total / 1000000;
+			out.format("Total %s Mb, %s ms, %s Mb/sec %s files\n", mb, time, (total / time) / 1024, o._().size());
 		}
 	}
 }
