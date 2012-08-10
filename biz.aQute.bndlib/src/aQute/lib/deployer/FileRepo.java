@@ -288,8 +288,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			reporter.progress(-1, "updated " + file.getAbsolutePath());
 
-			afterPut(file.getAbsoluteFile());
-
 			return file;
 		}
 		finally {
@@ -348,6 +346,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				 */
 				beforePut(tmpFile);
 				File file = putArtifact(tmpFile, options);
+				afterPut(file);
+
 				PutResult r = new PutResult();
 				r.artifact = file.toURI();
 
