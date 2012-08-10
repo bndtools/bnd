@@ -95,8 +95,8 @@ public class ProjectBuilder extends Builder {
 	 * 
 	 * @throws Exception
 	 */
-
-	public void doBaseline(Jar dot) throws Exception {
+	@Override
+	protected void doBaseline(Jar dot) throws Exception {
 		Parameters diffs = parseHeader(getProperty(Constants.BASELINE));
 		if (diffs.isEmpty())
 			return;
