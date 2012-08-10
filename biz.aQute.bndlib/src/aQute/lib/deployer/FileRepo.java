@@ -50,6 +50,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	boolean						dirty;
 	String						name;
 	boolean						inited;
+	boolean						needsInit;
 
 	public FileRepo() {}
 
@@ -362,7 +363,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	public void setLocation(String string) {
-		root = new File(string);
+		root = IO.getFile(string);
+		if (root.isDirectory())
+			;
+		needsInit = true;
+		root.mkdirs();
 		if (!root.isDirectory())
 			throw new IllegalArgumentException("Invalid repository directory");
 	}
