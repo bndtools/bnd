@@ -426,7 +426,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				byte[] disDigest = needFetchDigest ? dis.getMessageDigest().digest() : null;
 				
 				/* verify the digest when requested */
-				if (verifyFetch && !MessageDigest.isEqual(options.digest, disDigest)) {
+				if (verifyFetch && !Arrays.equals(disDigest, options.digest)) {
 					throw new IOException("Retrieved artifact digest doesn't match specified digest");
 				}
 				
