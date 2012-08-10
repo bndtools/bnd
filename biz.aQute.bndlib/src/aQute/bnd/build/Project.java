@@ -367,7 +367,6 @@ public class Project extends Processor {
 
 	private List<Container> parseBuildpath() throws Exception {
 		List<Container> bundles = getBundles(Strategy.LOWEST, getProperty(Constants.BUILDPATH), Constants.BUILDPATH);
-		appendPackages(Strategy.LOWEST, getProperty(Constants.BUILDPACKAGES), bundles, ResolverMode.build);
 		return bundles;
 	}
 
@@ -480,71 +479,6 @@ public class Project extends Processor {
 		return getBundles(strategy, spec, null);
 	}
 
-	/**
-	 * Calculates the containers required to fulfil the {@code -buildpackages}
-	 * instruction, and appends them to the existing list of containers.
-	 * 
-	 * @param strategyx
-	 *            The package-version disambiguation strategy.
-	 * @param spec
-	 *            The value of the @{code -buildpackages} instruction.
-	 * @throws Exception
-	 */
-	public void appendPackages(Strategy strategyx, String spec, List<Container> resolvedBundles, ResolverMode mode)
-			throws Exception {
-		Map<File,Container> pkgResolvedBundles = new HashMap<File,Container>();
-
-		List<Entry<String,Attrs>> queue = new LinkedList<Map.Entry<String,Attrs>>();
-		queue.addAll(new Parameters(spec).entrySet());
-
-		while (!queue.isEmpty()) {
-			Entry<String,Attrs> entry = queue.remove(0);
-
-			String pkgName = entry.getKey();
-			Map<String,String> attrs = entry.getValue();
-
-			Container found = null;
-
-			String versionRange = attrs.get(Constants.VERSION_ATTRIBUTE);
-			if ("latest".equals(versionRange) || "snapshot".equals(versionRange))
-				found = getPackage(pkgName, versionRange, strategyx, attrs, mode);
-
-			if (found == null)
-				found = getPackage(pkgName, versionRange, strategyx, attrs, mode);
-
-			if (found != null) {
-				if (resolvedBundles.contains(found)) {
-					// Don't add his bundle because it was already included
-					// using -buildpath
-				} else {
-					List<Container> libs = found.getMembers();
-					for (Container cc : libs) {
-						Container existing = pkgResolvedBundles.get(cc.file);
-						if (existing != null)
-							addToPackageList(existing, attrs.get("packages"));
-						else {
-							addToPackageList(cc, attrs.get("packages"));
-							pkgResolvedBundles.put(cc.file, cc);
-						}
-
-						String importUses = cc.getAttributes().get("import-uses");
-						if (importUses != null)
-							queue.addAll(0, new Parameters(importUses).entrySet());
-					}
-				}
-			} else {
-				// Unable to resolve
-				Container x = new Container(this, "X", versionRange, Container.TYPE.ERROR, null, "package " + pkgName
-						+ ";version=" + versionRange + " not found", attrs);
-				resolvedBundles.add(x);
-				warning("Can not find URL for package " + pkgName);
-			}
-		}
-
-		for (Container container : pkgResolvedBundles.values()) {
-			resolvedBundles.add(container);
-		}
-	}
 
 	static void mergeNames(String names, Set<String> set) {
 		StringTokenizer tokenizer = new StringTokenizer(names, ",");
@@ -574,68 +508,6 @@ public class Project extends Processor {
 			mergeNames(newPackageNames, merged);
 
 		container.putAttribute("packages", flatten(merged));
-	}
-
-	/**
-	 * Find a container to fulfil a package requirement
-	 * 
-	 * @param packageName
-	 *            The package required
-	 * @param range
-	 *            The package version range required
-	 * @param strategyx
-	 *            The package-version disambiguation strategy
-	 * @param attrs
-	 *            Other attributes specified by the search.
-	 * @return
-	 * @throws Exception
-	 */
-	public Container getPackage(String packageName, String range, Strategy strategyx, Map<String,String> attrs,
-			ResolverMode mode) throws Exception {
-		if ("snapshot".equals(range))
-			return new Container(this, "", range, Container.TYPE.ERROR, null,
-					"snapshot not supported for package lookups", null);
-
-		if (attrs == null)
-			attrs = new HashMap<String,String>(2);
-		attrs.put("package", packageName);
-		attrs.put("mode", mode.name());
-
-		Strategy useStrategy = findStrategy(attrs, strategyx, range);
-
-		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
-		for (RepositoryPlugin plugin : plugins) {
-			try {
-				File result = plugin.get(null, range, useStrategy, attrs);
-				if (result != null) {
-					if (result.getName().endsWith("lib"))
-						return new Container(this, result.getName(), range, Container.TYPE.LIBRARY, result, null, attrs);
-					return new Container(this, result.getName(), range, Container.TYPE.REPO, result, null, attrs);
-				}
-			}
-			catch (Exception e) {
-				// Ignore... lots of repos will fail here
-			}
-		}
-
-		return new Container(this, "X", range, Container.TYPE.ERROR, null, "package " + packageName + ";version="
-				+ range + " Not found in " + plugins, null);
-	}
-
-	private Strategy findStrategy(Map<String,String> attrs, Strategy defaultStrategy, String versionRange) {
-		Strategy useStrategy = defaultStrategy;
-		String overrideStrategy = attrs.get("strategy");
-		if (overrideStrategy != null) {
-			if ("highest".equalsIgnoreCase(overrideStrategy))
-				useStrategy = Strategy.HIGHEST;
-			else if ("lowest".equalsIgnoreCase(overrideStrategy))
-				useStrategy = Strategy.LOWEST;
-			else if ("exact".equalsIgnoreCase(overrideStrategy))
-				useStrategy = Strategy.EXACT;
-		}
-		if ("latest".equals(versionRange))
-			useStrategy = Strategy.HIGHEST;
-		return useStrategy;
 	}
 
 	/**
