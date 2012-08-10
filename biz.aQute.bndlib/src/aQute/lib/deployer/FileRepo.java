@@ -8,13 +8,15 @@ import java.util.regex.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.libg.command.*;
+import aQute.libg.cryptography.*;
 import aQute.service.reporter.*;
 
-public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin {
+public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable {
 	public final static String	LOCATION		= "location";
 	public final static String	READONLY		= "readonly";
 	public final static String	NAME			= "name";
@@ -283,7 +285,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		dis.on(needFetchDigest);
 
 		exec(before, null);
-		
+
 		File tmpFile = null;
 		try {
 
@@ -484,20 +486,18 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return null;
 	}
 
-	
 	public File get(String bsn, Version version, Map<String,String> properties) {
 		File file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".jar");
 		if (file.isFile())
 			return file;
-		
+
 		file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".lib");
 		if (file.isFile())
 			return file;
-		
+
 		return null;
 	}
-	
-	
+
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
@@ -550,5 +550,35 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			else
 				throw new RuntimeException(e);
 		}
+	}
+
+	public Map<String,Runnable> actions(Object target) throws Exception {
+		if (target == null || !(target instanceof File))
+			return null;
+
+		final File f = (File) target;
+		if (!f.getCanonicalPath().startsWith(root.getCanonicalPath()))
+			return null;
+
+		Map<String,Runnable> actions = new HashMap<String,Runnable>();
+		actions.put("Delete", new Runnable() {
+			public void run() {
+				IO.delete(f);
+			};
+		});
+		return null;
+	}
+
+	public String tooltip(Object target) throws Exception {
+		if (target == null)
+			return String.format("File repository %s on location %s", getName(), root);
+
+		if (!(target instanceof File))
+			return null;
+		File f = (File) target;
+		if (!f.getCanonicalPath().startsWith(root.getCanonicalPath()))
+			return null;
+
+		return String.format("%s, %s bytes, %s", f.getAbsolutePath(), f.length(), SHA1.digest(f).asHex());
 	}
 }
