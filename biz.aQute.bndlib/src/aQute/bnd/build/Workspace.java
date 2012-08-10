@@ -393,22 +393,31 @@ public class Workspace extends Processor {
 		this.offline = on;
 		return this;
 	}
-	
+
 	/**
 	 * Provide access to the global settings of this machine.
-	 * @throws Exception 
-	 * @throws UnknownHostException 
+	 * 
+	 * @throws Exception
+	 * @throws UnknownHostException
 	 */
-	
-	public String _global(String[] args) throws Exception  {
-		Macro.verifyCommand(args, "${global;<name>}, get a global setting from ~/.bnd/settings.json", null, 2, 2);
-		
+
+	public String _global(String[] args) throws Exception {
+		Macro.verifyCommand(args, "${global;<name>[;<default>]}, get a global setting from ~/.bnd/settings.json", null,
+				2, 3);
+
 		String key = args[1];
-		if ( key.equals("key.public"))
+		if (key.equals("key.public"))
 			return Hex.toHexString(settings.getPublicKey());
-		if ( key.equals("key.private"))
+		if (key.equals("key.private"))
 			return Hex.toHexString(settings.getPrivateKey());
+
+		String s = settings.get(key);
+		if (s != null)
+			return s;
+
+		if (args.length == 3)
+			return args[2];
 		
-		return settings.get(key);
+		return null;
 	}
 }
