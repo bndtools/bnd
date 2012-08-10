@@ -578,6 +578,51 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return root.toString();
 	}
 
+	public Map<String,Runnable> actions(Object... target) throws Exception {
+		if (target == null || target.length == 0)
+			return null; // no default actions
+
+		try {
+			String bsn = (String) target[0];
+			Version version = (Version) target[1];
+
+			final File f = get(bsn, version, null);
+			if (f == null)
+				return null;
+
+			Map<String,Runnable> actions = new HashMap<String,Runnable>();
+			actions.put("Delete", new Runnable() {
+				public void run() {
+					IO.delete(f);
+				};
+			});
+			return actions;
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+
+	public String tooltip(Object... target) throws Exception {
+		if (target == null || target.length == 0)
+			return String.format("File repository %s on location %s", getName(), root);
+
+		try {
+			String bsn = (String) target[0];
+			Version version = (Version) target[1];
+			File f = get(bsn, version, null);
+			return String.format("%s, %s bytes, %s", f.getAbsolutePath(), f.length(), SHA1.digest(f).asHex());
+
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+
+	public void close() throws IOException {
+		exec(close, root);
+	}
+
 	/**
 	 * Execute a command. Used in different stages so that the repository can be
 	 * synced.
@@ -624,48 +669,4 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 	}
 
-	public Map<String,Runnable> actions(Object... target) throws Exception {
-		if (target == null || target.length == 0)
-			return null; // no default actions
-
-		try {
-			String bsn = (String) target[0];
-			Version version = (Version) target[1];
-
-			final File f = get(bsn, version, null);
-			if (f == null)
-				return null;
-
-			Map<String,Runnable> actions = new HashMap<String,Runnable>();
-			actions.put("Delete", new Runnable() {
-				public void run() {
-					IO.delete(f);
-				};
-			});
-			return actions;
-		}
-		catch (Exception e) {
-			return null;
-		}
-	}
-
-	public String tooltip(Object... target) throws Exception {
-		if (target == null || target.length == 0)
-			return String.format("File repository %s on location %s", getName(), root);
-
-		try {
-			String bsn = (String) target[0];
-			Version version = (Version) target[1];
-			File f = get(bsn, version, null);
-			return String.format("%s, %s bytes, %s", f.getAbsolutePath(), f.length(), SHA1.digest(f).asHex());
-
-		}
-		catch (Exception e) {
-			return null;
-		}
-	}
-
-	public void close() throws IOException {
-		exec(close, root);
-	}
 }
