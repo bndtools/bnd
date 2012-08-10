@@ -53,7 +53,5 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	org.eclipse.team.core,\
 	org.eclipse.core.filesystem, \
 	org.eclipse.equinox.preferences, \
-	com.springsource.org.objectweb.asm,\
-	com.springsource.org.objectweb.asm.tree,\
 	osgi.core
 Export-Package: bndtools.release.api
