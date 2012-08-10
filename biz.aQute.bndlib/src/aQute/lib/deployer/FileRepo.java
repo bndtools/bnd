@@ -376,9 +376,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 	}
 
-	/**
-	 *  a straight copy of this method lives in LocalIndexedRepo 
-	 *  
+	/*
+	 * (non-Javadoc)
+	 * @see aQute.bnd.service.RepositoryPlugin#put(java.io.InputStream,
+	 * aQute.bnd.service.RepositoryPlugin.PutOptions)
 	 */
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 
