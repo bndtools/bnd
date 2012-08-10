@@ -939,12 +939,14 @@ public class Project extends Processor {
 		List<RepositoryPlugin> plugins = workspace.getRepositories();
 
 		if (useStrategy == Strategy.EXACT) {
+			if ( !Verifier.isVersion(range))
+				return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range + " Invalid version", null);				
 
 			// For an exact range we just iterate over the repos
 			// and return the first we find.
-
+			Version version = new Version(range);
 			for (RepositoryPlugin plugin : plugins) {
-				File result = plugin.get(bsn, range, Strategy.EXACT, attrs);
+				File result = plugin.get(bsn,version, attrs);
 				if (result != null)
 					return toContainer(bsn, range, attrs, result);
 			}
@@ -974,7 +976,8 @@ public class Project extends Processor {
 					// Repository
 					// To query, we must have a real version
 					if (!versions.isEmpty() && Verifier.isVersion(range)) {
-						File file = plugin.get(bsn, range, useStrategy, attrs);
+						Version version = new Version(range);
+						File file = plugin.get(bsn, version, attrs);
 						// and the entry must exist
 						// if it does, return this as a result
 						if (file != null)
@@ -1004,7 +1007,7 @@ public class Project extends Processor {
 				if (provider != null) {
 					RepositoryPlugin repo = versions.get(provider);
 					String version = provider.toString();
-					File result = repo.get(bsn, version, Strategy.EXACT, attrs);
+					File result = repo.get(bsn, provider, attrs);
 					if (result != null)
 						return toContainer(bsn, version, attrs, result);
 				} else
