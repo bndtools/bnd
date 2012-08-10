@@ -48,14 +48,6 @@ public interface RepositoryPlugin {
 		 * the result.
 		 */
 		public boolean	generateDigest		= false;
-
-		/**
-		 * Create a 'latest' artifact when it did not exist.<br/>
-		 * <br/>
-		 * When set to true the implementation is requested to create a 'latest'
-		 * artifact.
-		 */
-		public boolean	createLatest		= false;
 	}
 
 	PutOptions	DEFAULTOPTIONS	= new PutOptions();
