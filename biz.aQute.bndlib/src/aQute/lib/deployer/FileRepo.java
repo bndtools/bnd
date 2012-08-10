@@ -69,7 +69,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (location == null)
 			throw new IllegalArgumentException("Location must be set on a FileRepo plugin");
 
-		root = new File(location);
+		root = IO.getFile(IO.home, location);
 
 		String readonly = map.get(READONLY);
 		if (readonly != null && Boolean.valueOf(readonly).booleanValue())
