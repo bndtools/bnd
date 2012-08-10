@@ -23,19 +23,23 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public static final String	CMD_PATH		= "cmd.path";
 	public static final String	CMD_SHELL		= "cmd.shell";
 	public static final String	CMD_INIT		= "cmd.init";
+	public static final String	CMD_OPEN		= "cmd.open";
 	public static final String	CMD_AFTER_PUT	= "cmd.after.put";
 	public static final String	CMD_REFRESH		= "cmd.refresh";
 	public static final String	CMD_BEFORE_PUT	= "cmd.before.put";
 	public static final String	CMD_ABORT_PUT	= "cmd.abort.put";
+	public static final String	CMD_CLOSE		= "cmd.cose";
 	static final PutOptions		DEFAULTOPTIONS	= new PutOptions();
 
 	String						shell;
 	String						path;
 	String						init;
+	String						open;
 	String						refresh;
 	String						before;
 	String						after;
 	String						abort;
+	String						close;
 
 	File[]						EMPTY_FILES		= new File[0];
 	protected File				root;
@@ -88,10 +92,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		path = map.get(CMD_PATH);
 		shell = map.get(CMD_SHELL);
 		init = map.get(CMD_INIT);
+		open = map.get(CMD_OPEN);
 		refresh = map.get(CMD_REFRESH);
 		before = map.get(CMD_BEFORE_PUT);
 		abort = map.get(CMD_ABORT_PUT);
 		after = map.get(CMD_AFTER_PUT);
+		close = map.get(CMD_CLOSE);
 	}
 
 	/**
