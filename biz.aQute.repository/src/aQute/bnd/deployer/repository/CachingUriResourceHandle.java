@@ -148,7 +148,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		this.reporter = reporter;
 	}
 
-	File resolveFile(String baseFileName, String fileName) {
+	static File resolveFile(String baseFileName, String fileName) {
 		File resolved;
 
 		File baseFile = new File(baseFileName);
@@ -192,7 +192,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		return new File(localDir, localFileName);
 	}
 
-	private File mapETag(File cachedFile) {
+	private static File mapETag(File cachedFile) {
 		return new File(cachedFile.getAbsolutePath() + ".etag");
 	}
 
@@ -311,7 +311,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		}
 	}
 
-	private String collectStackTrace(Throwable t) {
+	private static String collectStackTrace(Throwable t) {
 		try {
 			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			PrintStream pps = new PrintStream(buffer, false, "UTF-8");
