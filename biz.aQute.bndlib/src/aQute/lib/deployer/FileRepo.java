@@ -257,6 +257,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				versionString = "0";
 			else if (!Verifier.isVersion(versionString))
 				throw new IllegalArgumentException("Incorrect version in : " + tmpFile + " " + versionString);
+
 			Version version = new Version(versionString);
 
 			reporter.trace("bsn=%s version=%s", bsn, version);
@@ -268,7 +269,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 			File file = new File(dir, fName);
-
 
 			reporter.trace("updating %s ", file.getAbsolutePath());
 
@@ -297,7 +297,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * aQute.bnd.service.RepositoryPlugin.PutOptions)
 	 */
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
-
 		/* determine if the put is allowed */
 		if (!canWrite) {
 			throw new IOException("Repository is read-only");
@@ -323,13 +322,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		File tmpFile = IO.createTempFile(root, "put", ".jar");
 		try {
 			DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
-			
 			try {
-				
 				IO.copy(dis, tmpFile);
-				
+
 				byte[] digest = dis.getMessageDigest().digest();
-				
+
 				if (options.digest != null && !Arrays.equals(digest, options.digest))
 					throw new IOException("Retrieved artifact digest doesn't match specified digest");
 
