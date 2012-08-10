@@ -396,11 +396,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		init();
 
 		/* determine if the artifact needs to be verified */
-		boolean verifyFetch = (options.digest != null);
 		boolean verifyPut = !options.allowArtifactChange;
 
 		/* determine which digests are needed */
-		boolean needFetchDigest = verifyFetch || verifyPut;
+		boolean needFetchDigest = (options.digest != null) || verifyPut;
 		boolean needPutDigest = verifyPut || options.generateDigest;
 
 		/*
@@ -426,7 +425,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				byte[] disDigest = needFetchDigest ? dis.getMessageDigest().digest() : null;
 				
 				/* verify the digest when requested */
-				if (verifyFetch && !Arrays.equals(disDigest, options.digest)) {
+				if (options.digest != null && !Arrays.equals(disDigest, options.digest)) {
 					throw new IOException("Retrieved artifact digest doesn't match specified digest");
 				}
 				
