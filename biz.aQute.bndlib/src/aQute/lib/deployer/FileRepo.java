@@ -346,6 +346,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				 */
 				beforePut(tmpFile);
 				File file = putArtifact(tmpFile, options);
+				file.setReadOnly();
 				afterPut(file);
 
 				PutResult r = new PutResult();
