@@ -57,7 +57,8 @@ public interface RepositoryPlugin {
 		 */
 		public boolean	createLatest		= false;
 	}
-	PutOptions DEFAULTOPTIONS	= new PutOptions();
+
+	PutOptions	DEFAULTOPTIONS	= new PutOptions();
 
 	/**
 	 * Results returned by the put operation
@@ -103,7 +104,8 @@ public interface RepositoryPlugin {
 	 *            The input stream with the artifact
 	 * @param options
 	 *            The put options. See {@link RepositoryPlugin.PutOptions}, can
-	 *            be {@code null}, which will then take the default options like new PutOptions().
+	 *            be {@code null}, which will then take the default options like
+	 *            new PutOptions().
 	 * @return The result of the put, never null. See
 	 *         {@link RepositoryPlugin.PutResult}
 	 * @throws Exception
