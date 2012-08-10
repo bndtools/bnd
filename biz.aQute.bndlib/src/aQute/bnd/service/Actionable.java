@@ -3,9 +3,13 @@ package aQute.bnd.service;
 import java.util.*;
 
 /**
- * An interface to allow bnd to provide commands on selected entries. Primary
- * use case is the repository that provides commands on its entries. The
- * interface also provides the possibility to get some details of an entry.
+ * An interface to allow bnd to provide commands on elements. This interface can
+ * provide information about the implementer but it can also provide information
+ * about its elements. These elements are identified by a <i>target</i>. A
+ * target is one or more objects that uniquely identify a child in the
+ * container. The exact protocol for the target is left to the implementers,
+ * this interface is just a conduit between the bnd world (no Eclipse etc) and
+ * the GUI world, using only bnd and java interfaces.
  */
 public interface Actionable {
 	/**
@@ -18,7 +22,7 @@ public interface Actionable {
 	 * @return A Map with the actions or null if no actions are available.
 	 * @throws Exception
 	 */
-	Map<String,Runnable> actions(Object ... target) throws Exception;
+	Map<String,Runnable> actions(Object... target) throws Exception;
 
 	/**
 	 * Return a tooltip for the given target or the encompassing entity if null
@@ -27,7 +31,18 @@ public interface Actionable {
 	 * @param target
 	 *            the target, any number of parameters to identify
 	 * @return the tooltip or null
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	String tooltip(Object ... target) throws Exception;
+	String tooltip(Object... target) throws Exception;
+
+	/**
+	 * Provide a title for an element.
+	 * 
+	 * @param target
+	 *            the target, any number of parameters to identify
+	 * @return the text for this element
+	 * @throws Exception
+	 */
+
+	String title(Object... target) throws Exception;
 }
