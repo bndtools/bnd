@@ -330,10 +330,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				
 				byte[] digest = dis.getMessageDigest().digest();
 				
-				if (options.digest != null && !Arrays.equals(digest, options.digest)) {
+				if (options.digest != null && !Arrays.equals(digest, options.digest))
 					throw new IOException("Retrieved artifact digest doesn't match specified digest");
-				}
-				
+
 				/*
 				 * put the artifact into the repository (from the temporary
 				 * file)
