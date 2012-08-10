@@ -14,6 +14,7 @@ import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.libg.command.*;
 import aQute.libg.cryptography.*;
+import aQute.libg.reporter.*;
 import aQute.service.reporter.*;
 
 /**
@@ -176,6 +177,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			return false;
 
 		inited = true;
+
+		if (reporter == null) {
+			ReporterAdapter reporter = trace ? new ReporterAdapter(System.out) : new ReporterAdapter();
+			reporter.setTrace(trace);
+			reporter.setExceptions(trace);
+			this.reporter = reporter;
+		}
 
 		if (!root.isDirectory()) {
 			root.mkdirs();
