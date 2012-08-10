@@ -6,6 +6,12 @@ import java.util.*;
 
 import aQute.bnd.version.*;
 
+/**
+ * A Repository Plugin abstract a bnd repository. This interface allows bnd to
+ * find programs from their bsn and revisions from their bsn-version
+ * combination. It is also possible to put revisions in a repository if the
+ * repository is not read only.
+ */
 public interface RepositoryPlugin {
 	/**
 	 * Options used to steer the put operation
