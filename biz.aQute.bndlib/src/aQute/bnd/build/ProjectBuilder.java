@@ -91,7 +91,7 @@ public class ProjectBuilder extends Builder {
 	}
 
 	/**
-	 * Base line against a previous version
+	 * Compare this builder's JAR with a baseline
 	 * 
 	 * @throws Exception
 	 */
