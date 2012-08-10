@@ -8,7 +8,7 @@
  * Contributors:
  *     Per Kr. Soreide - initial API and implementation
  *******************************************************************************/
-package bndtools.release;
+package bndtools.release.ui;
 
 import java.util.List;
 
@@ -26,9 +26,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.diff.JarDiff;
+import bndtools.release.Activator;
+import bndtools.release.ReleaseHelper;
+import bndtools.release.ReleaseJob;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.nl.Messages;
 
@@ -38,16 +41,15 @@ public class BundleReleaseDialog extends Dialog {
 	private static final int UPDATE_BUTTON = IDialogConstants.CLIENT_ID + 3;
 	private static final int CANCEL_BUTTON = IDialogConstants.CLIENT_ID + 2;
 
-	private BundleRelease release;
+	private BundleTree release;
 	private Project project;
-	private List<JarDiff> diffs;
+	private List<Baseline> diffs;
 	private Combo releaseRepoCombo;
-	
-	public BundleReleaseDialog(Shell parentShell, Project project, List<JarDiff> compare) {
+
+	public BundleReleaseDialog(Shell parentShell, Project project, List<Baseline> compare) {
 		super(parentShell);
 		super.setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
 		this.project = project;
-		release = new BundleRelease(compare);
 		this.diffs = compare;
 	}
 
@@ -62,7 +64,7 @@ public class BundleReleaseDialog extends Dialog {
 		gridLayout.marginWidth = 0;
 		gridLayout.marginHeight = 0;
 		composite.setLayout(gridLayout);
-		
+
 		Composite repoPart = new Composite(composite, SWT.NONE);
 		gridLayout = new GridLayout();
 		gridLayout.numColumns = 2;
@@ -88,17 +90,17 @@ public class BundleReleaseDialog extends Dialog {
 				}
 			}
 		}
-		
-		releaseRepoCombo = new Combo (repoPart, SWT.READ_ONLY);
-		//combo.setLayout(gridLayout);
-		releaseRepoCombo.setItems (items);
-		releaseRepoCombo.setSize (200, 200);
+
+		releaseRepoCombo = new Combo(repoPart, SWT.READ_ONLY);
+		// combo.setLayout(gridLayout);
+		releaseRepoCombo.setItems(items);
+		releaseRepoCombo.setSize(200, 200);
 		if (items.length > 0) {
 			releaseRepoCombo.setText(items[idx]);
 		} else {
 			releaseRepoCombo.setText("");
 		}
-		
+
 		Composite diffPart = new Composite(composite, SWT.NONE);
 		gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
@@ -120,24 +122,25 @@ public class BundleReleaseDialog extends Dialog {
 		scrolled.setLayout(gridLayout);
 		scrolled.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
 
-		release.createControl(scrolled);
+		release = new BundleTree(scrolled, SWT.NONE);
+		release.setInput(diffs);
 
 		scrolled.setExpandHorizontal(true);
 		scrolled.setExpandVertical(true);
-		scrolled.setContent(release.getControl());
+		scrolled.setContent(release);
 		scrolled.setMinSize(300, 300);
 		scrolled.layout(true);
 
 		return composite;
 	}
-	
+
 	@Override
 	protected void buttonPressed(int buttonId) {
 		if (CANCEL_BUTTON == buttonId) {
 			cancelPressed();
 			return;
 		}
-		
+
 		boolean updateOnly = false;
 		if (UPDATE_BUTTON == buttonId) {
 			updateOnly = true;
@@ -151,13 +154,13 @@ public class BundleReleaseDialog extends Dialog {
 		}
 
 		ReleaseContext context = new ReleaseContext(project, diffs, release, updateOnly);
-		
+
 		ReleaseJob job = new ReleaseJob(context, true);
 		job.setRule(ResourcesPlugin.getWorkspace().getRoot());
 		job.schedule();
-		
+
 		super.okPressed();
-		
+
 	}
 
 	@Override

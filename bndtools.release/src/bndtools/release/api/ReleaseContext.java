@@ -19,15 +19,15 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.diff.JarDiff;
 import bndtools.release.api.IReleaseParticipant.Scope;
 
 public class ReleaseContext {
 
 	private Project project;
-	private List<JarDiff> jarDiffs;
+	private List<Baseline> diffs;
 	private RepositoryPlugin releaseRepo;
 	private IProgressMonitor progressMonitor;
 	
@@ -37,9 +37,9 @@ public class ReleaseContext {
 	private Scope currentScope;
 	private boolean updateOnly;
 	
-	public ReleaseContext(Project project, List<JarDiff> jarDiffs, RepositoryPlugin releaseRepo, boolean updateOnly) {
+	public ReleaseContext(Project project, List<Baseline> diffs, RepositoryPlugin releaseRepo, boolean updateOnly) {
 		this.project = project;
-		this.jarDiffs = jarDiffs;
+		this.diffs = diffs;
 		this.releaseRepo = releaseRepo;
 		this.updateOnly = updateOnly;
 		
@@ -52,8 +52,8 @@ public class ReleaseContext {
 		return project;
 	}
 
-	public List<JarDiff> getJarDiffs() {
-		return jarDiffs;
+	public List<Baseline> getBaselines() {
+		return diffs;
 	}
 
 	public RepositoryPlugin getReleaseRepository() {

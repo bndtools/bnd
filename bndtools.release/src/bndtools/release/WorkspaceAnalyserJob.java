@@ -25,15 +25,17 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.osgi.framework.Constants;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.service.RepositoryPlugin;
-import bndtools.diff.JarDiff;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Diff.Ignore;
 import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
+import bndtools.release.ui.WorkspaceReleaseDialog;
 
 public class WorkspaceAnalyserJob extends Job {
 
@@ -73,21 +75,25 @@ public class WorkspaceAnalyserJob extends Job {
 				}
 				List<Builder> builders = project.getBuilder(null)
 						.getSubBuilders();
-				List<JarDiff> jarDiffs = null;
+				List<Baseline> jarDiffs = null;
 				for (Builder b : builders) {
 					mon.subTask("Processing " + b.getBsn() + "...");
 
-					RepositoryPlugin baselineRepository = ReleaseHelper
-							.getBaselineRepository(project, b.getBsn(),
-									b.getProperty(Constants.BUNDLE_VERSION));
-					JarDiff jarDiff = JarDiff.createJarDiff(project,
-							baselineRepository, b.getBsn());
+					Baseline jarDiff = DiffHelper.createBaseline(project,
+							b.getBsn());
 					if (jarDiff != null) {
 						if (jarDiffs == null) {
-							jarDiffs = new ArrayList<JarDiff>();
+							jarDiffs = new ArrayList<Baseline>();
 						}
-						if (jarDiff.getChangedExportedPackages().size() > 0
-								|| jarDiff.getChangedImportedPackages().size() > 0 || jarDiff.getChangedPrivatePackages().size() > 0) {
+
+						Delta delta = jarDiff.getDiff().getDelta(new Ignore() {
+                            public boolean contains(Diff diff) {
+                               if ("META-INF/MANIFEST.MF".equals(diff.getName())) {
+                                   return true;
+                               }
+                                return false;
+                            }});
+						if (delta != Delta.UNCHANGED && delta != Delta.IGNORED) {
 							jarDiffs.add(jarDiff);
 						}
 					}
@@ -168,14 +174,15 @@ public class WorkspaceAnalyserJob extends Job {
 			List<Project> outlist) throws Exception {
 
 		for (Project project : dependsOn) {
-			if (!outlist.contains(project)) {
-				Collection<Project> subProjects = project.getDependson();
-				for (Project subProject : subProjects) {
-					if (!outlist.contains(subProject)) {
-						outlist.add(subProject);
-					}
+			Collection<Project> subProjects = project.getDependson();
+			for (Project subProject : subProjects) {
+				if (!outlist.contains(subProject)) {
+					outlist.add(subProject);
 				}
 			}
+            if (!outlist.contains(project)) {
+                outlist.add(project);
+            }
 		}
 	}
 }

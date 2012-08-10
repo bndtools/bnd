@@ -22,7 +22,7 @@ public class Messages extends NLS {
 	public static String versionRange;
 	public static String newRange;
 	public static String showAllPackages;
-	public static String symbNamePackage;
+	public static String symbNameResources;
 	public static String releaseToRepo;
 	public static String cleaningProject;
 	public static String releasing;
@@ -37,6 +37,7 @@ public class Messages extends NLS {
 	public static String releasedTo;
 	public static String updateVersions;
 	public static String updateVersionsAndRelease;
+	public static String bundleAndPackageName;
 
 	public static String workspaceReleaseJob;
 	public static String calculatingBuildPath;

@@ -2,6 +2,7 @@ package bndtools.release;
 
 import java.util.List;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -16,33 +17,34 @@ public class WorkspaceReleaseJob extends Job {
 
 	private List<ProjectDiff> projectDiffs;
 	private boolean updateOnly;
-	
+
 	public WorkspaceReleaseJob(List<ProjectDiff> projectDiffs, boolean updateOnly) {
 		super(Messages.workspaceReleaseJob);
 		this.projectDiffs = projectDiffs;
 		this.updateOnly = updateOnly;
 	}
-	
+
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		
+
 		monitor.beginTask("Releasing projects...", projectDiffs.size());
 		for (ProjectDiff projectDiff : projectDiffs) {
 			if (projectDiff.isRelease()) {
-				
+
 				RepositoryPlugin release = null;
 				if (projectDiff.getReleaseRepository() != null) {
 					release = Activator.getRepositoryPlugin(projectDiff.getReleaseRepository());
 				}
 
-				ReleaseContext context = new ReleaseContext(projectDiff.getProject(), projectDiff.getJarDiffs(), release, updateOnly);
+				ReleaseContext context = new ReleaseContext(projectDiff.getProject(), projectDiff.getBaselines(), release, updateOnly);
 				ReleaseJob job = new ReleaseJob(context, false);
+				job.setRule(ResourcesPlugin.getWorkspace().getRoot());
 				job.run(new SubProgressMonitor(monitor, 1));
 			}
 			monitor.worked(1);
 		}
 		monitor.done();
-		
+
 		return Status.OK_STATUS;
 	}
 

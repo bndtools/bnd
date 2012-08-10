@@ -41,9 +41,9 @@ public class ReleaseAction implements IObjectActionDelegate {
 			if (!PlatformUI.getWorkbench().saveAllEditors(true)) {
 				return;
 			}
-			
+
 			for (Map.Entry<Project, List<File>> me : bndFiles.entrySet()) {
-				
+
 				Project project;
 				try {
 					project = me.getKey();

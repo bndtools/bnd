@@ -14,10 +14,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,13 +21,12 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.osgi.framework.Constants;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.service.RepositoryPlugin;
-import bndtools.diff.JarDiff;
 import bndtools.release.nl.Messages;
+import bndtools.release.ui.BundleReleaseDialog;
 
 public class ReleaseDialogJob extends Job {
 
@@ -49,35 +44,27 @@ public class ReleaseDialogJob extends Job {
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		
+
         try {
 	    	monitor.beginTask(Messages.cleaningProject, 100);
-	        try {
-				IProject proj = ResourcesPlugin.getWorkspace().getRoot().getProject(project.getName());
-				proj.build(IncrementalProjectBuilder.FULL_BUILD, null);
-			} catch (CoreException e) {
-				return e.getStatus();
-			}
 			monitor.setTaskName(Messages.releasing);
 			monitor.worked(33);
 			monitor.subTask(Messages.checkingExported);
-			
-			final List<JarDiff> diffs = new ArrayList<JarDiff>();
-			
+
+			final List<Baseline> diffs = new ArrayList<Baseline>();
+
 			List<Builder> builders = project.getBuilder(null).getSubBuilders();
-			for (Builder b : builders) {
-				
+			for (Builder builder : builders) {
+
 				if (subBundles != null) {
-					if (!subBundles.contains(b.getPropertiesFile())) {
+					if (!subBundles.contains(builder.getPropertiesFile())) {
 						continue;
 					}
 				}
-				
-				RepositoryPlugin baselineRepository = ReleaseHelper.getBaselineRepository(project, b.getBsn(), b.getProperty(Constants.BUNDLE_VERSION));
-				
-				JarDiff jarDiff = JarDiff.createJarDiff(project, baselineRepository, b.getBsn());
-				if (jarDiff != null) {
-					diffs.add(jarDiff);
+
+				Baseline diff = DiffHelper.createBaseline(project, builder.getBsn());
+				if (diff != null) {
+					diffs.add(diff);
 				}
 			}
 			if (diffs.size() == 0) {
@@ -85,7 +72,7 @@ public class ReleaseDialogJob extends Job {
 				return Status.OK_STATUS;
 			}
 			monitor.worked(33);
-			
+
 			Runnable runnable = new Runnable() {
 				public void run() {
 					BundleReleaseDialog dialog = new BundleReleaseDialog(shell, project, diffs);

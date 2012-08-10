@@ -11,28 +11,32 @@
 package bndtools.release;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.differ.Baseline;
+import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -40,10 +44,8 @@ import aQute.bnd.osgi.JarResource;
 import aQute.bnd.properties.Document;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.lib.io.IO;
+import aQute.bnd.version.Version;
 import aQute.service.reporter.Reporter;
-import bndtools.diff.JarDiff;
-import bndtools.diff.PackageInfo;
 import bndtools.release.api.IReleaseParticipant;
 import bndtools.release.api.IReleaseParticipant.Scope;
 import bndtools.release.api.ReleaseContext;
@@ -57,38 +59,34 @@ public class ReleaseHelper {
 		Collection<? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
 		for (Builder builder : builders) {
 
-			JarDiff current = getJarDiffForBuilder(builder, context);
+			Baseline current = getBaselineForBuilder(builder, context);
 			if (current == null) {
 				continue;
 			}
-			for (PackageInfo pi : current.getModifiedExportedPackages()) {
-				if (pi.getCurrentVersion() != null && !pi.getCurrentVersion().equals(pi.getSuggestedVersion())) {
-					updatePackageInfoFile(context.getProject(), pi);
-				}
-			}
-
-			for (PackageInfo pi : current.getNewExportedPackages()) {
-				updatePackageInfoFile(context.getProject(), pi);
+			for (Info info : current.getPackageInfos()) {
+			    context.getProject().setPackageInfo(info.packageName, info.suggestedVersion);
 			}
 
 			updateBundleVersion(context, current, builder);
    		}
 	}
 
-	private static void updateBundleVersion(ReleaseContext context, JarDiff current, Builder builder) throws IOException, CoreException {
+	private static void updateBundleVersion(ReleaseContext context, Baseline current, Builder builder) throws IOException, CoreException {
 
-		String bundleVersion = current.getSelectedVersion();
+		Version bundleVersion = current.getSuggestedVersion();
 		if (bundleVersion != null) {
 
 			File file = builder.getPropertiesFile();
+			Properties properties = builder.getProperties();
 			if (file == null) {
 				file = context.getProject().getPropertiesFile();
+				properties = context.getProject().getProperties();
 			}
 			final IFile resource = (IFile) ReleaseUtils.toResource(file);
-			
+
 			final Document document;
 			if (resource.exists()) {
-				byte[] bytes = FileUtils.readFully(resource.getContents());
+				byte[] bytes = readFully(resource.getContents());
 				document = new Document(new String(bytes, resource.getCharset()));
 			} else {
 				document = new Document("");
@@ -101,7 +99,8 @@ public class ReleaseHelper {
 			if (savedVersion != null && savedVersion.indexOf('$') > -1) {
 				//TODO: Handle macros / variables
 			}
-			model.setBundleVersion(bundleVersion);
+			model.setBundleVersion(bundleVersion.toString());
+			properties.setProperty(Constants.BUNDLE_VERSION, bundleVersion.toString());
 
 			final Document finalDoc = document;
 			Runnable run = new Runnable() {
@@ -109,7 +108,7 @@ public class ReleaseHelper {
 					model.saveChangesTo(finalDoc);
 
 					try {
-						FileUtils.writeFully(finalDoc.get(), resource, false);
+						writeFully(finalDoc.get(), resource, false);
 						resource.refreshLocal(IResource.DEPTH_ZERO, null);
 					} catch (CoreException e) {
 						throw new RuntimeException(e);
@@ -123,10 +122,10 @@ public class ReleaseHelper {
 		}
 	}
 
-	private static JarDiff getJarDiffForBuilder(Builder builder, ReleaseContext context) {
-		JarDiff current = null;
-		for (JarDiff jd : context.getJarDiffs()) {
-			if (jd.getSymbolicName().equals(builder.getBsn())) {
+	private static Baseline getBaselineForBuilder(Builder builder, ReleaseContext context) {
+	    Baseline current = null;
+		for (Baseline jd : context.getBaselines()) {
+			if (jd.getBsn().equals(builder.getBsn())) {
 				current = jd;
 				break;
 			}
@@ -134,7 +133,7 @@ public class ReleaseHelper {
 		return current;
 	}
 
-	public static boolean release(ReleaseContext context, List<JarDiff> jarDiffs) throws Exception {
+	public static boolean release(ReleaseContext context, List<Baseline> diffs) throws Exception {
 
 		boolean ret = true;
 
@@ -154,18 +153,18 @@ public class ReleaseHelper {
 		if (context.isUpdateOnly()) {
 			return true;
 		}
-		
+
 		if (!preRelease(context, participants)) {
 			postRelease(context, participants, false);
 			displayErrors(context);
 			return false;
 		}
 
-		for (JarDiff jarDiff : jarDiffs) {
+		for (Baseline diff : diffs) {
 			Collection<? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
 			Builder builder = null;
 			for (Builder b : builders) {
-				if (b.getBsn().equals(jarDiff.getSymbolicName())) {
+				if (b.getBsn().equals(diff.getBsn())) {
 					builder = b;
 					break;
 				}
@@ -224,9 +223,6 @@ public class ReleaseHelper {
 
 	private static boolean release(ReleaseContext context, List<IReleaseParticipant> participants, Builder builder) throws Exception {
 
-		context.getProject().refresh();
-		context.getProject().setChanged();
-
 		Jar jar = builder.build();
 
 		handleBuildErrors(context, builder, jar);
@@ -249,16 +245,14 @@ public class ReleaseHelper {
 		    is.close();
 		}
 
-		context.getProject().refresh();
-
-		File file = context.getReleaseRepository().get(symbName, '[' + version + ',' + version + ']', Strategy.HIGHEST, null);
+		File file = context.getReleaseRepository().get(symbName, version, Strategy.EXACT, null);
 		Jar releasedJar = null;
 		if (file != null && file.exists()) {
 			IResource resource = ReleaseUtils.toResource(file);
 			if (resource != null) {
 				resource.refreshLocal(IResource.DEPTH_ZERO, null);
 			}
-			releasedJar = new Jar(file);
+			releasedJar = jar;
 		}
 		if (releasedJar == null) {
 			handleReleaseErrors(context, context.getProject(), symbName, version);
@@ -271,60 +265,6 @@ public class ReleaseHelper {
 
 		postJarRelease(context, participants, releasedJar);
 		return true;
-	}
-
-	private static void updatePackageInfoFile(Project project, PackageInfo packageInfo) throws Exception {
-		String path = packageInfo.getPackageName().replace('.', '/') + "/packageinfo";
-		File file = getSourceFile(project, path);
-
-		// If package/classes are copied into the bundle through Private-Package etc, there will be no source
-		if (!file.getParentFile().exists()) {
-			return;
-		}
-
-		if (file.exists() && equalsPackageInfoFileVersion(file, packageInfo.getSuggestedVersion())) {
-			return;
-		}
-		PrintWriter pw = new PrintWriter(file, "UTF-8");
-		pw.println("version " + packageInfo.getSuggestedVersion());
-		pw.flush();
-		pw.close();
-		ReleaseUtils.toResource(file).refreshLocal(IResource.DEPTH_ZERO, null);
-
-		File binary = IO.getFile(project.getOutput(), path);
-		IO.copy(file, binary);
-		ReleaseUtils.toResource(binary).refreshLocal(IResource.DEPTH_ZERO, null);
-	}
-
-	private static boolean equalsPackageInfoFileVersion(File packageInfoFile, String version) throws IOException {
-		// Check existing version
-		if (packageInfoFile.exists()) {
-			BufferedReader reader = null;
-			try {
-				reader = new BufferedReader(new InputStreamReader(new FileInputStream(packageInfoFile), "UTF-8"));
-				String line;
-				while ((line = reader.readLine()) != null) {
-					line = line.trim();
-					if (line.startsWith("version ")) {
-						String fileVersion = line.substring(8);
-						if (fileVersion.equals(version)) {
-							return true;
-						}
-						return false;
-					}
-				}
-			} finally {
-				if (reader != null) {
-					IO.close(reader);
-				}
-			}
-		}
-		return false;
-	}
-	
-	private static File getSourceFile(Project project, String path) {
-		String src = project.getProperty("src", "src");
-		return project.getFile(src + "/" + path);
 	}
 
 	private static boolean preUpdateProjectVersions(ReleaseContext context, List<IReleaseParticipant> participants) {
@@ -386,36 +326,6 @@ public class ReleaseHelper {
 		return ret.toArray(new String[ret.size()]);
 	}
 
-	public static RepositoryPlugin getBaselineRepository(Project project, String bsn, String version) {
-		
-		String baseline = project.getProperty("-release-baseline");//TODO: Constants.RELEASE_BASELINE from bnd
-		if (baseline != null) {
-			return Activator.getRepositoryPlugin(baseline);
-		}
-		String release = project.getProperty(Constants.RELEASEREPO);
-		if (release != null) {
-			return Activator.getRepositoryPlugin(release);
-		}
-		
-		List<RepositoryPlugin> repos = Activator.getRepositories();
-		for (RepositoryPlugin repo : repos) {
-			try {
-				File file;
-				if (version == null) {
-					file = repo.get(bsn, null, Strategy.HIGHEST, null);
-				} else {
-					file =  repo.get(bsn, version, Strategy.EXACT, null);
-				}
-				if (file != null) {
-					return repo;
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				continue;
-			}
-		}
-		return null;
-	}
 	
 	public static void initializeProjectDiffs(List<ProjectDiff> projects) {
 		String[] repos =  getReleaseRepositories();
@@ -430,10 +340,43 @@ public class ReleaseHelper {
 			}
 			projectDiff.setReleaseRepository(repo);
 			projectDiff.setDefaultReleaseRepository(repo);
-//			for (JarDiff jarDiff : projectDiff.getJarDiffs()) {
+//			for (Diff jarDiff : projectDiff.getDiffs()) {
 				//TODO: decide which projects to release
-//				
 //			}
 		}
 	}
+
+    private static byte[] readFully(InputStream stream) throws IOException {
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+            final byte[] buffer = new byte[1024];
+            while (true) {
+                int read = stream.read(buffer, 0, 1024);
+                if (read == -1)
+                    break;
+                output.write(buffer, 0, read);
+            }
+            return output.toByteArray();
+        } finally {
+            stream.close();
+        }
+    }
+
+    public static void writeFully(String text, IFile file, boolean createIfAbsent) throws CoreException {
+        ByteArrayInputStream inputStream;
+        try {
+            inputStream = new ByteArrayInputStream(text.getBytes(file.getCharset(true)));
+        } catch (UnsupportedEncodingException e) {
+            return;
+        }
+        if (file.exists()) {
+            file.setContents(inputStream, false, true, null);
+        } else {
+            if (createIfAbsent)
+                file.create(inputStream, false, null);
+            else
+                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, "File does not exist: " + file.getFullPath().toString(), null));
+        }
+    }
 }

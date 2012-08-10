@@ -24,7 +24,6 @@ public class TestErrorDialog {
 	
 	public static void main (String [] args) {
 		
-		
 		Display display = new Display ();
 		Shell shell = new Shell(display);
 
@@ -79,7 +78,7 @@ public class TestErrorDialog {
 		
 		error.setMessage("Message with table, symbolicName and version");
 		
-		error.setSymbolicName("net.comactivity.gore");
+		error.setSymbolicName("com.example.bundle1");
 		error.setVersion("666.0.0");
 		error.setScope(Scope.PRE_JAR_RELEASE);
 		errors.add(error);
@@ -121,7 +120,7 @@ public class TestErrorDialog {
 		
 		error.setMessage("Another message with table, symbolicName and version");
 		
-		error.setSymbolicName("net.comactivity.al.gore");
+		error.setSymbolicName("com.example.bundle2");
 		error.setVersion("77.77.77");
 		error.setScope(Scope.POST_JAR_RELEASE);
 		errors.add(error);

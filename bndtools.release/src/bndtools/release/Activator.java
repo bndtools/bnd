@@ -12,8 +12,10 @@ package bndtools.release;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -43,6 +45,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.release.api.IReleaseParticipant;
 import bndtools.release.api.ReleaseUtils;
+import bndtools.release.ui.BundleTreeImages;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -54,8 +57,7 @@ public class Activator extends AbstractUIPlugin {
 
 	// The shared instance
 	private static Activator plugin;
-		
-	
+
 	private static ServiceTracker workspaceTracker;
 	/**
 	 * The constructor
@@ -63,10 +65,6 @@ public class Activator extends AbstractUIPlugin {
 	public Activator() {
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
-	 */
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
@@ -75,10 +73,6 @@ public class Activator extends AbstractUIPlugin {
 		workspaceTracker.open();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-	 */
 	@Override
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
@@ -99,7 +93,6 @@ public class Activator extends AbstractUIPlugin {
 		ILog log = getDefault().getLog();
 		Status status = new Status(msgType, getDefault().getBundle().getSymbolicName(), msgType, msg + "\n", null);
 		log.log(status);
-		
 	}
 
     static void async(Runnable run) {
@@ -108,6 +101,7 @@ public class Activator extends AbstractUIPlugin {
         } else
             run.run();
     }
+
     public static void message(final String msg) {
         async(new Runnable() {
             public void run() {
@@ -126,239 +120,36 @@ public class Activator extends AbstractUIPlugin {
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
-	
+
 	@Override
 	protected void initializeImageRegistry(ImageRegistry reg) {
-		
-		// Images
-		ImageDescriptor id = getImageDescriptor("icons/tree16/bundle_obj.gif");
-		reg.put("bundle", id);
-		
-		id = getImageDescriptor("icons/tree16/class_obj.gif");
-		reg.put("class", id);
-		
-		id = getImageDescriptor("icons/tree16/field_public_obj.gif");
-		reg.put("field", id);
-		
-		id = getImageDescriptor("icons/tree16/methpub_obj.gif");
-		reg.put("method", id);
-		
-		id = getImageDescriptor("icons/tree16/package_obj.gif");
-		reg.put("package", id);
 
-		
-		// Overlays
-		id = getImageDescriptor("icons/ovr16/addition_red_ovr.gif");
-		reg.put("major_add", id);
-		
-		id = getImageDescriptor("icons/ovr16/change_red_ovr.gif");
-		reg.put("major_modify", id);
-		
-		id = getImageDescriptor("icons/ovr16/deletion_red_ovr.gif");
-		reg.put("major_remove", id);
-		
-		id = getImageDescriptor("icons/ovr16/addition_blue_ovr.gif");
-		reg.put("minor_add", id);
-		
-		id = getImageDescriptor("icons/ovr16/change_blue_ovr.gif");
-		reg.put("minor_modify", id);
-		
-		id = getImageDescriptor("icons/ovr16/deletion_blue_ovr.gif");
-		reg.put("minor_remove", id);
-		
-		id = getImageDescriptor("icons/ovr16/change_green_ovr.gif");
-		reg.put("micro_modify", id);
-		
-		id = getImageDescriptor("icons/ovr16/deletion_green_ovr.gif");
-		reg.put("micro_remove", id);
-
-		id = getImageDescriptor("icons/ovr16/export_ovr.gif");
-		reg.put("export", id);
-		
-		id = getImageDescriptor("icons/ovr16/import_ovr.gif");
-		reg.put("import", id);
-
-		id = getImageDescriptor("icons/ovr16/import_export_ovr.gif");
-		reg.put("import_export", id);
-
-		id = getImageDescriptor("icons/ovr16/static_ovr.gif");
-		reg.put("static", id);
-
-		// Images with overlay
-		OverlayImageDescriptor oid = new OverlayImageDescriptor(reg, "package", "import");
-		oid.setXValue(8);
-		oid.setYValue(0);
-		reg.put("package_import", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package", "export");
-		oid.setXValue(8);
-		oid.setYValue(0);
-		reg.put("package_export", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package", "import_export");
-		oid.setXValue(8);
-		oid.setYValue(0);
-		reg.put("package_import_export", oid);
-
-		oid = new OverlayImageDescriptor(reg, "field", "static");
-		oid.setXValue(0);
-		oid.setYValue(0);
-		reg.put("static_field", oid);
-
-		oid = new OverlayImageDescriptor(reg, "method", "static");
-		oid.setXValue(0);
-		oid.setYValue(0);
-		reg.put("static_method", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "package_import", "major_add");
-		reg.put("package_import_major_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package_import", "minor_remove");
-		reg.put("package_import_minor_remove", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "package_import", "minor_modify");
-		reg.put("package_import_minor_modify", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package_import", "micro_remove");
-		reg.put("package_import_micro_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package_export", "major_add");
-		reg.put("package_export_major_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package_export", "major_modify");
-		reg.put("package_export_major_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "package_export", "major_remove");
-		reg.put("package_export_major_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package_export", "minor_add");
-		reg.put("package_export_minor_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package_export", "minor_modify");
-		reg.put("package_export_minor_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "package_export", "minor_remove");
-		reg.put("package_export_minor_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package_export", "micro_modify");
-		reg.put("package_export_micro_modify", oid);
-		
-
-		oid = new OverlayImageDescriptor(reg, "package_import_export", "major_add");
-		reg.put("package_import_export_major_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package_import_export", "major_modify");
-		reg.put("package_import_export_major_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "package_import_export", "major_remove");
-		reg.put("package_import_export_major_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package_import_export", "minor_add");
-		reg.put("package_import_export_minor_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package_import_export", "minor_modify");
-		reg.put("package_import_export_minor_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "package_import_export", "minor_remove");
-		reg.put("package_import_export_minor_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "package_import_export", "micro_modify");
-		reg.put("package_import_export_micro_modify", oid);
-
-		
-		
-		
-		oid = new OverlayImageDescriptor(reg, "class", "major_add");
-		reg.put("class_major_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "class", "major_modify");
-		reg.put("class_major_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "class", "major_remove");
-		reg.put("class_major_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "class", "minor_add");
-		reg.put("class_minor_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "class", "minor_modify");
-		reg.put("class_minor_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "class", "minor_remove");
-		reg.put("class_minor_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "field", "major_add");
-		reg.put("field_major_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "field", "major_modify");
-		reg.put("field_major_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "field", "major_remove");
-		reg.put("field_major_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "field", "minor_add");
-		reg.put("field_minor_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "field", "minor_modify");
-		reg.put("field_minor_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "field", "minor_remove");
-		reg.put("field_minor_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "static_field", "major_add");
-		reg.put("static_field_major_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "static_field", "major_modify");
-		reg.put("static_field_major_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "static_field", "major_remove");
-		reg.put("static_field_major_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "static_field", "minor_add");
-		reg.put("static_field_minor_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "static_field", "minor_modify");
-		reg.put("static_field_minor_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "static_field", "minor_remove");
-		reg.put("static_field_minor_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "method", "major_add");
-		reg.put("method_major_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "method", "major_modify");
-		reg.put("method_major_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "method", "major_remove");
-		reg.put("method_major_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "method", "minor_add");
-		reg.put("method_minor_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "method", "minor_modify");
-		reg.put("method_minor_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "method", "minor_remove");
-		reg.put("method_minor_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "static_method", "major_add");
-		reg.put("static_method_major_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "static_method", "major_modify");
-		reg.put("static_method_major_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "static_method", "major_remove");
-		reg.put("static_method_major_remove", oid);
-
-		oid = new OverlayImageDescriptor(reg, "static_method", "minor_add");
-		reg.put("static_method_minor_add", oid);
-
-		oid = new OverlayImageDescriptor(reg, "static_method", "minor_modify");
-		reg.put("static_method_minor_modify", oid);
-		
-		oid = new OverlayImageDescriptor(reg, "static_method", "minor_remove");
-		reg.put("static_method_minor_remove", oid);
+		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.DELTA, "*.gif");
+		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.IMPORT_EXPORT, "*.gif");
+		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.MODIFIERS, "*.gif");
+		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.TYPES, "*.gif");
 	}
-	
+
+	private static void loadBundleImages(ImageRegistry reg, String rootPath, String parent, String filePattern) {
+        @SuppressWarnings("unchecked")
+        Enumeration<URL> en = plugin.getBundle().findEntries(rootPath + "/" + parent, filePattern, false);
+        if (en == null) {
+            return;
+        }
+        while (en.hasMoreElements()) {
+            URL url = en.nextElement();
+            String name = getResourceName(url);
+            ImageDescriptor id = ImageDescriptor.createFromURL(url);
+            reg.put(parent + "_" + name, id);
+        }
+    }
+
+    private static String getResourceName(URL url) {
+        int idx = url.getPath().lastIndexOf('/');
+        String name = url.getPath().substring(idx + 1);
+        return name.substring(0, name.lastIndexOf('.'));
+    }
+
 	@SuppressWarnings("unchecked")
     public static <T> T getService(Class<T> clazz) {
     	 if (clazz == Workspace.class) {
@@ -368,7 +159,7 @@ public class Activator extends AbstractUIPlugin {
 				throw new RuntimeException(e);
 			}
     	 }
-    	 
+
     	 ServiceReference sr = getDefault().getBundle().getBundleContext().getServiceReference(clazz.getName());
     	 if (sr == null) {
     		 return null;
@@ -384,10 +175,9 @@ public class Activator extends AbstractUIPlugin {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot root = workspace.getRoot();
 		IProject p  = root.getProject(project.getName());
-		project.refresh();
 		refreshProject(p);
 	}
-	
+
 	public static File getLocalRepoLocation(RepositoryPlugin repository) {
 		try {
 			Method m = repository.getClass().getMethod("getRoot");
@@ -407,9 +197,9 @@ public class Activator extends AbstractUIPlugin {
 	public static Workspace getWorkspace() {
 		return (Workspace) workspaceTracker.getService();
 	}
-	
+
 	public static List<RepositoryPlugin> getRepositories() {
-		
+
 		Workspace ws = (Workspace)workspaceTracker.getService();
 		if (ws == null) {
 			return Collections.emptyList();
@@ -427,7 +217,7 @@ public class Activator extends AbstractUIPlugin {
 		}
 		return null;
 	}
-    
+
 	public static void refreshFile(File f) throws Exception {
 		if (f == null) {
 			return;
@@ -470,10 +260,11 @@ public class Activator extends AbstractUIPlugin {
         }
 	    return participants;
 	}
-	
+
 	public static void logError(String message, Throwable exception) {
 		log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
 	}
+
 	public static void log(IStatus status) {
 		Activator instance = plugin;
 		if(instance != null) {
@@ -482,7 +273,8 @@ public class Activator extends AbstractUIPlugin {
 			System.err.println(String.format("Unable to print to log for %s: bundle has been stopped.", Activator.PLUGIN_ID));
 		}
 	}
-    public static void error(List<String> errors) {
+
+	public static void error(List<String> errors) {
         final StringBuffer sb = new StringBuffer();
         for (String msg : errors) {
             sb.append(msg);
@@ -497,6 +289,4 @@ public class Activator extends AbstractUIPlugin {
             }
         });
     }
-
-    
 }
