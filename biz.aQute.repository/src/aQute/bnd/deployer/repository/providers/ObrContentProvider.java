@@ -163,7 +163,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		}
 	}
 	
-	private Object convertProperty(String value, String typeName) {
+	private static Object convertProperty(String value, String typeName) {
 		final Object result;
 		if (TYPE_VERSION.equals(typeName))
 			result = Version.parseVersion(value);
@@ -172,7 +172,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return result;
 	}
 	
-	private String mapObrNameToR5Namespace(String obrName, boolean extend) {
+	private static String mapObrNameToR5Namespace(String obrName, boolean extend) {
 		if ("bundle".equals(obrName))
 			return extend ? HostNamespace.HOST_NAMESPACE : BundleNamespace.BUNDLE_NAMESPACE;
 		if ("package".equals(obrName))
@@ -185,7 +185,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return obrName;
 	}
 	
-	private String translateObrFilter(String namespace, String filter) {
+	private static String translateObrFilter(String namespace, String filter) {
 		if (PackageNamespace.PACKAGE_NAMESPACE.equals(namespace))
 			return filter.replaceAll("\\(package", "(" + PackageNamespace.PACKAGE_NAMESPACE);
 		
@@ -203,7 +203,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return filter;
 	}
 	
-	private String mapObrPropertyToR5(String namespace, String propName) {
+	private static String mapObrPropertyToR5(String namespace, String propName) {
 		if (BundleNamespace.BUNDLE_NAMESPACE.equals(namespace)) {
 			if ("symbolicname".equals(propName))
 				return BundleNamespace.BUNDLE_NAMESPACE;
@@ -224,7 +224,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return propName;
 	}
 
-	private URI resolveUri(String uriStr, URI baseUri) throws URISyntaxException {
+	private static URI resolveUri(String uriStr, URI baseUri) throws URISyntaxException {
 		URI resolved;
 		
 		URI resourceUri = new URI(uriStr);
@@ -236,7 +236,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return resolved;
 	}
 
-	private void addBasicCapabilities(ResourceBuilder builder, String bsn, Version version, URI resolvedUri) {
+	private static void addBasicCapabilities(ResourceBuilder builder, String bsn, Version version, URI resolvedUri) {
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
 			.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn)
 			.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE)
@@ -255,7 +255,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 			.addCapability(host);
 	}
 	
-	private void addUnresolvableRequirement(ResourceBuilder builder) {
+	private static void addUnresolvableRequirement(ResourceBuilder builder) {
 		CapReqBuilder noresolve = new CapReqBuilder("bnd.noresolve").
 				addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(bnd.noresolve=true)");
 		builder.addRequirement(noresolve);
