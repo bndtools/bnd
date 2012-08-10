@@ -263,8 +263,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				throw new IllegalArgumentException("Incorrect version in : " + tmpFile + " " + versionString);
 			Version version = new Version(versionString);
 
-			if (reporter != null)
-				reporter.trace("bsn=%s version=%s", bsn, version);
+			reporter.trace("bsn=%s version=%s", bsn, version);
 
 			File dir = new File(root, bsn);
 			dir.mkdirs();
@@ -276,16 +275,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			PutResult result = new PutResult();
 
-			if (reporter != null)
-				reporter.trace("updating %s ", file.getAbsoluteFile());
+			reporter.trace("updating %s ", file.getAbsoluteFile());
 
 			IO.delete(file);
 			IO.rename(tmpFile, file);
 
 			result.artifact = file.toURI();
 
-			if (reporter != null)
-				reporter.progress(-1, "updated " + file.getAbsolutePath());
+			reporter.progress(-1, "updated " + file.getAbsolutePath());
 
 			fireBundleAdded(jar, file);
 			afterPut(file.getAbsoluteFile());
