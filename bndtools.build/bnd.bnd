@@ -4,7 +4,6 @@
 	bndtools.jareditor,\
 	bndtools.repository.base,\
 	bndtools.template.dm,\
-	bndtools.diff,\
 	bndtools.release,\
 	org.bndtools.embeddedrepo
 
@@ -16,11 +15,8 @@ Include-Resource:\
 	${repo;bndtools.jareditor;latest},\
 	${repo;bndtools.repository.base;latest},\
 	${repo;bndtools.template.dm;latest},\
-	${repo;bndtools.diff;latest},\
 	${repo;bndtools.release;latest},\
 	${repo;org.bndtools.embeddedrepo;latest},\
-	${repo;com.springsource.org.objectweb.asm;latest},\
-	${repo;com.springsource.org.objectweb.asm.tree;latest},\
 	${repo;javax.xml;latest},\
 	${repo;javax.xml.stream;latest},\
 	${repo;stax2-api;latest},\

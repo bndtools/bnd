@@ -24,9 +24,6 @@
        <Package name="bndtools.classpath.ui" />
      </Match>
      <Match>
-       <Package name="bndtools.diff" />
-     </Match>
-     <Match>
        <Package name="bndtools.editor" />
      </Match>
      <Match>
@@ -217,11 +214,5 @@
      </Match>
      <Match>
        <Package name="test.bndtools.bndplugins.repo.git" />
-     </Match>
-     <Match>
-       <Package name="test.bndtools.diff" />
-     </Match>
-     <Match>
-       <Package name="test.bndtools.diff.util" />
      </Match>
 </FindBugsFilter>
