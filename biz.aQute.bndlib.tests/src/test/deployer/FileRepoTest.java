@@ -1,5 +1,7 @@
 package test.deployer;
 
+import static aQute.lib.io.IO.*;
+
 import java.io.*;
 import java.security.*;
 import java.util.*;
@@ -9,7 +11,6 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.lib.deployer.*;
-import aQute.lib.io.*;
 
 public class FileRepoTest extends TestCase {
 	
@@ -26,7 +27,7 @@ public class FileRepoTest extends TestCase {
 
 	private static byte[] calculateHash(MessageDigest algorithm, File file) throws Exception {
 		algorithm.reset();
-		IO.copy(file, algorithm);
+		copy(file, algorithm);
 		return algorithm.digest();
 	}
 
@@ -37,6 +38,7 @@ public class FileRepoTest extends TestCase {
 		testRepo = createRepo(testRepoDir);
 		
 		File nonExistentDir = new File("definitely/doesnt/exist");
+		delete(nonExistentDir);
 		assertFalse(nonExistentDir.exists());
 		nonExistentRepo = createRepo(nonExistentDir);
 	}
@@ -89,7 +91,7 @@ public class FileRepoTest extends TestCase {
 		}
 		finally {
 			if (dstBundle != null) {
-				IO.delete(dstBundle.getParentFile());
+				delete(dstBundle.getParentFile());
 			}
 		}
 	}
