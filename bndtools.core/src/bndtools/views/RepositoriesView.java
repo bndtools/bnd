@@ -343,11 +343,16 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                     if (!selection.isEmpty()) {
                         Object firstElement = selection.getFirstElement();
                         if (firstElement instanceof Actionable) {
+                            //
+                            // Use the Actionable interface to fill the menu
+                            // Should extend this to allow other menu entries
+                            // from the view, but currently there are none
+                            //
                             Actionable act = (Actionable) firstElement;
                             Map<String,Runnable> actions = act.actions();
                             if (actions != null) {
                                 for (final Entry<String,Runnable> e : actions.entrySet()) {
-                                    final String label = e.getKey().replaceAll("\\$\\{@\\}", e.getValue().toString());
+                                    final String label = e.getKey();
                                     final Action a = new Action(label) {
                                         @Override
                                         public void run() {
