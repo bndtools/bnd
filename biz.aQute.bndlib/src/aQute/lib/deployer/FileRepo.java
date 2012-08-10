@@ -3,10 +3,8 @@ package aQute.lib.deployer;
 import java.io.*;
 import java.security.*;
 import java.util.*;
-import java.util.jar.*;
 import java.util.regex.*;
 
-import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
@@ -226,70 +224,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	/**
-	 * Get a list of URLs to bundles that are constrained by the bsn and
-	 * versionRange.
-	 * 
-	 * TODO can be removed
-	 */
-	private File[] get(String bsn, String versionRange) throws Exception {
-		init();
-
-		// If the version is set to project, we assume it is not
-		// for us. A project repo will then get it.
-		if (versionRange != null && versionRange.equals("project"))
-			return null;
-
-		//
-		// Check if the entry exists
-		//
-		File f = new File(root, bsn);
-		if (!f.isDirectory())
-			return null;
-
-		//
-		// The version range we are looking for can
-		// be null (for all) or a version range.
-		//
-		VersionRange range;
-		if (versionRange == null || versionRange.equals("latest")) {
-			range = new VersionRange("0");
-		} else
-			range = new VersionRange(versionRange);
-
-		//
-		// Iterator over all the versions for this BSN.
-		// Create a sorted map over the version as key
-		// and the file as URL as value. Only versions
-		// that match the desired range are included in
-		// this list.
-		//
-		File instances[] = f.listFiles();
-		SortedMap<Version,File> versions = new TreeMap<Version,File>();
-		for (int i = 0; i < instances.length; i++) {
-			Matcher m = REPO_FILE.matcher(instances[i].getName());
-			if (m.matches() && m.group(1).equals(bsn)) {
-				String versionString = m.group(2);
-				Version version;
-				if (versionString.equals("latest"))
-					version = new Version(Integer.MAX_VALUE);
-				else
-					version = new Version(versionString);
-
-				if (range.includes(version) || versionString.equals(versionRange))
-					versions.put(version, instances[i]);
-			}
-		}
-
-		File[] files = versions.values().toArray(EMPTY_FILES);
-		if ("latest".equals(versionRange) && files.length > 0) {
-			return new File[] {
-				files[files.length - 1]
-			};
-		}
-		return files;
-	}
-
-	/**
 	 * Answer if this repository can write.
 	 */
 	public boolean canWrite() {
@@ -333,7 +267,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 			File file = new File(dir, fName);
 
-			boolean renamed = false;
 			PutResult result = new PutResult();
 
 			if (reporter != null)
@@ -342,7 +275,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			IO.delete(file);
 			IO.rename(tmpFile, file);
 
-			renamed = true;
 			result.artifact = file.toURI();
 
 			if (reporter != null)
