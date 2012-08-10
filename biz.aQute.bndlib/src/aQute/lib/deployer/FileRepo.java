@@ -251,7 +251,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			 * copy the artifact from the (new/digest) stream into a temporary
 			 * file in the root directory of the repository
 			 */
-			tmpFile = IO.createTempFile(root, "put", ".bnd");
+			tmpFile = IO.createTempFile(root, "put", ".jar");
 			IO.copy(dis, tmpFile);
 
 			/* get the digest if available */
