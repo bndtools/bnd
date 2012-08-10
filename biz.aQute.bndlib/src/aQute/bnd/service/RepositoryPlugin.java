@@ -74,15 +74,6 @@ public interface RepositoryPlugin {
 		public URI		artifact	= null;
 
 		/**
-		 * The 'latest' artifact as it was put in the repository.<br/>
-		 * <br/>
-		 * Only set when {@link PutOptions#createLatest} was set to true and the
-		 * 'latest' artifact did not exist, or when the 'latest' artifact did
-		 * exists and was older than the artifact being put in the repository.
-		 */
-		public URI		latest		= null;
-
-		/**
 		 * The <b>SHA1</b> digest of the artifact as it was put into the
 		 * repository.<br/>
 		 * <br/>

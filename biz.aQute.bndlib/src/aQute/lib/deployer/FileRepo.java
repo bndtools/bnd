@@ -344,26 +344,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			fireBundleAdded(jar, file);
 			exec(after, file);
 
-			
-			// TODO like to get rid of the latest option. This is only
-			// used to have a constant name for the outside users (like ant)
-			// we should be able to handle this differently?
-			
-			File latest = new File(dir, bsn + "-latest.jar");
-			boolean latestExists = latest.exists() && latest.isFile();
-			boolean latestIsOlder = latestExists && (latest.lastModified() < jar.lastModified());
-			if ((options.createLatest && !latestExists) || latestIsOlder) {
-				if (latestExists) {
-					IO.delete(latest);
-				}
-				if (!renamed) {
-					IO.rename(tmpFile, latest);
-				} else {
-					IO.copy(file, latest);
-				}
-				result.latest = latest.toURI();
-			}
-
 			return result;
 		}
 		finally {
