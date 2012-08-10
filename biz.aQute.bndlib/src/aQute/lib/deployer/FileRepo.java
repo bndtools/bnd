@@ -74,7 +74,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			exec(init, root);
 		}
 
-		exec(init, root);
+		exec(open, root);
 		return true;
 	}
 
