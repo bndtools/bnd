@@ -80,4 +80,11 @@ public class RepositoryBundleVersion implements IAdaptable, Actionable {
             return ((Actionable) p).tooltip(bundle.getBsn(), version);
         return null;
     }
+
+    public String title(Object... target) throws Exception {
+        RepositoryPlugin p = bundle.getRepo();
+        if (p instanceof Actionable)
+            return ((Actionable) p).title(bundle.getBsn(), version);
+        return null;
+    }
 }

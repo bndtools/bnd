@@ -155,19 +155,25 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     }
 
     public String getText(Object element) {
-        if (element instanceof RepositoryPlugin) {
-            return ((RepositoryPlugin) element).getName();
-        } else if (element instanceof Project) {
-            Project project = (Project) element;
-            return project.getName();
-        } else if (element instanceof ProjectBundle) {
-            return ((ProjectBundle) element).getBsn();
-        } else if (element instanceof RepositoryBundle) {
-            RepositoryBundle bundle = (RepositoryBundle) element;
-            return bundle.getBsn();
-        } else if (element instanceof RepositoryBundleVersion) {
-            RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
-            return bundleVersion.getVersion().toString();
+        try {
+            if (element instanceof Actionable) {
+                return ((Actionable) element).title();
+            } else if (element instanceof RepositoryPlugin) {
+                return ((RepositoryPlugin) element).getName();
+            } else if (element instanceof Project) {
+                Project project = (Project) element;
+                return project.getName();
+            } else if (element instanceof ProjectBundle) {
+                return ((ProjectBundle) element).getBsn();
+            } else if (element instanceof RepositoryBundle) {
+                RepositoryBundle bundle = (RepositoryBundle) element;
+                return bundle.getBsn();
+            } else if (element instanceof RepositoryBundleVersion) {
+                RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
+                return bundleVersion.getVersion().toString();
+            }
+        } catch (Exception e) {
+            // just take the default
         }
         return null;
     }
