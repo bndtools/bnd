@@ -551,45 +551,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return name;
 	}
 
-	public File get(String bsn, String version, Strategy strategy, Map<String,String> properties) throws Exception {
-		if (version == null)
-			version = "0.0.0";
-
-		if (strategy == Strategy.EXACT) {
-			VersionRange vr = new VersionRange(version);
-			if (vr.isRange())
-				return null;
-
-			if (vr.getHigh().getMajor() == Integer.MAX_VALUE)
-				version = "latest";
-
-			File file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".jar");
-			if (file.isFile())
-				return file;
-			file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".lib");
-			if (file.isFile())
-				return file;
-			return null;
-
-		}
-		File[] files = get(bsn, version);
-		if (files == null || files.length == 0)
-			return null;
-
-		if (files.length >= 0) {
-			switch (strategy) {
-				case LOWEST :
-					return files[0];
-				case HIGHEST :
-					return files[files.length - 1];
-				case EXACT :
-					// TODO
-					break;
-			}
-		}
-		return null;
-	}
-
 	public File get(String bsn, Version version, Map<String,String> properties) {
 		File file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".jar");
 		if (file.isFile())
