@@ -23,6 +23,7 @@ public class DownloadBlockerTest extends TestCase {
 			final DownloadBlocker dbb = new DownloadBlocker(null);
 
 			Thread t = new Thread() {
+				@Override
 				public void run() {
 					try {
 						Thread.sleep(1000);
@@ -42,6 +43,7 @@ public class DownloadBlockerTest extends TestCase {
 			final DownloadBlocker dbb = new DownloadBlocker(null);
 
 			Thread t = new Thread() {
+				@Override
 				public void run() {
 					try {
 						Thread.sleep(1000);

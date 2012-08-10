@@ -104,7 +104,6 @@ public class Launcher implements ServiceListener {
 			TimerTask watchdog = new TimerTask() {
 				long	begin	= propertiesFile.lastModified();
 
-				@Override
 				public void run() {
 					if (begin < propertiesFile.lastModified()) {
 						try {
