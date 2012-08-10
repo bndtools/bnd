@@ -86,21 +86,21 @@ public class CalltreeResource extends WriteResource {
 				COMPARATOR);
 
 		ClassDataCollector cd = new ClassDataCollector() {
-			Clazz.MethodDef	source;
+//			Clazz.MethodDef	source;
 
 			// Before a method is parsed
 			@Override
 			public void method(Clazz.MethodDef source) {
-				this.source = source;
+//				this.source = source;
 				xref(using, source, null);
 				xref(usedby, source, null);
 			}
 
 			// For any reference in the previous method.
-			public void reference(Clazz.MethodDef reference) {
-				xref(using, source, reference);
-				xref(usedby, reference, source);
-			}
+//			public void reference(Clazz.MethodDef reference) {
+//				xref(using, source, reference);
+//				xref(usedby, reference, source);
+//			}
 		};
 		for (Clazz clazz : classes) {
 			clazz.parseClassFileWithCollector(cd);
