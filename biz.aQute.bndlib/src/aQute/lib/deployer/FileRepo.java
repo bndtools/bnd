@@ -240,13 +240,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * 
 	 * @param tmpFile
 	 *            source file
-	 * @param options
 	 * @return a File that contains the content of the tmpFile
 	 * @throws Exception
 	 */
-	protected File putArtifact(File tmpFile, PutOptions options) throws Exception {
+	protected File putArtifact(File tmpFile) throws Exception {
 		assert (tmpFile != null);
-		assert (options != null);
 
 		Jar jar = new Jar(tmpFile);
 		try {
@@ -345,7 +343,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				 * file)
 				 */
 				beforePut(tmpFile);
-				File file = putArtifact(tmpFile, options);
+				File file = putArtifact(tmpFile);
 				file.setReadOnly();
 				afterPut(file);
 
