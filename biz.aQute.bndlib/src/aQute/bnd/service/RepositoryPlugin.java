@@ -99,7 +99,8 @@ public interface RepositoryPlugin {
 	 * @param stream
 	 *            The input stream with the artifact
 	 * @param options
-	 *            The put options. See {@link RepositoryPlugin.PutOptions}
+	 *            The put options. See {@link RepositoryPlugin.PutOptions}, can
+	 *            be {@code null}, which will then take the default options like new PutOptions().
 	 * @return The result of the put, never null. See
 	 *         {@link RepositoryPlugin.PutResult}
 	 * @throws Exception

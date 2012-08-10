@@ -25,6 +25,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public static final String	CMD_BEFORE_PUT	= "cmd.before.put";
 	public static final String	CMD_ABORT_PUT	= "cmd.abort.put";
 	public static final String	CMD_SHELL		= "cmd.shell";
+	static final PutOptions		DEFAULTOPTIONS	= new PutOptions();
 
 	String						before;
 	String						refresh;
@@ -246,8 +247,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/* a straight copy of this method lives in LocalIndexedRepo */
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 
+		if (options == null)
+			options = DEFAULTOPTIONS;
+
 		/* both parameters are required */
-		if ((stream == null) || (options == null)) {
+		if ((stream == null)) {
 			throw new IllegalArgumentException("No stream and/or options specified");
 		}
 
