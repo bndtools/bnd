@@ -504,7 +504,6 @@ public class Main extends ReporterAdapter {
 		List<ArtifactData> ads = jpm.getArtifacts();
 		Collections.sort(ads, new Comparator<ArtifactData>() {
 
-			@Override
 			public int compare(ArtifactData a, ArtifactData b) {
 				return a.bsn.compareTo(b.bsn);
 			}

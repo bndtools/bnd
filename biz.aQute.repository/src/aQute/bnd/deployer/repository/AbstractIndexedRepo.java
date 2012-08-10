@@ -39,6 +39,7 @@ import aQute.service.reporter.*;
  * 
  * @author Neil Bartlett
  */
+@SuppressWarnings("synthetic-access")
 public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository {
 
 	public static final String									PROP_NAME						= "name";
