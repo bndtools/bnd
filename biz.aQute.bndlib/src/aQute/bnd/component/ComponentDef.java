@@ -112,7 +112,7 @@ class ComponentDef {
 	}
 	
 	void sortReferences() {
-		Map<String, ReferenceDef> temp = new TreeMap(references);
+		Map<String, ReferenceDef> temp = new TreeMap<String,ReferenceDef>(references);
 		references.clear();
 		references.putAll(temp);
 	}
