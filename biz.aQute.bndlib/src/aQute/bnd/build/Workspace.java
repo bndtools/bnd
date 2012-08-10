@@ -271,11 +271,11 @@ public class Workspace extends Processor {
 		}
 
 		@Override
-		protected void init() throws Exception {
+		protected boolean init() throws Exception {
 			if (lock.tryLock(50, TimeUnit.SECONDS) == false)
 				throw new TimeLimitExceededException("Cached File Repo is locked and can't acquire it");
 			try {
-				if (!inited) {
+				if (super.init()) {
 					inited = true;
 					if (!root.exists() && !root.mkdirs()) {
 						throw new IOException("Could not create cache directory " + root);
@@ -289,7 +289,9 @@ public class Workspace extends Processor {
 					else {
 						error("Couldn't find embedded-repo.jar in bundle ");
 					}
-				}
+					return true;
+				} else
+					return false;
 			}
 			finally {
 				lock.unlock();

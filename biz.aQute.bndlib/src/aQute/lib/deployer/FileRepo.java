@@ -55,15 +55,22 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		this.canWrite = canWrite;
 	}
 
-	protected void init() throws Exception {
+	protected boolean init() throws Exception {
 		if (inited)
-			return;
+			return false;
 
 		inited = true;
-		if (!getRoot().isDirectory()) {
-			getRoot().mkdirs();
+
+		if (!root.isDirectory()) {
+			root.mkdirs();
+			if (!root.isDirectory())
+				throw new IllegalArgumentException("Location cannot be turned into a directory " + root);
+
+			exec(init, root);
 		}
-		exec(init, null);
+
+		exec(init, root);
+		return true;
 	}
 
 	public void setProperties(Map<String,String> map) {
