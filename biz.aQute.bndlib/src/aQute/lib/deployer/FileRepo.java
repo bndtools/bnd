@@ -415,9 +415,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	public boolean refresh() throws Exception {
 		init();
+		exec(refresh, null);
 		if (dirty) {
 			dirty = false;
-			exec(refresh, null);
 			return true;
 		}
 		return false;
