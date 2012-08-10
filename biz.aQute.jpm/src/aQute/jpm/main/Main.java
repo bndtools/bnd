@@ -25,7 +25,6 @@ import aQute.lib.data.*;
 import aQute.lib.getopt.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
-import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 import aQute.libg.reporter.*;
 import aQute.library.cache.*;
