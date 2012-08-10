@@ -413,17 +413,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			
 			try {
 				
-				// TODO we need to lock?
-				/*
-				 * copy the artifact from the (new/digest) stream into a temporary
-				 * file in the root directory of the repository
-				 */
 				IO.copy(dis, tmpFile);
 				
-				/* get the digest if available */
 				byte[] digest = needFetchDigest ? dis.getMessageDigest().digest() : null;
 				
-				/* verify the digest when requested */
 				if (options.digest != null && !Arrays.equals(digest, options.digest)) {
 					throw new IOException("Retrieved artifact digest doesn't match specified digest");
 				}
