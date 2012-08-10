@@ -275,7 +275,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			PutResult result = new PutResult();
 
-			reporter.trace("updating %s ", file.getAbsoluteFile());
+			reporter.trace("updating %s ", file.getAbsolutePath());
 
 			IO.delete(file);
 			IO.rename(tmpFile, file);
