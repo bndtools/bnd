@@ -17,6 +17,9 @@ public interface RepositoryPlugin {
 	 * Options used to steer the put operation
 	 */
 	class PutOptions {
+		public String	BUNDLE	= "application/vnd.osgi.bundle";
+		public String	LIB		= "application/vnd.aQute.lib";
+
 		/**
 		 * The <b>SHA1</b> digest of the artifact to put into the repository.
 		 * When specified the digest of the <b>fetched</b> artifact will be
@@ -25,6 +28,13 @@ public interface RepositoryPlugin {
 		 * specified digest and the calculated digest do not match.
 		 */
 		public byte[]	digest	= null;
+
+		/**
+		 * Specify the mime type of the importing stream. This can be either
+		 * {@link #BUNDLE} or {@link #LIB}. If left open, it is up to the
+		 * repository to guess the content type.
+		 */
+		public String	type;
 	}
 
 	PutOptions	DEFAULTOPTIONS	= new PutOptions();
