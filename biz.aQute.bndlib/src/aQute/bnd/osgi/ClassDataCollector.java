@@ -25,7 +25,6 @@ public class ClassDataCollector {
 
 	public void field(Clazz.FieldDef defined) {}
 
-
 	public void classEnd() throws Exception {}
 
 	public void deprecated() throws Exception {}
@@ -68,15 +67,9 @@ public class ClassDataCollector {
 
 	public void memberEnd() {}
 
-	public void version(int minor, int major) {
-		// TODO Auto-generated method stub
+	public void version(int minor, int major) {}
 
-	}
-
-	public void referenceMethod(int access, TypeRef className, String method, String descriptor) {
-		// TODO Auto-generated method stub
-
-	}
+	public void referenceMethod(int access, TypeRef className, String method, String descriptor) {}
 
 	/**
 	 * A reference to a type from method or field. The modifiers indicate the
@@ -85,8 +78,6 @@ public class ClassDataCollector {
 	 * @param typeRef
 	 * @param modifiers
 	 */
-	public void referTo(TypeRef typeRef, int modifiers) {
-		
-	}
+	public void referTo(TypeRef typeRef, int modifiers) {}
 
 }
