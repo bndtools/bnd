@@ -116,16 +116,19 @@ public class FileRepoTest extends TestCase {
 		FileRepo repo = new FileRepo();
 		File root = new File("tmp");
 		delete(root);
-		root.mkdirs();
 		try {
 			Map<String,String> props = new HashMap<String,String>();
 			props.put(FileRepo.LOCATION, root.getAbsolutePath());
-			props.put(FileRepo.CMD_INIT, "echo init $PATH >>report");
-			props.put(FileRepo.CMD_BEFORE_PUT, "echo before >>report");
-			props.put(FileRepo.CMD_AFTER_PUT, "echo after ${@} >>report");
-			props.put(FileRepo.CMD_ABORT_PUT, "echo abort >>report");
+			props.put(FileRepo.CMD_INIT, "echo init>>report");
+			props.put(FileRepo.CMD_OPEN, "echo open >>report");
+			props.put(FileRepo.CMD_BEFORE_GET, "echo beforeGet ${@} >>report");
+			props.put(FileRepo.CMD_BEFORE_PUT, "echo beforePut >>report");
+			props.put(FileRepo.CMD_AFTER_PUT, "echo afterPut ${@} >>report");
+			props.put(FileRepo.CMD_ABORT_PUT, "echo abortPut >>report");
 			props.put(FileRepo.CMD_REFRESH, "echo refresh >>report");
+			props.put(FileRepo.CMD_CLOSE, "echo close >>report");
 			props.put(FileRepo.CMD_PATH, "/xxx,${@},/yyy");
+			props.put(FileRepo.TRACE, true+"");
 			repo.setProperties(props);
 
 			repo.refresh();
@@ -151,10 +154,11 @@ public class FileRepoTest extends TestCase {
 					in.close();
 				}
 			}
+			repo.close();
 			String s = collect(new File(root, "report"));
 			s = s.replaceAll("\r?\n", "@");
 			System.out.println(s);
-			assertTrue(s.matches("init /xxx.+/yyy@refresh@before@after .*tmp/osgi/osgi-4.0.0.jar@before@abort@"));
+			assertTrue(s.matches("init@open@refresh@beforePut@afterPut .*tmp/osgi/osgi-4.0.0.jar@beforePut@abortPut@close@"));
 		}
 		finally {
 			delete(root);
