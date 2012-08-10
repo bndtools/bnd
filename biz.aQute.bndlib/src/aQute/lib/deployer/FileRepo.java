@@ -16,7 +16,7 @@ import aQute.libg.command.*;
 import aQute.libg.cryptography.*;
 import aQute.service.reporter.*;
 
-public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable {
+public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
 	public final static String	LOCATION		= "location";
 	public final static String	READONLY		= "readonly";
 	public final static String	NAME			= "name";
@@ -599,5 +599,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		catch (Exception e) {
 			return null;
 		}
+	}
+
+	public void close() throws IOException {
+		exec(close, root);
 	}
 }
