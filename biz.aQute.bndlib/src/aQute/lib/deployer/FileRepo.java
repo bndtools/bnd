@@ -636,7 +636,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	public void close() throws IOException {
-		exec(close, root.getAbsoluteFile());
+		if (inited)
+			exec(close, root.getAbsoluteFile());
 	}
 
 	/**
