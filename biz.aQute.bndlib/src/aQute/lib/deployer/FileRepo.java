@@ -190,10 +190,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (!root.isDirectory())
 				throw new IllegalArgumentException("Location cannot be turned into a directory " + root);
 
-			exec(init, root.getAbsoluteFile());
+			exec(init, root.getAbsolutePath());
 		}
 
-		exec(open, root.getAbsoluteFile());
+		open();
 		return true;
 	}
 
@@ -365,7 +365,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				reporter.progress(-1, "updated " + file.getAbsolutePath());
 
 			fireBundleAdded(jar, file);
-			exec(afterPut, file.getAbsoluteFile());
+			afterPut(file.getAbsoluteFile());
 
 			return result;
 		}
@@ -417,8 +417,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
 		dis.on(needFetchDigest);
 
-		exec(beforePut, null);
-
 		File tmpFile = null;
 		try {
 
@@ -429,6 +427,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			 */
 			tmpFile = IO.createTempFile(root, "put", ".jar");
 			IO.copy(dis, tmpFile);
+			beforePut(tmpFile);
 
 			/* get the digest if available */
 			byte[] disDigest = needFetchDigest ? dis.getMessageDigest().digest() : null;
@@ -460,7 +459,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			return r;
 		}
 		catch (Exception e) {
-			exec(abortPut, null);
+			abortPut(tmpFile);
 			throw e;
 		}
 		finally {
@@ -564,7 +563,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @see aQute.bnd.service.RepositoryPlugin#get(java.lang.String,
 	 * aQute.bnd.version.Version, java.util.Map)
 	 */
-	public File get(String bsn, Version version, Map<String,String> properties) {
+	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
+		init();
+		beforeGet(bsn, version);
 		File file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".jar");
 		if (file.isFile())
 			return file;
@@ -627,7 +628,27 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	public void close() throws IOException {
 		if (inited)
-			exec(close, root.getAbsoluteFile());
+			exec(close, root.getAbsolutePath());
+	}
+
+	protected void open() {
+		exec(open, root.getAbsolutePath());
+	}
+
+	protected void beforePut(File tmp) {
+		exec(beforePut, root.getAbsolutePath(), tmp.getAbsolutePath());
+	}
+
+	protected void afterPut(File file) {
+		exec(afterPut, root.getAbsolutePath(), file.getAbsolutePath());
+	}
+
+	protected void abortPut(File tmpFile) {
+		exec(abortPut, root.getAbsolutePath(), tmpFile.getAbsolutePath());
+	}
+
+	protected void beforeGet(String bsn, Version version) {
+		exec(beforeGet, root.getAbsolutePath(), bsn, version);
 	}
 
 	protected void fireBundleAdded(Jar jar, File file) {
@@ -647,25 +668,31 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	/**
 	 * Execute a command. Used in different stages so that the repository can be
-	 * synced.
+	 * synced with external tools.
 	 * 
 	 * @param line
 	 * @param target
 	 */
-	void exec(String line, File target) {
+	void exec(String line, Object... args) {
 		if (line == null)
 			return;
 
 		try {
-			if (target != null)
-				line = line.replaceAll("\\$\\{@\\}", target.getAbsolutePath());
+			if (args != null)
+				for (int i = 0; i < args.length; i++) {
+					if (i == 0)
+						line = line.replaceAll("\\$\\{@\\}", args[i].toString());
+					line = line.replaceAll("\\$\\{" + i + "\\}", args[i].toString());
+				}
 
-			System.out.println("Cmd: " + line);
-			Command cmd = new Command("sh");
-			cmd.inherit();
-			String oldpath = cmd.var("PATH");
+			if (shell == null) {
+				shell = System.getProperty("os.name").toLowerCase().indexOf("win") > 0 ? "cmd.exe" : "sh";
+			}
+			Command cmd = new Command(shell);
 
 			if (path != null) {
+				cmd.inherit();
+				String oldpath = cmd.var("PATH");
 				path = path.replaceAll("\\s*,\\s*", File.pathSeparator);
 				path = path.replaceAll("\\$\\{@\\}", oldpath);
 				cmd.var("PATH", path);
@@ -676,18 +703,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			StringBuilder stderr = new StringBuilder();
 			int result = cmd.execute(line, stdout, stderr);
 			if (result != 0) {
-				if (reporter != null)
-					reporter.error("Command %s failed with %s %s %s", line, result, stdout, stderr);
-				else
-					throw new Exception("Command " + line + " failed " + result + " " + stdout + " " + stderr);
-
+				reporter.error("Command %s failed with %s %s %s", line, result, stdout, stderr);
 			}
 		}
 		catch (Exception e) {
-			if (reporter != null)
-				reporter.exception(e, e.getMessage());
-			else
-				throw new RuntimeException(e);
+			e.printStackTrace();
+			reporter.exception(e, e.getMessage());
 		}
 	}
 
