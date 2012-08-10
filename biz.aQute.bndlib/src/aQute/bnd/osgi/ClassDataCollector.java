@@ -2,27 +2,28 @@ package aQute.bnd.osgi;
 
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
+@SuppressWarnings("unused")
 public class ClassDataCollector {
-	public void classBegin(@SuppressWarnings("unused") int access, @SuppressWarnings("unused") TypeRef name) {}
+	public void classBegin(int access, TypeRef name) {}
 
 	public boolean classStart(int access, TypeRef className) {
 		classBegin(access, className);
 		return true;
 	}
 
-	public void extendsClass(@SuppressWarnings("unused") TypeRef zuper) throws Exception {}
+	public void extendsClass(TypeRef zuper) throws Exception {}
 
-	public void implementsInterfaces(@SuppressWarnings("unused") TypeRef[] interfaces) throws Exception {}
+	public void implementsInterfaces(TypeRef[] interfaces) throws Exception {}
 
-	public void addReference(@SuppressWarnings("unused") TypeRef ref) {}
+	public void addReference(TypeRef ref) {}
 
-	public void annotation(@SuppressWarnings("unused") Annotation annotation) {}
+	public void annotation(Annotation annotation) {}
 
-	public void parameter(@SuppressWarnings("unused") int p) {}
+	public void parameter(int p) {}
 
-	public void method(@SuppressWarnings("unused") Clazz.MethodDef defined) {}
+	public void method(Clazz.MethodDef defined) {}
 
-	public void field(@SuppressWarnings("unused") Clazz.FieldDef defined) {}
+	public void field(Clazz.FieldDef defined) {}
 
 
 	public void classEnd() throws Exception {}
@@ -58,24 +59,21 @@ public class ClassDataCollector {
 	 *            The access flags
 	 * @throws Exception
 	 */
-	public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName, @SuppressWarnings("unused") int innerClassAccessFlags)
+	public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName, int innerClassAccessFlags)
 			throws Exception {}
 
-	public void signature(@SuppressWarnings("unused") String signature) {}
+	public void signature(String signature) {}
 
-	public void constant(@SuppressWarnings("unused") Object object) {}
+	public void constant(Object object) {}
 
 	public void memberEnd() {}
 
-	public void version(@SuppressWarnings("unused") int minor, @SuppressWarnings("unused") int major) {
+	public void version(int minor, int major) {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void referenceMethod(@SuppressWarnings("unused")
-	int access, @SuppressWarnings("unused")
-	TypeRef className, @SuppressWarnings("unused")
-	String method, @SuppressWarnings("unused") String descriptor) {
+	public void referenceMethod(int access, TypeRef className, String method, String descriptor) {
 		// TODO Auto-generated method stub
 
 	}
