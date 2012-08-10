@@ -138,6 +138,19 @@ public interface RepositoryPlugin {
 	PutResult put(InputStream stream, PutOptions options) throws Exception;
 
 	/**
+	 * Return a URL to a matching version of the given bundle.
+	 * 
+	 * @param bsn
+	 *            Bundle-SymbolicName of the searched bundle
+	 * @param version
+	 *            Version requested.
+	 * @return A file to the revision or null if not found
+	 * @throws Exception
+	 *             when anything goes wrong
+	 */
+	File get(String bsn, Version version, Map<String,String> properties) throws Exception;
+
+	/**
 	 * Return a list of bsns that are present in the repository.
 	 * 
 	 * @param regex

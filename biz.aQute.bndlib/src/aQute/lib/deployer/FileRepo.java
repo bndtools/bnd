@@ -436,6 +436,20 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return null;
 	}
 
+	
+	public File get(String bsn, Version version, Map<String,String> properties) {
+		File file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".jar");
+		if (file.isFile())
+			return file;
+		
+		file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".lib");
+		if (file.isFile())
+			return file;
+		
+		return null;
+	}
+	
+	
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
 	}

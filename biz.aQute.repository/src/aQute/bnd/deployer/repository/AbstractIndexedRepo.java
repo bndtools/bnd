@@ -658,4 +658,14 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public String toString() {
 		return getName();
 	}
+
+	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
+		ResourceHandle handle = resolveBundle(bsn,version.toString(), Strategy.EXACT);
+		if ( handle == null)
+			return null;
+
+		return handle.request();
+	}
+
+
 }

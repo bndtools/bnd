@@ -201,4 +201,8 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	public String getLocation() {
 		return root.toString();
 	}
+
+	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
+		return get(bsn, version.toString(), Strategy.EXACT, properties);
+	}
 }
