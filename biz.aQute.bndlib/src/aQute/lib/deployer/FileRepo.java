@@ -286,6 +286,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		
 		File tmpFile = null;
 		try {
+
+			// TODO we need to lock?
 			/*
 			 * copy the artifact from the (new/digest) stream into a temporary
 			 * file in the root directory of the repository
