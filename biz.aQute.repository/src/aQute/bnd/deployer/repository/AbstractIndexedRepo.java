@@ -656,13 +656,30 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return getName();
 	}
 
-	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
-		ResourceHandle handle = resolveBundle(bsn,version.toString(), Strategy.EXACT);
-		if ( handle == null)
+	/**
+	 * This can be optimized to use the download technique with the listeners.
+	 * Now just a quick hack to make it work. I actually think these classes
+	 * should extend FileRepo. TODO 
+	 */
+	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
+			throws Exception {
+		ResourceHandle handle = resolveBundle(bsn, version.toString(), Strategy.EXACT);
+		if (handle == null)
 			return null;
 
-		return handle.request();
-	}
+		File f = handle.request();
+		if (f == null)
+			return null;
 
+		for (DownloadListener l : listeners) {
+			try {
+				l.success(f);
+			}
+			catch (Exception e) {
+				reporter.exception(e, "Download listener for %s", f);
+			}
+		}
+		return f;
+	}
 
 }

@@ -206,7 +206,19 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return root.toString();
 	}
 
-	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
-		return get(bsn, version.toString(), Strategy.EXACT, properties);
+	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener ... listeners) throws Exception {
+		File file = get(bsn, version.toString(), Strategy.EXACT, properties);
+		if ( file == null)
+			return null;
+		
+		for (DownloadListener l : listeners) {
+			try {
+				l.success(file);
+			}
+			catch (Exception e) {
+				reporter.exception(e, "Download listener for %s", file);
+			}
+		}
+		return file;
 	}
 }
