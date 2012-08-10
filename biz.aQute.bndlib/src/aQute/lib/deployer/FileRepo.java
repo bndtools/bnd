@@ -559,6 +559,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return name;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see aQute.bnd.service.RepositoryPlugin#get(java.lang.String,
+	 * aQute.bnd.version.Version, java.util.Map)
+	 */
 	public File get(String bsn, Version version, Map<String,String> properties) {
 		File file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".jar");
 		if (file.isFile())
