@@ -33,8 +33,8 @@ import aQute.service.reporter.*;
  * <li>{@link #CMD_AFTER_PUT} - After the file system has changed, and the put
  * <li>{@link #CMD_BEFORE_GET} - Before the file is gotten</li>
  * <li>{@link #CMD_AFTER_ACTION} - Before the file is gotten</li>
- * <li>{@link #CMD_CLOSE} - When the repo is closed and no more actions will take place</li>
- * was a success</li>
+ * <li>{@link #CMD_CLOSE} - When the repo is closed and no more actions will
+ * take place</li> was a success</li>
  * <li>{@link #CMD_ABORT_PUT} - When the put is aborted.</li>
  * <li>{@link #CMD_CLOSE} - To close the repository.</li>
  * </ul>
@@ -48,13 +48,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * If set, will trace to stdout. Works only if no reporter is set.
 	 */
-	public final static String	TRACE			= "trace";
+	public final static String	TRACE				= "trace";
 
 	/**
 	 * Property name for the location of the repo, must be a valid path name
 	 * using forward slashes (see {@link IO#getFile(String)}.
 	 */
-	public final static String	LOCATION		= "location";
+	public final static String	LOCATION			= "location";
 
 	/**
 	 * Property name for the readonly state of the repository. If no, will
@@ -62,104 +62,125 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * {@link Boolean#parseBoolean(String)}. Read only repositories will not
 	 * accept writes.
 	 */
-	public final static String	READONLY		= "readonly";
+	public final static String	READONLY			= "readonly";
 
 	/**
 	 * Set the name of this repository (optional)
 	 */
-	public final static String	NAME			= "name";
+	public final static String	NAME				= "name";
 
 	/**
 	 * Path property for commands. A comma separated path for directories to be
-	 * searched for command. May contain ${@} which will be replaced by the
+	 * searched for command. May contain $ @} which will be replaced by the
 	 * system path. If this property is not set, the system path is assumed.
 	 */
-	public static final String	CMD_PATH		= "cmd.path";
+	public static final String	CMD_PATH			= "cmd.path";
 
 	/**
 	 * The name ( and path) of the shell to execute the commands. By default
 	 * this is sh and searched in the path.
 	 */
-	public static final String	CMD_SHELL		= "cmd.shell";
+	public static final String	CMD_SHELL			= "cmd.shell";
 
 	/**
 	 * Property for commands. The command only runs when the location does not
-	 * exist.
-	 * </p>
-	 * @param rootFile the root of the repo (directory exists)
+	 * exist. </p>
+	 * 
+	 * @param rootFile
+	 *            the root of the repo (directory exists)
 	 */
-	public static final String	CMD_INIT		= "cmd.init";
+	public static final String	CMD_INIT			= "cmd.init";
 
 	/**
-	 * Property for commands. Command is run before the repo is first used.
-	 * </p>
-	 * @param ${@0} rootFile the root of the repo (directory exists)
+	 * Property for commands. Command is run before the repo is first used. </p>
+	 * 
+	 * @param $
+	 *            {@0} rootFile the root of the repo (directory exists)
 	 */
-	public static final String	CMD_OPEN		= "cmd.open";
+	public static final String	CMD_OPEN			= "cmd.open";
 
 	/**
-	 * Property for commands. The command runs after a put operation.
-	 * </p>
-	 * @param ${@0} the root of the repo (directory exists)
-	 * @param ${@1} the file that was put
-	 * @param ${@2} the hex checksum of the file
+	 * Property for commands. The command runs after a put operation. </p>
+	 * 
+	 * @param $
+	 *            {@0} the root of the repo (directory exists)
+	 * @param $
+	 *            {@1} the file that was put
+	 * @param $
+	 *            {@2} the hex checksum of the file
 	 */
-	public static final String	CMD_AFTER_PUT	= "cmd.after.put";
+	public static final String	CMD_AFTER_PUT		= "cmd.after.put";
 
 	/**
 	 * Property for commands. The command runs when the repository is refreshed.
 	 * </p>
-	 * @param ${@0} the root of the repo (directory exists)
+	 * 
+	 * @param $
+	 *            {@0} the root of the repo (directory exists)
 	 */
-	public static final String	CMD_REFRESH		= "cmd.refresh";
+	public static final String	CMD_REFRESH			= "cmd.refresh";
 
 	/**
-	 * Property for commands. The command runs after the file is put. 
-	 * </p>
-	 * @param ${@0} the root of the repo (directory exists)
-	 * @param ${@1} the path to a temporary file
+	 * Property for commands. The command runs after the file is put. </p>
+	 * 
+	 * @param $
+	 *            {@0} the root of the repo (directory exists)
+	 * @param $
+	 *            {@1} the path to a temporary file
 	 */
-	public static final String	CMD_BEFORE_PUT	= "cmd.before.put";
+	public static final String	CMD_BEFORE_PUT		= "cmd.before.put";
 
 	/**
 	 * Property for commands. The command runs when a put is aborted after file
-	 * changes were made.
-	 * </p>
-	 * @param ${@0} the root of the repo (directory exists)
-	 * @param ${@1} the temporary file that was used (optional)
+	 * changes were made. </p>
+	 * 
+	 * @param $
+	 *            {@0} the root of the repo (directory exists)
+	 * @param $
+	 *            {@1} the temporary file that was used (optional)
 	 */
-	public static final String	CMD_ABORT_PUT	= "cmd.abort.put";
+	public static final String	CMD_ABORT_PUT		= "cmd.abort.put";
 
 	/**
-	 * Property for commands. The command runs after the file is put.
-	 * </p>
-	 * @param ${@0} the root of the repo (directory exists)
+	 * Property for commands. The command runs after the file is put. </p>
+	 * 
+	 * @param $
+	 *            {@0} the root of the repo (directory exists)
 	 */
-	public static final String	CMD_CLOSE		= "cmd.close";
+	public static final String	CMD_CLOSE			= "cmd.close";
 
 	/**
-	 * Property for commands. Will be run after an action has been executed. 
+	 * Property for commands. Will be run after an action has been executed.
 	 * </p>
-	 * @param ${@0} the root of the repo (directory exists)
-	 * @param ${@1} the path to the file that the action was executed on
-	 * @param ${@2} the action executed
+	 * 
+	 * @param $
+	 *            {@0} the root of the repo (directory exists)
+	 * @param $
+	 *            {@1} the path to the file that the action was executed on
+	 * @param $
+	 *            {@2} the action executed
 	 */
-	public static final String	CMD_AFTER_ACTION		= "cmd.after.action";
-	
+	public static final String	CMD_AFTER_ACTION	= "cmd.after.action";
+
 	/**
 	 * Called before a before get.
 	 * 
-	 * @param ${@0} the root of the repo (directory exists)
-	 * @param ${@1} the path to the file that will be returned (might not exist)
-	 * @param ${@2} the bsn
-	 * @param ${@3} the version
+	 * @param $
+	 *            {@0} the root of the repo (directory exists)
+	 * @param $
+	 *            {@1} the path to the file that will be returned (might not
+	 *            exist)
+	 * @param $
+	 *            {@2} the bsn
+	 * @param $
+	 *            {@3} the version
 	 */
-	public static final String	CMD_BEFORE_GET	= "cmd.before.get";
+	public static final String	CMD_BEFORE_GET		= "cmd.before.get";
 
 	/**
 	 * Options used when the options are null
 	 */
-	static final PutOptions		DEFAULTOPTIONS	= new PutOptions();
+	static final PutOptions		DEFAULTOPTIONS		= new PutOptions();
 
 	String						shell;
 	String						path;
@@ -173,11 +194,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	String						close;
 	String						action;
 
-	File[]						EMPTY_FILES		= new File[0];
+	File[]						EMPTY_FILES			= new File[0];
 	protected File				root;
 	Registry					registry;
-	boolean						canWrite		= true;
-	Pattern						REPO_FILE		= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)\\.(jar|lib)");
+	boolean						canWrite			= true;
+	Pattern						REPO_FILE			= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)\\.(jar|lib)");
 	Reporter					reporter;
 	boolean						dirty;
 	String						name;
@@ -506,10 +527,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				return null;
 
 			Map<String,Runnable> actions = new HashMap<String,Runnable>();
-			actions.put("Delete", new Runnable() {
+			actions.put("Delete " + bsn + "-" + status(bsn,version), new Runnable() {
 				public void run() {
 					IO.delete(f);
-					if ( f.getParentFile().list().length == 0)
+					if (f.getParentFile().list().length == 0)
 						IO.delete(f.getParentFile());
 					afterAction(f, "delete");
 				};
@@ -536,8 +557,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		try {
 			String bsn = (String) target[0];
 			Version version = (Version) target[1];
-			File f = get(bsn, version, null);
-			return String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0), SHA1.digest(f).asHex());
+			File f = getLocal(bsn, version);
+			String s = String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0), SHA1
+					.digest(f).asHex());
+			if ( f.getName().endsWith(".lib") && f.isFile()) {
+				s += "\n" + IO.collect(f);
+			}
+			return s;
 
 		}
 		catch (Exception e) {
@@ -545,15 +571,76 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 	}
 
-	private static String[] names = {"bytes", "Kb", "Mb", "Gb"};
+	/*
+	 * (non-Javadoc)
+	 * @see aQute.bnd.service.Actionable#title(java.lang.Object[])
+	 */
+	public String title(Object... target) throws Exception {
+		if (target == null || target.length == 0)
+			return getName();
+
+		if (target.length == 1 && target[0] instanceof String)
+			return (String) target[0];
+
+		if (target.length == 2 && target[0] instanceof String && target[1] instanceof Version) {
+			return status((String) target[0], (Version) target[1]);
+		}
+
+		return null;
+	}
+
+	protected File getLocal(String bsn, Version version) {
+		File dir = new File(bsn);
+
+		File fjar = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".jar");
+		if (fjar.isFile())
+			return fjar;
+
+		File flib = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".lib");
+		if (flib.isFile())
+			return flib;
+
+		return fjar;
+	}
+
+	protected String status(String bsn, Version version) {
+		File file = getLocal(bsn,version);
+		StringBuilder sb = new StringBuilder(version.toString());
+		String del= " [";
+		
+		if ( file.getName().endsWith(".lib") ) {
+			sb.append(del).append("L");
+			del = "";
+		}
+		if ( !file.getName().endsWith(".jar") ) {
+			sb.append(del).append("?");
+			del = "";
+		}
+		if ( !file.isFile() ) {
+			sb.append(del).append("X");
+			del = "";
+		}
+		if ( file.length() == 0 ) {
+			sb.append(del).append("0");
+			del = "";
+		}
+		if ( del.equals(""))
+			sb.append("]");
+		return sb.toString();
+	}
+
+	private static String[]	names	= {
+			"bytes", "Kb", "Mb", "Gb"
+									};
+
 	private Object readable(long length, int n) {
-		if ( length < 0 )
+		if (length < 0)
 			return "<invalid>";
-		
-		if ( length < 1024 || n >= names.length)
+
+		if (length < 1024 || n >= names.length)
 			return length + names[n];
-		
-		return readable(length/1024, n+1);
+
+		return readable(length / 1024, n + 1);
 	}
 
 	public void close() throws IOException {
