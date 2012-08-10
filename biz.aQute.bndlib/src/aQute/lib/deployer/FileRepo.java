@@ -314,7 +314,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			String bsn = jar.getBsn();
 			if (bsn == null)
-				throw new IllegalArgumentException("No Bundle SymbolicName set");
+				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
 
 			String versionString = jar.getVersion();
 			if (versionString == null)
