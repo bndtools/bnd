@@ -119,6 +119,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public static final String	CMD_CLOSE		= "cmd.cose";
 
 	/**
+	 * Called before a beforeGet
+	 */
+	public static final String	CMD_BEFORE_GET	= "cmd.before.get";
+
+	/**
 	 * Options used when the options are null
 	 */
 	static final PutOptions		DEFAULTOPTIONS	= new PutOptions();
@@ -131,6 +136,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	String						beforePut;
 	String						afterPut;
 	String						abortPut;
+	String						beforeGet;
 	String						close;
 
 	File[]						EMPTY_FILES		= new File[0];
@@ -199,6 +205,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		beforePut = map.get(CMD_BEFORE_PUT);
 		abortPut = map.get(CMD_ABORT_PUT);
 		afterPut = map.get(CMD_AFTER_PUT);
+		beforeGet = map.get(CMD_BEFORE_GET);
 		close = map.get(CMD_CLOSE);
 	}
 
