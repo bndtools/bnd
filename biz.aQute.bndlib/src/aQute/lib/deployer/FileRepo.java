@@ -189,7 +189,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			exec(init, root.getAbsolutePath());
 		}
-
 		open();
 		return true;
 	}
@@ -347,7 +346,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				afterPut(file);
 
 				PutResult result = new PutResult();
-				result.artifact = file.toURI();
 
 				/* calculate the digest when requested */
 				if (needPutDigest && (result.artifact != null)) {
@@ -364,7 +362,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 					}
 					throw new IOException("Stored artifact digest doesn't match specified digest");
 				}
-				
+
+				result.artifact = file.toURI();
+
 				return result;
 			}
 			finally {
