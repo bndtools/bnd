@@ -2055,8 +2055,6 @@ public class Project extends Processor {
 			throw new IOException("Could not create directory " + bp);
 		}
 		IO.copy(file, binary);
-
-		refresh();
 	}
 
 	File getPackageInfoFile(String packageName) {
