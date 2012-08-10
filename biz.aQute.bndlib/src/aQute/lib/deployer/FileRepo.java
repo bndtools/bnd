@@ -413,7 +413,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return root;
 	}
 
-	public boolean refresh() {
+	public boolean refresh() throws Exception {
+		init();
 		if (dirty) {
 			dirty = false;
 			exec(refresh, null);
