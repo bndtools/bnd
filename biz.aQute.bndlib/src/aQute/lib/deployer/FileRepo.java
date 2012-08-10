@@ -241,10 +241,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param tmpFile
 	 *            source file
 	 * @param options
-	 * @return
+	 * @return a File that contains the content of the tmpFile
 	 * @throws Exception
 	 */
-	protected PutResult putArtifact(File tmpFile, PutOptions options) throws Exception {
+	protected File putArtifact(File tmpFile, PutOptions options) throws Exception {
 		assert (tmpFile != null);
 		assert (options != null);
 
@@ -273,15 +273,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 			File file = new File(dir, fName);
 
-			PutResult result = new PutResult();
 
 			reporter.trace("updating %s ", file.getAbsolutePath());
 
 			IO.rename(tmpFile, file);
 
 			fireBundleAdded(jar, file);
-
-			result.artifact = file.toURI();
 
 			// TODO like to beforeGet rid of the latest option. This is only
 			// used to have a constant name for the outside users (like ant)
@@ -293,7 +290,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			afterPut(file.getAbsoluteFile());
 
-			return result;
+			return file;
 		}
 		finally {
 			jar.close();
@@ -350,8 +347,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				 * file)
 				 */
 				beforePut(tmpFile);
-				PutResult r = putArtifact(tmpFile, options);
-				
+				File file = putArtifact(tmpFile, options);
+				PutResult r = new PutResult();
+				r.artifact = file.toURI();
+
 				/* calculate the digest when requested */
 				if (needPutDigest && (r.artifact != null)) {
 					MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
