@@ -128,9 +128,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	String						init;
 	String						open;
 	String						refresh;
-	String						before;
-	String						after;
-	String						abort;
+	String						beforePut;
+	String						afterPut;
+	String						abortPut;
 	String						close;
 
 	File[]						EMPTY_FILES		= new File[0];
@@ -196,9 +196,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		init = map.get(CMD_INIT);
 		open = map.get(CMD_OPEN);
 		refresh = map.get(CMD_REFRESH);
-		before = map.get(CMD_BEFORE_PUT);
-		abort = map.get(CMD_ABORT_PUT);
-		after = map.get(CMD_AFTER_PUT);
+		beforePut = map.get(CMD_BEFORE_PUT);
+		abortPut = map.get(CMD_ABORT_PUT);
+		afterPut = map.get(CMD_AFTER_PUT);
 		close = map.get(CMD_CLOSE);
 	}
 
@@ -342,7 +342,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				reporter.progress(-1, "updated " + file.getAbsolutePath());
 
 			fireBundleAdded(jar, file);
-			exec(after, file);
+			exec(afterPut, file);
 
 			return result;
 		}
@@ -394,7 +394,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
 		dis.on(needFetchDigest);
 
-		exec(before, null);
+		exec(beforePut, null);
 
 		File tmpFile = null;
 		try {
@@ -437,7 +437,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			return r;
 		}
 		catch (Exception e) {
-			exec(abort, null);
+			exec(abortPut, null);
 			throw e;
 		}
 		finally {
