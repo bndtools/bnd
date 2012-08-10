@@ -27,7 +27,7 @@ import aQute.libg.sed.*;
  */
 
 public class Project extends Processor {
-
+	
 	final static String			DEFAULT_ACTIONS			= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
 	public final static String	BNDFILE					= "bnd.bnd";
 	public final static String	BNDCNF					= "cnf";
@@ -55,7 +55,7 @@ public class Project extends Processor {
 	boolean						delayRunDependencies	= false;
 	final ProjectMessages		msgs					= ReporterMessages.base(this, ProjectMessages.class);
 
-	public Project(Workspace workspace, @SuppressWarnings("unused") File projectDir, File buildFile) throws Exception {
+	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
 		this.workspace = workspace;
 		setFileMustExist(false);
