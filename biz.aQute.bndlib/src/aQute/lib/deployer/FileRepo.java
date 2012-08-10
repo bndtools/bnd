@@ -308,36 +308,20 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		assert (tmpFile != null);
 		assert (options != null);
 
-		Jar jar = null;
+		Jar jar = new Jar(tmpFile);
 		try {
 			dirty = true;
 
-			jar = new Jar(tmpFile);
-
-			Manifest manifest = jar.getManifest();
-			if (manifest == null)
-				throw new IllegalArgumentException("No manifest in JAR: " + jar);
-
-			String bsn = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_SYMBOLICNAME);
+			String bsn = jar.getBsn();
 			if (bsn == null)
 				throw new IllegalArgumentException("No Bundle SymbolicName set");
 
-			Parameters b = Processor.parseHeader(bsn, null);
-			if (b.size() != 1)
-				throw new IllegalArgumentException("Multiple bsn's specified " + b);
-
-			for (String key : b.keySet()) {
-				bsn = key;
-				if (!Verifier.SYMBOLICNAME.matcher(bsn).matches())
-					throw new IllegalArgumentException("Bundle SymbolicName has wrong format: " + bsn);
-			}
-
-			String versionString = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_VERSION);
-			Version version;
+			String versionString = jar.getVersion();
 			if (versionString == null)
-				version = new Version();
-			else
-				version = new Version(versionString);
+				versionString = "0";
+			else if (!Verifier.isVersion(versionString))
+				throw new IllegalArgumentException("Incorrect version in : " + tmpFile + " " + versionString);
+			Version version = new Version(versionString);
 
 			if (reporter != null)
 				reporter.trace("bsn=%s version=%s", bsn, version);
@@ -370,9 +354,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			return result;
 		}
 		finally {
-			if (jar != null) {
-				jar.close();
-			}
+			jar.close();
 		}
 	}
 
