@@ -346,26 +346,26 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				file.setReadOnly();
 				afterPut(file);
 
-				PutResult r = new PutResult();
-				r.artifact = file.toURI();
+				PutResult result = new PutResult();
+				result.artifact = file.toURI();
 
 				/* calculate the digest when requested */
-				if (needPutDigest && (r.artifact != null)) {
+				if (needPutDigest && (result.artifact != null)) {
 					MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-					IO.copy(new File(r.artifact), sha1);
-					r.digest = sha1.digest();
+					IO.copy(new File(result.artifact), sha1);
+					result.digest = sha1.digest();
 				}
 				
 				/* verify the artifact when requested */
-				if (verifyPut && (r.digest != null) && !MessageDigest.isEqual(digest, r.digest)) {
-					File f = new File(r.artifact);
+				if (verifyPut && (result.digest != null) && !MessageDigest.isEqual(digest, result.digest)) {
+					File f = new File(result.artifact);
 					if (f.exists()) {
 						IO.delete(f);
 					}
 					throw new IOException("Stored artifact digest doesn't match specified digest");
 				}
 				
-				return r;
+				return result;
 			}
 			finally {
 				dis.close();
