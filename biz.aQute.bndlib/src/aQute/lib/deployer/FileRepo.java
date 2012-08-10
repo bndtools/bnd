@@ -42,6 +42,11 @@ import aQute.service.reporter.*;
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
 
 	/**
+	 * If set, will trace to stdout. Works only if no reporter is set.
+	 */
+	public final static String	TRACE			= "trace";
+
+	/**
 	 * Property name for the location of the repo, must be a valid path name
 	 * using forward slashes (see {@link IO#getFile(String)}.
 	 */
@@ -149,6 +154,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	String						name;
 	boolean						inited;
 	boolean						needsInit;
+	boolean						trace;
 
 	public FileRepo() {}
 
@@ -207,6 +213,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		afterPut = map.get(CMD_AFTER_PUT);
 		beforeGet = map.get(CMD_BEFORE_GET);
 		close = map.get(CMD_CLOSE);
+
+		trace = map.get(TRACE) != null && Boolean.parseBoolean(map.get(TRACE));
 	}
 
 	/**
