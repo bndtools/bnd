@@ -182,10 +182,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (!root.isDirectory())
 				throw new IllegalArgumentException("Location cannot be turned into a directory " + root);
 
-			exec(init, root);
+			exec(init, root.getAbsoluteFile());
 		}
 
-		exec(open, root);
+		exec(open, root.getAbsoluteFile());
 		return true;
 	}
 
@@ -345,7 +345,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			PutResult result = new PutResult();
 
 			if (reporter != null)
-				reporter.trace("updating %s ", file.getAbsolutePath());
+				reporter.trace("updating %s ", file.getAbsoluteFile());
 
 			IO.delete(file);
 			IO.rename(tmpFile, file);
@@ -357,7 +357,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				reporter.progress(-1, "updated " + file.getAbsolutePath());
 
 			fireBundleAdded(jar, file);
-			exec(afterPut, file);
+			exec(afterPut, file.getAbsoluteFile());
 
 			return result;
 		}
@@ -628,7 +628,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	public void close() throws IOException {
-		exec(close, root);
+		exec(close, root.getAbsoluteFile());
 	}
 
 	/**
