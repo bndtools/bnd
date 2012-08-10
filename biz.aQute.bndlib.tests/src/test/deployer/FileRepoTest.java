@@ -7,10 +7,17 @@ import java.security.*;
 import java.util.*;
 
 import junit.framework.*;
+
+import org.mockito.*;
+
 import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
+import aQute.bnd.version.*;
 import aQute.lib.deployer.*;
+import aQute.lib.io.*;
+import aQute.libg.cryptography.*;
 
 public class FileRepoTest extends TestCase {
 
@@ -42,11 +49,11 @@ public class FileRepoTest extends TestCase {
 		nonExistentDir.setReadOnly();
 		nonExistentRepo = createRepo(nonExistentDir);
 	}
-	
+
 	@Override
 	protected void tearDown() throws Exception {
-		File nonExistentDir = new File("invalidrepo");		
-		delete(nonExistentDir);		
+		File nonExistentDir = new File("invalidrepo");
+		delete(nonExistentDir);
 	}
 
 	private static FileRepo createRepo(File root) {
@@ -101,6 +108,36 @@ public class FileRepoTest extends TestCase {
 		}
 	}
 
+	public static void testDownloadListenerCallback() throws Exception {
+		File tmp = new File("tmp");
+		try {
+			FileRepo repo = new FileRepo("tmp", tmp, true);
+			File srcBundle = new File("test/test.jar");
+
+			PutResult r = repo.put(IO.stream(new File("test/test.jar")), null);
+
+			assertNotNull(r);
+			assertNotNull(r.artifact);
+			File f = new File(r.artifact); // file repo, so should match
+			SHA1 sha1 = SHA1.digest(srcBundle);
+			sha1.equals(SHA1.digest(f));
+
+			DownloadListener mock = Mockito.mock(DownloadListener.class);
+
+			f = repo.get("test", new Version("0"), null, mock);
+			Mockito.verify(mock).success(f);
+			Mockito.verifyNoMoreInteractions(mock);
+			Mockito.reset(mock);
+
+			f = repo.get("XXXXXXXXXXXXXXXXX", new Version("0"), null, mock);
+			assertNull(f);
+			Mockito.verifyZeroInteractions(mock);
+		}
+		finally {
+			IO.delete(tmp);
+		}
+	}
+
 	public static void testDeployToNonexistentRepoFails() throws Exception {
 		try {
 			nonExistentRepo.put(new BufferedInputStream(new FileInputStream("test/test.jar")),
@@ -119,16 +156,16 @@ public class FileRepoTest extends TestCase {
 		try {
 			Map<String,String> props = new HashMap<String,String>();
 			props.put(FileRepo.LOCATION, root.getAbsolutePath());
-			props.put(FileRepo.CMD_INIT, "echo init>>report");
-			props.put(FileRepo.CMD_OPEN, "echo open >>report");
-			props.put(FileRepo.CMD_BEFORE_GET, "echo beforeGet ${@} >>report");
-			props.put(FileRepo.CMD_BEFORE_PUT, "echo beforePut >>report");
-			props.put(FileRepo.CMD_AFTER_PUT, "echo afterPut ${@} >>report");
-			props.put(FileRepo.CMD_ABORT_PUT, "echo abortPut >>report");
-			props.put(FileRepo.CMD_REFRESH, "echo refresh >>report");
-			props.put(FileRepo.CMD_CLOSE, "echo close >>report");
-			props.put(FileRepo.CMD_PATH, "/xxx,${@},/yyy");
-			props.put(FileRepo.TRACE, true+"");
+			props.put(FileRepo.CMD_INIT, "echo init $0 $1 $2 $3>>report");
+			props.put(FileRepo.CMD_OPEN, "echo open $0 $1 $2 $3 >>report");
+			props.put(FileRepo.CMD_BEFORE_GET, "echo beforeGet $0 $1 $2 $3 >>report");
+			props.put(FileRepo.CMD_BEFORE_PUT, "echo beforePut $0 $1 $2 $3>>report");
+			props.put(FileRepo.CMD_AFTER_PUT, "echo afterPut $0 $1 $2 $3>>report");
+			props.put(FileRepo.CMD_ABORT_PUT, "echo abortPut $0 $1 $2 $3>>report");
+			props.put(FileRepo.CMD_REFRESH, "echo refresh  $0 $1 $2 $3>>report");
+			props.put(FileRepo.CMD_CLOSE, "echo close  $0 $1 $2 $3>>report");
+			props.put(FileRepo.CMD_PATH, "/xxx,$@,/yyy");
+			props.put(FileRepo.TRACE, true + "");
 			repo.setProperties(props);
 
 			repo.refresh();
@@ -147,7 +184,8 @@ public class FileRepoTest extends TestCase {
 				try {
 					repo.put(in, null);
 					fail("expected failure");
-				} catch( Exception e) {
+				}
+				catch (Exception e) {
 					// ignore
 				}
 				finally {
@@ -156,9 +194,21 @@ public class FileRepoTest extends TestCase {
 			}
 			repo.close();
 			String s = collect(new File(root, "report"));
-			s = s.replaceAll("\r?\n", "@");
+			s = s.replaceAll(root.getAbsolutePath(), "@");
+			s = s.replaceAll(File.separator, "/");
 			System.out.println(s);
-			assertTrue(s.matches("init@open@refresh@beforePut@afterPut .*tmp/osgi/osgi-4.0.0.jar@beforePut@abortPut@close@"));
+
+			String parts[] = s.split("\r?\n");
+			assertEquals(8, parts.length);
+			assertEquals(parts[0], "init @");
+			assertEquals(parts[1], "open @");
+			assertEquals(parts[2], "refresh @");
+			assertTrue(parts[3].matches("beforePut @ @/.*"));
+			assertEquals(parts[4],
+					"afterPut @ @/osgi/osgi-4.0.0.jar D37A1C9D5A9D3774F057B5452B7E47B6D1BB12D0");
+			assertTrue(parts[5].matches("beforePut @ @/.*"));
+			assertTrue(parts[6].matches("abortPut @ @/.*"));
+			assertEquals(parts[7], "close @");
 		}
 		finally {
 			delete(root);

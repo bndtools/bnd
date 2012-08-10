@@ -94,20 +94,20 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * Property for commands. Command is run before the repo is first used. </p>
 	 * 
-	 * @param $
-	 *            {@0} rootFile the root of the repo (directory exists)
+	 * @param $0
+	 *            rootFile the root of the repo (directory exists)
 	 */
 	public static final String	CMD_OPEN			= "cmd.open";
 
 	/**
 	 * Property for commands. The command runs after a put operation. </p>
 	 * 
-	 * @param $
-	 *            {@0} the root of the repo (directory exists)
-	 * @param $
-	 *            {@1} the file that was put
-	 * @param $
-	 *            {@2} the hex checksum of the file
+	 * @param $0
+	 *            the root of the repo (directory exists)
+	 * @param $1
+	 *            the file that was put
+	 * @param $2
+	 *            the hex checksum of the file
 	 */
 	public static final String	CMD_AFTER_PUT		= "cmd.after.put";
 
@@ -116,17 +116,17 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * </p>
 	 * 
 	 * @param $
-	 *            {@0} the root of the repo (directory exists)
+	 *            {0} the root of the repo (directory exists)
 	 */
 	public static final String	CMD_REFRESH			= "cmd.refresh";
 
 	/**
 	 * Property for commands. The command runs after the file is put. </p>
 	 * 
-	 * @param $
-	 *            {@0} the root of the repo (directory exists)
-	 * @param $
-	 *            {@1} the path to a temporary file
+	 * @param $0
+	 *            the root of the repo (directory exists)
+	 * @param $1
+	 *            the path to a temporary file
 	 */
 	public static final String	CMD_BEFORE_PUT		= "cmd.before.put";
 
@@ -134,18 +134,18 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Property for commands. The command runs when a put is aborted after file
 	 * changes were made. </p>
 	 * 
-	 * @param $
-	 *            {@0} the root of the repo (directory exists)
-	 * @param $
-	 *            {@1} the temporary file that was used (optional)
+	 * @param $0
+	 *            the root of the repo (directory exists)
+	 * @param $1
+	 *            the temporary file that was used (optional)
 	 */
 	public static final String	CMD_ABORT_PUT		= "cmd.abort.put";
 
 	/**
 	 * Property for commands. The command runs after the file is put. </p>
 	 * 
-	 * @param $
-	 *            {@0} the root of the repo (directory exists)
+	 * @param $0
+	 *            the root of the repo (directory exists)
 	 */
 	public static final String	CMD_CLOSE			= "cmd.close";
 
@@ -153,27 +153,24 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Property for commands. Will be run after an action has been executed.
 	 * </p>
 	 * 
-	 * @param $
-	 *            {@0} the root of the repo (directory exists)
-	 * @param $
-	 *            {@1} the path to the file that the action was executed on
-	 * @param $
-	 *            {@2} the action executed
+	 * @param $0
+	 *            the root of the repo (directory exists)
+	 * @param $1
+	 *            the path to the file that the action was executed on
+	 * @param $2
+	 *            the action executed
 	 */
 	public static final String	CMD_AFTER_ACTION	= "cmd.after.action";
 
 	/**
 	 * Called before a before get.
 	 * 
-	 * @param $
-	 *            {@0} the root of the repo (directory exists)
-	 * @param $
-	 *            {@1} the path to the file that will be returned (might not
-	 *            exist)
-	 * @param $
-	 *            {@2} the bsn
-	 * @param $
-	 *            {@3} the version
+	 * @param $0
+	 *            the root of the repo (directory exists)
+	 * @param $1
+	 *            the bsn
+	 * @param $2
+	 *            the version
 	 */
 	public static final String	CMD_BEFORE_GET		= "cmd.before.get";
 
@@ -290,10 +287,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * 
 	 * @param tmpFile
 	 *            source file
+	 * @param digest 
 	 * @return a File that contains the content of the tmpFile
 	 * @throws Exception
 	 */
-	protected File putArtifact(File tmpFile) throws Exception {
+	protected File putArtifact(File tmpFile, byte[] digest) throws Exception {
 		assert (tmpFile != null);
 
 		Jar jar = new Jar(tmpFile);
@@ -327,6 +325,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			IO.rename(tmpFile, file);
 
 			fireBundleAdded(jar, file);
+			afterPut(file, bsn, version, Hex.toHexString(digest));
 
 			// TODO like to beforeGet rid of the latest option. This is only
 			// used to have a constant name for the outside users (like ant)
@@ -381,9 +380,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				 * file)
 				 */
 				beforePut(tmpFile);
-				File file = putArtifact(tmpFile);
+				File file = putArtifact(tmpFile, digest);
 				file.setReadOnly();
-				afterPut(file, Hex.toHexString(digest));
 
 				PutResult result = new PutResult();
 				result.digest = digest;
@@ -492,17 +490,22 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @see aQute.bnd.service.RepositoryPlugin#get(java.lang.String,
 	 * aQute.bnd.version.Version, java.util.Map)
 	 */
-	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
+	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
+			throws Exception {
 		init();
-		File file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".jar");
-		beforeGet(bsn, version, file);
-		if (file.isFile())
+		beforeGet(bsn, version);
+		File file = getLocal(bsn, version, properties);
+		if (file.exists()) {
+			for (DownloadListener l : listeners) {
+				try {
+					l.success(file);
+				}
+				catch (Exception e) {
+					reporter.exception(e, "Download listener for %s", file);
+				}
+			}
 			return file;
-
-		file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".lib");
-		if (file.isFile())
-			return file;
-
+		}
 		return null;
 	}
 
@@ -527,7 +530,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				return null;
 
 			Map<String,Runnable> actions = new HashMap<String,Runnable>();
-			actions.put("Delete " + bsn + "-" + status(bsn,version), new Runnable() {
+			actions.put("Delete " + bsn + "-" + status(bsn, version), new Runnable() {
 				public void run() {
 					IO.delete(f);
 					if (f.getParentFile().list().length == 0)
@@ -550,6 +553,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * (non-Javadoc)
 	 * @see aQute.bnd.service.Actionable#tooltip(java.lang.Object[])
 	 */
+	@SuppressWarnings("unchecked")
 	public String tooltip(Object... target) throws Exception {
 		if (target == null || target.length == 0)
 			return String.format("%s\n%s", getName(), root);
@@ -557,10 +561,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		try {
 			String bsn = (String) target[0];
 			Version version = (Version) target[1];
-			File f = getLocal(bsn, version);
+			Map<String,String> map = null;
+			if (target.length > 2)
+				map = (Map<String,String>) target[2];
+
+			File f = getLocal(bsn, version, map);
 			String s = String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0), SHA1
 					.digest(f).asHex());
-			if ( f.getName().endsWith(".lib") && f.isFile()) {
+			if (f.getName().endsWith(".lib") && f.isFile()) {
 				s += "\n" + IO.collect(f);
 			}
 			return s;
@@ -589,42 +597,42 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return null;
 	}
 
-	protected File getLocal(String bsn, Version version) {
-		File dir = new File(bsn);
+	protected File getLocal(String bsn, Version version, Map<String,String> properties) {
+		File dir = new File(root, bsn);
 
 		File fjar = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".jar");
 		if (fjar.isFile())
-			return fjar;
+			return fjar.getAbsoluteFile();
 
 		File flib = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".lib");
 		if (flib.isFile())
-			return flib;
+			return flib.getAbsoluteFile();
 
-		return fjar;
+		return fjar.getAbsoluteFile();
 	}
 
 	protected String status(String bsn, Version version) {
-		File file = getLocal(bsn,version);
+		File file = getLocal(bsn, version, null);
 		StringBuilder sb = new StringBuilder(version.toString());
-		String del= " [";
-		
-		if ( file.getName().endsWith(".lib") ) {
+		String del = " [";
+
+		if (file.getName().endsWith(".lib")) {
 			sb.append(del).append("L");
 			del = "";
 		}
-		if ( !file.getName().endsWith(".jar") ) {
+		if (!file.getName().endsWith(".jar")) {
 			sb.append(del).append("?");
 			del = "";
 		}
-		if ( !file.isFile() ) {
+		if (!file.isFile()) {
 			sb.append(del).append("X");
 			del = "";
 		}
-		if ( file.length() == 0 ) {
+		if (file.length() == 0) {
 			sb.append(del).append("0");
 			del = "";
 		}
-		if ( del.equals(""))
+		if (del.equals(""))
 			sb.append("]");
 		return sb.toString();
 	}
@@ -656,7 +664,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		exec(beforePut, root.getAbsolutePath(), tmp.getAbsolutePath());
 	}
 
-	protected void afterPut(File file, String sha) {
+	protected void afterPut(File file, String bsn, Version version, String sha) {
 		exec(afterPut, root.getAbsolutePath(), file.getAbsolutePath(), sha);
 	}
 
@@ -664,8 +672,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		exec(abortPut, root.getAbsolutePath(), tmpFile.getAbsolutePath());
 	}
 
-	protected void beforeGet(String bsn, Version version, File file) {
-		exec(beforeGet, root.getAbsolutePath(), file.getAbsolutePath(), bsn, version);
+	protected void beforeGet(String bsn, Version version) {
+		exec(beforeGet, root.getAbsolutePath(), bsn, version);
 	}
 
 	protected void fireBundleAdded(Jar jar, File file) {
@@ -698,8 +706,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (args != null)
 				for (int i = 0; i < args.length; i++) {
 					if (i == 0)
-						line = line.replaceAll("\\$\\{@\\}", args[i].toString());
-					line = line.replaceAll("\\$\\{" + i + "\\}", args[i].toString());
+						line = line.replaceAll("\\$\\{@\\}", args[0].toString());
+					line = line.replaceAll("\\$" + i, args[i].toString());
 				}
 
 			if (shell == null) {

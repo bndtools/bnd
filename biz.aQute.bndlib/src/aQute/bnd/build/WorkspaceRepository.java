@@ -9,7 +9,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 
-public class WorkspaceRepository implements RepositoryPlugin {
+public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 	private final Workspace	workspace;
 
 	public WorkspaceRepository(Workspace workspace) {
@@ -152,15 +152,42 @@ public class WorkspaceRepository implements RepositoryPlugin {
 	}
 
 	public String getName() {
-		return "Workspace";
+		return "Workspace " + workspace.getBase().getName();
 	}
 
 	public String getLocation() {
-		return "Workspace";
+		return workspace.getBase().getAbsolutePath();
 	}
 
-	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
-		return get(bsn, version.toString(), Strategy.EXACT, properties);
+	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener ... listeners) throws Exception {
+		File file = get(bsn, version.toString(), Strategy.EXACT, properties);
+		if ( file == null)
+			return null;
+		for (DownloadListener l : listeners) {
+			try {
+				l.success(file);
+			}
+			catch (Exception e) {
+				workspace.exception(e, "Workspace repo listener callback for %s" ,file);
+			}
+		}
+		return file;
+	}
+
+	
+	public Map<String,Runnable> actions(Object... target) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String tooltip(Object... target) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String title(Object... target) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

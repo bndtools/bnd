@@ -90,17 +90,79 @@ public interface RepositoryPlugin {
 	PutResult put(InputStream stream, PutOptions options) throws Exception;
 
 	/**
+	 * The caller can specify any number of DownloadListener objects that are
+	 * called back when a download is finished (potentially before the get
+	 * method has returned).
+	 */
+
+	interface DownloadListener {
+		/**
+		 * Called when the file is successfully downloaded from a remote
+		 * repository.
+		 * 
+		 * @param file
+		 *            The file that was downloaded
+		 * @throws Exception
+		 *             , are logged and ignored
+		 */
+		void success(File file) throws Exception;
+
+		/**
+		 * Called when the file could not be downloaded from a remote
+		 * repository.
+		 * 
+		 * @param file
+		 *            The file that was intended to be downloaded.
+		 * @throws Exception
+		 *             , are logged and ignored
+		 */
+		void failure(File file, String reason) throws Exception;
+
+		/**
+		 * Can be called back regularly before success/failure but never after.
+		 * Indicates how far the download has progressed in percents. Since
+		 * downloads can be restarted, it is possible that the percentage
+		 * decreases.
+		 * 
+		 * @param file
+		 *            The file that was intended to be downloaded
+		 * @param percentage
+		 *            Percentage of file downloaded (can go down)
+		 * @return true if the download should continue, fails if it should be
+		 *         canceled (and fail)
+		 * @throws Exception
+		 *             , are logged and ignored
+		 */
+		boolean progress(File file, int percentage) throws Exception;
+	}
+
+	/**
 	 * Return a URL to a matching version of the given bundle.
+	 * <p/>
+	 * If download listeners are specified then the returned file is not
+	 * guaranteed to exist before a download listener is notified of success or
+	 * failure. The callback can happen before the method has returned. If the
+	 * returned file is null then download listeners are not called back.
+	 * <p/>
+	 * The intention of the Download Listeners is to allow a caller to obtain
+	 * references to files that do not yet exist but are to be downloaded. If
+	 * the downloads were done synchronously in the call, then no overlap of
+	 * downloads could take place.
 	 * 
 	 * @param bsn
 	 *            Bundle-SymbolicName of the searched bundle
 	 * @param version
-	 *            Version requested.
+	 *            Version requested
+	 * @param listeners
+	 *            Zero or more download listener that will be notified of the
+	 *            outcome.
 	 * @return A file to the revision or null if not found
 	 * @throws Exception
-	 *             when anything goes wrong
+	 *             when anything goes wrong, in this case no listeners will be
+	 *             called back.
 	 */
-	File get(String bsn, Version version, Map<String,String> properties) throws Exception;
+	File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
+			throws Exception;
 
 	/**
 	 * Answer if this repository can be used to store files.
