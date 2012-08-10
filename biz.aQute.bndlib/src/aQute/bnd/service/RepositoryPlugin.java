@@ -127,7 +127,10 @@ public interface RepositoryPlugin {
 	 *         null is returned when no files with the given bsn ould be found.
 	 * @throws Exception
 	 *             when anything goes wrong
+	 * @deprecated because bnd only uses {@link #get(String, Version, Map)}.
+	 *             Will be removed in a future revision
 	 */
+	@Deprecated
 	File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception;
 
 	/**
