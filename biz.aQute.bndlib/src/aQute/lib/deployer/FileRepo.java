@@ -280,11 +280,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			IO.delete(file);
 			IO.rename(tmpFile, file);
 
+			fireBundleAdded(jar, file);
+
 			result.artifact = file.toURI();
 
 			reporter.progress(-1, "updated " + file.getAbsolutePath());
 
-			fireBundleAdded(jar, file);
 			afterPut(file.getAbsoluteFile());
 
 			return result;
