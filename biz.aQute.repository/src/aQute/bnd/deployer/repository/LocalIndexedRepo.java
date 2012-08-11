@@ -201,7 +201,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		}
 	}
 
-	protected PutResult putArtifact(File tmpFile, PutOptions options) throws Exception {
+	protected PutResult putArtifact(File tmpFile) throws Exception {
 		assert (tmpFile != null);
 		assert (tmpFile.isFile());
 
@@ -300,7 +300,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			}
 
 			/* put the artifact into the repository (from the temporary file) */
-			PutResult result = putArtifact(tmpFile, options);
+			PutResult result = putArtifact(tmpFile);
 
 			/* always calculate the digest */
 			MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
