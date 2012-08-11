@@ -265,10 +265,12 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			throw new IOException("Repository is read-only");
 		}
 
+		if (options == null)
+			options = DEFAULTOPTIONS;
+
 		/* both parameters are required */
-		if ((stream == null) || (options == null)) {
+		if (stream == null)
 			throw new IllegalArgumentException("No stream and/or options specified");
-		}
 
 		/* the root directory of the repository has to be a directory */
 		if (!storageDir.isDirectory()) {
