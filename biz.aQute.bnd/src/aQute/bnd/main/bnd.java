@@ -26,7 +26,6 @@ import aQute.bnd.main.BaselineCommands.baseLineOptions;
 import aQute.bnd.main.BaselineCommands.schemaOptions;
 import aQute.bnd.main.DiffCommand.diffOptions;
 import aQute.bnd.main.RepoCommand.repoOptions;
-import aQute.bnd.main.bnd.hashOptions.Alg;
 import aQute.bnd.maven.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.Def;
@@ -2786,6 +2785,10 @@ public class bnd extends Processor {
 		}
 	}
 
+	enum Alg {
+		SHA1, MD5
+	};
+
 	/**
 	 * hash a file
 	 * 
@@ -2795,9 +2798,6 @@ public class bnd extends Processor {
 	@Description("Hashes a number of files")
 	@Arguments(arg = "file...")
 	interface hashOptions extends Options {
-		enum Alg {
-			SHA1, MD5
-		};
 
 		@Description("Show hex output (default)")
 		boolean hex();
