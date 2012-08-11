@@ -24,18 +24,7 @@ public interface RepositoryPlugin {
 		 * the artifact into the repository. </p> An exception is thrown if the
 		 * specified digest and the calculated digest do not match.
 		 */
-		public byte[]	digest				= null;
-
-		/**
-		 * Allow the implementation to change the artifact.<br/>
-		 * <br/>
-		 * When set to true the implementation is allowed to change the artifact
-		 * when putting it into the repository.<br/>
-		 * <br/>
-		 * An exception is thrown when set to false and the implementation can't
-		 * put the artifact into the repository without changing it.
-		 */
-		public boolean	allowArtifactChange	= false;
+		public byte[]	digest	= null;
 	}
 
 	PutOptions	DEFAULTOPTIONS	= new PutOptions();
@@ -45,11 +34,11 @@ public interface RepositoryPlugin {
 	 */
 	class PutResult {
 		/**
-		 * The artifact as it was put in the repository.<br/>
+		 * A (potentially public) uri to the revision as it was put in the
+		 * repository.<br/>
 		 * <br/>
-		 * This can be a URI to the artifact (when it was put into the
-		 * repository), or null when the artifact was not put into the
-		 * repository (for example because it was already in the repository).
+		 * This can be a URI to the given artifact (when it was put into the
+		 * repository). This does not have to be a File URI!
 		 */
 		public URI		artifact	= null;
 
@@ -57,8 +46,8 @@ public interface RepositoryPlugin {
 		 * The <b>SHA1</b> digest of the artifact as it was put into the
 		 * repository.<br/>
 		 * <br/>
-		 * This will be null when {@link PutOptions#generateDigest} was null, or
-		 * when {@link #artifact} is null.
+		 * This can be null and it can differ from the input digest if the
+		 * repository rewrote the stream for optimization reason. If the
 		 */
 		public byte[]	digest		= null;
 	}
