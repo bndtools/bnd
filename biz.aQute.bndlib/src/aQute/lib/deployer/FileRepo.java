@@ -365,7 +365,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				beforePut(tmpFile);
 				File file = putArtifact(tmpFile);
 				file.setReadOnly();
-				afterPut(file, Hex.toHexString(digest));
 
 				PutResult result = new PutResult();
 
@@ -377,11 +376,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				/* verify the artifact when requested */
 				if (verifyPut && (result.digest != null) && !MessageDigest.isEqual(digest, result.digest)) {
 					File f = new File(result.artifact);
+					abortPut(f);
 					if (f.exists()) {
 						IO.delete(f);
 					}
 					throw new IOException("Stored artifact digest doesn't match specified digest");
 				}
+
+				afterPut(file, Hex.toHexString(digest));
 
 				result.artifact = file.toURI();
 
