@@ -34,7 +34,7 @@ public class DescriptionRightsPart extends SectionPart implements PropertyChange
     private final Set<String> dirtySet = new HashSet<String>();
     private BndEditModel model;
     private final Text bundleCopyright;
-    private final Text bundleLicense;
+    //    private final Text bundleLicense;
     private final ModificationLock lock = new ModificationLock();
 
     public DescriptionRightsPart(Composite parent, FormToolkit toolkit, int style) {
@@ -57,18 +57,18 @@ public class DescriptionRightsPart extends SectionPart implements PropertyChange
             }
         });
         // BUNDLE_LICENSE
-        toolkit.createLabel(composite, "License:");
-        bundleLicense = toolkit.createText(composite, "", SWT.BORDER);
-        ToolTips.setupMessageAndToolTipFromSyntax(bundleLicense, Constants.BUNDLE_LICENSE);
-        bundleLicense.addModifyListener(new ModifyListener() {
-            public void modifyText(ModifyEvent e) {
-                lock.ifNotModifying(new Runnable() {
-                    public void run() {
-                        addDirtyProperty(Constants.BUNDLE_LICENSE);
-                    }
-                });
-            }
-        });
+        //        toolkit.createLabel(composite, "License:");
+        //        bundleLicense = toolkit.createText(composite, "", SWT.BORDER);
+        //        ToolTips.setupMessageAndToolTipFromSyntax(bundleLicense, Constants.BUNDLE_LICENSE);
+        //        bundleLicense.addModifyListener(new ModifyListener() {
+        //            public void modifyText(ModifyEvent e) {
+        //                lock.ifNotModifying(new Runnable() {
+        //                    public void run() {
+        //                        addDirtyProperty(Constants.BUNDLE_LICENSE);
+        //                    }
+        //                });
+        //            }
+        //        });
         // Layout
         GridLayout layout = new GridLayout(2, false);
         layout.horizontalSpacing = 10;
@@ -77,9 +77,9 @@ public class DescriptionRightsPart extends SectionPart implements PropertyChange
         gd = new GridData(SWT.FILL, SWT.TOP, true, false);
         gd.horizontalIndent = 5;
         bundleCopyright.setLayoutData(gd);
-        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-        gd.horizontalIndent = 5;
-        bundleLicense.setLayoutData(gd);
+        //        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+        //        gd.horizontalIndent = 5;
+        //        bundleLicense.setLayoutData(gd);
         editablePropertySet = new HashSet<String>();
         for (String prop : EDITABLE_PROPERTIES) {
             editablePropertySet.add(prop);
@@ -116,12 +116,12 @@ public class DescriptionRightsPart extends SectionPart implements PropertyChange
                     name = null;
                 model.setBundleCopyright(name);
             }
-            if (dirtySet.contains(Constants.BUNDLE_LICENSE)) {
-                String name = bundleLicense.getText();
-                if (name != null && name.length() == 0)
-                    name = null;
-                // FIXME model.setBundleLicense(name);
-            }
+            //            if (dirtySet.contains(Constants.BUNDLE_LICENSE)) {
+            //                String name = bundleLicense.getText();
+            //                if (name != null && name.length() == 0)
+            //                    name = null;
+            //                model.setBundleLicense(name);
+            //            }
         } finally {
             // Restore property change listening
             model.addPropertyChangeListener(this);
@@ -137,8 +137,8 @@ public class DescriptionRightsPart extends SectionPart implements PropertyChange
             public void run() {
                 String bundleCR = model.getBundleCopyright();
                 bundleCopyright.setText(bundleCR != null ? bundleCR : ""); //$NON-NLS-1$
-                String bundleLI = null; // FIXME model.getBundleLicense();
-                bundleLicense.setText(bundleLI != null ? bundleLI : ""); //$NON-NLS-1$
+                //                String bundleLI = null; // FIXME model.getBundleLicense();
+                //                bundleLicense.setText(bundleLI != null ? bundleLI : ""); //$NON-NLS-1$
             }
         });
         dirtySet.clear();

@@ -60,7 +60,7 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
     private BndEditModel model;
     private final Text bundleName;
     private final Text bundleDescription;
-    private final Text bundleCategory;
+    //    private final Text bundleCategory;
     private final ModificationLock lock = new ModificationLock();
 
     public DescriptionBundlePart(Composite parent, FormToolkit toolkit, int style) {
@@ -96,18 +96,18 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
             }
         });
         // BUNDLE_CATEGORY
-        toolkit.createLabel(composite, "Category:");
-        bundleCategory = toolkit.createText(composite, "", SWT.BORDER);
-        ToolTips.setupMessageAndToolTipFromSyntax(bundleCategory, Constants.BUNDLE_CATEGORY);
-        bundleCategory.addModifyListener(new ModifyListener() {
-            public void modifyText(ModifyEvent e) {
-                lock.ifNotModifying(new Runnable() {
-                    public void run() {
-                        addDirtyProperty(Constants.BUNDLE_CATEGORY);
-                    }
-                });
-            }
-        });
+        //        toolkit.createLabel(composite, "Category:");
+        //        bundleCategory = toolkit.createText(composite, "", SWT.BORDER);
+        //        ToolTips.setupMessageAndToolTipFromSyntax(bundleCategory, Constants.BUNDLE_CATEGORY);
+        //        bundleCategory.addModifyListener(new ModifyListener() {
+        //            public void modifyText(ModifyEvent e) {
+        //                lock.ifNotModifying(new Runnable() {
+        //                    public void run() {
+        //                        addDirtyProperty(Constants.BUNDLE_CATEGORY);
+        //                    }
+        //                });
+        //            }
+        //        });
         // Layout
         GridLayout layout = new GridLayout(2, false);
         layout.horizontalSpacing = 10;
@@ -120,9 +120,9 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
         gd.horizontalIndent = 5;
         gd.heightHint = 150;
         bundleDescription.setLayoutData(gd);
-        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-        gd.horizontalIndent = 5;
-        bundleCategory.setLayoutData(gd);
+        //        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
+        //        gd.horizontalIndent = 5;
+        //        bundleCategory.setLayoutData(gd);
         editablePropertySet = new HashSet<String>();
         for (String prop : EDITABLE_PROPERTIES) {
             editablePropertySet.add(prop);
@@ -165,12 +165,12 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
                     name = null;
                 model.setBundleDescription(name);
             }
-            if (dirtySet.contains(Constants.BUNDLE_CATEGORY)) {
-                String name = bundleCategory.getText();
-                if (name != null && name.length() == 0)
-                    name = null;
-                // FIXME model.setBundleCategory(name);
-            }
+            //            if (dirtySet.contains(Constants.BUNDLE_CATEGORY)) {
+            //                String name = bundleCategory.getText();
+            //                if (name != null && name.length() == 0)
+            //                    name = null;
+            //                model.setBundleCategory(name);
+            //            }
         } finally {
             // Restore property change listening
             model.addPropertyChangeListener(this);
@@ -188,8 +188,8 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
                 bundleName.setText(bundleNm != null ? bundleNm : ""); //$NON-NLS-1$
                 String bundleDescr = model.getBundleDescription();
                 bundleDescription.setText(bundleDescr != null ? bundleDescr : ""); //$NON-NLS-1$
-                String bundleCat = null;// FIXME model.getBundleCategory();
-                bundleCategory.setText(bundleCat != null ? bundleCat : ""); //$NON-NLS-1$
+                //                String bundleCat = null;// FIXME model.getBundleCategory();
+                //                bundleCategory.setText(bundleCat != null ? bundleCat : ""); //$NON-NLS-1$
             }
         });
         dirtySet.clear();
