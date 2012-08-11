@@ -21,7 +21,7 @@ import bndtools.Plugin;
  */
 public abstract class FilteredViewPart extends ViewPart {
 
-    private final FilterPanelPart filterPanel = new FilterPanelPart();
+    private final FilterPanelPart filterPanel = new FilterPanelPart(Plugin.getDefault().getScheduler());
 
     private Action filterAction;
 

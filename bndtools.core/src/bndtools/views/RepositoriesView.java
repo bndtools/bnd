@@ -68,7 +68,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
     private static final ILogger logger = Logger.getLogger();
 
-    private final FilterPanelPart filterPart = new FilterPanelPart();
+    private final FilterPanelPart filterPart = new FilterPanelPart(Plugin.getDefault().getScheduler());
     private TreeViewer viewer;
 
     private Action collapseAllAction;

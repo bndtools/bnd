@@ -2,6 +2,7 @@ package org.bndtools.core.utils.swt;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -20,12 +21,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import bndtools.Plugin;
-
 public class FilterPanelPart {
 
     private static final String PROP_FILTER = "filter";
     private static final long SEARCH_DELAY = 1000;
+
+    private final ScheduledExecutorService scheduler;
 
     private String filter;
 
@@ -50,6 +51,10 @@ public class FilterPanelPart {
         }
     };
     private ScheduledFuture< ? > scheduledFilterUpdate = null;
+
+    public FilterPanelPart(ScheduledExecutorService scheduler) {
+        this.scheduler = scheduler;
+    }
 
     public Control createControl(Composite parent) {
         return createControl(parent, 0, 0);
@@ -95,7 +100,7 @@ public class FilterPanelPart {
                     scheduledFilterLock.lock();
                     if (scheduledFilterUpdate != null)
                         scheduledFilterUpdate.cancel(true);
-                    scheduledFilterUpdate = Plugin.getDefault().getScheduler().schedule(updateFilterTask, SEARCH_DELAY, TimeUnit.MILLISECONDS);
+                    scheduledFilterUpdate = scheduler.schedule(updateFilterTask, SEARCH_DELAY, TimeUnit.MILLISECONDS);
                 } finally {
                     scheduledFilterLock.unlock();
                 }
