@@ -140,7 +140,7 @@ public interface RepositoryPlugin {
 	 * @throws Exception
 	 */
 
-	List<Version> versions(String bsn) throws Exception;
+	SortedSet<Version> versions(String bsn) throws Exception;
 
 	/**
 	 * @return The name of the repository

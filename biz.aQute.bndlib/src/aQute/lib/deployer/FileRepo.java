@@ -9,6 +9,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.lib.collections.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.libg.command.*;
@@ -441,7 +442,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return result;
 	}
 
-	public List<Version> versions(String bsn) throws Exception {
+	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
 		File dir = new File(root, bsn);
 		if (dir.isDirectory()) {
@@ -456,9 +457,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 					list.add(new Version(version));
 				}
 			}
-			return list;
+			return new SortedList<Version>(list);
 		}
-		return null;
+		return SortedList.empty();
 	}
 
 	@Override

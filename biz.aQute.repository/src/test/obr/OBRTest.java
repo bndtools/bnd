@@ -158,11 +158,11 @@ public class OBRTest extends TestCase {
 	}
 
 	public static void testVersions() throws Exception {
-		List<Version> result = obr.versions("name.njbartlett.osgi.emf.minimal");
+		SortedSet<Version> result = obr.versions("name.njbartlett.osgi.emf.minimal");
 		assertEquals(2, result.size());
 
-		assertEquals(new Version("2.6.1.v20100914-1218"), result.get(0));
-		assertEquals(new Version("2.7.0.201104130744"), result.get(1));
+		assertEquals(new Version("2.6.1.v20100914-1218"), result.first());
+		assertEquals(new Version("2.7.0.201104130744"), result.last());
 	}
 
 	public static void testName() throws MalformedURLException {

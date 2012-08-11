@@ -7,6 +7,7 @@ import java.util.regex.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.lib.collections.*;
 
 public class WorkspaceRepository implements RepositoryPlugin {
 	private final Workspace	workspace;
@@ -119,7 +120,7 @@ public class WorkspaceRepository implements RepositoryPlugin {
 		return names;
 	}
 
-	public List<Version> versions(String bsn) throws Exception {
+	public SortedSet<Version> versions(String bsn) throws Exception {
 		List<Version> versions = new ArrayList<Version>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
@@ -134,7 +135,10 @@ public class WorkspaceRepository implements RepositoryPlugin {
 			}
 		}
 
-		return versions;
+		if ( versions.isEmpty())
+			return SortedList.empty();
+		
+		return new SortedList<Version>(versions);
 	}
 
 	public String getName() {

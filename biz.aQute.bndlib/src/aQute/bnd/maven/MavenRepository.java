@@ -7,6 +7,7 @@ import java.util.regex.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.lib.collections.*;
 import aQute.service.reporter.*;
 
 public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath {
@@ -117,7 +118,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		throw new UnsupportedOperationException("Maven does not support the put command");
 	}
 
-	public List<Version> versions(String bsn) throws Exception {
+	public SortedSet<Version> versions(String bsn) throws Exception {
 
 		File files[] = get(bsn, null);
 		List<Version> versions = new ArrayList<Version>();
@@ -127,7 +128,10 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 			Version v = new Version(version);
 			versions.add(v);
 		}
-		return versions;
+		if ( versions.isEmpty())
+			return SortedList.empty();
+		
+		return new SortedList<Version>(versions);
 	}
 
 	public void setProperties(Map<String,String> map) {

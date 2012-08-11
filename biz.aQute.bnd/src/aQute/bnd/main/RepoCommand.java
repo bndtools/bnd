@@ -159,7 +159,7 @@ public class RepoCommand {
 			Set<Version> versions = new TreeSet<Version>();
 			for (RepositoryPlugin repo : repos) {
 				if (from.matches(repo.getName())) {
-					List<Version> result = repo.versions(bsn);
+					SortedSet<Version> result = repo.versions(bsn);
 					if (result != null)
 						versions.addAll(result);
 				}
@@ -208,7 +208,7 @@ public class RepoCommand {
 
 		for (RepositoryPlugin repo : repos) {
 			if (from.matches(repo.getName())) {
-				List<Version> versions = repo.versions(bsn);
+				SortedSet<Version> versions = repo.versions(bsn);
 				if (versions != null)
 					for (Version v : versions) {
 						if (r.includes(v))
