@@ -8,7 +8,7 @@ import aQute.bnd.version.*;
 
 public class FileRepo {
 	File	root;
-	Pattern	REPO_FILE	= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
+	Pattern	REPO_FILE	= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)\\.(jar|lib)");
 
 	public FileRepo(File root) {
 		this.root = root;
