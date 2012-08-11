@@ -136,6 +136,15 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public static final String	CMD_CLOSE		= "cmd.close";
 
 	/**
+	 * Property for commands. Will be run after an action has been executed. 
+	 * </p>
+	 * @param ${@0} the root of the repo (directory exists)
+	 * @param ${@1} the path to the file that the action was executed on
+	 * @param ${@2} the action executed
+	 */
+	public static final String	CMD_AFTER_ACTION		= "cmd.after.action";
+	
+	/**
 	 * Called before a before get.
 	 * 
 	 * @param ${@0} the root of the repo (directory exists)
@@ -160,6 +169,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	String						abortPut;
 	String						beforeGet;
 	String						close;
+	String						action;
 
 	File[]						EMPTY_FILES		= new File[0];
 	protected File				root;
@@ -235,6 +245,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		afterPut = map.get(CMD_AFTER_PUT);
 		beforeGet = map.get(CMD_BEFORE_GET);
 		close = map.get(CMD_CLOSE);
+		action = map.get(CMD_AFTER_ACTION);
 
 		trace = map.get(TRACE) != null && Boolean.parseBoolean(map.get(TRACE));
 	}
