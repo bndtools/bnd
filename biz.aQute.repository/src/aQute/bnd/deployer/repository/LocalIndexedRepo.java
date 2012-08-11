@@ -17,7 +17,7 @@ import aQute.lib.io.*;
 
 public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant {
 
-	private static final String	CACHE_PATH	= ".cache";
+	private static final String			CACHE_PATH				= ".cache";
 	public static final String			PROP_LOCAL_DIR			= "local";
 	public static final String			PROP_READONLY			= "readonly";
 	public static final String			PROP_PRETTY				= "pretty";
@@ -32,7 +32,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	private File						storageDir;
 
 	// @GuardedBy("newFilesInCoordination")
-	private final List<URI>	newFilesInCoordination	= new LinkedList<URI>();
+	private final List<URI>				newFilesInCoordination	= new LinkedList<URI>();
 
 	@Override
 	public synchronized void setProperties(Map<String,String> map) {
@@ -43,12 +43,12 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		if (localDirPath == null)
 			throw new IllegalArgumentException(String.format("Attribute '%s' must be set on %s plugin.",
 					PROP_LOCAL_DIR, getClass().getName()));
-		
+
 		storageDir = new File(localDirPath);
 		if (storageDir.exists() && !storageDir.isDirectory())
 			throw new IllegalArgumentException(String.format("Local path '%s' exists and is not a directory.",
 					localDirPath));
-		
+
 		readOnly = Boolean.parseBoolean(map.get(PROP_READONLY));
 		pretty = Boolean.parseBoolean(map.get(PROP_PRETTY));
 		overwrite = map.get(PROP_OVERWRITE) == null ? true : Boolean.parseBoolean(map.get(PROP_OVERWRITE));
@@ -206,9 +206,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 		init();
 
-		Jar jar= new Jar(tmpFile);
+		Jar jar = new Jar(tmpFile);
 		try {
-
 			String bsn = jar.getBsn();
 			if (bsn == null || !Verifier.isBsn(bsn))
 				throw new IllegalArgumentException("Jar does not have a Bundle-SymbolicName manifest header");
@@ -251,7 +250,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			jar.close();
 		}
 	}
-
 
 	/* NOTE: this is a straight copy of FileRepo.put */
 	@Override
