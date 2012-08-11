@@ -222,7 +222,13 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				throw new IOException("Could not create directory " + dir);
 			}
 
-			Version version = Version.parseVersion(jar.getVersion());
+			String versionString = jar.getVersion();
+			if (versionString == null)
+				versionString = "0";
+			else if (!Verifier.isVersion(versionString))
+				throw new IllegalArgumentException("Invalid version " + versionString + " in file " + tmpFile);
+
+			Version version = Version.parseVersion(versionString);
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 			File file = new File(dir, fName);
 
