@@ -515,6 +515,8 @@ public class Jar implements Closeable {
 			return;
 		try {
 			createDirectories(directories, jout, path);
+			if (path.endsWith(Constants.EMPTY_HEADER))
+				return;
 			ZipEntry ze = new ZipEntry(path);
 			ze.setMethod(ZipEntry.DEFLATED);
 			long lastModified = resource.lastModified();

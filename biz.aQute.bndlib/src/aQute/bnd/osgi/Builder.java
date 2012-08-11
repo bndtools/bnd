@@ -945,6 +945,10 @@ public class Builder extends Analyzer {
 				files.put(p, file);
 			}
 		}
+		if (fs.length == 0) {
+			File empty = new File(dir, Constants.EMPTY_HEADER);
+			files.put(appendPath(path, empty.getName()), empty);
+		}
 	}
 
 	private void noSuchFile(Jar jar, @SuppressWarnings("unused") String clause, Map<String,String> extra, String source, String destinationPath)
@@ -1065,6 +1069,8 @@ public class Builder extends Analyzer {
 				if (isTrue(extra.get(LIB_DIRECTIVE))) {
 					setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH), path));
 				}
+			} else if (from.getName().equals(Constants.EMPTY_HEADER)) {
+				jar.putResource(path, new EmbeddedResource(new byte[0], 0));
 			} else {
 				error("Input file does not exist: " + from);
 			}
