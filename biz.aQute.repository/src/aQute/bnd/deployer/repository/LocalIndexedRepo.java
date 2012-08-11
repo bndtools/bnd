@@ -42,11 +42,13 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		// Load essential properties
 		String localDirPath = map.get(PROP_LOCAL_DIR);
 		if (localDirPath == null)
-			throw new IllegalArgumentException(String.format("Attribute '%s' must be set on %s plugin.", PROP_LOCAL_DIR, getClass().getName()));
+			throw new IllegalArgumentException(String.format("Attribute '%s' must be set on %s plugin.",
+					PROP_LOCAL_DIR, getClass().getName()));
 		
 		storageDir = new File(localDirPath);
 		if (storageDir.exists() && !storageDir.isDirectory())
-			throw new IllegalArgumentException(String.format("Local path '%s' exists and is not a directory.", localDirPath));
+			throw new IllegalArgumentException(String.format("Local path '%s' exists and is not a directory.",
+					localDirPath));
 		
 		readOnly = Boolean.parseBoolean(map.get(PROP_READONLY));
 		pretty = Boolean.parseBoolean(map.get(PROP_PRETTY));
@@ -58,7 +60,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		// Set the local index and cache directory locations
 		cacheDir = new File(storageDir, CACHE_PATH);
 		if (cacheDir.exists() && !cacheDir.isDirectory())
-			throw new IllegalArgumentException(String.format("Cannot create repository cache: '%s' already exists but is not directory.", cacheDir.getAbsolutePath()));
+			throw new IllegalArgumentException(String.format(
+					"Cannot create repository cache: '%s' already exists but is not directory.",
+					cacheDir.getAbsolutePath()));
 	}
 
 	@Override
@@ -168,7 +172,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				File file = new File(entry);
 				jar = new Jar(file);
 				fireBundleAdded(jar, file);
-			} finally {
+			}
+			finally {
 				if (jar != null) {
 					jar.close();
 				}
