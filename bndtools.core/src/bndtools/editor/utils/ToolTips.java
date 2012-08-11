@@ -44,6 +44,12 @@ public class ToolTips {
         }
 
         String values = syntax.getValues();
+        if (values != null) {
+            /* filter out macros */
+            values = values.replaceAll("\\$\\{[^\\}]*\\}", "");
+            values = values.replaceAll(",\\s*,", ",");
+            values = values.replaceAll("(^,|,$)", "");
+        }
         if ((values == null) || (values.trim().length() == 0)) {
             values = "";
         } else {
