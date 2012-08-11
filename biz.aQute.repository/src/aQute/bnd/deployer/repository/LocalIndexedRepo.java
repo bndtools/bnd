@@ -238,9 +238,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			if (!overwrite && file.exists())
 				return result;
 
-			if (file.exists()) {
-				IO.delete(file);
-			}
 			IO.rename(tmpFile, file);
 			result.artifact = file.toURI();
 
