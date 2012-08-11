@@ -4,7 +4,6 @@ import java.io.*;
 import java.util.*;
 
 import aQute.bnd.service.*;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.version.*;
 import aQute.service.reporter.*;
 

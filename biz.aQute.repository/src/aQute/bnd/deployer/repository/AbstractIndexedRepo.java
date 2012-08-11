@@ -23,6 +23,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.service.url.*;
 import aQute.bnd.version.*;
+import aQute.lib.collections.*;
 import aQute.lib.filter.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
@@ -38,6 +39,7 @@ import aQute.service.reporter.*;
  * 
  * @author Neil Bartlett
  */
+@SuppressWarnings("synthetic-access")
 public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository {
 
 	public static final String									PROP_NAME						= "name";
@@ -310,17 +312,13 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return result;
 	}
 
-	public List<Version> versions(String bsn) throws Exception {
+	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
 		SortedMap<Version,Resource> versionMap = bsnMap.get(bsn);
-		List<Version> list;
-		if (versionMap != null) {
-			list = new ArrayList<Version>(versionMap.size());
-			list.addAll(versionMap.keySet());
-		} else {
-			list = Collections.emptyList();
-		}
-		return list;
+		if (versionMap == null || versionMap.isEmpty())
+			return SortedList.empty();
+		
+		return new SortedList<Version>(versionMap.keySet());
 	}
 
 	public synchronized String getName() {
@@ -363,18 +361,18 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		capabilityIndex.addResource(resource);
 	}
 	
-	Capability getIdentityCapability(Resource resource) {
+	static Capability getIdentityCapability(Resource resource) {
 		List<Capability> identityCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (identityCaps == null || identityCaps.isEmpty())
 			throw new IllegalArgumentException("Resource has no identity capability.");
 		return identityCaps.iterator().next();
 	}
 	
-	String getResourceIdentity(Resource resource) {
+	static String getResourceIdentity(Resource resource) {
 		return (String) getIdentityCapability(resource).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
 	}
 
-	Version getResourceVersion(Resource resource) {
+	static Version getResourceVersion(Resource resource) {
 		Version result;
 		
 		Object versionObj = getIdentityCapability(resource).getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
@@ -390,7 +388,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return result;
 	}
 	
-	URI getContentUrl(Resource resource) {
+	static URI getContentUrl(Resource resource) {
 		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
 		if (caps == null || caps.isEmpty())
 			throw new IllegalArgumentException("Resource has no content capability");
@@ -474,7 +472,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		}
 	}
 
-	List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version,Resource> versionMap, Filter filter) {
+	static List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version,Resource> versionMap, Filter filter) {
 		List<Resource> result = new ArrayList<Resource>(versionMap.size());
 
 		Dictionary<String,String> dict = new Hashtable<String,String>();
@@ -489,7 +487,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return result;
 	}
 
-	List<Resource> narrowVersionsByVersionRange(SortedMap<Version,Resource> versionMap, String rangeStr) {
+	static List<Resource> narrowVersionsByVersionRange(SortedMap<Version,Resource> versionMap, String rangeStr) {
 		List<Resource> result;
 		if ("latest".equals(rangeStr)) {
 			Version highest = versionMap.lastKey();
@@ -569,7 +567,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return selected;
 	}
 
-	String listToString(List< ? > list) {
+	static String listToString(List< ? > list) {
 		StringBuilder builder = new StringBuilder();
 
 		int count = 0;
@@ -599,7 +597,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return mapResourceToHandle(resource);
 	}
 
-	Resource findVersion(Version version, SortedMap<Version,Resource> versions) {
+	static Resource findVersion(Version version, SortedMap<Version,Resource> versions) {
 		if (version.getQualifier() != null && version.getQualifier().length() > 0) {
 			return versions.get(version);
 		}
@@ -618,7 +616,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return latest;
 	}
 
-	private int compare(Version v1, Version v2) {
+	private static int compare(Version v1, Version v2) {
 
 		if (v1.getMajor() != v2.getMajor())
 			return v1.getMajor() - v2.getMajor();
@@ -658,4 +656,31 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public String toString() {
 		return getName();
 	}
+
+	/**
+	 * This can be optimized to use the download technique with the listeners.
+	 * Now just a quick hack to make it work. I actually think these classes
+	 * should extend FileRepo. TODO 
+	 */
+	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
+			throws Exception {
+		ResourceHandle handle = resolveBundle(bsn, version.toString(), Strategy.EXACT);
+		if (handle == null)
+			return null;
+
+		File f = handle.request();
+		if (f == null)
+			return null;
+
+		for (DownloadListener l : listeners) {
+			try {
+				l.success(f);
+			}
+			catch (Exception e) {
+				reporter.exception(e, "Download listener for %s", f);
+			}
+		}
+		return f;
+	}
+
 }

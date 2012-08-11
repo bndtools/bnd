@@ -147,7 +147,7 @@ public class Clazz {
 	}
 
 	public abstract class Def {
-		
+
 		final int		access;
 		Set<TypeRef>	annotations;
 
@@ -220,9 +220,11 @@ public class Clazz {
 		public TypeRef getOwnerType() {
 			return className;
 		}
-		
+
 		public abstract String getName();
+
 		public abstract TypeRef getType();
+
 		public abstract TypeRef[] getPrototype();
 
 		public Object getClazz() {
@@ -255,7 +257,6 @@ public class Clazz {
 		public String getName() {
 			return name;
 		}
-		
 
 		@Override
 		public TypeRef getType() {
@@ -296,6 +297,7 @@ public class Clazz {
 		public TypeRef[] getPrototype() {
 			return null;
 		}
+
 		public String getSignature() {
 			return signature;
 		}
@@ -338,7 +340,6 @@ public class Clazz {
 		public boolean getImplements() {
 			return interf;
 		}
-		
 
 		@Override
 		public String getName() {
@@ -346,11 +347,12 @@ public class Clazz {
 				return "<implements>";
 			return "<extends>";
 		}
-		
+
 		@Override
 		public TypeRef getType() {
 			return type;
 		}
+
 		@Override
 		public TypeRef[] getPrototype() {
 			return null;
@@ -859,9 +861,9 @@ public class Clazz {
 			doSignature(in, member, access_flags);
 		else if ("ConstantValue".equals(attributeName))
 			doConstantValue(in);
-        else if ("Exceptions".equals(attributeName))
-             doExceptions(in, access_flags);
-        else {
+		else if ("Exceptions".equals(attributeName))
+			doExceptions(in, access_flags);
+		else {
 			if (attribute_length > 0x7FFFFFFF) {
 				throw new IllegalArgumentException("Attribute > 2Gb");
 			}
@@ -1006,8 +1008,8 @@ public class Clazz {
 				referTo(clazz, access_flags);
 			}
 		}
-	}	
-	       
+	}
+
 	/**
 	 * <pre>
 	 * Code_attribute {
@@ -1154,7 +1156,8 @@ public class Clazz {
 		}
 	}
 
-	private void doAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy, int access_flags) throws IOException {
+	private void doAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy, int access_flags)
+			throws IOException {
 		int num_annotations = in.readUnsignedShort(); // # of annotations
 		for (int a = 0; a < num_annotations; a++) {
 			if (cd == null)
@@ -1166,8 +1169,8 @@ public class Clazz {
 		}
 	}
 
-	private Annotation doAnnotation(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect, int access_flags)
-			throws IOException {
+	private Annotation doAnnotation(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect,
+			int access_flags) throws IOException {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
 			annotations = new HashSet<TypeRef>();
@@ -1201,8 +1204,8 @@ public class Clazz {
 		return null;
 	}
 
-	private Object doElementValue(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect, int access_flags)
-			throws IOException {
+	private Object doElementValue(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect,
+			int access_flags) throws IOException {
 		char tag = (char) in.readUnsignedByte();
 		switch (tag) {
 			case 'B' : // Byte
@@ -1228,8 +1231,8 @@ public class Clazz {
 				if (policy == RetentionPolicy.RUNTIME) {
 					referTo(type_name_index, 0);
 					if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
-						 TypeRef name = analyzer.getTypeRef((String) pool[type_name_index]);
-						 api.add(name.getPackageRef());
+						TypeRef name = analyzer.getTypeRef((String) pool[type_name_index]);
+						api.add(name.getPackageRef());
 					}
 				}
 				int const_name_index = in.readUnsignedShort();
@@ -1240,8 +1243,8 @@ public class Clazz {
 				if (policy == RetentionPolicy.RUNTIME) {
 					referTo(class_info_index, 0);
 					if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
-						 TypeRef name = analyzer.getTypeRef((String) pool[class_info_index]);
-						 api.add(name.getPackageRef());
+						TypeRef name = analyzer.getTypeRef((String) pool[class_info_index]);
+						api.add(name.getPackageRef());
 					}
 				}
 				return pool[class_info_index];
@@ -1729,5 +1732,4 @@ public class Clazz {
 	public Clazz.TypeDef getImplements(TypeRef type) {
 		return new TypeDef(type, true);
 	}
-
 }

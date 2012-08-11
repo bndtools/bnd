@@ -162,12 +162,12 @@ public class BndrunResolveContext extends ResolveContext {
         }
     }
 
-    public boolean isInputRequirementResource(Resource resource) {
+    public static boolean isInputRequirementResource(Resource resource) {
         Capability id = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0);
         return IDENTITY_INITIAL_RESOURCE.equals(id.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE));
     }
 
-    private Version toVersion(Object object) throws IllegalArgumentException {
+    private static Version toVersion(Object object) throws IllegalArgumentException {
         if (object == null)
             return null;
 
@@ -180,7 +180,7 @@ public class BndrunResolveContext extends ResolveContext {
         throw new IllegalArgumentException(MessageFormat.format("Cannot convert type {0} to Version.", object.getClass().getName()));
     }
 
-    private Capability findFrameworkContractCapability(Resource resource) {
+    private static Capability findFrameworkContractCapability(Resource resource) {
         List<Capability> contractCaps = resource.getCapabilities(ContractNamespace.CONTRACT_NAMESPACE);
         if (contractCaps != null)
             for (Capability cap : contractCaps) {

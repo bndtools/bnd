@@ -9,6 +9,7 @@ public class UsesParam {
 		Subject subject = new Subject();
 	}
 	
+	@SuppressWarnings("unused")
 	private static void bar(Subject subject) {
 		
 	}

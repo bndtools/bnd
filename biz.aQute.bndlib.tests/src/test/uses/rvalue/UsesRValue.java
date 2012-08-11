@@ -10,6 +10,7 @@ public class UsesRValue {
 		return null;
 	}
 	
+	@SuppressWarnings("unused")
 	private static Subject bar() {
 		return null;
 	}

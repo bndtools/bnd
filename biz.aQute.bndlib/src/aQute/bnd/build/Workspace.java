@@ -2,6 +2,7 @@ package aQute.bnd.build;
 
 import java.io.*;
 import java.lang.ref.*;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
@@ -14,7 +15,9 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.lib.deployer.*;
+import aQute.lib.hex.*;
 import aQute.lib.io.*;
+import aQute.lib.settings.*;
 import aQute.service.reporter.*;
 
 public class Workspace extends Processor {
@@ -29,6 +32,7 @@ public class Workspace extends Processor {
 	final File									buildDir;
 	final Maven									maven		= new Maven(Processor.getExecutor());
 	private boolean								offline		= true;
+	Settings									settings	= new Settings();
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -157,7 +161,8 @@ public class Workspace extends Processor {
 		}
 	}
 
-	public String _workspace(@SuppressWarnings("unused") String args[]) {
+	public String _workspace(@SuppressWarnings("unused")
+	String args[]) {
 		return getBase().getAbsolutePath();
 	}
 
@@ -270,11 +275,11 @@ public class Workspace extends Processor {
 		}
 
 		@Override
-		protected void init() throws Exception {
+		protected boolean init() throws Exception {
 			if (lock.tryLock(50, TimeUnit.SECONDS) == false)
 				throw new TimeLimitExceededException("Cached File Repo is locked and can't acquire it");
 			try {
-				if (!inited) {
+				if (super.init()) {
 					inited = true;
 					if (!root.exists() && !root.mkdirs()) {
 						throw new IOException("Could not create cache directory " + root);
@@ -288,7 +293,9 @@ public class Workspace extends Processor {
 					else {
 						error("Couldn't find embedded-repo.jar in bundle ");
 					}
-				}
+					return true;
+				} else
+					return false;
 			}
 			finally {
 				lock.unlock();
@@ -385,5 +392,32 @@ public class Workspace extends Processor {
 	public Workspace setOffline(boolean on) {
 		this.offline = on;
 		return this;
+	}
+
+	/**
+	 * Provide access to the global settings of this machine.
+	 * 
+	 * @throws Exception
+	 * @throws UnknownHostException
+	 */
+
+	public String _global(String[] args) throws Exception {
+		Macro.verifyCommand(args, "${global;<name>[;<default>]}, get a global setting from ~/.bnd/settings.json", null,
+				2, 3);
+
+		String key = args[1];
+		if (key.equals("key.public"))
+			return Hex.toHexString(settings.getPublicKey());
+		if (key.equals("key.private"))
+			return Hex.toHexString(settings.getPrivateKey());
+
+		String s = settings.get(key);
+		if (s != null)
+			return s;
+
+		if (args.length == 3)
+			return args[2];
+		
+		return null;
 	}
 }

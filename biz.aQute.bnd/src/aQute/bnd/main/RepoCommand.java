@@ -10,7 +10,6 @@ import aQute.bnd.maven.support.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
@@ -118,7 +117,8 @@ public class RepoCommand {
 	 */
 	interface reposOptions extends Options {}
 
-	public void _repos(@SuppressWarnings("unused") reposOptions opts) {
+	public void _repos(@SuppressWarnings("unused")
+	reposOptions opts) {
 		int n = 1;
 		for (RepositoryPlugin repo : repos) {
 			String location = "";
@@ -159,7 +159,7 @@ public class RepoCommand {
 			Set<Version> versions = new TreeSet<Version>();
 			for (RepositoryPlugin repo : repos) {
 				if (from.matches(repo.getName())) {
-					List<Version> result = repo.versions(bsn);
+					SortedSet<Version> result = repo.versions(bsn);
 					if (result != null)
 						versions.addAll(result);
 				}
@@ -208,7 +208,7 @@ public class RepoCommand {
 
 		for (RepositoryPlugin repo : repos) {
 			if (from.matches(repo.getName())) {
-				List<Version> versions = repo.versions(bsn);
+				SortedSet<Version> versions = repo.versions(bsn);
 				if (versions != null)
 					for (Version v : versions) {
 						if (r.includes(v))
@@ -230,7 +230,7 @@ public class RepoCommand {
 			v = l.last();
 
 		RepositoryPlugin repo = index.get(v);
-		File file = repo.get(bsn, v.toString(), Strategy.EXACT, null);
+		File file = repo.get(bsn, v, null);
 
 		File dir = bnd.getBase();
 		String name = file.getName();
@@ -256,7 +256,7 @@ public class RepoCommand {
 	 */
 
 	interface putOptions extends Options {
-
+		boolean overwrite();
 		boolean force();
 	}
 
@@ -272,39 +272,43 @@ public class RepoCommand {
 			return;
 		}
 
-		File file = bnd.getFile(args.remove(0));
-		if (!file.isFile()) {
-			bnd.error("No such file %s", file);
-			return;
-		}
+		while (args.size() > 0) {
+			File file = bnd.getFile(args.remove(0));
+			if (!file.isFile()) {
+				bnd.error("No such file %s", file);
+			} else {
 
-		bnd.trace("put %s", file);
+				bnd.trace("put %s", file);
 
-		Jar jar = new Jar(file);
-		try {
-			String bsn = jar.getBsn();
-			if (bsn == null) {
-				bnd.error("File %s is not a bundle (it has no bsn) ", file);
-				return;
+				Jar jar = new Jar(file);
+				try {
+					String bsn = jar.getBsn();
+					if (bsn == null) {
+						bnd.error("File %s is not a bundle (it has no bsn) ", file);
+						return;
+					}
+
+					bnd.trace("bsn %s version %s", bsn, jar.getVersion());
+
+					if (!opts.force()) {
+						Verifier v = new Verifier(jar);
+						v.setTrace(true);
+						v.setExceptions(true);
+						v.verify();
+						bnd.getInfo(v);
+					}
+
+					if (bnd.isOk()) {
+						PutResult r = writable.put(new BufferedInputStream(new FileInputStream(file)),
+								new RepositoryPlugin.PutOptions());
+						bnd.trace("put %s in %s (%s) into %s", file, writable.getName(), writable.getLocation(),
+								r.artifact);
+					}
+				}
+				finally {
+					jar.close();
+				}
 			}
-
-			bnd.trace("bsn %s version %s", bsn, jar.getVersion());
-
-			if (!opts.force()) {
-				Verifier v = new Verifier(jar);
-				v.setTrace(true);
-				v.setExceptions(true);
-				v.verify();
-				bnd.getInfo(v);
-			}
-
-			if (bnd.isOk()) {
-				PutResult r = writable.put(new BufferedInputStream(new FileInputStream(file)), new RepositoryPlugin.PutOptions());
-				bnd.trace("put %s in %s (%s) into %s", file, writable.getName(), writable.getLocation(), r.artifact);
-			}
-		}
-		finally {
-			jar.close();
 		}
 	}
 
@@ -359,21 +363,21 @@ public class RepoCommand {
 			Diff diff = new DiffImpl(tNewer, tOlder);
 			MultiMap<String,String> map = new MultiMap<String,String>();
 			for (Diff bsn : diff.getChildren()) {
-				
+
 				for (Diff version : bsn.getChildren()) {
 					if (version.getDelta() == Delta.UNCHANGED)
 						continue;
-					
+
 					if (options.remove() == false && options.added() == false
 							|| (options.remove() //
 							&& version.getDelta() == Delta.REMOVED)
 							|| (options.added() && version.getDelta() == Delta.ADDED)) {
-						
-						map.add(bsn.getName(), version.getName());						
-					}					
+
+						map.add(bsn.getName(), version.getName());
+					}
 				}
 			}
-			
+
 			if (options.json())
 				codec.enc().to(new OutputStreamWriter(bnd.out, "UTF-8")).put(map).flush();
 			else if (!options.diff())
@@ -394,15 +398,15 @@ public class RepoCommand {
 
 	@Description("Refresh refreshable repositories")
 	interface RefreshOptions extends Options {
-		
+
 	}
-	public void _refresh(RefreshOptions opts) {
-		for ( Object o : repos) {
-			if ( o instanceof Refreshable) {
+
+	public void _refresh(RefreshOptions opts) throws Exception {
+		for (Object o : repos) {
+			if (o instanceof Refreshable) {
 				bnd.trace("refresh %s", o);
-				((Refreshable)o).refresh();
+				((Refreshable) o).refresh();
 			}
 		}
 	}
-
 }

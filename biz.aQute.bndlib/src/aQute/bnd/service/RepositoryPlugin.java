@@ -6,111 +6,61 @@ import java.util.*;
 
 import aQute.bnd.version.*;
 
+/**
+ * A Repository Plugin abstract a bnd repository. This interface allows bnd to
+ * find programs from their bsn and revisions from their bsn-version
+ * combination. It is also possible to put revisions in a repository if the
+ * repository is not read only.
+ */
 public interface RepositoryPlugin {
-	public enum Strategy {
-		LOWEST, HIGHEST, EXACT
-	}
-
 	/**
 	 * Options used to steer the put operation
 	 */
-	public class PutOptions {
+	class PutOptions {
+		public String	BUNDLE	= "application/vnd.osgi.bundle";
+		public String	LIB		= "application/vnd.aQute.lib";
+
 		/**
-		 * The <b>SHA1</b> digest of the artifact to put into the repository.<br/>
-		 * <br/>
+		 * The <b>SHA1</b> digest of the artifact to put into the repository.
 		 * When specified the digest of the <b>fetched</b> artifact will be
 		 * calculated and verified against this digest, <b>before</b> putting
-		 * the artifact into the repository.<br/>
-		 * <br/>
-		 * An exception is thrown if the specified digest and the calculated
-		 * digest do not match.
+		 * the artifact into the repository. </p> An exception is thrown if the
+		 * specified digest and the calculated digest do not match.
 		 */
-		public byte[]	digest				= null;
+		public byte[]	digest	= null;
 
 		/**
-		 * Allow the implementation to change the artifact.<br/>
-		 * <br/>
-		 * When set to true the implementation is allowed to change the artifact
-		 * when putting it into the repository.<br/>
-		 * <br/>
-		 * An exception is thrown when set to false and the implementation can't
-		 * put the artifact into the repository without changing it.
+		 * Specify the mime type of the importing stream. This can be either
+		 * {@link #BUNDLE} or {@link #LIB}. If left open, it is up to the
+		 * repository to guess the content type.
 		 */
-		public boolean	allowArtifactChange	= false;
-
-		/**
-		 * Generate a <b>SHA1</b> digest.<br/>
-		 * <br/>
-		 * When set to true the implementation generates a digest of the
-		 * artifact as it is put into the repository and returns that digest in
-		 * the result.
-		 */
-		public boolean	generateDigest		= false;
-
-		/**
-		 * Create a 'latest' artifact when it did not exist.<br/>
-		 * <br/>
-		 * When set to true the implementation is requested to create a 'latest'
-		 * artifact.
-		 */
-		public boolean	createLatest		= false;
+		public String	type;
 	}
+
+	PutOptions	DEFAULTOPTIONS	= new PutOptions();
 
 	/**
 	 * Results returned by the put operation
 	 */
-	public class PutResult {
+	class PutResult {
 		/**
-		 * The artifact as it was put in the repository.<br/>
+		 * A (potentially public) uri to the revision as it was put in the
+		 * repository.<br/>
 		 * <br/>
-		 * This can be a URI to the artifact (when it was put into the
-		 * repository), or null when the artifact was not put into the
-		 * repository (for example because it was already in the repository).
+		 * This can be a URI to the given artifact (when it was put into the
+		 * repository). This does not have to be a File URI!
 		 */
 		public URI		artifact	= null;
-
-		/**
-		 * The 'latest' artifact as it was put in the repository.<br/>
-		 * <br/>
-		 * Only set when {@link PutOptions#createLatest} was set to true and the
-		 * 'latest' artifact did not exist, or when the 'latest' artifact did
-		 * exists and was older than the artifact being put in the repository.
-		 */
-		public URI		latest		= null;
 
 		/**
 		 * The <b>SHA1</b> digest of the artifact as it was put into the
 		 * repository.<br/>
 		 * <br/>
-		 * This will be null when {@link PutOptions#generateDigest} was null, or
-		 * when {@link #artifact} is null.
+		 * This can be null and it can differ from the input digest if the
+		 * repository rewrote the stream for optimization reason. If the
 		 */
 		public byte[]	digest		= null;
 	}
-
-	/**
-	 * Return a URL to a matching version of the given bundle.
-	 * 
-	 * @param bsn
-	 *            Bundle-SymbolicName of the searched bundle
-	 * @param range
-	 *            Version range for this bundle,"latest" if you only want the
-	 *            latest, or null when you want all.
-	 * @param strategy
-	 *            Get the highest or the lowest
-	 * @return A list of URLs sorted on version, lowest version is at index 0.
-	 *         null is returned when no files with the given bsn ould be found.
-	 * @throws Exception
-	 *             when anything goes wrong
-	 */
-	File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception;
-
-	/**
-	 * Answer if this repository can be used to store files.
-	 * 
-	 * @return true if writable
-	 */
-	boolean canWrite();
 
 	/**
 	 * Put an artifact (from the InputStream) into the repository.<br/>
@@ -123,7 +73,9 @@ public interface RepositoryPlugin {
 	 * @param stream
 	 *            The input stream with the artifact
 	 * @param options
-	 *            The put options. See {@link RepositoryPlugin.PutOptions}
+	 *            The put options. See {@link RepositoryPlugin.PutOptions}, can
+	 *            be {@code null}, which will then take the default options like
+	 *            new PutOptions().
 	 * @return The result of the put, never null. See
 	 *         {@link RepositoryPlugin.PutResult}
 	 * @throws Exception
@@ -136,6 +88,88 @@ public interface RepositoryPlugin {
 	 *             ), or when another error has occurred.
 	 */
 	PutResult put(InputStream stream, PutOptions options) throws Exception;
+
+	/**
+	 * The caller can specify any number of DownloadListener objects that are
+	 * called back when a download is finished (potentially before the get
+	 * method has returned).
+	 */
+
+	interface DownloadListener {
+		/**
+		 * Called when the file is successfully downloaded from a remote
+		 * repository.
+		 * 
+		 * @param file
+		 *            The file that was downloaded
+		 * @throws Exception
+		 *             , are logged and ignored
+		 */
+		void success(File file) throws Exception;
+
+		/**
+		 * Called when the file could not be downloaded from a remote
+		 * repository.
+		 * 
+		 * @param file
+		 *            The file that was intended to be downloaded.
+		 * @throws Exception
+		 *             , are logged and ignored
+		 */
+		void failure(File file, String reason) throws Exception;
+
+		/**
+		 * Can be called back regularly before success/failure but never after.
+		 * Indicates how far the download has progressed in percents. Since
+		 * downloads can be restarted, it is possible that the percentage
+		 * decreases.
+		 * 
+		 * @param file
+		 *            The file that was intended to be downloaded
+		 * @param percentage
+		 *            Percentage of file downloaded (can go down)
+		 * @return true if the download should continue, fails if it should be
+		 *         canceled (and fail)
+		 * @throws Exception
+		 *             , are logged and ignored
+		 */
+		boolean progress(File file, int percentage) throws Exception;
+	}
+
+	/**
+	 * Return a URL to a matching version of the given bundle.
+	 * <p/>
+	 * If download listeners are specified then the returned file is not
+	 * guaranteed to exist before a download listener is notified of success or
+	 * failure. The callback can happen before the method has returned. If the
+	 * returned file is null then download listeners are not called back.
+	 * <p/>
+	 * The intention of the Download Listeners is to allow a caller to obtain
+	 * references to files that do not yet exist but are to be downloaded. If
+	 * the downloads were done synchronously in the call, then no overlap of
+	 * downloads could take place.
+	 * 
+	 * @param bsn
+	 *            Bundle-SymbolicName of the searched bundle
+	 * @param version
+	 *            Version requested
+	 * @param listeners
+	 *            Zero or more download listener that will be notified of the
+	 *            outcome.
+	 * @return A file to the revision or null if not found
+	 * @throws Exception
+	 *             when anything goes wrong, in this case no listeners will be
+	 *             called back.
+	 */
+	File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
+			throws Exception;
+
+	/**
+	 * Answer if this repository can be used to store files.
+	 * 
+	 * @return true if writable
+	 */
+	boolean canWrite();
 
 	/**
 	 * Return a list of bsns that are present in the repository.
@@ -155,7 +189,7 @@ public interface RepositoryPlugin {
 	 * @throws Exception
 	 */
 
-	List<Version> versions(String bsn) throws Exception;
+	SortedSet<Version> versions(String bsn) throws Exception;
 
 	/**
 	 * @return The name of the repository

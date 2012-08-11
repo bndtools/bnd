@@ -57,6 +57,7 @@ import aQute.lib.io.*;
  * See the end of the source file for distribution license (Modified BSD
  * licence)
  */
+@SuppressWarnings("synthetic-access")
 public class NanoHTTPD {
 	// ==================================================
 	// API parts

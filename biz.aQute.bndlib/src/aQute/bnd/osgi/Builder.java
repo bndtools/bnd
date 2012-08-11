@@ -9,7 +9,6 @@ import java.util.zip.*;
 
 import aQute.bnd.component.*;
 import aQute.bnd.differ.*;
-import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.header.*;
 import aQute.bnd.make.*;
 import aQute.bnd.make.component.*;
@@ -18,7 +17,6 @@ import aQute.bnd.maven.*;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.diff.*;
 import aQute.lib.collections.*;
 import aQute.libg.generics.*;
@@ -309,8 +307,10 @@ public class Builder extends Analyzer {
 				}
 			}
 		}
-		if (jar.getDirectories().size() == 0)
+		if (jar.getDirectories().size() == 0) {
+			trace("extra dirs %s", jar.getDirectories());
 			return null;
+		}
 		return jar;
 	}
 
@@ -1506,90 +1506,18 @@ public class Builder extends Analyzer {
 			show(c, indent, warning);
 	}
 
-	/**
-	 * Base line against a previous version
-	 * 
-	 * @throws Exception
-	 */
-
-	private void doBaseline(Jar dot) throws Exception {
-		Parameters diffs = parseHeader(getProperty("-baseline"));
-		if (diffs.isEmpty())
-			return;
-
-		System.err.printf("baseline %s%n", diffs);
-
-		Jar other = getBaselineJar();
-		if (other == null) {
-			return;
-		}
-		Baseline baseline = new Baseline(this, differ);
-		Set<Info> infos = baseline.baseline(dot, other, null);
-		for (Info info : infos) {
-			if (info.mismatch) {
-				error("%s %-50s %-10s %-10s %-10s %-10s %-10s\n", info.mismatch ? '*' : ' ', info.packageName,
-						info.packageDiff.getDelta(), info.newerVersion, info.olderVersion, info.suggestedVersion,
-						info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
-			}
-		}
-	}
-
+	
 	public void addSourcepath(Collection<File> sourcepath) {
 		for (File f : sourcepath) {
 			addSourcepath(f);
 		}
 	}
 
-	public Jar getBaselineJar() throws Exception {
+	/**
+	 * Base line against a previous version. Should be overridden in the ProjectBuilder where we have access to the repos
+	 * 
+	 * @throws Exception
+	 */
 
-		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
-
-		String baseline = getProperty(Constants.BASELINE);
-		Parameters params = parseHeader(baseline);
-		File baselineFile = null;
-		if (baseline == null) {
-			String repoName = getProperty(Constants.BASELINEREPO);
-			if (repoName == null) {
-				repoName = getProperty(Constants.RELEASEREPO);
-				if (repoName == null) {
-					return null;
-				}
-			}
-			for (RepositoryPlugin repo : repos) {
-				if (repoName.equals(repo.getName())) {
-					baselineFile = repo.get(getBsn(), null, Strategy.HIGHEST, null);
-					break;
-				}
-			}
-		} else {
-
-			String bsn = null;
-			String version = null;
-			for (Entry<String,Attrs> entry : params.entrySet()) {
-				bsn = entry.getKey();
-				if ("@".equals(bsn)) {
-					bsn = getBsn();
-				}
-				version = entry.getValue().get(Constants.VERSION_ATTRIBUTE);
-				break;
-			}
-			if ("latest".equals(version)) {
-				version = null;
-			}
-			for (RepositoryPlugin repo : repos) {
-				if (version == null) {
-					baselineFile = repo.get(bsn, null, Strategy.HIGHEST, null);
-				} else {
-					baselineFile = repo.get(bsn, version, Strategy.EXACT, null);
-				}
-				if (baselineFile != null) {
-					break;
-				}
-			}
-		}
-		if (baselineFile == null) {
-			return new Jar(".");
-		}
-		return new Jar(baselineFile);
-	}
+	protected void doBaseline(Jar dot) throws Exception {}
 }

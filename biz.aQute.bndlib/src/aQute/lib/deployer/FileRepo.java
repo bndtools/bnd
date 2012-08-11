@@ -3,29 +3,204 @@ package aQute.lib.deployer;
 import java.io.*;
 import java.security.*;
 import java.util.*;
-import java.util.jar.*;
 import java.util.regex.*;
 
-import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.lib.collections.*;
+import aQute.lib.hex.*;
 import aQute.lib.io.*;
+import aQute.libg.command.*;
+import aQute.libg.cryptography.*;
+import aQute.libg.reporter.*;
 import aQute.service.reporter.*;
 
-public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin {
-	public final static String	LOCATION	= "location";
-	public final static String	READONLY	= "readonly";
-	public final static String	NAME		= "name";
+/**
+ * A FileRepo is the primary and example implementation of a repository based on
+ * a file system. It maintains its files in a bsn/bsn-version.jar style from a
+ * given location. It implements all the functions of the
+ * {@link RepositoryPlugin}, {@link Refreshable}, {@link Actionable}, and
+ * {@link Closeable}. The FileRepo can be extended or used as is. When used as
+ * is, it is possible to add shell commands to the life cycle of the FileRepo.
+ * This life cycle is as follows:
+ * <ul>
+ * <li>{@link #CMD_INIT} - Is only executed when the location did not exist</li>
+ * <li>{@link #CMD_OPEN} - Called (after init if necessary) to open it once</li>
+ * <li>{@link #CMD_REFRESH} - Called when refreshed.</li>
+ * <li>{@link #CMD_BEFORE_PUT} - Before the file system is changed</li>
+ * <li>{@link #CMD_AFTER_PUT} - After the file system has changed, and the put
+ * <li>{@link #CMD_BEFORE_GET} - Before the file is gotten</li>
+ * <li>{@link #CMD_AFTER_ACTION} - Before the file is gotten</li>
+ * <li>{@link #CMD_CLOSE} - When the repo is closed and no more actions will
+ * take place</li> was a success</li>
+ * <li>{@link #CMD_ABORT_PUT} - When the put is aborted.</li>
+ * <li>{@link #CMD_CLOSE} - To close the repository.</li>
+ * </ul>
+ * Additionally, it is possible to set the {@link #CMD_SHELL} and the
+ * {@link #CMD_PATH}. Notice that you can use the ${global} macro to read global
+ * (that is, machine local) settings from the ~/.bnd/settings.json file (can be
+ * managed with bnd).
+ */
+public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
 
-	File[]						EMPTY_FILES	= new File[0];
+	/**
+	 * If set, will trace to stdout. Works only if no reporter is set.
+	 */
+	public final static String	TRACE				= "trace";
+
+	/**
+	 * Property name for the location of the repo, must be a valid path name
+	 * using forward slashes (see {@link IO#getFile(String)}.
+	 */
+	public final static String	LOCATION			= "location";
+
+	/**
+	 * Property name for the readonly state of the repository. If no, will
+	 * read/write, otherwise it must be a boolean value read by
+	 * {@link Boolean#parseBoolean(String)}. Read only repositories will not
+	 * accept writes.
+	 */
+	public final static String	READONLY			= "readonly";
+
+	/**
+	 * Set the name of this repository (optional)
+	 */
+	public final static String	NAME				= "name";
+
+	/**
+	 * Path property for commands. A comma separated path for directories to be
+	 * searched for command. May contain $ @} which will be replaced by the
+	 * system path. If this property is not set, the system path is assumed.
+	 */
+	public static final String	CMD_PATH			= "cmd.path";
+
+	/**
+	 * The name ( and path) of the shell to execute the commands. By default
+	 * this is sh and searched in the path.
+	 */
+	public static final String	CMD_SHELL			= "cmd.shell";
+
+	/**
+	 * Property for commands. The command only runs when the location does not
+	 * exist. </p>
+	 * 
+	 * @param rootFile
+	 *            the root of the repo (directory exists)
+	 */
+	public static final String	CMD_INIT			= "cmd.init";
+
+	/**
+	 * Property for commands. Command is run before the repo is first used. </p>
+	 * 
+	 * @param $0
+	 *            rootFile the root of the repo (directory exists)
+	 */
+	public static final String	CMD_OPEN			= "cmd.open";
+
+	/**
+	 * Property for commands. The command runs after a put operation. </p>
+	 * 
+	 * @param $0
+	 *            the root of the repo (directory exists)
+	 * @param $1
+	 *            the file that was put
+	 * @param $2
+	 *            the hex checksum of the file
+	 */
+	public static final String	CMD_AFTER_PUT		= "cmd.after.put";
+
+	/**
+	 * Property for commands. The command runs when the repository is refreshed.
+	 * </p>
+	 * 
+	 * @param $
+	 *            {0} the root of the repo (directory exists)
+	 */
+	public static final String	CMD_REFRESH			= "cmd.refresh";
+
+	/**
+	 * Property for commands. The command runs after the file is put. </p>
+	 * 
+	 * @param $0
+	 *            the root of the repo (directory exists)
+	 * @param $1
+	 *            the path to a temporary file
+	 */
+	public static final String	CMD_BEFORE_PUT		= "cmd.before.put";
+
+	/**
+	 * Property for commands. The command runs when a put is aborted after file
+	 * changes were made. </p>
+	 * 
+	 * @param $0
+	 *            the root of the repo (directory exists)
+	 * @param $1
+	 *            the temporary file that was used (optional)
+	 */
+	public static final String	CMD_ABORT_PUT		= "cmd.abort.put";
+
+	/**
+	 * Property for commands. The command runs after the file is put. </p>
+	 * 
+	 * @param $0
+	 *            the root of the repo (directory exists)
+	 */
+	public static final String	CMD_CLOSE			= "cmd.close";
+
+	/**
+	 * Property for commands. Will be run after an action has been executed.
+	 * </p>
+	 * 
+	 * @param $0
+	 *            the root of the repo (directory exists)
+	 * @param $1
+	 *            the path to the file that the action was executed on
+	 * @param $2
+	 *            the action executed
+	 */
+	public static final String	CMD_AFTER_ACTION	= "cmd.after.action";
+
+	/**
+	 * Called before a before get.
+	 * 
+	 * @param $0
+	 *            the root of the repo (directory exists)
+	 * @param $1
+	 *            the bsn
+	 * @param $2
+	 *            the version
+	 */
+	public static final String	CMD_BEFORE_GET		= "cmd.before.get";
+
+	/**
+	 * Options used when the options are null
+	 */
+	static final PutOptions		DEFAULTOPTIONS		= new PutOptions();
+
+	String						shell;
+	String						path;
+	String						init;
+	String						open;
+	String						refresh;
+	String						beforePut;
+	String						afterPut;
+	String						abortPut;
+	String						beforeGet;
+	String						close;
+	String						action;
+
+	File[]						EMPTY_FILES			= new File[0];
 	protected File				root;
 	Registry					registry;
-	boolean						canWrite	= true;
-	Pattern						REPO_FILE	= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
+	boolean						canWrite			= true;
+	Pattern						REPO_FILE			= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)\\.(jar|lib)");
 	Reporter					reporter;
 	boolean						dirty;
 	String						name;
+	boolean						inited;
+	boolean						trace;
 
 	public FileRepo() {}
 
@@ -35,280 +210,200 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		this.canWrite = canWrite;
 	}
 
-	protected void init() throws Exception {
-		// for extensions
+	/**
+	 * Initialize the repository Subclasses should first call this method and
+	 * then if it returns true, do their own initialization
+	 * 
+	 * @return true if initialized, false if already had been initialized.
+	 * @throws Exception
+	 */
+	protected boolean init() throws Exception {
+		if (inited)
+			return false;
+
+		inited = true;
+
+		if (reporter == null) {
+			ReporterAdapter reporter = trace ? new ReporterAdapter(System.out) : new ReporterAdapter();
+			reporter.setTrace(trace);
+			reporter.setExceptions(trace);
+			this.reporter = reporter;
+		}
+
+		if (!root.isDirectory()) {
+			root.mkdirs();
+			if (!root.isDirectory())
+				throw new IllegalArgumentException("Location cannot be turned into a directory " + root);
+
+			exec(init, root.getAbsolutePath());
+		}
+		open();
+		return true;
 	}
 
+	/**
+	 * @see aQute.bnd.service.Plugin#setProperties(java.util.Map)
+	 */
 	public void setProperties(Map<String,String> map) {
 		String location = map.get(LOCATION);
 		if (location == null)
 			throw new IllegalArgumentException("Location must be set on a FileRepo plugin");
 
-		root = new File(location);
-
+		root = IO.getFile(IO.home, location);
 		String readonly = map.get(READONLY);
 		if (readonly != null && Boolean.valueOf(readonly).booleanValue())
 			canWrite = false;
 
 		name = map.get(NAME);
+		path = map.get(CMD_PATH);
+		shell = map.get(CMD_SHELL);
+		init = map.get(CMD_INIT);
+		open = map.get(CMD_OPEN);
+		refresh = map.get(CMD_REFRESH);
+		beforePut = map.get(CMD_BEFORE_PUT);
+		abortPut = map.get(CMD_ABORT_PUT);
+		afterPut = map.get(CMD_AFTER_PUT);
+		beforeGet = map.get(CMD_BEFORE_GET);
+		close = map.get(CMD_CLOSE);
+		action = map.get(CMD_AFTER_ACTION);
+
+		trace = map.get(TRACE) != null && Boolean.parseBoolean(map.get(TRACE));
 	}
 
 	/**
-	 * Get a list of URLs to bundles that are constrained by the bsn and
-	 * versionRange.
+	 * Answer if this repository can write.
 	 */
-	private File[] get(String bsn, String versionRange) throws Exception {
-		init();
-
-		// If the version is set to project, we assume it is not
-		// for us. A project repo will then get it.
-		if (versionRange != null && versionRange.equals("project"))
-			return null;
-
-		//
-		// Check if the entry exists
-		//
-		File f = new File(root, bsn);
-		if (!f.isDirectory())
-			return null;
-
-		//
-		// The version range we are looking for can
-		// be null (for all) or a version range.
-		//
-		VersionRange range;
-		if (versionRange == null || versionRange.equals("latest")) {
-			range = new VersionRange("0");
-		} else
-			range = new VersionRange(versionRange);
-
-		//
-		// Iterator over all the versions for this BSN.
-		// Create a sorted map over the version as key
-		// and the file as URL as value. Only versions
-		// that match the desired range are included in
-		// this list.
-		//
-		File instances[] = f.listFiles();
-		SortedMap<Version,File> versions = new TreeMap<Version,File>();
-		for (int i = 0; i < instances.length; i++) {
-			Matcher m = REPO_FILE.matcher(instances[i].getName());
-			if (m.matches() && m.group(1).equals(bsn)) {
-				String versionString = m.group(2);
-				Version version;
-				if (versionString.equals("latest"))
-					version = new Version(Integer.MAX_VALUE);
-				else
-					version = new Version(versionString);
-
-				if (range.includes(version) || versionString.equals(versionRange))
-					versions.put(version, instances[i]);
-			}
-		}
-
-		File[] files = versions.values().toArray(EMPTY_FILES);
-		if ("latest".equals(versionRange) && files.length > 0) {
-			return new File[] {
-				files[files.length - 1]
-			};
-		}
-		return files;
-	}
-
 	public boolean canWrite() {
 		return canWrite;
 	}
 
-	protected PutResult putArtifact(File tmpFile, PutOptions options) throws Exception {
+	/**
+	 * Local helper method that tries to insert a file in the repository. This
+	 * method can be overridden but MUST not change the content of the tmpFile.
+	 * This method should also create a latest version of the artifact for
+	 * reference by tools like ant etc. </p> It is allowed to rename the file,
+	 * the tmp file must be beneath the root directory to prevent rename
+	 * problems.
+	 * 
+	 * @param tmpFile
+	 *            source file
+	 * @param digest 
+	 * @return a File that contains the content of the tmpFile
+	 * @throws Exception
+	 */
+	protected File putArtifact(File tmpFile, byte[] digest) throws Exception {
 		assert (tmpFile != null);
-		assert (options != null);
 
-		Jar jar = null;
+		Jar jar = new Jar(tmpFile);
 		try {
-			init();
 			dirty = true;
 
-			jar = new Jar(tmpFile);
-
-			Manifest manifest = jar.getManifest();
-			if (manifest == null)
-				throw new IllegalArgumentException("No manifest in JAR: " + jar);
-
-			String bsn = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_SYMBOLICNAME);
+			String bsn = jar.getBsn();
 			if (bsn == null)
-				throw new IllegalArgumentException("No Bundle SymbolicName set");
+				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
 
-			Parameters b = Processor.parseHeader(bsn, null);
-			if (b.size() != 1)
-				throw new IllegalArgumentException("Multiple bsn's specified " + b);
-
-			for (String key : b.keySet()) {
-				bsn = key;
-				if (!Verifier.SYMBOLICNAME.matcher(bsn).matches())
-					throw new IllegalArgumentException("Bundle SymbolicName has wrong format: " + bsn);
-			}
-
-			String versionString = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_VERSION);
-			Version version;
+			String versionString = jar.getVersion();
 			if (versionString == null)
-				version = new Version();
-			else
-				version = new Version(versionString);
+				versionString = "0";
+			else if (!Verifier.isVersion(versionString))
+				throw new IllegalArgumentException("Incorrect version in : " + tmpFile + " " + versionString);
 
-			if (reporter != null)
-				reporter.trace("bsn=%s version=%s", bsn, version);
+			Version version = new Version(versionString);
+
+			reporter.trace("bsn=%s version=%s", bsn, version);
 
 			File dir = new File(root, bsn);
-			if (!dir.exists() && !dir.mkdirs()) {
+			dir.mkdirs();
+			if (!dir.isDirectory())
 				throw new IOException("Could not create directory " + dir);
-			}
+
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 			File file = new File(dir, fName);
 
-			boolean renamed = false;
-			PutResult result = new PutResult();
+			reporter.trace("updating %s ", file.getAbsolutePath());
 
-			if (reporter != null)
-				reporter.trace("updating %s ", file.getAbsolutePath());
-			if (!file.exists() || file.lastModified() < jar.lastModified()) {
-				if (file.exists()) {
-					IO.delete(file);
-				}
-				IO.rename(tmpFile, file);
-				renamed = true;
-				result.artifact = file.toURI();
+			IO.rename(tmpFile, file);
 
-				if (reporter != null)
-					reporter.progress(-1, "updated " + file.getAbsolutePath());
+			fireBundleAdded(jar, file);
+			afterPut(file, bsn, version, Hex.toHexString(digest));
 
-				fireBundleAdded(jar, file);
-			} else {
-				if (reporter != null) {
-					reporter.progress(-1, "Did not update " + jar + " because repo has a newer version");
-					reporter.trace("NOT Updating " + fName + " (repo is newer)");
-				}
-			}
-
+			// TODO like to beforeGet rid of the latest option. This is only
+			// used to have a constant name for the outside users (like ant)
+			// we should be able to handle this differently?
 			File latest = new File(dir, bsn + "-latest.jar");
-			boolean latestExists = latest.exists() && latest.isFile();
-			boolean latestIsOlder = latestExists && (latest.lastModified() < jar.lastModified());
-			if ((options.createLatest && !latestExists) || latestIsOlder) {
-				if (latestExists) {
-					IO.delete(latest);
-				}
-				if (!renamed) {
-					IO.rename(tmpFile, latest);
-				} else {
-					IO.copy(file, latest);
-				}
-				result.latest = latest.toURI();
-			}
+			IO.copy(file, latest);
 
-			return result;
+			reporter.trace("updated %s", file.getAbsolutePath());
+
+			return file;
 		}
 		finally {
-			if (jar != null) {
-				jar.close();
-			}
+			jar.close();
 		}
 	}
 
-	/* a straight copy of this method lives in LocalIndexedRepo */
+	/*
+	 * (non-Javadoc)
+	 * @see aQute.bnd.service.RepositoryPlugin#put(java.io.InputStream,
+	 * aQute.bnd.service.RepositoryPlugin.PutOptions)
+	 */
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
-		/* both parameters are required */
-		if ((stream == null) || (options == null)) {
-			throw new IllegalArgumentException("No stream and/or options specified");
-		}
-
 		/* determine if the put is allowed */
 		if (!canWrite) {
 			throw new IOException("Repository is read-only");
 		}
 
-		/* the root directory of the repository has to be a directory */
-		if (!root.isDirectory()) {
-			throw new IOException("Repository directory " + root + " is not a directory");
-		}
+		assert stream != null;
 
-		/* determine if the artifact needs to be verified */
-		boolean verifyFetch = (options.digest != null);
-		boolean verifyPut = !options.allowArtifactChange;
+		if (options == null)
+			options = DEFAULTOPTIONS;
 
-		/* determine which digests are needed */
-		boolean needFetchDigest = verifyFetch || verifyPut;
-		boolean needPutDigest = verifyPut || options.generateDigest;
+		init();
 
 		/*
-		 * setup a new stream that encapsulates the stream and calculates (when
-		 * needed) the digest
+		 * copy the artifact from the (new/digest) stream into a temporary file
+		 * in the root directory of the repository
 		 */
-		DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
-		dis.on(needFetchDigest);
-
-		File tmpFile = null;
+		File tmpFile = IO.createTempFile(root, "put", ".jar");
 		try {
-			/*
-			 * copy the artifact from the (new/digest) stream into a temporary
-			 * file in the root directory of the repository
-			 */
-			tmpFile = IO.createTempFile(root, "put", ".bnd");
-			IO.copy(dis, tmpFile);
+			DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
+			try {
+				IO.copy(dis, tmpFile);
 
-			/* get the digest if available */
-			byte[] disDigest = needFetchDigest ? dis.getMessageDigest().digest() : null;
+				byte[] digest = dis.getMessageDigest().digest();
 
-			/* verify the digest when requested */
-			if (verifyFetch && !MessageDigest.isEqual(options.digest, disDigest)) {
-				throw new IOException("Retrieved artifact digest doesn't match specified digest");
+				if (options.digest != null && !Arrays.equals(digest, options.digest))
+					throw new IOException("Retrieved artifact digest doesn't match specified digest");
+
+				/*
+				 * put the artifact into the repository (from the temporary
+				 * file)
+				 */
+				beforePut(tmpFile);
+				File file = putArtifact(tmpFile, digest);
+				file.setReadOnly();
+
+				PutResult result = new PutResult();
+				result.digest = digest;
+				result.artifact = file.toURI();
+
+				return result;
 			}
-
-			/* put the artifact into the repository (from the temporary file) */
-			PutResult r = putArtifact(tmpFile, options);
-
-			/* calculate the digest when requested */
-			if (needPutDigest && (r.artifact != null)) {
-				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-				IO.copy(new File(r.artifact), sha1);
-				r.digest = sha1.digest();
+			finally {
+				dis.close();
 			}
-
-			/* verify the artifact when requested */
-			if (verifyPut && (r.digest != null) && !MessageDigest.isEqual(disDigest, r.digest)) {
-				File f = new File(r.artifact);
-				if (f.exists()) {
-					IO.delete(f);
-				}
-				throw new IOException("Stored artifact digest doesn't match specified digest");
-			}
-
-			return r;
+		}
+		catch (Exception e) {
+			abortPut(tmpFile);
+			throw e;
 		}
 		finally {
-			if (tmpFile != null && tmpFile.exists()) {
-				IO.delete(tmpFile);
-			}
-		}
-	}
-
-	protected void fireBundleAdded(Jar jar, File file) {
-		if (registry == null)
-			return;
-		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
-		for (RepositoryListenerPlugin listener : listeners) {
-			try {
-				listener.bundleAdded(this, jar, file);
-			}
-			catch (Exception e) {
-				if (reporter != null)
-					reporter.warning("Repository listener threw an unexpected exception: %s", e);
-			}
+			IO.delete(tmpFile);
 		}
 	}
 
 	public void setLocation(String string) {
-		root = new File(string);
-		if (!root.isDirectory())
-			throw new IllegalArgumentException("Invalid repository directory");
+		root = IO.getFile(string);
 	}
 
 	public void setReporter(Reporter reporter) {
@@ -344,7 +439,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return result;
 	}
 
-	public List<Version> versions(String bsn) throws Exception {
+	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
 		File dir = new File(root, bsn);
 		if (dir.isDirectory()) {
@@ -359,9 +454,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 					list.add(new Version(version));
 				}
 			}
-			return list;
+			return new SortedList<Version>(list);
 		}
-		return null;
+		return SortedList.empty();
 	}
 
 	@Override
@@ -373,7 +468,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return root;
 	}
 
-	public boolean refresh() {
+	public boolean refresh() throws Exception {
+		init();
+		exec(refresh, root);
 		if (dirty) {
 			dirty = false;
 			return true;
@@ -388,50 +485,26 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return name;
 	}
 
-	public Jar get(String bsn, Version v) throws Exception {
+	/*
+	 * (non-Javadoc)
+	 * @see aQute.bnd.service.RepositoryPlugin#get(java.lang.String,
+	 * aQute.bnd.version.Version, java.util.Map)
+	 */
+	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
+			throws Exception {
 		init();
-		File bsns = new File(root, bsn);
-		File version = new File(bsns, bsn + "-" + v.getMajor() + "." + v.getMinor() + "." + v.getMicro() + ".jar");
-		if (version.exists())
-			return new Jar(version);
-		return null;
-	}
-
-	public File get(String bsn, String version, Strategy strategy, Map<String,String> properties) throws Exception {
-		if (version == null)
-			version = "0.0.0";
-
-		if (strategy == Strategy.EXACT) {
-			VersionRange vr = new VersionRange(version);
-			if (vr.isRange())
-				return null;
-
-			if (vr.getHigh().getMajor() == Integer.MAX_VALUE)
-				version = "latest";
-
-			File file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".jar");
-			if (file.isFile())
-				return file;
-			file = IO.getFile(root, bsn + "/" + bsn + "-" + version + ".lib");
-			if (file.isFile())
-				return file;
-			return null;
-
-		}
-		File[] files = get(bsn, version);
-		if (files == null || files.length == 0)
-			return null;
-
-		if (files.length >= 0) {
-			switch (strategy) {
-				case LOWEST :
-					return files[0];
-				case HIGHEST :
-					return files[files.length - 1];
-				case EXACT :
-					// TODO
-					break;
+		beforeGet(bsn, version);
+		File file = getLocal(bsn, version, properties);
+		if (file.exists()) {
+			for (DownloadListener l : listeners) {
+				try {
+					l.success(file);
+				}
+				catch (Exception e) {
+					reporter.exception(e, "Download listener for %s", file);
+				}
 			}
+			return file;
 		}
 		return null;
 	}
@@ -442,6 +515,226 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	public String getLocation() {
 		return root.toString();
+	}
+
+	public Map<String,Runnable> actions(Object... target) throws Exception {
+		if (target == null || target.length == 0)
+			return null; // no default actions
+
+		try {
+			String bsn = (String) target[0];
+			Version version = (Version) target[1];
+
+			final File f = get(bsn, version, null);
+			if (f == null)
+				return null;
+
+			Map<String,Runnable> actions = new HashMap<String,Runnable>();
+			actions.put("Delete " + bsn + "-" + status(bsn, version), new Runnable() {
+				public void run() {
+					IO.delete(f);
+					if (f.getParentFile().list().length == 0)
+						IO.delete(f.getParentFile());
+					afterAction(f, "delete");
+				};
+			});
+			return actions;
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+
+	protected void afterAction(File f, String key) {
+		exec(action, root, f, key);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see aQute.bnd.service.Actionable#tooltip(java.lang.Object[])
+	 */
+	@SuppressWarnings("unchecked")
+	public String tooltip(Object... target) throws Exception {
+		if (target == null || target.length == 0)
+			return String.format("%s\n%s", getName(), root);
+
+		try {
+			String bsn = (String) target[0];
+			Version version = (Version) target[1];
+			Map<String,String> map = null;
+			if (target.length > 2)
+				map = (Map<String,String>) target[2];
+
+			File f = getLocal(bsn, version, map);
+			String s = String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0), SHA1
+					.digest(f).asHex());
+			if (f.getName().endsWith(".lib") && f.isFile()) {
+				s += "\n" + IO.collect(f);
+			}
+			return s;
+
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see aQute.bnd.service.Actionable#title(java.lang.Object[])
+	 */
+	public String title(Object... target) throws Exception {
+		if (target == null || target.length == 0)
+			return getName();
+
+		if (target.length == 1 && target[0] instanceof String)
+			return (String) target[0];
+
+		if (target.length == 2 && target[0] instanceof String && target[1] instanceof Version) {
+			return status((String) target[0], (Version) target[1]);
+		}
+
+		return null;
+	}
+
+	protected File getLocal(String bsn, Version version, Map<String,String> properties) {
+		File dir = new File(root, bsn);
+
+		File fjar = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".jar");
+		if (fjar.isFile())
+			return fjar.getAbsoluteFile();
+
+		File flib = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".lib");
+		if (flib.isFile())
+			return flib.getAbsoluteFile();
+
+		return fjar.getAbsoluteFile();
+	}
+
+	protected String status(String bsn, Version version) {
+		File file = getLocal(bsn, version, null);
+		StringBuilder sb = new StringBuilder(version.toString());
+		String del = " [";
+
+		if (file.getName().endsWith(".lib")) {
+			sb.append(del).append("L");
+			del = "";
+		}
+		if (!file.getName().endsWith(".jar")) {
+			sb.append(del).append("?");
+			del = "";
+		}
+		if (!file.isFile()) {
+			sb.append(del).append("X");
+			del = "";
+		}
+		if (file.length() == 0) {
+			sb.append(del).append("0");
+			del = "";
+		}
+		if (del.equals(""))
+			sb.append("]");
+		return sb.toString();
+	}
+
+	private static String[]	names	= {
+			"bytes", "Kb", "Mb", "Gb"
+									};
+
+	private Object readable(long length, int n) {
+		if (length < 0)
+			return "<invalid>";
+
+		if (length < 1024 || n >= names.length)
+			return length + names[n];
+
+		return readable(length / 1024, n + 1);
+	}
+
+	public void close() throws IOException {
+		if (inited)
+			exec(close, root.getAbsolutePath());
+	}
+
+	protected void open() {
+		exec(open, root.getAbsolutePath());
+	}
+
+	protected void beforePut(File tmp) {
+		exec(beforePut, root.getAbsolutePath(), tmp.getAbsolutePath());
+	}
+
+	protected void afterPut(File file, String bsn, Version version, String sha) {
+		exec(afterPut, root.getAbsolutePath(), file.getAbsolutePath(), sha);
+	}
+
+	protected void abortPut(File tmpFile) {
+		exec(abortPut, root.getAbsolutePath(), tmpFile.getAbsolutePath());
+	}
+
+	protected void beforeGet(String bsn, Version version) {
+		exec(beforeGet, root.getAbsolutePath(), bsn, version);
+	}
+
+	protected void fireBundleAdded(Jar jar, File file) {
+		if (registry == null)
+			return;
+		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
+		for (RepositoryListenerPlugin listener : listeners) {
+			try {
+				listener.bundleAdded(this, jar, file);
+			}
+			catch (Exception e) {
+				if (reporter != null)
+					reporter.warning("Repository listener threw an unexpected exception: %s", e);
+			}
+		}
+	}
+
+	/**
+	 * Execute a command. Used in different stages so that the repository can be
+	 * synced with external tools.
+	 * 
+	 * @param line
+	 * @param target
+	 */
+	void exec(String line, Object... args) {
+		if (line == null)
+			return;
+
+		try {
+			if (args != null)
+				for (int i = 0; i < args.length; i++) {
+					if (i == 0)
+						line = line.replaceAll("\\$\\{@\\}", args[0].toString());
+					line = line.replaceAll("\\$" + i, args[i].toString());
+				}
+
+			if (shell == null) {
+				shell = System.getProperty("os.name").toLowerCase().indexOf("win") > 0 ? "cmd.exe" : "sh";
+			}
+			Command cmd = new Command(shell);
+
+			if (path != null) {
+				cmd.inherit();
+				String oldpath = cmd.var("PATH");
+				path = path.replaceAll("\\s*,\\s*", File.pathSeparator);
+				path = path.replaceAll("\\$\\{@\\}", oldpath);
+				cmd.var("PATH", path);
+			}
+
+			cmd.setCwd(getRoot());
+			StringBuilder stdout = new StringBuilder();
+			StringBuilder stderr = new StringBuilder();
+			int result = cmd.execute(line, stdout, stderr);
+			if (result != 0) {
+				reporter.error("Command %s failed with %s %s %s", line, result, stdout, stderr);
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			reporter.exception(e, e.getMessage());
+		}
 	}
 
 }

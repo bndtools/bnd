@@ -11,6 +11,7 @@ public class UsesGenericRValue {
 		return null;
 	}
 	
+	@SuppressWarnings("unused")
 	private static List<Subject> bar() {
 		return null;
 	}

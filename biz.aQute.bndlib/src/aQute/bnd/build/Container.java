@@ -5,46 +5,54 @@ import java.util.*;
 import java.util.jar.*;
 
 import aQute.bnd.osgi.*;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.service.*;
 
 public class Container {
 	public enum TYPE {
 		REPO, PROJECT, EXTERNAL, LIBRARY, ERROR
 	}
 
-	final File					file;
+	private final File			file;
+	private final String		path;
 	final TYPE					type;
 	final String				bsn;
 	final String				version;
 	final String				error;
 	final Project				project;
+	final DownloadBlocker		db;
 	volatile Map<String,String>	attributes;
 	private long				manifestTime;
 	private Manifest			manifest;
 
 	Container(Project project, String bsn, String version, TYPE type, File source, String error,
-			Map<String,String> attributes) {
+			Map<String,String> attributes, DownloadBlocker db) {
 		this.bsn = bsn;
 		this.version = version;
 		this.type = type;
 		this.file = source != null ? source : new File("/" + bsn + ":" + version + ":" + type);
+		this.path = file.getAbsolutePath();
+		
 		this.project = project;
 		this.error = error;
 		if (attributes == null || attributes.isEmpty())
 			this.attributes = Collections.emptyMap();
 		else
 			this.attributes = attributes;
+		this.db = db;
 	}
 
 	public Container(Project project, File file) {
-		this(project, file.getName(), "project", TYPE.PROJECT, file, null, null);
+		this(project, file.getName(), "project", TYPE.PROJECT, file, null, null, null);
 	}
 
-	public Container(File file) {
-		this(null, file.getName(), "project", TYPE.EXTERNAL, file, null, null);
+	public Container(File file, DownloadBlocker db) {
+		this(null, file.getName(), "project", TYPE.EXTERNAL, file, null, null, db);
 	}
 
 	public File getFile() {
+		if (db != null && db.getReason() != null) {
+			return new File(db.getReason() + ": " + file);
+		}
 		return file;
 	}
 
@@ -59,7 +67,7 @@ public class Container {
 		switch (type) {
 			case EXTERNAL :
 			case REPO :
-				files.add(file);
+				files.add(getFile());
 				return true;
 
 			case PROJECT :
@@ -106,13 +114,13 @@ public class Container {
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Container)
-			return file.equals(((Container) other).file);
+			return path.equals(((Container) other).path);
 		return false;
 	}
 
 	@Override
 	public int hashCode() {
-		return file.hashCode();
+		return path.hashCode();
 	}
 
 	public Project getProject() {
@@ -162,7 +170,7 @@ public class Container {
 			BufferedReader rd = null;
 			String line;
 			try {
-				in = new FileInputStream(file);
+				in = new FileInputStream(getFile());
 				rd = new BufferedReader(new InputStreamReader(in, Constants.DEFAULT_CHARSET));
 				while ((line = rd.readLine()) != null) {
 					line = line.trim();

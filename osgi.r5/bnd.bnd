@@ -14,3 +14,5 @@ Export-Package: org.osgi.framework.namespace,\
 	org.osgi.namespace.service
 
 Require-Capability: do.not.resolve
+no.junit = true
+

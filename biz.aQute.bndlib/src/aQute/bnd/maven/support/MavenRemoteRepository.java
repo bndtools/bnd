@@ -75,7 +75,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		throw new UnsupportedOperationException("cannot do list");
 	}
 
-	public List<Version> versions(String bsn) throws Exception {
+	public SortedSet<Version> versions(String bsn) throws Exception {
 		throw new UnsupportedOperationException("cannot do versions");
 	}
 
@@ -126,4 +126,21 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 
 		return Arrays.toString(repositories);
 	}
+
+	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener ... listeners) throws Exception {
+		File f= get(bsn, version.toString(), Strategy.EXACT, properties);
+		if ( f == null)
+			return null;
+		
+		for (DownloadListener l : listeners) {
+			try {
+				l.success(f);
+			}
+			catch (Exception e) {
+				reporter.exception(e, "Download listener for %s", f);
+			}
+		}
+		return f;
+	}
+
 }

@@ -25,7 +25,6 @@ import aQute.lib.data.*;
 import aQute.lib.getopt.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
-import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 import aQute.libg.reporter.*;
 import aQute.library.cache.*;
@@ -505,7 +504,6 @@ public class Main extends ReporterAdapter {
 		List<ArtifactData> ads = jpm.getArtifacts();
 		Collections.sort(ads, new Comparator<ArtifactData>() {
 
-			@Override
 			public int compare(ArtifactData a, ArtifactData b) {
 				return a.bsn.compareTo(b.bsn);
 			}
