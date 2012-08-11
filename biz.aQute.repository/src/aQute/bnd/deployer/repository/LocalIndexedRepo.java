@@ -207,9 +207,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 		init();
 
-		Jar jar = null;
+		Jar jar= new Jar(tmpFile);
 		try {
-			jar= new Jar(tmpFile);
 
 			String bsn = jar.getBsn();
 			if (bsn == null)
@@ -250,9 +249,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			return result;
 		}
 		finally {
-			if (jar != null) {
-				jar.close();
-			}
+			jar.close();
 		}
 	}
 
