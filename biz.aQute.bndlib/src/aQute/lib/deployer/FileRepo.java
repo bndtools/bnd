@@ -530,6 +530,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			actions.put("Delete", new Runnable() {
 				public void run() {
 					IO.delete(f);
+					if ( f.getParentFile().list().length == 0)
+						IO.delete(f.getParentFile());
 					afterAction(f, "delete");
 				};
 			});
