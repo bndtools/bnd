@@ -530,6 +530,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			actions.put("Delete", new Runnable() {
 				public void run() {
 					IO.delete(f);
+					afterAction(f, "delete");
 				};
 			});
 			return actions;
@@ -537,6 +538,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		catch (Exception e) {
 			return null;
 		}
+	}
+
+	protected void afterAction(File f, String key) {
+		exec(action, root, f, key);
 	}
 
 	/*
