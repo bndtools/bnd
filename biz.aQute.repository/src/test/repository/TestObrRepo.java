@@ -125,7 +125,7 @@ public class TestObrRepo extends TestCase {
 	}
 
 	public static void testList() throws Exception {
-		List<String> result = obr.list("name\\.njbartlett\\..*");
+		List<String> result = obr.list("name.njbart*");
 		assertNotNull(result);
 		assertEquals(2, result.size());
 	}

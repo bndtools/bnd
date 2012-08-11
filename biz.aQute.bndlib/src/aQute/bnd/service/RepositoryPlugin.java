@@ -174,14 +174,15 @@ public interface RepositoryPlugin {
 	/**
 	 * Return a list of bsns that are present in the repository.
 	 * 
-	 * @param regex
-	 *            if not null, match against the bsn and if matches, return
-	 *            otherwise skip
-	 * @return A list of bsns that match the regex parameter or all if regex is
-	 *         null
+	 * @param pattern
+	 *            A <ahref="https://en.wikipedia.org/wiki/Glob_%28programming%29">glob pattern</a>
+	 *            to be matched against bsns present in the repository, or {@code null}.
+	 * @return A list of bsns that match the pattern parameter or all if pattern
+	 *         is null; repositories that do not support browsing or querying
+	 *         should return an empty list.
 	 * @throws Exception
 	 */
-	List<String> list(String regex) throws Exception;
+	List<String> list(String pattern) throws Exception;
 
 	/**
 	 * Return a list of versions.

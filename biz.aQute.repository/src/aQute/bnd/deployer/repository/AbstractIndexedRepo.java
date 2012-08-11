@@ -27,6 +27,7 @@ import aQute.lib.collections.*;
 import aQute.lib.filter.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
+import aQute.libg.glob.*;
 import aQute.libg.gzip.*;
 import aQute.service.reporter.*;
 
@@ -299,13 +300,13 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		throw new UnsupportedOperationException("Read-only repository.");
 	}
 
-	public List<String> list(String regex) throws Exception {
+	public List<String> list(String pattern) throws Exception {
 		init();
-		Pattern pattern = regex != null ? Pattern.compile(regex) : null;
+		Glob glob = pattern != null ? new Glob(pattern) : null;
 		List<String> result = new LinkedList<String>();
 
 		for (String bsn : bsnMap.keySet()) {
-			if (pattern == null || pattern.matcher(bsn).matches())
+			if (glob == null || glob.matcher(bsn).matches())
 				result.add(bsn);
 		}
 
