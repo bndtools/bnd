@@ -201,7 +201,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		}
 	}
 
-	protected PutResult putArtifact(File tmpFile) throws Exception {
+	protected File putArtifact(File tmpFile) throws Exception {
 		assert (tmpFile != null);
 		assert (tmpFile.isFile());
 
@@ -232,24 +232,21 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 			File file = new File(dir, fName);
 
-			PutResult result = new PutResult();
-
 			// check overwrite policy
 			if (!overwrite && file.exists())
-				return result;
+				return null;
 
 			IO.rename(tmpFile, file);
-			result.artifact = file.toURI();
 
 			synchronized (newFilesInCoordination) {
-				newFilesInCoordination.add(result.artifact);
+				newFilesInCoordination.add(file.toURI());
 			}
 
 			Coordinator coordinator = (registry != null) ? registry.getPlugin(Coordinator.class) : null;
 			if (!(coordinator != null && coordinator.addParticipant(this))) {
 				finishPut();
 			}
-			return result;
+			return file;
 		}
 		finally {
 			jar.close();
@@ -300,7 +297,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			}
 
 			/* put the artifact into the repository (from the temporary file) */
-			PutResult result = putArtifact(tmpFile);
+			File file = putArtifact(tmpFile);
+
+			PutResult result = new PutResult();
 
 			/* always calculate the digest */
 			MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
@@ -315,6 +314,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				}
 				throw new IOException("Stored artifact digest doesn't match specified digest");
 			}
+
+			result.artifact = file.toURI();
 
 			return result;
 		}
