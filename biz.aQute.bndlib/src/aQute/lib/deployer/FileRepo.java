@@ -340,9 +340,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		init();
 
-		/* determine if the artifact needs to be verified */
-		boolean verifyPut = !options.allowArtifactChange;
-
 		/*
 		 * copy the artifact from the (new/digest) stream into a temporary file
 		 * in the root directory of the repository
@@ -374,7 +371,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				result.digest = sha1.digest();
 
 				/* verify the artifact when requested */
-				if (verifyPut && (result.digest != null) && !MessageDigest.isEqual(digest, result.digest)) {
+				if (!options.allowArtifactChange && (result.digest != null) && !MessageDigest.isEqual(digest, result.digest)) {
 					File f = new File(result.artifact);
 					abortPut(f);
 					if (f.exists()) {
