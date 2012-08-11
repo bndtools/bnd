@@ -18,14 +18,11 @@ public interface RepositoryPlugin {
 	 */
 	class PutOptions {
 		/**
-		 * The <b>SHA1</b> digest of the artifact to put into the repository.<br/>
-		 * <br/>
+		 * The <b>SHA1</b> digest of the artifact to put into the repository.
 		 * When specified the digest of the <b>fetched</b> artifact will be
 		 * calculated and verified against this digest, <b>before</b> putting
-		 * the artifact into the repository.<br/>
-		 * <br/>
-		 * An exception is thrown if the specified digest and the calculated
-		 * digest do not match.
+		 * the artifact into the repository. </p> An exception is thrown if the
+		 * specified digest and the calculated digest do not match.
 		 */
 		public byte[]	digest				= null;
 
