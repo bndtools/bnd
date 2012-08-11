@@ -300,23 +300,23 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			}
 
 			/* put the artifact into the repository (from the temporary file) */
-			PutResult r = putArtifact(tmpFile, options);
+			PutResult result = putArtifact(tmpFile, options);
 
 			/* always calculate the digest */
 			MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-			IO.copy(new File(r.artifact), sha1);
-			r.digest = sha1.digest();
+			IO.copy(new File(result.artifact), sha1);
+			result.digest = sha1.digest();
 
 			/* verify the artifact when requested */
-			if (!options.allowArtifactChange && (r.digest != null) && !MessageDigest.isEqual(disDigest, r.digest)) {
-				File f = new File(r.artifact);
+			if (!options.allowArtifactChange && (result.digest != null) && !MessageDigest.isEqual(disDigest, result.digest)) {
+				File f = new File(result.artifact);
 				if (f.exists()) {
 					IO.delete(f);
 				}
 				throw new IOException("Stored artifact digest doesn't match specified digest");
 			}
 
-			return r;
+			return result;
 		}
 		finally {
 			if (tmpFile != null && tmpFile.exists()) {
