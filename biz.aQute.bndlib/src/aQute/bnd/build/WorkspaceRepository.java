@@ -128,8 +128,12 @@ public class WorkspaceRepository implements RepositoryPlugin {
 			if (build != null) {
 				for (File file : build) {
 					Jar jar = new Jar(file);
+					try {
 					if (bsn.equals(jar.getBsn())) {
 						versions.add(new Version(jar.getVersion()));
+					}
+					finally {
+						jar.close();
 					}
 				}
 			}
