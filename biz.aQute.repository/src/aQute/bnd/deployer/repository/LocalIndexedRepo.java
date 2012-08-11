@@ -295,7 +295,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			/* get the digest if available */
 			byte[] disDigest = dis.getMessageDigest().digest();
 
-			/* verify the digest when requested */
 			if (options.digest != null && !MessageDigest.isEqual(options.digest, disDigest)) {
 				throw new IOException("Retrieved artifact digest doesn't match specified digest");
 			}
