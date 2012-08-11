@@ -25,7 +25,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
@@ -69,6 +68,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     private static final ILogger logger = Logger.getLogger();
 
     private final FilterPanelPart filterPart = new FilterPanelPart(Plugin.getDefault().getScheduler());
+    private final RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider();
     private TreeViewer viewer;
 
     private Action collapseAllAction;
@@ -86,7 +86,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         filterPanel.setBackground(tree.getBackground());
 
         viewer = new TreeViewer(tree);
-        viewer.setContentProvider(new RepositoryTreeContentProvider());
+        viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
         getViewSite().setSelectionProvider(viewer);
 
@@ -263,14 +263,16 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     }
 
     private void updatedFilter(String filterString) {
-        if (filterString == null || filterString.length() == 0) {
-            viewer.setFilters(new ViewerFilter[0]);
-        } else {
-            viewer.setFilters(new ViewerFilter[] {
-                new RepositoryBsnFilter(filterString)
-            });
+        String newFilter;
+        if (filterString == null || filterString.length() == 0 || filterString.trim().equals("*"))
+            newFilter = null;
+        else
+            newFilter = "*" + filterString.trim() + "*";
+
+        contentProvider.setFilter(newFilter);
+        viewer.refresh();
+        if (newFilter != null)
             viewer.expandToLevel(2);
-        }
     }
 
     void createActions() {
