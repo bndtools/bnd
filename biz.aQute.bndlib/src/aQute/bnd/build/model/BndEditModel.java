@@ -30,6 +30,7 @@ public class BndEditModel {
 	private static final String									ISO_8859_1					= "ISO-8859-1";												//$NON-NLS-1$
 
 	private static String[]										KNOWN_PROPERTIES			= new String[] {
+			Constants.BUNDLE_LICENSE, Constants.BUNDLE_CATEGORY,
 			Constants.BUNDLE_NAME, Constants.BUNDLE_DESCRIPTION, Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_UPDATELOCATION,
 			Constants.BUNDLE_VENDOR, Constants.BUNDLE_CONTACTADDRESS, Constants.BUNDLE_DOCURL,
 			Constants.BUNDLE_SYMBOLICNAME, Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR,
@@ -167,6 +168,8 @@ public class BndEditModel {
 	@SuppressWarnings("deprecation")
 	public BndEditModel() {
 		// register converters
+		converters.put(aQute.bnd.osgi.Constants.BUNDLE_LICENSE, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.BUNDLE_CATEGORY, stringConverter);
 		converters.put(aQute.bnd.osgi.Constants.BUNDLE_NAME, stringConverter);
 		converters.put(aQute.bnd.osgi.Constants.BUNDLE_DESCRIPTION, stringConverter);
 		converters.put(aQute.bnd.osgi.Constants.BUNDLE_COPYRIGHT, stringConverter);
@@ -201,6 +204,8 @@ public class BndEditModel {
 		converters.put(aQute.bnd.osgi.Constants.RUNREPOS, listConverter);
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 
+		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_LICENSE, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_CATEGORY, newlineEscapeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_NAME, newlineEscapeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_DESCRIPTION, newlineEscapeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_COPYRIGHT, newlineEscapeFormatter);
@@ -356,6 +361,22 @@ public class BndEditModel {
 		if (formatter == null)
 			formatter = new DefaultFormatter();
 		doSetObject(propertyName, oldValue, value, formatter);
+	}
+
+	public String getBundleLicense() {
+		return doGetObject(Constants.BUNDLE_LICENSE, stringConverter);
+	}
+
+	public void setBundleLicense(String bundleLicense) {
+		doSetObject(Constants.BUNDLE_LICENSE, getBundleLicense(), bundleLicense, newlineEscapeFormatter);
+	}
+
+	public String getBundleCategory() {
+		return doGetObject(Constants.BUNDLE_CATEGORY, stringConverter);
+	}
+
+	public void setBundleCategory(String bundleCategory) {
+		doSetObject(Constants.BUNDLE_CATEGORY, getBundleCategory(), bundleCategory, newlineEscapeFormatter);
 	}
 
 	public String getBundleName() {
