@@ -133,7 +133,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * </p>
 	 * @param ${@0} the root of the repo (directory exists)
 	 */
-	public static final String	CMD_CLOSE		= "cmd.cose";
+	public static final String	CMD_CLOSE		= "cmd.close";
 
 	/**
 	 * Called before a before get.
