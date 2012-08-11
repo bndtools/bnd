@@ -270,9 +270,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			throw new IOException("Repository directory " + storageDir + " is not a directory");
 		}
 
-		/* determine if the artifact needs to be verified */
-		boolean verifyPut = !options.allowArtifactChange;
-
 		/*
 		 * setup a new stream that encapsulates the stream and calculates (when
 		 * needed) the digest
@@ -305,7 +302,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			r.digest = sha1.digest();
 
 			/* verify the artifact when requested */
-			if (verifyPut && (r.digest != null) && !MessageDigest.isEqual(disDigest, r.digest)) {
+			if (!options.allowArtifactChange && (r.digest != null) && !MessageDigest.isEqual(disDigest, r.digest)) {
 				File f = new File(r.artifact);
 				if (f.exists()) {
 					IO.delete(f);
