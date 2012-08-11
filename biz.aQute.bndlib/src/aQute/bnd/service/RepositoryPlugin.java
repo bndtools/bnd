@@ -39,15 +39,6 @@ public interface RepositoryPlugin {
 		 * put the artifact into the repository without changing it.
 		 */
 		public boolean	allowArtifactChange	= false;
-
-		/**
-		 * Generate a <b>SHA1</b> digest.<br/>
-		 * <br/>
-		 * When set to true the implementation generates a digest of the
-		 * artifact as it is put into the repository and returns that digest in
-		 * the result.
-		 */
-		public boolean	generateDigest		= false;
 	}
 
 	PutOptions	DEFAULTOPTIONS	= new PutOptions();

@@ -343,9 +343,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		/* determine if the artifact needs to be verified */
 		boolean verifyPut = !options.allowArtifactChange;
 
-		/* determine which digests are needed */
-		boolean needPutDigest = verifyPut || options.generateDigest;
-
 		/*
 		 * copy the artifact from the (new/digest) stream into a temporary file
 		 * in the root directory of the repository
@@ -372,13 +369,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 				PutResult result = new PutResult();
 
-				/* calculate the digest when requested */
-				if (needPutDigest && (result.artifact != null)) {
-					MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-					IO.copy(new File(result.artifact), sha1);
-					result.digest = sha1.digest();
-				}
-				
+				/* always calculate the digest */
+				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+				IO.copy(new File(result.artifact), sha1);
+				result.digest = sha1.digest();
+
 				/* verify the artifact when requested */
 				if (verifyPut && (result.digest != null) && !MessageDigest.isEqual(digest, result.digest)) {
 					File f = new File(result.artifact);

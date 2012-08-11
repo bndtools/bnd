@@ -276,7 +276,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 		/* determine which digests are needed */
 		boolean needFetchDigest = verifyFetch || verifyPut;
-		boolean needPutDigest = verifyPut || options.generateDigest;
 
 		/*
 		 * setup a new stream that encapsulates the stream and calculates (when
@@ -305,12 +304,10 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			/* put the artifact into the repository (from the temporary file) */
 			PutResult r = putArtifact(tmpFile, options);
 
-			/* calculate the digest when requested */
-			if (needPutDigest && (r.artifact != null)) {
-				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-				IO.copy(new File(r.artifact), sha1);
-				r.digest = sha1.digest();
-			}
+			/* always calculate the digest */
+			MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+			IO.copy(new File(r.artifact), sha1);
+			r.digest = sha1.digest();
 
 			/* verify the artifact when requested */
 			if (verifyPut && (r.digest != null) && !MessageDigest.isEqual(disDigest, r.digest)) {
