@@ -260,14 +260,14 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	/* NOTE: this is a straight copy of FileRepo.put */
 	@Override
 	public synchronized PutResult put(InputStream stream, PutOptions options) throws Exception {
-		/* both parameters are required */
-		if ((stream == null) || (options == null)) {
-			throw new IllegalArgumentException("No stream and/or options specified");
-		}
-
 		/* determine if the put is allowed */
 		if (readOnly) {
 			throw new IOException("Repository is read-only");
+		}
+
+		/* both parameters are required */
+		if ((stream == null) || (options == null)) {
+			throw new IllegalArgumentException("No stream and/or options specified");
 		}
 
 		/* the root directory of the repository has to be a directory */
