@@ -2,16 +2,15 @@ package aQute.bnd.deployer.repository;
 
 import java.io.*;
 import java.net.*;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
+import java.security.*;
 import java.util.*;
 
 import org.osgi.service.coordinator.*;
 import org.osgi.service.log.*;
 
-import aQute.bnd.osgi.*;
 import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.filerepo.FileRepo;
+import aQute.bnd.filerepo.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
