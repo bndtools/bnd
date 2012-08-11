@@ -19,7 +19,10 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.editor.common.MDSashForm;
-import bndtools.editor.contents.DescriptionInfoPart;
+import bndtools.editor.contents.DescriptionBundlePart;
+import bndtools.editor.contents.DescriptionDeveloperPart;
+import bndtools.editor.contents.DescriptionRightsPart;
+import bndtools.editor.contents.DescriptionVendorPart;
 import bndtools.utils.MessageHyperlinkAdapter;
 
 public class BundleDescriptionPage extends FormPage {
@@ -63,8 +66,17 @@ public class BundleDescriptionPage extends FormPage {
 
         Composite leftPanel = toolkit.createComposite(sashForm);
 
-        DescriptionInfoPart infoPart = new DescriptionInfoPart(leftPanel, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        DescriptionBundlePart infoPart = new DescriptionBundlePart(leftPanel, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
         managedForm.addPart(infoPart);
+
+        DescriptionRightsPart rightsPart = new DescriptionRightsPart(leftPanel, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        managedForm.addPart(rightsPart);
+
+        DescriptionVendorPart vendorPart = new DescriptionVendorPart(leftPanel, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        managedForm.addPart(vendorPart);
+
+        DescriptionDeveloperPart developerPart = new DescriptionDeveloperPart(leftPanel, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        managedForm.addPart(developerPart);
 
         // LAYOUT
         GridData gd;
@@ -75,6 +87,15 @@ public class BundleDescriptionPage extends FormPage {
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         infoPart.getSection().setLayoutData(gd);
+
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        rightsPart.getSection().setLayoutData(gd);
+
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        vendorPart.getSection().setLayoutData(gd);
+
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        developerPart.getSection().setLayoutData(gd);
 
         sashForm.hookResizeListener();
 

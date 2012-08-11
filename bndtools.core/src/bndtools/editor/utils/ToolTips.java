@@ -15,6 +15,10 @@ public class ToolTips {
 
     static private String getStrippedExample(Syntax syntax, String constant) {
         String example = syntax.getExample();
+        if ((example == null) || (example.trim().length() == 0)) {
+            return null;
+        }
+
         Pattern p = Pattern.compile("^(\\s*" + Pattern.quote(constant.trim()) + "\\s*)(:|=|:=)(\\s*)(.*?)\\s*$");
         Matcher matcher = p.matcher(example);
         if (matcher.matches()) {
@@ -38,12 +42,29 @@ public class ToolTips {
             logger.logError("No bnd syntax found for " + constant, null);
             syntax = new Syntax(constant, "Description of " + constant, constant + ": Example for " + constant, null, null);
         }
-        String se = getStrippedExample(syntax, constant);
+
+        String values = syntax.getValues();
+        if ((values == null) || (values.trim().length() == 0)) {
+            values = "";
+        } else {
+            values = "\n\nProposed Values:\n" + values.trim().replaceAll("\\s*,\\s*", ", ");
+        }
+
+        String message = "";
+        String examples = getStrippedExample(syntax, constant);
+        if (examples == null) {
+            message = "";
+            examples = "";
+        } else {
+            message = examples;
+            examples = "\n\nExample:\n" + examples;
+        }
 
         if (control instanceof Text) {
             Text text = (Text) control;
-            text.setToolTipText(syntax.getLead() + "\n\nExample:\n" + se);
-            text.setMessage(se);
+            String tt = syntax.getLead() + values + examples;
+            text.setToolTipText(tt);
+            text.setMessage(message);
         }
     }
 }
