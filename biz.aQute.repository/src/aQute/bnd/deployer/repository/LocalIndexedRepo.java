@@ -274,15 +274,11 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		boolean verifyFetch = (options.digest != null);
 		boolean verifyPut = !options.allowArtifactChange;
 
-		/* determine which digests are needed */
-		boolean needFetchDigest = verifyFetch || verifyPut;
-
 		/*
 		 * setup a new stream that encapsulates the stream and calculates (when
 		 * needed) the digest
 		 */
 		DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
-		dis.on(needFetchDigest);
 
 		File tmpFile = null;
 		try {
@@ -294,7 +290,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			IO.copy(dis, tmpFile);
 
 			/* get the digest if available */
-			byte[] disDigest = needFetchDigest ? dis.getMessageDigest().digest() : null;
+			byte[] disDigest = dis.getMessageDigest().digest();
 
 			/* verify the digest when requested */
 			if (verifyFetch && !MessageDigest.isEqual(options.digest, disDigest)) {
