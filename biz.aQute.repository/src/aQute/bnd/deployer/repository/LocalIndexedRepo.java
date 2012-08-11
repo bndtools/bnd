@@ -291,7 +291,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			/* get the digest if available */
 			byte[] disDigest = dis.getMessageDigest().digest();
 
-			if (options.digest != null && !MessageDigest.isEqual(options.digest, disDigest)) {
+			if (options.digest != null && !Arrays.equals(options.digest, disDigest)) {
 				throw new IOException("Retrieved artifact digest doesn't match specified digest");
 			}
 
@@ -306,7 +306,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			result.digest = sha1.digest();
 
 			/* verify the artifact when requested */
-			if (!options.allowArtifactChange && (result.digest != null) && !MessageDigest.isEqual(disDigest, result.digest)) {
+			if (!options.allowArtifactChange && (result.digest != null) && !Arrays.equals(disDigest, result.digest)) {
 				File f = new File(result.artifact);
 				if (f.exists()) {
 					IO.delete(f);
