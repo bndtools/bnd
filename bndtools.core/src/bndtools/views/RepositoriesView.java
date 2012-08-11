@@ -1,10 +1,13 @@
 package bndtools.views;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.bndtools.core.utils.swt.FilterPanelPart;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
@@ -33,6 +36,7 @@ import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -40,6 +44,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
+import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.ServiceRegistration;
 
@@ -59,9 +64,11 @@ import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
-public class RepositoriesView extends FilteredViewPart implements RepositoryListenerPlugin {
+public class RepositoriesView extends ViewPart implements RepositoryListenerPlugin {
+
     private static final ILogger logger = Logger.getLogger();
 
+    private final FilterPanelPart filterPart = new FilterPanelPart();
     private TreeViewer viewer;
 
     private Action collapseAllAction;
@@ -71,9 +78,12 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
     private ServiceRegistration registration;
 
     @Override
-    protected void createMainControl(Composite container) {
+    public void createPartControl(Composite parent) {
         // CREATE CONTROLS
-        Tree tree = new Tree(container, SWT.FULL_SELECTION | SWT.MULTI);
+        Composite mainPanel = new Composite(parent, SWT.NONE);
+        Control filterPanel = filterPart.createControl(mainPanel, 5, 5);
+        Tree tree = new Tree(mainPanel, SWT.FULL_SELECTION | SWT.MULTI);
+        filterPanel.setBackground(tree.getBackground());
 
         viewer = new TreeViewer(tree);
         viewer.setContentProvider(new RepositoryTreeContentProvider());
@@ -83,6 +93,12 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         createActions();
 
         // LISTENERS
+        filterPart.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                String filter = (String) event.getNewValue();
+                updatedFilter(filter);
+            }
+        });
         ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
             @Override
             public boolean validateDrop(Object target, int operation, TransferData transferType) {
@@ -193,11 +209,22 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         layout.verticalSpacing = 0;
         layout.marginWidth = 0;
         layout.marginHeight = 0;
-        container.setLayout(layout);
+        mainPanel.setLayout(layout);
 
         tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        filterPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
+        // Toolbar
+        createActions();
+        fillToolBar(getViewSite().getActionBars().getToolBarManager());
+
+        // Register as repository listener
         registration = Activator.getDefault().getBundleContext().registerService(RepositoryListenerPlugin.class.getName(), this, null);
+    }
+
+    @Override
+    public void setFocus() {
+        filterPart.setFocus();
     }
 
     private static File[] convertSelectionToFiles(ISelection selection) {
@@ -235,8 +262,7 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         return true;
     }
 
-    @Override
-    protected void updatedFilter(String filterString) {
+    private void updatedFilter(String filterString) {
         if (filterString == null || filterString.length() == 0) {
             viewer.setFilters(new ViewerFilter[0]);
         } else {
@@ -299,14 +325,11 @@ public class RepositoriesView extends FilteredViewPart implements RepositoryList
         getSite().registerContextMenu(mgr, viewer);
     }
 
-    @Override
-    protected void fillToolBar(IToolBarManager toolBar) {
+    private void fillToolBar(IToolBarManager toolBar) {
         toolBar.add(refreshAction);
         toolBar.add(collapseAllAction);
         toolBar.add(addBundlesAction);
         toolBar.add(new Separator());
-
-        super.fillToolBar(toolBar);
     }
 
     public void bundleAdded(final RepositoryPlugin repository, Jar jar, File file) {
