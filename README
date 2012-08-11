@@ -1,24 +1,31 @@
-README bnd
+# README bnd
 bnd is a swiss army knife for OSGi, it creates manifest headers for you based on 
 analyzing the class code, it verifies your settings, it manages project dependencies,
 gives you quote of the day, diffs jars, and much more. 
 
 The information about bnd can be found at http://www.aQute.biz/Bnd
 
-Repository
+## Repository
 The git repository contains all code. It contains the following projects:
 
-1) bndlib     - Core library function, also contains most tests
-2) bnd        - Command line tool, eclipse plugin, and ant plugin
-3) launcher   - A launcher plugin for bnd
-4) libg       - Small, simple library utilities that are useful outside bnd
-5) junit      - A tester plugin for JUnit 3.8 testing for bnd
-6) cnf        - The bnd project directory, contains the repo with dependencies
-7) demo       - A project used in testing
-8) compiler   - A wrapped version of the eclipse java compiler
+* aQute.libg - Library to be statically linked (Conditional-Package)
+* biz.aQute.bnd - A command line utility and ant plugin
+* biz.aQute.bndlib - The core library
+* biz.aQute.bndlib.tests - Tests for the core library
+* biz.aQute.jpm - Just another package manager for Java		     
+* biz.aQute.junit - Junit tester (runs on Java 1.4)
+* biz.aQute.launcher - Launcher (runs on Java 1.4)
+* biz.aQute.repository - Different repos with OBR
+* biz.aQute.resolve - OBR Resolver
+* cnf - Configuration directory
+* demo - Used in testing
+* dist - Contains the distribution after 'ant dist'
+* osgi.r5 - OSGi jars without all dependencies
 
-API
+## License
 All code is Apache 2.0 Licensed so you can do what you want with the source code. 
+
+## API
 though I am usually pretty good at backward compatibility, there is no guarantee. This
 is an unpaid project and one of the most annoying thing of work is being backward compatible
 on the Java API when you know a better way to do it. Properties will be backward compatible
@@ -29,15 +36,11 @@ If you're building a tool with a general audience, e.g. bndtools,  that includes
 for a general audience I would appreciate if you got in touch with me so I can keep 
 in touch. I am always interested in ideas.
 
-Eclipse
-bnd is build with itself, which can create some headaches. Overall, you want 
-to your work therefore in Eclipse with a recent bnd.jar in the Eclipse dropins
-folder. Currently, bndtools is not yet ready for bnd itself :-( however, that is
-being worked on. Once bndtools handles the bnd launcher/tester then the eclipse
-plugin will be removed. Until that moment, we need to use the old code in Eclipse.
-It is advised to not mix bnd and bndtools but use different instances of Eclipse.
+## Eclipse
+bndtools is the development environment of bnd. An earlier Eclipse plugin in bnd is no longer
+available.
 
-Building
+## Building
 The workspace root has a build.xml that builds all project in proper order. Due
 to the fact that bnd builds itself there are certain cases where you get an error
 during build. Trying again should fix the issue.
@@ -48,37 +51,24 @@ ant build (default) - Build
 ant clean           - Clean the project
 ant test            - Run a bnd OSGi test
 ant junit           - Run standard JUnit tests in the test package
+ant dist            - Create a dist directory with all the bundles in repo format + obr indexes
 
 Outputs are stored in the tmp directory in the different projects.
 
-Testing
-The main tests are in the bndlib project. These are standard JUnit tests. They
+## Testing
+The main tests are in the biz.aQute.bndlib.tests project. These are standard JUnit tests. They
 are all in the src/test directory. Tests are quite extensive and run from the
 Eclipse JUnit screen.
 
-Release
-The current release process could use some work. The following steps are used:
+## Release
+bnd is continuously built on Cloudbees: https://bndtools.ci.cloudbees.com/#
 
-1) Changes to the tree are made on the next branch
-2) After the next branch is done, commit all changes. There are a few
-   files changed by tests that should not be committed every time: 
-   # biz.aQute.bndlib/test/ws/p1/bnd.bnd
-   # biz.aQute.bndlib/test/ws/p1/bnd.bnd.bak
-   # biz.aQute.bndlib/test/ws/p3/generated/p3.jar
-   This needs fixing btw. The test should not touch those files or at least restore
-3) Switch to master
-4) ant clean build
-5) run the tests
-6) if successful, release the jars
-7) bump the version (bnd bump command does this)
-8) switch to next branch
+A more comprehensive release process is in the works.
 
-This process is likely to change because it contains too many manual steps
-
-Feedback
+## Feedback
 Feedback is always welcome, for general discussions use bndtools-users@googlegroups.com
-Bugs and issues should go to https://github.com/bndtools/bnd
-Other feedback or specific functionality send to Peter.Kriens@aQute.biz
 
-Donations should go to http://pledgie.com/campaigns/10548
+Bugs and issues should go to https://github.com/bndtools/bnd
+
+Other feedback or specific functionality send to Peter.Kriens@aQute.biz
 
