@@ -314,13 +314,9 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
 		SortedMap<Version,Resource> versionMap = bsnMap.get(bsn);
-		List<Version> list;
-		if (versionMap != null) {
-			list = new ArrayList<Version>(versionMap.size());
-			list.addAll(versionMap.keySet());
-		} else {
-			list = Collections.emptyList();
-		}
+		if (versionMap == null || versionMap.isEmpty())
+			return SortedList.empty();
+		
 		return new SortedList<Version>(versionMap.keySet());
 	}
 
