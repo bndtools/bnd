@@ -9,6 +9,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.libg.command.*;
 import aQute.libg.cryptography.*;
@@ -366,7 +367,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				beforePut(tmpFile);
 				File file = putArtifact(tmpFile);
 				file.setReadOnly();
-				afterPut(file);
+				afterPut(file, Hex.toHexString(digest));
 
 				PutResult result = new PutResult();
 
@@ -493,8 +494,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 */
 	public File get(String bsn, Version version, Map<String,String> properties) throws Exception {
 		init();
-		beforeGet(bsn, version);
 		File file = IO.getFile(root, bsn + "/" + bsn + "-" + version.getWithoutQualifier() + ".jar");
+		beforeGet(bsn, version, file);
 		if (file.isFile())
 			return file;
 
@@ -571,16 +572,16 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		exec(beforePut, root.getAbsolutePath(), tmp.getAbsolutePath());
 	}
 
-	protected void afterPut(File file) {
-		exec(afterPut, root.getAbsolutePath(), file.getAbsolutePath());
+	protected void afterPut(File file, String sha) {
+		exec(afterPut, root.getAbsolutePath(), file.getAbsolutePath(), sha);
 	}
 
 	protected void abortPut(File tmpFile) {
 		exec(abortPut, root.getAbsolutePath(), tmpFile.getAbsolutePath());
 	}
 
-	protected void beforeGet(String bsn, Version version) {
-		exec(beforeGet, root.getAbsolutePath(), bsn, version);
+	protected void beforeGet(String bsn, Version version, File file) {
+		exec(beforeGet, root.getAbsolutePath(), file.getAbsolutePath(), bsn, version);
 	}
 
 	protected void fireBundleAdded(Jar jar, File file) {
