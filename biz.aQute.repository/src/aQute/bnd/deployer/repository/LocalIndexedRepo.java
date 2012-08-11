@@ -211,7 +211,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		try {
 
 			String bsn = jar.getBsn();
-			if (bsn == null)
+			if (bsn == null || !Verifier.isBsn(bsn))
 				throw new IllegalArgumentException("Jar does not have a Bundle-SymbolicName manifest header");
 
 			File dir = new File(storageDir, bsn);
