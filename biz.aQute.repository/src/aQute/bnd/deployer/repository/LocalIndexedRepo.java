@@ -203,7 +203,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 	protected PutResult putArtifact(File tmpFile, PutOptions options) throws Exception {
 		assert (tmpFile != null);
-		assert (options != null);
+		assert (tmpFile.isFile());
 
 		init();
 
