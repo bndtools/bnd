@@ -2,26 +2,54 @@ package org.bndtools.core.utils.swt;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+
+import bndtools.Plugin;
 
 public class FilterPanelPart {
 
     private static final String PROP_FILTER = "filter";
-    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+    private static final long SEARCH_DELAY = 1000;
 
     private String filter;
 
     private Composite panel;
     private Text txtFilter;
+
+    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+    private final Lock scheduledFilterLock = new ReentrantLock();
+    private final Runnable updateFilterTask = new Runnable() {
+        public void run() {
+            Display display = panel.getDisplay();
+            Runnable update = new Runnable() {
+                public void run() {
+                    String newFilter = txtFilter.getText();
+                    setFilter(newFilter);
+                }
+            };
+            if (display.getThread() == Thread.currentThread())
+                update.run();
+            else
+                display.asyncExec(update);
+        }
+    };
+    private ScheduledFuture< ? > scheduledFilterUpdate = null;
 
     public Control createControl(Composite parent) {
         return createControl(parent, 0, 0);
@@ -48,11 +76,29 @@ public class FilterPanelPart {
         // LISTENERS
         txtFilter.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                if (e.detail == SWT.CANCEL)
-                    setFilter("");
-                else
-                    setFilter(txtFilter.getText());
+            public void widgetDefaultSelected(SelectionEvent ev) {
+                try {
+                    scheduledFilterLock.lock();
+                    if (scheduledFilterUpdate != null)
+                        scheduledFilterUpdate.cancel(true);
+                } finally {
+                    scheduledFilterLock.unlock();
+                }
+
+                String newFilter = (ev.detail == SWT.CANCEL) ? "" : txtFilter.getText();
+                setFilter(newFilter);
+            }
+        });
+        txtFilter.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent ev) {
+                try {
+                    scheduledFilterLock.lock();
+                    if (scheduledFilterUpdate != null)
+                        scheduledFilterUpdate.cancel(true);
+                    scheduledFilterUpdate = Plugin.getDefault().getScheduler().schedule(updateFilterTask, SEARCH_DELAY, TimeUnit.MILLISECONDS);
+                } finally {
+                    scheduledFilterLock.unlock();
+                }
             }
         });
         return panel;
