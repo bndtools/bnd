@@ -367,16 +367,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 				/* always calculate the digest */
 				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-				IO.copy(new File(result.artifact), sha1);
+				IO.copy(file, sha1);
 				result.digest = sha1.digest();
 
 				/* verify the artifact when requested */
 				if (!options.allowArtifactChange && (result.digest != null) && !Arrays.equals(digest, result.digest)) {
-					File f = new File(result.artifact);
-					abortPut(f);
-					if (f.exists()) {
-						IO.delete(f);
-					}
+					abortPut(file);
+					IO.delete(file);
 					throw new IOException("Stored artifact digest doesn't match specified digest");
 				}
 
