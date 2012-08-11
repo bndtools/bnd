@@ -24,7 +24,15 @@ public class ToolTips {
         return example;
     }
 
-    static public void setupHeaderMessageAndToolTip(Control control, String constant) {
+    /**
+     * Setup the message and the tooltip of a control. The Syntax class of bnd is used to determine these.
+     * 
+     * @param control
+     *            the control
+     * @param constant
+     *            the constant, as mentioned in aQute.bnd.osgi.Constants
+     */
+    static public void setupMessageAndToolTipFromSyntax(Control control, String constant) {
         Syntax syntax = Syntax.HELP.get(constant);
         if (syntax == null) {
             logger.logError("No bnd syntax found for " + constant, null);

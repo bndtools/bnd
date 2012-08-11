@@ -40,7 +40,7 @@ public class RunVMArgsPart extends SectionPart implements PropertyChangeListener
         Composite composite = toolkit.createComposite(section);
 
         textField = toolkit.createText(composite, "", SWT.MULTI | SWT.BORDER);
-        ToolTips.setupHeaderMessageAndToolTip(textField, Constants.RUNVM);
+        ToolTips.setupMessageAndToolTipFromSyntax(textField, Constants.RUNVM);
         textField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {

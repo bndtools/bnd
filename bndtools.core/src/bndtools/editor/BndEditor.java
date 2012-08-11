@@ -72,6 +72,7 @@ import bndtools.api.ResolveMode;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.model.IDocumentWrapper;
 import bndtools.editor.pages.BundleContentPage;
+import bndtools.editor.pages.BundleDescriptionPage;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
@@ -88,6 +89,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     static final String WORKSPACE_PAGE = "__workspace_page";
     static final String WORKSPACE_EXT_PAGE = "__workspace_ext_page";
+    static final String DESCRIPTION_PAGE = "__description_page";
     static final String CONTENT_PAGE = "__content_page";
     static final String BUILD_PAGE = "__build_page";
     static final String PROJECT_RUN_PAGE = "__project_run_page";
@@ -105,6 +107,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
         pageFactories.put(WORKSPACE_EXT_PAGE, WorkspacePage.EXT_FACTORY);
         pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
+        pageFactories.put(DESCRIPTION_PAGE, BundleDescriptionPage.FACTORY);
         pageFactories.put(BUILD_PAGE, ProjectBuildPage.FACTORY);
         pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY);
         pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);

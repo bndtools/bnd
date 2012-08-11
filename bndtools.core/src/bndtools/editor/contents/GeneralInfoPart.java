@@ -159,11 +159,11 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
         toolkit.createLabel(composite, "Version:");
         txtVersion = toolkit.createText(composite, "", SWT.BORDER);
-        ToolTips.setupHeaderMessageAndToolTip(txtVersion, Constants.BUNDLE_VERSION);
+        ToolTips.setupMessageAndToolTipFromSyntax(txtVersion, Constants.BUNDLE_VERSION);
 
         Hyperlink linkActivator = toolkit.createHyperlink(composite, "Activator:", SWT.NONE);
         txtActivator = toolkit.createText(composite, "", SWT.BORDER);
-        ToolTips.setupHeaderMessageAndToolTip(txtActivator, Constants.BUNDLE_ACTIVATOR);
+        ToolTips.setupMessageAndToolTipFromSyntax(txtActivator, Constants.BUNDLE_ACTIVATOR);
 
         toolkit.createLabel(composite, "Declarative Services:");
         cmbComponents = new Combo(composite, SWT.READ_ONLY);
