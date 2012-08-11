@@ -271,7 +271,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		}
 
 		/* determine if the artifact needs to be verified */
-		boolean verifyFetch = (options.digest != null);
 		boolean verifyPut = !options.allowArtifactChange;
 
 		/*
@@ -293,7 +292,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			byte[] disDigest = dis.getMessageDigest().digest();
 
 			/* verify the digest when requested */
-			if (verifyFetch && !MessageDigest.isEqual(options.digest, disDigest)) {
+			if (options.digest != null && !MessageDigest.isEqual(options.digest, disDigest)) {
 				throw new IOException("Retrieved artifact digest doesn't match specified digest");
 			}
 
