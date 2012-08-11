@@ -129,8 +129,15 @@ public class WorkspaceRepository implements RepositoryPlugin {
 				for (File file : build) {
 					Jar jar = new Jar(file);
 					try {
-					if (bsn.equals(jar.getBsn())) {
-						versions.add(new Version(jar.getVersion()));
+						if (bsn.equals(jar.getBsn())) {
+							String v  = jar.getVersion();
+							if ( v == null)
+								v = "0";
+							else if (!Verifier.isVersion(v))
+								continue; // skip
+							
+							versions.add(new Version(v));
+						}
 					}
 					finally {
 						jar.close();
@@ -138,7 +145,6 @@ public class WorkspaceRepository implements RepositoryPlugin {
 				}
 			}
 		}
-
 		if ( versions.isEmpty())
 			return SortedList.empty();
 		
