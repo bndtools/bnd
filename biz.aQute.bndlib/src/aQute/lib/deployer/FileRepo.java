@@ -545,18 +545,29 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 */
 	public String tooltip(Object... target) throws Exception {
 		if (target == null || target.length == 0)
-			return String.format("File repository %s on location %s", getName(), root);
+			return String.format("%s\n%s", getName(), root);
 
 		try {
 			String bsn = (String) target[0];
 			Version version = (Version) target[1];
 			File f = get(bsn, version, null);
-			return String.format("%s, %s bytes, %s", f.getAbsolutePath(), f.length(), SHA1.digest(f).asHex());
+			return String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0), SHA1.digest(f).asHex());
 
 		}
 		catch (Exception e) {
 			return null;
 		}
+	}
+
+	private static String[] names = {"bytes", "Kb", "Mb", "Gb"};
+	private Object readable(long length, int n) {
+		if ( length < 0 )
+			return "<invalid>";
+		
+		if ( length < 1024 || n >= names.length)
+			return length + names[n];
+		
+		return readable(length/1024, n+1);
 	}
 
 	public void close() throws IOException {
