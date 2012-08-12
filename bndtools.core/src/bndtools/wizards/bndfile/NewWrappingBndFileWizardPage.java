@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.osgi.framework.Version;
 
-import aQute.lib.osgi.Constants;
+import aQute.bnd.osgi.Constants;
 import bndtools.utils.PathUtils;
 
 public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {

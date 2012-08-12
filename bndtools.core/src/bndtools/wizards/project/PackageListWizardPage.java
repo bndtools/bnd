@@ -36,8 +36,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.Resource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
 import bndtools.internal.pkgselection.PackageNameLabelProvider;
 
 public class PackageListWizardPage extends WizardPage {

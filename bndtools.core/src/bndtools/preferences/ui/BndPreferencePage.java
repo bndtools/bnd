@@ -36,6 +36,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private boolean noCheckCnf = false;
     private boolean warnExistingLaunch = true;
     private int buildLogging = 0;
+    private boolean editorOpenSourceTab = false;
 
     @Override
     protected Control createContents(Composite parent) {
@@ -85,6 +86,12 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
                 "None", "Basic", "Full"
         });
 
+        Group editorGroup = new Group(composite, SWT.NONE);
+        editorGroup.setText("Bnd Files Editor");
+
+        final Button btnEditorOpenSourceTab = new Button(editorGroup, SWT.CHECK);
+        btnEditorOpenSourceTab.setText("Open the \"source\" tab by default.");
+
         // Load Data
         if (MessageDialogWithToggle.ALWAYS.equals(enableSubs)) {
             btnAlways.setSelection(true);
@@ -104,6 +111,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         btnCheckCnfNow.setEnabled(!noCheckCnf);
         btnWarnExistingLaunch.setSelection(warnExistingLaunch);
         cmbBuildLogging.select(buildLogging);
+        btnEditorOpenSourceTab.setSelection(editorOpenSourceTab);
 
         // Listeners
         SelectionAdapter adapter = new SelectionAdapter() {
@@ -158,6 +166,12 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
                 buildLogging = cmbBuildLogging.getSelectionIndex();
             }
         });
+        btnEditorOpenSourceTab.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                editorOpenSourceTab = btnEditorOpenSourceTab.getSelection();
+            }
+        });
 
         // Layout
         GridLayout layout;
@@ -192,6 +206,13 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         grpDebugging.setLayout(new GridLayout(2, false));
         cmbBuildLogging.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        editorGroup.setLayoutData(gd);
+
+        layout = new GridLayout(1, false);
+        layout.verticalSpacing = 10;
+        editorGroup.setLayout(layout);
+
         return composite;
     }
 
@@ -203,6 +224,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         prefs.setHideInitCnfWizard(noCheckCnf);
         prefs.setWarnExistingLaunch(warnExistingLaunch);
         prefs.setBuildLogging(buildLogging);
+        prefs.setEditorOpenSourceTab(editorOpenSourceTab);
 
         return true;
     }
@@ -215,5 +237,6 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         noCheckCnf = prefs.getHideInitCnfWizard();
         warnExistingLaunch = prefs.getWarnExistingLaunches();
         buildLogging = prefs.getBuildLogging();
+        editorOpenSourceTab = prefs.getEditorOpenSourceTab();
     }
 }

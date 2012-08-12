@@ -218,7 +218,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
 
                             return Status.OK_STATUS;
                         } catch (IOException e) {
-                            Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
+                            Status status = new Status(IStatus.ERROR, PluginConstants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
                             // ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, status);
                             return status;
                         } finally {

@@ -36,17 +36,17 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
-import aQute.lib.osgi.Builder;
-import aQute.lib.osgi.Clazz;
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Descriptors.PackageRef;
-import aQute.lib.osgi.Jar;
-import aQute.lib.osgi.Processor;
-import aQute.libg.header.Attrs;
-import aQute.libg.header.Parameters;
-import aQute.libg.version.Version;
-import aQute.libg.version.VersionRange;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
@@ -191,7 +191,7 @@ public class AnalyseBundleResolutionJob extends Job {
         Parameters exportsMap = new Parameters(exportPkgStr);
 
         // Merge the exports
-        MultiMap<PackageRef,PackageRef> uses = builder.getUses();
+        Map<PackageRef,List<PackageRef>> uses = builder.getUses();
         for (Entry<String,Attrs> entry : exportsMap.entrySet()) {
             String pkgName = Processor.removeDuplicateMarker(entry.getKey());
             ExportPackage export = new ExportPackage(pkgName, entry.getValue(), uses.get(pkgName));
@@ -204,8 +204,8 @@ public class AnalyseBundleResolutionJob extends Job {
         }
 
         // Merge the used-by package mappings
-        MultiMap<PackageRef,PackageRef> myUsedBy = CollectionUtils.invertMultiMap(uses);
-        for (Entry<PackageRef,List<PackageRef>> entry : myUsedBy.entrySet()) {
+        Map<PackageRef,Set<PackageRef>> myUsedBy = CollectionUtils.invertMapOfCollection(uses);
+        for (Entry<PackageRef,Set<PackageRef>> entry : myUsedBy.entrySet()) {
             String pkgName = entry.getKey().getFQN();
             List<String> users = getFQNList(entry.getValue());
 
@@ -240,7 +240,7 @@ public class AnalyseBundleResolutionJob extends Job {
         }
     }
 
-    private static List<String> getFQNList(List<PackageRef> pkgRefs) {
+    private static List<String> getFQNList(Collection<PackageRef> pkgRefs) {
         List<String> result = new ArrayList<String>(pkgRefs.size());
         for (PackageRef pkgRef : pkgRefs) {
             result.add(pkgRef.getFQN());

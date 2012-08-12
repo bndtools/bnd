@@ -73,13 +73,12 @@ import org.osgi.framework.Constants;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.ServiceComponent;
-import aQute.libg.header.Attrs;
-import aQute.libg.version.Version;
-import bndtools.BndConstants;
+import aQute.bnd.header.Attrs;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.api.ILogger;
+import bndtools.editor.utils.ToolTips;
 import bndtools.utils.CachingContentProposalProvider;
 import bndtools.utils.JavaContentProposal;
 import bndtools.utils.JavaContentProposalLabelProvider;
@@ -90,7 +89,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     private static final ILogger logger = Logger.getLogger();
 
     private static final String[] EDITABLE_PROPERTIES = new String[] {
-            Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, BndConstants.SOURCES, BndConstants.OUTPUT, aQute.lib.osgi.Constants.SERVICE_COMPONENT, aQute.lib.osgi.Constants.DSANNOTATIONS
+            Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.DSANNOTATIONS
     };
 
     private static final String UNKNOWN_ACTIVATOR_ERROR_KEY = "ERROR_" + Constants.BUNDLE_ACTIVATOR + "_UNKNOWN";
@@ -160,11 +159,11 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
         toolkit.createLabel(composite, "Version:");
         txtVersion = toolkit.createText(composite, "", SWT.BORDER);
-        txtVersion.setMessage(Version.LOWEST.toString());
+        ToolTips.setupMessageAndToolTipFromSyntax(txtVersion, Constants.BUNDLE_VERSION);
 
         Hyperlink linkActivator = toolkit.createHyperlink(composite, "Activator:", SWT.NONE);
         txtActivator = toolkit.createText(composite, "", SWT.BORDER);
-        txtActivator.setMessage("Enter activator class name");
+        ToolTips.setupMessageAndToolTipFromSyntax(txtActivator, Constants.BUNDLE_ACTIVATOR);
 
         toolkit.createLabel(composite, "Declarative Services:");
         cmbComponents = new Combo(composite, SWT.READ_ONLY);
@@ -215,8 +214,8 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                         if (index >= 0 && index < ComponentChoice.values().length) {
                             componentChoice = ComponentChoice.values()[cmbComponents.getSelectionIndex()];
                             if (old != componentChoice) {
-                                addDirtyProperty(aQute.lib.osgi.Constants.SERVICE_COMPONENT);
-                                addDirtyProperty(aQute.lib.osgi.Constants.DSANNOTATIONS);
+                                addDirtyProperty(aQute.bnd.osgi.Constants.SERVICE_COMPONENT);
+                                addDirtyProperty(aQute.bnd.osgi.Constants.DSANNOTATIONS);
                                 if (old == null) {
                                     cmbComponents.remove(ComponentChoice.values().length);
                                 }
@@ -333,13 +332,13 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                                 @Override
                                 public void run() {
                                     model.addPrivatePackage(packageName);
-                                    addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
+                                    addDirtyProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE);
                                 }
                             }, new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
                                 @Override
                                 public void run() {
                                     model.addExportedPackage(new ExportedPackage(packageName, null));
-                                    addDirtyProperty(aQute.lib.osgi.Constants.PRIVATE_PACKAGE);
+                                    addDirtyProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE);
                                 }
                             }
                     };
@@ -391,7 +390,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 model.setBundleActivator(activator);
             }
 
-            if (dirtySet.contains(aQute.lib.osgi.Constants.SERVICE_COMPONENT) || dirtySet.contains(aQute.lib.osgi.Constants.DSANNOTATIONS)) {
+            if (dirtySet.contains(aQute.bnd.osgi.Constants.SERVICE_COMPONENT) || dirtySet.contains(aQute.bnd.osgi.Constants.DSANNOTATIONS)) {
                 switch (componentChoice) {
                 case Bnd :
                     model.setServiceComponents(Collections.singletonList(SERVICE_COMPONENT_STAR));
@@ -467,7 +466,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
             } else {
                 markStale();
             }
-        } else if (Constants.EXPORT_PACKAGE.equals(evt.getPropertyName()) || aQute.lib.osgi.Constants.PRIVATE_PACKAGE.equals(evt.getPropertyName())) {
+        } else if (Constants.EXPORT_PACKAGE.equals(evt.getPropertyName()) || aQute.bnd.osgi.Constants.PRIVATE_PACKAGE.equals(evt.getPropertyName())) {
             checkActivatorIncluded();
         }
     }

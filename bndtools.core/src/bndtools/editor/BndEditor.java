@@ -20,8 +20,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.bndtools.core.obr.ObrResolutionJob;
-import org.bndtools.core.obr.ObrResolutionResult;
+import org.bndtools.core.resolve.ResolutionResult;
+import org.bndtools.core.resolve.ResolveJob;
+import org.bndtools.core.resolve.ui.ResolutionWizard;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.core.resources.IFile;
@@ -63,8 +64,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.build.model.conversions.Converter;
-import aQute.bnd.build.model.conversions.EnumConverter;
 import bndtools.BndConstants;
 import bndtools.Logger;
 import bndtools.Plugin;
@@ -73,14 +72,15 @@ import bndtools.api.ResolveMode;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.model.IDocumentWrapper;
 import bndtools.editor.pages.BundleContentPage;
+import bndtools.editor.pages.BundleDescriptionPage;
 import bndtools.editor.pages.ProjectBuildPage;
 import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
 import bndtools.editor.pages.WorkspacePage;
 import bndtools.launch.LaunchConstants;
+import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
 import bndtools.utils.SWTConcurrencyUtil;
-import bndtools.wizards.obr.ObrResolutionWizard;
 
 public class BndEditor extends ExtendedFormEditor implements IResourceChangeListener {
     private static final ILogger logger = Logger.getLogger();
@@ -89,6 +89,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     static final String WORKSPACE_PAGE = "__workspace_page";
     static final String WORKSPACE_EXT_PAGE = "__workspace_ext_page";
+    static final String DESCRIPTION_PAGE = "__description_page";
     static final String CONTENT_PAGE = "__content_page";
     static final String BUILD_PAGE = "__build_page";
     static final String PROJECT_RUN_PAGE = "__project_run_page";
@@ -102,12 +103,11 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
 
-    private final Converter<ResolveMode,String> resolveModeConverter = EnumConverter.create(ResolveMode.class, ResolveMode.manual);
-
     public BndEditor() {
         pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
         pageFactories.put(WORKSPACE_EXT_PAGE, WorkspacePage.EXT_FACTORY);
         pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
+        pageFactories.put(DESCRIPTION_PAGE, BundleDescriptionPage.FACTORY);
         pageFactories.put(BUILD_PAGE, ProjectBuildPage.FACTORY);
         pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY);
         pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
@@ -241,7 +241,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             sourcePage.refresh();
         }
 
-        ResolveMode resolveMode = resolveModeConverter.convert((String) model.genericGet(BndConstants.RESOLVE_MODE));
+        ResolveMode resolveMode = getResolveMode();
 
         // If auto resolve, then resolve and save in background thread.
         if (resolveMode == ResolveMode.auto && !PlatformUI.getWorkbench().isClosing()) {
@@ -253,7 +253,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             }
 
             // Create resolver job and pre-validate
-            final ObrResolutionJob job = new ObrResolutionJob(file, model);
+            final ResolveJob job = new ResolveJob(model);
             IStatus validation = job.validateBeforeRun();
             if (!validation.isOK()) {
                 String message = "Unable to run the OBR resolver. NB.: the file will still be saved.";
@@ -267,9 +267,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             final UIJob completionJob = new UIJob(shell.getDisplay(), "Display Resolution Results") {
                 @Override
                 public IStatus runInUIThread(IProgressMonitor monitor) {
-                    ObrResolutionResult result = job.getResolutionResult();
-                    ObrResolutionWizard wizard = new ObrResolutionWizard(model, file, result);
-                    if (!result.isResolved() || !result.getOptional().isEmpty()) {
+                    ResolutionResult result = job.getResolutionResult();
+                    ResolutionWizard wizard = new ResolutionWizard(model, file, result);
+                    if (result.getOutcome() != ResolutionResult.Outcome.Resolved || !result.getResolve().getOptionalResources().isEmpty()) {
                         WizardDialog dialog = new WizardDialog(shell, wizard);
                         if (dialog.open() != Window.OK) {
                             if (!wizard.performFinish()) {
@@ -299,6 +299,18 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             // Not auto-resolving, just save
             reallySave(monitor);
         }
+    }
+
+    private ResolveMode getResolveMode() {
+        ResolveMode resolveMode = ResolveMode.manual;
+        try {
+            String str = (String) model.genericGet(BndConstants.RESOLVE_MODE);
+            if (str != null)
+                resolveMode = Enum.valueOf(ResolveMode.class, str);
+        } catch (Exception e) {
+            logger.logError("Error parsing '-resolve' header.", e);
+        }
+        return resolveMode;
     }
 
     private void reallySave(IProgressMonitor monitor) {
@@ -358,6 +370,12 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     void showHighestPriorityPage() {
         int selectedPrio = Integer.MIN_VALUE;
         String selected = null;
+
+        BndPreferences prefs = new BndPreferences();
+        if (prefs.getEditorOpenSourceTab()) {
+            selected = SOURCE_PAGE;
+            selectedPrio = 0;
+        }
 
         for (Object pageObj : pages) {
             IFormPage page = (IFormPage) pageObj;

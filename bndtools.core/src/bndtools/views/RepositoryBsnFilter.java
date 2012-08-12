@@ -1,21 +1,21 @@
 package bndtools.views;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedSet;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Jar;
-import aQute.libg.header.Attrs;
-import aQute.libg.header.Parameters;
-import aQute.libg.version.Version;
-import aQute.libg.version.VersionRange;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
@@ -61,7 +61,7 @@ public class RepositoryBsnFilter extends ViewerFilter {
                 RepositoryBundle bundle = (RepositoryBundle) element;
 
                 try {
-                    List<Version> versions = bundle.getRepo().versions(bundle.getBsn());
+                    SortedSet<Version> versions = bundle.getRepo().versions(bundle.getBsn());
                     for (Version version : versions) {
                         RepositoryBundleVersion bundleVersion = new RepositoryBundleVersion(bundle, version);
                         if (filterMatch(bundleVersion)) {

@@ -66,7 +66,7 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.lib.osgi.Constants;
+import aQute.bnd.osgi.Constants;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
@@ -318,7 +318,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
     @Override
     public void refresh() {
         List<String> modelList = model.getTestSuites();
-        testSuites = (modelList == null) ? new ArrayList<String>() : new ArrayList<String>(modelList);
+        testSuites = new ArrayList<String>(modelList);
         viewer.setInput(testSuites);
         validate();
     }
@@ -437,7 +437,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 }
 
 class TestSuiteLabelProvider extends StyledCellLabelProvider {
-    private Image suiteImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tsuite.gif").createImage();
+    private final Image suiteImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tsuite.gif").createImage();
 
     // private Image testImg =
     // AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID,

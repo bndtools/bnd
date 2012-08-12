@@ -44,7 +44,7 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
-import aQute.lib.osgi.Constants;
+import aQute.bnd.osgi.Constants;
 import bndtools.UIConstants;
 import bndtools.javamodel.FormPartJavaSearchContext;
 import bndtools.utils.ModificationLock;

@@ -8,17 +8,18 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Builder;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
-import aQute.lib.osgi.Builder;
-import aQute.libg.version.Version;
+import aQute.bnd.version.Version;
 import bndtools.Logger;
 import bndtools.api.ILogger;
 
@@ -172,7 +173,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     static RepositoryBundleVersion[] getRepositoryBundleVersions(RepositoryBundle bundle) {
         RepositoryBundleVersion[] result = null;
 
-        List<Version> versions = null;
+        SortedSet<Version> versions = null;
         try {
             versions = bundle.getRepo().versions(bundle.getBsn());
         } catch (Exception e) {

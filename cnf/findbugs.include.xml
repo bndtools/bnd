@@ -9,9 +9,6 @@
        <Package name="bndtools.api" />
      </Match>
      <Match>
-       <Package name="bndtools.bindex" />
-     </Match>
-     <Match>
        <Package name="bndtools.bndplugins.repo" />
      </Match>
      <Match>
@@ -25,9 +22,6 @@
      </Match>
      <Match>
        <Package name="bndtools.classpath.ui" />
-     </Match>
-     <Match>
-       <Package name="bndtools.diff" />
      </Match>
      <Match>
        <Package name="bndtools.editor" />
@@ -49,9 +43,6 @@
      </Match>
      <Match>
        <Package name="bndtools.editor.model" />
-     </Match>
-     <Match>
-       <Package name="bndtools.editor.model.conversions" />
      </Match>
      <Match>
        <Package name="bndtools.editor.pages" />
@@ -156,9 +147,6 @@
        <Package name="bndtools.wizards.bndfile" />
      </Match>
      <Match>
-       <Package name="bndtools.wizards.obr" />
-     </Match>
-     <Match>
        <Package name="bndtools.wizards.project" />
      </Match>
      <Match>
@@ -180,31 +168,31 @@
        <Package name="org.bndtools.core.actions" />
      </Match>
      <Match>
+       <Package name="org.bndtools.core.build.indexer" />
+     </Match>
+     <Match>
        <Package name="org.bndtools.core.build.validate" />
      </Match>
      <Match>
        <Package name="org.bndtools.core.jobs.newproject" />
      </Match>
      <Match>
-       <Package name="org.bndtools.core.obr" />
+       <Package name="org.bndtools.core.resolve" />
      </Match>
      <Match>
-       <Package name="org.bndtools.core.obr.model" />
-     </Match>
-     <Match>
-       <Package name="org.bndtools.core.repository" />
+       <Package name="org.bndtools.core.resolve.ui" />
      </Match>
      <Match>
        <Package name="org.bndtools.core.ui" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.ui.resource" />
      </Match>
      <Match>
        <Package name="org.bndtools.core.utils.collections" />
      </Match>
      <Match>
        <Package name="org.bndtools.core.utils.dnd" />
-     </Match>
-     <Match>
-       <Package name="org.bndtools.core.utils.filters" />
      </Match>
      <Match>
        <Package name="org.bndtools.core.utils.jface" />
@@ -216,6 +204,9 @@
        <Package name="org.bndtools.core.utils.parse.properties" />
      </Match>
      <Match>
+       <Package name="org.bndtools.core.utils.resources" />
+     </Match>
+     <Match>
        <Package name="org.bndtools.core.utils.swt" />
      </Match>
      <Match>
@@ -223,11 +214,5 @@
      </Match>
      <Match>
        <Package name="test.bndtools.bndplugins.repo.git" />
-     </Match>
-     <Match>
-       <Package name="test.bndtools.diff" />
-     </Match>
-     <Match>
-       <Package name="test.bndtools.diff.util" />
      </Match>
 </FindBugsFilter>

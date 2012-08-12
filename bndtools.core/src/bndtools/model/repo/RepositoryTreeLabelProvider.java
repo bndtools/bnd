@@ -1,7 +1,8 @@
 package bndtools.model.repo;
 
-import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,10 +18,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import aQute.bnd.build.Project;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
-import bndtools.WorkspaceObrProvider;
 import bndtools.api.ILogger;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
@@ -39,13 +38,6 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
 
     @Override
     public void update(ViewerCell cell) {
-        try {
-            /* initialise WorkspaceObrProvider */
-            Central.getWorkspaceObrProvider();
-        } catch (Exception e) {
-            /* ignore */
-        }
-
         Object element = cell.getElement();
         int index = cell.getColumnIndex();
 
@@ -55,7 +47,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 cell.setText(repo.getName());
 
                 Image image;
-                if (element instanceof WorkspaceObrProvider)
+                if (RepositoryUtils.isWorkspaceRepo(repo))
                     image = projectImg;
                 else if (isRemoteRepo((RepositoryPlugin) element))
                     image = remoteRepoImg;
@@ -106,7 +98,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     }
 
     private static boolean isRemoteRepo(RepositoryPlugin repository) {
-        List<URI> locations = Collections.emptyList();
+        List< ? > locations = Collections.emptyList();
         if (repository instanceof IndexProvider) {
             try {
                 locations = ((IndexProvider) repository).getIndexLocations();
@@ -115,12 +107,19 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             }
         }
 
-        for (URI location : locations) {
+        for (Object locationObj : locations) {
             try {
-                String protocol = location.toURL().getProtocol();
+                URI location;
+                if (locationObj instanceof URI)
+                    location = (URI) locationObj;
+                else if (locationObj instanceof URL)
+                    location = ((URL) locationObj).toURI();
+                else
+                    return false;
+                String protocol = location.getScheme();
                 if ("http".equals(protocol) || "https".equals(protocol))
                     return true;
-            } catch (MalformedURLException e) {
+            } catch (URISyntaxException e) {
                 return false;
             }
         }
@@ -137,25 +136,21 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     }
 
     public Image getImage(Object element) {
-        WorkspaceObrProvider workspace;
-        try {
-            workspace = Central.getWorkspaceObrProvider();
-        } catch (Exception e) {
-            workspace = null;
-        }
-
-        if (element == workspace) {
-            return projectImg;
-        } else if (element instanceof RepositoryPlugin) {
-            return isRemoteRepo((RepositoryPlugin) element) ? remoteRepoImg : localRepoImg;
+        Image img = null;
+        if (element instanceof RepositoryPlugin) {
+            RepositoryPlugin repo = (RepositoryPlugin) element;
+            if (RepositoryUtils.isWorkspaceRepo(repo))
+                img = projectImg;
+            else
+                img = isRemoteRepo(repo) ? remoteRepoImg : localRepoImg;
         } else if (element instanceof Project) {
-            return projectImg;
+            img = projectImg;
         } else if (element instanceof ProjectBundle) {
-            return bundleImg;
+            img = bundleImg;
         } else if (element instanceof RepositoryBundle) {
-            return bundleImg;
+            img = bundleImg;
         }
-        return null;
+        return img;
     }
 
     public String getText(Object element) {

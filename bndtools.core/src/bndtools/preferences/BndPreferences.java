@@ -13,6 +13,7 @@ public class BndPreferences {
     private static final String PREF_WARN_EXISTING_LAUNCH = "warnExistingLaunch";
     private static final String PREF_HIDE_WARNING_EXTERNAL_FILE = "hideExternalFileWarning";
     private static final String PREF_BUILD_LOGGING = "buildLogging";
+    private static final String PREF_EDITOR_OPEN_SOURCE_TAB = "editorOpenSourceTab";
 
     private IPreferenceStore store;
 
@@ -83,4 +84,11 @@ public class BndPreferences {
         return store;
     }
 
+    public void setEditorOpenSourceTab(boolean editorOpenSourceTab) {
+        store.setValue(PREF_EDITOR_OPEN_SOURCE_TAB, editorOpenSourceTab);
+    }
+
+    public boolean getEditorOpenSourceTab() {
+        return store.getBoolean(PREF_EDITOR_OPEN_SOURCE_TAB);
+    }
 }

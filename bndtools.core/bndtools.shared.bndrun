@@ -9,15 +9,8 @@ workspace.bundles: \
 	bndtools.repository.base;version=snapshot,\
 	bndtools.template.dm;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
-	bndtools.diff;version=snapshot,\
 	bndtools.release;version=snapshot,\
-	org.bndtools.embeddedrepo;version=snapshot,\
-	org.bndtools.repos.obr;version=snapshot,\
-	org.osgi.impl.bundle.bindex2.lib
-
-# used by the bndtools.diff and bndtools.release plug-ins	
-asm.bundles: com.springsource.org.objectweb.asm,\
-	com.springsource.org.objectweb.asm.tree
+	org.bndtools.embeddedrepo;version=snapshot
 
 p2.bundles: org.eclipse.equinox.p2.core,\
 	org.eclipse.equinox.p2.engine,\
@@ -59,6 +52,7 @@ help.bundles: \
 crossplatform.bundles:\
 	${bndlib},\
 	${aQute-repository},\
+	biz.aQute.resolve,\
 	bndtools.runtime.eclipse.applaunch,\
 	org.osgi.impl.bundle.bindex;version=latest,\
 	stax2-api,\
@@ -139,8 +133,7 @@ crossplatform.bundles:\
 	org.eclipse.ui.browser,\
 	${help.bundles},\
 	${p2.bundles},\
-	${workspace.bundles},\
-	${asm.bundles}
+	${workspace.bundles}
 	
 crossplatform.vmargs: -Xmx512m -XX:MaxPermSize=256m
 

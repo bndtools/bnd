@@ -11,15 +11,17 @@ Import-Package: org.eclipse.core.runtime;registry=!,\
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 Private-Package: bndtools.release,\
-	bndtools.release.nl
-Conditional-Package: aQute.lib.io
+	bndtools.release.nl,\
+	org.osgi.service.component.annotations,\
+	bndtools.release.ui
+
+Conditional-Package: aQute.lib.*,aQute.libg.*
 
 Include-Resource: 	plugin.xml=_plugin.xml,\
 					/=resources
 
 -buildpath:\
 	ee.j2se;version=${javac.ee},\
-	bndtools.diff;version=latest, \
 	bndtools.core;version=latest, \
 	${bndlib}, \
 	org.eclipse.core.runtime,\
@@ -51,7 +53,5 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	org.eclipse.team.core,\
 	org.eclipse.core.filesystem, \
 	org.eclipse.equinox.preferences, \
-	com.springsource.org.objectweb.asm,\
-	com.springsource.org.objectweb.asm.tree,\
 	osgi.core
 Export-Package: bndtools.release.api

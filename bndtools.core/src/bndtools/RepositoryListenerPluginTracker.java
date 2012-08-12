@@ -5,9 +5,9 @@ import java.io.File;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Jar;
 
 public class RepositoryListenerPluginTracker extends ServiceTracker implements RepositoryListenerPlugin {
 

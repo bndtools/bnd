@@ -42,7 +42,7 @@ public class JARContentPage extends FormPage {
         form.setText("JAR File Viewer");
         toolkit.decorateFormHeading(form.getForm());
 
-        titleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/jar_obj.gif").createImage(form.getDisplay());
+        titleImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID, "/icons/jar_obj.gif").createImage(form.getDisplay());
         form.setImage(titleImg);
 
         // CREATE CONTROLS

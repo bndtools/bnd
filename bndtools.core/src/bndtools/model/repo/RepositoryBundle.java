@@ -2,6 +2,7 @@ package bndtools.model.repo;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.SortedSet;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -11,9 +12,10 @@ import org.eclipse.core.runtime.Path;
 
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
+import aQute.bnd.service.Strategy;
+import aQute.bnd.version.Version;
 import bndtools.Logger;
 import bndtools.api.ILogger;
 
@@ -73,7 +75,11 @@ public class RepositoryBundle implements IAdaptable {
                 else
                     file = null;
             } else {
-                file = repo.get(bsn, "latest", Strategy.HIGHEST, null);
+                SortedSet<Version> versions = repo.versions(bsn);
+                if (versions == null || versions.isEmpty())
+                    file = null;
+                else
+                    file = repo.get(bsn, versions.last(), null);
             }
             return file;
         } catch (Exception e) {

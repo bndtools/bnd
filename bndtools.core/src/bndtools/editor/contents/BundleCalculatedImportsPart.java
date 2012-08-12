@@ -55,6 +55,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.osgi.Clazz;
 import bndtools.Plugin;
 import bndtools.model.importanalysis.ImportPackage;
 import bndtools.model.importanalysis.ImportTreeContentProvider;
@@ -65,8 +66,8 @@ import bndtools.tasks.AnalyseBundleResolutionJob;
 
 public class BundleCalculatedImportsPart extends SectionPart implements IResourceChangeListener {
 
-    private Image imgRefresh = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_refresh.png").createImage(); //$NON-NLS-1$
-    private Image imgShowSelfImports = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif").createImage(); //$NON-NLS-1$
+    private final Image imgRefresh = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_refresh.png").createImage(); //$NON-NLS-1$
+    private final Image imgShowSelfImports = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif").createImage(); //$NON-NLS-1$
 
     private Tree tree;
     private TreeViewer viewer;

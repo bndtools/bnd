@@ -105,8 +105,8 @@ public class JARContentTreePart extends AbstractFormPart {
 
     private static class JARTreeLabelProvider extends StyledCellLabelProvider {
 
-        private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
-        private final Image fileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Constants.PLUGIN_ID, "/icons/file_obj.gif").createImage();
+        private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
+        private final Image fileImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID, "/icons/file_obj.gif").createImage();
 
         public JARTreeLabelProvider() {
             super();
@@ -189,7 +189,7 @@ public class JARContentTreePart extends AbstractFormPart {
                         ZipTreeNode.addEntry(entryMap, entries.nextElement());
                     }
                 } catch (IOException e) {
-                    Status status = new Status(IStatus.ERROR, Constants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
+                    Status status = new Status(IStatus.ERROR, PluginConstants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
                     ErrorDialog.openError(managedForm.getForm().getShell(), "Error", null, status);
                 } finally {
                     try {

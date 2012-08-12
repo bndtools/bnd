@@ -11,8 +11,8 @@ import org.osgi.resource.Requirement;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.lib.osgi.resource.CapReqBuilder;
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
 
@@ -51,7 +51,7 @@ public class DependencyManagerTemplate implements IProjectTemplate {
         model.setBundleActivator("org.example.Activator");
         model.setRunRequires(requires);
         model.setRunBundles(runPath);
-        model.setRunFramework("org.apache.felix.framework");
+        model.setRunFw("org.apache.felix.framework");
         model.setEE(EE.JavaSE_1_6);
 
         model.setPrivatePackages(Arrays.asList(new String[] { "org.example" }));

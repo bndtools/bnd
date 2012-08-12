@@ -10,7 +10,7 @@
  *******************************************************************************/
 package bndtools.release.api;
 
-import aQute.lib.osgi.Jar;
+import aQute.bnd.osgi.Jar;
 
 /**
  * IReleaseParticipant contains methods for extending the release process

@@ -25,7 +25,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.clauses.HeaderClause;
-import aQute.lib.osgi.Constants;
+import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ExportUsesPackage;

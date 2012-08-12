@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
@@ -77,11 +78,13 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
     protected void updateContent(final IEditorInput input) {
         Runnable update = new Runnable() {
             public void run() {
-                if (contentPage != null && !contentPage.getPartControl().isDisposed()) {
+                Control c = (contentPage == null) ? null : contentPage.getPartControl();
+                if (c != null && !c.isDisposed()) {
                     contentPage.getManagedForm().refresh();
                 }
 
-                if (printPage != null && !printPage.getPartControl().isDisposed()) {
+                c = (printPage == null) ? null : printPage.getPartControl();
+                if (c != null && !c.isDisposed()) {
                     printPage.refresh();
                 }
             }

@@ -3,17 +3,17 @@ package bndtools.release;
 import java.util.List;
 
 import aQute.bnd.build.Project;
-import bndtools.diff.JarDiff;
+import aQute.bnd.differ.Baseline;
 
 public class ProjectDiff {
 	
 	private final Project project;
-	private final List<JarDiff> compare;
+	private final List<Baseline> compare;
 	private boolean release;
 	private String releaseRepository;
 	private String defaultReleaseRepository;
 	
-	public ProjectDiff(Project project, List<JarDiff> compare) {
+	public ProjectDiff(Project project, List<Baseline> compare) {
 		this.project = project;
 		this.compare = compare;
 		this.release = true;
@@ -31,7 +31,7 @@ public class ProjectDiff {
 		return project;
 	}
 
-	public List<JarDiff> getJarDiffs() {
+	public List<Baseline> getBaselines() {
 		return compare;
 	}
 

@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import aQute.lib.osgi.Clazz;
+import aQute.bnd.osgi.Clazz;
 
 class BundleInfo {
     final String bsn;

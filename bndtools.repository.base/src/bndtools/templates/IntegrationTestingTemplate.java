@@ -11,7 +11,7 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.libg.header.Attrs;
+import aQute.bnd.header.Attrs;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
 
@@ -33,7 +33,7 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
         model.setBuildPath(newBuildPath);
 
         model.setTestSuites(Arrays.asList(ALL_TEST_CASES_MACRO));
-        model.setRunFramework("org.apache.felix.framework");
+        model.setRunFw("org.apache.felix.framework");
         model.setEE(EE.JavaSE_1_6);
         model.setPrivatePackages(Arrays.asList(new String[] {
             "org.example.tests"

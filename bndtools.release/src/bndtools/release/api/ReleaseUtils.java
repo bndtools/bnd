@@ -34,10 +34,10 @@ import org.eclipse.team.core.subscribers.Subscriber;
 import org.eclipse.team.core.synchronize.SyncInfoSet;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.Jar;
-import aQute.libg.version.Version;
+import aQute.bnd.version.Version;
 
 public class ReleaseUtils {
 
@@ -121,6 +121,9 @@ public class ReleaseUtils {
 
 	public static IProject getProject(Project project) {
 		IResource res = toWorkspaceResource(project.getBase());
+		if (res == null) {
+			return null;
+		}
 		return res.getProject();
 	}
 
@@ -139,7 +142,7 @@ public class ReleaseUtils {
 	 * @param jar
 	 * @return The file revision or <code>null</code> if the bundle repository is not shared or the Jar does not exist in the remote repository
 	 */
-	public static IFileRevision getTeamRevision(RepositoryPlugin repository, Jar jar) throws CoreException {
+	public static IFileRevision getTeamRevision(RepositoryPlugin repository, Jar jar) {
 		IFolder repoRoot = ReleaseUtils.getLocalRepoLocation(repository);
 		IProject repoProject = repoRoot.getProject();
 
@@ -168,9 +171,8 @@ public class ReleaseUtils {
 	 * @param flags
 	 * @param monitor
 	 * @return
-	 * @throws CoreException
 	 */
-	public static IFileRevision[] getTeamRevisions(IResource resource, int flags, IProgressMonitor monitor) throws CoreException {
+	public static IFileRevision[] getTeamRevisions(IResource resource, int flags, IProgressMonitor monitor) {
 
 		RepositoryProvider provider = RepositoryProvider.getProvider(resource.getProject());
 		if (provider == null) {

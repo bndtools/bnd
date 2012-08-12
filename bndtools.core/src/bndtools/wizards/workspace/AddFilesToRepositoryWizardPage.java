@@ -43,7 +43,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Constants;
 
-import aQute.lib.osgi.Jar;
+import aQute.bnd.osgi.Jar;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;

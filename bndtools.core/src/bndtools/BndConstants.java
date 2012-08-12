@@ -10,12 +10,12 @@
  *******************************************************************************/
 package bndtools;
 
-import aQute.lib.osgi.Constants;
+import aQute.bnd.osgi.Constants;
 
 public interface BndConstants extends Constants {
 
     public static final String OUTPUT = "-output";
-    public static final String RUNFRAMEWORK = "-runfw";
+    public static final String RUNFW = "-runfw";
     public static final String BACKUP_RUNBUNDLES = "-runbundles-old";
 
     /**

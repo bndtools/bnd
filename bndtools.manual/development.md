@@ -48,7 +48,6 @@ Ensure that all the following projects are checked:
 * `cnf`
 * `bndtools.bndplugins`
 * `bndtools.core`
-* `bndtools.diff`
 * `bndtools.jareditor`
 * `bndtools.build`
 * `bndtools.manual`

@@ -1,6 +1,7 @@
 package bndtools;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +13,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.bndtools.core.repository.WorkspaceRepoProvider;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -28,21 +28,24 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.osgi.framework.Version;
-
 import bndtools.api.ILogger;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.RepositoryPlugin;
 
 public class Central {
     private static final ILogger logger = Logger.getLogger();
 
     static Workspace workspace = null;
-    static WorkspaceObrProvider workspaceObr = null;
-    static WorkspaceRepoProvider workspaceRepo = null;
+    static WorkspaceR5Repository r5Repository = null;
+    static RepositoryPlugin workspaceRepo = null;
+
     static final AtomicBoolean indexValid = new AtomicBoolean(false);
     static final ConcurrentMap<String,Map<String,SortedSet<Version>>> exportedPackageMap = new ConcurrentHashMap<String,Map<String,SortedSet<Version>>>();
+    static final ConcurrentMap<String,Collection<String>> containedPackageMap = new ConcurrentHashMap<String,Collection<String>>();
 
     final Map<IJavaProject,Project> javaProjectToModel = new HashMap<IJavaProject,Project>();
     final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
@@ -165,24 +168,22 @@ public class Central {
         return matches[0];
     }
 
-    public synchronized static WorkspaceRepoProvider getWorkspaceRepoProvider() throws Exception {
+    public synchronized static WorkspaceR5Repository getWorkspaceR5Repository() throws Exception {
+        if (r5Repository != null)
+            return r5Repository;
+
+        r5Repository = new WorkspaceR5Repository();
+        r5Repository.init();
+
+        return r5Repository;
+    }
+
+    public synchronized static RepositoryPlugin getWorkspaceRepository() throws Exception {
         if (workspaceRepo != null)
             return workspaceRepo;
 
-        File wsIndexFile = new File(Plugin.getDefault().getStateLocation().toFile(), "ws-index.xml");
-        workspaceRepo = new WorkspaceRepoProvider(wsIndexFile, Plugin.getDefault().getResourceIndexer(), logger);
-        workspaceRepo.setWorkspace(getWorkspace());
-
+        workspaceRepo = new WorkspaceRepository(getWorkspace());
         return workspaceRepo;
-    }
-
-    public synchronized static WorkspaceObrProvider getWorkspaceObrProvider() throws Exception {
-        if (workspaceObr != null)
-            return workspaceObr;
-
-        workspaceObr = new WorkspaceObrProvider();
-        workspaceObr.setWorkspace(getWorkspace());
-        return workspaceObr;
     }
 
     public synchronized static Workspace getWorkspace() throws Exception {
@@ -209,9 +210,7 @@ public class Central {
 
         workspace.addBasicPlugin(new WorkspaceListener(workspace));
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
-        workspace.addBasicPlugin(Plugin.getDefault().getBundleIndexer());
-        workspace.addBasicPlugin(new WrappingIndexProvider(getWorkspaceObrProvider()));
-        // workspace.addBasicPlugin(getWorkspaceRepoProvider());
+        workspace.addBasicPlugin(getWorkspaceR5Repository());
 
         return workspace;
     }
@@ -326,9 +325,15 @@ public class Central {
         return exportedPackageMap.get(key);
     }
 
-    public static void setExportedPackageModel(IProject project, Map<String,SortedSet<Version>> exports) {
+    public static Collection<String> getContainedPackageModel(IProject project) {
+        String key = project.getFullPath().toPortableString();
+        return containedPackageMap.get(key);
+    }
+
+    public static void setProjectPackageModel(IProject project, Map<String,SortedSet<Version>> exports, Collection<String> contained) {
         String key = project.getFullPath().toPortableString();
         exportedPackageMap.put(key, exports);
+        containedPackageMap.put(key, contained);
     }
 
 }

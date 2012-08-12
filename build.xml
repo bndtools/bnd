@@ -26,4 +26,9 @@
 	<target name="findbugs">
 		<iterate target="findbugs" />
 	</target>
+
+	<target name="wipecache">
+		<delete dir="${user.home}/.bnd/cache"/>
+	</target>
+
 </project>

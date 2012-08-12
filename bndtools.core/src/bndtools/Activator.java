@@ -13,8 +13,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import aQute.bnd.build.ReflectAction;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.action.Action;
-import aQute.lib.osgi.Processor;
 
 /**
  * The activator class controls the plug-in life cycle

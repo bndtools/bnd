@@ -36,12 +36,13 @@ import org.osgi.service.url.URLStreamHandlerService;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.build.Workspace;
-import aQute.lib.osgi.Processor;
-import aQute.libg.version.Version;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.version.Version;
 import bndtools.api.ILogger;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
+
     private static final ILogger logger = Logger.getLogger();
 
     public static final String PLUGIN_ID = "bndtools.core";
@@ -57,7 +58,6 @@ public class Plugin extends AbstractUIPlugin {
     private Activator bndActivator;
     private final List<IStartupParticipant> startupParticipants = new LinkedList<IStartupParticipant>();
 
-    private volatile RepositoryModel repositoryModel;
     private volatile ServiceTracker workspaceTracker;
     private volatile ServiceRegistration urlHandlerReg;
     private volatile IndexerTracker indexerTracker;
@@ -89,8 +89,6 @@ public class Plugin extends AbstractUIPlugin {
         registerWorkspaceServiceFactory(context);
 
         central = new Central();
-
-        repositoryModel = new RepositoryModel();
 
         runStartupParticipants();
     }
@@ -170,10 +168,6 @@ public class Plugin extends AbstractUIPlugin {
 
     public BundleContext getBundleContext() {
         return bundleContext;
-    }
-
-    public RepositoryModel getRepositoryModel() {
-        return repositoryModel;
     }
 
     public static void report(boolean warnings, boolean acknowledge, Processor reporter, final String title, final String extra) {

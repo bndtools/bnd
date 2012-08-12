@@ -10,10 +10,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.bndtools.core.obr.ObrResolutionJob;
+import org.bndtools.core.resolve.ResolveJob;
+import org.bndtools.core.resolve.ui.ResolutionWizard;
+import org.bndtools.core.ui.resource.RequirementLabelProvider;
 import org.bndtools.core.utils.dnd.AbstractViewerDropAdapter;
 import org.bndtools.core.utils.dnd.SupportedTransfer;
-import org.bndtools.core.utils.filters.ObrConstants;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -56,6 +57,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
@@ -63,30 +65,25 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.bnd.build.model.conversions.Converter;
-import aQute.bnd.build.model.conversions.EnumConverter;
-import aQute.bnd.build.model.conversions.EnumFormatter;
-import aQute.bnd.build.model.conversions.SimpleListConverter;
-import aQute.lib.osgi.Constants;
-import aQute.lib.osgi.resource.CapReqBuilder;
-import aQute.lib.osgi.resource.Filters;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.Filters;
+import aQute.bnd.version.Version;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
+import aQute.libg.filters.LiteralFilter;
 import aQute.libg.filters.Operator;
 import aQute.libg.filters.SimpleFilter;
-import aQute.libg.version.Version;
-import aQute.libg.version.VersionRange;
+import aQute.libg.qtokens.QuotedTokenizer;
 import bndtools.BndConstants;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.ResolveMode;
-import bndtools.model.obr.RequirementLabelProvider;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
-import bndtools.wizards.obr.ObrResolutionWizard;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunRequirementsPart extends SectionPart implements PropertyChangeListener {
@@ -102,11 +99,6 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
     private final Image addBundleIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick_add.png").createImage();
     private final Image resolveIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/wand.png").createImage();
-
-    private final Converter<ResolveMode,String> resolveModeConverter = EnumConverter.create(ResolveMode.class, ResolveMode.manual);
-    private final Converter<String,ResolveMode> resolveModeFormatter = EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
-
-    private final Converter<List<Requirement>,String> legacyRequireListConverter = SimpleListConverter.create(new LegacyRunRequiresConverter());
 
     private ToolItem addBundleTool;
     private ToolItem removeTool;
@@ -239,11 +231,11 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         }
 
         if (bsn != null) {
-            Filter filter = new SimpleFilter(ObrConstants.FILTER_BSN, bsn);
+            Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
             if (version != null) {
                 filter = new AndFilter().addChild(filter).addChild(new SimpleFilter("version", Operator.GreaterThanOrEqual, version.toString()));
             }
-            Requirement req = new CapReqBuilder(ObrConstants.REQUIREMENT_BUNDLE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
+            Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
             return req;
         }
         return null;
@@ -261,14 +253,13 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
                 List<VersionedClause> result = wizard.getSelectedBundles();
                 List<Requirement> adding = new ArrayList<Requirement>(result.size());
                 for (VersionedClause bundle : result) {
-                    Filter filter = new SimpleFilter(ObrConstants.FILTER_BSN, bundle.getName());
+                    Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bundle.getName());
 
-                    String versionRangeStr = bundle.getVersionRange();
-                    if (versionRangeStr != null && !"latest".equals(versionRangeStr)) {
-                        VersionRange versionRange = new VersionRange(versionRangeStr);
-                        filter = new AndFilter().addChild(filter).addChild(Filters.fromVersionRange(versionRange));
+                    String versionRange = bundle.getVersionRange();
+                    if (versionRange != null && !"latest".equals(versionRange)) {
+                        filter = new AndFilter().addChild(filter).addChild(new LiteralFilter(Filters.fromVersionRange(versionRange)));
                     }
-                    Requirement req = new CapReqBuilder(ObrConstants.REQUIREMENT_BUNDLE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
+                    Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
                     adding.add(req);
                 }
                 if (!adding.isEmpty()) {
@@ -317,7 +308,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         final Shell parentShell = page.getEditor().getSite().getShell();
 
         // Create the wizard and pre-validate
-        final ObrResolutionJob job = new ObrResolutionJob(file, model);
+        final ResolveJob job = new ResolveJob(model);
         IStatus validation = job.validateBeforeRun();
         if (!validation.isOK()) {
             ErrorDialog errorDialog = new ErrorDialog(parentShell, "Validation Problem", null, validation, IStatus.ERROR | IStatus.WARNING) {
@@ -338,7 +329,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         // showing the result)
         final Runnable showResult = new Runnable() {
             public void run() {
-                ObrResolutionWizard wizard = new ObrResolutionWizard(model, file, job.getResolutionResult());
+                ResolutionWizard wizard = new ResolutionWizard(model, file, job.getResolutionResult());
                 WizardDialog dialog = new WizardDialog(parentShell, wizard);
                 dialog.open();
             }
@@ -384,7 +375,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
             committing = true;
             model.setRunRequires(requires);
             model.genericSet(Constants.RUNREQUIRE, null);
-            model.genericSet(BndConstants.RESOLVE_MODE, resolveModeFormatter.convert(resolveMode));
+            setResolveMode();
         } finally {
             committing = false;
         }
@@ -396,18 +387,64 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         if (tmp == null) {
             String legacyReqStr = (String) model.genericGet(Constants.RUNREQUIRE);
             if (legacyReqStr != null) {
-                tmp = legacyRequireListConverter.convert(legacyReqStr);
+                tmp = convertLegacyRequireList(legacyReqStr);
             }
         }
 
         requires = new ArrayList<Requirement>(tmp != null ? tmp : Collections.<Requirement> emptyList());
         viewer.setInput(requires);
 
-        resolveMode = resolveModeConverter.convert((String) model.genericGet(BndConstants.RESOLVE_MODE));
+        resolveMode = getResolveMode();
         btnAutoResolve.setSelection(resolveMode == ResolveMode.auto);
         updateButtonStates();
 
         super.refresh();
+    }
+
+    private void setResolveMode() {
+        String formatted;
+        if (resolveMode == ResolveMode.manual || resolveMode == null)
+            formatted = null;
+        else
+            formatted = resolveMode.toString();
+        model.genericSet(BndConstants.RESOLVE_MODE, formatted);
+    }
+
+    private ResolveMode getResolveMode() {
+        ResolveMode resolveMode = ResolveMode.manual;
+        try {
+            String str = (String) model.genericGet(BndConstants.RESOLVE_MODE);
+            if (str != null)
+                resolveMode = Enum.valueOf(ResolveMode.class, str);
+        } catch (Exception e) {
+            logger.logError("Error parsing '-resolve' header.", e);
+        }
+        return resolveMode;
+    }
+
+    private List<Requirement> convertLegacyRequireList(String input) throws IllegalArgumentException {
+        List<Requirement> result = new ArrayList<Requirement>();
+        if (Constants.EMPTY_HEADER.equalsIgnoreCase(input.trim()))
+            return result;
+
+        QuotedTokenizer qt = new QuotedTokenizer(input, ",");
+        String token = qt.nextToken();
+
+        while (token != null) {
+            String item = token.trim();
+            int index = item.indexOf(":");
+            if (index < 0)
+                throw new IllegalArgumentException("Invalid format for requirement");
+
+            String name = item.substring(0, index);
+            String filter = item.substring(index + 1);
+            Requirement req = new CapReqBuilder(name).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter).buildSyntheticRequirement();
+            result.add(req);
+
+            token = qt.nextToken();
+        }
+
+        return result;
     }
 
     private void updateButtonStates() {

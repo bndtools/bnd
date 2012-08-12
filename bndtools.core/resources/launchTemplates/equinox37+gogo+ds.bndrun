@@ -9,8 +9,8 @@
 	org.apache.felix.gogo.command,\
 	osgi.cmpn;version=4.2
 
--runrequire:\
-	bundle:(symbolicname=org.eclipse.equinox.ds),\	
-	bundle:(symbolicname=org.apache.felix.gogo.shell),\
-	bundle:(symbolicname=org.apache.felix.gogo.command),\
-	bundle:(&(symbolicname=osgi.cmpn)(version>=4.2)),\
+-runrequires:\
+	osgi.identity;filter:='(osgi.identity=org.eclipse.equinox.ds)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
+	osgi.identity;filter:='(&(osgi.identity=osgi.cmpn)(version>=4.2))'

@@ -348,14 +348,14 @@
 		
 		<decorator
 			adaptable="true"
-			label="Bndtools OSGi Exported Package"
+			label="Bndtools OSGi Package Decorations"
 			objectClass="org.eclipse.jdt.core.IPackageFragment"
 			state="true"
 			lightweight="true"
-			class="bndtools.internal.ui.ExportedPackageDecorator"
-			id="bndtools.exportedPackageDecorator"
+			class="bndtools.internal.ui.PackageDecorator"
+			id="bndtools.packageDecorator"
 			location="TOP_LEFT"> 
-			<description>Marks Java packages that are exported with a '+' decoration</description>
+			<description>Marks exported packages with a '+' decoration, and excluded packages with a strike-through.</description>
 		</decorator>
 	</extension>
    <extension
@@ -607,17 +607,6 @@
          point="org.eclipse.help.contexts">
          <contexts file="contexthelp.xml"/>
     </extension>
-    <extension
-         point="bndtools.core.obr">
-         <obr label="Apache Felix Releases" url="http://felix.apache.org/obr/releases.xml"/>
-    </extension>
-    <extension
-          point="bndtools.core.obr">
-          <obr
-               label="Eclipse Orbit R20100519200754"
-               resource="obr/orbit-R20100519200754.xml"/>
-    </extension>
-
    <extension point="bndtoolsStartupParticipant">
       <startupParticipant class="org.bndtools.core.jobs.newproject.NewProjectJobsStartupParticipant" />
    </extension>
@@ -626,10 +615,13 @@
       <listener name="Workspace Setup" class="bndtools.wizards.workspace.CnfSetupBuildListener"/>
    </extension>
    
-   <extension point="bndtoolsStartupParticipant">
-      <startupParticipant class="org.bndtools.core.jobs.startup.KickBundles"/>
+   <extension point="buildListeners">
+      <listener
+          name="Bundle Index Generation"
+          class="org.bndtools.core.build.indexer.BuiltBundleIndexer"
+      />
    </extension>
-
+   
    <extension point="bndtools.core.projectTemplates">
       <template name="Empty Project"
          priority="-2147483648"
@@ -663,11 +655,6 @@
          path="launchTemplates/equinox37+gogo+ds.bndrun"
          doc="html/equinox37+gogo+ds.form.xml"
          icon="icons/equinox.gif"/>
-      <template
-         name="Knopflerfish 5.1 with Gogo Shell"
-         path="launchTemplates/knopflerfish.bndrun"
-         doc="html/knopflerfish.form.xml"
-         icon="icons/knopflerfish_16x16_inverted.gif"/>
       <template
          name="«Empty»"
          path="launchTemplates/empty.bndrun"

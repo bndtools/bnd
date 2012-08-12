@@ -30,8 +30,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
-import aQute.lib.osgi.Builder;
-import aQute.lib.osgi.Constants;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
@@ -43,7 +43,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
     private static final ILogger logger = Logger.getLogger();
 
     private final List<Builder> projectBuilders = new ArrayList<Builder>();
-    private Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
+    private final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
 
     private Image warningImg;
     private ControlDecoration warningDecor = null;

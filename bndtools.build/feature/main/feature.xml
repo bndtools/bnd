@@ -13,7 +13,7 @@
 <feature
       id="bndtools.feature"
       label="Bndtools"
-      version="1.1.0.RC2-qualifier"
+      version="2.0.0.alpha01-qualifier"
       provider-name="Bndtools"
       plugin="bndtools.core">
 
@@ -123,6 +123,13 @@ This Agreement is governed by the laws of the State of New York and the intellec
          unpack="false"/>
 
    <plugin
+         id="biz.aQute.resolve"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
          id="bndtools.core"
          download-size="0"
          install-size="0"
@@ -144,20 +151,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
          unpack="false"/>
 
    <plugin
-         id="bndtools.diff"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="bndtools.release"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="bndtools.release"
          download-size="0"
          install-size="0"
@@ -166,41 +159,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
 
    <plugin
          id="org.bndtools.embeddedrepo"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.bndtools.repos.obr"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.osgi.impl.bundle.bindex2.lib"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.osgi.impl.bundle.bindex"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.springsource.org.objectweb.asm"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.springsource.org.objectweb.asm.tree"
          download-size="0"
          install-size="0"
          version="0.0.0"

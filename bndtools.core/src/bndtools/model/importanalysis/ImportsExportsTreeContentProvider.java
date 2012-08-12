@@ -20,8 +20,8 @@ import java.util.Set;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import aQute.lib.osgi.Clazz;
-import aQute.lib.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 
 public class ImportsExportsTreeContentProvider implements ITreeContentProvider {
 

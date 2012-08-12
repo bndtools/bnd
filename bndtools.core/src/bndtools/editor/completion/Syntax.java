@@ -1,9 +1,12 @@
 package bndtools.editor.completion;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Verifier;
 
 // TODO this is temporarily copied in from aQute.bnd.help to avoid the dependency which is not yet exported
 // Need to delete this class and use bnd.help instance once it's available

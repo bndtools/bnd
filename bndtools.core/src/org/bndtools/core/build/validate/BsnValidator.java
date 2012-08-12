@@ -3,7 +3,7 @@ package org.bndtools.core.build.validate;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-import aQute.lib.osgi.Builder;
+import aQute.bnd.osgi.Builder;
 import bndtools.Plugin;
 import bndtools.api.IValidator;
 

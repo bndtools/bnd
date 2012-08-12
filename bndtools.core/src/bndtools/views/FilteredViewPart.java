@@ -1,17 +1,15 @@
 package bndtools.views;
 
+import org.bndtools.core.utils.swt.FilterPanelPart;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
@@ -23,7 +21,8 @@ import bndtools.Plugin;
  */
 public abstract class FilteredViewPart extends ViewPart {
 
-    private Text txtFilter;
+    private final FilterPanelPart filterPanel = new FilterPanelPart(Plugin.getDefault().getScheduler());
+
     private Action filterAction;
 
     private Composite stackPanel;
@@ -44,25 +43,11 @@ public abstract class FilteredViewPart extends ViewPart {
         topPanel = new Composite(stackPanel, SWT.NONE);
 
         // Filter panel
-        Composite filterPanel = new Composite(topPanel, SWT.NONE);
-        new Label(filterPanel, SWT.NONE).setText("Filter:");
-        txtFilter = new Text(filterPanel, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
-        txtFilter.setMessage("enter search string");
+        Control filterControl = filterPanel.createControl(topPanel);
 
         // Main panel
         mainPanel = new Composite(stackPanel, SWT.NONE);
         createMainControl(mainPanel);
-
-        // Add listeners
-        txtFilter.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                if (e.detail == SWT.CANCEL)
-                    updatedFilter("");
-                else
-                    updatedFilter(txtFilter.getText());
-            }
-        });
 
         // Layout
         stack.topControl = mainPanel;
@@ -74,10 +59,8 @@ public abstract class FilteredViewPart extends ViewPart {
         layout.marginWidth = 0;
         topPanel.setLayout(layout);
 
-        filterPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        filterPanel.setLayout(new GridLayout(2, false));
-        txtFilter.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         mainPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+        filterControl.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
         // Toolbar
         createActions();
@@ -131,7 +114,7 @@ public abstract class FilteredViewPart extends ViewPart {
             if (filterAction.isChecked()) {
                 stack.topControl = topPanel;
                 mainPanel.setParent(topPanel);
-                updatedFilter(txtFilter.getText());
+                updatedFilter(filterPanel.getFilter());
             } else {
                 stack.topControl = mainPanel;
                 mainPanel.setParent(stackPanel);
@@ -145,7 +128,7 @@ public abstract class FilteredViewPart extends ViewPart {
     @Override
     public void setFocus() {
         if (filterAction.isChecked()) {
-            txtFilter.setFocus();
+            filterPanel.setFocus();
         } else {
             doSetFocus();
         }

@@ -21,10 +21,9 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 
-import aQute.lib.deployer.repository.LocalIndexedRepo;
-import aQute.lib.deployer.repository.api.IRepositoryContentProvider;
+import aQute.bnd.deployer.repository.LocalIndexedRepo;
+import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.lib.io.IO;
-import aQute.lib.osgi.Jar;
 import aQute.libg.glob.Glob;
 
 public class GitOBRRepo extends LocalIndexedRepo {
@@ -83,10 +82,11 @@ public class GitOBRRepo extends LocalIndexedRepo {
             }
             File file = new File(localDirPath);
             if (!file.exists()) {
-                file.mkdirs();
+                if (!file.mkdirs()) {
+                    throw new IllegalArgumentException("Could not create directory " + file);
+                }
             }
         }
-
         gitRootDir = new File(localDirPath);
 
         if (!gitRootDir.isDirectory())
@@ -105,7 +105,9 @@ public class GitOBRRepo extends LocalIndexedRepo {
         if (localSubDirPath != null) {
             dir = new File(gitRootDir, localSubDirPath);
             if (!dir.exists()) {
-                dir.mkdirs();
+                if (!dir.mkdirs()) {
+                    throw new IllegalArgumentException("Could not create directory " + dir);
+                }
             }
         } else {
             dir = gitRootDir;
@@ -127,10 +129,8 @@ public class GitOBRRepo extends LocalIndexedRepo {
     }
 
     @Override
-    public synchronized File put(Jar jar) throws Exception {
+    public synchronized PutResult put(InputStream stream, PutOptions options) throws Exception {
         init();
-
-        File newFile = null;
 
         try {
             repository.incrementOpen();
@@ -149,30 +149,34 @@ public class GitOBRRepo extends LocalIndexedRepo {
 
             // TODO: Check if jar already exists, is it ok to overwrite in all repositories?
 
-            newFile = super.put(jar);
+            PutResult result = super.put(stream, options);
+            if (result.artifact != null) {
+                File newFile = new File(result.artifact);
 
-            // Add, Commit and Push
-            for (IRepositoryContentProvider provider : generatingProviders) {
-                if (!provider.supportsGeneration())
-                    continue;
-                git.add().addFilepattern(getRelativePath(gitRootDir, newFile)).addFilepattern(getRelativePath(gitRootDir, new File(provider.getDefaultIndexName(pretty)))).call();
+                // Add, Commit and Push
+                for (IRepositoryContentProvider provider : generatingProviders) {
+                    if (!provider.supportsGeneration())
+                        continue;
+                    git.add().addFilepattern(getRelativePath(gitRootDir, newFile)).addFilepattern(getRelativePath(gitRootDir, new File(provider.getDefaultIndexName(pretty)))).call();
+                }
+                git.commit().setMessage("bndtools added bundle : " + getRelativePath(gitRootDir, newFile)).call();
+                git.push().setCredentialsProvider(CredentialsProvider.getDefault()).call();
+
+                // Re-read the index
+                reset();
+                init();
             }
-            git.commit().setMessage("bndtools added bundle : " + getRelativePath(gitRootDir, newFile)).call();
-            git.push().setCredentialsProvider(CredentialsProvider.getDefault()).call();
 
-            // Re-read the index
-            reset();
-            init();
+            return result;
         } finally {
             if (repository != null) {
                 repository.close();
             }
         }
-        return newFile;
     }
 
     @Override
-    public String getLocation() {
+    public synchronized String getLocation() {
         return gitUri;
     }
 
@@ -181,7 +185,7 @@ public class GitOBRRepo extends LocalIndexedRepo {
         return null;
     }
 
-    private static String getRelativePath(File base, File file) throws IOException {
+    private static String getRelativePath(File base, File file) throws Exception {
         return base.toURI().relativize(file.toURI()).getPath();
     }
 
