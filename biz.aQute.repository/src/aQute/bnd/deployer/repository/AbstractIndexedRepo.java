@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.regex.*;
 
 import org.osgi.framework.namespace.*;
 import org.osgi.impl.bundle.bindex.*;
@@ -665,6 +664,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	 */
 	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
 			throws Exception {
+		init();
 		ResourceHandle handle = resolveBundle(bsn, version.toString(), Strategy.EXACT);
 		if (handle == null)
 			return null;
