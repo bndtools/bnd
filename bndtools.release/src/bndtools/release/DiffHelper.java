@@ -33,7 +33,7 @@ public class DiffHelper {
 			if (builder != null) {
 				Jar jar = builder.build();
 
-				Jar currentJar = builder.getBaselineJar();
+				Jar currentJar = null; // FIXME: builder.getBaselineJar();
 				if (currentJar == null) {
 				    currentJar = new Jar(".");
 				}

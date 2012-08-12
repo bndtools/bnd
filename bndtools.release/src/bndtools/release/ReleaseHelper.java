@@ -43,7 +43,6 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.properties.Document;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.version.Version;
 import aQute.service.reporter.Reporter;
 import bndtools.release.api.IReleaseParticipant;
@@ -245,7 +244,7 @@ public class ReleaseHelper {
 		    is.close();
 		}
 
-		File file = context.getReleaseRepository().get(symbName, version, Strategy.EXACT, null);
+		File file = context.getReleaseRepository().get(symbName, Version.parseVersion(version), null);
 		Jar releasedJar = null;
 		if (file != null && file.exists()) {
 			IResource resource = ReleaseUtils.toResource(file);
