@@ -11,7 +11,7 @@ import java.util.Properties;
 import junit.framework.TestCase;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import bndtools.bndplugins.repo.git.GitOBRRepo;
 
@@ -32,7 +32,7 @@ public class TestGitOBRRepo extends TestCase {
 
     public void testGitRepoGet() throws Exception {
         GitOBRRepo repo = getOBRRepo();
-        File bundleFile = repo.get("osgi.core", "[4.2, 4.3)", Strategy.HIGHEST, null);
+        File bundleFile = repo.get("osgi.core", new Version("4.2.0"), null);
         assertNotNull("Repository returned null", bundleFile);
         assertEquals(new File(checkoutDir, "jars/osgi.core/osgi.core-4.2.0.jar").getAbsoluteFile(), bundleFile);
     }
@@ -40,7 +40,7 @@ public class TestGitOBRRepo extends TestCase {
     public void testGitRepoPut() throws Exception {
         GitOBRRepo repo = getOBRRepo();
         repo.put(new BufferedInputStream(new FileInputStream("testdata/eclipse2/ploogins/javax.servlet_2.5.0.v200806031605.jar")), new RepositoryPlugin.PutOptions());
-        File bundleFile = repo.get("javax.servlet", "[2, 3)", Strategy.HIGHEST, null);
+        File bundleFile = repo.get("javax.servlet", new Version("2.5"), null);
         assertNotNull("Repository returned null", bundleFile);
         assertEquals(new File(checkoutDir, "jars/javax.servlet/javax.servlet-2.5.0.jar").getAbsoluteFile(), bundleFile);
     }
