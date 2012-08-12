@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
@@ -14,7 +15,6 @@ import org.osgi.framework.Bundle;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.RepositoryPlugin.Strategy;
 import aQute.bnd.version.Version;
 import bndtools.Logger;
 import bndtools.Plugin;
@@ -47,11 +47,11 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
             List<RepositoryPlugin> repositories = (workspace != null) ? workspace.getRepositories() : Collections.<RepositoryPlugin> emptyList();
             for (RepositoryPlugin repo : repositories) {
                 try {
-                    List<Version> versions = repo.versions(bsn);
+                    SortedSet<Version> versions = repo.versions(bsn);
                     if (versions != null)
                         for (Version version : versions) {
                             try {
-                                File framework = repo.get(bsn, version.toString(), Strategy.HIGHEST, null);
+                                File framework = repo.get(bsn, version, null);
                                 if (framework != null)
                                     frameworks.add(new OSGiFramework(frameworkName, bsn, version, iconUrl));
                             } catch (Exception e) {

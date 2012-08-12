@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -172,7 +173,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     static RepositoryBundleVersion[] getRepositoryBundleVersions(RepositoryBundle bundle) {
         RepositoryBundleVersion[] result = null;
 
-        List<Version> versions = null;
+        SortedSet<Version> versions = null;
         try {
             versions = bundle.getRepo().versions(bundle.getBsn());
         } catch (Exception e) {

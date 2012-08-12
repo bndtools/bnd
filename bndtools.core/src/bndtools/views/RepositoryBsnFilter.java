@@ -1,9 +1,9 @@
 package bndtools.views;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedSet;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -61,7 +61,7 @@ public class RepositoryBsnFilter extends ViewerFilter {
                 RepositoryBundle bundle = (RepositoryBundle) element;
 
                 try {
-                    List<Version> versions = bundle.getRepo().versions(bundle.getBsn());
+                    SortedSet<Version> versions = bundle.getRepo().versions(bundle.getBsn());
                     for (Version version : versions) {
                         RepositoryBundleVersion bundleVersion = new RepositoryBundleVersion(bundle, version);
                         if (filterMatch(bundleVersion)) {
