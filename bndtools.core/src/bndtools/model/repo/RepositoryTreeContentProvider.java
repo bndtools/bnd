@@ -146,10 +146,13 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                         continue;
                 }
 
-                if (showRepos)
+                if (showRepos) {
                     result.add(repo);
-                else
-                    result.addAll(Arrays.asList(getRepositoryBundles(repo)));
+                } else {
+                    RepositoryBundle[] bundles = getRepositoryBundles(repo);
+                    if (bundles != null && bundles.length > 0)
+                        result.addAll(Arrays.asList(bundles));
+                }
             }
         }
     }

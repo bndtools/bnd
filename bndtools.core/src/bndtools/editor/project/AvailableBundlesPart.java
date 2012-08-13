@@ -38,7 +38,6 @@ import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.RepositoryUtils;
 import bndtools.utils.SelectionDragAdapter;
-import bndtools.views.RepositoryBsnFilter;
 
 public class AvailableBundlesPart extends BndEditorPart {
 
@@ -48,6 +47,7 @@ public class AvailableBundlesPart extends BndEditorPart {
     private String searchStr = "";
     private ScheduledFuture< ? > scheduledFilterUpdate = null;
 
+    private final RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider(ResolutionPhase.runtime);
     private Text txtSearch;
     private TreeViewer viewer;
 
@@ -75,18 +75,9 @@ public class AvailableBundlesPart extends BndEditorPart {
         public void run() {
             Display display = viewer.getControl().getDisplay();
 
-            final ViewerFilter[] filters;
-            if (searchStr == null || searchStr.trim().length() == 0)
-                filters = new ViewerFilter[] {
-                    includedRepoFilter
-                };
-            else
-                filters = new ViewerFilter[] {
-                        includedRepoFilter, new RepositoryBsnFilter(searchStr.trim())
-                };
             Runnable update = new Runnable() {
                 public void run() {
-                    viewer.setFilters(filters);
+                    updatedFilter(searchStr);
                 }
             };
 
@@ -110,21 +101,19 @@ public class AvailableBundlesPart extends BndEditorPart {
         // Create contents
         Composite container = toolkit.createComposite(section);
         section.setClient(container);
-        GridLayout layout = new GridLayout(2, false);
+        GridLayout layout = new GridLayout(1, false);
         layout.marginWidth = 0;
         layout.marginHeight = 0;
         container.setLayout(layout);
 
-        toolkit.createLabel(container, "Filter:");
-
         txtSearch = toolkit.createText(container, "", SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL | SWT.BORDER);
+        txtSearch.setMessage("Enter search string");
         txtSearch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
         Tree tree = toolkit.createTree(container, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL);
         tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
         viewer = new TreeViewer(tree);
-        RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider(ResolutionPhase.runtime);
         contentProvider.setShowRepos(false);
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new RepositoryTreeLabelProvider(true));
@@ -171,14 +160,15 @@ public class AvailableBundlesPart extends BndEditorPart {
         viewer.setInput(RepositoryUtils.listRepositories(true));
     }
 
-    void updatedFilter(String filterString) {
-        if (filterString == null || filterString.length() == 0) {
-            viewer.setFilters(new ViewerFilter[0]);
-        } else {
-            viewer.setFilters(new ViewerFilter[] {
-                new RepositoryBsnFilter(filterString)
-            });
-        }
+    private void updatedFilter(String filterString) {
+        String newFilter;
+        if (filterString == null || filterString.length() == 0 || filterString.trim().equals("*"))
+            newFilter = null;
+        else
+            newFilter = "*" + filterString.trim() + "*";
+
+        contentProvider.setFilter(newFilter);
+        viewer.refresh(true);
     }
 
     @Override
