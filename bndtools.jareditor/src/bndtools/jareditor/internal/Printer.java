@@ -28,7 +28,7 @@ import aQute.bnd.osgi.Verifier;
 import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
 import aQute.libg.generics.Create;
-import bndtools.utils.CollectionUtil;
+import bndtools.jareditor.internal.utils.CollectionUtil;
 
 public class Printer extends Processor {
 
