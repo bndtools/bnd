@@ -8,6 +8,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
+import aQute.libg.glob.*;
 
 public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 	private final Workspace	workspace;
@@ -91,7 +92,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		throw new UnsupportedOperationException("Read only repository");
 	}
 
-	public List<String> list(String regex) throws Exception {
+	public List<String> list(String pattern) throws Exception {
 		List<String> names = new ArrayList<String>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
@@ -100,9 +101,9 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 				for (File file : build) {
 					Jar jar = new Jar(file);
 					String bsn = jar.getBsn();
-					if (regex != null) {
-						Pattern pattern = Pattern.compile(regex);
-						Matcher matcher = pattern.matcher(bsn);
+					if (pattern != null) {
+						Glob glob = new Glob(pattern);
+						Matcher matcher = glob.matcher(bsn);
 						if (matcher.matches()) {
 							if (!names.contains(bsn)) {
 								names.add(bsn);
