@@ -84,9 +84,9 @@ public class BundleTreeImages {
 		File[] files = icons.listFiles();
 		for (File file : files) {
 			if (file.isFile() && file.getName().endsWith(".gif")) {
-				URL url = file.toURL();
+				URL url = file.toURI().toURL();
 				String name = getResourceName(url);
-				ImageDescriptor id = ImageDescriptor.createFromURL(file.toURL());
+				ImageDescriptor id = ImageDescriptor.createFromURL(url);
 				registry.put(parent + "_" + name, id);
 			}
 		}
