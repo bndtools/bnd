@@ -51,6 +51,10 @@
 			</classpath>
 		</taskdef>
 
+		<condition property="testDirExists">
+			<available file="${basedir}/test" type="dir"/>
+		</condition>
+
 		<!-- mark init has been run -->
 		<property name="initialized" value="set" />
 		<echo message="Enter project ${project.name}"/>
@@ -110,13 +114,29 @@
 		<bnd command="build" exceptions="true" basedir="${project}" />
 	</target>
 
-	<target name="junit" depends="build">
-		<junit printsummary="true">			
-			<classpath path="${project.buildpath}" />
+	<target name="compileTests" depends="init,build" if="testDirExists">
+		<mkdir dir="bin_test"/>
+		<javac fork="yes" executable="${javac}" srcdir="test" destdir="bin_test" classpath="${project.buildpath}:${project.testpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
+		<!--
+		  The eclipse compiler copies resources but the Javac compiler does not
+		  If ${src} == ${bin} then this is not necessary, but unfortunately, now
+		  it is.
+		-->
+		<copy todir="bin_test" verbose="${verbose}" preservelastmodified="true">
+			<fileset dir="test">
+				<exclude name="**/*.java" />
+				<exclude name="**/*.class" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="junit" depends="init,compileTests" if="testDirExists">
+		<junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
+			<classpath path="${project.buildpath}:bin_test/" />
 			<formatter type="xml"/>
 			<batchtest todir="${target}" >
-			    <fileset dir="${src}">
-			      <include name="test/**.java"/>
+			    <fileset dir="test">
+			      <include name="**/*.java"/>
 			    </fileset>
 			</batchtest>
 		</junit>
