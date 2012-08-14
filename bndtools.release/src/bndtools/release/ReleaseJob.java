@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
-import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Jar;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseUtils;
@@ -86,9 +85,9 @@ public class ReleaseJob  extends Job {
 			}
 
 		} catch (Exception e) {
-			for (Baseline spec : context.getBaselines()) {
+//			for (Baseline spec : context.getBaselines()) {
 //				context.getErrorHandler().error(spec.getBsn(), jarDiff.getSuggestedVersion() != null ? jarDiff.getSuggestedVersion().toString() : "0.0.0", e.getMessage());
-			}
+//			}
 			return new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
 		}
 

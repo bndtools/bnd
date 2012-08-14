@@ -75,7 +75,7 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
         setPartName(name);
     }
 
-    protected void updateContent(final IEditorInput input) {
+    protected void updateContent(@SuppressWarnings("unused") final IEditorInput input) {
         Runnable update = new Runnable() {
             public void run() {
                 Control c = (contentPage == null) ? null : contentPage.getPartControl();

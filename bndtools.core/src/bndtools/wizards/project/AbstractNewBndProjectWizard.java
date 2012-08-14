@@ -67,7 +67,9 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
      * 
      * @param monitor
      */
-    @SuppressWarnings("static-method")
+    @SuppressWarnings({
+            "static-method", "unused"
+    })
     protected BndEditModel generateBndModel(IProgressMonitor monitor) {
         return new BndEditModel();
     }
@@ -77,7 +79,9 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
      * 
      * @param monitor
      */
-    @SuppressWarnings("static-method")
+    @SuppressWarnings({
+            "static-method", "unused"
+    })
     protected BndProject generateBndProject(IProject project, IProgressMonitor monitor) {
         return new BndProject(project);
     }

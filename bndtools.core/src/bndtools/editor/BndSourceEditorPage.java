@@ -132,7 +132,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
         }
     }
 
-    void commit(boolean onSave) {
+    void commit(@SuppressWarnings("unused") boolean onSave) {
         try {
             // Only commit changes to the model if the document text has
             // actually changed since we switched to the page; this prevents us

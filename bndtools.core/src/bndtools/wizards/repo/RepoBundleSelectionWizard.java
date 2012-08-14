@@ -19,7 +19,7 @@ public class RepoBundleSelectionWizard extends Wizard {
      *            A mutable collection of bundles.
      * @throws Exception
      */
-    public RepoBundleSelectionWizard(final Project project, List<VersionedClause> bundles) throws Exception {
+    public RepoBundleSelectionWizard(@SuppressWarnings("unused") final Project project, List<VersionedClause> bundles) throws Exception {
         selectionPage.setSelectedBundles(bundles);
         addPage(selectionPage);
     }
