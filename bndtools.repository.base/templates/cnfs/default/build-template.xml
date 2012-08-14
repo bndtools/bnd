@@ -36,6 +36,10 @@
 		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 
+		<condition property="testDirExists">
+			<available file="${basedir}/test" type="dir"/>
+		</condition>
+
 		<!-- Create a marker property to indicate that initialisation has been completed -->
 		<property name="initialized" value="set" />
 		<echo message="Enter project ${project.name}"/>
@@ -92,7 +96,7 @@
 	<!-- 
 		JUNIT
 	-->
-	<target name="junit" depends="build">
+	<target name="junit" depends="init,build" if="testDirExists">
 		<junit printsummary="true">
 			<classpath path="${project.buildpath}:bin_test/" />
 			<formatter type="xml"/>

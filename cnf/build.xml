@@ -51,6 +51,10 @@
 			</classpath>
 		</taskdef>
 
+		<condition property="testDirExists">
+			<available file="${basedir}/test" type="dir"/>
+		</condition>
+
 		<!-- mark init has been run -->
 		<property name="initialized" value="set" />
 		<echo message="Enter project ${project.name}"/>
@@ -110,7 +114,7 @@
 		<bnd command="build" exceptions="true" basedir="${project}" />
 	</target>
 
-	<target name="junit" depends="build">
+	<target name="junit" depends="init,build" if="testDirExists">
 		<junit printsummary="true">			
 			<classpath path="${project.buildpath}" />
 			<formatter type="xml"/>
