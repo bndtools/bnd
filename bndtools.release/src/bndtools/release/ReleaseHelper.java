@@ -94,10 +94,10 @@ public class ReleaseHelper {
 			final BndEditModel model = new BndEditModel();
 			model.loadFrom(document);
 
-			String savedVersion = model.getBundleVersionString();
-			if (savedVersion != null && savedVersion.indexOf('$') > -1) {
+			// String savedVersion = model.getBundleVersionString();
+			// if (savedVersion != null && savedVersion.indexOf('$') > -1) {
 				//TODO: Handle macros / variables
-			}
+			// }
 			model.setBundleVersion(bundleVersion.toString());
 			properties.setProperty(Constants.BUNDLE_VERSION, bundleVersion.toString());
 
