@@ -313,6 +313,7 @@ public class RepositorySelectionPart extends BndEditorPart {
     }
 
     int[] findSelectedIndexes() {
+        lazyInitIncludedRepos();
         Object[] selection = ((IStructuredSelection) viewer.getSelection()).toArray();
         int[] selectionIndexes = new int[selection.length];
 
