@@ -97,7 +97,7 @@
 		JUNIT
 	-->
 	<target name="junit" depends="init,build" if="testDirExists">
-		<junit printsummary="true">
+		<junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
 			<classpath path="${project.buildpath}:bin_test/" />
 			<formatter type="xml"/>
 			<batchtest todir="${target}">
