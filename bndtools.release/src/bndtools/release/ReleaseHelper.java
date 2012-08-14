@@ -41,7 +41,6 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
-import aQute.bnd.osgi.Verifier;
 import aQute.bnd.properties.Document;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;

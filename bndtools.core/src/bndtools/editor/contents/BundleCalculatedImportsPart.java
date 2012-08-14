@@ -55,7 +55,6 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.clauses.HeaderClause;
-import aQute.bnd.osgi.Clazz;
 import bndtools.Plugin;
 import bndtools.model.importanalysis.ImportPackage;
 import bndtools.model.importanalysis.ImportTreeContentProvider;
