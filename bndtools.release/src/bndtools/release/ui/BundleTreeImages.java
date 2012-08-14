@@ -56,13 +56,13 @@ public class BundleTreeImages {
 		return descr.getImage();
 	}
 
-	public static ImageRegistry getImageRegistry() {
+	public static synchronized ImageRegistry getImageRegistry() {
 		if (Activator.getDefault() == null) {
-			if (imageRegistry == null) {
-				imageRegistry = new ImageRegistry();
-				initImageRegistry(imageRegistry);
-			}
-			return imageRegistry;
+            if (imageRegistry == null) {
+                imageRegistry = new ImageRegistry();
+                initImageRegistry(imageRegistry);
+            }
+            return imageRegistry;
 		}
 		return Activator.getDefault().getImageRegistry();
 	}
