@@ -135,8 +135,8 @@
 			<classpath path="${project.buildpath}:bin_test/" />
 			<formatter type="xml"/>
 			<batchtest todir="${target}" >
-			    <fileset dir="${src}">
-			      <include name="test/**.java"/>
+			    <fileset dir="test">
+			      <include name="**/*.java"/>
 			    </fileset>
 			</batchtest>
 		</junit>

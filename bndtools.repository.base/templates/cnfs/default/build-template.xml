@@ -118,7 +118,7 @@
 			<formatter type="xml"/>
 			<batchtest todir="${target}">
 				<fileset dir="test">
-					<include name="**.java"/>
+					<include name="**/*.java"/>
 				</fileset>
 			</batchtest>
 		</junit>
