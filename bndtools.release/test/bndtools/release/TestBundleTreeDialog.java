@@ -130,16 +130,5 @@ public class TestBundleTreeDialog {
 			}
 			return null;
 		}
-
-		private Tree getTree()  {
-			try {
-				return differ.tree(new Jar(new File("jar/biz.aQute.bnd.annotation-1.47.0.jar")));
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
 	}
 }
