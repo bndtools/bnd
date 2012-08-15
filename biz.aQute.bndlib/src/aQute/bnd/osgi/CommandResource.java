@@ -8,11 +8,13 @@ public class CommandResource extends WriteResource {
 	final long		lastModified;
 	final Builder	domain;
 	final String	command;
+	final File wd;
 
-	public CommandResource(String command, Builder domain, long lastModified) {
+	public CommandResource(String command, Builder domain, long lastModified, File wd) {
 		this.lastModified = lastModified;
 		this.domain = domain;
 		this.command = command;
+		this.wd = wd;
 	}
 
 	@Override
@@ -22,6 +24,7 @@ public class CommandResource extends WriteResource {
 		try {
 			domain.trace("executing command %s", command);
 			Command cmd = new Command("sh");
+			cmd.setCwd(wd);
 			cmd.inherit();
 			String oldpath = cmd.var("PATH");
 
