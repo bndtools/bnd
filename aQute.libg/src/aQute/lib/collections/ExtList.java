@@ -20,6 +20,11 @@ public class ExtList<T> extends ArrayList<T> {
 		super(_);
 	}
 
+	public ExtList(Iterable<T> _) {
+		for ( T t : _)
+			add(t);
+	}
+
 	public static ExtList<String> from(String s) {
 		// TODO make sure no \ before comma
 		return from(s, "\\s*,\\s*");
