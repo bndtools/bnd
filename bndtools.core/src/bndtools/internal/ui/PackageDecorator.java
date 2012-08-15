@@ -35,6 +35,7 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 
             IPackageFragment pkg = (IPackageFragment) element;
             String pkgName = pkg.getElementName();
+            boolean emptyPkg = isEmptyPackage(pkg);
             boolean isSourcePkg = isSourcePackage(pkg);
 
             IJavaProject javaProject = pkg.getJavaProject();
@@ -52,13 +53,21 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
                         decoration.addSuffix(" " + versions.toString());
                 }
 
-                if (isSourcePkg && (contained == null || !contained.contains(pkgName))) {
+                if (isSourcePkg && !emptyPkg && (contained == null || !contained.contains(pkgName))) {
                     decoration.addOverlay(excludedIcon);
                     decoration.addSuffix(" <excluded>");
                 }
             } else {
                 ExportedPackageDecoratorJob.scheduleForProject(project);
             }
+        }
+    }
+
+    private boolean isEmptyPackage(IPackageFragment pkg) {
+        try {
+            return !pkg.containsJavaResources();
+        } catch (JavaModelException e) {
+            return false;
         }
     }
 
