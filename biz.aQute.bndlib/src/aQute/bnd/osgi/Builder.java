@@ -860,6 +860,7 @@ public class Builder extends Analyzer {
 
 		if (!destination.contains("${@}")) {
 			cr = new CombinedResource();
+			cr.lastModified = lastModified;
 		}
 		trace("last modified requires %s", lastModified);
 
@@ -869,9 +870,10 @@ public class Builder extends Analyzer {
 				String path = getReplacer().process(destination);
 				String command = getReplacer().process(cmd);
 				File file = getFile(item);
-
-				Resource r = new CommandResource(command, this, Math.max(lastModified,
-						file.exists() ? file.lastModified() : 0L));
+				if ( file.exists())
+					lastModified = Math.max(lastModified, file.lastModified());
+				
+				Resource r = new CommandResource(command, this, lastModified, getBase());
 
 				if (preprocess)
 					r = new PreprocessResource(this, r);
@@ -890,6 +892,8 @@ public class Builder extends Analyzer {
 		// to update the modified time.
 		if (cr != null)
 			jar.putResource(destination, cr);
+		
+		updateModified(lastModified, "Include-Resource: cmd");
 	}
 
 	private String doResourceDirectory(Jar jar, Map<String,String> extra, boolean preprocess, File sourceFile,
