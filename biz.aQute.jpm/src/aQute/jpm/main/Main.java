@@ -8,7 +8,6 @@ import java.net.*;
 import java.security.*;
 import java.security.spec.*;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
@@ -16,20 +15,23 @@ import javax.swing.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
 import aQute.lib.base64.*;
 import aQute.lib.collections.*;
-import aQute.lib.converter.*;
 import aQute.lib.data.*;
 import aQute.lib.getopt.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.settings.*;
+import aQute.libg.cryptography.*;
 import aQute.libg.reporter.*;
-import aQute.library.cache.*;
 import aQute.library.command.*;
 import aQute.library.remote.*;
+import aQute.service.library.*;
+import aQute.service.library.Library.Find;
+import aQute.service.library.Library.Revision;
 import aQute.service.library.Library.StageRequest;
 import aQute.service.library.Library.StageResponse;
 
@@ -42,7 +44,6 @@ public class Main extends ReporterAdapter {
 	File						base			= new File(System.getProperty("user.dir"));
 	Settings					settings		= new Settings();
 	RemoteLibrary				library;
-	LibraryCache				cache;
 
 	/**
 	 * Show installed binaries
@@ -205,7 +206,6 @@ public class Main extends ReporterAdapter {
 				cacheDir = null;
 
 			library = new RemoteLibrary(url);
-			cache = new LibraryCache(library, cacheDir);
 
 			CommandLine handler = opts._command();
 			List<String> arguments = opts._();
@@ -260,8 +260,17 @@ public class Main extends ReporterAdapter {
 		@Description("Require a master version even when version is specified")
 		boolean master();
 
-		@Description("Refresh the cache before consulting the JPM registry")
-		boolean sync();
+		@Description("Version range requested, default is the latest master version")
+		VersionRange range();
+
+		@Description("Install from symbolic name, not the command name")
+		String bsn();
+
+		@Description("Include staged revisions in the search")
+		boolean staged();
+
+		@Description("Ignore digest")
+		boolean xdigest();
 
 	}
 
@@ -277,31 +286,13 @@ public class Main extends ReporterAdapter {
 			return;
 		}
 
-		// We only want to sync once, and only when
-		// we are allowed to sync
-		boolean hasSynchronized = !opts.sync();
-
 		for (String target : opts._()) {
 			try {
 
 				if (URL_PATTERN.matcher(target).matches()) {
 					try {
-						// Download
-						URL url = new URL(target);
-						File tmp = File.createTempFile("jpm", ".jar");
-						try {
-							copy(url, tmp);
-							if (tmp.isFile()) {
-								install(tmp, opts);
-
-								// next!
-
-								continue;
-							}
-						}
-						finally {
-							tmp.delete();
-						}
+						install(new URL(target), opts, null);
+						continue;
 					}
 					catch (MalformedURLException mfue) {
 						// Ignore, try as file name
@@ -326,63 +317,50 @@ public class Main extends ReporterAdapter {
 
 				// Try to download it from the central registry
 				{
-					String version = null;
-					String bsn = target;
+					Find<Revision> where = library.findRevision();
+					if (opts.bsn() != null) {
+						if (!Verifier.isBsn(opts.bsn()))
+							error("Not a valid bsn");
+						else
+							where.where("bsn", opts.bsn());
+					} else {
+						where.capability("x-jpm", "x-jpm", target);
+					}
 
-					int n = target.lastIndexOf('-');
-					if (n < 0) {
-						String v = target.substring(n + 1);
-						String b = target.substring(0, n);
-						if (Verifier.isBsn(b) && Verifier.isVersion(v)) {
-							version = v;
-							bsn = b;
+					ExtList<Revision> sl = new ExtList<Revision>(where);
+					if (sl.size() == 0)
+						error("cannot find %s", target);
+					else {
+						trace("found %s revisions", sl.size());
+						
+						VersionRange range = opts.range();
+						boolean staged = opts.staged();
+						SortedMap<Version,Revision> candidates = new TreeMap<Version,Library.Revision>();
+
+						for (Revision r : sl) {
+							Version v = new Version(r.version.base);
+
+							if (range != null) {
+								if (range.includes(v)) {
+									candidates.put(v, r);
+								} else
+									trace("skipping %s because not in range %s", v, range);
+							} else if (r.master || staged) {
+								candidates.put(v, r);
+							} else
+								trace("skipping %s because staged", v, range, staged);
+								
+						}
+						if (candidates.isEmpty()) {
+							error("No candidates found after filtering: %s", sl);
+						} else {
+							Revision r = candidates.get(candidates.lastKey()); // get
+																				// best
+																				// match							
+							trace("Installing %s-%s %s %s", r.bsn, r.version.original, r.url, Hex.toHexString(r.sha));
+							install(r.url.toURL(), opts, r.sha);
 						}
 					}
-					if (!Verifier.isBsn(bsn)) {
-						error("Not a url, file, nor bsn: %s", bsn);
-					}
-					if (version != null && !Verifier.isVersion(version)) {
-						error("Not a valid version: %s", version);
-					}
-
-					if (!isOk())
-						return;
-
-					if (version == null) {
-						SortedSet<Version> versions = Converter.cnv(new TypeReference<SortedSet<Version>>() {},
-								cache.versions(bsn));
-						if (versions.isEmpty()) {
-							error("Cannot find any versions for: %s", bsn);
-							continue;
-						} else
-							version = versions.last().getWithoutQualifier().toString();
-					}
-
-					if (!hasSynchronized) {
-						cache.synchronize();
-						hasSynchronized = true;
-					}
-
-					Future<File> ref = opts.master() ? cache.getMaster(bsn, version) : cache.getStaged(bsn, version);
-					if (ref == null) {
-						error("Cannot locate %s-%s in the JPM registry%?", bsn, version, opts.sync() ? ""
-								: ", try --sync");
-						continue;
-					}
-
-					getInfo(cache);
-					if (!isOk())
-						return;
-
-					File f = ref.get();
-					if (f == null) {
-						getInfo(cache);
-						error("Unable to download %s-%s", bsn, version);
-						continue;
-					}
-
-					install(f, opts);
-					continue;
 				}
 			}
 			catch (IOException e) {
@@ -677,6 +655,33 @@ public class Main extends ReporterAdapter {
 	 * @param opts
 	 * @throws IOException
 	 */
+
+	private void install(URL url, installOptions opts, byte[] digest) throws Exception {
+		trace("installing %s", url);
+		// Download
+		File tmp = File.createTempFile("jpm", ".jar");
+		try {
+			copy(url, tmp);
+			if (tmp.isFile()) {
+				if (!opts.xdigest()) {
+					byte[] sha = SHA1.digest(tmp).digest();
+					trace("found sha %s, expecte sha %s", sha, digest);
+					if (!Arrays.equals(sha, digest))
+						error("invalid digest %s, expected %s, file is %s", url, Hex.toHexString(digest),
+								Hex.toHexString(sha));
+				}
+				if (!isOk())
+					return;
+
+				install(tmp, opts);
+			} else {
+				error("");
+			}
+		}
+		finally {
+			tmp.delete();
+		}
+	}
 
 	private void install(File source, installOptions opts) throws Exception {
 		JarFile jar = new JarFile(source);
@@ -1064,7 +1069,7 @@ public class Main extends ReporterAdapter {
 
 	public void _keys(KeysOptions opts) throws Exception {
 		boolean any = opts.pem() || opts.extended() || opts.hex();
-		
+
 		if (opts.extended()) {
 			PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(settings.getPrivateKey());
 			X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(settings.getPublicKey());
@@ -1072,14 +1077,14 @@ public class Main extends ReporterAdapter {
 			PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
 			PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
 			privateKey.getAlgorithm();
-			if ( opts.secret())
+			if (opts.secret())
 				out.format("private %s", privateKey);
-			out.format(    "public  %s", publicKey);
+			out.format("public  %s", publicKey);
 		}
 		if (opts.hex()) {
-			if ( opts.secret())
+			if (opts.secret())
 				out.format("private %s", Hex.toHexString(settings.getPrivateKey()));
-			out.format(    "public  %s", Hex.toHexString(settings.getPublicKey()));
+			out.format("public  %s", Hex.toHexString(settings.getPublicKey()));
 		}
 		if (opts.pem() || !any) {
 			formatKey(settings.getPublicKey(), "PUBLIC");
@@ -1093,7 +1098,7 @@ public class Main extends ReporterAdapter {
 		if (email == null)
 			email = "<no email set>";
 		email += " " + InetAddress.getLocalHost().getHostName();
-		
+
 		StringBuilder sb = new StringBuilder(Base64.encodeBase64(data));
 		int r = 60;
 		while (r < sb.length()) {
