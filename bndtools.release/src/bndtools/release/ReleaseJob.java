@@ -58,25 +58,25 @@ public class ReleaseJob  extends Job {
 			}
 			if (ok) {
 				StringBuilder sb = new StringBuilder();
-				sb.append(Messages.project);
-				sb.append(" : ");
+				sb.append(Messages.project2);
+				sb.append(" : "); //$NON-NLS-1$
 				sb.append(context.getProject().getName());
-				sb.append("\n\n");
+				sb.append("\n\n"); //$NON-NLS-1$
 				if (context.isUpdateOnly()) {
 					sb.append(Messages.updatedVersionInfo);
 				} else {
 					sb.append(Messages.released);
-					sb.append(" :\n");
+					sb.append(" :\n"); //$NON-NLS-1$
 				}
 
 				for (Jar jar : context.getReleasedJars()) {
-					sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar) + "\n");
+					sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar) + "\n"); //$NON-NLS-1$//$NON-NLS-2$
 				}
 
 				if (!context.isUpdateOnly()) {
-					sb.append("\n\n");
+					sb.append("\n\n"); //$NON-NLS-1$
 					sb.append(Messages.releasedTo);
-					sb.append(" : ");
+					sb.append(" : "); //$NON-NLS-1$
 					sb.append(context.getReleaseRepository().getName());
 				}
 				if (showMessage) {

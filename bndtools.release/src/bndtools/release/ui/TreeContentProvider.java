@@ -70,7 +70,7 @@ public class TreeContentProvider implements ITreeContentProvider {
             if (diff.getType() == Type.SHA) {
                 continue;
             }
-            if ("META-INF/MANIFEST.MF".equals(diff.getName())) {
+            if ("META-INF/MANIFEST.MF".equals(diff.getName())) { //$NON-NLS-1$
                 continue;
             }
             filteredDiffs.add(diff);

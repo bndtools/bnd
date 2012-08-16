@@ -50,6 +50,7 @@ import bndtools.release.api.IReleaseParticipant.Scope;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseContext.Error;
 import bndtools.release.api.ReleaseUtils;
+import bndtools.release.nl.Messages;
 
 public class ReleaseHelper {
 
@@ -88,7 +89,7 @@ public class ReleaseHelper {
 				byte[] bytes = readFully(resource.getContents());
 				document = new Document(new String(bytes, resource.getCharset()));
 			} else {
-				document = new Document("");
+				document = new Document(""); //$NON-NLS-1$
 			}
 
 			final BndEditModel model = new BndEditModel();
@@ -375,7 +376,7 @@ public class ReleaseHelper {
             if (createIfAbsent)
                 file.create(inputStream, false, null);
             else
-                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, "File does not exist: " + file.getFullPath().toString(), null));
+                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, String.format(Messages.fileDoesNotExist, file.getFullPath().toString()), null));
         }
     }
 }

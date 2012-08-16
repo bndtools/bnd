@@ -98,7 +98,7 @@ public class BundleReleaseDialog extends Dialog {
 		if (items.length > 0) {
 			releaseRepoCombo.setText(items[idx]);
 		} else {
-			releaseRepoCombo.setText("");
+			releaseRepoCombo.setText(""); //$NON-NLS-1$
 		}
 
 		Composite diffPart = new Composite(composite, SWT.NONE);
@@ -166,7 +166,7 @@ public class BundleReleaseDialog extends Dialog {
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
-		newShell.setText(Messages.releaseDialogTitle);
+		newShell.setText(Messages.releaseDialogTitle1);
 	}
 
 	@Override

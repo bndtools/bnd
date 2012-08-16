@@ -45,7 +45,7 @@ import bndtools.release.nl.Messages;
 
 public class BundleTree extends Composite {
 
-	public final static String VERSION_STRING = "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.([-_\\da-zA-Z]+))?)?)?";
+	public final static String VERSION_STRING = "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.([-_\\da-zA-Z]+))?)?)?"; //$NON-NLS-1$
 	public final static Pattern VERSION = Pattern.compile(VERSION_STRING);
 
 	protected SashForm sashForm;
@@ -112,7 +112,7 @@ public class BundleTree extends Composite {
 		treeColumn.setLabelProvider(new InfoLabelProvider());
 
 		TreeViewerColumn currentVersion = new TreeViewerColumn(infoViewer, SWT.NONE);
-		currentVersion.getColumn().setText(Messages.version);
+		currentVersion.getColumn().setText(Messages.version2);
 		currentVersion.getColumn().setWidth(80);
 		currentVersion.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -123,7 +123,7 @@ public class BundleTree extends Composite {
 				if (element instanceof Info) {
 					return ((Info) element).olderVersion.toString();
 				}
-				return "";
+				return ""; //$NON-NLS-1$
 			}
 		});
 		TreeViewerColumn suggestedVersion = new TreeViewerColumn(infoViewer, SWT.NONE);
@@ -138,7 +138,7 @@ public class BundleTree extends Composite {
 				if (element instanceof Info) {
 					return ((Info) element).suggestedVersion.toString();
 				}
-				return "";
+				return ""; //$NON-NLS-1$
 			}
 		});
 		suggestedVersion.setEditingSupport(new InlineComboEditingSupport(infoViewer));
@@ -309,7 +309,7 @@ public class BundleTree extends Composite {
 		@Override
         protected void initializeCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
 
-			 String selectedVersion = "";
+			 String selectedVersion = ""; //$NON-NLS-1$
 			 if (cell.getElement() instanceof Baseline) {
 			     selectedVersion = ((Baseline) cell.getElement()).getSuggestedVersion().toString();
 			 } else if (cell.getElement() instanceof Info) {

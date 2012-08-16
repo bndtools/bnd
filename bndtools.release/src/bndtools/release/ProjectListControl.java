@@ -11,6 +11,8 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
+import bndtools.release.nl.Messages;
+
 public class ProjectListControl {
 
 	private Table projects;
@@ -45,17 +47,17 @@ public class ProjectListControl {
 
 		// Project
 		TableColumn tableCol = new TableColumn(projects, SWT.NONE);
-		tableCol.setText("Project");
+		tableCol.setText(Messages.project1);
 		tableCol.setWidth(200);
 
 		// Repository
 		tableCol = new TableColumn(projects, SWT.NONE);
-		tableCol.setText("Repository");
+		tableCol.setText(Messages.repository);
 		tableCol.setWidth(100);
 
 		// Number of Bundles
 		tableCol = new TableColumn(projects, SWT.NONE);
-		tableCol.setText("Bundles");
+		tableCol.setText(Messages.bundles);
 		tableCol.setAlignment(SWT.RIGHT);
 		tableCol.setWidth(50);
 	}

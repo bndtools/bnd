@@ -35,7 +35,7 @@ public class DiffHelper {
 
 				Jar currentJar = builder.getBaselineJar();
 				if (currentJar == null) {
-				    currentJar = new Jar(".");
+				    currentJar = new Jar("."); //$NON-NLS-1$
 				}
 				Baseline baseline = new Baseline(builder, new DiffPluginImpl());
 
@@ -54,7 +54,7 @@ public class DiffHelper {
 			return null;
 		}
 		// Remove qualifier
-		String[] parts = version.split("\\.");
+		String[] parts = version.split("\\."); //$NON-NLS-1$
 		StringBuilder sb = new StringBuilder();
 		String sep = "";
 		for (int i = 0; i < parts.length; i++) {
@@ -63,7 +63,7 @@ public class DiffHelper {
 			}
 			sb.append(sep);
 			sb.append(parts[i]);
-			sep = ".";
+			sep = "."; //$NON-NLS-1$
 		}
 		return sb.toString();
 	}
