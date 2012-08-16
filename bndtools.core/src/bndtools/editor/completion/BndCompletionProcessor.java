@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 
+import aQute.bnd.help.Syntax;
+
 public class BndCompletionProcessor implements IContentAssistProcessor {
 
     private static final Pattern PREFIX_PATTERN = Pattern.compile("^(?:.*\\s)*(.*)$");
