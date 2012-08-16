@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 
 import bndtools.release.api.ReleaseContext.Error;
+import bndtools.release.nl.Messages;
 
 public class ErrorList {
 
@@ -115,7 +116,7 @@ public class ErrorList {
 			g.setLayout(gridLayout);
 		    g.setLayoutData(gridData);
 			
-		    g.setText(error.getScope() + (error.getSymbName() == null ? "" : " :  " + error.getSymbName() + "-" + error.getVersion()));
+		    g.setText(error.getScope() + (error.getSymbName() == null ? "" : " :  " + error.getSymbName() + "-" + error.getVersion())); //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
 		    
 		    Composite c2 = new Composite(g, SWT.NONE);
 			gridLayout = new GridLayout();
@@ -133,7 +134,7 @@ public class ErrorList {
 
 			
 			Label label = new Label(c2, SWT.NONE);
-			label.setText("Message");
+			label.setText(Messages.message);
 
 			Text text = new Text(c2, SWT.BORDER | SWT.MULTI);
 			text.setEditable(false);
@@ -141,14 +142,14 @@ public class ErrorList {
 
 			if (error.getSymbName() != null) {
 				label = new Label(c2, SWT.NONE);
-				label.setText("Symbolic Name");
+				label.setText(Messages.symbolicName);
 	
 				text = new Text(c2, SWT.BORDER);
 				text.setEditable(false);
 				text.setText(error.getSymbName());
 
 				label = new Label(c2, SWT.NONE);
-				label.setText("Version");
+				label.setText(Messages.version1);
 	
 				text = new Text(c2, SWT.BORDER);
 				text.setEditable(false);
@@ -181,7 +182,7 @@ public class ErrorList {
 			if (headers.length == 0) {
 				headers = new String[error.getList().length];
 				for (int i = 0; i < headers.length; i++) {
-					headers[i] = "";
+					headers[i] = ""; //$NON-NLS-1$
 				}
 			}
 			
