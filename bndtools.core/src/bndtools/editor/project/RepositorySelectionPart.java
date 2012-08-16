@@ -223,8 +223,6 @@ public class RepositorySelectionPart extends BndEditorPart {
         });
 
         ColumnViewerToolTipSupport.enableFor(viewer, ToolTip.NO_RECREATE);
-
-        reloadRepos();
     }
 
     void updateButtons() {
@@ -335,7 +333,7 @@ public class RepositorySelectionPart extends BndEditorPart {
     protected void refreshFromModel() {
         List<String> tmp = model.getRunRepos();
         includedRepos = tmp == null ? null : new LinkedList<String>(tmp);
-        viewer.refresh(true);
+        reloadRepos();
         updateButtons();
 
     }

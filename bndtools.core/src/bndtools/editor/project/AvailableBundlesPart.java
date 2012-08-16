@@ -28,7 +28,8 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
-import aQute.bnd.service.IndexProvider;
+import aQute.bnd.build.WorkspaceRepository;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import bndtools.BndConstants;
 import bndtools.Plugin;
@@ -59,10 +60,14 @@ public class AvailableBundlesPart extends BndEditorPart {
             boolean select = false;
             if (element instanceof RepositoryBundle) {
                 RepositoryBundle repoBundle = (RepositoryBundle) element;
-                if (repoBundle.getRepo() instanceof IndexProvider) {
-                    if (includedRepos == null || includedRepos.contains(repoBundle.getRepo().getName())) {
-                        select = true;
-                    }
+                RepositoryPlugin repo = repoBundle.getRepo();
+
+                if (includedRepos == null) {
+                    select = true;
+                } else if (repo instanceof WorkspaceRepository) {
+                    select = includedRepos.contains("Workspace");
+                } else {
+                    select = includedRepos.contains(repoBundle.getRepo().getName());
                 }
             } else {
                 select = true;
@@ -156,8 +161,6 @@ public class AvailableBundlesPart extends BndEditorPart {
                 }
             }
         });
-
-        viewer.setInput(RepositoryUtils.listRepositories(true));
     }
 
     private void updatedFilter(String filterString) {
@@ -182,7 +185,7 @@ public class AvailableBundlesPart extends BndEditorPart {
     protected void refreshFromModel() {
         List<String> tmp = model.getRunRepos();
         includedRepos = (tmp == null) ? null : new HashSet<String>(tmp);
-        viewer.refresh(true);
+        viewer.setInput(RepositoryUtils.listRepositories(true));
     }
 
     @Override
