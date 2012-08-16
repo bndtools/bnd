@@ -156,7 +156,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public SetLocation warning(String string, Object... args) {
 		Processor p = current();
-		String s = formatArrays(string, args);
+		String s = base.toString() + ": " + formatArrays(string, args);
 		if (!p.warnings.contains(s))
 			p.warnings.add(s);
 		p.signal();
@@ -168,7 +168,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		try {
 			if (p.isFailOk())
 				return p.warning(string, args);
-			String s = formatArrays(string, args == null ? new Object[0] : args);
+			String s = base.toString() + ": " + formatArrays(string, args == null ? new Object[0] : args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 			return location(s);
@@ -200,7 +200,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return p.warning(string + ": " + t, args);
 			}
 			p.errors.add("Exception: " + t.getMessage());
-			String s = formatArrays(string, args == null ? new Object[0] : args);
+			String s = base.toString() + ": " + formatArrays(string, args == null ? new Object[0] : args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 			return location(s);
