@@ -21,3 +21,5 @@ Git-SHA: ${system-allow-fail;git rev-list -1 HEAD}
 junit:    junit.osgi;version=3.8.2;export="junit.framework;version=3.8.2"
 -runpath: org.eclipse.osgi;version=3.5.2,\
           ${junit}
+
+Bundle-License: http://www.eclipse.org/legal/epl-v10.html
