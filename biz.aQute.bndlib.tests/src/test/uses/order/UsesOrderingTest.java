@@ -11,17 +11,17 @@ public class UsesOrderingTest extends TestCase {
 
 	static DiffPluginImpl	differ	= new DiffPluginImpl();
 
-	public static void testInheritance() throws Exception {
+	public static void testOrdering() throws Exception {
 		Builder builder = new Builder();
 		builder.addClasspath(new File("bin"));
-		builder.setProperty(Constants.EXPORT_PACKAGE, "test.diff;uses:=d,c,a,b");
+		builder.setProperty(Constants.EXPORT_PACKAGE, "test.diff;uses:=\"d,c,a,b\"");
 		Jar a = builder.build();
 
 		String exa = (String) a.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
 		
 		builder = new Builder();
 		builder.addClasspath(new File("bin"));
-		builder.setProperty(Constants.EXPORT_PACKAGE, "test.diff;uses:=d,b,a,c");
+		builder.setProperty(Constants.EXPORT_PACKAGE, "test.diff;uses:=\"d,b,a,c\"");
 		Jar b = builder.build();
 
 		String exb = (String) b.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);

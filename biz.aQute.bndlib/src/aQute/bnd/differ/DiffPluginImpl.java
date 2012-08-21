@@ -10,6 +10,7 @@ import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.service.diff.Tree.Data;
+import aQute.lib.collections.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
@@ -153,7 +154,13 @@ public class DiffPluginImpl implements Differ {
 				for (Map.Entry<String,Attrs> clause : clauses.entrySet()) {
 					Collection<Element> parameterDef = new ArrayList<Element>();
 					for (Map.Entry<String,String> parameter : clause.getValue().entrySet()) {
-						parameterDef.add(new Element(Type.PARAMETER, parameter.getKey() + ":" + parameter.getValue(),
+						String paramValue = parameter.getValue();
+						if (Constants.EXPORT_PACKAGE.equals(header) && Constants.USES_DIRECTIVE.equals(parameter.getKey())) {
+							ExtList<String> uses = ExtList.from(parameter.getValue());
+							Collections.sort(uses);
+							paramValue = uses.join();
+						}
+						parameterDef.add(new Element(Type.PARAMETER, parameter.getKey() + ":" + paramValue,
 								null, CHANGED, CHANGED, null));
 					}
 					clausesDef.add(new Element(Type.CLAUSE, clause.getKey(), parameterDef, CHANGED, CHANGED, null));
