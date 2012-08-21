@@ -71,7 +71,7 @@ public class BundleTree extends Composite {
 
 	public void createControl() {
 
-		sashForm = new SashForm(this, SWT.VERTICAL); 
+		sashForm = new SashForm(this, SWT.VERTICAL);
 		sashForm.setLayout(new FillLayout());
 		sashForm.setSashWidth(10);
 
@@ -136,7 +136,7 @@ public class BundleTree extends Composite {
                     return ((Baseline) element).getSuggestedVersion().toString();
                 }
 				if (element instanceof Info) {
-					return ((Info) element).suggestedVersion.toString();
+					return ((Info) element).suggestedVersion != null ? ((Info) element).suggestedVersion.toString() : ""; //$NON-NLS-1$
 				}
 				return ""; //$NON-NLS-1$
 			}
