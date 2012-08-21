@@ -18,7 +18,6 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
 import aQute.bnd.service.diff.*;
-import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.libg.generics.*;
 
@@ -1521,63 +1520,4 @@ public class Builder extends Analyzer {
 	 */
 
 	protected void doBaseline(Jar dot) throws Exception {}
-
-	public Jar getBaselineJar() throws Exception {
-
-		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
-
-		String baseline = getProperty(Constants.BASELINE);
-		Parameters params = parseHeader(baseline);
-		File baselineFile = null;
-		if (baseline == null) {
-			String repoName = getProperty(Constants.BASELINEREPO);
-			if (repoName == null) {
-				repoName = getProperty(Constants.RELEASEREPO);
-				if (repoName == null) {
-					return null;
-				}
-			}
-			for (RepositoryPlugin repo : repos) {
-				if (repoName.equals(repo.getName())) {
-					SortedSet<Version> versions = repo.versions(getBsn());
-					if (!versions.isEmpty()) {
-						baselineFile = repo.get(getBsn(), versions.last(), null);
-					}
-					break;
-				}
-			}
-		} else {
-
-			String bsn = null;
-			String version = null;
-			for (Entry<String,Attrs> entry : params.entrySet()) {
-				bsn = entry.getKey();
-				if ("@".equals(bsn)) {
-					bsn = getBsn();
-				}
-				version = entry.getValue().get(Constants.VERSION_ATTRIBUTE);
-				break;
-			}
-			if ("latest".equals(version)) {
-				version = null;
-			}
-			for (RepositoryPlugin repo : repos) {
-				if (version == null) {
-					SortedSet<Version> versions = repo.versions(bsn);
-					if (!versions.isEmpty()) {
-						baselineFile = repo.get(bsn, versions.last(), null);
-					}
-				} else {
-					baselineFile = repo.get(bsn, Version.parseVersion(version), null);
-				}
-				if (baselineFile != null) {
-					break;
-				}
-			}
-		}
-		if (baselineFile == null) {
-			return new Jar(".");
-		}
-		return new Jar(baselineFile);
-	}
 }
