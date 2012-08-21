@@ -13,6 +13,7 @@ package bndtools.release;
 import java.util.List;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Builder;
@@ -40,10 +41,10 @@ public class DiffHelper {
 
 		try {
 
-			if (builder != null) {
+			if (builder instanceof ProjectBuilder) {
 				Jar jar = builder.build();
 
-				Jar currentJar = builder.getBaselineJar();
+				Jar currentJar = ((ProjectBuilder) builder).getBaselineJar();
 				if (currentJar == null) {
 				    currentJar = new Jar("."); //$NON-NLS-1$
 				}
