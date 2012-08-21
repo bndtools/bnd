@@ -380,4 +380,81 @@ public class ProjectTest extends TestCase {
 		assertTrue(p1b.getRunBuilds());
 	}
 
+	public static void testSetPackageVersion() throws Exception {
+		File tmp = new File("tmp-ws");
+		if (tmp.exists())
+			IO.deleteWithException(tmp);
+		tmp.mkdir();
+		assertTrue(tmp.isDirectory());
+
+		try {
+			IO.copy(new File("test/ws"), tmp);
+			Workspace ws = Workspace.getWorkspace(tmp);
+			Project project = ws.getProject("p5");
+			project.setTrace(true);
+
+			Version newVersion = new Version(2,0,0);
+
+			// Package with no package info
+			project.setPackageInfo("pkg1", newVersion);
+			Version version = project.getPackageInfo("pkg1");
+			assertEquals(newVersion, version);
+			checkPackageInfoFiles(project, "pkg1", true, false);
+
+			// Package with package-info.java containing @Version("1.0.0")
+			project.setPackageInfo("pkg2", newVersion);
+			version = project.getPackageInfo("pkg2");
+			assertEquals(newVersion, version);
+			checkPackageInfoFiles(project, "pkg2", false, true);
+
+			// Package with package-info.java containing @aQute.bnd.annotations.Version("1.0.0")
+			project.setPackageInfo("pkg3", newVersion);
+			version = project.getPackageInfo("pkg3");
+			assertEquals(newVersion, version);
+			checkPackageInfoFiles(project, "pkg3", false, true);
+
+			// Package with package-info.java containing @aQute.bnd.annotations.Version(value="1.0.0")
+			project.setPackageInfo("pkg4", newVersion);
+			version = project.getPackageInfo("pkg4");
+			assertEquals(newVersion, version);
+			checkPackageInfoFiles(project, "pkg4", false, true);
+
+			// Package with package-info.java containing version + packageinfo
+			project.setPackageInfo("pkg5", newVersion);
+			version = project.getPackageInfo("pkg5");
+			assertEquals(newVersion, version);
+			checkPackageInfoFiles(project, "pkg5", true, true);
+
+			// Package with package-info.java NOT containing version + packageinfo
+			project.setPackageInfo("pkg6", newVersion);
+			version = project.getPackageInfo("pkg6");
+			assertEquals(newVersion, version);
+			checkPackageInfoFiles(project, "pkg6", true, true);
+
+			// Package with package-info.java NOT containing version
+			project.setPackageInfo("pkg7", newVersion);
+			version = project.getPackageInfo("pkg7");
+			assertEquals(newVersion, version);
+			checkPackageInfoFiles(project, "pkg7", true, true);
+
+			newVersion = new Version(2,2,0);
+
+			// Update packageinfo file
+			project.setPackageInfo("pkg1", newVersion);
+			version = project.getPackageInfo("pkg1");
+			assertEquals(newVersion, version);
+			checkPackageInfoFiles(project, "pkg1", true, false);
+
+		}
+		finally {
+			IO.deleteWithException(tmp);
+		}
+	}
+
+	private static void checkPackageInfoFiles(Project project, String packageName, boolean expectPackageInfo, boolean expectPackageInfoJava) throws Exception {
+		File pkgInfo = IO.getFile(project.getSrc(), packageName + "/packageinfo");
+		File pkgInfoJava = IO.getFile(project.getSrc(), packageName + "/package-info.java");
+		assertEquals(expectPackageInfo, pkgInfo.exists());
+		assertEquals(expectPackageInfoJava, pkgInfoJava.exists());
+	}
 }
