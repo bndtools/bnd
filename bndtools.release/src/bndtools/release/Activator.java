@@ -37,7 +37,6 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.build.Project;
@@ -141,7 +140,7 @@ public class Activator extends AbstractUIPlugin {
             URL url = en.nextElement();
             String name = getResourceName(url);
             ImageDescriptor id = ImageDescriptor.createFromURL(url);
-            reg.put(parent + "_" + name, id);
+            reg.put(parent + "_" + name, id); //$NON-NLS-1$
         }
     }
 
@@ -151,25 +150,8 @@ public class Activator extends AbstractUIPlugin {
         return name.substring(0, name.lastIndexOf('.'));
     }
 
-	@SuppressWarnings("unchecked")
-    public static <T> T getService(Class<T> clazz) {
-    	 if (clazz == Workspace.class) {
-    		 try {
-				return (T) Workspace.getWorkspace(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile());
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-    	 }
-
-    	 ServiceReference sr = getDefault().getBundle().getBundleContext().getServiceReference(clazz.getName());
-    	 if (sr == null) {
-    		 return null;
-    	 }
-    	 return (T) getDefault().getBundle().getBundleContext().getService(sr);
-     }
-
 	public static void refreshProject(Project project) throws Exception {
-		Workspace ws = Activator.getService(Workspace.class);
+		Workspace ws = getWorkspace();
 		if (ws == null) {
 			return;
 		}
@@ -251,7 +233,7 @@ public class Activator extends AbstractUIPlugin {
             	String strRanking = element.getAttribute("ranking");  //$NON-NLS-1$
             	int ranking = 0;
             	if (strRanking != null && strRanking.length() > 0) {
-            		ranking = Integer.valueOf(strRanking); 
+            		ranking = Integer.valueOf(strRanking);
             	}
             	participant.setRanking(ranking);
             	participants.add(participant);
