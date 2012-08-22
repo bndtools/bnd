@@ -11,7 +11,7 @@
 			<classpath>
 				<path location="${workspacedir}/cnf/buildrepo/junit.osgi/junit.osgi-3.8.2.jar"/>
 				<pathelement location="${project.output}" />
-				<path location="${workspacedir}/org.osgi.impl.bundle.bindex2.lib/generated/org.osgi.impl.bundle.bindex2.lib.jar" />
+				<path location="${workspacedir}/org.osgi.impl.bundle.repoindex.lib/generated/org.osgi.impl.bundle.repoindex.lib.jar" />
 			</classpath>
 			<formatter type="xml"/>
 			<batchtest todir="${target}/test-reports">

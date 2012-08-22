@@ -1,7 +1,7 @@
 # Build settings
 -buildpath:\
-	org.osgi.impl.bundle.bindex2.api;version=project,\
-	org.osgi.impl.bundle.bindex2.lib;version=project,\
+	org.osgi.impl.bundle.repoindex.api;version=project,\
+	org.osgi.impl.bundle.repoindex.lib;version=project,\
 	de.kalpatec.pojosr.framework;version=0.1.8,\
 	osgi.cmpn;version=4.2,\
 	junit.osgi,\

@@ -16,7 +16,7 @@ import org.example.tests.utils.Utils;
 
 public class TestCommandLine extends TestCase {
 	
-	private static final String BINDEX2_LIB_PATH = "../org.osgi.impl.bundle.bindex2.cli/generated/org.osgi.impl.bundle.bindex2.cli.jar";
+	private static final String BINDEX2_LIB_PATH = "../org.osgi.impl.bundle.repoindex.cli/generated/org.osgi.impl.bundle.repoindex.cli.jar";
 	
 	private File tempDir;
 

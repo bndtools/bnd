@@ -1,6 +1,6 @@
 -buildpath:\
 	ee.j2se;version='[1.5,1.6)',\
-	org.osgi.impl.bundle.bindex2.api;version=project,\
+	org.osgi.impl.bundle.repoindex.api;version=project,\
 	osgi.core;version=4.2,\
 	junit.osgi,\
 	lib/kxml2-min.jar;version=file,\
