@@ -2,7 +2,7 @@
   osgi.core;version=4.2,\
   osgi.cmpn,\
   junit.osgi,\
-  org.mockito.mockito-all,\
+  org.mockito.mockito-all;version='[1.8,1.9)',\
   org.osgi.impl.bundle.repoindex.lib;version=snapshot,\
   org.osgi.impl.bundle.repoindex.lib;version=project,\
   ee.j2se;version='[1.5,1.6)'
@@ -13,7 +13,7 @@
 
 Conditional-Package: org.example.tests.utils
 
--runbundles: org.mockito.mockito-all,\
+-runbundles: org.mockito.mockito-all;version='[1.8,1.9)',\
   org.osgi.impl.bundle.repoindex.lib;version=latest,\
   osgi.cmpn
   

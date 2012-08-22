@@ -1,11 +1,10 @@
--buildpath:\
-	ee.j2se;version='[1.5,1.6)',\
+-buildpath: ee.j2se;version='[1.5,1.6)',\
 	org.osgi.impl.bundle.repoindex.api;version=project,\
 	osgi.core;version=4.2,\
 	junit.osgi,\
 	lib/kxml2-min.jar;version=file,\
 	osgi.cmpn,\
-	org.mockito.mockito-all
+	org.mockito.mockito-all;version='[1.8,1.9)'
 
 Bundle-Name: BIndex2: Repository Index Generator
 Bundle-Activator: org.osgi.service.indexer.osgi.Activator

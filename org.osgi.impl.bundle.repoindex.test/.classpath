@@ -2,6 +2,5 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="aQute.bnd.classpath.container"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.osgi.impl.bundle.bindex2.lib"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
