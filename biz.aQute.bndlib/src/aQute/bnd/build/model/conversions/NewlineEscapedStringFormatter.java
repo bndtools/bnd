@@ -23,7 +23,7 @@ public class NewlineEscapedStringFormatter implements Converter<String,String> {
 				break;
 			}
 			result.append(input.substring(position, newlineIndex));
-			result.append(BndEditModel.LINE_SEPARATOR);
+			result.append(BndEditModel.NEWLINE_LINE_SEPARATOR);
 			position = newlineIndex + 1;
 		}
 
