@@ -267,7 +267,6 @@ public class IO {
 		if (file.startsWith("~/")) {
 			file = file.substring(2);
 			if (!file.startsWith("~/")) {
-				System.out.println("home " + file + " " + home);
 				return getFile(home, file);
 			}
 		}
