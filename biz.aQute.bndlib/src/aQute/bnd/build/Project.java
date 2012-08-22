@@ -233,7 +233,7 @@ public class Project extends Processor {
 					// dependencies.add( getWorkspace().getProject("cnf"));
 
 					String dp = getProperty(Constants.DEPENDSON);
-					Set<String> requiredProjectNames = new Parameters(dp).keySet();
+					Set<String> requiredProjectNames = new HashSet<String>(new Parameters(dp).keySet());
 					List<DependencyContributor> dcs = getPlugins(DependencyContributor.class);
 					for (DependencyContributor dc : dcs)
 						dc.addDependencies(this, requiredProjectNames);
