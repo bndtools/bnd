@@ -1,0 +1,45 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.apache.felix.eventadmin'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='1.2.14'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='9b91a6e582c29f2060bb1a892705d3f4937307abdee7fefd2b40232cf88cfd55'/>
+    <attribute name='url' value='testdata/org.apache.felix.eventadmin-1.2.14.jar'/>
+    <attribute name='size' type='Long' value='205242'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.apache.felix.eventadmin'/>
+    <attribute name='bundle-version' type='Version' value='1.2.14'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.apache.felix.eventadmin'/>
+    <attribute name='bundle-version' type='Version' value='1.2.14'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.osgi.service.event'/>
+    <attribute name='version' type='Version' value='1.2.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.felix.eventadmin'/>
+    <attribute name='bundle-version' type='Version' value='1.2.14'/>
+    <directive name='uses' value='org.osgi.framework'/>
+  </capability>
+  <capability namespace='foo'>
+    <attribute name='foo' value='bar'/>
+  </capability>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.framework)(version&gt;=1.3.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.cm)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.event)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.metatype)(version&gt;=1.1.0)(!(version&gt;=2.0.0)))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+</resource>

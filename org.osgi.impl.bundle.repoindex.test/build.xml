@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="build">
+	<import file="../cnf/build.xml"/>
+
+	<target name="test" depends="build">
+		<!-- OSGi Tests -->
+		<bndtest/>
+
+		<!-- Standalone Library Tests -->
+		<junit fork="true" printsummary="true" dir="${projectdir}" showoutput="true">
+			<classpath>
+				<path location="${workspacedir}/cnf/buildrepo/junit.osgi/junit.osgi-3.8.2.jar"/>
+				<pathelement location="${project.output}" />
+				<path location="${workspacedir}/org.osgi.impl.bundle.repoindex.lib/generated/org.osgi.impl.bundle.repoindex.lib.jar" />
+			</classpath>
+			<formatter type="xml"/>
+			<batchtest todir="${target}/test-reports">
+				<fileset dir="${project.sourcepath}" includes="org/example/tests/standalone/Test*.java"/>
+			</batchtest>
+		</junit>
+
+		<!-- CLI Tests -->
+		<junit fork="true" printsummary="true" dir="${projectdir}" showoutput="true">
+			<classpath>
+				<path location="${workspacedir}/cnf/buildrepo/junit.osgi/junit.osgi-3.8.2.jar"/>
+				<pathelement location="${project.output}" />
+			</classpath>
+			<formatter type="xml" />
+			<batchtest todir="${target}/test-reports">
+				<fileset dir="${project.sourcepath}" includes="org/example/tests/cli/Test*.java" />
+			</batchtest>
+		</junit>
+	</target>
+
+</project>

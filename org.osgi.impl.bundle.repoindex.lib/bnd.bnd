@@ -1,0 +1,33 @@
+-buildpath: ee.j2se;version='[1.5,1.6)',\
+	org.osgi.impl.bundle.repoindex.api;version=project,\
+	osgi.core;version=4.2,\
+	junit.osgi,\
+	lib/kxml2-min.jar;version=file,\
+	osgi.cmpn,\
+	org.mockito.mockito-all;version='[1.8,1.9)'
+
+Bundle-Name: BIndex2: Repository Index Generator
+Bundle-Activator: org.osgi.service.indexer.osgi.Activator
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+
+# We embed org.osgi.framework so that our use of Filter resolves when running under plain Java...
+Private-Package:\
+	org.osgi.framework,\
+	org.osgi.service.indexer.impl,\
+	org.osgi.service.indexer.impl.types,\
+	org.osgi.service.indexer.impl.util,\
+	org.osgi.service.indexer.osgi
+
+# ... but although org.osgi.framework is embedded, we must import it from the  actual framework
+# when running in OSGi!
+Import-Package:\
+	org.osgi.framework;version='[1.5,2)',\
+	org.osgi.service.log;version='[1.3,2)',\
+	*
+
+# Export the indexer package. Also export the log service.
+Export-Package:\
+	org.osgi.service.indexer,\
+	org.osgi.service.log
+	
+Bundle-Version: 0.0.1.${tstamp}

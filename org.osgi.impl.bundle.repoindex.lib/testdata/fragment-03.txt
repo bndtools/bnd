@@ -1,0 +1,27 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.c'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='805edded7fe1d6cd060347818257270277dfaa2a99bf747065da61639a89984e'/>
+    <attribute name='url' value='testdata/03-export.jar'/>
+    <attribute name='size' type='Long' value='1100'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.example.c'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.example.c'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.example.a'/>
+    <attribute name='version' type='Version' value='1.0.0'/>
+    <attribute name='bundle-symbolic-name' value='org.example.c'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+</resource>
