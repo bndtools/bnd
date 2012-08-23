@@ -13,9 +13,8 @@ import java.util.regex.*;
 
 import javax.swing.*;
 
-import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.Verifier;
+import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
 import aQute.lib.base64.*;
@@ -25,7 +24,6 @@ import aQute.lib.getopt.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.settings.*;
-import aQute.libg.cryptography.*;
 import aQute.libg.reporter.*;
 import aQute.library.command.*;
 import aQute.library.remote.*;
@@ -50,7 +48,7 @@ public class Main extends ReporterAdapter {
 	 */
 
 	@Arguments(arg = {})
-	@Description("List the repository information. Contains bsns, versions, and services.")
+	@Description("List the repository information. Contains bsns, versions, and service.")
 	public interface artifactOptions extends Options {
 		String filter();
 	}
@@ -104,9 +102,9 @@ public class Main extends ReporterAdapter {
 	})
 	public interface uninstallOptions extends Options {
 		@Description("Version range that must be matched, if not specified all versions are removed.")
-		VersionRange range();
+		Version version();
 
-		@Description("Garbage collect command and services that do not point to a valid repo file")
+		@Description("Garbage collect command and service that do not point to a valid repo file")
 		boolean gc();
 	}
 
@@ -118,9 +116,9 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * garbage collect commands and services
+	 * garbage collect commands and service
 	 */
-	@Description("Garbage collect any orphan services and commands")
+	@Description("Garbage collect any orphan service and commands")
 	@Arguments(arg = {})
 	public interface GCOptions extends Options {}
 
@@ -205,8 +203,9 @@ public class Main extends ReporterAdapter {
 			} else
 				cacheDir = null;
 
+			trace("using url %s", url);
 			library = new RemoteLibrary(url);
-
+			
 			CommandLine handler = opts._command();
 			List<String> arguments = opts._();
 
@@ -244,7 +243,7 @@ public class Main extends ReporterAdapter {
 	 * Install a jar options
 	 */
 	@Arguments(arg = {
-			"url|file", "..."
+		"command|service"
 	})
 	@Description("Install a jar into the repository. If the jar defines a number of headers it can also be installed as a command and/or a service. ")
 	public interface installOptions extends Options {
@@ -254,17 +253,8 @@ public class Main extends ReporterAdapter {
 		@Description("Force overwrite of existing command")
 		boolean force();
 
-		@Description("Verify digests in the JAR, provide algorithms. Default is MD5 and SHA1. A '-' ignores the digests.")
-		String[] verify();
-
 		@Description("Require a master version even when version is specified")
 		boolean master();
-
-		@Description("Version range requested, default is the latest master version")
-		VersionRange range();
-
-		@Description("Install from symbolic name, not the command name")
-		String bsn();
 
 		@Description("Include staged revisions in the search")
 		boolean staged();
@@ -272,6 +262,24 @@ public class Main extends ReporterAdapter {
 		@Description("Ignore digest")
 		boolean xdigest();
 
+		/**
+		 * If specified, will install a revision with the given name and version
+		 * and then add any command/service to the system.
+		 */
+		String bsn();
+
+		/**
+		 * Specify a version range for the artifact.
+		 * 
+		 * @return
+		 */
+		Version version();
+
+		/**
+		 * Install a file and extra commands
+		 */
+
+		String local();
 	}
 
 	/**
@@ -286,85 +294,200 @@ public class Main extends ReporterAdapter {
 			return;
 		}
 
-		for (String target : opts._()) {
+		List<String> _ = opts._();
+		List<ArtifactData> list = new ArrayList<ArtifactData>();
+
+		if (opts.bsn() != null) {
+			String bsn = opts.bsn();
+			if (!Verifier.isBsn(bsn)) {
+				error("Not a valid bsn: %s", bsn);
+				return;
+			}
+			Version version = opts.version();
+
+			if (!_.isEmpty())
+				error("If --bsn is specified than no other arguments are allowed: %s", opts._());
+
+			ArtifactData artifact = jpm.artifact(bsn, version);
+			if (artifact == null) {
+				error("Cannot find %s-%s", bsn, version);
+				return;
+			}
+
+			if (!isOk())
+				return;
+
+			list.add(artifact);
+		} else if (opts.local() != null) {
+			File file = getFile(opts.local());
+			if (file == null || !file.isFile()) {
+				error("%s is not a file", opts.local());
+				return;
+			}
+			Jar jar = new Jar(file);
 			try {
+				String bsn = jar.getBsn();
+				String version = jar.getVersion();
+				if (bsn == null)
+					error("No bsn in %s", file);
+				else if (!Verifier.isBsn(bsn))
+					error("Invalid bsn %s in %s", bsn, file);
 
-				if (URL_PATTERN.matcher(target).matches()) {
-					try {
-						install(new URL(target), opts, null);
-						continue;
-					}
-					catch (MalformedURLException mfue) {
-						// Ignore, try as file name
-					}
+				if (version == null)
+					error("No version in %s", file);
+				else if (!Verifier.isVersion(version))
+					error("Invalid version %s in %s", version, file);
+
+				if (!isOk())
+					return;
+
+				trace("putting %s" , file);
+				jpm.put(IO.stream(file), null);
+				ArtifactData artifact = jpm.artifact(bsn, new Version(version));
+
+				if (artifact == null) {
+					error("Cannot find %s-%s", bsn, version);
+					return;
 				}
 
-				// Try as file/directory name
+				if (!isOk())
+					return;
+				
 
-				File file = IO.getFile(base, target);
-				if (file.exists()) {
-					if (file.isFile())
-						install(file, opts);
-					else if (file.isDirectory()) {
-						for (File sub : file.listFiles()) {
-							if (sub.getName().endsWith(".jar")) {
-								install(sub, opts);
-							}
-						}
-					}
-					continue;
-				}
+				list.add(artifact);
+			}
+			finally {
+				jar.close();
+			}
+		} else {
 
-				// Try to download it from the central registry
-				{
+			for (String target : _) {
+				try {
+
 					Find<Revision> where = library.findRevision();
-					if (opts.bsn() != null) {
-						if (!Verifier.isBsn(opts.bsn()))
-							error("Not a valid bsn");
-						else
-							where.where("bsn", opts.bsn());
-					} else {
-						where.capability("x-jpm", "x-jpm", target);
-					}
+					where.capability("x-jpm", "x-jpm", target);
 
 					ExtList<Revision> sl = new ExtList<Revision>(where);
 					if (sl.size() == 0)
 						error("cannot find %s", target);
 					else {
 						trace("found %s revisions", sl.size());
-						
-						VersionRange range = opts.range();
+
+						Version version = opts.version();
 						boolean staged = opts.staged();
 						SortedMap<Version,Revision> candidates = new TreeMap<Version,Library.Revision>();
 
 						for (Revision r : sl) {
 							Version v = new Version(r.version.base);
 
-							if (range != null) {
-								if (range.includes(v)) {
+							if (version != null) {
+								if (version.compareTo(v) <= 0) {
 									candidates.put(v, r);
 								} else
-									trace("skipping %s because not in range %s", v, range);
+									trace("skipping %s because not in range %s", v, version);
 							} else if (r.master || staged) {
 								candidates.put(v, r);
 							} else
-								trace("skipping %s because staged", v, range, staged);
-								
+								trace("skipping %s because staged", v, version, staged);
+
 						}
 						if (candidates.isEmpty()) {
 							error("No candidates found after filtering: %s", sl);
 						} else {
 							Revision r = candidates.get(candidates.lastKey()); // get
 																				// best
-																				// match							
+																				// match
 							trace("Installing %s-%s %s %s", r.bsn, r.version.original, r.url, Hex.toHexString(r.sha));
-							install(r.url.toURL(), opts, r.sha);
+
+							ArtifactData artifact = jpm.artifact(r.bsn, new Version(r.version.base));
+							if (artifact == null) {
+								error("Cannot find %s-%s", r.bsn, r.version.base);
+								continue;
+							}
+
+							if (artifact.reason != null)
+								error("Revision %s-%s has has troubles downloading: %s, sha=%s", r.bsn, r.version.base,
+										artifact.reason, r.sha);
+
+							if (artifact.verify != null && !opts.xdigest())
+								error("Revision %s-%s has has digest troubles: %s, sha=%s", r.bsn, r.version.base,
+										artifact.reason, r.sha);
+
+							if (artifact.command == null && artifact.service == null)
+								error("Revision %s-%s has no JPM command nor service (%s) ", r.bsn, r.version.base,
+										r.sha);
+
+							if (!isOk())
+								continue;
+
+							if (!opts.force()) {
+
+								if (artifact.command != null && artifact.command.installed)
+									error("Command %s already exists, specify -f,--force if you want it installed",
+											target);
+								if (artifact.service != null && artifact.service.installed)
+									error("Service %s already exists, specify -f,--force if you want it installed",
+											target);
+							}
+							list.add(artifact);
 						}
 					}
+
+				}
+				catch (IOException e) {
+					exception(e, "Could not install %s because %s", target, e);
 				}
 			}
-			catch (IOException e) {
-				exception(e, "Could not install %s because %s", target, e);
+		}
+		// Now do the real work ...
+		trace("artifacts %s", list);
+		for (ArtifactData artifact : list) {
+			if (artifact.command != null) {
+				artifact.command.force=opts.force();
+				trace("creating command %s", artifact.command.bsn);
+				String error = jpm.createCommand(artifact.command);
+				if ( error != null)
+					error("Could not create command: %s", error);
+			}
+			if (artifact.service != null) {
+				artifact.command.force=opts.force();
+				trace("creating service %s", artifact.service.bsn);
+				String error = jpm.createService(artifact.service);
+				if ( error != null)
+					error("Could not create service: %s", error);
+			}
+		}
+	}
+
+	/**
+	 * Put a file in the repository:
+	 * 
+	 * <pre>
+	 * put
+	 * </pre>
+	 */
+
+	@Arguments(arg = {
+			"file", "..."
+	})
+	interface putOptions extends Options {
+		boolean install();
+	}
+
+	public void _put(putOptions opts) throws Exception {
+		for (String target : opts._()) {
+			File file = getFile(target);
+			if (file == null) {
+				error("Cannot find file %s", file);
+			} else {
+				FileInputStream in = new FileInputStream(file);
+				try {
+					PutResult result = jpm.put(in, null);
+					trace("put succesfully %s %s", result.artifact, Hex.toHexString(result.digest));
+				}
+				finally {
+					in.close();
+				}
 			}
 		}
 	}
@@ -472,23 +595,19 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * List the repository, services, and commands
+	 * List the repository, service, and commands
 	 * 
 	 * @param opts
 	 * @throws Exception
 	 */
 
 	public void _artifacts(artifactOptions opts) throws Exception {
-		List<ArtifactData> ads = jpm.getArtifacts();
-		Collections.sort(ads, new Comparator<ArtifactData>() {
-
-			public int compare(ArtifactData a, ArtifactData b) {
-				return a.bsn.compareTo(b.bsn);
-			}
-		});
-
-		for (ArtifactData artifact : ads)
-			out.printf("%-40s %s%n", artifact.bsn, artifact.version);
+		List<String> list = jpm.list(opts.filter());
+		for (String bsn : list) {
+			List<Version> l = new ArrayList<Version>(jpm.versions(bsn));
+			Collections.reverse(l);
+			out.printf("%-40s %s%n", bsn, l);
+		}
 	}
 
 	public void _service(serviceOptions opts) throws Exception {
@@ -522,13 +641,12 @@ public class Main extends ReporterAdapter {
 				if (opts.version() != null)
 					data.version = opts.version();
 
-				File artifact = jpm.getArtifact(data.bsn, data.version);
+				File artifact = jpm.get(data.bsn, data.version, null);
 				if (artifact == null) {
 					error("No such artifact %s:%s", data.bsn, data.version);
 					return;
 				}
 
-				data.repoFile = artifact;
 			} else {
 				error("No such service %s", name);
 				return;
@@ -548,11 +666,11 @@ public class Main extends ReporterAdapter {
 			update = true;
 		}
 		if (opts.log() != null) {
-			data.log = IO.getFile(base, opts.log());
+			data.log = IO.getFile(base, opts.log()).getAbsolutePath();
 			update = true;
 		}
 		if (opts.work() != null) {
-			data.work = IO.getFile(base, opts.work());
+			data.work = IO.getFile(base, opts.work()).getAbsolutePath();
 			update = true;
 		}
 
@@ -589,7 +707,7 @@ public class Main extends ReporterAdapter {
 	public void _command(commandOptions opts) throws Exception {
 		if (opts._().isEmpty()) {
 			for (CommandData sd : jpm.getCommands())
-				out.printf("%-40s %s-%s (%s)%n", sd.name, sd.bsn, sd.version, sd.repoFile);
+				out.printf("%-40s %s-%s (%s)%n", sd.name, sd.bsn, sd.version, sd.dependencies);
 			return;
 		}
 	}
@@ -610,10 +728,10 @@ public class Main extends ReporterAdapter {
 		if (!isOk())
 			return;
 
-		VersionRange range = opts.range();
+		Version version = opts.version();
 
 		for (String bsn : opts._()) {
-			jpm.uninstall(bsn, range);
+			jpm.delete(bsn, version);
 		}
 
 		jpm.gc();
@@ -645,171 +763,6 @@ public class Main extends ReporterAdapter {
 			return;
 
 		error("Cannot doinit due to %s", result);
-	}
-
-	/**
-	 * Install the source file in the repository.
-	 * 
-	 * @param target
-	 *            The source file
-	 * @param opts
-	 * @throws IOException
-	 */
-
-	private void install(URL url, installOptions opts, byte[] digest) throws Exception {
-		trace("installing %s", url);
-		// Download
-		File tmp = File.createTempFile("jpm", ".jar");
-		try {
-			copy(url, tmp);
-			if (tmp.isFile()) {
-				if (!opts.xdigest()) {
-					byte[] sha = SHA1.digest(tmp).digest();
-					trace("found sha %s, expecte sha %s", sha, digest);
-					if (!Arrays.equals(sha, digest))
-						error("invalid digest %s, expected %s, file is %s", url, Hex.toHexString(digest),
-								Hex.toHexString(sha));
-				}
-				if (!isOk())
-					return;
-
-				install(tmp, opts);
-			} else {
-				error("");
-			}
-		}
-		finally {
-			tmp.delete();
-		}
-	}
-
-	private void install(File source, installOptions opts) throws Exception {
-		JarFile jar = new JarFile(source);
-		Manifest m = jar.getManifest();
-		Attributes main = m.getMainAttributes();
-		String bsn = main.getValue("Bundle-SymbolicName");
-		if (bsn == null)
-			error("The JAR does not have a name (Bundle-SymbolicName header)");
-
-		String v = main.getValue("Bundle-Version");
-		Version version = null;
-
-		if (v == null)
-			error("The JAR does not have a version (Bundle-Version header)");
-		else if (!v.matches(JustAnotherPackageManager.VERSION_PATTERN))
-			error("Not a valid version: %s", v);
-		else
-			version = new Version(v);
-
-		String mainClass = main.getValue("Main-Class");
-
-		trace("install %s %s %s", bsn, version, mainClass);
-		List<File> install = new ArrayList<File>();
-		List<ServiceData> services = new ArrayList<ServiceData>();
-		List<CommandData> commands = new ArrayList<CommandData>();
-
-		{
-			Parameters embedded = OSGiHeader.parseHeader(main.getValue("JPM-Embedded"));
-			if (embedded != null) {
-				for (String e : embedded.keySet()) {
-					trace("embedded %s from %s", e, source);
-					File tmp = File.createTempFile("jpm", ".jar");
-					InputStream in = getClass().getClassLoader().getResourceAsStream(e);
-					if (in != null) {
-						copy(in, tmp);
-						install.add(tmp);
-					} else
-						warning("%s contains embedded that is not present: %s", source, e);
-				}
-			}
-			trace("embedded %s", install);
-		}
-
-		if (!opts.ignore()) {
-			Parameters service = OSGiHeader.parseHeader(main.getValue("JPM-Service"));
-			for (Map.Entry<String,Attrs> e : service.entrySet()) {
-				Attrs attrs = e.getValue();
-				ServiceData data = new ServiceData();
-				data.name = e.getKey();
-				data.bsn = bsn;
-				data.version = version;
-				if (attrs.containsKey("args"))
-					data.args = attrs.get("args");
-				if (attrs.containsKey("jvmargs"))
-					data.jvmArgs = attrs.get("jvmargs");
-
-				data.force = opts.force();
-				data.main = mainClass;
-				services.add(data);
-			}
-			trace("services %s", services);
-		}
-
-		if (!opts.ignore()) {
-			Parameters command = OSGiHeader.parseHeader(main.getValue("JPM-Command"));
-			for (Map.Entry<String,Attrs> e : command.entrySet()) {
-				Attrs attrs = e.getValue();
-				CommandData data = new CommandData();
-				data.bsn = bsn;
-				data.version = version;
-				data.name = e.getKey();
-				data.jvmArgs = attrs.get("vmargs");
-				data.force = opts.force();
-				data.main = mainClass;
-				commands.add(data);
-			}
-			trace("commands %s", commands);
-		}
-
-		try {
-			String msg = jpm.verify(jar, opts.verify());
-			if (msg != null) {
-				error("The JAR %s fails to verify, %s. Use -v - to ignore verification", source, msg);
-				return;
-			}
-
-			if (!opts.ignore()) {
-				if (commands.size() > 0 && mainClass == null)
-					error("JPM command is specified but JAR contains no Main-Class attribute for %s", source);
-
-				if (services.size() > 0 && mainClass == null)
-					error("JPM service is specified but JAR contains no Main-Class attribute for %s", source);
-			}
-
-			if (!isOk())
-				return;
-
-		}
-		finally {
-			jar.close();
-		}
-
-		for (File e : install)
-			install(e, opts);
-
-		File repoFile = jpm.install(source, bsn, version);
-
-		if (!opts.ignore()) {
-			for (CommandData data : commands) {
-				data.repoFile = repoFile;
-				trace("create command %s", data);
-				String s = jpm.createCommand(data);
-				if (s != null)
-					error("During create command %s, %s", data, s);
-				else
-					out.println("Installed command " + data);
-			}
-
-			for (ServiceData data : services) {
-				data.repoFile = repoFile;
-				trace("create service %s", data);
-				String s = jpm.createService(data);
-				if (s != null)
-					error("During create service %s, %s", data, s);
-				else
-					out.println("Installed service " + data);
-			}
-		}
 	}
 
 	/**

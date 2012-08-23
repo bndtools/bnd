@@ -6,6 +6,7 @@ import java.io.*;
 import java.lang.reflect.*;
 
 import aQute.jpm.lib.*;
+import aQute.lib.collections.*;
 import aQute.libg.sed.*;
 
 public abstract class Unix extends Platform {
@@ -78,11 +79,11 @@ public abstract class Unix extends Platform {
 	@Override
 	public int launchService(ServiceData data) throws Exception {
 		File launch = getLaunch(data);
-		Process p = Runtime.getRuntime().exec(launch.getAbsolutePath(), null, data.work);
+		Process p = Runtime.getRuntime().exec(launch.getAbsolutePath(), null, new File(data.work));
 		return p.waitFor();
 	}
 
-	protected void process(String resource, Object data, File file) throws Exception {
+	protected void process(String resource, CommandData data, File file) throws Exception {
 		copy(getClass().getResourceAsStream(resource), file);
 		Sed sed = new Sed(file);
 		sed.setBackup(false);
@@ -93,6 +94,9 @@ public abstract class Unix extends Platform {
 
 			sed.replace("%" + key.getName() + "%", "" + value);
 		}
+		String classpath = new ExtList<String>(data.dependencies).join(File.pathSeparator);
+		sed.replace("%classpath%", classpath);
+		
 		sed.doIt();
 		run("chmod a+x " + file.getAbsolutePath());
 	}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.5" authoringToolBuild="196.1">
+    <title>JPM</title>
+    <options customize="never" allow-external-scripts="no" rootVolumeOnly="true"/>
+    <background file="background" alignment="left" scaling="tofit"/>
+    <welcome language="en" mime-type="text/rtf"><![CDATA[{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 LucidaGrande;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs26 \cf0 JPM is Just Another Package Manager for Java. It provides a Java installation tool that makes it just as easy to install a Java program on any environment as it is for some other environments. Many ideas were taken form NPM.\
+\
+JPM makes the promise of Java, "Write Once, Run Anywhere", really come true.}]]></welcome>
+    <choices-outline>
+        <line choice="choice0"/>
+        <line choice="choice4"/>
+    </choices-outline>
+    <choice id="choice0" title="biz.aQute.jpm.run">
+        <pkg-ref id="biz.aQute.jpm.run.pkg"/>
+    </choice>
+    <choice id="choice4" title="JPM Postflight" start_visible="false">
+        <pkg-ref id="biz.aQute.jpm.postflight.pkg"/>
+    </choice>
+    <pkg-ref id="biz.aQute.jpm.run.pkg" installKBytes="984" version="1.0" auth="Root">file:./Contents/Packages/bizaqutejpmrun.pkg</pkg-ref>
+    <pkg-ref id="biz.aQute.jpm.postflight.pkg" installKBytes="0" version="1.0" auth="Root">file:./Contents/Packages/jpmPostflight.pkg</pkg-ref>
+</installer-script>

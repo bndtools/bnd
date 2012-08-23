@@ -3,6 +3,7 @@ package test;
 import java.io.*;
 
 import junit.framework.*;
+import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
 import aQute.jpm.platform.*;
 import aQute.libg.reporter.*;
@@ -51,5 +52,12 @@ public class JPMTest extends TestCase {
 		Platform plf = new PLF();
 		jpm.setPlatform(plf);
 
+	}
+	
+	public static void testDownload() throws Exception {
+		ReporterAdapter reporter = new ReporterAdapter();
+		JustAnotherPackageManager jpm = new JustAnotherPackageManager(reporter);
+		ArtifactData artifact = jpm.artifact("aQute.libg", new Version("2.7.3"));
+		assertNotNull(artifact);
 	}
 }

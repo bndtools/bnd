@@ -5,17 +5,20 @@ import static aQute.lib.io.IO.*;
 import java.io.*;
 import java.net.*;
 
+import aQute.lib.io.*;
+
 public class Service {
 	final ServiceData				data;
 	final JustAnotherPackageManager	jpm;
-
+	final File lock;
 	Service(JustAnotherPackageManager jpm, ServiceData data) throws Exception {
 		this.jpm = jpm;
 		this.data = data;
+		this.lock = new File(data.lock);
 	}
 
 	public String start() throws Exception {
-		if (data.lock.createNewFile()) {
+		if (lock.createNewFile()) {
 			try {
 				int result = jpm.platform.launchService(data);
 				if (result == 0)
@@ -24,7 +27,7 @@ public class Service {
 				return "Could not launch service " + data.name + " return value " + result;
 			}
 			catch (Throwable t) {
-				data.lock.delete();
+				IO.delete(lock);
 				return String.format("Failed to start %s for %s", data.name, t.getMessage());
 			}
 		}
@@ -32,14 +35,14 @@ public class Service {
 	}
 
 	public String stop() throws Exception {
-		if (data.lock.exists()) {
-			if (!data.lock.canWrite()) {
+		if (lock.exists()) {
+			if (!lock.canWrite()) {
 				return String.format("Cannot write lock %s", data.lock);
 			}
 			try {
 				send(getPort(), "STOP");
 				for (int i = 0; i < 20; i++) {
-					if (!data.lock.exists())
+					if (!lock.exists())
 						return null;
 
 					Thread.sleep(500);
@@ -47,14 +50,14 @@ public class Service {
 				return "Lock was not deleted by service in time (waited 10 secs)";
 			}
 			finally {
-				data.lock.delete();
+				lock.delete();
 			}
 		}
 		return "Not running";
 	}
 
 	public String status() throws Exception {
-		if (data.lock.canWrite() && data.lock.exists())
+		if (lock.canWrite() && lock.exists())
 			return send(getPort(), "STATUS");
 
 		return null;
@@ -109,7 +112,7 @@ public class Service {
 	}
 
 	public boolean isRunning() {
-		return data.lock.exists();
+		return lock.exists();
 	}
 
 	@Override

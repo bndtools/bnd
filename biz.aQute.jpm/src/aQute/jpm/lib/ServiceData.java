@@ -1,11 +1,9 @@
 package aQute.jpm.lib;
 
-import java.io.*;
-
 public class ServiceData extends CommandData {
 	public String	args	= "";
-	public File		sdir;
-	public File		work;
-	public File		lock;
-	public File		log;
+	public String	sdir;
+	public String	work;
+	public String	lock;
+	public String	log;
 }
