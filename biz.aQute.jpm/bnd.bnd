@@ -1,0 +1,20 @@
+-sources: false
+
+Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
+									description="${Bundle-Copyright}"; \
+									link=LICENSE
+						
+Conditional-Package: 			aQute.libg.*, aQute.lib.*
+Bundle-Version: 				0.0.5
+
+-buildpath: aQute.libg;version=project,\
+	biz.aQute.bndlib;version=project,\
+	ee.j2se;version=${javac.ee},\
+	com.springsource.junit,\
+	org.mockito.mockito-all;version=1.9.0,\
+	aQute.library.client;version=1.0.0
+	
+
+-digests: MD5, SHA1
+
+-sub: *.bnd

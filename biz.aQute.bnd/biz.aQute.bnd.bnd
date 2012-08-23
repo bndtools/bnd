@@ -1,17 +1,29 @@
--sources: 						true
--include: 						~META-INF/MANIFEST.MF
+Include-Resource: 				LICENSE, embedded-repo.jar
+Private-Package: aQute.bnd.*,\
+	aQute.configurable.*,\
+	org.osgi.service.component.annotations.*,\
+	aQute.lib.deployer.*,\
+	org.osgi.service.coordinator
 
-Include-Resource: 				plugin.xml, icons=icons, LICENSE, embedded-repo.jar
+Export-Package: aQute.bnd.service.*,\
+        aQute.bnd.header, \
+        aQute.bnd.osgi, \
+        aQute.bnd.build, \
+        aQute.bnd.version, \
+        aQute.bnd.maven.support, \
+	org.osgi.service.bindex,\
+	aQute.service.reporter,\
+	aQute.bnd.osgi.resource,\
+	org.osgi.service.repository,\
+	org.osgi.resource
 
-Private-Package: 				aQute.bnd.*, aQute.lib.*
+Import-Package: org.apache.tools.ant.*;resolution:=optional,\
+	junit.framework;resolution:=optional;version='[3.8,4)',\
+	*
 
-#, org.osgi.service.component.annotations
-Conditional-Package: 			aQute.libg.*
-Export-Package: 				aQute.bnd.service.*, org.osgi.service.bindex
-Import-Package: 				!org.eclipse.*,org.apache.tools.ant;resolution:=optional,org.osgi.service.bindex,*
-Bundle-ClassPath:				.
 Main-Class: 					aQute.bnd.main.bnd
+JPM-Command:					bnd
 Bundle-Version:					${^Bundle-Version}
 
-
+-digests: MD5, SHA1
 

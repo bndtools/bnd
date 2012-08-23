@@ -13,9 +13,9 @@ import java.util.*;
 public class Tag {
 	Tag							parent;													// Parent
 	String						name;														// Name
-	final Map<String, String>	attributes	= new LinkedHashMap<String, String>();
+	final Map<String,String>	attributes	= new LinkedHashMap<String,String>();
 	final List<Object>			content		= new ArrayList<Object>();						// Content
-	static SimpleDateFormat		format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	SimpleDateFormat			format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 	boolean						cdata;
 
 	/**
@@ -28,19 +28,20 @@ public class Tag {
 	}
 
 	public Tag(Tag parent, String name, Object... contents) {
-		this(name,contents);
+		this(name, contents);
 		parent.addContent(this);
 	}
 
 	/**
 	 * Construct a new Tag with a name.
 	 */
-	public Tag(String name, Map<String, String> attributes, Object... contents) {
-		this(name,contents);
+	public Tag(String name, Map<String,String> attributes, Object... contents) {
+		this(name, contents);
 		this.attributes.putAll(attributes);
 
 	}
-	public Tag(String name, Map<String, String> attributes) {
+
+	public Tag(String name, Map<String,String> attributes) {
 		this(name, attributes, new Object[0]);
 	}
 
@@ -49,11 +50,11 @@ public class Tag {
 	 * are given as ( name, value ) ...
 	 */
 	public Tag(String name, String[] attributes, Object... contents) {
-		this(name,contents);
+		this(name, contents);
 		for (int i = 0; i < attributes.length; i += 2)
 			addAttribute(attributes[i], attributes[i + 1]);
 	}
-	
+
 	public Tag(String name, String[] attributes) {
 		this(name, attributes, new Object[0]);
 	}
@@ -124,7 +125,7 @@ public class Tag {
 	 * Return the attribute value.
 	 */
 	public String getAttribute(String key) {
-		return (String) attributes.get(key);
+		return attributes.get(key);
 	}
 
 	/**
@@ -138,7 +139,7 @@ public class Tag {
 	/**
 	 * Answer the attributes as a Dictionary object.
 	 */
-	public Map<String, String> getAttributes() {
+	public Map<String,String> getAttributes() {
 		return attributes;
 	}
 
@@ -153,6 +154,7 @@ public class Tag {
 	 * Return a string representation of this Tag and all its children
 	 * recursively.
 	 */
+	@Override
 	public String toString() {
 		StringWriter sw = new StringWriter();
 		print(0, new PrintWriter(sw));
@@ -176,15 +178,15 @@ public class Tag {
 	 * Return the whole contents as a String (no tag info and attributes).
 	 */
 	public String getContentsAsString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		getContentsAsString(sb);
 		return sb.toString();
 	}
 
 	/**
-	 * convenient method to get the contents in a StringBuffer.
+	 * convenient method to get the contents in a StringBuilder.
 	 */
-	public void getContentsAsString(StringBuffer sb) {
+	public void getContentsAsString(StringBuilder sb) {
 		for (Object o : content) {
 			if (o instanceof Tag)
 				((Tag) o).getContentsAsString(sb);
@@ -206,13 +208,9 @@ public class Tag {
 			String value = escape(attributes.get(key));
 			pw.print(' ');
 			pw.print(key);
-			pw.print("=");
-			String quote = "'";
-			if (value.indexOf(quote) >= 0)
-				quote = "\"";
-			pw.print(quote);
+			pw.print("=\"");
 			pw.print(value);
-			pw.print(quote);
+			pw.print("\"");
 		}
 
 		if (content.size() == 0)
@@ -221,7 +219,14 @@ public class Tag {
 			pw.print('>');
 			for (Object c : content) {
 				if (c instanceof String) {
-					formatted(pw, indent + 2, 60, escape((String) c));
+					if (cdata) {
+						pw.print("<![CDATA[");
+						String s = (String) c;
+						s = s.replaceAll("]]>", "] ]>");
+						pw.print(s);
+						pw.print("]]>");
+					} else
+						formatted(pw, indent + 2, 60, escape((String) c));
 				} else if (c instanceof Tag) {
 					Tag tag = (Tag) c;
 					tag.print(indent + 2, pw);
@@ -252,22 +257,22 @@ public class Tag {
 				pos = 0;
 			}
 			switch (c) {
-			case '<':
-				pw.print("&lt;");
-				pos += 4;
-				break;
-			case '>':
-				pw.print("&gt;");
-				pos += 4;
-				break;
-			case '&':
-				pw.print("&amp;");
-				pos += 5;
-				break;
-			default:
-				pw.print(c);
-				pos++;
-				break;
+				case '<' :
+					pw.print("&lt;");
+					pos += 4;
+					break;
+				case '>' :
+					pw.print("&gt;");
+					pos += 4;
+					break;
+				case '&' :
+					pw.print("&amp;");
+					pos += 5;
+					break;
+				default :
+					pw.print(c);
+					pos++;
+					break;
 			}
 
 		}
@@ -277,22 +282,25 @@ public class Tag {
 	 * Escape a string, do entity conversion.
 	 */
 	String escape(String s) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			switch (c) {
-			case '<':
-				sb.append("&lt;");
-				break;
-			case '>':
-				sb.append("&gt;");
-				break;
-			case '&':
-				sb.append("&amp;");
-				break;
-			default:
-				sb.append(c);
-				break;
+				case '<' :
+					sb.append("&lt;");
+					break;
+				case '>' :
+					sb.append("&gt;");
+					break;
+				case '\"' :
+					sb.append("&quot;");
+					break;
+				case '&' :
+					sb.append("&amp;");
+					break;
+				default :
+					sb.append(c);
+					break;
 			}
 		}
 		return sb.toString();
@@ -382,13 +390,10 @@ public class Tag {
 
 		if (mapping == null) {
 			return tn == sn || (sn != null && sn.equals(tn));
-		} else {
-			String suri = sn == null ? mapping.getAttribute("xmlns") : mapping
-					.getAttribute("xmlns:" + sn);
-			String turi = tn == null ? child.findRecursiveAttribute("xmlns") : child
-					.findRecursiveAttribute("xmlns:" + tn);
-			return turi == suri || (turi != null && suri != null && turi.equals(suri));
 		}
+		String suri = sn == null ? mapping.getAttribute("xmlns") : mapping.getAttribute("xmlns:" + sn);
+		String turi = tn == null ? child.findRecursiveAttribute("xmlns") : child.findRecursiveAttribute("xmlns:" + tn);
+		return ((turi == null) && (suri == null)) || ((turi != null) && turi.equals(suri));
 	}
 
 	public String getString(String path) {
@@ -405,7 +410,7 @@ public class Tag {
 				path = "";
 		}
 		Collection<Tag> tags = select(path);
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (Tag tag : tags) {
 			if (attribute == null)
 				tag.getContentsAsString(sb);
@@ -416,7 +421,7 @@ public class Tag {
 	}
 
 	public String getStringContent() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (Object c : content) {
 			if (!(c instanceof Tag))
 				sb.append(c);
@@ -433,8 +438,8 @@ public class Tag {
 		if (index > 0) {
 			String ns = name.substring(0, index);
 			return findRecursiveAttribute("xmlns:" + ns);
-		} else
-			return findRecursiveAttribute("xmlns");
+		}
+		return findRecursiveAttribute("xmlns");
 	}
 
 	public String findRecursiveAttribute(String name) {

@@ -1,0 +1,4 @@
+Bundle-Name:            bnd Test Library
+Bundle-Description:     Contains only the test functions for bnd.
+Bundle-DocURL:          http://www.aQute.biz/Code/Bnd
+Export-Package:         aQute.bnd.test.*

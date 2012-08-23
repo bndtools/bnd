@@ -7,34 +7,46 @@ Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 									description="Apache Software License 2.0"; \
 									link=http://www.apache.org/licenses/LICENSE-2.0.html
 Bundle-DocURL:          		http://www.aQute.biz/Code/Bnd
-Bundle-Name: 					bnd - Bundle Tool
+Bundle-Name: 					bndlib
 Bundle-Description:				A Swiss Army Knife for OSGi
 Bundle-SymbolicName: 	        biz.aQute.bndlib
 Private-Package: 				aQute.bnd.*, aQute.lib.*, org.osgi.service.component.annotations
 Export-Package: aQute.bnd.annotation.*,\
-	aQute.lib.osgi,\
+	aQute.bnd.osgi,\
+	aQute.bnd.osgi.resource,\
 	aQute.bnd.build,\
+	aQute.bnd.differ,\
 	aQute.bnd.service.*,\
 	aQute.bnd.help.*,\
-	aQute.libg.reporter,\
-	aQute.libg.version,\
-	aQute.libg.sed,\
-	aQute.libg.header,\
-	aQute.libg.qtokens,\
-	aQute.libg.sax,\
-	org.osgi.service.bindex
-#Workaround, bnd should be adding this automatically:
-Import-Package: org.osgi.service.bindex,*
+	org.osgi.service.repository,\
+	org.osgi.resource,\
+	aQute.bnd.header,\
+	aQute.bnd.version,\
+	aQute.bnd.filerepo,\
+	aQute.bnd.properties,\
+	aQute.bnd.build.model,\
+	aQute.bnd.build.model.clauses,\
+	aQute.service.reporter,\
+	aQute.bnd.maven.support
 
-Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*
-Include-Resource: 				LICENSE
+Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*, aQute.configurable
+Include-Resource: 				LICENSE, img/=img/
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 
 -buildpath: com.springsource.junit,\
 	osgi.cmpn;version=4.3,\
 	aQute.libg;version=project,\
-	osgi.core;version=4.1, \
-	ee.j2se; version=1.5, \
-	org.osgi.impl.bundle.bindex
+	osgi.core;version=4.1,\
+	osgi.r5;version=1.0.1,\
+	ee.j2se;version=${javac.ee}
 
-Bundle-Version: 1.50.0
+Bundle-Version: 2.0.0.${tstamp;yyyyMMdd-HHmmss}
+Import-Package: junit.framework;resolution:=optional,\
+	org.osgi.resource;resolution:=optional,\
+	org.osgi.framework;version='[1.5,2)',\
+	*
+
+Bundle-Icon: img/bnd-64.png;size=64
+Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
+Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com
+Bundle-SCM: git@github.com:bndtools/bnd.git

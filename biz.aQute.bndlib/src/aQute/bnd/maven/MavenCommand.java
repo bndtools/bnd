@@ -3,25 +3,26 @@ package aQute.bnd.maven;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
+import aQute.bnd.header.*;
 import aQute.bnd.maven.support.*;
-import aQute.bnd.maven.support.Pom.*;
-import aQute.bnd.settings.*;
+import aQute.bnd.maven.support.Pom.Scope;
+import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
+import aQute.lib.settings.*;
 import aQute.libg.command.*;
-import aQute.libg.header.*;
 
 public class MavenCommand extends Processor {
 	final Settings	settings	= new Settings();
 	File			temp;
 
-	public MavenCommand() {
-	}
+	public MavenCommand() {}
 
 	public MavenCommand(Processor p) {
 		super(p);
@@ -59,7 +60,9 @@ public class MavenCommand extends Processor {
 
 		trace("temp dir " + temp);
 		IO.delete(temp);
-		temp.mkdirs();
+		if (!temp.exists() && !temp.mkdirs()) {
+			throw new IOException("Could not create directory " + temp);
+		}
 		if (!temp.isDirectory())
 			throw new IOException("Cannot create temp directory");
 
@@ -76,23 +79,23 @@ public class MavenCommand extends Processor {
 	}
 
 	private void help() {
-		System.err.println("Usage:\n");
+		System.err.printf("Usage:%n");
 		System.err
-				.println("  maven \n" //
-						+ "  [-temp <dir>]            use as temp directory\n" //
-						+ "  settings                 show maven settings\n" //
-						+ "  bundle                   turn a bundle into a maven bundle\n" //
-						+ "    [-properties <file>]   provide properties, properties starting with javadoc are options for javadoc, like javadoc-tag=...\n"
-						+ "    [-javadoc <file|url>]  where to find the javadoc (zip/dir), otherwise generated\n" //
-						+ "    [-source <file|url>]   where to find the source (zip/dir), otherwise from OSGI-OPT/src\n" //
-						+ "    [-scm <url>]           required scm in pom, otherwise from Bundle-SCM\n" //
-						+ "    [-url <url>]           required project url in pom\n" //
-						+ "    [-bsn bsn]             overrides bsn\n" //
-						+ "    [-version <version>]   overrides version\n" //
-						+ "    [-developer <email>]   developer email\n" //
-						+ "    [-nodelete]            do not delete temp files\n" //
-						+ "    [-passphrase <gpgp passphrase>] signer password\n"//
-						+ "        <file|url> ");
+				.printf("  maven %n" //
+						+ "  [-temp <dir>]            use as temp directory%n" //
+						+ "  settings                 show maven settings%n" //
+						+ "  bundle                   turn a bundle into a maven bundle%n" //
+						+ "    [-properties <file>]   provide properties, properties starting with javadoc are options for javadoc, like javadoc-tag=...%n"
+						+ "    [-javadoc <file|url>]  where to find the javadoc (zip/dir), otherwise generated%n" //
+						+ "    [-source <file|url>]   where to find the source (zip/dir), otherwise from OSGI-OPT/src%n" //
+						+ "    [-scm <url>]           required scm in pom, otherwise from Bundle-SCM%n" //
+						+ "    [-url <url>]           required project url in pom%n" //
+						+ "    [-bsn bsn]             overrides bsn%n" //
+						+ "    [-version <version>]   overrides version%n" //
+						+ "    [-developer <email>]   developer email%n" //
+						+ "    [-nodelete]            do not delete temp files%n" //
+						+ "    [-passphrase <gpgp passphrase>] signer password%n"//
+						+ "        <file|url>%n");
 	}
 
 	/**
@@ -113,12 +116,9 @@ public class MavenCommand extends Processor {
 			error("There is no settings file at '%s'", settings.getAbsolutePath());
 			return;
 		}
-
-		FileReader rdr = new FileReader(settings);
-
-		LineCollection lc = new LineCollection(new BufferedReader(rdr));
+		LineCollection lc = new LineCollection(IO.reader(settings));
 		while (lc.hasNext()) {
-			System.out.println(lc.next());
+			System.err.println(lc.next());
 		}
 	}
 
@@ -168,19 +168,24 @@ public class MavenCommand extends Processor {
 			else if (option.equals("-output"))
 				output = args[i++];
 			else if (option.equals("-nodelete"))
-				nodelete=true;
+				nodelete = true;
 			else if (option.startsWith("-properties")) {
-				InputStream in = new FileInputStream(args[i++]);
+				InputStream in = null;
 				try {
+					in = new FileInputStream(args[i++]);
 					properties.load(in);
-				} catch (Exception e) {
-					in.close();
+				}
+				catch (Exception e) {}
+				finally {
+					if (in != null) {
+						in.close();
+					}
 				}
 			}
 		}
 
 		if (developers.isEmpty()) {
-			String email = settings.globalGet(Settings.EMAIL, null);
+			String email = settings.remove("email");
 			if (email == null)
 				error("No developer email set, you can set global default email with: bnd global email Peter.Kriens@aQute.biz");
 			else
@@ -207,7 +212,9 @@ public class MavenCommand extends Processor {
 		}
 
 		File original = getFile(temp, "original");
-		original.mkdirs();
+		if (!original.exists() && !original.mkdirs()) {
+			throw new IOException("Could not create directory " + original);
+		}
 		binaryJar.expand(original);
 		binaryJar.calcChecksums(null);
 
@@ -230,17 +237,16 @@ public class MavenCommand extends Processor {
 		for (String d : developers)
 			pom.addDeveloper(d);
 
-		Set<String> exports = OSGiHeader.parseHeader(
-				manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE)).keySet();
+		Set<String> exports = OSGiHeader.parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE))
+				.keySet();
 
 		Jar sourceJar;
 		if (source == null) {
 			trace("Splitting source code");
 			sourceJar = new Jar("source");
-			for (Map.Entry<String, Resource> entry : binaryJar.getResources().entrySet()) {
+			for (Map.Entry<String,Resource> entry : binaryJar.getResources().entrySet()) {
 				if (entry.getKey().startsWith("OSGI-OPT/src")) {
-					sourceJar.putResource(entry.getKey().substring("OSGI-OPT/src/".length()),
-							entry.getValue());
+					sourceJar.putResource(entry.getKey().substring("OSGI-OPT/src/".length()), entry.getValue());
 				}
 			}
 			copyInfo(binaryJar, sourceJar, "source");
@@ -248,7 +254,7 @@ public class MavenCommand extends Processor {
 			sourceJar = getJarFromFileOrURL(source);
 		}
 		sourceJar.calcChecksums(null);
-		
+
 		Jar javadocJar;
 		if (javadoc == null) {
 			trace("creating javadoc because -javadoc not used");
@@ -263,22 +269,23 @@ public class MavenCommand extends Processor {
 			javadocJar = getJarFromFileOrURL(javadoc);
 		}
 		javadocJar.calcChecksums(null);
-		
+
 		addClose(binaryJar);
 		addClose(sourceJar);
 		addClose(javadocJar);
 
 		trace("creating bundle dir");
 		File bundle = new File(temp, "bundle");
-		bundle.mkdirs();
+		if (!bundle.exists() && !bundle.mkdirs()) {
+			throw new IOException("Could not create directory " + bundle);
+		}
 
 		String prefix = pom.getArtifactId() + "-" + pom.getVersion();
 		File binaryFile = new File(bundle, prefix + ".jar");
 		File sourceFile = new File(bundle, prefix + "-sources.jar");
 		File javadocFile = new File(bundle, prefix + "-javadoc.jar");
 		File pomFile = new File(bundle, "pom.xml").getAbsoluteFile();
-		trace("creating output files %s, %s,%s, and %s", binaryFile, sourceFile, javadocFile,
-				pomFile);
+		trace("creating output files %s, %s,%s, and %s", binaryFile, sourceFile, javadocFile, pomFile);
 
 		IO.copy(pom.openInputStream(), pomFile);
 		trace("copied pom");
@@ -315,39 +322,39 @@ public class MavenCommand extends Processor {
 	private void copyInfo(Jar source, Jar dest, String type) throws Exception {
 		source.ensureManifest();
 		dest.ensureManifest();
-		copyInfoResource( source, dest, "LICENSE");
-		copyInfoResource( source, dest, "LICENSE.html");
-		copyInfoResource( source, dest, "about.html");
-		
+		copyInfoResource(source, dest, "LICENSE");
+		copyInfoResource(source, dest, "LICENSE.html");
+		copyInfoResource(source, dest, "about.html");
+
 		Manifest sm = source.getManifest();
 		Manifest dm = dest.getManifest();
-		copyInfoHeader( sm, dm, "Bundle-Description","");
-		copyInfoHeader( sm, dm, "Bundle-Vendor","");
-		copyInfoHeader( sm, dm, "Bundle-Copyright","");
-		copyInfoHeader( sm, dm, "Bundle-DocURL","");
-		copyInfoHeader( sm, dm, "Bundle-License","");
-		copyInfoHeader( sm, dm, "Bundle-Name", " " + type);
-		copyInfoHeader( sm, dm, "Bundle-SymbolicName", "." + type);
-		copyInfoHeader( sm, dm, "Bundle-Version", "");
+		copyInfoHeader(sm, dm, "Bundle-Description", "");
+		copyInfoHeader(sm, dm, "Bundle-Vendor", "");
+		copyInfoHeader(sm, dm, "Bundle-Copyright", "");
+		copyInfoHeader(sm, dm, "Bundle-DocURL", "");
+		copyInfoHeader(sm, dm, "Bundle-License", "");
+		copyInfoHeader(sm, dm, "Bundle-Name", " " + type);
+		copyInfoHeader(sm, dm, "Bundle-SymbolicName", "." + type);
+		copyInfoHeader(sm, dm, "Bundle-Version", "");
 	}
 
 	private void copyInfoHeader(Manifest sm, Manifest dm, String key, String value) {
 		String v = sm.getMainAttributes().getValue(key);
-		if ( v == null) {
+		if (v == null) {
 			trace("no source for " + key);
 			return;
 		}
-		
-		if ( dm.getMainAttributes().getValue(key) != null) {
-			trace("already have " + key );
+
+		if (dm.getMainAttributes().getValue(key) != null) {
+			trace("already have " + key);
 			return;
 		}
-		
+
 		dm.getMainAttributes().putValue(key, v + value);
 	}
 
 	private void copyInfoResource(Jar source, Jar dest, String type) {
-		if ( source.getResources().containsKey(type) && !dest.getResources().containsKey(type))
+		if (source.getResources().containsKey(type) && !dest.getResources().containsKey(type))
 			dest.putResource(type, source.getResource(type));
 	}
 
@@ -366,7 +373,8 @@ public class MavenCommand extends Processor {
 			InputStream in = url.openStream();
 			try {
 				jar = new Jar(url.getFile(), in);
-			} finally {
+			}
+			finally {
 				in.close();
 			}
 		}
@@ -387,19 +395,20 @@ public class MavenCommand extends Processor {
 			command.add("--passphrase", passphrase);
 		command.add("-ab", "--sign"); // not the -b!!
 		command.add(file.getAbsolutePath());
-		System.out.println(command);
-		StringBuffer stdout = new StringBuffer();
-		StringBuffer stderr = new StringBuffer();
+		System.err.println(command);
+		StringBuilder stdout = new StringBuilder();
+		StringBuilder stderr = new StringBuilder();
 		int result = command.execute(stdout, stderr);
 		if (result != 0) {
 			error("gpg signing %s failed because %s", file, "" + stdout + stderr);
 		}
 	}
 
-	private Jar javadoc(File source, Set<String> exports, Manifest m, Properties p)
-			throws Exception {
+	private Jar javadoc(File source, Set<String> exports, Manifest m, Properties p) throws Exception {
 		File tmp = new File(temp, "javadoc");
-		tmp.mkdirs();
+		if (!tmp.exists() && !tmp.mkdirs()) {
+			throw new IOException("Could not create directory " + tmp);
+		}
 
 		Command command = new Command();
 		command.add(getProperty("javadoc", "javadoc"));
@@ -435,7 +444,7 @@ public class MavenCommand extends Processor {
 		command.add("-tag");
 		command.add("noimplement:t:Consumers of this API must not implement this interface");
 
-		for (Enumeration<?> e = pp.propertyNames(); e.hasMoreElements();) {
+		for (Enumeration< ? > e = pp.propertyNames(); e.hasMoreElements();) {
 			String key = (String) e.nextElement();
 			String value = pp.getProperty(key);
 
@@ -450,15 +459,14 @@ public class MavenCommand extends Processor {
 			command.add(packageName);
 		}
 
-		StringBuffer out = new StringBuffer();
-		StringBuffer err = new StringBuffer();
+		StringBuilder out = new StringBuilder();
+		StringBuilder err = new StringBuilder();
 
-		System.out.println(command);
+		System.err.println(command);
 
 		int result = command.execute(out, err);
 		if (result != 0) {
-			warning("Error during execution of javadoc command: %s\n******************\n%s", out,
-					err);
+			warning("Error during execution of javadoc command: %s\n******************\n%s", out, err);
 		}
 		Jar jar = new Jar(tmp);
 		addClose(jar);
@@ -472,14 +480,13 @@ public class MavenCommand extends Processor {
 	 * @return
 	 */
 	private String license(Attributes attr) {
-		Map<String, Map<String, String>> map = Processor.parseHeader(
-				attr.getValue(Constants.BUNDLE_LICENSE), null);
+		Parameters map = Processor.parseHeader(attr.getValue(Constants.BUNDLE_LICENSE), null);
 		if (map.isEmpty())
 			return null;
 
 		StringBuilder sb = new StringBuilder();
 		String sep = "Licensed under ";
-		for (Map.Entry<String, Map<String, String>> entry : map.entrySet()) {
+		for (Entry<String,Attrs> entry : map.entrySet()) {
 			sb.append(sep);
 			String key = entry.getKey();
 			String link = entry.getValue().get("link");
@@ -538,78 +545,74 @@ public class MavenCommand extends Processor {
 		pp.setProperty(key, defaultValue);
 	}
 
-	
 	/**
 	 * View - Show the dependency details of an artifact
 	 */
-	
 
-	static Executor executor = Executors.newCachedThreadPool();
-	static Pattern GROUP_ARTIFACT_VERSION = Pattern.compile("([^+]+)\\+([^+]+)\\+([^+]+)");
-	void view( String args[], int i) throws Exception {
+	static Executor	executor				= Executors.newCachedThreadPool();
+	static Pattern	GROUP_ARTIFACT_VERSION	= Pattern.compile("([^+]+)\\+([^+]+)\\+([^+]+)");
+
+	void view(String args[], int i) throws Exception {
 		Maven maven = new Maven(executor);
-		OutputStream out = System.out;
-		
-		List<URI>	urls = new ArrayList<URI>();
-		
-		while ( i < args.length && args[i].startsWith("-")) {
-			if( "-r".equals(args[i])) {
+		OutputStream out = System.err;
+
+		List<URI> urls = new ArrayList<URI>();
+
+		while (i < args.length && args[i].startsWith("-")) {
+			if ("-r".equals(args[i])) {
 				URI uri = new URI(args[++i]);
-				urls.add( uri );
-				System.out.println("URI for repo " + uri);
-			}
-			else
-				if ( "-o".equals(args[i])) {
-					out = new FileOutputStream(args[++i]);
-				}
-				else
-					throw new IllegalArgumentException("Unknown option: " + args[i]);
-			
+				urls.add(uri);
+				System.err.println("URI for repo " + uri);
+			} else if ("-o".equals(args[i])) {
+				out = new FileOutputStream(args[++i]);
+			} else
+				throw new IllegalArgumentException("Unknown option: " + args[i]);
+
 			i++;
 		}
-		
+
 		URI[] urls2 = urls.toArray(new URI[urls.size()]);
-		PrintWriter pw = new PrintWriter(out);
-		
-		while ( i < args.length) {
+		PrintWriter pw = IO.writer(out);
+
+		while (i < args.length) {
 			String ref = args[i++];
 			pw.println("Ref " + ref);
-			
+
 			Matcher matcher = GROUP_ARTIFACT_VERSION.matcher(ref);
 			if (matcher.matches()) {
-				
+
 				String group = matcher.group(1);
 				String artifact = matcher.group(2);
 				String version = matcher.group(3);
 				CachedPom pom = maven.getPom(group, artifact, version, urls2);
-				
+
 				Builder a = new Builder();
 				a.setProperty("Private-Package", "*");
 				Set<Pom> dependencies = pom.getDependencies(Scope.compile, urls2);
-				for ( Pom dep : dependencies ) {
-					System.out.printf( "%20s %-20s %10s\n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
+				for (Pom dep : dependencies) {
+					System.err.printf("%20s %-20s %10s%n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
 					a.addClasspath(dep.getArtifact());
 				}
 				pw.println(a.getClasspath());
 				a.build();
 
-				TreeSet<String> sorted = new TreeSet<String>( a.getImports().keySet());
-				for ( String p :sorted) {
-					pw.printf("%-40s\n",p);
+				TreeSet<PackageRef> sorted = new TreeSet<PackageRef>(a.getImports().keySet());
+				for (PackageRef p : sorted) {
+					pw.printf("%-40s\n", p);
 				}
-//				for ( Map.Entry<String, Set<String>> entry : a.getUses().entrySet()) {
-//					String from = entry.getKey();
-//					for ( String uses : entry.getValue()) {
-//						System.out.printf("%40s %s\n", from, uses);
-//						from = "";
-//					}
-//				}
+				// for ( Map.Entry<String, Set<String>> entry :
+				// a.getUses().entrySet()) {
+				// String from = entry.getKey();
+				// for ( String uses : entry.getValue()) {
+				// System.err.printf("%40s %s\n", from, uses);
+				// from = "";
+				// }
+				// }
 				a.close();
 			} else
 				System.err.println("Wrong, must look like group+artifact+version, is " + ref);
-			
+
 		}
 	}
-	
-	
+
 }

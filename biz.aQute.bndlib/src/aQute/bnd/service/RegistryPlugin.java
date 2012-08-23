@@ -1,6 +1,5 @@
 package aQute.bnd.service;
 
-
 /**
  * A plugin that wants a registry
  */

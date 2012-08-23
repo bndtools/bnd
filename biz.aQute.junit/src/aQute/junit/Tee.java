@@ -13,9 +13,15 @@ public class Tee extends OutputStream {
 	}
 
 	public PrintStream getStream() {
-		return new PrintStream(this);
+		try {
+			return new PrintStream(this, false, "UTF-8");
+		}
+		catch (UnsupportedEncodingException e) {
+			return null;
+		}
 	}
 
+	@Override
 	public void write(int character) throws IOException {
 		if (capture)
 			buffer.write(character);
@@ -26,7 +32,12 @@ public class Tee extends OutputStream {
 	public String getContent() {
 		if (buffer.size() == 0)
 			return null;
-		return buffer.toString();
+		try {
+			return buffer.toString("UTF-8");
+		}
+		catch (UnsupportedEncodingException e) {
+			return null;
+		}
 	}
 
 	public Tee clear() {

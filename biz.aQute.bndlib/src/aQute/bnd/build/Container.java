@@ -4,47 +4,55 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
-import aQute.bnd.service.RepositoryPlugin.Strategy;
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.service.*;
 
 public class Container {
 	public enum TYPE {
-		REPO, PROJECT, PROJECT_BUNDLE, EXTERNAL, LIBRARY, ERROR
+		REPO, PROJECT, EXTERNAL, LIBRARY, ERROR
 	}
 
-	final File					file;
+	private final File			file;
+	private final String		path;
 	final TYPE					type;
 	final String				bsn;
 	final String				version;
 	final String				error;
 	final Project				project;
-	volatile Map<String, String>	attributes;
+	final DownloadBlocker		db;
+	volatile Map<String,String>	attributes;
 	private long				manifestTime;
 	private Manifest			manifest;
 
 	Container(Project project, String bsn, String version, TYPE type, File source, String error,
-			Map<String, String> attributes) {
+			Map<String,String> attributes, DownloadBlocker db) {
 		this.bsn = bsn;
 		this.version = version;
 		this.type = type;
 		this.file = source != null ? source : new File("/" + bsn + ":" + version + ":" + type);
+		this.path = file.getAbsolutePath();
+		
 		this.project = project;
 		this.error = error;
 		if (attributes == null || attributes.isEmpty())
 			this.attributes = Collections.emptyMap();
 		else
 			this.attributes = attributes;
+		this.db = db;
 	}
 
 	public Container(Project project, File file) {
-		this(project, file.getName(), "project", TYPE.PROJECT, file, null, null);
+		this(project, file.getName(), "project", TYPE.PROJECT, file, null, null, null);
 	}
 
-	public Container(File file) {
-		this(null, file.getName(), "project", TYPE.EXTERNAL, file, null, null);
+	public Container(File file, DownloadBlocker db) {
+		this(null, file.getName(), "project", TYPE.EXTERNAL, file, null, null, db);
 	}
 
 	public File getFile() {
+		if (db != null && db.getReason() != null) {
+			return new File(db.getReason() + ": " + file);
+		}
 		return file;
 	}
 
@@ -57,32 +65,32 @@ public class Container {
 	 */
 	public boolean contributeFiles(List<File> files, Processor reporter) throws Exception {
 		switch (type) {
-		case EXTERNAL:
-		case REPO:
-			files.add(file);
-			return true;
+			case EXTERNAL :
+			case REPO :
+				files.add(getFile());
+				return true;
 
-		case PROJECT:
-			File[] fs = project.build();
-			reporter.getInfo(project);
-			if (fs == null)
-				return false;
-
-			for (File f : fs)
-				files.add(f);
-			return true;
-
-		case LIBRARY:
-			List<Container> containers = getMembers();
-			for (Container container : containers) {
-				if (!container.contributeFiles(files, reporter))
+			case PROJECT :
+				File[] fs = project.build();
+				reporter.getInfo(project);
+				if (fs == null)
 					return false;
-			}
-			return true;
 
-		case ERROR:
-			reporter.error(error);
-			return false;
+				for (File f : fs)
+					files.add(f);
+				return true;
+
+			case LIBRARY :
+				List<Container> containers = getMembers();
+				for (Container container : containers) {
+					if (!container.contributeFiles(files, reporter))
+						return false;
+				}
+				return true;
+
+			case ERROR :
+				reporter.error(error);
+				return false;
 		}
 		return false;
 	}
@@ -103,15 +111,16 @@ public class Container {
 		return error;
 	}
 
+	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Container)
-			return file.equals(((Container) other).file);
-		else
-			return false;
+			return path.equals(((Container) other).path);
+		return false;
 	}
 
+	@Override
 	public int hashCode() {
-		return file.hashCode();
+		return path.hashCode();
 	}
 
 	public Project getProject() {
@@ -123,20 +132,20 @@ public class Container {
 	 * 
 	 * @return
 	 */
+	@Override
 	public String toString() {
 		if (getError() != null)
 			return "/error/" + getError();
-		else
-			return getFile().getAbsolutePath();
+		return getFile().getAbsolutePath();
 	}
 
-	public Map<String, String> getAttributes() {
+	public Map<String,String> getAttributes() {
 		return attributes;
 	}
-	
+
 	public void putAttribute(String name, String value) {
-		if (attributes == Collections.<String,String>emptyMap())
-			attributes = new HashMap<String, String>(1);
+		if (attributes == Collections.<String, String> emptyMap())
+			attributes = new HashMap<String,String>(1);
 		attributes.put(name, value);
 	}
 
@@ -157,11 +166,12 @@ public class Container {
 			// basically a specification clause per line.
 			// I.e. you can do bsn; version, bsn2; version. But also
 			// spread it out over lines.
-			InputStream in = new FileInputStream(file);
-			BufferedReader rd = new BufferedReader(new InputStreamReader(in,
-					Constants.DEFAULT_CHARSET));
+			InputStream in = null;
+			BufferedReader rd = null;
+			String line;
 			try {
-				String line;
+				in = new FileInputStream(getFile());
+				rd = new BufferedReader(new InputStreamReader(in, Constants.DEFAULT_CHARSET));
 				while ((line = rd.readLine()) != null) {
 					line = line.trim();
 					if (!line.startsWith("#") && line.length() > 0) {
@@ -169,8 +179,14 @@ public class Container {
 						result.addAll(list);
 					}
 				}
-			} finally {
-				in.close();
+			}
+			finally {
+				if (rd != null) {
+					rd.close();
+				}
+				if (in != null) {
+					in.close();
+				}
 			}
 		} else
 			result.add(this);
@@ -194,7 +210,8 @@ public class Container {
 				manifest = jin.getManifest();
 				jin.close();
 				manifestTime = getFile().lastModified();
-			} finally {
+			}
+			finally {
 				in.close();
 			}
 		}

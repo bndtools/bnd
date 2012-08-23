@@ -1,0 +1,18 @@
+-buildpath: osgi.core-5.0.0.jar;version=file,\
+	osgi.enterprise-5.0.0.jar;version=file
+
+Bundle-Copyright: Copyright (c) aQute (2000, 2012). All Rights Reserved.
+Bundle-Description: Exports a limited set of packages from OSGi R5 core and enterprise.
+Bundle-Name: OSGi R5 Filtered Build Library
+Bundle-Version: 1.0.1
+Export-Package: org.osgi.framework.namespace,\
+	org.osgi.resource,\
+	org.osgi.service.repository,\
+	org.osgi.service.resolver,\
+	org.osgi.namespace.contract,\
+	org.osgi.namespace.extender,\
+	org.osgi.namespace.service
+
+Require-Capability: do.not.resolve
+no.junit = true
+

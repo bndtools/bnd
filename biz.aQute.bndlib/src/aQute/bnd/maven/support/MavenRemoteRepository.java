@@ -5,10 +5,9 @@ import java.net.*;
 import java.util.*;
 
 import aQute.bnd.service.*;
+import aQute.bnd.version.*;
 import aQute.lib.io.*;
-import aQute.lib.osgi.*;
-import aQute.libg.reporter.*;
-import aQute.libg.version.*;
+import aQute.service.reporter.*;
 
 public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, Plugin {
 	Reporter	reporter;
@@ -16,28 +15,19 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 	Registry	registry;
 	Maven		maven;
 
-	public File[] get(String bsn, String range) throws Exception {
-		File f = get(bsn, range, Strategy.HIGHEST, null);
-		if (f == null)
-			return null;
-
-		return new File[] { f };
-	}
-
-	public File get(String bsn, String version, Strategy strategy, Map<String, String> properties)
-			throws Exception {
+	public File get(String bsn, String version, Strategy strategy, Map<String,String> properties) throws Exception {
 		String groupId = null;
-		
+
 		if (properties != null)
 			groupId = properties.get("groupId");
-		
+
 		if (groupId == null) {
 			int n = bsn.indexOf('+');
-			if ( n < 0)
+			if (n < 0)
 				return null;
-			
-			groupId = bsn.substring(0,n);
-			bsn = bsn.substring(n+1);
+
+			groupId = bsn.substring(0, n);
+			bsn = bsn.substring(n + 1);
 		}
 
 		String artifactId = bsn;
@@ -59,15 +49,16 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		try {
 			action = Pom.Scope.valueOf(value);
 			return pom.getLibrary(action, repositories);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			return pom.getArtifact();
 		}
 	}
 
 	public Maven getMaven() {
-		if ( maven != null)
+		if (maven != null)
 			return maven;
-		
+
 		maven = registry.getPlugin(Maven.class);
 		return maven;
 	}
@@ -76,7 +67,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		return false;
 	}
 
-	public File put(Jar jar) throws Exception {
+	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		throw new UnsupportedOperationException("cannot do put");
 	}
 
@@ -84,7 +75,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		throw new UnsupportedOperationException("cannot do list");
 	}
 
-	public List<Version> versions(String bsn) throws Exception {
+	public SortedSet<Version> versions(String bsn) throws Exception {
 		throw new UnsupportedOperationException("cannot do versions");
 	}
 
@@ -96,7 +87,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		repositories = urls;
 	}
 
-	public void setProperties(Map<String, String> map) {
+	public void setProperties(Map<String,String> map) {
 		String repoString = map.get("repositories");
 		if (repoString != null) {
 			String[] repos = repoString.split("\\s*,\\s*");
@@ -105,10 +96,11 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 			for (String repo : repos) {
 				try {
 					URI uri = new URI(repo);
-					if ( !uri.isAbsolute())
-						uri = IO.getFile( new File(""),repo).toURI();
+					if (!uri.isAbsolute())
+						uri = IO.getFile(new File(""), repo).toURI();
 					repositories[n++] = uri;
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					if (reporter != null)
 						reporter.error("Invalid repository %s for maven plugin, %s", repo, e);
 				}
@@ -127,4 +119,28 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 	public void setMaven(Maven maven) {
 		this.maven = maven;
 	}
+
+	public String getLocation() {
+		if (repositories == null || repositories.length == 0)
+			return "maven central";
+
+		return Arrays.toString(repositories);
+	}
+
+	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener ... listeners) throws Exception {
+		File f= get(bsn, version.toString(), Strategy.EXACT, properties);
+		if ( f == null)
+			return null;
+		
+		for (DownloadListener l : listeners) {
+			try {
+				l.success(f);
+			}
+			catch (Exception e) {
+				reporter.exception(e, "Download listener for %s", f);
+			}
+		}
+		return f;
+	}
+
 }

@@ -1,21 +1,3 @@
-/*
- * $Header: /cvsroot/bnd/aQute.libg/src/aQute/libg/clauses/Selector.java,v 1.1 2009/01/19 14:17:42 pkriens Exp $
- * 
- * Copyright (c) OSGi Alliance (2006). All Rights Reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package aQute.libg.clauses;
 
 import java.util.*;
@@ -62,21 +44,21 @@ public class Selector {
 			negated = true;
 			string = string.substring(1);
 		}
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int c = 0; c < string.length(); c++) {
 			switch (string.charAt(c)) {
-			case '.':
-				sb.append("\\.");
-				break;
-			case '*':
-				sb.append(".*");
-				break;
-			case '?':
-				sb.append(".?");
-				break;
-			default:
-				sb.append(string.charAt(c));
-				break;
+				case '.' :
+					sb.append("\\.");
+					break;
+				case '*' :
+					sb.append(".*");
+					break;
+				case '?' :
+					sb.append(".?");
+					break;
+				default :
+					sb.append(string.charAt(c));
+					break;
 			}
 		}
 		string = sb.toString();
@@ -87,6 +69,7 @@ public class Selector {
 		return new Selector(sb.toString(), negated);
 	}
 
+	@Override
 	public String toString() {
 		return getPattern();
 	}
@@ -101,17 +84,16 @@ public class Selector {
 
 	public static List<Selector> getInstructions(Clauses clauses) {
 		List<Selector> result = new ArrayList<Selector>();
-		for (Map.Entry<String, Map<String, String>> entry : clauses.entrySet()) {
+		for (Map.Entry<String,Map<String,String>> entry : clauses.entrySet()) {
 			Selector instruction = getPattern(entry.getKey());
 			result.add(instruction);
 		}
 		return result;
 	}
-	
-	public static <T> List<T> select(Collection<T> domain,
-			List<Selector> instructions) {
+
+	public static <T> List<T> select(Collection<T> domain, List<Selector> instructions) {
 		List<T> result = new ArrayList<T>();
-		Iterator<T> iterator = domain.iterator(); 
+		Iterator<T> iterator = domain.iterator();
 		value: while (iterator.hasNext()) {
 			T value = iterator.next();
 			for (Selector instruction : instructions) {
@@ -124,6 +106,5 @@ public class Selector {
 		}
 		return result;
 	}
-	
 
 }

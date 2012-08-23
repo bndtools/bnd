@@ -2,11 +2,12 @@ package aQute.junit;
 
 import java.io.*;
 import java.lang.reflect.*;
-import java.net.*;
 import java.util.*;
 
 import junit.framework.*;
 
+import org.junit.runner.*;
+import org.junit.runner.manipulation.*;
 import org.osgi.framework.*;
 
 import aQute.junit.constants.*;
@@ -15,12 +16,11 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	BundleContext		context;
 	volatile boolean	active;
 	int					port		= -1;
-	String				reportPath;
 	boolean				continuous	= false;
 	boolean				trace		= false;
 	PrintStream			out			= System.err;
 	JUnitEclipseReport	jUnitEclipseReport;
-	
+
 	public Activator() {
 		super("bnd Runtime Test Bundle");
 	}
@@ -33,12 +33,13 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 	public void stop(BundleContext context) throws Exception {
 		active = false;
-		if ( jUnitEclipseReport != null)
+		if (jUnitEclipseReport != null)
 			jUnitEclipseReport.close();
 		interrupt();
 		join(10000);
 	}
 
+	@Override
 	public void run() {
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
 		trace = context.getProperty(TESTER_TRACE) != null;
@@ -47,7 +48,8 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			port = Integer.parseInt(context.getProperty(TESTER_PORT));
 			try {
 				jUnitEclipseReport = new JUnitEclipseReport(port);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				System.err.println("Cannot create link Eclipse JUnit on port " + port);
 				System.exit(-2);
 			}
@@ -55,29 +57,37 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 		if (testcases == null) {
 			trace("automatic testing of all bundles with Test-Cases header");
-			automatic();
+			try {
+				automatic();
+			}
+			catch (IOException e) {
+				// ignore
+			}
 		} else {
 			trace("receivednames of classes to test %s", testcases);
 			try {
 				int errors = test(null, testcases, null);
 				System.exit(errors);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 				System.exit(-2);
 			}
 		}
 	}
 
-	void automatic() {
+	void automatic() throws IOException {
 		String testerDir = context.getProperty(TESTER_DIR);
-		if ( testerDir == null)
-			testerDir ="testdir";
-		
-		
+		if (testerDir == null)
+			testerDir = "testdir";
+
 		final File reportDir = new File(testerDir);
 		final List<Bundle> queue = new Vector<Bundle>();
-		trace( "using %s, needed creation %s", reportDir, reportDir.mkdirs());
-		
+		if (!reportDir.exists() && !reportDir.mkdirs()) {
+			throw new IOException("Could not create directory " + reportDir);
+		}
+		trace("using %s, needed creation %s", reportDir, reportDir.mkdirs());
+
 		trace("adding Bundle Listener for getting test bundle events");
 		context.addBundleListener(new SynchronousBundleListener() {
 			public void bundleChanged(BundleEvent event) {
@@ -100,7 +110,8 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				while (queue.isEmpty() && active) {
 					try {
 						queue.wait();
-					} catch (InterruptedException e) {
+					}
+					catch (InterruptedException e) {
 						trace("tests bundle queue interrupted");
 						interrupt();
 						break outer;
@@ -108,29 +119,31 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				}
 			}
 			try {
-				bundle = (Bundle) queue.remove(0);
+				bundle = queue.remove(0);
 				trace("received bundle to test: %s", bundle.getLocation());
 				Writer report = getReportWriter(reportDir, bundle);
 				try {
 					trace("test will run");
 					result += test(bundle, (String) bundle.getHeaders().get("Test-Cases"), report);
 					trace("test ran");
-					if ( queue.isEmpty() && !continuous) {
-						trace( "queue " + queue );
+					if (queue.isEmpty() && !continuous) {
+						trace("queue " + queue);
 						System.exit(result);
 					}
-				} finally {
+				}
+				finally {
 					if (report != null)
 						report.close();
 				}
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				error("Not sure what happened anymore %s", e);
 				System.exit(-2);
 			}
 		}
 	}
 
-	private void checkBundle(List<Bundle> queue, Bundle bundle) {
+	void checkBundle(List<Bundle> queue, Bundle bundle) {
 		if (bundle.getState() == Bundle.ACTIVE) {
 			String testcases = (String) bundle.getHeaders().get("Test-Cases");
 			if (testcases != null) {
@@ -146,9 +159,9 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	private Writer getReportWriter(File reportDir, Bundle bundle) throws IOException {
 		if (reportDir.isDirectory()) {
 			Version v = bundle.getVersion();
-			File f = new File(reportDir, "TEST-" + bundle.getSymbolicName() + "-" + v.getMajor()
-					+ "." + v.getMinor() + "." + v.getMicro() + ".xml");
-			return new FileWriter(f);
+			File f = new File(reportDir, "TEST-" + bundle.getSymbolicName() + "-" + v.getMajor() + "." + v.getMinor()
+					+ "." + v.getMicro() + ".xml");
+			return new OutputStreamWriter(new FileOutputStream(f), "UTF-8");
 		}
 		return null;
 	}
@@ -179,7 +192,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			Tee systemErr;
 			Tee systemOut;
 
-			systemOut = new Tee(System.out);
+			systemOut = new Tee(System.err);
 			systemErr = new Tee(System.err);
 			systemOut.capture(trace).echo(true);
 			systemErr.capture(trace).echo(true);
@@ -189,6 +202,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			try {
 
 				BasicTestReport basic = new BasicTestReport(this, systemOut, systemErr) {
+					@Override
 					public void check() {
 						if (!active)
 							result.stop();
@@ -206,9 +220,9 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				}
 
 				for (TestReporter tr : reporters) {
-					tr.setup(fw,bundle);
+					tr.setup(fw, bundle);
 				}
-				
+
 				try {
 					TestSuite suite = createSuite(bundle, names, result);
 					trace("created suite " + suite);
@@ -221,16 +235,19 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 					trace("running suite " + suite);
 					suite.run(result);
 
-				} catch (Throwable t) {
-					trace( t.getMessage());
+				}
+				catch (Throwable t) {
+					trace(t.getMessage());
 					result.addError(null, t);
-				} finally {
+				}
+				finally {
 					for (TestReporter tr : reporters) {
 						tr.end();
 					}
 				}
-			} catch(Throwable t) {
-				System.out.println("exiting " + t);
+			}
+			catch (Throwable t) {
+				System.err.println("exiting " + t);
 				t.printStackTrace();
 			}
 			finally {
@@ -241,7 +258,8 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			System.err.println("Errors: " + result.errorCount());
 			System.err.println("Failures: " + result.failureCount());
 			return result.errorCount() + result.failureCount();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 		return -1;
@@ -250,30 +268,81 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	private TestSuite createSuite(Bundle tfw, List<String> testNames, TestResult result) throws Exception {
 		TestSuite suite = new TestSuite();
 		for (String fqn : testNames) {
-			try {
-				int n = fqn.indexOf(':');
-				if (n > 0) {
-					String method = fqn.substring(n + 1);
-					fqn = fqn.substring(0, n);
-					Class<?> clazz = loadClass(tfw, fqn);
-					suite.addTest(TestSuite.createTest(clazz, method));
-				} else {
-					Class<?> clazz = loadClass(tfw, fqn);
-					suite.addTestSuite(clazz);
-				}
-			} catch (Throwable e) {
-				System.err.println("Can not create test case for: " + fqn + " : " + e);
-				result.addError(suite, e);
-			}
+			addTest(tfw, suite, fqn, result);
 		}
 		return suite;
 	}
 
-	private Class<?> loadClass(Bundle tfw, String fqn) {
+	private void addTest(Bundle tfw, TestSuite suite, String fqn, TestResult testResult) {
+		try {
+			int n = fqn.indexOf(':');
+			if (n > -1) {
+				String method = fqn.substring(n + 1);
+				fqn = fqn.substring(0, n);
+				Class< ? > clazz = loadClass(tfw, fqn);
+				if (clazz != null)
+					addTest(tfw, suite, clazz, testResult, method);
+				else {
+					System.err.println("Can not create test case for: " + fqn
+							+ ", class might not be included in your test bundle?");
+					testResult.addError(suite, new Exception("Cannot load class " + fqn
+							+ ", was it included in the test bundle?"));
+				}
+
+			} else {
+				Class< ? > clazz = loadClass(tfw, fqn);
+				addTest(tfw, suite, clazz, testResult, null);
+			}
+		}
+		catch (Throwable e) {
+			System.err.println("Can not create test case for: " + fqn + " : " + e);
+			testResult.addError(suite, e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void addTest(@SuppressWarnings("unused") Bundle tfw, TestSuite suite, Class< ? > clazz, @SuppressWarnings("unused") TestResult testResult, final String method) {
+		if (TestCase.class.isAssignableFrom(clazz)) {
+			if (method != null) {
+				suite.addTest(TestSuite.createTest(clazz, method));
+				return;
+			}
+			suite.addTestSuite((Class< ? extends TestCase>) clazz);
+			return;
+		}
+
+		JUnit4TestAdapter adapter = new JUnit4TestAdapter(clazz);
+		if (method != null) {
+			try {
+				adapter.filter(new org.junit.runner.manipulation.Filter() {
+
+					@Override
+					public String describe() {
+						return "Method filter";
+					}
+
+					@Override
+					public boolean shouldRun(Description description) {
+						if (method.equals(description.getMethodName())) {
+							return true;
+						}
+						return false;
+					}
+				});
+			}
+			catch (NoTestsRemainException e) {
+				return;
+			}
+		}
+		suite.addTest(new JUnit4TestAdapter(clazz));
+	}
+
+	private Class< ? > loadClass(Bundle tfw, String fqn) {
 		if (tfw != null)
 			try {
 				return tfw.loadClass(fqn);
-			} catch (ClassNotFoundException e1) {
+			}
+			catch (ClassNotFoundException e1) {
 				return null;
 			}
 
@@ -281,7 +350,8 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		for (int i = bundles.length - 1; i >= 0; i--) {
 			try {
 				return bundles[i].loadClass(fqn);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				// Ignore, looking further
 			}
 		}
@@ -290,7 +360,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 	public int flatten(List<Test> list, TestSuite suite) {
 		int realCount = 0;
-		for (Enumeration<?> e = suite.tests(); e.hasMoreElements();) {
+		for (Enumeration< ? > e = suite.tests(); e.hasMoreElements();) {
 			Test test = (Test) e.nextElement();
 			list.add(test);
 			if (test instanceof TestSuite)
@@ -334,26 +404,26 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			if (c == '%') {
 				c = string.charAt(++i);
 				switch (c) {
-				case 's':
-					if (n < objects.length) {
-						Object o = objects[n++];
-						if (o instanceof Throwable) {
-							e = (Throwable) o;
-							if (o instanceof InvocationTargetException) {
-								Throwable t = (InvocationTargetException) o;
-								sb.append(t.getMessage());
-								e = t;
-							} else
-								sb.append(e.getMessage());
-						} else {
-							sb.append(o);
-						}
-					} else
-						sb.append("<no more arguments>");
-					break;
+					case 's' :
+						if (n < objects.length) {
+							Object o = objects[n++];
+							if (o instanceof Throwable) {
+								e = (Throwable) o;
+								if (o instanceof InvocationTargetException) {
+									Throwable t = (InvocationTargetException) o;
+									sb.append(t.getMessage());
+									e = t;
+								} else
+									sb.append(e.getMessage());
+							} else {
+								sb.append(o);
+							}
+						} else
+							sb.append("<no more arguments>");
+						break;
 
-				default:
-					sb.append(c);
+					default :
+						sb.append(c);
 				}
 			} else {
 				sb.append(c);
@@ -366,10 +436,6 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 
 	public void error(String msg, Object... objects) {
 		message("! ", msg, objects);
-	}
-
-	static void main() throws URISyntaxException {
-		URI uri = new URI("/abc/def");
 	}
 
 }

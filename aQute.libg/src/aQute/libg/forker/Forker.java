@@ -12,12 +12,11 @@ import java.util.concurrent.atomic.*;
  * have ran their associated runnable.
  * 
  * @author aqute
- * 
  * @param <T>
  */
 public class Forker<T> {
 	final Executor		executor;
-	final Map<T, Job>	waiting		= new HashMap<T, Job>();
+	final Map<T,Job>	waiting		= new HashMap<T,Job>();
 	final Set<Job>		executing	= new HashSet<Job>();
 	final AtomicBoolean	canceled	= new AtomicBoolean();
 	private int			count;
@@ -47,13 +46,13 @@ public class Forker<T> {
 
 					t = Thread.currentThread();
 				}
-				System.out.println("Running " + target);
 				runnable.run();
-				System.out.println("Done running " + target);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				exception = e;
 				e.printStackTrace();
-			} finally {
+			}
+			finally {
 				synchronized (this) {
 					t = null;
 				}
@@ -65,7 +64,7 @@ public class Forker<T> {
 		/**
 		 * Cancel this job
 		 */
-		private void cancel() {
+		void cancel() {
 			if (!canceled.getAndSet(true)) {
 				synchronized (this) {
 					if (t != null)
@@ -86,7 +85,6 @@ public class Forker<T> {
 
 	/**
 	 * Constructor
-	 * 
 	 */
 	public Forker() {
 		this.executor = Executors.newFixedThreadPool(4);
@@ -103,12 +101,11 @@ public class Forker<T> {
 	 * @param runnable
 	 *            the runnable to run
 	 */
-	public synchronized void doWhen(Collection<? extends T> dependencies, T target,
-			Runnable runnable) {
+	public synchronized void doWhen(Collection< ? extends T> dependencies, T target, Runnable runnable) {
 		if (waiting.containsKey(target))
 			throw new IllegalArgumentException("You can only add a target once to the forker");
 
-		System.out.println("doWhen " + dependencies + " " + target);
+		System.err.println("doWhen " + dependencies + " " + target);
 		Job job = new Job();
 		job.dependencies = new HashSet<T>(dependencies);
 		job.target = target;
@@ -119,7 +116,7 @@ public class Forker<T> {
 	public void start(long ms) throws InterruptedException {
 		check();
 		count = waiting.size();
-		System.out.println("Count " + count);
+		System.err.println("Count " + count);
 		schedule();
 		if (ms >= 0)
 			sync(ms);
@@ -132,18 +129,17 @@ public class Forker<T> {
 		dependencies.removeAll(waiting.keySet());
 		if (dependencies.size() > 0)
 			throw new IllegalArgumentException(
-					"There are dependencies in the jobs that are not present in the targets: "
-							+ dependencies);
+					"There are dependencies in the jobs that are not present in the targets: " + dependencies);
 
 	}
 
 	public synchronized void sync(long ms) throws InterruptedException {
-		System.out.println("Waiting for sync");
+		System.err.println("Waiting for sync");
 		while (count > 0) {
-			System.out.println("Waiting for sync " + count);
+			System.err.println("Waiting for sync " + count);
 			wait(ms);
 		}
-		System.out.println("Exiting sync " + count);
+		System.err.println("Exiting sync " + count);
 	}
 
 	private void schedule() {
@@ -170,20 +166,22 @@ public class Forker<T> {
 	 * 
 	 * @param done
 	 */
-	private void done(Job done) {
+	void done(Job done) {
 		synchronized (this) {
-			System.out.println("count = " + count);
+			System.err.println("count = " + count);
 			executing.remove(done);
 			count--;
 			if (count == 0) {
-				System.out.println("finished");
+				System.err.println("finished");
 				notifyAll();
 				return;
 			}
 
 			for (Job job : waiting.values()) {
-				boolean x = job.dependencies.remove(done.target);
-				//System.out.println( "Removing " + done.target + " from " + job.target + " ?" + x  + " " + job.dependencies.size());
+				// boolean x =
+				job.dependencies.remove(done.target);
+				// System.err.println( "Removing " + done.target + " from " +
+				// job.target + " ?" + x + " " + job.dependencies.size());
 			}
 		}
 		schedule();
@@ -195,7 +193,7 @@ public class Forker<T> {
 	 * @throws InterruptedException
 	 */
 	public void cancel(long ms) throws InterruptedException {
-		System.out.println("canceled " + count);
+		System.err.println("canceled " + count);
 
 		if (!canceled.getAndSet(true)) {
 			synchronized (this) {

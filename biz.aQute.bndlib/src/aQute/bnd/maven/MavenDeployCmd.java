@@ -5,9 +5,10 @@ import java.util.*;
 import java.util.jar.*;
 
 import aQute.bnd.build.*;
-import aQute.lib.osgi.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.libg.command.*;
-import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class MavenDeployCmd extends Processor {
 
@@ -29,15 +30,16 @@ public class MavenDeployCmd extends Processor {
 	 */
 	void run(String args[], int i) throws Exception {
 		if (i >= args.length) {
+			System.err.printf("Usage:%n");
 			System.err
-					.println("Usage:\n");
-			System.err.println("  deploy [-url repo] [-passphrase passphrase] [-homedir homedir] [-keyname keyname] bundle ...");
+					.println("  deploy [-url repo] [-passphrase passphrase] [-homedir homedir] [-keyname keyname] bundle ...");
 			System.err.println("  settings");
 			return;
 		}
 
-		@SuppressWarnings("unused") String cmd = args[i++];
-		
+		/* skip first argument */
+		i++;
+
 		while (i < args.length && args[i].startsWith("-")) {
 			String option = args[i];
 			if (option.equals("-url"))
@@ -52,10 +54,9 @@ public class MavenDeployCmd extends Processor {
 				error("Invalid command ");
 		}
 
-		
 	}
 
-	public void setProperties(Map<String, String> map) {
+	public void setProperties(Map<String,String> map) {
 		repository = map.get("repository");
 		url = map.get("url");
 		passphrase = map.get("passphrase");
@@ -75,17 +76,18 @@ public class MavenDeployCmd extends Processor {
 	/**
 	 */
 	public boolean deploy(Project project, Jar original) throws Exception {
-		Map<String, Map<String, String>> deploy = project.parseHeader(project
-				.getProperty(Constants.DEPLOY));
+		Parameters deploy = project.parseHeader(project.getProperty(Constants.DEPLOY));
 
-		Map<String, String> maven = deploy.get(repository);
+		Map<String,String> maven = deploy.get(repository);
 		if (maven == null)
 			return false; // we're not playing for this bundle
 
 		project.progress("deploying %s to Maven repo: %s", original, repository);
 		File target = project.getTarget();
 		File tmp = Processor.getFile(target, repository);
-		tmp.mkdirs();
+		if (!tmp.exists() && !tmp.mkdirs()) {
+			throw new IOException("Could not create directory " + tmp);
+		}
 
 		Manifest manifest = original.getManifest();
 		if (manifest == null)
@@ -100,10 +102,12 @@ public class MavenDeployCmd extends Processor {
 			Jar src = new Jar("src");
 			try {
 				split(original, main, src);
-				Map<String, Map<String, String>> exports = project.parseHeader(manifest
-						.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+				Parameters exports = project.parseHeader(manifest.getMainAttributes()
+						.getValue(Constants.EXPORT_PACKAGE));
 				File jdoc = new File(tmp, "jdoc");
-				jdoc.mkdirs();
+				if (!jdoc.exists() && !jdoc.mkdirs()) {
+					throw new IOException("Could not create directory " + jdoc);
+				}
 				project.progress("Generating Javadoc for: " + exports.keySet());
 				Jar javadoc = javadoc(jdoc, project, exports.keySet());
 				project.progress("Writing javadoc jar");
@@ -120,7 +124,8 @@ public class MavenDeployCmd extends Processor {
 				project.progress("Deploying main javadoc file");
 				maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
 
-			} finally {
+			}
+			finally {
 				main.close();
 				src.close();
 			}
@@ -129,7 +134,7 @@ public class MavenDeployCmd extends Processor {
 	}
 
 	private void split(Jar original, Jar main, Jar src) {
-		for (Map.Entry<String, Resource> e : original.getResources().entrySet()) {
+		for (Map.Entry<String,Resource> e : original.getResources().entrySet()) {
 			String path = e.getKey();
 			if (path.startsWith("OSGI-OPT/src/")) {
 				src.putResource(path.substring("OSGI-OPT/src/".length()), e.getValue());
@@ -148,8 +153,7 @@ public class MavenDeployCmd extends Processor {
 	// -Dfile=/Ws/bnd/biz.aQute.bndlib/tmp/biz.aQute.bndlib.jar \
 	// -Dpassphrase=a1k3v3t5x3
 
-	private void maven_gpg_sign_and_deploy(Project b, File file, String classifier, File pomFile)
-			throws Exception {
+	private void maven_gpg_sign_and_deploy(Project b, File file, String classifier, File pomFile) throws Exception {
 		Command command = new Command();
 		command.setTrace();
 		command.add(b.getProperty("mvn", "mvn"));
@@ -163,17 +167,17 @@ public class MavenDeployCmd extends Processor {
 		optional(command, "classifier", classifier);
 		optional(command, "pomFile", pomFile == null ? null : pomFile.getAbsolutePath());
 
-		StringBuffer stdout = new StringBuffer();
-		StringBuffer stderr = new StringBuffer();
+		StringBuilder stdout = new StringBuilder();
+		StringBuilder stderr = new StringBuilder();
 
 		int result = command.execute(stdout, stderr);
 		if (result != 0) {
-			b.error("Maven deploy to %s failed to sign and transfer %s because %s", repository,
-					file, "" + stdout + stderr);
+			b.error("Maven deploy to %s failed to sign and transfer %s because %s", repository, file, "" + stdout
+					+ stderr);
 		}
 	}
 
-	private void optional(Command command, String key, String value) {
+	private void optional(Command command, @SuppressWarnings("unused") String key, String value) {
 		if (value == null)
 			return;
 
@@ -193,8 +197,8 @@ public class MavenDeployCmd extends Processor {
 			command.add(packageName);
 		}
 
-		StringBuffer out = new StringBuffer();
-		StringBuffer err = new StringBuffer();
+		StringBuilder out = new StringBuilder();
+		StringBuilder err = new StringBuilder();
 		Command c = new Command();
 		c.setTrace();
 		int result = c.execute(out, err);
@@ -212,7 +216,8 @@ public class MavenDeployCmd extends Processor {
 		OutputStream out = new FileOutputStream(f);
 		try {
 			r.write(out);
-		} finally {
+		}
+		finally {
 			out.close();
 		}
 		return f;

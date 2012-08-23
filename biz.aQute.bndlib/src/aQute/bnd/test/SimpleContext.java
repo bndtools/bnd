@@ -5,20 +5,18 @@ import java.util.*;
 import javax.xml.namespace.*;
 
 public class SimpleContext implements NamespaceContext {
-	final String prefix;
-	final String ns;
-	
-	
+	final String	prefix;
+	final String	ns;
+
 	SimpleContext(String prefix, String ns) {
 		this.prefix = prefix;
 		this.ns = ns;
 	}
-	
+
 	public String getNamespaceURI(String prefix) {
-		if ( prefix.equals(prefix))
+		if (prefix.equals(prefix))
 			return ns;
-		else
-			return null;
+		return null;
 	}
 
 	public String getPrefix(String namespaceURI) {
@@ -27,7 +25,7 @@ public class SimpleContext implements NamespaceContext {
 		return prefix;
 	}
 
-	public Iterator getPrefixes(String namespaceURI) {
+	public Iterator<String> getPrefixes(String namespaceURI) {
 		return Arrays.asList(prefix).iterator();
 	}
 

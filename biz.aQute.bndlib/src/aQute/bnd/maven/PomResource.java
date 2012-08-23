@@ -2,27 +2,32 @@ package aQute.bnd.maven;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.regex.*;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 import aQute.lib.tag.*;
 
 public class PomResource extends WriteResource {
 	final Manifest				manifest;
-	private Map<String, String>	scm;
+	private Map<String,String>	scm;
 	final static Pattern		NAME_URL	= Pattern.compile("(.*)(http://.*)");
 
 	public PomResource(Manifest manifest) {
 		this.manifest = manifest;
 	}
 
-	@Override public long lastModified() {
+	@Override
+	public long lastModified() {
 		return 0;
 	}
 
-	@Override public void write(OutputStream out) throws IOException {
-		PrintWriter ps = new PrintWriter(out);
+	@Override
+	public void write(OutputStream out) throws IOException {
+		PrintWriter ps = IO.writer(out);
 
 		String name = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_NAME);
 
@@ -77,7 +82,7 @@ public class PomResource extends WriteResource {
 
 		if (scm != null) {
 			Tag scm = new Tag(project, "scm");
-			for (Map.Entry<String, String> e : this.scm.entrySet()) {
+			for (Map.Entry<String,String> e : this.scm.entrySet()) {
 				new Tag(scm, e.getKey()).addContent(e.getValue());
 			}
 		}
@@ -99,9 +104,8 @@ public class PomResource extends WriteResource {
 		if (licenses != null) {
 			Tag ls = new Tag(project, "licenses");
 
-			Map<String, Map<String, String>> map = Processor.parseHeader(licenses, null);
-			for (Iterator<Map.Entry<String, Map<String, String>>> e = map.entrySet().iterator(); e
-					.hasNext();) {
+			Parameters map = Processor.parseHeader(licenses, null);
+			for (Iterator<Entry<String,Attrs>> e = map.entrySet().iterator(); e.hasNext();) {
 
 				// Bundle-License:
 				// http://www.opensource.org/licenses/apache2.0.php; \
@@ -115,9 +119,9 @@ public class PomResource extends WriteResource {
 				//    <distribution>repo</distribution>
 				//    </license>
 
-				Map.Entry<String, Map<String, String>> entry = e.next();
+				Entry<String,Attrs> entry = e.next();
 				Tag l = new Tag(ls, "license");
-				Map<String, String> values = entry.getValue();
+				Map<String,String> values = entry.getValue();
 				String url = entry.getKey();
 
 				if (values.containsKey("description"))
@@ -142,9 +146,8 @@ public class PomResource extends WriteResource {
 	 * @param tag
 	 * @param object
 	 */
-	private Tag tagFromMap(Tag parent, Map<String, String> values, String string, String tag,
-			String object) {
-		String value = (String) values.get(string);
+	private Tag tagFromMap(Tag parent, Map<String,String> values, String string, String tag, String object) {
+		String value = values.get(string);
 		if (value == null)
 			value = object;
 		if (value == null)
@@ -153,7 +156,7 @@ public class PomResource extends WriteResource {
 		return parent;
 	}
 
-	public void setProperties(Map<String, String> scm) {
+	public void setProperties(Map<String,String> scm) {
 		this.scm = scm;
 	}
 }

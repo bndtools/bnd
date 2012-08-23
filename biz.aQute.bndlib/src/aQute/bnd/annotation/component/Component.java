@@ -2,7 +2,9 @@ package aQute.bnd.annotation.component;
 
 import java.lang.annotation.*;
 
-@Retention(RetentionPolicy.CLASS) @Target(ElementType.TYPE) public @interface Component {
+@Retention(RetentionPolicy.CLASS)
+@Target(ElementType.TYPE)
+public @interface Component {
 	String	RNAME					= "LaQute/bnd/annotation/component/Component;";
 	String	PROVIDE					= "provide";
 	String	NAME					= "name";
@@ -18,7 +20,7 @@ import java.lang.annotation.*;
 
 	String name() default "";
 
-	Class<?>[] provide() default Object.class;
+	Class< ? >[] provide() default Object.class;
 
 	String factory() default "";
 
@@ -32,7 +34,7 @@ import java.lang.annotation.*;
 
 	String[] properties() default {};
 
-	Class<?> designate() default Object.class;
+	Class< ? > designate() default Object.class;
 
-	Class<?> designateFactory() default Object.class;
+	Class< ? > designateFactory() default Object.class;
 }
