@@ -19,7 +19,7 @@ import aQute.lib.json.*;
  * certificate without using com.sun classes) and preferences are not editable.
  */
 public class Settings implements Map<String,String> {
-	static JSONCodec	codec	= new JSONCodec().setHex(false);
+	static JSONCodec	codec	= new JSONCodec();
 
 	private File		where;
 	private PublicKey	publicKey;

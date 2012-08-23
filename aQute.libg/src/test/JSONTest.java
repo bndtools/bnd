@@ -245,14 +245,14 @@ public class JSONTest extends TestCase {
 		assertEquals("[43,41]", enc.to().put(new Byte[] {
 				43, 41
 		}).toString());
-		assertEquals("\"Kyk=\"", enc.to().put(new byte[] {
+		assertEquals("\"2B29\"", enc.to().put(new byte[] {
 				43, 41
 		}).toString());
 
 		Decoder dec = new JSONCodec().dec();
 		assertTrue(Arrays.equals(new byte[] {
 				43, 41
-		}, dec.faq("'Kyk='").get(byte[].class)));
+		}, dec.faq("'2B29'").get(byte[].class)));
 		assertTrue(Arrays.equals(new Byte[] {
 				43, 41
 		}, dec.from("[43,41]").get(Byte[].class)));
@@ -593,11 +593,11 @@ public class JSONTest extends TestCase {
 		};
 
 		assertEquals(
-				"{\"booleans\":[false,false],\"bytes\":\"AQI=\",\"chars\":[65,66],\"doubles\":[7,8],\"floats\":[7,8],\"ints\":[5,6],\"longs\":[7,8],\"shorts\":[3,4]}",
+				"{\"booleans\":[false,false],\"bytes\":\"0102\",\"chars\":[65,66],\"doubles\":[7,8],\"floats\":[7,8],\"ints\":[5,6],\"longs\":[7,8],\"shorts\":[3,4]}",
 				enc.put(d).toString());
 		Decoder dec = new JSONCodec().dec();
 		Data4 dd = dec
-				.from("{\"booleans\":[false,false],\"bytes\":\"AQI=\",\"chars\":[65,66],\"doubles\":[7,8],\"floats\":[7,8],\"ints\":[5,6],\"longs\":[7,8],\"shorts\":[3,4]}")
+				.from("{\"booleans\":[false,false],\"bytes\":\"0102\",\"chars\":[65,66],\"doubles\":[7,8],\"floats\":[7,8],\"ints\":[5,6],\"longs\":[7,8],\"shorts\":[3,4]}")
 				.get(Data4.class);
 		assertTrue(Arrays.equals(d.booleans, dd.booleans));
 		assertTrue(Arrays.equals(d.bytes, dd.bytes));

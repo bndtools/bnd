@@ -6,6 +6,11 @@ import java.util.*;
 
 import aQute.lib.hex.*;
 
+/**
+ * 
+ * Will now use hex for encoding byte arrays
+ *
+ */
 public class ByteArrayHandler extends Handler {
 	@Override
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {

@@ -34,6 +34,8 @@ import java.util.regex.*;
  * <p/>
  * This Codec class can be used in a concurrent environment. The Decoders and
  * Encoders, however, must only be used in a single thread.
+ * <p/>
+ * Will now use hex for encoding byte arrays
  */
 public class JSONCodec {
 	final static String								START_CHARACTERS	= "[{\"-0123456789tfn";
@@ -51,7 +53,6 @@ public class JSONCodec {
 	private static ByteArrayHandler					byteh				= new ByteArrayHandler();
 
 	boolean											ignorenull;
-	boolean											useHex;
 
 	/**
 	 * Create a new Encoder with the state and appropriate API.
@@ -486,21 +487,6 @@ public class JSONCodec {
 
 	public boolean isIgnorenull() {
 		return ignorenull;
-	}
-
-	/**
-	 * Use hex instead of default base 64 encoding
-	 * 
-	 * @param useHex
-	 * @return
-	 */
-	public JSONCodec setHex(boolean useHex) {
-		this.useHex = useHex;
-		return this;
-	}
-
-	public boolean isHex() {
-		return useHex;
 	}
 
 }
