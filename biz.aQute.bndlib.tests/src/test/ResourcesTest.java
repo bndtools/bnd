@@ -1,12 +1,8 @@
 package test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
+import java.io.*;
 import java.util.*;
-import java.util.jar.JarInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.zip.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
