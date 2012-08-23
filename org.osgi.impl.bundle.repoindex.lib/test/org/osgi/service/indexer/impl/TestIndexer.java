@@ -27,7 +27,7 @@ import org.osgi.service.indexer.Requirement;
 import org.osgi.service.indexer.Resource;
 import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.BIndex2;
+import org.osgi.service.indexer.impl.RepoIndex;
 import org.osgi.service.log.LogService;
 
 public class TestIndexer extends TestCase {
@@ -105,11 +105,11 @@ public class TestIndexer extends TestCase {
 	}
 
 	private static void assertFragmentMatch(String expectedPath, String jarPath) throws Exception {
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		assertFragmentMatch(indexer, expectedPath, jarPath);
 	}
 	
-	private static void assertFragmentMatch(BIndex2 indexer, String expectedPath, String jarPath) throws Exception {
+	private static void assertFragmentMatch(RepoIndex indexer, String expectedPath, String jarPath) throws Exception {
 		StringWriter writer = new StringWriter();
 		indexer.indexFragment(Collections.singleton(new File(jarPath)), writer, null);
 		
@@ -118,13 +118,13 @@ public class TestIndexer extends TestCase {
 	}
 	
 	public void testEmptyIndex() throws Exception {
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Set<File> files = Collections.emptySet();
 
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(BIndex2.REPOSITORY_INCREMENT_OVERRIDE, "0");
+		config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
 		config.put(ResourceIndexer.REPOSITORY_NAME, "empty");
 		config.put(ResourceIndexer.PRETTY, "true");
 		indexer.index(files, out, config);
@@ -134,7 +134,7 @@ public class TestIndexer extends TestCase {
 	}
 	
 	public void testFullIndex() throws Exception {
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Set<File> files = new LinkedHashSet<File>();
@@ -142,7 +142,7 @@ public class TestIndexer extends TestCase {
 		files.add(new File("testdata/06-requirebundle.jar"));
 		
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(BIndex2.REPOSITORY_INCREMENT_OVERRIDE, "0");
+		config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
 		config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
 		indexer.index(files, out, config);
 		
@@ -152,7 +152,7 @@ public class TestIndexer extends TestCase {
 	}
 	
 	public void testFullIndexPrettyPrint() throws Exception {
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Set<File> files = new LinkedHashSet<File>();
@@ -160,7 +160,7 @@ public class TestIndexer extends TestCase {
 		files.add(new File("testdata/06-requirebundle.jar"));
 		
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(BIndex2.REPOSITORY_INCREMENT_OVERRIDE, "0");
+		config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
 		config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
 		config.put(ResourceIndexer.PRETTY, "true");
 		indexer.index(files, out, config);
@@ -170,7 +170,7 @@ public class TestIndexer extends TestCase {
 	}
 	
 	public void testAddAnalyzer() throws Exception {
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new WibbleAnalyzer(), null);
 		
 		StringWriter writer = new StringWriter();
@@ -185,7 +185,7 @@ public class TestIndexer extends TestCase {
 	}
 	
 	public void testAddAnalyzerWithFilter() throws Exception {
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new WibbleAnalyzer(), FrameworkUtil.createFilter("(location=*sion.jar)"));
 		
 		StringWriter writer = new StringWriter();
@@ -200,7 +200,7 @@ public class TestIndexer extends TestCase {
 	}
 	
 	public void testRootInSubdirectory() throws Exception {
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		
 		Map<String, String> props = new HashMap<String, String>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString());
@@ -213,7 +213,7 @@ public class TestIndexer extends TestCase {
 	}
 
 	public void testRootInSubSubdirectory() throws Exception {
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		
 		Map<String, String> props = new HashMap<String, String>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString());
@@ -234,7 +234,7 @@ public class TestIndexer extends TestCase {
 		ResourceAnalyzer goodAnalyzer = mock(ResourceAnalyzer.class);
 		
 		LogService log = mock(LogService.class);
-		BIndex2 indexer = new BIndex2(log);
+		RepoIndex indexer = new RepoIndex(log);
 		indexer.addAnalyzer(badAnalyzer, null);
 		indexer.addAnalyzer(goodAnalyzer, null);
 		
@@ -255,7 +255,7 @@ public class TestIndexer extends TestCase {
 	
 	public void testBundleOutsideRootDirectory() throws Exception {
 		LogService log = mock(LogService.class);
-		BIndex2 indexer = new BIndex2(log);
+		RepoIndex indexer = new RepoIndex(log);
 		
 		Map<String, String> props = new HashMap<String, String>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata/subdir").getAbsoluteFile().toURI().toURL().toString());
@@ -268,7 +268,7 @@ public class TestIndexer extends TestCase {
 	
 	public void testRemoveDisallowed() throws Exception {
 		LogService log = mock(LogService.class);
-		BIndex2 indexer = new BIndex2(log);
+		RepoIndex indexer = new RepoIndex(log);
 		indexer.addAnalyzer(new NaughtyAnalyzer(), null);
 		
 		Map<String, String> props = new HashMap<String, String>();
@@ -284,7 +284,7 @@ public class TestIndexer extends TestCase {
 		Properties props = new Properties();
 		props.load(new FileInputStream("testdata/known-bundles.properties"));
 		
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new KnownBundleAnalyzer(props), FrameworkUtil.createFilter("(name=*)"));
 		assertFragmentMatch(indexer, "testdata/org.apache.felix.scr-1.6.0.xml", "testdata/org.apache.felix.scr-1.6.0.jar");
 	}
@@ -293,7 +293,7 @@ public class TestIndexer extends TestCase {
 		Properties props = new Properties();
 		props.load(new FileInputStream("testdata/known-bundles.properties"));
 		
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new KnownBundleAnalyzer(props), FrameworkUtil.createFilter("(name=*)"));
 		assertFragmentMatch(indexer, "testdata/org.apache.felix.eventadmin.xml", "testdata/org.apache.felix.eventadmin-1.2.14.jar");
 	}

@@ -30,7 +30,7 @@ import org.osgi.service.indexer.impl.util.Pair;
 import org.osgi.service.indexer.impl.util.Tag;
 import org.osgi.service.log.LogService;
 
-public class BIndex2 implements ResourceIndexer {
+public class RepoIndex implements ResourceIndexer {
 	
 	static final String REPOSITORY_INCREMENT_OVERRIDE = "-repository.increment.override";
 	
@@ -42,11 +42,11 @@ public class BIndex2 implements ResourceIndexer {
 	
 	private final List<Pair<ResourceAnalyzer, Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer,Filter>>();
 	
-	public BIndex2() {
+	public RepoIndex() {
 		this(new ConsoleLogSvc());
 	}
 	
-	public BIndex2(LogService log) {
+	public RepoIndex(LogService log) {
 		this.log = log;
 
 		this.bundleAnalyzer = new BundleAnalyzer(log);

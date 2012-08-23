@@ -13,13 +13,13 @@ import junit.framework.TestCase;
 
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.BIndex2;
+import org.osgi.service.indexer.impl.RepoIndex;
 import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
 
 public class TestStandaloneLibrary extends TestCase {
 
 	public void testBasicServiceInvocation() throws Exception {
-		ResourceIndexer indexer = new BIndex2();
+		ResourceIndexer indexer = new RepoIndex();
 		
 		StringWriter writer = new StringWriter();
 		File tempDir = createTempDir();
@@ -35,7 +35,7 @@ public class TestStandaloneLibrary extends TestCase {
 	}
 	
 	public void testKnownBundleRecognition() throws Exception {
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
 		
 		StringWriter writer = new StringWriter();
@@ -58,7 +58,7 @@ public class TestStandaloneLibrary extends TestCase {
 		KnownBundleAnalyzer knownBundlesAnalyzer = new KnownBundleAnalyzer();
 		knownBundlesAnalyzer.setKnownBundlesExtra(extras);
 		
-		BIndex2 indexer = new BIndex2();
+		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(knownBundlesAnalyzer, FrameworkUtil.createFilter("(name=*)"));
 		
 		StringWriter writer = new StringWriter();
