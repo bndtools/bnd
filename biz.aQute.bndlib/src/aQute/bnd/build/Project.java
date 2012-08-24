@@ -233,19 +233,35 @@ public class Project extends Processor {
 					// dependencies.add( getWorkspace().getProject("cnf"));
 
 					String dp = getProperty(Constants.DEPENDSON);
-					Set<String> requiredProjectNames = new Parameters(dp).keySet();
+					Set<String> requiredProjectNames = new LinkedHashSet<String>(new Parameters(dp).keySet());
 					List<DependencyContributor> dcs = getPlugins(DependencyContributor.class);
 					for (DependencyContributor dc : dcs)
 						dc.addDependencies(this, requiredProjectNames);
-
-					for (String p : requiredProjectNames) {
-						Project required = getWorkspace().getProject(p);
-						if (required == null)
-							msgs.MissingDependson_(p);
-						else {
-							dependencies.add(required);
+					
+					LinkedHashMap<Pattern, Boolean> patterns = new LinkedHashMap<Pattern, Boolean>(requiredProjectNames.size());
+					for (String name: requiredProjectNames) {
+						boolean negated = false;
+						if (name.startsWith("!")) {
+							negated = true;
+							name = name.substring(1);
 						}
+						patterns.put(Pattern.compile(name), negated);
+					}
 
+					Collection<Project> projects = getWorkspace().getAllProjects();
+					for (Map.Entry<Pattern,Boolean> entry: patterns.entrySet()) {
+						boolean matched = false;
+						for (Iterator<Project> it = projects.iterator(); it.hasNext();) {
+							Project p = it.next();
+							if (entry.getKey().matcher(p.getName()).matches()) {
+								it.remove();
+								matched = true;
+								if (!entry.getValue())
+									dependencies.add(p);
+							}
+						}
+						if (!matched) 
+							msgs.MissingDependson_(entry.getKey().pattern());							
 					}
 
 					// We have two paths that consists of repo files, projects,
