@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package bndtools.utils;
+package bndtools.jareditor.internal.utils;
 
 import org.eclipse.swt.widgets.Display;
 

@@ -1,4 +1,4 @@
-package bndtools.utils;
+package bndtools.jareditor.internal.utils;
 
 import java.util.Collection;
 import java.util.Map;

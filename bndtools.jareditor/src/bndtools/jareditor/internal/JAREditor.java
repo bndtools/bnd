@@ -25,7 +25,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import bndtools.utils.SWTConcurrencyUtil;
+import bndtools.jareditor.internal.utils.SWTConcurrencyUtil;
 
 public class JAREditor extends FormEditor implements IResourceChangeListener {
 
