@@ -295,10 +295,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		assert (tmpFile != null);
 
 		Jar jar = new Jar(tmpFile);
+		File target = null;
+		String bsn = null;
+		Version version = null;
+		File dir = null;
 		try {
 			dirty = true;
 
-			String bsn = jar.getBsn();
+			bsn = jar.getBsn();
 			if (bsn == null)
 				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
 
@@ -308,38 +312,43 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			else if (!Verifier.isVersion(versionString))
 				throw new IllegalArgumentException("Incorrect version in : " + tmpFile + " " + versionString);
 
-			Version version = new Version(versionString);
+			version = new Version(versionString);
 
 			reporter.trace("bsn=%s version=%s", bsn, version);
 
-			File dir = new File(root, bsn);
+			dir = new File(root, bsn);
 			dir.mkdirs();
 			if (!dir.isDirectory())
 				throw new IOException("Could not create directory " + dir);
 
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
-			File file = new File(dir, fName);
+			target = new File(dir, fName);
 
-			reporter.trace("updating %s ", file.getAbsolutePath());
-
-			IO.rename(tmpFile, file);
-
-			fireBundleAdded(jar, file);
-			afterPut(file, bsn, version, Hex.toHexString(digest));
-
-			// TODO like to beforeGet rid of the latest option. This is only
-			// used to have a constant name for the outside users (like ant)
-			// we should be able to handle this differently?
-			File latest = new File(dir, bsn + "-latest.jar");
-			IO.copy(file, latest);
-
-			reporter.trace("updated %s", file.getAbsolutePath());
-
-			return file;
+			reporter.trace("updating %s ", target.getAbsolutePath());
 		}
 		finally {
 			jar.close();
 		}
+		
+		if(target != null){
+			IO.rename(tmpFile, target);
+			
+			// TODO like to beforeGet rid of the latest option. This is only
+			// used to have a constant name for the outside users (like ant)
+			// we should be able to handle this differently?
+			File latest = new File(dir, bsn + "-latest.jar");
+			IO.copy(target, latest);				
+			
+			Jar targetJar = new Jar(target);
+			try {
+				fireBundleAdded(targetJar, target);
+				afterPut(target, bsn, version, Hex.toHexString(digest));
+			} finally {
+				targetJar.close();
+			}
+			reporter.trace("updated %s", target.getAbsolutePath());
+		}
+		return target;
 	}
 
 	/*
