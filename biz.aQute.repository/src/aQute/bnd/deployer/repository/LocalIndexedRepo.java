@@ -207,12 +207,16 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		init();
 
 		Jar jar = new Jar(tmpFile);
+		File target = null;
+		String bsn = null;
+		Version version = null;
+		File dir = null;
 		try {
-			String bsn = jar.getBsn();
+			bsn = jar.getBsn();
 			if (bsn == null || !Verifier.isBsn(bsn))
 				throw new IllegalArgumentException("Jar does not have a Bundle-SymbolicName manifest header");
 
-			File dir = new File(storageDir, bsn);
+			dir = new File(storageDir, bsn);
 			if (dir.exists() && !dir.isDirectory())
 				throw new IllegalArgumentException("Path already exists but is not a directory: "
 						+ dir.getAbsolutePath());
@@ -226,29 +230,32 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			else if (!Verifier.isVersion(versionString))
 				throw new IllegalArgumentException("Invalid version " + versionString + " in file " + tmpFile);
 
-			Version version = Version.parseVersion(versionString);
+			version = Version.parseVersion(versionString);
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
-			File file = new File(dir, fName);
+			target = new File(dir, fName);
+		}
+		finally {
+			jar.close();
+		}
+		
+		if(target != null){
 
 			// check overwrite policy
-			if (!overwrite && file.exists())
+			if (!overwrite && target.exists())
 				return null;
 
-			IO.rename(tmpFile, file);
+			IO.rename(tmpFile, target);
 
 			synchronized (newFilesInCoordination) {
-				newFilesInCoordination.add(file.toURI());
+				newFilesInCoordination.add(target.toURI());
 			}
 
 			Coordinator coordinator = (registry != null) ? registry.getPlugin(Coordinator.class) : null;
 			if (!(coordinator != null && coordinator.addParticipant(this))) {
 				finishPut();
 			}
-			return file;
 		}
-		finally {
-			jar.close();
-		}
+		return target;
 	}
 
 	/* NOTE: this is a straight copy of FileRepo.put */
