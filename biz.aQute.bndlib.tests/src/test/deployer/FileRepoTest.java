@@ -199,8 +199,8 @@ public class FileRepoTest extends TestCase {
 			}
 			repo.close();
 			String s = collect(new File(root, "report"));
-			s = s.replaceAll(root.getAbsolutePath(), "@");
-			s = s.replaceAll(File.separator, "/");
+			s = s.replaceAll("\\\\", "/");
+			s = s.replaceAll(root.getAbsolutePath().replaceAll("\\\\", "/"), "@");
 			System.out.println(s);
 
 			String parts[] = s.split("\r?\n");
