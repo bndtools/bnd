@@ -295,10 +295,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		assert (tmpFile != null);
 
 		Jar jar = new Jar(tmpFile);
+		File target = null;
+		String bsn = null;
+		Version version = null;
+		File dir = null;
 		try {
 			dirty = true;
 
-			String bsn = jar.getBsn();
+			bsn = jar.getBsn();
 			if (bsn == null)
 				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
 
@@ -308,38 +312,43 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			else if (!Verifier.isVersion(versionString))
 				throw new IllegalArgumentException("Incorrect version in : " + tmpFile + " " + versionString);
 
-			Version version = new Version(versionString);
+			version = new Version(versionString);
 
 			reporter.trace("bsn=%s version=%s", bsn, version);
 
-			File dir = new File(root, bsn);
+			dir = new File(root, bsn);
 			dir.mkdirs();
 			if (!dir.isDirectory())
 				throw new IOException("Could not create directory " + dir);
 
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
-			File file = new File(dir, fName);
+			target = new File(dir, fName);
 
-			reporter.trace("updating %s ", file.getAbsolutePath());
-
-			IO.rename(tmpFile, file);
-
-			fireBundleAdded(jar, file);
-			afterPut(file, bsn, version, Hex.toHexString(digest));
-
-			// TODO like to beforeGet rid of the latest option. This is only
-			// used to have a constant name for the outside users (like ant)
-			// we should be able to handle this differently?
-			File latest = new File(dir, bsn + "-latest.jar");
-			IO.copy(file, latest);
-
-			reporter.trace("updated %s", file.getAbsolutePath());
-
-			return file;
+			reporter.trace("updating %s ", target.getAbsolutePath());
 		}
 		finally {
 			jar.close();
 		}
+		
+		if(target != null){
+			IO.rename(tmpFile, target);
+			
+			// TODO like to beforeGet rid of the latest option. This is only
+			// used to have a constant name for the outside users (like ant)
+			// we should be able to handle this differently?
+			File latest = new File(dir, bsn + "-latest.jar");
+			IO.copy(target, latest);				
+			
+			Jar targetJar = new Jar(target);
+			try {
+				fireBundleAdded(targetJar, target);
+				afterPut(target, bsn, version, Hex.toHexString(digest));
+			} finally {
+				targetJar.close();
+			}
+			reporter.trace("updated %s", target.getAbsolutePath());
+		}
+		return target;
 	}
 
 	/*
@@ -699,34 +708,53 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param target
 	 */
 	void exec(String line, Object... args) {
-		if (line == null)
+		if (line == null) {
 			return;
+		}
 
 		try {
-			if (args != null)
+			if (args != null) {
 				for (int i = 0; i < args.length; i++) {
-					if (i == 0)
-						line = line.replaceAll("\\$\\{@\\}", args[0].toString());
-					line = line.replaceAll("\\$" + i, args[i].toString());
+					if (i == 0) {
+						// replaceAll backslash magic ensures windows paths
+						// remain intact
+						line = line.replaceAll("\\$\\{@\\}", args[0].toString().replaceAll("\\\\", "\\\\\\\\"));
+					}
+					// replaceAll backslash magic ensures windows paths remain
+					// intact
+					line = line.replaceAll("\\$" + i, args[i].toString().replaceAll("\\\\", "\\\\\\\\"));
 				}
-
-			if (shell == null) {
-				shell = System.getProperty("os.name").toLowerCase().indexOf("win") > 0 ? "cmd.exe" : "sh";
 			}
-			Command cmd = new Command(shell);
+			// purge remaining placeholders
+			line = line.replaceAll("\\s*\\$[0-9]\\s*", "");
 
-			if (path != null) {
-				cmd.inherit();
-				String oldpath = cmd.var("PATH");
-				path = path.replaceAll("\\s*,\\s*", File.pathSeparator);
-				path = path.replaceAll("\\$\\{@\\}", oldpath);
-				cmd.var("PATH", path);
-			}
-
-			cmd.setCwd(getRoot());
+			int result = 0;
 			StringBuilder stdout = new StringBuilder();
 			StringBuilder stderr = new StringBuilder();
-			int result = cmd.execute(line, stdout, stderr);
+			if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+
+				// FIXME ignoring possible shell setting stdin approach used
+				// below does not work in windows
+				Command cmd = new Command("cmd.exe /C " + line);
+				cmd.setCwd(getRoot());
+				result = cmd.execute(stdout, stderr);
+
+			} else {
+				if (shell == null) {
+					shell = "sh";
+				}
+				Command cmd = new Command(shell);
+				cmd.setCwd(getRoot());
+
+				if (path != null) {
+					cmd.inherit();
+					String oldpath = cmd.var("PATH");
+					path = path.replaceAll("\\s*,\\s*", File.pathSeparator);
+					path = path.replaceAll("\\$\\{@\\}", oldpath);
+					cmd.var("PATH", path);
+				}
+				result = cmd.execute(line, stdout, stderr);
+			}
 			if (result != 0) {
 				reporter.error("Command %s failed with %s %s %s", line, result, stdout, stderr);
 			}
