@@ -207,6 +207,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		init();
 
 		Jar jar = new Jar(tmpFile);
+		boolean isJarClosed = false;
 		try {
 			String bsn = jar.getBsn();
 			if (bsn == null || !Verifier.isBsn(bsn))
@@ -234,6 +235,10 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			if (!overwrite && file.exists())
 				return null;
 
+			// An open jar on file will fail rename on windows
+			jar.close();
+			isJarClosed = true;
+
 			IO.rename(tmpFile, file);
 
 			synchronized (newFilesInCoordination) {
@@ -247,7 +252,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			return file;
 		}
 		finally {
-			jar.close();
+			if (!isJarClosed)
+				jar.close();
 		}
 	}
 
