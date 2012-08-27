@@ -268,7 +268,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			}
 			catch (InvocationTargetException e) {
 				if (e.getCause() instanceof IllegalArgumentException) {
-					reporter.error("%s, for cmd: %s, arguments; %s", e.getMessage(), method, Arrays.toString(args));
+					reporter.error("%s, for cmd: %s, arguments; %s", e.getCause().getMessage(), method, Arrays.toString(args));
 				} else {
 					reporter.warning("Exception in replace: " + e.getCause());
 					e.getCause().printStackTrace();
