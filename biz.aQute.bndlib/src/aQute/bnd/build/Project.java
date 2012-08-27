@@ -228,26 +228,27 @@ public class Project extends Processor {
 					// We might have some other projects we want build
 					// before we do anything, but these projects are not in
 					// our path. The -dependson allows you to build them before.
+					// The values are possibly negated globbing patterns.
 
-					List<Project> dependencies = new ArrayList<Project>();
 					// dependencies.add( getWorkspace().getProject("cnf"));
 
 					String dp = getProperty(Constants.DEPENDSON);
-					Set<String> requiredProjectNames = new Parameters(dp).keySet();
+					Set<String> requiredProjectNames = new LinkedHashSet<String>(new Parameters(dp).keySet());
+					
+					//Allow DependencyConstributors to modify requiredProjectNames
 					List<DependencyContributor> dcs = getPlugins(DependencyContributor.class);
 					for (DependencyContributor dc : dcs)
 						dc.addDependencies(this, requiredProjectNames);
-
-					for (String p : requiredProjectNames) {
-						Project required = getWorkspace().getProject(p);
-						if (required == null)
-							msgs.MissingDependson_(p);
-						else {
-							dependencies.add(required);
-						}
-
-					}
-
+					
+					Instructions is = new Instructions(requiredProjectNames);
+					
+					Set<Instruction> unused = new HashSet<Instruction>();
+					Collection<Project> projects = getWorkspace().getAllProjects();
+					Collection<Project> dependencies = is.select(projects, unused, false);
+					
+					for (Instruction u: unused) 
+						msgs.MissingDependson_(u.getInput());							
+						
 					// We have two paths that consists of repo files, projects,
 					// or some other stuff. The doPath routine adds them to the
 					// path and extracts the projects so we can build them
