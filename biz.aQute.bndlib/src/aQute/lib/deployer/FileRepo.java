@@ -294,15 +294,17 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File putArtifact(File tmpFile, byte[] digest) throws Exception {
 		assert (tmpFile != null);
 
-		Jar jar = new Jar(tmpFile);
+		Jar tmpJar = new Jar(tmpFile);
+		boolean isTmpJarClosed = false;
+		Jar newJar = null;
 		try {
 			dirty = true;
 
-			String bsn = jar.getBsn();
+			String bsn = tmpJar.getBsn();
 			if (bsn == null)
 				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
 
-			String versionString = jar.getVersion();
+			String versionString = tmpJar.getVersion();
 			if (versionString == null)
 				versionString = "0";
 			else if (!Verifier.isVersion(versionString))
@@ -322,9 +324,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			reporter.trace("updating %s ", file.getAbsolutePath());
 
+			// An open jar on file will fail rename on windows
+			tmpJar.close();
+			isTmpJarClosed = true;
+
 			IO.rename(tmpFile, file);
 
-			fireBundleAdded(jar, file);
+			newJar = new Jar(file);
+			fireBundleAdded(newJar, file);
 			afterPut(file, bsn, version, Hex.toHexString(digest));
 
 			// TODO like to beforeGet rid of the latest option. This is only
@@ -338,7 +345,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			return file;
 		}
 		finally {
-			jar.close();
+			if (!isTmpJarClosed)
+				tmpJar.close();
+			if (newJar != null)
+				newJar.close();
 		}
 	}
 
