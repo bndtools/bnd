@@ -2039,6 +2039,8 @@ public class Analyzer extends Processor {
 				typeName = "extends";
 			else if (typeName.equalsIgnoreCase("importing"))
 				typeName = "imports";
+			else if (typeName.equalsIgnoreCase("annotation"))
+				typeName = "annotated";
 			else if (typeName.equalsIgnoreCase("implementing"))
 				typeName = "implements";
 

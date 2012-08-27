@@ -14,11 +14,41 @@ import aQute.lib.collections.*;
 import aQute.lib.io.*;
 
 public class BuilderTest extends BndTestCase {
+
 	/**
-	 * Check if we can create digests
+	 * Dave Smith <dave.smith@candata.com>
+	 * 
+	 * I have pulled the latest from git and am testing out 2.0 with our current
+	 * application. I am getting the following error message on the bnd.bnd file
+	 * null, for cmd : classes, arguments
+	 * [classes;CONCRETE;ANNOTATION;javax.persistence.Entity] My bnd file does
+	 * have the following line ... Hibernate-Db =
+	 * ${classes;CONCRETE;ANNOTATION;javax.persistence.Entity}
 	 * @throws Exception 
 	 */
+
+	public static void testClasses() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("x", "${classes;CONCRETE;ANNOTATION;aQute.bnd.annotation.component.Component}");
+		b.setProperty("y", "${classes;CONCRETE;ANNOTATED;aQute.bnd.annotation.component.Component}");
+		b.setProperty("z", "${classes;CONCRETE;ANNOTATEDX;x.y.Z}");
+		b.setPrivatePackage("test");
+		b.addClasspath(IO.getFile("bin"));
+		b.build();
+		String s = b.getProperty("x");
+		assertEquals(s, b.getProperty("y"));
+		assertTrue( s.contains("test.Target"));
+		assertEquals("${classes;CONCRETE;ANNOTATEDX;x.y.Z}", b.getProperty("z"));
+		assertTrue(b.check("ANNOTATEDX"));
+	}
 	
+
+	/**
+	 * Check if we can create digests
+	 * 
+	 * @throws Exception
+	 */
+
 	public static void testDigests() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile(new File(""), "jar/osgi.jar"));
