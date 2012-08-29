@@ -126,6 +126,7 @@ public class Main extends ReporterAdapter {
 	final PrintStream			err	= System.err;
 	final PrintStream			out	= System.out;
 	File						sm;
+	private String				url;
 
 	/**
 	 * Default constructor
@@ -191,7 +192,7 @@ public class Main extends ReporterAdapter {
 			if (opts.base() != null)
 				base = IO.getFile(base, opts.base());
 
-			String url = opts.library();
+			url = opts.library();
 			if (url == null)
 				url = settings.get("library.url");
 
@@ -203,9 +204,6 @@ public class Main extends ReporterAdapter {
 			} else
 				cacheDir = null;
 
-			trace("using url %s", url);
-			library = new RemoteLibrary(url);
-			
 			CommandLine handler = opts._command();
 			List<String> arguments = opts._();
 
@@ -341,7 +339,7 @@ public class Main extends ReporterAdapter {
 				if (!isOk())
 					return;
 
-				trace("putting %s" , file);
+				trace("putting %s", file);
 				jpm.put(IO.stream(file), null);
 				ArtifactData artifact = jpm.artifact(bsn, new Version(version));
 
@@ -352,7 +350,6 @@ public class Main extends ReporterAdapter {
 
 				if (!isOk())
 					return;
-				
 
 				list.add(artifact);
 			}
@@ -364,7 +361,7 @@ public class Main extends ReporterAdapter {
 			for (String target : _) {
 				try {
 
-					Find<Revision> where = library.findRevision();
+					Find<Revision> where = getLibrary().findRevision();
 					where.capability("x-jpm", "x-jpm", target);
 
 					ExtList<Revision> sl = new ExtList<Revision>(where);
@@ -443,17 +440,17 @@ public class Main extends ReporterAdapter {
 		trace("artifacts %s", list);
 		for (ArtifactData artifact : list) {
 			if (artifact.command != null) {
-				artifact.command.force=opts.force();
+				artifact.command.force = opts.force();
 				trace("creating command %s", artifact.command.bsn);
 				String error = jpm.createCommand(artifact.command);
-				if ( error != null)
+				if (error != null)
 					error("Could not create command: %s", error);
 			}
 			if (artifact.service != null) {
-				artifact.command.force=opts.force();
+				artifact.command.force = opts.force();
 				trace("creating service %s", artifact.service.bsn);
 				String error = jpm.createService(artifact.service);
-				if ( error != null)
+				if (error != null)
 					error("Could not create service: %s", error);
 			}
 		}
@@ -547,7 +544,7 @@ public class Main extends ReporterAdapter {
 			sr.force = opts.force();
 			sr.message = opts.message();
 			sr.owner = opts.owner() == null ? settings.getEmail() : opts.owner();
-			StageResponse stage = library.stage(sr);
+			StageResponse stage = getLibrary().stage(sr);
 			addErrors(f.getName(), stage.errors);
 			addWarnings(f.getName(), stage.warnings);
 		}
@@ -590,7 +587,7 @@ public class Main extends ReporterAdapter {
 			error("email not set, use 'jpm set email=...");
 			return false;
 		}
-		library.credentials(email, machine, settings.getPublicKey(), settings.getPrivateKey());
+		getLibrary().credentials(email, machine, settings.getPublicKey(), settings.getPrivateKey());
 		return isOk();
 	}
 
@@ -823,7 +820,7 @@ public class Main extends ReporterAdapter {
 			File f = new File(s).getAbsoluteFile();
 			if (f.exists()) {
 				CommandLine cl = new CommandLine(this);
-				cl.execute(this, "install", Arrays.asList("-f", f.getAbsolutePath()));
+				cl.execute(this, "install", Arrays.asList("-fl", f.getAbsolutePath()));
 			} else
 				error("Cannot find the jpm jar from %s", f);
 		}
@@ -1062,4 +1059,13 @@ public class Main extends ReporterAdapter {
 		out.append(sb.toString()).append("\n");
 		out.format("-----END %s %s KEY-----%n", email, type);
 	}
+
+	private RemoteLibrary getLibrary() {
+		if (library != null) {
+			trace("using url %s", url);
+			library = new RemoteLibrary(url);
+		}
+		return library;
+	}
+
 }
