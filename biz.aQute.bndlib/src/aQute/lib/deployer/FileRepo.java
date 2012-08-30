@@ -295,7 +295,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		assert (tmpFile != null);
 
 		Jar tmpJar = new Jar(tmpFile);
-		boolean isTmpJarClosed = false;
 		try {
 			dirty = true;
 
@@ -325,7 +324,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			// An open jar on file will fail rename on windows
 			tmpJar.close();
-			isTmpJarClosed = true;
 
 			IO.rename(tmpFile, file);
 
@@ -343,8 +341,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			return file;
 		}
 		finally {
-			if (!isTmpJarClosed)
-				tmpJar.close();
+			tmpJar.close();
 		}
 	}
 
