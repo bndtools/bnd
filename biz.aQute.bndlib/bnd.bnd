@@ -40,7 +40,7 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	osgi.r5;version=1.0.1,\
 	ee.j2se;version=${javac.ee}
 
-Bundle-Version: 2.0.0.${tstamp;yyyyMMdd-HHmmss}
+Bundle-Version: 2.1.0.${tstamp;yyyyMMdd-HHmmss}
 Import-Package: junit.framework;resolution:=optional,\
 	org.osgi.resource;resolution:=optional,\
 	org.osgi.framework;version='[1.5,2)',\
