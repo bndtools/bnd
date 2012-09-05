@@ -1,6 +1,7 @@
 Bundle-Description: The main jpm command. This is a command line utility.
-Private-Package: aQute.jpm.*
-Conditional-Package: !java*,*
+Bundle-Icon: images/icon.png;size=64
+Private-Package: aQute.jpm.*, org.osgi.service.component.annotations
+Conditional-Package: aQute.*, org.osgi.service.*
 Include-Resource: images=images, service.jar
 
 Main-Class: 					aQute.jpm.main.Main

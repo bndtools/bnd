@@ -44,6 +44,17 @@ public class JPMTest extends TestCase {
 		public String createService(ServiceData data) throws Exception {
 			return null;
 		}
+
+		@Override
+		public void installDaemon(boolean user) throws Exception {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void uninstallDaemon(boolean user) throws Exception {
+			// TODO Auto-generated method stub
+			
+		}
 	}
 
 	public static void testSimple() {
@@ -57,7 +68,7 @@ public class JPMTest extends TestCase {
 	public static void testDownload() throws Exception {
 		ReporterAdapter reporter = new ReporterAdapter();
 		JustAnotherPackageManager jpm = new JustAnotherPackageManager(reporter);
-		ArtifactData artifact = jpm.artifact("aQute.libg", new Version("2.7.3"));
+		ArtifactData artifact = jpm.artifact("aQute.libg", new Version("2.7.3"), true);
 		assertNotNull(artifact);
 	}
 }

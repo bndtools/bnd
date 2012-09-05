@@ -10,7 +10,14 @@ public abstract class Platform {
 	static Platform	platform;
 	static Runtime	runtime	= Runtime.getRuntime();
 	Reporter		reporter;
-
+	
+	/**
+	 * Get the current platform manager.
+	 * 
+	 * @param reporter
+	 * @param jpmx
+	 * @return
+	 */
 	public static Platform getPlatform(Reporter reporter) {
 
 		if (platform == null) {
@@ -45,7 +52,7 @@ public abstract class Platform {
 
 	abstract public String getName();
 
-	abstract public void uninstall();
+	abstract public void uninstall() throws IOException;
 
 	public int run(String args) throws Exception {
 		return runtime.exec(args).waitFor();
@@ -60,4 +67,13 @@ public abstract class Platform {
 	public abstract String remove(ServiceData data) throws Exception;
 
 	public abstract int launchService(ServiceData data) throws Exception;
+	
+	public abstract void installDaemon(boolean user) throws Exception;
+	public abstract void uninstallDaemon(boolean user) throws Exception;
+	public abstract void chown(String user, boolean recursive, File file) throws Exception;
+	public abstract String user() throws Exception;
+
+	public abstract  void deleteCommand(CommandData cmd) throws Exception ;
+
+	public String defaultCacertsPassword() { return "changeme"; }
 }

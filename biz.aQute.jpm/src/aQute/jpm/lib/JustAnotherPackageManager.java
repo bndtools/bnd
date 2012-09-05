@@ -71,6 +71,7 @@ public class JustAnotherPackageManager extends FileRepo {
 	RemoteLibrary				library				= new RemoteLibrary(null);
 	Reporter					reporter;
 	final JSONCodec				codec				= new JSONCodec();
+	final List<Service>			startedByDaemon		= new ArrayList<Service>();
 
 	public JustAnotherPackageManager(Reporter reporter) {
 		super.setReporter(reporter);
@@ -127,6 +128,14 @@ public class JustAnotherPackageManager extends FileRepo {
 		return result;
 	}
 
+	public CommandData getCommand(String name) throws Exception {
+		File f = new File(commandDir, name);
+		if ( !f.isFile())
+			return null;
+		
+		return getData(CommandData.class, f);
+	}
+
 	/**
 	 * Garbage collect any service and commands.
 	 * 
@@ -135,11 +144,11 @@ public class JustAnotherPackageManager extends FileRepo {
 	public void gc() throws Exception {
 		for (File cmd : commandDir.listFiles()) {
 			CommandData data = getData(CommandData.class, cmd);
-//			File repoFile = new File(data.repoFile);
-//			if (!repoFile.isFile()) {
-//				platform.remove(data);
-//				cmd.delete();
-//			}
+			// File repoFile = new File(data.repoFile);
+			// if (!repoFile.isFile()) {
+			// platform.remove(data);
+			// cmd.delete();
+			// }
 		}
 
 		for (File service : serviceDir.listFiles()) {
@@ -147,18 +156,18 @@ public class JustAnotherPackageManager extends FileRepo {
 
 			ServiceData data = getData(ServiceData.class, dataFile);
 
-//			if (!repoFile.isFile()) {
-//				Service s = getService(service.getName());
-//				s.stop();
-//				if (data.work != null)
-//					IO.delete(new File(data.work));
-//				if (data.sdir != null)
-//					IO.delete(new File(data.sdir));
-//				if (data.log != null)
-//					IO.delete(new File(data.log));
-//				platform.remove(data);
-//				IO.delete(service);
-//			}
+			// if (!repoFile.isFile()) {
+			// Service s = getService(service.getName());
+			// s.stop();
+			// if (data.work != null)
+			// IO.delete(new File(data.work));
+			// if (data.sdir != null)
+			// IO.delete(new File(data.sdir));
+			// if (data.log != null)
+			// IO.delete(new File(data.log));
+			// platform.remove(data);
+			// IO.delete(service);
+			// }
 		}
 	}
 
@@ -194,19 +203,22 @@ public class JustAnotherPackageManager extends FileRepo {
 			throw new IOException("Could not create directory " + data.sdir);
 		}
 		data.sdir = sdir.getAbsolutePath();
-		
+
 		File lock = new File(data.sdir, "lock");
 		data.lock = lock.getAbsolutePath();
-		
-		if (data.work == null) 
+
+		if (data.work == null)
 			data.work = new File(data.sdir, "work").getAbsolutePath();
+		if (data.user == null)
+			data.user = platform.user();
+
+		if ( data.user == null)
+			data.user = "root";
 		
 		new File(data.work).mkdir();
-		
+
 		if (data.log == null)
 			data.log = new File(data.sdir, "log").getAbsolutePath();
-
-		new File(data.log).mkdir();
 
 		if (Data.validate(data) != null)
 			return "Invalid service data: " + Data.validate(data);
@@ -218,7 +230,9 @@ public class JustAnotherPackageManager extends FileRepo {
 			throw new RuntimeException(
 					"Missing biz.aQute.jpm.service in repo, should have been installed by init, try reiniting");
 
-		data.dependencies.add(service.getAbsolutePath());
+		data.serviceLib = service.getAbsolutePath();
+
+		platform.chown(data.user, true, new File(data.sdir));
 
 		String s = platform.createService(data);
 		if (s == null)
@@ -240,6 +254,16 @@ public class JustAnotherPackageManager extends FileRepo {
 			storeData(new File(commandDir, data.name), data);
 		return s;
 	}
+
+	public void deleteCommand(String name) throws Exception {
+		CommandData cmd = getCommand(name);
+		if ( cmd == null)
+			throw new IllegalArgumentException("No such command " + name);
+		
+		platform.deleteCommand(cmd);
+		IO.deleteWithException( new File(commandDir,name));
+	}
+
 
 	public Service getService(String service) throws Exception {
 		File base = new File(serviceDir, service);
@@ -342,7 +366,7 @@ public class JustAnotherPackageManager extends FileRepo {
 		}
 		File file = super.get(bsn, version, properties, listeners);
 		if (file == null) {
-			Revision revision = library.getRevision(bsn, version.toString());
+			Revision revision = library.findRevision().bsn(bsn).baseline(version.getWithoutQualifier().toString()).one();
 			if (revision == null)
 				return null;
 
@@ -368,7 +392,7 @@ public class JustAnotherPackageManager extends FileRepo {
 		return file;
 	}
 
-	public ArtifactData artifact(File source) throws Exception {
+	public ArtifactData artifact(File source, boolean verifyDigests) throws Exception {
 		assert source.isFile();
 
 		JarFile jar = new JarFile(source);
@@ -380,7 +404,7 @@ public class JustAnotherPackageManager extends FileRepo {
 			if (bsn == null)
 				reporter.error("The JAR does not have a name (Bundle-SymbolicName header)");
 			artifact.bsn = bsn;
-			
+
 			String v = main.getValue("Bundle-Version");
 			Version version = null;
 
@@ -391,8 +415,9 @@ public class JustAnotherPackageManager extends FileRepo {
 			else
 				version = new Version(v);
 			artifact.version = version;
-			
+
 			String mainClass = main.getValue("Main-Class");
+			String description = main.getValue("Bundle-Description");
 
 			reporter.trace("analyzing %s %s %s", bsn, version, mainClass);
 			List<String> dependencies = new ArrayList<String>();
@@ -429,8 +454,10 @@ public class JustAnotherPackageManager extends FileRepo {
 					Attrs attrs = e.getValue();
 					ServiceData data = new ServiceData();
 					data.name = e.getKey();
+					data.user = platform.user();
 					data.bsn = bsn;
 					data.version = version;
+					data.description = description;
 					if (attrs.containsKey("args"))
 						data.args = attrs.get("args");
 					if (attrs.containsKey("jvmargs"))
@@ -455,14 +482,37 @@ public class JustAnotherPackageManager extends FileRepo {
 					data.name = e.getKey();
 					data.jvmArgs = attrs.get("vmargs");
 					data.main = mainClass;
+					data.description = description;
 					data.dependencies.add(source.getAbsolutePath());
 					data.dependencies.addAll(dependencies);
 					artifact.command = data;
 				}
 				reporter.trace("commands %s", artifact.command);
 			}
+			{
+				Parameters embedded = OSGiHeader.parseHeader(main.getValue("JPM-Embedded"));
 
-			artifact.verify = verify(jar);
+				for (Map.Entry<String,Attrs> e : embedded.entrySet()) {
+					String entry = e.getKey();
+					JarEntry r = jar.getJarEntry(entry);
+					if (r == null) {
+						reporter.error("Specifies JPM-Embedded but not such entry %s", entry);
+						return null;
+					}
+
+					File tmp = IO.createTempFile(source.getParentFile(), "embedded", ".jar");
+					tmp.deleteOnExit();
+					IO.copy(jar.getInputStream(r), tmp);
+					ArtifactData x = artifact(tmp, verifyDigests);
+					if (x == null) {
+						return null;
+					}
+				}
+			}
+
+			if (verifyDigests)
+				artifact.verify = verify(jar);
+
 			reporter.trace("returning " + artifact);
 			return artifact;
 		}
@@ -472,12 +522,114 @@ public class JustAnotherPackageManager extends FileRepo {
 
 	}
 
-	public ArtifactData artifact(String bsn, Version version) throws Exception {
+	public ArtifactData artifact(String bsn, Version version, boolean verify) throws Exception {
 		File f = get(bsn, version, null);
 		if (f == null)
 			return null;
 
-		return artifact(f);
+		return artifact(f, verify);
 
 	}
+
+	/**
+	 * This is called when JPM runs in the background to start jobs
+	 * 
+	 * @throws Exception
+	 */
+	public void daemon() throws Exception {
+		Runtime.getRuntime().addShutdownHook(new Thread("Daemon shutdown") {
+			public void run() {
+
+				for (Service service : startedByDaemon) {
+					try {
+						System.err.println("Stopping " + service);
+						service.stop();
+						System.err.println("Stopped " + service);
+					}
+					catch (Exception e) {
+						// Ignore
+					}
+				}
+			}
+		});
+		List<ServiceData> services = getServices();
+		Map<String,ServiceData> map = new HashMap<String,ServiceData>();
+		for (ServiceData d : services) {
+			map.put(d.name, d);
+		}
+		List<ServiceData> start = new ArrayList<ServiceData>();
+		Set<ServiceData> set = new HashSet<ServiceData>();
+		for (ServiceData sd : services) {
+			checkStartup(map, start, sd, set);
+		}
+
+		if (start.isEmpty())
+			System.out.println("No services to start");
+
+		for (ServiceData sd : start) {
+			try {
+				Service service = getService(sd.name);
+				System.err.println("Starting " + service);
+				String result = service.start();
+				if ( result != null)
+					System.err.println("Started error " + result);
+				else
+					startedByDaemon.add(service);
+				System.err.println("Started " + service);
+			}
+			catch (Exception e) {
+				System.err.println("Cannot start daemon " + sd.name);
+			}
+		}
+
+		while (true) {
+			for (Service sd : startedByDaemon) {
+				try {
+					if (!sd.isRunning()) {
+						System.err.println("Starting due to failure " + sd);
+						String result = sd.start();
+						if ( result != null)
+							System.err.println("Started error " + result);
+					}
+				}
+				catch (Exception e) {
+					System.err.println("Cannot start daemon " + sd);
+				}
+			}
+			Thread.sleep(100000);
+		}
+
+	}
+
+	private void checkStartup(Map<String,ServiceData> map, List<ServiceData> start, ServiceData sd,
+			Set<ServiceData> cyclic) {
+		if (sd.after.isEmpty() || start.contains(sd))
+			return;
+
+		if (cyclic.contains(sd)) {
+			System.err.println("Cyclic dependency for " + sd.name);
+			return;
+		}
+
+		cyclic.add(sd);
+
+		for (String dependsOn : sd.after) {
+			if (dependsOn.equals("boot"))
+				continue;
+
+			ServiceData deps = map.get(dependsOn);
+			if (deps == null) {
+				System.err.println("No such service " + dependsOn + " but " + sd.name + " depends on it");
+			} else {
+				checkStartup(map, start, deps, cyclic);
+			}
+		}
+		start.add(sd);
+	}
+
+	public void register(boolean user) throws Exception {
+		platform.installDaemon(user);
+	}
+
+
 }

@@ -9,6 +9,9 @@ public class CommandData {
 	public long			time			= System.currentTimeMillis();
 	@Validator(JustAnotherPackageManager.COMMAND_PATTERN)
 	public String		name;
+
+	@AllowNull
+	public String		description;
 	public boolean		force;
 	@AllowNull
 	public String		jvmArgs			= "";

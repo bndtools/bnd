@@ -10,7 +10,8 @@ import aQute.lib.io.*;
 public class Service {
 	final ServiceData				data;
 	final JustAnotherPackageManager	jpm;
-	final File lock;
+	final File						lock;
+
 	Service(JustAnotherPackageManager jpm, ServiceData data) throws Exception {
 		this.jpm = jpm;
 		this.data = data;
@@ -18,13 +19,24 @@ public class Service {
 	}
 
 	public String start() throws Exception {
+		if (lock.exists())
+			return "Already running";
+
 		if (lock.createNewFile()) {
+			jpm.platform.chown(data.user, false, lock);
 			try {
 				int result = jpm.platform.launchService(data);
-				if (result == 0)
-					return null;
+				if (result != 0)
+					return "Could not launch service " + data.name + " return value " + result;
 
-				return "Could not launch service " + data.name + " return value " + result;
+				long start = System.currentTimeMillis();
+				while (System.currentTimeMillis() - start < 10000) {
+					Thread.sleep(100);
+					if (getPort() != -1)
+						return null;
+				}
+				lock.delete();
+				return "Could not establish a link to the service, likely failed to start";
 			}
 			catch (Throwable t) {
 				IO.delete(lock);
@@ -137,5 +149,20 @@ public class Service {
 		else
 			send(getPort(), "TRACE-OFF");
 		return null;
+	}
+
+	public void remove() throws IOException {
+		try {
+			stop();
+		}
+		catch (Exception e) {}
+
+		IO.deleteWithException(new File(data.sdir));
+	}
+
+	public void clear() {
+		IO.delete(new File(data.log));
+		IO.delete(new File(data.work));
+		new File(data.work).mkdir();
 	}
 }

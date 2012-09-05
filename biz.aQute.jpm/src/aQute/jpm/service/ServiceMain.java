@@ -20,10 +20,12 @@ public class ServiceMain extends Thread {
 
 	public static void main(String args[]) throws Exception, SecurityException, NoSuchMethodException {
 		lock = new File(args[0]).getAbsoluteFile();
+		lock.deleteOnExit();
 
 		if (!lock.exists())
 			throw new IllegalArgumentException("Must start with a valid lock file " + lock);
 
+		
 		socket = new DatagramSocket();
 		ServiceMain main = new ServiceMain();
 
