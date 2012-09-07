@@ -15,6 +15,23 @@ import aQute.libg.map.*;
 public class JSONTest extends TestCase {
 	JSONCodec	codec	= new JSONCodec();
 
+	
+	
+	/**
+	 * test the hex/base64 encoding
+	 * @throws Exception 
+	 */
+	public void testBase64AndHex() throws Exception {
+		byte[] b = "abc".getBytes("UTF-8");
+		
+		assertTrue( Arrays.equals(b, codec.dec().from("\" 616263\"").get(byte[].class)));
+		assertTrue( Arrays.equals(b, codec.dec().from("\"61 62 63\"").get(byte[].class)));
+		assertTrue( Arrays.equals(b, codec.dec().from("\"YWJj\"").get(byte[].class)));
+		assertTrue( Arrays.equals(b, codec.dec().from("\" Y W J j\"").get(byte[].class)));
+	}
+	
+	
+	
 	/**
 	 * Test the use of inflate/deflate
 	 */
