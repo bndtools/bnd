@@ -294,15 +294,15 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File putArtifact(File tmpFile, byte[] digest) throws Exception {
 		assert (tmpFile != null);
 
-		Jar jar = new Jar(tmpFile);
+		Jar tmpJar = new Jar(tmpFile);
 		try {
 			dirty = true;
 
-			String bsn = jar.getBsn();
+			String bsn = tmpJar.getBsn();
 			if (bsn == null)
 				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
 
-			String versionString = jar.getVersion();
+			String versionString = tmpJar.getVersion();
 			if (versionString == null)
 				versionString = "0";
 			else if (!Verifier.isVersion(versionString))
@@ -322,9 +322,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			reporter.trace("updating %s ", file.getAbsolutePath());
 
+			// An open jar on file will fail rename on windows
+			tmpJar.close();
+
 			IO.rename(tmpFile, file);
 
-			fireBundleAdded(jar, file);
+			fireBundleAdded(file);
 			afterPut(file, bsn, version, Hex.toHexString(digest));
 
 			// TODO like to beforeGet rid of the latest option. This is only
@@ -338,7 +341,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			return file;
 		}
 		finally {
-			jar.close();
+			tmpJar.close();
 		}
 	}
 
@@ -676,17 +679,24 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		exec(beforeGet, root.getAbsolutePath(), bsn, version);
 	}
 
-	protected void fireBundleAdded(Jar jar, File file) {
+	protected void fireBundleAdded(File file) {
 		if (registry == null)
 			return;
 		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
+		Jar jar = null;
 		for (RepositoryListenerPlugin listener : listeners) {
 			try {
+				if (jar == null)
+					jar = new Jar(file);
 				listener.bundleAdded(this, jar, file);
 			}
 			catch (Exception e) {
 				if (reporter != null)
 					reporter.warning("Repository listener threw an unexpected exception: %s", e);
+			}
+			finally {
+				if (jar != null)
+					jar.close();
 			}
 		}
 	}
@@ -699,34 +709,53 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param target
 	 */
 	void exec(String line, Object... args) {
-		if (line == null)
+		if (line == null) {
 			return;
+		}
 
 		try {
-			if (args != null)
+			if (args != null) {
 				for (int i = 0; i < args.length; i++) {
-					if (i == 0)
-						line = line.replaceAll("\\$\\{@\\}", args[0].toString());
-					line = line.replaceAll("\\$" + i, args[i].toString());
+					if (i == 0) {
+						// replaceAll backslash magic ensures windows paths
+						// remain intact
+						line = line.replaceAll("\\$\\{@\\}", args[0].toString().replaceAll("\\\\", "\\\\\\\\"));
+					}
+					// replaceAll backslash magic ensures windows paths remain
+					// intact
+					line = line.replaceAll("\\$" + i, args[i].toString().replaceAll("\\\\", "\\\\\\\\"));
 				}
-
-			if (shell == null) {
-				shell = System.getProperty("os.name").toLowerCase().indexOf("win") > 0 ? "cmd.exe" : "sh";
 			}
-			Command cmd = new Command(shell);
+			// purge remaining placeholders
+			line = line.replaceAll("\\s*\\$[0-9]\\s*", "");
 
-			if (path != null) {
-				cmd.inherit();
-				String oldpath = cmd.var("PATH");
-				path = path.replaceAll("\\s*,\\s*", File.pathSeparator);
-				path = path.replaceAll("\\$\\{@\\}", oldpath);
-				cmd.var("PATH", path);
-			}
-
-			cmd.setCwd(getRoot());
+			int result = 0;
 			StringBuilder stdout = new StringBuilder();
 			StringBuilder stderr = new StringBuilder();
-			int result = cmd.execute(line, stdout, stderr);
+			if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+
+				// FIXME ignoring possible shell setting stdin approach used
+				// below does not work in windows
+				Command cmd = new Command("cmd.exe /C " + line);
+				cmd.setCwd(getRoot());
+				result = cmd.execute(stdout, stderr);
+
+			} else {
+				if (shell == null) {
+					shell = "sh";
+				}
+				Command cmd = new Command(shell);
+				cmd.setCwd(getRoot());
+
+				if (path != null) {
+					cmd.inherit();
+					String oldpath = cmd.var("PATH");
+					path = path.replaceAll("\\s*,\\s*", File.pathSeparator);
+					path = path.replaceAll("\\$\\{@\\}", oldpath);
+					cmd.var("PATH", path);
+				}
+				result = cmd.execute(line, stdout, stderr);
+			}
 			if (result != 0) {
 				reporter.error("Command %s failed with %s %s %s", line, result, stdout, stderr);
 			}
