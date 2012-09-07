@@ -34,7 +34,7 @@ class ReferenceDef {
 			analyzer.error("No name for a reference");
 
 		if ((updated != null && !updated.equals("-")) || policyOption != null)
-			version = ComponentDef.max(version, AnnotationReader.V1_2);
+			updateVersion(AnnotationReader.V1_2);
 
 		if (target != null) {
 			String error = Verifier.validateFilter(target);
@@ -85,5 +85,10 @@ class ReferenceDef {
 	public String toString() {
 		return name;
 	}
+	
+	void updateVersion(Version version) {
+		this.version = ComponentDef.max(this.version, version);
+	}
+
 
 }
