@@ -709,34 +709,53 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param target
 	 */
 	void exec(String line, Object... args) {
-		if (line == null)
+		if (line == null) {
 			return;
+		}
 
 		try {
-			if (args != null)
+			if (args != null) {
 				for (int i = 0; i < args.length; i++) {
-					if (i == 0)
-						line = line.replaceAll("\\$\\{@\\}", args[0].toString());
-					line = line.replaceAll("\\$" + i, args[i].toString());
+					if (i == 0) {
+						// replaceAll backslash magic ensures windows paths
+						// remain intact
+						line = line.replaceAll("\\$\\{@\\}", args[0].toString().replaceAll("\\\\", "\\\\\\\\"));
+					}
+					// replaceAll backslash magic ensures windows paths remain
+					// intact
+					line = line.replaceAll("\\$" + i, args[i].toString().replaceAll("\\\\", "\\\\\\\\"));
 				}
-
-			if (shell == null) {
-				shell = System.getProperty("os.name").toLowerCase().indexOf("win") > 0 ? "cmd.exe" : "sh";
 			}
-			Command cmd = new Command(shell);
+			// purge remaining placeholders
+			line = line.replaceAll("\\s*\\$[0-9]\\s*", "");
 
-			if (path != null) {
-				cmd.inherit();
-				String oldpath = cmd.var("PATH");
-				path = path.replaceAll("\\s*,\\s*", File.pathSeparator);
-				path = path.replaceAll("\\$\\{@\\}", oldpath);
-				cmd.var("PATH", path);
-			}
-
-			cmd.setCwd(getRoot());
+			int result = 0;
 			StringBuilder stdout = new StringBuilder();
 			StringBuilder stderr = new StringBuilder();
-			int result = cmd.execute(line, stdout, stderr);
+			if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+
+				// FIXME ignoring possible shell setting stdin approach used
+				// below does not work in windows
+				Command cmd = new Command("cmd.exe /C " + line);
+				cmd.setCwd(getRoot());
+				result = cmd.execute(stdout, stderr);
+
+			} else {
+				if (shell == null) {
+					shell = "sh";
+				}
+				Command cmd = new Command(shell);
+				cmd.setCwd(getRoot());
+
+				if (path != null) {
+					cmd.inherit();
+					String oldpath = cmd.var("PATH");
+					path = path.replaceAll("\\s*,\\s*", File.pathSeparator);
+					path = path.replaceAll("\\$\\{@\\}", oldpath);
+					cmd.var("PATH", path);
+				}
+				result = cmd.execute(line, stdout, stderr);
+			}
 			if (result != 0) {
 				reporter.error("Command %s failed with %s %s %s", line, result, stdout, stderr);
 			}
