@@ -166,17 +166,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			newFilesInCoordination.clear();
 		}
 		for (URI entry : clone) {
-			Jar jar = null;
-			try {
-				File file = new File(entry);
-				jar = new Jar(file);
-				fireBundleAdded(jar, file);
-			}
-			finally {
-				if (jar != null) {
-					jar.close();
-				}
-			}
+			File file = new File(entry);
+			fireBundleAdded(file);
 		}
 	}
 
@@ -233,6 +224,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			// check overwrite policy
 			if (!overwrite && file.exists())
 				return null;
+
+			// An open jar on file will fail rename on windows
+			jar.close();
 
 			IO.rename(tmpFile, file);
 
@@ -319,17 +313,24 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		return storageDir;
 	}
 
-	protected void fireBundleAdded(Jar jar, File file) {
+	protected void fireBundleAdded(File file) {
 		if (registry == null)
 			return;
 		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
+		Jar jar = null;
 		for (RepositoryListenerPlugin listener : listeners) {
 			try {
+				if (jar == null)
+					jar = new Jar(file);
 				listener.bundleAdded(this, jar, file);
 			}
 			catch (Exception e) {
 				if (reporter != null)
 					reporter.warning("Repository listener threw an unexpected exception: %s", e);
+			}
+			finally {
+				if (jar != null)
+					jar.close();
 			}
 		}
 	}
