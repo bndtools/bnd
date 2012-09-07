@@ -2329,15 +2329,19 @@ public class Analyzer extends Processor {
 			// We assume the user knows what he is
 			// doing and inserted a literal. So
 			// we ignore any not matched literals
-			if (instruction.isLiteral()) {
+			// #252, we should not be negated to make it a constant
+			if (instruction.isLiteral() && !instruction.isNegated()) {
 				result.merge(getPackageRef(instruction.getLiteral()), true, instructions.get(instruction));
 				i.remove();
 				continue;
 			}
 
 			// Not matching a negated instruction looks
-			// like an error ...
+			// like an error ... Though so, but
+			// in the second phase of Export-Package
+			// the !package will never match anymore. 
 			if (instruction.isNegated()) {
+				i.remove();
 				continue;
 			}
 
