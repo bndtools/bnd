@@ -34,7 +34,7 @@ class ReferenceDef {
 			analyzer.error("No name for a reference");
 
 		if ((updated != null && !updated.equals("-")) || policyOption != null)
-			version = max(version, AnnotationReader.V1_2);
+			version = ComponentDef.max(version, AnnotationReader.V1_2);
 
 		if (target != null) {
 			String error = Verifier.validateFilter(target);
@@ -79,13 +79,6 @@ class ReferenceDef {
 			ref.addAttribute("policy-option", policyOption.toString());
 
 		return ref;
-	}
-
-	static <T extends Comparable<T>> T max(T a, T b) {
-		int n = a.compareTo(b);
-		if (n >= 0)
-			return a;
-		return b;
 	}
 
 	@Override
