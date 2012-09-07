@@ -1677,6 +1677,20 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
+	public static void testUnreferredNegatedImport() throws Exception {
+		Builder bmaker = new Builder();
+		Properties p = new Properties();
+
+		p.put("-classpath", "jar/mina.jar");
+		p.put("Export-Package", "*");
+		p.put("Import-Package", "!org.apache.commons.collections.map,*");
+		bmaker.setProperties(p);
+		Jar jar = bmaker.build();
+		assertTrue(bmaker.check());
+		report("testUnreferredImport", bmaker, jar);
+
+	}
+
 	public static void testIncludeResourceResourcesOnlyJar2() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
@@ -1827,9 +1841,7 @@ public class BuilderTest extends BndTestCase {
 		p.put("Include-Resource", "@jar/easymock.jar!/org/easymock/**");
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
-
-		assertEquals(1, bmaker.getWarnings().size());
-		assertEquals(0, bmaker.getErrors().size());
+		assertTrue(bmaker.check());
 		assertEquals(59, jar.getResources().size());
 	}
 
