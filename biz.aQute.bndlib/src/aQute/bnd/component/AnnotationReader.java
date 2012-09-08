@@ -32,14 +32,22 @@ public class AnnotationReader extends ClassDataCollector {
 	public static final Version	V1_0					= new Version("1.0.0");																												// "1.1.0"
 	public static final Version	V1_1					= new Version("1.1.0");																												// "1.1.0"
 	public static final Version	V1_2					= new Version("1.2.0");																												// "1.1.0"
-	static Pattern				BINDNAME				= Pattern.compile("(set|add|bind)?(.*)");
-	static Pattern				BINDDESCRIPTOR			= Pattern
-																.compile("\\(((L([^;]+);)(Ljava/util/Map;)?|Lorg/osgi/framework/ServiceReference;)\\)V");
 
-	static Pattern				LIFECYCLEDESCRIPTOR		= Pattern
-																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
+	static Pattern				BINDNAME				= Pattern.compile("(set|add|bind)?(.*)");
+	
+	static Pattern				BINDDESCRIPTORDS10			= Pattern
+																.compile("\\(((L([^;]+);)|Lorg/osgi/framework/ServiceReference;)\\)V");
+	static Pattern				BINDDESCRIPTORDS11			= Pattern
+																.compile("\\(((L([^;]+);)(Ljava/util/Map;)?|Lorg/osgi/framework/ServiceReference;)\\)V");
 	static Pattern				REFERENCEBINDDESCRIPTOR	= Pattern
 																.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
+
+	static Pattern				LIFECYCLEDESCRIPTORDS10		= Pattern
+																.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)V");
+	static Pattern				LIFECYCLEDESCRIPTORDS11		= Pattern
+																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
+	static Pattern				DEACTIVATEDESCRIPTORDS11		= Pattern
+																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)V");
 
 	ComponentDef				component				= new ComponentDef();
 
@@ -112,12 +120,21 @@ public class AnnotationReader extends ClassDataCollector {
 
 		if (methods.containsKey(value)) {
 			for (String descriptor : methods.get(value)) {
-				Matcher matcher = BINDDESCRIPTOR.matcher(descriptor);
+				Matcher matcher = BINDDESCRIPTORDS10.matcher(descriptor);
 				if (matcher.matches()) {
 					String type = matcher.group(2);
-					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) || type.equals("Ljava/util/Map;")
+					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) 
 							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
 
+						return value;
+					}
+				}
+				matcher = BINDDESCRIPTORDS11.matcher(descriptor);
+				if (matcher.matches()) {
+					String type = matcher.group(2);
+					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) 
+							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
+						rdef.updateVersion(V1_1);
 						return value;
 					}
 				}
@@ -153,27 +170,47 @@ public class AnnotationReader extends ClassDataCollector {
 	/**
 	 * 
 	 */
-	protected void doDeactivate() {
-		if (!LIFECYCLEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
+	protected void doActivate() {
+		String methodDescriptor = method.getDescriptor().toString();
+		if ("activate".equals(method.getName()) && LIFECYCLEDESCRIPTORDS10.matcher(methodDescriptor).matches()) {
+			component.activate = method.getName();			
+		} else if (LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor).matches()) {
+			component.activate = method.getName();	
+			component.updateVersion(V1_1);
+		} else 
 			analyzer.error(
-					"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
+					"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
 					clazz, method.getDescriptor());
-		else {
+		
+	}
+
+	/**
+	 * 
+	 */
+	protected void doDeactivate() {
+		String methodDescriptor = method.getDescriptor().toString();
+		if ( "deactivate".equals(method.getName()) && LIFECYCLEDESCRIPTORDS10.matcher(methodDescriptor).matches()) {
+			component.deactivate = method.getName();			
+		} else if (DEACTIVATEDESCRIPTORDS11.matcher(methodDescriptor).matches()) {
 			component.deactivate = method.getName();
-		}
+			component.updateVersion(V1_1);
+		} else
+			analyzer.error(
+					"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, BundleContext, int, or Integer is allowed. Found: %s",
+					clazz, method.getDescriptor());
 	}
 
 	/**
 	 * 
 	 */
 	protected void doModified() {
-		if (!LIFECYCLEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
+		if (LIFECYCLEDESCRIPTORDS11.matcher(method.getDescriptor().toString()).matches()) {
+			component.modified = method.getName();
+			component.updateVersion(V1_1);
+		} else
 			analyzer.error(
 					"Modified method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
 					clazz, method.getDescriptor());
-		else {
-			component.modified = method.getName();
-		}
 	}
 
 	/**
@@ -202,13 +239,20 @@ public class AnnotationReader extends ClassDataCollector {
 		} else {
 			// We have to find the type of the current method to
 			// link it to the referenced service.
-			Matcher m = BINDDESCRIPTOR.matcher(method.getDescriptor().toString());
+			String methodDescriptor = method.getDescriptor().toString();
+			Matcher m = BINDDESCRIPTORDS10.matcher(methodDescriptor);
 			if (m.matches()) {
 				def.service = Descriptors.binaryToFQN(m.group(3));
-			} else
-				throw new IllegalArgumentException(
-						"Cannot detect the type of a Component Reference from the descriptor: "
-								+ method.getDescriptor());
+			} else {
+				m = BINDDESCRIPTORDS11.matcher(methodDescriptor);
+				if (m.matches()) {
+					def.service = Descriptors.binaryToFQN(m.group(3));
+					def.updateVersion(V1_1);
+				} else 
+					throw new IllegalArgumentException(
+							"Cannot detect the type of a Component Reference from the descriptor: "
+									+ method.getDescriptor());
+			}
 		}
 
 		// Check if we have a target, this must be a filter
@@ -227,19 +271,6 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * 
-	 */
-	protected void doActivate() {
-		if (!LIFECYCLEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
-			analyzer.error(
-					"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-					clazz, method.getDescriptor());
-		else {
-			component.activate = method.getName();
-		}
-	}
-
-	/**
 	 * @param annotation
 	 * @throws Exception
 	 */
@@ -249,7 +280,6 @@ public class AnnotationReader extends ClassDataCollector {
 		if (component.implementation != null)
 			return;
 
-		component.version = V1_0;
 		component.implementation = clazz.getClassName();
 		component.name = comp.name();
 		component.factory = comp.factory();
@@ -263,8 +293,10 @@ public class AnnotationReader extends ClassDataCollector {
 		if (annotation.get("servicefactory") != null)
 			component.servicefactory = comp.servicefactory();
 
-		if (annotation.get("configurationPid") != null)
+		if (annotation.get("configurationPid") != null) {
 			component.configurationPid = comp.configurationPid();
+			component.updateVersion(V1_2);
+		}
 
 		if (annotation.get("xmlns") != null)
 			component.xmlns = comp.xmlns();

@@ -50,11 +50,8 @@ class ComponentDef {
 	 */
 	void prepare(Analyzer analyzer) throws Exception {
 
-		for (ReferenceDef ref : references.values()) {
-			ref.prepare(analyzer);
-			if (ref.version.compareTo(version) > 0)
-				version = ref.version;
-		}
+		prepareVersion(analyzer);
+
 
 		if (implementation == null) {
 			analyzer.error("No Implementation defined for component " + name);
@@ -71,11 +68,6 @@ class ComponentDef {
 				analyzer.referTo(interfaceName);
 		} else if (servicefactory != null && servicefactory)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
-
-		if (configurationPolicy != null)
-			version = ReferenceDef.max(version, AnnotationReader.V1_1);
-		if (configurationPid != null)
-			version = ReferenceDef.max(version, AnnotationReader.V1_2);
 
 		for (Map.Entry<String,List<String>> kvs : property.entrySet()) {
 			Tag property = new Tag("property");
@@ -109,6 +101,21 @@ class ComponentDef {
 			}
 			propertyTags.add(property);
 		}
+	}
+
+	private void prepareVersion(Analyzer analyzer) throws Exception {
+		
+		for (ReferenceDef ref : references.values()) {
+			ref.prepare(analyzer);
+			updateVersion(ref.version);
+		}
+		if (configurationPolicy != null)
+			updateVersion(AnnotationReader.V1_1);
+		if (configurationPid != null)
+			updateVersion(AnnotationReader.V1_2);
+		if (modified != null)
+			updateVersion(AnnotationReader.V1_1);
+			
 	}
 	
 	void sortReferences() {
@@ -147,10 +154,10 @@ class ComponentDef {
 		if (factory != null)
 			component.addAttribute("factory", factory);
 
-		if (activate != null)
+		if (activate != null && version != AnnotationReader.V1_0)
 			component.addAttribute("activate", activate);
 
-		if (deactivate != null)
+		if (deactivate != null && version != AnnotationReader.V1_0)
 			component.addAttribute("deactivate", deactivate);
 
 		if (modified != null)
@@ -220,4 +227,16 @@ class ComponentDef {
 		}
 		return v;
 	}
+	
+	void updateVersion(Version version) {
+		this.version = max(this.version, version);
+	}
+	
+	static <T extends Comparable<T>> T max(T a, T b) {
+		int n = a.compareTo(b);
+		if (n >= 0)
+			return a;
+		return b;
+	}
+
 }
