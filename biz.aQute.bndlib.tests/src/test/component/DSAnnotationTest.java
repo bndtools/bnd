@@ -10,6 +10,7 @@ import org.osgi.service.component.*;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.log.*;
 
+import aQute.bnd.component.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
 
@@ -534,11 +535,11 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 	
 	/**
-	 * Check that a DS 1.3 compotible class ends up with the DS 1.3 namespace and appropriate activate/deactivate attributes
+	 * Check that a Felix 1.2 compotible class ends up with the Felix 1.2 namespace and appropriate activate/deactivate attributes
 	 *
 	 */
 	@Component()
-	public static class activate_basic13 implements Serializable, Runnable {
+	public static class activate_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
@@ -567,7 +568,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component()
-	public static class deactivate_basic13 implements Serializable, Runnable {
+	public static class deactivate_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
@@ -596,7 +597,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component()
-	public static class modified_basic13 implements Serializable, Runnable {
+	public static class modified_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
@@ -625,7 +626,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component()
-	public static class bind_basic13 implements Serializable, Runnable {
+	public static class bind_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
@@ -654,7 +655,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component()
-	public static class unbind_basic13 implements Serializable, Runnable {
+	public static class unbind_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
@@ -683,7 +684,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component()
-	public static class updated_basic13 implements Serializable, Runnable {
+	public static class updated_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
@@ -711,36 +712,34 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	public static void testBasic13() throws Exception {
+	public static void testBasicFelix12() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("-dsannotations", "test.component.*_basic13");
+		b.setProperty("-dsannotations", "test.component.*_basicFelix12");
+		b.setProperty("-ds-felix-extensions", "");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
 		assertOk(b);
 
-		// Test 13 activate gives 1.3 namespace 
-		checkDS13(jar, "test.component.DSAnnotationTest$activate_basic13");
-		// Test 13 deactivate gives 1.3 namespace 
-		checkDS13(jar, "test.component.DSAnnotationTest$deactivate_basic13");
-		// Test 13 modified gives 1.3 namespace 
-		checkDS13(jar, "test.component.DSAnnotationTest$modified_basic13");
-		// Test 13 bind gives 1.3 namespace 
-		checkDS13(jar, "test.component.DSAnnotationTest$bind_basic13");
-		// Test 13 bind gives 1.3 namespace 
-		checkDS13(jar, "test.component.DSAnnotationTest$unbind_basic13");
+		// Test Felix12 activate gives Felix 1.2 namespace 
+		checkDSFelix12(jar, "test.component.DSAnnotationTest$activate_basicFelix12");
+		// Test Felix12 deactivate gives Felix 1.2 namespace 
+		checkDSFelix12(jar, "test.component.DSAnnotationTest$deactivate_basicFelix12");
+		// Test Felix12 modified gives Felix 1.2 namespace 
+		checkDSFelix12(jar, "test.component.DSAnnotationTest$modified_basicFelix12");
+		// Test Felix12 bind gives Felix 1.2 namespace 
+		checkDSFelix12(jar, "test.component.DSAnnotationTest$bind_basicFelix12");
+		// Test Felix12 bind gives Felix 1.2 namespace 
+		checkDSFelix12(jar, "test.component.DSAnnotationTest$unbind_basicFelix12");
 	}
 
-	private static void checkDS13(Jar jar, String name) throws Exception, XPathExpressionException {
+	private static void checkDSFelix12(Jar jar, String name) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0"); // #136
-																											// was
-																											// http://www.osgi.org/xmlns/scr/1.1.0
-
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", AnnotationReader.FELIX_1_2); 
 		// Test the defaults
 		xt.assertAttribute(name, "scr:component/implementation/@class");
 

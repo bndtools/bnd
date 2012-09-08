@@ -32,8 +32,10 @@ public class AnnotationReader extends ClassDataCollector {
 	public static final Version	V1_0					= new Version("1.0.0");																												// "1.0.0"
 	public static final Version	V1_1					= new Version("1.1.0");																												// "1.1.0"
 	public static final Version	V1_2					= new Version("1.2.0");																												// "1.2.0"
-	public static final Version	V1_3					= new Version("1.3.0");																												// "1.3.0"
+//	public static final Version	V1_3					= new Version("1.3.0");																												// "1.3.0"
 
+	public static final String FELIX_1_2				= "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
+	
 	static Pattern				BINDNAME				= Pattern.compile("(set|add|bind)?(.*)");
 	
 	static Pattern				BINDDESCRIPTORDS10			= Pattern
@@ -65,18 +67,22 @@ public class AnnotationReader extends ClassDataCollector {
 	Analyzer					analyzer;
 	MultiMap<String,String>		methods					= new MultiMap<String,String>();
 	TypeRef						extendsClass;
-	boolean						inherit;
+	final boolean						inherit;
 	boolean						baseclass				= true;
+	
+	final boolean						felixExtensions;
 
-	AnnotationReader(Analyzer analyzer, Clazz clazz, boolean inherit) {
+	AnnotationReader(Analyzer analyzer, Clazz clazz, boolean inherit, boolean felixExtensions) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.inherit = inherit;
+		this.felixExtensions = felixExtensions;
 	}
 
 	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer) throws Exception {
 		boolean inherit = Processor.isTrue(analyzer.getProperty("-dsannotations-inherit"));
-		AnnotationReader r = new AnnotationReader(analyzer, c, inherit);
+		boolean felixExtensions = Processor.isTrue(analyzer.getProperty("-ds-felix-extensions"));
+		AnnotationReader r = new AnnotationReader(analyzer, c, inherit, felixExtensions);
 		return r.getDef();
 	}
 
@@ -146,11 +152,14 @@ public class AnnotationReader extends ClassDataCollector {
 					}
 				}
 				matcher = BINDDESCRIPTORDS13.matcher(descriptor);
-				if (matcher.matches()) {
+				if (felixExtensions && matcher.matches()) {
 					String type = matcher.group(2);
 					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) 
 							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
-						rdef.updateVersion(V1_3);
+						rdef.updateVersion(V1_2);
+						if (component.xmlns == null) {
+							component.xmlns = FELIX_1_2;
+						}
 						return value;
 					}
 				}
@@ -193,9 +202,12 @@ public class AnnotationReader extends ClassDataCollector {
 		} else if (LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor).matches()) {
 			component.activate = method.getName();	
 			component.updateVersion(V1_1);
-		} else if (LIFECYCLEDESCRIPTORDS13.matcher(methodDescriptor).matches()) {
+		} else if (felixExtensions && LIFECYCLEDESCRIPTORDS13.matcher(methodDescriptor).matches()) {
 			component.activate = method.getName();	
-			component.updateVersion(V1_3);
+			component.updateVersion(V1_2);
+			if (component.xmlns == null) {
+				component.xmlns = FELIX_1_2;
+			}
 		} else 
 			analyzer.error(
 					"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
@@ -213,9 +225,12 @@ public class AnnotationReader extends ClassDataCollector {
 		} else if (DEACTIVATEDESCRIPTORDS11.matcher(methodDescriptor).matches()) {
 			component.deactivate = method.getName();
 			component.updateVersion(V1_1);
-		} else if (DEACTIVATEDESCRIPTORDS13.matcher(methodDescriptor).matches()) {
+		} else if (felixExtensions && DEACTIVATEDESCRIPTORDS13.matcher(methodDescriptor).matches()) {
 			component.deactivate = method.getName();
-			component.updateVersion(V1_3);
+			component.updateVersion(V1_2);
+			if (component.xmlns == null) {
+				component.xmlns = FELIX_1_2;
+			}
 		} else
 			analyzer.error(
 					"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, BundleContext, int, or Integer is allowed. Found: %s",
@@ -229,9 +244,12 @@ public class AnnotationReader extends ClassDataCollector {
 		if (LIFECYCLEDESCRIPTORDS11.matcher(method.getDescriptor().toString()).matches()) {
 			component.modified = method.getName();
 			component.updateVersion(V1_1);
-		} else if (LIFECYCLEDESCRIPTORDS13.matcher(method.getDescriptor().toString()).matches()) {
+		} else if (felixExtensions && LIFECYCLEDESCRIPTORDS13.matcher(method.getDescriptor().toString()).matches()) {
 			component.modified = method.getName();
-			component.updateVersion(V1_3);
+			component.updateVersion(V1_2);
+			if (component.xmlns == null) {
+				component.xmlns = FELIX_1_2;
+			}
 		} else
 
 			analyzer.error(
@@ -276,9 +294,12 @@ public class AnnotationReader extends ClassDataCollector {
 					def.updateVersion(V1_1);
 				} else {
 					m = BINDDESCRIPTORDS13.matcher(methodDescriptor);
-					if (m.matches()) {
+					if (felixExtensions && m.matches()) {
 						def.service = Descriptors.binaryToFQN(m.group(3));
-						def.updateVersion(V1_3);
+						def.updateVersion(V1_2);
+						if (component.xmlns == null) {
+							component.xmlns = FELIX_1_2;
+						}
 					} else 
 						throw new IllegalArgumentException(
 							"Cannot detect the type of a Component Reference from the descriptor: "
