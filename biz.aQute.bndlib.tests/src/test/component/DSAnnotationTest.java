@@ -3,6 +3,8 @@ package test.component;
 import java.io.*;
 import java.util.*;
 
+import javax.xml.xpath.*;
+
 import org.osgi.framework.*;
 import org.osgi.service.component.*;
 import org.osgi.service.component.annotations.*;
@@ -529,6 +531,246 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("resource.props", "scr:component/properties[1]/@entry");
 			xt.assertAttribute("greedy", "scr:component/reference[1]/@policy-option");
 		}
+	}
+	
+	/**
+	 * Check that a DS 1.3 compotible class ends up with the DS 1.3 namespace and appropriate activate/deactivate attributes
+	 *
+	 */
+	@Component()
+	public static class activate_basic13 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		Map<String, Object> activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {
+			return null;
+		}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void updatedLogService(@SuppressWarnings("unused") LogService log) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	@Component()
+	public static class deactivate_basic13 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+
+		@Deactivate
+		Map<String, Object> deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {
+			return null;
+		}
+		
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void updatedLogService(@SuppressWarnings("unused") LogService log) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	@Component()
+	public static class modified_basic13 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+		
+		@Modified
+		Map<String, Object> modified(@SuppressWarnings("unused")ComponentContext cc) {
+			return null;
+		}
+
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void updatedLogService(@SuppressWarnings("unused") LogService log) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	@Component()
+	public static class bind_basic13 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+		
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		Map<String, Object> setLogService(@SuppressWarnings("unused") LogService log) {
+			return null;
+		}
+
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void updatedLogService(@SuppressWarnings("unused") LogService log) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	@Component()
+	public static class unbind_basic13 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+		
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		Map<String, Object> unsetLogService(@SuppressWarnings("unused") LogService log) {
+			return null;
+		}
+		
+		void updatedLogService(@SuppressWarnings("unused") LogService log) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	@Component()
+	public static class updated_basic13 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+		
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+
+		Map<String, Object> updatedLogService(@SuppressWarnings("unused") LogService log) {
+			return null;
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	public static void testBasic13() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.*_basic13");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		// Test 13 activate gives 1.3 namespace 
+		checkDS13(jar, "test.component.DSAnnotationTest$activate_basic13");
+		// Test 13 deactivate gives 1.3 namespace 
+		checkDS13(jar, "test.component.DSAnnotationTest$deactivate_basic13");
+		// Test 13 modified gives 1.3 namespace 
+		checkDS13(jar, "test.component.DSAnnotationTest$modified_basic13");
+		// Test 13 bind gives 1.3 namespace 
+		checkDS13(jar, "test.component.DSAnnotationTest$bind_basic13");
+		// Test 13 bind gives 1.3 namespace 
+		checkDS13(jar, "test.component.DSAnnotationTest$unbind_basic13");
+	}
+
+	private static void checkDS13(Jar jar, String name) throws Exception, XPathExpressionException {
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0"); // #136
+																											// was
+																											// http://www.osgi.org/xmlns/scr/1.1.0
+
+		// Test the defaults
+		xt.assertAttribute(name, "scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute(name, "scr:component/@name");
+
+		xt.assertAttribute("", "scr:component/@configuration-policy");
+		xt.assertAttribute("", "scr:component/@immediate");
+		xt.assertAttribute("", "scr:component/@enabled");
+		xt.assertAttribute("", "scr:component/@factory");
+		xt.assertAttribute("", "scr:component/@servicefactory");
+		xt.assertAttribute("", "scr:component/@configuration-pid");
+		xt.assertAttribute("activate", "scr:component/@activate");
+		xt.assertAttribute("deactivate", "scr:component/@deactivate");
+		xt.assertAttribute("modified", "scr:component/@modified");
+		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+
+		xt.assertAttribute("0", "count(scr:component/properties)");
+		xt.assertAttribute("0", "count(scr:component/property)");
+
+		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
+		xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
+		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
+		xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
 	}
 
 	/**
