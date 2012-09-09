@@ -522,6 +522,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         File[] built;
 
+        // Clear errors & warnings before build
+        model.clear();
+
         // Validate
         List<IValidator> validators = loadValidators();
         if (validators != null) {
@@ -529,9 +532,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 validate(builder, validators);
             }
         }
-
-        // Clear errors & warnings before build
-        model.clear();
 
         // Update the exported packages for the project
         ExportedPackageDecoratorJob.scheduleForProject(getProject());
