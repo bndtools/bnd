@@ -39,7 +39,9 @@ Export-Package: bndtools.api.*,\
 	bndtools.model.clauses,\
 	org.bndtools.build.api,\
 	org.bndtools.core.ui,\
-	org.osgi.service.resolver;provide:=true;-split-package:=merge-first
+	org.osgi.service.resolver;provide:=true;-split-package:=merge-first,\
+	bndtools.launch.util,\
+	bndtools.launch.api
 
 Include-Resource: plugin.xml=_plugin.xml,\
 	resources

@@ -23,6 +23,7 @@ import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectTester;
 import aQute.bnd.service.EclipseJUnitTester;
 import bndtools.Plugin;
+import bndtools.launch.util.LaunchUtils;
 import bndtools.utils.BundleUtils;
 
 public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {

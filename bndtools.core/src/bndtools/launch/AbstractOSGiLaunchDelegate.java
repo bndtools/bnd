@@ -27,6 +27,7 @@ import aQute.bnd.build.ProjectLauncher;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.launch.util.LaunchUtils;
 import bndtools.preferences.BndPreferences;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
