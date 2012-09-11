@@ -70,7 +70,7 @@ public class WorkspaceAnalyserJob extends Job {
 			mon.setTaskName(Messages.processingProjects);
 			for (Project project : orderedProjects) {
 				IProject eProject = ReleaseUtils.getProject(project);
-				if (!eProject.isOpen() || !eProject.isAccessible()) {
+				if (eProject == null || !eProject.isOpen() || !eProject.isAccessible()) {
 					continue;
 				}
 				List<Builder> builders = project.getBuilder(null)
