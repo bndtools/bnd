@@ -112,7 +112,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
         bndEclipseTester.setPort(port);
 
         // Enable tracing?
-        bndTester.getProjectLauncher().setTrace(enableTraceOption(configuration));
+        enableTraceOptionIfSetOnConfiguration(configuration, bndTester.getProjectLauncher());
 
         // Keep alive?
         bndTester.setContinuous(enableKeepAlive(configuration));

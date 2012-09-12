@@ -211,16 +211,17 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
     }
 
     @SuppressWarnings("deprecation")
-    protected static boolean enableTraceOption(ILaunchConfiguration configuration) throws CoreException {
-        boolean trace = configuration.getAttribute(LaunchConstants.ATTR_TRACE, LaunchConstants.DEFAULT_TRACE);
+    protected static void enableTraceOptionIfSetOnConfiguration(ILaunchConfiguration configuration, ProjectLauncher launcher) throws CoreException {
+        if (configuration.hasAttribute(LaunchConstants.ATTR_TRACE)) {
+            launcher.setTrace(configuration.getAttribute(LaunchConstants.ATTR_TRACE, LaunchConstants.DEFAULT_TRACE));
+        }
         String logLevelStr = configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, (String) null);
         if (logLevelStr != null) {
             Plugin.getDefault().getLog()
                     .log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, MessageFormat.format("The {0} attribute is no longer supported, use {1} instead.", LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.ATTR_TRACE), null));
             Level logLevel = Level.parse(logLevelStr);
-            trace |= logLevel.intValue() <= Level.FINE.intValue();
+            launcher.setTrace(launcher.getTrace() || logLevel.intValue() <= Level.FINE.intValue());
         }
-        return trace;
     }
 
     protected static MultiStatus createStatus(String message, List<String> errors, List<String> warnings) {
