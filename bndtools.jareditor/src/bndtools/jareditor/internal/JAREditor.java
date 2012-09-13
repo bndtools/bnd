@@ -111,6 +111,9 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
         IResource myResource = ResourceUtil.getResource(getEditorInput());
 
         IResourceDelta delta = event.getDelta();
+        if (delta == null)
+            return;
+
         IPath fullPath = myResource.getFullPath();
         delta = delta.findMember(fullPath);
         if (delta == null)
