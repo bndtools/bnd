@@ -165,7 +165,10 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                     // Check for bundles included in the launcher's runbundles
                     // list
                     if (!update.get()) {
-                        final Set<String> runBundleSet = new HashSet<String>(bndLauncher.getRunBundles());
+                        final Set<String> runBundleSet = new HashSet<String>();
+                        for (String bundlePath : bndLauncher.getRunBundles()) {
+                            runBundleSet.add(new org.eclipse.core.runtime.Path(bundlePath).toPortableString());
+                        }
                         event.getDelta().accept(new IResourceDeltaVisitor() {
                             public boolean visit(IResourceDelta delta) throws CoreException {
                                 // Short circuit if we have already found a
