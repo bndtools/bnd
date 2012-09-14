@@ -1209,6 +1209,7 @@ public class BuilderTest extends BndTestCase {
 	 * @throws Exception
 	 */
 	public static void testVersionCleanup() throws Exception {
+		assertVersion("1.201209072340200", "1.0.0.201209072340200");
 		assertVersion("000001.0003.00000-SNAPSHOT", "1.3.0.SNAPSHOT");
 		assertVersion("000000.0000.00000-SNAPSHOT", "0.0.0.SNAPSHOT");
 		assertVersion("0-SNAPSHOT", "0.0.0.SNAPSHOT");
