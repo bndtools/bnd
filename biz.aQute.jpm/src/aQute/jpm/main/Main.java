@@ -16,6 +16,7 @@ import javax.swing.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
@@ -28,6 +29,7 @@ import aQute.lib.getopt.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.settings.*;
+import aQute.libg.cryptography.*;
 import aQute.libg.reporter.*;
 import aQute.library.remote.*;
 import aQute.service.library.*;
@@ -107,6 +109,7 @@ public class Main extends ReporterAdapter {
 	@Description("Commands")
 	public interface commandOptions extends Options {
 		boolean remove();
+
 	}
 
 	/**
@@ -244,7 +247,6 @@ public class Main extends ReporterAdapter {
 			exception(t, "Failed %s", t);
 		}
 
-		report(err);
 		if (!check(opts.failok())) {
 			System.exit(getErrors().size());
 		}
@@ -296,7 +298,12 @@ public class Main extends ReporterAdapter {
 		String local();
 
 		@Description("The path to the log file")
-		String log();
+		String path();
+
+		@Description("Specify a command name, overrides the JPM-Command header")
+		String command();
+		
+
 	}
 
 	/**
@@ -336,6 +343,7 @@ public class Main extends ReporterAdapter {
 
 			list.add(artifact);
 		} else if (opts.local() != null) {
+			boolean artificial = false;
 			File file = getFile(opts.local());
 			if (file == null || !file.isFile()) {
 				error("%s is not a file", opts.local());
@@ -343,25 +351,45 @@ public class Main extends ReporterAdapter {
 			}
 			Jar jar = new Jar(file);
 			try {
+				Manifest m = jar.getManifest();
+				if (m == null) {
+					m = new Manifest();
+					jar.setManifest(m);
+				}
+
 				String bsn = jar.getBsn();
 				String version = jar.getVersion();
-				if (bsn == null)
-					error("No bsn in %s", file);
-				else if (!Verifier.isBsn(bsn))
-					error("Invalid bsn %s in %s", bsn, file);
+				if (bsn == null || !Verifier.isBsn(bsn)) {
+					bsn = SHA1.digest(file).asHex();
+					warning("No bsn in jar, uses SHA %s as bsn", bsn);
+					version = "1.0.0"; // always new version
 
-				if (version == null)
-					error("No version in %s", file);
-				else if (!Verifier.isVersion(version))
-					error("Invalid version %s in %s", version, file);
-
+					m.getMainAttributes().putValue("Bundle-ManifestVersion", "2");
+					m.getMainAttributes().putValue("Bundle-SymbolicName", bsn);
+					m.getMainAttributes().putValue("Bundle-Version", version);
+					if ( opts.command() != null)
+						m.getMainAttributes().putValue("JPM-Command", opts.command());
+						
+					File tmp = File.createTempFile("jpm", ",jar");
+					jar.setDigestAlgorithms(new String[] {
+							"SHA1", "MD5"
+					});
+					jar.write(tmp);
+					tmp.deleteOnExit();
+					file = tmp;
+				} else {
+					if (version == null)
+						error("No version in %s", file);
+					else if (!Verifier.isVersion(version)) {
+						error("Invalid version %s in %s", version, file);
+					}
+				}
 				if (!isOk())
 					return;
 
 				trace("putting %s", file);
 				PutResult result = jpm.put(IO.stream(file), null);
-				Parameters embedded = OSGiHeader.parseHeader(jar.getManifest().getMainAttributes()
-						.getValue("JPM-Embedded"));
+				Parameters embedded = OSGiHeader.parseHeader(m.getMainAttributes().getValue("JPM-Embedded"));
 
 				for (Map.Entry<String,Attrs> e : embedded.entrySet()) {
 					Resource r = jar.getResource(e.getKey());
@@ -378,7 +406,6 @@ public class Main extends ReporterAdapter {
 					error("Cannot find %s-%s", bsn, version);
 					return;
 				}
-
 				if (!isOk())
 					return;
 
@@ -420,8 +447,9 @@ public class Main extends ReporterAdapter {
 
 						}
 						if (candidates.isEmpty()) {
-							Revision r = sl.get( sl.size()-1);
-							error("Not master revision but there are unstaged revisions for command '%s'. You can specify --staged or use --bsn %s --version %s", target, r.bsn, r.baseline);
+							Revision r = sl.get(sl.size() - 1);
+							error("Not master revision but there are unstaged revisions for command '%s'. You can specify --staged or use --bsn %s --version %s",
+									target, r.bsn, r.baseline);
 						} else {
 							Revision r = candidates.get(candidates.lastKey()); // get
 																				// best
@@ -484,8 +512,8 @@ public class Main extends ReporterAdapter {
 				if (opts.user() != null)
 					artifact.service.user = opts.user();
 
-				if (opts.log() != null)
-					artifact.service.log = IO.getFile(base, opts.log()).getAbsolutePath();
+				if (opts.path() != null)
+					artifact.service.log = IO.getFile(base, opts.path()).getAbsolutePath();
 
 				artifact.service.force = opts.force();
 				trace("creating service %s", artifact.service.bsn);
@@ -773,6 +801,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	public void _command(commandOptions opts) throws Exception {
+
 		if (opts.remove()) {
 			Instructions instrs = new Instructions(opts._());
 			for (CommandData cmd : jpm.getCommands()) {
@@ -782,14 +811,15 @@ public class Main extends ReporterAdapter {
 			}
 			return;
 		}
+
 		if (opts._().isEmpty()) {
 			for (CommandData sd : jpm.getCommands())
 				out.printf("%-40s %s%n", sd.name, sd.description == null ? "" : sd.description);
 			return;
 		} else {
-			for ( String name : opts._()) {
+			for (String name : opts._()) {
 				CommandData data = jpm.getCommand(name);
-				if ( data == null) {
+				if (data == null) {
 					error("Not found: %s", name);
 				} else {
 					out.printf("%-40s %s%n", data.name, data.description == null ? "" : data.description);
@@ -797,7 +827,7 @@ public class Main extends ReporterAdapter {
 					out.printf("  %-38s %s-%s%n", "Name", data.bsn, data.version);
 					out.printf("  %-38s %s%n", "JVM Args", data.jvmArgs);
 					out.printf("  %-38s %s%n", "Main class", data.main);
-					out.printf("  %-38s %s%n", "Time", new Date(data.time));					
+					out.printf("  %-38s %s%n", "Time", new Date(data.time));
 				}
 			}
 		}
