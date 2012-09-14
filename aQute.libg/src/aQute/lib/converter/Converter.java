@@ -22,7 +22,8 @@ public class Converter {
 	}
 
 	boolean			fatal	= true;
-	Map<Type,Hook>	hooks	= new HashMap<Type,Converter.Hook>();
+	Map<Type,Hook>	hooks;
+	List<Hook>		allHooks;
 
 	public <T> T convert(Class<T> type, Object o) throws Exception {
 		// Is it a compatible type?
@@ -44,11 +45,21 @@ public class Converter {
 			return null; // compatible with any
 		}
 
-		Hook hook = hooks.get(type);
-		if (hook != null) {
-			Object value = hook.convert(type, o);
-			if (value != null)
-				return value;
+		if (allHooks != null) {
+			for (Hook hook : allHooks) {
+				Object r = hook.convert(type, o);
+				if (r != null)
+					return r;
+			}
+		}
+
+		if (hooks != null) {
+			Hook hook = hooks.get(type);
+			if (hook != null) {
+				Object value = hook.convert(type, o);
+				if (value != null)
+					return value;
+			}
 		}
 
 		Class< ? > actualType = o.getClass();
@@ -243,22 +254,23 @@ public class Converter {
 						f.set(instance, value);
 					}
 					catch (Exception ee) {
-						
+
 						// We cannot find the key, so try the __extra field
 						Field f = resultType.getField("__extra");
 						Map<String,Object> extra = (Map<String,Object>) f.get(instance);
-						if ( extra == null) {
+						if (extra == null) {
 							extra = new HashMap<String,Object>();
 							f.set(instance, extra);
 						}
-						extra.put(key, convert(Object.class,e.getValue()));
-						
+						extra.put(key, convert(Object.class, e.getValue()));
+
 					}
 				}
 				return instance;
 			}
 			catch (Exception e) {
-				return error("No conversion found for " + o.getClass() + " to " + type + ", error " + e + " on key " + key);
+				return error("No conversion found for " + o.getClass() + " to " + type + ", error " + e + " on key "
+						+ key);
 			}
 		}
 
@@ -441,7 +453,16 @@ public class Converter {
 	}
 
 	public Converter hook(Type type, Hook hook) {
-		this.hooks.put(type, hook);
+		if (type != null) {
+			if (hooks == null)
+				hooks = new HashMap<Type,Converter.Hook>();
+			this.hooks.put(type, hook);
+		} else {
+			if (allHooks == null)
+				allHooks = new ArrayList<Converter.Hook>();
+			allHooks.add(hook);
+		}
+
 		return this;
 	}
 
