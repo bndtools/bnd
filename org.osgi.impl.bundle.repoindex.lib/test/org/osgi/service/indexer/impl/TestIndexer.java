@@ -92,6 +92,10 @@ public class TestIndexer extends TestCase {
 		assertFragmentMatch("testdata/fragment-15.txt", "testdata/15-scr.jar");
 	}
 	
+	public void testFragmentOptionalRequireBundle() throws Exception {
+		assertFragmentMatch("testdata/fragment-16.txt", "testdata/16-optionalrequirebundle.jar");
+	}
+	
 	public void testFragmentRequireSCR1_0() throws Exception {
 		assertFragmentMatch("testdata/fragment-scr1_0.txt", "testdata/scr1_0.jar");
 	}

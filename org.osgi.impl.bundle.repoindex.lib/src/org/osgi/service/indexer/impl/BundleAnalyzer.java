@@ -5,10 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -295,20 +298,25 @@ class BundleAnalyzer implements ResourceAnalyzer {
 				.setNamespace(Namespaces.NS_WIRING_PACKAGE)
 				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
 			
-			for (Entry<String, String> attribEntry : entry.getValue().entrySet()) {
-				String key = attribEntry.getKey();
-				
-				if (!Constants.VERSION_ATTRIBUTE.equalsIgnoreCase(key) && !"specification-version".equals(key)) {
-					if (key.endsWith(":")) {
-						String directive = key.substring(0, key.length() - 1);
-						builder.addDirective(directive, attribEntry.getValue());
-					} else {
-						builder.addAttribute(key, attribEntry.getValue());
-					}
-				}
-			}
+			copyAttribsAndDirectives(entry.getValue(), builder, Constants.VERSION_ATTRIBUTE, "specification-version");
 
 			reqs.add(builder.buildRequirement());
+		}
+	}
+	
+	private void copyAttribsAndDirectives(Map<String, String> input, Builder output, String... ignores) {
+		Set<String> ignoreSet = new HashSet<String>(Arrays.asList(ignores));
+		
+		for (Entry<String, String> entry : input.entrySet()) {
+			String key = entry.getKey();
+			if (!ignoreSet.contains(key)) {
+				if (key.endsWith(":")) {
+					String directive = key.substring(0, key.length() - 1);
+					output.addDirective(directive, entry.getValue());
+				} else {
+					output.addAttribute(key, entry.getValue());
+				}
+			}
 		}
 	}
 	
@@ -337,6 +345,8 @@ class BundleAnalyzer implements ResourceAnalyzer {
 			Builder builder = new Builder()
 				.setNamespace(Namespaces.NS_WIRING_BUNDLE)
 				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
+			
+			copyAttribsAndDirectives(entry.getValue(), builder, Constants.BUNDLE_VERSION_ATTRIBUTE);
 			
 			reqs.add(builder.buildRequirement());
 		}

@@ -1,0 +1,25 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.example.p'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='8e765c2d20f07731e59f895e151769c7062dcf68edd1315475a3159fdbdd69c0'/>
+    <attribute name='url' value='testdata/16-optionalrequirebundle.jar'/>
+    <attribute name='size' type='Long' value='376'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.example.p'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.example.p'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <requirement namespace='osgi.wiring.bundle'>
+    <directive name='filter' value='(&amp;(osgi.wiring.bundle=org.example.a)(bundle-version&gt;=3.0.0)(!(bundle-version&gt;=4.0.0)))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+</resource>
