@@ -312,7 +312,14 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 			} else {
 				Class< ? > clazz = loadClass(tfw, fqn);
-				addTest(tfw, suite, clazz, testResult, null);
+				if (clazz != null)
+					addTest(tfw, suite, clazz, testResult, null);
+				else {
+					System.err.println("Can not create test case for: " + fqn
+							+ ", class might not be included in your test bundle?");
+					testResult.addError(suite, new Exception("Cannot load class " + fqn
+							+ ", was it included in the test bundle?"));
+				}
 			}
 		}
 		catch (Throwable e) {
@@ -361,25 +368,32 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	private Class< ? > loadClass(Bundle tfw, String fqn) {
-		if (tfw != null) {
-			checkResolved(tfw);
-			try {
-				return tfw.loadClass(fqn);
+		try {
+			if (tfw != null) {
+				checkResolved(tfw);
+				try {
+					return tfw.loadClass(fqn);
+				}
+				catch (ClassNotFoundException e1) {
+					return null;
+				}
 			}
-			catch (ClassNotFoundException e1) {
-				return null;
+
+			Bundle bundles[] = context.getBundles();
+			for (int i = bundles.length - 1; i >= 0; i--) {
+				try {
+					checkResolved(bundles[i]);
+					return bundles[i].loadClass(fqn);
+				}
+				catch (ClassNotFoundException e1) {
+					// try next
+				}
 			}
 		}
-
-		Bundle bundles[] = context.getBundles();
-		for (int i = bundles.length - 1; i >= 0; i--) {
-			try {
-				checkResolved(bundles[i]);
-				return bundles[i].loadClass(fqn);
-			}
-			catch (Exception e) {
-				// Ignore, looking further
-			}
+		catch (Exception e) {
+			error("Exception during loading of class: %s. Exception %s and cause %s. This sometimes "
+					+ "happens when there is an error in the static initialization, the class has "
+					+ "no public constructor, it is an inner class, or it has no public access", fqn, e, e.getCause());
 		}
 		return null;
 	}
