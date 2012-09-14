@@ -12,7 +12,7 @@ import org.osgi.framework.*;
 
 import aQute.junit.constants.*;
 
-public class Activator extends Thread implements BundleActivator, TesterConstants {
+public class Activator implements BundleActivator, TesterConstants, Runnable {
 	BundleContext		context;
 	volatile boolean	active;
 	int					port		= -1;
@@ -20,33 +20,54 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	boolean				trace		= false;
 	PrintStream			out			= System.err;
 	JUnitEclipseReport	jUnitEclipseReport;
+	volatile Thread		thread;
 
 	public Activator() {
-		super("bnd Runtime Test Bundle");
 	}
 
 	public void start(BundleContext context) throws Exception {
 		this.context = context;
 		active = true;
-		start();
+		if (context.getProperty(TESTER_SEPARATETHREAD) == null) {			
+			Hashtable<String,String> ht = new Hashtable<String,String>();
+			ht.put("main.thread", "true");
+			ht.put(Constants.SERVICE_DESCRIPTION, "JUnit tester");
+			context.registerService(Runnable.class.getName(), this, ht);
+		} else {
+			thread = new Thread("bnd Runtime Test Bundle");
+			thread.start();
+		}
 	}
 
 	public void stop(BundleContext context) throws Exception {
 		active = false;
 		if (jUnitEclipseReport != null)
 			jUnitEclipseReport.close();
-		interrupt();
-		join(10000);
+		
+		if (thread != null) {
+			thread.interrupt();
+			thread.join(10000);
+		}
 	}
 
-	@Override
 	public void run() {
+		
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
 		trace = context.getProperty(TESTER_TRACE) != null;
+		
+		if (thread == null)
+			trace("running in main thread");
+		
+		// We can be started on our own thread or from the main code
+		thread = Thread.currentThread();
+		
+
 		String testcases = context.getProperty(TESTER_NAMES);
+		trace("test cases %s", testcases);
 		if (context.getProperty(TESTER_PORT) != null) {
 			port = Integer.parseInt(context.getProperty(TESTER_PORT));
 			try {
+				trace("using port %s", port);
 				jUnitEclipseReport = new JUnitEclipseReport(port);
 			}
 			catch (Exception e) {
@@ -113,7 +134,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 					}
 					catch (InterruptedException e) {
 						trace("tests bundle queue interrupted");
-						interrupt();
+						thread.interrupt();
 						break outer;
 					}
 				}
@@ -301,7 +322,9 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	}
 
 	@SuppressWarnings("unchecked")
-	private void addTest(@SuppressWarnings("unused") Bundle tfw, TestSuite suite, Class< ? > clazz, @SuppressWarnings("unused") TestResult testResult, final String method) {
+	private void addTest(@SuppressWarnings("unused")
+	Bundle tfw, TestSuite suite, Class< ? > clazz, @SuppressWarnings("unused")
+	TestResult testResult, final String method) {
 		if (TestCase.class.isAssignableFrom(clazz)) {
 			if (method != null) {
 				suite.addTest(TestSuite.createTest(clazz, method));
@@ -338,17 +361,20 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	}
 
 	private Class< ? > loadClass(Bundle tfw, String fqn) {
-		if (tfw != null)
+		if (tfw != null) {
+			checkResolved(tfw);
 			try {
 				return tfw.loadClass(fqn);
 			}
 			catch (ClassNotFoundException e1) {
 				return null;
 			}
+		}
 
 		Bundle bundles[] = context.getBundles();
 		for (int i = bundles.length - 1; i >= 0; i--) {
 			try {
+				checkResolved(bundles[i]);
 				return bundles[i].loadClass(fqn);
 			}
 			catch (Exception e) {
@@ -356,6 +382,13 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 			}
 		}
 		return null;
+	}
+
+	private void checkResolved(Bundle bundle) {
+		int state = bundle.getState();
+		if (state == Bundle.INSTALLED || state == Bundle.UNINSTALLED) {
+			trace("unresolved bundle %s", bundle.getLocation());
+		}
 	}
 
 	public int flatten(List<Test> list, TestSuite suite) {
