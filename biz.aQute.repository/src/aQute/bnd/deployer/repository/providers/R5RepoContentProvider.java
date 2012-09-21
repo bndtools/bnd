@@ -244,11 +244,11 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	}
 
 	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI baseUri, boolean pretty, Registry registry, LogService log) throws Exception {
-		BIndex2 indexer;
+		RepoIndex indexer;
 		if (log != null)
-			indexer = new BIndex2(log);
+			indexer = new RepoIndex(log);
 		else
-			indexer = new BIndex2();
+			indexer = new RepoIndex();
 		indexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
 
 		if (registry != null) {

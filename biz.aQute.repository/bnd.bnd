@@ -1,4 +1,4 @@
-Bundle-Version: 2.0.2.${tstamp;yyyyMMdd-HHmmss}_${Git-Descriptor}
+Bundle-Version: 2.0.3.${tstamp;yyyyMMdd-HHmmss}_${Git-Descriptor}
 
 jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	lib/jetty-continuation-7.6.3.v20120416.jar;version=file,\
@@ -11,8 +11,8 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 -buildpath: osgi.core;version=4.2,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-	org.osgi.impl.bundle.bindex2.lib,\
 	org.osgi.impl.bundle.bindex,\
+	org.osgi.impl.bundle.repoindex.lib,\
 	junit.osgi,\
 	osgi.cmpn;version=4.3.0,\
 	osgi.r5;version=1.0.1,\
@@ -46,7 +46,7 @@ bindex-pkgs: \
 	org.kxml2.io,\
 	org.xmlpull.v1
 
-bindex2-pkgs: \
+repoindex-pkgs: \
 	org.osgi.service.indexer.impl,\
 	org.osgi.service.indexer.impl.types,\
 	org.osgi.service.indexer.impl.util,\
@@ -67,7 +67,7 @@ libg-pkgs: \
 # NB: `org.osgi.framework` API is included in Private-Package for running outside of OSGi.
 Private-Package:\
 	${bindex-pkgs},\
-	${bindex2-pkgs},\
+	${repoindex-pkgs},\
 	org.osgi.framework;-split-package:=first,\
 
 Conditional-Package:\
