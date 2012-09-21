@@ -96,23 +96,19 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		List<String> names = new ArrayList<String>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
-			File[] build = project.build(false);
-			if (build != null) {
-				for (File file : build) {
-					Jar jar = new Jar(file);
-					String bsn = jar.getBsn();
-					if (pattern != null) {
-						Glob glob = new Glob(pattern);
-						Matcher matcher = glob.matcher(bsn);
-						if (matcher.matches()) {
-							if (!names.contains(bsn)) {
-								names.add(bsn);
-							}
-						}
-					} else {
+			for (Builder builder : project.getSubBuilders()) {	
+				String bsn = builder.getBsn();
+				if (pattern != null) {
+					Glob glob = new Glob(pattern);
+					Matcher matcher = glob.matcher(bsn);
+					if (matcher.matches()) {
 						if (!names.contains(bsn)) {
 							names.add(bsn);
 						}
+					}
+				} else {
+					if (!names.contains(bsn)) {
+						names.add(bsn);
 					}
 				}
 			}
