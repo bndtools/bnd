@@ -8,7 +8,9 @@ Bundle-SymbolicName: bndtools.repository.base;singleton:=true
 Bundle-Vendor: Bndtools
 Bundle-Version: ${master-version}
 
-plugins-dir=templates/cnfs/default/plugins
+default-template=templates/cnfs/default
+plugins-dir=${default-template}/plugins
+buildrepo-dir=${default-template}/buildrepo
 
 Include-Resource:\
 	plugin.xml=_plugin.xml,\
@@ -16,7 +18,9 @@ Include-Resource:\
 	templateDocs/=templateDocs,\
 	templates/=templates,\
 	${plugins-dir}/biz.aQute.bnd/=${repo;biz.aQute.bnd;latest},\
-	${plugins-dir}/biz.aQute.repository/=${repo;biz.aQute.repository;latest}
+	${plugins-dir}/biz.aQute.repository/=${repo;biz.aQute.repository;latest},\
+	${buildrepo-dir}/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\
+	${buildrepo-dir}/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest}
 
 Private-Package: bndtools.templates
 
