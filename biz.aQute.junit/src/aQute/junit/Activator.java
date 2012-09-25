@@ -304,8 +304,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				if (clazz != null)
 					addTest(tfw, suite, clazz, testResult, method);
 				else {
-					System.err.println("Can not create test case for: " + fqn
-							+ ", class might not be included in your test bundle?");
+					diagnoseNoClass(tfw, fqn);
 					testResult.addError(suite, new Exception("Cannot load class " + fqn
 							+ ", was it included in the test bundle?"));
 				}
@@ -315,8 +314,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				if (clazz != null)
 					addTest(tfw, suite, clazz, testResult, null);
 				else {
-					System.err.println("Can not create test case for: " + fqn
-							+ ", class might not be included in your test bundle?");
+					diagnoseNoClass(tfw, fqn);
 					testResult.addError(suite, new Exception("Cannot load class " + fqn
 							+ ", was it included in the test bundle?"));
 				}
@@ -325,6 +323,28 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		catch (Throwable e) {
 			System.err.println("Can not create test case for: " + fqn + " : " + e);
 			testResult.addError(suite, e);
+		}
+	}
+
+	private void diagnoseNoClass(Bundle tfw, String fqn) {
+		if ( tfw == null) {
+			error("No class found: %s, target bundle: %s", fqn, tfw);
+			trace("Installed bundles:");
+			for ( Bundle bundle : context.getBundles()) {
+				Class<?> c = loadClass(bundle,fqn);
+				String state;
+				switch(bundle.getState()) {
+					case Bundle.UNINSTALLED: state = "UNINSTALLED"; break;
+					case Bundle.INSTALLED: state = "INSTALLED"; break;
+					case Bundle.RESOLVED: state = "RESOLVED"; break;
+					case Bundle.STARTING: state = "STARTING"; break;
+					case Bundle.STOPPING: state = "STOPPING"; break;
+					case Bundle.ACTIVE: state = "ACTIVE"; break;
+					default:
+						state = "UNKNOWN";
+				}
+				trace("%s %s %s", bundle.getLocation(), state, c != null);
+			}
 		}
 	}
 
