@@ -212,6 +212,9 @@ public class Main extends ReporterAdapter {
 			if (url == null)
 				url = settings.get("library.url");
 
+			if ( url != null)
+				jpm.setLibrary(new URI(url));
+			
 			File cacheDir;
 			if (opts.cache() != null) {
 				cacheDir = IO.getFile(base, opts.cache());
