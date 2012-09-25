@@ -192,7 +192,12 @@ public class Converter {
 				return Base64.decodeBase64(input);
 
 			if (Enum.class.isAssignableFrom(resultType)) {
-				return Enum.valueOf((Class<Enum>) resultType, input);
+				try {
+					return Enum.valueOf((Class<Enum>) resultType, input);
+				} catch( Exception e) {
+					input = input.toUpperCase();
+					return Enum.valueOf((Class<Enum>) resultType, input);
+				}
 			}
 			if (resultType == Pattern.class) {
 				return Pattern.compile(input);
