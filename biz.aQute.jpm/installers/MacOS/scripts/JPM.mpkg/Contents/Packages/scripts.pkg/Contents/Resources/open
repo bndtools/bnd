@@ -1,2 +1,0 @@
-#!/bin/sh
-java -jar /Library/Java/PackageManager/bin/jpm.jar

@@ -1,0 +1,4 @@
+#!/bin/sh
+java -jar /Library/Java/PackageManager/bin/jpm.jar init
+open http://www.aqute.biz
+
