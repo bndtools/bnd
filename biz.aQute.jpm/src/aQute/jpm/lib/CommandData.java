@@ -2,12 +2,11 @@ package aQute.jpm.lib;
 
 import java.util.*;
 
-import aQute.bnd.version.*;
 import aQute.lib.data.*;
+import aQute.struct.*;
 
-public class CommandData {
+public class CommandData extends struct {
 	public long			time			= System.currentTimeMillis();
-	@Validator(JustAnotherPackageManager.COMMAND_PATTERN)
 	public String		name;
 
 	@AllowNull
@@ -15,19 +14,11 @@ public class CommandData {
 	public boolean		force;
 	@AllowNull
 	public String		jvmArgs			= "";
-	@Validator(JustAnotherPackageManager.BSN_PATTERN)
-	public String		bsn;
-	@Validator(JustAnotherPackageManager.VERSION_PATTERN)
-	public Version		version			= Version.LOWEST;
 
-	@Validator(JustAnotherPackageManager.MAINCLASS_PATTERN)
 	public String		main;
 
 	public List<String>	dependencies	= new ArrayList<String>();
 	public boolean		installed;
+	public byte[]		sha;
 
-	@Override
-	public String toString() {
-		return "[" + name + "]";
-	}
 }

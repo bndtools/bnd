@@ -1,12 +1,15 @@
 package test;
 
 import java.io.*;
+import java.net.*;
+import java.util.*;
 
 import junit.framework.*;
 import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
 import aQute.jpm.platform.*;
 import aQute.libg.reporter.*;
+import aQute.service.library.Library.Revision;
 import aQute.service.reporter.*;
 
 public class JPMTest extends TestCase {
@@ -57,7 +60,28 @@ public class JPMTest extends TestCase {
 		}
 	}
 
-	public static void testSimple() {
+	public void testCandidates() throws Exception {
+		Reporter r = new ReporterAdapter();
+		JustAnotherPackageManager jpm = new JustAnotherPackageManager(r);
+		jpm.setPlatform( new PLF());
+		jpm.setLibrary(new URI("http://localhost:8080/rest"));
+
+		ArtifactData a = jpm.getCandidate("aQute.libg", false);
+		assertNotNull(a);
+		
+		a.sync();
+		assertNull(a.error);
+		
+		
+		List<Revision> candidates = jpm.getCandidates("hello");
+		assertNotNull(candidates);
+		
+		candidates = jpm.getCandidates("aQute.libg");
+		assertNotNull(candidates);
+	}
+	
+	
+	public static void testSimple() throws IOException {
 		Reporter r = new ReporterAdapter();
 		JustAnotherPackageManager jpm = new JustAnotherPackageManager(r);
 		Platform plf = new PLF();
@@ -68,7 +92,8 @@ public class JPMTest extends TestCase {
 	public static void testDownload() throws Exception {
 		ReporterAdapter reporter = new ReporterAdapter();
 		JustAnotherPackageManager jpm = new JustAnotherPackageManager(reporter);
-		ArtifactData artifact = jpm.artifact("aQute.libg", new Version("2.7.3"), true);
+		jpm.setLibrary(new URI("http://localhost:8080/rest"));
+		ArtifactData artifact = jpm.getCandidate("aQute.libg", true);
 		assertNotNull(artifact);
 	}
 }

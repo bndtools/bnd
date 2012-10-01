@@ -5,7 +5,7 @@ Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 									link=LICENSE
 						
 Conditional-Package: 			aQute.libg.*, aQute.lib.*
-Bundle-Version: 				0.0.8
+Bundle-Version: 				1.0.0
 
 -buildpath: aQute.libg;version=project,\
 	biz.aQute.bndlib;version=project,\
