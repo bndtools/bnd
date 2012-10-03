@@ -1310,7 +1310,9 @@ public class bnd extends Processor {
 				wrapper.setJar(file);
 
 				File outputFile = wrapper.getOutputFile(options.output());
-				outputFile.delete();
+				if (!outputFile.getCanonicalPath().equals(file.getCanonicalPath())) {
+					outputFile.delete();
+				}
 
 				String stem = file.getName();
 				if (stem.endsWith(".jar"))
