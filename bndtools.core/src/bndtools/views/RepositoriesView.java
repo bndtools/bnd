@@ -122,6 +122,17 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                                         valid = true;
                                         break;
                                     }
+                                    if (element instanceof IFile) {
+                                        valid = true;
+                                        break;
+                                    }
+                                    if (element instanceof IAdaptable) {
+                                        IFile file = (IFile) ((IAdaptable) element).getAdapter(IFile.class);
+                                        if (file != null) {
+                                            valid = true;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         } else {
