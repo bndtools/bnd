@@ -1310,7 +1310,9 @@ public class bnd extends Processor {
 				wrapper.setJar(file);
 
 				File outputFile = wrapper.getOutputFile(options.output());
-				outputFile.delete();
+				if (!outputFile.getCanonicalPath().equals(file.getCanonicalPath())) {
+					outputFile.delete();
+				}
 
 				String stem = file.getName();
 				if (stem.endsWith(".jar"))
@@ -1335,9 +1337,10 @@ public class bnd extends Processor {
 				if (options.version() != null)
 					wrapper.setBundleVersion(options.version());
 
-				wrapper.calcManifest();
+				Manifest manifest = wrapper.calcManifest();
 
 				if (wrapper.isOk()) {
+					wrapper.getJar().setManifest(manifest);
 					wrapper.save(outputFile, options.force());
 				}
 				getInfo(wrapper, file.toString());
