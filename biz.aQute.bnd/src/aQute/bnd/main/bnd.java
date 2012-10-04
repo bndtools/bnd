@@ -1340,9 +1340,10 @@ public class bnd extends Processor {
 				if (options.version() != null)
 					wrapper.setBundleVersion(options.version());
 
-				wrapper.calcManifest();
+				Manifest m = wrapper.calcManifest();
 
 				if (wrapper.isOk()) {
+					wrapper.getJar().setManifest(m);
 					wrapper.save(outputFile, options.force());
 				}
 				getInfo(wrapper, file.toString());
