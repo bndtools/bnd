@@ -25,6 +25,7 @@ public class Launcher implements ServiceListener {
 	private PrintStream					out;
 	LauncherConstants					parms;
 	Framework							systemBundle;
+	volatile boolean					inrefresh;
 	private final Properties			properties;
 	private boolean						security;
 	private SimplePermissionPolicy		policy;
@@ -261,8 +262,17 @@ public class Launcher implements ServiceListener {
 		else
 			synchronizeFiles(tobestarted);
 
-		if (padmin != null)
+		if (padmin != null) {
+			inrefresh = true;
 			padmin.refreshPackages(null);
+			trace("Waiting for refresh to finish");
+
+			// Will be reset by the Framework listener we added
+			// when we created the framework.
+			while (inrefresh)
+				Thread.sleep(100);
+		} else
+			trace("cannot refresh the bundles because there is no Package Admin");
 
 		trace("bundles administered %s", installedBundles.keySet());
 
@@ -563,6 +573,27 @@ public class Launcher implements ServiceListener {
 			systemBundle = new MiniFramework(p);
 		}
 		systemBundle.init();
+
+		try {
+			systemBundle.getBundleContext().addFrameworkListener(new FrameworkListener() {
+
+				public void frameworkEvent(FrameworkEvent event) {
+					switch (event.getType()) {
+						case FrameworkEvent.ERROR :
+						case FrameworkEvent.WAIT_TIMEDOUT :
+							trace("Refresh will end due to error or timeout %s", event.toString());
+							
+						case FrameworkEvent.PACKAGES_REFRESHED :
+							inrefresh = false;
+							trace("refresh ended");
+							break;
+					}
+				}
+			});
+		}
+		catch (Exception e) {
+			trace("could not register a framework listener: %s", e);
+		}
 		trace("inited system bundle %s", systemBundle);
 		return systemBundle;
 	}
