@@ -22,7 +22,6 @@ import aQute.lib.struct.*;
 import aQute.libg.cryptography.*;
 import aQute.library.remote.*;
 import aQute.service.library.*;
-import aQute.service.library.Library.Find;
 import aQute.service.library.Library.Phase;
 import aQute.service.library.Library.Revision;
 import aQute.service.reporter.*;
@@ -71,7 +70,7 @@ public class JustAnotherPackageManager {
 														"([-a-z0-9_.]+):([-a-z0-9_.]+)(?::([-a-z0-9_.]+))?(?:@([-a-z0-9._]+))?",
 														Pattern.CASE_INSENSITIVE);
 	static Pattern		CMD_P			= Pattern.compile("([a-z_][a-z\\d_]*)", Pattern.CASE_INSENSITIVE);
-	static Pattern		SHA_P			= Pattern.compile("([a-f0-9]{40,40})", Pattern.CASE_INSENSITIVE);
+	static Pattern		SHA_P			= Pattern.compile("(?:sha:)?([a-f0-9]{40,40})", Pattern.CASE_INSENSITIVE);
 	static Executor		executor;
 
 	File				repoDir;
@@ -86,7 +85,8 @@ public class JustAnotherPackageManager {
 
 	/**
 	 * Constructor
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	public JustAnotherPackageManager(Reporter reporter) throws IOException {
 		this.reporter = reporter;
@@ -364,7 +364,7 @@ public class JustAnotherPackageManager {
 		commandDir.mkdir();
 		serviceDir.mkdir();
 		service = new File(repoDir, "service.jar");
-		if ( !service.isFile()) {
+		if (!service.isFile()) {
 			init();
 		}
 	}
@@ -400,24 +400,13 @@ public class JustAnotherPackageManager {
 						key = Library.OSGI_GROUP + ":" + key + ":" + v;
 					}
 					reporter.trace("searching %s", key);
-					List<Revision> candidates = getCandidates(key);
-					if (candidates.isEmpty()) {
+					ArtifactData candidate = getCandidate(key, false);
+
+					if (candidate == null) {
 						reporter.error("Missing dependency: %s", key);
 					} else {
-						reporter.trace("found %s", candidates);
-						Map<String,Revision> latest = latest(candidates);
-						if (latest.size() > 1) {
-							reporter.error("Multiple candidates %s for key %s", latest.keySet(), key);
-						} else {
-							Revision r = latest.values().iterator().next();
-							reporter.trace("found %s", r.url);
-							ArtifactData candidate = get(r._id);
-							if (candidate == null) {
-								reporter.trace("downloading %s", r.url);
-								candidate = putAsync(r.url);
-							}
-							dependencies.add(candidate);
-						}
+						reporter.trace("found %s", candidate);
+						dependencies.add(candidate);
 					}
 				}
 
@@ -648,47 +637,6 @@ public class JustAnotherPackageManager {
 			return null;
 	}
 
-	public List<Revision> getCandidates(String key) throws Exception {
-		Find<Revision> cursor = library.findRevision();
-		String parts[] = match(key, BSN_P);
-		if (parts != null) {
-			String bsn = parts[0];
-			String version = parts[1];
-			cursor.bsn(bsn);
-			if (version != null)
-				cursor.version(version);
-		} else if ((parts = match(key, COORD_P)) != null) {
-			String groupId = parts[0];
-			String artifactId = parts[1];
-			String classifier = parts[2];
-			String version = parts[3];
-			StringBuilder sb = new StringBuilder("&");
-			sb.append("(groupId=").append(groupId).append(")");
-			sb.append("(artifactId=").append(artifactId).append(")");
-
-			if (classifier == null)
-				sb.append("(!(classifier=*))");
-			else
-				sb.append("(classifier=").append(classifier).append(")");
-			if (version != null)
-				sb.append("(version=").append(version).append(")");
-
-			cursor.where(sb.toString());
-		} else if ((parts = match(key, CMD_P)) != null) {
-			cursor.capability("x-jpm", "x-jpm", parts[0]);
-		} else if ((parts = match(key, SHA_P)) != null) {
-			cursor.where("_id=%s", parts[0]);
-		} else {
-			reporter.error("Cannot map %s to either bsn:version, maven coordinates (g:a(:c)?:v), sha, or command", key);
-			return null;
-		}
-		List<Revision> revisions = new ArrayList<Library.Revision>();
-		for (Revision r : cursor) {
-			revisions.add(r);
-		}
-		return revisions;
-	}
-
 	public List<Revision> filter(Collection<Revision> list, EnumSet<Library.Phase> phases) {
 		List<Revision> filtered = new ArrayList<Library.Revision>();
 		for (Revision r : list)
@@ -753,29 +701,23 @@ public class JustAnotherPackageManager {
 		return sb.toString();
 	}
 
-	private String[] match(String key, Pattern pattern) {
-		Matcher m = pattern.matcher(key);
-		if (!m.matches())
-			return null;
-
-		String[] ss = new String[m.groupCount()];
-		for (int i = 0; i < m.groupCount(); i++)
-			ss[i] = m.group(i + 1);
-		return ss;
-	}
-
 	public ArtifactData getCandidate(String key, boolean staged) throws Exception {
 
 		// Short cut, see if we alread have it
-		if (SHA_P.matcher(key).matches()) {
-			ArtifactData art = get(Hex.toByteArray(key));
+		Matcher m = SHA_P.matcher(key);
+		if (m.matches()) {
+			ArtifactData art = get(Hex.toByteArray(m.group(1)));
 			if (art != null)
 				return art;
 		}
 
-		List<Revision> revs = getCandidates(key);
-		if (revs == null)
+		Iterable<Revision> rs = library.getRevisions(key);
+		if (rs == null)
 			return null;
+
+		List<Revision> revs = new ArrayList<Library.Revision>();
+		for (Revision r : rs)
+			revs.add(r);
 
 		if (!staged)
 			revs = filter(revs, EnumSet.of(Phase.MASTER));
@@ -827,5 +769,14 @@ public class JustAnotherPackageManager {
 	public void init() throws IOException {
 		URL s = getClass().getClassLoader().getResource("service.jar");
 		IO.copy(s, service);
+	}
+
+	public List<Revision> getCandidates(String key) throws Exception {
+		Iterable<Revision> revisions = library.getRevisions(key);
+		List<Revision> revs = new ArrayList<Revision>();
+		for ( Revision r : revisions) {
+			revs.add(r);
+		}
+		return revs;
 	}
 }
