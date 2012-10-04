@@ -1310,6 +1310,11 @@ public class bnd extends Processor {
 				wrapper.setJar(file);
 
 				File outputFile = wrapper.getOutputFile(options.output());
+				if ( outputFile.getCanonicalFile().equals(file.getCanonicalFile())) {
+					//  #267: CommandLine wrap deletes target even if file equals source
+					error("Output file %s and source file %s are the same file, they must be different", outputFile, file);
+					return;
+				}
 				outputFile.delete();
 
 				String stem = file.getName();
