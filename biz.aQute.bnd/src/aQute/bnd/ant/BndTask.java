@@ -222,7 +222,12 @@ public class BndTask extends BaseTask {
 				builder.setSourcepath(toFiles(sourcepath, "sourcepath"));
 				Jar jars[] = builder.builds();
 
-				if (!failok && report() && report(builder)) {
+				// Report both task failures and bnd build failures.
+				boolean taskFailed = report();
+				boolean bndFailed = report(builder);
+
+				// Fail this build if failure is not ok and either the task failed or the bnd build failed.
+				if (!failok && (taskFailed || bndFailed)) {
 					throw new BuildException("bnd failed", new org.apache.tools.ant.Location(file.getAbsolutePath()));
 				}
 
