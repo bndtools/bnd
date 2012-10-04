@@ -220,9 +220,10 @@ public class Macro {
 				Method m = target.getClass().getMethod(cname, new Class[] {
 					String[].class
 				});
-				return (String) m.invoke(target, new Object[] {
+				Object result = m.invoke(target, new Object[] {
 					args
 				});
+				return result == null ? null : result.toString();
 			}
 			catch (NoSuchMethodException e) {
 				// Ignore
