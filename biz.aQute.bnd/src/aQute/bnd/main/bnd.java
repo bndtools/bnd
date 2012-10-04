@@ -1311,6 +1311,11 @@ public class bnd extends Processor {
 				wrapper.setJar(file);
 
 				File outputFile = wrapper.getOutputFile(options.output());
+				if ( outputFile.getCanonicalFile().equals(file.getCanonicalFile())) {
+					//  #267: CommandLine wrap deletes target even if file equals source
+					error("Output file %s and source file %s are the same file, they must be different", outputFile, file);
+					return;
+				}
 				outputFile.delete();
 
 				String stem = file.getName();
@@ -1336,9 +1341,10 @@ public class bnd extends Processor {
 				if (options.version() != null)
 					wrapper.setBundleVersion(options.version());
 
-				wrapper.calcManifest();
+				Manifest m = wrapper.calcManifest();
 
 				if (wrapper.isOk()) {
+					wrapper.getJar().setManifest(m);
 					wrapper.save(outputFile, options.force());
 				}
 				getInfo(wrapper, file.toString());

@@ -23,6 +23,7 @@ import static aQute.libg.generics.Create.*;
 
 import java.io.*;
 import java.net.*;
+import java.text.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.*;
@@ -712,12 +713,17 @@ public class Analyzer extends Processor {
 		return getBndInfo("version", "<unknown>");
 	}
 
+	static SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd hh:mm:ss z yyyy");
 	public long getBndLastModified() {
 		String time = getBndInfo("lastmodified", "0");
-		try {
+		if ( time.matches("\\d+"))
 			return Long.parseLong(time);
-		}
-		catch (Exception e) {
+		
+		try {
+			Date parse = df.parse(time);
+			if ( parse != null)
+				return parse.getTime();
+		} catch( ParseException e) {
 			// Ignore
 		}
 		return 0;
