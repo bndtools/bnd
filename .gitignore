@@ -11,3 +11,4 @@ Archive
 .*.swp
 buildfiles
 .ant-targets-build.xml
+biz.aQute.jpm/global/
