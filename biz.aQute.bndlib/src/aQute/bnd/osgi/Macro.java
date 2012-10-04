@@ -229,7 +229,8 @@ public class Macro {
 			}
 			catch (InvocationTargetException e) {
 				if (e.getCause() instanceof IllegalArgumentException) {
-					domain.error("%s, for cmd: %s, arguments; %s", e.getCause().getMessage(), method, Arrays.toString(args));
+					domain.error("%s, for cmd: %s, arguments; %s", e.getCause().getMessage(), method,
+							Arrays.toString(args));
 				} else {
 					domain.warning("Exception in replace: %s", e.getCause());
 					e.getCause().printStackTrace();
@@ -260,11 +261,11 @@ public class Macro {
 		return Processor.join(set, ",");
 	}
 
-	public String _pathseparator(@SuppressWarnings("unused") String args[]) {
+	public String _pathseparator(String args[]) {
 		return File.pathSeparator;
 	}
 
-	public String _separator(@SuppressWarnings("unused") String args[]) {
+	public String _separator(String args[]) {
 		return File.separator;
 	}
 
@@ -332,8 +333,20 @@ public class Macro {
 		return "";
 	}
 
-	public String _now(@SuppressWarnings("unused") String args[]) {
-		return new Date().toString();
+	public final static String	_nowHelp	= "${now;pattern|'long'}, returns current time";
+
+	public Object _now(String args[]) {
+		verifyCommand(args, _nowHelp, null, 1, 2);
+		Date now = new Date();
+
+		if (args.length == 2) {
+			if ("long".equals(args[1]))
+				return now.getTime();
+
+			DateFormat df = new SimpleDateFormat(args[1]);
+			return df.format(now);
+		}
+		return new Date();
 	}
 
 	public final static String	_fmodifiedHelp	= "${fmodified;<list of filenames>...}, return latest modification date";
@@ -604,7 +617,7 @@ public class Macro {
 		return Processor.join(result, ",");
 	}
 
-	public String _currenttime(@SuppressWarnings("unused") String args[]) {
+	public String _currenttime(String args[]) {
 		return Long.toString(System.currentTimeMillis());
 	}
 
@@ -842,7 +855,7 @@ public class Macro {
 		}
 	}
 
-	public static void verifyCommand(String args[], @SuppressWarnings("unused") String help, Pattern[] patterns, int low, int high) {
+	public static void verifyCommand(String args[], String help, Pattern[] patterns, int low, int high) {
 		String message = "";
 		if (args.length > high) {
 			message = "too many arguments";
