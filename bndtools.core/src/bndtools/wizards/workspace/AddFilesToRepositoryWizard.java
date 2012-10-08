@@ -78,15 +78,20 @@ public class AddFilesToRepositoryWizard extends Wizard {
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to analyse JAR: {0}", file.getPath()), e));
                 continue;
+            } finally {
+                if (jar != null)
+                    jar.close();
             }
 
             try {
                 RepositoryPlugin.PutResult result = repository.put(new BufferedInputStream(new FileInputStream(file)), new RepositoryPlugin.PutOptions());
-                File newFile = new File(result.artifact);
+                if (result.artifact != null && result.artifact.getScheme().equals("file")) {
+                    File newFile = new File(result.artifact);
 
-                RefreshFileJob refreshJob = new RefreshFileJob(newFile, false);
-                if (refreshJob.needsToSchedule())
-                    refreshJob.schedule();
+                    RefreshFileJob refreshJob = new RefreshFileJob(newFile, false);
+                    if (refreshJob.needsToSchedule())
+                        refreshJob.schedule();
+                }
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to add JAR to repository: {0}", file.getPath()), e));
                 continue;
