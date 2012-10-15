@@ -33,6 +33,11 @@ public class DiffPluginImpl implements Differ {
 	 */
 	final static Set<String>	IGNORE_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
+	/**
+	 * Headers that have values that should be sorted
+	 */
+	final static Set<String>	ORDERED_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+
 	static {
 		MAJOR_HEADERS.add(Constants.EXPORT_PACKAGE);
 		MAJOR_HEADERS.add(Constants.IMPORT_PACKAGE);
@@ -47,6 +52,8 @@ public class DiffPluginImpl implements Differ {
 		IGNORE_HEADERS.add(Constants.TOOL);
 		IGNORE_HEADERS.add(Constants.BND_LASTMODIFIED);
 		IGNORE_HEADERS.add(Constants.CREATED_BY);
+
+		ORDERED_HEADERS.add(Constants.SERVICE_COMPONENT);
 	}
 
 	/**
@@ -166,6 +173,10 @@ public class DiffPluginImpl implements Differ {
 					clausesDef.add(new Element(Type.CLAUSE, clause.getKey(), parameterDef, CHANGED, CHANGED, null));
 				}
 				result.add(new Element(Type.HEADER, header, clausesDef, CHANGED, CHANGED, null));
+			} else if (ORDERED_HEADERS.contains(header)) {
+				ExtList<String> values = ExtList.from(value);
+				Collections.sort(values);
+				result.add(new Element(Type.HEADER, header + ":" + values.join(), null, CHANGED, CHANGED, null));
 			} else {
 				result.add(new Element(Type.HEADER, header + ":" + value, null, CHANGED, CHANGED, null));
 			}
