@@ -21,17 +21,24 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		Collection<Project> projects = workspace.getAllProjects();
 		SortedMap<Version,File> foundVersion = new TreeMap<Version,File>();
 		for (Project project : projects) {
-			File[] build = project.build(false);
-			if (build != null) {
-				for (File file : build) {
-					Jar jar = new Jar(file);
-					if (bsn.equals(jar.getBsn())) {
-						Version version = new Version(jar.getVersion());
-						boolean exact = range.matches("[0-9]+\\.[0-9]+\\.[0-9]+\\..*");
-						if ("latest".equals(range) || matchVersion(range, version, exact)) {
-							foundVersion.put(version, file);
+			for (Builder builder : project.getSubBuilders()) {	
+				if (!bsn.equals(builder.getBsn())) {
+					continue;
+				}
+				Version version = new Version(builder.getVersion());
+				boolean exact = range.matches("[0-9]+\\.[0-9]+\\.[0-9]+\\..*");
+				if ("latest".equals(range) || matchVersion(range, version, exact)) {
+					File file = project.getOutputFile(bsn);
+					if (!file.exists()) {
+						Jar jar = builder.build();
+						if (jar == null) {
+							project.getInfo(builder);
+							continue;
 						}
+						file = project.saveBuild(jar);
+						jar.close();
 					}
+					foundVersion.put(version, file);
 				}
 			}
 		}
