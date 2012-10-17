@@ -25,7 +25,7 @@ import org.osgi.service.indexer.Requirement;
 import org.osgi.service.indexer.Resource;
 import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.BIndex2;
+import org.osgi.service.indexer.impl.RepoIndex;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -73,7 +73,7 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
             indexFile = new File(target, INDEX_FILENAME);
 
             // Create the indexer and add ResourceAnalyzers from plugins
-            BIndex2 indexer = new BIndex2(logAdapter);
+            RepoIndex indexer = new RepoIndex(logAdapter);
             List<ResourceAnalyzer> analyzers = Central.getWorkspace().getPlugins(ResourceAnalyzer.class);
             for (ResourceAnalyzer analyzer : analyzers) {
                 indexer.addAnalyzer(analyzer, null);
