@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import org.osgi.resource.*;
 
+import aQute.bnd.build.*;
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.build.model.conversions.*;
 import aQute.bnd.header.*;
@@ -59,7 +60,7 @@ public class BndEditModel {
 	private final Properties										properties					= new Properties();
 
 	private File													bndResource;
-	private boolean													projectFile;
+	private String													bndResourceName;
 	private final Map<String,Object>								objectProperties			= new HashMap<String,Object>();
 	private final Map<String,String>								changesToSave				= new HashMap<String,String>();
 
@@ -764,12 +765,12 @@ public class BndEditModel {
 		propChangeSupport.firePropertyChange(name, oldValue, newValue);
 	}
 
-	public void setProjectFile(boolean projectFile) {
-		this.projectFile = projectFile;
+	public boolean isProjectFile() {
+		return Project.BNDFILE.equals(getBndResourceName());
 	}
 
-	public boolean isProjectFile() {
-		return this.projectFile;
+	public boolean isBndrun() {
+		return getBndResourceName().endsWith(Constants.DEFAULT_BNDRUN_EXTENSION);
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -794,5 +795,15 @@ public class BndEditModel {
 
 	public File getBndResource() {
 		return bndResource;
+	}
+
+	public String getBndResourceName() {
+		if (bndResourceName == null)
+			return "";
+		return bndResourceName;
+	}
+
+	public void setBndResourceName(String bndResourceName) {
+		this.bndResourceName = bndResourceName;
 	}
 }
