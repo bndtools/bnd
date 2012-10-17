@@ -11,7 +11,9 @@
 package bndtools.release.ui;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -59,6 +61,8 @@ public class BundleTree extends Composite {
 
 	protected TreeContentProvider bundleTreeViewerProvider = new TreeContentProvider();
 	protected InfoContentProvider infoTreeViewerProvider = new InfoContentProvider();
+
+	private Map<Object, Version> initialSuggested;
 
 	public BundleTree(Composite composite) {
 		this(composite, SWT.NONE);
@@ -248,7 +252,26 @@ public class BundleTree extends Composite {
 		return false;
 	}
 
-	static class InlineComboEditingSupport extends EditingSupport {
+    protected Version getInitialSuggestedVersion(Object obj) {
+        if (initialSuggested == null) {
+            initialSuggested = new HashMap<Object,Version>();
+        }
+
+        Version version = initialSuggested.get(obj);
+        if (version != null) {
+            return version;
+        }
+
+        if (obj instanceof Info) {
+            version = ((Info) obj).suggestedVersion;
+        } else {
+            version = ((Baseline) obj).getSuggestedVersion();
+        }
+        initialSuggested.put(obj, version);
+        return version;
+    }
+
+	class InlineComboEditingSupport extends EditingSupport {
 
 		protected ComboBoxCellEditor editor;
 
@@ -284,11 +307,17 @@ public class BundleTree extends Composite {
 			Set<String> versions = new TreeSet<String>();
             if (element instanceof Baseline) {
                 Baseline info = (Baseline) element;
-                versions.add(info.getSuggestedVersion().toString());
+                versions.add(getInitialSuggestedVersion(info).toString());
+                if (getInitialSuggestedVersion(info).compareTo(Version.ONE) < 0) {
+                    versions.add(Version.ONE.toString());
+                }
             }
 			if (element instanceof Info) {
 				Info info = (Info) element;
-				versions.add(info.suggestedVersion.toString());
+				versions.add(getInitialSuggestedVersion(info).toString());
+                if (getInitialSuggestedVersion(info).compareTo(Version.ONE) < 0) {
+                    versions.add(Version.ONE.toString());
+                }
 			}
 
 			editor.setItems(versions.toArray(new String[versions.size()]));
