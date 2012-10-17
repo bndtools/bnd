@@ -30,6 +30,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
@@ -65,6 +66,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.BndConstants;
+import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
@@ -431,15 +433,24 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         setPartNameForInput(input);
 
         IResource resource = ResourceUtil.getResource(input);
+        String resourceName;
         if (resource != null) {
             resource.getWorkspace().addResourceChangeListener(this);
+            resourceName = resource.getName();
+        } else {
+            IStorage storage = (IStorage) input.getAdapter(IStorage.class);
+            if (storage != null) {
+                resourceName = storage.getName();
+            } else {
+                resourceName = input.getName();
+            }
         }
 
         final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
         IDocument document = docProvider.getDocument(input);
         try {
             model.loadFrom(new IDocumentWrapper(document));
-            model.setProjectFile(Project.BNDFILE.equals(input.getName()));
+            model.setBndResourceName(resourceName);
 
             if (resource != null) {
                 model.setBndResource(resource.getLocation().toFile());
@@ -467,6 +478,14 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
             public void elementContentAboutToBeReplaced(Object element) {}
         });
+    }
+
+    private static Workspace getWorkspace() {
+        try {
+            return Central.getWorkspace();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private void setPartNameForInput(IEditorInput input) {
