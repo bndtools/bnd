@@ -78,7 +78,14 @@ public class Baseline {
 
 		newerVersion = getVersion(n);
 		olderVersion = getVersion(o);
-		
+
+		boolean firstRelease = false;
+		if (o.get("<manifest>") == null) {
+			firstRelease = true;
+			if (newerVersion.equals(Version.emptyVersion)) {
+				newerVersion = Version.ONE;
+			}
+		}
 		Delta highestDelta = Delta.MICRO;
 		for (Diff pdiff : apiDiff.getChildren()) {
 			if (pdiff.getType() != Type.PACKAGE) // Just packages
@@ -108,7 +115,14 @@ public class Baseline {
 			} else if (pdiff.getDelta() == Delta.REMOVED) {
 				info.suggestedVersion = null;
 			} else if (pdiff.getDelta() == Delta.ADDED) {
-				info.suggestedVersion = Version.ONE;
+				if (firstRelease) {
+					info.suggestedVersion = info.newerVersion;
+					if (info.suggestedVersion.equals(Version.emptyVersion)) {
+						info.suggestedVersion = newerVersion.getWithoutQualifier();
+					}
+				} else {
+					info.suggestedVersion = Version.ONE;
+				}
 			} else {
 				// We have an API change
 				info.suggestedVersion = bump(pdiff.getDelta(), info.olderVersion, 1, 0);
@@ -151,9 +165,10 @@ public class Baseline {
 				highestDelta = pdiff.getDelta();
 			}
 		}
-		suggestedVersion = bumpBundle(highestDelta, olderVersion, 1, 0);
-		if (suggestedVersion.getMajor() == 0) {
-			suggestedVersion = Version.ONE;
+		if (firstRelease) {
+			suggestedVersion = newerVersion;
+		} else {
+			suggestedVersion = bumpBundle(highestDelta, olderVersion, 1, 0);
 		}
 		return infos;
 	}
