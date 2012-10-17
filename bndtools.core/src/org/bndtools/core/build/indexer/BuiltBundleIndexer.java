@@ -16,6 +16,7 @@ import java.util.Set;
 import org.bndtools.build.api.AbstractBuildListener;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -72,6 +73,9 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
             File target = model.getTarget();
             indexFile = new File(target, INDEX_FILENAME);
 
+            IFile indexPath = wsroot.getFile(Central.toPath(indexFile));
+            indexPath.setDerived(true);
+
             // Create the indexer and add ResourceAnalyzers from plugins
             RepoIndex indexer = new RepoIndex(logAdapter);
             List<ResourceAnalyzer> analyzers = Central.getWorkspace().getPlugins(ResourceAnalyzer.class);
@@ -95,6 +99,7 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
             output = new FileOutputStream(indexFile);
             indexer.index(files, output, config);
             IO.close(output);
+            indexPath.refreshLocal(IResource.DEPTH_ZERO, null);
         } catch (Exception e) {
             logger.logError(MessageFormat.format("Failed to generate index file for bundles in project {0}.", project.getName()), e);
             return;
