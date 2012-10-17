@@ -74,7 +74,6 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
             indexFile = new File(target, INDEX_FILENAME);
 
             IFile indexPath = wsroot.getFile(Central.toPath(indexFile));
-            indexPath.setDerived(true);
 
             // Create the indexer and add ResourceAnalyzers from plugins
             RepoIndex indexer = new RepoIndex(logAdapter);
@@ -99,6 +98,7 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
             output = new FileOutputStream(indexFile);
             indexer.index(files, output, config);
             IO.close(output);
+            indexPath.setDerived(true);
             indexPath.refreshLocal(IResource.DEPTH_ZERO, null);
         } catch (Exception e) {
             logger.logError(MessageFormat.format("Failed to generate index file for bundles in project {0}.", project.getName()), e);
