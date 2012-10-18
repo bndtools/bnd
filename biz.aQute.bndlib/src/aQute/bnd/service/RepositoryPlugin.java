@@ -17,8 +17,8 @@ public interface RepositoryPlugin {
 	 * Options used to steer the put operation
 	 */
 	class PutOptions {
-		public String	BUNDLE	= "application/vnd.osgi.bundle";
-		public String	LIB		= "application/vnd.aQute.lib";
+		public static final String	BUNDLE	= "application/vnd.osgi.bundle";
+		public static final String	LIB		= "application/vnd.aQute.lib";
 
 		/**
 		 * The <b>SHA1</b> digest of the artifact to put into the repository.
