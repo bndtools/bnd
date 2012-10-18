@@ -13,8 +13,8 @@ import aQute.bnd.version.*;
 
 public class TestCompressedObrRepo extends TestCase {
 
-	private static final String obrSrc = "testdata/fullobr.xml.gz";
-	private static final String obrDst = "testdata/fullobr.tmp.xml.gz";
+	private static final String obrSrc = "testdata/fullobr.xml";
+	private static final String obrDst = "testdata/fullobr.xml.gz";
 	private static FixedIndexedRepo	obr;
 	private static NanoHTTPD			httpd;
 	private static int					httpdPort;
@@ -25,7 +25,7 @@ public class TestCompressedObrRepo extends TestCase {
 		httpd = new NanoHTTPD(0, new File("testdata/http"));
 		httpdPort = httpd .getPort();
 
-		Sed.gzFile2GzFile(obrSrc, "__httpdPort__", Integer.toString(httpdPort), obrDst);
+		Sed.file2GzFile(obrSrc, "__httpdPort__", Integer.toString(httpdPort), obrDst);
 
 		reporter = new Processor();
 		obr = new FixedIndexedRepo();
