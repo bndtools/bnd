@@ -1,9 +1,7 @@
-Bundle-Description: The main jpm command. This is a command line utility.
 Private-Package: aQute.jpm.*
-Conditional-Package: !java*,*
+Conditional-Package: aQute.*, org.osgi.service.*
 Include-Resource: images=images, service.jar
-Bundle-Version: 0.0.3
 
 Main-Class: 					aQute.jpm.main.Main
 JPM-Command:					jpm
-JPM-Embedded:					service.jar
+

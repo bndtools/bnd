@@ -831,9 +831,8 @@ public class bnd extends Processor {
 				project = new Project(ws, getBase(), file);
 
 				String profile = opts.profile() == null ? "exec" : opts.profile();
-				project.getRunProperties().put("profile", profile);
 
-				pack(project, output, path.replaceAll(".bnd(run)?$", "") + ".jar");
+				pack(project, output, path.replaceAll(".bnd(run)?$", "") + ".jar", profile);
 			}
 		}
 	}
@@ -844,7 +843,7 @@ public class bnd extends Processor {
 	 */
 	static List<String>	ignore	= new ExtList<String>(BUNDLE_SPECIFIC_HEADERS);
 
-	private void pack(Project project, File output, String path) throws Exception {
+	private void pack(Project project, File output, String path, String profile) throws Exception {
 		Collection< ? extends Builder> subBuilders = project.getSubBuilders();
 
 		if (subBuilders.size() != 1) {
@@ -860,7 +859,9 @@ public class bnd extends Processor {
 
 		try {
 			project.use(this);
-			Jar jar = project.getProjectLauncher().executable();
+			ProjectLauncher launcher = project.getProjectLauncher();
+			launcher.getRunProperties().put("profile", profile);
+			Jar jar = launcher.executable();
 			Manifest m = jar.getManifest();
 			Attributes main = m.getMainAttributes();
 			for (String key : project.getPropertyKeys(true)) {

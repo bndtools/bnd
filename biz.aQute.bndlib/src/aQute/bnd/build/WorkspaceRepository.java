@@ -56,7 +56,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		return new File[0];
 	}
 
-	public File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception {
+	private File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception {
 		File[] files = get(bsn, range);
 
 		if (files.length == 0) {

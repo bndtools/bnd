@@ -167,6 +167,7 @@ public abstract class Domain implements Iterable<String> {
 	public Parameters getIncludeResource() {
 		Parameters ic = getParameters(INCLUDE_RESOURCE);
 		ic.putAll(getParameters(INCLUDERESOURCE));
+		ic.putAll(getParameters(WAB));
 		return ic;
 	}
 

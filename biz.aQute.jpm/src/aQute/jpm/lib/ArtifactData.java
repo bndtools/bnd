@@ -2,15 +2,31 @@ package aQute.jpm.lib;
 
 import java.util.*;
 
-import aQute.bnd.version.*;
+import aQute.struct.*;
 
-public class ArtifactData {
-	public long				time	= System.currentTimeMillis();
-	public String			bsn;
-	public List<Version>	version;
+public class ArtifactData extends struct {
+	public byte[]		sha;
+	public long			time			= System.currentTimeMillis();
+	public CommandData	command;
+	public ServiceData	service;
+	public String		error;
 
-	@Override
-	public String toString() {
-		return "[" + bsn + "]";
+	public String		name;
+	public String		mainClass;
+	public String		description;
+	public List<String>	dependencies	= new ArrayList<String>();		// shas
+
+	boolean				busy			= false;
+	public String		file;
+
+	synchronized void done() {
+		busy = false;
+		notifyAll();
 	}
+
+	public synchronized void sync() throws InterruptedException {
+		while(busy)
+			wait();
+	}
+
 }
