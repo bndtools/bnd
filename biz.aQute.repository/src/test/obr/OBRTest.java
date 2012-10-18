@@ -5,6 +5,7 @@ import java.net.*;
 import java.util.*;
 
 import junit.framework.*;
+import test.helpers.*;
 import test.lib.*;
 import aQute.bnd.deployer.obr.*;
 import aQute.bnd.osgi.*;
@@ -13,15 +14,23 @@ import aQute.bnd.version.*;
 
 public class OBRTest extends TestCase {
 
+	private static final String obrSrc = "testdata/fullobr.xml";
+	private static final String obrDst = "testdata/fullobr.tmp.xml";
 	private static OBR			obr;
 	private static NanoHTTPD	httpd;
+	private static int			httpdPort;
 	private static Processor reporter;
 
 	@Override
 	protected void setUp() throws Exception {
+		httpd = new NanoHTTPD(0, new File("testdata/http"));
+		httpdPort = httpd.getPort();
+
+		Sed.file2File(obrSrc, "__httpdPort__", Integer.toString(httpdPort), obrDst);
+
 		obr = new OBR();
 		Map<String,String> config = new HashMap<String,String>();
-		config.put("location", new File("testdata/fullobr.xml").getAbsoluteFile().toURI().toString());
+		config.put("location", new File(obrDst).getAbsoluteFile().toURI().toString());
 
 		File tmpFile = File.createTempFile("cache", ".tmp");
 		tmpFile.deleteOnExit();
@@ -33,7 +42,6 @@ public class OBRTest extends TestCase {
 		reporter = new Processor();
 		obr.setReporter(reporter);
 
-		httpd = new NanoHTTPD(18080, new File("testdata/http"));
 	}
 
 	@Override
@@ -47,6 +55,7 @@ public class OBRTest extends TestCase {
 			}
 		}
 		obr.getCacheDirectory().delete();
+		new File(obrDst).delete();
 	}
 
 	public static void testSetProperties() throws Exception {
@@ -166,7 +175,7 @@ public class OBRTest extends TestCase {
 	}
 
 	public static void testName() throws MalformedURLException {
-		assertEquals(new File("testdata/fullobr.xml").getAbsoluteFile().toURI().toString(), obr.getName());
+		assertEquals(new File(obrDst).getAbsoluteFile().toURI().toString(), obr.getName());
 
 		OBR obr2 = new OBR();
 		Map<String,String> config = new HashMap<String,String>();

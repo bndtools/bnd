@@ -223,6 +223,7 @@ public class NanoHTTPD {
 			myServerSocket = sslSock;
 		} else {
 			myServerSocket = new ServerSocket(myTcpPort);
+			myTcpPort = myServerSocket.getLocalPort();
 		}
 		myThread = new Thread(new Runnable() {
 			@SuppressWarnings("unused")
@@ -814,6 +815,10 @@ public class NanoHTTPD {
 	private final ServerSocket	myServerSocket;
 	private Thread				myThread;
 	private File				myRootDir;
+
+	public int getPort() {
+		return myTcpPort;
+	}
 
 	// ==================================================
 	// File server code

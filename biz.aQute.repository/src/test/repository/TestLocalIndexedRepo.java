@@ -14,6 +14,7 @@ public class TestLocalIndexedRepo extends TestCase {
 
 	private static File		outputDir;
 	private static NanoHTTPD	httpd;
+	private static int			httpdPort;
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
@@ -23,7 +24,8 @@ public class TestLocalIndexedRepo extends TestCase {
 			throw new IOException("Could not create directory " + outputDir);
 		}
 
-		httpd = new NanoHTTPD(18081, new File("testdata"));
+		httpd = new NanoHTTPD(0, new File("testdata"));
+		httpdPort = httpd.getPort();
 	}
 
 	@Override
@@ -50,14 +52,14 @@ public class TestLocalIndexedRepo extends TestCase {
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("local", outputDir.getAbsolutePath());
-		config.put("locations", "http://localhost:18081/index1.xml,http://localhost:18081/index2.xml");
+		config.put("locations", "http://localhost:" + httpdPort + "/index1.xml,http://localhost:" + httpdPort + "/index2.xml");
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 
 		assertEquals(3, repo.getIndexLocations().size());
 		assertEquals(new File(outputDir, "index.xml.gz").toURI(), repo.getIndexLocations().get(0));
-		assertEquals(new URI("http://localhost:18081/index1.xml"), repo.getIndexLocations().get(1));
-		assertEquals(new URI("http://localhost:18081/index2.xml"), repo.getIndexLocations().get(2));
+		assertEquals(new URI("http://localhost:" + httpdPort + "/index1.xml"), repo.getIndexLocations().get(1));
+		assertEquals(new URI("http://localhost:" + httpdPort + "/index2.xml"), repo.getIndexLocations().get(2));
 
 		assertEquals(0, reporter.getErrors().size());
 		assertEquals(0, reporter.getWarnings().size());
