@@ -114,14 +114,6 @@ public class TestFixedIndexedRepo extends TestCase {
 
 	public static void testExternalEntitiesNotFetched() throws Exception {
 		final AtomicInteger accessCount = new AtomicInteger(0);
-		NanoHTTPD httpd = new NanoHTTPD(18081, new File("testdata")) {
-			@Override
-			public Response serve(String uri, String method, Properties header, Properties parms, Properties files) {
-				accessCount.incrementAndGet();
-				System.err.println("Tried to retrieve from HTTP: " + uri);
-				return super.serve(uri, method, header, parms, files);
-			}
-		};
 
 		FixedIndexedRepo repo;
 		Map<String,String> config;
@@ -152,7 +144,6 @@ public class TestFixedIndexedRepo extends TestCase {
 		repo.setReporter(reporter);
 		repo.list(null);
 
-		httpd.stop();
 		assertEquals("Should not make any HTTP connection.", 0, accessCount.get());
 		assertEquals("Should not be any errors", 0, reporter.getErrors().size());
 		assertTrue("Should be some ambiguity warnings", reporter.getWarnings().size() > 0);

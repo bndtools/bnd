@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
+import test.helpers.*;
 import test.lib.*;
 import aQute.bnd.deployer.repository.*;
 import aQute.bnd.osgi.*;
@@ -12,17 +13,25 @@ import aQute.bnd.version.*;
 
 public class TestCompressedObrRepo extends TestCase {
 
+	private static final String obrSrc = "testdata/fullobr.xml.gz";
+	private static final String obrDst = "testdata/fullobr.tmp.xml.gz";
 	private static FixedIndexedRepo	obr;
 	private static NanoHTTPD			httpd;
+	private static int					httpdPort;
 	private static Processor			reporter;
 
 	@Override
 	protected void setUp() throws Exception {
+		httpd = new NanoHTTPD(0, new File("testdata/http"));
+		httpdPort = httpd .getPort();
+
+		Sed.gzFile2GzFile(obrSrc, "__httpdPort__", Integer.toString(httpdPort), obrDst);
+
 		reporter = new Processor();
 		obr = new FixedIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("name", "obr");
-		config.put("locations", new File("testdata/fullobr.xml.gz").toURI().toString());
+		config.put("locations", new File(obrDst).toURI().toString());
 		config.put("type", "OBR");
 		obr.setProperties(config);
 		obr.setReporter(reporter);
@@ -30,8 +39,6 @@ public class TestCompressedObrRepo extends TestCase {
 		File tmpFile = File.createTempFile("cache", ".tmp");
 		tmpFile.deleteOnExit();
 		obr.setCacheDirectory(new File(tmpFile.getAbsolutePath() + ".dir"));
-
-		httpd = new NanoHTTPD(18080, new File("testdata/http"));
 	}
 
 	@Override
@@ -45,6 +52,7 @@ public class TestCompressedObrRepo extends TestCase {
 			}
 		}
 		obr.getCacheDirectory().delete();
+		new File(obrDst).delete();
 
 		assertEquals(0, reporter.getErrors().size());
 		assertEquals(0, reporter.getWarnings().size());
