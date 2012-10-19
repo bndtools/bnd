@@ -16,6 +16,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.service.Actionable;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Logger;
@@ -154,20 +155,43 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     }
 
     public String getText(Object element) {
-        if (element instanceof RepositoryPlugin) {
-            return ((RepositoryPlugin) element).getName();
-        } else if (element instanceof Project) {
-            Project project = (Project) element;
-            return project.getName();
-        } else if (element instanceof ProjectBundle) {
-            return ((ProjectBundle) element).getBsn();
-        } else if (element instanceof RepositoryBundle) {
-            RepositoryBundle bundle = (RepositoryBundle) element;
-            return bundle.getBsn();
-        } else if (element instanceof RepositoryBundleVersion) {
-            RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
-            return bundleVersion.getVersion().toString();
+        try {
+            if (element instanceof Actionable) {
+                return ((Actionable) element).title();
+            } else if (element instanceof RepositoryPlugin) {
+                return ((RepositoryPlugin) element).getName();
+            } else if (element instanceof Project) {
+                Project project = (Project) element;
+                return project.getName();
+            } else if (element instanceof ProjectBundle) {
+                return ((ProjectBundle) element).getBsn();
+            } else if (element instanceof RepositoryBundle) {
+                RepositoryBundle bundle = (RepositoryBundle) element;
+                return bundle.getBsn();
+            } else if (element instanceof RepositoryBundleVersion) {
+                RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
+                return bundleVersion.getVersion().toString();
+            }
+        } catch (Exception e) {
+            // just take the default
         }
+        return null;
+    }
+
+    /**
+     * Return the text to be shown as a tooltip.
+     * <p/>
+     * TODO allow markdown to be used. Not sure how to create a rich text tooltip though. Would also be nice if we could
+     * copy/paste from the tooltip like in the JDT.
+     */
+    @Override
+    public String getToolTipText(Object element) {
+        if (element instanceof Actionable)
+            try {
+                return ((Actionable) element).tooltip();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         return null;
     }
 }

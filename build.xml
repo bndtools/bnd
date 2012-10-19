@@ -19,6 +19,10 @@
 		<iterate target="build" />
 	</target>
 
+	<target name="junit">
+		<iterate target="junit" />
+	</target>
+
 	<target name="clean">
 		<iterate target="clean" />
 	</target>

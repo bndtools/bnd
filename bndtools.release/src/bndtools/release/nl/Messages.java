@@ -12,39 +12,63 @@ package bndtools.release.nl;
 
 import org.eclipse.osgi.util.NLS;
 
-
 public class Messages extends NLS {
 
-	private final static String RESOURCE_BUNDLE = Messages.class.getName();
-	
-	public static String version;
-	public static String newVersion;
-	public static String versionRange;
-	public static String newRange;
-	public static String showAllPackages;
-	public static String symbNameResources;
-	public static String releaseToRepo;
-	public static String cleaningProject;
-	public static String releasing;
-	public static String checkingExported;
-	public static String releaseJob;
-	public static String project;
-	public static String releaseDialogTitle;
-	public static String errorDialogTitle;
-	public static String bundleReleaseJob;
-	public static String released;
-	public static String updatedVersionInfo;
-	public static String releasedTo;
-	public static String updateVersions;
-	public static String updateVersionsAndRelease;
-	public static String bundleAndPackageName;
+    private final static String RESOURCE_BUNDLE = Messages.class.getName();
 
-	public static String workspaceReleaseJob;
-	public static String calculatingBuildPath;
+    public static String releaseDialogTitle; /* bndtools.release.Activator::message */
+    public static String errorExecutingStartupParticipant; /* bndtools.release.Activator::getReleaseParticipants */
+    public static String loggingError; /* bndtools.release.Activator::log */
+    public static String errorDialogTitle; /* bndtools.release.Activator::error */
 
-	
-	static {
-		NLS.initializeMessages(RESOURCE_BUNDLE, Messages.class);
-	}
+    public static String errorDialogTitle1; /* bndtools.release.ErrorDialog::configureShell */
+    public static String project; /* bndtools.release.ErrorDialog::createDialogArea */
+
+    public static String message; /* bndtools.release.ErrorList::createControl */
+    public static String symbolicName; /* bndtools.release.ErrorList::createControl */
+    public static String version1; /* bndtools.release.ErrorList::createControl */
+    
+    public static String project1; /* bndtools.release.ProjectListControl::createTable */
+    public static String repository; /* bndtools.release.ProjectListControl::createTable */
+    public static String bundles; /* bndtools.release.ProjectListControl::createTable */
+    
+    public static String releaseJob; /* bndtools.release.ReleaseDialogJob::ReleaseDialogJob */
+    public static String cleaningProject; /* bndtools.release.ReleaseDialogJob::ReleaseDialogJob */
+    public static String releasing; /* bndtools.release.ReleaseDialogJob::ReleaseDialogJob */
+    public static String checkingExported; /* bndtools.release.ReleaseDialogJob::ReleaseDialogJob */
+
+    public static String fileDoesNotExist; /* bndtools.release.ReleaseHelper::writeFully */
+    
+    public static String bundleReleaseJob; /* bndtools.release.ReleaseJob::ReleaseJob */
+    public static String project2; /* bndtools.release.ReleaseJob::run */
+    public static String updatedVersionInfo; /* bndtools.release.ReleaseJob::run */
+    public static String released; /* bndtools.release.ReleaseJob::run */
+    public static String releasedTo; /* bndtools.release.ReleaseJob::run */
+
+    public static String calculatingBuildPath; /* bndtools.release.WorkspaceAnalyserJob::getBuildOrder */
+    public static String resolvingDependenciesForProject; /* bndtools.release.WorkspaceAnalyserJob::getBuildOrder */
+    public static String processingProjects; /* bndtools.release.WorkspaceAnalyserJob::run */
+    public static String processingProject; /* bndtools.release.WorkspaceAnalyserJob::run */
+    public static String releaseWorkspaceBundles; /* bndtools.release.WorkspaceAnalyserJob::run */
+    public static String noBundlesRequireRelease; /* bndtools.release.WorkspaceAnalyserJob::run */
+    public static String workspaceReleaseJob; /* bndtools.release.WorkspaceAnalyserJob::run */
+    public static String workspaceReleaseJob1; /* bndtools.release.WorkspaceAnalyserJob::WorkspaceAnalyserJob */
+
+    public static String workspaceReleaseJob2; /* bndtools.release.WorkspaceReleaseJob::WorkspaceReleaseJob */
+    public static String releasingProjects; /* bndtools.release.WorkspaceReleaseJob::run */
+    
+    public static String releaseDialogTitle1; /* bndtools.release.BundleReleaseDialog::configureShell */
+    public static String updateVersionsAndRelease; /* bndtools.release.BundleReleaseDialog::createButtonsForButtonBar */
+    public static String updateVersions; /* bndtools.release.BundleReleaseDialog::createButtonsForButtonBar */
+    public static String releaseToRepo; /* bndtools.release.BundleReleaseDialog::BundleReleaseDialog */
+
+    public static String symbNameResources; /* bndtools.release.ui.BundleTree::createBundleTreeViewer */
+    public static String showAllPackages; /* bndtools.release.ui.BundleTree::createButtons */
+    public static String bundleAndPackageName; /* bndtools.release.ui.BundleTree::createInfoViewer */
+    public static String newVersion; /* bndtools.release.ui.BundleTree::createInfoViewer */
+    public static String version2; /* bndtools.release.ui.BundleTree::createInfoViewer */
+
+    static {
+        NLS.initializeMessages(RESOURCE_BUNDLE, Messages.class);
+    }
 }
-

@@ -10,7 +10,6 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.DecorationContext;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -28,9 +27,8 @@ import bndtools.internal.decorator.ExportedPackageDecoratorJob;
  */
 public class PackageDecorator extends LabelProvider implements ILightweightLabelDecorator {
 
-    private final ImageDescriptor plusIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/plus-decorator.png");
-    private final ImageDescriptor excludedPackageIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/package_excluded.gif");
-    private final ImageDescriptor excludedEmptyPackageIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/package_empty_excluded.gif");
+    private final ImageDescriptor exportedIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/plus-decorator.png");
+    private final ImageDescriptor excludedIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/excluded_ovr.gif");
 
     public void decorate(Object element, IDecoration decoration) {
         if (element instanceof IPackageFragment) {
@@ -48,16 +46,15 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
             if (exports != null) {
                 Collection<Version> versions = exports.get(pkgName);
                 if (versions != null) {
-                    decoration.addOverlay(plusIcon);
+                    decoration.addOverlay(exportedIcon);
                     if (versions.isEmpty())
                         decoration.addSuffix(" " + Collections.singletonList(Version.emptyVersion).toString());
                     else
                         decoration.addSuffix(" " + versions.toString());
                 }
 
-                if (isSourcePkg && (contained == null || !contained.contains(pkgName))) {
-                    ((DecorationContext) decoration.getDecorationContext()).putProperty(IDecoration.ENABLE_REPLACE, Boolean.TRUE);
-                    decoration.addOverlay(emptyPkg ? excludedEmptyPackageIcon : excludedPackageIcon, IDecoration.REPLACE);
+                if (isSourcePkg && !emptyPkg && (contained == null || !contained.contains(pkgName))) {
+                    decoration.addOverlay(excludedIcon);
                     decoration.addSuffix(" <excluded>");
                 }
             } else {

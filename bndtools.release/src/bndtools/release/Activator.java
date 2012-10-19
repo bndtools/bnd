@@ -37,7 +37,6 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.build.Project;
@@ -45,6 +44,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.release.api.IReleaseParticipant;
 import bndtools.release.api.ReleaseUtils;
+import bndtools.release.nl.Messages;
 import bndtools.release.ui.BundleTreeImages;
 
 /**
@@ -53,7 +53,7 @@ import bndtools.release.ui.BundleTreeImages;
 public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "bndtools.release";
+	public static final String PLUGIN_ID = "bndtools.release"; //$NON-NLS-1$
 
 	// The shared instance
 	private static Activator plugin;
@@ -91,7 +91,7 @@ public class Activator extends AbstractUIPlugin {
 
 	public static void log(String msg, int msgType) {
 		ILog log = getDefault().getLog();
-		Status status = new Status(msgType, getDefault().getBundle().getSymbolicName(), msgType, msg + "\n", null);
+		Status status = new Status(msgType, getDefault().getBundle().getSymbolicName(), msgType, msg + "\n", null); //$NON-NLS-1$
 		log.log(status);
 	}
 
@@ -105,7 +105,7 @@ public class Activator extends AbstractUIPlugin {
     public static void message(final String msg) {
         async(new Runnable() {
             public void run() {
-                MessageDialog.openInformation(null, "Release Bundle", msg);
+                MessageDialog.openInformation(null, Messages.releaseDialogTitle1, msg);
             }
         });
     }
@@ -124,10 +124,10 @@ public class Activator extends AbstractUIPlugin {
 	@Override
 	protected void initializeImageRegistry(ImageRegistry reg) {
 
-		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.DELTA, "*.gif");
-		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.IMPORT_EXPORT, "*.gif");
-		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.MODIFIERS, "*.gif");
-		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.TYPES, "*.gif");
+		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.DELTA, "*.gif"); //$NON-NLS-1$
+		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.IMPORT_EXPORT, "*.gif"); //$NON-NLS-1$
+		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.MODIFIERS, "*.gif"); //$NON-NLS-1$
+		loadBundleImages(reg, BundleTreeImages.BUNDLE_PATH, BundleTreeImages.TYPES, "*.gif"); //$NON-NLS-1$
 	}
 
 	private static void loadBundleImages(ImageRegistry reg, String rootPath, String parent, String filePattern) {
@@ -140,7 +140,7 @@ public class Activator extends AbstractUIPlugin {
             URL url = en.nextElement();
             String name = getResourceName(url);
             ImageDescriptor id = ImageDescriptor.createFromURL(url);
-            reg.put(parent + "_" + name, id);
+            reg.put(parent + "_" + name, id); //$NON-NLS-1$
         }
     }
 
@@ -150,25 +150,8 @@ public class Activator extends AbstractUIPlugin {
         return name.substring(0, name.lastIndexOf('.'));
     }
 
-	@SuppressWarnings("unchecked")
-    public static <T> T getService(Class<T> clazz) {
-    	 if (clazz == Workspace.class) {
-    		 try {
-				return (T) Workspace.getWorkspace(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile());
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-    	 }
-
-    	 ServiceReference sr = getDefault().getBundle().getBundleContext().getServiceReference(clazz.getName());
-    	 if (sr == null) {
-    		 return null;
-    	 }
-    	 return (T) getDefault().getBundle().getBundleContext().getService(sr);
-     }
-
 	public static void refreshProject(Project project) throws Exception {
-		Workspace ws = Activator.getService(Workspace.class);
+		Workspace ws = getWorkspace();
 		if (ws == null) {
 			return;
 		}
@@ -180,7 +163,7 @@ public class Activator extends AbstractUIPlugin {
 
 	public static File getLocalRepoLocation(RepositoryPlugin repository) {
 		try {
-			Method m = repository.getClass().getMethod("getRoot");
+			Method m = repository.getClass().getMethod("getRoot"); //$NON-NLS-1$
 			if (m.getReturnType() == File.class) {
 				return (File) m.invoke(repository);
 			}
@@ -239,23 +222,23 @@ public class Activator extends AbstractUIPlugin {
 	}
 
 	public static List<IReleaseParticipant> getReleaseParticipants() {
-		IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(PLUGIN_ID, "bndtoolsReleaseParticipant");
+		IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(PLUGIN_ID, "bndtoolsReleaseParticipant"); //$NON-NLS-1$
 		if (elements.length == 0) {
 			return Collections.emptyList();
 		}
 		List<IReleaseParticipant> participants = new ArrayList<IReleaseParticipant>();
 	    for (IConfigurationElement element : elements) {
             try {
-            	IReleaseParticipant participant = (IReleaseParticipant) element.createExecutableExtension("class");
-            	String strRanking = element.getAttribute("ranking");
+            	IReleaseParticipant participant = (IReleaseParticipant) element.createExecutableExtension("class"); //$NON-NLS-1$
+            	String strRanking = element.getAttribute("ranking");  //$NON-NLS-1$
             	int ranking = 0;
             	if (strRanking != null && strRanking.length() > 0) {
-            		ranking = Integer.valueOf(strRanking); 
+            		ranking = Integer.valueOf(strRanking);
             	}
             	participant.setRanking(ranking);
             	participants.add(participant);
             } catch (CoreException e) {
-                logError("Error executing startup participant", e);
+                logError(Messages.errorExecutingStartupParticipant, e);
             }
         }
 	    return participants;
@@ -270,7 +253,7 @@ public class Activator extends AbstractUIPlugin {
 		if(instance != null) {
 			instance.getLog().log(status);
 		} else {
-			System.err.println(String.format("Unable to print to log for %s: bundle has been stopped.", Activator.PLUGIN_ID));
+			System.err.println(String.format(Messages.loggingError, Activator.PLUGIN_ID));
 		}
 	}
 
@@ -278,13 +261,13 @@ public class Activator extends AbstractUIPlugin {
         final StringBuffer sb = new StringBuffer();
         for (String msg : errors) {
             sb.append(msg);
-            sb.append("\n");
+            sb.append("\n"); //$NON-NLS-1$
         }
 
         async(new Runnable() {
             public void run() {
-                Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
-                ErrorDialog.openError(null, "Errors during release",
+                Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null); //$NON-NLS-1$
+                ErrorDialog.openError(null, Messages.errorDialogTitle,
                         sb.toString(), s);
             }
         });

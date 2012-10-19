@@ -223,8 +223,6 @@ public class RepositorySelectionPart extends BndEditorPart {
         });
 
         ColumnViewerToolTipSupport.enableFor(viewer, ToolTip.NO_RECREATE);
-
-        reloadRepos();
     }
 
     void updateButtons() {
@@ -313,6 +311,7 @@ public class RepositorySelectionPart extends BndEditorPart {
     }
 
     int[] findSelectedIndexes() {
+        lazyInitIncludedRepos();
         Object[] selection = ((IStructuredSelection) viewer.getSelection()).toArray();
         int[] selectionIndexes = new int[selection.length];
 
@@ -334,7 +333,7 @@ public class RepositorySelectionPart extends BndEditorPart {
     protected void refreshFromModel() {
         List<String> tmp = model.getRunRepos();
         includedRepos = tmp == null ? null : new LinkedList<String>(tmp);
-        viewer.refresh(true);
+        reloadRepos();
         updateButtons();
 
     }

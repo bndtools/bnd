@@ -2,7 +2,7 @@ package org.bndtools.core.ui.resource;
 
 public class ResolutionFailureFlatLabelProvider extends RequirementLabelProvider {
 
-    private static final String LABEL_INITIAL = "INITIAL";
+    //    private static final String LABEL_INITIAL = "INITIAL";
 
     /*
      * TODO

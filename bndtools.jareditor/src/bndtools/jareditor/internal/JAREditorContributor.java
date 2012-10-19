@@ -10,14 +10,10 @@
  *******************************************************************************/
 package bndtools.jareditor.internal;
 
-import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.IDEActionFactory;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -30,14 +26,12 @@ import org.eclipse.ui.texteditor.ITextEditorActionConstants;
  */
 public class JAREditorContributor extends MultiPageEditorActionBarContributor {
     private IEditorPart activeEditorPart;
-    private Action sampleAction;
 
     /**
      * Creates a multi-page contributor.
      */
     public JAREditorContributor() {
         super();
-        createActions();
     }
 
     /**
@@ -76,30 +70,5 @@ public class JAREditorContributor extends MultiPageEditorActionBarContributor {
             actionBars.setGlobalActionHandler(IDEActionFactory.BOOKMARK.getId(), getAction(editor, IDEActionFactory.BOOKMARK.getId()));
             actionBars.updateActionBars();
         }
-    }
-
-    private void createActions() {
-        sampleAction = new Action() {
-            @Override
-            public void run() {
-                MessageDialog.openInformation(null, "JAR Editor Plug-in", "Sample Action Executed");
-            }
-        };
-        sampleAction.setText("Sample Action");
-        sampleAction.setToolTipText("Sample Action tool tip");
-        sampleAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(IDE.SharedImages.IMG_OBJS_TASK_TSK));
-    }
-
-    @Override
-    public void contributeToMenu(IMenuManager manager) {
-        IMenuManager menu = new MenuManager("Editor &Menu");
-        manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
-        menu.add(sampleAction);
-    }
-
-    @Override
-    public void contributeToToolBar(IToolBarManager manager) {
-        manager.add(new Separator());
-        manager.add(sampleAction);
     }
 }

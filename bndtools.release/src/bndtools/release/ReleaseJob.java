@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
-import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Jar;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseUtils;
@@ -59,25 +58,25 @@ public class ReleaseJob  extends Job {
 			}
 			if (ok) {
 				StringBuilder sb = new StringBuilder();
-				sb.append(Messages.project);
-				sb.append(" : ");
+				sb.append(Messages.project2);
+				sb.append(" : "); //$NON-NLS-1$
 				sb.append(context.getProject().getName());
-				sb.append("\n\n");
+				sb.append("\n\n"); //$NON-NLS-1$
 				if (context.isUpdateOnly()) {
 					sb.append(Messages.updatedVersionInfo);
 				} else {
 					sb.append(Messages.released);
-					sb.append(" :\n");
+					sb.append(" :\n"); //$NON-NLS-1$
 				}
 
 				for (Jar jar : context.getReleasedJars()) {
-					sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar) + "\n");
+					sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar) + "\n"); //$NON-NLS-1$//$NON-NLS-2$
 				}
 
 				if (!context.isUpdateOnly()) {
-					sb.append("\n\n");
+					sb.append("\n\n"); //$NON-NLS-1$
 					sb.append(Messages.releasedTo);
-					sb.append(" : ");
+					sb.append(" : "); //$NON-NLS-1$
 					sb.append(context.getReleaseRepository().getName());
 				}
 				if (showMessage) {
@@ -86,9 +85,9 @@ public class ReleaseJob  extends Job {
 			}
 
 		} catch (Exception e) {
-			for (Baseline spec : context.getBaselines()) {
+//			for (Baseline spec : context.getBaselines()) {
 //				context.getErrorHandler().error(spec.getBsn(), jarDiff.getSuggestedVersion() != null ? jarDiff.getSuggestedVersion().toString() : "0.0.0", e.getMessage());
-			}
+//			}
 			return new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
 		}
 

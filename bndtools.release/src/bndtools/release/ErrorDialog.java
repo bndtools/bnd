@@ -100,7 +100,7 @@ public class ErrorDialog extends Dialog {
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
-		newShell.setText(Messages.errorDialogTitle);
+		newShell.setText(Messages.errorDialogTitle1);
 	}
 
 }

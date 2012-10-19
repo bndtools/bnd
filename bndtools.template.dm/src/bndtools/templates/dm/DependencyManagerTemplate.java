@@ -60,7 +60,7 @@ public class DependencyManagerTemplate implements IProjectTemplate {
     private static void addRunBundle(String bsn, Collection<? super VersionedClause> runPath, Collection<? super Requirement> requires, boolean inferred) {
         runPath.add(new VersionedClause(bsn, new Attrs()));
         if (!inferred) {
-            Requirement req = new CapReqBuilder("bundle").addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(symbolicname=" + bsn + ")").buildSyntheticRequirement();
+            Requirement req = new CapReqBuilder("osgi.identity").addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=" + bsn + ")").buildSyntheticRequirement();
             requires.add(req);
         }
     }

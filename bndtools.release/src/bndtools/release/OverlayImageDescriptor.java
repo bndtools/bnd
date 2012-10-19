@@ -44,7 +44,6 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
 		// coordinates are both zero
 		ImageDescriptor imgDescr = reg.getDescriptor(overlayImage);
 		if (imgDescr == null) {
-			System.out.println("MISSING ImageDescriptor!!! " + overlayImage);
 			return;
 		}
 		drawImage(imgDescr.getImageData(), xValue, yValue);

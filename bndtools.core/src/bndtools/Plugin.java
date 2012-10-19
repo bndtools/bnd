@@ -170,7 +170,7 @@ public class Plugin extends AbstractUIPlugin {
         return bundleContext;
     }
 
-    public static void report(boolean warnings, boolean acknowledge, Processor reporter, final String title, final String extra) {
+    public static void report(boolean warnings, @SuppressWarnings("unused") boolean acknowledge, Processor reporter, final String title, final String extra) {
         if (reporter.getErrors().size() > 0 || (warnings && reporter.getWarnings().size() > 0)) {
             final StringBuffer sb = new StringBuffer();
             sb.append("\n");

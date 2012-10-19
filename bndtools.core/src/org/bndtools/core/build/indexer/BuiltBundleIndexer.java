@@ -16,6 +16,7 @@ import java.util.Set;
 import org.bndtools.build.api.AbstractBuildListener;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -25,7 +26,7 @@ import org.osgi.service.indexer.Requirement;
 import org.osgi.service.indexer.Resource;
 import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.BIndex2;
+import org.osgi.service.indexer.impl.RepoIndex;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -72,8 +73,10 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
             File target = model.getTarget();
             indexFile = new File(target, INDEX_FILENAME);
 
+            IFile indexPath = wsroot.getFile(Central.toPath(indexFile));
+
             // Create the indexer and add ResourceAnalyzers from plugins
-            BIndex2 indexer = new BIndex2(logAdapter);
+            RepoIndex indexer = new RepoIndex(logAdapter);
             List<ResourceAnalyzer> analyzers = Central.getWorkspace().getPlugins(ResourceAnalyzer.class);
             for (ResourceAnalyzer analyzer : analyzers) {
                 indexer.addAnalyzer(analyzer, null);
@@ -95,6 +98,9 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
             output = new FileOutputStream(indexFile);
             indexer.index(files, output, config);
             IO.close(output);
+            indexPath.refreshLocal(IResource.DEPTH_ZERO, null);
+            if (indexPath.exists())
+                indexPath.setDerived(true);
         } catch (Exception e) {
             logger.logError(MessageFormat.format("Failed to generate index file for bundles in project {0}.", project.getName()), e);
             return;

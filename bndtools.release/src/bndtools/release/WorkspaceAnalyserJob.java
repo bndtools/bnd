@@ -42,7 +42,7 @@ public class WorkspaceAnalyserJob extends Job {
 	protected final Shell shell;
 
 	public WorkspaceAnalyserJob() {
-		super(Messages.workspaceReleaseJob);
+		super(Messages.workspaceReleaseJob1);
 		this.shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
 		setUser(true);
 	}
@@ -67,17 +67,17 @@ public class WorkspaceAnalyserJob extends Job {
 			}
 
 			final List<ProjectDiff> projectDiffs = new ArrayList<ProjectDiff>();
-			mon.setTaskName("Processing Projects...");
+			mon.setTaskName(Messages.processingProjects);
 			for (Project project : orderedProjects) {
 				IProject eProject = ReleaseUtils.getProject(project);
-				if (!eProject.isOpen() || !eProject.isAccessible()) {
+				if (eProject == null || !eProject.isOpen() || !eProject.isAccessible()) {
 					continue;
 				}
 				List<Builder> builders = project.getBuilder(null)
 						.getSubBuilders();
 				List<Baseline> jarDiffs = null;
 				for (Builder b : builders) {
-					mon.subTask("Processing " + b.getBsn() + "...");
+					mon.subTask(String.format(Messages.processingProject, b.getBsn()));
 
 					Baseline jarDiff = DiffHelper.createBaseline(project,
 							b.getBsn());
@@ -88,7 +88,7 @@ public class WorkspaceAnalyserJob extends Job {
 
 						Delta delta = jarDiff.getDiff().getDelta(new Ignore() {
                             public boolean contains(Diff diff) {
-                               if ("META-INF/MANIFEST.MF".equals(diff.getName())) {
+                               if ("META-INF/MANIFEST.MF".equals(diff.getName())) { //$NON-NLS-1$
                                    return true;
                                }
                                 return false;
@@ -110,7 +110,7 @@ public class WorkspaceAnalyserJob extends Job {
 			if (projectDiffs.size() == 0) {
 				Runnable runnable = new Runnable() {
 					public void run() {
-						MessageDialog.openInformation(shell, "Release Workspace Bundles", "No bundles requires release.");
+						MessageDialog.openInformation(shell, Messages.releaseWorkspaceBundles, Messages.noBundlesRequireRelease);
 					}
 				};
 				if (Display.getCurrent() == null) {
@@ -157,7 +157,7 @@ public class WorkspaceAnalyserJob extends Job {
 		monitor.setTaskName(Messages.calculatingBuildPath);
 		for (Project project : workspace.getAllProjects()) {
 
-			monitor.subTask("Resolving dependencies for " + project.getName());
+			monitor.subTask(String.format(Messages.resolvingDependenciesForProject, project.getName()));
 			Collection<Project> dependsOn = project.getDependson();
 
 			getBuildOrder(dependsOn, outlist);

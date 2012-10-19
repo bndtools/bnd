@@ -47,11 +47,11 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
             result = new String[] {
                     PRIVATE_PKGS, EXPORTS, IMPORT_PATTERNS, BndEditor.BUILD_PAGE, BndEditor.PROJECT_RUN_PAGE, BndEditor.SOURCE_PAGE
             };
-        } else if (model.getBndResource().getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+        } else if (model.getBndResourceName().endsWith(LaunchConstants.EXT_BNDRUN)) {
             result = new String[] {
                     BndEditor.PROJECT_RUN_PAGE, BndEditor.SOURCE_PAGE
             };
-        } else if (Workspace.BUILDFILE.equals(model.getBndResource().getName())) {
+        } else if (Workspace.BUILDFILE.equals(model.getBndResourceName())) {
             result = new String[] {
                     PLUGINS, BndEditor.SOURCE_PAGE
             };

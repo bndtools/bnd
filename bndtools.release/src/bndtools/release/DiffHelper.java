@@ -1,8 +1,19 @@
+/*******************************************************************************
+ * Copyright (c) 2012 Per Kr. Soreide.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Per Kr. Soreide - initial API and implementation
+ *******************************************************************************/
 package bndtools.release;
 
 import java.util.List;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Builder;
@@ -30,12 +41,12 @@ public class DiffHelper {
 
 		try {
 
-			if (builder != null) {
+			if (builder instanceof ProjectBuilder) {
 				Jar jar = builder.build();
 
-				Jar currentJar = null; // FIXME: builder.getBaselineJar();
+				Jar currentJar = ((ProjectBuilder) builder).getBaselineJar();
 				if (currentJar == null) {
-				    currentJar = new Jar(".");
+				    currentJar = new Jar("."); //$NON-NLS-1$
 				}
 				Baseline baseline = new Baseline(builder, new DiffPluginImpl());
 
@@ -54,7 +65,7 @@ public class DiffHelper {
 			return null;
 		}
 		// Remove qualifier
-		String[] parts = version.split("\\.");
+		String[] parts = version.split("\\."); //$NON-NLS-1$
 		StringBuilder sb = new StringBuilder();
 		String sep = "";
 		for (int i = 0; i < parts.length; i++) {
@@ -63,7 +74,7 @@ public class DiffHelper {
 			}
 			sb.append(sep);
 			sb.append(parts[i]);
-			sep = ".";
+			sep = "."; //$NON-NLS-1$
 		}
 		return sb.toString();
 	}

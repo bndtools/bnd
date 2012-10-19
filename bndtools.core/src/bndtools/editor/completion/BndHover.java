@@ -2,6 +2,8 @@ package bndtools.editor.completion;
 
 import org.eclipse.jface.text.*;
 
+import aQute.bnd.help.Syntax;
+
 public class BndHover implements ITextHover {
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
         if (hoverRegion != null) {

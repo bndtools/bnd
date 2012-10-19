@@ -24,11 +24,13 @@ import bndtools.Logger;
 import bndtools.api.ILogger;
 
 public class RepositoryTreeContentProvider implements ITreeContentProvider {
-    private static final ILogger logger = Logger.getLogger();
 
     private static final String CACHE_REPOSITORY = "cache";
+    private static final ILogger logger = Logger.getLogger();
 
     private final EnumSet<ResolutionPhase> phases;
+
+    private String filter = null;
     private boolean showRepos = true;
 
     public RepositoryTreeContentProvider() {
@@ -41,6 +43,14 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
     public RepositoryTreeContentProvider(EnumSet<ResolutionPhase> modes) {
         this.phases = modes;
+    }
+
+    public String getFilter() {
+        return filter;
+    }
+
+    public void setFilter(String filter) {
+        this.filter = filter;
     }
 
     public void setShowRepos(boolean showRepos) {
@@ -106,7 +116,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return element instanceof RepositoryPlugin || element instanceof RepositoryBundle || element instanceof Project;
     }
 
-    void addRepositoryPlugins(Collection<Object> result, Workspace workspace) {
+    private void addRepositoryPlugins(Collection<Object> result, Workspace workspace) {
         workspace.getErrors().clear();
         List<RepositoryPlugin> repoPlugins = workspace.getPlugins(RepositoryPlugin.class);
         for (String error : workspace.getErrors()) {
@@ -127,7 +137,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         }
     }
 
-    void addCollection(Collection<Object> result, Collection<Object> inputs) {
+    private void addCollection(Collection<Object> result, Collection<Object> inputs) {
         for (Object input : inputs) {
             if (input instanceof RepositoryPlugin) {
                 RepositoryPlugin repo = (RepositoryPlugin) input;
@@ -136,15 +146,18 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                         continue;
                 }
 
-                if (showRepos)
+                if (showRepos) {
                     result.add(repo);
-                else
-                    result.addAll(Arrays.asList(getRepositoryBundles(repo)));
+                } else {
+                    RepositoryBundle[] bundles = getRepositoryBundles(repo);
+                    if (bundles != null && bundles.length > 0)
+                        result.addAll(Arrays.asList(bundles));
+                }
             }
         }
     }
 
-    boolean supportsPhase(IndexProvider provider) {
+    private boolean supportsPhase(IndexProvider provider) {
         Set<ResolutionPhase> supportedPhases = provider.getSupportedPhases();
         for (ResolutionPhase phase : phases) {
             if (supportedPhases.contains(phase))
@@ -153,7 +166,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return false;
     }
 
-    static ProjectBundle[] getProjectBundles(Project project) {
+    private ProjectBundle[] getProjectBundles(Project project) {
         ProjectBundle[] result = null;
         try {
             Collection< ? extends Builder> builders = project.getSubBuilders();
@@ -170,7 +183,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result;
     }
 
-    static RepositoryBundleVersion[] getRepositoryBundleVersions(RepositoryBundle bundle) {
+    private RepositoryBundleVersion[] getRepositoryBundleVersions(RepositoryBundle bundle) {
         RepositoryBundleVersion[] result = null;
 
         SortedSet<Version> versions = null;
@@ -189,12 +202,12 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result;
     }
 
-    static RepositoryBundle[] getRepositoryBundles(RepositoryPlugin repo) {
+    private RepositoryBundle[] getRepositoryBundles(RepositoryPlugin repo) {
         RepositoryBundle[] result = null;
 
         List<String> bsns = null;
         try {
-            bsns = repo.list(null);
+            bsns = repo.list(filter);
         } catch (Exception e) {
             logger.logError(MessageFormat.format("Error querying repository {0}.", repo.getName()), e);
         }

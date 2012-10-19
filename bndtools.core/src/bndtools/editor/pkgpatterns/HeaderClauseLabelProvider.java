@@ -52,5 +52,6 @@ public abstract class HeaderClauseLabelProvider<C extends HeaderClause> extends 
         packageImg.dispose();
     }
 
+    @SuppressWarnings("unused")
     protected void decorate(StyledString label, C clause) {}
 }

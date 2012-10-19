@@ -6,6 +6,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bndtools.core.utils.swt.FilterPanelPart;
 import org.eclipse.core.resources.IFile;
@@ -13,10 +15,13 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.util.LocalSelectionTransfer;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
@@ -25,7 +30,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
@@ -49,6 +53,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Activator;
@@ -69,6 +74,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     private static final ILogger logger = Logger.getLogger();
 
     private final FilterPanelPart filterPart = new FilterPanelPart(Plugin.getDefault().getScheduler());
+    private final RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider();
     private TreeViewer viewer;
 
     private Action collapseAllAction;
@@ -86,7 +92,9 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         filterPanel.setBackground(tree.getBackground());
 
         viewer = new TreeViewer(tree);
-        viewer.setContentProvider(new RepositoryTreeContentProvider());
+        viewer.setContentProvider(contentProvider);
+        ColumnViewerToolTipSupport.enableFor(viewer);
+
         viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
         getViewSite().setSelectionProvider(viewer);
 
@@ -113,6 +121,17 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                                     if (element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion) {
                                         valid = true;
                                         break;
+                                    }
+                                    if (element instanceof IFile) {
+                                        valid = true;
+                                        break;
+                                    }
+                                    if (element instanceof IAdaptable) {
+                                        IFile file = (IFile) ((IAdaptable) element).getAdapter(IFile.class);
+                                        if (file != null) {
+                                            valid = true;
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -263,14 +282,16 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     }
 
     private void updatedFilter(String filterString) {
-        if (filterString == null || filterString.length() == 0) {
-            viewer.setFilters(new ViewerFilter[0]);
-        } else {
-            viewer.setFilters(new ViewerFilter[] {
-                new RepositoryBsnFilter(filterString)
-            });
+        String newFilter;
+        if (filterString == null || filterString.length() == 0 || filterString.trim().equals("*"))
+            newFilter = null;
+        else
+            newFilter = "*" + filterString.trim() + "*";
+
+        contentProvider.setFilter(newFilter);
+        viewer.refresh();
+        if (newFilter != null)
             viewer.expandToLevel(2);
-        }
     }
 
     void createActions() {
@@ -323,6 +344,42 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         viewer.getControl().setMenu(menu);
         mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         getSite().registerContextMenu(mgr, viewer);
+
+        mgr.addMenuListener(new IMenuListener() {
+
+            public void menuAboutToShow(IMenuManager manager) {
+                try {
+                    manager.removeAll();
+                    IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+                    if (!selection.isEmpty()) {
+                        Object firstElement = selection.getFirstElement();
+                        if (firstElement instanceof Actionable) {
+                            //
+                            // Use the Actionable interface to fill the menu
+                            // Should extend this to allow other menu entries
+                            // from the view, but currently there are none
+                            //
+                            Actionable act = (Actionable) firstElement;
+                            Map<String,Runnable> actions = act.actions();
+                            if (actions != null) {
+                                for (final Entry<String,Runnable> e : actions.entrySet()) {
+                                    final String label = e.getKey();
+                                    final Action a = new Action(label) {
+                                        @Override
+                                        public void run() {
+                                            e.getValue().run();
+                                        }
+                                    };
+                                    manager.add(a);
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void fillToolBar(IToolBarManager toolBar) {

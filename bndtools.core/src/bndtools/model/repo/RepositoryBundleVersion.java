@@ -2,6 +2,7 @@ package bndtools.model.repo;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -9,11 +10,13 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 
+import aQute.bnd.service.Actionable;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import bndtools.Logger;
 import bndtools.api.ILogger;
 
-public class RepositoryBundleVersion implements IAdaptable {
+public class RepositoryBundleVersion implements IAdaptable, Actionable {
     private static final ILogger logger = Logger.getLogger();
 
     private final Version version;
@@ -62,5 +65,26 @@ public class RepositoryBundleVersion implements IAdaptable {
             logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1} version {2}.", bundle.getRepo().getName(), bundle.getBsn(), version), e);
             return null;
         }
+    }
+
+    public Map<String,Runnable> actions(Object... t) throws Exception {
+        RepositoryPlugin p = bundle.getRepo();
+        if (p instanceof Actionable)
+            return ((Actionable) p).actions(bundle.getBsn(), version);
+        return null;
+    }
+
+    public String tooltip(Object... target) throws Exception {
+        RepositoryPlugin p = bundle.getRepo();
+        if (p instanceof Actionable)
+            return ((Actionable) p).tooltip(bundle.getBsn(), version);
+        return null;
+    }
+
+    public String title(Object... target) throws Exception {
+        RepositoryPlugin p = bundle.getRepo();
+        if (p instanceof Actionable)
+            return ((Actionable) p).title(bundle.getBsn(), version);
+        return null;
     }
 }

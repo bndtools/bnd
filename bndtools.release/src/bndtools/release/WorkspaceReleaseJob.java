@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2012 Per Kr. Soreide.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Per Kr. Soreide - initial API and implementation
+ *******************************************************************************/
 package bndtools.release;
 
 import java.util.List;
@@ -19,7 +29,7 @@ public class WorkspaceReleaseJob extends Job {
 	private boolean updateOnly;
 
 	public WorkspaceReleaseJob(List<ProjectDiff> projectDiffs, boolean updateOnly) {
-		super(Messages.workspaceReleaseJob);
+		super(Messages.workspaceReleaseJob2);
 		this.projectDiffs = projectDiffs;
 		this.updateOnly = updateOnly;
 	}
@@ -27,7 +37,7 @@ public class WorkspaceReleaseJob extends Job {
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 
-		monitor.beginTask("Releasing projects...", projectDiffs.size());
+		monitor.beginTask(Messages.releasingProjects, projectDiffs.size());
 		for (ProjectDiff projectDiff : projectDiffs) {
 			if (projectDiff.isRelease()) {
 

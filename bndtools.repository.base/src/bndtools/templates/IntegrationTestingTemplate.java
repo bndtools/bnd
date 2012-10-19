@@ -26,7 +26,7 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
         if (oldBuildPath != null)
             newBuildPath.addAll(oldBuildPath);
 
-        newBuildPath.add(createBundleRef("osgi.core", "[4.1,5)"));
+        newBuildPath.add(createBundleRef("osgi.core", "[4.2,5)"));
         newBuildPath.add(createBundleRef("osgi.cmpn", null));
         newBuildPath.add(createBundleRef("junit.osgi", null));
         newBuildPath.add(createBundleRef("org.mockito.mockito-all", null));

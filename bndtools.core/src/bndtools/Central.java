@@ -212,6 +212,9 @@ public class Central {
         workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
         workspace.addBasicPlugin(getWorkspaceR5Repository());
 
+        // Initialize projects in synchronized block
+        workspace.getBuildOrder();
+
         return workspace;
     }
 

@@ -187,7 +187,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         return project != null ? getLaunchConfigsForProject(project) : null;
     }
 
-    ILaunchConfiguration[] getLaunchConfigsForProject(IProject project) {
+    ILaunchConfiguration[] getLaunchConfigsForProject(@SuppressWarnings("unused") IProject project) {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
 
         ILaunchConfigurationType type = manager.getLaunchConfigurationType(launchId);

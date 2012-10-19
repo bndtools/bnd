@@ -18,7 +18,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 public class FilterPanelPart {
@@ -63,9 +62,8 @@ public class FilterPanelPart {
     public Control createControl(Composite parent, int marginWidth, int marginHeight) {
         // CREATE CONTROLS
         panel = new Composite(parent, SWT.NONE);
-        new Label(panel, SWT.NONE).setText("Filter:");
         txtFilter = new Text(panel, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
-        txtFilter.setMessage("enter search string");
+        txtFilter.setMessage("Enter search string");
 
         // INITIAL PROPERTIES
         if (filter != null)

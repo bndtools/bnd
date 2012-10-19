@@ -25,7 +25,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import bndtools.utils.SWTConcurrencyUtil;
+import bndtools.jareditor.internal.utils.SWTConcurrencyUtil;
 
 public class JAREditor extends FormEditor implements IResourceChangeListener {
 
@@ -75,7 +75,7 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
         setPartName(name);
     }
 
-    protected void updateContent(final IEditorInput input) {
+    protected void updateContent(@SuppressWarnings("unused") final IEditorInput input) {
         Runnable update = new Runnable() {
             public void run() {
                 Control c = (contentPage == null) ? null : contentPage.getPartControl();
@@ -111,6 +111,9 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
         IResource myResource = ResourceUtil.getResource(getEditorInput());
 
         IResourceDelta delta = event.getDelta();
+        if (delta == null)
+            return;
+
         IPath fullPath = myResource.getFullPath();
         delta = delta.findMember(fullPath);
         if (delta == null)

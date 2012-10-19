@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2012 Per Kr. Soreide.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Per Kr. Soreide - initial API and implementation
+ *******************************************************************************/
 package bndtools.release.ui;
 
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -53,7 +63,7 @@ public class TreeLabelProvider extends ColumnLabelProvider {
     public Image getImage(Object element) {
 
 		if (element instanceof Baseline) {
-		    return BundleTreeImages.resolveImage("bundle", ((Baseline)element).getDiff().getDelta().toString().toLowerCase(), null, null);
+		    return BundleTreeImages.resolveImage("bundle", ((Baseline)element).getDiff().getDelta().toString().toLowerCase(), null, null); //$NON-NLS-1$
 		}
 		if (element instanceof Diff) {
 			Diff tree = (Diff) element;
@@ -62,12 +72,12 @@ public class TreeLabelProvider extends ColumnLabelProvider {
 			String strDelta = getDeltaString(tree);
 			String impExp = null;
 			if (tree.getType() == Type.PACKAGE) {
-				impExp = "export";
+				impExp = "export"; //$NON-NLS-1$
 			} else if (tree.getType() == Type.RESOURCE) {
 			    String name = tree.getName();
 				int idx = name.lastIndexOf('.');
 				if (idx > -1) {
-					type = "dot_" + name.substring(idx + 1);
+					type = "dot_" + name.substring(idx + 1); //$NON-NLS-1$
 				}
 			}
 			return BundleTreeImages.resolveImage(type, strDelta, impExp, null);
@@ -77,12 +87,12 @@ public class TreeLabelProvider extends ColumnLabelProvider {
 			String type = tree.getType().toString().toLowerCase();
 			String impExp = null;
 			if (tree.getType() == Type.PACKAGE) {
-				impExp = "export";
+				impExp = "export"; //$NON-NLS-1$
 			} else if (tree.getType() == Type.RESOURCE) {
                 String name = tree.getName();
 				int idx = name.lastIndexOf('.');
 				if (idx > 0) {
-					type = "dot_" + name.substring(idx + 1);
+					type = "dot_" + name.substring(idx + 1); //$NON-NLS-1$
 				}
 			}
 			return BundleTreeImages.resolveImage(type, null, impExp, null);
