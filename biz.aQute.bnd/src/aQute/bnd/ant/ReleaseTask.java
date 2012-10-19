@@ -36,7 +36,11 @@ public class ReleaseTask extends BaseTask {
 	public void execute() throws BuildException {
 		try {
 			Project project = Workspace.getProject(getProject().getBaseDir());
-			project.release(releaseRepo);
+			if (releaseRepo == null) {
+				project.release(false);
+			} else {
+				project.release(releaseRepo);
+			}
 
 			if (report(project))
 				throw new BuildException("Release failed");
