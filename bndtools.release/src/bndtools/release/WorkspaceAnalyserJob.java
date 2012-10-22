@@ -13,6 +13,7 @@ package bndtools.release;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -40,12 +41,14 @@ import bndtools.release.ui.WorkspaceReleaseDialog;
 public class WorkspaceAnalyserJob extends Job {
 
 	protected final Shell shell;
+	protected final Set<IProject> projects;
 
-	public WorkspaceAnalyserJob() {
-		super(Messages.workspaceReleaseJob1);
-		this.shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-		setUser(true);
-	}
+    public WorkspaceAnalyserJob(Set<IProject> projects) {
+        super(Messages.workspaceReleaseJob1);
+        this.shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
+        setUser(true);
+        this.projects = projects;
+    }
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
@@ -70,7 +73,12 @@ public class WorkspaceAnalyserJob extends Job {
 			mon.setTaskName(Messages.processingProjects);
 			for (Project project : orderedProjects) {
 				IProject eProject = ReleaseUtils.getProject(project);
+                if (!isIncluded(eProject)) {
+                    mon.worked(1);
+                    continue;
+                }
 				if (eProject == null || !eProject.isOpen() || !eProject.isAccessible()) {
+	                mon.worked(1);
 					continue;
 				}
 				List<Builder> builders = project.getBuilder(null)
@@ -184,5 +192,12 @@ public class WorkspaceAnalyserJob extends Job {
                 outlist.add(project);
             }
 		}
+	}
+
+	protected boolean isIncluded(IProject project) {
+	    if (projects == null) {
+	        return true;
+	    }
+	    return projects.contains(project);
 	}
 }
