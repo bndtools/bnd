@@ -1,6 +1,6 @@
 plugindir: ${workspace}/cnf/plugins
 
--pluginpath: ${plugindir}/biz.aQute.repository/biz.aQute.repository-2.0.2.jar
+-pluginpath: ${plugindir}/biz.aQute.repository/biz.aQute.repository-2.0.3.jar
 
 -plugin:\
 	aQute.bnd.deployer.repository.LocalIndexedRepo; name=Release;      local=${workspace}/cnf/releaserepo;pretty=true,\
