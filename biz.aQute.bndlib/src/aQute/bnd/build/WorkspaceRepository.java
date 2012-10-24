@@ -128,24 +128,15 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		List<Version> versions = new ArrayList<Version>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
-			File[] build = project.build(false);
-			if (build != null) {
-				for (File file : build) {
-					Jar jar = new Jar(file);
-					try {
-						if (bsn.equals(jar.getBsn())) {
-							String v  = jar.getVersion();
-							if ( v == null)
-								v = "0";
-							else if (!Verifier.isVersion(v))
-								continue; // skip
-							
-							versions.add(new Version(v));
-						}
-					}
-					finally {
-						jar.close();
-					}
+			for (Builder builder : project.getSubBuilders()) {
+				if (bsn.equals(builder.getBsn())) {
+					String v  = builder.getVersion();
+					if (v == null)
+						v = "0";
+					else if (!Verifier.isVersion(v))
+						continue; // skip
+					
+					versions.add(new Version(v));
 				}
 			}
 		}
