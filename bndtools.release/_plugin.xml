@@ -12,6 +12,7 @@
                class="bndtools.release.ReleaseAction"
                enablesFor="+"
                id="bndtools.release.releaseBundle"
+               icon="icons/bricks_release.png"
                label="%releaseBundle"
                menubarPath="additions"
                tooltip="%releaseBundle.tooltip">
@@ -33,7 +34,7 @@
          <visibility>
             <objectState
                   name="projectNature"
-                  value="org.eclipse.jdt.core.javanature">
+                  value="bndtools.core.bndnature">
             </objectState>
          </visibility>
       </objectContribution>
