@@ -31,8 +31,10 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Type;
 import aQute.bnd.service.diff.Diff.Ignore;
 import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
@@ -99,7 +101,10 @@ public class WorkspaceAnalyserJob extends Job {
                                if ("META-INF/MANIFEST.MF".equals(diff.getName())) { //$NON-NLS-1$
                                    return true;
                                }
-                                return false;
+                               if (diff.getType() == Type.HEADER && diff.getName().startsWith(Constants.BUNDLE_VERSION)) {
+                                   return true;
+                               }
+                               return false;
                             }});
 						if (delta != Delta.UNCHANGED && delta != Delta.IGNORED) {
 							jarDiffs.add(jarDiff);
