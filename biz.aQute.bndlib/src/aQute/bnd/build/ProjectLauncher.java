@@ -37,6 +37,7 @@ public abstract class ProjectLauncher {
 	private boolean				trace;
 	private boolean				keep;
 	private int					framework;
+	private File				cwd;
 
 	public final static int		SERVICES			= 10111;
 	public final static int		NONE				= 20123;
@@ -207,6 +208,9 @@ public abstract class ProjectLauncher {
 		java.addAll(getArguments());
 		if (timeout != 0)
 			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
+		
+		File cwd = getCwd();
+		if (cwd != null) java.setCwd(cwd);
 
 		try {
 			int result = java.execute(System.in, System.err, System.err);
@@ -363,5 +367,13 @@ public abstract class ProjectLauncher {
 	protected void warning(String message, Object... args) {
 		String formatted = String.format(message, args);
 		warnings.add(formatted);
+	}
+	
+	public File getCwd() {
+		return cwd;
+	}
+
+	public void setCwd(File cwd) {
+		this.cwd = cwd;
 	}
 }

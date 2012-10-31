@@ -12,6 +12,7 @@ public class TestTask extends BaseTask {
 
 	private boolean	continuous	= false;
 	private String	runFiles	= null;
+	private File dir = null;
 
 	@Override
 	public void execute() throws BuildException {
@@ -60,6 +61,7 @@ public class TestTask extends BaseTask {
 
 		ProjectTester tester = project.getProjectTester();
 		tester.setContinuous(continuous);
+		if (dir != null) tester.setCwd(dir);
 		tester.prepare();
 
 		if (report(project))
@@ -82,6 +84,10 @@ public class TestTask extends BaseTask {
 
 	public void setRunfiles(String runFiles) {
 		this.runFiles = runFiles;
+	}
+	
+	public void setDir(File dir) {
+		this.dir = dir;
 	}
 
 }

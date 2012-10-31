@@ -1,5 +1,6 @@
 package aQute.junit.plugin;
 
+import java.io.*;
 import java.util.*;
 
 import aQute.bnd.build.*;
@@ -34,6 +35,14 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 			launcher.getRunProperties().put(TESTER_CONTINUOUS, "" + getContinuous());
 			if (Processor.isTrue(project.getProperty(Constants.RUNTRACE)))
 				launcher.getRunProperties().put(TESTER_TRACE, "true");
+			
+			try {
+				// use reflection to avoid NoSuchMethodError due to change in API
+				File cwd = (File) getClass().getMethod("getCwd").invoke(this);
+				if (cwd != null) launcher.setCwd(cwd);
+			} catch (NoSuchMethodException e){
+				// ignore
+			}
 
 			Collection<String> testnames = getTests();
 			if (testnames.size() > 0) {
