@@ -21,6 +21,8 @@ import test.lib.MockRegistry;
 import test.lib.NullLogService;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.clauses.*;
+import aQute.bnd.header.*;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import biz.aQute.resolve.internal.BndrunResolveContext;
 
@@ -284,6 +286,24 @@ public class BndrunResolveContextTest extends TestCase {
         Requirement req = new CapReqBuilder("osgi.wiring.host").addDirective("filter", "(osgi.wiring.host=system.bundle)").buildSyntheticRequirement();
         List<Capability> providers = context.findProviders(req);
 
+        assertEquals(1, providers.size());
+        assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+    }
+    
+    public static void testResolveSystemPackagesExtra() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+        runModel.setEE(EE.JavaSE_1_6);
+        runModel.setSystemPackages(Collections.singletonList(new ExportedPackage("sun.reflect", new Attrs())));
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+        
+        Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=sun.reflect)").buildSyntheticRequirement();
+        List<Capability> providers = context.findProviders(req);
+        
         assertEquals(1, providers.size());
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
     }

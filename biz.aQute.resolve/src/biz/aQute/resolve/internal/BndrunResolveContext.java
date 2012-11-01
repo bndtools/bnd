@@ -25,6 +25,7 @@ import org.osgi.service.resolver.ResolveContext;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.service.Registry;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.Filters;
@@ -56,6 +57,7 @@ public class BndrunResolveContext extends ResolveContext {
 
     private Resource inputRequirementsResource = null;
     private EE ee;
+    private List<ExportedPackage> sysPkgsExtra;
 
     public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
         this.runModel = runModel;
@@ -68,6 +70,7 @@ public class BndrunResolveContext extends ResolveContext {
             return;
 
         loadEE();
+        loadSystemPackagesExtra();
         loadRepositories();
         findFramework();
         constructInputRequirements();
@@ -78,6 +81,10 @@ public class BndrunResolveContext extends ResolveContext {
     private void loadEE() {
         EE tmp = runModel.getEE();
         ee = (tmp != null) ? tmp : EE.JavaSE_1_6;
+    }
+
+    private void loadSystemPackagesExtra() {
+        sysPkgsExtra = runModel.getSystemPackages();
     }
 
     private void loadRepositories() {
@@ -136,7 +143,7 @@ public class BndrunResolveContext extends ResolveContext {
                             if (frameworkResourceVersion == null || (foundVersion.compareTo(frameworkResourceVersion) > 0)) {
                                 frameworkResource = frameworkCap.getResource();
                                 frameworkResourceVersion = foundVersion;
-                                frameworkResourceRepo = new FrameworkResourceRepository(frameworkResource, ee);
+                                frameworkResourceRepo = new FrameworkResourceRepository(frameworkResource, ee, sysPkgsExtra);
                             }
                         }
                     }

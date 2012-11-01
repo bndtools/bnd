@@ -21,6 +21,7 @@ import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.deployer.repository.CapabilityIndex;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -31,7 +32,7 @@ public class FrameworkResourceRepository implements Repository {
     private final Resource framework;
     private final EE ee;
 
-    public FrameworkResourceRepository(Resource frameworkResource, EE ee) {
+    public FrameworkResourceRepository(Resource frameworkResource, EE ee, List<ExportedPackage> sysPkgsExtra) {
         this.framework = frameworkResource;
         this.ee = ee;
         capIndex.addResource(frameworkResource);
@@ -51,6 +52,18 @@ public class FrameworkResourceRepository implements Repository {
 
         // Add JRE packages
         loadJREPackages();
+
+        // Add system.packages.extra
+        if (sysPkgsExtra != null)
+            for (ExportedPackage sysPkg : sysPkgsExtra) {
+                CapReqBuilder builder = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
+                builder.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, sysPkg.getName());
+                String versionStr = sysPkg.getVersionString();
+                Version version = versionStr != null ? new Version(versionStr) : Version.emptyVersion;
+                builder.addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+                Capability cap = builder.setResource(framework).buildCapability();
+                capIndex.addCapability(cap);
+            }
     }
 
     public void addFrameworkCapability(CapReqBuilder builder) {
