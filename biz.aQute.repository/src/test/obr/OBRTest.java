@@ -8,6 +8,8 @@ import junit.framework.*;
 import test.helpers.*;
 import test.lib.*;
 import aQute.bnd.deployer.obr.*;
+import aQute.bnd.deployer.repository.*;
+import aQute.bnd.deployer.repository.providers.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
@@ -185,4 +187,29 @@ public class OBRTest extends TestCase {
 		assertEquals("http://www.example.com/bundles/dummybundle.jar,file:/Users/neil/bundles/dummy.jar",
 				obr2.getName());
 	}
+	
+	public static void testProcessFilter1() {
+		String filter = "(&(name=foo)(version<1.0.0))";
+		String expected = "(&(name=foo)(!(version>=1.0.0)))";
+		assertEquals(expected, ObrUtil.processFilter(filter, null));
+	}
+
+	public static void testProcessFilter2() {
+		String filter = "(&(name=foo)(version>1.0.0))";
+		String expected = "(&(name=foo)(!(version<=1.0.0)))";
+		assertEquals(expected, ObrUtil.processFilter(filter, null));
+	}
+	
+	public static void testProcessFilter3() {
+		String filter = "(name=foo)(mandatory:<*hello)(version>=1.0.0)(foo<*bar)";
+		String expected = "(name=foo)(version>=1.0.0)";
+		assertEquals(expected, ObrUtil.processFilter(filter, null));
+	}
+
+	public static void testProcessFilter4() {
+		String filter = "(name=foo)(mandatory:<*hello)(mandatory:*>goodbye)(version>=1.0.0)(foo<*bar)";
+		String expected = "(name=foo)(version>=1.0.0)";
+		assertEquals(expected, ObrUtil.processFilter(filter, null));
+	}
+
 }

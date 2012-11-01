@@ -21,6 +21,7 @@ public class AllTests {
 		suite.addTestSuite(TestLocalObrGeneration.class);
 		suite.addTestSuite(TestObrRepo.class);
 		suite.addTestSuite(TestMultipleLocalIndexGeneration.class);
+		suite.addTestSuite(TestObrCapReqParsing.class);
 		suite.addTestSuite(TestObrRecognition.class);
 		suite.addTestSuite(TestR5Recognition.class);
 		suite.addTestSuite(FindProvidersTest.class);
