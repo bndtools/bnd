@@ -69,6 +69,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.properties.BadLocationException;
 import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -465,6 +466,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
         // Ensure the field values are updated if the file content is replaced
         docProvider.addElementStateListener(new IElementStateListener() {
+
+            String savedString = null;
+
             public void elementMoved(Object originalElement, Object movedElement) {}
 
             public void elementDirtyStateChanged(Object element, boolean isDirty) {}
@@ -473,13 +477,39 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
             public void elementContentReplaced(Object element) {
                 try {
-                    model.loadFrom(new IDocumentWrapper(docProvider.getDocument(element)));
+                    IDocumentWrapper idoc = new IDocumentWrapper(docProvider.getDocument(element));
+                    if (!saving.get()) {
+                        model.loadFrom(idoc);
+                    } else {
+                        if (savedString != null) {
+                            logger.logInfo("Putting back content that we almost lost!", null);
+                            try {
+                                idoc.replace(0, idoc.getLength(), savedString);
+                            } catch (BadLocationException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
                 } catch (IOException e) {
                     logger.logError("Error loading model from document.", e);
+                } finally {
+                    savedString = null;
                 }
             }
 
-            public void elementContentAboutToBeReplaced(Object element) {}
+            public void elementContentAboutToBeReplaced(Object element) {
+                // [cs] This check is here to attempt to save content that would be thrown away by a (misbehaving?) version control plugin.
+                // Scenario: File is checked out by Perforce plugin. 
+                // This causes elementContentAboutToBeReplaced and elementContentReplaced callbacks to be fired.
+                // However -- by the time that elementContentReplaced is called, the content inside of the IDocumentWrapper
+                // is already replaced with the contents of the perforce file being checked out.
+                // To avoid losing changes, we need to save the content here, then put that content BACK on to the document
+                // in elementContentReplaced 
+                if (saving.get()) {
+                    logger.logInfo("Content about to be replaced... Save it.", null);
+                    savedString = new IDocumentWrapper(docProvider.getDocument(element)).get();
+                }
+            }
         });
     }
 
