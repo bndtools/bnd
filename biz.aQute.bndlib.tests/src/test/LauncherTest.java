@@ -72,6 +72,19 @@ public class LauncherTest extends TestCase {
 		assertEquals(42, l.launch());
 	}
 
+//	public static void testWorkspaceWithSpace() throws Exception {
+//		Project project = getProjectFromWorkspaceWithSpace();
+//		project.clear();
+//
+//		//[cs] This fails due to not finding the Launcher Plugin. I don't quite
+//		// understand what needs to be in the test workspace with a space
+//		// to make it find the launcher plugin.
+//		ProjectLauncher l = project.getProjectLauncher();
+//		l.setTrace(true);
+//		l.getRunProperties().put("test.cmd", "exit");
+//		assertEquals(42, l.launch());
+//	}
+	
 	/**
 	 * @return
 	 * @throws Exception
@@ -79,6 +92,12 @@ public class LauncherTest extends TestCase {
 	static Project getProject() throws Exception {
 		Workspace workspace = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile());
 		Project project = workspace.getProject("demo");
+		return project;
+	}
+	
+	static Project getProjectFromWorkspaceWithSpace() throws Exception {
+		Workspace workspace = Workspace.getWorkspace(new File("test/w o r k s p a c e"));
+		Project project = workspace.getProject("p r o j e c t");
 		return project;
 	}
 
