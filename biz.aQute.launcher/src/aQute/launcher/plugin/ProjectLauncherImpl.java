@@ -21,7 +21,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		propertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
 		project.trace(MessageFormat.format("launcher plugin using temp launch file {0}",
 				propertiesFile.getAbsolutePath()));
-		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + propertiesFile.getAbsolutePath() + "\"");
+		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=" + propertiesFile.getAbsolutePath());
 
 		if (project.getRunProperties().get("noframework") != null) {
 			setRunFramework(NONE);
