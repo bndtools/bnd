@@ -38,6 +38,7 @@ public abstract class ProjectLauncher {
 	private boolean				keep;
 	private int					framework;
 	private File				cwd;
+	private boolean	            supportEclipse             = false;
 
 	public final static int		SERVICES			= 10111;
 	public final static int		NONE				= 20123;
@@ -375,5 +376,13 @@ public abstract class ProjectLauncher {
 
 	public void setCwd(File cwd) {
 		this.cwd = cwd;
+	}
+	
+	public void setSupportEclipse(boolean supportEclipse) {
+		this.supportEclipse=supportEclipse;
+	}
+	
+	public boolean getSupportEclipse() {
+		return this.supportEclipse;
 	}
 }

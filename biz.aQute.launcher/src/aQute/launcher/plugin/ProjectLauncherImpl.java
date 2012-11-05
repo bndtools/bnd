@@ -21,7 +21,11 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		propertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
 		project.trace(MessageFormat.format("launcher plugin using temp launch file {0}",
 				propertiesFile.getAbsolutePath()));
-		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=" + propertiesFile.getAbsolutePath());
+		if (this.getSupportEclipse() && propertiesFile.getAbsolutePath().contains(" ")) {
+			addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + propertiesFile.getAbsolutePath() + "\"");
+		} else {
+			addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=" + propertiesFile.getAbsolutePath());
+		}
 
 		if (project.getRunProperties().get("noframework") != null) {
 			setRunFramework(NONE);
@@ -31,6 +35,24 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		super.addDefault(Constants.DEFAULT_LAUNCHER_BSN);
 	}
 
+	@Override
+	public void setSupportEclipse(boolean supportEclipse) {
+		super.setSupportEclipse(supportEclipse);
+		
+		Collection<String> runvmArgs = getRunVM();
+		for (String str : runvmArgs) {
+			if (str.startsWith("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=")) {
+				runvmArgs.remove(str);
+				if (supportEclipse && propertiesFile.getAbsolutePath().contains(" ")) {
+					str = "-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + propertiesFile.getAbsolutePath() + "\"";
+				} else {
+					str = "-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=" + propertiesFile.getAbsolutePath();
+				}
+				runvmArgs.add(str);
+			}
+		}
+	}
+	
 	/**
 	 * Cleanup the properties file. Is called after the process terminates.
 	 */
