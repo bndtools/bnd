@@ -2,7 +2,7 @@ package aQute.libg.tuple;
 
 import java.io.Serializable;
 
-public class Pair<A, B> implements Serializable {
+public class Pair<A, B> implements Serializable, Cloneable {
 
 	private static final long	serialVersionUID	= 1L;
 
