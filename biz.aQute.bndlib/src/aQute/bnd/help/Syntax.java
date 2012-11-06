@@ -38,7 +38,7 @@ public class Syntax implements Constants {
 																							+ Verifier.VERSIONRANGE
 																									.toString()));
 
-	static Syntax[]							syntaxes				= new Syntax[] {
+	static final Syntax[]					syntaxes				= new Syntax[] {
 			new Syntax(
 					BUNDLE_ACTIVATIONPOLICY,
 					"The " + BUNDLE_ACTIVATIONPOLICY + " header specifies how the framework should activate the bundle once started.",
