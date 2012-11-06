@@ -6,4 +6,4 @@ build = sometime
                                 readonly=false;name=Release, \
                         aQute.lib.deployer.FileRepo; \
                                 location=${workspace}/cnf/repo; \
-                                readonly=true
+                                readonly=true;name=Repo
