@@ -116,36 +116,22 @@ public class ProjectBuilder extends Builder {
 		}
 	}
 
-	protected Jar getBaselineJar(boolean fallback) throws Exception {
+	public Jar getBaselineJar(boolean fallback) throws Exception {
 
 		String baseline = getProperty(Constants.BASELINE);
-		if ((baseline == null || baseline.trim().length() == 0) && !fallback)
+		String baselineRepo = getProperty(Constants.BASELINEREPO);
+		if ((baseline == null || baseline.trim().length() == 0) 
+				&& (baselineRepo == null || baselineRepo.trim().length() == 0) && !fallback)
 			return null;
 
-		trace("baseline %s", baseline);
-
 		File baselineFile = null;
-		if ((baseline == null || baseline.trim().length() == 0) && fallback) {
-
-			String repoName = getProperty(Constants.BASELINEREPO);
-			if (repoName == null) {
-				repoName = getProperty(Constants.RELEASEREPO);
-				if (repoName == null) {
-					return null;
-				}
-			}
-
-			List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
-			for (RepositoryPlugin repo : repos) {
-				if (repoName.equals(repo.getName())) {
-					SortedSet<Version> versions = repo.versions(getBsn());
-					if (!versions.isEmpty()) {
-						baselineFile = repo.get(getBsn(), versions.last(), null);
-					}
-					break;
-				}
-			}
+		if ((baseline == null || baseline.trim().length() == 0)) {
+			baselineFile = getBaselineFromRepo(fallback);
+			if (baselineFile != null)
+				trace("baseline %s", baselineFile.getName());
 		} else {
+
+			trace("baseline %s", baseline);
 
 			Collection<Container> bundles = project.getBundles(Strategy.LOWEST, baseline);
 			for (Container c : bundles) {
@@ -163,6 +149,32 @@ public class ProjectBuilder extends Builder {
 			return new Jar(".");
 		}
 		return new Jar(baselineFile);
+	}
+
+	private File getBaselineFromRepo(boolean fallback) throws Exception {
+		String repoName = getProperty(Constants.BASELINEREPO);
+		if (repoName == null && !fallback)
+			return null;
+
+		if (repoName == null) {
+			repoName = getProperty(Constants.RELEASEREPO);
+			if (repoName == null) {
+				return null;
+			}
+		}
+
+		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
+		for (RepositoryPlugin repo : repos) {
+			if (repoName.equals(repo.getName())) {
+				SortedSet<Version> versions = repo.versions(getBsn());
+				if (!versions.isEmpty()) {
+					return repo.get(getBsn(), versions.last(), null);
+				}
+				break;
+			}
+		}
+		return null;
+
 	}
 
 	/** 
