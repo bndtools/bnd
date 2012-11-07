@@ -72,6 +72,31 @@ public class LauncherTest extends TestCase {
 		assertEquals(42, l.launch());
 	}
 
+	public static void testWorkspaceWithSpace() throws Exception {
+		Project project = getProjectFromWorkspaceWithSpace();
+		
+		project.clear();
+		project.clean();
+		
+		// reuse built .class files from the demo project.
+		String base = new File("").getAbsoluteFile().getParentFile().getAbsolutePath();
+		
+		new File(base + "/biz.aQute.bndlib.tests/test/a space/test/bin/test/").mkdirs();
+		
+		IO.copy(new File(base + "/demo/bin/test/TestActivator$1.class"),
+				new File(base + "/biz.aQute.bndlib.tests/test/a space/test/bin/test/TestActivator$1.class"));
+		IO.copy(new File(base + "/demo/bin/test/TestActivator.class"),
+				new File(base + "/biz.aQute.bndlib.tests/test/a space/test/bin/test/TestActivator.class"));
+		
+		project.clear();
+		project.build();
+
+		ProjectLauncher l = project.getProjectLauncher();
+		l.setTrace(true);
+		l.getRunProperties().put("test.cmd", "exit");
+		assertEquals(42, l.launch());
+	}
+	
 	/**
 	 * @return
 	 * @throws Exception
@@ -79,6 +104,12 @@ public class LauncherTest extends TestCase {
 	static Project getProject() throws Exception {
 		Workspace workspace = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile());
 		Project project = workspace.getProject("demo");
+		return project;
+	}
+	
+	static Project getProjectFromWorkspaceWithSpace() throws Exception {
+		Workspace workspace = Workspace.getWorkspace(new File("test/a space"));
+		Project project = workspace.getProject("test");
 		return project;
 	}
 

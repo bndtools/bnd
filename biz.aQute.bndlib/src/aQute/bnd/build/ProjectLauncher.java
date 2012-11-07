@@ -37,6 +37,7 @@ public abstract class ProjectLauncher {
 	private boolean				trace;
 	private boolean				keep;
 	private int					framework;
+	private boolean	            supportEclipse             = false;
 
 	public final static int		SERVICES			= 10111;
 	public final static int		NONE				= 20123;
@@ -363,5 +364,13 @@ public abstract class ProjectLauncher {
 	protected void warning(String message, Object... args) {
 		String formatted = String.format(message, args);
 		warnings.add(formatted);
+	}
+	
+	public void setSupportEclipse(boolean supportEclipse) {
+		this.supportEclipse=supportEclipse;
+	}
+	
+	public boolean getSupportEclipse() {
+		return this.supportEclipse;
 	}
 }
