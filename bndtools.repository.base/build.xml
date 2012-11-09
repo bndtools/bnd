@@ -3,19 +3,27 @@
 
 	<import file="../cnf/build.xml" />
 
-	<!-- Taskdefs -->
-	<taskdef resource="net/sf/antcontrib/antlib.xml">
-		<classpath location="ant-contrib-1.0b3.jar" />
-	</taskdef>
-	<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
-		<classpath location="org.osgi.impl.bundle.bindex-2.2.0.jar" />
-	</taskdef>
+	<target name="__repobasetaskdefsinit" unless="__repobasetaskdefsinit_done">
+		<!-- tasks and macros must be defined in a task or we'll get
+		     'Trying to override old definition of task ...' reports -->
+
+		<!-- Taskdefs -->
+		<taskdef resource="net/sf/antcontrib/antlib.xml">
+			<classpath location="ant-contrib-1.0b3.jar" />
+		</taskdef>
+		<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
+			<classpath location="org.osgi.impl.bundle.bindex-2.2.0.jar" />
+		</taskdef>
+
+		<!-- mark __repobasetaskdefsinit has been run -->
+		<property name="__repobasetaskdefsinit_done" value="set" />
+	</target>
 
 	<property name="templates.cnf" location="templates/cnfs" />
 	<property name="templates.cnf.standard" location="${templates.cnf}/standard" />
 	<property name="templates.cnf.lightweight" location="${templates.cnf}/lightweight" />
 
-	<target name="__copy_bundle_std">
+	<target name="__copy_bundle_std" depends="__repobasetaskdefsinit">
 		<fail unless="bsn" />
 		<timestampselector property="latest">
 			<path>
@@ -26,7 +34,7 @@
 		<copy todir="${templates.cnf.standard}/repo/${bsn}" file="${latest}" />
 	</target>
 
-	<target name="__copy_bundle_lwt">
+	<target name="__copy_bundle_lwt" depends="__repobasetaskdefsinit">
 		<fail unless="bsn" />
 		<timestampselector property="latest">
 			<path>
@@ -37,7 +45,7 @@
 		<copy todir="${templates.cnf.lightweight}/repo/${bsn}" file="${latest}" />
 	</target>
 
-	<target name="updateTemplates" depends="init">
+	<target name="updateTemplates" depends="__repobasetaskdefsinit,init">
 		<delete>
 			<fileset dir="${templates.cnf.standard}/repo" includes="biz.aQute.*/**" />
 			<fileset dir="${templates.cnf.lightweight}/repo" includes="biz.aQute.*/**" />
