@@ -2,6 +2,7 @@ package aQute.bnd.osgi;
 
 import static aQute.bnd.osgi.Constants.*;
 
+import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.*;
@@ -17,6 +18,7 @@ import aQute.service.reporter.*;
  * provides convenient methods to access these properties via semantic methods.
  */
 public abstract class Domain implements Iterable<String> {
+	final Properties	translation	= new Properties();
 
 	public abstract String get(String key);
 
@@ -25,6 +27,23 @@ public abstract class Domain implements Iterable<String> {
 		if (result != null)
 			return result;
 		return deflt;
+	}
+
+	public String translate(String key) {
+		return translate(key, null);
+	}
+	
+	
+	public String translate(String key, String deflt) {
+		String value = get(key);
+		if ( value == null)
+			return deflt;
+		
+		if ( value.indexOf('%')>=0) {
+			value = value.trim().substring(1);
+			return translation.getProperty(value,value);
+		}
+		return null;
 	}
 
 	public abstract void set(String key, String value);
@@ -147,6 +166,13 @@ public abstract class Domain implements Iterable<String> {
 	public Parameters getParameters(String key, String deflt, Reporter reporter) {
 		return new Parameters(get(key, deflt), reporter);
 	}
+	
+	
+	public Parameters getRequireBundle() {
+		return getParameters(Constants.REQUIRE_BUNDLE);
+	}
+
+
 
 	public Parameters getImportPackage() {
 		return getParameters(IMPORT_PACKAGE);
@@ -244,6 +270,13 @@ public abstract class Domain implements Iterable<String> {
 		return p.entrySet().iterator().next();
 	}
 
+	public Map.Entry<String,Attrs> getFragmentHost() {
+		Parameters p = getParameters(FRAGMENT_HOST);
+		if (p.isEmpty())
+			return null;
+		return p.entrySet().iterator().next();
+	}
+
 	public void setBundleSymbolicName(String s) {
 		set(BUNDLE_SYMBOLICNAME, s);
 	}
@@ -307,4 +340,37 @@ public abstract class Domain implements Iterable<String> {
 		set(CONDITIONAL_PACKAGE, string);
 
 	}
+
+	public void setTranslation(Jar jar) throws Exception {
+
+		Manifest m = jar.getManifest();
+		if (m == null)
+			return;
+
+		String path = m.getMainAttributes().getValue(Constants.BUNDLE_LOCALIZATION);
+		if (path == null)
+			path = org.osgi.framework.Constants.BUNDLE_LOCALIZATION_DEFAULT_BASENAME;
+
+		path += ".properties";
+
+		Resource propsResource = jar.getResource(path);
+		if (propsResource != null) {
+			InputStream in = propsResource.openInputStream();
+			try {
+				translation.load(in);
+			}
+			finally {
+				in.close();
+			}
+		}
+	}
+
+	public Parameters getRequireCapability() {
+		return getParameters(Constants.REQUIRE_CAPABILITY);
+	}
+
+	public Parameters getProvideCapability() {
+		return getParameters(Constants.PROVIDE_CAPABILITY);
+	}
+
 }
