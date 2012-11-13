@@ -2008,7 +2008,7 @@ public class Analyzer extends Processor {
 
 	private static String removeLeadingZeroes(String group) {
 		if (group == null)
-			return null;
+			return "0";
 
 		int n = 0;
 		while (n < group.length() - 1 && group.charAt(n) == '0')
