@@ -40,6 +40,17 @@ class MacOS extends Unix {
 	}
 
 	@Override
+	public String remove(ServiceData data) {
+		// File initd = getInitd(data);
+		File launch = getLaunch(data);
+		
+		if (launch.exists() && !launch.delete())
+			return "Cannot delete service " + data.name + " because it exists and cannot be deleted: " + launch;
+
+		return null;
+	}
+
+	@Override
 	public void installDaemon(boolean user) throws IOException {
 		String dest = "~/Library/LaunchAgents/org.jpm4j.run.plist";
 		if ( !user) {
@@ -62,4 +73,8 @@ class MacOS extends Unix {
 	
 	public String defaultCacertsPassword() { return "changeit"; }
 
+	
+	public String toString() {
+		return "MacOS";
+	}
 }

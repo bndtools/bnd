@@ -19,6 +19,7 @@ import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
 import aQute.jpm.lib.Service;
 import aQute.jpm.platform.*;
+import aQute.jpm.platform.windows.*;
 import aQute.lib.base64.*;
 import aQute.lib.collections.*;
 import aQute.lib.data.*;
@@ -27,6 +28,7 @@ import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.settings.*;
 import aQute.libg.reporter.*;
+import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
 
 @Description("Just Another Package Manager (for java™)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service.")
@@ -74,7 +76,7 @@ public class Main extends ReporterAdapter {
 		String epilog();
 
 		String prolog();
-		
+
 		String name();
 
 	}
@@ -184,11 +186,14 @@ public class Main extends ReporterAdapter {
 		@Description("Do not return error status for error that match this given regular expression.")
 		String[] failok();
 
-		@Description("Remote library url (can also be permanently set with 'jpm set library.url=...'")
+		@Description("Remote library url (can also be permanently set with 'jpm settings library.url=...'")
 		String library();
 
-		@Description("Cache directory, can als be permanently set with 'jpm set library.cache=...'")
+		@Description("Cache directory, can als be permanently set with 'jpm settings library.cache=...'")
 		String cache();
+
+		@Description("The directory where to store executables. Can also be set 'jpm settings library.bin=...'")
+		String bin();
 	}
 
 	/**
@@ -215,13 +220,24 @@ public class Main extends ReporterAdapter {
 			if (url != null)
 				jpm.setLibrary(new URI(url));
 
-			File cacheDir;
+			File homeDir;
 			if (opts.cache() != null) {
-				cacheDir = IO.getFile(base, opts.cache());
+				homeDir = IO.getFile(base, opts.cache());
 			} else if (settings.containsKey("library.cache")) {
-				cacheDir = IO.getFile(base, settings.get("library.cache"));
+				homeDir = IO.getFile(base, settings.get("library.cache"));
 			} else
-				cacheDir = null;
+				homeDir = null;
+
+			if ( homeDir != null) 
+				jpm.setHomeDir(homeDir);
+			
+			File binDir;
+			if (opts.bin() != null) {
+				binDir = IO.getFile(base, opts.bin());
+			} else if (settings.containsKey("library.bin")) {
+				binDir = IO.getFile(base, settings.get("library.bin"));
+			} else
+				homeDir = null;
 
 			CommandLine handler = opts._command();
 			List<String> arguments = opts._();
@@ -323,7 +339,7 @@ public class Main extends ReporterAdapter {
 		ArtifactData target = null;
 
 		if (opts.local() != null) {
-			
+
 			File f = IO.getFile(base, opts.local());
 			if (f.isFile()) {
 				trace("Found file %s", f);
@@ -342,9 +358,8 @@ public class Main extends ReporterAdapter {
 				error("Could not install from file/url: %s", opts.local());
 				return;
 			}
-		}
-		else {
-			if( opts._().isEmpty()) {
+		} else {
+			if (opts._().isEmpty()) {
 				error("You need to specify a command name or artifact id");
 				return;
 			}
@@ -368,11 +383,10 @@ public class Main extends ReporterAdapter {
 			}
 		}
 		trace("Target from %s", Hex.toHexString(target.sha));
-		
-		
+
 		if (target.command != null) {
 			target.command.force = opts.force();
-			update(target.command,opts);
+			update(target.command, opts);
 			target.command.dependencies.add(0, target.file);
 			if (opts.force() && jpm.getCommand(target.command.name) != null)
 				jpm.deleteCommand(target.command.name);
@@ -380,33 +394,36 @@ public class Main extends ReporterAdapter {
 			String result = jpm.createCommand(target.command);
 			if (result != null)
 				error("Command creation failed: %s", result);
-		} else if ( opts.name() != null) {
-				CommandData data = new CommandData();
-				data.description = "Installed from command line";
-				data.force = opts.force();
-				data.main = target.mainClass;
-				data.name = opts.name();
-				data.sha = target.sha;
-				data.time = System.currentTimeMillis();
-				data.dependencies.add( target.file);
-				update(data, opts);
-				if ( data.main == null) {
-					error("No main class set");
-					return;
-				}
-				
-				if (opts.force() && jpm.getCommand(data.name) != null)
-					jpm.deleteCommand(data.name);
-				String result = jpm.createCommand(data);
-				if (result != null)
-					error("Command creation failed: %s", result);
+		} else if (opts.name() != null) {
+			CommandData data = new CommandData();
+			data.description = "Installed from command line";
+			data.force = opts.force();
+			data.main = target.mainClass;
+			data.name = opts.name();
+			data.sha = target.sha;
+			data.time = System.currentTimeMillis();
+			data.dependencies.add(target.file);
+			update(data, opts);
+			if (data.main == null) {
+				error("No main class set");
+				return;
+			}
+
+			if (opts.force() && jpm.getCommand(data.name) != null)
+				jpm.deleteCommand(data.name);
+			String result = jpm.createCommand(data);
+			if (result != null)
+				error("Command creation failed: %s", result);
 		} else
 			warning("No command found");
 
 		if (target.service != null) {
+			target.service.force = opts.force();
 			target.service.dependencies.add(0, target.file);
 			Service s = jpm.getService(target.service.name);
+			trace("existing service %s", s);
 			if (opts.force() && s != null) {
+				trace("will remove %s", s.getServiceData().bin);
 				s.remove();
 			}
 			String result = jpm.createService(target.service);
@@ -498,6 +515,7 @@ public class Main extends ReporterAdapter {
 				error("Create service failed: %s", result);
 			return;
 		}
+		
 		if (s == null) {
 			error("No such service: %s", name);
 			return;
@@ -509,12 +527,11 @@ public class Main extends ReporterAdapter {
 				error("No write access to update service %s", name);
 				return;
 			}
-			s.remove();
-			String result = jpm.createCommand(data);
+			data.force = true;
+			String result = jpm.createService(data);
 			if (result != null)
 				error("Update service failed: %s", result);
-
-			if (s.isRunning())
+			else if (s.isRunning())
 				warning("Changes will not affect the currently running process");
 		}
 		Data.details(data, out);
@@ -709,9 +726,9 @@ public class Main extends ReporterAdapter {
 		try {
 			File f = new File(s).getAbsoluteFile();
 			if (f.exists()) {
+				jpm.init();
 				CommandLine cl = new CommandLine(this);
 				cl.execute(this, "install", Arrays.asList("-fl", f.getAbsolutePath()));
-				jpm.init();
 			} else
 				error("Cannot find the jpm jar from %s", f);
 		}
@@ -722,7 +739,7 @@ public class Main extends ReporterAdapter {
 
 	public void _platform(@SuppressWarnings("unused")
 	platformOptions opts) {
-		out.println(jpm);
+		out.println(jpm.getPlatform());
 	}
 
 	/**
@@ -1191,10 +1208,20 @@ public class Main extends ReporterAdapter {
 			if (candidates == null) {
 				error("No candidates found for %s", key);
 			} else
-				for (Revision r : candidates) {
-					out.printf("%-40s %10s%-10s %s\n", jpm.getCoordinates(r), r.baseline, r.qualifier == null ? ""
-							: ("." + r.qualifier), r.description);
-				}
+				print(candidates);
+		}
+	}
+
+	void print(Iterable<Revision> revisions) {
+		for (Revision r : revisions) {
+			out.printf("%-40s %10s%-10s %s\n", jpm.getCoordinates(r), r.baseline, r.qualifier == null ? ""
+					: ("." + r.qualifier), r.description);
+		}
+	}
+
+	void printPrograms(Iterable< ? extends Program> programs) {
+		for (Program p : programs) {
+			out.printf("%-30s %s\n", p.groupId + ":" + p.artifactId, p.wiki);
 		}
 	}
 
@@ -1212,5 +1239,68 @@ public class Main extends ReporterAdapter {
 			} else
 				error("no such candidate");
 		}
+	}
+
+	interface findOptions extends Options {
+
+	}
+
+	public void _find(findOptions opts) throws Exception {
+		String q = new ExtList<String>(opts._()).join(" ");
+		Iterable< ? extends Program> programs = jpm.find(q);
+		printPrograms(programs);
+	}
+
+	/**
+	 * Some window specific commands
+	 */
+
+	enum Key {
+		HKEY_LOCAL_MACHINE(WinRegistry.HKEY_LOCAL_MACHINE),
+		HKEY_CURRENT_USER(WinRegistry.HKEY_CURRENT_USER);
+		
+		int n;
+		Key(int n) {
+			this.n = n;
+		}
+		
+		public int value() { return n; }
+	}
+	@Arguments(arg={"key", "[property]"})
+	interface winregOptions extends Options {
+		boolean localMachine();
+	}
+
+	public void _winreg(winregOptions opts) throws Exception {
+		List<String> _ = opts._();
+		String key = _.remove(0);
+		String property = _.isEmpty() ? null : _.remove(0);
+		int n = opts.localMachine() ?  WinRegistry.HKEY_LOCAL_MACHINE : WinRegistry.HKEY_CURRENT_USER;
+		
+		List<String> keys = WinRegistry.readStringSubKeys(n, key);
+		if ( property == null) {
+			Map<String,String> map = WinRegistry.readStringValues(n, key);
+			System.out.println(map);
+		} else {
+			WinRegistry.readString(n, key, property);
+		}
+	}
+	
+	/**
+	 * Make the setup local
+	 */
+	@Arguments(arg={"user|global"})
+	interface setupOptions extends Options {
+	}
+	public void _setup(setupOptions opts) {
+		String type = opts._().remove(0);
+		if ( type.equalsIgnoreCase("user")) {
+			File bin = IO.getFile("~/.jpm/bin");
+//	TODO		File home = IO.getFile("~/")
+//			settings.put("library.bin", );
+		} else {
+			
+		}
+		
 	}
 }

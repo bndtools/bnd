@@ -23,13 +23,15 @@ public abstract class Platform {
 		if (platform == null) {
 
 			String osName = System.getProperty("os.name").toLowerCase();
+			reporter.trace("os.name=%s", osName);
 			if (osName.startsWith("windows"))
-				throw new UnsupportedOperationException("Windows not supported");
-			else if (osName.startsWith("mac"))
+				platform = new Windows();
+			else if (osName.startsWith("mac") || osName.startsWith("darwin"))
 				platform = new MacOS();
 			else
 				platform = new Linux();
 			platform.reporter = reporter;
+			reporter.trace("platform=%s", platform.reporter);
 		}
 		return platform;
 	}

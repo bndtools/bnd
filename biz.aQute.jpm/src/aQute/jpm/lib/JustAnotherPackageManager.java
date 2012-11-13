@@ -5,6 +5,7 @@ import static aQute.lib.io.IO.*;
 import java.io.*;
 import java.net.*;
 import java.security.*;
+import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.jar.*;
@@ -23,6 +24,7 @@ import aQute.libg.cryptography.*;
 import aQute.library.remote.*;
 import aQute.service.library.*;
 import aQute.service.library.Library.Phase;
+import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
 import aQute.service.reporter.*;
 
@@ -73,8 +75,9 @@ public class JustAnotherPackageManager {
 	static Pattern		SHA_P			= Pattern.compile("(?:sha:)?([a-f0-9]{40,40})", Pattern.CASE_INSENSITIVE);
 	static Executor		executor;
 
-	File				repoDir;
 	File				homeDir;
+	File				binDir;
+	File				repoDir;
 	File				commandDir;
 	File				serviceDir;
 	File				service;
@@ -245,6 +248,9 @@ public class JustAnotherPackageManager {
 		// if (Data.validate(data) != null)
 		// return "Invalid command data: " + Data.validate(data);
 
+		if ( binDir != null) 
+			data.bin = new File(binDir, data.name);
+		
 		String s = platform.createCommand(data);
 		if (s == null)
 			storeData(new File(commandDir, data.name), data);
@@ -349,7 +355,13 @@ public class JustAnotherPackageManager {
 
 	public void setPlatform(Platform plf) throws IOException {
 		this.platform = plf;
-		homeDir = platform.getGlobal();
+		if (homeDir == null)
+			homeDir = platform.getGlobal();
+
+		initDirs();
+	}
+
+	void initDirs() throws IOException {
 		if (!homeDir.exists() && !homeDir.mkdirs()) {
 			throw new ExceptionInInitializerError("Could not create directory " + homeDir);
 		}
@@ -654,6 +666,9 @@ public class JustAnotherPackageManager {
 			if (r.classifier != null)
 				coordinates += ":" + r.classifier;
 
+			if (r.groupId.equals(Library.SHA_GROUP))
+				continue;
+
 			Revision current = programs.get(coordinates);
 			if (current == null)
 				programs.put(coordinates, r);
@@ -729,9 +744,15 @@ public class JustAnotherPackageManager {
 		Map<String,Revision> latest = latest(revs);
 
 		if (latest.size() > 1) {
-			System.out.printf("Multiple candidates for this name, select with its sha");
-			for (Revision r : revs) {
-				System.out.printf("%s %s\n", Hex.toHexString(r._id), r.description);
+			System.out.printf("Multiple candidates for this name, select with its sha\n");
+			for (String name : latest.keySet()) {
+				Revision r = latest.get(name);
+				String desc = r.description;
+				if (desc != null && desc.length() > 60)
+					desc = desc.substring(0, 59) + " ...";
+				SimpleDateFormat df = new SimpleDateFormat("yyyymmdd");
+				System.out.printf("%-20s %-10s %-10s %s %s\n", name, r.version, df.format(r.created),
+						Hex.toHexString(r._id), desc);
 			}
 			return null;
 		}
@@ -774,9 +795,28 @@ public class JustAnotherPackageManager {
 	public List<Revision> getCandidates(String key) throws Exception {
 		Iterable<Revision> revisions = library.getRevisions(key);
 		List<Revision> revs = new ArrayList<Revision>();
-		for ( Revision r : revisions) {
+		for (Revision r : revisions) {
 			revs.add(r);
 		}
 		return revs;
+	}
+
+	public Iterable< ? extends Program> find(String q) throws Exception {
+		return library.findProgram().query(q);
+	}
+
+	public void setHomeDir(File homeDir) throws IOException {
+		System.out.println("Outdir : " + homeDir);
+		this.homeDir = homeDir;
+		initDirs();
+	}
+
+	public void setBinDir(File binDir) throws IOException {
+		this.binDir = binDir;
+		this.binDir.mkdirs();
+	}
+
+	public Platform getPlatform() {
+		return platform;
 	}
 }

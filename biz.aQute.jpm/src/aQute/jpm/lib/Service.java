@@ -151,13 +151,14 @@ public class Service {
 		return null;
 	}
 
-	public void remove() throws IOException {
+	public void remove() throws Exception {
 		try {
 			stop();
 		}
 		catch (Exception e) {}
 
 		IO.deleteWithException(new File(data.sdir));
+		jpm.platform.remove(data);
 	}
 
 	public void clear() {

@@ -1,5 +1,6 @@
 package aQute.jpm.lib;
 
+import java.io.*;
 import java.util.*;
 
 import aQute.lib.data.*;
@@ -20,5 +21,6 @@ public class CommandData extends struct {
 	public List<String>	dependencies	= new ArrayList<String>();
 	public boolean		installed;
 	public byte[]		sha;
+	public File			bin;
 
 }
