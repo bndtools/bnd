@@ -7,7 +7,7 @@ public class Version implements Comparable<Version> {
 	final int					minor;
 	final int					micro;
 	final String				qualifier;
-	public final static String	VERSION_STRING	= "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.([-_\\da-zA-Z]+))?)?)?";
+	public final static String	VERSION_STRING	= "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9})(\\.([-_\\da-zA-Z]+))?)?)?";
 	public final static Pattern	VERSION			= Pattern.compile(VERSION_STRING);
 	public final static Version	LOWEST			= new Version();
 	public final static Version	HIGHEST			= new Version(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE,
