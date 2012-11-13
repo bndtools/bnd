@@ -78,7 +78,7 @@ public class Verifier extends Processor {
 	public final static String	SYMBOLICNAME_STRING				= "[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*";
 	public final static Pattern	SYMBOLICNAME					= Pattern.compile(SYMBOLICNAME_STRING);
 
-	public final static String	VERSION_STRING					= "[0-9]+(\\.[0-9]+(\\.[0-9]+(\\.[0-9A-Za-z_-]+)?)?)?";
+	public final static String	VERSION_STRING					= "[0-9]{1,9}(\\.[0-9]{1,9}(\\.[0-9]{1,9}(\\.[0-9A-Za-z_-]+)?)?)?";
 	public final static Pattern	VERSION							= Pattern.compile(VERSION_STRING);
 	final static Pattern		FILTEROP						= Pattern.compile("=|<=|>=|~=");
 	public final static Pattern	VERSIONRANGE					= Pattern.compile("((\\(|\\[)"
