@@ -68,7 +68,7 @@ public class LaunchStatusDialog extends TitleAreaDialog {
         Composite container = (Composite) super.createDialogArea(parent);
         container.setLayout(new GridLayout(1, true));
 
-        SashForm composite = new SashForm(container, SWT.NONE);
+        SashForm composite = new SashForm(container, SWT.VERTICAL);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         Composite left = new Composite(composite, SWT.NONE);
