@@ -66,7 +66,11 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
             int processCount = 0;
             for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
                 // ... is it the same launch resource?
-                if (launchResource.equals(LaunchUtils.getTargetResource(l.getLaunchConfiguration()))) {
+                ILaunchConfiguration launchConfig = l.getLaunchConfiguration();
+                if (launchConfig == null) {
+                    continue;
+                }
+                if (launchResource.equals(LaunchUtils.getTargetResource(launchConfig))) {
                     // Iterate existing processes
                     for (IProcess process : l.getProcesses()) {
                         if (!process.isTerminated())
