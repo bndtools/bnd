@@ -25,7 +25,7 @@ public class ReleaseWorkspaceHandler extends AbstractHandler {
 				return null;
 			}
 
-			WorkspaceAnalyserJob job = new WorkspaceAnalyserJob();
+			WorkspaceAnalyserJob job = new WorkspaceAnalyserJob(null);
 			job.setRule(ResourcesPlugin.getWorkspace().getRoot());
 			job.schedule();
 

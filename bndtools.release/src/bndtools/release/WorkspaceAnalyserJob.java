@@ -13,6 +13,7 @@ package bndtools.release;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -30,8 +31,10 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Type;
 import aQute.bnd.service.diff.Diff.Ignore;
 import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
@@ -40,12 +43,14 @@ import bndtools.release.ui.WorkspaceReleaseDialog;
 public class WorkspaceAnalyserJob extends Job {
 
 	protected final Shell shell;
+	protected final Set<IProject> projects;
 
-	public WorkspaceAnalyserJob() {
-		super(Messages.workspaceReleaseJob1);
-		this.shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-		setUser(true);
-	}
+    public WorkspaceAnalyserJob(Set<IProject> projects) {
+        super(Messages.workspaceReleaseJob1);
+        this.shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
+        setUser(true);
+        this.projects = projects;
+    }
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
@@ -70,7 +75,12 @@ public class WorkspaceAnalyserJob extends Job {
 			mon.setTaskName(Messages.processingProjects);
 			for (Project project : orderedProjects) {
 				IProject eProject = ReleaseUtils.getProject(project);
+                if (!isIncluded(eProject)) {
+                    mon.worked(1);
+                    continue;
+                }
 				if (eProject == null || !eProject.isOpen() || !eProject.isAccessible()) {
+	                mon.worked(1);
 					continue;
 				}
 				List<Builder> builders = project.getBuilder(null)
@@ -91,7 +101,10 @@ public class WorkspaceAnalyserJob extends Job {
                                if ("META-INF/MANIFEST.MF".equals(diff.getName())) { //$NON-NLS-1$
                                    return true;
                                }
-                                return false;
+                               if (diff.getType() == Type.HEADER && diff.getName().startsWith(Constants.BUNDLE_VERSION)) {
+                                   return true;
+                               }
+                               return false;
                             }});
 						if (delta != Delta.UNCHANGED && delta != Delta.IGNORED) {
 							jarDiffs.add(jarDiff);
@@ -184,5 +197,12 @@ public class WorkspaceAnalyserJob extends Job {
                 outlist.add(project);
             }
 		}
+	}
+
+	protected boolean isIncluded(IProject project) {
+	    if (projects == null) {
+	        return true;
+	    }
+	    return projects.contains(project);
 	}
 }

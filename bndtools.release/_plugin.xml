@@ -12,13 +12,48 @@
                class="bndtools.release.ReleaseAction"
                enablesFor="+"
                id="bndtools.release.releaseBundle"
+               icon="icons/bricks_release.png"
                label="%releaseBundle"
                menubarPath="additions"
                tooltip="%releaseBundle.tooltip">
          </action>
       </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="bndtools.releaseBundlesContribution"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="bndtools.release.WorkspaceReleaseAction"
+               enablesFor="+"
+               id="bndtools.release.releaseBundles"
+               icon="icons/bricks_release.png"
+               label="%releaseBundles"
+               menubarPath="additions"
+               style="push">
+         </action>
+         <visibility>
+            <objectState
+                  name="projectNature"
+                  value="bndtools.core.bndnature">
+            </objectState>
+         </visibility>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="bndtools.releaseBundlesContributionWorkingSets"
+            objectClass="org.eclipse.ui.IWorkingSet">
+         <action
+               class="bndtools.release.WorkspaceReleaseAction"
+               enablesFor="+"
+               id="bndtools.release.releaseBundlesWorkingSets"
+               icon="icons/bricks_release.png"
+               label="%releaseBundles"
+               menubarPath="additions"
+               style="push">
+         </action>
+      </objectContribution>
    </extension>
-   
+
    <extension point="org.eclipse.ui.commands">
       <command
          id="bndtools.release.releaseWorkspaceBundles"
@@ -26,14 +61,14 @@
          description=""
       />
    </extension>
-   
+
       <extension point="org.eclipse.ui.handlers">
        <handler
          commandId="bndtools.release.releaseWorkspaceBundles"
          class="bndtools.release.ReleaseWorkspaceHandler"
        />
    </extension>
-   
+
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="menu:bndtools"><!-- ?after=bndtools.workspace.openMainConfig -->
           <command commandId="bndtools.release.releaseWorkspaceBundles" mnemonic="R"/>

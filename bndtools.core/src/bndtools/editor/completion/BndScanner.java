@@ -24,7 +24,7 @@ public class BndScanner extends RuleBasedScanner {
                     public boolean isWhitespace(char c) {
                         return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
                     }
-                }), new BndWordRule(), new MacroRule(bsvc.T_MACRO), new EndOfLineRule("#", bsvc.T_COMMENT), new EndOfLineRule("\\ ", bsvc.T_ERROR), new EndOfLineRule("\\\t", bsvc.T_ERROR),
+                }), new BndWordRule(), new MacroRule(bsvc.T_MACRO), new EndOfLineRule("#", bsvc.T_COMMENT), new BndEndOfLineRule("\\ ", bsvc.T_ERROR), new BndEndOfLineRule("\\\t", bsvc.T_ERROR),
         };
 
         setRules(rules);
@@ -78,6 +78,23 @@ public class BndScanner extends RuleBasedScanner {
             for (int i = 0; i < words.length; ++i) {
                 keyWords.put(words[i], token);
             }
+        }
+    }
+
+    class BndEndOfLineRule extends EndOfLineRule {
+
+        public BndEndOfLineRule(String startSequence, IToken token) {
+            super(startSequence, token);
+        }
+
+        @Override
+        protected boolean sequenceDetected(ICharacterScanner scanner, char[] sequence, boolean eofAllowed) {
+
+            boolean checkEof = eofAllowed;
+            if (BndScanner.this.fOffset < BndScanner.this.fDocument.getLength()) {
+                checkEof = false;
+            }
+            return super.sequenceDetected(scanner, sequence, checkEof);
         }
     }
 }

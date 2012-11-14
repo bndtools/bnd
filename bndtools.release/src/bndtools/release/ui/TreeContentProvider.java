@@ -18,6 +18,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import aQute.bnd.differ.Baseline;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
@@ -73,6 +74,9 @@ public class TreeContentProvider implements ITreeContentProvider {
             if ("META-INF/MANIFEST.MF".equals(diff.getName())) { //$NON-NLS-1$
                 continue;
             }
+            if (diff.getType() == Type.HEADER && diff.getName().startsWith(Constants.BUNDLE_VERSION)) {
+                continue;
+            }
             filteredDiffs.add(diff);
         }
         return filteredDiffs.toArray(new Diff[filteredDiffs.size()]);
@@ -91,7 +95,7 @@ public class TreeContentProvider implements ITreeContentProvider {
 				switch (diff.getType()) {
 				case API :
 				case MANIFEST :
-				case RESOURCES : 
+				case RESOURCES :
 					if (getChildren(diff).length > 0)
 					    return true;
                     break;

@@ -132,6 +132,11 @@ public class AnalyseBundleResolutionJob extends Job {
             requiredBundleResults.addAll(list);
         }
 
+        // Cleanup
+        for (Builder builder : builderMap.values()) {
+            builder.close();
+        }
+
         // showResults(resultFileArray, importResults, exportResults);
         return Status.OK_STATUS;
     }

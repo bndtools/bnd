@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -252,15 +253,22 @@ public class Central {
     }
 
     public static IPath toPath(File file) throws Exception {
-        String path = file.getCanonicalPath();
-        String workspacePath = getWorkspace().getBase().getAbsolutePath();
-        if (path.startsWith(workspacePath))
-            path = path.substring(workspacePath.length());
-        else
-            return null;
+        IPath result = null;
 
-        IPath p = new Path(path);
-        return p;
+        File absolute = file.getCanonicalFile();
+
+        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+        IFile[] candidates = wsroot.findFilesForLocationURI(absolute.toURI());
+        if (candidates != null && candidates.length > 0) {
+            result = candidates[0].getFullPath();
+        } else {
+            String workspacePath = getWorkspace().getBase().getAbsolutePath();
+            String absolutePath = absolute.getPath();
+            if (absolutePath.startsWith(workspacePath))
+                result = new Path(absolutePath.substring(workspacePath.length()));
+        }
+
+        return result;
     }
 
     public static void refresh(IPath path) {

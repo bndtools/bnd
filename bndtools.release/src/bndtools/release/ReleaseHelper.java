@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -53,6 +55,9 @@ import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
 
 public class ReleaseHelper {
+
+    public final static String  VERSION_WITH_MACRO_STRING  = "(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\$\\{[-_\\.\\da-zA-Z]+\\})";//$NON-NLS-1$
+    public final static Pattern VERSION_WITH_MACRO         = Pattern.compile(VERSION_WITH_MACRO_STRING);
 
 	public static void updateProject(ReleaseContext context) throws Exception {
 
@@ -95,12 +100,10 @@ public class ReleaseHelper {
 			final BndEditModel model = new BndEditModel();
 			model.loadFrom(document);
 
-			// String savedVersion = model.getBundleVersionString();
-			// if (savedVersion != null && savedVersion.indexOf('$') > -1) {
-				//TODO: Handle macros / variables
-			// }
-			model.setBundleVersion(bundleVersion.toString());
-			properties.setProperty(Constants.BUNDLE_VERSION, bundleVersion.toString());
+			String currentVersion = model.getBundleVersionString();
+			String templateVersion = updateTemplateVersion(currentVersion, bundleVersion);
+			model.setBundleVersion(templateVersion);
+			properties.setProperty(Constants.BUNDLE_VERSION, templateVersion);
 
 			final Document finalDoc = document;
 			Runnable run = new Runnable() {
@@ -326,7 +329,7 @@ public class ReleaseHelper {
 		return ret.toArray(new String[ret.size()]);
 	}
 
-	
+
 	public static void initializeProjectDiffs(List<ProjectDiff> projects) {
 		String[] repos =  getReleaseRepositories();
 		for (ProjectDiff projectDiff : projects) {
@@ -340,9 +343,6 @@ public class ReleaseHelper {
 			}
 			projectDiff.setReleaseRepository(repo);
 			projectDiff.setDefaultReleaseRepository(repo);
-//			for (Diff jarDiff : projectDiff.getDiffs()) {
-				//TODO: decide which projects to release
-//			}
 		}
 	}
 
@@ -378,5 +378,18 @@ public class ReleaseHelper {
             else
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, String.format(Messages.fileDoesNotExist, file.getFullPath().toString()), null));
         }
+    }
+
+    private static String updateTemplateVersion(String currentVersion, Version newVersion) {
+        String version = newVersion.toString();
+        if (currentVersion == null) {
+            return version;
+        }
+
+        Matcher m = VERSION_WITH_MACRO.matcher(currentVersion);
+        if (m.matches()) {
+            return newVersion.getMajor() + "." + newVersion.getMinor() + "." + newVersion.getMicro() + "." + m.group(6);
+        }
+        return version;
     }
 }

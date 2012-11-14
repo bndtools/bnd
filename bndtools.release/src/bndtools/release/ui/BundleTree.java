@@ -122,7 +122,7 @@ public class BundleTree extends Composite {
 			@Override
             public String getText(Object element) {
                 if (element instanceof Baseline) {
-                    return ((Baseline) element).getOlderVersion().toString();
+                    return ((Baseline) element).getOlderVersion().getWithoutQualifier().toString();
                 }
 				if (element instanceof Info) {
 					return ((Info) element).olderVersion.toString();
