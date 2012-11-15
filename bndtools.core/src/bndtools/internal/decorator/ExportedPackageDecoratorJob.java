@@ -63,6 +63,9 @@ public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule 
 
         try {
             Project model = Workspace.getProject(project.getLocation().toFile());
+            if (model == null) {
+                return Status.OK_STATUS;
+            }
             Collection< ? extends Builder> builders = model.getSubBuilders();
 
             Map<String,SortedSet<Version>> allExports = new HashMap<String,SortedSet<Version>>();
