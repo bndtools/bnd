@@ -5,17 +5,20 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import aQute.libg.header.Attrs;
-import bndtools.api.EE;
-import bndtools.api.IBndModel;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.BndEditModel;
 import bndtools.api.IBndProject;
 import bndtools.api.IProjectTemplate;
-import bndtools.api.Requirement;
-import bndtools.model.clauses.HeaderClause;
-import bndtools.model.clauses.VersionedClause;
+
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
+import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.bnd.build.model.clauses.HeaderClause;
 
 public class DependencyManagerAnnotationsTemplate implements IProjectTemplate {
-    public void modifyInitialBndModel(IBndModel model) {
+    public void modifyInitialBndModel(BndEditModel model) {
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
         List<VersionedClause> tmp;
 
@@ -48,7 +51,7 @@ public class DependencyManagerAnnotationsTemplate implements IProjectTemplate {
         addRunBundle("org.apache.felix.log", runPath, requires, false);
 
         model.setBundleActivator("org.example.Activator");
-        model.setRunRequire(requires);
+        model.setRunRequires(requires);
         model.setRunBundles(runPath);
         model.setRunFramework("org.apache.felix.framework");
         model.setEE(EE.JavaSE_1_6);
@@ -63,7 +66,8 @@ public class DependencyManagerAnnotationsTemplate implements IProjectTemplate {
     private static void addRunBundle(String bsn, Collection<? super VersionedClause> runPath, Collection<? super Requirement> requires, boolean inferred) {
         runPath.add(new VersionedClause(bsn, new Attrs()));
         if (!inferred) {
-            requires.add(new Requirement("bundle", "(symbolicname=" + bsn + ")"));
+            Requirement r = new CapReqBuilder("osgi.identity").addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=" + bsn + ")").buildSyntheticRequirement();
+            requires.add(r);
         }
     }
 
