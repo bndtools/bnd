@@ -27,11 +27,11 @@ Create an API Project
 
 First we need to create a Bndtools OSGi Project. This is just a standard Eclipse Java Project, with an additional builder for constructing OSGi bundles.
 
-1.	From the File menu, select **New -> Bndtools OSGi Project**.
+1. From the File menu, select **New -> Bndtools OSGi Project**.
 
 	![]($images$01.png)
 
-1.	On the next page, enter `org.example.api` as the name of the project. Select at least J2SE-1.5 for the JRE execution environment.
+1. On the next page, enter `org.example.api` as the name of the project. Select at least J2SE-1.5 for the JRE execution environment.
 
 	![]($images$02.png)
 
@@ -39,7 +39,7 @@ First we need to create a Bndtools OSGi Project. This is just a standard Eclipse
 
 	![]($images$03.png)
 
-1.	If this is the first time you have used Bndtools in this workspace, you will now see the "Welcome" dialog. Click **Next** followed by **Finish** to allow Bndtools to setup a configuration project and import a basic repository. A repository is a place where bundles that you use in your projects are stored. A remote "BndTools hub" repository is created by default that contains some often used bundles.
+1. If this is the first time you have used Bndtools in this workspace, you will now see the "Welcome" dialog. Click **Next** followed by **Finish** to allow Bndtools to setup a configuration project and import a basic repository. A repository is a place where bundles that you use in your projects are stored. A remote "BndTools hub" repository is created by default that contains some often used bundles.
 
 	![]($images$04.png)
 
@@ -218,9 +218,9 @@ In the editor for the new `run.bndrun` file, click on **Run OSGi** near the top-
       3|Active     |    1|Apache Felix Gogo Command (0.12.0)
   g!
 
-Next we want to include the `org.example.impls.provider` bundle. This can be done as follows:
+Next we want to include the `org.example.impls.provider` and `osgi.cmpn` bundles. This can be done as follows:
 
- *	Click the "+" icon in the toolbar of the **Run Requirements** panel. In the dialog, double-click `org.example.impls.provider` under "Workspace" and click **Finish**.
+ *	Click the "+" icon in the toolbar of the **Run Requirements** panel. In the dialog, double-click `org.example.impls.provider` and `osgi.cmpn` under "Workspace" and click **Finish**.
 
 Also add the osgi.cmpn bundle. The **Run Requirements** panel should now look like this:
 
@@ -245,13 +245,13 @@ The provider bundle has been added to the runtime dynamically. Note that the API
 
 We can now look at the services published by our provider bundle using the command `inspect service capability 3`... (or the short form `inspect s c 3`):
 
-	-> inspect s c 3
-	org.example.impls.provider (3) provides services:
-	-------------------------------------------------
-	component.id = 0
-	component.name = org.example.ExampleComponent
-	objectClass = org.example.api.Greeting
-	service.id = 27
+	g! inspect c service 2
+  org.example.impls.provider [2] provides:
+  service; org.example.api.Greeting with properties:
+     component.id = 0
+     component.name = org.example.ExampleComponent
+     service.id = 6
+  g!
 
 Our bundle now publishes a service under the `Greeting` interface.
 
@@ -317,6 +317,7 @@ Switch back to the editor for `run.bndrun`. In the **Run Requirements** tab, add
 
 The command bundle will now appear in the list of bundles when typing `lb`:
 
+~~~~~~~~~~
 	g! lb
   START LEVEL 1
      ID|State      |Level|Name
@@ -330,7 +331,7 @@ The command bundle will now appear in the list of bundles when typing `lb`:
       7|Active     |    1|org.example.impls.command (0.0.0)
       8|Active     |    1|org.example.api (0.0.0)
   g!
-
+~~~~~~~~~~
 Finally, the `greet` command will now be available from the Gogo shell:
 
 	g! greet BndTools
