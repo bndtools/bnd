@@ -27,23 +27,25 @@ Create an API Project
 
 First we need to create a Bndtools OSGi Project. This is just a standard Eclipse Java Project, with an additional builder for constructing OSGi bundles.
 
-1.	From the File menu, select **New -> Bndtools OSGi Project**.
+1. From the File menu, select **New -> Bndtools OSGi Project**.
 
 	![]($images$01.png)
 
-1.	If this is the first time you have used Bndtools, you will now see the "Welcome" dialog. Click **Next** followed by **Finish** to allow Bndtools to setup a configuration project and import a basic repository.
+1. On the next page, enter `org.example.api` as the name of the project. Select at least J2SE-1.5 for the JRE execution environment.
 
 	![]($images$02.png)
 
+1. Next you are offered a choice of project templates to start off your project. Select **Empty Project** and click **Finish**. The new project will be created.
+
 	![]($images$03.png)
 
-1.	On the next page, enter `org.example.api` as the name of the project. Select at least J2SE-1.5 for the JRE execution environment.
+1. If this is the first time you have used Bndtools in this workspace, you will now see the "Welcome" dialog. Click **Next** followed by **Finish** to allow Bndtools to setup a configuration project and import a basic repository. A repository is a place where bundles that you use in your projects are stored. A remote "BndTools hub" repository is created by default that contains some often used bundles.
 
 	![]($images$04.png)
 
-1. Next you are offered a choice of project templates to start off your project. Select **Empty Project** and click **Finish**. The new project will be created.
-
 	![]($images$05.png)
+
+
 
 *Important Points:*
 
@@ -201,40 +203,58 @@ Run an OSGi Framework
 
 We'd now like to run OSGi. To achieve this we need to create a "Run Descriptor" that defines the collection of bundles to run, along with some other run-time settings.
 
-Right-click on the project `org.example.impls` and select **New > Run Descriptor**. In the resulting dialog, enter `run` as the file name and click **Next**. The next page of the dialog asks us to select a template; choose **Apache Felix 4 with Shell** and click **Finish**.
+Right-click on the project `org.example.impls` and select **New > Run Descriptor**. In the resulting dialog, enter `run` as the file name and click **Next**. The next page of the dialog asks us to select a template; choose **Apache Felix 4 with Gogo Shell** and click **Finish**.
 
 ![]($images$14.png)
 
-In the editor for the new `run.bndrun` file, click on **Run OSGi** near the top-right corner. Shortly, the Felix Shell prompt "`->`" will appear in the **Console** view. Type the `ps` command to view the list of bundles:
+In the editor for the new `run.bndrun` file, click on **Run OSGi** near the top-right corner. Shortly, the Felix Shell prompt "`g! `" will appear in the **Console** view. Type the `lb` command to view the list of bundles:
 
-	-> ps
-	START LEVEL 1
-	   ID   State         Level  Name
-	[   0] [Active     ] [    0] System Bundle (4.0.0)
-	[   1] [Active     ] [    1] Apache Felix Shell Service (1.4.2)
-	[   2] [Active     ] [    1] Apache Felix Shell TUI (1.4.1)
+  g! lb
+  START LEVEL 1
+     ID|State      |Level|Name
+      0|Active     |    0|System Bundle (4.0.3)
+      1|Active     |    1|Apache Felix Gogo Runtime (0.10.0)
+      2|Active     |    1|Apache Felix Gogo Shell (0.10.0)
+      3|Active     |    1|Apache Felix Gogo Command (0.12.0)
+  g!
 
-Next we want to include the `org.example.impls.provider` bundle. This can be done in the following ways:
+Next we want to include the `org.example.impls.provider` and `osgi.cmpn` bundles. This can be done as follows:
 
- *	Click the "+" icon in the toolbar of the **Run Requirements** panel. In the dialog, double-click `org.example.impls.provider` under "Workspace" and click **Finish**.
- *	**OR** drag-and-drop `org.examples.impls.provider` from under Workspace in the **Run Repositories** to the **Run Requirements** panel.
+ *	Click the "+" icon in the toolbar of the **Run Requirements** panel. In the dialog, double-click `org.example.impls.provider` and `osgi.cmpn` under "Workspace" and click **Finish**.
 
-Either way, the **Run Requirements** panel should now look like this:
+Also add the osgi.cmpn bundle. The **Run Requirements** panel should now look like this:
 
 ![]($images$15.png)
 
-Check **Auto-resolve on save** and then save the file. Returning to the **Console** view, type `ps` again:
+Check **Auto-resolve on save** and then save the file. Returning to the **Console** view, type `lb` again:
 
-	-> ps
-	START LEVEL 1
-	   ID   State         Level  Name
-	[   0] [Active     ] [    0] System Bundle (4.0.0)
-	[   1] [Active     ] [    1] Apache Felix Shell Service (1.4.2)
-	[   2] [Active     ] [    1] Apache Felix Shell TUI (1.4.1)
-	[   3] [Active     ] [    1] org.example.api (0)
-	[   4] [Active     ] [    1] org.example.impls.provider (0)
+  g! lb
+  START LEVEL 1
+     ID|State      |Level|Name
+      0|Active     |    0|System Bundle (4.0.3)
+      1|Active     |    1|Apache Felix Gogo Runtime (0.10.0)
+      2|Active     |    1|Apache Felix Declarative Services (1.6.0)
+      3|Active     |    1|org.example.impls.provider (0.0.0)
+      4|Active     |    1|osgi.cmpn (4.2.0.200908310645)
+      5|Active     |    1|Apache Felix Gogo Shell (0.10.0)
+      6|Active     |    1|Apache Felix Gogo Command (0.12.0)
+      7|Active     |    1|org.example.api (0.0.0)
+  g!
 
-The provider bundle has been added to the runtime dynamically. Note that the API bundle was also added because it was resolved as a dependency of the provider.
+The provider bundle has been added to the runtime dynamically. Note that the API bundle and Apache Felix Declarative Services are also added because they resolved as dependencies of the provider.
+
+We can now look at the services published by our provider bundle using the command `inspect service capability 3`... (or the short form `inspect s c 3`):
+
+	g! inspect c service 2
+  org.example.impls.provider [2] provides:
+  service; org.example.api.Greeting with properties:
+     component.id = 0
+     component.name = org.example.ExampleComponent
+     service.id = 6
+  g!
+
+Our bundle now publishes a service under the `Greeting` interface.
+
 
 *Important Points:*
 
@@ -243,90 +263,38 @@ The provider bundle has been added to the runtime dynamically. Note that the API
  *	If the OSGi Framework is still running, then saving the `bndrun` file will cause the list of bundles to be dynamically updated. So we can add and remove bundles without restarting.
  *	Editing an existing bundle -- including editing the Java code that comprises it -- will also result in the bundle being dynamically updated in the runtime.
 
-Add the Declarative Services Runtime
-------------------------------------
-
-The provider bundle uses Declarative Services; however for the component to be activated we need to include the runtime part of Declarative Services, known as the Service Component Runtime (SCR).
-
-In the **Run Repositories** panel there is a search box; type `scr` and hit enter: `org.apache.felix.scr` will appear as a match. Drag this bundle into the **Run Requirements** panel.
-
-Save the file. This time a dialog appears during save, because the SCR bundle has optional dependencies that we might want to include. Just click **Finish**.
-
-![]($images$16.png)
-
-In the **Console** view, type `ps` again. Both the Declarative Services and OSGi Compendium ("cmpn") bundles have been added:
-
-	-> ps
-	START LEVEL 1
-	   ID   State         Level  Name
-	[   0] [Active     ] [    0] System Bundle (4.0.0)
-	[   1] [Active     ] [    1] Apache Felix Shell Service (1.4.2)
-	[   2] [Active     ] [    1] Apache Felix Shell TUI (1.4.1)
-	[   3] [Active     ] [    1] org.example.api (0)
-	[   4] [Active     ] [    1] org.example.impls.provider (0)
-	[   5] [Active     ] [    1] Apache Felix Declarative Services (1.6.0)
-	[   6] [Active     ] [    1] osgi.cmpn (4.2.1.201001051203)
-
-We can now look at the services published by our provider bundle using the command `inspect service capability 4`... (or the short form `inspect s c 4`):
-
-	-> inspect s c 4
-	org.example.impls.provider (4) provides services:
-	-------------------------------------------------
-	component.id = 0
-	component.name = org.example.ExampleComponent
-	objectClass = org.example.api.Greeting
-	service.id = 27
-
-Our bundle now publishes a service under the `Greeting` interface.
 
 Write a Command Component
 =========================
 
 Finally we will write a component that consumes the Greeting service and publishes a shell command that can be invoked from the Felix shell.
 
-First we need to make the Felix shell API available to compile against. Open `bnd.bnd` and change to the **Build** tab. Add `org.apache.felix.shell` to the list of build dependencies, and save the file:
+First we need to make the Felix shell API available to compile against. Open `bnd.bnd` and change to the **Build** tab. Add `org.apache.felix.gogo.runtime` to the list of build dependencies, and save the file:
 
 ![]($images$17.png)
 
 Now create a new Java package under the `src` folder named `org.example.command`. In this package create a class `GreetingCommand` as follows:
 
 ~~~~~~~~~~ {.Java}
-import java.io.PrintStream;
-import java.util.StringTokenizer;
-
-import org.apache.felix.shell.Command;
 import org.example.api.Greeting;
+import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Reference;
 
-import aQute.bnd.annotation.component.*;
-
-@Component
-public class GreetingCommand implements Command {
+@Component(properties={
+		"osgi.command.scope=example", 
+		"osgi.command.function=greet"}, 
+		provide=Object.class)
+public class GreetingCommand {
 
 	private Greeting greetingSvc;
-	
+
 	@Reference
 	public void setGreeting(Greeting greetingSvc) {
 		this.greetingSvc = greetingSvc;
 	}
 
-	public void execute(String line, PrintStream out, PrintStream err) {
-		StringTokenizer tokenizer = new StringTokenizer(line);
-		tokenizer.nextToken(); // discard first token
-		
-		String name = "";
-		if (tokenizer.hasMoreTokens())
-			name = tokenizer.nextToken();
-		
+	public void greet(String name) {
 		System.out.println(greetingSvc.sayHello(name));
-	}
-	public String getName() {
-		return "greet";
-	}
-	public String getShortDescription() {
-		return "Example command";
-	}
-	public String getUsage() {
-		return "greet <name>";
 	}
 }
 ~~~~~~~~~~
@@ -347,21 +315,26 @@ Add the Command Bundle to the Runtime
 
 Switch back to the editor for `run.bndrun`. In the **Run Requirements** tab, add the `org.example.impls.command` bundle, and save the file.
 
-The command bundle will now appear in the list of bundles when typing `ps`:
+The command bundle will now appear in the list of bundles when typing `lb`:
 
-	-> ps
-	START LEVEL 1
-	   ID   State         Level  Name
-	[   0] [Active     ] [    0] System Bundle (4.0.0)
-	[   1] [Active     ] [    1] Apache Felix Shell Service (1.4.2)
-	[   2] [Active     ] [    1] Apache Felix Shell TUI (1.4.1)
-	[   3] [Active     ] [    1] org.example.api (0)
-	[   4] [Active     ] [    1] org.example.impls.provider (0)
-	[   5] [Active     ] [    1] Apache Felix Declarative Services (1.6.0)
-	[   6] [Active     ] [    1] osgi.cmpn (4.2.1.201001051203)
-	[   7] [Active     ] [    1] org.example.impls.command (0)
+~~~~~~~~~~
+	g! lb
+  START LEVEL 1
+     ID|State      |Level|Name
+      0|Active     |    0|System Bundle (4.0.3)
+      1|Active     |    1|Apache Felix Declarative Services (1.6.0)
+      2|Active     |    1|org.example.impls.provider (0.0.0)
+      3|Active     |    1|Apache Felix Gogo Runtime (0.10.0)
+      4|Active     |    1|osgi.cmpn (4.2.0.200908310645)
+      5|Active     |    1|Apache Felix Gogo Shell (0.10.0)
+      6|Active     |    1|Apache Felix Gogo Command (0.12.0)
+      7|Active     |    1|org.example.impls.command (0.0.0)
+      8|Active     |    1|org.example.api (0.0.0)
+  g!
+~~~~~~~~~~
+Finally, the `greet` command will now be available from the Gogo shell:
 
-Finally, the `greet` command will now be available from the Felix shell:
+	g! greet BndTools
+  Hello BndTools
+  
 
-	-> greet Neil
-	Hello Neil
