@@ -44,17 +44,6 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
     protected void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception {
         synchronized (model) {
             bndLauncher = model.getProjectLauncher();
-
-            Collection<String> runvmArgs = bndLauncher.getRunVM();
-
-            // this loop keeps the same order and adds quotes when there's a space.
-            for (String str : runvmArgs) {
-                runvmArgs.remove(str);
-                if (str.contains(" ")) {
-                    str = "\"" + str + "\"";
-                }
-                runvmArgs.add(str);
-            }
         }
         configureLauncher(configuration);
         bndLauncher.prepare();
