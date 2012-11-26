@@ -12,6 +12,8 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
+import bndtools.launch.api.AbstractLaunchShortcut;
+
 public class JUnitShortcut extends AbstractLaunchShortcut {
 
     public JUnitShortcut() {

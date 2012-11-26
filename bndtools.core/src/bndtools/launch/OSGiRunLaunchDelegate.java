@@ -34,6 +34,7 @@ import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.launch.util.LaunchUtils;
 
 public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
     private static final ILogger logger = Logger.getLogger();

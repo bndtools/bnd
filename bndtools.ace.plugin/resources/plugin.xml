@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+
+	<extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+		<launchConfigurationTabGroup class="bndtools.ace.launch.ui.AceLaunchTabGroup"
+			id="aQute.bnd.launch.ace.tabgroup" type="bndtools.launch.ace">
+		</launchConfigurationTabGroup>
+	</extension>
+	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
+		<launchConfigurationType delegate="bndtools.ace.launch.AceLauncherDelegate"
+			id="bndtools.launch.ace" modes="run" name="ACE deployment"
+			sourceLocatorId="org.bndtools.core.launch.BndDependencySourceLookupDirector"
+			sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer" />
+	</extension>
+	<extension point="org.eclipse.debug.ui.launchShortcuts">
+		<shortcut class="bndtools.ace.launch.AceRunShortcut" icon="icons/bricks_run.png"
+			id="bndtools.ace.launch.AceRunShortcut" label="ACE Run" modes="run">
+			<contextualLaunch>
+				<enablement>
+					<with variable="selection">
+						<count value="1" />
+						<iterate>
+							<or>
+								<!-- Java/Bnd Project -->
+								<and>
+									<test property="org.eclipse.jdt.launching.isContainer" />
+									<test property="org.eclipse.jdt.launching.hasProjectNature"
+										args="org.eclipse.jdt.core.javanature" />
+									<test property="org.eclipse.jdt.launching.hasProjectNature"
+										args="bndtools.core.bndnature" />
+								</and>
+
+								<!-- bnd.bnd file -->
+								<test property="org.eclipse.core.resources.name" value="bnd.bnd" />
+
+								<!-- *.bndrun file -->
+								<test property="org.eclipse.core.resources.extension"
+									value="bndrun" />
+							</or>
+						</iterate>
+					</with>
+				</enablement>
+			</contextualLaunch>
+		</shortcut>
+	</extension>
+</plugin>

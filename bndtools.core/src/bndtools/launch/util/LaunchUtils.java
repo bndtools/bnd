@@ -1,4 +1,4 @@
-package bndtools.launch;
+package bndtools.launch.util;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -16,12 +16,13 @@ import aQute.bnd.build.Workspace;
 import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.builder.BndProjectNature;
+import bndtools.launch.LaunchConstants;
 
 public final class LaunchUtils {
 
     private LaunchUtils() {}
 
-    static IResource getTargetResource(ILaunchConfiguration configuration) throws CoreException {
+    public static IResource getTargetResource(ILaunchConfiguration configuration) throws CoreException {
         String target = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
         if (target == null || target.length() == 0) {
             return null;
@@ -34,7 +35,7 @@ public final class LaunchUtils {
         return targetResource;
     }
 
-    static String getLaunchProjectName(IResource launchResource) {
+    public static String getLaunchProjectName(IResource launchResource) {
         String result;
 
         IProject project = launchResource.getProject();
@@ -49,7 +50,7 @@ public final class LaunchUtils {
         return result;
     }
 
-    static Project getBndProject(ILaunchConfiguration configuration) throws CoreException {
+    public static Project getBndProject(ILaunchConfiguration configuration) throws CoreException {
         IResource targetResource = getTargetResource(configuration);
         if (targetResource == null)
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd launch target was not specified, or does not exist.", null));

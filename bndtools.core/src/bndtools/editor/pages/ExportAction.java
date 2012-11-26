@@ -22,7 +22,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
-import bndtools.launch.LaunchUtils;
+import bndtools.launch.util.LaunchUtils;
 import bndtools.wizards.bndfile.RunExportSelectionWizard;
 
 public class ExportAction extends Action {

@@ -1,4 +1,4 @@
-package bndtools.launch;
+package bndtools.launch.api;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +36,8 @@ import aQute.bnd.build.Project;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.launch.LaunchConstants;
+import bndtools.launch.util.LaunchUtils;
 
 public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
     private static final ILogger logger = Logger.getLogger();
@@ -58,7 +60,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         }
     }
 
-    private void launchSelectedObject(Object selected, String mode) throws CoreException {
+    protected void launchSelectedObject(Object selected, String mode) throws CoreException {
         if (selected instanceof IJavaElement) {
             launchJavaElement((IJavaElement) selected, mode);
         } else if (selected instanceof IResource && Project.BNDFILE.equals(((IResource) selected).getName())) {
@@ -112,7 +114,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         launch(bndRunFile.getFullPath(), mode);
     }
 
-    void launch(IPath targetPath, String mode) {
+    protected void launch(IPath targetPath, String mode) {
         IPath tp = targetPath.makeRelative();
         try {
             ILaunchConfiguration config = findLaunchConfig(tp);
@@ -126,7 +128,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         }
     }
 
-    ILaunchConfiguration findLaunchConfig(IPath targetPath) throws CoreException {
+    protected ILaunchConfiguration findLaunchConfig(IPath targetPath) throws CoreException {
         List<ILaunchConfiguration> candidateConfigs = new ArrayList<ILaunchConfiguration>();
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
 
@@ -145,7 +147,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         return !candidateConfigs.isEmpty() ? candidateConfigs.get(candidateConfigs.size() - 1) : null;
     }
 
-    ILaunchConfigurationWorkingCopy createConfiguration(IPath targetPath) throws CoreException {
+    protected ILaunchConfigurationWorkingCopy createConfiguration(IPath targetPath) throws CoreException {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType configType = manager.getLaunchConfigurationType(launchId);
 
@@ -163,7 +165,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         return wc;
     }
 
-    static IProject getProject(ISelection selection) {
+    protected static IProject getProject(ISelection selection) {
         if (selection instanceof IStructuredSelection) {
             Object element = ((IStructuredSelection) selection).getFirstElement();
             if (element instanceof IResource)
@@ -177,7 +179,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         return null;
     }
 
-    static IProject getProject(IEditorPart editorPart) {
+    protected static IProject getProject(IEditorPart editorPart) {
         IResource resource = ResourceUtil.getResource(editorPart);
         return resource != null ? resource.getProject() : null;
     }
@@ -187,7 +189,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         return project != null ? getLaunchConfigsForProject(project) : null;
     }
 
-    ILaunchConfiguration[] getLaunchConfigsForProject(@SuppressWarnings("unused") IProject project) {
+    protected ILaunchConfiguration[] getLaunchConfigsForProject(@SuppressWarnings("unused") IProject project) {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
 
         ILaunchConfigurationType type = manager.getLaunchConfigurationType(launchId);

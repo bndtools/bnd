@@ -21,6 +21,10 @@
       <zip destfile="${target}/features/jarviewer.feature.jar">
          <fileset dir="${target}/features/jarviewer" includes="feature.xml" />
       </zip>
+   	
+      <zip destfile="${target}/features/ace.feature.jar">
+   	     <fileset dir="${target}/features/ace" includes="feature.xml" />
+   	  </zip>
    </target>
 	
 	<!-- Build the Eclipse "plugins" directory -->

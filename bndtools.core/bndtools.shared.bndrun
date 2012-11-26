@@ -10,7 +10,9 @@ workspace.bundles: \
 	bndtools.template.dm;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
 	bndtools.release;version=snapshot,\
-	org.bndtools.embeddedrepo;version=snapshot
+	org.bndtools.embeddedrepo;version=snapshot,\
+	bndtools.ace.plugin;version=snapshot,\
+	bndtools.ace.launcher;version=snapshot
 
 p2.bundles: org.eclipse.equinox.p2.core,\
 	org.eclipse.equinox.p2.engine,\
@@ -131,6 +133,7 @@ crossplatform.bundles:\
 	org.eclipse.equinox.frameworkadmin,\
 	org.eclipse.equinox.frameworkadmin.equinox,\
 	org.eclipse.ui.browser,\
+	org.apache.ace.bnd.repository,\
 	${help.bundles},\
 	${p2.bundles},\
 	${workspace.bundles}

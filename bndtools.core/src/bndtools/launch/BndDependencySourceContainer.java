@@ -22,6 +22,7 @@ import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.launch.util.LaunchUtils;
 
 public class BndDependencySourceContainer extends CompositeSourceContainer {
     private static final ILogger logger = Logger.getLogger();
