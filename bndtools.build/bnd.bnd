@@ -5,7 +5,9 @@
 	bndtools.repository.base,\
 	bndtools.template.dm,\
 	bndtools.release,\
-	org.bndtools.embeddedrepo
+	org.bndtools.embeddedrepo,\
+	bndtools.ace.launcher,\
+	bndtools.ace.plugin
 
 Include-Resource:\
 	${repo;biz.aQute.bndlib;${bndlib-version-base}},\
