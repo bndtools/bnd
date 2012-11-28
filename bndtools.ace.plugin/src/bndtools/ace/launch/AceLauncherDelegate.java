@@ -1,14 +1,12 @@
 package bndtools.ace.launch;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-
-import javax.management.RuntimeErrorException;
 
 import org.bndtools.build.api.BuildListener;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
@@ -17,6 +15,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
@@ -65,9 +64,15 @@ public class AceLauncherDelegate extends JavaLaunchDelegate implements BuildList
         org.osgi.framework.Bundle aceRepoBundle = Platform.getBundle("org.apache.ace.bnd.repository");
         org.osgi.framework.Bundle bndRepoBundle = Platform.getBundle("biz.aQute.bndlib");
         try {
-			String decode = URLDecoder.decode(bndRepoBundle.getLocation(), "UTF-8");
-			return new String[] { bundle.getLocation(), aceRepoBundle.getLocation(), decode };
+        	
+        	String bndRepoBundlePath = FileLocator.getBundleFile(bndRepoBundle).getAbsolutePath();
+			String bundlePath = FileLocator.getBundleFile(bundle).getAbsolutePath();
+			String aceBundlePath = FileLocator.getBundleFile(aceRepoBundle).getAbsolutePath();
+
+			return new String[] {bundlePath, aceBundlePath, bndRepoBundlePath };
 		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
     }
@@ -103,6 +108,12 @@ public class AceLauncherDelegate extends JavaLaunchDelegate implements BuildList
 
     private void registerBuildListener() throws CoreException {
     	Bundle bundle = FrameworkUtil.getBundle(AceLauncherDelegate.class);
+    	try {
+			bundle.start();
+		} catch (BundleException e) {
+			e.printStackTrace();
+		}
+
     	BundleContext bundleContext = bundle.getBundleContext();
     	m_service = bundleContext.registerService(BuildListener.class.getName(), this, null);
     }
