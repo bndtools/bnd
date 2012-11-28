@@ -23,4 +23,6 @@ Include-Resource:\
 	${repo;javax.xml.stream;latest},\
 	${repo;stax2-api;latest},\
 	${repo;woodstox-core-asl;latest},\
-	${repo;bndtools.ace.plugin;latest}
+	${repo;bndtools.ace.plugin;latest},\
+    ${repo;org.apache.ace.bnd.repository;latest},\
+    ${repo;bndtools.ace.launcher;latest}
