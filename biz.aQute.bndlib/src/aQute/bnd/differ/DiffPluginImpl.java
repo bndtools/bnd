@@ -54,6 +54,7 @@ public class DiffPluginImpl implements Differ {
 		IGNORE_HEADERS.add(Constants.CREATED_BY);
 
 		ORDERED_HEADERS.add(Constants.SERVICE_COMPONENT);
+		ORDERED_HEADERS.add(Constants.TESTCASES);
 	}
 
 	/**
