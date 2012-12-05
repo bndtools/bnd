@@ -37,22 +37,60 @@ public class Command {
 		return execute(in, stdout, stderr);
 	}
 
+	public static boolean needsWindowsQuoting(String s) {
+		int len = s.length();
+		if (len == 0) // empty string have to be quoted
+			return true;
+		for (int i = 0; i < len; i++) {
+			switch (s.charAt(i)) {
+				case ' ' :
+				case '\t' :
+				case '\\' :
+				case '"' :
+					return true;
+			}
+		}
+		return false;
+	}
+
+	public static String windowsQuote(String s) {
+		if (!needsWindowsQuoting(s))
+			return s;
+		s = s.replaceAll("([\\\\]*)\"", "$1$1\\\\\"");
+		s = s.replaceAll("([\\\\]*)\\z", "$1$1");
+		return "\"" + s + "\"";
+	}
+
 	public int execute(final InputStream in, Appendable stdout, Appendable stderr) throws Exception {
 		if (reporter != null) {
 			reporter.trace("executing cmd: %s", arguments);
 		}
-
-		String args[] = arguments.toArray(new String[arguments.size()]);
-		String vars[] = new String[variables.size()];
-		int i = 0;
-		for (Entry<String,String> s : variables.entrySet()) {
-			vars[i++] = s.getKey() + "=" + s.getValue();
+		
+		ProcessBuilder p;
+		if (fullCommand != null) {
+			p = new ProcessBuilder(fullCommand);
+		} else {
+			//[cs] Arguments on windows aren't processed correctly. Thus the below junk
+			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6511002
+			
+			if (System.getProperty("os.name").startsWith("Windows")) {
+				List<String> adjustedStrings = new LinkedList<String>();
+				for (String a : arguments) {
+					adjustedStrings.add(windowsQuote(a));
+				}
+				p = new ProcessBuilder(adjustedStrings);
+			} else {
+				p = new ProcessBuilder(arguments);
+			}
 		}
-
-		if (fullCommand == null)
-			process = Runtime.getRuntime().exec(args, vars.length == 0 ? null : vars, cwd);
-		else
-			process = Runtime.getRuntime().exec(fullCommand, vars.length == 0 ? null : vars, cwd);
+		
+		Map<String, String> env = p.environment();
+		for (Entry<String,String> s : variables.entrySet()) {
+			env.put(s.getKey(), s.getValue());
+		}
+		
+		p.directory(cwd);
+		process = p.start();
 
 		// Make sure the command will not linger when we go
 		Runnable r = new Runnable() {
