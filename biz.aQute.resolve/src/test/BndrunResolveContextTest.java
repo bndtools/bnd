@@ -42,6 +42,26 @@ public class BndrunResolveContextTest extends TestCase {
         assertTrue(context.isEffective(noEffectiveDirectiveReq));
     }
 
+    public static void testEffective2() {
+        BndEditModel model = new BndEditModel();
+        model.genericSet(BndrunResolveContext.RUN_EFFECTIVE_INSTRUCTION, "active, arbitrary");
+
+        BndrunResolveContext context = new BndrunResolveContext(model, new MockRegistry(), log);
+
+        Requirement resolveReq = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, Namespace.EFFECTIVE_RESOLVE).buildSyntheticRequirement();
+        Requirement activeReq = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, Namespace.EFFECTIVE_ACTIVE).buildSyntheticRequirement();
+        Requirement arbitrary1Req = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, "arbitrary").buildSyntheticRequirement();
+        Requirement arbitrary2Req = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, "VeryArbitrary").buildSyntheticRequirement();
+
+        Requirement noEffectiveDirectiveReq = new CapReqBuilder("dummy.ns").buildSyntheticRequirement();
+
+        assertTrue(context.isEffective(resolveReq));
+        assertTrue(context.isEffective(activeReq));
+        assertTrue(context.isEffective(arbitrary1Req));
+        assertFalse(context.isEffective(arbitrary2Req));
+        assertTrue(context.isEffective(noEffectiveDirectiveReq));
+    }
+
     public static void testEmptyInitialWirings() {
         assertEquals(0, new BndrunResolveContext(new BndEditModel(), new MockRegistry(), log).getWirings().size());
     }
@@ -289,7 +309,7 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(1, providers.size());
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
     }
-    
+
     public static void testResolveSystemPackagesExtra() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
@@ -300,11 +320,12 @@ public class BndrunResolveContextTest extends TestCase {
         runModel.setSystemPackages(Collections.singletonList(new ExportedPackage("sun.reflect", new Attrs())));
 
         BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
-        
+
         Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=sun.reflect)").buildSyntheticRequirement();
         List<Capability> providers = context.findProviders(req);
-        
+
         assertEquals(1, providers.size());
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
     }
+
 }

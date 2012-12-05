@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -42,6 +44,8 @@ public class BndrunResolveContext extends ResolveContext {
     private static final String CONTRACT_OSGI_FRAMEWORK = "OSGiFramework";
     private static final String IDENTITY_INITIAL_RESOURCE = "<<INITIAL>>";
 
+    public static final String RUN_EFFECTIVE_INSTRUCTION = "-runeffective";
+
     private final List<Repository> repos = new LinkedList<Repository>();
     private final Map<Requirement,List<Capability>> optionalRequirements = new HashMap<Requirement,List<Capability>>();
 
@@ -57,6 +61,7 @@ public class BndrunResolveContext extends ResolveContext {
 
     private Resource inputRequirementsResource = null;
     private EE ee;
+    private Set<String> effectiveSet;
     private List<ExportedPackage> sysPkgsExtra;
 
     public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
@@ -72,6 +77,7 @@ public class BndrunResolveContext extends ResolveContext {
         loadEE();
         loadSystemPackagesExtra();
         loadRepositories();
+        loadEffectiveSet();
         findFramework();
         constructInputRequirements();
 
@@ -108,6 +114,17 @@ public class BndrunResolveContext extends ResolveContext {
                 if (repo != null)
                     repos.add(repo);
             }
+        }
+    }
+
+    private void loadEffectiveSet() {
+        String effective = (String) runModel.genericGet(RUN_EFFECTIVE_INSTRUCTION);
+        if (effective == null)
+            effectiveSet = null;
+        else {
+            effectiveSet = new HashSet<String>();
+            for (Entry<String,Attrs> entry : new Parameters(effective).entrySet())
+                effectiveSet.add(entry.getKey());
         }
     }
 
@@ -305,8 +322,15 @@ public class BndrunResolveContext extends ResolveContext {
 
     @Override
     public boolean isEffective(Requirement requirement) {
+        init();
         String effective = requirement.getDirectives().get(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
-        return effective == null || Namespace.EFFECTIVE_RESOLVE.equals(effective);
+        if (effective == null || Namespace.EFFECTIVE_RESOLVE.equals(effective))
+            return true;
+
+        if (effectiveSet != null && effectiveSet.contains(effective))
+            return true;
+
+        return false;
     }
 
     @Override
