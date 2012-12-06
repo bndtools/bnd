@@ -22,6 +22,10 @@ import aQute.launcher.minifw.*;
  * 1.4.
  */
 public class Launcher implements ServiceListener {
+	
+	// Use our own constant for this rather than depend on OSGi core 4.3
+	private static final String FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA = "org.osgi.framework.system.capabilities.extra";
+	
 	private PrintStream					out;
 	LauncherConstants					parms;
 	Framework							systemBundle;
@@ -543,6 +547,11 @@ public class Launcher implements ServiceListener {
 			p.setProperty(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, parms.systemPackages);
 			trace("system packages used: %s", parms.systemPackages);
 		}
+		
+		if (parms.systemCapabilities != null) {
+			p.setProperty(FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA, parms.systemCapabilities);
+			trace("system capabilities used: %s", parms.systemCapabilities);
+		}
 
 		Framework systemBundle;
 
@@ -672,6 +681,7 @@ public class Launcher implements ServiceListener {
 			list(out, fill("Run bundles", 40), parms.runbundles);
 			list(out, fill("Classpath", 40), split(System.getProperty("java.class.path"), File.pathSeparator));
 			list(out, fill("System Packages", 40), split(parms.systemPackages, ","));
+			list(out, fill("System Capabilities", 40), split(parms.systemCapabilities, ","));
 			row(out, "Properties");
 			for (Entry<Object,Object> entry : properties.entrySet()) {
 				String key = (String) entry.getKey();

@@ -30,6 +30,7 @@ public class LauncherConstants {
 	final static String			LAUNCH_KEEP					= "launch.keep";
 	final static String			LAUNCH_RUNBUNDLES			= "launch.bundles";
 	final static String			LAUNCH_SYSTEMPACKAGES		= "launch.system.packages";
+	final static String			LAUNCH_SYSTEMCAPABILITIES	= "launch.system.capabilities";
 	final static String			LAUNCH_TRACE				= "launch.trace";
 	final static String			LAUNCH_TIMEOUT				= "launch.timeout";
 	final static String			LAUNCH_ACTIVATORS			= "launch.activators";
@@ -47,6 +48,7 @@ public class LauncherConstants {
 	public boolean				keep;
 	public final List<String>	runbundles					= new ArrayList<String>();
 	public String				systemPackages;
+	public String				systemCapabilities;
 	public boolean				trace;
 	public long					timeout;
 	public final List<String>	activators					= new ArrayList<String>();
@@ -68,6 +70,8 @@ public class LauncherConstants {
 		p.setProperty(LAUNCH_RUNBUNDLES, join(runbundles, ","));
 		if (systemPackages != null)
 			p.setProperty(LAUNCH_SYSTEMPACKAGES, systemPackages + "");
+		if (systemCapabilities != null)
+			p.setProperty(LAUNCH_SYSTEMCAPABILITIES, systemCapabilities + "");
 		p.setProperty(LAUNCH_TRACE, trace + "");
 		p.setProperty(LAUNCH_TIMEOUT, timeout + "");
 		p.setProperty(LAUNCH_ACTIVATORS, join(activators, ","));
@@ -105,6 +109,7 @@ public class LauncherConstants {
 		keep = Boolean.valueOf(p.getProperty(LAUNCH_KEEP));
 		runbundles.addAll(split(p.getProperty(LAUNCH_RUNBUNDLES), ","));
 		systemPackages = p.getProperty(LAUNCH_SYSTEMPACKAGES);
+		systemCapabilities = p.getProperty(LAUNCH_SYSTEMCAPABILITIES);
 		trace = Boolean.valueOf(p.getProperty(LAUNCH_TRACE));
 		timeout = Long.parseLong(p.getProperty(LAUNCH_TIMEOUT));
 		activators.addAll(split(p.getProperty(LAUNCH_ACTIVATORS), " ,"));
