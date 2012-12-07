@@ -4,7 +4,9 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.bnd.header.*;
+import aQute.bnd.header.Attrs.Type;
 import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 
 public class ParseHeaderTest extends TestCase {
 
@@ -102,5 +104,25 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals(e, d);
 
 		System.err.println(map);
+	}
+	
+	public static void testParseMultiValueAttribute() {
+		String s = "capability;foo:List<String>=\"MacOSX,Mac OS X\";version:List<Version>=\"1.0, 2.0, 2.1\"";
+		Parameters map = Processor.parseHeader(s, null);
+		
+		Attrs attrs = map.get("capability");
+		
+		assertEquals(Type.STRINGS, attrs.getType("foo"));
+		List<String> foo = (List<String>) attrs.getTyped("foo");
+		assertEquals(2, foo.size());
+		assertEquals("MacOSX", foo.get(0));
+		assertEquals("Mac OS X", foo.get(1));
+		
+		assertEquals(Type.VERSIONS, attrs.getType("version"));
+		List<Version> version = (List<Version>) attrs.getTyped("version");
+		assertEquals(3, version.size());
+		assertEquals(new Version(1), version.get(0));
+		assertEquals(new Version(2), version.get(1));
+		assertEquals(new Version(2, 1), version.get(2));
 	}
 }

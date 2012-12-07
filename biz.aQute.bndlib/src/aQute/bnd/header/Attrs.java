@@ -305,11 +305,37 @@ public class Attrs implements Map<String,String> {
 			return null;
 		}
 		List<Object> list = new ArrayList<Object>();
-		String split[] = s.split("\\s*\\(\\?!\\),\\s*");
-		for (String p : split) {
-			p = p.replaceAll("\\\\", "");
+		
+		List<String> split = splitListAttribute(s);
+		for (String p : split)
 			list.add(convert(t.sub, p));
-		}
 		return list;
+	}
+	
+	static List<String> splitListAttribute(String input) throws IllegalArgumentException {
+		List<String> result = new LinkedList<String>();
+
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < input.length(); i++) {
+			char c = input.charAt(i);
+			switch (c) {
+				case '\\' :
+					i++;
+					if (i >= input.length())
+						throw new IllegalArgumentException("Trailing blackslash in multi-valued attribute value");
+					c = input.charAt(i);
+					builder.append(c);
+					break;
+				case ',' :
+					result.add(builder.toString());
+					builder = new StringBuilder();
+					break;
+				default :
+					builder.append(c);
+					break;
+			}
+		}
+		result.add(builder.toString());
+		return result;
 	}
 }
