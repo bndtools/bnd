@@ -105,6 +105,33 @@ public class MacroTest extends TestCase {
 		assertEquals(12, a12.length());
 		assertNotSame(a, a12);
 	}
+	
+	/**
+	 * Test the native macro
+	 */
+	public static void testNativeCapabilityMacro() {
+		Processor p = new Processor();
+		p.setProperty("a", "${native_capability}");
+		
+		String origOsName = System.getProperty("os.name");
+		String origOsVersion = System.getProperty("os.version");
+		String origOsArch = System.getProperty("os.arch");
+		try {
+			System.setProperty("os.name", "Mac OS X");
+			System.setProperty("os.version", "10.8.2");
+			System.setProperty("os.arch", "x86_64");
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"MacOSX,Mac OS X\";osgi.native.osversion:Version=10.8.2;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", p.getProperty("a"));
+			
+			System.setProperty("os.name", "Windows 7");
+			System.setProperty("os.version", "6.1.7601.17514");
+			System.setProperty("os.arch", "x86");
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Windows7,Windows 7,Win32\";osgi.native.osversion:Version=6.1.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"", p.getProperty("a"));
+		} finally {
+			System.setProperty("os.name", origOsName);
+			System.setProperty("os.version", origOsVersion);
+			System.setProperty("os.arch", origOsArch);
+		}
+	}
 
 	/**
 	 * Testing an example with nesting that was supposd not to work
