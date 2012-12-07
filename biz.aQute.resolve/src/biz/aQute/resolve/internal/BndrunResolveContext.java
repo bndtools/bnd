@@ -29,6 +29,7 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.service.Registry;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.Filters;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -63,6 +64,7 @@ public class BndrunResolveContext extends ResolveContext {
     private EE ee;
     private Set<String> effectiveSet;
     private List<ExportedPackage> sysPkgsExtra;
+    private Parameters sysCapsExtraParams;
 
     public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
         this.runModel = runModel;
@@ -76,6 +78,7 @@ public class BndrunResolveContext extends ResolveContext {
 
         loadEE();
         loadSystemPackagesExtra();
+        loadSystemCapabilitiesExtra();
         loadRepositories();
         loadEffectiveSet();
         findFramework();
@@ -91,6 +94,14 @@ public class BndrunResolveContext extends ResolveContext {
 
     private void loadSystemPackagesExtra() {
         sysPkgsExtra = runModel.getSystemPackages();
+    }
+
+    private void loadSystemCapabilitiesExtra() {
+        String header = (String) runModel.genericGet(Constants.RUNSYSTEMCAPABILITIES);
+        if (header != null)
+            sysCapsExtraParams = new Parameters(header);
+        else
+            sysCapsExtraParams = null;
     }
 
     private void loadRepositories() {
@@ -160,7 +171,7 @@ public class BndrunResolveContext extends ResolveContext {
                             if (frameworkResourceVersion == null || (foundVersion.compareTo(frameworkResourceVersion) > 0)) {
                                 frameworkResource = frameworkCap.getResource();
                                 frameworkResourceVersion = foundVersion;
-                                frameworkResourceRepo = new FrameworkResourceRepository(frameworkResource, ee, sysPkgsExtra);
+                                frameworkResourceRepo = new FrameworkResourceRepository(frameworkResource, ee, sysPkgsExtra, sysCapsExtraParams);
                             }
                         }
                     }

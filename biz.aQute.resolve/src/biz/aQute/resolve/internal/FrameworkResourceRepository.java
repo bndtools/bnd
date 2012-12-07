@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.osgi.framework.Constants;
@@ -23,6 +24,7 @@ import org.osgi.service.repository.Repository;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.deployer.repository.CapabilityIndex;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 
@@ -32,7 +34,7 @@ public class FrameworkResourceRepository implements Repository {
     private final Resource framework;
     private final EE ee;
 
-    public FrameworkResourceRepository(Resource frameworkResource, EE ee, List<ExportedPackage> sysPkgsExtra) {
+    public FrameworkResourceRepository(Resource frameworkResource, EE ee, List<ExportedPackage> sysPkgsExtra, Parameters sysCapsExtraParams) {
         this.framework = frameworkResource;
         this.ee = ee;
         capIndex.addResource(frameworkResource);
@@ -64,6 +66,23 @@ public class FrameworkResourceRepository implements Repository {
                 Capability cap = builder.setResource(framework).buildCapability();
                 capIndex.addCapability(cap);
             }
+
+        // Add system capabilities extra
+        if (sysCapsExtraParams != null) {
+            for (Entry<String,Attrs> entry : sysCapsExtraParams.entrySet()) {
+                CapReqBuilder builder = new CapReqBuilder(entry.getKey());
+                for (String attrKey : entry.getValue().keySet()) {
+                    if (attrKey.endsWith(":")) {
+                        String directiveKey = attrKey.substring(0, attrKey.length() - 1);
+                        builder.addDirective(directiveKey, entry.getValue().get(attrKey));
+                    } else {
+                        builder.addAttribute(attrKey, entry.getValue().getTyped(attrKey));
+                    }
+                }
+                builder.setResource(frameworkResource);
+                capIndex.addCapability(builder.buildCapability());
+            }
+        }
     }
 
     public void addFrameworkCapability(CapReqBuilder builder) {
