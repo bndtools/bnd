@@ -1,24 +1,19 @@
 package org.bndtools.core.resolve.ui;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
-import org.bndtools.core.utils.jface.StatusLabelProvider;
-import org.bndtools.core.utils.jface.StatusTreeContentProvider;
 import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
 import org.bndtools.core.utils.swt.SashHighlightForm;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.viewers.IOpenListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.OpenEvent;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
@@ -34,7 +29,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
@@ -55,7 +50,7 @@ public class ResolutionFailurePanel {
 
     private SashHighlightForm sashForm;
 
-    private TableViewer processingErrorsViewer;
+    private Text processingErrorsText;
     private SashFormPanelMaximiser processingErrorsMaximiser;
 
     private TreeViewer unresolvedViewer;
@@ -80,26 +75,15 @@ public class ResolutionFailurePanel {
 
         createProcessingErrorsToolBar(cmpProcessingErrors);
 
-        Table tblProcessingErrors = new Table(cmpProcessingErrors, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
-        GridData gd_tblProcessingErrors = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
-        gd_tblProcessingErrors.heightHint = 80;
-        tblProcessingErrors.setLayoutData(gd_tblProcessingErrors);
+        processingErrorsText = new Text(cmpProcessingErrors, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.READ_ONLY);
+        GridData gd_processingErrors = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
+        gd_processingErrors.heightHint = 80;
+        processingErrorsText.setLayoutData(gd_processingErrors);
 
-        processingErrorsViewer = new TableViewer(tblProcessingErrors);
-
-        ControlDecoration controlDecoration = new ControlDecoration(tblProcessingErrors, SWT.RIGHT | SWT.TOP);
+        ControlDecoration controlDecoration = new ControlDecoration(processingErrorsText, SWT.RIGHT | SWT.TOP);
         controlDecoration.setMarginWidth(2);
         controlDecoration.setDescriptionText("Double-click to view details");
         controlDecoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL).getImage());
-        processingErrorsViewer.setContentProvider(new StatusTreeContentProvider());
-        processingErrorsViewer.setLabelProvider(new StatusLabelProvider());
-
-        processingErrorsViewer.addOpenListener(new IOpenListener() {
-            public void open(OpenEvent event) {
-                IStatus status = (IStatus) ((IStructuredSelection) event.getSelection()).getFirstElement();
-                ErrorDialog.openError(parent.getShell(), "Processing Errors", null, status);
-            }
-        });
 
         Composite cmpUnresolved = new Composite(sashForm, SWT.NONE);
         GridLayout gl_unresolved = new GridLayout(2, false);
@@ -115,6 +99,7 @@ public class ResolutionFailurePanel {
         Tree treeUnresolved = new Tree(cmpUnresolved, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
         GridData gd_tblUnresolved = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gd_tblUnresolved.heightHint = 80;
+        gd_tblUnresolved.widthHint = 400;
         treeUnresolved.setLayoutData(gd_tblUnresolved);
 
         unresolvedViewer = new TreeViewer(treeUnresolved);
@@ -135,9 +120,27 @@ public class ResolutionFailurePanel {
         Collection<Requirement> unresolved = resolutionException != null ? resolutionException.getUnresolvedRequirements() : Collections.<Requirement> emptyList();
 
         unresolvedViewer.setInput(unresolved);
-        processingErrorsViewer.setInput(resolutionResult.getStatus());
+        processingErrorsText.setText(formatFailureStatus(resolutionResult.getStatus()));
 
         unresolvedViewer.expandToLevel(2);
+    }
+
+    private static String formatFailureStatus(IStatus status) {
+        StringWriter writer = new StringWriter();
+        PrintWriter pw = new PrintWriter(writer);
+
+        if (status.isMultiStatus()) {
+            IStatus[] children = status.getChildren();
+            for (IStatus child : children)
+                pw.print(formatFailureStatus(child));
+        } else {
+            pw.println(status.getMessage());
+            Throwable exception = status.getException();
+            if (exception != null)
+                exception.printStackTrace(pw);
+        }
+        pw.close();
+        return writer.toString();
     }
 
     public void dispose() {
