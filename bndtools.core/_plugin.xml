@@ -24,7 +24,7 @@
    />
    <extension-point id="bndPlugins"
       name="Bnd Plug-ins"
-      schema="schema/bndPlugins.exsd"
+      schema="schema/.exsd"
    />
    <extension-point id="validators"
       name="Build Validators"
@@ -699,41 +699,25 @@
       </plugin>
       
       <plugin
-         class="aQute.lib.deployer.obr.OBR"
+         class="aQute.bnd.deployer.repository.FixedIndexedRepo"
          icon="icons/database.png"
-         name="OBR Repository (read-only)">
+         name="Indexed Repository (read-only)">
          <property name="name" type="string" description="Name of the repository"/>
-         <property name="locations" type="string" description="OBR index locations (comma-separated list of URLs)"/>
+         <property name="locations" type="string" description="Index locations (comma-separated list of URLs)"/>
          <property name="cache" type="string" description="Local cache for downloaded remote resources" deprecated="true"/>
-         <property name="mode" type="string" description="Resolution mode (build, runtime or any)"/>
+         <property name="phase" type="string" description="Resolution phase (build, runtime or any)"/>
       </plugin>
       
       <plugin
-         class="aQute.lib.deployer.obr.LocalOBR"
+         class="aQute.bnd.deployer.repository.LocalIndexedRepo"
          icon="icons/database.png"
-         name="OBR Repository with Local Storage">
+         name="Locally Indexed Repository (read/write)">
          <property name="name" type="string" description="Name of the repository"/>
          <property name="local" type="string" description="Local directory path"/>
-         <property name="locations" type="string" description="OBR index locations (comma-separated list of URLs)"/>
-         <property name="mode" type="string" description="Resolution mode (build, runtime or any)"/>
+         <property name="phase" type="string" description="Resolution phase (build, runtime or any)"/>
+         <property name="pretty" type="boolean" default="false" description="Enable pretty-printed index format"/>
          <property name="readonly" type="boolean" default="false"/>
-      </plugin>
-      
-      <plugin
-         class="aQute.bnd.maven.MavenRepository"
-         rank="10"
-         icon="icons/bundlefolder.png"
-         name="Maven Local Repository">
-         <property name="name" type="string" description="Name of the repository"/>
-         <property name="root" type="string" description="Full path to repository (default USER_HOME/.m2/repository)"/>
-      </plugin>
-      
-      <plugin
-         class="aQute.bnd.maven.support.MavenRemoteRepository"
-         rank="10"
-         icon="icons/bundlefolder.png"
-         name="Maven Remote Repository">
-         <property name="repositories" type="string" description="List of remote repository URLs"/>
+         <property name="type" type="string" description="Index types, separated by '|'. E.g. 'R5|OBR'"/>
       </plugin>
       
       <plugin
