@@ -11,7 +11,7 @@ eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo;locations=file://${
 deps: ${workspace}/cnf/deps
 
 ## Remote Bnd Repository (Known good build on Jenkins).
-bndBuildNum: 39
+bndBuildNum: 42
 remoteRepo: https://bndtools.ci.cloudbees.com/job/bnd.master/${bndBuildNum}/artifact/dist/bundles/repository.xml
 ## Remote Bnd Repository (Latest successful build on Jenkins)
 latestRemoteRepo: https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/repository.xml
