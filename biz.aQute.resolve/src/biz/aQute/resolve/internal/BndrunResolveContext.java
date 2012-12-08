@@ -30,6 +30,7 @@ import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.service.Registry;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.Filters;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -98,10 +99,19 @@ public class BndrunResolveContext extends ResolveContext {
 
     private void loadSystemCapabilitiesExtra() {
         String header = (String) runModel.genericGet(Constants.RUNSYSTEMCAPABILITIES);
-        if (header != null)
-            sysCapsExtraParams = new Parameters(header);
-        else
+        if (header != null) {
+            Processor processor = new Processor();
+            try {
+                processor.setProperty(Constants.RUNSYSTEMCAPABILITIES, header);
+                String processedHeader = processor.getProperty(Constants.RUNSYSTEMCAPABILITIES);
+                sysCapsExtraParams = new Parameters(processedHeader);
+            }
+            finally {
+                processor.close();
+            }
+        } else {
             sysCapsExtraParams = null;
+        }
     }
 
     private void loadRepositories() {

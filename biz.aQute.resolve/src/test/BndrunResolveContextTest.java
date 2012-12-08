@@ -377,4 +377,36 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
     }
 
+    public static void testMacroInSystemCapability() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+        runModel.setEE(EE.JavaSE_1_6);
+        runModel.genericSet("-runsystemcapabilities", "${native_capability}");
+
+        String origOsName = System.getProperty("os.name");
+        String origOsVersion = System.getProperty("os.version");
+        String origOsArch = System.getProperty("os.arch");
+        try {
+            System.setProperty("os.name", "Mac OS X");
+            System.setProperty("os.version", "10.8.2");
+            System.setProperty("os.arch", "x86_64");
+
+            BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+            Requirement req = new CapReqBuilder("osgi.native").addDirective("filter", "(osgi.native.osname=MacOSX)").buildSyntheticRequirement();
+
+            List<Capability> providers = context.findProviders(req);
+            assertEquals(1, providers.size());
+            assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+        }
+        finally {
+            System.setProperty("os.name", origOsName);
+            System.setProperty("os.version", origOsVersion);
+            System.setProperty("os.arch", origOsArch);
+        }
+
+    }
+
 }
