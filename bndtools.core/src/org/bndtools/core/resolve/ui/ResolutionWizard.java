@@ -107,6 +107,21 @@ public class ResolutionWizard extends Wizard {
                     pathsStream.println(builder.toString());
                 }
             }
+            Collections.sort(runBundles, new Comparator<VersionedClause>() {
+                public int compare(VersionedClause vc1, VersionedClause vc2) {
+                    int diff = vc1.getName().compareTo(vc2.getName());
+                    if (diff != 0)
+                        return diff;
+                    String r1 = vc1.getVersionRange();
+                    if (r1 == null)
+                        r1 = "";
+                    String r2 = vc2.getVersionRange();
+                    if (r2 == null)
+                        r2 = "";
+                    return r1.compareTo(r2);
+                }
+
+            });
             model.setRunBundles(runBundles);
         } finally {
             if (pathsStream != null) {
