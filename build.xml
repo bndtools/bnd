@@ -27,6 +27,9 @@
 	<target name="junit">
 		<iterate target="junit" />
 	</target>
+	<target name="findbugs-prepare">
+		<exec dir="." executable="./cnf/scripts/fb_generate_includes.bash" osfamily="unix" />
+	</target>
 	<target name="findbugs">
 		<iterate target="findbugs" />
 	</target>
