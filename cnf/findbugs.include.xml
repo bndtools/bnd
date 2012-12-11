@@ -6,6 +6,15 @@
        <Package name="bndtools" />
      </Match>
      <Match>
+       <Package name="bndtools.ace.launch" />
+     </Match>
+     <Match>
+       <Package name="bndtools.ace.launcher" />
+     </Match>
+     <Match>
+       <Package name="bndtools.ace.launch.ui" />
+     </Match>
+     <Match>
        <Package name="bndtools.api" />
      </Match>
      <Match>
@@ -54,6 +63,9 @@
        <Package name="bndtools.editor.project" />
      </Match>
      <Match>
+       <Package name="bndtools.editor.utils" />
+     </Match>
+     <Match>
        <Package name="bndtools.editor.workspace" />
      </Match>
      <Match>
@@ -75,16 +87,25 @@
        <Package name="bndtools.jareditor.internal" />
      </Match>
      <Match>
+       <Package name="bndtools.jareditor.internal.utils" />
+     </Match>
+     <Match>
        <Package name="bndtools.javamodel" />
      </Match>
      <Match>
        <Package name="bndtools.launch" />
      </Match>
      <Match>
+       <Package name="bndtools.launch.api" />
+     </Match>
+     <Match>
        <Package name="bndtools.launch.ui" />
      </Match>
      <Match>
        <Package name="bndtools.launch.ui.internal" />
+     </Match>
+     <Match>
+       <Package name="bndtools.launch.util" />
      </Match>
      <Match>
        <Package name="bndtools.model.clauses" />
@@ -120,6 +141,9 @@
        <Package name="bndtools.release.nl" />
      </Match>
      <Match>
+       <Package name="bndtools.release.ui" />
+     </Match>
+     <Match>
        <Package name="bndtools.services" />
      </Match>
      <Match>
@@ -133,6 +157,9 @@
      </Match>
      <Match>
        <Package name="bndtools.templates.dm" />
+     </Match>
+     <Match>
+       <Package name="bndtools.templates.dm.annotations" />
      </Match>
      <Match>
        <Package name="bndtools.types" />
@@ -157,9 +184,6 @@
      </Match>
      <Match>
        <Package name="bndtools.wizards.workspace" />
-     </Match>
-     <Match>
-       <Class name="org.apache.felix.bundlerepository.impl.ResolverImpl" />
      </Match>
      <Match>
        <Package name="org.bndtools.build.api" />
