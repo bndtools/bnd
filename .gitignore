@@ -20,10 +20,10 @@
 /cnf/cache
 
 # ant
-/.ant-targets-build.xml
+.ant-targets-build.xml
 
 # findbugs
-/*.findbugs.xml
+*.findbugs.xml
 
 /bndtools.ace.launcher/.settings
 /bndtools.ace.plugin/.settings
