@@ -7,7 +7,7 @@ script="${0}"
 scriptDir="$(dirname "${script}")"
 
 workspaceDir="${scriptDir}/../.."
-excludeFile="${workspaceDir}/cnf/findbugs.include.xml"
+includeFile="${workspaceDir}/cnf/findbugs.include.xml"
 
 regex='^[[:space:]]*package[[:space:]]+(.+);'
 
@@ -19,15 +19,15 @@ declare -a packages=( $( \
   ) )
 
 
-echo "<FindBugsFilter>" > "${excludeFile}"
+echo "<FindBugsFilter>" > "${includeFile}"
 
 for package in "${packages[@]}"; do
-  cat >> "${excludeFile}" << EOF
+  cat >> "${includeFile}" << EOF
      <Match>
        <Package name="${package}" />
      </Match>
 EOF
 done
 
-echo "</FindBugsFilter>" >> "${excludeFile}"
+echo "</FindBugsFilter>" >> "${includeFile}"
 
