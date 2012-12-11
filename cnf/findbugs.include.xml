@@ -84,6 +84,9 @@
        <Package name="aQute.bnd.maven.support" />
      </Match>
      <Match>
+       <Package name="aQute.bnd.obr" />
+     </Match>
+     <Match>
        <Package name="aQute.bnd.osgi" />
      </Match>
      <Match>
@@ -96,9 +99,6 @@
        <Package name="aQute.bnd.properties" />
      </Match>
      <Match>
-       <Package name="aQute.bnd.repo.eclipse" />
-     </Match>
-     <Match>
        <Package name="aQute.bnd.service" />
      </Match>
      <Match>
@@ -108,16 +108,19 @@
        <Package name="aQute.bnd.service.diff" />
      </Match>
      <Match>
-       <Package name="aQute.bnd.service.url" />
+       <Package name="aQute.bnd.service.repository" />
      </Match>
      <Match>
-       <Package name="aQute.bnd.settings" />
+       <Package name="aQute.bnd.service.url" />
      </Match>
      <Match>
        <Package name="aQute.bnd.signing" />
      </Match>
      <Match>
        <Package name="aQute.bnd.test" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.version" />
      </Match>
      <Match>
        <Package name="aQute.configurable" />
@@ -133,6 +136,9 @@
      </Match>
      <Match>
        <Package name="aQute.jpm.platform" />
+     </Match>
+     <Match>
+       <Package name="aQute.jpm.platform.windows" />
      </Match>
      <Match>
        <Package name="aQute.jpm.service" />
@@ -276,6 +282,9 @@
        <Package name="aQute.lib.putjar" />
      </Match>
      <Match>
+       <Package name="aQute.lib.settings" />
+     </Match>
+     <Match>
        <Package name="aQute.lib.spring" />
      </Match>
      <Match>
@@ -313,6 +322,24 @@
      </Match>
      <Match>
        <Package name="eclipse_jsr14" />
+     </Match>
+     <Match>
+       <Package name="pkg2" />
+     </Match>
+     <Match>
+       <Package name="pkg3" />
+     </Match>
+     <Match>
+       <Package name="pkg4" />
+     </Match>
+     <Match>
+       <Package name="pkg5" />
+     </Match>
+     <Match>
+       <Package name="pkg6" />
+     </Match>
+     <Match>
+       <Package name="pkg7" />
      </Match>
      <Match>
        <Package name="sun_1_1" />
@@ -369,6 +396,9 @@
        <Package name="test.genericinterf.c" />
      </Match>
      <Match>
+       <Package name="test.helpers" />
+     </Match>
+     <Match>
        <Package name="test.http" />
      </Match>
      <Match>
@@ -418,6 +448,48 @@
      </Match>
      <Match>
        <Package name="test.top.middle.bottom" />
+     </Match>
+     <Match>
+       <Package name="test.uses.annotation" />
+     </Match>
+     <Match>
+       <Package name="test.uses.annotation.annotation" />
+     </Match>
+     <Match>
+       <Package name="test.uses.constructor" />
+     </Match>
+     <Match>
+       <Package name="test.uses.exception" />
+     </Match>
+     <Match>
+       <Package name="test.uses.extend" />
+     </Match>
+     <Match>
+       <Package name="test.uses.field" />
+     </Match>
+     <Match>
+       <Package name="test.uses.generic.extend" />
+     </Match>
+     <Match>
+       <Package name="test.uses.generic.implement" />
+     </Match>
+     <Match>
+       <Package name="test.uses.generic.param" />
+     </Match>
+     <Match>
+       <Package name="test.uses.generic.rvalue" />
+     </Match>
+     <Match>
+       <Package name="test.uses.implement" />
+     </Match>
+     <Match>
+       <Package name="test.uses.order" />
+     </Match>
+     <Match>
+       <Package name="test.uses.param" />
+     </Match>
+     <Match>
+       <Package name="test.uses.rvalue" />
      </Match>
      <Match>
        <Package name="test.versionpolicy.api" />
