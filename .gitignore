@@ -23,6 +23,7 @@
 /.ant-targets-build.xml
 
 # findbugs
-*.findbugs.xml
-bndtools.ace.launcher/.settings
-bndtools.ace.plugin/.settings
+/*.findbugs.xml
+
+/bndtools.ace.launcher/.settings
+/bndtools.ace.plugin/.settings
