@@ -19,6 +19,9 @@
 /cnf/eclipse-*/bnd.index
 /cnf/cache
 
+# ant
+/.ant-targets-build.xml
+
 # findbugs
 *.findbugs.xml
 bndtools.ace.launcher/.settings

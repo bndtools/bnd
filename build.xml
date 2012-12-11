@@ -35,6 +35,10 @@
 		<iterate target="clean" />
 	</target>
 
+	<target name="findbugs-prepare">
+		<exec dir="." executable="./cnf/scripts/fb_generate_includes.bash" osfamily="unix" />
+	</target>
+
 	<target name="findbugs" depends="__mainiterateinit">
 		<iterate target="findbugs" />
 	</target>
