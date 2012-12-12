@@ -29,7 +29,7 @@ public abstract class ProjectLauncher {
 	private Map<String,String>	runproperties;
 	private Command				java;
 	private Parameters			runsystempackages;
-	private Parameters			runsystemcapabilities;
+	private String				runsystemcapabilities;
 	private final List<String>	activators			= Create.list();
 	private File				storageDir;
 	private final List<String>	warnings			= Create.list();
@@ -93,7 +93,7 @@ public abstract class ProjectLauncher {
 
 		Collection<Container> runpath = project.getRunpath();
 		runsystempackages = project.getParameters(Constants.RUNSYSTEMPACKAGES);
-		runsystemcapabilities = project.getParameters(Constants.RUNSYSTEMCAPABILITIES);
+		runsystemcapabilities = project.getProperty(Constants.RUNSYSTEMCAPABILITIES);
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
@@ -273,8 +273,8 @@ public abstract class ProjectLauncher {
 		return runsystempackages.asMapMap();
 	}
 	
-	public Map<String, ? extends Map<String, String>> getSystemCapabilities() {
-		return runsystemcapabilities.asMapMap();
+	public String getSystemCapabilities() {
+		return runsystemcapabilities;
 	}
 
 	public void setKeep(boolean keep) {

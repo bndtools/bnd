@@ -30,12 +30,7 @@ public class ProjectLaunchImplTest extends TestCase {
 		ProjectLauncherImpl launcher = new ProjectLauncherImpl(project);
 		launcher.prepare();
 		
-		Map<String, ? extends Map<String,String>> caps = launcher.getSystemCapabilities();
-		assertEquals(1, caps.size());
-		Map<String,String> entryMap = caps.get("osgi.native");
-		
-		assertEquals(2, entryMap.size());
-		String osnames = entryMap.get("osgi.native.osname");
-		assertEquals("Win7,Windows7,Windows 7", osnames);
+		String systemCaps = launcher.getSystemCapabilities();
+		assertEquals("osgi.native;osgi.native.osname:List<String>=\"Win7,Windows7,Windows 7\";osgi.native.osversion:Version=6.1", systemCaps);
 	}
 }

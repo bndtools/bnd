@@ -111,9 +111,12 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		try {
 			// If the workspace contains a newer version of biz.aQute.launcher than the version of bnd(tools) used
 			// then this could throw NoSuchMethodError. For now just ignore it.
-			Map<String, ? extends Map<String,String>> systemCaps = getSystemCapabilities();
-			if (systemCaps != null && !systemCaps.isEmpty())
-				lc.systemCapabilities = Processor.printClauses(systemCaps);
+			String systemCaps = getSystemCapabilities();
+			if (systemCaps != null) {
+				systemCaps = systemCaps.trim();
+				if (systemCaps.length() > 0)
+					lc.systemCapabilities = systemCaps;
+			}
 		} catch (Throwable e) {
 		}
 		return lc;
