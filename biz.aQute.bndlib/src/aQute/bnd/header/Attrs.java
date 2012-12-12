@@ -133,6 +133,9 @@ public class Attrs implements Map<String,String> {
 	}
 
 	public String put(String key, String value) {
+		if (key == null)
+			return null;
+
 		if (map == null)
 			map = new LinkedHashMap<String,String>();
 
