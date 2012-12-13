@@ -380,7 +380,7 @@ public class ReleaseHelper {
         }
     }
 
-    private static String updateTemplateVersion(String currentVersion, Version newVersion) {
+    static String updateTemplateVersion(String currentVersion, Version newVersion) {
         String version = newVersion.toString();
         if (currentVersion == null) {
             return version;
@@ -388,7 +388,7 @@ public class ReleaseHelper {
 
         Matcher m = VERSION_WITH_MACRO.matcher(currentVersion);
         if (m.matches()) {
-            return newVersion.getMajor() + "." + newVersion.getMinor() + "." + newVersion.getMicro() + "." + m.group(6);
+            return newVersion.getMajor() + "." + newVersion.getMinor() + "." + newVersion.getMicro() + "." + m.group(4);
         }
         return version;
     }

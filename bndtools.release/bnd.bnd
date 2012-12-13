@@ -24,6 +24,7 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	ee.j2se;version=${javac.ee},\
 	bndtools.core;version=latest, \
 	${bndlib}, \
+	${junit},\
 	org.eclipse.core.runtime,\
 	org.eclipse.core.contenttype,\
 	org.eclipse.jface,\
