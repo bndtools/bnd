@@ -49,6 +49,7 @@ public class BndrunResolveContext extends ResolveContext {
     public static final String RUN_EFFECTIVE_INSTRUCTION = "-resolve.effective";
 
     private final List<Repository> repos = new LinkedList<Repository>();
+    private final Map<Requirement,List<Capability>> mandatoryRequirements = new HashMap<Requirement,List<Capability>>();
     private final Map<Requirement,List<Capability>> optionalRequirements = new HashMap<Requirement,List<Capability>>();
 
     private final BndEditModel runModel;
@@ -300,6 +301,9 @@ public class BndrunResolveContext extends ResolveContext {
 
             return fwkCaps;
         } else {
+            // Record as a mandatory requirement
+            mandatoryRequirements.put(requirement, result);
+
             return result;
         }
     }
@@ -365,6 +369,10 @@ public class BndrunResolveContext extends ResolveContext {
 
     public boolean isFrameworkResource(Resource resource) {
         return resource == frameworkResource;
+    }
+
+    public Map<Requirement,List<Capability>> getMandatoryRequirements() {
+        return mandatoryRequirements;
     }
 
     public Map<Requirement,List<Capability>> getOptionalRequirements() {
