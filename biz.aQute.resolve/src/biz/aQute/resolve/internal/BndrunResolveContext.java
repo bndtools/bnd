@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -27,19 +29,19 @@ import org.osgi.service.resolver.ResolveContext;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.service.Registry;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.Filters;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.service.Registry;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
 import aQute.libg.filters.LiteralFilter;
 import aQute.libg.filters.SimpleFilter;
-import aQute.bnd.header.Attrs;
-import aQute.bnd.header.Parameters;
 
 public class BndrunResolveContext extends ResolveContext {
 
@@ -49,6 +51,7 @@ public class BndrunResolveContext extends ResolveContext {
     public static final String RUN_EFFECTIVE_INSTRUCTION = "-resolve.effective";
 
     private final List<Repository> repos = new LinkedList<Repository>();
+    private final ConcurrentMap<Resource,Integer> resourcePriorities = new ConcurrentHashMap<Resource,Integer>();
     private final Map<Requirement,List<Capability>> mandatoryRequirements = new HashMap<Requirement,List<Capability>>();
     private final Map<Requirement,List<Capability>> optionalRequirements = new HashMap<Requirement,List<Capability>>();
 
@@ -269,7 +272,7 @@ public class BndrunResolveContext extends ResolveContext {
             }
         }
 
-        // int score = 0;
+        int order = 0;
         for (Repository repo : repos) {
             Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singleton(requirement));
             Collection<Capability> capabilities = providers.get(requirement);
@@ -277,13 +280,13 @@ public class BndrunResolveContext extends ResolveContext {
                 result.ensureCapacity(result.size() + capabilities.size());
                 for (Capability capability : capabilities) {
                     // filter out OSGi frameworks & other forbidden resource
-                    if (isPermitted(capability.getResource()))
+                    if (isPermitted(capability.getResource())) {
                         result.add(capability);
+                        setResourcePriority(order, capability.getResource());
+                    }
                 }
-                // for (Capability capability : capabilities)
-                // scoreResource(capability.getResource(), score);
             }
-            // score--;
+            order++;
         }
 
         if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE))) {
@@ -306,6 +309,10 @@ public class BndrunResolveContext extends ResolveContext {
 
             return result;
         }
+    }
+
+    private void setResourcePriority(int priority, Resource resource) {
+        resourcePriorities.putIfAbsent(resource, priority);
     }
 
     private boolean isPermitted(Resource resource) {
@@ -341,8 +348,23 @@ public class BndrunResolveContext extends ResolveContext {
     }
 
     @Override
-    public int insertHostedCapability(List<Capability> capabilities, HostedCapability hostedCapability) {
-        throw new UnsupportedOperationException("TODO");
+    public int insertHostedCapability(List<Capability> caps, HostedCapability hc) {
+        Integer prioObj = resourcePriorities.get(hc.getResource());
+        int priority = prioObj != null ? prioObj.intValue() : Integer.MAX_VALUE;
+
+        for (int i = 0; i < caps.size(); i++) {
+            Capability c = caps.get(i);
+
+            Integer otherPrioObj = resourcePriorities.get(c.getResource());
+            int otherPriority = otherPrioObj != null ? otherPrioObj.intValue() : 0;
+            if (otherPriority > priority) {
+                caps.add(i, hc);
+                return i;
+            }
+        }
+
+        caps.add(hc);
+        return caps.size() - 1;
     }
 
     @Override
