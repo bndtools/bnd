@@ -11,7 +11,7 @@
 
 -->
 <feature
-      id="jarviewer.feature"
+      id="bndtools.jarviewer.feature"
       label="JAR Viewer"
       version="2.0.0.alpha01-qualifier"
       provider-name="Bndtools"
