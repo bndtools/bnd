@@ -502,11 +502,12 @@
 	   <extension
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
-            label="OSGi JUnit Test"
+            label="Bnd OSGi Test Launcher (JUnit)"
             icon="icons/bricks_junit.png"
             class="bndtools.launch.JUnitShortcut"
             modes="run, debug"
-            id="bndtools.launch.junitShortcut">
+            id="bndtools.launch.junitShortcut"
+            path="bndtools.launch.core">
          <contextualLaunch>
             <enablement>
                <with variable="selection">
@@ -553,8 +554,9 @@
             class="bndtools.launch.RunShortcut"
             icon="icons/bricks_run.png"
             id="bndtools.launch.runShortcut"
-            label="OSGi Run"
-            modes="run, debug">
+            label="Bnd OSGi Run Launcher"
+            modes="run, debug"
+            path="bndtools.launch.core">
          <contextualLaunch>
             <enablement>
                <with variable="selection">
