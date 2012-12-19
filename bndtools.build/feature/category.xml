@@ -3,12 +3,12 @@
 
    <category-def name="bndtools" label="Bndtools" />
 
-   <feature url="features/bndtools.feature_2.0.0.alpha01-qualifier" id="bndtools.feature"
+   <feature url="features/bndtools.feature_2.0.0.RC01-qualifier" id="bndtools.feature"
       version="2.0.0.alpha01-qualifier">
       <category name="bndtools" />
    </feature>
 
-   <feature url="features/bndtools.jarviewer.feature_2.0.0.alpha01-qualifier" id="bndtools.jarviewer.feature"
+   <feature url="features/bndtools.jarviewer.feature_2.0.0.RC01-qualifier" id="bndtools.jarviewer.feature"
       version="2.0.0.alpha01-qualifier">
       <category name="bndtools" />
    </feature>
