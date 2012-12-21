@@ -22,5 +22,6 @@ public class CommandData extends struct {
 	public boolean		installed;
 	public byte[]		sha;
 	public File			bin;
+	public String	coordinates;
 
 }

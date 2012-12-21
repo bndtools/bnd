@@ -98,6 +98,9 @@ public class Main extends ReporterAdapter {
 
 		boolean staged();
 
+		boolean update();
+		
+		String coordinates();
 	}
 
 	/**
@@ -344,10 +347,12 @@ public class Main extends ReporterAdapter {
 			if (f.isFile()) {
 				trace("Found file %s", f);
 				target = jpm.put(f.toURI());
+				target.coordinates = f.toURI().toString();
 			} else {
 				try {
 					trace("Found url %s", f);
 					target = jpm.put(new URI(opts.local()));
+					target.coordinates = opts.local();
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -368,8 +373,9 @@ public class Main extends ReporterAdapter {
 
 				// we've got to check for locally installed files
 				trace("locally installed file found");
+				target.coordinates = "sha:"+key.trim();
 			} else {
-				target = jpm.getCandidate(key, opts.staged());
+				target = jpm.getCandidate(key, isSha(key) || opts.staged() || key.indexOf('@')>0);
 				if (target == null) {
 					error("No such candidate %s", key);
 					return;
@@ -380,12 +386,14 @@ public class Main extends ReporterAdapter {
 					error("Error in getting target %s", target.error);
 					return;
 				}
+				target.coordinates = key;
 			}
 		}
 		trace("Target from %s", Hex.toHexString(target.sha));
 
 		if (target.command != null) {
 			target.command.force = opts.force();
+			target.command.coordinates = target.coordinates;
 			update(target.command, opts);
 			target.command.dependencies.add(0, target.file);
 			if (opts.force() && jpm.getCommand(target.command.name) != null)
@@ -397,6 +405,7 @@ public class Main extends ReporterAdapter {
 		} else if (opts.name() != null) {
 			CommandData data = new CommandData();
 			data.description = "Installed from command line";
+			data.coordinates = target.coordinates;
 			data.force = opts.force();
 			data.main = target.mainClass;
 			data.name = opts.name();
@@ -419,6 +428,7 @@ public class Main extends ReporterAdapter {
 
 		if (target.service != null) {
 			target.service.force = opts.force();
+			target.service.coordinates = target.coordinates;
 			target.service.dependencies.add(0, target.file);
 			Service s = jpm.getService(target.service.name);
 			trace("existing service %s", s);
@@ -509,6 +519,7 @@ public class Main extends ReporterAdapter {
 				return;
 
 			ServiceData data = target.service;
+			data.coordinates = opts.create();
 			update(data, opts);
 			String result = jpm.createService(data);
 			if (result != null)
@@ -522,10 +533,44 @@ public class Main extends ReporterAdapter {
 		}
 
 		ServiceData data = s.getServiceData();
-		if (update(data, opts)) {
+		if (update(data, opts) || opts.coordinates()!=null || opts.update()) {
 			if (!jpm.hasAccess()) {
 				error("No write access to update service %s", name);
 				return;
+			}
+
+			// 
+			// Check if we have to update the underlying artifact
+			// This is triggered by --coordinates, which provides
+			// the new coordinates or just --update which reuses the
+			// old coordinates without version
+			//
+			
+			if ( opts.coordinates()!=null || opts.update()) {
+				String coordinates = opts.coordinates();
+				if ( coordinates == null || coordinates.equals(".")) {
+					coordinates = data.coordinates;
+				}
+				if ( coordinates == null) {
+					error("No coordinates found in old service record");
+					return;
+				}
+				
+				int n = coordinates.indexOf('@');
+				if ( n > 0)
+					coordinates = coordinates.substring(0,n);
+				
+				trace("Updating from coordinates: %s", coordinates);
+				ArtifactData target = jpm.getCandidate(coordinates, opts.staged());
+				if ( target == null) {
+					error("No candidates found for %s (%s)", coordinates, opts.staged() ? "staged" : "only masters");
+					return;
+				}
+				
+				data.dependencies.clear();
+				data.dependencies.add(target.file);
+				data.dependencies.addAll(target.dependencies);
+				data.coordinates = coordinates;
 			}
 			data.force = true;
 			String result = jpm.createService(data);

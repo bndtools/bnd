@@ -71,6 +71,7 @@ public class JustAnotherPackageManager {
 												.compile(
 														"([-a-z0-9_.]+):([-a-z0-9_.]+)(?::([-a-z0-9_.]+))?(?:@([-a-z0-9._]+))?",
 														Pattern.CASE_INSENSITIVE);
+	static Pattern		URL_P			= Pattern.compile("([a-z]{3,6}:/.*)", Pattern.CASE_INSENSITIVE);
 	static Pattern		CMD_P			= Pattern.compile("([a-z_][a-z\\d_]*)", Pattern.CASE_INSENSITIVE);
 	static Pattern		SHA_P			= Pattern.compile("(?:sha:)?([a-f0-9]{40,40})", Pattern.CASE_INSENSITIVE);
 	static Executor		executor;
@@ -248,9 +249,9 @@ public class JustAnotherPackageManager {
 		// if (Data.validate(data) != null)
 		// return "Invalid command data: " + Data.validate(data);
 
-		if ( binDir != null) 
+		if (binDir != null)
 			data.bin = new File(binDir, data.name);
-		
+
 		String s = platform.createCommand(data);
 		if (s == null)
 			storeData(new File(commandDir, data.name), data);
@@ -550,7 +551,7 @@ public class JustAnotherPackageManager {
 					System.err.println("Cannot start daemon " + sd);
 				}
 			}
-			Thread.sleep(100000);
+			Thread.sleep(10000);
 		}
 
 	}
@@ -726,6 +727,24 @@ public class JustAnotherPackageManager {
 				return art;
 		}
 
+		File f = new File(key);
+		if ( f.isFile() ) {
+			ArtifactData target = put(f.toURI());
+			target.coordinates = f.getAbsolutePath();
+			return target;			
+		}
+		
+		m = URL_P.matcher(key);
+		if ( m.matches()){
+			try {
+				ArtifactData target = put(new URI(key));
+				target.coordinates = key;
+				return target;
+			} catch (Exception e) {
+				// Ignore
+			}
+		}
+		
 		Iterable<Revision> rs = library.getRevisions(key);
 		if (rs == null)
 			return null;
