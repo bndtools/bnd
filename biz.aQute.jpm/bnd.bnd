@@ -1,3 +1,8 @@
+-include: .settings/org.eclipse.jdt.core.prefs
+
+javac.source 			= ${org.eclipse.jdt.core.compiler.compliance}
+javac.target 			= ${org.eclipse.jdt.core.compiler.codegen.targetPlatform}
+
 -sources: false
 
 Bundle-Description: JPM, Just another Package Manager for Java, is a package management
@@ -38,3 +43,4 @@ Bundle-Developers: \
 		organizationUrl=http://www.jpm4j.org; \
 		roles="architect,developer"; \
       	timezone=1
+
