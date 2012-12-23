@@ -301,4 +301,14 @@ public class TestIndexer extends TestCase {
 		indexer.addAnalyzer(new KnownBundleAnalyzer(props), FrameworkUtil.createFilter("(name=*)"));
 		assertFragmentMatch(indexer, "testdata/org.apache.felix.eventadmin.xml", "testdata/org.apache.felix.eventadmin-1.2.14.jar");
 	}
+	
+	public void testFragmentRequireBlueprint() throws Exception {
+		assertFragmentMatch("testdata/fragment-17.txt", "testdata/17-blueprint1.jar");
+	}
+	
+	public void testFragmentRequireBlueprintUsingHeader() throws Exception {
+		assertFragmentMatch("testdata/fragment-18.txt", "testdata/18-blueprint2.jar");
+	}
+	
+	
 }

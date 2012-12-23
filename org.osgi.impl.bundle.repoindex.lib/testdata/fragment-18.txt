@@ -1,0 +1,24 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.examples.blueprint2'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='65be51330fbbd6f514373b880ff797e7b3671a257dc52fabc13e86d6ac7fa77d'/>
+    <attribute name='url' value='testdata/18-blueprint2.jar'/>
+    <attribute name='size' type='Long' value='602'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.examples.blueprint2'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.examples.blueprint2'/>
+    <attribute name='bundle-version' type='Version' value='0.0.0'/>
+  </capability>
+  <requirement namespace='osgi.extender'>
+    <directive name='filter' value='(&amp;(osgi.extender=osgi.blueprint)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+</resource>

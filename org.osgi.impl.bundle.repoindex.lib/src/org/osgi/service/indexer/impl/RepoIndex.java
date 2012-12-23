@@ -37,6 +37,7 @@ public class RepoIndex implements ResourceIndexer {
 	private final BundleAnalyzer bundleAnalyzer;
 	private final OSGiFrameworkAnalyzer frameworkAnalyzer;
 	private final SCRAnalyzer scrAnalyzer;
+	private final BlueprintAnalyzer blueprintAnalyzer;
 	
 	private final LogService log;
 	
@@ -52,6 +53,7 @@ public class RepoIndex implements ResourceIndexer {
 		this.bundleAnalyzer = new BundleAnalyzer(log);
 		this.frameworkAnalyzer = new OSGiFrameworkAnalyzer(log);
 		this.scrAnalyzer = new SCRAnalyzer(log);
+		this.blueprintAnalyzer = new BlueprintAnalyzer(log);
 		
 		try {
 			Filter allFilter = createFilter("(name=*.jar)");
@@ -59,6 +61,7 @@ public class RepoIndex implements ResourceIndexer {
 			addAnalyzer(bundleAnalyzer, allFilter);
 			addAnalyzer(frameworkAnalyzer, allFilter);
 			addAnalyzer(scrAnalyzer, allFilter);
+			addAnalyzer(blueprintAnalyzer, allFilter);
 
 		} catch (InvalidSyntaxException e) {
 			// Can't happen...?

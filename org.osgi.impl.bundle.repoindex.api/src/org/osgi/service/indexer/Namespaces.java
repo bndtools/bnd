@@ -50,5 +50,6 @@ public final class Namespaces {
 	// Known contracts and extenders
 	public static final String CONTRACT_OSGI_FRAMEWORK = "OSGiFramework";
 	public static final String EXTENDER_SCR = "osgi.ds";
+	public static final String EXTENDER_BLUEPRINT = "osgi.blueprint";
 
 }
