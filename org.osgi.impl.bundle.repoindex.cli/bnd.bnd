@@ -36,7 +36,7 @@ Private-Package:\
 	org.osgi.service.log,\
 	${bindex-pkgs},\
 	${pojosr-pkgs},\
-	${osgi-pkgs},\
+	${osgi-pkgs}
 
 # Main headers
 Bundle-Version: 0.0.1

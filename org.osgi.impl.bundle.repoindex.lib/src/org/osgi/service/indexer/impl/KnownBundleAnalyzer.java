@@ -77,28 +77,44 @@ public class KnownBundleAnalyzer implements ResourceAnalyzer {
 		}
 	}
 	
+	private static enum IndicatorType {
+		Capability("cap="),
+		Requirement("req=");
+		
+		String prefix;
+		IndicatorType(String prefix) { this.prefix = prefix; }
+		public String getPrefix() {
+			return prefix;
+		}
+	}
+	
 	private static void processClause(String bundleRef, String clauseStr, List<Capability> caps, List<Requirement> reqs) {
 		Map<String, Map<String, String>> header = OSGiHeader.parseHeader(clauseStr);
 		
 		for (Entry<String, Map<String,String>> entry : header.entrySet()) {
 			String indicator = OSGiHeader.removeDuplicateMarker(entry.getKey());
-			String[] parsedIndicator = indicator.split("@", 2);
-			if (parsedIndicator.length == 2) {
-				String type = parsedIndicator[0];
-				String namespace = parsedIndicator[1];
-				Builder builder = new Builder().setNamespace(namespace);
-				
-				Map<String, String> attribs = entry.getValue();
-				Util.copyAttribsToBuilder(builder, attribs);
-				
-				if ("capability".equalsIgnoreCase(type) || "cap".equalsIgnoreCase(type))
-					caps.add(builder.buildCapability());
-				else if ("requirement".equalsIgnoreCase(type) || "req".equalsIgnoreCase(type))
-					reqs.add(builder.buildRequirement());
-				else throw new IllegalArgumentException(MessageFormat.format("Invalid indicator type in known-bundle parsing for bundle \"{0}\", must be either cap[ability] or req[uirement], found \"{1}\".", bundleRef));
+			IndicatorType type;
+			
+			String namespace;
+			if(indicator.startsWith(IndicatorType.Capability.getPrefix())) {
+				type = IndicatorType.Capability;
+				namespace = indicator.substring(IndicatorType.Capability.getPrefix().length());
+			} else if (indicator.startsWith(IndicatorType.Requirement.getPrefix())) {
+				type = IndicatorType.Requirement;
+				namespace = indicator.substring(IndicatorType.Requirement.getPrefix().length());
 			} else {
-				throw new IllegalArgumentException(MessageFormat.format("Invalid indicator format in known-bundle parsing for bundle  \"{0}\", expected type@namespace, found \"{1}\".", bundleRef, indicator));
+				throw new IllegalArgumentException(MessageFormat.format("Invalid indicator format in known-bundle parsing for bundle  \"{0}\", expected cap=namespace or req=namespace, found \"{1}\".", bundleRef, indicator));
 			}
+
+			Builder builder = new Builder().setNamespace(namespace);
+				
+			Map<String, String> attribs = entry.getValue();
+			Util.copyAttribsToBuilder(builder, attribs);
+			
+			if (type == IndicatorType.Capability)
+				caps.add(builder.buildCapability());
+			else if (type == IndicatorType.Requirement)
+				reqs.add(builder.buildRequirement());
 		}
 	}
 

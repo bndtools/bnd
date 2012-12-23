@@ -53,7 +53,7 @@ public class TestStandaloneLibrary extends TestCase {
 	
 	public void testKnownBundlesExtra() throws Exception {
 		Properties extras = new Properties();
-		extras.setProperty("org.eclipse.equinox.ds;[1.4,1.5)", "cap@extra;extra=wibble");
+		extras.setProperty("org.eclipse.equinox.ds;[1.4,1.5)", "cap=extra;extra=wibble");
 		
 		KnownBundleAnalyzer knownBundlesAnalyzer = new KnownBundleAnalyzer();
 		knownBundlesAnalyzer.setKnownBundlesExtra(extras);

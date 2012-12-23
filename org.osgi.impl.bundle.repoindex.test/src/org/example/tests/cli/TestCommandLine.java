@@ -154,7 +154,7 @@ public class TestCommandLine extends TestCase {
 	
 	public void testKnownBundleExtra() throws Exception {
 		Properties props = new Properties();
-		props.setProperty("org.eclipse.equinox.ds;[1.4,1.5)", "cap@extra;extra=wibble");
+		props.setProperty("org.eclipse.equinox.ds;[1.4,1.5)", "cap=extra;extra=wibble");
 		File knownBundlesFile = File.createTempFile("known", ".properties", new File("generated"));
 		knownBundlesFile.deleteOnExit();
 		props.store(new FileOutputStream(knownBundlesFile), "");
