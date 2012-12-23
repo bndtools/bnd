@@ -1,0 +1,169 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.eclipse.gemini.blueprint.extender'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='1.0.0.RELEASE'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='f0bdd4d1d28c5de7432e0f914b0b3c58f094f0111837efdc8d355744f33bd172'/>
+    <attribute name='url' value='testdata/gemini-blueprint-extender-1.0.0.RELEASE.jar'/>
+    <attribute name='size' type='Long' value='178525'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.eclipse.gemini.blueprint.extender'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0.RELEASE'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.eclipse.gemini.blueprint.extender'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0.RELEASE'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.eclipse.gemini.blueprint.extender'/>
+    <attribute name='version' type='Version' value='1.0.0.RELEASE'/>
+    <attribute name='bundle-symbolic-name' value='org.eclipse.gemini.blueprint.extender'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0.RELEASE'/>
+    <directive name='uses' value='org.eclipse.gemini.blueprint.context,org.osgi.framework,org.springframework.beans,org.springframework.beans.factory.config'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.eclipse.gemini.blueprint.extender.event'/>
+    <attribute name='version' type='Version' value='1.0.0.RELEASE'/>
+    <attribute name='bundle-symbolic-name' value='org.eclipse.gemini.blueprint.extender'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0.RELEASE'/>
+    <directive name='uses' value='org.eclipse.gemini.blueprint.context.event,org.eclipse.gemini.blueprint.service.importer.event,org.osgi.framework,org.springframework.context'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.eclipse.gemini.blueprint.extender.support'/>
+    <attribute name='version' type='Version' value='1.0.0.RELEASE'/>
+    <attribute name='bundle-symbolic-name' value='org.eclipse.gemini.blueprint.extender'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0.RELEASE'/>
+    <directive name='uses' value='org.eclipse.gemini.blueprint.context,org.eclipse.gemini.blueprint.extender,org.eclipse.gemini.blueprint.extender.support.scanning,org.osgi.framework,org.springframework.beans.factory'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.eclipse.gemini.blueprint.extender.support.scanning'/>
+    <attribute name='version' type='Version' value='1.0.0.RELEASE'/>
+    <attribute name='bundle-symbolic-name' value='org.eclipse.gemini.blueprint.extender'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0.RELEASE'/>
+    <directive name='uses' value='org.osgi.framework'/>
+  </capability>
+  <capability namespace='osgi.extender'>
+    <attribute name='osgi.extender' value='osgi.blueprint'/>
+    <attribute name='version' type='Version' value='1.0.0'/>
+    <directive name='uses' value='org.osgi.service.blueprint.container,org.osgi.service.blueprint.reflect'/>
+  </capability>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.commons.logging)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.blueprint.container)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.blueprint.container.support)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.context)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.context.event)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.context.support)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.extensions.annotation)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.io)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.service.exporter.support)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.service.importer)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.service.importer.event)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.service.importer.support)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.gemini.blueprint.util)(version&gt;=1.0.0.RELEASE)(version&lt;=1.0.0.RELEASE))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.framework)(version&gt;=1.3.0))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.blueprint.container)(version&gt;=1.0.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.blueprint.reflect)(version&gt;=1.0.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.event)(version&gt;=1.1.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.packageadmin)(version&gt;=1.2.0))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.util.tracker)(version&gt;=1.3.0))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.beans)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.beans.factory)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.beans.factory.config)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.beans.factory.parsing)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.beans.factory.support)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.beans.factory.xml)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.context)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.context.event)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.core)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.core.convert)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.core.io)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.core.io.support)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.core.task)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.scheduling.timer)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.springframework.util)(version&gt;=3.0.0)(!(version&gt;=4.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=org.xml.sax)'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+</resource>
