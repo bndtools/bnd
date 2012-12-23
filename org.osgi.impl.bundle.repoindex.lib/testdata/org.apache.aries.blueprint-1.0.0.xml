@@ -1,0 +1,175 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.apache.aries.blueprint'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='1.0.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='22def9db2e6a1b4542c588e5b79433a557a7e8ee1066ca4d014164dde27a65e8'/>
+    <attribute name='url' value='testdata/org.apache.aries.blueprint-1.0.0.jar'/>
+    <attribute name='size' type='Long' value='437187'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.apache.aries.blueprint'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0'/>
+    <directive name='blueprint.graceperiod' value='false'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.apache.aries.blueprint'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.osgi.service.blueprint'/>
+    <attribute name='version' type='Version' value='1.0.1'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.aries.blueprint'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0'/>
+    <directive name='uses' value='org.osgi.service.blueprint.container,org.osgi.service.blueprint.reflect,org.apache.aries.blueprint,org.apache.aries.blueprint.ext,org.apache.aries.blueprint.mutable,org.apache.aries.blueprint.compendium.cm'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.osgi.service.blueprint.container'/>
+    <attribute name='version' type='Version' value='1.0.1'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.aries.blueprint'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0'/>
+    <directive name='uses' value='org.osgi.service.blueprint.reflect,org.osgi.framework'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.osgi.service.blueprint.reflect'/>
+    <attribute name='version' type='Version' value='1.0.1'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.aries.blueprint'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.apache.aries.blueprint'/>
+    <attribute name='version' type='Version' value='1.0.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.aries.blueprint'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0'/>
+    <directive name='uses' value='org.osgi.service.blueprint.reflect,org.apache.aries.blueprint.services,org.osgi.framework,org.w3c.dom'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.apache.aries.blueprint.services'/>
+    <attribute name='version' type='Version' value='1.0.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.aries.blueprint'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0'/>
+    <directive name='uses' value='org.apache.aries.blueprint,org.osgi.service.blueprint.reflect,org.osgi.framework,org.apache.aries.proxy,org.osgi.service.blueprint.container'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.apache.aries.blueprint.mutable'/>
+    <attribute name='version' type='Version' value='1.0.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.aries.blueprint'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0'/>
+    <directive name='uses' value='org.osgi.service.blueprint.reflect,org.apache.aries.blueprint,org.osgi.framework'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.apache.aries.blueprint.ext'/>
+    <attribute name='version' type='Version' value='1.0.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.aries.blueprint'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0'/>
+    <directive name='uses' value='org.osgi.service.blueprint.reflect,org.slf4j,org.apache.aries.blueprint,org.osgi.framework,org.osgi.service.blueprint.container,org.apache.aries.blueprint.mutable,org.apache.aries.blueprint.services,org.apache.aries.blueprint.ext.evaluator'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.apache.aries.blueprint.ext.evaluator'/>
+    <attribute name='version' type='Version' value='1.0.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.aries.blueprint'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.apache.aries.blueprint.utils'/>
+    <attribute name='version' type='Version' value='1.0.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.aries.blueprint'/>
+    <attribute name='bundle-version' type='Version' value='1.0.0'/>
+    <directive name='uses' value='org.osgi.framework,org.apache.aries.blueprint.services,org.osgi.service.blueprint.container,org.slf4j'/>
+  </capability>
+  <capability namespace='osgi.wiring.service'>
+    <attribute name='osgi.wiring.service' value='org.apache.aries.blueprint.NamespaceHandler'/>
+  </capability>
+  <capability namespace='osgi.wiring.service'>
+    <attribute name='osgi.wiring.service' value='org.apache.aries.blueprint.ParserService'/>
+  </capability>
+  <capability namespace='osgi.extender'>
+    <attribute name='osgi.extender' value='osgi.blueprint'/>
+    <attribute name='version' type='Version' value='1.0.0'/>
+    <directive name='uses' value='org.osgi.service.blueprint.container,org.osgi.service.blueprint.reflect'/>
+  </capability>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=javax.xml.namespace)'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=javax.xml.parsers)'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=javax.xml.transform)'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=javax.xml.transform.dom)'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=javax.xml.transform.stream)'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=javax.xml.validation)'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.aries.blueprint.annotation.service)(version&gt;=1.0.0)(!(version&gt;=1.1.0)))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.aries.proxy)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.aries.quiesce.manager)(version&gt;=1.0.0)(!(version&gt;=1.1.0)))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.aries.quiesce.participant)(version&gt;=1.0.0)(!(version&gt;=1.1.0)))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.aries.util)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.aries.util.tracker)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.framework)(version&gt;=1.5.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.blueprint.container)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.blueprint.reflect)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.cm)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.event)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.framework)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.util.tracker)(version&gt;=1.4.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.slf4j)(version&gt;=1.5.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=org.w3c.dom)'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=org.w3c.dom.ls)'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=org.xml.sax)'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.service'>
+    <directive name='filter' value='(osgi.wiring.service=org.osgi.service.cm.ConfigurationAdmin)'/>
+    <directive name='effective' value='active'/>
+  </requirement>
+  <requirement namespace='osgi.extender'>
+    <directive name='filter' value='(&amp;(osgi.extender=osgi.blueprint)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
+</resource>

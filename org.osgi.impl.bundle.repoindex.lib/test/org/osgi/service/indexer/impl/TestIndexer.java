@@ -290,6 +290,12 @@ public class TestIndexer extends TestCase {
 		assertFragmentMatch(indexer, "testdata/org.apache.felix.scr-1.6.0.xml", "testdata/org.apache.felix.scr-1.6.0.jar");
 	}
 	
+	public void testRecogniseAriesBlueprint() throws Exception {
+		RepoIndex indexer = new RepoIndex();
+		indexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
+		assertFragmentMatch(indexer, "testdata/org.apache.aries.blueprint-1.0.0.xml", "testdata/org.apache.aries.blueprint-1.0.0.jar");
+	}
+	
 	public void testMacroExpansion() throws Exception {
 		Properties props = new Properties();
 		props.load(new FileInputStream("testdata/known-bundles.properties"));
