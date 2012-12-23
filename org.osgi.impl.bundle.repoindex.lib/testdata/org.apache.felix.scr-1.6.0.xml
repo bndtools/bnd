@@ -63,4 +63,7 @@
     <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.packageadmin)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))'/>
     <directive name='resolution' value='optional'/>
   </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.cm)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))'/>
+  </requirement>
 </resource>
