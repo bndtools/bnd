@@ -12,7 +12,7 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	org.osgi.impl.bundle.bindex,\
-	org.osgi.impl.bundle.repoindex.lib,\
+	org.osgi.impl.bundle.repoindex.lib;version=0.0.2,\
 	junit.osgi,\
 	osgi.cmpn;version=4.3.0,\
 	osgi.r5;version=1.0.1,\
