@@ -20,5 +20,6 @@
   </capability>
   <capability namespace='osgi.wiring.service'>
     <attribute name='osgi.wiring.service' value='org.example.a.A'/>
+    <directive name='effective' value='active'/>
   </capability>
 </resource>

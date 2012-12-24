@@ -91,7 +91,8 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 		Util.addVersionFilter(filter, range, VersionKey.PackageVersion);
 		filter.append(')');
 		
-		builder.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
+		builder.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString())
+			.addDirective(Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
 		Requirement requirement = builder.buildRequirement();
 		return requirement;
 	}

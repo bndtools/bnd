@@ -87,6 +87,7 @@
       <attribute name='osgi.extender' value='osgi.ds'/>
       <attribute name='version' type='Version' value='1.2.0'/>
       <directive name='uses' value='org.osgi.service.component'/>
+      <directive name='effective' value='active'/>
     </capability>
     <capability namespace='extra'>
       <attribute name='extra' value='wibble'/>

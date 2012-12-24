@@ -87,6 +87,7 @@
       <attribute name='osgi.extender' value='osgi.ds'/>
       <attribute name='version' type='Version' value='1.2.0'/>
       <directive name='uses' value='org.osgi.service.component'/>
+      <directive name='effective' value='active'/>
     </capability>
     <requirement namespace='osgi.wiring.package'>
       <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.equinox.internal.util.event)(version&gt;=1.0.0))'/>

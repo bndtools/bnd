@@ -20,5 +20,6 @@
   </capability>
   <requirement namespace='osgi.extender'>
     <directive name='filter' value='(&amp;(osgi.extender=osgi.ds)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))'/>
+    <directive name='effective' value='active'/>
   </requirement>
 </resource>

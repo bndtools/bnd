@@ -388,7 +388,8 @@ class BundleAnalyzer implements ResourceAnalyzer {
 			String service = OSGiHeader.removeDuplicateMarker(export.getKey());
 			Builder builder = new Builder()
 					.setNamespace(Namespaces.NS_WIRING_SERVICE)
-					.addAttribute(Namespaces.NS_WIRING_SERVICE, service);
+					.addAttribute(Namespaces.NS_WIRING_SERVICE, service)
+					.addDirective(Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
 			caps.add(builder.buildCapability());
 		}
 	}

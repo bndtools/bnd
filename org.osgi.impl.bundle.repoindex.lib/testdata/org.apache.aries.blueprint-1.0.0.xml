@@ -82,14 +82,17 @@
   </capability>
   <capability namespace='osgi.wiring.service'>
     <attribute name='osgi.wiring.service' value='org.apache.aries.blueprint.NamespaceHandler'/>
+    <directive name='effective' value='active'/>
   </capability>
   <capability namespace='osgi.wiring.service'>
     <attribute name='osgi.wiring.service' value='org.apache.aries.blueprint.ParserService'/>
+    <directive name='effective' value='active'/>
   </capability>
   <capability namespace='osgi.extender'>
     <attribute name='osgi.extender' value='osgi.blueprint'/>
     <attribute name='version' type='Version' value='1.0.0'/>
     <directive name='uses' value='org.osgi.service.blueprint.container,org.osgi.service.blueprint.reflect'/>
+    <directive name='effective' value='active'/>
   </capability>
   <requirement namespace='osgi.wiring.package'>
     <directive name='filter' value='(osgi.wiring.package=javax.xml.namespace)'/>
@@ -171,5 +174,6 @@
   </requirement>
   <requirement namespace='osgi.extender'>
     <directive name='filter' value='(&amp;(osgi.extender=osgi.blueprint)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))'/>
+    <directive name='effective' value='active'/>
   </requirement>
 </resource>

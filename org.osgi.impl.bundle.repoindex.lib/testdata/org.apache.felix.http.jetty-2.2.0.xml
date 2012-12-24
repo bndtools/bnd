@@ -60,6 +60,7 @@
   <capability namespace='osgi.service'>
     <attribute name='objectClass' value='org.osgi.service.http.HttpService'/>
     <directive name='uses' value='org.osgi.service.http,javax.servlet,javax.servlet.http'/>
+    <directive name='effective' value='active'/>
   </capability>
   <requirement namespace='osgi.wiring.package'>
     <directive name='filter' value='(osgi.wiring.package=javax.net.ssl)'/>
