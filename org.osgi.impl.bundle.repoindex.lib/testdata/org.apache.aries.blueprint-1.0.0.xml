@@ -80,12 +80,13 @@
     <attribute name='bundle-version' type='Version' value='1.0.0'/>
     <directive name='uses' value='org.osgi.framework,org.apache.aries.blueprint.services,org.osgi.service.blueprint.container,org.slf4j'/>
   </capability>
-  <capability namespace='osgi.wiring.service'>
-    <attribute name='osgi.wiring.service' value='org.apache.aries.blueprint.NamespaceHandler'/>
+  <capability namespace='osgi.service'>
+    <attribute name='objectClass' value='org.apache.aries.blueprint.NamespaceHandler'/>
+    <attribute name='osgi.service.blueprint.namespace' value=''/>
     <directive name='effective' value='active'/>
   </capability>
-  <capability namespace='osgi.wiring.service'>
-    <attribute name='osgi.wiring.service' value='org.apache.aries.blueprint.ParserService'/>
+  <capability namespace='osgi.service'>
+    <attribute name='objectClass' value='org.apache.aries.blueprint.ParserService'/>
     <directive name='effective' value='active'/>
   </capability>
   <capability namespace='osgi.extender'>
@@ -168,8 +169,8 @@
   <requirement namespace='osgi.wiring.package'>
     <directive name='filter' value='(osgi.wiring.package=org.xml.sax)'/>
   </requirement>
-  <requirement namespace='osgi.wiring.service'>
-    <directive name='filter' value='(osgi.wiring.service=org.osgi.service.cm.ConfigurationAdmin)'/>
+  <requirement namespace='osgi.service'>
+    <directive name='filter' value='(objectClass=org.osgi.service.cm.ConfigurationAdmin)'/>
     <directive name='effective' value='active'/>
   </requirement>
   <requirement namespace='osgi.extender'>

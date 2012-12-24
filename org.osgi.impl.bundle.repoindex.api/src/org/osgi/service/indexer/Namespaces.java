@@ -10,7 +10,6 @@ public final class Namespaces {
 	public static final String NS_WIRING_PACKAGE = "osgi.wiring.package";
 	public static final String NS_WIRING_BUNDLE = "osgi.wiring.bundle";
 	public static final String NS_WIRING_HOST = "osgi.wiring.host";
-	public static final String NS_WIRING_SERVICE = "osgi.wiring.service";
 	public static final String NS_EE = "osgi.ee";
 	
 	// Non-core namespaces

@@ -387,9 +387,11 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		for (Entry<String, Map<String, String>> export : exports.entrySet()) {
 			String service = OSGiHeader.removeDuplicateMarker(export.getKey());
 			Builder builder = new Builder()
-					.setNamespace(Namespaces.NS_WIRING_SERVICE)
-					.addAttribute(Namespaces.NS_WIRING_SERVICE, service)
-					.addDirective(Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
+					.setNamespace(Namespaces.NS_SERVICE)
+					.addAttribute(Constants.OBJECTCLASS, service);
+			for (Entry<String,String> attribEntry : export.getValue().entrySet())
+				builder.addAttribute(attribEntry.getKey(), attribEntry.getValue());
+			builder.addDirective(Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
 			caps.add(builder.buildCapability());
 		}
 	}
@@ -402,10 +404,10 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		for (Entry<String, Map<String, String>> imp : imports.entrySet()) {
 			String service = OSGiHeader.removeDuplicateMarker(imp.getKey());
 			StringBuilder filter = new StringBuilder();
-			filter.append('(').append(Namespaces.NS_WIRING_SERVICE).append('=').append(service).append(')');
+			filter.append('(').append(Constants.OBJECTCLASS).append('=').append(service).append(')');
 			
 			Builder builder = new Builder()
-				.setNamespace(Namespaces.NS_WIRING_SERVICE)
+				.setNamespace(Namespaces.NS_SERVICE)
 				.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString())
 				.addDirective(Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
 			reqs.add(builder.buildRequirement());

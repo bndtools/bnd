@@ -18,8 +18,8 @@
     <attribute name='osgi.wiring.host' value='org.example.k'/>
     <attribute name='bundle-version' type='Version' value='0.0.0'/>
   </capability>
-  <requirement namespace='osgi.wiring.service'>
-    <directive name='filter' value='(osgi.wiring.service=org.example.a.A)'/>
+  <requirement namespace='osgi.service'>
+    <directive name='filter' value='(objectClass=org.example.a.A)'/>
     <directive name='effective' value='active'/>
   </requirement>
 </resource>
