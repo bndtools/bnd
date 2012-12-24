@@ -302,6 +302,12 @@ public class TestIndexer extends TestCase {
 		assertFragmentMatch(indexer, "testdata/gemini-blueprint-extender-1.0.0.RELEASE.xml", "testdata/gemini-blueprint-extender-1.0.0.RELEASE.jar");
 	}
 	
+	public void testRecogniseFelixJetty() throws Exception {
+		RepoIndex indexer = new RepoIndex();
+		indexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
+		assertFragmentMatch(indexer, "testdata/org.apache.felix.http.jetty-2.2.0.xml", "testdata/org.apache.felix.http.jetty-2.2.0.jar");
+	}
+	
 	public void testMacroExpansion() throws Exception {
 		Properties props = new Properties();
 		props.load(new FileInputStream("testdata/known-bundles.properties"));

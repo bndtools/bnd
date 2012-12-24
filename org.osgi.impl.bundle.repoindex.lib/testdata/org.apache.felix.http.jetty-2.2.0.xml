@@ -1,0 +1,124 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='org.apache.felix.http.jetty'/>
+    <attribute name='type' value='osgi.bundle'/>
+    <attribute name='version' type='Version' value='2.2.0'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='e4d019c20015b7b36ff6480730255dfbd6c9091615a99353ee4c1cc815ab2cf3'/>
+    <attribute name='url' value='testdata/org.apache.felix.http.jetty-2.2.0.jar'/>
+    <attribute name='size' type='Long' value='941716'/>
+    <attribute name='mime' value='application/vnd.osgi.bundle'/>
+  </capability>
+  <capability namespace='osgi.wiring.bundle'>
+    <attribute name='osgi.wiring.bundle' value='org.apache.felix.http.jetty'/>
+    <attribute name='bundle-version' type='Version' value='2.2.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.host'>
+    <attribute name='osgi.wiring.host' value='org.apache.felix.http.jetty'/>
+    <attribute name='bundle-version' type='Version' value='2.2.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.apache.felix.http.api'/>
+    <attribute name='version' type='Version' value='2.0.4'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.felix.http.jetty'/>
+    <attribute name='bundle-version' type='Version' value='2.2.0'/>
+    <directive name='uses' value='javax.servlet,org.osgi.service.http'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='org.osgi.service.http'/>
+    <attribute name='version' type='Version' value='1.2.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.felix.http.jetty'/>
+    <attribute name='bundle-version' type='Version' value='2.2.0'/>
+    <directive name='uses' value='javax.servlet.http,javax.servlet'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='javax.servlet.resources'/>
+    <attribute name='version' type='Version' value='2.5.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.felix.http.jetty'/>
+    <attribute name='bundle-version' type='Version' value='2.2.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='javax.servlet'/>
+    <attribute name='version' type='Version' value='2.5.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.felix.http.jetty'/>
+    <attribute name='bundle-version' type='Version' value='2.2.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='javax.servlet.jsp.resources'/>
+    <attribute name='version' type='Version' value='2.5.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.felix.http.jetty'/>
+    <attribute name='bundle-version' type='Version' value='2.2.0'/>
+  </capability>
+  <capability namespace='osgi.wiring.package'>
+    <attribute name='osgi.wiring.package' value='javax.servlet.http'/>
+    <attribute name='version' type='Version' value='2.5.0'/>
+    <attribute name='bundle-symbolic-name' value='org.apache.felix.http.jetty'/>
+    <attribute name='bundle-version' type='Version' value='2.2.0'/>
+    <directive name='uses' value='javax.servlet'/>
+  </capability>
+  <capability namespace='osgi.service'>
+    <attribute name='objectClass' value='org.osgi.service.http.HttpService'/>
+    <directive name='uses' value='org.osgi.service.http,javax.servlet,javax.servlet.http'/>
+  </capability>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=javax.net.ssl)'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=javax.security.cert)'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=javax.servlet)(version&gt;=2.5.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=javax.servlet.http)(version&gt;=2.5.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=javax.servlet.jsp.resources)(version&gt;=2.5.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=javax.servlet.resources)(version&gt;=2.5.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=javax.xml.parsers)'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.felix.http.api)(version&gt;=2.0.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.framework)(version&gt;=1.3.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.http)(version&gt;=1.2.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.log)(version&gt;=1.3.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.util.tracker)(version&gt;=1.3.0))'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=org.slf4j)'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=org.xml.sax)'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+  <requirement namespace='osgi.wiring.package'>
+    <directive name='filter' value='(osgi.wiring.package=org.xml.sax.helpers)'/>
+    <directive name='resolution' value='optional'/>
+  </requirement>
+</resource>
