@@ -1,6 +1,8 @@
 package org.example.tests.cli;
 
-import static org.example.tests.utils.Utils.*;
+import static org.example.tests.utils.Utils.copyToTempFile;
+import static org.example.tests.utils.Utils.createTempDir;
+import static org.example.tests.utils.Utils.deleteWithException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -152,6 +154,21 @@ public class TestCommandLine extends TestCase {
 		assertEquals(expected, actual);
 	}
 	
+	public void testKnownBundleOverride() throws Exception {
+		File tempFile = copyToTempFile(tempDir, "testdata/org.eclipse.equinox.ds-1.4.0.jar");
+		String[] args = new String[] {
+				"--pretty",
+				"--noincrement",
+				"-K",
+				tempFile.getAbsolutePath()
+		};
+		execute(args);
+		assertTrue(new File("generated/index.xml").exists());
+		
+ 		String expected = Utils.readStream(getClass().getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0-overridden.xml"));
+		String actual = Utils.readStream(new FileInputStream("generated/index.xml"));
+		assertEquals(expected, actual);	}
+	
 	public void testKnownBundleExtra() throws Exception {
 		Properties props = new Properties();
 		props.setProperty("org.eclipse.equinox.ds;[1.4,1.5)", "cap=extra;extra=wibble");
@@ -172,5 +189,6 @@ public class TestCommandLine extends TestCase {
 		
  		String expected = Utils.readStream(getClass().getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0-extra.xml"));
 		String actual = Utils.readStream(new FileInputStream("generated/index.xml"));
-		assertEquals(expected, actual);	}
+		assertEquals(expected, actual);
+	}
 }

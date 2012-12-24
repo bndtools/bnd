@@ -97,8 +97,8 @@ public class Index {
 	private static File processArgs(String[] args, Map<String, String> config, Collection<? super File> fileList, BundleContext context) throws Exception {
 		File output = new File(DEFAULT_FILENAME_COMPRESSED);
 		
-		File knownBundles = null;
-		File knownBundlesExtra = null;
+		KnownBundleAnalyzer knownBundleAnalyzer = null;
+		File knownBundlesExtraFile = null;
 		
 		for (int i = 0; i < args.length; i++) {
 			try {
@@ -123,8 +123,10 @@ public class Index {
 				} else if (args[i].equalsIgnoreCase("--pretty")) {
 					output = new File(DEFAULT_FILENAME_UNCOMPRESSED);
 					config.put(ResourceIndexer.PRETTY, Boolean.toString(true));
+				} else if (args[i].equals("-K")) {
+					knownBundleAnalyzer = new KnownBundleAnalyzer(new Properties());
 				} else if (args[i].equals("-k")) {
-					knownBundlesExtra = new File(args[++i]);
+					knownBundlesExtraFile = new File(args[++i]);
 				} else if(args[i].equalsIgnoreCase("--noincrement")) {
 					config.put("-repository.increment.override", "");
 				} else if (args[i].startsWith("-h")) {
@@ -140,16 +142,11 @@ public class Index {
 			}
 		}
 		
-		final KnownBundleAnalyzer knownBundleAnalyzer;
-		if (knownBundles == null) {
+		if (knownBundleAnalyzer == null)
 			knownBundleAnalyzer = new KnownBundleAnalyzer();
-		} else {
-			Properties props = loadPropertiesFile(knownBundles);
-			knownBundleAnalyzer = new KnownBundleAnalyzer(props);
-		}
 		
-		if (knownBundlesExtra != null) {
-			Properties props = loadPropertiesFile(knownBundlesExtra);
+		if (knownBundlesExtraFile != null) {
+			Properties props = loadPropertiesFile(knownBundlesExtraFile);
 			knownBundleAnalyzer.setKnownBundlesExtra(props);
 		}
 		
@@ -178,17 +175,17 @@ public class Index {
 
 	private static void printUsage() {
 		System.err
-				.println("Arguments:\n" //
-						+ "  [-r index.xml(.gz)]                                              --> Output file name.\n" //
-						+ "  [--pretty                                                        --> Non-compressed, indented output.\n" //
-						+ "  [-n Untitled]                                                    --> Repository name.\n"
-						+ "  [-t \"%s\" symbolic name \"%v\" version \"%f\" filename \"%p\" dirpath ] --> Resource URL template.\n" //
-						+ "  [-d rootdir]                                                     --> Root directory.\n" //
-						+ "  [-h]                                                             --> Show help.\n" //
-						+ "  [-l file:license.html]                                           --> Licence file.\n" //
-						+ "  [-v]                                                             --> Verbose reporting.\n" //
-						+ "  [-stylesheet "
-						+ ResourceIndexer.STYLESHEET_DEFAULT + "]               --> Stylesheet URL.\n" //
-						+ "  <file> [<file>*]");
+				.printf("Arguments:%n" //
+						+ "  [-r index.xml(.gz)]                                              --> Output file name.%n" //
+						+ "  [--pretty]                                                       --> Non-compressed, indented output.%n" //
+						+ "  [-n Untitled]                                                    --> Repository name.%n"
+						+ "  [-k known-bundles.properties]                                    --> Load extra known-bundles data from file.%n"
+						+ "  [-K]                                                             --> Override built-in known-bundles data.%n"
+						+ "  [-t \"%%s\" symbolic name \"%%v\" version \"%%f\" filename \"%%p\" dirpath ] --> Resource URL template.%n" //
+						+ "  [-d rootdir]                                                     --> Root directory.%n"
+						+ "  [-l file:license.html]                                           --> Licence file.%n"
+						+ "  [-v]                                                             --> Verbose reporting.%n"
+						+ "  [-stylesheet http://www.osgi.org/www/obr2html.xsl]               --> Stylesheet URL.%n"
+						+ "  <file> [<file>*]%n");
 	}
 }
