@@ -36,6 +36,7 @@ import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
+import aQute.bnd.version.*;
 import aQute.bnd.version.Version;
 import aQute.lib.base64.*;
 import aQute.lib.collections.*;
@@ -464,7 +465,7 @@ public class Analyzer extends Processor {
 			// This should not really happen. The code should never throw
 			// exceptions in normal situations. So if it happens we need more
 			// information. So to help diagnostics. We do a full property dump
-			throw new IllegalStateException("Calc manifest failed, state=\n"+getFlattenedProperties(), e);
+			throw new IllegalStateException("Calc manifest failed, state=\n" + getFlattenedProperties(), e);
 		}
 	}
 
@@ -1931,7 +1932,12 @@ public class Analyzer extends Processor {
 		Matcher m = Verifier.VERSIONRANGE.matcher(version);
 
 		if (m.matches()) {
-			return version;
+			try {
+				VersionRange vr = new VersionRange(version);
+				return version;
+			} catch( Exception e) {
+				// ignore
+			}
 		}
 
 		m = fuzzyVersionRange.matcher(version);
@@ -1951,6 +1957,15 @@ public class Analyzer extends Processor {
 			String micro = removeLeadingZeroes(m.group(5));
 			String qualifier = m.group(7);
 
+			if (qualifier == null) {
+				if (!isInteger(minor)) {
+					qualifier = minor;
+					minor = "0";
+				} else if (!isInteger(micro)) {
+					qualifier = micro;
+					micro = "0";
+				}
+			}
 			if (major != null) {
 				result.append(major);
 				if (minor != null) {
@@ -1977,9 +1992,23 @@ public class Analyzer extends Processor {
 		return version;
 	}
 
+	/**
+	 * TRhe cleanup version got confused when people used numeric dates like
+	 * 201209091230120 as qualifiers. These are too large for Integers. This
+	 * method checks if the all digit string fits in an integer.
+	 * <pre>
+	 * maxint = 2,147,483,647 = 10 digits
+	 * </pre>	 
+	 * @param integer
+	 * @return if this fits in an integer
+	 */
+	private static boolean isInteger(String minor) {
+		return minor.length() < 10 || (minor.length() == 10 && minor.compareTo("2147483647") < 0);
+	}
+
 	private static String removeLeadingZeroes(String group) {
 		if (group == null)
-			return null;
+			return "0";
 
 		int n = 0;
 		while (n < group.length() - 1 && group.charAt(n) == '0')
@@ -2345,7 +2374,7 @@ public class Analyzer extends Processor {
 			// Not matching a negated instruction looks
 			// like an error ... Though so, but
 			// in the second phase of Export-Package
-			// the !package will never match anymore. 
+			// the !package will never match anymore.
 			if (instruction.isNegated()) {
 				i.remove();
 				continue;

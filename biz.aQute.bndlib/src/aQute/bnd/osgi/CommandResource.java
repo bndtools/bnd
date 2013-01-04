@@ -21,7 +21,6 @@ public class CommandResource extends WriteResource {
 	public void write(OutputStream out) throws IOException, Exception {
 		StringBuilder errors = new StringBuilder();
 		StringBuilder stdout = new StringBuilder();
-		try {
 			domain.trace("executing command %s", command);
 			Command cmd = new Command("sh");
 			cmd.setCwd(wd);
@@ -40,12 +39,8 @@ public class CommandResource extends WriteResource {
 			osw.append(stdout);
 			osw.flush();
 			if (result != 0) {
-				domain.error("executing command failed %s %s", command, stdout + "\n" + errors);
+				throw new Exception("executing command failed" + command + "\n"+ stdout + "\n" + errors);
 			}
-		}
-		catch (Exception e) {
-			domain.error("executing command failed %s %s", command, e.getMessage());
-		}
 	}
 
 	@Override

@@ -3,11 +3,14 @@ package test.component;
 import java.io.*;
 import java.util.*;
 
+import javax.xml.xpath.*;
+
 import org.osgi.framework.*;
 import org.osgi.service.component.*;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.log.*;
 
+import aQute.bnd.component.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
 
@@ -63,10 +66,131 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	/**
-	 * The basic test. This test will take an all default component and a
-	 * component that has all values set. It looks like the xml tester needs a namespace, so we set one.
+	 * Check that a DS 1.0 compotible class with annotations ends up with the DS 1.0 (no) namespace
+	 *
 	 */
-	@Component(xmlns = "http://www.osgi.org/xmlns/scr/v1.1.0")
+	@Component()
+	public static class DS10_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		void xsetLogService(@SuppressWarnings("unused") LogService log) {
+
+		}
+
+		void unxsetLogService(@SuppressWarnings("unused") LogService log) {
+
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	/**
+	 * Check that a DS 1.1 compotible class ends up with the DS 1.1 namespace and appropriate activate/deactivate attributes
+	 *
+	 */
+	@Component()
+	public static class DS11_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+
+		@Reference
+		void xsetLogService(@SuppressWarnings("unused") LogService log) {
+
+		}
+
+		void unxsetLogService(@SuppressWarnings("unused") LogService log) {
+
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	/**
+	 * Check that a DS 1.1 bind method causes a DS 1.1 namespace
+	 *
+	 */
+	@Component()
+	public static class DS11_ref1_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		void xsetLogService(@SuppressWarnings("unused") LogService log, @SuppressWarnings("unused")  Map map) {
+
+		}
+
+		void unxsetLogService(@SuppressWarnings("unused") LogService log) {
+
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	/**
+	 * Check that a DS 1.1 unbind method causes a DS 1.1 namespace
+	 *
+	 */
+	@Component()
+	public static class DS11_ref2_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		void xsetLogService(@SuppressWarnings("unused") LogService log) {
+
+		}
+
+		void unxsetLogService(@SuppressWarnings("unused") LogService log, @SuppressWarnings("unused")  Map map) {
+
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	/**
+	 * The basic test. This test will take an all default component and a
+	 * component that has all values set.  Since the activate/deactivate methods have non-default names
+	 * and there is a modified methods, this is a DS 1.1 component.
+	 */
+	@Component()
 	public static class Defaults_basic implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
@@ -153,6 +277,176 @@ public class DSAnnotationTest extends BndTestCase {
 
 		{
 			//
+			// Test all the DS 1.0 defaults
+			//
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS10_basic.xml");
+			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream()); 
+
+			// Test the defaults
+			xt.assertAttribute("test.component.DSAnnotationTest$DS10_basic", "component/implementation/@class");
+
+			// Default must be the implementation class
+			xt.assertAttribute("test.component.DSAnnotationTest$DS10_basic", "component/@name");
+
+			xt.assertAttribute("", "component/@configuration-policy");
+			xt.assertAttribute("", "component/@immediate");
+			xt.assertAttribute("", "component/@enabled");
+			xt.assertAttribute("", "component/@factory");
+			xt.assertAttribute("", "component/@servicefactory");
+			xt.assertAttribute("", "component/@configuration-pid");
+			xt.assertAttribute("", "component/@activate");
+			xt.assertAttribute("", "component/@deactivate");
+			xt.assertAttribute("", "component/@modified");
+			xt.assertAttribute("java.io.Serializable", "component/service/provide[1]/@interface");
+			xt.assertAttribute("java.lang.Runnable", "component/service/provide[2]/@interface");
+
+			xt.assertAttribute("0", "count(component/properties)");
+			xt.assertAttribute("0", "count(component/property)");
+
+			xt.assertAttribute("xsetLogService", "component/reference[1]/@name");
+			xt.assertAttribute("", "component/reference[1]/@target");
+			xt.assertAttribute("xsetLogService", "component/reference[1]/@bind");
+			xt.assertAttribute("unxsetLogService", "component/reference[1]/@unbind");
+			xt.assertAttribute("", "component/reference[1]/@cardinality");
+			xt.assertAttribute("", "component/reference[1]/@policy");
+			xt.assertAttribute("", "component/reference[1]/@target");
+			xt.assertAttribute("", "component/reference[1]/@policy-option");
+	}
+	{
+			//
+			// Test the DS 1.1 defaults 
+			//
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS11_basic.xml");
+			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
+																												// was
+																												// http://www.osgi.org/xmlns/scr/1.1.0
+
+			// Test the defaults
+			xt.assertAttribute("test.component.DSAnnotationTest$DS11_basic", "scr:component/implementation/@class");
+
+			// Default must be the implementation class
+			xt.assertAttribute("test.component.DSAnnotationTest$DS11_basic", "scr:component/@name");
+
+			xt.assertAttribute("", "scr:component/@configuration-policy");
+			xt.assertAttribute("", "scr:component/@immediate");
+			xt.assertAttribute("", "scr:component/@enabled");
+			xt.assertAttribute("", "scr:component/@factory");
+			xt.assertAttribute("", "scr:component/@servicefactory");
+			xt.assertAttribute("", "scr:component/@configuration-pid");
+			xt.assertAttribute("activate", "scr:component/@activate");
+			xt.assertAttribute("deactivate", "scr:component/@deactivate");
+			xt.assertAttribute("", "scr:component/@modified");
+			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+
+			xt.assertAttribute("0", "count(scr:component/properties)");
+			xt.assertAttribute("0", "count(scr:component/property)");
+
+			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
+			xt.assertAttribute("", "scr:component/reference[1]/@target");
+			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@bind");
+			xt.assertAttribute("unxsetLogService", "scr:component/reference[1]/@unbind");
+			xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
+			xt.assertAttribute("", "scr:component/reference[1]/@policy");
+			xt.assertAttribute("", "scr:component/reference[1]/@target");
+			xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
+	}
+	{
+		//
+		// Test a DS 1.1 bind method results in the DS 1.1 namespace
+		//
+
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS11_ref1_basic.xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
+																											// was
+																											// http://www.osgi.org/xmlns/scr/1.1.0
+
+		// Test the defaults
+		xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref1_basic", "scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref1_basic", "scr:component/@name");
+
+		xt.assertAttribute("", "scr:component/@configuration-policy");
+		xt.assertAttribute("", "scr:component/@immediate");
+		xt.assertAttribute("", "scr:component/@enabled");
+		xt.assertAttribute("", "scr:component/@factory");
+		xt.assertAttribute("", "scr:component/@servicefactory");
+		xt.assertAttribute("", "scr:component/@configuration-pid");
+		xt.assertAttribute("activate", "scr:component/@activate");
+		xt.assertAttribute("deactivate", "scr:component/@deactivate");
+		xt.assertAttribute("", "scr:component/@modified");
+		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+
+		xt.assertAttribute("0", "count(scr:component/properties)");
+		xt.assertAttribute("0", "count(scr:component/property)");
+
+		xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@bind");
+		xt.assertAttribute("unxsetLogService", "scr:component/reference[1]/@unbind");
+		xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
+	}
+	{
+		//
+		// Test a DS 1.1 unbind method results in the DS 1.1 namespace
+		//
+
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS11_ref2_basic.xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
+																											// was
+																											// http://www.osgi.org/xmlns/scr/1.1.0
+
+		// Test the defaults
+		xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref2_basic", "scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref2_basic", "scr:component/@name");
+
+		xt.assertAttribute("", "scr:component/@configuration-policy");
+		xt.assertAttribute("", "scr:component/@immediate");
+		xt.assertAttribute("", "scr:component/@enabled");
+		xt.assertAttribute("", "scr:component/@factory");
+		xt.assertAttribute("", "scr:component/@servicefactory");
+		xt.assertAttribute("", "scr:component/@configuration-pid");
+		xt.assertAttribute("activate", "scr:component/@activate");
+		xt.assertAttribute("deactivate", "scr:component/@deactivate");
+		xt.assertAttribute("", "scr:component/@modified");
+		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+
+		xt.assertAttribute("0", "count(scr:component/properties)");
+		xt.assertAttribute("0", "count(scr:component/property)");
+
+		xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@bind");
+		xt.assertAttribute("unxsetLogService", "scr:component/reference[1]/@unbind");
+		xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
+	}
+	{
+			//
 			// Test all the defaults
 			//
 
@@ -238,6 +532,244 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("resource.props", "scr:component/properties[1]/@entry");
 			xt.assertAttribute("greedy", "scr:component/reference[1]/@policy-option");
 		}
+	}
+	
+	/**
+	 * Check that a Felix 1.2 compotible class ends up with the Felix 1.2 namespace and appropriate activate/deactivate attributes
+	 *
+	 */
+	@Component()
+	public static class activate_basicFelix12 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		Map<String, Object> activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {
+			return null;
+		}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void updatedLogService(@SuppressWarnings("unused") LogService log) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	@Component()
+	public static class deactivate_basicFelix12 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+
+		@Deactivate
+		Map<String, Object> deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {
+			return null;
+		}
+		
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void updatedLogService(@SuppressWarnings("unused") LogService log) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	@Component()
+	public static class modified_basicFelix12 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+		
+		@Modified
+		Map<String, Object> modified(@SuppressWarnings("unused")ComponentContext cc) {
+			return null;
+		}
+
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void updatedLogService(@SuppressWarnings("unused") LogService log) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	@Component()
+	public static class bind_basicFelix12 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+		
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		Map<String, Object> setLogService(@SuppressWarnings("unused") LogService log) {
+			return null;
+		}
+
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void updatedLogService(@SuppressWarnings("unused") LogService log) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	@Component()
+	public static class unbind_basicFelix12 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+		
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		Map<String, Object> unsetLogService(@SuppressWarnings("unused") LogService log) {
+			return null;
+		}
+		
+		void updatedLogService(@SuppressWarnings("unused") LogService log) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	@Component()
+	public static class updated_basicFelix12 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+		
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+
+		Map<String, Object> updatedLogService(@SuppressWarnings("unused") LogService log) {
+			return null;
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	public static void testBasicFelix12() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.*_basicFelix12");
+		b.setProperty("-ds-felix-extensions", "");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		// Test Felix12 activate gives Felix 1.2 namespace 
+		checkDSFelix12(jar, "test.component.DSAnnotationTest$activate_basicFelix12");
+		// Test Felix12 deactivate gives Felix 1.2 namespace 
+		checkDSFelix12(jar, "test.component.DSAnnotationTest$deactivate_basicFelix12");
+		// Test Felix12 modified gives Felix 1.2 namespace 
+		checkDSFelix12(jar, "test.component.DSAnnotationTest$modified_basicFelix12");
+		// Test Felix12 bind gives Felix 1.2 namespace 
+		checkDSFelix12(jar, "test.component.DSAnnotationTest$bind_basicFelix12");
+		// Test Felix12 bind gives Felix 1.2 namespace 
+		checkDSFelix12(jar, "test.component.DSAnnotationTest$unbind_basicFelix12");
+	}
+
+	private static void checkDSFelix12(Jar jar, String name) throws Exception, XPathExpressionException {
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", AnnotationReader.FELIX_1_2); 
+		// Test the defaults
+		xt.assertAttribute(name, "scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute(name, "scr:component/@name");
+
+		xt.assertAttribute("", "scr:component/@configuration-policy");
+		xt.assertAttribute("", "scr:component/@immediate");
+		xt.assertAttribute("", "scr:component/@enabled");
+		xt.assertAttribute("", "scr:component/@factory");
+		xt.assertAttribute("", "scr:component/@servicefactory");
+		xt.assertAttribute("", "scr:component/@configuration-pid");
+		xt.assertAttribute("activate", "scr:component/@activate");
+		xt.assertAttribute("deactivate", "scr:component/@deactivate");
+		xt.assertAttribute("modified", "scr:component/@modified");
+		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+
+		xt.assertAttribute("0", "count(scr:component/properties)");
+		xt.assertAttribute("0", "count(scr:component/property)");
+
+		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
+		xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
+		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
+		xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
 	}
 
 	/**

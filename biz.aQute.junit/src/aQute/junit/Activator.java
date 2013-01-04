@@ -12,7 +12,7 @@ import org.osgi.framework.*;
 
 import aQute.junit.constants.*;
 
-public class Activator extends Thread implements BundleActivator, TesterConstants {
+public class Activator implements BundleActivator, TesterConstants, Runnable {
 	BundleContext		context;
 	volatile boolean	active;
 	int					port		= -1;
@@ -20,33 +20,54 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	boolean				trace		= false;
 	PrintStream			out			= System.err;
 	JUnitEclipseReport	jUnitEclipseReport;
+	volatile Thread		thread;
 
 	public Activator() {
-		super("bnd Runtime Test Bundle");
 	}
 
 	public void start(BundleContext context) throws Exception {
 		this.context = context;
 		active = true;
-		start();
+		if (context.getProperty(TESTER_SEPARATETHREAD) == null) {			
+			Hashtable<String,String> ht = new Hashtable<String,String>();
+			ht.put("main.thread", "true");
+			ht.put(Constants.SERVICE_DESCRIPTION, "JUnit tester");
+			context.registerService(Runnable.class.getName(), this, ht);
+		} else {
+			thread = new Thread("bnd Runtime Test Bundle");
+			thread.start();
+		}
 	}
 
 	public void stop(BundleContext context) throws Exception {
 		active = false;
 		if (jUnitEclipseReport != null)
 			jUnitEclipseReport.close();
-		interrupt();
-		join(10000);
+		
+		if (thread != null) {
+			thread.interrupt();
+			thread.join(10000);
+		}
 	}
 
-	@Override
 	public void run() {
+		
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
 		trace = context.getProperty(TESTER_TRACE) != null;
+		
+		if (thread == null)
+			trace("running in main thread");
+		
+		// We can be started on our own thread or from the main code
+		thread = Thread.currentThread();
+		
+
 		String testcases = context.getProperty(TESTER_NAMES);
+		trace("test cases %s", testcases);
 		if (context.getProperty(TESTER_PORT) != null) {
 			port = Integer.parseInt(context.getProperty(TESTER_PORT));
 			try {
+				trace("using port %s", port);
 				jUnitEclipseReport = new JUnitEclipseReport(port);
 			}
 			catch (Exception e) {
@@ -113,7 +134,7 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 					}
 					catch (InterruptedException e) {
 						trace("tests bundle queue interrupted");
-						interrupt();
+						thread.interrupt();
 						break outer;
 					}
 				}
@@ -283,15 +304,20 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 				if (clazz != null)
 					addTest(tfw, suite, clazz, testResult, method);
 				else {
-					System.err.println("Can not create test case for: " + fqn
-							+ ", class might not be included in your test bundle?");
+					diagnoseNoClass(tfw, fqn);
 					testResult.addError(suite, new Exception("Cannot load class " + fqn
 							+ ", was it included in the test bundle?"));
 				}
 
 			} else {
 				Class< ? > clazz = loadClass(tfw, fqn);
-				addTest(tfw, suite, clazz, testResult, null);
+				if (clazz != null)
+					addTest(tfw, suite, clazz, testResult, null);
+				else {
+					diagnoseNoClass(tfw, fqn);
+					testResult.addError(suite, new Exception("Cannot load class " + fqn
+							+ ", was it included in the test bundle?"));
+				}
 			}
 		}
 		catch (Throwable e) {
@@ -300,8 +326,32 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 		}
 	}
 
+	private void diagnoseNoClass(Bundle tfw, String fqn) {
+		if ( tfw == null) {
+			error("No class found: %s, target bundle: %s", fqn, tfw);
+			trace("Installed bundles:");
+			for ( Bundle bundle : context.getBundles()) {
+				Class<?> c = loadClass(bundle,fqn);
+				String state;
+				switch(bundle.getState()) {
+					case Bundle.UNINSTALLED: state = "UNINSTALLED"; break;
+					case Bundle.INSTALLED: state = "INSTALLED"; break;
+					case Bundle.RESOLVED: state = "RESOLVED"; break;
+					case Bundle.STARTING: state = "STARTING"; break;
+					case Bundle.STOPPING: state = "STOPPING"; break;
+					case Bundle.ACTIVE: state = "ACTIVE"; break;
+					default:
+						state = "UNKNOWN";
+				}
+				trace("%s %s %s", bundle.getLocation(), state, c != null);
+			}
+		}
+	}
+
 	@SuppressWarnings("unchecked")
-	private void addTest(@SuppressWarnings("unused") Bundle tfw, TestSuite suite, Class< ? > clazz, @SuppressWarnings("unused") TestResult testResult, final String method) {
+	private void addTest(@SuppressWarnings("unused")
+	Bundle tfw, TestSuite suite, Class< ? > clazz, @SuppressWarnings("unused")
+	TestResult testResult, final String method) {
 		if (TestCase.class.isAssignableFrom(clazz)) {
 			if (method != null) {
 				suite.addTest(TestSuite.createTest(clazz, method));
@@ -338,24 +388,41 @@ public class Activator extends Thread implements BundleActivator, TesterConstant
 	}
 
 	private Class< ? > loadClass(Bundle tfw, String fqn) {
-		if (tfw != null)
-			try {
-				return tfw.loadClass(fqn);
-			}
-			catch (ClassNotFoundException e1) {
-				return null;
+		try {
+			if (tfw != null) {
+				checkResolved(tfw);
+				try {
+					return tfw.loadClass(fqn);
+				}
+				catch (ClassNotFoundException e1) {
+					return null;
+				}
 			}
 
-		Bundle bundles[] = context.getBundles();
-		for (int i = bundles.length - 1; i >= 0; i--) {
-			try {
-				return bundles[i].loadClass(fqn);
-			}
-			catch (Exception e) {
-				// Ignore, looking further
+			Bundle bundles[] = context.getBundles();
+			for (int i = bundles.length - 1; i >= 0; i--) {
+				try {
+					checkResolved(bundles[i]);
+					return bundles[i].loadClass(fqn);
+				}
+				catch (ClassNotFoundException e1) {
+					// try next
+				}
 			}
 		}
+		catch (Exception e) {
+			error("Exception during loading of class: %s. Exception %s and cause %s. This sometimes "
+					+ "happens when there is an error in the static initialization, the class has "
+					+ "no public constructor, it is an inner class, or it has no public access", fqn, e, e.getCause());
+		}
 		return null;
+	}
+
+	private void checkResolved(Bundle bundle) {
+		int state = bundle.getState();
+		if (state == Bundle.INSTALLED || state == Bundle.UNINSTALLED) {
+			trace("unresolved bundle %s", bundle.getLocation());
+		}
 	}
 
 	public int flatten(List<Test> list, TestSuite suite) {

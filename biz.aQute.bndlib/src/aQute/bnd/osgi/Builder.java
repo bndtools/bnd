@@ -260,7 +260,7 @@ public class Builder extends Analyzer {
 	 */
 
 	void sign(@SuppressWarnings("unused") Jar jar) throws Exception {
-		String signing = getProperty("-sign");
+		String signing = getProperty(SIGN);
 		if (signing == null)
 			return;
 

@@ -51,7 +51,7 @@ public class Launcher implements ServiceListener {
 			if (path != null) {
 				propertiesFile = new File(path).getAbsoluteFile();
 				if (!propertiesFile.isFile())
-					errorAndExit("Specified launch file `%s' was not found.", path);
+					errorAndExit("Specified launch file `%s' was not found - absolutePath='%s'", path, propertiesFile.getAbsolutePath());
 				in = new FileInputStream(propertiesFile);
 			} else {
 				propertiesFile = null;

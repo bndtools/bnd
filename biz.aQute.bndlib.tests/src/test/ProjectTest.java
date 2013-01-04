@@ -457,4 +457,23 @@ public class ProjectTest extends TestCase {
 		assertEquals(expectPackageInfo, pkgInfo.exists());
 		assertEquals(expectPackageInfoJava, pkgInfoJava.exists());
 	}
+	
+	public static void testBuildAll() throws Exception {
+		assertTrue(testBuildAll("*", 14).check()); //there are 14 projects
+		assertTrue(testBuildAll("p*", 8).check()); //7 begin with p, plus build-all
+		assertTrue(testBuildAll("!p*, *", 6).check()); // negation: 6 don't begin with p, including build-all
+		assertTrue(testBuildAll("*-*", 7).check()); //more than one wildcard: 7 have a dash
+		assertTrue(testBuildAll("!p*, p1, *", 6).check("Missing dependson p1")); //check that an unused instruction is an error
+		assertTrue(testBuildAll("p*, !*-*, *", 11).check()); // check that negation works after some projects have been selected.
+	}
+	
+	private static Project testBuildAll(String dependsOn, int count) throws Exception {
+		Workspace ws = new Workspace(new File("test/ws"));
+		Project all = ws.getProject("build-all");
+		all.setProperty("-dependson", dependsOn);
+		all.prepare();
+		Collection<Project> dependson = all.getDependson();
+		assertEquals(count, dependson.size());
+		return all;
+	}
 }

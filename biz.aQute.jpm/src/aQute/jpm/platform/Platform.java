@@ -10,19 +10,28 @@ public abstract class Platform {
 	static Platform	platform;
 	static Runtime	runtime	= Runtime.getRuntime();
 	Reporter		reporter;
-
+	
+	/**
+	 * Get the current platform manager.
+	 * 
+	 * @param reporter
+	 * @param jpmx
+	 * @return
+	 */
 	public static Platform getPlatform(Reporter reporter) {
 
 		if (platform == null) {
 
 			String osName = System.getProperty("os.name").toLowerCase();
+			reporter.trace("os.name=%s", osName);
 			if (osName.startsWith("windows"))
-				throw new UnsupportedOperationException("Windows not supported");
-			else if (osName.startsWith("mac"))
+				platform = new Windows();
+			else if (osName.startsWith("mac") || osName.startsWith("darwin"))
 				platform = new MacOS();
 			else
 				platform = new Linux();
 			platform.reporter = reporter;
+			reporter.trace("platform=%s", platform.reporter);
 		}
 		return platform;
 	}
@@ -45,7 +54,7 @@ public abstract class Platform {
 
 	abstract public String getName();
 
-	abstract public void uninstall();
+	abstract public void uninstall() throws IOException;
 
 	public int run(String args) throws Exception {
 		return runtime.exec(args).waitFor();
@@ -60,4 +69,13 @@ public abstract class Platform {
 	public abstract String remove(ServiceData data) throws Exception;
 
 	public abstract int launchService(ServiceData data) throws Exception;
+	
+	public abstract void installDaemon(boolean user) throws Exception;
+	public abstract void uninstallDaemon(boolean user) throws Exception;
+	public abstract void chown(String user, boolean recursive, File file) throws Exception;
+	public abstract String user() throws Exception;
+
+	public abstract  void deleteCommand(CommandData cmd) throws Exception ;
+
+	public String defaultCacertsPassword() { return "changeme"; }
 }

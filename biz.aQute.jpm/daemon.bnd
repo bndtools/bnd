@@ -5,3 +5,4 @@ JPM-Service: testd
 JPM-Command: 
 JPM-Embedded: 
 
+Bundle-Version: 0.0.6

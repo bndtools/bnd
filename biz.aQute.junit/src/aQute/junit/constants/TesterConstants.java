@@ -39,4 +39,16 @@ public interface TesterConstants {
 	 */
 	String	TESTER_TRACE		= "tester.trace";
 
+	/**
+	 * Use a new thread to run the tests on (might be needed if a test uses the main thread for some 
+	 * other reason) and for backward compatibility.
+	 * <p/>
+	 * Note: The previous default was a separate thread so this option is mostly for backward
+	 * compatibility and the unlikely case this code is used outside the bnd launcher. This
+	 * approach started to fail when we allowed the embedded activators to start before all
+	 * bundles were started, this created a race condition for class loading. Using the main
+	 * has the guarantee that all bundles have been installed and it is kind of clean as well
+	 * to use this special thread to run all tests on.
+	 */
+	String	TESTER_SEPARATETHREAD			= "tester.separatethread";
 }

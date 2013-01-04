@@ -56,6 +56,7 @@ public class RepoCommand {
 		// We can include the maven repository
 
 		if (opts.maven()) {
+			bnd.trace("maven");
 			MavenRemoteRepository maven = new MavenRemoteRepository();
 			maven.setProperties(new Attrs());
 			maven.setReporter(bnd);
@@ -66,6 +67,7 @@ public class RepoCommand {
 
 		if (opts.repo() != null) {
 			for (String r : opts.repo()) {
+				bnd.trace("file repo " + r);
 				FileRepo repo = new FileRepo();
 				repo.setReporter(bnd);
 				File location = bnd.getFile(r);
@@ -82,6 +84,7 @@ public class RepoCommand {
 				repos.addAll(p.getWorkspace().getRepositories());
 			}
 		}
+		bnd.trace("repos " + repos);
 
 		// Clean up and find first writable
 		RepositoryPlugin w = null;
@@ -97,6 +100,7 @@ public class RepoCommand {
 			}
 		}
 		this.writable = w;
+		bnd.trace("writable " + w);
 
 		List<String> args = opts._();
 		if (args.size() == 0) {
@@ -145,6 +149,7 @@ public class RepoCommand {
 	}
 
 	public void _list(listOptions opts) throws Exception {
+		bnd.trace("list");
 		Set<String> bsns = new HashSet<String>();
 		Instruction from = opts.from();
 		if (from == null)
@@ -154,10 +159,12 @@ public class RepoCommand {
 			if (from.matches(repo.getName()))
 				bsns.addAll(repo.list(opts.mask()));
 		}
+		bnd.trace("list " + bsns);
 
 		for (String bsn : new SortedList<String>(bsns)) {
 			Set<Version> versions = new TreeSet<Version>();
 			for (RepositoryPlugin repo : repos) {
+				bnd.trace("get " + bsn + " from " + repo);
 				if (from.matches(repo.getName())) {
 					SortedSet<Version> result = repo.versions(bsn);
 					if (result != null)

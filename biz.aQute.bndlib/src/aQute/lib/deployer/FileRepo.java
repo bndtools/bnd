@@ -766,4 +766,38 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 	}
 
+	/*
+	 * 8 Set the root directory directly
+	 */
+	public void setDir(File repoDir) {
+		this.root = repoDir;
+	}
+
+	/**
+	 * Delete an entry from the repository and cleanup the directory
+	 * 
+	 * @param bsn
+	 * @param version
+	 * @throws Exception
+	 */
+	public void delete(String bsn, Version version) throws Exception {
+		assert bsn != null;
+
+		SortedSet<Version> versions;
+		if (version == null)
+			versions = versions(bsn);
+		else
+			versions = new SortedList<Version>(version);
+
+		for (Version v : versions) {
+			File f = getLocal(bsn, version, null);
+			if (!f.isFile())
+				reporter.error("No artifact found for %s:%s", bsn, version);
+			else
+				IO.delete(f);
+		}
+		if ( versions(bsn).isEmpty())
+			IO.delete( new File(root,bsn));
+	}
+
 }

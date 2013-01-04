@@ -18,5 +18,9 @@ class Linux extends Unix {
 	public void uninstall() {
 
 	}
+	
+	public String toString() {
+		return "Linux";
+	}
 
 }

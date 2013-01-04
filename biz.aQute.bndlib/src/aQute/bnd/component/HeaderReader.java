@@ -169,7 +169,7 @@ public class HeaderReader extends Processor {
 		properties(cd, info, name);
 		reference(info, impl, cd, bindmethods);
 		//compute namespace after references, an updated method means ds 1.2.
-		cd.xmlns = getNamespace(info, cd, lifecycleMethods);
+		getNamespace(info, cd, lifecycleMethods);
 		cd.prepare(analyzer);
 		return cd.getTag();
 
@@ -194,36 +194,39 @@ public class HeaderReader extends Processor {
 	 * @param descriptors TODO
 	 * @return
 	 */
-	private String getNamespace(Map<String, String> info, ComponentDef cd, Map<String,MethodDef> descriptors) {
+	private void getNamespace(Map<String, String> info, ComponentDef cd, Map<String,MethodDef> descriptors) {
 		String namespace = info.get(COMPONENT_NAMESPACE);
 		if (namespace != null) {
-			return namespace;
+			cd.xmlns = namespace;
 		}
 		String version = info.get(COMPONENT_VERSION);
 		if (version != null) {
 			try {
 				Version v = new Version(version);
-				return NAMESPACE_STEM + "/v" + v;
+				cd.updateVersion(v);
 			} catch (Exception e) {
 				error("version: specified on component header but not a valid version: "
 						+ version);
-				return null;
+				return;
 			}
 		}
 		for (String key : info.keySet()) {
 			if (SET_COMPONENT_DIRECTIVES_1_2.contains(key)) {
-				return NAMESPACE_STEM + "/v1.2.0";
+				cd.updateVersion(AnnotationReader.V1_2);
+				return;
 			}
 		}
 		for (ReferenceDef rd: cd.references.values()) {
 			if (rd.updated != null) {
-				return NAMESPACE_STEM + "/v1.2.0";
+				cd.updateVersion(AnnotationReader.V1_2);
+				return;
 			}
 		}
 		//among other things this picks up any specified lifecycle methods
 		for (String key : info.keySet()) {
 			if (SET_COMPONENT_DIRECTIVES_1_1.contains(key)) {
-				return NAMESPACE_STEM + "/v1.1.0";
+				cd.updateVersion(AnnotationReader.V1_1);
+				return;
 			}
 		}
 		for (String lifecycle: LIFECYCLE_METHODS) {
@@ -231,10 +234,10 @@ public class HeaderReader extends Processor {
 			MethodDef test = descriptors.get(lifecycle);
 			if (descriptors.containsKey(lifecycle) && (!(test.isPublic() || test.isProtected()) || 
 					rateLifecycle(test, "deactivate".equals(lifecycle)? allowedDeactivate: allowed) > 1)) {
-				return NAMESPACE_STEM + "/v1.1.0";
+				cd.updateVersion(AnnotationReader.V1_1);
+				return;
 			}
 		}
-		return null;
 	}
 
 	/**

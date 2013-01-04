@@ -65,6 +65,20 @@ public class ConverterTest extends TestCase {
 		});
 		assertEquals(new Integer(6), converter.convert(Integer.class, "6"));
 		assertEquals(new File("src").getAbsoluteFile(), converter.convert(File.class, "src"));
+		
+		converter.hook(null, new Hook() {
+			
+			public Object convert(Type dest, Object o) throws Exception {
+				if ( dest instanceof Class) {
+					if ( Number.class.isAssignableFrom((Class< ? >) dest))
+						return 1;
+				}
+				return null;
+			}
+		});
+		assertEquals(new Integer(1), converter.convert(Integer.class, "6"));
+		assertEquals(new Integer(1), converter.convert(Long.class, "6"));
+		assertEquals("6", converter.convert(String.class, "6"));
 	}
 
 	/**

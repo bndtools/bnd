@@ -1,11 +1,27 @@
+-include: .settings/org.eclipse.jdt.core.prefs
+
+javac.source 			= ${org.eclipse.jdt.core.compiler.compliance}
+javac.target 			= ${org.eclipse.jdt.core.compiler.codegen.targetPlatform}
+
 -sources: false
 
+Bundle-Description: JPM, Just another Package Manager for Java, is a package management
+  system making true the promise of Java. It allows applications to be easily installed
+  or deployed on a myriad of platforms. JPM is associated with the http://www.jpm4j.org web
+  site that hosts a well organized index to zillions of jars. Any jar that has a main
+  method can easily be installed through this program from the command line. Further, 
+  jpm supports a service model that allows programs to be started when the system boots
+  and stopped before the system exits. The command provide extensive diagnostices. To get
+  started, visit the website or type jpm help.
+ 
 Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
 									description="${Bundle-Copyright}"; \
 									link=LICENSE
+Bundle-Vendor: 					jpm4j.org
+Bundle-Icon: 					images/icon.png;size=64
 						
 Conditional-Package: 			aQute.libg.*, aQute.lib.*
-Bundle-Version: 				0.0.5
+Bundle-Version: 				1.0.1
 
 -buildpath: aQute.libg;version=project,\
 	biz.aQute.bndlib;version=project,\
@@ -18,3 +34,13 @@ Bundle-Version: 				0.0.5
 -digests: MD5, SHA1
 
 -sub: *.bnd
+
+Bundle-Developers: \
+	pkriens; \
+		email=Peter.Kriens@aQute.biz;
+		name="Peter Kriens"; \
+		organization=aQute; \
+		organizationUrl=http://www.jpm4j.org; \
+		roles="architect,developer"; \
+      	timezone=1
+

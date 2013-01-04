@@ -4,11 +4,19 @@ import static aQute.lib.io.IO.*;
 
 import java.io.*;
 import java.lang.reflect.*;
+import java.util.*;
+import java.util.regex.*;
 
 import aQute.jpm.lib.*;
+import aQute.lib.collections.*;
+import aQute.lib.io.*;
+import aQute.libg.command.*;
 import aQute.libg.sed.*;
 
 public abstract class Unix extends Platform {
+
+	public static String	BINARIES	= "/usr/bin";
+	public static String	JPM_GLOBAL	= "/var/jpm";
 
 	@Override
 	public File getGlobal() {
@@ -23,12 +31,24 @@ public abstract class Unix extends Platform {
 
 	@Override
 	public String createCommand(CommandData data) throws Exception {
-		File executable = getExecutable(data);
-		if (!data.force && executable.exists())
-			return "Command already exists " + executable;
+		if (data.bin == null)
+			data.bin = getExecutable(data);
 
-		process("unix/command.sh", data, executable);
+		if (data.bin.isDirectory()) {
+			data.bin = new File(data.bin, data.name);
+		}
+
+		if (!data.force && data.bin.exists())
+			return "Command already exists " + data.bin;
+
+		process("unix/command.sh", data, data.bin);
 		return null;
+	}
+
+	@Override
+	public void deleteCommand(CommandData data) throws Exception {
+		File executable = getExecutable(data);
+		IO.deleteWithException(executable);
 	}
 
 	@Override
@@ -36,11 +56,16 @@ public abstract class Unix extends Platform {
 		File initd = getInitd(data);
 		File launch = getLaunch(data);
 
-		if (!data.force && (initd.exists() || launch.exists()))
-			return "Service already exists " + initd + " & " + launch;
+		if (!data.force) {
+			if (initd.exists())
+				return "Service already exists in " + initd + ", use --force to override";
 
-		process("unix/launch.sh", data, launch);
-		process("unix/initd.sh", data, initd);
+			if (launch.exists())
+				return "Service launch file already exists in " + launch + ", use --force to override";
+		}
+
+		process("unix/launch.sh", data, launch, data.serviceLib);
+		process("unix/initd.sh", data, initd, data.serviceLib);
 		return null;
 	}
 
@@ -53,7 +78,7 @@ public abstract class Unix extends Platform {
 	}
 
 	private File getExecutable(CommandData data) {
-		return new File("/usr/local/bin/" + data.name);
+		return new File(BINARIES + "/" + data.name);
 	}
 
 	@Override
@@ -63,6 +88,8 @@ public abstract class Unix extends Platform {
 
 		if (!getExecutable(data).delete())
 			return "Cannot delete " + getExecutable(data);
+		
+		System.out.println("Removed service data ");
 
 		return null;
 	}
@@ -78,23 +105,119 @@ public abstract class Unix extends Platform {
 	@Override
 	public int launchService(ServiceData data) throws Exception {
 		File launch = getLaunch(data);
-		Process p = Runtime.getRuntime().exec(launch.getAbsolutePath(), null, data.work);
+		Process p = Runtime.getRuntime().exec(launch.getAbsolutePath(), null, new File(data.work));
 		return p.waitFor();
 	}
 
-	protected void process(String resource, Object data, File file) throws Exception {
+	protected void process(String resource, CommandData data, File file, String... extra) throws Exception {
 		copy(getClass().getResourceAsStream(resource), file);
 		Sed sed = new Sed(file);
 		sed.setBackup(false);
 		for (Field key : data.getClass().getFields()) {
 			Object value = key.get(data);
-			if (value == null)
+			if (value == null) {
 				value = "";
+			}
 
+			// We want to enclose the prolog and epilog so they are
+			// executed as one command and thus logged as one command
+			if ("epiplog".equals(key.getName()) || "prolog".equals(key.getName())) {
+				String s = (String) value;
+				if (s != null && s.trim().length() > 0) {
+					value = "(" + s + ")";
+				}
+			}
 			sed.replace("%" + key.getName() + "%", "" + value);
 		}
+		ExtList<String> deps = new ExtList<String>(data.dependencies);
+		for (String x : extra) {
+			deps.add(x);
+		}
+		String classpath = deps.join(File.pathSeparator);
+		sed.replace("%classpath%", classpath);
+
 		sed.doIt();
 		run("chmod a+x " + file.getAbsolutePath());
+	}
+
+	static String	DAEMON			= "\n### JPM BEGIN ###\n" + BINARIES + "/jpm daemon >" + JPM_GLOBAL
+											+ "/daemon.log 2>>" + JPM_GLOBAL + "/daemon.log &\n### JPM END ###\n";
+	static Pattern	DAEMON_PATTERN	= Pattern.compile("\n### JPM BEGIN ###\n.*\n### JPM END ###\n", Pattern.MULTILINE);
+
+	@Override
+	public void installDaemon(boolean user) throws Exception {
+		if (user)
+			throw new IllegalArgumentException("This Unix platform does not support user based agents");
+
+		File rclocal = new File("/etc/rc.d/rc.local");
+		if (!rclocal.isFile())
+			rclocal = new File("/etc/rc.local");
+
+		if (!rclocal.isFile())
+			throw new IllegalArgumentException("Cannot find rc.local in either /etc or /etc/rc.d. Unknown unix");
+
+		String s = IO.collect(rclocal);
+		if (s.contains(DAEMON))
+			return;
+
+		s += DAEMON;
+		IO.store(s, rclocal);
+
+	}
+
+	@Override
+	public void uninstallDaemon(boolean user) throws Exception {
+		if (user)
+			return;
+
+		File rclocal = new File("/etc/rc.d/rc.local");
+		if (!rclocal.isFile())
+			rclocal = new File("/etc/rc.local");
+
+		if (!rclocal.isFile())
+			return;
+
+		String s = IO.collect(rclocal);
+
+		Matcher m = DAEMON_PATTERN.matcher(s);
+		s = m.replaceAll("");
+		s += DAEMON;
+		IO.store(s, rclocal);
+	}
+
+	@Override
+	public void chown(String user, boolean recursive, File file) throws Exception {
+		String cmd = "chown " + (recursive ? " -R " : "") + user + " " + file.getAbsolutePath();
+		if ("root".equals(user))
+			return;
+
+		if ("0".equals(user))
+			return;
+
+		Command chown = new Command(cmd);
+		StringBuilder sb = new StringBuilder();
+
+		int n = chown.execute(sb, sb);
+		if (n != 0)
+			throw new IllegalArgumentException("Changing ownership for " + file + " fails: " + n + " : " + sb);
+	}
+
+	@Override
+	public String user() throws Exception {
+		ProcessBuilder pb = new ProcessBuilder();
+		Map<String,String> environment = pb.environment();
+		String user = environment.get("USER");
+		System.out.println(user);
+		return user;
+		// Command id = new Command("id -nu");
+		// StringBuilder sb = new StringBuilder();
+		//
+		// int n = id.execute(sb,sb);
+		// if ( n != 0)
+		// throw new IllegalArgumentException("Getting user id fails: " + n +
+		// " : " + sb);
+		//
+		// return sb.toString().trim();
 	}
 
 }

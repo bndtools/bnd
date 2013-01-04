@@ -84,6 +84,9 @@
        <Package name="aQute.bnd.maven.support" />
      </Match>
      <Match>
+       <Package name="aQute.bnd.obr" />
+     </Match>
+     <Match>
        <Package name="aQute.bnd.osgi" />
      </Match>
      <Match>
@@ -133,6 +136,9 @@
      </Match>
      <Match>
        <Package name="aQute.jpm.platform" />
+     </Match>
+     <Match>
+       <Package name="aQute.jpm.platform.windows" />
      </Match>
      <Match>
        <Package name="aQute.jpm.service" />
