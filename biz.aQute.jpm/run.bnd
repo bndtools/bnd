@@ -5,3 +5,4 @@ Include-Resource: images=images, service.jar
 Main-Class: 					aQute.jpm.main.Main
 JPM-Command:					jpm
 
+Bundle-Version: 0.0.4
