@@ -72,30 +72,40 @@ public class LauncherTest extends TestCase {
 		assertEquals(42, l.launch());
 	}
 
-//	public static void testWorkspaceWithSpace() throws Exception {
-//		Project project = getProjectFromWorkspaceWithSpace();
-//		
-//		project.clear();
-//		project.clean();
-//		
-//		// reuse built .class files from the demo project.
-//		String base = new File("").getAbsoluteFile().getParentFile().getAbsolutePath();
-//		
-//		new File(base + "/biz.aQute.bndlib.tests/test/a space/test/bin/test/").mkdirs();
-//		
-//		IO.copy(new File(base + "/demo/bin/test/TestActivator$1.class"),
-//				new File(base + "/biz.aQute.bndlib.tests/test/a space/test/bin/test/TestActivator$1.class"));
-//		IO.copy(new File(base + "/demo/bin/test/TestActivator.class"),
-//				new File(base + "/biz.aQute.bndlib.tests/test/a space/test/bin/test/TestActivator.class"));
-//		
-//		project.clear();
-//		project.build();
-//
-//		ProjectLauncher l = project.getProjectLauncher();
-//		l.setTrace(true);
-//		l.getRunProperties().put("test.cmd", "exit");
-//		assertEquals(42, l.launch());
-//	}
+	public static void testWorkspaceWithSpace() throws Exception {
+		Project project = getProjectFromWorkspaceWithSpace();
+		
+		project.clear();
+		project.clean();
+		
+		// reuse built .class files from the demo project.
+		String base = new File("").getAbsoluteFile().getParentFile().getAbsolutePath();
+		
+		new File(base + "/biz.aQute.bndlib.tests/test/a space/test/bin/test/").mkdirs();
+		
+		IO.copy(new File(base + "/demo/bin/test/TestActivator$1.class"),
+				new File(base + "/biz.aQute.bndlib.tests/test/a space/test/bin/test/TestActivator$1.class"));
+		IO.copy(new File(base + "/demo/bin/test/TestActivator.class"),
+				new File(base + "/biz.aQute.bndlib.tests/test/a space/test/bin/test/TestActivator.class"));
+		
+		// populate the launcher jar.
+		File launcher = new File(base + "/biz.aQute.launcher/generated/biz.aQute.launcher.jar");
+		File newlauncher = new File(base + "/biz.aQute.bndlib.tests/test/a space/cnf/local/biz.aQute.launcher/biz.aQute.launcher-1.0.0.jar");
+		if (newlauncher.exists()) {
+			assertTrue(newlauncher.delete());
+		}
+		newlauncher.getParentFile().mkdirs();
+		IO.copy(launcher, newlauncher);
+		assertTrue(newlauncher.exists());
+		
+		project.clear();
+		project.build();
+
+		ProjectLauncher l = project.getProjectLauncher();
+		l.setTrace(true);
+		l.getRunProperties().put("test.cmd", "exit");
+		assertEquals(42, l.launch());
+	}
 	
 	/**
 	 * @return
