@@ -19,6 +19,7 @@ public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
 	private static final String SERVICE_FRAMEWORK_FACTORY = "META-INF/services/org.osgi.framework.launch.FrameworkFactory";
 	private static final String FRAMEWORK_PACKAGE = "org.osgi.framework";
 	
+	@SuppressWarnings("unused")
 	private final LogService log;
 	
 	public OSGiFrameworkAnalyzer(LogService log) {

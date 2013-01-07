@@ -42,6 +42,7 @@ class BundleAnalyzer implements ResourceAnalyzer {
 	private static final String MIME_TYPE_OSGI_BUNDLE = "application/vnd.osgi.bundle";
 	
 	private final ThreadLocal<GeneratorState> state = new ThreadLocal<GeneratorState>();
+	@SuppressWarnings("unused")
 	private final LogService log;
 
 	public BundleAnalyzer(LogService log) {

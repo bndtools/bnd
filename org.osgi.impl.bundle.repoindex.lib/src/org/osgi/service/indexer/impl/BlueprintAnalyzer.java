@@ -14,6 +14,7 @@ public class BlueprintAnalyzer implements ResourceAnalyzer {
 
 	private static final String BUNDLE_BLUEPRINT_HEADER = "Bundle-Blueprint";
 	
+	@SuppressWarnings("unused")
 	private LogService log;
 
 	public BlueprintAnalyzer(LogService log) {
