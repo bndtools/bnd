@@ -171,39 +171,6 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		return result;
 	}
 
-
-	private static String translate(String value, Properties localStrings) {
-		if (value == null)
-			return null;
-		
-		if (!value.startsWith("%"))
-			return value;
-		
-		value = value.substring(1);
-		return localStrings.getProperty(value, value);
-	}
-
-	private static Properties loadLocalStrings(Resource resource) throws IOException {
-		Properties props = new Properties();
-		
-		Attributes attribs = resource.getManifest().getMainAttributes();
-		String path = attribs.getValue(Constants.BUNDLE_LOCALIZATION);
-		if (path == null)
-			path = Constants.BUNDLE_LOCALIZATION_DEFAULT_BASENAME;
-		path += ".properties";
-		
-		Resource propsResource = resource.getChild(path);
-		if (propsResource != null) {
-			try {
-				props.load(propsResource.getStream());
-			} finally {
-				propsResource.close();
-			}
-		}
-		
-		return props;
-	}
-
 	private void doBundleAndHost(Resource resource, List<? super Capability> caps) throws Exception {
 		Builder bundleBuilder = new Builder().setNamespace(Namespaces.NS_WIRING_BUNDLE);
 		Builder hostBuilder   = new Builder().setNamespace(Namespaces.NS_WIRING_HOST);
