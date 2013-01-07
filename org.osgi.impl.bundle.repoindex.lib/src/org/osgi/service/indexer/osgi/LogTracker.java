@@ -22,11 +22,11 @@ class LogTracker extends ServiceTracker implements LogService {
 		log(null, level, message, exception);
 	}
 
-	public void log(@SuppressWarnings("rawtypes") ServiceReference sr, int level, String message) {
+	public void log(ServiceReference sr, int level, String message) {
 		log(sr, level, message, null);
 	}
 
-	public void log(@SuppressWarnings("rawtypes") ServiceReference sr, int level, String message, Throwable exception) {
+	public void log(ServiceReference sr, int level, String message, Throwable exception) {
 		LogService log = (LogService) getService();
 		
 		if (log != null)
