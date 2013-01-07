@@ -1,6 +1,7 @@
 package org.osgi.service.indexer.impl;
 
-import static org.osgi.service.indexer.impl.Utils.*;
+import static org.osgi.service.indexer.impl.Utils.findCaps;
+import static org.osgi.service.indexer.impl.Utils.findReqs;
 
 import java.io.File;
 import java.util.LinkedList;

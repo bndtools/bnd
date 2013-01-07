@@ -1,6 +1,6 @@
 package org.osgi.service.indexer.impl.util;
 
-import java.util.*;
+import java.util.List;
 
 public interface Reporter {
 	void error(String s, Object ... args);

@@ -1,14 +1,18 @@
 package org.osgi.service.indexer.impl;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.StringWriter;
 import java.util.Collections;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -19,15 +23,12 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.mockito.ArgumentCaptor;
-import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.indexer.Capability;
 import org.osgi.service.indexer.Requirement;
 import org.osgi.service.indexer.Resource;
 import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.RepoIndex;
 import org.osgi.service.log.LogService;
 
 public class TestIndexer extends TestCase {

@@ -2,7 +2,6 @@ package org.osgi.service.indexer.impl;
 
 import java.util.List;
 
-import org.osgi.service.blueprint.container.BlueprintContainer;
 import org.osgi.service.indexer.Builder;
 import org.osgi.service.indexer.Capability;
 import org.osgi.service.indexer.Namespaces;

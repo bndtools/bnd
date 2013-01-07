@@ -7,7 +7,6 @@ import java.util.jar.Manifest;
 import junit.framework.TestCase;
 
 import org.osgi.service.indexer.Resource;
-import org.osgi.service.indexer.impl.JarResource;
 
 public class TestJarResource extends TestCase {
 

@@ -1,6 +1,9 @@
 package org.example.tests.standalone;
 
-import static org.example.tests.utils.Utils.*;
+import static org.example.tests.utils.Utils.copyToTempFile;
+import static org.example.tests.utils.Utils.createTempDir;
+import static org.example.tests.utils.Utils.deleteWithException;
+import static org.example.tests.utils.Utils.readStream;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -13,8 +16,8 @@ import junit.framework.TestCase;
 
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.RepoIndex;
 import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
+import org.osgi.service.indexer.impl.RepoIndex;
 
 public class TestStandaloneLibrary extends TestCase {
 

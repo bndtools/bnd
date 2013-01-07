@@ -1,6 +1,14 @@
 package org.example.tests.osgi;
 
-import static org.example.tests.utils.Utils.*;
+import static org.example.tests.utils.Utils.copyToTempFile;
+import static org.example.tests.utils.Utils.createTempDir;
+import static org.example.tests.utils.Utils.deleteWithException;
+import static org.example.tests.utils.Utils.readStream;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -27,8 +35,6 @@ import org.osgi.service.indexer.Resource;
 import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.log.LogService;
-
-import static org.mockito.Mockito.*;
 
 public class TestOSGiServices extends TestCase {
 

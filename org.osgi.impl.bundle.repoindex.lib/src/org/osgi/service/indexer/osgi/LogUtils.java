@@ -1,6 +1,9 @@
 package org.osgi.service.indexer.osgi;
 
-import static org.osgi.service.log.LogService.*;
+import static org.osgi.service.log.LogService.LOG_DEBUG;
+import static org.osgi.service.log.LogService.LOG_ERROR;
+import static org.osgi.service.log.LogService.LOG_INFO;
+import static org.osgi.service.log.LogService.LOG_WARNING;
 
 final class LogUtils {
 
