@@ -3,6 +3,7 @@ package bndtools.views;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -204,18 +205,14 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 if (!event.getSelection().isEmpty()) {
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                     if (selection.getFirstElement() instanceof IAdaptable) {
-                        Object fileObject = ((IAdaptable) selection.getFirstElement()).getAdapter(IFile.class);
-                        if (fileObject != null) {
+                        URI uri = (URI) ((IAdaptable) selection.getFirstElement()).getAdapter(URI.class);
+                        if (uri != null) {
                             IWorkbenchPage page = getSite().getPage();
                             try {
-                                if (fileObject instanceof IFile) {
-                                    IDE.openEditor(page, (IFile) fileObject);
-                                } else if (fileObject instanceof File) {
-                                    IFileStore fileStore = EFS.getLocalFileSystem().getStore(((File) fileObject).toURI());
-                                    IDE.openEditorOnFileStore(page, fileStore);
-                                }
+                                IFileStore fileStore = EFS.getLocalFileSystem().getStore(uri);
+                                IDE.openEditorOnFileStore(page, fileStore);
                             } catch (PartInitException e) {
-                                logger.logError("Error opening editor for " + fileObject, e);
+                                logger.logError("Error opening editor for " + uri, e);
                             }
                         }
                     }
