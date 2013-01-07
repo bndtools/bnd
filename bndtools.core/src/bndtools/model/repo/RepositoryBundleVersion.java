@@ -50,6 +50,11 @@ public class RepositoryBundleVersion implements IAdaptable, Actionable {
             if (file != null) {
                 IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
                 result = root.getFileForLocation(new Path(file.getAbsolutePath()));
+                // If result is null it means that the file is outside the workspace.
+                // Just return the file instead.
+                if (result == null) {
+                    result = file;
+                }
             }
         } else if (File.class.equals(adapter)) {
             result = getFile();

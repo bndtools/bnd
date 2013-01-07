@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bndtools.core.utils.swt.FilterPanelPart;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
@@ -202,14 +204,18 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 if (!event.getSelection().isEmpty()) {
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                     if (selection.getFirstElement() instanceof IAdaptable) {
-                        IFile file = (IFile) ((IAdaptable) selection.getFirstElement()).getAdapter(IFile.class);
-
-                        if (file != null) {
+                        Object fileObject = ((IAdaptable) selection.getFirstElement()).getAdapter(IFile.class);
+                        if (fileObject != null) {
                             IWorkbenchPage page = getSite().getPage();
                             try {
-                                IDE.openEditor(page, file);
+                                if (fileObject instanceof IFile) {
+                                    IDE.openEditor(page, (IFile) fileObject);
+                                } else if (fileObject instanceof File) {
+                                    IFileStore fileStore = EFS.getLocalFileSystem().getStore(((File) fileObject).toURI());
+                                    IDE.openEditorOnFileStore(page, fileStore);
+                                }
                             } catch (PartInitException e) {
-                                logger.logError("Error opening editor for " + file, e);
+                                logger.logError("Error opening editor for " + fileObject, e);
                             }
                         }
                     }
