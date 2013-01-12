@@ -3,6 +3,7 @@ package bndtools.views;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bndtools.core.utils.swt.FilterPanelPart;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
@@ -202,14 +205,14 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 if (!event.getSelection().isEmpty()) {
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                     if (selection.getFirstElement() instanceof IAdaptable) {
-                        IFile file = (IFile) ((IAdaptable) selection.getFirstElement()).getAdapter(IFile.class);
-
-                        if (file != null) {
+                        URI uri = (URI) ((IAdaptable) selection.getFirstElement()).getAdapter(URI.class);
+                        if (uri != null) {
                             IWorkbenchPage page = getSite().getPage();
                             try {
-                                IDE.openEditor(page, file);
+                                IFileStore fileStore = EFS.getLocalFileSystem().getStore(uri);
+                                IDE.openEditorOnFileStore(page, fileStore);
                             } catch (PartInitException e) {
-                                logger.logError("Error opening editor for " + file, e);
+                                logger.logError("Error opening editor for " + uri, e);
                             }
                         }
                     }

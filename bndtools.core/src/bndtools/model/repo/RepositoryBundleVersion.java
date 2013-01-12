@@ -1,6 +1,7 @@
 package bndtools.model.repo;
 
 import java.io.File;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Map;
 
@@ -43,16 +44,19 @@ public class RepositoryBundleVersion implements IAdaptable, Actionable {
     public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         Object result = null;
 
-        if (IFile.class.equals(adapter)) { // ||
-                                           // IResource.class.equals(adapter))
-                                           // {
-            File file = getFile();
-            if (file != null) {
+        File file = getFile();
+        if (file != null) {
+            if (IFile.class.equals(adapter)) { // ||
+                // IResource.class.equals(adapter))
+                // {
+                // Note that if the file is outside the workspace the IFile result will be null
                 IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
                 result = root.getFileForLocation(new Path(file.getAbsolutePath()));
+            } else if (File.class.equals(adapter)) {
+                result = file;
+            } else if (URI.class.equals(adapter)) {
+                result = file.toURI();
             }
-        } else if (File.class.equals(adapter)) {
-            result = getFile();
         }
 
         return result;
