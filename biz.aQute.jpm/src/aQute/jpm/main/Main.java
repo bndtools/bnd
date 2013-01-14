@@ -1259,8 +1259,7 @@ public class Main extends ReporterAdapter {
 
 	void print(Iterable<Revision> revisions) {
 		for (Revision r : revisions) {
-			out.printf("%-40s %10s%-10s %s\n", jpm.getCoordinates(r), r.baseline, r.qualifier == null ? ""
-					: ("." + r.qualifier), r.description);
+			out.printf("%-40s %s %s\n", jpm.getCoordinates(r), Hex.toHexString(r._id),(r.description == null ? "" : r.description));
 		}
 	}
 
