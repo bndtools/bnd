@@ -711,7 +711,7 @@ public class JustAnotherPackageManager {
 	public String getCoordinates(Revision r) {
 		StringBuilder sb = new StringBuilder(r.groupId).append(":").append(r.artifactId).append(":");
 		if (r.classifier != null)
-			sb.append(r.classifier).append(":");
+			sb.append(r.classifier).append("@");
 		sb.append(r.version);
 
 		return sb.toString();
