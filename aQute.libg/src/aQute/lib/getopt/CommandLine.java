@@ -24,7 +24,7 @@ public class CommandLine {
 	static int			LINELENGTH	= 60;
 	static Pattern		ASSIGNMENT	= Pattern.compile("(\\w[\\w\\d]*+)\\s*=\\s*([^\\s]+)\\s*");
 	Reporter			reporter;
-	Justif				justif		= new Justif(60);
+	Justif				justif		= new Justif(80,30,32,70);
 	CommandLineMessages	msg;
 
 	public CommandLine(Reporter reporter) {
@@ -309,15 +309,19 @@ public class CommandLine {
 	 * Provide a help text.
 	 */
 
-	public void help(Formatter f, @SuppressWarnings("unused") Object target, String cmd, Class< ? extends Options> specification) {
+	public void help(Formatter f, @SuppressWarnings("unused")
+	Object target, String cmd, Class< ? extends Options> specification) {
 		Description descr = specification.getAnnotation(Description.class);
 		Arguments patterns = specification.getAnnotation(Arguments.class);
 		Map<String,Method> options = getOptions(specification);
 
 		String description = descr == null ? "" : descr.value();
 
-		f.format("NAME%n  %s - %s%n%n", cmd, description);
-		f.format("SYNOPSIS%n   %s [options] ", cmd);
+		f.format("%nNAME%n  %s \t0- \t1%s%n%n", cmd, description);
+		if (options.isEmpty())
+			f.format("SYNOPSIS%n   %s ", cmd);
+		else
+			f.format("SYNOPSIS%n   %s [options] ", cmd);
 
 		if (patterns == null)
 			f.format(" ...%n%n");
@@ -330,28 +334,30 @@ public class CommandLine {
 					f.format("%s<%s>", del, pattern);
 				del = " ";
 			}
-			f.format("%n%n");
+			f.format("%n");
 		}
 
-		f.format("OPTIONS%n");
-		for (Entry<String,Method> entry : options.entrySet()) {
-			String optionName = entry.getKey();
-			Method m = entry.getValue();
+		if (!options.isEmpty()) {
+			f.format("%nOPTIONS%n%n");
+			for (Entry<String,Method> entry : options.entrySet()) {
+				String optionName = entry.getKey();
+				Method m = entry.getValue();
 
-			Config cfg = m.getAnnotation(Config.class);
-			Description d = m.getAnnotation(Description.class);
-			boolean required = isMandatory(m);
+				Config cfg = m.getAnnotation(Config.class);
+				Description d = m.getAnnotation(Description.class);
+				boolean required = isMandatory(m);
 
-			String methodDescription = cfg != null ? cfg.description() : (d == null ? "" : d.value());
+				String methodDescription = cfg != null ? cfg.description() : (d == null ? "" : d.value());
 
-			f.format("   %s -%s, --%s %s%s - %s%n", required ? " " : "[", //
-					optionName.charAt(0), //
-					optionName, //
-					getTypeDescriptor(m.getGenericReturnType()), //
-					required ? " " : "]",//
-					methodDescription);
+				f.format("   %s -%s, --%s %s%s \t0- \t1%s%n", required ? " " : "[", //
+						optionName.charAt(0), //
+						optionName, //
+						getTypeDescriptor(m.getGenericReturnType()), //
+						required ? " " : "]",//
+						methodDescription);
+			}
+			f.format("%n");
 		}
-		f.format("%n");
 	}
 
 	static Pattern	LAST_PART	= Pattern.compile(".*[\\$\\.]([^\\$\\.]+)");
