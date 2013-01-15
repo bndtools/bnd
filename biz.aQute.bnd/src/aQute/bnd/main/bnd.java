@@ -68,7 +68,7 @@ public class bnd extends Processor {
 	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
 	static Pattern				COMMAND		= Pattern.compile("\\w[\\w\\d]+");
-
+	
 	@Description("OSGi Bundle Tool")
 	interface bndOptions extends Options {
 		@Description("Turns errors into warnings so command always succeeds")
@@ -118,6 +118,13 @@ public class bnd extends Processor {
 			return;
 
 		String arg = args.get(0);
+		if ( arg.equals("maven")) {
+			// ensure that we do not much with options
+			// because the maven command does not like 
+			// that
+			args.add(0, "maven");
+			return;
+		}
 		Matcher m = JARCOMMANDS.matcher(arg);
 		if (m.matches()) {
 			rewriteJarCmd(args);
@@ -2880,5 +2887,15 @@ public class bnd extends Processor {
 			float mb = total / 1000000;
 			out.format("Total %s Mb, %s ms, %s Mb/sec %s files\n", mb, time, (total / time) / 1024, o._().size());
 		}
+	}
+
+	/**
+	 * Maven command
+	 * @throws Exception 
+	 */
+	
+	public void _maven(Options options) throws Exception {
+		MavenCommand mc = new MavenCommand(this);
+		mc.run(options._().toArray(new String[0]), 1);
 	}
 }
