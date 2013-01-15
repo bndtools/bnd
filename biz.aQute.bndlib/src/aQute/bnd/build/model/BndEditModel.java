@@ -12,6 +12,7 @@ import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.build.model.conversions.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.resource.*;
 import aQute.bnd.properties.*;
 import aQute.bnd.version.*;
 import aQute.libg.tuple.*;
@@ -589,12 +590,47 @@ public class BndEditModel {
 		doSetObject(aQute.bnd.osgi.Constants.BUILDPACKAGES, oldValue, paths, headerClauseListFormatter);
 	}
 
+	private VersionedClause buildSelfVersionedClaus() {
+		VersionedClause ret = null;
+		if (this.isProjectFile() && (this.getBundleSymbolicName() != null || this.bndResource != null)) {
+
+			String name = this.getBundleSymbolicName();
+			if (name == null && this.bndResource != null) {
+				name = this.bndResource.getParentFile().getName();
+			}
+
+			Attrs a = new Attrs();
+			a.put("version", "latest");
+
+			ret = new VersionedClause(name, a);
+		}
+		return ret;
+	}
+
 	public List<VersionedClause> getRunBundles() {
-		return doGetObject(aQute.bnd.osgi.Constants.RUNBUNDLES, clauseListConverter);
+		List<VersionedClause> ret = doGetObject(aQute.bnd.osgi.Constants.RUNBUNDLES, clauseListConverter);
+
+		// [cs]
+		VersionedClause v = buildSelfVersionedClaus();
+		if (v != null) {
+			if (ret == null) {
+				ret = new ArrayList<VersionedClause>();
+			}
+			ret.add(v);
+		}
+
+		return ret;
 	}
 
 	public void setRunBundles(List< ? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
+
+		// [cs]
+		VersionedClause v = buildSelfVersionedClaus();
+		if (v != null) {
+			paths.remove(v);
+		}
+
 		doSetObject(aQute.bnd.osgi.Constants.RUNBUNDLES, oldValue, paths, headerClauseListFormatter);
 	}
 
@@ -732,14 +768,48 @@ public class BndEditModel {
         doSetObject(aQute.bnd.osgi.Constants.RUNFW, oldValue, clause, newlineEscapeFormatter);
     }
 
-    public List<Requirement> getRunRequires() {
-    	return doGetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListConverter);
-    }
+	private Requirement buildSelfRequirement() {
+		Requirement ret = null;
+		if (this.isProjectFile() && (this.getBundleSymbolicName() != null || this.bndResource != null)) {
+
+			CapReqBuilder builder = new CapReqBuilder("osgi.identity");
+
+			String name = this.getBundleSymbolicName();
+			if (name == null && this.bndResource != null) {
+				name = this.bndResource.getParentFile().getName();
+			}
+			builder.addDirective("filter", "(osgi.identity=" + name + ")");
+			ret = builder.buildSyntheticRequirement();
+		}
+		return ret;
+	}
     
-    public void setRunRequires(List<Requirement> requires) {
-    	List<Requirement> oldValue = getRunRequires();
-    	doSetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
-    }
+	public List<Requirement> getRunRequires() {
+		List<Requirement> ret = doGetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListConverter);
+
+		// [cs] If this is a project file, include self or own sub bundles.
+		Requirement r = buildSelfRequirement();
+		if (r != null) {
+			if (ret == null) {
+				ret = new ArrayList<Requirement>();
+			}
+			ret.add(r);
+		}
+
+		return ret;
+	}
+    
+	public void setRunRequires(List<Requirement> requires) {
+		List<Requirement> oldValue = getRunRequires();
+
+		// [cs] remove us if project file
+		Requirement r = buildSelfRequirement();
+		if (r != null) {
+			requires.remove(r);
+		}
+
+		doSetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
+	}
 
 
 	private <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
