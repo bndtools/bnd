@@ -179,6 +179,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 */
 	static final PutOptions		DEFAULTOPTIONS		= new PutOptions();
 
+	public static final int	MAX_MAJOR	= 999999999;
+
+	
 	String						shell;
 	String						path;
 	String						init;
@@ -444,6 +447,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
+		boolean haslatest = false;
 		File dir = new File(root, bsn);
 		if (dir.isDirectory()) {
 			String versions[] = dir.list();
@@ -453,10 +457,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				if (m.matches()) {
 					String version = m.group(2);
 					if (version.equals("latest"))
-						version = "999999";
-					list.add(new Version(version));
+						haslatest = true;
+					else
+						list.add(new Version(version));
 				}
 			}
+			if ( list.isEmpty() && haslatest)
+				list.add( new Version(MAX_MAJOR,0,0));
 			return new SortedList<Version>(list);
 		}
 		return SortedList.empty();
@@ -603,6 +610,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File getLocal(String bsn, Version version, Map<String,String> properties) {
 		File dir = new File(root, bsn);
 
+		if ( version.getMajor() == MAX_MAJOR && version.getMinor()== 0 && version.getMicro() == 0 && version.getQualifier() == null) {
+			File fjar = new File(dir, bsn + "-latest.jar");
+			if (fjar.isFile())
+				return fjar.getAbsoluteFile();
+		}
+		
 		File fjar = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".jar");
 		if (fjar.isFile())
 			return fjar.getAbsoluteFile();
