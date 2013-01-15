@@ -34,7 +34,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			ht.put(Constants.SERVICE_DESCRIPTION, "JUnit tester");
 			context.registerService(Runnable.class.getName(), this, ht);
 		} else {
-			thread = new Thread("bnd Runtime Test Bundle");
+			thread = new Thread(this,"bnd Runtime Test Bundle");
 			thread.start();
 		}
 	}
