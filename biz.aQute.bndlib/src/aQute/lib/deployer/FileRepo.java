@@ -195,7 +195,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File				root;
 	Registry					registry;
 	boolean						canWrite			= true;
-	Pattern						REPO_FILE			= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)\\.(jar|lib)");
+	Pattern						REPO_FILE			= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
 	Reporter					reporter;
 	boolean						dirty;
 	String						name;
@@ -453,7 +453,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				if (m.matches()) {
 					String version = m.group(2);
 					if (version.equals("latest"))
-						version = Integer.MAX_VALUE + "";
+						version = "999999";
 					list.add(new Version(version));
 				}
 			}
