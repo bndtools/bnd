@@ -21,14 +21,14 @@ Bundle-Vendor: 					jpm4j.org
 Bundle-Icon: 					images/icon.png;size=64
 						
 Conditional-Package: 			aQute.libg.*, aQute.lib.*
-Bundle-Version: 				1.0.1
+Bundle-Version: 				1.0.2
 
 -buildpath: aQute.libg;version=project,\
 	biz.aQute.bndlib;version=project,\
 	ee.j2se;version=${javac.ee},\
 	com.springsource.junit,\
 	org.mockito.mockito-all;version=1.9.0,\
-	aQute.library.client;version=1.0.0
+	aQute.library.client;version=1.0.1
 	
 
 -digests: MD5, SHA1

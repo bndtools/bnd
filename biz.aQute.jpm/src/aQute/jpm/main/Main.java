@@ -958,7 +958,12 @@ public class Main extends ReporterAdapter {
 	 * @throws IOException
 	 */
 
-	public void _version(Options options) throws IOException {
+	@Arguments(arg = {})
+	@Description("Show the current version. The qualifier represents the build date.")
+	interface VersionOptions extends Options {
+		
+	}
+	public void _version(VersionOptions options) throws IOException {
 		Manifest m = new Manifest(getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"));
 		out.println(m.getMainAttributes().getValue("Bundle-Version"));
 	}

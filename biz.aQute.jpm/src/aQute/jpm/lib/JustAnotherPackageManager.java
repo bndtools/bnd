@@ -5,7 +5,6 @@ import static aQute.lib.io.IO.*;
 import java.io.*;
 import java.net.*;
 import java.security.*;
-import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.jar.*;
@@ -26,6 +25,7 @@ import aQute.service.library.*;
 import aQute.service.library.Library.Phase;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
+import aQute.service.library.Library.RevisionRef;
 import aQute.service.reporter.*;
 
 /**
@@ -718,73 +718,108 @@ public class JustAnotherPackageManager {
 	}
 
 	public ArtifactData getCandidate(String key, boolean staged) throws Exception {
-
+		reporter.trace("getCandidate " + key);
 		// Short cut, see if we alread have it
 		Matcher m = SHA_P.matcher(key);
 		if (m.matches()) {
-			ArtifactData art = get(Hex.toByteArray(m.group(1)));
+			byte[] sha = Hex.toByteArray(m.group(1));
+			reporter.trace("sha " + key);
+			ArtifactData art = get(sha);
 			if (art != null)
 				return art;
+
+			reporter.trace("sha not in cache");
+			Revision r = library.getRevision(sha);
+			if (r != null) {
+				reporter.trace("downloading sha");
+				ArtifactData target = put(r.url);
+				target.coordinates = key;
+				return target;
+			}
+			reporter.trace("no sha found");
+			// fall through
 		}
 
 		File f = new File(key);
-		if ( f.isFile() ) {
+		if (f.isFile()) {
+			reporter.trace("is file");
 			ArtifactData target = put(f.toURI());
 			target.coordinates = f.getAbsolutePath();
-			return target;			
+			return target;
 		}
-		
+
 		m = URL_P.matcher(key);
-		if ( m.matches()){
+		if (m.matches()) {
+			reporter.trace("looks like a url");
 			try {
 				ArtifactData target = put(new URI(key));
 				target.coordinates = key;
 				return target;
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				// Ignore
+				reporter.trace("hmm, not a valid url");
+			}
+			// fall through
+		}
+
+		reporter.trace("get the programs for %s", key);
+		Iterable< ? extends Program> ps = library.getPrograms(key);
+		if (ps == null)
+			return null;
+
+		reporter.trace("filter for valid versions");
+		List<RevisionRef> refs = new ArrayList<RevisionRef>();
+		for (Program p : ps) {
+			RevisionRef selected = selectBest(p.revisions, staged);
+			if (selected != null)
+				refs.add(selected);
+		}
+		if (refs.isEmpty()) {
+			reporter.trace("no valid versions found");
+			return null;
+		}
+
+		if (refs.size() == 1) {
+			reporter.trace("found 1 program %s:%s", refs.get(0).groupId, refs.get(0).artifactId);
+			RevisionRef r = refs.get(0);
+			
+			ArtifactData target = get(r.revision);
+			if ( target == null)
+				target = put(r.url);
+			
+			target.coordinates = key;
+			return target;
+		}
+
+		System.out.printf("Multiple candidates for this name, select with its sha\n");
+		for (Program p : ps) {
+			RevisionRef selected = selectBest(p.revisions, staged);
+			if (selected != null) {
+				String desc = selected.description;
+				if (desc == null) {
+					desc = p.wiki.text;
+					if (desc == null)
+						desc = "-";
+				}
+
+				System.out.printf("%-20s:%20s %-10s %s %s\n", selected.groupId, selected.artifactId, selected.version,
+						Hex.toHexString(selected.revision), desc);
 			}
 		}
-		
-		Iterable<Revision> rs = library.getRevisions(key);
-		if (rs == null)
-			return null;
+		return null;
+	}
 
-		List<Revision> revs = new ArrayList<Library.Revision>();
-		for (Revision r : rs)
-			revs.add(r);
-
-		if (!staged)
-			revs = filter(revs, EnumSet.of(Phase.MASTER));
-
-		if (revs.isEmpty()) {
-			return null;
-		}
-
-		Map<String,Revision> latest = latest(revs);
-
-		if (latest.size() > 1) {
-			System.out.printf("Multiple candidates for this name, select with its sha\n");
-			for (String name : latest.keySet()) {
-				Revision r = latest.get(name);
-				String desc = r.description;
-				if (desc != null && desc.length() > 60)
-					desc = desc.substring(0, 59) + " ...";
-				SimpleDateFormat df = new SimpleDateFormat("yyyymmdd");
-				System.out.printf("%-20s %-10s %-10s %s %s\n", name, r.version, df.format(r.created),
-						Hex.toHexString(r._id), desc);
+	private RevisionRef selectBest(List<RevisionRef> revisions, boolean staged) {
+		long date = 0;
+		RevisionRef selected = null;
+		for (RevisionRef r : revisions) {
+			if (r.phase == Phase.MASTER || (r.phase == Phase.STAGING && staged)) {
+				if (selected == null || r.created > selected.created)
+					selected = r;
 			}
-			return null;
 		}
-
-		assert latest.size() == 1;
-
-		Revision candidate = latest.values().iterator().next();
-
-		ArtifactData data = get(candidate._id);
-		if (data == null) {
-			data = putAsync(candidate.url);
-		}
-		return data;
+		return selected;
 	}
 
 	public static Executor getExecutor() {
