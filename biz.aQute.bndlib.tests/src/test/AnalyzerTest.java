@@ -24,6 +24,45 @@ public class AnalyzerTest extends BndTestCase {
 	static File	cwd	= new File(System.getProperty("user.dir"));
 
 	/**
+	 * For the following annotation class in an OSGi bundle
+	 * 
+	 * @Retention(RetentionPolicy.RUNTIME)
+	 * @Target({ ElementType.TYPE, ElementType.METHOD }) public @interface
+	 *           Transactional {
+	 * @Nonbinding Class<? extends Annotation>[] qualifier() default Any.class;
+	 *             } maven-bundle-plugin fails to generate the package import
+	 *             for javax.enterprise.inject.Any, the default value of the
+	 *             annotation method. At runtime, this leads to a
+	 *             non-descriptive exception
+	 * 
+	 *             <pre>
+	 * Caused by: java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy 
+	 *         at sun.reflect.annotation.AnnotationParser.parseClassArray(AnnotationParser.java:673) ~[na:1.7.0_04] 
+	 *         at sun.reflect.annotation.AnnotationParser.parseArray(AnnotationParser.java:480) ~[na:1.7.0_04] 
+	 *         at sun.reflect.annotation.AnnotationParser.parseMemberValue(AnnotationParser.java:306) ~[na:1.7.0_04] 
+	 *         at java.lang.reflect.Method.getDefaultValue(Method.java:726) ~[na:1.7.0_04] 
+	 *         at sun.reflect.annotation.AnnotationType.<init>(AnnotationType.java:117) ~[na:1.7.0_04] 
+	 *         at sun.reflect.annotation.AnnotationType.getInstance(AnnotationType.java:84) ~[na:1.7.0_04] 
+	 *         at sun.reflect.annotation.AnnotationParser.parseAnnotation(AnnotationParser.java:221) ~[na:1.7.0_04] 
+	 *         at sun.reflect.annotation.AnnotationParser.parseAnnotations2(AnnotationParser.java:88) ~[na:1.7.0_04] 
+	 *         at sun.reflect.annotation.AnnotationParser.parseAnnotations(AnnotationParser.java:70) ~[na:1.7.0_04] 
+	 *         at java.lang.Class.initAnnotationsIfNecessary(Class.java:3089) ~[na:1.7.0_04] 
+	 *         at java.lang.Class.getDeclaredAnnotations(Class.java:3077) ~[na:1.7.0_04]
+	 * </pre>
+	 */
+	public void testAnnotationWithDefaultClass() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(IO.getFile(cwd, "bin"));
+		b.setExportPackage("test.annotation");
+		b.build();
+		assertTrue(b.check());
+		assertTrue( b.getExports().containsKey(b.getPackageRef("test/annotation")));
+		assertFalse( b.getContained().containsKey(b.getPackageRef("test/annotation/any")));
+		assertTrue( b.getImports().containsKey(b.getPackageRef("test/annotation/any")));
+	}
+	 
+
+	/**
 	 * Check the cross references
 	 */
 
