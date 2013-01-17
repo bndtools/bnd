@@ -7,8 +7,8 @@ import java.lang.annotation.*;
  * This type is provided for convenience because it is the default. A change in
  * a provider type (that is all except Consumer types) can be changed with only
  * (at minimum) a minor update to the package API version number. This interface
- * is similar to the Eclipse @noextend and OSGi @noimplement annotations (for
- * the latter, see below).
+ * is similar to the Eclipse @noextend and @noimplement annotations. OSGi
+ * specifications use the @noimplement annotation, see below.
  * </p>
  * <h2>Elaborate and Simple Explanation</h2>
  * <p>
@@ -38,7 +38,7 @@ import java.lang.annotation.*;
  * small number of bundles would be broken; these are the providers of the
  * ConfigurationAdmin API, e.g. org.apache.felix.configadmin and so on.
  * </p>
- * <h2>Relation to OSGi Specifications and javadoc</h2>
+ * <h2>Relation to OSGi Specifications and Javadoc</h2>
  * <p>
  * At OSGi, the javadoc tag @noimplement is used to mark "provider implemented"
  * interfaces. Interfaces not marked @noimplement are "consumer implemented"
