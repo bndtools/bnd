@@ -44,6 +44,8 @@ public class Printer extends Processor {
 
     PrintStream out = System.out;
 
+    private static final String EOL = String.format("%n");
+
     public void setOut(PrintStream out) {
         this.out = out;
     }
@@ -174,8 +176,8 @@ public class Printer extends Processor {
         }
         for (String key : sorted) {
             Object value = manifest.getMainAttributes().getValue(key);
-            format(out, "%-40s %-40s\r\n", new Object[] {
-                    key, value
+            format(out, "%-40s %-40s%s", new Object[] {
+                    key, value, EOL
             });
         }
     }
@@ -188,7 +190,7 @@ public class Printer extends Processor {
             Object key = entry.getKey();
             Map< ? , ? > clause = Create.copy(entry.getValue());
             clause.remove("uses:");
-            format(out, "  %-38s %s\r\n", key.toString().trim(), clause.isEmpty() ? "" : clause.toString());
+            format(out, "  %-38s %s%s", key.toString().trim(), clause.isEmpty() ? "" : clause.toString(), EOL);
         }
     }
 
@@ -210,11 +212,11 @@ public class Printer extends Processor {
             String name = s.toString();
             sb.append(del);
             sb.append(name);
-            sb.append("\r\n");
+            sb.append(EOL);
             del = pad(padding);
         }
         if (sb.length() == 0)
-            sb.append("\r\n");
+            sb.append(EOL);
         return sb.toString();
     }
 
