@@ -2896,6 +2896,9 @@ public class bnd extends Processor {
 	
 	public void _maven(Options options) throws Exception {
 		MavenCommand mc = new MavenCommand(this);
+		mc.setTrace(isTrace());
+		mc.setExceptions(isExceptions());
+		mc.setPedantic(isPedantic());
 		mc.run(options._().toArray(new String[0]), 1);
 	}
 }
