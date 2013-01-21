@@ -39,7 +39,7 @@ public class Windows extends Platform {
 	}
 
 	@Override
-	public String createCommand(CommandData data) throws Exception {
+	public String createCommand(CommandData data, String ... extra) throws Exception {
 		
 		return null;
 	}

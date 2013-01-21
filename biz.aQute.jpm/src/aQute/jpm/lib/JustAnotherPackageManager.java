@@ -252,7 +252,8 @@ public class JustAnotherPackageManager {
 		if (binDir != null)
 			data.bin = new File(binDir, data.name);
 
-		String s = platform.createCommand(data);
+		
+		String s = platform.createCommand(data, service.getAbsolutePath());
 		if (s == null)
 			storeData(new File(commandDir, data.name), data);
 		return s;

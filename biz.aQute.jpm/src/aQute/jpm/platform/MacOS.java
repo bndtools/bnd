@@ -27,6 +27,22 @@ class MacOS extends Unix {
 	public String getName() {
 		return "MacOS";
 	}
+	
+	@Override
+	public String createCommand(CommandData data, String ... extra) throws Exception {
+		if (data.bin == null)
+			data.bin = getExecutable(data);
+
+		if (data.bin.isDirectory()) {
+			data.bin = new File(data.bin, data.name);
+		}
+
+		if (!data.force && data.bin.exists())
+			return "Command already exists " + data.bin;
+
+		process("macos/command.sh", data, data.bin, extra);
+		return null;
+	}
 
 	@Override
 	public String createService(ServiceData data) throws Exception {

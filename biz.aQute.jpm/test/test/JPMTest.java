@@ -5,7 +5,6 @@ import java.net.*;
 import java.util.*;
 
 import junit.framework.*;
-import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
 import aQute.jpm.platform.*;
 import aQute.libg.reporter.*;
@@ -39,7 +38,7 @@ public class JPMTest extends TestCase {
 		}
 
 		@Override
-		public String createCommand(CommandData data) throws Exception {
+		public String createCommand(CommandData data, String ...strings ) throws Exception {
 			return null;
 		}
 

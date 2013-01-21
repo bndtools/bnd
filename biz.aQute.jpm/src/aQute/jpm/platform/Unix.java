@@ -30,7 +30,7 @@ public abstract class Unix extends Platform {
 	}
 
 	@Override
-	public String createCommand(CommandData data) throws Exception {
+	public String createCommand(CommandData data, String ... extra) throws Exception {
 		if (data.bin == null)
 			data.bin = getExecutable(data);
 
@@ -41,7 +41,7 @@ public abstract class Unix extends Platform {
 		if (!data.force && data.bin.exists())
 			return "Command already exists " + data.bin;
 
-		process("unix/command.sh", data, data.bin);
+		process("unix/command.sh", data, data.bin, extra);
 		return null;
 	}
 
@@ -77,7 +77,7 @@ public abstract class Unix extends Platform {
 		return new File(data.sdir, "launch.sh");
 	}
 
-	private File getExecutable(CommandData data) {
+	protected File getExecutable(CommandData data) {
 		return new File(BINARIES + "/" + data.name);
 	}
 

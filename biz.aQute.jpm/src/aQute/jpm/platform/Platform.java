@@ -60,7 +60,7 @@ public abstract class Platform {
 		return runtime.exec(args).waitFor();
 	}
 
-	public abstract String createCommand(CommandData data) throws Exception;
+	public abstract String createCommand(CommandData data, String ... deps) throws Exception;
 
 	public abstract String createService(ServiceData data) throws Exception;
 
