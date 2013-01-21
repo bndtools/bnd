@@ -113,6 +113,9 @@ public abstract class Unix extends Platform {
 		copy(getClass().getResourceAsStream(resource), file);
 		Sed sed = new Sed(file);
 		sed.setBackup(false);
+		if ( data.title == null || data.title.trim().length() == 0)
+			data.title = data.name;
+		
 		for (Field key : data.getClass().getFields()) {
 			Object value = key.get(data);
 			if (value == null) {

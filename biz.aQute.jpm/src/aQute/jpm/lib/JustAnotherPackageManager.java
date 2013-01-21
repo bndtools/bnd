@@ -442,6 +442,7 @@ public class JustAnotherPackageManager {
 				for (Map.Entry<String,Attrs> e : service.entrySet()) {
 					Attrs attrs = e.getValue();
 					ServiceData data = new ServiceData();
+					data.name = e.getKey();
 					doService(attrs, data, artifact);
 					data.name = e.getKey();
 					artifact.service = data;
@@ -477,6 +478,7 @@ public class JustAnotherPackageManager {
 		if (attrs.containsKey("jvmargs"))
 			data.jvmArgs = attrs.get("jvmargs");
 		data.main = artifact.mainClass;
+		data.title = attrs.get("title");
 		data.dependencies = artifact.dependencies;
 	}
 

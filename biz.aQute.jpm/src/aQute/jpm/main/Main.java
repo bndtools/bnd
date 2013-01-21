@@ -79,6 +79,8 @@ public class Main extends ReporterAdapter {
 
 		String name();
 
+		String title();
+
 	}
 
 	/**
@@ -629,6 +631,10 @@ public class Main extends ReporterAdapter {
 		}
 		if (opts.name() != null) {
 			data.name = opts.name();
+			update = true;
+		}
+		if (opts.title() != null) {
+			data.title = opts.title();
 			update = true;
 		}
 		return update;

@@ -9,7 +9,7 @@ import aQute.struct.*;
 public class CommandData extends struct {
 	public long			time			= System.currentTimeMillis();
 	public String		name;
-
+	public String		title;
 	@AllowNull
 	public String		description;
 	public boolean		force;
@@ -22,6 +22,6 @@ public class CommandData extends struct {
 	public boolean		installed;
 	public byte[]		sha;
 	public File			bin;
-	public String	coordinates;
+	public String		coordinates;
 
 }

@@ -1,2 +1,2 @@
 #!/bin/sh
-exec java -Dpid=$$ -Xdock:name=%name% %jvmArgs% -cp "%classpath%" %main% "$@"
+exec java -Dpid=$$ -Xdock:name="%title%" %jvmArgs% -cp "%classpath%" %main% "$@"
