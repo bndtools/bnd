@@ -30,12 +30,14 @@
 										args="bndtools.core.bndnature" />
 								</and>
 
-								<!-- bnd.bnd file -->
-								<test property="org.eclipse.core.resources.name" value="bnd.bnd" />
-
-								<!-- *.bndrun file -->
-								<test property="org.eclipse.core.resources.extension"
-									value="bndrun" />
+								<!-- bnd.bnd or *.bndrun file -->
+								<and>
+									<instanceof value="org.eclipse.core.resources.IResource" />
+									<or>
+										<test property="org.eclipse.core.resources.name" value="bnd.bnd" />
+										<test property="org.eclipse.core.resources.extension" value="bndrun" />
+									</or>
+								</and>
 							</or>
 						</iterate>
 					</with>
