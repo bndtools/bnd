@@ -41,7 +41,7 @@ public class BndEditModel {
 			aQute.bnd.osgi.Constants.BUILDPATH, aQute.bnd.osgi.Constants.BUILDPACKAGES,
 			aQute.bnd.osgi.Constants.RUNBUNDLES, aQute.bnd.osgi.Constants.RUNPROPERTIES, aQute.bnd.osgi.Constants.SUB,
 			aQute.bnd.osgi.Constants.RUNFRAMEWORK, aQute.bnd.osgi.Constants.RUNFW,
-			aQute.bnd.osgi.Constants.RUNVM,
+			aQute.bnd.osgi.Constants.RUNVM, aQute.bnd.osgi.Constants.RUNPROGRAMARGS,
 			// BndConstants.RUNVMARGS,
 			// BndConstants.TESTSUITES,
 			aQute.bnd.osgi.Constants.TESTCASES, aQute.bnd.osgi.Constants.PLUGIN, aQute.bnd.osgi.Constants.PLUGINPATH,
@@ -196,6 +196,7 @@ public class BndEditModel {
 		converters.put(aQute.bnd.osgi.Constants.SUB, listConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNPROPERTIES, propertiesConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNVM, stringConverter);
+		converters.put(aQute.bnd.osgi.Constants.RUNPROGRAMARGS, stringConverter);
 		// converters.put(BndConstants.RUNVMARGS, stringConverter);
 		converters.put(aQute.bnd.osgi.Constants.TESTSUITES, listConverter);
 		converters.put(aQute.bnd.osgi.Constants.TESTCASES, listConverter);
@@ -233,6 +234,7 @@ public class BndEditModel {
 		formatters.put(aQute.bnd.osgi.Constants.SUB, stringListFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.RUNPROPERTIES, propertiesFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.RUNVM, newlineEscapeFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.RUNPROGRAMARGS, newlineEscapeFormatter);
 		// formatters.put(BndConstants.RUNVMARGS, newlineEscapeFormatter);
 		// formatters.put(BndConstants.TESTSUITES, stringListFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.TESTCASES, stringListFormatter);
@@ -652,6 +654,23 @@ public class BndEditModel {
 	public void setRunVMArgs(String args) {
 		String old = getRunVMArgs();
 		doSetObject(aQute.bnd.osgi.Constants.RUNVM, old, args, newlineEscapeFormatter);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see bndtools.editor.model.IBndModel#getRunProgramArgs()
+	 */
+	public String getRunProgramArgs() {
+		return doGetObject(aQute.bnd.osgi.Constants.RUNPROGRAMARGS, stringConverter);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see bndtools.editor.model.IBndModel#setRunProgramArgs(java.lang.String)
+	 */
+	public void setRunProgramArgs(String args) {
+		String old = getRunProgramArgs();
+		doSetObject(aQute.bnd.osgi.Constants.RUNPROGRAMARGS, old, args, newlineEscapeFormatter);
 	}
 
 	@SuppressWarnings("deprecation")
