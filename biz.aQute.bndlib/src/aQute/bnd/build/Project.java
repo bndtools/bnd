@@ -1839,6 +1839,11 @@ public class Project extends Processor {
 		return hdr.keySet();
 	}
 
+	public Collection<String> getRunProgramArgs() {
+		Parameters hdr = getParameters(RUNPROGRAMARGS);
+		return hdr.keySet();
+	}
+
 	public Map<String,String> getRunProperties() {
 		return OSGiHeader.parseProperties(getProperty(RUNPROPERTIES));
 	}
