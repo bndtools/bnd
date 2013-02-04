@@ -26,6 +26,7 @@ public abstract class ProjectLauncher {
 	private final List<String>	classpath			= new ArrayList<String>();
 	private List<String>		runbundles			= Create.list();
 	private final List<String>	runvm				= new ArrayList<String>();
+	private final List<String>	runprogramargs		= new ArrayList<String>();
 	private Map<String,String>	runproperties;
 	private Command				java;
 	private Parameters			runsystempackages;
@@ -105,6 +106,7 @@ public abstract class ProjectLauncher {
 		}
 
 		runvm.addAll(project.getRunVM());
+		runprogramargs.addAll(project.getRunProgramArgs());
 		runproperties = project.getRunProperties();
 
 		storageDir = project.getRunStorage();
@@ -168,6 +170,10 @@ public abstract class ProjectLauncher {
 		runvm.add(arg);
 	}
 
+	public void addRunProgramArgs(String arg) {
+		runprogramargs.add(arg);
+	}
+
 	public List<String> getRunpath() {
 		return classpath;
 	}
@@ -180,8 +186,13 @@ public abstract class ProjectLauncher {
 		return runvm;
 	}
 
+	@Deprecated
 	public Collection<String> getArguments() {
-		return Collections.emptySet();
+		return getRunProgramArgs();
+	}
+
+	public Collection<String> getRunProgramArgs() {
+		return runprogramargs;
 	}
 
 	public Map<String,String> getRunProperties() {
@@ -204,7 +215,7 @@ public abstract class ProjectLauncher {
 		java.add(Processor.join(getClasspath(), File.pathSeparator));
 		java.addAll(getRunVM());
 		java.add(getMainTypeName());
-		java.addAll(getArguments());
+		java.addAll(getRunProgramArgs());
 		if (timeout != 0)
 			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
 
