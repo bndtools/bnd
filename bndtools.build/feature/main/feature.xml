@@ -13,7 +13,7 @@
 <feature
       id="bndtools.main.feature"
       label="Bndtools"
-      version="2.0.0.REL"
+      version="2.0.1.DEV-qualifier"
       provider-name="Bndtools"
       plugin="bndtools.core">
 
