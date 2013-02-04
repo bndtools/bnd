@@ -176,7 +176,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
     public String getProgramArguments(ILaunchConfiguration configuration) throws CoreException {
         StringBuilder builder = new StringBuilder();
 
-        Collection<String> args = getProjectLauncher().getArguments();
+        Collection<String> args = getProjectLauncher().getRunProgramArgs();
         for (Iterator<String> iter = args.iterator(); iter.hasNext();) {
             builder.append(iter.next());
             if (iter.hasNext())
