@@ -309,7 +309,7 @@ public class CommandLine {
 	 * Provide a help text.
 	 */
 
-	public void help(Formatter f, @SuppressWarnings("unused")
+	public void help(Formatter f, 
 	Object target, String cmd, Class< ? extends Options> specification) {
 		Description descr = specification.getAnnotation(Description.class);
 		Arguments patterns = specification.getAnnotation(Arguments.class);
@@ -373,17 +373,20 @@ public class CommandLine {
 	 * Show all commands in a target
 	 */
 	public void help(Formatter f, Object target) throws Exception {
-		// TODO get help from the class
+		f.format("%n");
 		Description descr = target.getClass().getAnnotation(Description.class);
 		if (descr != null) {
 			f.format("%s%n%n", descr.value());
 		}
-		f.format("Available commands: ");
+		f.format("Available commands: %n%n");
 
-		String del = "";
-		for (String name : getCommands(target).keySet()) {
-			f.format("%s%s", del, name);
-			del = ", ";
+		for (Entry<String,Method> e : getCommands(target).entrySet()) {
+			Description d = e.getValue().getAnnotation(Description.class);
+			String desc = " ";
+			if ( d != null)
+				desc = d.value();
+			
+			f.format("  %s\t0-\t1%s %n", e.getKey(), desc);
 		}
 		f.format("%n");
 
