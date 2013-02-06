@@ -1,17 +1,12 @@
 package aQute.jpm.platform;
 
-import static aQute.lib.io.IO.*;
-
 import java.io.*;
-import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
 
 import aQute.jpm.lib.*;
-import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.command.*;
-import aQute.libg.sed.*;
 
 public abstract class Unix extends Platform {
 
@@ -30,29 +25,31 @@ public abstract class Unix extends Platform {
 	}
 
 	@Override
-	public String createCommand(CommandData data, String ... extra) throws Exception {
+	public String createCommand(CommandData data, Map<String, String> map, String... extra) throws Exception {
 		if (data.bin == null)
 			data.bin = getExecutable(data);
 
-		if (data.bin.isDirectory()) {
-			data.bin = new File(data.bin, data.name);
+		File f = new File(data.bin);
+		if (f.isDirectory()) {
+			f = new File(data.bin, data.name);
+			data.bin = f.getAbsolutePath();
 		}
 
-		if (!data.force && data.bin.exists())
+		if (!data.force && f.exists())
 			return "Command already exists " + data.bin;
 
-		process("unix/command.sh", data, data.bin, extra);
+		process("unix/command.sh", data, data.bin, map, extra);
 		return null;
 	}
 
 	@Override
 	public void deleteCommand(CommandData data) throws Exception {
-		File executable = getExecutable(data);
+		File executable = new File(getExecutable(data));
 		IO.deleteWithException(executable);
 	}
 
 	@Override
-	public String createService(ServiceData data) throws Exception {
+	public String createService(ServiceData data,  Map<String,String> map, String ... extra) throws Exception {
 		File initd = getInitd(data);
 		File launch = getLaunch(data);
 
@@ -64,8 +61,8 @@ public abstract class Unix extends Platform {
 				return "Service launch file already exists in " + launch + ", use --force to override";
 		}
 
-		process("unix/launch.sh", data, launch, data.serviceLib);
-		process("unix/initd.sh", data, initd, data.serviceLib);
+		process("unix/launch.sh", data, launch.getAbsolutePath(), map, add(extra, data.serviceLib));
+		process("unix/initd.sh", data, initd.getAbsolutePath(), map, add(extra, data.serviceLib));
 		return null;
 	}
 
@@ -77,8 +74,8 @@ public abstract class Unix extends Platform {
 		return new File(data.sdir, "launch.sh");
 	}
 
-	protected File getExecutable(CommandData data) {
-		return new File(BINARIES + "/" + data.name);
+	protected String getExecutable(CommandData data) {
+		return new File(BINARIES + "/" + data.name).getAbsolutePath();
 	}
 
 	@Override
@@ -86,9 +83,10 @@ public abstract class Unix extends Platform {
 		if (!getInitd(data).delete())
 			return "Cannot delete " + getInitd(data);
 
-		if (!getExecutable(data).delete())
+		File f = new File(getExecutable(data)); 
+		if (!f.delete())
 			return "Cannot delete " + getExecutable(data);
-		
+
 		System.out.println("Removed service data ");
 
 		return null;
@@ -96,7 +94,8 @@ public abstract class Unix extends Platform {
 
 	@Override
 	public String remove(CommandData data) throws Exception {
-		if (!getExecutable(data).delete())
+		File f = new File(getExecutable(data)); 
+		if (!f.delete())
 			return "Cannot delete " + getExecutable(data);
 
 		return null;
@@ -107,40 +106,6 @@ public abstract class Unix extends Platform {
 		File launch = getLaunch(data);
 		Process p = Runtime.getRuntime().exec(launch.getAbsolutePath(), null, new File(data.work));
 		return p.waitFor();
-	}
-
-	protected void process(String resource, CommandData data, File file, String... extra) throws Exception {
-		copy(getClass().getResourceAsStream(resource), file);
-		Sed sed = new Sed(file);
-		sed.setBackup(false);
-		if ( data.title == null || data.title.trim().length() == 0)
-			data.title = data.name;
-		
-		for (Field key : data.getClass().getFields()) {
-			Object value = key.get(data);
-			if (value == null) {
-				value = "";
-			}
-
-			// We want to enclose the prolog and epilog so they are
-			// executed as one command and thus logged as one command
-			if ("epiplog".equals(key.getName()) || "prolog".equals(key.getName())) {
-				String s = (String) value;
-				if (s != null && s.trim().length() > 0) {
-					value = "(" + s + ")";
-				}
-			}
-			sed.replace("%" + key.getName() + "%", "" + value);
-		}
-		ExtList<String> deps = new ExtList<String>(data.dependencies);
-		for (String x : extra) {
-			deps.add(x);
-		}
-		String classpath = deps.join(File.pathSeparator);
-		sed.replace("%classpath%", classpath);
-
-		sed.doIt();
-		run("chmod a+x " + file.getAbsolutePath());
 	}
 
 	static String	DAEMON			= "\n### JPM BEGIN ###\n" + BINARIES + "/jpm daemon >" + JPM_GLOBAL
@@ -223,4 +188,15 @@ public abstract class Unix extends Platform {
 		// return sb.toString().trim();
 	}
 
+	protected void process(String resource, CommandData data, String file, Map<String,String> map, String... extra) throws Exception {
+		super.process(resource, data, file, map, extra);
+		run("chmod a+x " + file);
+	}
+
+	@Override
+	public void report(Formatter out) throws IOException, Exception {
+		out.format("Name     \t%s\n", getName());
+		out.format("Global   \t%s\n", getGlobal());
+		out.format("Local    \t%s\n", getLocal());
+	}
 }

@@ -1,18 +1,15 @@
 package aQute.jpm.main;
 
-import static aQute.lib.io.IO.*;
-
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
+import java.nio.charset.*;
 import java.security.*;
 import java.security.spec.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.regex.*;
-
-import javax.swing.*;
 
 import aQute.bnd.osgi.*;
 import aQute.bnd.version.*;
@@ -26,12 +23,18 @@ import aQute.lib.data.*;
 import aQute.lib.getopt.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
+import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 import aQute.libg.reporter.*;
+import aQute.service.library.*;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
 
-@Description("Just Another Package Manager (for java™)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service.")
+/**
+ * The command line interface to JPM
+ * 
+ */
+@Description("Just Another Package Manager (for Java)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service. For more information see https://www.jpm4j.org/#/md/jpm")
 public class Main extends ReporterAdapter {
 	static Pattern				ASSIGNMENT		= Pattern.compile("\\s*([-\\w\\d_.]+)\\s*(?:=\\s*([^\\s]+)\\s*)?");
 	public final static Pattern	URL_PATTERN		= Pattern.compile("[a-zA-Z][0-9A-Za-z]{1,8}:.+");
@@ -44,42 +47,44 @@ public class Main extends ReporterAdapter {
 	 * Show installed binaries
 	 */
 
-	/**
-	 * Show platform
-	 */
-	@Arguments(arg = {})
-	@Description("Show platform specific information.")
-	public interface platformOptions extends Options {}
-
 	public interface ModifyService extends ModifyCommand {
+		@Description("Provide arguments to the service when started")
 		String args();
 
+		@Description("Set the log path. Log output will go to this file, otherwise in a reserved directory")
 		String log();
 
+		@Description("Set the log path")
 		String work();
 
+		@Description("Set the user id for the service when running")
 		String user();
 
 		@Description("If set, will be started at boot time after the given services have been started. Specify boot if there are no other dependencies.")
 		List<String> after();
 
+		@Description("Commands executed after the service exits, will run under root.")
 		String epilog();
 
+		@Description("Commands executed just before the service starts while still root.")
 		String prolog();
 	}
 
 	public interface ModifyCommand {
+		@Description("Provide or override the JVM arguments")
 		String jvmargs();
 
+		@Description("Provide the name of the main class used to launch this command or service in fully qualified form, e.g. aQute.main.Main")
 		String main();
 
-		String epilog();
-
-		String prolog();
-
+		@Description("Provide the name of the command or service")
 		String name();
 
+		@Description("Provide the title of the command or service")
 		String title();
+
+		@Description("Collect permission requests and print them at the end of a run. This can provide detailed information about what resources the command is using.")
+		boolean trace();
 
 	}
 
@@ -89,30 +94,31 @@ public class Main extends ReporterAdapter {
 	@Arguments(arg = {
 		"[name]"
 	})
-	@Description("Services")
-	public interface serviceOptions extends Options, ModifyService {
+	@Description("Manage the JPM ervices. Without arguments and options, this wil show all the current services. Careful, if --remove is used all services are removed without any parameters.")
+	public interface ServiceOptions extends Options, ModifyService {
 
+		@Description("Create a new service on an existing artifact")
 		String create();
 
-		boolean force();
-
+		@Description("Remove the given service")
 		boolean remove();
 
+		@Description("Consider staged versions. Normally only masters are considered.")
 		boolean staged();
 
+		@Description("Update the service with the latest master/staged version (see --staged)")
 		boolean update();
-		
+
+		@Description("Specify the coordinates of the service, identifies the main binary")
 		String coordinates();
 	}
 
 	/**
 	 * Commands
 	 */
-	@Arguments(arg = {
-		"..."
-	})
-	@Description("Commands")
-	public interface commandOptions extends Options, ModifyCommand {
+	@Arguments(arg =  "command")
+	@Description("Manage the commands that have been installed so far")
+	public interface CommandOptions extends Options, ModifyCommand {
 		String create();
 
 		boolean remove();
@@ -146,17 +152,27 @@ public class Main extends ReporterAdapter {
 	public interface GCOptions extends Options {}
 
 	JustAnotherPackageManager	jpm;
-	final PrintStream			err	= System.err;
-	final PrintStream			out	= System.out;
+	final PrintStream			err;
+	final PrintStream			out;
 	File						sm;
 	private String				url;
+	static String				encoding	= System.getProperty("file.encoding");
+
+	static {
+		if (encoding == null)
+			encoding = Charset.defaultCharset().name();
+	}
 
 	/**
 	 * Default constructor
+	 * 
+	 * @throws UnsupportedEncodingException
 	 */
 
-	public Main() {
-		super(System.err);
+	public Main() throws UnsupportedEncodingException {
+		super(new PrintStream(System.err, true, encoding));
+		err = new PrintStream(System.err, true, encoding);
+		out = new PrintStream(System.out, true, encoding);
 	}
 
 	/**
@@ -166,15 +182,22 @@ public class Main extends ReporterAdapter {
 	 */
 	public static void main(String args[]) throws Exception {
 		Main jpm = new Main();
-		jpm.run(args);
+		try {
+			jpm.run(args);
+		}
+		finally {
+			jpm.err.flush();
+			jpm.out.flush();
+		}
 	}
 
 	/**
 	 * Main options
 	 */
 
+	@Arguments(arg="cmd ...")
 	@Description("Options valid for all commands. Must be given before sub command")
-	interface jpmOptions extends Options {
+	interface JpmOptions extends Options {
 
 		@Description("Print exception stack traces when they occur.")
 		boolean exceptions();
@@ -186,7 +209,7 @@ public class Main extends ReporterAdapter {
 		boolean pedantic();
 
 		@Description("Specify a new base directory (default working directory).")
-		String base();
+		String Base();
 
 		@Description("Do not return error status for error that match this given regular expression.")
 		String[] failok();
@@ -199,6 +222,12 @@ public class Main extends ReporterAdapter {
 
 		@Description("The directory where to store executables. Can also be set 'jpm settings library.bin=...'")
 		String bin();
+
+		@Description("Wait for a key press, might be useful when you want to see the result before it is overwritten by a next command")
+		boolean key();
+		
+		@Description("Show the release notes")
+		boolean release();
 	}
 
 	/**
@@ -209,14 +238,16 @@ public class Main extends ReporterAdapter {
 	 * @throws InterruptedException
 	 * @throws IOException
 	 */
-	public void _jpm(jpmOptions opts) {
+	@Description("Just Another Package Manager for Java")
+	public void _jpm(JpmOptions opts) throws IOException {
 		try {
 			setExceptions(opts.exceptions());
 			setTrace(opts.trace());
 			setPedantic(opts.pedantic());
+			trace("set the options");
 
-			if (opts.base() != null)
-				base = IO.getFile(base, opts.base());
+			if (opts.Base() != null)
+				base = IO.getFile(base, opts.Base());
 
 			url = opts.library();
 			if (url == null)
@@ -233,9 +264,9 @@ public class Main extends ReporterAdapter {
 			} else
 				homeDir = null;
 
-			if ( homeDir != null) 
+			if (homeDir != null)
 				jpm.setHomeDir(homeDir);
-			
+
 			File binDir;
 			if (opts.bin() != null) {
 				binDir = IO.getFile(base, opts.bin());
@@ -248,9 +279,10 @@ public class Main extends ReporterAdapter {
 			List<String> arguments = opts._();
 
 			if (arguments.isEmpty()) {
-				Formatter f = new Formatter(err);
+				Justif j = new Justif();
+				Formatter f = j.formatter();
 				handler.help(f, this);
-				f.flush();
+				err.println(j.wrap());
 			} else {
 				String cmd = arguments.remove(0);
 				String help = handler.execute(this, cmd, arguments);
@@ -269,6 +301,13 @@ public class Main extends ReporterAdapter {
 		}
 		catch (Throwable t) {
 			exception(t, "Failed %s", t);
+		}
+		finally {
+			// Check if we need to wait for it to finish
+			if (opts.key()) {
+				System.out.println("Hit a key to continue ...");
+				System.in.read();
+			}
 		}
 
 		if (!check(opts.failok())) {
@@ -335,6 +374,7 @@ public class Main extends ReporterAdapter {
 	 * @param opts
 	 *            The options for installing
 	 */
+	@Description("Install an artifact from a url, file, or www.jpm4j.org")
 	public void _install(installOptions opts) throws Exception {
 		if (!jpm.hasAccess()) {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
@@ -342,6 +382,7 @@ public class Main extends ReporterAdapter {
 		}
 
 		ArtifactData target = null;
+		boolean staged = false;
 
 		if (opts.local() != null) {
 
@@ -375,10 +416,18 @@ public class Main extends ReporterAdapter {
 
 				// we've got to check for locally installed files
 				trace("locally installed file found");
-				target.coordinates = "sha:"+key.trim();
+				target.coordinates = "sha:" + key.trim();
 			} else {
-				target = jpm.getCandidate(key, isSha(key) || opts.staged() || key.indexOf('@')>0);
+				staged = isSha(key) || opts.staged() || key.indexOf('@') > 0;
+				target = jpm.getCandidate(key, staged);
 				if (target == null) {
+					if (!staged) {
+						target = jpm.getCandidate(key, true);
+						if (target != null) {
+							error("No candidate %s found, but found staged version(s): %s", key, target);
+							return;
+						}
+					}
 					error("No such candidate %s", key);
 					return;
 				}
@@ -425,8 +474,13 @@ public class Main extends ReporterAdapter {
 			String result = jpm.createCommand(data);
 			if (result != null)
 				error("Command creation failed: %s", result);
-		} else
-			warning("No command found");
+		} else {
+			if (staged)
+				warning("No command found in %s", target.coordinates);
+			else
+				warning("No command found in %s. You could try with --staged to find a staged version?",
+						target.coordinates);
+		}
 
 		if (target.service != null) {
 			target.service.force = opts.force();
@@ -454,37 +508,8 @@ public class Main extends ReporterAdapter {
 		return key != null && key.length() == 40 && key.matches("[\\da-fA-F]{40,40}");
 	}
 
-	/**
-	 * Put a file in the repository:
-	 * 
-	 * <pre>
-	 * put
-	 * </pre>
-	 */
-
-	@Arguments(arg = {
-			"file", "..."
-	})
-	interface putOptions extends Options {
-		boolean install();
-	}
-
-	public void _put(putOptions opts) throws Exception {
-		for (String target : opts._()) {
-			File file = getFile(target);
-			if (file == null) {
-				error("Cannot find file %s", file);
-			} else {
-				if (file.isFile()) {
-					ArtifactData data = jpm.put(file.toURI());
-					trace("Inserted %s", data);
-				} else
-					error("Not a file: %s", file);
-			}
-		}
-	}
-
-	public void _service(serviceOptions opts) throws Exception {
+	@Description("Manage the jpm4j services")
+	public void _service(ServiceOptions opts) throws Exception {
 		if (opts._().isEmpty()) {
 			for (ServiceData sd : jpm.getServices())
 				print(sd);
@@ -528,47 +553,47 @@ public class Main extends ReporterAdapter {
 				error("Create service failed: %s", result);
 			return;
 		}
-		
+
 		if (s == null) {
 			error("No such service: %s", name);
 			return;
 		}
 
 		ServiceData data = s.getServiceData();
-		if (update(data, opts) || opts.coordinates()!=null || opts.update()) {
+		if (update(data, opts) || opts.coordinates() != null || opts.update()) {
 			if (!jpm.hasAccess()) {
 				error("No write access to update service %s", name);
 				return;
 			}
 
-			// 
+			//
 			// Check if we have to update the underlying artifact
 			// This is triggered by --coordinates, which provides
 			// the new coordinates or just --update which reuses the
 			// old coordinates without version
 			//
-			
-			if ( opts.coordinates()!=null || opts.update()) {
+
+			if (opts.coordinates() != null || opts.update()) {
 				String coordinates = opts.coordinates();
-				if ( coordinates == null || coordinates.equals(".")) {
+				if (coordinates == null || coordinates.equals(".")) {
 					coordinates = data.coordinates;
 				}
-				if ( coordinates == null) {
+				if (coordinates == null) {
 					error("No coordinates found in old service record");
 					return;
 				}
-				
+
 				int n = coordinates.indexOf('@');
-				if ( n > 0)
-					coordinates = coordinates.substring(0,n);
-				
+				if (n > 0)
+					coordinates = coordinates.substring(0, n);
+
 				trace("Updating from coordinates: %s", coordinates);
 				ArtifactData target = jpm.getCandidate(coordinates, opts.staged());
-				if ( target == null) {
+				if (target == null) {
 					error("No candidates found for %s (%s)", coordinates, opts.staged() ? "staged" : "only masters");
 					return;
 				}
-				
+
 				data.dependencies.clear();
 				data.dependencies.add(target.file);
 				data.dependencies.addAll(target.dependencies);
@@ -637,6 +662,10 @@ public class Main extends ReporterAdapter {
 			data.title = opts.title();
 			update = true;
 		}
+		if (opts.trace() != data.trace) {
+			data.trace = opts.trace();
+			update = true;
+		}
 		return update;
 	}
 
@@ -645,7 +674,8 @@ public class Main extends ReporterAdapter {
 		out.printf("%-40s (%s) %s%n", sd.name, s.isRunning() ? "runs   " : "stopped", sd.args);
 	}
 
-	public void _command(commandOptions opts) throws Exception {
+	@Description("Manage the jpm4j commands")
+	public void _command(CommandOptions opts) throws Exception {
 
 		if (opts.remove()) {
 			Instructions instrs = new Instructions(opts._());
@@ -684,6 +714,7 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
+	@Description("Clean up any stale data, including any downloaded files not used in any commands")
 	public void _gc(GCOptions opts) throws Exception {
 		jpm.gc();
 	}
@@ -694,6 +725,7 @@ public class Main extends ReporterAdapter {
 	 * @param opts
 	 * @throws Exception
 	 */
+	@Description("Remove jpm from the system by deleting all artifacts and metadata")
 	public void _deinit(deinitOptions opts) throws Exception {
 
 		if (opts._().size() != 0)
@@ -723,32 +755,6 @@ public class Main extends ReporterAdapter {
 			if (args.length > 0 && args[0].equals("daemon"))
 				jpm.daemon();
 			else {
-				try {
-					Method m = System.class.getMethod("console");
-					Object o = m.invoke(null);
-					if (o == null) {
-						Icon icon = new ImageIcon(Main.class.getResource("/images/packages-stack.png"), "JPM");
-						int answer = JOptionPane.showOptionDialog(null, "This is a command line application. Setup?",
-								"Package Manager for Java(r)", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
-								icon, null, null);
-						if (answer == JOptionPane.OK_OPTION) {
-
-							_init(null);
-							if (!isPerfect()) {
-								StringBuilder sb = new StringBuilder();
-								report(sb);
-								JOptionPane.showMessageDialog(null, sb.toString());
-							} else
-								JOptionPane.showMessageDialog(null, "Initialized");
-						}
-						return;
-					}
-				}
-				catch (Throwable t) {
-					// Ignore, happens in certain circumstances, we fallback to
-					// the
-					// command line
-				}
 				CommandLine cl = new CommandLine(this);
 				ExtList<String> list = new ExtList<String>(args);
 				String help = cl.execute(this, "jpm", list);
@@ -767,30 +773,62 @@ public class Main extends ReporterAdapter {
 	 * 
 	 * @throws Exception
 	 */
-	public void _init(@SuppressWarnings("unused")
-	Options opts) throws Exception {
-		String s = System.getProperty("java.class.path");
-		if (s == null || s.indexOf(File.pathSeparator) > 0) {
-			error("Cannot initialize because not clear what the command jar is from java.class.path: %s", s);
-			return;
-		}
+	interface InitOptions extends Options {}
+
+	@Description("Install jpm on the current system")
+	public void _init(InitOptions opts) throws Exception {
 		try {
-			File f = new File(s).getAbsoluteFile();
-			if (f.exists()) {
-				jpm.init();
-				CommandLine cl = new CommandLine(this);
-				cl.execute(this, "install", Arrays.asList("-fl", f.getAbsolutePath()));
-			} else
-				error("Cannot find the jpm jar from %s", f);
+			String s = System.getProperty("java.class.path");
+			if (s == null || s.indexOf(File.pathSeparator) > 0) {
+				error("Cannot initialize because not clear what the command jar is from java.class.path: %s", s);
+				return;
+			}
+			try {
+				File f = new File(s).getAbsoluteFile();
+				if (f.exists()) {
+					jpm.init();
+					CommandLine cl = new CommandLine(this);
+					String help = cl.execute(this, "install", Arrays.asList("-fl", f.getAbsolutePath()));
+					if (help != null)
+						error(help);
+
+				} else
+					error("Cannot find the jpm jar from %s", f);
+			}
+			catch (InvocationTargetException e) {
+				exception(e.getTargetException(), "Could not install jpm, %s", e.getTargetException().getMessage());
+			}
 		}
-		catch (InvocationTargetException e) {
-			exception(e, "Could not install jpm, %s", e.getMessage());
+		catch (Throwable e) {
+			e.printStackTrace();
 		}
 	}
 
-	public void _platform(@SuppressWarnings("unused")
-	platformOptions opts) {
-		out.println(jpm.getPlatform());
+	/**
+	 * Show platform
+	 */
+	@Arguments(arg = {})
+	@Description("Show the name of the platform, or more specific information")
+	public interface PlatformOptions extends Options {
+		@Description("Show detailed information")
+		boolean verbose();
+	}
+
+	/**
+	 * Show the platform info.
+	 * 
+	 * @param opts
+	 * @throws IOException
+	 * @throws Exception
+	 */
+	@Description("Show platform information")
+	public void _platform(PlatformOptions opts) throws IOException, Exception {
+		if (opts.verbose()) {
+			Justif j = new Justif(80, 30, 40, 50, 60);
+			jpm.getPlatform().report(j.formatter());
+			out.append(j.wrap());
+		} else
+			out.println(jpm.getPlatform().getName());
 	}
 
 	/**
@@ -803,6 +841,7 @@ public class Main extends ReporterAdapter {
 		boolean clean();
 	}
 
+	@Description("Start a service")
 	public void _start(startOptions options) throws Exception {
 		if (!jpm.hasAccess()) {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
@@ -838,6 +877,7 @@ public class Main extends ReporterAdapter {
 	 * @param options
 	 * @throws Exception
 	 */
+	@Description("Restart a service")
 	public void _restart(Options options) throws Exception {
 		for (String s : options._()) {
 			Service service = jpm.getService(s);
@@ -871,6 +911,7 @@ public class Main extends ReporterAdapter {
 		boolean continuous();
 	}
 
+	@Description("Trace a service")
 	public void _trace(traceOptions options) throws Exception {
 		List<String> args = options._();
 		String s = args.remove(0);
@@ -901,6 +942,7 @@ public class Main extends ReporterAdapter {
 	 * @param options
 	 * @throws Exception
 	 */
+	@Description("Stop a service")
 	public void _stop(Options options) throws Exception {
 		for (String s : options._()) {
 			Service service = jpm.getService(s);
@@ -932,6 +974,7 @@ public class Main extends ReporterAdapter {
 		boolean continuous();
 	}
 
+	@Description("Status of a service")
 	public void _status(statusOptions options) throws InterruptedException {
 		while (true) {
 			for (String s : options._()) {
@@ -967,11 +1010,23 @@ public class Main extends ReporterAdapter {
 	@Arguments(arg = {})
 	@Description("Show the current version. The qualifier represents the build date.")
 	interface VersionOptions extends Options {
-		
+
 	}
+
+	@Description("Show the current version of jpm")
 	public void _version(VersionOptions options) throws IOException {
-		Manifest m = new Manifest(getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"));
-		out.println(m.getMainAttributes().getValue("Bundle-Version"));
+		Enumeration<URL> urls = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+		while (urls.hasMoreElements()) {
+			URL url = urls.nextElement();
+			trace("found manifest %s", url);
+			Manifest m = new Manifest(url.openStream());
+			String name = m.getMainAttributes().getValue("Bundle-SymbolicName");
+			if (name != null && name.trim().equals("biz.aQute.jpm.run")) {
+				out.println(m.getMainAttributes().getValue("Bundle-Version"));
+				return;
+			}
+		}
+		error("No version found in jar");
 	}
 
 	// /**
@@ -1007,6 +1062,7 @@ public class Main extends ReporterAdapter {
 		boolean extended();
 	}
 
+	@Description("Show the jpm machine keys")
 	public void _keys(KeysOptions opts) throws Exception {
 		boolean any = opts.pem() || opts.extended() || opts.hex();
 
@@ -1063,6 +1119,7 @@ public class Main extends ReporterAdapter {
 
 	}
 
+	@Description("Show the service log")
 	public void _log(logOptions opts) throws Exception {
 
 		String s = opts._().isEmpty() ? null : opts._().get(0);
@@ -1089,25 +1146,30 @@ public class Main extends ReporterAdapter {
 		}
 
 		RandomAccessFile raf = new RandomAccessFile(logFile, "r");
-		long start = Math.max(logFile.length() - 2000, 0);
-		while (true) {
-			long l = raf.length();
-			byte[] buffer = new byte[(int) (l - start)];
-			raf.seek(start);
-			raf.read(buffer);
-			out.write(buffer);
-			start = l;
-			if (!service.isRunning() || !opts.tail())
-				return;
+		try {
+			long start = Math.max(logFile.length() - 2000, 0);
+			while (true) {
+				long l = raf.length();
+				byte[] buffer = new byte[(int) (l - start)];
+				raf.seek(start);
+				raf.read(buffer);
+				out.write(buffer);
+				start = l;
+				if (!service.isRunning() || !opts.tail())
+					return;
 
-			if (l == raf.length())
-				Thread.sleep(100);
+				if (l == raf.length())
+					Thread.sleep(100);
+			}
+		}
+		finally {
+			raf.close();
 		}
 	}
 
 	/**
 	 * Install JPM as a platform daemon that will start the services marked with
-	 * a before (where boot is the canonical before).
+	 * after xxx (where boot is the canonical start).
 	 */
 
 	@Arguments(arg = {})
@@ -1116,6 +1178,7 @@ public class Main extends ReporterAdapter {
 		boolean user();
 	}
 
+	@Description("Install JPM as a platform daemon")
 	public void _register(registerOptions opts) throws Exception {
 		jpm.register(opts.user());
 	}
@@ -1137,6 +1200,7 @@ public class Main extends ReporterAdapter {
 		boolean hex();
 	}
 
+	@Description("Manage user settings of jpm (in ~/.jpm)")
 	public void _settings(settingOptions opts) throws Exception {
 		try {
 			trace("settings %s", opts.clear());
@@ -1243,6 +1307,7 @@ public class Main extends ReporterAdapter {
 		File cacerts();
 	}
 
+	@Description("Install a certificate that is trusted by this VM (persistent for the JVM!)")
 	public void _certificate(CertificateOptions opts) throws Exception {
 		if (!this.jpm.hasAccess())
 			error("Must be administrator");
@@ -1258,6 +1323,7 @@ public class Main extends ReporterAdapter {
 	 * @throws Exception
 	 */
 
+	@Description("Show the candidate revisions for a given program coordinate")
 	public void _candidates(Options opts) throws Exception {
 		for (String key : opts._()) {
 			List<Revision> candidates = jpm.getCandidates(key);
@@ -1270,36 +1336,46 @@ public class Main extends ReporterAdapter {
 
 	void print(Iterable<Revision> revisions) {
 		for (Revision r : revisions) {
-			out.printf("%-40s %s %s\n", jpm.getCoordinates(r), Hex.toHexString(r._id),(r.description == null ? "" : r.description));
+			out.printf("%-40s %s %s\n", jpm.getCoordinates(r), Hex.toHexString(r._id), (r.description == null ? ""
+					: r.description));
 		}
 	}
 
 	void printPrograms(Iterable< ? extends Program> programs) {
-		for (Program p : programs) {
-			out.printf("%-30s %s\n", p.groupId + ":" + p.artifactId, p.wiki);
+		Justif j = new Justif(120, 40, 42, 100);
+		StringBuilder sb = new StringBuilder();
+		Formatter f = new Formatter(sb);
+		try {
+			for (Program p : programs) {
+				if (p.groupId.equals(Library.OSGI_GROUP) || p.groupId.equals(Library.SHA_GROUP))
+					f.format("%s", p.artifactId);
+				else
+					f.format("%s:%s", p.groupId, p.artifactId);
+
+				f.format("\t0-\t1");
+
+				if (p.wiki != null && p.wiki.text != null)
+					sb.append(p.wiki.text.replace('\n', '\f'));
+				else if (p.last != null) {
+					if (p.last.description != null)
+						sb.append(p.last.description.replace('\n', '\f'));
+				}
+				f.format("%n");
+			}
+			j.wrap(sb);
+			out.println(sb);
+		}
+		finally {
+			f.close();
 		}
 	}
 
-	@Arguments(arg = "key...")
-	public interface artifactOptions extends Options {
-		boolean staged();
-	}
-
-	public void _artifact(artifactOptions opts) throws Exception {
-		for (String key : opts._()) {
-			ArtifactData candidate = jpm.getCandidate(key, opts.staged());
-			if (candidate != null) {
-				candidate.sync();
-				out.printf("%s\n", candidate);
-			} else
-				error("no such candidate");
-		}
-	}
 
 	interface findOptions extends Options {
 
 	}
 
+	@Description("Find programs from a query")
 	public void _find(findOptions opts) throws Exception {
 		String q = new ExtList<String>(opts._()).join(" ");
 		Iterable< ? extends Program> programs = jpm.find(q);
@@ -1311,51 +1387,60 @@ public class Main extends ReporterAdapter {
 	 */
 
 	enum Key {
-		HKEY_LOCAL_MACHINE(WinRegistry.HKEY_LOCAL_MACHINE),
-		HKEY_CURRENT_USER(WinRegistry.HKEY_CURRENT_USER);
-		
-		int n;
+		HKEY_LOCAL_MACHINE(WinRegistry.HKEY_LOCAL_MACHINE), HKEY_CURRENT_USER(WinRegistry.HKEY_CURRENT_USER);
+
+		int	n;
+
 		Key(int n) {
 			this.n = n;
 		}
-		
-		public int value() { return n; }
+
+		public int value() {
+			return n;
+		}
 	}
-	@Arguments(arg={"key", "[property]"})
+
+	@Arguments(arg = {
+			"key", "[property]"
+	})
 	interface winregOptions extends Options {
 		boolean localMachine();
 	}
 
+	@Description("Windows specific access to the registry")
 	public void _winreg(winregOptions opts) throws Exception {
 		List<String> _ = opts._();
 		String key = _.remove(0);
 		String property = _.isEmpty() ? null : _.remove(0);
-		int n = opts.localMachine() ?  WinRegistry.HKEY_LOCAL_MACHINE : WinRegistry.HKEY_CURRENT_USER;
-		
+		int n = opts.localMachine() ? WinRegistry.HKEY_LOCAL_MACHINE : WinRegistry.HKEY_CURRENT_USER;
+
 		List<String> keys = WinRegistry.readStringSubKeys(n, key);
-		if ( property == null) {
+		if (property == null) {
 			Map<String,String> map = WinRegistry.readStringValues(n, key);
-			System.out.println(map);
+			out.println(map);
 		} else {
 			WinRegistry.readString(n, key, property);
 		}
 	}
-	
+
 	/**
 	 * Make the setup local
 	 */
-	@Arguments(arg={"user|global"})
-	interface setupOptions extends Options {
-	}
+	@Arguments(arg = {
+		"user|global"
+	})
+	interface setupOptions extends Options {}
+
+	@Description("Make jpm local/global (probably does not work yet)")
 	public void _setup(setupOptions opts) {
 		String type = opts._().remove(0);
-		if ( type.equalsIgnoreCase("user")) {
+		if (type.equalsIgnoreCase("user")) {
 			File bin = IO.getFile("~/.jpm/bin");
-//	TODO		File home = IO.getFile("~/")
-//			settings.put("library.bin", );
+			// TODO File global = IO.getFile("~/")
+			// settings.put("library.bin", );
 		} else {
-			
+
 		}
-		
+
 	}
 }

@@ -38,12 +38,12 @@ public class JPMTest extends TestCase {
 		}
 
 		@Override
-		public String createCommand(CommandData data, String ...strings ) throws Exception {
+		public String createCommand(CommandData data, Map<String,String> map, String ...strings ) throws Exception {
 			return null;
 		}
 
 		@Override
-		public String createService(ServiceData data) throws Exception {
+		public String createService(ServiceData data, Map<String,String> map, String ...strings ) throws Exception {
 			return null;
 		}
 

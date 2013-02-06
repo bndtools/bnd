@@ -15,10 +15,10 @@ public class ArtifactData extends struct {
 	public String		mainClass;
 	public String		description;
 	public List<String>	dependencies	= new ArrayList<String>();		// shas
-
+	public String		title;
 	boolean				busy			= false;
 	public String		file;
-	public String	coordinates;
+	public String		coordinates;
 
 	synchronized void done() {
 		busy = false;
@@ -26,7 +26,7 @@ public class ArtifactData extends struct {
 	}
 
 	public synchronized void sync() throws InterruptedException {
-		while(busy)
+		while (busy)
 			wait();
 	}
 

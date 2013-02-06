@@ -3,6 +3,7 @@ package aQute.jpm.lib;
 import static aQute.lib.io.IO.*;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.security.*;
 import java.util.*;
@@ -15,10 +16,10 @@ import aQute.bnd.header.*;
 import aQute.bnd.version.*;
 import aQute.jpm.platform.*;
 import aQute.lib.base64.*;
+import aQute.lib.converter.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.json.*;
-import aQute.lib.struct.*;
 import aQute.libg.cryptography.*;
 import aQute.library.remote.*;
 import aQute.service.library.*;
@@ -27,10 +28,11 @@ import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
 import aQute.service.library.Library.RevisionRef;
 import aQute.service.reporter.*;
+import aQute.struct.*;
 
 /**
  * JPM is the Java package manager. It manages a local repository in the user
- * home directory and/or a global directory. This class is the main entry point
+ * global directory and/or a global directory. This class is the main entry point
  * for the command line. This program maintains a repository, a list of
  * installed commands, and a list of installed service. It provides the commands
  * to changes these resources. All information is kept in a platform specific
@@ -122,7 +124,8 @@ public class JustAnotherPackageManager {
 		List<CommandData> result = new ArrayList<CommandData>();
 		for (File f : commandDir.listFiles()) {
 			CommandData data = getData(CommandData.class, f);
-			result.add(data);
+			if (data != null)
+				result.add(data);
 		}
 		return result;
 	}
@@ -178,14 +181,26 @@ public class JustAnotherPackageManager {
 	 */
 
 	public String deinit(boolean force) throws Exception {
-
-		if (!repoDir.delete() && !force)
-			return "Not empty";
-
+		for ( CommandData d : getCommands())  {
+			reporter.trace("delete cmd %s", d.name);
+			deleteCommand(d.name);
+		}
+		
+		for ( ServiceData sd : getServices()) {
+			reporter.trace("delete service %s", sd.name);
+			Service s = getService(sd.name);
+			if ( s != null)
+				s.remove();
+		}
+		
+		
+		reporter.trace("delete repo");
 		IO.delete(repoDir);
-		gc();
-
-		IO.delete(platform.getGlobal());
+		gc(); 
+		reporter.trace("delete repo, command, and service dir");
+		IO.delete(repoDir);
+		IO.delete(commandDir);
+		IO.delete(serviceDir);
 		return null;
 	}
 
@@ -231,7 +246,7 @@ public class JustAnotherPackageManager {
 
 		platform.chown(data.user, true, new File(data.sdir));
 
-		String s = platform.createService(data);
+		String s = platform.createService(data, null);
 		if (s == null)
 			storeData(new File(data.sdir, "data"), data);
 		return s;
@@ -250,10 +265,15 @@ public class JustAnotherPackageManager {
 		// return "Invalid command data: " + Data.validate(data);
 
 		if (binDir != null)
-			data.bin = new File(binDir, data.name);
+			data.bin = new File(binDir, data.name).getAbsolutePath();
 
-		
-		String s = platform.createCommand(data, service.getAbsolutePath());
+		Map<String,String> map = null;
+		if ( data.trace ) {
+			map = new HashMap<String,String>();
+			map.put("java.security.manager", "aQute.jpm.service.TraceSecurityManager");
+			reporter.trace("tracing");
+		}
+		String s = platform.createCommand(data, map, service.getAbsolutePath());
 		if (s == null)
 			storeData(new File(commandDir, data.name), data);
 		return s;
@@ -265,7 +285,8 @@ public class JustAnotherPackageManager {
 			throw new IllegalArgumentException("No such command " + name);
 
 		platform.deleteCommand(cmd);
-		IO.deleteWithException(new File(commandDir, name));
+		File tobedel = new File(commandDir, name);
+		IO.deleteWithException(tobedel);
 	}
 
 	public Service getService(String service) throws Exception {
@@ -346,7 +367,8 @@ public class JustAnotherPackageManager {
 			return codec.dec().from(dataFile).get(clazz);
 		}
 		catch (Exception e) {
-			System.out.println(IO.collect(dataFile));
+			e.printStackTrace();
+			System.out.println("Cannot read data file "+dataFile+": " + IO.collect(dataFile));
 			return null;
 		}
 	}
@@ -399,8 +421,10 @@ public class JustAnotherPackageManager {
 				name += "-" + version;
 
 			artifact.name = name;
+
 			artifact.mainClass = main.getValue("Main-Class");
 			artifact.description = main.getValue("Bundle-Description");
+			artifact.title = main.getValue("JPM-Name");
 
 			List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
 			{
@@ -479,6 +503,13 @@ public class JustAnotherPackageManager {
 			data.jvmArgs = attrs.get("jvmargs");
 		data.main = artifact.mainClass;
 		data.title = attrs.get("title");
+
+		if (data.title != null)
+			data.title = artifact.title;
+
+		if (data.title != null)
+			data.title = data.name;
+
 		data.dependencies = artifact.dependencies;
 	}
 
@@ -634,7 +665,7 @@ public class JustAnotherPackageManager {
 				existing.sha = sha;
 				codec.enc().to(meta).put(existing);
 			}
-			StructUtil.copy(existing, data);
+			xcopy(existing, data);
 			reporter.trace("TD = " + data);
 		}
 		finally {
@@ -771,10 +802,12 @@ public class JustAnotherPackageManager {
 		if (ps == null)
 			return null;
 
-		reporter.trace("filter for valid versions");
+		Matcher matcher = COORD_P.matcher(key);
+		String classifier = matcher.matches() ? matcher.group(3) : null;
+		reporter.trace("filter for valid versions, classifier %s", classifier);
 		List<RevisionRef> refs = new ArrayList<RevisionRef>();
 		for (Program p : ps) {
-			RevisionRef selected = selectBest(p.revisions, staged);
+			RevisionRef selected = selectBest(p.revisions, staged, classifier);
 			if (selected != null)
 				refs.add(selected);
 		}
@@ -786,18 +819,18 @@ public class JustAnotherPackageManager {
 		if (refs.size() == 1) {
 			reporter.trace("found 1 program %s:%s", refs.get(0).groupId, refs.get(0).artifactId);
 			RevisionRef r = refs.get(0);
-			
+
 			ArtifactData target = get(r.revision);
-			if ( target == null)
+			if (target == null)
 				target = put(r.url);
-			
+
 			target.coordinates = key;
 			return target;
 		}
 
 		System.out.printf("Multiple candidates for this name, select with its sha\n");
 		for (Program p : ps) {
-			RevisionRef selected = selectBest(p.revisions, staged);
+			RevisionRef selected = selectBest(p.revisions, staged, classifier);
 			if (selected != null) {
 				String desc = selected.description;
 				if (desc == null) {
@@ -813,14 +846,27 @@ public class JustAnotherPackageManager {
 		return null;
 	}
 
-	private RevisionRef selectBest(List<RevisionRef> revisions, boolean staged) {
+	private RevisionRef selectBest(List<RevisionRef> revisions, boolean staged, String classifier) {
 		long date = 0;
 		RevisionRef selected = null;
 		for (RevisionRef r : revisions) {
-			if (r.phase == Phase.MASTER || (r.phase == Phase.STAGING && staged)) {
-				if (selected == null || r.created > selected.created)
-					selected = r;
+			reporter.trace("%s:%s:%s@%s %s", r.groupId, r.artifactId, r.classifier, r.version, classifier);
+			if (r.classifier == null && classifier != null || r.classifier != null && classifier == null) {
+				continue;
 			}
+
+			if (r.classifier == null || classifier == null || classifier.equals(r.classifier)) {
+				if (r.phase == Phase.MASTER || (r.phase == Phase.STAGING && staged)) {
+					if (selected == null || r.created > selected.created)
+						selected = r;
+				}
+			}
+		}
+		if (selected == null) {
+			reporter.trace("no candidate found");
+		} else {
+			reporter.trace("selected %s:%s:%s@%s", selected.groupId, selected.artifactId, selected.classifier,
+					selected.version);
 		}
 		return selected;
 	}
@@ -863,7 +909,6 @@ public class JustAnotherPackageManager {
 	}
 
 	public void setHomeDir(File homeDir) throws IOException {
-		System.out.println("Outdir : " + homeDir);
 		this.homeDir = homeDir;
 		initDirs();
 	}
@@ -875,5 +920,39 @@ public class JustAnotherPackageManager {
 
 	public Platform getPlatform() {
 		return platform;
+	}
+
+	/**
+	 * Copy from the copy method in StructUtil. Did not want to drag that code
+	 * in. maybe this actually should go to struct.
+	 * 
+	 * @param from
+	 * @param to
+	 * @param excludes
+	 * @return
+	 * @throws Exception
+	 */
+	static public <T extends struct> T xcopy(struct from, T to, String... excludes) throws Exception {
+		Arrays.sort(excludes);
+		for (Field f : from.fields()) {
+			if (Arrays.binarySearch(excludes, f.getName()) >= 0)
+				continue;
+
+			Object o = f.get(from);
+			if (o == null)
+				continue;
+
+			Field tof = to.getField(f.getName());
+			if (tof != null)
+				try {
+					tof.set(to, Converter.cnv(tof.getGenericType(), o));
+				}
+				catch (Exception e) {
+					System.out.println("Failed to convert " + f.getName() + " from " + from.getClass() + " to "
+							+ to.getClass() + " value " + o + " exception " + e);
+				}
+		}
+
+		return to;
 	}
 }
