@@ -1,10 +1,9 @@
 Bundle-Version: 				2.1.0.${tstamp;yyyyMMdd-HHmmss}
-Conditional-Package: 			aQute.libg.*, aQute.lib.*,aQute.configurable
+Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
 
 -sub: *.bnd
 
--buildpath:\
-	aQute.libg;version=latest,\
+-buildpath: aQute.libg;version=latest,\
 	ee.j2se;version=${javac.ee},\
 	biz.aQute.bndlib;version=project,\
 	biz.aQute.junit;version=project,\
@@ -14,5 +13,10 @@ Conditional-Package: 			aQute.libg.*, aQute.lib.*,aQute.configurable
 	osgi.core;version=4.1,\
 	junit.osgi,\
 	org.osgi.impl.bundle.bindex,\
-	osgi.r5;version=1.0.1
+	osgi.r5;version=1.0.1,\
+	aQute.library.bndrepo;version=1.1.2
+	
+# About the aQute.library.bndrepo dep. Needed to add them here
+# by hand even though they are in bndlib. However, they are added
+# and we can unfortunately not see those packages ...
 	

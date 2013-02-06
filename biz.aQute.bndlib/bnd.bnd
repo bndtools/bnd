@@ -10,7 +10,15 @@ Bundle-DocURL:          		http://www.aQute.biz/Code/Bnd
 Bundle-Name: 					bndlib
 Bundle-Description:				A Swiss Army Knife for OSGi
 Bundle-SymbolicName: 	        biz.aQute.bndlib
-Private-Package: 				aQute.bnd.*, aQute.lib.*, org.osgi.service.component.annotations
+
+Private-Package: 				\
+	aQute.bnd.*, \
+	aQute.lib.*, \
+	org.osgi.service.component.annotations,\
+	aQute.service.library,\
+	aQute.struct, \
+	aQute.library.*
+	
 Export-Package: aQute.bnd.annotation.*,\
 	aQute.bnd.osgi,\
 	aQute.bnd.osgi.resource,\
@@ -38,7 +46,8 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	aQute.libg;version=project,\
 	osgi.core;version=4.1,\
 	osgi.r5;version=1.0.1,\
-	ee.j2se;version=${javac.ee}
+	ee.j2se;version=${javac.ee},\
+	aQute.library.bndrepo;version=1.1.2
 
 Bundle-Version: 2.1.0.${tstamp;yyyyMMdd-HHmmss}
 Import-Package: junit.framework;resolution:=optional,\
