@@ -14,6 +14,7 @@ Bundle-SymbolicName: 	        biz.aQute.bndlib
 Private-Package: 				\
 	aQute.bnd.*, \
 	aQute.lib.*;-split-package:=first, \
+	aQute.libg.*;-split-package:=first, \
 	org.osgi.service.component.annotations,\
 	aQute.service.library,\
 	aQute.struct, \
