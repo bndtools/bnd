@@ -74,19 +74,35 @@ public class Decoder implements Closeable {
 	}
 
 	public <T> T get(Class<T> clazz) throws Exception {
-		return (T) codec.decode(clazz, this);
+		try {
+			return (T) codec.decode(clazz, this);
+		} finally {
+			close();
+		}
 	}
 
 	public Object get(Type type) throws Exception {
+		try {
 		return codec.decode(type, this);
+		} finally {
+			close();
+		}
 	}
 
 	public Object get() throws Exception {
+		try {
 		return codec.decode(null, this);
+		} finally {
+			close();
+		}
 	}
 
 	public <T> T get(TypeReference<T> ref) throws Exception {
+		try {
 		return (T) codec.decode(ref.getType(), this);
+		} finally {
+			close();
+		}
 	}
 
 	int read() throws Exception {
