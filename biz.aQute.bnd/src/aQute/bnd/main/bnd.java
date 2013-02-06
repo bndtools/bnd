@@ -231,9 +231,9 @@ public class bnd extends Processor {
 			trace("rewritten %s", arguments);
 
 			if (arguments.isEmpty()) {
-				Formatter f = new Formatter(err);
-				handler.help(f, this);
-				f.flush();
+				Justif f = new Justif();
+				handler.help(f.formatter(), this);
+				err.append(f.wrap());
 			} else {
 				String cmd = arguments.remove(0);
 				String help = handler.execute(this, cmd, arguments);

@@ -3,10 +3,18 @@ package aQute.lib.justif;
 import java.util.*;
 
 public class Justif {
-	int[]	tabs;
+	final int[]			tabs;
+	final int				width;
+	StringBuilder	sb	= new StringBuilder();
+	Formatter		f	= new Formatter(sb);
 
-	public Justif(@SuppressWarnings("unused") int width, int... tabs) {
-		this.tabs = tabs;
+	public Justif(int width, int... tabs) {
+		this.tabs = tabs == null || tabs.length == 0 ? new int[] {30,40, 50, 60, 70} : tabs;
+		this.width = width == 0 ? 73 : width;
+	}
+
+	public Justif() {
+		this(0);
 	}
 
 	/**
@@ -43,6 +51,10 @@ public class Justif {
 				case ' ' :
 					if (begin)
 						indent++;
+					else {
+						while (r < sb.length() && sb.charAt(r) == ' ')
+							sb.delete(r, r + 1);
+					}
 					lastSpace = r - 1;
 					linelength++;
 					break;
@@ -76,15 +88,21 @@ public class Justif {
 					break;
 
 				case '\f' :
-					linelength = 100000; // force a break
-					lastSpace = r - 1;
-
-					//$FALL-THROUGH$
+					sb.setCharAt(r - 1, '\n');
+					for (int i = 0; i < indent; i++) {
+						sb.insert(r, ' ');
+					}
+					r += indent;
+					while (r < sb.length() && sb.charAt(r) == ' ')
+						sb.delete(r, r + 1);
+					linelength = 0;
+					lastSpace = 0;
+					break;
 
 				default :
 					linelength++;
 					begin = false;
-					if (lastSpace != 0 && linelength > 60) {
+					if (lastSpace != 0 && linelength > width) {
 						sb.setCharAt(lastSpace, '\n');
 						linelength = 0;
 
@@ -99,4 +117,12 @@ public class Justif {
 		}
 	}
 
+	public String wrap() {
+		wrap(sb);
+		return sb.toString();
+	}
+	
+	public Formatter formatter() {
+		return f;
+	}
 }
