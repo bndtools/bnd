@@ -13,7 +13,7 @@ Bundle-SymbolicName: 	        biz.aQute.bndlib
 
 Private-Package: 				\
 	aQute.bnd.*, \
-	aQute.lib.*, \
+	aQute.lib.*;-split-package:=first, \
 	org.osgi.service.component.annotations,\
 	aQute.service.library,\
 	aQute.struct, \
@@ -37,7 +37,7 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.service.reporter,\
 	aQute.bnd.maven.support
 
-Conditional-Package:	        aQute.libg.*, aQute.lib.*, aQute.service.*, aQute.configurable
+Conditional-Package:	        aQute.service.*, aQute.configurable
 Include-Resource: 				LICENSE, img/=img/
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 
