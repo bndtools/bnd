@@ -1,3 +1,0 @@
-#!/bin/sh
-java -jar /Library/Java/PackageManager/bin/biz.aQute.jpm.run.jar "$@"
-

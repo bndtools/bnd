@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-RESULT=`/usr/bin/open '/Library/Java/PackageManager/bin/jpm.jar'`
-
-exit 0
