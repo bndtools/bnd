@@ -17,7 +17,8 @@ public class Decoder implements Closeable {
 	String				encoding	= "UTF-8";
 
 	boolean				strict;
-	boolean inflate;
+	boolean				inflate;
+	boolean				keepOpen	= false;
 
 	Decoder(JSONCodec codec) {
 		this.codec = codec;
@@ -28,10 +29,10 @@ public class Decoder implements Closeable {
 	}
 
 	public Decoder from(InputStream in) throws Exception {
-	
-		if ( inflate)
-			in  = new InflaterInputStream(in);
-		
+
+		if (inflate)
+			in = new InflaterInputStream(in);
+
 		return from(new InputStreamReader(in, encoding));
 	}
 
@@ -76,35 +77,48 @@ public class Decoder implements Closeable {
 	public <T> T get(Class<T> clazz) throws Exception {
 		try {
 			return (T) codec.decode(clazz, this);
-		} finally {
-			close();
+		}
+		finally {
+			if (!keepOpen)
+				close();
 		}
 	}
 
 	public Object get(Type type) throws Exception {
 		try {
-		return codec.decode(type, this);
-		} finally {
-			close();
+			return codec.decode(type, this);
+		}
+		finally {
+			if (!keepOpen)
+				close();
 		}
 	}
 
 	public Object get() throws Exception {
 		try {
-		return codec.decode(null, this);
-		} finally {
-			close();
+			return codec.decode(null, this);
+		}
+		finally {
+			if (!keepOpen)
+				close();
 		}
 	}
 
 	public <T> T get(TypeReference<T> ref) throws Exception {
 		try {
-		return (T) codec.decode(ref.getType(), this);
-		} finally {
-			close();
+			return (T) codec.decode(ref.getType(), this);
+		}
+		finally {
+			if (!keepOpen)
+				close();
 		}
 	}
 
+	public Decoder keepOpen() {
+		keepOpen = true;
+		return this;
+	}
+	
 	int read() throws Exception {
 		current = reader.read();
 		if (digest != null) {
@@ -162,9 +176,9 @@ public class Decoder implements Closeable {
 			extra = new HashMap<String,Object>();
 		return extra;
 	}
-	
+
 	public Decoder inflate() {
-		if ( reader != null)
+		if (reader != null)
 			throw new IllegalStateException("Reader already set, inflate must come before from()");
 		inflate = true;
 		return this;

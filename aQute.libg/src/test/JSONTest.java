@@ -15,23 +15,20 @@ import aQute.libg.map.*;
 public class JSONTest extends TestCase {
 	JSONCodec	codec	= new JSONCodec();
 
-	
-	
 	/**
 	 * test the hex/base64 encoding
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	public void testBase64AndHex() throws Exception {
 		byte[] b = "abc".getBytes("UTF-8");
-		
-		assertTrue( Arrays.equals(b, codec.dec().from("\" 616263\"").get(byte[].class)));
-		assertTrue( Arrays.equals(b, codec.dec().from("\"61 62 63\"").get(byte[].class)));
-		assertTrue( Arrays.equals(b, codec.dec().from("\"YWJj\"").get(byte[].class)));
-		assertTrue( Arrays.equals(b, codec.dec().from("\" Y W J j\"").get(byte[].class)));
+
+		assertTrue(Arrays.equals(b, codec.dec().from("\" 616263\"").get(byte[].class)));
+		assertTrue(Arrays.equals(b, codec.dec().from("\"61 62 63\"").get(byte[].class)));
+		assertTrue(Arrays.equals(b, codec.dec().from("\"YWJj\"").get(byte[].class)));
+		assertTrue(Arrays.equals(b, codec.dec().from("\" Y W J j\"").get(byte[].class)));
 	}
-	
-	
-	
+
 	/**
 	 * Test the use of inflate/deflate
 	 */
@@ -46,19 +43,18 @@ public class JSONTest extends TestCase {
 		X x = new X();
 		x.hello = "hello";
 		x.value = 42;
-		x.list  = Arrays.asList("1", "2");
-		
+		x.list = Arrays.asList("1", "2");
+
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		codec.enc().deflate().to(bout).put(x).close();
 		byte[] data = bout.toByteArray();
 
-		
 		X xx = codec.dec().inflate().from(new ByteArrayInputStream(data)).get(X.class);
 		assertNotNull(xx);
 		assertEquals("hello", xx.hello);
 		assertEquals(42, xx.value);
 		assertEquals(Arrays.asList("1", "2"), xx.list);
-		
+
 	}
 
 	public void testToDictionary() throws Exception {
@@ -554,15 +550,20 @@ public class JSONTest extends TestCase {
 	 */
 
 	public static void testRepeat() throws Exception {
-		Decoder dec = new JSONCodec().dec();
-		StringReader r = new StringReader("1\t2\r3\n 4      5   \n\r");
-		assertEquals((Integer) 1, dec.from(r).get(Integer.class));
-		assertEquals((Integer) 2, dec.get(Integer.class));
-		assertEquals((Integer) 3, dec.get(Integer.class));
-		assertEquals((Integer) 4, dec.get(Integer.class));
-		assertFalse(dec.isEof());
-		assertEquals((Integer) 5, dec.get(Integer.class));
-		assertTrue(dec.isEof());
+		Decoder dec = new JSONCodec().dec().keepOpen();
+		try {
+			StringReader r = new StringReader("1\t2\r3\n 4      5   \n\r");
+			assertEquals((Integer) 1, dec.from(r).get(Integer.class));
+			assertEquals((Integer) 2, dec.get(Integer.class));
+			assertEquals((Integer) 3, dec.get(Integer.class));
+			assertEquals((Integer) 4, dec.get(Integer.class));
+			assertFalse(dec.isEof());
+			assertEquals((Integer) 5, dec.get(Integer.class));
+			assertTrue(dec.isEof());
+		}
+		finally {
+			dec.close();
+		}
 
 	}
 
@@ -657,13 +658,18 @@ public class JSONTest extends TestCase {
 		byte[] original = enc.digest();
 		String string = enc.put(original).append("\n").toString();
 
-		Decoder dec = new JSONCodec().dec();
-		String x = dec.mark().from(string).get(String.class);
-		assertEquals("Hello World", x);
-		byte read[] = dec.digest();
-		byte read2[] = dec.get(byte[].class);
-		assertTrue(Arrays.equals(original, read));
-		assertTrue(Arrays.equals(read, read2));
+		Decoder dec = new JSONCodec().dec().keepOpen();
+		try {
+			String x = dec.mark().from(string).get(String.class);
+			assertEquals("Hello World", x);
+			byte read[] = dec.digest();
+			byte read2[] = dec.get(byte[].class);
+			assertTrue(Arrays.equals(original, read));
+			assertTrue(Arrays.equals(read, read2));
+		}
+		finally {
+			dec.close();
+		}
 	}
 
 	/**
