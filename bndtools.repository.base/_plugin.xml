@@ -10,6 +10,7 @@
          paths="templates/cnfs/default"
          priority="15"
          managed="ext/.*,plugins/.*,build-template.xml"
+         ignores="/cache/"
          version="0"
       />
    </extension>
