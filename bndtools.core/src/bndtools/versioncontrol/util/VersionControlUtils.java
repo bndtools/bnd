@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import bndtools.Logger;
 import bndtools.api.ILogger;
 import bndtools.api.ProjectPaths;
+import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
 import bndtools.versioncontrol.VersionControlSystem;
 
@@ -60,8 +61,8 @@ public class VersionControlUtils {
             throw new IllegalArgumentException("Can't get the version control system to use for a null project");
         }
 
-        boolean generateIgnoreFiles = true; // FIXME get the preferences setting
-        if (!generateIgnoreFiles) {
+        BndPreferences prefs = new BndPreferences();
+        if (!prefs.getVcsCreateIgnoreFiles()) {
             /* the preferences say 'never generate ignore files': return null */
             return null;
         }
@@ -80,8 +81,7 @@ public class VersionControlUtils {
          * to use
          */
 
-        VersionControlSystem vcs = VersionControlSystem.GIT; // FIXME get the preferences setting
-        return vcs;
+        return VersionControlSystem.reverseOrdinal(prefs.getVcsVcs());
     }
 
     /**
