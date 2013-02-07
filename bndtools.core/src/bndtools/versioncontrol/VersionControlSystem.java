@@ -58,6 +58,10 @@ public enum VersionControlSystem {
         return reverseOrdinalMap.get(Integer.valueOf(index));
     }
 
+    /*
+     * START of code to modify to add version control systems
+     */
+
     /**
      * @return True when the version control system can store empty directories, false otherwise
      * @throws IllegalArgumentException
@@ -141,6 +145,10 @@ public enum VersionControlSystem {
         logger.logError("Unknown repository provider ID encountered: " + repositoryProviderId, null);
         return null;
     }
+
+    /*
+     * END of code to modify to add version control systems
+     */
 
     /**
      * Sanitise a Git ignore entry (a path) so that it is a properly formatted ignore entry in Git format.
