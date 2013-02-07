@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.team.core.RepositoryProvider;
 
 import bndtools.Logger;
 import bndtools.api.ILogger;
@@ -67,9 +68,9 @@ public class VersionControlUtils {
             return null;
         }
 
-        boolean versionControlDetected = false; // FIXME detect whether the project already uses version control
-        if (versionControlDetected) {
-            VersionControlSystem vcs = null; // FIXME detect the version control system for the project
+        RepositoryProvider repositoryProvider = RepositoryProvider.getProvider(javaProject.getProject());
+        if (repositoryProvider != null) {
+            VersionControlSystem vcs = VersionControlSystem.fromRepositoryProviderId(repositoryProvider.getID());
             if (vcs != null) {
                 return vcs;
             }

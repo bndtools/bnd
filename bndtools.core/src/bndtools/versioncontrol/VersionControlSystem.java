@@ -3,11 +3,17 @@ package bndtools.versioncontrol;
 import java.util.Map;
 import java.util.TreeMap;
 
+import bndtools.Logger;
+import bndtools.api.ILogger;
+
 /**
  * Supported version control systems
  */
 public enum VersionControlSystem {
     GIT("Git");
+
+    /** the logger */
+    private static final ILogger logger = Logger.getLogger();
 
     /**
      * Constructor.
@@ -118,6 +124,22 @@ public enum VersionControlSystem {
         default :
             throw new IllegalArgumentException("Unknown version control system " + this.getName());
         }
+    }
+
+    /**
+     * Determine the version control system from a repository provider ID
+     * 
+     * @param repositoryProviderId
+     *            the repository provider ID
+     * @return the version control system, or null in case the repository provider ID is unknown
+     */
+    public static VersionControlSystem fromRepositoryProviderId(String repositoryProviderId) {
+        if ("org.eclipse.egit.core.GitProvider".equals(repositoryProviderId)) {
+            return GIT;
+        }
+
+        logger.logError("Unknown repository provider ID encountered: " + repositoryProviderId, null);
+        return null;
     }
 
     /**

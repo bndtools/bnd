@@ -65,6 +65,7 @@ eclipse.deps: \
 	org.eclipse.jdt.ui,\
 	org.eclipse.osgi,\
 	org.eclipse.core.commands,\
+	org.eclipse.team.core,\
 	org.eclipse.ui.forms,\
 	org.eclipse.ui.workbench.texteditor,\
 	org.eclipse.ui.editors,\
