@@ -10,57 +10,11 @@ import bndtools.api.ILogger;
  * Supported version control systems
  */
 public enum VersionControlSystem {
-    GIT("Git");
-
-    /** the logger */
-    private static final ILogger logger = Logger.getLogger();
-
-    /**
-     * Constructor.
-     * 
-     * @param name
-     *            The friendly name of the version control system
-     */
-    private VersionControlSystem(String name) {
-        this.name = name;
-    }
-
-    /** The friendly name of the version control system */
-    private String name;
-
-    /**
-     * @return The friendly name of the version control system
-     */
-    public String getName() {
-        return name;
-    }
-
-    /** a map for the reverseOrdinal function */
-    private static final Map<Integer,VersionControlSystem> reverseOrdinalMap;
-
-    /** initialise the reverse ordinal map */
-    static {
-        reverseOrdinalMap = new TreeMap<Integer,VersionControlSystem>();
-        VersionControlSystem[] vcsEntries = VersionControlSystem.values();
-        for (VersionControlSystem vcsEntry : vcsEntries) {
-            reverseOrdinalMap.put(Integer.valueOf(vcsEntry.ordinal()), vcsEntry);
-        }
-    }
-
-    /**
-     * Performs a reverse ordinal lookup.
-     * 
-     * @param index
-     *            the ordinal of the enum
-     * @return the corresponding enum, or null when not found
-     */
-    public static VersionControlSystem reverseOrdinal(int index) {
-        return reverseOrdinalMap.get(Integer.valueOf(index));
-    }
-
     /*
      * START of code to modify to add version control systems
      */
+
+    GIT("Git");
 
     /**
      * @return True when the version control system can store empty directories, false otherwise
@@ -149,6 +103,52 @@ public enum VersionControlSystem {
     /*
      * END of code to modify to add version control systems
      */
+
+    /** the logger */
+    private static final ILogger logger = Logger.getLogger();
+
+    /**
+     * Constructor.
+     * 
+     * @param name
+     *            The friendly name of the version control system
+     */
+    private VersionControlSystem(String name) {
+        this.name = name;
+    }
+
+    /** The friendly name of the version control system */
+    private String name;
+
+    /**
+     * @return The friendly name of the version control system
+     */
+    public String getName() {
+        return name;
+    }
+
+    /** a map for the reverseOrdinal function */
+    private static final Map<Integer,VersionControlSystem> reverseOrdinalMap;
+
+    /** initialise the reverse ordinal map */
+    static {
+        reverseOrdinalMap = new TreeMap<Integer,VersionControlSystem>();
+        VersionControlSystem[] vcsEntries = VersionControlSystem.values();
+        for (VersionControlSystem vcsEntry : vcsEntries) {
+            reverseOrdinalMap.put(Integer.valueOf(vcsEntry.ordinal()), vcsEntry);
+        }
+    }
+
+    /**
+     * Performs a reverse ordinal lookup.
+     * 
+     * @param index
+     *            the ordinal of the enum
+     * @return the corresponding enum, or null when not found
+     */
+    public static VersionControlSystem reverseOrdinal(int index) {
+        return reverseOrdinalMap.get(Integer.valueOf(index));
+    }
 
     /**
      * Sanitise a Git ignore entry (a path) so that it is a properly formatted ignore entry in Git format.
