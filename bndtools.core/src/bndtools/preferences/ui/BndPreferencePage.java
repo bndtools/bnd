@@ -22,6 +22,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import aQute.bnd.build.Project;
 import bndtools.preferences.BndPreferences;
 import bndtools.utils.ModificationLock;
+import bndtools.versioncontrol.VersionControlSystem;
 import bndtools.wizards.workspace.CnfSetupWizard;
 
 public class BndPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
@@ -37,6 +38,8 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private boolean warnExistingLaunch = true;
     private int buildLogging = 0;
     private boolean editorOpenSourceTab = false;
+    private boolean vcsCreateIgnoreFiles = true;
+    private int vcsVcs = VersionControlSystem.GIT.ordinal();
 
     @Override
     protected Control createContents(Composite parent) {
@@ -92,6 +95,20 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         final Button btnEditorOpenSourceTab = new Button(editorGroup, SWT.CHECK);
         btnEditorOpenSourceTab.setText(Messages.BndPreferencePage_btnEditorOpenSourceTab);
 
+        Group vcsGroup = new Group(composite, SWT.NONE);
+        vcsGroup.setText(Messages.BndPreferencePage_vcsGroup_text);
+
+        final Button btnVcsCreateIgnoreFiles = new Button(vcsGroup, SWT.CHECK);
+        btnVcsCreateIgnoreFiles.setText(Messages.BndPreferencePage_btnVcsCreateIgnoreFiles_text);
+
+        final Combo cmbVcs = new Combo(vcsGroup, SWT.READ_ONLY);
+        VersionControlSystem[] vcsEntries = VersionControlSystem.values();
+        String[] vcsNames = new String[vcsEntries.length];
+        for (int i = 0; i < vcsEntries.length; i++) {
+            vcsNames[i] = vcsEntries[i].getName();
+        }
+        cmbVcs.setItems(vcsNames);
+
         // Load Data
         if (MessageDialogWithToggle.ALWAYS.equals(enableSubs)) {
             btnAlways.setSelection(true);
@@ -112,6 +129,8 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         btnWarnExistingLaunch.setSelection(warnExistingLaunch);
         cmbBuildLogging.select(buildLogging);
         btnEditorOpenSourceTab.setSelection(editorOpenSourceTab);
+        btnVcsCreateIgnoreFiles.setSelection(vcsCreateIgnoreFiles);
+        cmbVcs.select(vcsVcs);
 
         // Listeners
         SelectionAdapter adapter = new SelectionAdapter() {
@@ -172,6 +191,18 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
                 editorOpenSourceTab = btnEditorOpenSourceTab.getSelection();
             }
         });
+        btnVcsCreateIgnoreFiles.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                vcsCreateIgnoreFiles = btnVcsCreateIgnoreFiles.getSelection();
+            }
+        });
+        cmbVcs.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                vcsVcs = cmbVcs.getSelectionIndex();
+            }
+        });
 
         // Layout
         GridLayout layout;
@@ -213,6 +244,9 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         layout.verticalSpacing = 10;
         editorGroup.setLayout(layout);
 
+        vcsGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+        vcsGroup.setLayout(new GridLayout(2, false));
+        cmbVcs.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         return composite;
     }
 
@@ -225,6 +259,8 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         prefs.setWarnExistingLaunch(warnExistingLaunch);
         prefs.setBuildLogging(buildLogging);
         prefs.setEditorOpenSourceTab(editorOpenSourceTab);
+        prefs.setVcsCreateIgnoreFiles(vcsCreateIgnoreFiles);
+        prefs.setVcsVcs(vcsVcs);
 
         return true;
     }
@@ -238,5 +274,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         warnExistingLaunch = prefs.getWarnExistingLaunches();
         buildLogging = prefs.getBuildLogging();
         editorOpenSourceTab = prefs.getEditorOpenSourceTab();
+        vcsCreateIgnoreFiles = prefs.getVcsCreateIgnoreFiles();
+        vcsVcs = prefs.getVcsVcs();
     }
 }

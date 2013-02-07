@@ -24,6 +24,8 @@ public class Messages extends NLS {
     public static String BndPreferencePage_lblBuildLogging_text;
     public static String BndPreferencePage_grpLaunching_text;
     public static String BndPreferencePage_btnWarnExistingLaunch;
+    public static String BndPreferencePage_vcsGroup_text;
+    public static String BndPreferencePage_btnVcsCreateIgnoreFiles_text;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

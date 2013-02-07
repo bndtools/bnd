@@ -3,6 +3,7 @@ package bndtools.preferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import bndtools.Plugin;
+import bndtools.versioncontrol.VersionControlSystem;
 
 public class BndPreferences {
 
@@ -14,14 +15,18 @@ public class BndPreferences {
     private static final String PREF_HIDE_WARNING_EXTERNAL_FILE = "hideExternalFileWarning";
     private static final String PREF_BUILD_LOGGING = "buildLogging";
     private static final String PREF_EDITOR_OPEN_SOURCE_TAB = "editorOpenSourceTab";
+    private static final String PREF_VCS_CREATE_IGNORE_FILES = "vcsCreateIgnoreFiles";
+    private static final String PREF_VCS_VCS = "vcsVcs";
 
-    private IPreferenceStore store;
+    private final IPreferenceStore store;
 
     public BndPreferences() {
         store = Plugin.getDefault().getPreferenceStore();
 
         // Defaults...
         store.setDefault(PREF_WARN_EXISTING_LAUNCH, true);
+        store.setDefault(PREF_VCS_CREATE_IGNORE_FILES, true);
+        store.setDefault(PREF_VCS_VCS, VersionControlSystem.GIT.ordinal());
     }
 
     public void setNoAskPackageInfo(boolean noAskPackageInfo) {
@@ -90,5 +95,21 @@ public class BndPreferences {
 
     public boolean getEditorOpenSourceTab() {
         return store.getBoolean(PREF_EDITOR_OPEN_SOURCE_TAB);
+    }
+
+    public void setVcsCreateIgnoreFiles(boolean vcsCreateIgnoreFiles) {
+        store.setValue(PREF_VCS_CREATE_IGNORE_FILES, vcsCreateIgnoreFiles);
+    }
+
+    public boolean getVcsCreateIgnoreFiles() {
+        return store.getBoolean(PREF_VCS_CREATE_IGNORE_FILES);
+    }
+
+    public void setVcsVcs(int vcs) {
+        store.setValue(PREF_VCS_VCS, vcs);
+    }
+
+    public int getVcsVcs() {
+        return store.getInt(PREF_VCS_VCS);
     }
 }
