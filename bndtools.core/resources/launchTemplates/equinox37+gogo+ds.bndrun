@@ -14,3 +14,4 @@
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
 	osgi.identity;filter:='(&(osgi.identity=osgi.cmpn)(version>=4.2))'
+-resolve.effective: active
