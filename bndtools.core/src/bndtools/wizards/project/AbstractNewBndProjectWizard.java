@@ -92,7 +92,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
      * 
      * @throws CoreException
      */
-    protected void processGeneratedProject(BndEditModel bndModel, IProject project, IProgressMonitor monitor) throws CoreException {
+    protected void processGeneratedProject(BndEditModel bndModel, IJavaProject project, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 3);
 
         Document document = new Document("");
@@ -105,14 +105,14 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         } catch (UnsupportedEncodingException e) {
             return;
         }
-        IFile bndBndFile = project.getFile(Project.BNDFILE);
+        IFile bndBndFile = project.getProject().getFile(Project.BNDFILE);
         if (bndBndFile.exists()) {
             bndBndFile.setContents(bndInput, false, false, progress.newChild(1));
         } else {
             bndBndFile.create(bndInput, false, progress.newChild(1));
         }
 
-        IFile buildXmlFile = project.getFile("build.xml");
+        IFile buildXmlFile = project.getProject().getFile("build.xml");
         InputStream buildXmlInput = getClass().getResourceAsStream("template_bnd_build.xml");
         try {
             if (buildXmlFile.exists()) {
@@ -126,11 +126,11 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             } catch (IOException e) {}
         }
 
-        BndProject proj = generateBndProject(project, progress.newChild(1));
+        BndProject proj = generateBndProject(project.getProject(), progress.newChild(1));
 
         progress.setWorkRemaining(proj.getResources().size());
         for (Map.Entry<String,URL> resource : proj.getResources().entrySet()) {
-            importResource(project, resource.getKey(), resource.getValue(), progress.newChild(1));
+            importResource(project.getProject(), resource.getKey(), resource.getValue(), progress.newChild(1));
         }
     }
 
@@ -178,7 +178,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                             // Make changes to the project
                             final IWorkspaceRunnable op = new IWorkspaceRunnable() {
                                 public void run(IProgressMonitor monitor) throws CoreException {
-                                    processGeneratedProject(bndModel, javaProj.getProject(), monitor);
+                                    processGeneratedProject(bndModel, javaProj, monitor);
                                 }
                             };
                             javaProj.getProject().getWorkspace().run(op, progress.newChild(2));
