@@ -38,11 +38,15 @@ import org.eclipse.ui.ide.IDE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.Document;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.editor.model.BndProject;
 import bndtools.utils.FileUtils;
+import bndtools.versioncontrol.util.VersionControlUtils;
 
 abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
+    private static final ILogger logger = Logger.getLogger();
 
     protected final NewBndProjectWizardPageOne pageOne;
     protected final NewJavaProjectWizardPageTwo pageTwo;
@@ -131,6 +135,13 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         progress.setWorkRemaining(proj.getResources().size());
         for (Map.Entry<String,URL> resource : proj.getResources().entrySet()) {
             importResource(project.getProject(), resource.getKey(), resource.getValue(), progress.newChild(1));
+        }
+
+        try {
+            VersionControlUtils.createDefaultProjectIgnores(project);
+            VersionControlUtils.addToIgnoreFile(project, null, "/generated/");
+        } catch (IOException e) {
+            logger.logError("Unable to create ignore file(s) for project " + project.getProject().getName(), e);
         }
     }
 
