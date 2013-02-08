@@ -596,7 +596,7 @@ public class BndEditModel {
 	}
 
 	public void setRunBundles(List< ? extends VersionedClause> paths) {
-		List<VersionedClause> oldValue = getBuildPath();
+		List<VersionedClause> oldValue = getRunBundles();
 		doSetObject(aQute.bnd.osgi.Constants.RUNBUNDLES, oldValue, paths, headerClauseListFormatter);
 	}
 
