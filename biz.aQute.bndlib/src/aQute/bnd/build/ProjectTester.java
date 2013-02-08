@@ -10,6 +10,7 @@ public abstract class ProjectTester {
 	final List<String>			tests		= new ArrayList<String>();
 	File						reportDir;
 	boolean						continuous	= true;
+	File						cwd;
 
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
@@ -60,6 +61,14 @@ public abstract class ProjectTester {
 
 	public void setContinuous(boolean b) {
 		this.continuous = b;
+	}
+	
+	public File getCwd() {
+		return cwd;
+	}
+	
+	public void setCwd(File dir) {
+		this.cwd = dir;
 	}
 
 	public boolean prepare() throws Exception {

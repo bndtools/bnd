@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.osgi.framework.Constants;
@@ -21,7 +22,9 @@ import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.deployer.repository.CapabilityIndex;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 
@@ -31,7 +34,7 @@ public class FrameworkResourceRepository implements Repository {
     private final Resource framework;
     private final EE ee;
 
-    public FrameworkResourceRepository(Resource frameworkResource, EE ee) {
+    public FrameworkResourceRepository(Resource frameworkResource, EE ee, List<ExportedPackage> sysPkgsExtra, Parameters sysCapsExtraParams) {
         this.framework = frameworkResource;
         this.ee = ee;
         capIndex.addResource(frameworkResource);
@@ -51,6 +54,35 @@ public class FrameworkResourceRepository implements Repository {
 
         // Add JRE packages
         loadJREPackages();
+
+        // Add system.packages.extra
+        if (sysPkgsExtra != null)
+            for (ExportedPackage sysPkg : sysPkgsExtra) {
+                CapReqBuilder builder = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
+                builder.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, sysPkg.getName());
+                String versionStr = sysPkg.getVersionString();
+                Version version = versionStr != null ? new Version(versionStr) : Version.emptyVersion;
+                builder.addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+                Capability cap = builder.setResource(framework).buildCapability();
+                capIndex.addCapability(cap);
+            }
+
+        // Add system capabilities extra
+        if (sysCapsExtraParams != null) {
+            for (Entry<String,Attrs> entry : sysCapsExtraParams.entrySet()) {
+                CapReqBuilder builder = new CapReqBuilder(entry.getKey());
+                for (String attrKey : entry.getValue().keySet()) {
+                    if (attrKey.endsWith(":")) {
+                        String directiveKey = attrKey.substring(0, attrKey.length() - 1);
+                        builder.addDirective(directiveKey, entry.getValue().get(attrKey));
+                    } else {
+                        builder.addAttribute(attrKey, entry.getValue().getTyped(attrKey));
+                    }
+                }
+                builder.setResource(frameworkResource);
+                capIndex.addCapability(builder.buildCapability());
+            }
+        }
     }
 
     public void addFrameworkCapability(CapReqBuilder builder) {

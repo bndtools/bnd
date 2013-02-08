@@ -21,6 +21,8 @@ import test.lib.MockRegistry;
 import test.lib.NullLogService;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.clauses.*;
+import aQute.bnd.header.*;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import biz.aQute.resolve.internal.BndrunResolveContext;
 
@@ -37,6 +39,26 @@ public class BndrunResolveContextTest extends TestCase {
 
         assertTrue(context.isEffective(resolveReq));
         assertFalse(context.isEffective(activeReq));
+        assertTrue(context.isEffective(noEffectiveDirectiveReq));
+    }
+
+    public static void testEffective2() {
+        BndEditModel model = new BndEditModel();
+        model.genericSet(BndrunResolveContext.RUN_EFFECTIVE_INSTRUCTION, "active, arbitrary");
+
+        BndrunResolveContext context = new BndrunResolveContext(model, new MockRegistry(), log);
+
+        Requirement resolveReq = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, Namespace.EFFECTIVE_RESOLVE).buildSyntheticRequirement();
+        Requirement activeReq = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, Namespace.EFFECTIVE_ACTIVE).buildSyntheticRequirement();
+        Requirement arbitrary1Req = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, "arbitrary").buildSyntheticRequirement();
+        Requirement arbitrary2Req = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, "VeryArbitrary").buildSyntheticRequirement();
+
+        Requirement noEffectiveDirectiveReq = new CapReqBuilder("dummy.ns").buildSyntheticRequirement();
+
+        assertTrue(context.isEffective(resolveReq));
+        assertTrue(context.isEffective(activeReq));
+        assertTrue(context.isEffective(arbitrary1Req));
+        assertFalse(context.isEffective(arbitrary2Req));
         assertTrue(context.isEffective(noEffectiveDirectiveReq));
     }
 
@@ -287,4 +309,104 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(1, providers.size());
         assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
     }
+
+    public static void testUnsatisfiedSystemPackage() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+        runModel.setEE(EE.JavaSE_1_6);
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+
+        Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=sun.reflect)").buildSyntheticRequirement();
+        List<Capability> providers = context.findProviders(req);
+
+        assertEquals(0, providers.size());
+    }
+
+    public static void testResolveSystemPackagesExtra() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+        runModel.setEE(EE.JavaSE_1_6);
+        runModel.setSystemPackages(Collections.singletonList(new ExportedPackage("sun.reflect", new Attrs())));
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+
+        Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=sun.reflect)").buildSyntheticRequirement();
+        List<Capability> providers = context.findProviders(req);
+
+        assertEquals(1, providers.size());
+        assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+    }
+
+    public static void testUnsatisfiedRequirement() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+        runModel.setEE(EE.JavaSE_1_6);
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+
+        Requirement req = new CapReqBuilder("osgi.extender").addDirective("filter", "(&(osgi.extender=foobar)(version>=1.0))").buildSyntheticRequirement();
+        List<Capability> providers = context.findProviders(req);
+        assertEquals(0, providers.size());
+    }
+
+    public static void testResolveSystemCapabilitiesExtra() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+        runModel.setEE(EE.JavaSE_1_6);
+        runModel.genericSet("-runsystemcapabilities", "osgi.extender;osgi.extender=foobar;version:Version=1.0");
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+
+        Requirement req = new CapReqBuilder("osgi.extender").addDirective("filter", "(&(osgi.extender=foobar)(version>=1.0))").buildSyntheticRequirement();
+        List<Capability> providers = context.findProviders(req);
+
+        assertEquals(1, providers.size());
+        assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+    }
+
+    public static void testMacroInSystemCapability() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+        runModel.setEE(EE.JavaSE_1_6);
+        runModel.genericSet("-runsystemcapabilities", "${native_capability}");
+
+        String origOsName = System.getProperty("os.name");
+        String origOsVersion = System.getProperty("os.version");
+        String origOsArch = System.getProperty("os.arch");
+        try {
+            System.setProperty("os.name", "Mac OS X");
+            System.setProperty("os.version", "10.8.2");
+            System.setProperty("os.arch", "x86_64");
+
+            BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+            Requirement req = new CapReqBuilder("osgi.native").addDirective("filter", "(osgi.native.osname=MacOSX)").buildSyntheticRequirement();
+
+            List<Capability> providers = context.findProviders(req);
+            assertEquals(1, providers.size());
+            assertEquals(new File("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+        }
+        finally {
+            System.setProperty("os.name", origOsName);
+            System.setProperty("os.version", origOsVersion);
+            System.setProperty("os.arch", origOsArch);
+        }
+
+    }
+
 }

@@ -141,6 +141,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	private void gatherFiles(Set<File> allFiles) throws Exception {
+		if (!storageDir.isDirectory())
+			return;
+		
 		List<String> bsns = storageRepo.list(null);
 		if (bsns != null)
 			for (String bsn : bsns) {

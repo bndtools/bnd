@@ -78,8 +78,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return INDEX_NAME;
 	}
 
-	public void parseIndex(InputStream stream, URI baseUri, IRepositoryIndexProcessor listener, LogService log)
-			throws Exception {
+	public void parseIndex(InputStream stream, URI baseUri, IRepositoryIndexProcessor listener, LogService log) throws Exception {
 		XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 		inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
 		inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, false);
@@ -112,7 +111,6 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 						String uri = reader.getAttributeValue(null, ATTR_RESOURCE_URI);
 						URI resolvedUri = resolveUri(uri, baseUri);
 						addBasicCapabilities(resourceBuilder, bsn, version, resolvedUri);
-						addUnresolvableRequirement(resourceBuilder);
 					} else if (TAG_CAPABILITY.equals(localName)) {
 						String obrName = reader.getAttributeValue(null, ATTR_NAME);
 						String namespace = mapObrNameToR5Namespace(obrName, false);
@@ -126,7 +124,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 						capReqBuilder = new CapReqBuilder(namespace);
 						if (optional)
 							capReqBuilder.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Namespace.RESOLUTION_OPTIONAL);
-						String filter = translateObrFilter(namespace, reader.getAttributeValue(null, ATTR_FILTER));
+						String filter = translateObrFilter(namespace, reader.getAttributeValue(null, ATTR_FILTER), log);
 						capReqBuilder.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
 					} else if (TAG_PROPERTY.equals(localName)) {
 						String name = reader.getAttributeValue(null, ATTR_PROPERTY_NAME);
@@ -185,7 +183,9 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return obrName;
 	}
 	
-	private static String translateObrFilter(String namespace, String filter) {
+	private static String translateObrFilter(String namespace, String filter, LogService log) {
+		filter = ObrUtil.processFilter(filter, log);
+		
 		if (PackageNamespace.PACKAGE_NAMESPACE.equals(namespace))
 			return filter.replaceAll("\\(package", "(" + PackageNamespace.PACKAGE_NAMESPACE);
 		
@@ -255,12 +255,6 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 			.addCapability(host);
 	}
 	
-	private static void addUnresolvableRequirement(ResourceBuilder builder) {
-		CapReqBuilder noresolve = new CapReqBuilder("bnd.noresolve").
-				addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(bnd.noresolve=true)");
-		builder.addRequirement(noresolve);
-	}
-
 	private static int parseInt(String value) {
 		if (value == null || "".equals(value))
 			return 0;

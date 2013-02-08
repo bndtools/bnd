@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -23,7 +24,7 @@ import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class ResolveProcess {
 
-    private Collection<Resource> requiredResources;
+    private Map<Resource,Collection<Requirement>> requiredResources;
     private Map<Resource,Collection<Requirement>> optionalResources;
     private ResolutionException resolutionException;
 
@@ -33,12 +34,37 @@ public class ResolveProcess {
             Map<Resource,List<Wire>> result = resolver.resolve(resolveContext);
 
             // Find required resources
-            requiredResources = new HashSet<Resource>(result.size());
+            Set<Resource> requiredResourceSet = new HashSet<Resource>(result.size());
             for (Resource resource : result.keySet()) {
                 if (!resolveContext.isInputRequirementsResource(resource) && !resolveContext.isFrameworkResource(resource)) {
-                    requiredResources.add(resource);
+                    requiredResourceSet.add(resource);
                 }
             }
+
+            // Process the mandatory requirements and save them as reasons against the required resources
+            requiredResources = new HashMap<Resource,Collection<Requirement>>(requiredResourceSet.size());
+            for (Entry<Requirement,List<Capability>> entry : resolveContext.getMandatoryRequirements().entrySet()) {
+                Requirement req = entry.getKey();
+                Resource requirer = req.getResource();
+                if (requiredResourceSet.contains(requirer)) {
+                    List<Capability> caps = entry.getValue();
+
+                    for (Capability cap : caps) {
+                        Resource requiredResource = cap.getResource();
+                        if (requiredResourceSet.remove(requiredResource)) {
+                            Collection<Requirement> reasons = requiredResources.get(requiredResource);
+                            if (reasons == null) {
+                                reasons = new LinkedList<Requirement>();
+                                requiredResources.put(requiredResource, reasons);
+                            }
+                            reasons.add(req);
+                        }
+                    }
+                }
+            }
+            // Add the remaining resources in the requiredResourceSet (these come from initial requirements)
+            for (Resource resource : requiredResourceSet)
+                requiredResources.put(resource, Collections.<Requirement> emptyList());
 
             // Find optional resources
             processOptionalRequirements(resolveContext);
@@ -55,11 +81,11 @@ public class ResolveProcess {
         for (Entry<Requirement,List<Capability>> entry : resolveContext.getOptionalRequirements().entrySet()) {
             Requirement req = entry.getKey();
             Resource requirer = req.getResource();
-            if (requiredResources.contains(requirer)) {
+            if (requiredResources.containsKey(requirer)) {
                 List<Capability> providers = entry.getValue();
                 for (Capability provider : providers) {
                     Resource providerResource = provider.getResource();
-                    if (requirer != providerResource && !requiredResources.contains(providerResource)) {
+                    if (requirer != providerResource && !requiredResources.containsKey(providerResource)) {
                         Collection<Requirement> reasons = optionalResources.get(provider.getResource());
                         if (reasons == null) {
                             reasons = new LinkedList<Requirement>();
@@ -77,7 +103,7 @@ public class ResolveProcess {
     }
 
     public Collection<Resource> getRequiredResources() {
-        return requiredResources != null ? Collections.unmodifiableCollection(requiredResources) : Collections.<Resource> emptyList();
+        return requiredResources != null ? Collections.unmodifiableCollection(requiredResources.keySet()) : Collections.<Resource> emptyList();
     }
 
     public Collection<Resource> getOptionalResources() {
@@ -85,7 +111,9 @@ public class ResolveProcess {
     }
 
     public Collection<Requirement> getReasons(Resource resource) {
-        Collection<Requirement> reasons = optionalResources.get(resource);
+        Collection<Requirement> reasons = requiredResources.get(resource);
+        if (reasons == null)
+            reasons = optionalResources.get(resource);
         return reasons != null ? Collections.unmodifiableCollection(reasons) : Collections.<Requirement> emptyList();
     }
 

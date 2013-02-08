@@ -5,10 +5,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -25,23 +29,30 @@ import org.osgi.service.resolver.ResolveContext;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
-import aQute.bnd.service.Registry;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.Filters;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.service.Registry;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
 import aQute.libg.filters.LiteralFilter;
 import aQute.libg.filters.SimpleFilter;
-import aQute.bnd.header.Attrs;
-import aQute.bnd.header.Parameters;
 
 public class BndrunResolveContext extends ResolveContext {
 
     private static final String CONTRACT_OSGI_FRAMEWORK = "OSGiFramework";
     private static final String IDENTITY_INITIAL_RESOURCE = "<<INITIAL>>";
 
+    public static final String RUN_EFFECTIVE_INSTRUCTION = "-resolve.effective";
+
     private final List<Repository> repos = new LinkedList<Repository>();
+    private final ConcurrentMap<Resource,Integer> resourcePriorities = new ConcurrentHashMap<Resource,Integer>();
+    private final Map<Requirement,List<Capability>> mandatoryRequirements = new HashMap<Requirement,List<Capability>>();
     private final Map<Requirement,List<Capability>> optionalRequirements = new HashMap<Requirement,List<Capability>>();
 
     private final BndEditModel runModel;
@@ -56,6 +67,9 @@ public class BndrunResolveContext extends ResolveContext {
 
     private Resource inputRequirementsResource = null;
     private EE ee;
+    private Set<String> effectiveSet;
+    private List<ExportedPackage> sysPkgsExtra;
+    private Parameters sysCapsExtraParams;
 
     public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
         this.runModel = runModel;
@@ -68,7 +82,10 @@ public class BndrunResolveContext extends ResolveContext {
             return;
 
         loadEE();
+        loadSystemPackagesExtra();
+        loadSystemCapabilitiesExtra();
         loadRepositories();
+        loadEffectiveSet();
         findFramework();
         constructInputRequirements();
 
@@ -78,6 +95,27 @@ public class BndrunResolveContext extends ResolveContext {
     private void loadEE() {
         EE tmp = runModel.getEE();
         ee = (tmp != null) ? tmp : EE.JavaSE_1_6;
+    }
+
+    private void loadSystemPackagesExtra() {
+        sysPkgsExtra = runModel.getSystemPackages();
+    }
+
+    private void loadSystemCapabilitiesExtra() {
+        String header = (String) runModel.genericGet(Constants.RUNSYSTEMCAPABILITIES);
+        if (header != null) {
+            Processor processor = new Processor();
+            try {
+                processor.setProperty(Constants.RUNSYSTEMCAPABILITIES, header);
+                String processedHeader = processor.getProperty(Constants.RUNSYSTEMCAPABILITIES);
+                sysCapsExtraParams = new Parameters(processedHeader);
+            }
+            finally {
+                processor.close();
+            }
+        } else {
+            sysCapsExtraParams = null;
+        }
     }
 
     private void loadRepositories() {
@@ -101,6 +139,17 @@ public class BndrunResolveContext extends ResolveContext {
                 if (repo != null)
                     repos.add(repo);
             }
+        }
+    }
+
+    private void loadEffectiveSet() {
+        String effective = (String) runModel.genericGet(RUN_EFFECTIVE_INSTRUCTION);
+        if (effective == null)
+            effectiveSet = null;
+        else {
+            effectiveSet = new HashSet<String>();
+            for (Entry<String,Attrs> entry : new Parameters(effective).entrySet())
+                effectiveSet.add(entry.getKey());
         }
     }
 
@@ -136,7 +185,7 @@ public class BndrunResolveContext extends ResolveContext {
                             if (frameworkResourceVersion == null || (foundVersion.compareTo(frameworkResourceVersion) > 0)) {
                                 frameworkResource = frameworkCap.getResource();
                                 frameworkResourceVersion = foundVersion;
-                                frameworkResourceRepo = new FrameworkResourceRepository(frameworkResource, ee);
+                                frameworkResourceRepo = new FrameworkResourceRepository(frameworkResource, ee, sysPkgsExtra, sysCapsExtraParams);
                             }
                         }
                     }
@@ -223,7 +272,7 @@ public class BndrunResolveContext extends ResolveContext {
             }
         }
 
-        // int score = 0;
+        int order = 0;
         for (Repository repo : repos) {
             Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singleton(requirement));
             Collection<Capability> capabilities = providers.get(requirement);
@@ -231,13 +280,13 @@ public class BndrunResolveContext extends ResolveContext {
                 result.ensureCapacity(result.size() + capabilities.size());
                 for (Capability capability : capabilities) {
                     // filter out OSGi frameworks & other forbidden resource
-                    if (isPermitted(capability.getResource()))
+                    if (isPermitted(capability.getResource())) {
                         result.add(capability);
+                        setResourcePriority(order, capability.getResource());
+                    }
                 }
-                // for (Capability capability : capabilities)
-                // scoreResource(capability.getResource(), score);
             }
-            // score--;
+            order++;
         }
 
         if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE))) {
@@ -255,8 +304,15 @@ public class BndrunResolveContext extends ResolveContext {
 
             return fwkCaps;
         } else {
+            // Record as a mandatory requirement
+            mandatoryRequirements.put(requirement, result);
+
             return result;
         }
+    }
+
+    private void setResourcePriority(int priority, Resource resource) {
+        resourcePriorities.putIfAbsent(resource, priority);
     }
 
     private boolean isPermitted(Resource resource) {
@@ -292,14 +348,36 @@ public class BndrunResolveContext extends ResolveContext {
     }
 
     @Override
-    public int insertHostedCapability(List<Capability> capabilities, HostedCapability hostedCapability) {
-        throw new UnsupportedOperationException("TODO");
+    public int insertHostedCapability(List<Capability> caps, HostedCapability hc) {
+        Integer prioObj = resourcePriorities.get(hc.getResource());
+        int priority = prioObj != null ? prioObj.intValue() : Integer.MAX_VALUE;
+
+        for (int i = 0; i < caps.size(); i++) {
+            Capability c = caps.get(i);
+
+            Integer otherPrioObj = resourcePriorities.get(c.getResource());
+            int otherPriority = otherPrioObj != null ? otherPrioObj.intValue() : 0;
+            if (otherPriority > priority) {
+                caps.add(i, hc);
+                return i;
+            }
+        }
+
+        caps.add(hc);
+        return caps.size() - 1;
     }
 
     @Override
     public boolean isEffective(Requirement requirement) {
+        init();
         String effective = requirement.getDirectives().get(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
-        return effective == null || Namespace.EFFECTIVE_RESOLVE.equals(effective);
+        if (effective == null || Namespace.EFFECTIVE_RESOLVE.equals(effective))
+            return true;
+
+        if (effectiveSet != null && effectiveSet.contains(effective))
+            return true;
+
+        return false;
     }
 
     @Override
@@ -313,6 +391,10 @@ public class BndrunResolveContext extends ResolveContext {
 
     public boolean isFrameworkResource(Resource resource) {
         return resource == frameworkResource;
+    }
+
+    public Map<Requirement,List<Capability>> getMandatoryRequirements() {
+        return mandatoryRequirements;
     }
 
     public Map<Requirement,List<Capability>> getOptionalRequirements() {

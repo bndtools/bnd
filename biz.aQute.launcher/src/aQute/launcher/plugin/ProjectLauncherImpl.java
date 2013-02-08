@@ -99,13 +99,25 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.activators.addAll(getActivators());
 		lc.name = getProject().getName();
 
-		if (!getSystemPackages().isEmpty()) {
-			try {
-				lc.systemPackages = Processor.printClauses(getSystemPackages());
+		try {
+			// If the workspace contains a newer version of biz.aQute.launcher than the version of bnd(tools) used
+			// then this could throw NoSuchMethodError. For now just ignore it.
+			Map<String, ? extends Map<String,String>> systemPkgs = getSystemPackages();
+			if (systemPkgs != null && !systemPkgs.isEmpty())
+				lc.systemPackages = Processor.printClauses(systemPkgs);
+		} catch (Throwable e) {
+		}
+		
+		try {
+			// If the workspace contains a newer version of biz.aQute.launcher than the version of bnd(tools) used
+			// then this could throw NoSuchMethodError. For now just ignore it.
+			String systemCaps = getSystemCapabilities();
+			if (systemCaps != null) {
+				systemCaps = systemCaps.trim();
+				if (systemCaps.length() > 0)
+					lc.systemCapabilities = systemCaps;
 			}
-			catch (Throwable e) {
-				// ignore for now
-			}
+		} catch (Throwable e) {
 		}
 		return lc;
 

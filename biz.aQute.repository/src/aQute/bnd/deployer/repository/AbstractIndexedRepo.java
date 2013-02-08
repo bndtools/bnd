@@ -98,9 +98,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		for (IRepositoryContentProvider provider : extraProviders) {
 			String providerName = provider.getName();
 			if (allContentProviders.containsKey(providerName)) {
-				if (reporter != null)
-					reporter.warning("Repository content provider with name \"%s\" is already registered.",
-							providerName);
+				warning("Repository content provider with name \"%s\" is already registered.", providerName);
 			} else {
 				allContentProviders.put(providerName, provider);
 			}
@@ -124,16 +122,13 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					String token = tokenizer.nextToken().trim();
 					IRepositoryContentProvider provider = allContentProviders.get(token);
 					if (provider == null) {
-						if (reporter != null)
-							reporter.warning("Unknown repository content provider \"%s\".", token);
+						warning("Unknown repository content provider \"%s\".", token);
 					} else {
 						generatingProviders.add(provider);
 					}
 				}
 				if (generatingProviders.isEmpty()) {
-					if (reporter != null)
-						reporter.warning("No valid repository index generators were found, requested list was: [%s]",
-								requestedContentProviderList);
+					warning("No valid repository index generators were found, requested list was: [%s]", requestedContentProviderList);
 				}
 			}
 
@@ -157,14 +152,12 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 							readIndex(indexLocation.getPath(), indexLocation, new FileInputStream(indexHandle.request()), this);
 						}
 						catch (Exception e) {
-							if (reporter != null)
-								reporter.error("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, parentUri, e);
+							warning("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, parentUri, e);
 						}
 
 					}
 					catch (URISyntaxException e) {
-						if (reporter != null)
-							reporter.error("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(), parentUri, e);
+						warning("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(), parentUri, e);
 					}
 				}
 
@@ -180,8 +173,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					readIndex(indexFile.getName(), indexLocation, indexStream, processor);
 				}
 				catch (Exception e) {
-					if (reporter != null)
-						reporter.error("Unable to read index at URL '%s': %s", indexLocation, e);
+					warning("Unable to read index at URL '%s': %s", indexLocation, e);
 				}
 			}
 
@@ -224,8 +216,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 						supportedPhases.add(ResolutionPhase.valueOf(token));
 					}
 					catch (Exception e) {
-						if (reporter != null)
-							reporter.error("Unknown OBR resolution mode: " + token);
+						error("Unknown OBR resolution mode: " + token);
 					}
 				}
 			}
@@ -440,10 +431,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 				selectedProvider = provider;
 				break;
 			} else if (checkResult.getDecision() == Decision.undecided) {
-				if (reporter != null)
-					reporter.warning(
-							"Content provider '%s' was unable to determine compatibility with index at URL '%s': %s",
-							provider.getName(), baseUri, checkResult.getMessage());
+				warning("Content provider '%s' was unable to determine compatibility with index at URL '%s': %s",
+						provider.getName(), baseUri, checkResult.getMessage());
 				if (maybeSelectedProvider == null)
 					maybeSelectedProvider = provider;
 			}
@@ -454,10 +443,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		if (selectedProvider == null) {
 			if (maybeSelectedProvider != null) {
 				selectedProvider = maybeSelectedProvider;
-				if (reporter != null)
-					reporter.warning(
-							"No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.",
-							selectedProvider.getName());
+				warning("No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.",
+						selectedProvider.getName());
 			} else {
 				throw new IOException("No content provider understands the specified index.");
 			}
@@ -678,10 +665,24 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 				l.success(f);
 			}
 			catch (Exception e) {
-				reporter.exception(e, "Download listener for %s", f);
+				error("Download listener for %s: %s", f, e);
 			}
 		}
 		return f;
+	}
+	
+	private void error(String format, Object... args) {
+		if (reporter != null)
+			reporter.error(format, args);
+		else
+			System.err.println(String.format(format, args));
+	}
+
+	private void warning(String format, Object... args) {
+		if (reporter != null)
+			reporter.warning(format, args);
+		else
+			System.err.println(String.format(format, args));
 	}
 
 }

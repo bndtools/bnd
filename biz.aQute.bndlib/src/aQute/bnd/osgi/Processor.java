@@ -10,6 +10,7 @@ import java.util.regex.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.service.*;
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
@@ -1498,6 +1499,88 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		return new String(array);
+	}
+	
+	/**
+	 * <p>
+	 * Generates a Capability string, in the format specified by the OSGi
+	 * Provide-Capability header, representing the current native platform
+	 * according to OSGi RFC 188. For example on Windows7 running on an x86_64
+	 * processor it should generate the following:
+	 * </p>
+	 * 
+	 * <pre>
+	 * osgi.native;osgi.native.osname:List&lt;String&gt;="Windows7,Windows 7,Win32";osgi.native.osversion:Version=6.1.0;osgi.native.processor:List&lt;String&gt;="x86-64,amd64,em64t,x86_64"
+	 * </pre>
+	 * 
+	 * @param args
+	 *            Ignored; reserved for future use.
+	 */
+	public String _native_capability(String[] args) {
+		StringBuilder builder = new StringBuilder().append("osgi.native");
+		
+		try {
+			// Operating System name and version
+			String osnames;
+			Version osversion;
+			
+			String sysPropOsName = System.getProperty("os.name");
+			String sysPropOsVersion = System.getProperty("os.version");
+			if (sysPropOsName.startsWith("Windows")) {
+				if (sysPropOsVersion.startsWith("6.2")) {
+					osversion = new Version(6,2,0);
+					osnames = "Windows8,Windows 8,Win32"; 
+				} else if (sysPropOsVersion.startsWith("6.1")) {
+					osversion = new Version(6, 1, 0);
+					osnames = "Windows7,Windows 7,Win32";
+				} else if (sysPropOsName.startsWith("6.0")) {
+					osversion = new Version(6, 0, 0);
+					osnames = "WindowsVista,WinVista,Windows Vista,Win32";
+				} else if (sysPropOsName.startsWith("5.1")) {
+					osversion = new Version(5, 1, 0);
+					osnames = "WindowsXP,WinXP,Windows XP,Win32";
+				} else {
+					throw new IllegalArgumentException(String.format("Unrecognised or unsupported Windows version while processing ${native} macro: %s version %s. Supported: XP, Vista, Win7, Win8.", sysPropOsName, sysPropOsVersion));
+				}
+			} else if (sysPropOsName.startsWith("Mac OS X")) {
+				osnames = "MacOSX,Mac OS X";
+				osversion = new Version(sysPropOsVersion);
+			} else if (sysPropOsName.toLowerCase().startsWith("linux")) {
+				osnames = "Linux";
+				osversion = new Version(sysPropOsVersion);
+			} else if (sysPropOsName.startsWith("Solaris")) {
+				osnames = "Solaris";
+				osversion = new Version(sysPropOsVersion);
+			} else if (sysPropOsName.startsWith("AIX")) {
+				osnames = "AIX";
+				osversion = new Version(sysPropOsVersion);
+			} else if (sysPropOsName.startsWith("HP-UX")) {
+				osnames = "HPUX,hp-ux";
+				osversion = new Version(sysPropOsVersion);
+			} else {
+				throw new IllegalArgumentException(String.format("Unrecognised or unsupported OS while processing ${native} macro: %s version %s. Supported: Windows, Mac OS X, Linux, Solaris, AIX, HP-UX.", sysPropOsName, sysPropOsVersion));
+			}
+			
+			builder.append(";osgi.native.osname:List<String>=\"").append(osnames).append('"');
+			builder.append(";osgi.native.osversion:Version=").append(osversion.toString());
+			
+			// Processor
+			String processorNames;
+			
+			String arch = System.getProperty("os.arch");
+			if ("x86_64".equals(arch))
+				processorNames = "x86-64,amd64,em64t,x86_64";
+			else if ("x86".equals(arch))
+				processorNames = "x86,pentium,i386,i486,i586,i686";
+			else
+				throw new IllegalArgumentException(String.format("Unrecognised/unsupported processor name '%s' in ${native} macro.", arch));
+			builder.append(";osgi.native.processor:List<String>=\"").append(processorNames).append('"');
+			
+		} catch (SecurityException e) {
+			throw new IllegalArgumentException("Security error retrieving system properties while processing ${native} macro.");
+		}
+		
+		return builder.toString();
 	}
 
 	/**

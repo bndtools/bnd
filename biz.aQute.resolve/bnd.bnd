@@ -7,7 +7,7 @@
 	org.mockito.mockito-all,\
 	osgi.cmpn
 
-Bundle-Version: 0.0.1.${tstamp;yyyyMMdd-HHmmss}_${Git-Descriptor}
+Bundle-Version: 0.0.2.${tstamp;yyyyMMdd-HHmmss}_${Git-Descriptor}
 
 Export-Package: biz.aQute.resolve,\
 	org.osgi.service.log;-split-package:=first

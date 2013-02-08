@@ -30,6 +30,7 @@ public abstract class ProjectLauncher {
 	private Map<String,String>	runproperties;
 	private Command				java;
 	private Parameters			runsystempackages;
+	private String				runsystemcapabilities;
 	private final List<String>	activators			= Create.list();
 	private File				storageDir;
 	private final List<String>	warnings			= Create.list();
@@ -38,6 +39,7 @@ public abstract class ProjectLauncher {
 	private boolean				trace;
 	private boolean				keep;
 	private int					framework;
+	private File				cwd;
 
 	public final static int		SERVICES			= 10111;
 	public final static int		NONE				= 20123;
@@ -92,6 +94,7 @@ public abstract class ProjectLauncher {
 
 		Collection<Container> runpath = project.getRunpath();
 		runsystempackages = project.getParameters(Constants.RUNSYSTEMPACKAGES);
+		runsystemcapabilities = project.getProperty(Constants.RUNSYSTEMCAPABILITIES);
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
@@ -218,6 +221,9 @@ public abstract class ProjectLauncher {
 		java.addAll(getRunProgramArgs());
 		if (timeout != 0)
 			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
+		
+		File cwd = getCwd();
+		if (cwd != null) java.setCwd(cwd);
 
 		try {
 			int result = java.execute(System.in, System.err, System.err);
@@ -276,6 +282,10 @@ public abstract class ProjectLauncher {
 
 	public Map<String, ? extends Map<String,String>> getSystemPackages() {
 		return runsystempackages.asMapMap();
+	}
+	
+	public String getSystemCapabilities() {
+		return runsystemcapabilities;
 	}
 
 	public void setKeep(boolean keep) {
@@ -374,5 +384,13 @@ public abstract class ProjectLauncher {
 	protected void warning(String message, Object... args) {
 		String formatted = String.format(message, args);
 		warnings.add(formatted);
+	}
+	
+	public File getCwd() {
+		return cwd;
+	}
+
+	public void setCwd(File cwd) {
+		this.cwd = cwd;
 	}
 }

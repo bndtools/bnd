@@ -1,0 +1,3 @@
+-runfw: org.apache.felix.framework
+-runproperties: =
+-runsystemcapabilities: osgi.native;osgi.native.osname:List<String>="Win7,Windows7,Windows 7";osgi.native.osversion:Version=6.1
