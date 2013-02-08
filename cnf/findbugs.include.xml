@@ -372,6 +372,12 @@
        <Package name="test.activator.inherits" />
      </Match>
      <Match>
+       <Package name="test.annotation" />
+     </Match>
+     <Match>
+       <Package name="test.annotation.any" />
+     </Match>
+     <Match>
        <Package name="test.baseline" />
      </Match>
      <Match>
