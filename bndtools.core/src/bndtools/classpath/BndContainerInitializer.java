@@ -96,6 +96,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     // The suggested classpath container is ignored here; always recalculated
     // from the project.
     public void requestClasspathContainerUpdate(IPath containerPath, IJavaProject project, IClasspathContainer containerSuggestion) throws CoreException {
+        BndContainerSourceManager.saveAttachedSources(project, Arrays.asList(containerSuggestion.getClasspathEntries()));
+
         ArrayList<String> errors = new ArrayList<String>();
         calculateAndUpdateClasspathEntries(project, errors);
         replaceClasspathProblemMarkers(project.getProject(), errors);
@@ -111,6 +113,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         List<IClasspathEntry> currentClasspath = Arrays.asList(container.getClasspathEntries());
 
         List<IClasspathEntry> newClasspath = BndContainerInitializer.calculateProjectClasspath(model, javaProject, errors);
+        newClasspath = BndContainerSourceManager.loadAttachedSources(javaProject, newClasspath);
+
         replaceClasspathProblemMarkers(javaProject.getProject(), errors);
 
         if (!newClasspath.equals(currentClasspath)) {
@@ -134,8 +138,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         try {
             if (model != null) {
                 List<IClasspathEntry> classpath = calculateProjectClasspath(model, project, errors);
-                if (classpath != null)
+                if (classpath != null) {
+                    classpath = BndContainerSourceManager.loadAttachedSources(project, classpath);
                     entries = classpath.toArray(new IClasspathEntry[classpath.size()]);
+                }
             }
             setClasspathEntries(project, entries);
         } catch (Exception e) {
@@ -213,7 +219,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
         for (Container c : containers) {
             IClasspathEntry cpe;
-            IPath sourceAttachment = null;
 
             if (c.getError() == null) {
                 File file = c.getFile();
@@ -256,7 +261,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                         cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, null, true);
                     } else {
                         IAccessRule[] accessRules = calculateRepoBundleAccessRules(c);
-                        cpe = JavaCore.newLibraryEntry(p, sourceAttachment, null, accessRules, null, false);
+                        cpe = JavaCore.newLibraryEntry(p, null, null, accessRules, null, false);
                     }
                     result.add(cpe);
                 }
