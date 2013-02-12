@@ -37,7 +37,6 @@ public class WorkspaceR5Repository implements Repository {
     private final Map<IProject,CapabilityIndex> projectMap = new HashMap<IProject,CapabilityIndex>();
     private final IRepositoryContentProvider contentProvider = new R5RepoContentProvider();
 
-    private final URI workspaceRootUri = ResourcesPlugin.getWorkspace().getRoot().getLocationURI();
     private final ILogger logger = Logger.getLogger();
     private final LogService logAdapter = new LogServiceAdapter(logger);
 
@@ -50,14 +49,14 @@ public class WorkspaceR5Repository implements Repository {
                 if (targetDir != null) {
                     File indexFile = new File(targetDir, ".index");
                     if (indexFile != null && indexFile.isFile()) {
-                        loadProjectIndex(project, new FileInputStream(indexFile));
+                        loadProjectIndex(project, new FileInputStream(indexFile), project.getLocation().toFile().toURI());
                     }
                 }
             }
         }
     }
 
-    public void loadProjectIndex(final IProject project, InputStream index) {
+    public void loadProjectIndex(final IProject project, InputStream index, URI baseUri) {
         synchronized (projectMap) {
             try {
                 cleanProject(project);
@@ -71,7 +70,7 @@ public class WorkspaceR5Repository implements Repository {
                         // ignore: we don't create any referrals
                     }
                 };
-                contentProvider.parseIndex(index, workspaceRootUri, processor, logAdapter);
+                contentProvider.parseIndex(index, baseUri, processor, logAdapter);
             } catch (Exception e) {
                 logger.logError(MessageFormat.format("Failed to process index file for bundles in project {0}.", project.getName()), e);
             } finally {

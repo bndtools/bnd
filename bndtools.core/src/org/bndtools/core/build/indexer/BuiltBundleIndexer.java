@@ -92,7 +92,7 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
 
             Map<String,String> config = new HashMap<String,String>();
             config.put(ResourceIndexer.REPOSITORY_NAME, project.getName());
-            config.put(ResourceIndexer.ROOT_URL, project.getLocationURI().toString());
+            config.put(ResourceIndexer.ROOT_URL, project.getLocation().toFile().toURI().toString());
             config.put(ResourceIndexer.PRETTY, "true");
 
             output = new FileOutputStream(indexFile);
@@ -113,7 +113,7 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
         try {
             input = new FileInputStream(indexFile);
             WorkspaceR5Repository workspaceRepo = Central.getWorkspaceR5Repository();
-            workspaceRepo.loadProjectIndex(project, input);
+            workspaceRepo.loadProjectIndex(project, input, project.getLocation().toFile().toURI());
         } catch (Exception e) {
             logger.logError("Failed to update workspace index.", e);
         } finally {

@@ -22,6 +22,7 @@ import bndtools.editor.project.AvailableBundlesPart;
 import bndtools.editor.project.RepositorySelectionPart;
 import bndtools.editor.project.RunBundlesPart;
 import bndtools.editor.project.RunFrameworkPart;
+import bndtools.editor.project.RunProgramArgsPart;
 import bndtools.editor.project.RunPropertiesPart;
 import bndtools.editor.project.RunRequirementsPart;
 import bndtools.editor.project.RunVMArgsPart;
@@ -129,6 +130,11 @@ public class ProjectRunPage extends FormPage {
         managedForm.addPart(runPropertiesPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         runPropertiesPart.getSection().setLayoutData(gd);
+
+        RunProgramArgsPart programArgsPart = new RunProgramArgsPart(left, tk, Section.TITLE_BAR | Section.TWISTIE);
+        managedForm.addPart(programArgsPart);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        programArgsPart.getSection().setLayoutData(gd);
 
         RunVMArgsPart vmArgsPart = new RunVMArgsPart(left, tk, Section.TITLE_BAR | Section.TWISTIE);
         managedForm.addPart(vmArgsPart);

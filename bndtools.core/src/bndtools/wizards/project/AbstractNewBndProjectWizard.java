@@ -38,11 +38,15 @@ import org.eclipse.ui.ide.IDE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.Document;
+import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
 import bndtools.editor.model.BndProject;
 import bndtools.utils.FileUtils;
+import bndtools.versioncontrol.util.VersionControlUtils;
 
 abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
+    private static final ILogger logger = Logger.getLogger();
 
     protected final NewBndProjectWizardPageOne pageOne;
     protected final NewJavaProjectWizardPageTwo pageTwo;
@@ -92,7 +96,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
      * 
      * @throws CoreException
      */
-    protected void processGeneratedProject(BndEditModel bndModel, IProject project, IProgressMonitor monitor) throws CoreException {
+    protected void processGeneratedProject(BndEditModel bndModel, IJavaProject project, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 3);
 
         Document document = new Document("");
@@ -105,14 +109,14 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         } catch (UnsupportedEncodingException e) {
             return;
         }
-        IFile bndBndFile = project.getFile(Project.BNDFILE);
+        IFile bndBndFile = project.getProject().getFile(Project.BNDFILE);
         if (bndBndFile.exists()) {
             bndBndFile.setContents(bndInput, false, false, progress.newChild(1));
         } else {
             bndBndFile.create(bndInput, false, progress.newChild(1));
         }
 
-        IFile buildXmlFile = project.getFile("build.xml");
+        IFile buildXmlFile = project.getProject().getFile("build.xml");
         InputStream buildXmlInput = getClass().getResourceAsStream("template_bnd_build.xml");
         try {
             if (buildXmlFile.exists()) {
@@ -126,11 +130,18 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             } catch (IOException e) {}
         }
 
-        BndProject proj = generateBndProject(project, progress.newChild(1));
+        BndProject proj = generateBndProject(project.getProject(), progress.newChild(1));
 
         progress.setWorkRemaining(proj.getResources().size());
         for (Map.Entry<String,URL> resource : proj.getResources().entrySet()) {
-            importResource(project, resource.getKey(), resource.getValue(), progress.newChild(1));
+            importResource(project.getProject(), resource.getKey(), resource.getValue(), progress.newChild(1));
+        }
+
+        try {
+            VersionControlUtils.createDefaultProjectIgnores(project);
+            VersionControlUtils.addToIgnoreFile(project, null, "/generated/");
+        } catch (IOException e) {
+            logger.logError("Unable to create ignore file(s) for project " + project.getProject().getName(), e);
         }
     }
 
@@ -178,7 +189,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                             // Make changes to the project
                             final IWorkspaceRunnable op = new IWorkspaceRunnable() {
                                 public void run(IProgressMonitor monitor) throws CoreException {
-                                    processGeneratedProject(bndModel, javaProj.getProject(), monitor);
+                                    processGeneratedProject(bndModel, javaProj, monitor);
                                 }
                             };
                             javaProj.getProject().getWorkspace().run(op, progress.newChild(2));

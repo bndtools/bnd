@@ -40,6 +40,7 @@ import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.utils.BundleUtils;
+import bndtools.versioncontrol.util.VersionControlUtils;
 import bndtools.wizards.workspace.CnfInfo.Existence;
 
 public class CnfSetupTask extends WorkspaceModifyOperation {
@@ -138,7 +139,8 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         IProject cnfProject = ResourcesPlugin.getWorkspace().getRoot().getProject(Workspace.CNFDIR);
         URI location = operation.getLocation() != null ? operation.getLocation().toFile().toURI() : null;
         JavaCapabilityConfigurationPage.createProject(cnfProject, location, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-        configureJavaProject(JavaCore.create(cnfProject), progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+        IJavaProject cnfJavaProject = JavaCore.create(cnfProject);
+        configureJavaProject(cnfJavaProject, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
         String bsn = templateConfig.getContributor().getName();
         Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
@@ -156,6 +158,14 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
 
             copyBundleEntries(bundle, path, new Path(path), cnfProject, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
         }
+
+        try {
+            VersionControlUtils.createDefaultProjectIgnores(cnfJavaProject);
+            VersionControlUtils.addToIgnoreFile(cnfJavaProject, null, templateConfig.getAttribute("ignores"));
+        } catch (IOException e) {
+            logger.logError("Unable to create ignore file(s) for project " + cnfProject.getName(), e);
+        }
+
         try {
             Central.getWorkspace().refresh();
         } catch (Exception e) {

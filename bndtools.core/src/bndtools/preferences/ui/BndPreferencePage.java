@@ -22,6 +22,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import aQute.bnd.build.Project;
 import bndtools.preferences.BndPreferences;
 import bndtools.utils.ModificationLock;
+import bndtools.versioncontrol.VersionControlSystem;
 import bndtools.wizards.workspace.CnfSetupWizard;
 
 public class BndPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
@@ -37,6 +38,8 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private boolean warnExistingLaunch = true;
     private int buildLogging = 0;
     private boolean editorOpenSourceTab = false;
+    private boolean vcsCreateIgnoreFiles = true;
+    private int vcsVcs = VersionControlSystem.GIT.ordinal();
 
     @Override
     protected Control createContents(Composite parent) {
@@ -44,12 +47,12 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
         // Create controls
         Group cnfCheckGroup = new Group(composite, SWT.NONE);
-        cnfCheckGroup.setText("Configuration Project");
+        cnfCheckGroup.setText(Messages.BndPreferencePage_cnfCheckGroup);
 
         final Button btnNoCheckCnf = new Button(cnfCheckGroup, SWT.CHECK);
-        btnNoCheckCnf.setText(MessageFormat.format("Do not check for the Bnd Configuration project (\"{0}\").", Project.BNDCNF));
+        btnNoCheckCnf.setText(MessageFormat.format(Messages.BndPreferencePage_btnNoCheckCnf, Project.BNDCNF));
         final Button btnCheckCnfNow = new Button(cnfCheckGroup, SWT.PUSH);
-        btnCheckCnfNow.setText("Check Now");
+        btnCheckCnfNow.setText(Messages.BndPreferencePage_btnCheckCnfNow);
 
         Group enableSubBundlesGroup = new Group(composite, SWT.NONE);
         enableSubBundlesGroup.setText(Messages.BndPreferencePage_titleSubBundles);
@@ -62,10 +65,10 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         btnPrompt.setText(Messages.BndPreferencePage_optionPrompt);
 
         Group exportsGroup = new Group(composite, SWT.NONE);
-        exportsGroup.setText("Exported Source Packages");
+        exportsGroup.setText(Messages.BndPreferencePage_exportsGroup);
 
         final Button btnNoAskPackageInfo = new Button(exportsGroup, SWT.CHECK);
-        btnNoAskPackageInfo.setText("Always generate \"packageinfo\" file.");
+        btnNoAskPackageInfo.setText(Messages.BndPreferencePage_btnNoAskPackageInfo);
 
         Group grpLaunching = new Group(composite, SWT.NONE);
         grpLaunching.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
@@ -83,14 +86,28 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
         final Combo cmbBuildLogging = new Combo(grpDebugging, SWT.READ_ONLY);
         cmbBuildLogging.setItems(new String[] {
-                "None", "Basic", "Full"
+                Messages.BndPreferencePage_cmbBuildLogging_None, Messages.BndPreferencePage_cmbBuildLogging_Basic, Messages.BndPreferencePage_cmbBuildLogging_Full
         });
 
         Group editorGroup = new Group(composite, SWT.NONE);
-        editorGroup.setText("Bnd Files Editor");
+        editorGroup.setText(Messages.BndPreferencePage_editorGroup);
 
         final Button btnEditorOpenSourceTab = new Button(editorGroup, SWT.CHECK);
-        btnEditorOpenSourceTab.setText("Open the \"source\" tab by default.");
+        btnEditorOpenSourceTab.setText(Messages.BndPreferencePage_btnEditorOpenSourceTab);
+
+        Group vcsGroup = new Group(composite, SWT.NONE);
+        vcsGroup.setText(Messages.BndPreferencePage_vcsGroup_text);
+
+        final Button btnVcsCreateIgnoreFiles = new Button(vcsGroup, SWT.CHECK);
+        btnVcsCreateIgnoreFiles.setText(Messages.BndPreferencePage_btnVcsCreateIgnoreFiles_text);
+
+        final Combo cmbVcs = new Combo(vcsGroup, SWT.READ_ONLY);
+        VersionControlSystem[] vcsEntries = VersionControlSystem.values();
+        String[] vcsNames = new String[vcsEntries.length];
+        for (int i = 0; i < vcsEntries.length; i++) {
+            vcsNames[i] = vcsEntries[i].getName();
+        }
+        cmbVcs.setItems(vcsNames);
 
         // Load Data
         if (MessageDialogWithToggle.ALWAYS.equals(enableSubs)) {
@@ -112,6 +129,8 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         btnWarnExistingLaunch.setSelection(warnExistingLaunch);
         cmbBuildLogging.select(buildLogging);
         btnEditorOpenSourceTab.setSelection(editorOpenSourceTab);
+        btnVcsCreateIgnoreFiles.setSelection(vcsCreateIgnoreFiles);
+        cmbVcs.select(vcsVcs);
 
         // Listeners
         SelectionAdapter adapter = new SelectionAdapter() {
@@ -150,7 +169,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (!CnfSetupWizard.showIfNeeded(true)) {
-                    MessageDialog.openInformation(getShell(), "Bnd Configuration", "The configuration project exists and does not need to be updated.");
+                    MessageDialog.openInformation(getShell(), Messages.BndPreferencePage_btnCheckCnfNow_BndConf, Messages.BndPreferencePage_btnCheckCnfNow_Exists);
                 }
             }
         });
@@ -170,6 +189,18 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
             @Override
             public void widgetSelected(SelectionEvent e) {
                 editorOpenSourceTab = btnEditorOpenSourceTab.getSelection();
+            }
+        });
+        btnVcsCreateIgnoreFiles.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                vcsCreateIgnoreFiles = btnVcsCreateIgnoreFiles.getSelection();
+            }
+        });
+        cmbVcs.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                vcsVcs = cmbVcs.getSelectionIndex();
             }
         });
 
@@ -213,6 +244,9 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         layout.verticalSpacing = 10;
         editorGroup.setLayout(layout);
 
+        vcsGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+        vcsGroup.setLayout(new GridLayout(2, false));
+        cmbVcs.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         return composite;
     }
 
@@ -225,6 +259,8 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         prefs.setWarnExistingLaunch(warnExistingLaunch);
         prefs.setBuildLogging(buildLogging);
         prefs.setEditorOpenSourceTab(editorOpenSourceTab);
+        prefs.setVcsCreateIgnoreFiles(vcsCreateIgnoreFiles);
+        prefs.setVcsVcs(vcsVcs);
 
         return true;
     }
@@ -238,5 +274,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         warnExistingLaunch = prefs.getWarnExistingLaunches();
         buildLogging = prefs.getBuildLogging();
         editorOpenSourceTab = prefs.getEditorOpenSourceTab();
+        vcsCreateIgnoreFiles = prefs.getVcsCreateIgnoreFiles();
+        vcsVcs = prefs.getVcsVcs();
     }
 }

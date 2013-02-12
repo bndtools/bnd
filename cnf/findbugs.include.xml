@@ -168,6 +168,12 @@
        <Package name="bndtools.utils" />
      </Match>
      <Match>
+       <Package name="bndtools.versioncontrol" />
+     </Match>
+     <Match>
+       <Package name="bndtools.versioncontrol.util" />
+     </Match>
+     <Match>
        <Package name="bndtools.views" />
      </Match>
      <Match>

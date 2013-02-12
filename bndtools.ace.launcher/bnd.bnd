@@ -1,5 +1,5 @@
 -buildpath: ee.j2se;version=${javac.ee},\
-	biz.aQute.bndlib;version=2.0.0.20120717-094345,\
+	${bndlib},\
 	org.apache.ace.bnd.repository
 	
 Include-Resource: @libs/org.amdatu.ace.client-0.0.1-SNAPSHOT.jar,\

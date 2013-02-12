@@ -1,9 +1,9 @@
 # Master Version Settings
-base-version: 2.0.0.REL
+base-version: 2.0.1.DEV
 master-version: ${base-version}-${tstamp;yyyyMMdd-HHmm}-${Git-Descriptor}
 
-bndlib-version-base:    2.0
-bndlib-version-ceiling: 2.1
+bndlib-version-base:    2.1
+bndlib-version-ceiling: 2.2
 bndlib: biz.aQute.bndlib;version='[${bndlib-version-base},${bndlib-version-ceiling})'
 
 aQute-repository-base: 2.0.5

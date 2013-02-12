@@ -13,7 +13,7 @@
 <feature
       id="bndtools.ace.feature"
       label="Bndtools / Apache ACE integration"
-      version="1.1.0.REL"
+      version="1.1.1.DEV-qualifier"
       provider-name="Bndtools"
       plugin="bndtools.ace.plugin">
 

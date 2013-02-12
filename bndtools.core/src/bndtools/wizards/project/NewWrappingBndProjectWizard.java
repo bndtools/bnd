@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -20,6 +19,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.osgi.framework.Constants;
 
@@ -113,7 +113,7 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
     }
 
     @Override
-    protected void processGeneratedProject(BndEditModel bndModel, IProject project, IProgressMonitor monitor) throws CoreException {
+    protected void processGeneratedProject(BndEditModel bndModel, IJavaProject project, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 2);
         super.processGeneratedProject(bndModel, project, progress.newChild(1));
 
@@ -122,7 +122,7 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
             int workRemaining = 1 + paths.size();
             progress.setWorkRemaining(workRemaining);
 
-            IFolder libFolder = project.getFolder("lib");
+            IFolder libFolder = project.getProject().getFolder("lib");
             libFolder.create(false, true, progress.newChild(1));
 
             // Copy JARs into project lib folder.

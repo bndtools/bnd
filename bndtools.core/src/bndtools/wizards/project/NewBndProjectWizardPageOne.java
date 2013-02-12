@@ -42,15 +42,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 import bndtools.api.IProjectTemplate;
+import bndtools.api.ProjectPaths;
 import bndtools.classpath.BndContainerInitializer;
 
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
-
-    private static final String PATH_SRC = "src";
-    private static final String PATH_SRC_BIN = "bin";
-
-    private static final String PATH_TEST_SRC = "test";
-    private static final String PATH_TEST_BIN = "bin_test";
 
     private IProjectTemplate projectTemplate;
 
@@ -145,17 +140,17 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         IPath projectPath = new Path(getProjectName()).makeAbsolute();
 
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(2);
-        newEntries.add(JavaCore.newSourceEntry(projectPath.append(PATH_SRC)));
+        newEntries.add(JavaCore.newSourceEntry(projectPath.append(ProjectPaths.PATH_SRC), null, projectPath.append(ProjectPaths.PATH_SRC_BIN)));
 
         if (projectTemplate == null || projectTemplate.enableTestSourceFolder())
-            newEntries.add(JavaCore.newSourceEntry(projectPath.append(PATH_TEST_SRC), null, projectPath.append(PATH_TEST_BIN)));
+            newEntries.add(JavaCore.newSourceEntry(projectPath.append(ProjectPaths.PATH_TEST_SRC), null, projectPath.append(ProjectPaths.PATH_TEST_BIN)));
 
         return newEntries.toArray(new IClasspathEntry[newEntries.size()]);
     }
 
     @Override
     public IPath getOutputLocation() {
-        return new Path(getProjectName()).makeAbsolute().append(PATH_SRC_BIN);
+        return new Path(getProjectName()).makeAbsolute().append(ProjectPaths.PATH_SRC_BIN);
     }
 
     public void setProjectTemplate(IProjectTemplate projectTemplate) {

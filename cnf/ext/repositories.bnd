@@ -14,14 +14,15 @@ deps: ${workspace}/cnf/deps
 bndBuildNum: 49
 remoteRepo: https://bndtools.ci.cloudbees.com/job/bnd.master/${bndBuildNum}/artifact/dist/bundles/repository.xml
 ## Remote Bnd Repository (Latest successful build on Jenkins)
-latestRemoteRepo: https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/repository.xml
+latestMasterRemoteRepo: https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/repository.xml
+latestNextRemoteRepo: https://bndtools.ci.cloudbees.com/job/bnd.next/lastSuccessfulBuild/artifact/dist/bundles/repository.xml
 ## Local Bnd Repository (Assumes bnd is checked out as "bnd" directory next to current workspace directory)
 localRepo:  file:///${workspace}/../bnd/dist/bundles/repository.xml
 
 ## REPOSITORY SELECTION
-## Switch locations between remoteRepo/latestRemoteRepo/localRepo as required
+## Switch locations between remoteRepo/latestMasterRemoteRepo/latestNextRemoteRepo/localRepo as required
 ## WARNING: localRepo will break the build if pushed to GitHub... it is used for local testing only!!
 -plugin:\
 	aQute.lib.deployer.FileRepo;name=Dependencies;location=${deps},\
-	aQute.bnd.deployer.repository.FixedIndexedRepo;locations=${remoteRepo};name=bnd,\
+	aQute.bnd.deployer.repository.FixedIndexedRepo;locations=${latestMasterRemoteRepo};name=bnd,\
 	${eclipse-repo}
