@@ -416,4 +416,17 @@ public class RepoCommand {
 			}
 		}
 	}
+	
+	@Arguments(arg="bsn")
+	interface VersionsOptions extends Options {
+		
+	}
+	public void _versions(VersionsOptions opts) throws Exception {
+		TreeSet<Version> versions = new TreeSet<Version>();
+		String bsn = opts._().remove(0);
+		for ( RepositoryPlugin repo : repos) {
+			versions.addAll( repo.versions(bsn));
+		}
+		bnd.out.println(versions);
+	}
 }
