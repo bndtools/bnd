@@ -42,6 +42,7 @@ public class BaselineCommands {
 			"newer jar", "older jar"
 	})
 	interface baseLineOptions extends Options {
+		@Description("Output file with fixup info")
 		String fixup();
 	}
 
@@ -49,6 +50,7 @@ public class BaselineCommands {
 	 * Compare
 	 */
 
+	@Description("Compare a newer bundle to a baselined bundle and provide versioning advice")
 	public void _baseline(baseLineOptions opts) throws Exception {
 
 		List<String> args = opts._();
@@ -119,11 +121,12 @@ public class BaselineCommands {
 	 * package overview -ee j2se-1.6.0 -ee j2se-1.5.0 -ee j2ee-1.4.0 javax.activation-1.1.jar
 	 * </pre>
 	 */
+	@Description("Print out the packages from spec jars and check in which ees they appear. Very specific. For example, schema -ee j2se-1.6.0 -ee j2se-1.5.0 -ee j2ee-1.4.0 javax.activation-1.1.jar")
 	interface schemaOptions extends Options {
-		Collection<Instruction> filter();
-
+		@Description("Output file")
 		String output(String deflt);
 
+		@Description("Specify an XSL file for pretty printing")
 		String xsl();
 	}
 

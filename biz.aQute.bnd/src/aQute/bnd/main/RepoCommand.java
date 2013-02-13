@@ -21,9 +21,13 @@ import aQute.lib.json.*;
 public class RepoCommand {
 	final static JSONCodec	codec	= new JSONCodec();
 
-	@Description("Access to the repositories")
+	@Description("Access to the repositories. Provides a number of sub commands to manipulate the repository "
+			+ "(see repo help) that provide access to the installed repos for the current project.")
+	@Arguments(arg = {
+			"sub-cmd", "..."
+	})
 	interface repoOptions extends Options {
-		@Description("Add a file repository")
+		@Description("Add a File Repository")
 		Collection<String> repo();
 
 		@Description("Include the maven repository")
@@ -119,8 +123,11 @@ public class RepoCommand {
 	/**
 	 * List the repos
 	 */
+	@Arguments(arg = {})
+	@Description("List the current repositories")
 	interface reposOptions extends Options {}
 
+	@Description("List the current repositories")
 	public void _repos(@SuppressWarnings("unused")
 	reposOptions opts) {
 		int n = 1;
@@ -140,14 +147,21 @@ public class RepoCommand {
 	/**
 	 * List the content of the repos
 	 */
+	@Description("List all artifacts from the current repositories with their versions")
+	@Arguments(arg = {})
 	interface listOptions extends Options {
-		boolean versions();
 
-		String mask();
+		@Description("Do not list the versions, just the bsns")
+		boolean noversions();
 
+		@Description("Optional search term for the list of bsns (given to the repo)")
+		String query();
+
+		@Description("A glob expression on the source repo, default is all repos")
 		Instruction from();
 	}
 
+	@Description("List all artifacts from the current repositories with their versions")
 	public void _list(listOptions opts) throws Exception {
 		bnd.trace("list");
 		Set<String> bsns = new HashSet<String>();
@@ -157,21 +171,25 @@ public class RepoCommand {
 
 		for (RepositoryPlugin repo : repos) {
 			if (from.matches(repo.getName()))
-				bsns.addAll(repo.list(opts.mask()));
+				bsns.addAll(repo.list(opts.query()));
 		}
 		bnd.trace("list " + bsns);
 
 		for (String bsn : new SortedList<String>(bsns)) {
-			Set<Version> versions = new TreeSet<Version>();
-			for (RepositoryPlugin repo : repos) {
-				bnd.trace("get " + bsn + " from " + repo);
-				if (from.matches(repo.getName())) {
-					SortedSet<Version> result = repo.versions(bsn);
-					if (result != null)
-						versions.addAll(result);
+			if (!opts.noversions()) {
+				Set<Version> versions = new TreeSet<Version>();
+				for (RepositoryPlugin repo : repos) {
+					bnd.trace("get " + bsn + " from " + repo);
+					if (from.matches(repo.getName())) {
+						SortedSet<Version> result = repo.versions(bsn);
+						if (result != null)
+							versions.addAll(result);
+					}
 				}
+				bnd.out.printf("%-40s %s%n", bsn, versions);
+			} else {
+				bnd.out.printf("%s%n", bsn);
 			}
-			bnd.out.printf("%-40s %s%n", bsn, versions);
 		}
 	}
 
@@ -181,14 +199,21 @@ public class RepoCommand {
 	 * @param opts
 	 */
 
+	@Description("Get an artifact from a repository.")
+	@Arguments(arg = {
+			"bsn", "[range]"
+	})
 	interface getOptions extends Options {
+		@Description("Where to store the artifact")
 		String output();
 
+		@Description("")
 		boolean lowest();
 
 		Instruction from();
 	}
 
+	@Description("Get an artifact from a repository.")
 	public void _get(getOptions opts) throws Exception {
 		Instruction from = opts.from();
 		if (from == null)
@@ -262,11 +287,16 @@ public class RepoCommand {
 	 * put
 	 */
 
+	@Description("Put an artifact into the repository after it has been verified.")
+	@Arguments(arg = {
+		"<jar>..."
+	})
 	interface putOptions extends Options {
-		boolean overwrite();
+		@Description("Put in repository even if verification fails (actually, no verification is done).")
 		boolean force();
 	}
 
+	@Description("Put an artifact into the repository after it has been verified.")
 	public void _put(putOptions opts) throws Exception {
 		if (writable == null) {
 			bnd.error("No writable repository in %s", repos);
@@ -322,11 +352,14 @@ public class RepoCommand {
 	@Arguments(arg = {
 			"newer repo", "[older repo]"
 	})
+	@Description("Show the diff tree of a single repo or compare 2  repos. A diff tree is a "
+			+ "detailed tree of all aspects of a bundle, including its packages, types, methods, "
+			+ "fields, and modifiers.")
 	interface diffOptions extends Options {
 		@Description("Serialize to JSON")
 		boolean json();
 
-		@Description("Show full diff tree (also equals)")
+		@Description("Show full diff tree (also wen entries are equal)")
 		boolean full();
 
 		@Description("Formatted like diff")
@@ -335,11 +368,14 @@ public class RepoCommand {
 		@Description("Both add and removes")
 		boolean all();
 
+		@Description("Just removes (no additions)")
 		boolean remove();
 
+		@Description("Just additions (no removes)")
 		boolean added();
 	}
 
+	@Description("Diff jars (or show tree)")
 	public void _diff(diffOptions options) throws UnsupportedEncodingException, IOException, Exception {
 
 		List<String> _ = options._();
@@ -404,10 +440,12 @@ public class RepoCommand {
 	}
 
 	@Description("Refresh refreshable repositories")
+	@Arguments(arg = {})
 	interface RefreshOptions extends Options {
 
 	}
 
+	@Description("Refresh refreshable repositories")
 	public void _refresh(RefreshOptions opts) throws Exception {
 		for (Object o : repos) {
 			if (o instanceof Refreshable) {
@@ -416,16 +454,19 @@ public class RepoCommand {
 			}
 		}
 	}
-	
-	@Arguments(arg="bsn")
+
+	@Description("Displays a sorted set of versions for a given bsn that can be found in the current repositories.")
+	@Arguments(arg = "bsn")
 	interface VersionsOptions extends Options {
-		
+
 	}
+
+	@Description("Displays a list of versions for a given bsn that can be found in the current repositories.")
 	public void _versions(VersionsOptions opts) throws Exception {
 		TreeSet<Version> versions = new TreeSet<Version>();
 		String bsn = opts._().remove(0);
-		for ( RepositoryPlugin repo : repos) {
-			versions.addAll( repo.versions(bsn));
+		for (RepositoryPlugin repo : repos) {
+			versions.addAll(repo.versions(bsn));
 		}
 		bnd.out.println(versions);
 	}
