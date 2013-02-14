@@ -219,7 +219,7 @@ class JavaElement {
 			public void deprecated() {
 				if (memberEnd)
 					clazz.setDeprecated(true);
-				else
+				else if (last != null)
 					last.setDeprecated(true);
 			}
 
@@ -314,7 +314,7 @@ class JavaElement {
 				if (Deprecated.class.getName().equals(annotation.getName().getFQN())) {
 					if (memberEnd)
 						clazz.setDeprecated(true);
-					else
+					else if (last != null)
 						last.setDeprecated(true);
 					return;
 				}
