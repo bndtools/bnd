@@ -7,7 +7,7 @@
 	     This file is maintained automatically by Bndtools! You should not edit it directly.
 	     Instead, insert overrides into build.xml as follows:
 	     
-	     <target name="compile">
+	     <target name="compile" depends="template.init">
 	        <echo message="This task executed before compilation..."/>
 	        <antcall target="template.compile"/>
 	        <echo message="This task executed AFTER compilation."/>
