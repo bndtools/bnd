@@ -1,5 +1,6 @@
 package bndtools.internal.decorator;
 
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -33,6 +35,7 @@ import aQute.bnd.osgi.Processor;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.utils.FileUtils;
 import bndtools.utils.SWTConcurrencyUtil;
 
 public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule {
@@ -108,7 +111,20 @@ public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule 
                     logger.logWarning(MessageFormat.format("Unable to process exported packages for builder of {0}.", builder.getPropertiesFile()), e);
                 }
             }
-            Central.setProjectPackageModel(project, allExports, allContained);
+
+            Collection<File> modelSourcePaths = model.getSourcePath();
+            Collection<IResource> modelSourcePathsResources = null;
+            if (modelSourcePaths != null && !modelSourcePaths.isEmpty()) {
+                modelSourcePathsResources = new HashSet<IResource>();
+                for (File modelSourcePath : modelSourcePaths) {
+                    IResource modelSourcePathResource = FileUtils.toProjectResource(project, modelSourcePath);
+                    if (modelSourcePathResource != null) {
+                        modelSourcePathsResources.add(modelSourcePathResource);
+                    }
+                }
+            }
+
+            Central.setProjectPackageModel(project, allExports, allContained, modelSourcePathsResources);
 
             Display display = PlatformUI.getWorkbench().getDisplay();
             SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {

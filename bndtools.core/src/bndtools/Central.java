@@ -47,6 +47,7 @@ public class Central {
     static final AtomicBoolean indexValid = new AtomicBoolean(false);
     static final ConcurrentMap<String,Map<String,SortedSet<Version>>> exportedPackageMap = new ConcurrentHashMap<String,Map<String,SortedSet<Version>>>();
     static final ConcurrentMap<String,Collection<String>> containedPackageMap = new ConcurrentHashMap<String,Collection<String>>();
+    static final ConcurrentMap<String,Collection<IResource>> sourceFolderMap = new ConcurrentHashMap<String,Collection<IResource>>();
 
     final Map<IJavaProject,Project> javaProjectToModel = new HashMap<IJavaProject,Project>();
     final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
@@ -341,10 +342,16 @@ public class Central {
         return containedPackageMap.get(key);
     }
 
-    public static void setProjectPackageModel(IProject project, Map<String,SortedSet<Version>> exports, Collection<String> contained) {
+    public static Collection<IResource> getSourceFolderModel(IProject project) {
+        String key = project.getFullPath().toPortableString();
+        return sourceFolderMap.get(key);
+    }
+
+    public static void setProjectPackageModel(IProject project, Map<String,SortedSet<Version>> exports, Collection<String> contained, Collection<IResource> sourceFolders) {
         String key = project.getFullPath().toPortableString();
         exportedPackageMap.put(key, exports);
         containedPackageMap.put(key, contained);
+        sourceFolderMap.put(key, sourceFolders);
     }
 
 }

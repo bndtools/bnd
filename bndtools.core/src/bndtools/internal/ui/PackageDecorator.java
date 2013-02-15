@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -40,6 +41,17 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
             boolean schedule = true;
 
             try {
+                Collection<IResource> sourceFolders = Central.getSourceFolderModel(project);
+                if (sourceFolders == null) {
+                    return;
+                }
+
+                IResource sourceFolderResource = pkg.getParent().getResource();
+                if (!sourceFolders.contains(sourceFolderResource)) {
+                    schedule = false;
+                    return;
+                }
+
                 Map<String, ? extends Collection<Version>> exports = Central.getExportedPackageModel(project);
                 if (exports == null) {
                     return;
