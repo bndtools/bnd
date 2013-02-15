@@ -34,16 +34,13 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
         if (element instanceof IPackageFragment) {
 
             IPackageFragment pkg = (IPackageFragment) element;
-            String pkgName = pkg.getElementName();
-            boolean emptyPkg = isEmptyPackage(pkg);
-            boolean isSourcePkg = isSourcePackage(pkg);
 
             IJavaProject javaProject = pkg.getJavaProject();
             IProject project = javaProject.getProject();
 
             Map<String, ? extends Collection<Version>> exports = Central.getExportedPackageModel(project);
-            Collection<String> contained = Central.getContainedPackageModel(project);
             if (exports != null) {
+                String pkgName = pkg.getElementName();
                 Collection<Version> versions = exports.get(pkgName);
                 if (versions != null) {
                     decoration.addOverlay(exportedIcon);
@@ -53,6 +50,9 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
                         decoration.addSuffix(" " + versions.toString());
                 }
 
+                boolean isSourcePkg = isSourcePackage(pkg);
+                boolean emptyPkg = isEmptyPackage(pkg);
+                Collection<String> contained = Central.getContainedPackageModel(project);
                 if (isSourcePkg && !emptyPkg && (contained == null || !contained.contains(pkgName))) {
                     decoration.addOverlay(excludedIcon);
                     decoration.addSuffix(" <excluded>");
