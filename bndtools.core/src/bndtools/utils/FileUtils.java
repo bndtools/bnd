@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspace;
@@ -98,6 +99,20 @@ public class FileUtils {
         if (c.equals(dir))
             return true;
         return isAncestor(dir, c.getParentFile());
+    }
+
+    public static IResource toProjectResource(IProject project, File file) {
+        if (file == null) {
+            return null;
+        }
+
+        String projectPath = project.getLocation().toFile().getAbsolutePath();
+        String filePath = file.getAbsolutePath();
+        if (!filePath.startsWith(projectPath)) {
+            return null;
+        }
+
+        return project.getFolder(filePath.substring(projectPath.length()));
     }
 
     public static IResource toWorkspaceResource(File file) {
