@@ -351,7 +351,10 @@ public class Central {
         String key = project.getFullPath().toPortableString();
         exportedPackageMap.put(key, exports);
         containedPackageMap.put(key, contained);
-        sourceFolderMap.put(key, sourceFolders);
+        if (sourceFolders == null) {
+            sourceFolderMap.remove(key);
+        } else {
+            sourceFolderMap.put(key, sourceFolders);
+        }
     }
-
 }
