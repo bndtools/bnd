@@ -37,9 +37,16 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 
             IJavaProject javaProject = pkg.getJavaProject();
             IProject project = javaProject.getProject();
+            boolean schedule = true;
 
-            Map<String, ? extends Collection<Version>> exports = Central.getExportedPackageModel(project);
-            if (exports != null) {
+            try {
+                Map<String, ? extends Collection<Version>> exports = Central.getExportedPackageModel(project);
+                if (exports == null) {
+                    return;
+                }
+
+                schedule = false;
+
                 String pkgName = pkg.getElementName();
                 Collection<Version> versions = exports.get(pkgName);
                 if (versions != null) {
@@ -57,8 +64,10 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
                     decoration.addOverlay(excludedIcon);
                     decoration.addSuffix(" <excluded>");
                 }
-            } else {
-                ExportedPackageDecoratorJob.scheduleForProject(project);
+            } finally {
+                if (schedule) {
+                    ExportedPackageDecoratorJob.scheduleForProject(project);
+                }
             }
         }
     }
