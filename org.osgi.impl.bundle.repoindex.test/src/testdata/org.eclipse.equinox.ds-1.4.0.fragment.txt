@@ -140,6 +140,6 @@
     <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.felix.scr)(version&gt;=1.6.0)(!(version&gt;=1.7.0)))'/>
   </requirement>
   <requirement namespace='osgi.ee'>
-    <directive name='filter' value='(|(osgi.ee=OSGi/Minimum-1.2)(osgi.ee=CDC-1.1/Foundation-1.1)(osgi.ee=J2SE-1.4))'/>
+    <directive name='filter' value='(|(&amp;(osgi.ee=OSGi/Minimum)(version=1.2))(&amp;(osgi.ee=CDC/Foundation)(version=1.1))(&amp;(osgi.ee=J2SE)(version=1.4)))'/>
   </requirement>
 </resource>
