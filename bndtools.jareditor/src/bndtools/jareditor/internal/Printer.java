@@ -200,7 +200,7 @@ public class Printer extends Processor {
             String name = key.toString();
 
             SortedList<Object> values = new SortedList<Object>(map.get(key));
-            String list = vertical(40, values);
+            String list = vertical(41, values);
             format(out, "%-40s %s", name, list);
         }
     }
