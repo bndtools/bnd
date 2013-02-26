@@ -157,8 +157,6 @@ public class Printer extends Processor {
                             }
                             out.println();
                         }
-                    } else {
-                        out.println(name + " <no contents>");
                     }
                 }
                 out.println();
