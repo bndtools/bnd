@@ -343,36 +343,13 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         final Set<File> changedFiles = new HashSet<File>();
 
-        final IPath projectPath = getProject().getFullPath();
-        final IPath targetDirFullPath = projectPath.append(calculateTargetDirPath(model));
         final Set<File> targetJars = findJarsInTarget();
 
         boolean force = false;
         IResourceDelta delta;
 
-        IResourceDeltaVisitor deltaVisitor = new IResourceDeltaVisitor() {
-            public boolean visit(IResourceDelta delta) throws CoreException {
-                if (!isChangeDelta(delta))
-                    return false;
+        IResourceDeltaVisitor deltaVisitor = new ProjectDeltaVisitor(getProject(), changedFiles);
 
-                IResource resource = delta.getResource();
-                if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT)
-                    return true;
-
-                if (resource.getType() == IResource.FOLDER) {
-                    IPath folderPath = resource.getFullPath();
-                    // ignore ALL files in target dir
-                    return !folderPath.equals(targetDirFullPath);
-                }
-
-                if (resource.getType() == IResource.FILE) {
-                    File file = resource.getLocation().toFile();
-                    changedFiles.add(file);
-                }
-
-                return false;
-            }
-        };
         // Get delta on local project
         delta = getDelta(getProject());
         if (delta != null) {
@@ -386,7 +363,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
         for (IProject depProject : dependsOn) {
             delta = getDelta(depProject);
             if (delta != null) {
-                delta.accept(deltaVisitor);
+                IResourceDeltaVisitor depVisitor = new ProjectDeltaVisitor(depProject, changedFiles);
+                delta.accept(depVisitor);
                 log(LOG_FULL, "%d files in dependency project '%s' changed or removed: %s", changedFiles.size(), depProject.getName(), changedFiles);
             } else {
                 log(LOG_BASIC, "no info available on changes from project '%s'", depProject.getName());
@@ -807,4 +785,45 @@ public class NewBuilder extends IncrementalProjectBuilder {
             buildLog.add(String.format(message, args));
     }
 
+    private static class ProjectDeltaVisitor implements IResourceDeltaVisitor {
+
+        final Project model;
+        final Set<File> changedFiles;
+        final IPath targetDirFullPath;
+
+        ProjectDeltaVisitor(final IProject project, final Set<File> changedFiles) throws Exception {
+            this.changedFiles = changedFiles;
+            this.model = Workspace.getProject(project.getLocation().toFile());
+            if (this.model == null) {
+                this.targetDirFullPath = null;
+                return;
+            }
+            this.targetDirFullPath = project.getFullPath().append(calculateTargetDirPath(model));
+        }
+
+        public boolean visit(IResourceDelta delta) throws CoreException {
+            if (targetDirFullPath == null) {
+                return false;
+            }
+            if (!isChangeDelta(delta))
+                return false;
+
+            IResource resource = delta.getResource();
+            if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT)
+                return true;
+
+            if (resource.getType() == IResource.FOLDER) {
+                IPath folderPath = resource.getFullPath();
+                // ignore ALL files in target dir
+                return !folderPath.equals(targetDirFullPath);
+            }
+
+            if (resource.getType() == IResource.FILE) {
+                File file = resource.getLocation().toFile();
+                changedFiles.add(file);
+            }
+
+            return false;
+        }
+    }
 }
