@@ -17,6 +17,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -203,6 +204,9 @@ public class Central {
             // Initialize projects in synchronized block
             newWorkspace.getBuildOrder();
 
+            // Monitor changes in cnf so we can refresh the workspace
+            addCnfChangeListener(newWorkspace);
+
             // The workspace has been initialized fully, set the field now
             workspace = newWorkspace;
 
@@ -231,6 +235,82 @@ public class Central {
         // Have to assume that the eclipse workspace == the bnd workspace,
         // and cnf hasn't been imported yet.
         return eclipseWorkspace.getLocation().toFile();
+    }
+
+    private static void addCnfChangeListener(final Workspace workspace) {
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
+
+            public void resourceChanged(IResourceChangeEvent event) {
+                if (event.getType() != IResourceChangeEvent.POST_CHANGE)
+                    return;
+
+                IResourceDelta rootDelta = event.getDelta();
+                if (isCnfChanged(rootDelta)) {
+                    workspace.refresh();
+                }
+            }
+        });
+    }
+
+    public static boolean isCnfChanged(IResourceDelta delta) {
+
+        final AtomicBoolean result = new AtomicBoolean(false);
+        try {
+            delta.accept(new IResourceDeltaVisitor() {
+                public boolean visit(IResourceDelta delta) throws CoreException {
+                    try {
+
+                        if (!isChangeDelta(delta))
+                            return false;
+
+                        IResource resource = delta.getResource();
+                        if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT && resource.getName().equals(Workspace.CNFDIR))
+                            return true;
+
+                        if (resource.getType() == IResource.PROJECT)
+                            return false;
+
+                        if (resource.getType() == IResource.FOLDER && resource.getName().equals("ext")) {
+                            result.set(true);
+                            return false;
+                        }
+
+                        if (resource.getType() == IResource.FILE) {
+                            if (Workspace.BUILDFILE.equals(resource.getName())) {
+                                result.set(true);
+                                return false;
+                            }
+                            // Check files included by the -include directive in build.bnd
+                            List<File> includedFiles = workspace.getIncluded();
+                            if (includedFiles == null) {
+                                return false;
+                            }
+                            for (File includedFile : includedFiles) {
+                                if (includedFile.equals(resource.getLocation().toFile())) {
+                                    result.set(true);
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
+                    } catch (Exception e) {
+                        throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, "During checking project changes", e));
+                    }
+                }
+
+            });
+        } catch (CoreException e) {
+            logger.logError("Central.isCnfChanged() failed", e);
+        }
+        return result.get();
+    }
+
+    public static boolean isChangeDelta(IResourceDelta delta) {
+        if (IResourceDelta.MARKERS == delta.getFlags())
+            return false;
+        if ((delta.getKind() & (IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED)) == 0)
+            return false;
+        return true;
     }
 
     public void changed(Project model) {
