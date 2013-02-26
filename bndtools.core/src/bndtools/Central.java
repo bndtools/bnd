@@ -19,7 +19,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -192,32 +191,46 @@ public class Central {
         if (workspace != null)
             return workspace;
 
-        IWorkspace eclipseWorkspace = ResourcesPlugin.getWorkspace();
-        IProject cnfProject = eclipseWorkspace.getRoot().getProject("bnd");
+        Workspace newWorkspace = null;
 
+        try {
+            newWorkspace = Workspace.getWorkspace(getWorkspaceDirectory());
+
+            newWorkspace.addBasicPlugin(new WorkspaceListener(newWorkspace));
+            newWorkspace.addBasicPlugin(Activator.instance.repoListenerTracker);
+            newWorkspace.addBasicPlugin(getWorkspaceR5Repository());
+
+            // Initialize projects in synchronized block
+            newWorkspace.getBuildOrder();
+
+            // The workspace has been initialized fully, set the field now
+            workspace = newWorkspace;
+
+            return workspace;
+        } catch (final Exception e) {
+            if (newWorkspace != null) {
+                newWorkspace.close();
+            }
+            throw e;
+        }
+    }
+
+    private static File getWorkspaceDirectory() throws CoreException {
+        IWorkspaceRoot eclipseWorkspace = ResourcesPlugin.getWorkspace().getRoot();
+
+        IProject cnfProject = eclipseWorkspace.getProject("bnd");
         if (!cnfProject.exists())
-            cnfProject = eclipseWorkspace.getRoot().getProject("cnf");
+            cnfProject = eclipseWorkspace.getProject("cnf");
 
         if (cnfProject.exists()) {
             if (!cnfProject.isOpen())
                 cnfProject.open(null);
-            File cnfDir = cnfProject.getLocation().toFile();
-            workspace = Workspace.getWorkspace(cnfDir.getParentFile());
-        } else {
-            // Have to assume that the eclipse workspace == the bnd workspace,
-            // and cnf hasn't been imported yet.
-            File workspaceDir = eclipseWorkspace.getRoot().getLocation().toFile();
-            workspace = Workspace.getWorkspace(workspaceDir);
+            return cnfProject.getLocation().toFile().getParentFile();
         }
 
-        workspace.addBasicPlugin(new WorkspaceListener(workspace));
-        workspace.addBasicPlugin(Activator.instance.repoListenerTracker);
-        workspace.addBasicPlugin(getWorkspaceR5Repository());
-
-        // Initialize projects in synchronized block
-        workspace.getBuildOrder();
-
-        return workspace;
+        // Have to assume that the eclipse workspace == the bnd workspace,
+        // and cnf hasn't been imported yet.
+        return eclipseWorkspace.getLocation().toFile();
     }
 
     public void changed(Project model) {
