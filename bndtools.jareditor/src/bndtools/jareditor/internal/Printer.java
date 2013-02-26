@@ -264,6 +264,7 @@ public class Printer extends Processor {
                     width += c - '0';
                     c = string.charAt(i++);
                 }
+                --i;
                 if (c != 's') {
                     throw new IllegalArgumentException("Invalid sprintf format:  " + string);
                 }
