@@ -145,7 +145,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 }
                 log(LOG_FULL, "classpaths were not changed");
                 this.subBuilders = model.getSubBuilders();
-                rebuildIfLocalChanges(dependsOn);
+                rebuildIfLocalChanges(dependsOn, true);
                 return dependsOn;
             }
             // (NB: from now on the delta cannot be null, due to the check in
@@ -165,7 +165,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
             // CASE 4: local file changes
             this.subBuilders = model.getSubBuilders();
-            rebuildIfLocalChanges(dependsOn);
+            rebuildIfLocalChanges(dependsOn, false);
 
             return dependsOn;
         } catch (Exception e) {
@@ -338,14 +338,14 @@ public class NewBuilder extends IncrementalProjectBuilder {
     /**
      * @return Whether any files were built
      */
-    private boolean rebuildIfLocalChanges(IProject[] dependsOn) throws Exception {
+    private boolean rebuildIfLocalChanges(IProject[] dependsOn, boolean forceBuild) throws Exception {
         log(LOG_FULL, "calculating local changes...");
 
         final Set<File> changedFiles = new HashSet<File>();
 
         final Set<File> targetJars = findJarsInTarget();
 
-        boolean force = false;
+        boolean force = forceBuild;
         IResourceDelta delta;
 
         IResourceDeltaVisitor deltaVisitor = new ProjectDeltaVisitor(getProject(), changedFiles);
