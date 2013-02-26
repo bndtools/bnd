@@ -71,6 +71,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
     private Project model;
     private BuildListeners listeners;
+    private Collection< ? extends Builder> subBuilders;
 
     private List<String> classpathErrors;
     private MultiStatus validationResults;
@@ -143,6 +144,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                     return dependsOn;
                 }
                 log(LOG_FULL, "classpaths were not changed");
+                this.subBuilders = model.getSubBuilders();
                 rebuildIfLocalChanges(dependsOn);
                 return dependsOn;
             }
@@ -162,6 +164,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             }
 
             // CASE 4: local file changes
+            this.subBuilders = model.getSubBuilders();
             rebuildIfLocalChanges(dependsOn);
 
             return dependsOn;
@@ -179,6 +182,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             }
 
             model = null;
+            subBuilders = null;
         }
     }
 
@@ -392,7 +396,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         // Process the sub-builders to determine whether a rebuild, force
         // rebuild, or nothing is required.
         if (!model.isNoBundles())
-            for (Builder builder : model.getSubBuilders()) {
+            for (Builder builder : subBuilders) {
                 // If the builder's output JAR has been removed, this could be
                 // because the user
                 // deleted it, so we should force build in order to regenerate
@@ -513,8 +517,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         // Validate
         List<IValidator> validators = loadValidators();
         if (validators != null) {
-            Collection< ? extends Builder> builders = model.getSubBuilders();
-            for (Builder builder : builders) {
+            for (Builder builder : subBuilders) {
                 validate(builder, validators);
             }
         }
@@ -570,7 +573,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         } else {
             // Delete target files since the project has compile errors and the
             // delete action was selected.
-            for (Builder builder : model.getSubBuilders()) {
+            for (Builder builder : subBuilders) {
                 File targetFile = new File(model.getTarget(), builder.getBsn() + ".jar");
                 boolean deleted = targetFile.delete();
                 log(LOG_FULL, "deleted target file %s (%b)", targetFile, deleted);
