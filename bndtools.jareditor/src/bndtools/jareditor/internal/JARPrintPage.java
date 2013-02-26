@@ -74,11 +74,11 @@ public class JARPrintPage extends FormPage {
         Printer printer = new Printer();
         printer.setOut(ps);
 
-        // TODO: METATYPE throws NPE
-        int options = 255;
+        /* Printer.METATYPE throws an NPE */
+        int options = Printer.VERIFY | Printer.MANIFEST | Printer.LIST | Printer.IMPEXP | Printer.USES | Printer.USEDBY | Printer.COMPONENT;
+
         printer.doPrint(file.getAbsolutePath(), options);
         ps.close();
         return new String(bos.toByteArray(), "UTF-8");
     }
-
 }
