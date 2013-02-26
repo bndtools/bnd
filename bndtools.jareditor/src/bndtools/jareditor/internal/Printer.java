@@ -119,14 +119,17 @@ public class Printer extends Processor {
                     Map<PackageRef,Set<PackageRef>> usedBy = CollectionUtil.invertMapOfCollection(analyzer.getUses());
                     printMultiMap(usedBy);
                 }
+                out.println();
             }
 
             if ((options & COMPONENT) != 0) {
                 printComponents(jar);
+                out.println();
             }
 
             if ((options & METATYPE) != 0) {
                 printMetatype(jar);
+                out.println();
             }
 
             if ((options & LIST) != 0) {
@@ -149,7 +152,6 @@ public class Printer extends Processor {
                             if (r != null) {
                                 String extra = r.getExtra();
                                 if (extra != null) {
-
                                     out.print(" extra='" + escapeUnicode(extra) + "'");
                                 }
                             }
@@ -341,7 +343,9 @@ public class Printer extends Processor {
 
         String componentHeader = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
         Parameters clauses = new Parameters(componentHeader);
+        boolean printed = false;
         for (String path : clauses.keySet()) {
+            printed = true;
             out.println(path);
 
             Resource r = jar.getResource(path);
@@ -359,7 +363,9 @@ public class Printer extends Processor {
                 warning("No Resource found for service component: " + path);
             }
         }
-        out.println();
+        if (printed) {
+            out.println();
+        }
     }
 
     /**
