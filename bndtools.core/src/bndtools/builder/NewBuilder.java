@@ -248,7 +248,18 @@ public class NewBuilder extends IncrementalProjectBuilder {
                         result.set(true);
                         log(LOG_FULL, "detected change in cnf due to resource %s, kind=0x%x, flags=0x%x", resource.getFullPath(), delta.getKind(), delta.getFlags());
                     } else {
-                        // TODO: check other file names included from build.bnd
+                        // Check files included by the -include directive in build.bnd
+                        List<File> includedFiles = model.getWorkspace().getIncluded();
+                        if (includedFiles == null) {
+                            return false;
+                        }
+                        for (File includedFile : includedFiles) {
+                            IPath location = resource.getLocation();
+                            if (location != null && includedFile.equals(location.toFile())) {
+                                result.set(true);
+                                return false;
+                            }
+                        }
                     }
                 }
 
