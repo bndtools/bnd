@@ -286,7 +286,8 @@ public class Central {
                                 return false;
                             }
                             for (File includedFile : includedFiles) {
-                                if (includedFile.equals(resource.getLocation().toFile())) {
+                                IPath location = resource.getLocation();
+                                if (location != null && includedFile.equals(location.toFile())) {
                                     result.set(true);
                                     return false;
                                 }
