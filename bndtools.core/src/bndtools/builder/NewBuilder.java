@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -410,6 +411,24 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 jar.delete();
             } catch (Exception e) {
                 logger.logError("Error deleting target JAR: " + jar, e);
+            }
+        }
+
+        // Remove files not in scope
+        if (!force && !changedFiles.isEmpty() && !model.isNoBundles()) {
+            for (Iterator<File> itr = changedFiles.iterator(); itr.hasNext();) {
+                File changeFile = itr.next();
+                boolean inScope = false;
+                for (Builder builder : subBuilders) {
+                    if (builder.isInScope(Collections.singleton(changeFile))) {
+                        inScope = true;
+                        break;
+                    }
+                }
+                if (!inScope) {
+                    itr.remove();
+                    log(LOG_FULL, "removed file %s, was not in scope for project %s", changeFile, getProject().getName());
+                }
             }
         }
 
