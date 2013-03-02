@@ -11,6 +11,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.libg.command.*;
 import aQute.libg.generics.*;
+import java.util.regex.*;
 
 /**
  * A Project Launcher is a base class to be extended by launchers. Launchers are
@@ -216,7 +217,7 @@ public abstract class ProjectLauncher {
 		java.add(project.getProperty("java", "java"));
 		java.add("-cp");
 		java.add(Processor.join(getClasspath(), File.pathSeparator));
-		java.addAll(getRunVM());
+		java.addAll(splitEntries(getRunVM()));
 		java.add(getMainTypeName());
 		java.addAll(getRunProgramArgs());
 		if (timeout != 0)
@@ -235,6 +236,27 @@ public abstract class ProjectLauncher {
 		finally {
 			cleanup();
 		}
+	}
+	
+	private Collection<String> splitEntries(Collection<String> initialStrings) {
+		ArrayList<String> newList = new ArrayList<String>();
+		Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
+		for (String stringEntry : initialStrings) {
+			Matcher regexMatcher = regex.matcher(stringEntry);
+			while (regexMatcher.find()) {
+			    if (regexMatcher.group(1) != null) {
+			        // Add double-quoted string without the quotes
+			        newList.add(regexMatcher.group(1));
+			    } else if (regexMatcher.group(2) != null) {
+			        // Add single-quoted string without the quotes
+			        newList.add(regexMatcher.group(2));
+			    } else {
+			        // Add unquoted word
+			        newList.add(regexMatcher.group());
+			    }
+			}
+		}
+		return newList;
 	}
 
 	/**
