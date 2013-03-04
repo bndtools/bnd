@@ -4,10 +4,7 @@ Private-Package: aQute.bnd.*,\
 	aQute.configurable.*,\
 	org.osgi.service.component.annotations.*,\
 	aQute.lib.deployer.*;-split-package:=first,\
-	org.osgi.service.coordinator,\
-	aQute.service.library,\
-	aQute.struct, \
-	aQute.library.*
+	org.osgi.service.coordinator
 
 Export-Package: aQute.bnd.service.*,\
         aQute.bnd.header, \
