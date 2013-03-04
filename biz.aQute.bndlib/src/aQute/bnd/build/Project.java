@@ -695,7 +695,7 @@ public class Project extends Processor {
 		};
 	}
 
-	public File release(String jarName, InputStream jarStream) throws Exception {
+	public URI release(String jarName, InputStream jarStream) throws Exception {
 		String name = getProperty(Constants.RELEASEREPO);
 		return release(name, jarName, jarStream);
 	}
@@ -710,40 +710,49 @@ public class Project extends Processor {
 	 * @return
 	 * @throws Exception
 	 */
-	public File release(String name, String jarName, InputStream jarStream) throws Exception {
-		trace("release %s", name);
-		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
-		RepositoryPlugin rp = null;
-		for (RepositoryPlugin plugin : plugins) {
-			if (!plugin.canWrite()) {
-				continue;
-			}
-			if (name == null) {
-				rp = plugin;
-				break;
-			} else if (name.equals(plugin.getName())) {
-				rp = plugin;
-				break;
-			}
+	public URI release(String name, String jarName, InputStream jarStream) throws Exception {
+		
+		trace("release to %s", name);
+		RepositoryPlugin repo = getReleaseRepo(name);
+
+		if (repo == null) {
+			if (name == null)
+				msgs.NoNameForReleaseRepository();
+			else
+				msgs.ReleaseRepository_NotFoundIn_(name, getPlugins(RepositoryPlugin.class));
+			return null;
 		}
 
-		if (rp != null) {
-			try {
-				PutResult r = rp.put(jarStream, new RepositoryPlugin.PutOptions());
-				trace("Released %s to %s in repository %s", jarName, r.artifact, rp);
-			}
-			catch (Exception e) {
-				msgs.Release_Into_Exception_(jarName, rp, e);
-			}
-		} else if (name == null)
-			msgs.NoNameForReleaseRepository();
-		else
-			msgs.ReleaseRepository_NotFoundIn_(name, plugins);
-
-		return null;
-
+		try {
+			PutResult r = repo.put(jarStream, new RepositoryPlugin.PutOptions());
+			trace("Released %s to %s in repository %s", jarName, r.artifact, repo);
+			return r.artifact;
+		}
+		catch (Exception e) {
+			msgs.Release_Into_Exception_(jarName, repo, e);
+			return null;
+		}
 	}
 
+	RepositoryPlugin getReleaseRepo(String releaserepo) {
+		String name = releaserepo == null ? 
+			name = getProperty(RELEASEREPO) : releaserepo;
+		
+		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		
+		for (RepositoryPlugin plugin : plugins) {
+			if (!plugin.canWrite())
+				continue;
+
+			if (name == null)
+				return plugin;
+				
+			if (name.equals(plugin.getName()))
+				return plugin;
+		}
+		return null;
+	}
+	
 	public void release(boolean test) throws Exception {
 		String name = getProperty(Constants.RELEASEREPO);
 		release(name, test);
