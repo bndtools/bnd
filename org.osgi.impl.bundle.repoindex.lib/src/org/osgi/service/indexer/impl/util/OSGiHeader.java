@@ -58,15 +58,15 @@ public class OSGiHeader {
 							aliases.add(adname.trim());
 					} else {
 						String advalue = qt.nextToken();
-						if (clause.containsKey(adname)) {
-							if (logger != null && logger.isPedantic())
-								logger.warning("Duplicate attribute/directive name " + adname + " in " + value + ". This attribute/directive will be ignored");
-						}
 						if (advalue == null) {
 							if (logger != null)
 								logger.error("No value after '=' sign for attribute " + adname);
 							advalue = "";
 						}
+						
+						while(clause.containsKey(adname.trim()))
+							adname = adname.trim() + DUPLICATE_MARKER;
+						
 						clause.put(adname.trim(), advalue.trim());
 						del = qt.getSeparator();
 						hadAttribute = true;

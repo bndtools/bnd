@@ -39,7 +39,7 @@ Private-Package:\
 	${osgi-pkgs}
 
 # Main headers
-Bundle-Version: 0.0.2.${tstamp}
+Bundle-Version: 0.0.3.${tstamp}
 Bundle-Name: BIndex2: Repository Index Generator (Standalone)
 Main-Class: org.osgi.impl.bundle.bindex.cli.Index
 Bundle-Activator: org.osgi.service.indexer.osgi.Activator

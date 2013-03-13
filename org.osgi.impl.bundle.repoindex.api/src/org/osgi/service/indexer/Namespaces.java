@@ -16,6 +16,7 @@ public final class Namespaces {
 	public static final String NS_EXTENDER = "osgi.extender";
 	public static final String NS_SERVICE = "osgi.service";
 	public static final String NS_CONTRACT = "osgi.contract";
+	public static final String NS_NATIVE = "osgi.native";
 	
 	// Generic attributes
 	public static final String ATTR_VERSION = "version";
@@ -35,6 +36,12 @@ public final class Namespaces {
 	// Package export attributes
 	public static final String ATTR_BUNDLE_SYMBOLIC_NAME = "bundle-symbolic-name";
 	public static final String ATTR_BUNDLE_VERSION = "bundle-version";
+	
+	// Native Attributes
+	public static final String ATTR_NATIVE_OSNAME = NS_NATIVE + ".osname";
+	public static final String ATTR_NATIVE_OSVERSION = NS_NATIVE + ".osversion";
+	public static final String ATTR_NATIVE_PROCESSOR = NS_NATIVE + ".processor";
+	public static final String ATTR_NATIVE_LANGUAGE = NS_NATIVE + ".language";
 	
 	// Common directives
 	public static final String DIRECTIVE_FILTER = "filter";

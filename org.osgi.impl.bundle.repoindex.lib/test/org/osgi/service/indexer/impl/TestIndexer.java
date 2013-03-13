@@ -326,5 +326,7 @@ public class TestIndexer extends TestCase {
 		assertFragmentMatch("testdata/fragment-18.txt", "testdata/18-blueprint2.jar");
 	}
 	
-	
+	public void testFragmentBundleNativeCode() throws Exception {
+		assertFragmentMatch("testdata/fragment-19.txt", "testdata/19-bundlenativecode.jar");
+	}
 }

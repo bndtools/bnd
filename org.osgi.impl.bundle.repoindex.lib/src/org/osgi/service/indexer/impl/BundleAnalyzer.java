@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -62,6 +63,7 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		doBREE(resource, requirements);
 		doCapabilities(resource, capabilities);
 		doRequirements(resource, requirements);
+		doBundleNativeCode(resource, requirements);
 	}	
 
 	private void doIdentity(Resource resource, List<? super Capability> caps) throws Exception {
@@ -424,6 +426,99 @@ class BundleAnalyzer implements ResourceAnalyzer {
 				reqs.add(builder.buildRequirement());
 			}
 		});
+	}
+	
+	private void doBundleNativeCode(Resource resource, final List<? super Requirement> reqs) throws IOException {
+		String nativeHeaderStr = resource.getManifest().getMainAttributes().getValue(Constants.BUNDLE_NATIVECODE);
+		if (nativeHeaderStr == null)
+			return;
+		
+		List<String> options = new LinkedList<String>();
+		
+		Map<String, Map<String, String>> nativeHeader = OSGiHeader.parseHeader(nativeHeaderStr);
+		for (Entry<String, Map<String, String>> entry : nativeHeader.entrySet()) {
+			StringBuilder builder = new StringBuilder().append("(&");
+			Map<String, String> attribs = entry.getValue();
+			
+			String osnamesFilter = buildFilter(attribs, Constants.BUNDLE_NATIVECODE_OSNAME, Namespaces.ATTR_NATIVE_OSNAME);
+			if (osnamesFilter != null)
+				builder.append(osnamesFilter);
+			
+			String versionRangeStr = attribs.get(Constants.BUNDLE_NATIVECODE_OSVERSION);
+			if (versionRangeStr != null)
+				Util.addVersionFilter(builder, new VersionRange(versionRangeStr), VersionKey.NativeOsVersion);
+			
+			String processorFilter = buildFilter(attribs, Constants.BUNDLE_NATIVECODE_PROCESSOR, Namespaces.ATTR_NATIVE_PROCESSOR);
+			if (processorFilter != null)
+				builder.append(processorFilter);
+			
+			String languageFilter = buildFilter(attribs, Constants.BUNDLE_NATIVECODE_LANGUAGE, Namespaces.ATTR_NATIVE_LANGUAGE);
+			if (languageFilter != null)
+				builder.append(languageFilter);
+			
+			String selectionFilter = attribs.get(Constants.SELECTION_FILTER_ATTRIBUTE);
+			if (selectionFilter != null)
+				builder.append(selectionFilter);
+			
+			builder.append(")");
+			options.add(builder.toString());
+		}
+		if (options.isEmpty())
+			return;
+
+		String filter;
+		if (options.size() == 1)
+			filter = options.get(0);
+		else {
+			StringBuilder builder = new StringBuilder();
+			builder.append("(|");
+			for (String option : options)
+				builder.append(option);
+			builder.append(")");
+			filter = builder.toString();
+		}
+		
+		Requirement req = new Builder()
+			.setNamespace(Namespaces.NS_NATIVE)
+			.addDirective(Namespaces.DIRECTIVE_FILTER, filter)
+			.buildRequirement();
+		reqs.add(req);
+	}
+	
+	/*
+	 * Assemble a compound filter by searching a map of attributes. E.g. the following values:
+	 * 
+	 * 1. foo=bar
+	 * 2. foo=baz
+	 * 3. foo=quux
+	 * 
+	 * become the filter (|(foo~=bar)(foo~=baz)(foo~=quux)).
+	 * 
+	 * Note that the duplicate foo keys will have trailing tildes as duplicate markers, these will
+	 * be removed.
+	 */
+	private String buildFilter(Map<String, String> attribs, String match, String filterKey) {
+		List<String> options = new LinkedList<String>();
+		for (Entry<String,String> entry : attribs.entrySet()) {
+			String key = OSGiHeader.removeDuplicateMarker(entry.getKey());
+			if (match.equals(key)) {
+				String filter = String.format("(%s~=%s)", filterKey, entry.getValue());
+				options.add(filter);
+			}
+		}
+		
+		if (options.isEmpty())
+			return null;
+		if (options.size() == 1)
+			return options.get(0);
+		
+		StringBuilder builder = new StringBuilder();
+		builder.append("(|");
+		for (String option : options)
+			builder.append(option);
+		builder.append(")");
+		
+		return builder.toString();
 	}
 	
 	private static void buildFromHeader(String headerStr, Yield<Builder> output) {
