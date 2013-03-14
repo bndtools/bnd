@@ -19,6 +19,6 @@
     <attribute name='bundle-version' type='Version' value='0.0.0'/>
   </capability>
   <requirement namespace='osgi.ee'>
-    <directive name='filter' value='(|(osgi.ee=J2SE-1.4)(osgi.ee=OSGi/Minimum-1.1))'/>
+    <directive name='filter' value='(|(&amp;(osgi.ee=JavaSE)(version=1.4))(&amp;(osgi.ee=OSGi/Minimum)(version=1.1)))'/>
   </requirement>
 </resource>
