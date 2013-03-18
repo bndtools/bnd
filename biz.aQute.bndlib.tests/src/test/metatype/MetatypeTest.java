@@ -21,7 +21,7 @@ import aQute.libg.generics.*;
 
 public class MetatypeTest extends TestCase {
 	static DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
-	static XPathFactory			xpathf	= XPathFactory.newInstance();
+	static XPathFactory				xpathf	= XPathFactory.newInstance();
 	static XPath					xpath	= xpathf.newXPath();
 
 	static DocumentBuilder			db;
@@ -824,9 +824,11 @@ public class MetatypeTest extends TestCase {
 				});
 	}
 
-	static void assertAD(Document d, @SuppressWarnings("unused") String mname, String name, String id, String min, String max, String deflt,
-			int cardinality, String type, String description, @SuppressWarnings("unused") String[] optionvalues, @SuppressWarnings("unused") String optionLabels[])
-			throws XPathExpressionException {
+	static void assertAD(Document d, @SuppressWarnings("unused")
+	String mname, String name, String id, String min, String max, String deflt, int cardinality, String type,
+			String description, @SuppressWarnings("unused")
+			String[] optionvalues, @SuppressWarnings("unused")
+			String optionLabels[]) throws XPathExpressionException {
 		assertEquals(name, xpath.evaluate("//OCD/AD[@id='" + id + "']/@name", d, XPathConstants.STRING));
 		assertEquals(id, xpath.evaluate("//OCD/AD[@id='" + id + "']/@id", d, XPathConstants.STRING));
 		assertEquals(min == null ? "" : min,
@@ -1054,6 +1056,9 @@ public class MetatypeTest extends TestCase {
 		String[] notSoSimple();
 
 		Collection<String> stringCollection();
+
+		@Meta.AD(deflt = "true")
+		boolean enabled();
 	}
 
 	public static void testSimple() throws Exception {
@@ -1079,8 +1084,78 @@ public class MetatypeTest extends TestCase {
 		assertEquals("simple", xpath.evaluate("//OCD/AD[@id='simple']/@id", d));
 		assertEquals("Simple", xpath.evaluate("//OCD/AD[@id='simple']/@name", d));
 		assertEquals("String", xpath.evaluate("//OCD/AD[@id='simple']/@type", d));
+		assertEquals("true", xpath.evaluate("//OCD/AD[@id='notSoSimple']/@required", d));
+		/**
+		 * https://github.com/bndtools/bnd/issues/281
+		 * 
+		 * Using the Bnd annotations library (1.52.3), the generated metatype
+		 * file will have required='false' for all fields annotated with
+		 * @Meta.AD(). When this annotation is omitted, or when the required
+		 * property is explicitly set, the field is correctly marked as
+		 * required. Taking a glance at the code, the bug appears to be due to
+		 * aQute.bnd.osgi.Annotation using
+		 * aQute.bnd.annotation.metatype.Configurable internally for bridging
+		 * Bnd-annotations to Java-annotations. This configurable only obtains
+		 * the values from the Bnd-annotation, omitting the defaults defined in
+		 * the Java annotation. The workaround is to explicitly mention the
+		 * required property on each field annotated with @Meta.AD.
+		 */
+		assertEquals("true", xpath.evaluate("//OCD/AD[@id='simple']/@required", d));
 		assertEquals(Integer.MAX_VALUE + "", xpath.evaluate("//OCD/AD[@id='notSoSimple']/@cardinality", d));
 
+	}
+
+	/**
+	 * https://github.com/bndtools/bnd/issues/316 Example Configuration:
+	 * 
+	 * <pre>
+	 *  @Meta.AD(required = false, type = Type.Boolean, deflt = "false")
+	 *  boolean enabled();
+	 * It appears that in the configurable class that this logic
+	 * 
+	 * if (resultType == boolean.class || resultType == Boolean.class) {
+	 *         if ( actualType == boolean.class || actualType ==   Boolean.class)
+	 *             return o;
+	 * 
+	 *         if (Number.class.isAssignableFrom(actualType)) {
+	 *             double b = ((Number) o).doubleValue();
+	 *             if (b == 0)
+	 *                 return false;
+	 *             else
+	 *                 return true;
+	 *         }
+	 *         return true;
+	 * </pre>
+	 * 
+	 * Does not perform as expected. The deflt value from the configuration
+	 * interface will always be a string, and the value is never parsed,
+	 * therefore the third if statement is basically unreachable for a default
+	 * value. Additionally the default behavior of returning true is unexpected
+	 * because default values for booleans is false, configuration admin would
+	 * use false for anything NOT equal, ignore case "true", so why would this
+	 * be true, and how could that assumption even be made when, at least in the
+	 * aforementioned case of the default value, the incoming value isn't
+	 * processed(parsed, or in someway checked for actual content). Note that
+	 * per documentation available an number value was tried for the deflt, ie
+	 * "0", but again the value isn't processed so this had no effect.
+	 */
+	static interface DefaultBoolean {
+		@Meta.AD(deflt = "true", required = false)
+		boolean istrue();
+
+		@Meta.AD(deflt = "FALSE", required = false)
+		boolean isfalse();
+
+		@Meta.AD(required = false)
+		boolean isAlsoFalse();
+	}
+
+	public static void testConfigurable() {
+		Map<String,Object> ht = new Hashtable<String,Object>();
+		DefaultBoolean db = Configurable.createConfigurable(DefaultBoolean.class, ht);
+		assertTrue(db.istrue());
+		assertFalse(db.isfalse());
+		assertFalse(db.isAlsoFalse());
 	}
 
 }
