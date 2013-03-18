@@ -699,7 +699,7 @@ public class JSONTest extends TestCase {
 		u3.sex = Sex.MALE;
 		u1.offspring.add(u3);
 
-		String s = codec.enc().put(u1).toString();
+		String s = codec.enc().indent("  ").put(u1).toString();
 		System.out.println(s);
 		// Person u4 = codec.dec().from(s).get( Person.class );
 

@@ -51,6 +51,7 @@ public class ObjectHandler extends Handler {
 	@Override
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws Exception {
 		app.append("{");
+		app.indent();
 		String del = "";
 		for (int i = 0; i < fields.length; i++) {
 			if (fields[i].getName().startsWith("__"))
@@ -71,6 +72,7 @@ public class ObjectHandler extends Handler {
 			app.encode(value, types[i], visited);
 			del = ",";
 		}
+		app.undent();
 		app.append("}");
 	}
 
