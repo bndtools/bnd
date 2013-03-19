@@ -14,6 +14,7 @@ public class ArrayHandler extends Handler {
 	@Override
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		app.append("[");
+		app.indent();
 		String del = "";
 		int l = Array.getLength(object);
 		for (int i = 0; i < l; i++) {
@@ -21,6 +22,7 @@ public class ArrayHandler extends Handler {
 			app.encode(Array.get(object, i), componentType, visited);
 			del = ",";
 		}
+		app.undent();
 		app.append("]");
 	}
 

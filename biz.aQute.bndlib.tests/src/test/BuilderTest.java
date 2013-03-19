@@ -16,15 +16,32 @@ import aQute.lib.io.*;
 public class BuilderTest extends BndTestCase {
 
 	/**
-	 * Dave Smith <dave.smith@candata.com>
-	 * 
-	 * I have pulled the latest from git and am testing out 2.0 with our current
-	 * application. I am getting the following error message on the bnd.bnd file
-	 * null, for cmd : classes, arguments
-	 * [classes;CONCRETE;ANNOTATION;javax.persistence.Entity] My bnd file does
-	 * have the following line ... Hibernate-Db =
+	 * https://github.com/bndtools/bnd/issues/315
+	 * Turns out bnd doesn't seem to support a class in a capitalized package
+	 * name. I accidentally called a package with a capital letter and I get the
+	 * strange error message and a refusal to build it. (See title for error
+	 * message) My package could be named "Coffee" and the package named
+	 * "CoffeeClient", The bnd.bnd file could have: Private-Package: Coffee I'm
+	 * running 2.0.0REL with Eclipse Juno.
+	 */
+	public static void testUpperCasePackage() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(IO.getFile("bin"));
+		b.setExportPackage("UPPERCASEPACKAGE");
+		b.build();
+		assertTrue(b.check());
+		b.getExports().containsFQN("UPPERCASEPACKAGE");
+	}	
+	
+	/**
+	 * Dave Smith <dave.smith@candata.com> I have pulled the latest from git and
+	 * am testing out 2.0 with our current application. I am getting the
+	 * following error message on the bnd.bnd file null, for cmd : classes,
+	 * arguments [classes;CONCRETE;ANNOTATION;javax.persistence.Entity] My bnd
+	 * file does have the following line ... Hibernate-Db =
 	 * ${classes;CONCRETE;ANNOTATION;javax.persistence.Entity}
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testClasses() throws Exception {
@@ -37,11 +54,10 @@ public class BuilderTest extends BndTestCase {
 		b.build();
 		String s = b.getProperty("x");
 		assertEquals(s, b.getProperty("y"));
-		assertTrue( s.contains("test.Target"));
+		assertTrue(s.contains("test.Target"));
 		assertEquals("${classes;CONCRETE;ANNOTATEDX;x.y.Z}", b.getProperty("z"));
 		assertTrue(b.check("ANNOTATEDX"));
 	}
-	
 
 	/**
 	 * Check if we can create digests
@@ -58,21 +74,18 @@ public class BuilderTest extends BndTestCase {
 		assertTrue(b.check());
 		File f = File.createTempFile("test", ".jar");
 		jar.write(f);
-		
+
 		Jar other = new Jar(f);
 		Manifest manifest = other.getManifest();
 		assertNotNull(manifest);
-		Attributes attrs =manifest.getAttributes("org/osgi/framework/BundleActivator.class");
+		Attributes attrs = manifest.getAttributes("org/osgi/framework/BundleActivator.class");
 		assertNotNull(attrs);
-		assertEquals( "RTRhr3kadnulINegRhpmog==", attrs.getValue("MD5-Digest"));
-		assertEquals( "BfVfpnE3Srx/0UWwtzNecrAGf8A=", attrs.getValue("SHA-Digest"));
-	
+		assertEquals("RTRhr3kadnulINegRhpmog==", attrs.getValue("MD5-Digest"));
+		assertEquals("BfVfpnE3Srx/0UWwtzNecrAGf8A=", attrs.getValue("SHA-Digest"));
+
 		b.close();
 		other.close();
 	}
-	
-	
-	
 
 	/**
 	 * Test the Include-Resource facility to generate resources on the fly. This
@@ -100,8 +113,9 @@ public class BuilderTest extends BndTestCase {
 
 	public static void testOnTheFlySingle() throws Exception {
 		// disable this test on windows
-		if (!"/".equals(File.separator)) return;
-		
+		if (!"/".equals(File.separator))
+			return;
+
 		Builder b = new Builder();
 		b.setIncludeResource("test/ls;cmd='ls /etc | grep hosts'");
 		b.setProperty("-resourceonly", "true");
@@ -275,56 +289,57 @@ public class BuilderTest extends BndTestCase {
 	 * Test the digests
 	 */
 
-//	public void testDigests() throws Exception {
-//		Builder b = new Builder();
-//		b.addClasspath(new File("jar/osgi.jar"));
-//		b.setProperty(Constants.DIGESTS, "MD5, SHA1");
-//		b.setProperty(Constants.PRIVATE_PACKAGE, "*");
-//		Jar build = b.build();
-//		assertOk(b);
-//
-//		Manifest m = build.getManifest();
-//		assertEquals(261, build.getResources().size());
-//
-//		for (Entry<String,Resource> e : build.getResources().entrySet()) {
-//			System.out.println("Path " + e.getKey());
-//
-//			Attributes attrs = m.getAttributes(e.getKey());
-//			assertNotNull(e.getKey(), attrs);
-//			boolean md5 = false, sha1 = false;
-//
-//			for (Entry<Object,Object> ee : attrs.entrySet()) {
-//				String name = ee.getKey().toString().toLowerCase();
-//				if (name.endsWith("-digest")) {
-//					String value = ee.getValue().toString().trim();
-//					assertNotNull("original digest", value);
-//
-//					byte[] original = Base64.decodeBase64(value);
-//					assertNotNull("original digest", original);
-//
-//					String alg = name.substring(0, name.length() - 7);
-//					if (alg.equals("md5"))
-//						md5 = true;
-//					if (alg.equals("sha1"))
-//						sha1 = true;
-//
-//					MessageDigest md = MessageDigest.getInstance(alg);
-//					InputStream in = e.getValue().openInputStream();
-//					byte[] buffer = new byte[8000];
-//					int size = in.read(buffer);
-//					while (size > 0) {
-//						md.update(buffer, 0, size);
-//						size = in.read(buffer);
-//					}
-//					byte calculated[] = md.digest();
-//					assertTrue("comparing digests " + e.getKey() + " " + value + " " + Base64.encodeBase64(calculated),
-//							Arrays.equals(original, calculated));
-//				}
-//			}
-//			assertTrue("expected md5", md5);
-//			assertTrue("expected sha1", sha1);
-//		}
-//	}
+	// public void testDigests() throws Exception {
+	// Builder b = new Builder();
+	// b.addClasspath(new File("jar/osgi.jar"));
+	// b.setProperty(Constants.DIGESTS, "MD5, SHA1");
+	// b.setProperty(Constants.PRIVATE_PACKAGE, "*");
+	// Jar build = b.build();
+	// assertOk(b);
+	//
+	// Manifest m = build.getManifest();
+	// assertEquals(261, build.getResources().size());
+	//
+	// for (Entry<String,Resource> e : build.getResources().entrySet()) {
+	// System.out.println("Path " + e.getKey());
+	//
+	// Attributes attrs = m.getAttributes(e.getKey());
+	// assertNotNull(e.getKey(), attrs);
+	// boolean md5 = false, sha1 = false;
+	//
+	// for (Entry<Object,Object> ee : attrs.entrySet()) {
+	// String name = ee.getKey().toString().toLowerCase();
+	// if (name.endsWith("-digest")) {
+	// String value = ee.getValue().toString().trim();
+	// assertNotNull("original digest", value);
+	//
+	// byte[] original = Base64.decodeBase64(value);
+	// assertNotNull("original digest", original);
+	//
+	// String alg = name.substring(0, name.length() - 7);
+	// if (alg.equals("md5"))
+	// md5 = true;
+	// if (alg.equals("sha1"))
+	// sha1 = true;
+	//
+	// MessageDigest md = MessageDigest.getInstance(alg);
+	// InputStream in = e.getValue().openInputStream();
+	// byte[] buffer = new byte[8000];
+	// int size = in.read(buffer);
+	// while (size > 0) {
+	// md.update(buffer, 0, size);
+	// size = in.read(buffer);
+	// }
+	// byte calculated[] = md.digest();
+	// assertTrue("comparing digests " + e.getKey() + " " + value + " " +
+	// Base64.encodeBase64(calculated),
+	// Arrays.equals(original, calculated));
+	// }
+	// }
+	// assertTrue("expected md5", md5);
+	// assertTrue("expected sha1", sha1);
+	// }
+	// }
 
 	/**
 	 * Check of the use of x- directives are not skipped. bnd allows x-
@@ -767,9 +782,9 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * #196 StringIndexOutOfBoundsException in Builder.getClasspathEntrySuffix
-	 * 
 	 * If a class path entry was changed the isInScope threw an exception
 	 * because it assumed all cpes were directories.
+	 * 
 	 * @throws Exception
 	 */
 	public static void testInScopeClasspathEntry() throws Exception {
@@ -777,12 +792,13 @@ public class BuilderTest extends BndTestCase {
 		b.setProperty("Export-Package", "aQute.bnd.*");
 		b.addClasspath(new File("bin"));
 		b.addClasspath(new File("jar/osgi.jar"));
-		
+
 		List<File> project = Arrays.asList(b.getFile("bin/aQute/bnd/build/Project.class"));
 		assertTrue(b.isInScope(project));
 		List<File> cpe = Arrays.asList(b.getFile("jar/osgi.jar"));
 		assertTrue(b.isInScope(cpe));
 	}
+
 	public static void testInScopeExport() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Export-Package", "aQute.bnd.*");
@@ -989,7 +1005,6 @@ public class BuilderTest extends BndTestCase {
 		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
 		assertEquals("[1.0,2)", s);
 	}
-
 
 	public static void testMultipleExport2() throws Exception {
 		File cp[] = {
@@ -1722,8 +1737,7 @@ public class BuilderTest extends BndTestCase {
 		bmaker.setProperties(p);
 		bmaker.setClasspath(cp);
 		bmaker.build();
-		assertTrue(bmaker.check("The JAR is empty",
-				"Missing file on classpath: " + cwd + "/jar/idonotexist.jar"));
+		assertTrue(bmaker.check("The JAR is empty", "Missing file on classpath: " + cwd + "/jar/idonotexist.jar"));
 	}
 
 	public static void testExpandWithNegate() throws Exception {
@@ -1885,7 +1899,8 @@ public class BuilderTest extends BndTestCase {
 		bmaker.setProperty("Export-Package", "test.activator");
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
-		assertEquals("[test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class, test/activator/Activator3.class, test/activator/ActivatorPackage.class, test/activator/ActivatorPrivate.class]",
+		assertEquals(
+				"[test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class, test/activator/Activator3.class, test/activator/ActivatorPackage.class, test/activator/ActivatorPrivate.class]",
 				new SortedList<String>(jar.getDirectories().get("test/activator").keySet()).toString());
 	}
 

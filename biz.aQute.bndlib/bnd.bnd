@@ -44,8 +44,7 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	aQute.libg;version=project,\
 	osgi.core;version=4.1,\
 	osgi.r5;version=1.0.1,\
-	ee.j2se;version=${javac.ee},\
-	aQute.library.bndrepo;version=1.1.2
+	ee.j2se;version=${javac.ee}
 
 Bundle-Version: 2.1.0.${tstamp;yyyyMMdd-HHmmss}
 Import-Package: junit.framework;resolution:=optional,\

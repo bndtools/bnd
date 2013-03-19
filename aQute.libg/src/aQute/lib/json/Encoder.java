@@ -12,8 +12,10 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	MessageDigest	digest;
 	boolean			writeDefaults;
 	String			encoding	= "UTF-8";
-	boolean deflate;
-	
+	boolean			deflate;
+	String				tabs		= null;
+	String			indent		= "";
+
 	Encoder(JSONCodec codec) {
 		this.codec = codec;
 	}
@@ -56,9 +58,9 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	}
 
 	public Encoder to(OutputStream out) throws IOException {
-		if ( deflate)
+		if (deflate)
 			out = new DeflaterOutputStream(out);
-		
+
 		return to(new OutputStreamWriter(out, encoding));
 	}
 
@@ -116,10 +118,32 @@ public class Encoder implements Appendable, Closeable, Flushable {
 			((Flushable) app).flush();
 		}
 	}
+
 	public Encoder deflate() {
-		if ( app != null)
+		if (app != null)
 			throw new IllegalStateException("Writer already set, deflate must come before to(...)");
 		deflate = true;
 		return this;
+	}
+
+	public Encoder indent(String tabs) {
+		this.tabs = tabs;
+		return this;
+	}
+
+	void undent() throws IOException {
+		if (tabs != null) {
+			app.append("\n");
+			indent = indent.substring(tabs.length());
+			app.append(indent);
+		}
+	}
+
+	void indent() throws IOException {
+		if (tabs != null) {
+			app.append("\n");
+			indent += tabs;
+			app.append(indent);
+		}
 	}
 }

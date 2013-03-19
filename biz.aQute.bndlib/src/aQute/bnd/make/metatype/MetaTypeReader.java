@@ -226,6 +226,13 @@ public class MetaTypeReader extends WriteResource {
 				}
 				if (ad != null) {
 					assert method != null;
+					// Fixup required since it is default true
+					// but we have no access to these defaults.
+					// i.e. the defaults are implemented in the code
+					// thus here
+					if ( annotation.get("required") == null)
+						annotation.put("required", true);
+					
 					methods.put(method, ad);
 				}
 			}

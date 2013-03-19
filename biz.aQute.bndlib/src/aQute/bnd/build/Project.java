@@ -1478,7 +1478,14 @@ public class Project extends Processor {
 	}
 
 	public void test() throws Exception {
+		
+		String testcases = get(Constants.TESTCASES);
+		if ( testcases == null) {
+			warning("No %s set", Constants.TESTCASES);
+			return;
+		}
 		clear();
+		
 		ProjectTester tester = getProjectTester();
 		tester.setContinuous(isTrue(getProperty(Constants.TESTCONTINUOUS)));
 		tester.prepare();

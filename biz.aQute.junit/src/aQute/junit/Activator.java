@@ -276,8 +276,11 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				System.setErr(systemErr.oldStream);
 				trace("unset streams");
 			}
-			System.err.println("Errors: " + result.errorCount());
-			System.err.println("Failures: " + result.failureCount());
+			System.err.println("Tests run  : " + result.runCount());
+			System.err.println("Passed     : " + (result.runCount() - result.errorCount() - result.failureCount()));
+			System.err.println("Errors     : " + result.errorCount());
+			System.err.println("Failures   : " + result.failureCount());
+
 			return result.errorCount() + result.failureCount();
 		}
 		catch (Exception e) {

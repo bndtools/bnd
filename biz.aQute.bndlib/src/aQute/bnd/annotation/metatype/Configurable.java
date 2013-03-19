@@ -55,9 +55,9 @@ public class Configurable<T> {
 			}
 			if (o == null) {
 				Class< ? > rt = method.getReturnType();
-				if (rt == boolean.class || rt == Boolean.class)
+				if (rt == boolean.class )
 					return false;
-
+				
 				if (method.getReturnType().isPrimitive()) {
 
 					o = "0";
@@ -98,6 +98,9 @@ public class Configurable<T> {
 					if (b == 0)
 						return false;
 					return true;
+				}
+				if ( o instanceof String) {
+					return Boolean.parseBoolean((String) o);
 				}
 				return true;
 
