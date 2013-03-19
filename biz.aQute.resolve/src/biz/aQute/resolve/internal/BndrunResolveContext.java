@@ -38,6 +38,7 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.Filters;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.service.Registry;
+import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
 import aQute.libg.filters.LiteralFilter;
@@ -310,6 +311,7 @@ public class BndrunResolveContext extends ResolveContext {
             // to the side, in order to work out the optional resources later.
             if (fwkCaps.isEmpty())
                 if (cached == null) {
+                    callResolverHooks(requirement, result);
                     providerCache.put(cacheKey, new ArrayList<Capability>(result));
                 }
             optionalRequirements.put(requirement, result);
@@ -317,6 +319,7 @@ public class BndrunResolveContext extends ResolveContext {
             return fwkCaps;
         } else {
             if (cached == null) {
+                callResolverHooks(requirement, result);
                 providerCache.put(cacheKey, new ArrayList<Capability>(result));
             }
             // Record as a mandatory requirement
@@ -328,6 +331,15 @@ public class BndrunResolveContext extends ResolveContext {
 
     private static CacheKey getCacheKey(Requirement requirement) {
         return new CacheKey(requirement.getNamespace(), requirement.getDirectives().get("filter"), requirement.getAttributes());
+    }
+
+    private void callResolverHooks(Requirement requirement, Collection<Capability> candidates) {
+        if (candidates.size() == 0) {
+            return;
+        }
+        for (ResolverHook resolverHook : registry.getPlugins(ResolverHook.class)) {
+            resolverHook.filterMatches(requirement, candidates);
+        }
     }
 
     private void setResourcePriority(int priority, Resource resource) {
