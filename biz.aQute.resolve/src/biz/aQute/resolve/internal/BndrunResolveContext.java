@@ -55,6 +55,8 @@ public class BndrunResolveContext extends ResolveContext {
     private final Map<Requirement,List<Capability>> mandatoryRequirements = new HashMap<Requirement,List<Capability>>();
     private final Map<Requirement,List<Capability>> optionalRequirements = new HashMap<Requirement,List<Capability>>();
 
+    private final Map<CacheKey,List<Capability>> providerCache = new HashMap<CacheKey,List<Capability>>();
+
     private final BndEditModel runModel;
     private final Registry registry;
     private final LogService log;
@@ -260,33 +262,40 @@ public class BndrunResolveContext extends ResolveContext {
     @Override
     public List<Capability> findProviders(Requirement requirement) {
         init();
-        ArrayList<Capability> result = new ArrayList<Capability>();
 
-        // The selected OSGi framework always has the first chance to provide the capabilities
-        if (frameworkResourceRepo != null) {
-            Map<Requirement,Collection<Capability>> providers = frameworkResourceRepo.findProviders(Collections.singleton(requirement));
-            Collection<Capability> capabilities = providers.get(requirement);
-            if (capabilities != null && !capabilities.isEmpty()) {
-                result.addAll(capabilities);
-                // scoreResource
-            }
-        }
-
-        int order = 0;
-        for (Repository repo : repos) {
-            Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singleton(requirement));
-            Collection<Capability> capabilities = providers.get(requirement);
-            if (capabilities != null && !capabilities.isEmpty()) {
-                result.ensureCapacity(result.size() + capabilities.size());
-                for (Capability capability : capabilities) {
-                    // filter out OSGi frameworks & other forbidden resource
-                    if (isPermitted(capability.getResource())) {
-                        result.add(capability);
-                        setResourcePriority(order, capability.getResource());
-                    }
+        ArrayList<Capability> result;
+        CacheKey cacheKey = getCacheKey(requirement);
+        List<Capability> cached = providerCache.get(cacheKey);
+        if (cached != null) {
+            result = new ArrayList<Capability>(cached);
+        } else {
+            result = new ArrayList<Capability>();
+            // The selected OSGi framework always has the first chance to provide the capabilities
+            if (frameworkResourceRepo != null) {
+                Map<Requirement,Collection<Capability>> providers = frameworkResourceRepo.findProviders(Collections.singleton(requirement));
+                Collection<Capability> capabilities = providers.get(requirement);
+                if (capabilities != null && !capabilities.isEmpty()) {
+                    result.addAll(capabilities);
+                    // scoreResource
                 }
             }
-            order++;
+
+            int order = 0;
+            for (Repository repo : repos) {
+                Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singleton(requirement));
+                Collection<Capability> capabilities = providers.get(requirement);
+                if (capabilities != null && !capabilities.isEmpty()) {
+                    result.ensureCapacity(result.size() + capabilities.size());
+                    for (Capability capability : capabilities) {
+                        // filter out OSGi frameworks & other forbidden resource
+                        if (isPermitted(capability.getResource())) {
+                            result.add(capability);
+                            setResourcePriority(order, capability.getResource());
+                        }
+                    }
+                }
+                order++;
+            }
         }
 
         if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE))) {
@@ -300,15 +309,25 @@ public class BndrunResolveContext extends ResolveContext {
             // If the framework couldn't provide the requirement then save the list of potential providers
             // to the side, in order to work out the optional resources later.
             if (fwkCaps.isEmpty())
-                optionalRequirements.put(requirement, result);
+                if (cached == null) {
+                    providerCache.put(cacheKey, new ArrayList<Capability>(result));
+                }
+            optionalRequirements.put(requirement, result);
 
             return fwkCaps;
         } else {
+            if (cached == null) {
+                providerCache.put(cacheKey, new ArrayList<Capability>(result));
+            }
             // Record as a mandatory requirement
             mandatoryRequirements.put(requirement, result);
 
             return result;
         }
+    }
+
+    private static CacheKey getCacheKey(Requirement requirement) {
+        return new CacheKey(requirement.getNamespace(), requirement.getDirectives().get("filter"), requirement.getAttributes());
     }
 
     private void setResourcePriority(int priority, Resource resource) {
@@ -401,4 +420,59 @@ public class BndrunResolveContext extends ResolveContext {
         return optionalRequirements;
     }
 
+    private static class CacheKey {
+        final String namespace;
+        final String filter;
+        final Map<String,Object> attributes;
+        final int hashcode;
+
+        CacheKey(String namespace, String filter, Map<String,Object> attributes) {
+            this.namespace = namespace;
+            this.filter = filter;
+            this.attributes = attributes;
+            this.hashcode = calculateHashCode(namespace, filter, attributes);
+        }
+
+        private static int calculateHashCode(String namespace, String filter, Map<String,Object> attributes) {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
+            result = prime * result + ((filter == null) ? 0 : filter.hashCode());
+            result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+            return result;
+        }
+
+        @Override
+        public int hashCode() {
+            return hashcode;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            CacheKey other = (CacheKey) obj;
+            if (attributes == null) {
+                if (other.attributes != null)
+                    return false;
+            } else if (!attributes.equals(other.attributes))
+                return false;
+            if (filter == null) {
+                if (other.filter != null)
+                    return false;
+            } else if (!filter.equals(other.filter))
+                return false;
+            if (namespace == null) {
+                if (other.namespace != null)
+                    return false;
+            } else if (!namespace.equals(other.namespace))
+                return false;
+            return true;
+        }
+
+    }
 }
