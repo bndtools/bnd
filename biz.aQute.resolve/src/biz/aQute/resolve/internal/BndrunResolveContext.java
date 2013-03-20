@@ -1,9 +1,13 @@
 package biz.aQute.resolve.internal;
 
+import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
+import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
+
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -15,7 +19,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.namespace.contract.ContractNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -57,6 +63,8 @@ public class BndrunResolveContext extends ResolveContext {
     private final Map<Requirement,List<Capability>> optionalRequirements = new HashMap<Requirement,List<Capability>>();
 
     private final Map<CacheKey,List<Capability>> providerCache = new HashMap<CacheKey,List<Capability>>();
+
+    private final Comparator<Capability> capabilityComparator = new CapabilityComparator();
 
     private final BndEditModel runModel;
     private final Registry registry;
@@ -277,22 +285,30 @@ public class BndrunResolveContext extends ResolveContext {
                 Collection<Capability> capabilities = providers.get(requirement);
                 if (capabilities != null && !capabilities.isEmpty()) {
                     result.addAll(capabilities);
+                    Collections.sort(result, capabilityComparator);
                     // scoreResource
                 }
             }
 
             int order = 0;
+            ArrayList<Capability> repoCapabilities = new ArrayList<Capability>();
             for (Repository repo : repos) {
+                repoCapabilities.clear();
                 Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singleton(requirement));
                 Collection<Capability> capabilities = providers.get(requirement);
                 if (capabilities != null && !capabilities.isEmpty()) {
-                    result.ensureCapacity(result.size() + capabilities.size());
+                    repoCapabilities.ensureCapacity(capabilities.size());
                     for (Capability capability : capabilities) {
                         // filter out OSGi frameworks & other forbidden resource
                         if (isPermitted(capability.getResource())) {
-                            result.add(capability);
+                            repoCapabilities.add(capability);
                             setResourcePriority(order, capability.getResource());
                         }
+                    }
+                    if (!repoCapabilities.isEmpty()) {
+                        Collections.sort(repoCapabilities, capabilityComparator);
+                        result.ensureCapacity(result.size() + repoCapabilities.size());
+                        result.addAll(repoCapabilities);
                     }
                 }
                 order++;
@@ -309,13 +325,14 @@ public class BndrunResolveContext extends ResolveContext {
 
             // If the framework couldn't provide the requirement then save the list of potential providers
             // to the side, in order to work out the optional resources later.
-            if (fwkCaps.isEmpty())
+            if (fwkCaps.isEmpty()) {
                 if (cached == null) {
                     callResolverHooks(requirement, result);
                     providerCache.put(cacheKey, new ArrayList<Capability>(result));
                 }
-            optionalRequirements.put(requirement, result);
-
+                optionalRequirements.put(requirement, result);
+            }
+            Collections.sort(fwkCaps, capabilityComparator);
             return fwkCaps;
         } else {
             if (cached == null) {
@@ -340,6 +357,20 @@ public class BndrunResolveContext extends ResolveContext {
         for (ResolverHook resolverHook : registry.getPlugins(ResolverHook.class)) {
             resolverHook.filterMatches(requirement, candidates);
         }
+    }
+
+    Resource getFrameworkResource() {
+        return frameworkResource;
+    }
+
+    static Version getVersion(Capability cap, String attr) {
+        Object versionatt = cap.getAttributes().get(attr);
+        if (versionatt instanceof Version)
+            return (Version) versionatt;
+        else if (versionatt instanceof String)
+            return Version.parseVersion((String) versionatt);
+        else
+            return Version.emptyVersion;
     }
 
     private void setResourcePriority(int priority, Resource resource) {
@@ -487,4 +518,80 @@ public class BndrunResolveContext extends ResolveContext {
         }
 
     }
+
+    private class CapabilityComparator implements Comparator<Capability> {
+
+        public CapabilityComparator() {}
+
+        public int compare(Capability o1, Capability o2) {
+
+            Resource res1 = o1.getResource();
+            Resource res2 = o2.getResource();
+
+            // 1. Framework bundle
+            if (res1 == getFrameworkResource())
+                return -1;
+            if (res2 == getFrameworkResource())
+                return +1;
+
+            // 2. Wired
+            Map<Resource,Wiring> wirings = getWirings();
+            Wiring w1 = wirings.get(res1);
+            Wiring w2 = wirings.get(res2);
+
+            if (w1 != null && w2 == null)
+                return -1;
+            if (w1 == null && w2 != null)
+                return +1;
+
+            // 3. Input requirements
+            if (isInputRequirementResource(res1)) {
+                if (!isInputRequirementResource(res2))
+                    return -1;
+            }
+            if (isInputRequirementResource(res2)) {
+                if (!isInputRequirementResource(res1))
+                    return +1;
+            }
+
+            // 4. Higher package version
+            String ns1 = o1.getNamespace();
+            String ns2 = o2.getNamespace();
+            if (PACKAGE_NAMESPACE.equals(ns1) && PACKAGE_NAMESPACE.equals(ns2)) {
+                Version v1 = getVersion(o1, PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+                Version v2 = getVersion(o2, PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+                if (!v1.equals(v2))
+                    return v2.compareTo(v1);
+            }
+
+            // 5. Higher resource version
+            if (BUNDLE_NAMESPACE.equals(ns1) && BUNDLE_NAMESPACE.equals(ns2)) {
+                Version v1 = getVersion(o1, BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+                Version v2 = getVersion(o2, BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+                if (!v1.equals(v2))
+                    return v2.compareTo(v1);
+            } else if (IdentityNamespace.IDENTITY_NAMESPACE.equals(ns1) && IdentityNamespace.IDENTITY_NAMESPACE.equals(ns2)) {
+                Version v1 = getVersion(o1, IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+                Version v2 = getVersion(o2, IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+                if (!v1.equals(v2))
+                    return v2.compareTo(v1);
+            }
+
+            // 6. Same package version, higher bundle version
+            if (PACKAGE_NAMESPACE.equals(ns1) && PACKAGE_NAMESPACE.equals(ns2)) {
+                String bsn1 = (String) o1.getAttributes().get(Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
+                String bsn2 = (String) o2.getAttributes().get(Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
+                if (bsn1 != null && bsn1.equals(bsn2)) {
+                    Version v1 = getVersion(o1, BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+                    Version v2 = getVersion(o2, BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+                    if (!v1.equals(v2))
+                        return v2.compareTo(v1);
+                }
+            }
+
+            // 7. The resource with most capabilities
+            return res2.getCapabilities(null).size() - res1.getCapabilities(null).size();
+        }
+    }
+
 }
