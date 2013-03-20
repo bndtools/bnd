@@ -50,6 +50,9 @@ public final class Namespaces {
 	public static final String DIRECTIVE_EFFECTIVE = "effective";
 	public static final String DIRECTIVE_MANDATORY = "mandatory";
 	public static final String DIRECTIVE_USES = "uses";
+	public static final String DIRECTIVE_RESOLUTION = "resolution";
+	
+	public static final String RESOLUTION_OPTIONAL = "optional";
 
 	public static final String EFFECTIVE_RESOLVE = "resolve";
 	public static final String EFFECTIVE_ACTIVE = "active";

@@ -474,10 +474,17 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		if (nativeHeaderStr == null)
 			return;
 		
+		boolean optional = false;
 		List<String> options = new LinkedList<String>();
 		
 		Map<String, Map<String, String>> nativeHeader = OSGiHeader.parseHeader(nativeHeaderStr);
 		for (Entry<String, Map<String, String>> entry : nativeHeader.entrySet()) {
+			String name = entry.getKey();
+			if ("*".equals(name)) {
+				optional = true;
+				continue;
+			}
+			
 			StringBuilder builder = new StringBuilder().append("(&");
 			Map<String, String> attribs = entry.getValue();
 			
@@ -519,11 +526,12 @@ class BundleAnalyzer implements ResourceAnalyzer {
 			filter = builder.toString();
 		}
 		
-		Requirement req = new Builder()
+		Builder builder = new Builder()
 			.setNamespace(Namespaces.NS_NATIVE)
-			.addDirective(Namespaces.DIRECTIVE_FILTER, filter)
-			.buildRequirement();
-		reqs.add(req);
+			.addDirective(Namespaces.DIRECTIVE_FILTER, filter);
+		if (optional)
+			builder.addDirective(Namespaces.DIRECTIVE_RESOLUTION, Namespaces.RESOLUTION_OPTIONAL);
+		reqs.add(builder.buildRequirement());
 	}
 	
 	/*

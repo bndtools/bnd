@@ -331,6 +331,10 @@ public class TestIndexer extends TestCase {
 		assertFragmentMatch("testdata/fragment-19.txt", "testdata/19-bundlenativecode.jar");
 	}
 	
+	public void testFragmentBundleNativeCodeOptional() throws Exception {
+		assertFragmentMatch("testdata/fragment-20.txt", "testdata/20-bundlenativecode-optional.jar");
+	}
+	
 	public void testFragmentPlainJar() throws Exception {
 		LogService mockLog = Mockito.mock(LogService.class);
 		RepoIndex indexer = new RepoIndex(mockLog);
