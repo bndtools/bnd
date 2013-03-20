@@ -39,8 +39,8 @@ class BundleAnalyzer implements ResourceAnalyzer {
 	private static final String PROVIDE_CAPABILITY = "Provide-Capability";
 	private static final String REQUIRE_CAPABILITY = "Require-Capability";
 
-	// The mime-type of an OSGi bundle
-	private static final String MIME_TYPE_OSGI_BUNDLE = "application/vnd.osgi.bundle";
+	// Filename suffix for JAR files
+	private static final String SUFFIX_JAR = ".jar";
 	
 	private final ThreadLocal<GeneratorState> state = new ThreadLocal<GeneratorState>();
 	@SuppressWarnings("unused")
@@ -51,29 +51,44 @@ class BundleAnalyzer implements ResourceAnalyzer {
 	}
 
 	public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements) throws Exception {
-		doIdentity(resource, capabilities);
-		doContent(resource, capabilities);
-		doBundleAndHost(resource, capabilities);
-		doExports(resource, capabilities);
-		doImports(resource, requirements);
-		doRequireBundles(resource, requirements);
-		doFragment(resource, requirements);
-		doExportService(resource, capabilities);
-		doImportService(resource, requirements);
-		doBREE(resource, requirements);
-		doCapabilities(resource, capabilities);
-		doRequirements(resource, requirements);
-		doBundleNativeCode(resource, requirements);
+		MimeType mimeType = Util.getMimeType(resource);
+		if (mimeType == MimeType.Bundle || mimeType == MimeType.Fragment) {
+			doBundleIdentity(resource, mimeType, capabilities);
+			doContent(resource, mimeType, capabilities);
+			doBundleAndHost(resource, capabilities);
+			doExports(resource, capabilities);
+			doImports(resource, requirements);
+			doRequireBundles(resource, requirements);
+			doFragment(resource, requirements);
+			doExportService(resource, capabilities);
+			doImportService(resource, requirements);
+			doBREE(resource, requirements);
+			doCapabilities(resource, capabilities);
+			doRequirements(resource, requirements);
+			doBundleNativeCode(resource, requirements);
+		} else {
+			doPlainJarIdentity(resource, capabilities);
+			doContent(resource, mimeType, capabilities);
+		}
 	}	
 
-	private void doIdentity(Resource resource, List<? super Capability> caps) throws Exception {
+	private void doBundleIdentity(Resource resource, MimeType mimeType, List<? super Capability> caps) throws Exception {
 		Manifest manifest = resource.getManifest();
 		if (manifest == null)
 			throw new IllegalArgumentException("Missing bundle manifest.");
 		
-		Attributes attribs = manifest.getMainAttributes();
-		String fragmentHost = attribs.getValue(Constants.FRAGMENT_HOST);
-		String identity = (fragmentHost == null) ? Namespaces.RESOURCE_TYPE_BUNDLE : Namespaces.RESOURCE_TYPE_FRAGMENT;
+		String type;
+		switch (mimeType) {
+		case Bundle:
+			type = Namespaces.RESOURCE_TYPE_BUNDLE;
+			break;
+		case Fragment:
+			type = Namespaces.RESOURCE_TYPE_FRAGMENT;
+			break;
+		default:
+			type = Namespaces.RESOURCE_TYPE_PLAIN_JAR;
+			break;
+		}
 		
 		SymbolicName bsn = Util.getSymbolicName(resource);
 		boolean singleton = Boolean.TRUE.toString().equalsIgnoreCase(bsn.getAttributes().get(Constants.SINGLETON_DIRECTIVE + ":"));
@@ -83,10 +98,36 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		Builder builder = new Builder()
 				.setNamespace(Namespaces.NS_IDENTITY)
 				.addAttribute(Namespaces.NS_IDENTITY, bsn.getName())
-				.addAttribute(Namespaces.ATTR_IDENTITY_TYPE, identity)
+				.addAttribute(Namespaces.ATTR_IDENTITY_TYPE, type)
 				.addAttribute(Namespaces.ATTR_VERSION, version);
 		if (singleton)
 			builder.addDirective(Namespaces.DIRECTIVE_SINGLETON, Boolean.TRUE.toString());
+		caps.add(builder.buildCapability());
+	}
+	
+	private void doPlainJarIdentity(Resource resource, List<? super Capability> caps) {
+		String name = (String) resource.getProperties().get(Resource.NAME);
+		if (name.toLowerCase().endsWith(SUFFIX_JAR))
+			name = name.substring(0, name.length() - SUFFIX_JAR.length());
+		
+		Version version = null;
+		int dashIndex = name.lastIndexOf('-');
+		if (dashIndex > 0) {
+			try {
+				String versionStr = name.substring(dashIndex + 1);
+				version = new Version(versionStr);
+				name = name.substring(0, dashIndex);
+			} catch (Exception e) {
+				version = null;
+			}
+		}
+		
+		Builder builder = new Builder()
+			.setNamespace(Namespaces.NS_IDENTITY)
+			.addAttribute(Namespaces.NS_IDENTITY, name)
+			.addAttribute(Namespaces.ATTR_IDENTITY_TYPE, Namespaces.RESOURCE_TYPE_PLAIN_JAR);
+		if (version != null)
+			builder.addAttribute(Namespaces.ATTR_VERSION, version);
 		caps.add(builder.buildCapability());
 	}
 
@@ -98,7 +139,7 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		return state.get();
 	}
 	
-	private void doContent(Resource resource, List<? super Capability> capabilities) throws Exception {
+	private void doContent(Resource resource, MimeType mimeType, List<? super Capability> capabilities) throws Exception {
 		Builder builder = new Builder()
 			.setNamespace(Namespaces.NS_CONTENT);
 		
@@ -111,7 +152,7 @@ class BundleAnalyzer implements ResourceAnalyzer {
 		long size = resource.getSize();
 		if (size > 0L) builder.addAttribute(Namespaces.ATTR_CONTENT_SIZE, size);
 		
-		builder.addAttribute(Namespaces.ATTR_CONTENT_MIME, MIME_TYPE_OSGI_BUNDLE);
+		builder.addAttribute(Namespaces.ATTR_CONTENT_MIME, mimeType.toString());
 		
 		capabilities.add(builder.buildCapability());
 	}

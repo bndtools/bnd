@@ -27,6 +27,7 @@ public final class Namespaces {
 	// Resource types
 	public static final String RESOURCE_TYPE_BUNDLE = "osgi.bundle";
 	public static final String RESOURCE_TYPE_FRAGMENT = "osgi.fragment";
+	public static final String RESOURCE_TYPE_PLAIN_JAR = "jarfile";
 	
 	// Content attributes
 	public static final String ATTR_CONTENT_URL = "url";

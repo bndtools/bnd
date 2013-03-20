@@ -47,7 +47,13 @@ public class KnownBundleAnalyzer implements ResourceAnalyzer {
 	}
 	
 	public void analyzeResource(Resource resource, List<Capability> caps, List<Requirement> reqs) throws Exception {
-		SymbolicName resourceName = Util.getSymbolicName(resource);
+		SymbolicName resourceName;
+		try {
+			resourceName = Util.getSymbolicName(resource);
+		} catch (IllegalArgumentException e) {
+			// not a bundle, so return without analyzing
+			return;
+		}
 		
 		for (Enumeration<?> names = defaultProperties.propertyNames(); names.hasMoreElements(); ) {
 			String propName = (String) names.nextElement();

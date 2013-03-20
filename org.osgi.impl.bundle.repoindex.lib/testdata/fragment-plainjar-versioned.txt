@@ -1,0 +1,13 @@
+<resource>
+  <capability namespace='osgi.identity'>
+    <attribute name='osgi.identity' value='jcip-annotations'/>
+    <attribute name='type' value='jarfile'/>
+    <attribute name='version' type='Version' value='2.5.6.wibble'/>
+  </capability>
+  <capability namespace='osgi.content'>
+    <attribute name='osgi.content' value='15dab616e296ed2eb426e46c1b79615126197a5b9a2ee942bfa72b15c5e3dadd'/>
+    <attribute name='url' value='testdata/jcip-annotations-2.5.6.wibble.jar'/>
+    <attribute name='size' type='Long' value='2250'/>
+    <attribute name='mime' value='application/java-archive'/>
+  </capability>
+</resource>

@@ -23,6 +23,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.indexer.Capability;
 import org.osgi.service.indexer.Requirement;
@@ -328,5 +329,18 @@ public class TestIndexer extends TestCase {
 	
 	public void testFragmentBundleNativeCode() throws Exception {
 		assertFragmentMatch("testdata/fragment-19.txt", "testdata/19-bundlenativecode.jar");
+	}
+	
+	public void testFragmentPlainJar() throws Exception {
+		LogService mockLog = Mockito.mock(LogService.class);
+		RepoIndex indexer = new RepoIndex(mockLog);
+		indexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
+		
+		assertFragmentMatch(indexer, "testdata/fragment-plainjar.txt", "testdata/jcip-annotations.jar");
+		Mockito.verifyZeroInteractions(mockLog);
+	}
+	
+	public void testFragmentPlainJarWithVersion() throws Exception {
+		assertFragmentMatch("testdata/fragment-plainjar-versioned.txt", "testdata/jcip-annotations-2.5.6.wibble.jar");
 	}
 }
