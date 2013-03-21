@@ -3,6 +3,8 @@ package bndtools.views;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -59,6 +61,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.io.IO;
 import bndtools.Activator;
 import bndtools.Logger;
 import bndtools.Plugin;
@@ -155,6 +158,55 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
             @Override
             public boolean performDrop(Object data) {
                 boolean copied = false;
+
+                // If a link is dropped it is represented as a string.
+                // which is a bit confusing because a file is String[]
+                // might want to clean up the different types and use the
+                // appropriate transfer type instead?
+
+                if (data instanceof String) {
+                    URI uri = null;
+
+                    // Try to convert to an absolute URI, if it fails
+                    // we continue.
+
+                    try {
+                        uri = new URI((String) data);
+                        if (uri.isAbsolute()) {
+                            Object target = getCurrentTarget();
+
+                            // We want to move this to an interface in bnd I guess ...
+
+                            Method m = target.getClass().getMethod("dropTarget", URI.class);
+                            m.invoke(target, uri);
+                            return true;
+                        }
+                    } catch (NoSuchMethodException e) {
+
+                        // The repository does not support 
+                        // URIs directly. So we download the file
+                        // and add it locally, probably quite useful
+
+                        File f = null;
+                        try {
+                            f = File.createTempFile("bndtools", ".jar");
+                            IO.copy(uri.toURL(), f);
+
+                            // Reuse the dispatch method.
+                            return performDrop(new String[] {
+                                f.getAbsolutePath()
+                            });
+                        } catch (IOException e1) {
+                            throw new RuntimeException(e1);
+                        } finally {
+                            if (f != null)
+                                f.delete();
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
                 if (data instanceof String[]) {
                     String[] paths = (String[]) data;
                     File[] files = new File[paths.length];
