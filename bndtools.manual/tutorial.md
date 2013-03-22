@@ -74,7 +74,7 @@ Define the Bundle
 
 The project we have created defines a single bundle with a Bundle Symbolic Name (BSN) of `org.example.api` (i.e., the same as the project name). As soon as we created the project, a bundle file named `org.example.api.jar` was created in the `generated` directory, and it will be rebuilt every time we change the bundle definition or its source code.
 
-However, the bundle is currently empty, because we have not defined any Java packages to include in the bundle. This is an important difference of Bndtools with respect to other tools: bundles are always empty until we explicitly add some content. You can verify this by double-clicking the bundle file and viewing its contents: it will have only `META-INF/MANIFEST.MF` and `OSGI-OPT/bnd.bnd` entries.
+However, the bundle is currently empty, because we have not defined any Java packages to include in the bundle. This is an important difference of Bndtools with respect to other tools: bundles are always empty until we explicitly add some content. You can verify this by double-clicking the bundle file and viewing its contents: it will only have an `META-INF/MANIFEST.MF` entry.
 
 We want to add the package `org.example.api` to the exported packages of the bundle. So open the `bnd.bnd` file at the top of the project and select the **Contents** tab. Now the package can be added in one of two ways:
 
@@ -133,6 +133,8 @@ In either case, the `org.example.api` bundle will appear in the **Build Path** p
 
 ![]($images$11.png)
 
+Save the file.
+
 *Important Points:*
 
  *	Build-time dependencies of the project can be added in the **Build Path** panel of the `bnd.bnd` editor.
@@ -144,17 +146,21 @@ Write an Implementation
 We will write a class that implements the `Greeting` interface. When the project was created from the template, Java source for a class named `org.example.ExampleComponent` was generated. Open this source file now and make it implement `Greeting`:
 
 ~~~~~~ {.Java}
+package org.example;
+
+import org.example.api.Greeting;
+
+import aQute.bnd.annotation.component.Component;
+
 @Component
 public class ExampleComponent implements Greeting {
-
 	public String sayHello(String name) {
 		return "Hello " + name;
 	}
-
 }
 ~~~~~~
 
-Note the use of the `@Component` annotation. This enables our bundle to use OSGi Declarative Services to declare the API implementation class. This means that instances of the class will be automatically created and registered with the OSGi service registry. However the annotation is build-time only, and does not pollute our class with runtime dependencies -- in other words, this is a "Plain Old Java Object" or POJO.
+Note the use of the `@Component` annotation. This enables our bundle to use OSGi Declarative Services to declare the API implementation class. This means that instances of the class will be automatically created and registered with the OSGi service registry. The annotation is build-time only, and does not pollute our class with runtime dependencies -- in other words, this is a "Plain Old Java Object" or POJO.
 
 Test the Implementation
 -----------------------
@@ -162,8 +168,11 @@ Test the Implementation
 We should write a test case to ensure the implementation class works as expected. In the `test` folder, a test case class already exists named `org.example.ExampleComponentTest`. Write a test method as follows:
 
 ~~~~~~ {.Java}
-public class ExampleComponentTest extends TestCase {
+package org.example;
 
+import junit.framework.TestCase;
+
+public class ExampleComponentTest extends TestCase {
 	public void testSaysHello() throws Exception {
 		String result = new ExampleComponent().sayHello("Bob");
 		assertEquals("Hello Bob", result);
@@ -209,49 +218,61 @@ Right-click on the project `org.example.impls` and select **New > Run Descriptor
 
 In the editor for the new `run.bndrun` file, click on **Run OSGi** near the top-right corner. Shortly, the Felix Shell prompt "`g! `" will appear in the **Console** view. Type the `lb` command to view the list of bundles:
 
-  g! lb
-  START LEVEL 1
-     ID|State      |Level|Name
-      0|Active     |    0|System Bundle (4.0.3)
-      1|Active     |    1|Apache Felix Gogo Runtime (0.10.0)
-      2|Active     |    1|Apache Felix Gogo Shell (0.10.0)
-      3|Active     |    1|Apache Felix Gogo Command (0.12.0)
-  g!
+~~~~~~~~~~
+g! lb
+START LEVEL 1
+   ID|State      |Level|Name
+    0|Active     |    0|System Bundle (4.0.3)
+    1|Active     |    1|Apache Felix Gogo Runtime (0.10.0)
+    2|Active     |    1|Apache Felix Gogo Shell (0.10.0)
+    3|Active     |    1|Apache Felix Gogo Command (0.12.0)
+g!
+~~~~~~~~~~
 
 Next we want to include the `org.example.impls.provider` and `osgi.cmpn` bundles. This can be done as follows:
 
- *	Click the "+" icon in the toolbar of the **Run Requirements** panel. In the dialog, double-click `org.example.impls.provider` and `osgi.cmpn` under "Workspace" and click **Finish**.
+ *	Click the "+" icon in the toolbar of the **Run Requirements** panel to open the 'Add Bundle Requirement' dialog.
+ *	Under "Workspace", double-click `org.example.impls.provider`.
+ *	Under "Bndtools Hub", double-click `osgi.cmpn`.
+ *	Click **Finish**.
 
-Also add the osgi.cmpn bundle. The **Run Requirements** panel should now look like this:
+The **Run Requirements** panel should now look like this:
 
 ![]($images$15.png)
 
 Check **Auto-resolve on save** and then save the file. Returning to the **Console** view, type `lb` again:
 
-  g! lb
-  START LEVEL 1
-     ID|State      |Level|Name
-      0|Active     |    0|System Bundle (4.0.3)
-      1|Active     |    1|Apache Felix Gogo Runtime (0.10.0)
-      2|Active     |    1|Apache Felix Declarative Services (1.6.0)
-      3|Active     |    1|org.example.impls.provider (0.0.0)
-      4|Active     |    1|osgi.cmpn (4.2.0.200908310645)
-      5|Active     |    1|Apache Felix Gogo Shell (0.10.0)
-      6|Active     |    1|Apache Felix Gogo Command (0.12.0)
-      7|Active     |    1|org.example.api (0.0.0)
-  g!
+~~~~~~~~~~
+g! lb
+START LEVEL 1
+   ID|State      |Level|Name
+    0|Active     |    0|System Bundle (4.0.3)
+    1|Active     |    1|Apache Felix Gogo Runtime (0.10.0)
+    2|Active     |    1|Apache Felix Gogo Shell (0.10.0)
+    3|Active     |    1|Apache Felix Gogo Command (0.12.0)
+    4|Active     |    1|Apache Felix Configuration Admin Service (1.4.0)
+    5|Active     |    1|Apache Felix Log Service (1.0.1)
+    6|Active     |    1|Apache Felix Declarative Services (1.6.2)
+    7|Active     |    1|org.example.api (0.0.0)
+    8|Active     |    1|org.example.impls.provider (0.0.0)
+    9|Active     |    1|osgi.cmpn (4.2.0.200908310645)
+g!
+~~~~~~~~~~
 
 The provider bundle has been added to the runtime dynamically. Note that the API bundle and Apache Felix Declarative Services are also added because they resolved as dependencies of the provider.
 
-We can now look at the services published by our provider bundle using the command `inspect service capability 3`... (or the short form `inspect s c 3`):
+We can now look at the services published by our provider bundle using the command `inspect capability service 8`:
 
-	g! inspect c service 2
-  org.example.impls.provider [2] provides:
-  service; org.example.api.Greeting with properties:
-     component.id = 0
-     component.name = org.example.ExampleComponent
-     service.id = 6
-  g!
+~~~~~~~~~~
+g! inspect capability service 8
+org.example.impls.provider [8] provides:
+----------------------------------------
+service; org.example.api.Greeting with properties:
+   component.id = 0
+   component.name = org.example.ExampleComponent
+   service.id = 24
+g!
+~~~~~~~~~~
 
 Our bundle now publishes a service under the `Greeting` interface.
 
@@ -276,16 +297,22 @@ First we need to make the Felix shell API available to compile against. Open `bn
 Now create a new Java package under the `src` folder named `org.example.command`. In this package create a class `GreetingCommand` as follows:
 
 ~~~~~~~~~~ {.Java}
+package org.example.command;
+
+import org.apache.felix.service.command.CommandProcessor;
 import org.example.api.Greeting;
+
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
 
-@Component(properties={
-		"osgi.command.scope=example", 
-		"osgi.command.function=greet"}, 
-		provide=Object.class)
+@Component(properties =	{
+		/* Felix GoGo Shell Commands */
+		CommandProcessor.COMMAND_SCOPE + ":String=example",
+		CommandProcessor.COMMAND_FUNCTION + ":String=greet"
+	},
+	provide = Object.class
+)
 public class GreetingCommand {
-
 	private Greeting greetingSvc;
 
 	@Reference
@@ -308,7 +335,7 @@ Right-click again on the `org.example.impls` project and select **New > Bundle D
 
 Add the package `org.example.command` to the **Private Packages** panel of the newly created file. As before, this can be done using the "+" button in the toolbar or by drag-and-drop.
 
-We also need to declare that the bundle contains Declarative Services components. Change to the **Components** tab of the editor and click the **Add** button. In the name field, enter "*" (i.e. asterisk). Now save the file.
+We also need to declare that the bundle contains Declarative Services components. Change to the **Contents** tab of the editor and in the **Declarative Services** drop-down select **Bnd Annotations**. Now save the file.
 
 Add the Command Bundle to the Runtime
 -------------------------------------
@@ -318,23 +345,28 @@ Switch back to the editor for `run.bndrun`. In the **Run Requirements** tab, add
 The command bundle will now appear in the list of bundles when typing `lb`:
 
 ~~~~~~~~~~
-	g! lb
-  START LEVEL 1
-     ID|State      |Level|Name
-      0|Active     |    0|System Bundle (4.0.3)
-      1|Active     |    1|Apache Felix Declarative Services (1.6.0)
-      2|Active     |    1|org.example.impls.provider (0.0.0)
-      3|Active     |    1|Apache Felix Gogo Runtime (0.10.0)
-      4|Active     |    1|osgi.cmpn (4.2.0.200908310645)
-      5|Active     |    1|Apache Felix Gogo Shell (0.10.0)
-      6|Active     |    1|Apache Felix Gogo Command (0.12.0)
-      7|Active     |    1|org.example.impls.command (0.0.0)
-      8|Active     |    1|org.example.api (0.0.0)
-  g!
+g! lb
+START LEVEL 1
+   ID|State      |Level|Name
+    0|Active     |    0|System Bundle (4.0.3)
+    1|Active     |    1|Apache Felix Gogo Runtime (0.10.0)
+    2|Active     |    1|Apache Felix Gogo Shell (0.10.0)
+    3|Active     |    1|Apache Felix Gogo Command (0.12.0)
+    4|Active     |    1|Apache Felix Configuration Admin Service (1.4.0)
+    5|Active     |    1|Apache Felix Log Service (1.0.1)
+    6|Active     |    1|Apache Felix Declarative Services (1.6.2)
+    7|Active     |    1|org.example.api (0.0.0)
+    8|Active     |    1|org.example.impls.provider (0.0.0)
+    9|Active     |    1|osgi.cmpn (4.2.0.200908310645)
+   10|Active     |    1|org.example.impls.command (0.0.0)
+g!
 ~~~~~~~~~~
+
 Finally, the `greet` command will now be available from the Gogo shell:
 
-	g! greet BndTools
-  Hello BndTools
-  
+~~~~~~~~~~
+g! greet BndTools
+Hello BndTools
+g!
+~~~~~~~~~~
 
