@@ -94,4 +94,18 @@ public class CapReqBuilder {
 		return new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addDirective(
 				Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 	}
+	
+	   public static CapReqBuilder createBundleRequirement(String bsn, String range) {
+	        Filter filter;
+	        SimpleFilter bsnFilter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
+	        if (range != null)
+	            filter = new AndFilter().addChild(bsnFilter).addChild(new LiteralFilter(Filters.fromVersionRange(range)));
+	        else
+	            filter = bsnFilter;
+
+	        return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(
+	        		Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+
+	    }
+
 }

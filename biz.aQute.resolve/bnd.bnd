@@ -5,6 +5,7 @@
 	biz.aQute.repository;version=snapshot,\
 	ee.j2se;version=${javac.ee},\
 	org.mockito.mockito-all,\
+	org.apache.felix.resolver,\
 	osgi.cmpn
 
 Bundle-Version: 0.0.2.${tstamp;yyyyMMdd-HHmmss}_${Git-Descriptor}
