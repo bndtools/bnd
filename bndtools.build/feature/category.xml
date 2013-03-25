@@ -18,5 +18,8 @@
 		<category name="bndtools.category" />
 	</feature>
    
-
+	<feature url="features/bndtools.dm.feature_1.0.0.DEV-qualifier" id="bndtools.dm.feature"
+      version="1.0.0.DEV-qualifier">
+      <category name="bndtools.category" />
+   </feature>
 </site>
