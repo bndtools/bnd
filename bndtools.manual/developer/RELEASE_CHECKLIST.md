@@ -49,3 +49,9 @@ Build
 	git clean -fdx     (Note: will destroy any unversioned changes)
 	git reset --hard   (Note: will destroy any uncommitted changes)
 	ant p2
+
+
+IMPORTANT NOTES
+---------------
+* We should release bnd and bndtools at the same time, with the same version.
+* The builds corresponding to the releases should be kept forever on the cloudbees Jenkins server
