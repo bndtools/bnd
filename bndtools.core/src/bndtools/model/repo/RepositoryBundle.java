@@ -2,6 +2,7 @@ package bndtools.model.repo;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.SortedSet;
 
 import org.eclipse.core.resources.IFile;
@@ -10,6 +11,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 
+import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResourceHandle;
@@ -19,7 +21,11 @@ import aQute.bnd.version.Version;
 import bndtools.Logger;
 import bndtools.api.ILogger;
 
-public class RepositoryBundle implements IAdaptable {
+/**
+ * Abstracts the Bundle in repository views, it wraps the underlying Repository Plugin with the bsn of the bundle. It
+ * supports {@code Actionable} by implementing its methods but forwarding them to the Repository Plugin.
+ */
+public class RepositoryBundle implements IAdaptable, Actionable {
     private static final ILogger logger = Logger.getLogger();
 
     private final RepositoryPlugin repo;
@@ -85,6 +91,48 @@ public class RepositoryBundle implements IAdaptable {
         } catch (Exception e) {
             logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1}.", repo.getName(), bsn), e);
             return null;
+        }
+    }
+
+    public String title(Object... target) throws Exception {
+        try {
+            if (getRepo() instanceof Actionable) {
+                String s = ((Actionable) getRepo()).title(getBsn());
+                if (s != null)
+                    return s;
+            }
+        } catch (Exception e) {
+            // just default
+        }
+        return getBsn();
+    }
+
+    public String tooltip(Object... target) throws Exception {
+        if (getRepo() instanceof Actionable) {
+            String s = ((Actionable) getRepo()).tooltip(getBsn());
+            if (s != null)
+                return s;
+        }
+        return null;
+    }
+
+    public Map<String,Runnable> actions(Object... target) throws Exception {
+        Map<String,Runnable> map = null;
+        try {
+            if (getRepo() instanceof Actionable) {
+                map = ((Actionable) getRepo()).actions(getBsn());
+            }
+        } catch (Exception e) {
+            // just default
+        }
+        return map;
+    }
+
+    public String getText() {
+        try {
+            return title();
+        } catch (Exception e) {
+            return getBsn();
         }
     }
 }

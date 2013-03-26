@@ -12,7 +12,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 
 import aQute.bnd.service.Actionable;
-import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import bndtools.Logger;
 import bndtools.api.ILogger;
@@ -71,24 +70,51 @@ public class RepositoryBundleVersion implements IAdaptable, Actionable {
         }
     }
 
-    public Map<String,Runnable> actions(Object... t) throws Exception {
-        RepositoryPlugin p = bundle.getRepo();
-        if (p instanceof Actionable)
-            return ((Actionable) p).actions(bundle.getBsn(), version);
-        return null;
+    public String title(Object... target) throws Exception {
+        try {
+            if (bundle.getRepo() instanceof Actionable) {
+                String s = ((Actionable) bundle.getRepo()).title(bundle.getBsn(), version);
+                if (s != null)
+                    return s;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // just default
+        }
+        return getVersion().toString();
     }
 
     public String tooltip(Object... target) throws Exception {
-        RepositoryPlugin p = bundle.getRepo();
-        if (p instanceof Actionable)
-            return ((Actionable) p).tooltip(bundle.getBsn(), version);
+        try {
+            if (bundle.getRepo() instanceof Actionable) {
+                String s = ((Actionable) bundle.getRepo()).tooltip(bundle.getBsn(), version);
+                if (s != null)
+                    return s;
+            }
+        } catch (Exception e) {
+            // just default
+        }
         return null;
     }
 
-    public String title(Object... target) throws Exception {
-        RepositoryPlugin p = bundle.getRepo();
-        if (p instanceof Actionable)
-            return ((Actionable) p).title(bundle.getBsn(), version);
-        return null;
+    public Map<String,Runnable> actions(Object... target) throws Exception {
+        Map<String,Runnable> map = null;
+        try {
+            if (bundle.getRepo() instanceof Actionable) {
+                map = ((Actionable) bundle.getRepo()).actions(bundle.getBsn(), version);
+            }
+        } catch (Exception e) {
+            // just default
+        }
+        return map;
     }
+
+    public String getText() {
+        try {
+            return title();
+        } catch (Exception e) {
+            return version.toString();
+        }
+    }
+
 }

@@ -81,7 +81,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         } else if (element instanceof RepositoryBundle) {
             if (index == 0) {
                 RepositoryBundle bundle = (RepositoryBundle) element;
-                StyledString label = new StyledString(bundle.getBsn());
+                StyledString label = new StyledString(bundle.getText());
                 if (showRepoId)
                     label.append("  [" + bundle.getRepo().getName() + "]", StyledString.QUALIFIER_STYLER);
                 cell.setText(label.getString());
@@ -91,7 +91,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         } else if (element instanceof RepositoryBundleVersion) {
             if (index == 0) {
                 RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
-                StyledString styledString = new StyledString(bundleVersion.getVersion().toString(), StyledString.COUNTER_STYLER);
+                StyledString styledString = new StyledString(bundleVersion.getText(), StyledString.COUNTER_STYLER);
                 cell.setText(styledString.getString());
                 cell.setStyleRanges(styledString.getStyleRanges());
             }
@@ -165,12 +165,6 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 return project.getName();
             } else if (element instanceof ProjectBundle) {
                 return ((ProjectBundle) element).getBsn();
-            } else if (element instanceof RepositoryBundle) {
-                RepositoryBundle bundle = (RepositoryBundle) element;
-                return bundle.getBsn();
-            } else if (element instanceof RepositoryBundleVersion) {
-                RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
-                return bundleVersion.getVersion().toString();
             }
         } catch (Exception e) {
             // just take the default
@@ -186,12 +180,12 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
      */
     @Override
     public String getToolTipText(Object element) {
-        if (element instanceof Actionable)
-            try {
+        try {
+            if (element instanceof Actionable)
                 return ((Actionable) element).tooltip();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        } catch (Exception e) {
+            // ignore, use default
+        }
         return null;
     }
 }
