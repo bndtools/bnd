@@ -955,4 +955,9 @@ public class JustAnotherPackageManager {
 
 		return to;
 	}
+
+	public RemoteLibrary getLibrary() {
+		return library;
+	}
+	
 }

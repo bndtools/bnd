@@ -2,3 +2,5 @@
 Include-Resource: \
 	biz.aQute.launcher/biz.aQute.launcher-latest.jar=${repo;biz.aQute.launcher;snapshot}, \
 	biz.aQute.junit/biz.aQute.junit-latest.jar=${repo;biz.aQute.junit;snapshot}
+	aQute.library.bndrepo/aQute.library.bndrepo-latest.jar=${repo;aQute.library.bndrepo;snapshot}
+	

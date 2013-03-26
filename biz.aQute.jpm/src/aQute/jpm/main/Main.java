@@ -26,13 +26,13 @@ import aQute.lib.io.*;
 import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 import aQute.libg.reporter.*;
+import aQute.library.remote.*;
 import aQute.service.library.*;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
 
 /**
  * The command line interface to JPM
- * 
  */
 @Description("Just Another Package Manager (for Java)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service. For more information see https://www.jpm4j.org/#/md/jpm")
 public class Main extends ReporterAdapter {
@@ -116,7 +116,7 @@ public class Main extends ReporterAdapter {
 	/**
 	 * Commands
 	 */
-	@Arguments(arg =  "command")
+	@Arguments(arg = "command")
 	@Description("Manage the commands that have been installed so far")
 	public interface CommandOptions extends Options, ModifyCommand {
 		String create();
@@ -195,7 +195,7 @@ public class Main extends ReporterAdapter {
 	 * Main options
 	 */
 
-	@Arguments(arg="cmd ...")
+	@Arguments(arg = "cmd ...")
 	@Description("Options valid for all commands. Must be given before sub command")
 	interface JpmOptions extends Options {
 
@@ -225,7 +225,7 @@ public class Main extends ReporterAdapter {
 
 		@Description("Wait for a key press, might be useful when you want to see the result before it is overwritten by a next command")
 		boolean key();
-		
+
 		@Description("Show the release notes")
 		boolean release();
 	}
@@ -1370,7 +1370,6 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
-
 	interface findOptions extends Options {
 
 	}
@@ -1440,6 +1439,36 @@ public class Main extends ReporterAdapter {
 			// settings.put("library.bin", );
 		} else {
 
+		}
+
+	}
+
+	/**
+	 * Deposit a file in JPM and scan it.
+	 */
+
+	@Arguments(arg = "file")
+	@Description("Deposit a file in a private depository")
+	interface DepositOptions extends Options {
+		@Description("If this file should be scanned")
+		boolean scan();
+
+		@Description("Import message for scanning")
+		String message();
+
+		@Description("Repository path")
+		String path();
+
+		@Description("Override email")
+		String email();
+		
+	}
+
+	@Description("Deposit a file in a private depository")
+	public void _deposit(DepositOptions options) {
+		File f = IO.getFile(base, options._().get(0));
+		if ( f.isFile()) {
+			error("No such file %s", f);
 		}
 
 	}
