@@ -5,6 +5,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -65,6 +66,7 @@ import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.converter.Converter;
+import aQute.lib.io.IO;
 import bndtools.Activator;
 import bndtools.Logger;
 import bndtools.Plugin;
@@ -127,6 +129,10 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 boolean valid = false;
                 if (target instanceof RepositoryPlugin) {
                     if (((RepositoryPlugin) target).canWrite()) {
+
+                        if (URLTransfer.getInstance().isSupportedType(transferType))
+                            return true;
+
                         if (LocalSelectionTransfer.getTransfer().isSupportedType(transferType)) {
                             ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
                             if (selection instanceof IStructuredSelection) {
@@ -171,7 +177,18 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 }
 
                 boolean copied = false;
-                if (data instanceof String[]) {
+                if (URLTransfer.getInstance().isSupportedType(getCurrentEvent().currentDataType)) {
+                    try {
+                        URL url = new URL((String) URLTransfer.getInstance().nativeToJava(getCurrentEvent().currentDataType));
+                        File tmp = File.createTempFile("dwnl", ".jar");
+                        IO.copy(url, tmp);
+                        copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), new File[] {
+                            tmp
+                        });
+                    } catch (Exception e) {
+                        return false;
+                    }
+                } else if (data instanceof String[]) {
                     String[] paths = (String[]) data;
                     File[] files = new File[paths.length];
                     for (int i = 0; i < paths.length; i++) {
@@ -197,7 +214,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         dropAdapter.setExpandEnabled(false);
 
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-                FileTransfer.getInstance(), ResourceTransfer.getInstance(), LocalSelectionTransfer.getTransfer()
+                URLTransfer.getInstance(), FileTransfer.getInstance(), ResourceTransfer.getInstance(), LocalSelectionTransfer.getTransfer()
         }, dropAdapter);
         viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
             LocalSelectionTransfer.getTransfer()
