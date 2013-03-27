@@ -8,13 +8,10 @@
          doc="templateDocs/dependencyManagerTemplate.xml" />
    </extension>
 
-<!-- Disabled this extension until the DM plugin is updated to the latest bnd version
-
    <extension point="bndtools.core.projectTemplates">
       <template name="Component Development (Apache Felix Dependency Manager Annotations)"
          priority="100"
          class="bndtools.templates.dm.annotations.DependencyManagerAnnotationsTemplate"
          doc="templateDocs/dependencyManagerAnnotationsTemplate.xml" />
    </extension>
-    -->
 </plugin>

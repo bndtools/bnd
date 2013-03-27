@@ -28,7 +28,7 @@ public class DependencyManagerAnnotationsTemplate implements IProjectTemplate {
         }
         buildPath.add(new VersionedClause("osgi.core", new Attrs()));
         buildPath.add(new VersionedClause("osgi.cmpn", new Attrs()));
-        buildPath.add(new VersionedClause("org.apache.felix.dependencymanager.annotation", new Attrs()));
+        buildPath.add(new VersionedClause("${build}/plugins/org.apache.felix.dependencymanager.annotation-3.1.1-SNAPSHOT.jar;version=file", new Attrs()));
         buildPath.add(new VersionedClause("junit.osgi", new Attrs()));
 
         model.setBuildPath(buildPath);
@@ -50,16 +50,15 @@ public class DependencyManagerAnnotationsTemplate implements IProjectTemplate {
         addRunBundle("org.apache.felix.gogo.runtime", runPath, requires, true);
         addRunBundle("org.apache.felix.log", runPath, requires, false);
 
-        model.setBundleActivator("org.example.Activator");
         model.setRunRequires(requires);
         model.setRunBundles(runPath);
-        model.setRunFramework("org.apache.felix.framework");
+        model.setRunFw("org.apache.felix.framework;version='[4.0.3,4.0.3]'");
         model.setEE(EE.JavaSE_1_6);
 
         model.setPrivatePackages(Arrays.asList(new String[] { "org.example" }));
         
         List<HeaderClause> plugins = new ArrayList<HeaderClause>();
-        plugins.add(new HeaderClause("org.apache.felix.dm.annotation.plugin.bnd.AnnotationPlugin;path:=../cnf/localrepo/org.apache.felix.dependencymanager.annotation/org.apache.felix.dependencymanager.annotation-3.1.0.jar", new Attrs()));
+        plugins.add(new HeaderClause("org.apache.felix.dm.annotation.plugin.bnd.AnnotationPlugin;path:=../cnf/plugins/org.apache.felix.dependencymanager.annotation-3.1.1-snapshot.jar", new Attrs()));
         model.setPlugins(plugins);
     }
 

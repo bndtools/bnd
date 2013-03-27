@@ -2,6 +2,8 @@ package org.example;
 
 import org.apache.felix.dm.annotation.api.Component;
 import org.apache.felix.dm.annotation.api.ServiceDependency;
+import org.apache.felix.dm.annotation.api.Start;
+import org.apache.felix.dm.annotation.api.Stop;
 import org.osgi.service.log.LogService;
 
 @Component
@@ -9,10 +11,12 @@ public class ExampleComponent {
 	@ServiceDependency
 	private volatile LogService m_log;
 	
+	@Start
 	public void start() {
 		m_log.log(LogService.LOG_INFO, "Component started.");
 	}
 	
+	@Stop
 	public void stop() {
 		m_log.log(LogService.LOG_INFO, "Component stopped.");
 	}
