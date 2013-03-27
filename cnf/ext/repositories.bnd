@@ -24,5 +24,5 @@ localRepo:  file:///${workspace}/../bnd/dist/bundles/repository.xml
 ## WARNING: localRepo will break the build if pushed to GitHub... it is used for local testing only!!
 -plugin:\
 	aQute.lib.deployer.FileRepo;name=Dependencies;location=${deps},\
-	aQute.bnd.deployer.repository.FixedIndexedRepo;locations=${latestMasterRemoteRepo};name=bnd,\
+	aQute.bnd.deployer.repository.FixedIndexedRepo;locations=${latestNextRemoteRepo};name=bnd,\
 	${eclipse-repo}
