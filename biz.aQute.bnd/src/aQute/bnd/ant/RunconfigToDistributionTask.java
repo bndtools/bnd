@@ -91,8 +91,6 @@ public class RunconfigToDistributionTask extends Task {
 		boolean deleted = releaseDir.delete();
 		if (deleted) {
 			log("Deleted directory " + outputDir);
-		} else {
-			throw new BuildException("Output directory '" + outputDir + "' could not be deleted");
 		}
 
 		boolean created = releaseDir.mkdir();
