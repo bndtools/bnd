@@ -87,11 +87,21 @@ public class RunconfigToDistributionTask extends Task {
 	}
 
 	private File createReleaseDir() {
-		log("Deleting directory " + outputDir);
 		File releaseDir = new File(outputDir);
-		releaseDir.delete();
-		releaseDir.mkdir();
-		log("Created directory " + outputDir);
+		boolean deleted = releaseDir.delete();
+		if (deleted) {
+			log("Deleted directory " + outputDir);
+		} else {
+			throw new BuildException("Output directory '" + outputDir + "' could not be deleted");
+		}
+
+		boolean created = releaseDir.mkdir();
+		if (created) {
+			log("Created directory " + outputDir);
+		} else {
+			throw new BuildException("Output directory '" + outputDir + "' could not be created");
+		}
+
 		return releaseDir;
 	}
 
@@ -117,7 +127,9 @@ public class RunconfigToDistributionTask extends Task {
 		return snapshots;
 	}
 
-	class NonTestProjectFileFilter implements FileFilter {
+	private static class NonTestProjectFileFilter implements FileFilter {
+		public NonTestProjectFileFilter() {}
+
 		public boolean accept(File projectFolder) {
 			return !projectFolder.getName().endsWith(".test") && containsGeneratedFolder(projectFolder);
 		}
@@ -136,7 +148,9 @@ public class RunconfigToDistributionTask extends Task {
 		}
 	}
 
-	class JarFileFilter implements FileFilter {
+	private static class JarFileFilter implements FileFilter {
+		public JarFileFilter() {}
+
 		public boolean accept(File file) {
 			return file.getName().endsWith(".jar");
 		}
