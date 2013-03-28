@@ -133,14 +133,12 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
 
                     /* see if there are matches, if not: return */
                     Matcher matcher = pattern.matcher(bndFileText);
-                    if (!matcher.find()) {
-                        continue;
-                    }
-
-                    /* find all matches to replace and add them to the root edit */
-                    matcher.reset();
-                    while (matcher.find()) {
-                        rootEdit.addChild(new ReplaceEdit(matcher.start(2), matcher.group(2).length(), newName));
+                    if (matcher.find()) {
+                        /* find all matches to replace and add them to the root edit */
+                        matcher.reset();
+                        while (matcher.find()) {
+                            rootEdit.addChild(new ReplaceEdit(matcher.start(2), matcher.group(2).length(), newName));
+                        }
                     }
 
                     pattern = Pattern.compile(
@@ -151,14 +149,12 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
 
                     /* see if there are matches, if not: return */
                     matcher = pattern.matcher(bndFileText);
-                    if (!matcher.find()) {
-                        continue;
-                    }
-
-                    /* find all matches to replace and add them to the root edit */
-                    matcher.reset();
-                    while (matcher.find()) {
-                        rootEdit.addChild(new ReplaceEdit(matcher.start(3), matcher.group(3).length(), newName));
+                    if (matcher.find()) {
+                        /* find all matches to replace and add them to the root edit */
+                        matcher.reset();
+                        while (matcher.find()) {
+                            rootEdit.addChild(new ReplaceEdit(matcher.start(3), matcher.group(3).length(), newName));
+                        }
                     }
                 }
 
