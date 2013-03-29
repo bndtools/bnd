@@ -3,14 +3,16 @@ package bndtools.views;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bndtools.core.utils.swt.FilterPanelPart;
 import org.eclipse.core.filesystem.EFS;
@@ -40,8 +42,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
+import org.eclipse.swt.dnd.URLTransfer;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -61,6 +65,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import bndtools.Activator;
 import bndtools.Logger;
@@ -76,6 +81,8 @@ import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public class RepositoriesView extends ViewPart implements RepositoryListenerPlugin {
+    final static Pattern LABEL_PATTERN = Pattern.compile("(-)?(!)?([^{}]+)(?:\\{([^}]+)\\})?");
+    private static final String DROP_TARGET = "dropTarget";
 
     private static final ILogger logger = Logger.getLogger();
 
@@ -116,9 +123,16 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
             @Override
             public boolean validateDrop(Object target, int operation, TransferData transferType) {
+                if (canDrop(target, transferType))
+                    return true;
+
                 boolean valid = false;
                 if (target instanceof RepositoryPlugin) {
                     if (((RepositoryPlugin) target).canWrite()) {
+
+                        if (URLTransfer.getInstance().isSupportedType(transferType))
+                            return true;
+
                         if (LocalSelectionTransfer.getTransfer().isSupportedType(transferType)) {
                             ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
                             if (selection instanceof IStructuredSelection) {
@@ -157,57 +171,24 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
             @Override
             public boolean performDrop(Object data) {
-                boolean copied = false;
-
-                // If a link is dropped it is represented as a string.
-                // which is a bit confusing because a file is String[]
-                // might want to clean up the different types and use the
-                // appropriate transfer type instead?
-
-                if (data instanceof String) {
-                    URI uri = null;
-
-                    // Try to convert to an absolute URI, if it fails
-                    // we continue.
-
-                    try {
-                        uri = new URI((String) data);
-                        if (uri.isAbsolute()) {
-                            Object target = getCurrentTarget();
-
-                            // We want to move this to an interface in bnd I guess ...
-
-                            Method m = target.getClass().getMethod("dropTarget", URI.class);
-                            m.invoke(target, uri);
-                            return true;
-                        }
-                    } catch (NoSuchMethodException e) {
-
-                        // The repository does not support 
-                        // URIs directly. So we download the file
-                        // and add it locally, probably quite useful
-
-                        File f = null;
-                        try {
-                            f = File.createTempFile("bndtools", ".jar");
-                            IO.copy(uri.toURL(), f);
-
-                            // Reuse the dispatch method.
-                            return performDrop(new String[] {
-                                f.getAbsolutePath()
-                            });
-                        } catch (IOException e1) {
-                            throw new RuntimeException(e1);
-                        } finally {
-                            if (f != null)
-                                f.delete();
-                        }
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                if (RepositoriesView.this.performDrop(getCurrentTarget(), getCurrentEvent().currentDataType)) {
+                    viewer.refresh(getCurrentTarget(), true);
+                    return true;
                 }
 
-                if (data instanceof String[]) {
+                boolean copied = false;
+                if (URLTransfer.getInstance().isSupportedType(getCurrentEvent().currentDataType)) {
+                    try {
+                        URL url = new URL((String) URLTransfer.getInstance().nativeToJava(getCurrentEvent().currentDataType));
+                        File tmp = File.createTempFile("dwnl", ".jar");
+                        IO.copy(url, tmp);
+                        copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), new File[] {
+                            tmp
+                        });
+                    } catch (Exception e) {
+                        return false;
+                    }
+                } else if (data instanceof String[]) {
                     String[] paths = (String[]) data;
                     File[] files = new File[paths.length];
                     for (int i = 0; i < paths.length; i++) {
@@ -233,7 +214,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         dropAdapter.setExpandEnabled(false);
 
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-                FileTransfer.getInstance(), ResourceTransfer.getInstance(), LocalSelectionTransfer.getTransfer()
+                URLTransfer.getInstance(), FileTransfer.getInstance(), ResourceTransfer.getInstance(), LocalSelectionTransfer.getTransfer()
         }, dropAdapter);
         viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
             LocalSelectionTransfer.getTransfer()
@@ -414,24 +395,48 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                             // Should extend this to allow other menu entries
                             // from the view, but currently there are none
                             //
-                            Actionable act = (Actionable) firstElement;
+                            final Actionable act = (Actionable) firstElement;
                             Map<String,Runnable> actions = act.actions();
                             if (actions != null) {
                                 for (final Entry<String,Runnable> e : actions.entrySet()) {
-                                    final String label = e.getKey();
-                                    final Action a = new Action(label) {
+                                    String label = e.getKey();
+                                    boolean enabled = true;
+                                    boolean checked = false;
+                                    String description = null;
+                                    Matcher m = LABEL_PATTERN.matcher(label);
+                                    if (m.matches()) {
+                                        if (m.group(1) != null)
+                                            enabled = false;
+
+                                        if (m.group(2) != null)
+                                            checked = false;
+
+                                        label = m.group(3);
+
+                                        description = m.group(4);
+                                    }
+                                    Action a = new Action(label) {
                                         @Override
                                         public void run() {
-                                            e.getValue().run();
+                                            try {
+                                                e.getValue().run();
+                                            } catch (Exception e) {
+                                                throw new RuntimeException(e);
+                                            }
+                                            viewer.refresh(act);
                                         }
                                     };
+                                    a.setEnabled(enabled);
+                                    if (description != null)
+                                        a.setDescription(description);
+                                    a.setChecked(checked);
                                     manager.add(a);
                                 }
                             }
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
         });
@@ -452,4 +457,106 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 }
             });
     }
+
+    /**
+     * Handle the drop on targets that understand drops.
+     * 
+     * @param target
+     *            The current target
+     * @param data
+     *            The transfer data
+     * @return true if the data is acceptable, otherwise false
+     */
+    boolean canDrop(Object target, TransferData data) {
+        try {
+            Class< ? > type = toJavaType(data);
+            if (type != null) {
+                target.getClass().getMethod(DROP_TARGET, type);
+                return true;
+            }
+        } catch (Exception e) {
+            // Ignore
+        }
+        return false;
+    }
+
+    /**
+     * Try a drop on the target. A drop is allowed if the target implements a {@code dropTarget} method that returns a
+     * boolean.
+     * 
+     * @param target
+     *            the target being dropped upon
+     * @param data
+     *            the data
+     * @return true if dropped and processed, false if not
+     */
+    boolean performDrop(Object target, TransferData data) {
+        try {
+            Object java = toJava(data);
+            if (java == null)
+                return false;
+
+            Method m = target.getClass().getMethod(DROP_TARGET, java.getClass());
+            return (Boolean) m.invoke(target, java);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Return a native data object that represents the dropped object
+     * 
+     * <pre>
+     *    URLTransfer             URI
+     *    FileTransfer            File[]
+     *    TextTransfer            String
+     *    ImageTransfer           ImageData
+     * </pre>
+     * 
+     * @param data
+     * @return
+     * @throws Exception
+     */
+    Class< ? > toJavaType(TransferData data) throws Exception {
+        if (URLTransfer.getInstance().isSupportedType(data))
+            return URI.class;
+        if (FileTransfer.getInstance().isSupportedType(data))
+            return File[].class;
+        if (TextTransfer.getInstance().isSupportedType(data))
+            return String.class;
+        //        if (ImageTransfer.getInstance().isSupportedType(data))
+        //            return Image.class;
+        return null;
+    }
+
+    /**
+     * Return a native data type that represents the dropped object
+     * 
+     * <pre>
+     *    URLTransfer             URI
+     *    FileTransfer            File[]
+     *    TextTransfer            String
+     *    ImageTransfer           ImageData
+     * </pre>
+     * 
+     * @param data
+     * @return
+     * @throws Exception
+     */
+    Object toJava(TransferData data) throws Exception {
+        if (URLTransfer.getInstance().isSupportedType(data))
+            return Converter.cnv(URI.class, URLTransfer.getInstance().nativeToJava(data));
+        else if (FileTransfer.getInstance().isSupportedType(data)) {
+            return Converter.cnv(File[].class, FileTransfer.getInstance().nativeToJava(data));
+        } else if (TextTransfer.getInstance().isSupportedType(data)) {
+            return TextTransfer.getInstance().nativeToJava(data);
+        }
+        // Need to write the transfer code since the ImageTransfer turns it into
+        // something very Eclipsy
+        //        else if (ImageTransfer.getInstance().isSupportedType(data))
+        //            return ImageTransfer.getInstance().nativeToJava(data);
+
+        return null;
+    }
+
 }

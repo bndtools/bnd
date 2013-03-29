@@ -39,7 +39,7 @@ import bndtools.utils.FileUtils;
 public class PkgRenameParticipant extends RenameParticipant implements ISharableParticipant {
     private static final ILogger logger = Logger.getLogger();
 
-    private Map<IPackageFragment,RenameArguments> pkgFragments = new HashMap<IPackageFragment,RenameArguments>();
+    private final Map<IPackageFragment,RenameArguments> pkgFragments = new HashMap<IPackageFragment,RenameArguments>();
     private String changeTitle = null;
 
     @Override
@@ -126,21 +126,29 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
 
                     final String oldName = pkgFragment.getElementName();
                     final String newName = arguments.getNewName();
-                    final Pattern pattern = Pattern.compile(
+
+                    Pattern pattern = Pattern.compile(
                     /* match start boundary */"(^|" + grammarSeparator + ")" +
                     /* match itself / package name */"(" + Pattern.quote(oldName) + ")" +
                     /* match end boundary */"(" + grammarSeparator + "|" + Pattern.quote(".*") + "|" + Pattern.quote("\\") + "|$)");
 
-                    /* see if there are matches, if not: return */
-                    Matcher matcher = pattern.matcher(bndFileText);
-                    if (!matcher.find()) {
-                        continue;
-                    }
-
                     /* find all matches to replace and add them to the root edit */
-                    matcher.reset();
+                    Matcher matcher = pattern.matcher(bndFileText);
                     while (matcher.find()) {
                         rootEdit.addChild(new ReplaceEdit(matcher.start(2), matcher.group(2).length(), newName));
+                    }
+
+                    pattern = Pattern.compile(
+                    /* match start boundary */"(^|" + grammarSeparator + ")" +
+                    /* match bundle activator */"(Bundle-Activator\\s*:\\s*)" +
+                    /* match itself / package name */"(" + Pattern.quote(oldName) + ")" +
+                    /* match class name */"(\\.[^\\.]+)" +
+                    /* match end boundary */"(" + grammarSeparator + "|" + Pattern.quote("\\") + "|$)");
+
+                    /* find all matches to replace and add them to the root edit */
+                    matcher = pattern.matcher(bndFileText);
+                    while (matcher.find()) {
+                        rootEdit.addChild(new ReplaceEdit(matcher.start(3), matcher.group(3).length(), newName));
                     }
                 }
 
