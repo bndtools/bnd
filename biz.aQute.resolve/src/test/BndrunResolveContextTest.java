@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -16,6 +17,7 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
+import org.osgi.service.repository.Repository;
 
 import test.lib.MockRegistry;
 import test.lib.NullLogService;
@@ -207,6 +209,28 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(2, providers.size());
         assertEquals(new File("testdata/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
         assertEquals(new File("testdata/osgi.cmpn-4.3.0.jar").toURI(), findContentURI(providers.get(1).getResource()));
+    }
+
+    public static void testSelfCapabilityPreferredOverRepository() {
+        MockRegistry registry = new MockRegistry();
+        Repository repo = createRepo(new File("testdata/repo4.index.xml"));
+
+        registry.addPlugin(repo);
+
+        Requirement resourceReq = new CapReqBuilder("osgi.identity").addDirective("filter", "(osgi.identity=dummy-selfcap)").buildSyntheticRequirement();
+        Resource resource = repo.findProviders(Collections.singleton(resourceReq)).get(resourceReq).iterator().next().getResource();
+
+        Requirement packageReq = resource.getRequirements("osgi.wiring.package").get(0);
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+        List<Capability> providers = context.findProviders(packageReq);
+
+        assertNotNull(providers);
+        assertEquals(2, providers.size());
+        assertEquals(new File("testdata/repo4/dummy.jar").toURI(), findContentURI(providers.get(0).getResource()));
     }
 
     public static void testInputRequirementsAsMandatoryResource() {
