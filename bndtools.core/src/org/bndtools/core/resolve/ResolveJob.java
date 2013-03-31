@@ -1,6 +1,5 @@
 package org.bndtools.core.resolve;
 
-import org.apache.felix.resolver.ResolverImpl;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -35,8 +34,7 @@ public class ResolveJob extends Job {
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-        ResolverImpl felixResolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4));
-        ResolveOperation operation = new ResolveOperation(model, felixResolver);
+        ResolveOperation operation = new ResolveOperation(model);
         operation.run(monitor);
         result = operation.getResult();
 
