@@ -382,9 +382,9 @@ class JavaElement {
 
 		if (clazz.isInterface())
 			if (clazz.isAnnotation())
-				type = Type.INTERFACE;
-			else
 				type = Type.ANNOTATION;
+			else
+				type = Type.INTERFACE;
 		else if (clazz.isEnum())
 			type = Type.ENUM;
 		else

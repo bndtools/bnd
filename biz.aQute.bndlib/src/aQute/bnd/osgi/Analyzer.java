@@ -1374,7 +1374,7 @@ public class Analyzer extends Processor {
 			// Only do a uses on exported or imported packages
 			// and uses should also not contain our own package
 			// name
-			Set<PackageRef> sharedPackages = new HashSet<PackageRef>();
+			Set<PackageRef> sharedPackages = new TreeSet<PackageRef>();
 			sharedPackages.addAll(imports.keySet());
 			sharedPackages.addAll(exports.keySet());
 			sharedPackages.retainAll(usedPackages);

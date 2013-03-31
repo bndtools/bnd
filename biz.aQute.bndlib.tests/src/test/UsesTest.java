@@ -1,15 +1,11 @@
 package test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.jar.Manifest;
+import java.io.*;
+import java.util.jar.*;
 
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Domain;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.header.Attrs;
-import aQute.bnd.header.Parameters;
-import junit.framework.TestCase;
+import junit.framework.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 
 public class UsesTest extends TestCase {
 
@@ -59,6 +55,12 @@ public class UsesTest extends TestCase {
 
 	public static void testUsesAnnotation() throws Exception {
 		checkUses("test.uses.annotation", "test.uses.annotation.annotation");
+	}
+	
+	public static void testUsesMulti() throws Exception {
+		// Check for consistent ordering
+		for (int i = 0; i < 10; i++)
+			checkUses("test.uses.multi", "javax.security.auth.callback,javax.sql");
 	}
 
 	private static void checkUses(String export) throws IOException, Exception {

@@ -10,14 +10,19 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -36,6 +41,7 @@ import org.osgi.service.resolver.ResolveContext;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.deployer.repository.MapToDictionaryAdapter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
@@ -272,24 +278,36 @@ public class BndrunResolveContext extends ResolveContext {
     public List<Capability> findProviders(Requirement requirement) {
         init();
 
-        ArrayList<Capability> result;
+        // Use a linked set for ordering and no duplication
+        LinkedHashSet<Capability> result;
         CacheKey cacheKey = getCacheKey(requirement);
         List<Capability> cached = providerCache.get(cacheKey);
         if (cached != null) {
-            result = new ArrayList<Capability>(cached);
+            result = new LinkedHashSet<Capability>(cached);
         } else {
-            result = new ArrayList<Capability>();
+            result = new LinkedHashSet<Capability>();
             // The selected OSGi framework always has the first chance to provide the capabilities
             if (frameworkResourceRepo != null) {
                 Map<Requirement,Collection<Capability>> providers = frameworkResourceRepo.findProviders(Collections.singleton(requirement));
                 Collection<Capability> capabilities = providers.get(requirement);
                 if (capabilities != null && !capabilities.isEmpty()) {
                     result.addAll(capabilities);
-                    Collections.sort(result, capabilityComparator);
-                    // scoreResource
                 }
             }
 
+            // Next find out if the requirement is satisfied by a capability on the same resource
+            Resource resource = requirement.getResource();
+            if (resource != null) {
+                List<Capability> selfCaps = resource.getCapabilities(requirement.getNamespace());
+                if (selfCaps != null) {
+                    for (Capability selfCap : selfCaps) {
+                        if (matches(requirement, selfCap))
+                            result.add(selfCap);
+                    }
+                }
+            }
+
+            // Now iterate over the repos
             int order = 0;
             ArrayList<Capability> repoCapabilities = new ArrayList<Capability>();
             for (Repository repo : repos) {
@@ -299,7 +317,6 @@ public class BndrunResolveContext extends ResolveContext {
                 if (capabilities != null && !capabilities.isEmpty()) {
                     repoCapabilities.ensureCapacity(capabilities.size());
                     for (Capability capability : capabilities) {
-                        // filter out OSGi frameworks & other forbidden resource
                         if (isPermitted(capability.getResource())) {
                             repoCapabilities.add(capability);
                             setResourcePriority(order, capability.getResource());
@@ -307,7 +324,6 @@ public class BndrunResolveContext extends ResolveContext {
                     }
                     if (!repoCapabilities.isEmpty()) {
                         Collections.sort(repoCapabilities, capabilityComparator);
-                        result.ensureCapacity(result.size() + repoCapabilities.size());
                         result.addAll(repoCapabilities);
                     }
                 }
@@ -315,10 +331,13 @@ public class BndrunResolveContext extends ResolveContext {
             }
         }
 
+        // Convert result to a list
+        ArrayList<Capability> listResult = new ArrayList<Capability>(result);
+
         if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE))) {
             // Only return the framework's capabilities when asked for optional resources.
-            List<Capability> fwkCaps = new ArrayList<Capability>(result.size());
-            for (Capability capability : result) {
+            List<Capability> fwkCaps = new ArrayList<Capability>(listResult.size());
+            for (Capability capability : listResult) {
                 if (capability.getResource() == frameworkResource)
                     fwkCaps.add(capability);
             }
@@ -327,23 +346,39 @@ public class BndrunResolveContext extends ResolveContext {
             // to the side, in order to work out the optional resources later.
             if (fwkCaps.isEmpty()) {
                 if (cached == null) {
-                    callResolverHooks(requirement, result);
-                    providerCache.put(cacheKey, new ArrayList<Capability>(result));
+                    callResolverHooks(requirement, listResult);
+                    providerCache.put(cacheKey, new ArrayList<Capability>(listResult));
                 }
-                optionalRequirements.put(requirement, result);
+                optionalRequirements.put(requirement, listResult);
             }
             Collections.sort(fwkCaps, capabilityComparator);
             return fwkCaps;
         } else {
             if (cached == null) {
-                callResolverHooks(requirement, result);
-                providerCache.put(cacheKey, new ArrayList<Capability>(result));
+                callResolverHooks(requirement, listResult);
+                providerCache.put(cacheKey, new ArrayList<Capability>(listResult));
             }
             // Record as a mandatory requirement
-            mandatoryRequirements.put(requirement, result);
+            mandatoryRequirements.put(requirement, listResult);
 
-            return result;
+            return listResult;
         }
+    }
+
+    private boolean matches(Requirement requirement, Capability selfCap) {
+        boolean match = false;
+        try {
+            String filterStr = requirement.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+            org.osgi.framework.Filter filter = filterStr != null ? org.osgi.framework.FrameworkUtil.createFilter(filterStr) : null;
+
+            if (filter == null)
+                match = true;
+            else
+                match = filter.match(new MapToDictionaryAdapter(selfCap.getAttributes()));
+        } catch (InvalidSyntaxException e) {
+            log.log(LogService.LOG_ERROR, "Invalid filter directive on requirement: " + requirement, e);
+        }
+        return match;
     }
 
     private static CacheKey getCacheKey(Requirement requirement) {
