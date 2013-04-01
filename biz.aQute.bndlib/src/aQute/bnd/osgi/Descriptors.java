@@ -331,7 +331,7 @@ public class Descriptors {
 			ref = getTypeRef(binaryClassName.substring(1));
 			ref = new ArrayRef(ref);
 		} else {
-			if (binaryClassName.length() >= 1) {
+			if (binaryClassName.length() == 1) {
 				switch (binaryClassName.charAt(0)) {
 					case 'V' :
 						return VOID;
@@ -351,11 +351,11 @@ public class Descriptors {
 						return LONG;
 					case 'Z' :
 						return BOOLEAN;
-					case 'L' :
-						binaryClassName = binaryClassName.substring(1, binaryClassName.length() - 1);
-						break;
 				}
 				// falls trough for other 1 letter class names
+			}
+			if (binaryClassName.startsWith("L")) {
+				binaryClassName = binaryClassName.substring(1, binaryClassName.length() - 1);
 			}
 			ref = typeRefCache.get(binaryClassName);
 			if (ref != null)
