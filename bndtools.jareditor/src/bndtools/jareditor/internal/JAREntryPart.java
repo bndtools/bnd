@@ -52,7 +52,6 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
 
     private final IEditorPart editor;
 
-    private Font textFont;
     private Text text;
     protected ZipEntry zipEntry = null;
     private Job displayJob = null;
@@ -76,15 +75,10 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
     }
 
     private void createContent(Composite parent, FormToolkit toolkit) {
-        FontDescriptor fd = JFaceResources.getTextFontDescriptor();
-        fd = fd.setHeight(9);
-        this.textFont = fd.createFont(parent.getDisplay());
-
         Section textSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
         textSection.setText("Entry Content");
         Composite textComposite = toolkit.createComposite(textSection);
         text = toolkit.createText(textComposite, "", SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
-        text.setFont(textFont);
         textSection.setClient(textComposite);
 
         Section encodingSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
@@ -240,10 +234,8 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
     }
 
     protected void setContent(String content) {
-        if (text != null && !text.isDisposed()) {
+        if (text != null && !text.isDisposed())
             text.setText(content);
-            text.setFont(textFont);
-        }
     }
 
     private static final String pseudo[] = {

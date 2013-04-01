@@ -8,8 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.felix.resolver.Logger;
-import org.apache.felix.resolver.ResolverImpl;
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.resolve.ResolveOperation;
 import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
@@ -47,6 +45,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -76,6 +75,7 @@ public class ResolutionResultsWizardPage extends WizardPage {
     private TabFolder tabFolder;
     private TabItem tbtmResults;
     private TabItem tbtmErrors;
+    private TabItem tbtmLog;
 
     private SashFormPanelMaximiser requiredMaximiser;
     private TableViewer requiredViewer;
@@ -83,6 +83,7 @@ public class ResolutionResultsWizardPage extends WizardPage {
     private CheckboxTableViewer optionalViewer;
     private TableViewer reasonsViewer;
     private Button btnAddResolveOptional;
+    private Text txtLog;
 
     private ResolutionResult result;
 
@@ -121,6 +122,10 @@ public class ResolutionResultsWizardPage extends WizardPage {
         tbtmErrors = new TabItem(tabFolder, SWT.NONE);
         tbtmErrors.setText("Errors");
         tbtmErrors.setControl(resolutionFailurePanel.createControl(tabFolder));
+
+        tbtmLog = new TabItem(tabFolder, SWT.NONE);
+        tbtmLog.setText("Log");
+        tbtmLog.setControl(createLogTabControl(tabFolder));
 
         updateUi();
     }
@@ -254,34 +259,16 @@ public class ResolutionResultsWizardPage extends WizardPage {
         reasonsViewer = new TableViewer(tblReasons);
         reasonsViewer.setContentProvider(ArrayContentProvider.getInstance());
         reasonsViewer.setLabelProvider(new RequirementWithResourceLabelProvider());
-        // reasonsViewer.setSorter(new ReasonSorter());
-
-        /*
-         * TODO: umm, what did this actually do anyway?
-         *
-        reasonsViewer.addDoubleClickListener(new IDoubleClickListener() {
-            public void doubleClick(DoubleClickEvent event) {
-                
-                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
-                Reason reason = (Reason) sel.getFirstElement();
-                TableItem[] items = requiredViewer.getTable().getItems();
-                for (int idx = 0; idx < items.length; idx++) {
-                    Resource resource = (Resource) items[idx].getData();
-                    if (resource.equals(reason.getResource())) {
-                        requiredViewer.getTable().select(idx);
-                        requiredViewer.getTable().showSelection();
-                        requiredViewer.getTable().notifyListeners(SWT.Selection, new Event());
-                        return;
-                    }
-                }
-            }
-        });
-        */
 
         sashForm.setWeights(new int[] {
                 3, 3, 1
         });
         return sashForm;
+    }
+
+    private Control createLogTabControl(Composite parent) {
+        txtLog = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY);
+        return txtLog;
     }
 
     public ResolutionResult getResult() {
@@ -299,7 +286,7 @@ public class ResolutionResultsWizardPage extends WizardPage {
     private void reresolve() {
         checkedOptional.clear();
         try {
-            ResolveOperation resolver = new ResolveOperation(model, new ResolverImpl(new Logger(4)));
+            ResolveOperation resolver = new ResolveOperation(model);
             getContainer().run(false, true, resolver);
 
             setResult(resolver.getResult());
@@ -348,6 +335,9 @@ public class ResolutionResultsWizardPage extends WizardPage {
         requiredViewer.setInput(result != null ? result.getResolve().getRequiredResources() : null);
         optionalViewer.setInput(result != null ? result.getResolve().getOptionalResources() : null);
         resolutionFailurePanel.setInput(result);
+
+        String log = result.getLog();
+        txtLog.setText(log != null ? log : "<<UNAVAILABLE>>");
 
         boolean resolved = result != null && result.getOutcome().equals(ResolutionResult.Outcome.Resolved);
         // && (result.getStatus() == null || result.getStatus().getSeverity() < IStatus.ERROR);

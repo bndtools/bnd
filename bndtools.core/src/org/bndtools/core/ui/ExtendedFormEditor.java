@@ -81,7 +81,7 @@ public abstract class ExtendedFormEditor extends FormEditor {
     }
 
     public void updatePageTitle(IFormPage page) {
-        int index = pages.indexOf(page);
+        int index = pages != null ? pages.indexOf(page) : -1;
         if (index != -1) {
             setPageImage(index, page.getTitleImage());
             setPageText(index, page.getTitle());
