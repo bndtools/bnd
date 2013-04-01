@@ -29,6 +29,8 @@ public class JARContentPage extends FormPage {
     private JARContentTreePart contentTreePart;
     private JAREntryPart entryPart;
 
+    private String[] selectedPath;
+
     public JARContentPage(FormEditor editor, String id, String title) {
         super(editor, id, title);
     }
@@ -58,6 +60,9 @@ public class JARContentPage extends FormPage {
         entryPart = new JAREntryPart(getEditor(), detailsPanel, toolkit);
         managedForm.addPart(entryPart);
 
+        if (selectedPath != null)
+            contentTreePart.setSelectedPath(selectedPath);
+
         // LAYOUT
         GridLayout layout;
         layout = new GridLayout();
@@ -74,5 +79,18 @@ public class JARContentPage extends FormPage {
     public void dispose() {
         super.dispose();
         titleImg.dispose();
+    }
+
+    void setSelectedPath(String[] path) {
+        this.selectedPath = path;
+        if (contentTreePart != null)
+            contentTreePart.setSelectedPath(path);
+    }
+
+    String[] getSelectedPath() {
+        if (contentTreePart != null)
+            return contentTreePart.getSelectedPath();
+        else
+            return null;
     }
 }

@@ -13,6 +13,7 @@ package bndtools.jareditor.internal;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,6 +29,8 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.TreePath;
+import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -51,6 +54,9 @@ public class JARContentTreePart extends AbstractFormPart {
 
     private final Tree tree;
     private final TreeViewer viewer;
+    private final JARTreeContentProvider contentProvider = new JARTreeContentProvider();
+
+    private String[] selectedPath = null;
 
     public JARContentTreePart(Composite parent, IManagedForm managedForm) {
         this.managedForm = managedForm;
@@ -65,7 +71,7 @@ public class JARContentTreePart extends AbstractFormPart {
         toolkit.paintBordersFor(section);
 
         viewer = new TreeViewer(tree);
-        viewer.setContentProvider(new JARTreeContentProvider());
+        viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new JARTreeLabelProvider());
 
         managedForm.addPart(this);
@@ -95,12 +101,43 @@ public class JARContentTreePart extends AbstractFormPart {
         super.refresh();
         Object input = getManagedForm().getInput();
         viewer.setInput(input);
+        refreshSelectedPath();
+    }
+
+    private void refreshSelectedPath() {
+        if (selectedPath != null) {
+            TreePath treePath = contentProvider.findPath(selectedPath);
+            if (treePath != null)
+                viewer.setSelection(new TreeSelection(treePath), true);
+            else
+                viewer.setSelection(TreeSelection.EMPTY);
+        }
     }
 
     @Override
     public boolean setFormInput(Object input) {
         viewer.setInput(input);
         return false;
+    }
+
+    void setSelectedPath(String[] path) {
+        selectedPath = path;
+        if (viewer != null && viewer.getInput() != null)
+            refreshSelectedPath();
+    }
+
+    String[] getSelectedPath() {
+        String[] result;
+        if (viewer.getSelection().isEmpty())
+            result = null;
+        else {
+            TreeSelection selection = (TreeSelection) viewer.getSelection();
+            TreePath treePath = selection.getPaths()[0];
+            result = new String[treePath.getSegmentCount()];
+            for (int i = 0; i < result.length; i++)
+                result[i] = treePath.getSegment(i).toString();
+        }
+        return result;
     }
 
     private static class JARTreeLabelProvider extends StyledCellLabelProvider {
@@ -199,6 +236,31 @@ public class JARContentTreePart extends AbstractFormPart {
                     } catch (IOException e) {}
                 }
             }
+        }
+
+        public TreePath findPath(String[] path) {
+            if (path == null || path.length == 0)
+                return null;
+
+            TreePath result = TreePath.EMPTY;
+            ZipTreeNode current = entryMap.get(path[0]);
+            if (current == null)
+                return null;
+            result = result.createChildPath(current);
+
+            segments: for (int i = 1; i < path.length; i++) {
+                Collection<ZipTreeNode> children = current.getChildren();
+                for (ZipTreeNode child : children) {
+                    if (path[i].equals(child.toString())) {
+                        current = child;
+                        result = result.createChildPath(child);
+                        continue segments;
+                    }
+                }
+                return null;
+            }
+
+            return result;
         }
     }
 }

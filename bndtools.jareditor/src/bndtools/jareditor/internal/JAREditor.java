@@ -73,6 +73,10 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
             name = ((IURIEditorInput) input).getName();
         }
         setPartName(name);
+
+        contentPage.setSelectedPath(new String[] {
+                "META-INF/", "MANIFEST.MF"
+        });
     }
 
     protected void updateContent(@SuppressWarnings("unused") final IEditorInput input) {
@@ -80,7 +84,9 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
             public void run() {
                 Control c = (contentPage == null) ? null : contentPage.getPartControl();
                 if (c != null && !c.isDisposed()) {
+                    String[] selectedPath = contentPage.getSelectedPath();
                     contentPage.getManagedForm().refresh();
+                    contentPage.setSelectedPath(selectedPath);
                 }
 
                 c = (printPage == null) ? null : printPage.getPartControl();
