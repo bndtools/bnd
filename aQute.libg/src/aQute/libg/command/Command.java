@@ -68,7 +68,8 @@ public class Command {
 		
 		ProcessBuilder p;
 		if (fullCommand != null) {
-			p = new ProcessBuilder(fullCommand);
+			// TODO do proper splitting
+			p = new ProcessBuilder(fullCommand.split("\\s+"));
 		} else {
 			//[cs] Arguments on windows aren't processed correctly. Thus the below junk
 			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6511002
