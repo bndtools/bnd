@@ -481,8 +481,10 @@ public class HeaderReader extends Processor {
 
 			if (dynamic.contains(referenceName)) {
 				rd.policy = ReferencePolicy.DYNAMIC;
+				if (rd.unbind == null)
+					error("In component %s, reference %s is dynamic but has no unbind method.", cd.name, rd.name);
 			}
-
+			
 			if (greedy.contains(referenceName)) {
 				rd.policyOption = ReferencePolicyOption.GREEDY;
 			}

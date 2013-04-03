@@ -110,6 +110,9 @@ public class AnnotationReader extends ClassDataCollector {
 			rdef.unbind = referredMethod(analyzer, rdef, rdef.unbind, "add(.*)", "remove$1", "(.*)", "un$1");
 			rdef.updated = referredMethod(analyzer, rdef, rdef.updated, "(add|set|bind)(.*)", "updated$2", "(.*)",
 					"updated$1");
+			
+			if (rdef.policy == ReferencePolicy.DYNAMIC && rdef.unbind == null)
+				analyzer.error("In component %s, reference %s is dynamic but has no unbind method.", component.name, rdef.name);
 		}
 		return component;
 	}

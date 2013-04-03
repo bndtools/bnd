@@ -233,7 +233,12 @@ public class ComponentTest extends TestCase {
 
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
+		List<String> errors = b.getErrors();
+		// ignore the dynamic-without-unbind error here
+		if (!errors.isEmpty()) {
+			assertEquals(1, errors.size());
+			assertTrue(errors.get(0).endsWith("dynamic but has no unbind method."));
+		}
 		assertEquals(0, b.getWarnings().size());
 
 		String path = "OSGI-INF/" + className + ".xml";

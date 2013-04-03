@@ -783,15 +783,18 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
 		void setB(@SuppressWarnings("unused") LogService l) {}
+		void unsetB(@SuppressWarnings("unused") LogService l) {}
 
 		@Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.RELUCTANT)
 		void setE(@SuppressWarnings("unused") LogService l) {}
+		void unsetE(@SuppressWarnings("unused") LogService l) {}
 
 		@Reference(cardinality = ReferenceCardinality.MANDATORY, policy = ReferencePolicy.STATIC, policyOption = ReferencePolicyOption.RELUCTANT)
 		void setC(@SuppressWarnings("unused") LogService l) {}
 
 		@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
 		void setD(@SuppressWarnings("unused") LogService l) {}
+		void unsetD(@SuppressWarnings("unused") LogService l) {}
 
 	}
 
@@ -1087,6 +1090,26 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
 
 	}
+	
+	@Component(name = "NoUnbindDynamic")
+	public static class NoUnbindDynamic {
+		@SuppressWarnings("unused")
+		@Reference(policy = ReferencePolicy.DYNAMIC)
+		private void bindLogService(LogService l) {
+		}
+	}
+	
+	public static void testNoUnbindDynamic() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*NoUnbindDynamic");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertEquals(1, b.getErrors().size());
+		assertTrue(b.getErrors().get(0).endsWith("dynamic but has no unbind method."));
+	}
+	
 	
 	@Component(name="testConfigPolicy", configurationPolicy=ConfigurationPolicy.IGNORE)
 	public static class TestConfigPolicy {}
