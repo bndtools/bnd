@@ -23,10 +23,7 @@ import aQute.lib.json.*;
 import aQute.libg.cryptography.*;
 import aQute.library.remote.*;
 import aQute.service.library.*;
-import aQute.service.library.Library.Phase;
-import aQute.service.library.Library.Program;
-import aQute.service.library.Library.Revision;
-import aQute.service.library.Library.RevisionRef;
+import aQute.service.library.Library.*;
 import aQute.service.reporter.*;
 import aQute.struct.*;
 
@@ -428,6 +425,7 @@ public class JustAnotherPackageManager {
 
 			List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
 			{
+				if (main.getValue("JPM-Classpath") != null) {
 				Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
 				List<DownloadBlocker> blockers = new ArrayList<DownloadBlocker>();
 
@@ -445,6 +443,17 @@ public class JustAnotherPackageManager {
 					} else {
 						reporter.trace("found %s", candidate);
 						dependencies.add(candidate);
+					}
+				}
+				}
+				else {
+					// TODO pierre this is the (pseudo code)
+					// do maven
+					Revision revision = library.getRevision(artifact.sha);
+					for ( Requirement req : revision.requirements ) {
+						if ( req.ns.equals("x-maven")) {
+							String coordinate = (String) req.ps.get("name:");
+						}
 					}
 				}
 
