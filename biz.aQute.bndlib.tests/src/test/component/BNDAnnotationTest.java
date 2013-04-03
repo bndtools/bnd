@@ -360,7 +360,7 @@ public class BNDAnnotationTest extends TestCase {
 		protected void setLog(@SuppressWarnings("unused") LogService log) {}
 
 	}
-
+	
 	public static void testNoUnbind() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
@@ -379,6 +379,28 @@ public class BNDAnnotationTest extends TestCase {
 		assertEquals("", xpath.evaluate("component/reference/@unbind", doc));
 	}
 
+	@Component(name = "nounbind_dynamic")
+	static class NoUnbindDynamic {
+		
+		@Reference(dynamic = true)
+		protected void setLog(@SuppressWarnings("unused") LogService log) {}
+	}
+	
+	public static void testNoUnbindDynamic() throws Exception {
+		Builder b = new Builder();
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
+		b.setProperty("Service-Component", "*NoUnbindDynamic");
+		b.setProperty("Private-Package", "test.component");
+		b.build();
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
+		assertEquals(1, b.getErrors().size());
+		assertTrue(b.getErrors().get(0).endsWith("dynamic but has no unbind method."));
+		assertEquals(0, b.getWarnings().size());
+	}
+	
 	//this is a bnd annotation not a DS annotation
 	@Component(name = "explicitunbind")
 	static class ExplicitUnbind {
@@ -647,9 +669,11 @@ public class BNDAnnotationTest extends TestCase {
 
 		@Reference(type = '*')
 		protected void bind(@SuppressWarnings("unused") LogService log) {}
+		protected void unbind(@SuppressWarnings("unused") LogService log) {}
 
 		@Reference(multiple = true, optional = true, dynamic = true)
 		protected void bind2(@SuppressWarnings("unused") LogService log) {}
+		protected void unbind2(@SuppressWarnings("unused") LogService log) {}
 	}
 
 	public static void testTypeVersusDetailed() throws Exception {
