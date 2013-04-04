@@ -145,6 +145,13 @@
             name="Repositories"
             restorable="true">
       </view>
+      <view
+            category="bndtools.viewCategory"
+            class="org.bndtools.core.views.jpm.JPMBrowserView"
+            id="org.bndtools.core.views.jpm.JPMBrowserView"
+            name="JPM"
+            restorable="true">
+      </view>
    </extension>
    <extension point="org.eclipse.ui.commands">
       <command
