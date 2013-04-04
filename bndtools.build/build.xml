@@ -43,16 +43,18 @@
 	
 	<!-- Generate the p2 repository and index -->
 	<target name="p2" depends="build,features.dir,plugins.dir" description="Generate the p2 repository">
+		<echo message="Publishing Features and Bundles" />
 		<java jar="${workspacedir}/cnf/eclipse-3.5.2/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar" fork="true" failonerror="true">
-			<!-- <arg line="-consoleLog"/> -->
+			<arg line="-consoleLog"/>
 			<arg line="-application org.eclipse.ant.core.antRunner"/>
 			<arg line="-data ${target}"/>
 			<arg line="-buildfile build.xml __internal_p2"/>
 		</java>
 		
 		<!-- Append the category info -->
+		<echo message="Categorising Repository" />
 		<java jar="${workspacedir}/cnf/eclipse-3.5.2/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar" fork="true" failonerror="true">
-			<!-- <arg line="-consoleLog"/> -->
+			 <arg line="-consoleLog"/>
 			<arg line="-application org.eclipse.equinox.p2.publisher.CategoryPublisher"/>
 			<arg line="-data ${target}"/>
 			<arg line="-metadataRepository file:${target}/p2"/>
