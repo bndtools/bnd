@@ -1,5 +1,4 @@
-*
-!.gitignore
-!org.eclipse.equinox.simpleconfigurator
-!org.eclipse.equinox.source
-!config.ini
+*.log
+org.eclipse.core.runtime/
+org.eclipse.equinox.app/
+org.eclipse.osgi/
