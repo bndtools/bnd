@@ -56,13 +56,10 @@ public class ToolTips {
             values = "\n\nProposed Values:\n" + values.trim().replaceAll("\\s*,\\s*", ", ");
         }
 
-        String message = "";
         String examples = getStrippedExample(syntax, constant);
         if (examples == null) {
-            message = "";
             examples = "";
         } else {
-            message = examples;
             examples = "\n\nExample:\n" + examples;
         }
 
@@ -70,7 +67,6 @@ public class ToolTips {
             Text text = (Text) control;
             String tt = syntax.getLead() + values + examples;
             text.setToolTipText(tt);
-            text.setMessage(message);
         }
     }
 }
