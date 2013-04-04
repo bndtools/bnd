@@ -31,6 +31,7 @@ help.bundles: \
 	org.eclipse.help.webapp,\
 	org.eclipse.help.appserver,\
 	org.apache.lucene,\
+	org.apache.lucene.core,\
 	org.apache.lucene.analysis,\
 	org.eclipse.platform.doc.user,\
 	org.eclipse.ant.core,\
@@ -126,6 +127,7 @@ crossplatform.bundles:\
 	org.eclipse.core.net,\
 	org.eclipse.equinox.p2.artifact.repository,\
 	org.eclipse.ui.views.log,\
+	org.eclipse.jdt.junit.core,\
 	org.eclipse.jdt.junit.runtime,\
 	org.eclipse.jdt.junit,\
 	org.junit;version='[3.8,4)',\
