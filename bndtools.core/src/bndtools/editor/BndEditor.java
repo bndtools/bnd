@@ -249,7 +249,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         if (resolveMode == ResolveMode.auto && !PlatformUI.getWorkbench().isClosing()) {
             final IFile file = ResourceUtil.getFile(getEditorInput());
             if (file == null) {
-                MessageDialog.openError(shell, "Resolution Error", "Unable to run OBR resolution because the file is not in the workspace. NB.: the file will still be saved.");
+                MessageDialog.openError(shell, "Resolution Error", "Unable to run resolution because the file is not in the workspace. NB.: the file will still be saved.");
                 reallySave(monitor);
                 return;
             }
@@ -258,7 +258,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             final ResolveJob job = new ResolveJob(model);
             IStatus validation = job.validateBeforeRun();
             if (!validation.isOK()) {
-                String message = "Unable to run the OBR resolver. NB.: the file will still be saved.";
+                String message = "Unable to run the resolver. NB.: the file will still be saved.";
                 ErrorDialog.openError(shell, "Resolution Validation Problem", message, validation, IStatus.ERROR | IStatus.WARNING);
                 reallySave(monitor);
                 return;

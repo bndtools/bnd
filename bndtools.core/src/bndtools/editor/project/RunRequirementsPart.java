@@ -113,7 +113,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
     private void createSection(Section section, FormToolkit tk) {
         section.setText("Run Requirements");
-        section.setDescription("The specified requirements will be used to resolve a set of runtime bundles from available OBR repositories.");
+        section.setDescription("The specified requirements will be used to resolve a set of runtime bundles from available repositories.");
 
         // Create toolbar
         ToolBar toolbar = new ToolBar(section, SWT.FLAT);
