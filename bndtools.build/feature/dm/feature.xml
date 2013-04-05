@@ -13,7 +13,7 @@
 <feature
       id="bndtools.dm.feature"
       label="Bndtools / Apache Felix Dependency Manager"
-      version="1.0.0.DEV-qualifier"
+      version="2.2.0.DEV-qualifier"
       provider-name="Bndtools"
       plugin="bndtools.template.dm">
 

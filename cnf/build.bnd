@@ -1,5 +1,5 @@
 # Master Version Settings
-base-version: 2.1.0.RC1
+base-version: 2.2.0.DEV
 master-version: ${base-version}-${tstamp;yyyyMMdd-HHmm}-${Git-Descriptor}
 
 bndlib-version-base:    2.2
