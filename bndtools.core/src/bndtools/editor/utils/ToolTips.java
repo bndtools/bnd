@@ -4,8 +4,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Text;
-
 import aQute.bnd.help.Syntax;
 import bndtools.Logger;
 import bndtools.api.ILogger;
@@ -56,21 +54,14 @@ public class ToolTips {
             values = "\n\nProposed Values:\n" + values.trim().replaceAll("\\s*,\\s*", ", ");
         }
 
-        String message = "";
         String examples = getStrippedExample(syntax, constant);
         if (examples == null) {
-            message = "";
             examples = "";
         } else {
-            message = examples;
             examples = "\n\nExample:\n" + examples;
         }
 
-        if (control instanceof Text) {
-            Text text = (Text) control;
-            String tt = syntax.getLead() + values + examples;
-            text.setToolTipText(tt);
-            text.setMessage(message);
-        }
+        String tt = syntax.getLead() + values + examples;
+        control.setToolTipText(tt);
     }
 }
