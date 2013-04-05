@@ -354,7 +354,7 @@ public class Descriptors {
 				}
 				// falls trough for other 1 letter class names
 			}
-			if (binaryClassName.startsWith("L")) {
+			if (binaryClassName.startsWith("L") && binaryClassName.endsWith(";")) {
 				binaryClassName = binaryClassName.substring(1, binaryClassName.length() - 1);
 			}
 			ref = typeRefCache.get(binaryClassName);
