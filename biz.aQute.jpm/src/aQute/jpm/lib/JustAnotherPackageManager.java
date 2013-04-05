@@ -276,7 +276,7 @@ public class JustAnotherPackageManager {
 		return s;
 	}
 
-	public void deleteCommand(String name) throws Exception {
+	public void deleteCommand(String name) throws Exception { //pl: no removal of no longer needed dependancies ?
 		CommandData cmd = getCommand(name);
 		if (cmd == null)
 			throw new IllegalArgumentException("No such command " + name);
@@ -426,27 +426,27 @@ public class JustAnotherPackageManager {
 			List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
 			{
 				if (main.getValue("JPM-Classpath") != null) {
-				Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
-				List<DownloadBlocker> blockers = new ArrayList<DownloadBlocker>();
+					Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
+					List<DownloadBlocker> blockers = new ArrayList<DownloadBlocker>();
 
-				for (Map.Entry<String,Attrs> e : requires.entrySet()) {
-					String key = e.getKey();
-					String v = e.getValue().get("version");
-					if (aQute.bnd.osgi.Verifier.isBsn(e.getKey()) && aQute.bnd.osgi.Verifier.isVersion(v)) {
-						key = Library.OSGI_GROUP + ":" + key + ":" + v;
-					}
-					reporter.trace("searching %s", key);
-					ArtifactData candidate = getCandidate(key, false);
+					for (Map.Entry<String,Attrs> e : requires.entrySet()) {
+						String key = e.getKey();
+						String v = e.getValue().get("version");
+						if (aQute.bnd.osgi.Verifier.isBsn(e.getKey()) && aQute.bnd.osgi.Verifier.isVersion(v)) {
+							key = Library.OSGI_GROUP + ":" + key + ":" + v;
+						}
+						reporter.trace("searching %s", key);
+						ArtifactData candidate = getCandidate(key, false);
 
-					if (candidate == null) {
-						reporter.error("Missing dependency: %s", key);
-					} else {
-						reporter.trace("found %s", candidate);
-						dependencies.add(candidate);
+						if (candidate == null) {
+							reporter.error("Missing dependency: %s", key);
+						} else {
+							reporter.trace("found %s", candidate);
+							dependencies.add(candidate);
+						}
 					}
 				}
-				}
-				else {
+				/*else {
 					// TODO pierre this is the (pseudo code)
 					// do maven
 					Revision revision = library.getRevision(artifact.sha);
@@ -455,7 +455,7 @@ public class JustAnotherPackageManager {
 							String coordinate = (String) req.ps.get("name:");
 						}
 					}
-				}
+				}*/
 
 				for (ArtifactData data : dependencies) {
 					data.sync();
@@ -858,6 +858,7 @@ public class JustAnotherPackageManager {
 	private RevisionRef selectBest(List<RevisionRef> revisions, boolean staged, String classifier) {
 		long date = 0;
 		RevisionRef selected = null;
+		Version selectedVersion = null;
 		for (RevisionRef r : revisions) {
 			reporter.trace("%s:%s:%s@%s %s", r.groupId, r.artifactId, r.classifier, r.version, classifier);
 			if (r.classifier == null && classifier != null || r.classifier != null && classifier == null) {
@@ -866,8 +867,12 @@ public class JustAnotherPackageManager {
 
 			if (r.classifier == null || classifier == null || classifier.equals(r.classifier)) {
 				if (r.phase == Phase.MASTER || (r.phase == Phase.STAGING && staged)) {
-					if (selected == null || r.created > selected.created)
+					Version v = toVersion(r.baseline,r.qualifier);
+					if (selected == null || v.compareTo(selectedVersion) > 0) {
 						selected = r;
+						selectedVersion = v;
+					}
+						
 				}
 			}
 		}
@@ -878,6 +883,14 @@ public class JustAnotherPackageManager {
 					selected.version);
 		}
 		return selected;
+	}
+
+	private Version toVersion(String baseline, String qualifier) {
+		if (qualifier == null || qualifier.trim().length() == 0) {
+			return new Version(baseline);
+		} else {
+			return new Version(baseline+"."+qualifier);
+		}
 	}
 
 	public static Executor getExecutor() {

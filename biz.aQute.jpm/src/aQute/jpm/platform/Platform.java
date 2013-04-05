@@ -109,6 +109,8 @@ public abstract class Platform {
 				value = "";
 			}
 
+			//pl: this is fishy -> epiplog -> epilog + this seems to correspond to a service, not a command
+			
 			// We want to enclose the prolog and epilog so they are
 			// executed as one command and thus logged as one command
 			if ("epiplog".equals(key.getName()) || "prolog".equals(key.getName())) {

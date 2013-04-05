@@ -5,8 +5,12 @@ import java.net.*;
 import java.util.*;
 
 import junit.framework.*;
+import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
+import aQute.jpm.main.*;
+import aQute.jpm.main.Main.installOptions;
 import aQute.jpm.platform.*;
+import aQute.lib.getopt.*;
 import aQute.libg.reporter.*;
 import aQute.service.library.Library.Revision;
 import aQute.service.reporter.*;
@@ -94,5 +98,13 @@ public class JPMTest extends TestCase {
 		jpm.setLibrary(new URI("http://localhost:8080/rest"));
 		ArtifactData artifact = jpm.getCandidate("aQute.libg", true);
 		assertNotNull(artifact);
+	}
+	
+	public void testPierre() throws Exception {
+		/*Reporter r = new ReporterAdapter();
+		JustAnotherPackageManager jpm = new JustAnotherPackageManager(r);
+		jpm.getCandidate("junit:junit", false);*/
+		String[] args = {"install", "jtwitter"};
+		
 	}
 }
