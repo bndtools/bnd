@@ -136,9 +136,14 @@ public class ProjectTest extends TestCase {
 	public static void testMultipleRepos() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p1");
+		
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.EXACT, null));
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.HIGHEST, null));
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.LOWEST, null));
+		
+		List<Container> bundles = project.getBundles(Strategy.LOWEST, "org.apache.felix.configadmin;version=1.1.0,org.apache.felix.configadmin;version=1.1.0", "test");
+		assertTrue( project.check("Multiple bundles with the same final URL"));
+		assertEquals(1, bundles.size());
 	}
 
 	/**
