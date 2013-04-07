@@ -117,7 +117,7 @@
 		<bindex repositoryfile="bundles/repository.xml" root="bundles" quiet="true">
 			<fileset dir="bundles" includes="**/*.jar" />
 		</bindex>
-		<repoindex out="bundles/index.xml" rooturl="bundles" name="bnd" pretty="true">
+		<repoindex out="${p}/bundles/index.xml" rooturl="${p}/bundles" name="bnd" pretty="true">
 			<fileset dir="bundles" includes="**/*.jar" />
 		</repoindex>
 	</target>
