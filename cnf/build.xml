@@ -42,6 +42,8 @@
 				<pathelement location="${workspacedir}/cnf/repo/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar" />
 			</classpath>
 		</taskdef>
+		
+		<taskdef resource="taskdef.properties" classpath="${workspacedir}/cnf/repo/org.osgi.impl.bundle.repoindex.ant/org.osgi.impl.bundle.repoindex.ant-latest.jar"/>
 
 		<!-- mark init has been run -->
 		<property name="initialized" value="set" />
@@ -115,6 +117,9 @@
 		<bindex repositoryfile="bundles/repository.xml" root="bundles" quiet="true">
 			<fileset dir="bundles" includes="**/*.jar" />
 		</bindex>
+		<repoindex out="bundles/index.xml" rooturl="bundles" name="bnd" pretty="true">
+			<fileset dir="bundles" includes="**/*.jar" />
+		</repoindex>
 	</target>
 
 	<!--
