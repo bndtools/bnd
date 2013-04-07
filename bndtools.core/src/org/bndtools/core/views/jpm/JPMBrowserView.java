@@ -5,6 +5,8 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.LocationAdapter;
+import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -12,6 +14,9 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import bndtools.Plugin;
 
 public class JPMBrowserView extends ViewPart {
+
+    private static final String HTTPS_URL = "https://www.jpm4j.org/";
+    private static final String HTTP_URL = "http://www.jpm4j.org/";
 
     private final ImageDescriptor backImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/back.png");
     private final ImageDescriptor forwardImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/forward.png");
@@ -25,7 +30,20 @@ public class JPMBrowserView extends ViewPart {
         browser = new Browser(parent, SWT.NONE);
         createActions();
 
-        browser.setUrl("https://www.jpm4j.org/");
+        // Prevent navigation away from JPM4J.org, and redirect from HTTP back to HTTPS
+        browser.addLocationListener(new LocationAdapter() {
+            @Override
+            public void changing(LocationEvent event) {
+                if (event.location.startsWith(HTTPS_URL))
+                    return;
+                if (event.location.startsWith(HTTP_URL))
+                    event.location = event.location.replaceFirst(HTTP_URL, HTTP_URL);
+                else
+                    event.doit = false;
+            }
+        });
+
+        browser.setUrl(HTTPS_URL);
     }
 
     private void createActions() {

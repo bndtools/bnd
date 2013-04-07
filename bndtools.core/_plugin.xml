@@ -148,6 +148,7 @@
       <view
             category="bndtools.viewCategory"
             class="org.bndtools.core.views.jpm.JPMBrowserView"
+            icon="icons/jpm.gif"
             id="org.bndtools.core.views.jpm.JPMBrowserView"
             name="JPM"
             restorable="true">
