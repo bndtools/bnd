@@ -21,7 +21,7 @@ public abstract class Unix extends Platform {
 	@Override
 	public File getLocal() {
 		File home = new File(System.getProperty("user.home"));
-		return new File(home, ".jpm");
+		return new File(home, "jpm");
 	}
 
 	@Override

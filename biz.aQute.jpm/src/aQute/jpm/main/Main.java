@@ -11,8 +11,6 @@ import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.regex.*;
 
-import javax.swing.text.html.*;
-
 import aQute.bnd.osgi.*;
 import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
@@ -43,7 +41,7 @@ public class Main extends ReporterAdapter {
 	public final static Pattern	BSNID_PATTERN	= Pattern.compile("([-A-Z0-9_.]+?)(-\\d+\\.\\d+.\\d+)?",
 														Pattern.CASE_INSENSITIVE);
 	File						base			= new File(System.getProperty("user.dir"));
-	Settings					settings		= new Settings();
+	Settings					settings;
 
 	/**
 	 * Show installed binaries
@@ -211,7 +209,7 @@ public class Main extends ReporterAdapter {
 		boolean pedantic();
 
 		@Description("Specify a new base directory (default working directory).")
-		String Base();
+		String base();
 
 		@Description("Do not return error status for error that match this given regular expression.")
 		String[] failok();
@@ -219,17 +217,23 @@ public class Main extends ReporterAdapter {
 		@Description("Remote library url (can also be permanently set with 'jpm settings library.url=...'")
 		String library();
 
-		@Description("Cache directory, can als be permanently set with 'jpm settings library.cache=...'")
+		@Description("Cache directory (one-shot)")
 		String cache();
-
-		@Description("The directory where to store executables. Can also be set 'jpm settings library.bin=...'")
-		String bin();
 
 		@Description("Wait for a key press, might be useful when you want to see the result before it is overwritten by a next command")
 		boolean key();
 
 		@Description("Show the release notes")
 		boolean release();
+		
+		@Description("Run jpm with local configurations (cache.local setting or platform default)")
+		boolean user();
+		
+		@Description("Run jpm with global configurations (cache.global setting or platform default)")
+		boolean global();
+		
+		@Description("Change settings file (one-shot)")
+		String settings();
 	}
 
 	/**
@@ -248,8 +252,15 @@ public class Main extends ReporterAdapter {
 			setPedantic(opts.pedantic());
 			trace("set the options");
 
-			if (opts.Base() != null)
-				base = IO.getFile(base, opts.Base());
+			if(opts.settings() != null) {
+				trace("Using settings file: %s", opts.settings());
+				settings = new Settings(opts.settings());
+			} else {
+				settings = new Settings("~/.jpm");
+			}
+			
+			if (opts.base() != null)
+				base = IO.getFile(base, opts.base());
 
 			url = opts.library();
 			if (url == null)
@@ -260,23 +271,23 @@ public class Main extends ReporterAdapter {
 
 			File homeDir;
 			if (opts.cache() != null) {
+				trace("Using dir specified in CLI");
 				homeDir = IO.getFile(base, opts.cache());
-			} else if (settings.containsKey("library.cache")) {
-				homeDir = IO.getFile(base, settings.get("library.cache"));
-			} else
-				homeDir = null;
-
-			if (homeDir != null)
-				jpm.setHomeDir(homeDir);
-
-			File binDir;
-			if (opts.bin() != null) {
-				binDir = IO.getFile(base, opts.bin());
-			} else if (settings.containsKey("library.bin")) {
-				binDir = IO.getFile(base, settings.get("library.bin"));
-			} else
-				homeDir = null;
-
+			} else if (opts.user()) {
+				homeDir = setLocal();
+			} else if (opts.global()) {
+				homeDir = setGlobal();
+			} else if (settings.containsKey("runconfig")) {
+				if(settings.get("runconfig").equalsIgnoreCase("local")) {
+					homeDir = setLocal();
+				} else {
+					homeDir = setGlobal();
+				}
+			} else {
+				homeDir = setGlobal();
+			}
+			jpm.setHomeDir(homeDir);
+			
 			CommandLine handler = opts._command();
 			List<String> arguments = opts._();
 
@@ -317,6 +328,26 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
+	private File setLocal() {
+		if (settings.containsKey("cache.local")) {
+			trace("Using local dir (from configuration)");
+			return IO.getFile(base, settings.get("cache.local"));
+		} else {
+			trace("Using local dir (platform default)");
+			return Platform.getPlatform(this).getLocal();
+		}
+	}
+	
+	private File setGlobal() {
+		if (settings.containsKey("cache.global")) {
+			trace("Using global dir (from configuration)");
+			return IO.getFile(base, settings.get("cache.global"));
+		} else {
+			trace("Using global dir (platform default)");
+			return Platform.getPlatform(this).getGlobal();
+		}
+	}
+	
 	/**
 	 * Install a jar options
 	 */
@@ -751,8 +782,11 @@ public class Main extends ReporterAdapter {
 	 * @param args
 	 * @throws Exception
 	 */
-	private void run(String[] args) throws Exception {
-		jpm = new JustAnotherPackageManager(this);
+	public void run(String[] args) throws Exception {
+		if(jpm == null) { 
+			jpm = new JustAnotherPackageManager(this);
+		}
+		
 		try {
 			if (args.length > 0 && args[0].equals("daemon"))
 				jpm.daemon();
@@ -1433,17 +1467,19 @@ public class Main extends ReporterAdapter {
 	})
 	interface setupOptions extends Options {}
 
-	@Description("Make jpm local/global (probably does not work yet)")
+	@Description("Make jpm local/global")
 	public void _setup(setupOptions opts) {
+
+		
 		String type = opts._().remove(0);
 		if (type.equalsIgnoreCase("user")) {
-			File bin = IO.getFile("~/.jpm/bin");
-			// TODO File global = IO.getFile("~/")
-			// settings.put("library.bin", );
+			trace("Making jpm local");
+			settings.put("runconfig", "local");
 		} else {
-
+			trace("Making jpm global");
+			settings.put("runconfig", "global");
 		}
-
+		settings.save();
 	}
 
 	/**
@@ -1501,12 +1537,6 @@ public class Main extends ReporterAdapter {
 		if(jpm.getCommand(name) != null) { // Try command first
 			trace("Corresponding command found, removing");
 			jpm.deleteCommand(name);
-			/*try {
-				jpm.deleteCommand(cmd);
-			}
-			catch (Exception e) {
-				exception(e, "Failed to remove the command (%s): %s", cmd, e.getMessage());
-			}*/
 			
 		} else if((s = jpm.getService(name)) != null) { // No command matching, try service
 			trace("Corresponding service found, removing");
@@ -1516,5 +1546,13 @@ public class Main extends ReporterAdapter {
 			error("No matching command or service found");
 		}
 		
+	}
+	
+	/**
+	 * Constructor for testing purposes
+	 */
+	public Main(JustAnotherPackageManager jpm) throws UnsupportedEncodingException {
+		this();
+		this.jpm = jpm;
 	}
 }

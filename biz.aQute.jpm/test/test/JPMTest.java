@@ -1,21 +1,30 @@
 package test;
 
+import static org.mockito.Mockito.*;
+
 import java.io.*;
-import java.net.*;
 import java.util.*;
 
 import junit.framework.*;
-import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
 import aQute.jpm.main.*;
-import aQute.jpm.main.Main.installOptions;
 import aQute.jpm.platform.*;
-import aQute.lib.getopt.*;
-import aQute.libg.reporter.*;
-import aQute.service.library.Library.Revision;
-import aQute.service.reporter.*;
+import aQute.lib.settings.*;
 
 public class JPMTest extends TestCase {
+	
+	static Settings settings;
+	
+	@Override
+	public void setUp() {
+		settings = new Settings("/tmp/settings");
+	}
+	
+	@Override
+	public void tearDown() {
+		settings.clear();
+	}
+	
 	static File	cwd	= new File(System.getProperty("user.dir")).getAbsoluteFile();
 
 	static class PLF extends Unix {
@@ -63,7 +72,7 @@ public class JPMTest extends TestCase {
 		}
 	}
 
-	public void testCandidates() throws Exception {
+	/*public void testCandidates() throws Exception {
 		Reporter r = new ReporterAdapter();
 		JustAnotherPackageManager jpm = new JustAnotherPackageManager(r);
 		jpm.setPlatform( new PLF());
@@ -98,13 +107,80 @@ public class JPMTest extends TestCase {
 		jpm.setLibrary(new URI("http://localhost:8080/rest"));
 		ArtifactData artifact = jpm.getCandidate("aQute.libg", true);
 		assertNotNull(artifact);
+	}*/
+	
+	public void test_userMode_cache() throws Exception {
+		JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
+		String[] args = {"-s", "/tmp/settings", "-c", "/tmp/cache"};
+		Main main = new Main(mock);
+		main.run(args);
+		
+		verify(mock).setHomeDir(new File("/tmp/cache"));
 	}
 	
-	public void testPierre() throws Exception {
-		/*Reporter r = new ReporterAdapter();
-		JustAnotherPackageManager jpm = new JustAnotherPackageManager(r);
-		jpm.getCandidate("junit:junit", false);*/
-		String[] args = {"install", "jtwitter"};
+	public void test_userMode_local_noConfig() throws Exception {
+		JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
 		
+		String[] args = {"-s", "/tmp/settings", "-u"};
+		Main main = new Main(mock);
+		main.run(args);
+		
+		verify(mock).setHomeDir(Platform.getPlatform(main).getLocal());
+	}
+	
+	public void test_userMode_local_config() throws Exception {
+		JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
+		settings.put("cache.local", "/tmp/localCache");
+		settings.save();
+		
+		String[] args = {"-s", "/tmp/settings","-u"};
+		Main main = new Main(mock);
+		main.run(args);
+
+		verify(mock).setHomeDir(new File("/tmp/localCache"));
+	}
+	
+	public void test_userMode_global_noConfig() throws Exception {
+		JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
+		
+		String[] args = {"-s", "/tmp/settings", "-g"};
+		Main main = new Main(mock);
+		main.run(args);
+		
+		verify(mock).setHomeDir(Platform.getPlatform(main).getGlobal());
+	}
+	
+	public void test_userMode_global_config() throws Exception {
+		JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
+		settings.put("cache.global", "/tmp/globalCache");
+		settings.save();
+		
+		String[] args = {"-s", "/tmp/settings", "-g"};
+		Main main = new Main(mock);
+		main.run(args);
+
+		verify(mock).setHomeDir(new File("/tmp/globalCache"));
+	}
+	
+	public void test_userMode_runconfig() throws Exception {
+		JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
+		settings.put("runconfig", "local");
+		settings.save();
+		
+		String[] args = {"-s", "/tmp/settings"};
+		Main main = new Main(mock);
+		main.run(args);
+
+		verify(mock).setHomeDir(Platform.getPlatform(main).getLocal());
+	}
+	
+	public void test_userMode_default() throws Exception {
+		JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
+		
+		String[] args = {"-s", "/tmp/settings"};
+		Main main = new Main(mock);
+		main.run(args);
+
+		verify(mock).setHomeDir(Platform.getPlatform(main).getGlobal());
 	}
 }

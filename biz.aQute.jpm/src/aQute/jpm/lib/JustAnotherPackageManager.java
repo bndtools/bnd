@@ -85,7 +85,7 @@ public class JustAnotherPackageManager {
 	RemoteLibrary		library			= new RemoteLibrary(null);
 	Reporter			reporter;
 	final List<Service>	startedByDaemon	= new ArrayList<Service>();
-
+	
 	/**
 	 * Constructor
 	 * 
@@ -376,10 +376,11 @@ public class JustAnotherPackageManager {
 
 	public void setPlatform(Platform plf) throws IOException {
 		this.platform = plf;
-		if (homeDir == null)
+		// pl: homeDir should always be provided by Main:_jpm
+		/*if (homeDir == null)
 			homeDir = platform.getGlobal();
 
-		initDirs();
+		initDirs();*/
 	}
 
 	void initDirs() throws IOException {
@@ -981,5 +982,5 @@ public class JustAnotherPackageManager {
 	public RemoteLibrary getLibrary() {
 		return library;
 	}
-	
+
 }
