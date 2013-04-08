@@ -172,6 +172,9 @@ public class CommandLine {
 					// Full named option, e.g. --output
 					String name = option.substring(2);
 					Method m = options.get(name);
+					if (m == null) { // Maybe due to capitalization modif
+						m = options.get(Character.toLowerCase(name.charAt(0))+name.substring(1));
+					}
 					if (m == null)
 						msg.UnrecognizedOption_(name);
 					else
@@ -223,7 +226,7 @@ public class CommandLine {
 	 * Answer a list of the options specified in an options interface
 	 */
 	private Map<String,Method> getOptions(Class< ? extends Options> interf) {
-		Map<String,Method> map = new TreeMap<String,Method>();
+		Map<String,Method> map = new TreeMap<String,Method>(String.CASE_INSENSITIVE_ORDER);
 
 		for (Method m : interf.getMethods()) {
 			if (m.getName().startsWith("_"))
@@ -239,6 +242,36 @@ public class CommandLine {
 
 			map.put(name, m);
 		}
+		
+		// In case two options have the same first char, uppercase one of them
+		// In case 3+  --------------------------------, throw an error
+		char prevChar = '\0';
+		boolean throwOnNextMatch = false;
+		Map<String, Method> toModify = new HashMap<String,Method>();
+		for (String name : map.keySet()) {
+			if(Character.toLowerCase(name.charAt(0)) != name.charAt(0)) { // 
+				throw new Error("Only commands with lower case first char are acceptable ("+name+")");
+			}
+			
+			if(Character.toLowerCase(name.charAt(0)) == prevChar) {
+				if(throwOnNextMatch) {
+					throw new Error("3 options with same first letter (one is: "+name+")");
+				} else {
+					toModify.put(name, map.get(name));
+					throwOnNextMatch = true;
+				}
+			} else {
+				throwOnNextMatch = false;
+				prevChar = name.charAt(0);
+			}		
+		}
+		
+		for (String name : toModify.keySet()) {
+			map.remove(name);
+			String newName = Character.toUpperCase(name.charAt(0))+name.substring(1);
+			map.put(newName, toModify.get(name));
+		}
+		
 		return map;
 	}
 
@@ -351,7 +384,7 @@ public class CommandLine {
 
 				f.format("   %s -%s, --%s %s%s \t0- \t1%s%n", required ? " " : "[", //
 						optionName.charAt(0), //
-						optionName, //
+						Character.toLowerCase(optionName.charAt(0))+optionName.substring(1), // hide away first upper case char in long args
 						getTypeDescriptor(m.getGenericReturnType()), //
 						required ? " " : "]",//
 						methodDescription);

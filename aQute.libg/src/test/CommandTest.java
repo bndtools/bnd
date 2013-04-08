@@ -92,4 +92,65 @@ public class CommandTest extends TestCase {
 		System.err.println(help);
 	}
 
+	interface Opt1 {
+		String title();
+	}
+	interface Opt2 {
+		String test();
+	}
+	interface Opt3 {
+		String third();
+	}
+	interface Opt4 {
+		String Wrong();
+	}
+	@Arguments(arg = {
+		""
+	})
+	interface TwoOptions extends Opt1, Opt2, Options {}
+	interface ThreeOptions extends Opt1, Opt2, Opt3 {}
+	
+	public static class CommandTwoOptions {
+		public String test, title;
+		
+		public void _commandTwoOptions(TwoOptions opts) {
+			test = opts.test();
+			title = opts.title();
+		}
+	}
+	
+	public static class CommandThreeOptions {
+		public void _commandThreeOptions(ThreeOptions opts) {}
+	}
+	
+	public static class CommandWrongOption {
+		public void _commandWrongOption(Opt4 opts) {}
+	}
+	
+	public void test_SameFirstChar() throws Exception {
+		CommandLine getopt = new CommandLine(rp);
+		CommandTwoOptions c = new CommandTwoOptions();
+		getopt.execute(c, "commandTwoOptions", new ExtList<String>("-t", "test", "-T", "title"));
+		assertEquals("title", c.title);
+		assertEquals("test", c.test);
+	}
+	
+	public void test_SameFirstChar_NoCapitalizedCommands() throws Exception {
+		CommandLine getopt = new CommandLine(rp);
+		CommandWrongOption c = new CommandWrongOption();
+		try {
+			getopt.execute(c, "commandWrongOption", new ExtList<String>());
+			fail();
+		}
+		catch (Error e) {}
+	}
+	
+	public void test_SameFirstChar_MaxTwoOptionsWithSameShortcut() throws Exception {
+		CommandLine getopt = new CommandLine(rp);
+		CommandThreeOptions c = new CommandThreeOptions();
+		try {
+			getopt.execute(c, "commandThreeOptions", new ExtList<String>());
+			fail();
+		} catch (Error e) {}
+	}
 }
