@@ -133,8 +133,11 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 					String v  = builder.getVersion();
 					if (v == null)
 						v = "0";
-					else if (!Verifier.isVersion(v))
-						continue; // skip
+					else {
+						v = Analyzer.cleanupVersion(v);
+						if (!Verifier.isVersion(v))
+							continue; // skip
+					}
 					
 					versions.add(new Version(v));
 				}
