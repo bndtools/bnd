@@ -48,6 +48,11 @@ public interface SearchableRepository {
 		 * True if already included in the local repository.
 		 */
 		public boolean	included;
+
+		/**
+		 * True if this resource was added as a dependency
+		 */
+		public boolean	dependency;
 	}
 
 	/**
@@ -55,12 +60,17 @@ public interface SearchableRepository {
 	 * recognized null is returned. This method can be used if a URL is dropped
 	 * and you need to know the resources identified by this url. The returned
 	 * set is owned by the caller and may be modified.
+	 * <p/>
+	 * The @{code includeDependencies} parameter indicates that if possible
+	 * any mandatory compile and runtime dependencies should be added to the result set.
 	 * 
 	 * @param url
 	 *            the dropped url
+	 * @param includeDependencies
+	 *            Include any dependent revisions
 	 * @return null or the modifiable set of associated resource descriptors.
 	 */
-	Set<ResourceDescriptor> getResources(URI url) throws Exception;
+	Set<ResourceDescriptor> getResources(URI url, boolean includeDependencies) throws Exception;
 
 	/**
 	 * Search a repository and return a set of resource descriptors that match
@@ -77,29 +87,31 @@ public interface SearchableRepository {
 	Set<ResourceDescriptor> query(String query) throws Exception;
 
 	/**
-	 * Add a set of resource descriptors to the underlying repositories. Only
-	 * descriptors recognized to be from this repository are added, others must
-	 * be ignored. The returned set contains unrecognized descriptors. The
-	 * descriptors passed must be the same (identity) objects returned from the
-	 * {@link #getResources(URI)} or {@link #query(String)} methods so that
-	 * these methods can return subclasses for easy identification.
+	 * Add a resource descriptors to the underlying repository. Only
+	 * descriptors recognized to be from the designated repository are added, others must
+	 * be ignored. True must be returned if this descriptor was accepted.
 	 * 
-	 * @param resources
-	 *            the set of descriptors to add, potentially empty
-	 * @return the set of descriptors not added
+	 * @param resource
+	 *            the descriptor to add
+	 * @return true if added, false if rejected
 	 * @throws Exception
 	 */
-	Set<ResourceDescriptor> addResources(Set<ResourceDescriptor> resources) throws Exception;
+	boolean addResource(ResourceDescriptor resource) throws Exception;
 
 	/**
 	 * Find a set of resources that match the given requirement.This is intended
 	 * to be used to provide extra resources when a resolve fails. Returned are
 	 * all revisions that have a matching capability.
+	 * <p/>
+	 * The @{code includeDependencies} parameter indicates that if possible
+	 * any mandatory compile and runtime dependencies should be added to the result set.
 	 * 
 	 * @param requirement
 	 *            The requirement to match
+	 * @param includeDependencies
+	 *            Include any dependent revisions
 	 * @return the set of resource descriptors that match, potentially empty
 	 * @throws Exception
 	 */
-	Set<ResourceDescriptor> findResources(Requirement requirement) throws Exception;
+	Set<ResourceDescriptor> findResources(Requirement requirement, boolean includeDependencies) throws Exception;
 }
