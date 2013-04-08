@@ -252,13 +252,11 @@ public class Attrs implements Map<String,String> {
 		return super.hashCode();
 	}
 
-	public boolean isEqual(Attrs o) {
-		if (this == o)
+	public boolean isEqual(Attrs other) {
+		if (this == other)
 			return true;
 
-		Attrs other = o;
-
-		if (size() != other.size())
+		if (other == null || size() != other.size())
 			return false;
 
 		if (isEmpty())
@@ -270,11 +268,12 @@ public class Attrs implements Map<String,String> {
 			return false;
 
 		for (String key : keySet()) {
-			if (!get(key).equals(other.get(key)))
+			String value = get(key);
+			String valueo = other.get(key);
+			if (!(value == valueo || (value != null && value.equals(valueo))))
 				return false;
 		}
 		return true;
-
 	}
 
 	public Object getTyped(String adname) {
