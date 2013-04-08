@@ -243,6 +243,9 @@
        <Package name="org.bndtools.core.utils.workspace" />
      </Match>
      <Match>
+       <Package name="org.bndtools.core.views.jpm" />
+     </Match>
+     <Match>
        <Package name="test.bndtools.bndplugins.repo.git" />
      </Match>
 </FindBugsFilter>
