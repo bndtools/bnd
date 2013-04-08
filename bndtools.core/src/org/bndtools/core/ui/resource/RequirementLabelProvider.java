@@ -45,17 +45,24 @@ public class RequirementLabelProvider extends StyledCellLabelProvider {
     }
 
     public StyledString getLabel(Requirement requirement) {
+        StyledString label;
+
         String filter = requirement.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+        if (filter == null) {
+            // not a proper requirement... maybe a substitution?
+            label = new StyledString("[unparsed]", StyledString.QUALIFIER_STYLER);
+        } else {
+            label = new StyledString(filter, StyledString.QUALIFIER_STYLER);
+            String namespace = requirement.getNamespace();
+            if (namespace != null) {
+                applyStyle(namespace, UIConstants.BOLD_STYLER, label);
 
-        StyledString label = new StyledString(filter, StyledString.QUALIFIER_STYLER);
-        String namespace = requirement.getNamespace();
-        if (namespace != null) {
-            applyStyle(namespace, UIConstants.BOLD_STYLER, label);
-
-            String versionAttrib = ResourceUtils.getVersionAttributeForNamespace(namespace);
-            if (versionAttrib != null)
-                applyStyle(versionAttrib, UIConstants.BOLD_COUNTER_STYLER, label);
+                String versionAttrib = ResourceUtils.getVersionAttributeForNamespace(namespace);
+                if (versionAttrib != null)
+                    applyStyle(versionAttrib, UIConstants.BOLD_COUNTER_STYLER, label);
+            }
         }
+
         return label;
     }
 

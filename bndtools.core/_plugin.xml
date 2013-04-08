@@ -308,7 +308,7 @@
                icon="icons/bnd_nature_add.png"
                id="bndtools.addBndNatureAction"
                label="Add Bndtools Project Nature"
-               menubarPath="additions"
+               menubarPath="org.eclipse.ui.projectConfigure/additions"
                style="push">
          </action>
          <visibility>
@@ -336,7 +336,7 @@
                icon="icons/bnd_nature_remove.png"
                id="bndtools.removeBndNatureAction"
                label="Remove Bndtools Project Nature"
-               menubarPath="additions"
+               menubarPath="org.eclipse.ui.projectConfigure/additions"
                style="push">
          </action>
          <visibility>
