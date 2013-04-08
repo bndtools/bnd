@@ -5,20 +5,21 @@ import java.net.*;
 
 import junit.framework.*;
 import test.lib.*;
+import aQute.bnd.deployer.http.*;
 import aQute.bnd.deployer.repository.*;
 import aQute.bnd.deployer.repository.CachingUriResourceHandle.CachingMode;
 import aQute.lib.io.*;
 
 public class CachingUriResourceHandlerTest extends TestCase {
 
-	private static final String	EXPECTED_ETAG	= "64035a95";
+	private static final String EXPECTED_SHA = "d0002141a722ef03ecd8fd2e0d3e4d3bc680ba91483cb4962f68a41a12dd01ab".toUpperCase();
 
 	static File						currentDir		= new File(System.getProperty("user.dir"));
 
 	public static void testLoadFromCache() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
-						"testdata/httpcache/1"), CachingMode.PreferRemote);
+						"testdata/httpcache/1"), new DefaultURLConnector(), (String) null);
 		File result = handle.request();
 
 		assertEquals(
@@ -30,7 +31,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 	public static void testFailedLoadFromRemote() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
-						"testdata/httpcache/2"), CachingMode.PreferRemote);
+						"testdata/httpcache/2"), new DefaultURLConnector(), (String) null);
 
 		try {
 			handle.request();
@@ -44,7 +45,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 	public static void testLoadFromRemote() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
-						"testdata/httpcache/3"), CachingMode.PreferRemote);
+						"testdata/httpcache/3"), new DefaultURLConnector(), (String) null);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
 		try {
@@ -54,24 +55,23 @@ public class CachingUriResourceHandlerTest extends TestCase {
 							.getAbsolutePath(),
 					result.getAbsolutePath());
 
-			File etagFile = new File(result.getAbsolutePath() + ".etag");
-			assertEquals(EXPECTED_ETAG, IO.collect(etagFile));
+			File shaFile = new File(result.getAbsolutePath() + ".sha");
+			assertEquals(EXPECTED_SHA, IO.collect(shaFile));
 
 			result.delete();
-			etagFile.delete();
+			shaFile.delete();
 		}
 		finally {
 			httpd.stop();
 		}
 	}
 
-	public static void testRemoteUnmodifiedETag() throws Exception {
+	public static void testUseCached() throws Exception {
 		File cached = new File("testdata/httpcache/4/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		long cacheTimestamp = cached.lastModified();
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
-						"testdata/httpcache/4"), CachingMode.PreferRemote);
+				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File("testdata/httpcache/4"), new DefaultURLConnector(), EXPECTED_SHA);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
 		try {
@@ -84,17 +84,16 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		}
 	}
 
-	public static void testRemoteModifiedETag() throws Exception {
+	public static void testReplaceCache() throws Exception {
 		File cached = new File("testdata/httpcache/5/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		long cacheTimestamp = cached.lastModified();
 
-		// Clear the etag so the file appears modified
-		File etagFile = new File(cached.getAbsolutePath() + ".etag");
-		IO.copy(IO.stream("00000000"), etagFile);
+		// Clear the SHA so the file appears modified
+		File shaFile = new File(cached.getAbsolutePath() + ".sha");
+		IO.copy(IO.stream("00000000"), shaFile);
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
-						"testdata/httpcache/5"), CachingMode.PreferRemote);
+				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File("testdata/httpcache/5"), new DefaultURLConnector(), EXPECTED_SHA);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
 		try {
@@ -102,50 +101,41 @@ public class CachingUriResourceHandlerTest extends TestCase {
 			assertEquals(cached, result);
 			assertNotSame("File timestamp SHOULD change", cacheTimestamp, result.lastModified());
 
-			assertEquals(EXPECTED_ETAG, IO.collect(etagFile));
+			assertEquals(EXPECTED_SHA, IO.collect(shaFile));
 		}
 		finally {
 			httpd.stop();
 		}
 	}
 
-	public static void testPreferCacheEmptyCache() throws Exception {
+	public static void testEmptyCache() throws Exception {
 		File cached = new File("testdata/httpcache/6/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		cached.delete();
 
-		File etagFile = new File(cached.getAbsolutePath() + ".etag");
-		etagFile.delete();
+		File shaFile = new File(cached.getAbsolutePath() + ".sha");
+		shaFile.delete();
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
-						"testdata/httpcache/6"), CachingMode.PreferCache);
+				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File("testdata/httpcache/6"), new DefaultURLConnector(), EXPECTED_SHA);
 		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
 		try {
 			File result = handle.request();
 			assertEquals(cached, result);
-			assertEquals(EXPECTED_ETAG, IO.collect(etagFile));
+			assertEquals(EXPECTED_SHA, IO.collect(shaFile));
 		}
 		finally {
 			httpd.stop();
 		}
 	}
-
-	public static void testPreferCache() throws Exception {
+	
+	public static void testUseCacheWhenRemoteUnavailable() throws Exception {
 		File cached = new File("testdata/httpcache/7/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
-		long cachedTimestamp = cached.lastModified();
+		CachingUriResourceHandle handle = new CachingUriResourceHandle(new URI("http://localhost:18083/bundles/dummybundle.jar"), new File("testdata/httpcache/7"), new DefaultURLConnector(), (String) null);
 
-		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
-						"testdata/httpcache/7"), CachingMode.PreferCache);
-		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
-		try {
-			File result = handle.request();
-			assertEquals(cached, result);
-			assertEquals("File timestamp should NOT change", cachedTimestamp, result.lastModified());
-		}
-		finally {
-			httpd.stop();
-		}
+		// whoops where's the server...
+
+		File result = handle.request();
+		assertEquals(cached, result);
 	}
 
 }

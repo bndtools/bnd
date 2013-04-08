@@ -147,7 +147,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					try {
 						URI indexLocation = new URI(referral.getUrl());
 						try {
-							CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, CachingMode.PreferRemote);
+							CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null);
 							indexHandle.setReporter(reporter);
 							readIndex(indexLocation.getPath(), indexLocation, new FileInputStream(indexHandle.request()), this);
 						}
@@ -166,7 +166,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			// Parse the indexes
 			for (URI indexLocation : indexLocations) {
 				try {
-					CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, CachingMode.PreferRemote);
+					CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null);
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
 					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
@@ -402,6 +402,20 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		
 		throw new IllegalArgumentException("Failed to convert resource content location to a valid URI.");
 	}
+	
+	static String getContentSha(Resource resource) {
+		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
+		if (caps == null || caps.isEmpty())
+			return null;
+		
+		Object contentObj = caps.iterator().next().getAttributes().get(ContentNamespace.CONTENT_NAMESPACE);
+		if (contentObj == null)
+			return null;
+		if (contentObj instanceof String)
+			return (String) contentObj;
+		
+		throw new IllegalArgumentException("Content attribute is wrong type: " + contentObj.getClass().toString() + " (expected String).");
+	}
 
 	private void readIndex(String name, URI baseUri, InputStream stream, IRepositoryIndexProcessor listener)
 			throws Exception {
@@ -519,7 +533,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 		CachingUriResourceHandle handle;
 		try {
-			handle = new CachingUriResourceHandle(getContentUrl(resource), getCacheDirectory(), getConnector(), CachingMode.PreferCache);
+			handle = new CachingUriResourceHandle(getContentUrl(resource), getCacheDirectory(), getConnector(), getContentSha(resource));
 		}
 		catch (FileNotFoundException e) {
 			throw new FileNotFoundException("Broken link in repository index: " + e.getMessage());
