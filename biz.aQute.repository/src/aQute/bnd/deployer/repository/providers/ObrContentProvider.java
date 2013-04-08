@@ -25,6 +25,8 @@ import aQute.lib.io.*;
 
 public class ObrContentProvider implements IRepositoryContentProvider {
 
+	private static final String	NULL_CONTENT	= "[null]";
+
 	public static final String	NAME						= "OBR";
 
 	private static final String	INDEX_NAME					= "repository.xml";
@@ -243,7 +245,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 			.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 		
 		CapReqBuilder content = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE)
-			.addAttribute(ContentNamespace.CONTENT_NAMESPACE, "DUMMY")
+			.addAttribute(ContentNamespace.CONTENT_NAMESPACE, null)
 			.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, resolvedUri);
 		
 		CapReqBuilder host = new CapReqBuilder(HostNamespace.HOST_NAMESPACE)

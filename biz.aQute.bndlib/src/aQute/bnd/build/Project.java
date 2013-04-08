@@ -695,9 +695,14 @@ public class Project extends Processor {
 		};
 	}
 
-	public URI release(String jarName, InputStream jarStream) throws Exception {
+	public File release(String jarName, InputStream jarStream) throws Exception {
 		String name = getProperty(Constants.RELEASEREPO);
 		return release(name, jarName, jarStream);
+	}
+
+	public URI releaseURI(String jarName, InputStream jarStream) throws Exception {
+		String name = getProperty(Constants.RELEASEREPO);
+		return releaseURI(name, jarName, jarStream);
 	}
 
 	/**
@@ -710,7 +715,15 @@ public class Project extends Processor {
 	 * @return
 	 * @throws Exception
 	 */
-	public URI release(String name, String jarName, InputStream jarStream) throws Exception {
+	public File release(String name, String jarName, InputStream jarStream) throws Exception {
+		URI uri = releaseURI(name, jarName, jarStream);
+		if (uri != null) {
+			return new File(uri);
+		}
+		return null;
+	}
+
+	public URI releaseURI(String name, String jarName, InputStream jarStream) throws Exception {
 		
 		trace("release to %s", name);
 		RepositoryPlugin repo = getReleaseRepo(name);
