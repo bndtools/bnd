@@ -57,8 +57,9 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
         for (IPath path : paths) {
             try {
                 IFile ifile = wsroot.getFile(path);
-                File file = ifile.getLocation().toFile();
-                files.add(file);
+                IPath location = ifile.getLocation();
+                if (location != null)
+                    files.add(location.toFile());
             } catch (IllegalArgumentException e) {
                 System.err.println("### Error processing path: " + path);
                 e.printStackTrace();
