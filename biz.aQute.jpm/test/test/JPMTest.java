@@ -10,6 +10,8 @@ import aQute.jpm.lib.*;
 import aQute.jpm.main.*;
 import aQute.jpm.platform.*;
 import aQute.lib.settings.*;
+import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class JPMTest extends TestCase {
 	
@@ -130,7 +132,7 @@ public class JPMTest extends TestCase {
 	
 	public void test_userMode_local_config() throws Exception {
 		JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
-		settings.put("cache.local", "/tmp/localCache");
+		settings.put("jpm.cache.local", "/tmp/localCache");
 		settings.save();
 		
 		String[] args = {"-s", "/tmp/settings","-u"};
@@ -152,7 +154,7 @@ public class JPMTest extends TestCase {
 	
 	public void test_userMode_global_config() throws Exception {
 		JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
-		settings.put("cache.global", "/tmp/globalCache");
+		settings.put("jpm.cache.global", "/tmp/globalCache");
 		settings.save();
 		
 		String[] args = {"-s", "/tmp/settings", "-g"};
@@ -164,7 +166,7 @@ public class JPMTest extends TestCase {
 	
 	public void test_userMode_runconfig() throws Exception {
 		JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
-		settings.put("runconfig", "local");
+		settings.put("jpm.runconfig", "local");
 		settings.save();
 		
 		String[] args = {"-s", "/tmp/settings"};
@@ -182,5 +184,30 @@ public class JPMTest extends TestCase {
 		main.run(args);
 
 		verify(mock).setHomeDir(Platform.getPlatform(main).getGlobal());
+	}
+	
+	public void test_install_local_binDir() throws Exception {
+		settings.put("jpm.bin.local", "/tmp");
+		settings.put("jpm.runconfig", "local");
+		settings.save();
+		
+		String[] args = {"-s", "/tmp/settings", "install", "filemap"};
+		Main main = new Main();
+		main.run(args);
+		
+		File exec = new File("/tmp/filemap");
+		assertTrue(exec.exists());
+		exec = null;
+		
+		String[] args2 = {"-s", "/tmp/settings", "remove", "filemap"};
+		main.run(args2);
+		exec = new File("/tmp/filemap");
+		assertFalse(exec.exists());
+	}
+	
+	public void testPierre() throws Exception {
+		String[] args = {"remove", "jtwitter"};
+		Main main = new Main();
+		main.run(args);
 	}
 }

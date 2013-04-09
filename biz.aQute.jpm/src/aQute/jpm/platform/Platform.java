@@ -41,8 +41,16 @@ public abstract class Platform {
 		return platform;
 	}
 
+	/**
+	 * Global homeDir
+	 * @return
+	 */
 	public abstract File getGlobal();
 
+	/**
+	 * Local homeDir
+	 * @return
+	 */
 	public abstract File getLocal();
 
 	abstract public void shell(String initial) throws Exception;

@@ -226,14 +226,17 @@ public class Main extends ReporterAdapter {
 		@Description("Show the release notes")
 		boolean release();
 		
-		@Description("Run jpm with local configurations (cache.local setting or platform default)")
+		@Description("Run jpm with local configurations (repository -> cache.local setting or platform default, binaries -> bin.local or platform default)")
 		boolean user();
 		
-		@Description("Run jpm with global configurations (cache.global setting or platform default)")
+		@Description("Run jpm with global configurations (repository -> cache.global setting or platform default, binaries -> bin.global or platform default)")
 		boolean global();
 		
 		@Description("Change settings file (one-shot)")
 		String settings();
+		
+		@Description("Specify executables directory (one-shot)")
+		String bindir();
 	}
 
 	/**
@@ -277,8 +280,8 @@ public class Main extends ReporterAdapter {
 				homeDir = setLocal();
 			} else if (opts.global()) {
 				homeDir = setGlobal();
-			} else if (settings.containsKey("runconfig")) {
-				if(settings.get("runconfig").equalsIgnoreCase("local")) {
+			} else if (settings.containsKey("jpm.runconfig")) {
+				if(settings.get("jpm.runconfig").equalsIgnoreCase("local")) {
 					homeDir = setLocal();
 				} else {
 					homeDir = setGlobal();
@@ -287,6 +290,9 @@ public class Main extends ReporterAdapter {
 				homeDir = setGlobal();
 			}
 			jpm.setHomeDir(homeDir);
+			if(opts.bindir() != null) {
+				jpm.setBinDir(IO.getFile(opts.bindir()));
+			}
 			
 			CommandLine handler = opts._command();
 			List<String> arguments = opts._();
@@ -328,20 +334,28 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
-	private File setLocal() {
-		if (settings.containsKey("cache.local")) {
+	private File setLocal() throws Exception {
+		if(settings.containsKey("jpm.bin.local")) {
+			jpm.setBinDir(IO.getFile(settings.get("jpm.bin.local")).getAbsoluteFile());
+		}
+		
+		if (settings.containsKey("jpm.cache.local")) {
 			trace("Using local dir (from configuration)");
-			return IO.getFile(base, settings.get("cache.local"));
+			return IO.getFile(base, settings.get("jpm.cache.local"));
 		} else {
 			trace("Using local dir (platform default)");
 			return Platform.getPlatform(this).getLocal();
 		}
 	}
 	
-	private File setGlobal() {
-		if (settings.containsKey("cache.global")) {
+	private File setGlobal() throws Exception {
+		if(settings.containsKey("jpm.bin.global")) {
+			jpm.setBinDir(IO.getFile(settings.get("jpm.bin.global")).getAbsoluteFile());
+		}
+		
+		if (settings.containsKey("jpm.cache.global")) {
 			trace("Using global dir (from configuration)");
-			return IO.getFile(base, settings.get("cache.global"));
+			return IO.getFile(base, settings.get("jpm.cache.global"));
 		} else {
 			trace("Using global dir (platform default)");
 			return Platform.getPlatform(this).getGlobal();
@@ -357,35 +371,35 @@ public class Main extends ReporterAdapter {
 	@Description("Install a jar into the repository. If the jar defines a number of headers it can also be installed as a command and/or a service. ")
 	public interface installOptions extends ModifyCommand, Options {
 		@Description("Ignore command and service information")
-		boolean ignore();
+		boolean ignore(); // pl: not used
 
 		@Description("Force overwrite of existing command")
 		boolean force();
 
 		@Description("Require a master version even when version is specified")
-		boolean master();
+		boolean master(); // pl: not used
 
 		@Description("Include staged revisions in the search")
 		boolean staged();
 
 		@Description("Ignore digest")
-		boolean xdigest();
+		boolean xdigest(); // pl: not used
 
 		@Description("Run service (if present) under the given user name, default is the name of the service")
-		String user();
+		String user(); // pl: not used
 
 		/**
 		 * If specified, will install a revision with the given name and version
 		 * and then add any command/service to the system.
 		 */
-		String bsn();
+		String bsn(); // pl: not used
 
 		/**
 		 * Specify a version range for the artifact.
 		 * 
 		 * @return
 		 */
-		Version version();
+		Version version(); // pl: not used
 
 		/**
 		 * Install a file and extra commands
@@ -394,10 +408,10 @@ public class Main extends ReporterAdapter {
 		String local();
 
 		@Description("The path to the log file")
-		String path();
+		String path(); // pl: not used
 
 		@Description("Specify a command name, overrides the JPM-Command header")
-		String command();
+		String command(); // pl: not used
 
 	}
 
@@ -530,6 +544,8 @@ public class Main extends ReporterAdapter {
 				error("Service creation failed: %s", result);
 		}
 	}
+	
+	
 
 	/**
 	 * Check if a key is a sha
@@ -809,10 +825,21 @@ public class Main extends ReporterAdapter {
 	 * 
 	 * @throws Exception
 	 */
-	interface InitOptions extends Options {}
+	interface InitOptions extends Options {
+		
+		@Description("Specify cache for jpm install")
+		String cache();
+		
+		@Description("Specify the directory for the jpm executable file")
+		String bindir();
+	}
 
 	@Description("Install jpm on the current system")
 	public void _init(InitOptions opts) throws Exception {
+		// Reset config, or respect init flags
+		jpm.setHomeDir(opts.cache() == null ? null : IO.getFile(opts.cache()));
+		jpm.setBinDir(opts.bindir() == null ? null : IO.getFile(opts.bindir()));
+		
 		try {
 			String s = System.getProperty("java.class.path");
 			if (s == null || s.indexOf(File.pathSeparator) > 0) {
@@ -1474,10 +1501,10 @@ public class Main extends ReporterAdapter {
 		String type = opts._().remove(0);
 		if (type.equalsIgnoreCase("user")) {
 			trace("Making jpm local");
-			settings.put("runconfig", "local");
+			settings.put("jpm.runconfig", "local");
 		} else {
 			trace("Making jpm global");
-			settings.put("runconfig", "global");
+			settings.put("jpm.runconfig", "global");
 		}
 		settings.save();
 	}

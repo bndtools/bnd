@@ -74,8 +74,12 @@ public abstract class Unix extends Platform {
 		return new File(data.sdir, "launch.sh");
 	}
 
-	protected String getExecutable(CommandData data) {
-		return new File(BINARIES + "/" + data.name).getAbsolutePath();
+	protected String getExecutable(CommandData data) { // TODO pl: has made changes there
+		if (data.bin == null) {
+			return new File(BINARIES + "/" + data.name).getAbsolutePath();
+		} else {
+			return data.bin;
+		}	
 	}
 
 	@Override

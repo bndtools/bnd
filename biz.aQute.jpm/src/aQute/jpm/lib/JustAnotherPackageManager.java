@@ -276,7 +276,7 @@ public class JustAnotherPackageManager {
 		return s;
 	}
 
-	public void deleteCommand(String name) throws Exception { //pl: no removal of no longer needed dependancies ?
+	public void deleteCommand(String name) throws Exception {
 		CommandData cmd = getCommand(name);
 		if (cmd == null)
 			throw new IllegalArgumentException("No such command " + name);
@@ -932,13 +932,19 @@ public class JustAnotherPackageManager {
 	}
 
 	public void setHomeDir(File homeDir) throws IOException {
-		this.homeDir = homeDir;
+		if (homeDir == null) {
+			this.homeDir = platform.getGlobal();
+		} else {
+			this.homeDir = homeDir;
+		}
+		
 		initDirs();
 	}
 
 	public void setBinDir(File binDir) throws IOException {
 		this.binDir = binDir;
-		this.binDir.mkdirs();
+		if(binDir != null)
+			this.binDir.mkdirs();
 	}
 
 	public Platform getPlatform() {
