@@ -1,18 +1,19 @@
 package bndtools.versioncontrol.util;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -101,27 +102,27 @@ public class VersionControlUtils {
      *             When the ignore file could not be fully read (for example due to the ignore file not being an regular
      *             file or due to an IOException)
      */
-    private static List<String> readIgnoreFile(VersionControlSystem versionControlSystem, File ignoreFile) throws IllegalArgumentException, IOException {
+    private static List<String> readIgnoreFile(VersionControlSystem versionControlSystem, IFile ignoreFile) throws IllegalArgumentException, IOException {
         if (versionControlSystem == null || ignoreFile == null) {
             throw new IllegalArgumentException("Can't read an ignore file for a null version control system and/or a null ignore file");
         }
 
         List<String> result = new LinkedList<String>();
 
-        if (!ignoreFile.exists() || !ignoreFile.isFile()) {
+        if (!ignoreFile.exists()) {
             return result;
         }
 
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(ignoreFile), "UTF-8"));
+            reader = new BufferedReader(new InputStreamReader(ignoreFile.getContents(), "UTF-8"));
 
             String line;
             while ((line = reader.readLine()) != null) {
                 result.add(versionControlSystem.getGitIgnoreEntryFromIgnoreEntry(line));
             }
         } catch (Exception e) {
-            throw new IOException("Error reading ignore file " + ignoreFile.getPath() + ": " + e.getMessage());
+            throw new IOException("Error reading ignore file " + ignoreFile.getFullPath().toOSString() + ": " + e.getMessage());
         } finally {
             if (reader != null) {
                 try {
@@ -166,38 +167,14 @@ public class VersionControlUtils {
             newIgnores = new LinkedList<String>();
         }
 
-        File ignoreFile;
+        IFile ignoreIFile;
         if (ignoreFolder == null) {
-            ignoreFile = new File(javaProject.getProject().getFile(vcs.getIgnoreFilename()).getLocationURI());
+            ignoreIFile = javaProject.getProject().getFile(vcs.getIgnoreFilename());
         } else {
-            ignoreFile = new File(ignoreFolder.getFile(vcs.getIgnoreFilename()).getLocationURI());
+            ignoreIFile = ignoreFolder.getFile(vcs.getIgnoreFilename());
         }
 
-        if (ignoreFile.exists()) {
-            /* read the current ignores */
-            List<String> currentIgnores = new LinkedList<String>();
-            try {
-                currentIgnores = readIgnoreFile(vcs, ignoreFile);
-            } catch (IOException e) {
-                /* swallow */
-            }
-            int currentCount = currentIgnores.size();
-
-            /* add new ignores to the current ignores, but only if the current ignores did not contain them */
-            for (String newIgnore : newIgnores) {
-                if (!currentIgnores.contains(newIgnore)) {
-                    currentIgnores.add(newIgnore);
-                }
-            }
-
-            /* put the new list of ignores into newIgnores */
-            newIgnores = currentIgnores;
-
-            /* exit when we did not add ignore entries */
-            if (newIgnores.size() <= currentCount) {
-                return;
-            }
-        }
+        File ignoreFile = new File(ignoreIFile.getLocationURI());
 
         /* determine if the ignoreFolder is empty */
         File ignoreFileDir = ignoreFile.getParentFile();
@@ -214,25 +191,51 @@ public class VersionControlUtils {
             throw new IOException("Could not create directory " + ignoreFileDir.getPath());
         }
 
-        /* write out the ignore file */
-        BufferedWriter writer = null;
-        try {
-            /* will create or truncate the ignore file */
-            writer = new BufferedWriter(new PrintWriter(ignoreFile.getPath(), "UTF-8"));
-            for (String newIgnore : newIgnores) {
-                writer.write(vcs.getIgnoreEntryFromGitIgnoreEntry(newIgnore));
-                writer.newLine();
+        List<String> ignoresToAppend;
+        if (!ignoreFile.exists()) {
+            ignoresToAppend = newIgnores;
+        } else {
+            ignoresToAppend = new LinkedList<String>();
+
+            /* refresh the file */
+            try {
+                ignoreIFile.refreshLocal(0, null);
+            } catch (CoreException e) {
+                throw new IOException(e);
             }
-        } catch (Exception e) {
-            throw new IOException("Failed to write to ignore file " + ignoreFile.getPath() + ": " + e.getMessage());
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    /* swallow */
+
+            /* read the current ignores */
+            List<String> currentIgnores = readIgnoreFile(vcs, ignoreIFile);
+
+            /* add new ignores to the current ignores, but only if the current ignores did not contain them */
+            for (String newIgnore : newIgnores) {
+                if (!currentIgnores.contains(newIgnore)) {
+                    ignoresToAppend.add(newIgnore);
                 }
             }
+
+            /* exit when we have no new ignores to write */
+            if (ignoresToAppend.isEmpty()) {
+                return;
+            }
+        }
+
+        /* write out the ignore file */
+        StringBuilder sb = new StringBuilder();
+        String newLine = String.format("%n");
+        for (String ignoreToAppend : ignoresToAppend) {
+            sb.append(vcs.getIgnoreEntryFromGitIgnoreEntry(ignoreToAppend));
+            sb.append(newLine);
+        }
+
+        try {
+            if (!ignoreFile.exists()) {
+                ignoreIFile.create(new ByteArrayInputStream(sb.toString().getBytes()), IResource.FORCE, null);
+            } else {
+                ignoreIFile.appendContents(new ByteArrayInputStream(sb.toString().getBytes()), IResource.FORCE, null);
+            }
+        } catch (CoreException e) {
+            throw new IOException(e);
         }
     }
 
