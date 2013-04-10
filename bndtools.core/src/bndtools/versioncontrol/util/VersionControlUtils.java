@@ -230,9 +230,9 @@ public class VersionControlUtils {
 
         try {
             if (!ignoreFile.exists()) {
-                ignoreIFile.create(new ByteArrayInputStream(sb.toString().getBytes()), IResource.FORCE, null);
+                ignoreIFile.create(new ByteArrayInputStream(sb.toString().getBytes("UTF-8")), IResource.FORCE, null);
             } else {
-                ignoreIFile.appendContents(new ByteArrayInputStream(sb.toString().getBytes()), IResource.FORCE, null);
+                ignoreIFile.appendContents(new ByteArrayInputStream(sb.toString().getBytes("UTF-8")), IResource.FORCE, null);
             }
         } catch (CoreException e) {
             throw new IOException("Could not write to ignore file " + ignoreIFile.getFullPath().toOSString() + " : " + e.getLocalizedMessage());
