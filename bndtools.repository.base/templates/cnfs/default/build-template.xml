@@ -30,7 +30,7 @@
 		<dirname property="workspacedir" file="${projectdir}" />
 
 		<!-- Define the location of bnd -->
-		<path id="bnd-classpath" location="${workspacedir}/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd-2.0.0.jar" />
+		<path id="bnd-classpath" location="${workspacedir}/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd-2.1.0.jar" />
 
 		<!-- Load bnd and prepare the workspace -->
 		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />
