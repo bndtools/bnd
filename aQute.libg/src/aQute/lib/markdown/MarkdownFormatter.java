@@ -1,4 +1,4 @@
-package aQute.lib.getopt;
+package aQute.lib.markdown;
 
 import java.util.*;
 
@@ -40,5 +40,18 @@ public class MarkdownFormatter {
 		return f.toString();
 	}
 
+	public MarkdownFormatter code(String format, Object... args) {
+		f = f.format("\t"+format+"%n", args); 
+		return this;
+	}
 	
+	public MarkdownFormatter inlineCode(String format, Object... args) {
+		f = f.format("`"+format+"`", args);
+		return this;
+	}
+
+	public MarkdownFormatter endP() {
+		f = f.format("%n%n");
+		return this;
+	}
 }

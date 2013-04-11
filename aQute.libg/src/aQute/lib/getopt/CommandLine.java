@@ -7,6 +7,7 @@ import java.util.regex.*;
 
 import aQute.configurable.*;
 import aQute.lib.justif.*;
+import aQute.lib.markdown.*;
 import aQute.libg.generics.*;
 import aQute.libg.reporter.*;
 import aQute.service.reporter.*;
@@ -139,22 +140,8 @@ public class CommandLine {
 		return help(target, cmd, optionClass);
 	}
 
-	public void generateDocumentation(Object target) {
-		MarkdownFormatter f = new MarkdownFormatter(System.out);
-		
-		Description descr = target.getClass().getAnnotation(Description.class);
-		
-		if (descr != null) { // Consider that first sentence is the title, and the remaining is the description
-			int firstDot = descr.value().indexOf(".");
-			
-			if (firstDot > 0) {
-				f.h1(descr.value().substring(0, firstDot));
-				
-				if (firstDot < descr.value().length()) {
-					f.format(descr.value().substring(firstDot+1)+"%n%n");
-				}
-			}			
-		}
+	public void generateDocumentation(Object target,Appendable out) {
+		MarkdownFormatter f = new MarkdownFormatter(out);
 		
 		f.h1("Available Commands:");
 		
@@ -166,20 +153,20 @@ public class CommandLine {
 			
 			f.h2(command);
 			
-			descr = specification.getAnnotation(Description.class);
+			Description descr = specification.getAnnotation(Description.class);
 			if (descr != null) {
 				f.format(descr.value()+"%n%n");
 			}
 			
 			f.h3("Synopsis:");
-			f.format("\t"+getSynopsys(command, options, patterns));
+			f.code(getSynopsys(command, options, patterns));
 
 			if (!options.isEmpty()) {
 				f.h3("Options:");
 				for (Entry<String,Method> entry : options.entrySet()) {
 					Option option = getOption(entry.getKey(), entry.getValue());
 
-					f.list("%s -%s --%s %s%s:", 
+					f.inlineCode("%s -%s --%s %s%s", 
 							option.required ? " " : "[", //
 							option.shortcut, //
 							option.name,
@@ -187,7 +174,8 @@ public class CommandLine {
 							option.required ? " " : "]");
 					
 					if (option.description != null) {
-						f.format("\t%s%n", option.description);
+						f.format("%s", option.description);
+						f.endP();
 					}
 					
 				}

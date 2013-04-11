@@ -29,6 +29,7 @@ import aQute.libg.reporter.*;
 import aQute.service.library.*;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
+import static aQute.lib.io.IO.*;
 
 /**
  * The command line interface to JPM
@@ -1578,9 +1579,13 @@ public class Main extends ReporterAdapter {
 	interface MarkdownOptions extends Options {}
 	
 	@Description("Generate markdown documentation for jpm") 
-	public void _gmd(MarkdownOptions opts) {
+	public void _gmd(MarkdownOptions opts) throws Exception {
+		
+		
+		IO.copy(this.getClass().getResourceAsStream("/static/jpm_prefix.md"), out);
+		
 		CommandLine cl = new CommandLine(this);	
-		cl.generateDocumentation(this);
+		cl.generateDocumentation(this, out);
 	}
 	
 	/**
