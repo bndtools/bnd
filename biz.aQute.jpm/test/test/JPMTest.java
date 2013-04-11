@@ -206,7 +206,7 @@ public class JPMTest extends TestCase {
 	}
 	
 	public void testPierre() throws Exception {
-		String[] args = {"remove", "jtwitter"};
+		String[] args = {"gmd"};
 		Main main = new Main();
 		main.run(args);
 	}

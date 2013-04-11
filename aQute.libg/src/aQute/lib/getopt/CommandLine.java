@@ -27,6 +27,14 @@ public class CommandLine {
 	Justif				justif		= new Justif(80,30,32,70);
 	CommandLineMessages	msg;
 
+	class Option {
+		public char shortcut;
+		public String name;
+		public String paramType;
+		public String description;
+		public boolean required;
+	}
+	
 	public CommandLine(Reporter reporter) {
 		this.reporter = reporter;
 		msg = ReporterMessages.base(reporter, CommandLineMessages.class);
@@ -129,6 +137,63 @@ public class CommandLine {
 			return null;
 		}
 		return help(target, cmd, optionClass);
+	}
+
+	public void generateDocumentation(Object target) {
+		MarkdownFormatter f = new MarkdownFormatter(System.out);
+		
+		Description descr = target.getClass().getAnnotation(Description.class);
+		
+		if (descr != null) { // Consider that first sentence is the title, and the remaining is the description
+			int firstDot = descr.value().indexOf(".");
+			
+			if (firstDot > 0) {
+				f.h1(descr.value().substring(0, firstDot));
+				
+				if (firstDot < descr.value().length()) {
+					f.format(descr.value().substring(firstDot+1)+"%n%n");
+				}
+			}			
+		}
+		
+		f.h1("Available Commands:");
+		
+		Map<String,Method> commands = getCommands(target);
+		for(String command : commands.keySet()) {
+			Class< ? extends Options> specification = (Class< ? extends Options>) commands.get(command).getParameterTypes()[0];
+			Map<String,Method> options = getOptions(specification);
+			Arguments patterns = specification.getAnnotation(Arguments.class);
+			
+			f.h2(command);
+			
+			descr = specification.getAnnotation(Description.class);
+			if (descr != null) {
+				f.format(descr.value()+"%n%n");
+			}
+			
+			f.h3("Synopsis:");
+			f.format("\t"+getSynopsys(command, options, patterns));
+
+			if (!options.isEmpty()) {
+				f.h3("Options:");
+				for (Entry<String,Method> entry : options.entrySet()) {
+					Option option = getOption(entry.getKey(), entry.getValue());
+
+					f.list("%s -%s --%s %s%s:", 
+							option.required ? " " : "[", //
+							option.shortcut, //
+							option.name,
+							option.paramType, //
+							option.required ? " " : "]");
+					
+					if (option.description != null) {
+						f.format("\t%s%n", option.description);
+					}
+					
+				}
+				f.format("%n");
+			}
+		}		
 	}
 
 	private String help(Object target, String cmd, Class< ? extends Options> type) throws Exception {
@@ -351,46 +416,64 @@ public class CommandLine {
 		String description = descr == null ? "" : descr.value();
 
 		f.format("%nNAME%n  %s \t0- \t1%s%n%n", cmd, description);
-		if (options.isEmpty())
-			f.format("SYNOPSIS%n   %s ", cmd);
-		else
-			f.format("SYNOPSIS%n   %s [options] ", cmd);
-
-		if (patterns == null)
-			f.format(" ...%n%n");
-		else {
-			String del = " ";
-			for (String pattern : patterns.arg()) {
-				if (pattern.equals("..."))
-					f.format("%s...", del);
-				else
-					f.format("%s<%s>", del, pattern);
-				del = " ";
-			}
-			f.format("%n");
-		}
+		
+		f.format("SYNOPSIS%n");
+		f.format(getSynopsys(cmd, options, patterns));
 
 		if (!options.isEmpty()) {
 			f.format("%nOPTIONS%n%n");
 			for (Entry<String,Method> entry : options.entrySet()) {
-				String optionName = entry.getKey();
-				Method m = entry.getValue();
+				Option option = getOption(entry.getKey(), entry.getValue());
 
-				Config cfg = m.getAnnotation(Config.class);
-				Description d = m.getAnnotation(Description.class);
-				boolean required = isMandatory(m);
-
-				String methodDescription = cfg != null ? cfg.description() : (d == null ? "" : d.value());
-
-				f.format("   %s -%s, --%s %s%s \t0- \t1%s%n", required ? " " : "[", //
-						optionName.charAt(0), //
-						Character.toLowerCase(optionName.charAt(0))+optionName.substring(1), // hide away first upper case char in long args
-						getTypeDescriptor(m.getGenericReturnType()), //
-						required ? " " : "]",//
-						methodDescription);
+				f.format("   %s -%s, --%s %s%s \t0- \t1%s%n", option.required ? " " : "[", //
+						option.shortcut, //
+						option.name,
+						option.paramType, //
+						option.required ? " " : "]",//
+						option.description);
 			}
 			f.format("%n");
 		}
+	}
+
+	private Option getOption(String optionName, Method m) {
+		Option option = new Option();
+		Config cfg = m.getAnnotation(Config.class);
+		Description d = m.getAnnotation(Description.class);
+		
+		option.shortcut = optionName.charAt(0);
+		option.name = Character.toLowerCase(optionName.charAt(0))+optionName.substring(1);
+		option.description = cfg != null ? cfg.description() : (d == null ? "" : d.value());
+		option.required = isMandatory(m);
+		String pt = getTypeDescriptor(m.getGenericReturnType());
+		if(pt.length() != 0)
+			pt += " ";
+		option.paramType = pt;
+
+		return option;
+	}
+
+	private String getSynopsys(String cmd, Map<String,Method> options, Arguments patterns) {
+		StringBuilder sb = new StringBuilder();
+		if (options.isEmpty())
+			sb.append(String.format("   %s ", cmd));
+		else
+			sb.append(String.format("   %s [options] ", cmd));
+
+		if (patterns == null)
+			sb.append(String.format(" ...%n%n"));
+		else {
+			String del = " ";
+			for (String pattern : patterns.arg()) {
+				if (pattern.equals("..."))
+					sb.append(String.format("%s...", del));
+				else
+					sb.append(String.format("%s<%s>", del, pattern));
+				del = " ";
+			}
+			sb.append(String.format("%n"));
+		}
+		return sb.toString();
 	}
 
 	static Pattern	LAST_PART	= Pattern.compile(".*[\\$\\.]([^\\$\\.]+)");

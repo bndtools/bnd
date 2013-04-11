@@ -33,8 +33,7 @@ import aQute.service.library.Library.Revision;
 /**
  * The command line interface to JPM
  */
-//@Description("Just Another Package Manager (for Java)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service. For more information see https://www.jpm4j.org/#/md/jpm")
-@Description("JPM-testing")
+@Description("Just Another Package Manager (for Java). Maintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service. For more information see https://www.jpm4j.org/#/md/jpm")
 public class Main extends ReporterAdapter {
 	static Pattern				ASSIGNMENT		= Pattern.compile("\\s*([-\\w\\d_.]+)\\s*(?:=\\s*([^\\s]+)\\s*)?");
 	public final static Pattern	URL_PATTERN		= Pattern.compile("[a-zA-Z][0-9A-Za-z]{1,8}:.+");
@@ -1573,6 +1572,15 @@ public class Main extends ReporterAdapter {
 			error("No matching command or service found");
 		}
 		
+	}
+	
+	@Description("Generate markdown documentation for jpm") 
+	interface MarkdownOptions extends Options {}
+	
+	@Description("Generate markdown documentation for jpm") 
+	public void _gmd(MarkdownOptions opts) {
+		CommandLine cl = new CommandLine(this);	
+		cl.generateDocumentation(this);
 	}
 	
 	/**
