@@ -28,8 +28,8 @@ _jpm_completion_()
     [[ ${cur} == -* ]] && return 0 # Not even trying to complete options
 
     # Basic commands
-    opts="candidates certificate command deinit deposit find gc init install jpm keys \
-	log platform register remove restart service settings setup start status \
+    opts="candidates certificate command deinit deposit find gc generate init install jpm \
+	keys log platform register remove restart service settings setup start status \
 	stop trace version winreg"
 
     prev=$(getPrev 1)
@@ -38,11 +38,10 @@ _jpm_completion_()
     # Argument completion
     #	
     case "${prev}" in
-	jpm)
+	jpm|help)
 	    COMPREPLY=($(compgen -W "${opts}" $cur))
 	    return 0
-	    ;;
-	    
+	    ;; 
 	command)
 	    COMPREPLY=( $(compgen -W "$(listCommands)" -- ${cur}) )
 	    return 0
@@ -56,6 +55,10 @@ _jpm_completion_()
 	    COMPREPLY=( $(compgen -W "$(listServices)" -- ${cur}) )
 	    return 0
 	    ;;
+	generate)
+		COMPREPLY=( $(compgen -W "markdown bash-completion" -- ${cur}) )
+		return 0
+		;;  
 	*)
 	    COMPREPLY=( $(compgen -f ${cur}) ) # List of files by default
             return 0
@@ -64,5 +67,4 @@ _jpm_completion_()
 
 }
 
-#Assign the auto-completion function _get for our command get.
 complete -F _jpm_completion_ jpm

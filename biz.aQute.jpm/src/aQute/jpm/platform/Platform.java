@@ -169,4 +169,8 @@ public abstract class Platform {
 
 	public abstract void report(Formatter out) throws IOException, Exception;
 
+	public String installCompletion() throws Exception {
+		return "No completion available for this platform";
+	}
+
 }

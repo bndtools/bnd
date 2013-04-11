@@ -29,7 +29,6 @@ import aQute.libg.reporter.*;
 import aQute.service.library.*;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
-import static aQute.lib.io.IO.*;
 
 /**
  * The command line interface to JPM
@@ -852,8 +851,13 @@ public class Main extends ReporterAdapter {
 					jpm.init();
 					CommandLine cl = new CommandLine(this);
 					String help = cl.execute(this, "install", Arrays.asList("-fl", f.getAbsolutePath()));
-					if (help != null)
+					if (help != null) {
 						error(help);
+						return;
+					} 
+					String completionInstallResult = Platform.getPlatform(this).installCompletion();
+					if (completionInstallResult != null)
+						trace(completionInstallResult);
 
 				} else
 					error("Cannot find the jpm jar from %s", f);
@@ -1575,17 +1579,32 @@ public class Main extends ReporterAdapter {
 		
 	}
 	
-	@Description("Generate markdown documentation for jpm") 
-	interface MarkdownOptions extends Options {}
+	@Arguments(arg="markdown|bash-completion")
+	@Description("Generate additional files for jpm (markdown documentation or bash completion file)") 
+	interface GenerateOptions extends Options {}
 	
-	@Description("Generate markdown documentation for jpm") 
-	public void _gmd(MarkdownOptions opts) throws Exception {
+	@Description("Generate additional files for jpm") 
+	public void _generate(GenerateOptions opts) throws Exception {
 		
+		if (opts._().isEmpty()) {
+			error("Syntax: jpm generate <markdown|bash-completion>");
+			return;
+		}
+
+		String genType = opts._().get(0);
 		
-		IO.copy(this.getClass().getResourceAsStream("/static/jpm_prefix.md"), out);
+		if (genType.equalsIgnoreCase("markdown")) {
+			IO.copy(this.getClass().getResourceAsStream("/static/jpm_prefix.md"), out);
+			
+			CommandLine cl = new CommandLine(this);	
+			cl.generateDocumentation(this, out);
+		} else if (genType.equalsIgnoreCase("bash-completion")) {
+			IO.copy(this.getClass().getResourceAsStream("/aQute/jpm/platform/unix/jpm-completion.bash"), out);
+		} else {
+			error("Syntax: jpm generate <markdown|bash-completion>");
+			return;
+		}
 		
-		CommandLine cl = new CommandLine(this);	
-		cl.generateDocumentation(this, out);
 	}
 	
 	/**

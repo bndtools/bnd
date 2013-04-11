@@ -10,8 +10,6 @@ import aQute.jpm.lib.*;
 import aQute.jpm.main.*;
 import aQute.jpm.platform.*;
 import aQute.lib.settings.*;
-import aQute.libg.reporter.*;
-import aQute.service.reporter.*;
 
 public class JPMTest extends TestCase {
 	
