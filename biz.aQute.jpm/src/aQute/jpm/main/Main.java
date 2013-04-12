@@ -26,7 +26,6 @@ import aQute.lib.io.*;
 import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 import aQute.libg.reporter.*;
-import aQute.library.remote.*;
 import aQute.service.library.*;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;

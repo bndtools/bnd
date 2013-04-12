@@ -278,7 +278,9 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 */
 		Resource createComponentResource(String name, String impl, Map<String, String> info)
 				throws Exception {
-			Tag tag = new HeaderReader(analyzer).createComponentTag(name, impl, info);
+			HeaderReader hr = new HeaderReader(analyzer);
+			Tag tag = hr.createComponentTag(name, impl, info);
+			hr.close();
 			return new TagResource(tag);
 		}
 	}

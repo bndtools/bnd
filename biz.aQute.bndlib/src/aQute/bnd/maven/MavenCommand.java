@@ -117,8 +117,13 @@ public class MavenCommand extends Processor {
 			return;
 		}
 		LineCollection lc = new LineCollection(IO.reader(settings));
-		while (lc.hasNext()) {
-			System.err.println(lc.next());
+		try {
+			while (lc.hasNext()) {
+				System.err.println(lc.next());
+			}
+		}
+		finally {
+			lc.close();
 		}
 	}
 

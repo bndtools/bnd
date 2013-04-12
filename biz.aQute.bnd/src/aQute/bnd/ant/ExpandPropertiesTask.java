@@ -19,15 +19,20 @@ public class ExpandPropertiesTask extends BaseTask {
 				properties.putAll((Map< ? , ? >) getProject().getProperties());
 
 				Processor processor = new Processor(properties);
-				processor.setProperties(propertyFile);
+				try {
+					processor.setProperties(propertyFile);
 
-				Project project = getProject();
-				Properties flattened = processor.getFlattenedProperties();
-				for (Iterator<Object> i = flattened.keySet().iterator(); i.hasNext();) {
-					String key = (String) i.next();
-					if (project.getProperty(key) == null) {
-						project.setProperty(key, flattened.getProperty(key));
+					Project project = getProject();
+					Properties flattened = processor.getFlattenedProperties();
+					for (Iterator<Object> i = flattened.keySet().iterator(); i.hasNext();) {
+						String key = (String) i.next();
+						if (project.getProperty(key) == null) {
+							project.setProperty(key, flattened.getProperty(key));
+						}
 					}
+				}
+				finally {
+					processor.close();
 				}
 			}
 			report();

@@ -37,13 +37,11 @@ import aQute.bnd.service.action.*;
 import aQute.bnd.version.*;
 import aQute.configurable.*;
 import aQute.lib.base64.*;
-import aQute.lib.codec.*;
 import aQute.lib.collections.*;
 import aQute.lib.filter.*;
 import aQute.lib.getopt.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
-import aQute.lib.json.*;
 import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 import aQute.lib.tag.*;
@@ -1401,11 +1399,13 @@ public class bnd extends Processor {
 	 * @param i
 	 * @throws Exception
 	 */
-	@Description("Wrap a jar into a bundle. This is a poor man's facility to " +
-			"quickly turn a non-OSGi JAR into an OSGi bundle. " +
-			"It is usually better to write a bnd file and use the bnd <file>.bnd " +
-			"command because that has greater control. Even better is to wrap in bndtools.")
-	@Arguments(arg={"<jar-file>", "[...]"})
+	@Description("Wrap a jar into a bundle. This is a poor man's facility to "
+			+ "quickly turn a non-OSGi JAR into an OSGi bundle. "
+			+ "It is usually better to write a bnd file and use the bnd <file>.bnd "
+			+ "command because that has greater control. Even better is to wrap in bndtools.")
+	@Arguments(arg = {
+			"<jar-file>", "[...]"
+	})
 	interface wrapOptions extends Options {
 		@Description("Path to the output, default the name of the input jar with the '.bar' extension. If this is a directory, the output is place there.")
 		String output();
@@ -1581,7 +1581,6 @@ public class bnd extends Processor {
 		new RepoCommand(this, opts);
 	}
 
-
 	/**
 	 * Print out a JAR
 	 */
@@ -1726,64 +1725,71 @@ public class bnd extends Processor {
 			if ((options & (USES | USEDBY | API)) != 0) {
 				out.println();
 				Analyzer analyzer = new Analyzer();
-				analyzer.setPedantic(isPedantic());
-				analyzer.setJar(jar);
-				Manifest m = jar.getManifest();
-				if (m != null) {
-					String s = m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
-					if (s != null)
-						analyzer.setExportPackage(s);
-				}
-				analyzer.analyze();
-
-				boolean java = po.java();
-
-				Packages exports = analyzer.getExports();
-
-				if ((options & API) != 0) {
-					Map<PackageRef,List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(), !po.java());
-					if (!po.xport()) {
-						if (exports.isEmpty())
-							warning("Not filtering on exported only since exports are empty");
-						else
-							apiUses.keySet().retainAll(analyzer.getExports().keySet());
+				try {
+					analyzer.setPedantic(isPedantic());
+					analyzer.setJar(jar);
+					Manifest m = jar.getManifest();
+					if (m != null) {
+						String s = m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+						if (s != null)
+							analyzer.setExportPackage(s);
 					}
-					out.println("[API USES]");
-					printMultiMap(apiUses);
+					analyzer.analyze();
 
-					Set<PackageRef> privates = analyzer.getPrivates();
-					for (PackageRef export : exports.keySet()) {
-						Map<Def,List<TypeRef>> xRef = analyzer.getXRef(export, privates, Modifier.PROTECTED
-								+ Modifier.PUBLIC);
-						if (!xRef.isEmpty()) {
-							out.println();
-							out.printf("%s refers to private Packages (not good)\n\n", export);
-							for (Entry<Def,List<TypeRef>> e : xRef.entrySet()) {
-								TreeSet<PackageRef> refs = new TreeSet<Descriptors.PackageRef>();
-								for (TypeRef ref : e.getValue())
-									refs.add(ref.getPackageRef());
+					boolean java = po.java();
 
-								refs.retainAll(privates);
-								out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
-										, e.getKey().getName(), refs);
-							}
-							out.println();
+					Packages exports = analyzer.getExports();
+
+					if ((options & API) != 0) {
+						Map<PackageRef,List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(),
+								!po.java());
+						if (!po.xport()) {
+							if (exports.isEmpty())
+								warning("Not filtering on exported only since exports are empty");
+							else
+								apiUses.keySet().retainAll(analyzer.getExports().keySet());
 						}
-					}
-					out.println();
-				}
+						out.println("[API USES]");
+						printMultiMap(apiUses);
 
-				Map<PackageRef,List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
-				if ((options & USES) != 0) {
-					out.println("[USES]");
-					printMultiMap(uses);
-					out.println();
+						Set<PackageRef> privates = analyzer.getPrivates();
+						for (PackageRef export : exports.keySet()) {
+							Map<Def,List<TypeRef>> xRef = analyzer.getXRef(export, privates, Modifier.PROTECTED
+									+ Modifier.PUBLIC);
+							if (!xRef.isEmpty()) {
+								out.println();
+								out.printf("%s refers to private Packages (not good)\n\n", export);
+								for (Entry<Def,List<TypeRef>> e : xRef.entrySet()) {
+									TreeSet<PackageRef> refs = new TreeSet<Descriptors.PackageRef>();
+									for (TypeRef ref : e.getValue())
+										refs.add(ref.getPackageRef());
+
+									refs.retainAll(privates);
+									out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
+											, e.getKey().getName(), refs);
+								}
+								out.println();
+							}
+						}
+						out.println();
+					}
+
+					Map<PackageRef,List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
+					if ((options & USES) != 0) {
+						out.println("[USES]");
+						printMultiMap(uses);
+						out.println();
+					}
+					if ((options & USEDBY) != 0) {
+						out.println("[USEDBY]");
+						MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<Descriptors.PackageRef,Descriptors.PackageRef>(
+								uses).transpose();
+						printMultiMap(usedBy);
+					}
+
 				}
-				if ((options & USEDBY) != 0) {
-					out.println("[USEDBY]");
-					MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<Descriptors.PackageRef,Descriptors.PackageRef>(
-							uses).transpose();
-					printMultiMap(usedBy);
+				finally {
+					analyzer.close();
 				}
 			}
 
@@ -2022,89 +2028,96 @@ public class bnd extends Processor {
 		File cwd = new File("").getAbsoluteFile();
 
 		Workspace ws = new Workspace(cwd);
-		File reportDir = getFile("reports");
-
-		IO.delete(reportDir);
-
-		Tag summary = new Tag("summary");
-		summary.addAttribute("date", new Date());
-		summary.addAttribute("ws", ws.getBase());
-
-		if (opts.reportdir() != null) {
-			reportDir = getFile(opts.reportdir());
-		}
-		if (!reportDir.exists() && !reportDir.mkdirs()) {
-			throw new IOException("Could not create directory " + reportDir);
-		}
-
-		if (!reportDir.isDirectory())
-			error("reportdir must be a directory %s (tried to create it ...)", reportDir);
-
-		if (opts.title() != null)
-			summary.addAttribute("title", opts.title());
-
-		if (opts.dir() != null)
-			cwd = getFile(opts.dir());
-
-		if (opts.workspace() != null)
-			ws = Workspace.getWorkspace(getFile(opts.workspace()));
-
-		// TODO check all the arguments
-
-		boolean hadOne = false;
 		try {
-			for (String arg : opts._()) {
-				trace("will run test %s", arg);
-				File f = getFile(arg);
-				errors += runtTest(f, ws, reportDir, summary);
-				hadOne = true;
+			File reportDir = getFile("reports");
+
+			IO.delete(reportDir);
+
+			Tag summary = new Tag("summary");
+			summary.addAttribute("date", new Date());
+			summary.addAttribute("ws", ws.getBase());
+
+			if (opts.reportdir() != null) {
+				reportDir = getFile(opts.reportdir());
+			}
+			if (!reportDir.exists() && !reportDir.mkdirs()) {
+				throw new IOException("Could not create directory " + reportDir);
 			}
 
-			if (!hadOne) {
-				// See if we had any, if so, just use all files in
-				// the current directory
-				File[] files = cwd.listFiles();
-				for (File f : files) {
-					if (f.getName().endsWith(".bnd")) {
-						errors += runtTest(f, ws, reportDir, summary);
+			if (!reportDir.isDirectory())
+				error("reportdir must be a directory %s (tried to create it ...)", reportDir);
+
+			if (opts.title() != null)
+				summary.addAttribute("title", opts.title());
+
+			if (opts.dir() != null)
+				cwd = getFile(opts.dir());
+
+			if (opts.workspace() != null) {
+				ws.close();
+				ws = Workspace.getWorkspace(getFile(opts.workspace()));
+			}
+
+			// TODO check all the arguments
+
+			boolean hadOne = false;
+			try {
+				for (String arg : opts._()) {
+					trace("will run test %s", arg);
+					File f = getFile(arg);
+					errors += runtTest(f, ws, reportDir, summary);
+					hadOne = true;
+				}
+
+				if (!hadOne) {
+					// See if we had any, if so, just use all files in
+					// the current directory
+					File[] files = cwd.listFiles();
+					for (File f : files) {
+						if (f.getName().endsWith(".bnd")) {
+							errors += runtTest(f, ws, reportDir, summary);
+						}
 					}
 				}
 			}
-		}
-		catch (Throwable e) {
-			if (isExceptions())
-				e.printStackTrace();
+			catch (Throwable e) {
+				if (isExceptions())
+					e.printStackTrace();
 
-			error("FAILURE IN RUNTESTS", e);
-			errors++;
-		}
+				error("FAILURE IN RUNTESTS", e);
+				errors++;
+			}
 
-		if (errors > 0)
-			summary.addAttribute("errors", errors);
+			if (errors > 0)
+				summary.addAttribute("errors", errors);
 
-		for (String error : getErrors()) {
-			Tag e = new Tag("error");
-			e.addContent(error);
-		}
+			for (String error : getErrors()) {
+				Tag e = new Tag("error");
+				e.addContent(error);
+			}
 
-		for (String warning : getWarnings()) {
-			Tag e = new Tag("warning");
-			e.addContent(warning);
-		}
+			for (String warning : getWarnings()) {
+				Tag e = new Tag("warning");
+				e.addContent(warning);
+			}
 
-		File r = getFile(reportDir, "summary.xml");
-		FileOutputStream out = new FileOutputStream(r);
-		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
+			File r = getFile(reportDir, "summary.xml");
+			FileOutputStream out = new FileOutputStream(r);
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
 
-		try {
-			summary.print(0, pw);
+			try {
+				summary.print(0, pw);
+			}
+			finally {
+				pw.close();
+				out.close();
+			}
+			if (errors != 0)
+				error("Errors found %s", errors);
 		}
 		finally {
-			pw.close();
-			out.close();
+			ws.close();
 		}
-		if (errors != 0)
-			error("Errors found %s", errors);
 	}
 
 	/**
@@ -2271,7 +2284,9 @@ public class bnd extends Processor {
 	 */
 
 	@Description("Verify jars")
-	@Arguments(arg={"<jar path>", "[...]"})
+	@Arguments(arg = {
+			"<jar path>", "[...]"
+	})
 	interface verifyOptions extends Options {}
 
 	@Description("Verify jars")
@@ -2476,7 +2491,7 @@ public class bnd extends Processor {
 	 */
 	@Description("Helps finding information in a set of JARs by filtering on manifest data and printing out selected information.")
 	@Arguments(arg = {
-		"<jar-path>", "[...]"
+			"<jar-path>", "[...]"
 	})
 	interface selectOptions extends Options {
 		@Description("A simple assertion on a manifest header (e.g. Bundle-Version=1.0.1) or an OSGi filter that is asserted on all manifest headers. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted to check for the presence of a header.")
@@ -2562,7 +2577,7 @@ public class bnd extends Processor {
 		}
 	}
 
-		/**
+	/**
 	 * Central routine to get a JAR with error checking
 	 * 
 	 * @param s
@@ -2603,7 +2618,7 @@ public class bnd extends Processor {
 	 */
 
 	@Description("Show version information about bnd")
-	@Arguments(arg={})
+	@Arguments(arg = {})
 	public interface versionOptions extends Options {
 		@Description("Show licensing, copyright, sha, scm, etc")
 		boolean xtra();
@@ -2804,7 +2819,9 @@ public class bnd extends Processor {
 	 * Handle the global settings
 	 */
 	@Description("Set bnd/jpm global variables. The key can be wildcard.")
-	@Arguments(arg={"<key>[=<value>]..."})
+	@Arguments(arg = {
+		"<key>[=<value>]..."
+	})
 	interface settingOptions extends Options {
 		@Description("Clear all the settings, including the public and private key")
 		boolean clear();

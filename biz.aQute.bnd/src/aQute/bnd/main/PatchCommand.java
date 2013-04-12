@@ -58,8 +58,8 @@ public class PatchCommand {
 
 		b.write(patch);
 		a.close();
-		a.close();
-
+		b.close();
+		
 		// TODO proper close
 	}
 
