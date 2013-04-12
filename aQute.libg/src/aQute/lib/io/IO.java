@@ -8,7 +8,7 @@ import java.util.*;
 
 public class IO {
 	static final public File	work	= new File(System.getProperty("user.dir"));
-	static final public File	home	= new File(System.getProperty("user.home"));
+	static final public File	home	= new File(System.getenv("HOME"));
 
 	public static void copy(Reader r, Writer w) throws IOException {
 		try {
