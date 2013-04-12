@@ -54,4 +54,9 @@ public class MarkdownFormatter {
 		f = f.format("%n%n");
 		return this;
 	}
+	
+	public MarkdownFormatter flush() {
+		f.flush();
+		return this;
+	}
 }

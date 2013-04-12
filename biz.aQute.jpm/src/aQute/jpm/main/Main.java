@@ -254,12 +254,14 @@ public class Main extends ReporterAdapter {
 			setPedantic(opts.pedantic());
 			trace("set the options");
 
-			if(opts.settings() != null) {
-				trace("Using settings file: %s", opts.settings());
+			if(opts.settings() != null) {	
 				settings = new Settings(opts.settings());
+				trace("Using settings file: %s", opts.settings());
 			} else {
-				settings = new Settings("~/.jpm");
+				settings = new Settings(Platform.getPlatform(this).getConfigFile());
+				trace("Using settings file: %s", Platform.getPlatform(this).getConfigFile());
 			}
+			
 			
 			if (opts.base() != null)
 				base = IO.getFile(base, opts.base());
@@ -289,9 +291,10 @@ public class Main extends ReporterAdapter {
 				homeDir = setGlobal();
 			}
 			jpm.setHomeDir(homeDir);
+			
 			if(opts.bindir() != null) {
 				jpm.setBinDir(IO.getFile(opts.bindir()));
-			}
+			} 
 			
 			CommandLine handler = opts._command();
 			List<String> arguments = opts._();
@@ -336,6 +339,8 @@ public class Main extends ReporterAdapter {
 	private File setLocal() throws Exception {
 		if(settings.containsKey("jpm.bin.local")) {
 			jpm.setBinDir(IO.getFile(settings.get("jpm.bin.local")).getAbsoluteFile());
+		} else {
+			jpm.setBinDir(Platform.getPlatform(this).getBinDir());
 		}
 		
 		if (settings.containsKey("jpm.cache.local")) {
@@ -350,6 +355,8 @@ public class Main extends ReporterAdapter {
 	private File setGlobal() throws Exception {
 		if(settings.containsKey("jpm.bin.global")) {
 			jpm.setBinDir(IO.getFile(settings.get("jpm.bin.global")).getAbsoluteFile());
+		} else {
+			jpm.setBinDir(Platform.getPlatform(this).getBinDir());
 		}
 		
 		if (settings.containsKey("jpm.cache.global")) {
@@ -779,7 +786,7 @@ public class Main extends ReporterAdapter {
 		if (opts._().size() != 0)
 			error("Deinit requires no other parameters: %s", opts._());
 		if (!jpm.hasAccess())
-			error("Requires write access to jmp area (sudo?)");
+			error("Requires write access to jpm area (sudo?)");
 
 		if (!isOk())
 			return;
@@ -791,6 +798,10 @@ public class Main extends ReporterAdapter {
 		error("Cannot doinit due to %s", result);
 	}
 
+	public void _deinit2(deinitOptions opts) throws Exception {
+		jpm.deinit2(out, opts.force());
+	}
+	
 	/**
 	 * Main entry for the command line
 	 * 
@@ -837,7 +848,7 @@ public class Main extends ReporterAdapter {
 	public void _init(InitOptions opts) throws Exception {
 		// Reset config, or respect init flags
 		jpm.setHomeDir(opts.cache() == null ? null : IO.getFile(opts.cache()));
-		jpm.setBinDir(opts.bindir() == null ? null : IO.getFile(opts.bindir()));
+		jpm.setBinDir(opts.bindir() == null ? Platform.getPlatform(this).getBinDir() : IO.getFile(opts.bindir()));
 		
 		try {
 			String s = System.getProperty("java.class.path");
@@ -1503,7 +1514,7 @@ public class Main extends ReporterAdapter {
 
 		
 		String type = opts._().remove(0);
-		if (type.equalsIgnoreCase("user")) {
+		if (type.equalsIgnoreCase("user") || type.equalsIgnoreCase("local")) {
 			trace("Making jpm local");
 			settings.put("jpm.runconfig", "local");
 		} else {
@@ -1614,4 +1625,5 @@ public class Main extends ReporterAdapter {
 		this();
 		this.jpm = jpm;
 	}
+	
 }

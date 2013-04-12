@@ -39,6 +39,12 @@ public class Windows extends Platform {
 
 	}
 
+	
+	@Override
+	public File getBinDir() {
+		return bin;
+	}
+
 	@Override
 	public File getGlobal() {
 		return home;

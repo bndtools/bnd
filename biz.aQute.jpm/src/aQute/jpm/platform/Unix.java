@@ -13,6 +13,12 @@ public abstract class Unix extends Platform {
 	public static String	BINARIES	= "/usr/bin";
 	public static String	JPM_GLOBAL	= "/var/jpm";
 
+	
+	@Override
+	public File getBinDir() {
+		return new File(BINARIES);
+	}
+
 	@Override
 	public File getGlobal() {
 		return new File("/var/jpm");
@@ -20,7 +26,7 @@ public abstract class Unix extends Platform {
 
 	@Override
 	public File getLocal() {
-		File home = new File(System.getProperty("user.home"));
+		File home = new File(System.getenv("HOME"));
 		return new File(home, "jpm");
 	}
 

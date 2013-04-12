@@ -181,7 +181,8 @@ public class CommandLine {
 				}
 				f.format("%n");
 			}
-		}		
+		}
+		f.flush();
 	}
 
 	private String help(Object target, String cmd, Class< ? extends Options> type) throws Exception {

@@ -9,6 +9,7 @@ import junit.framework.*;
 import aQute.jpm.lib.*;
 import aQute.jpm.main.*;
 import aQute.jpm.platform.*;
+import aQute.lib.io.*;
 import aQute.lib.settings.*;
 
 public class JPMTest extends TestCase {
@@ -185,12 +186,19 @@ public class JPMTest extends TestCase {
 	}
 	
 	public void test_install_local_binDir() throws Exception {
+		
+		
+		
 		settings.put("jpm.bin.local", "/tmp");
 		settings.put("jpm.runconfig", "local");
 		settings.save();
 		
 		String[] args = {"-s", "/tmp/settings", "install", "filemap"};
 		Main main = new Main();
+		// We have to make sure that service.jar is in the local repo (Junit cannot retrieve it from jar)
+		// (considering that jpm is installed in its normal (global) place)
+		IO.copy(new File(Platform.getPlatform(main).getGlobal(), "repo/service.jar"),
+				new File(Platform.getPlatform(main).getLocal(), "repo/service.jar"));
 		main.run(args);
 		
 		File exec = new File("/tmp/filemap");
@@ -203,9 +211,9 @@ public class JPMTest extends TestCase {
 		assertFalse(exec.exists());
 	}
 	
-	public void testPierre() throws Exception {
-		String[] args = {"gmd"};
+	/*public void testPierre() throws Exception {
+		String[] args = {"deinit2", "-f"};
 		Main main = new Main();
 		main.run(args);
-	}
+	}*/
 }

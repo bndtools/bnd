@@ -20,6 +20,8 @@ import aQute.lib.converter.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.json.*;
+import aQute.lib.justif.*;
+import aQute.lib.settings.*;
 import aQute.libg.cryptography.*;
 import aQute.library.remote.*;
 import aQute.service.library.*;
@@ -61,6 +63,7 @@ import aQute.struct.*;
  */
 
 public class JustAnotherPackageManager {
+	static final String	PERMISSION_ERROR	= "No write acces, might require administrator or root privileges (sudo in *nix)";
 	static JSONCodec	codec			= new JSONCodec();
 	static Pattern		BSN_P			= Pattern
 												.compile(
@@ -97,18 +100,22 @@ public class JustAnotherPackageManager {
 	}
 
 	public boolean hasAccess() {
-		File file = new File(homeDir, "check");
-		try {
-			store("", file);
-			return true;
-		}
-		catch (Exception e) {
-			return false;
-		}
+		assert(binDir != null);
+		assert(homeDir != null);
+		
+		return (binDir.canWrite() && homeDir.canWrite());
 	}
 
 	public List<ServiceData> getServices() throws Exception {
+		return getServices(serviceDir);
+	}
+	public List<ServiceData> getServices(File serviceDir) throws Exception {
 		List<ServiceData> result = new ArrayList<ServiceData>();
+		
+		if(!serviceDir.exists()) {
+			return result;
+		}
+		
 		for (File sdir : serviceDir.listFiles()) {
 			File dataFile = new File(sdir, "data");
 			ServiceData data = getData(ServiceData.class, dataFile);
@@ -118,7 +125,15 @@ public class JustAnotherPackageManager {
 	}
 
 	public List<CommandData> getCommands() throws Exception {
+		return getCommands(commandDir);
+	}
+	public List<CommandData> getCommands(File commandDir) throws Exception {
 		List<CommandData> result = new ArrayList<CommandData>();
+		
+		if (!commandDir.exists()) {
+			return result;
+		}
+		
 		for (File f : commandDir.listFiles()) {
 			CommandData data = getData(CommandData.class, f);
 			if (data != null)
@@ -178,7 +193,7 @@ public class JustAnotherPackageManager {
 	 */
 
 	public String deinit(boolean force) throws Exception {
-		for ( CommandData d : getCommands())  {
+		for ( CommandData d : getCommands(commandDir))  {
 			reporter.trace("delete cmd %s", d.name);
 			deleteCommand(d.name);
 		}
@@ -201,6 +216,177 @@ public class JustAnotherPackageManager {
 		return null;
 	}
 
+	public void deinit2(Appendable out, boolean force) throws Exception {
+		Settings settings = new Settings(platform.getConfigFile());
+		
+		if(!force) {
+			Justif justify = new Justif(80,40);
+			StringBuilder sb = new StringBuilder();
+			Formatter f = new Formatter(sb);
+			
+			try {				
+				String list = listFiles(platform.getGlobal());
+				if (list != null) {
+					f.format("In global default environment:%n");
+					f.format(list);
+				}
+				
+				list = listFiles(platform.getLocal());
+				if (list != null) {
+					f.format("In local default environment:%n");
+					f.format(list);
+				}
+
+				if (settings.containsKey("jpm.cache.global")) {
+					list = listFiles(IO.getFile(settings.get("jpm.cache.global")));
+					if (list != null) {
+						f.format("In global configured environment:%n");
+						f.format(list);
+					}
+				}
+				
+				if (settings.containsKey("jpm.cache.local")) {
+					list = listFiles(IO.getFile(settings.get("jpm.cache.local")));
+					if (list != null) {
+						f.format("In local configured environment:%n");
+						f.format(list);
+					}
+				}			
+				
+				f.format("jpm support files:%n");
+				f.format(listSupportFiles());
+				
+				f.format("%n%n");
+				
+				f.format("All files listed above will be deleted if deinit is run with the force flag set" +
+						" (\"jpm deinit -f\" or \"jpm deinit --force\"%n%n");
+				f.flush();
+				
+				justify.wrap(sb);
+				out.append(sb.toString());
+			} finally {
+				f.close();
+			}
+		} else { // i.e. if(force)
+			int count = 0;
+			File[] caches = {
+					platform.getGlobal(),
+					platform.getLocal(),
+					null,
+					null
+			};
+			if(settings.containsKey("jpm.cache.local")) {
+				caches[2] = IO.getFile(settings.get("jpm.cache.local"));
+			}
+			if(settings.containsKey("jpm.cache.global")) {
+				caches[3] = IO.getFile(settings.get("jpm.cache.global"));
+			}
+			ArrayList<File> toDelete = new ArrayList<File>();
+			ArrayList<File> toDeleteServices = new ArrayList<File>();
+			
+			for(File cache : caches) {
+				if (cache == null) {
+					continue;
+				}
+				listFiles(cache, toDelete, toDeleteServices);
+				if(toDelete.size() + toDeleteServices.size() > count) {
+					count = toDelete.size() + toDeleteServices.size();
+					if(!cache.canWrite()) {
+						reporter.error(PERMISSION_ERROR+" ("+cache+")");
+						return;
+					}
+					toDelete.add(cache);
+				}
+			}
+			listSupportFiles(toDelete);
+				
+			for (File f : toDeleteServices) {
+				if (!f.canWrite()) {
+					reporter.error(PERMISSION_ERROR+" ("+f+")");
+					return;
+				}
+			}
+			for (File f : toDelete) {
+				if (!f.canWrite()) {
+					System.out.println(f);
+					reporter.error(PERMISSION_ERROR+" ("+f+")");
+					return;
+				}
+			}
+
+			for (File f : toDeleteServices) {
+				IO.deleteWithException(f);
+			}
+			for (File f : toDelete) {
+				IO.deleteWithException(f);
+			}
+		}
+
+		
+		
+	}
+	private String listFiles(final File cache) throws Exception { // Adapter to list without planning to delete
+		return listFiles(cache, null, null);
+	}
+	private String listFiles(final File cache, List<File>toDelete, List<File>toDeleteServices) throws Exception {
+		boolean stopServices = false;
+		if (toDelete == null) {
+			toDelete = new ArrayList<File>();
+		}
+		if (toDeleteServices == null) {
+			toDeleteServices = new ArrayList<File>();
+		} else {
+			stopServices = true;
+		}
+		int count = 0;
+		Formatter f = new Formatter();
+		
+		f.format(" - Cache:%n    * %s%n", cache.getCanonicalPath());
+		f.format(" - Commands:%n");
+		for (CommandData cdata : getCommands(new File(cache, "commands"))) {
+			f.format("    * %s \t0 handle for \"%s\"%n", cdata.bin, cdata.name);
+			toDelete.add(new File(cdata.bin));
+			count++;
+		}
+		f.format(" - Services:%n");
+		for (ServiceData sdata : getServices(new File(cache, "service"))) {
+			f.format("    * %s \t0 service directory for \"%s\"%n", sdata.sdir, sdata.name);
+			toDeleteServices.add(new File(sdata.sdir));
+			if(stopServices) {
+				Service s = getService(sdata);
+				try {
+					s.stop();
+				}
+				catch (Exception e) {}
+			}
+			count++;
+		}
+		f.format("%n");
+		
+		String result = (count > 0) ? f.toString() : null;
+		f.close();
+		return result;
+	}
+	private String listSupportFiles() throws Exception { // Adapter to list without planning to delete
+		return listSupportFiles(null);
+	}
+	private String listSupportFiles(List<File> toDelete) throws Exception {
+		Formatter f = new Formatter();
+		try {
+			if (toDelete == null) {
+				toDelete = new ArrayList<File>();
+			}
+			File confFile = IO.getFile(platform.getConfigFile()).getCanonicalFile();
+			f.format("    * %s \t0 Config file%n", confFile);
+			toDelete.add(confFile);
+			
+			return f.toString();
+		} finally {
+			f.close();
+		}
+			
+	}
+	
 	/**
 	 * @param data
 	 * @param target
@@ -286,8 +472,14 @@ public class JustAnotherPackageManager {
 		IO.deleteWithException(tobedel);
 	}
 
-	public Service getService(String service) throws Exception {
-		File base = new File(serviceDir, service);
+	public Service getService(String serviceName) throws Exception {
+		File base = new File(serviceDir, serviceName);
+		return getService(base);
+	}
+	public Service getService(ServiceData sdata) throws Exception {
+		return getService(new File(sdata.sdir));
+	}
+	private Service getService(File base) throws Exception {
 		File dataFile = new File(base, "data");
 		if (!dataFile.isFile())
 			return null;
@@ -943,7 +1135,7 @@ public class JustAnotherPackageManager {
 
 	public void setBinDir(File binDir) throws IOException {
 		this.binDir = binDir;
-		if(binDir != null)
+		if(binDir != null && !binDir.exists())
 			this.binDir.mkdirs();
 	}
 

@@ -42,17 +42,23 @@ public abstract class Platform {
 	}
 
 	/**
-	 * Global homeDir
+	 * Global cache
 	 * @return
 	 */
 	public abstract File getGlobal();
 
 	/**
-	 * Local homeDir
+	 * Local cache
 	 * @return
 	 */
 	public abstract File getLocal();
 
+	/**
+	 * Bin directory (for command handles)
+	 * @return
+	 */
+	public abstract File getBinDir();
+	
 	abstract public void shell(String initial) throws Exception;
 
 	@Override
@@ -171,6 +177,10 @@ public abstract class Platform {
 
 	public String installCompletion() throws Exception {
 		return "No completion available for this platform";
+	}
+
+	public String getConfigFile() throws Exception {
+		return "~/.jpm";
 	}
 
 }
