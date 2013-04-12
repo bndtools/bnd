@@ -104,6 +104,7 @@ public class BuilderTest extends BndTestCase {
 
 		String s = IO.collect(r.openInputStream());
 		assertEquals("YES_1\nYES_2\nYES_3\n", s);
+		b.close();
 	}
 
 	/**
@@ -125,6 +126,24 @@ public class BuilderTest extends BndTestCase {
 		assertNotNull(r);
 		String s = IO.collect(r.openInputStream());
 		assertTrue(s.contains("hosts"));
+	}
+
+	/**
+	 * Test the Include-Resource facility to generate resources on the fly. This
+	 * is a simple case of one resource with an error.
+	 */
+
+	public static void testOnTheFlySingleError() throws Exception {
+		// disable this test on windows
+		if (!"/".equals(File.separator))
+			return;
+
+		Builder b = new Builder();
+		b.setIncludeResource("test/x;cmd='I do not exist!!!!!!!!!!!'");
+		b.setProperty("-resourceonly", "true");
+		Jar jar = b.build();
+		assertTrue(b.check("Cmd 'I do not exist!!!!!!!!!!!' failed"));
+		b.close();
 	}
 
 	/**

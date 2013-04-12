@@ -29,7 +29,8 @@ import aQute.libg.sed.*;
 
 public class Project extends Processor {
 
-	final static Pattern		VERSION_ANNOTATION		= Pattern.compile("@\\s*(:?aQute\\.bnd\\.annotation\\.)?Version\\s*\\(\\s*(:?value\\s*=\\s*)?\"(\\d+(:?\\.\\d+(:?\\.\\d+(:?\\.[\\d\\w-_]+)?)?)?)\"\\s*\\)");
+	final static Pattern		VERSION_ANNOTATION		= Pattern
+																.compile("@\\s*(:?aQute\\.bnd\\.annotation\\.)?Version\\s*\\(\\s*(:?value\\s*=\\s*)?\"(\\d+(:?\\.\\d+(:?\\.\\d+(:?\\.[\\d\\w-_]+)?)?)?)\"\\s*\\)");
 	final static String			DEFAULT_ACTIONS			= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
 	public final static String	BNDFILE					= "bnd.bnd";
 	public final static String	BNDCNF					= "cnf";
@@ -234,21 +235,22 @@ public class Project extends Processor {
 
 					String dp = getProperty(Constants.DEPENDSON);
 					Set<String> requiredProjectNames = new LinkedHashSet<String>(new Parameters(dp).keySet());
-					
-					//Allow DependencyConstributors to modify requiredProjectNames
+
+					// Allow DependencyConstributors to modify
+					// requiredProjectNames
 					List<DependencyContributor> dcs = getPlugins(DependencyContributor.class);
 					for (DependencyContributor dc : dcs)
 						dc.addDependencies(this, requiredProjectNames);
-					
+
 					Instructions is = new Instructions(requiredProjectNames);
-					
+
 					Set<Instruction> unused = new HashSet<Instruction>();
 					Collection<Project> projects = getWorkspace().getAllProjects();
 					Collection<Project> dependencies = is.select(projects, unused, false);
-					
-					for (Instruction u: unused) 
-						msgs.MissingDependson_(u.getInput());							
-						
+
+					for (Instruction u : unused)
+						msgs.MissingDependson_(u.getInput());
+
 					// We have two paths that consists of repo files, projects,
 					// or some other stuff. The doPath routine adds them to the
 					// path and extracts the projects so we can build them
@@ -423,7 +425,8 @@ public class Project extends Processor {
 						Project project = getWorkspace().getProject(bsn);
 						if (project != null && project.exists()) {
 							File f = project.getOutput();
-							found = new Container(project, bsn, versionRange, Container.TYPE.PROJECT, f, null, attrs, null);
+							found = new Container(project, bsn, versionRange, Container.TYPE.PROJECT, f, null, attrs,
+									null);
 						} else {
 							msgs.NoSuchProject(bsn, spec);
 							continue;
@@ -724,7 +727,7 @@ public class Project extends Processor {
 	}
 
 	public URI releaseURI(String name, String jarName, InputStream jarStream) throws Exception {
-		
+
 		trace("release to %s", name);
 		RepositoryPlugin repo = getReleaseRepo(name);
 
@@ -748,24 +751,23 @@ public class Project extends Processor {
 	}
 
 	RepositoryPlugin getReleaseRepo(String releaserepo) {
-		String name = releaserepo == null ? 
-			name = getProperty(RELEASEREPO) : releaserepo;
-		
+		String name = releaserepo == null ? name = getProperty(RELEASEREPO) : releaserepo;
+
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
-		
+
 		for (RepositoryPlugin plugin : plugins) {
 			if (!plugin.canWrite())
 				continue;
 
 			if (name == null)
 				return plugin;
-				
+
 			if (name.equals(plugin.getName()))
 				return plugin;
 		}
 		return null;
 	}
-	
+
 	public void release(boolean test) throws Exception {
 		String name = getProperty(Constants.RELEASEREPO);
 		release(name, test);
@@ -961,7 +963,7 @@ public class Project extends Processor {
 			container = new Container(this, bsn, range, Container.TYPE.LIBRARY, f, null, attrs, db);
 		else
 			container = new Container(this, bsn, range, Container.TYPE.REPO, f, null, attrs, db);
-		
+
 		return container;
 	}
 
@@ -1304,7 +1306,13 @@ public class Project extends Processor {
 
 				for (int i = 0; i < jars.length; i++) {
 					Jar jar = jars[i];
-					files[i] = saveBuild(jar);
+					File file = saveBuild(jar);
+					if (file == null) {
+						getInfo(builder);
+						error("Could not save %s", jar.getName());
+						return this.files = null;
+					}
+					this.files[i] = file;
 				}
 
 				// Write out the filenames in the buildfiles file
@@ -1491,14 +1499,14 @@ public class Project extends Processor {
 	}
 
 	public void test() throws Exception {
-		
+
 		String testcases = get(Constants.TESTCASES);
-		if ( testcases == null) {
+		if (testcases == null) {
 			warning("No %s set", Constants.TESTCASES);
 			return;
 		}
 		clear();
-		
+
 		ProjectTester tester = getProjectTester();
 		tester.setContinuous(isTrue(getProperty(Constants.TESTCONTINUOUS)));
 		tester.prepare();
@@ -1549,6 +1557,7 @@ public class Project extends Processor {
 		if (manifest == null) {
 			trace("Wrapping with all defaults");
 			Builder b = new Builder(this);
+			this.addClose(b);
 			b.addClasspath(jar);
 			b.setProperty("Bnd-Message", "Wrapped from " + id + "because lacked manifest");
 			b.setProperty(Constants.EXPORT_PACKAGE, "*");
@@ -1557,6 +1566,7 @@ public class Project extends Processor {
 		} else if (manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) == null) {
 			trace("Not a release 4 bundle, wrapping with manifest as source");
 			Builder b = new Builder(this);
+			this.addClose(b);
 			b.addClasspath(jar);
 			b.setProperty(Constants.PRIVATE_PACKAGE, "*");
 			b.mergeManifest(manifest);
@@ -2044,7 +2054,7 @@ public class Project extends Processor {
 		if (version != null) {
 			return version;
 		}
-		
+
 		version = getPackageInfoVersion(packageName);
 		if (version != null) {
 			return version;
@@ -2053,14 +2063,15 @@ public class Project extends Processor {
 		return Version.emptyVersion;
 	}
 
+	@SuppressWarnings("resource")
 	Version getPackageInfoVersion(String packageName) throws IOException {
 		File packageInfoFile = getPackageInfoFile(packageName);
 		if (!packageInfoFile.exists()) {
 			return null;
 		}
-		BufferedReader reader = null;
+		
+		BufferedReader reader = IO.reader(packageInfoFile);
 		try {
-			reader = IO.reader(packageInfoFile);
 			String line;
 			while ((line = reader.readLine()) != null) {
 				line = line.trim();
@@ -2070,9 +2081,7 @@ public class Project extends Processor {
 			}
 		}
 		finally {
-			if (reader != null) {
-				IO.close(reader);
-			}
+			IO.close(reader);
 		}
 		return null;
 	}
@@ -2083,8 +2092,8 @@ public class Project extends Processor {
 			return null;
 		}
 		BufferedReader reader = null;
+		reader = IO.reader(packageInfoJavaFile);
 		try {
-			reader = IO.reader(packageInfoJavaFile);
 			String line;
 			while ((line = reader.readLine()) != null) {
 				Matcher matcher = VERSION_ANNOTATION.matcher(line);
@@ -2094,9 +2103,7 @@ public class Project extends Processor {
 			}
 		}
 		finally {
-			if (reader != null) {
-				IO.close(reader);
-			}
+			IO.close(reader);
 		}
 		return null;
 	}

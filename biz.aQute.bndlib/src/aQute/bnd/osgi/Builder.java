@@ -69,7 +69,6 @@ public class Builder extends Analyzer {
 		doIncludeResources(dot);
 		doWab(dot);
 
-
 		// Check if we override the calculation of the
 		// manifest. We still need to calculated it because
 		// we need to have analyzed the classpath.
@@ -104,7 +103,7 @@ public class Builder extends Analyzer {
 
 		if (getProperty(POM) != null)
 			dot.putResource("pom.xml", new PomResource(dot.getManifest()));
-		
+
 		if (!isNoBundle())
 			doVerify(dot);
 
@@ -116,7 +115,7 @@ public class Builder extends Analyzer {
 		dot.setName(getBsn());
 
 		doDigests(dot);
-		
+
 		sign(dot);
 		doSaveManifest(dot);
 
@@ -124,7 +123,6 @@ public class Builder extends Analyzer {
 		doBaseline(dot); // check for a baseline
 		return dot;
 	}
-
 
 	/**
 	 * Check if we need to calculate any checksums.
@@ -250,7 +248,8 @@ public class Builder extends Analyzer {
 		changedFile(f);
 	}
 
-	protected void changedFile(@SuppressWarnings("unused") File f) {}
+	protected void changedFile(@SuppressWarnings("unused")
+	File f) {}
 
 	/**
 	 * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
@@ -259,7 +258,8 @@ public class Builder extends Analyzer {
 	 * @return
 	 */
 
-	void sign(@SuppressWarnings("unused") Jar jar) throws Exception {
+	void sign(@SuppressWarnings("unused")
+	Jar jar) throws Exception {
 		String signing = getProperty(SIGN);
 		if (signing == null)
 			return;
@@ -300,9 +300,10 @@ public class Builder extends Analyzer {
 				Map<String,Resource> map = cpe.getDirectories().get(pref.getPath());
 				if (map != null) {
 					copy(jar, cpe, pref.getPath(), false);
-// Now use copy so that bnd.info is processed, next line should be 
-// removed in the future TODO
-//					jar.addDirectory(map, false);
+					// Now use copy so that bnd.info is processed, next line
+					// should be
+					// removed in the future TODO
+					// jar.addDirectory(map, false);
 					break;
 				}
 			}
@@ -440,7 +441,8 @@ public class Builder extends Analyzer {
 		return sourcePath;
 	}
 
-	private void doVerify(@SuppressWarnings("unused") Jar dot) throws Exception {
+	private void doVerify(@SuppressWarnings("unused")
+	Jar dot) throws Exception {
 		Verifier verifier = new Verifier(this);
 		// Give the verifier the benefit of our analysis
 		// prevents parsing the files twice
@@ -619,18 +621,18 @@ public class Builder extends Analyzer {
 	 * @param overwriteResource
 	 */
 	private void copy(Jar dest, Jar srce, String path, boolean overwrite) {
-		trace("copy d=" + dest + " s=" + srce +" p="+ path);
+		trace("copy d=" + dest + " s=" + srce + " p=" + path);
 		dest.copy(srce, path, overwrite);
-		
+
 		// bnd.info sources must be preprocessed
 		String bndInfoPath = path + "/bnd.info";
 		Resource r = dest.getResource(bndInfoPath);
-		if ( r != null && !(r instanceof PreprocessResource)) {
+		if (r != null && !(r instanceof PreprocessResource)) {
 			trace("preprocessing bnd.info");
 			PreprocessResource pp = new PreprocessResource(this, r);
 			dest.putResource(bndInfoPath, pp);
 		}
-		
+
 		if (hasSources()) {
 			String srcPath = "OSGI-OPT/src/" + path;
 			Map<String,Resource> srcContents = srce.getDirectories().get(srcPath);
@@ -825,8 +827,7 @@ public class Builder extends Analyzer {
 	 * be used to replace the current item. If no {@code for} is given, the
 	 * source is used as the only item. If the destination contains a macro,
 	 * each iteration will create a new file, otherwise the destination name is
-	 * used. The execution of the command is delayed until the JAR is actually
-	 * written to the file system for performance reasons.
+	 * used.
 	 * 
 	 * @param jar
 	 * @param source
@@ -834,9 +835,10 @@ public class Builder extends Analyzer {
 	 * @param extra
 	 * @param preprocess
 	 * @param absentIsOk
+	 * @throws Exception 
 	 */
 	private void doCommand(Jar jar, String source, String destination, Map<String,String> extra, boolean preprocess,
-			boolean absentIsOk) {
+			boolean absentIsOk) throws Exception {
 		String repeat = extra.get("for"); // TODO constant
 		if (repeat == null)
 			repeat = source;
@@ -845,13 +847,13 @@ public class Builder extends Analyzer {
 		long lastModified = 0;
 		for (String required : requires) {
 			File file = getFile(required);
-			if (!file.isFile()) {
+			if (!file.exists()) {
 				error("Include-Resource.cmd for %s, requires %s, but no such file %s", source, required,
 						file.getAbsoluteFile());
 			} else
-				lastModified = Math.max(lastModified, file.lastModified());
+				lastModified = findLastModifiedWhileOlder(file, lastModified());
 		}
-
+		
 		String cmd = extra.get("cmd");
 
 		Collection<String> items = Processor.split(repeat);
@@ -862,7 +864,6 @@ public class Builder extends Analyzer {
 			cr = new CombinedResource();
 			cr.lastModified = lastModified;
 		}
-		trace("last modified requires %s", lastModified);
 
 		for (String item : items) {
 			setProperty("@", item);
@@ -870,10 +871,17 @@ public class Builder extends Analyzer {
 				String path = getReplacer().process(destination);
 				String command = getReplacer().process(cmd);
 				File file = getFile(item);
-				if ( file.exists())
+				if (file.exists())
 					lastModified = Math.max(lastModified, file.lastModified());
-				
+
 				Resource r = new CommandResource(command, this, lastModified, getBase());
+
+				// Turn this resource into a file resource
+				// so we execute the command now and catch its
+				// errors
+				FileResource fr = new FileResource(r);
+				addClose(fr);
+				r = fr;
 
 				if (preprocess)
 					r = new PreprocessResource(this, r);
@@ -892,8 +900,30 @@ public class Builder extends Analyzer {
 		// to update the modified time.
 		if (cr != null)
 			jar.putResource(destination, cr);
-		
+
 		updateModified(lastModified, "Include-Resource: cmd");
+	}
+
+	/**
+	 * Check if a file or directory is older than the given time.
+	 * 
+	 * @param file
+	 * @param lastModified
+	 * @return
+	 */
+	private long findLastModifiedWhileOlder(File file, long lastModified) {
+		if (file.isDirectory()) {
+			File children[] = file.listFiles();
+			for (File child : children) {
+				if (child.lastModified() > lastModified)
+					return child.lastModified();
+
+				long lm = findLastModifiedWhileOlder(child, lastModified);
+				if (lm > lastModified)
+					return lm;
+			}
+		}
+		return file.lastModified();
 	}
 
 	private String doResourceDirectory(Jar jar, Map<String,String> extra, boolean preprocess, File sourceFile,
@@ -955,8 +985,8 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	private void noSuchFile(Jar jar, @SuppressWarnings("unused") String clause, Map<String,String> extra, String source, String destinationPath)
-			throws Exception {
+	private void noSuchFile(Jar jar, @SuppressWarnings("unused")
+	String clause, Map<String,String> extra, String source, String destinationPath) throws Exception {
 		Jar src = getJarFromName(source, "Include-Resource " + source);
 		if (src != null) {
 			// Do not touch the manifest so this also
@@ -1184,6 +1214,7 @@ public class Builder extends Analyzer {
 			File file = members.remove(0);
 
 			// Check if the file is one of our parents
+			@SuppressWarnings("resource")
 			Processor p = this;
 			while (p != null) {
 				if (file.equals(p.getPropertiesFile()))
@@ -1430,7 +1461,8 @@ public class Builder extends Analyzer {
 	 * @throws Exception
 	 */
 
-	public void doDiff(@SuppressWarnings("unused") Jar dot) throws Exception {
+	public void doDiff(@SuppressWarnings("unused")
+	Jar dot) throws Exception {
 		Parameters diffs = parseHeader(getProperty("-diff"));
 		if (diffs.isEmpty())
 			return;
@@ -1510,7 +1542,6 @@ public class Builder extends Analyzer {
 			show(c, indent, warning);
 	}
 
-	
 	public void addSourcepath(Collection<File> sourcepath) {
 		for (File f : sourcepath) {
 			addSourcepath(f);
@@ -1518,7 +1549,8 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Base line against a previous version. Should be overridden in the ProjectBuilder where we have access to the repos
+	 * Base line against a previous version. Should be overridden in the
+	 * ProjectBuilder where we have access to the repos
 	 * 
 	 * @throws Exception
 	 */

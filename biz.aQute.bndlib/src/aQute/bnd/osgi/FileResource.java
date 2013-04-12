@@ -3,12 +3,27 @@ package aQute.bnd.osgi;
 import java.io.*;
 import java.util.regex.*;
 
-public class FileResource implements Resource {
+import aQute.lib.io.*;
+
+public class FileResource implements Resource, Closeable {
 	File	file;
 	String	extra;
+	boolean deleteOnClose;
 
 	public FileResource(File file) {
 		this.file = file;
+	}
+
+	/**
+	 * Turn a resource into a file so that anything in the conversion is properly caught
+	 * @param r
+	 * @throws Exception
+	 */
+	public FileResource(Resource r) throws Exception {
+		this.file = File.createTempFile("fileresource", ".resource");
+		deleteOnClose(true);
+		this.file.deleteOnExit();
+		IO.copy(r.openInputStream(), this.file);
 	}
 
 	public InputStream openInputStream() throws FileNotFoundException {
@@ -75,5 +90,21 @@ public class FileResource implements Resource {
 
 	public long size() {
 		return (int) file.length();
+	}
+
+	public void close() throws IOException {
+		if ( deleteOnClose) 
+			file.delete();
+	}
+
+	public void deleteOnClose(boolean b) {
+		deleteOnClose = b;
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		if ( deleteOnClose) 
+			file.delete();
+		super.finalize();
 	}
 }
