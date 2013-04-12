@@ -255,6 +255,12 @@ public class HeaderReader extends Processor {
 				String key = m.group(1).replaceAll("@", ":");
 				String value = m.group(4);
 				String parts[] = value.split("\\s*(\\||\\n)\\s*");
+				if (parts.length == 1 && value.endsWith("|")) {
+					String v = parts[0];
+					parts = new String[2];
+					parts[0] = v;
+					parts[1] = ComponentDef.MARKER;
+				}
 				for (String part: parts) {
 					cd.property.add(key, part);
 				}

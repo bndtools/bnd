@@ -20,6 +20,7 @@ import aQute.lib.tag.*;
  */
 class ComponentDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
+	final static String 			MARKER 			= new String("|marker");
 	final List<String>				properties		= new ArrayList<String>();
 	final MultiMap<String,String>	property		= new MultiMap<String,String>();
 	final Map<String,ReferenceDef>	references		= new LinkedHashMap<String,ReferenceDef>();
@@ -92,6 +93,9 @@ class ComponentDef {
 
 				String del = "";
 				for (String v : kvs.getValue()) {
+					if (v == MARKER) {
+						continue;
+					}
 					sb.append(del);
 					v = check(type, v, analyzer);
 					sb.append(v);

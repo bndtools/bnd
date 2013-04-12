@@ -176,7 +176,7 @@ public class BNDAnnotationTest extends TestCase {
 	}
 
 	@Component(name = "props", properties = {
-			" a =1", "b=3", "c=1|2|3"
+			" a =1", "b=3", "c=1|2|3", "d=1|"
 	}, designate = Config.class, designateFactory = Config.class)
 	static class PropertiesAndConfig {
 		@Activate
@@ -204,6 +204,7 @@ public class BNDAnnotationTest extends TestCase {
 			assertEquals("1", xpath.evaluate("scr:component/property[@name='a']/@value", doc));
 			assertEquals("3", xpath.evaluate("scr:component/property[@name='b']/@value", doc));
 			assertEquals("1\n2\n3", xpath.evaluate("scr:component/property[@name='c']", doc).trim());
+			assertEquals("1", xpath.evaluate("scr:component/property[@name='d']", doc).trim());
 		}
 
 	}
