@@ -409,7 +409,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                                             enabled = false;
 
                                         if (m.group(2) != null)
-                                            checked = false;
+                                            checked = true;
 
                                         label = m.group(3);
 
