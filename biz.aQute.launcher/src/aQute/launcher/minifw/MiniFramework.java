@@ -140,9 +140,9 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	public Bundle installBundle(String location) throws BundleException {
 		try {
 			if (location.startsWith("reference:"))
-				location = new File(new URL(location.substring("reference:".length()).trim()).toURI()).getPath();
+				location = new File(new URL(location.substring("reference:".length())).toURI()).getPath();
 			else if (location.startsWith("file:"))
-				location = new File(location.substring("file:".length()).trim()).getPath();
+				location = new File(location.substring("file:".length())).getPath();
 
 			while (location.startsWith("//"))
 				location = location.substring(1);
