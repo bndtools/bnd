@@ -2,9 +2,11 @@ package test;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
+import aQute.launcher.constants.*;
 import aQute.launcher.plugin.*;
 
 public class ProjectLaunchImplTest extends TestCase {
@@ -16,7 +18,12 @@ public class ProjectLaunchImplTest extends TestCase {
 		launcher.prepare();
 
 		String arg = launcher.getRunVM().iterator().next();
-		String propertiesPath = arg.substring("-Dlauncher.properties=".length());
+		String s = "-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=";
+		String propertiesPath = arg.substring(s.length());
+		Matcher matcher = Pattern.compile("^([\"'])(.*)\\1$").matcher(propertiesPath);
+		if (matcher.matches()) {
+			propertiesPath = matcher.group(2);
+		}
 
 		Properties launchProps = new Properties();
 		launchProps.load(new FileInputStream(new File(propertiesPath)));
