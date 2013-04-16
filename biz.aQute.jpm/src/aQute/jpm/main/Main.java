@@ -866,7 +866,7 @@ public class Main extends ReporterAdapter {
 						error(help);
 						return;
 					} 
-					String completionInstallResult = Platform.getPlatform(this).installCompletion();
+					String completionInstallResult = Platform.getPlatform(this).installCompletion(this);
 					if (completionInstallResult != null)
 						trace(completionInstallResult);
 

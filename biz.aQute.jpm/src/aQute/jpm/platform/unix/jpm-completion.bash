@@ -28,9 +28,7 @@ _jpm_completion_()
     [[ ${cur} == -* ]] && return 0 # Not even trying to complete options
 
     # Basic commands
-    opts="candidates certificate command deinit deposit find gc generate init install jpm \
-	keys log platform register remove restart service settings setup start status \
-	stop trace version winreg"
+    opts="%listJpmCommands%"
 
     prev=$(getPrev 1)
     

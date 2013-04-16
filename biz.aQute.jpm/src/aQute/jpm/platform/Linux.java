@@ -1,8 +1,14 @@
 package aQute.jpm.platform;
 
 import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
 
+import aQute.lib.getopt.*;
 import aQute.lib.io.*;
+import aQute.libg.reporter.*;
+import aQute.libg.sed.*;
+import aQute.service.reporter.*;
 
 class Linux extends Unix {
 
@@ -28,18 +34,33 @@ class Linux extends Unix {
 	}
 
 	@Override
-	public String installCompletion() throws Exception {
-		File f = new File(COMPLETION_DIRECTORY);
+	public String installCompletion(Object target) throws Exception {
+		File dir = new File(COMPLETION_DIRECTORY);
 		
-		if(!f.exists() || !f.canWrite()) {
+		if(!dir.exists() || !dir.canWrite()) {
 			return "Bash completion directory does not exist or cannot be written to";
 		}
 		
+		File f = new File(dir, "jpm-completion.bash");
+		
+		IO.copy(getClass().getResource("unix/jpm-completion.bash"), f);
+		
+		Sed sed = new Sed(f);
+		sed.setBackup(false);
+		
+		Reporter r = new ReporterAdapter();
+		CommandLine c = new CommandLine(r);
+		Map<String,Method> commands = c.getCommands(target);
+		StringBuilder sb = new StringBuilder();
+		for(String commandName : commands.keySet()) {
+			sb.append(" "+commandName);
+		}
+		
+		sed.replace("%listJpmCommands%", sb.toString().substring(1));
+		sed.doIt();
 		
 		
-		IO.copy(getClass().getResource("unix/jpm-completion.bash"), new File(f, "jpm-completion.bash"));
 		return "Bash completion file installed in "+COMPLETION_DIRECTORY;
 	}
-
 	
 }
