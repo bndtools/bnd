@@ -2,9 +2,11 @@ package test;
 
 import java.io.*;
 import java.util.concurrent.*;
+import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
+import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
 
 public class LauncherTest extends TestCase {
@@ -70,6 +72,25 @@ public class LauncherTest extends TestCase {
 		l.setTrace(true);
 		l.getRunProperties().put("test.cmd", "exit");
 		assertEquals(42, l.launch());
+	}
+
+	/**
+	 * Test the packager
+	 * @throws Exception
+	 */
+	public static void testPackager() throws Exception {
+		Project project = getProject();
+		project.clear();
+		project.setProperty("[debug]testprop", "debug");
+		project.setProperty("[exec]testprop", "exec");
+		project.setProperty("Header", "${testprop}");
+		project.setProperty(Constants.PROFILE, "exec");
+		ProjectLauncher l = project.getProjectLauncher();
+		l.setTrace(true);
+		Jar executable = l.executable();
+		assertNotNull(executable);
+		assertEquals( "exec", project.getProperty("testprop"));
+		assertEquals( "exec", project.getProperty("Header"));
 	}
 
 

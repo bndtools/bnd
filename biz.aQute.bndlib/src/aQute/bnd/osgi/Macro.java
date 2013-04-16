@@ -25,6 +25,7 @@ public class Macro {
 	Processor	domain;
 	Object		targets[];
 	boolean		flattening;
+	String		profile;
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
@@ -108,7 +109,7 @@ public class Macro {
 		return 0;
 	}
 
-	protected String replace(String key, Link link) {
+	protected String getMacro(String key, Link link) {
 		if (link != null && link.contains(key))
 			return "${infinite:" + link.toString() + "}";
 
@@ -154,14 +155,32 @@ public class Macro {
 					if (value != null)
 						return value;
 				}
-				if (!flattening && !key.equals("@"))
-					domain.warning("No translation found for macro: " + key);
 			} else {
 				domain.warning("Found empty macro key");
 			}
 		} else {
 			domain.warning("Found null macro key");
 		}
+
+		// Prevent recursion, but try to get a profiled variable
+		if (!key.startsWith("[") && !key.equals(Constants.PROFILE)) {
+			if (profile == null)
+				profile = domain.get(Constants.PROFILE);
+			if (profile != null) {
+				String replace = getMacro("[" + profile + "]" + key, link);
+				if (replace != null)
+					return replace;
+			}
+		}
+		return null;
+	}
+
+	public String replace(String key, Link link) {
+		String value = getMacro(key, link);
+		if (value != null)
+			return value;
+		if (!flattening && !key.equals("@"))
+			domain.warning("No translation found for macro: " + key);
 		return "${" + key + "}";
 	}
 

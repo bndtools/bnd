@@ -858,12 +858,15 @@ public class bnd extends Processor {
 			}
 		}
 
+		String profile = opts.profile() == null ? "exec" : opts.profile();
+		
+		// TODO Not sure if we need a project actually?
 		project.build();
 
 		if (cmdline.isEmpty())
 			cmdline.add(Project.BNDFILE); // default project itself
 
-		for (String path : opts._()) {
+		for (String path : cmdline) {
 
 			File file = getFile(path);
 			if (!file.isFile()) {
@@ -876,9 +879,7 @@ public class bnd extends Processor {
 
 				Workspace ws = project.getWorkspace();
 				project = new Project(ws, getBase(), file);
-
-				String profile = opts.profile() == null ? "exec" : opts.profile();
-
+				project.setProperty(PROFILE, profile);
 				pack(project, output, path.replaceAll(".bnd(run)?$", "") + ".jar", profile);
 			}
 		}
@@ -907,7 +908,8 @@ public class bnd extends Processor {
 		try {
 			project.use(this);
 			ProjectLauncher launcher = project.getProjectLauncher();
-			launcher.getRunProperties().put("profile", profile);
+			launcher.getRunProperties().put("profile", profile); // TODO remove
+			launcher.getRunProperties().put(PROFILE, profile);
 			Jar jar = launcher.executable();
 			Manifest m = jar.getManifest();
 			Attributes main = m.getMainAttributes();

@@ -809,27 +809,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 				source = source.getParent();
 			}
-		}
-
-		// Check if we found a value, if not, try to prefix
-		// it with a profile if found and search again. profiles
-		// are a simple name that is prefixed like [profile]. This
-		// allows different variables to be used in different profiles.
-
-		if (value == null && profile != null) {
-			String pkey = "[" + profile + "]" + key;
-			if (filter != null && filter.contains(key)) {
-				value = (String) getProperties().get(pkey);
-			} else {
-				while (source != null) {
-					value = (String) source.getProperties().get(pkey);
-					if (value != null)
-						break;
-
-					source = source.getParent();
-				}
+			//
+			// Check if we can find a replacement through the
+			// replacer, which takes profiles into account
+			if (value == null) {
+				value = getReplacer().getMacro(key, null);
 			}
 		}
+
 
 		if (value != null)
 			return getReplacer().process(value, source);
