@@ -14,6 +14,7 @@ public class PackageTask extends BaseTask {
 
 	String	runFilePath	= null;
 	File	output		= null;
+	boolean keep        = false;
 
 	@Override
 	public void execute() throws BuildException {
@@ -41,6 +42,7 @@ public class PackageTask extends BaseTask {
 			// Package it
 			packageProject.clear();
 			ProjectLauncher launcher = packageProject.getProjectLauncher();
+			launcher.setKeep(keep);
 			Jar jar = launcher.executable();
 
 			outStream = new FileOutputStream(output);
