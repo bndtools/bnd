@@ -406,11 +406,11 @@ class JavaElement {
 				// method on the consumer
 				add = MAJOR;
 
-				// Removing a method is not an issue because the
-				// provider, which calls this contract must be
-				// aware of the removal
+				// Removing a method is not an issue for
+				// providers, however, consumers could potentially
+				// call through this interface :-(
 
-				remove = MINOR;
+				remove = MAJOR;
 			}
 		} else {
 			// Adding a method to a class can never do any harm
@@ -495,7 +495,7 @@ class JavaElement {
 
 			// for covariant types we need to add the return types
 			// and all the implemented and extended types. This is already
-			// do for us when we get the element of the return type.
+			// done for us when we get the element of the return type.
 
 			getCovariantReturns(children, m.getType());
 
