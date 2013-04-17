@@ -6,8 +6,10 @@ import java.util.*;
 import java.util.jar.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.launcher.constants.*;
+import aQute.libg.cryptography.*;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
 	final private Project	project;
@@ -135,6 +137,11 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public Jar executable() throws Exception {
+		// TODO use constants in the future
+		Parameters packageHeader = OSGiHeader.parseHeader(project.getProperty("-package"));
+		boolean useShas = packageHeader.containsKey("jpm");
+		project.trace("useshas %s %s", useShas, packageHeader);
+		
 		Jar jar = new Jar(project.getName());
 
 		// Copy the class path of the launched VM to this bundle
@@ -143,14 +150,22 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		List<String> runpath = getRunpath();
 		Collections.reverse(runpath);
 
+		Set<String> runpathShas = new LinkedHashSet<String>();
+		Set<String> runbundleShas = new LinkedHashSet<String>();
+
 		for (String path : runpath) {
 			project.trace("embedding runpath %s", path);
 			File file = new File(path);
 			if (!file.isFile())
 				project.error("Invalid entry on runpath %s", file);
 			else {
-				Jar from = new Jar(file);
-				jar.addAll(from);
+				if (useShas)
+					runpathShas.add(SHA1.digest(file).asHex());
+				else {
+					Jar from = new Jar(file);
+					jar.addAll(from);
+					project.addClose(from);
+				}
 			}
 		}
 
@@ -162,13 +177,24 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		for (String path : runbundles) {
 			project.trace("embedding run bundles %s", path);
 			File file = new File(path);
-			String newPath = "jar/" + file.getName();
-			jar.putResource(newPath, new FileResource(file));
-			actualPaths.add(newPath);
+			if (!file.isFile())
+				project.error("Invalid entry in -runbundles %s", file);
+			else {
+				if (useShas) {
+					String sha = SHA1.digest(file).asHex();
+					runbundleShas.add(sha);
+					actualPaths.add("${JPMREPO}/"+sha);
+				}
+				else {
+					String newPath = "jar/" + file.getName();
+					jar.putResource(newPath, new FileResource(file));
+					actualPaths.add(newPath);
+				}
+			}
 		}
 
 		LauncherConstants lc = getConstants(actualPaths);
-		lc.embedded = true;
+		lc.embedded = ! useShas;
 		lc.storageDir = null; // cannot use local info
 
 		final Properties p = lc.getProperties();
@@ -191,6 +217,10 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		// And set the manifest
 		Manifest m = new Manifest();
 		m.getMainAttributes().putValue("Main-Class", "aQute.launcher.Launcher");
+		if (useShas) {
+			m.getMainAttributes().putValue("JPM-Classpath", Processor.join(runpathShas));
+			m.getMainAttributes().putValue("JPM-Runbundles", Processor.join(runbundleShas));
+		}
 		jar.setManifest(m);
 		return jar;
 	}
