@@ -322,7 +322,9 @@ public class Launcher implements ServiceListener {
 		// Turn the bundle location paths into files
 		List<File> desired = new ArrayList<File>();
 		for (Object o : parms.runbundles) {
-			File file = new File((String) o).getAbsoluteFile();
+			String s = (String) o;
+			s = toNativePath(s);
+			File file = new File(s).getAbsoluteFile();
 			if (!file.exists())
 				error("Bundle files does not exist: " + file);
 			else
@@ -378,6 +380,63 @@ public class Launcher implements ServiceListener {
 			catch (Exception e) {
 				error("Failed to update bundle %s, exception %s", f, e);
 			}
+	}
+
+	/**
+	 * Convert a path to native when it contains a macro. This is needed
+	 * for the jpm option since it stores the paths with a macro in the JAR
+	 * through the packager. This path is platform independent and must therefore
+	 * be translated to the executing platform. if no macro is present, we assume
+	 * the path is already native.
+	 * @param s
+	 * @return
+	 */
+	private String toNativePath(String s) {
+		if( !s.contains("${"))
+			return s;
+		
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			switch (c) {
+				case '/' :
+					sb.append(File.separator);
+					break;
+
+				case '$' :
+					if (s.length() -3 > i) {
+						char rover = s.charAt(++i);
+						if ( rover == '{') {
+							rover = s.charAt(++i);
+							StringBuilder var = new StringBuilder();
+							while ( i < s.length() - 1 && rover != '}' ) {
+								var.append(rover);
+								rover = s.charAt(++i);
+							}
+							String key = var.toString();
+							String value = System.getProperty(key);
+							if ( value == null)
+								value = System.getenv(key);
+							if ( value != null)
+								sb.append(value);
+							else
+								sb.append("${").append(key).append("}");
+						} else
+							sb.append('$').append(rover);
+					} else
+						sb.append('$');
+					break;
+					
+				case '\\' :
+					if (s.length() -1 > i)
+						sb.append(s.charAt(++i));
+					break;
+
+				default :
+					sb.append(c);
+			}
+		}
+		return sb.toString();
 	}
 
 	/**
