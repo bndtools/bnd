@@ -1,6 +1,7 @@
 package test;
 
 import java.io.*;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.jar.*;
 
@@ -92,6 +93,38 @@ public class LauncherTest extends TestCase {
 		assertEquals( "exec", project.getProperty("testprop"));
 		assertEquals( "exec", project.getProperty("Header"));
 	}
+
+	/**
+	 * Test the sha packager
+	 * @throws Exception
+	 */
+	public static void testShaPackager() throws Exception {
+		Project project = getProject();
+		project.clear();
+		project.setProperty("-package", "jpm");
+		ProjectLauncher l = project.getProjectLauncher();
+		l.setTrace(true);
+		Jar executable = l.executable();
+		assertNotNull(executable);
+		Manifest m = executable.getManifest();
+		m.write(System.out);
+		System.out.flush();
+		assertNotNull(m.getMainAttributes().getValue("JPM-Classpath"));
+		assertNotNull(m.getMainAttributes().getValue("JPM-Runbundles"));
+		
+		Resource r= executable.getResource( "launcher.properties");
+		assertNotNull(r);
+		
+		Properties p = new Properties();
+		p.load(r.openInputStream());
+		
+		System.out.println(p);
+		
+		String s = p.getProperty("launch.bundles");
+		assertTrue( s.contains("${JPMREPO}/"));
+		assertEquals( "false", p.getProperty("launch.embedded"));
+	}
+
 
 
 	/**

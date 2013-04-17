@@ -21,8 +21,9 @@ public class Syntax implements Constants {
 	static Syntax							bundle_symbolic_name	= new Syntax(
 																			BUNDLE_SYMBOLIC_NAME_ATTRIBUTE,
 																			"The bundle symbolic name of the exporting bundle.",
-																			BUNDLE_SYMBOLIC_NAME_ATTRIBUTE + "=com.acme.foo.daffy",
-																			null, Verifier.SYMBOLICNAME);
+																			BUNDLE_SYMBOLIC_NAME_ATTRIBUTE
+																					+ "=com.acme.foo.daffy", null,
+																			Verifier.SYMBOLICNAME);
 
 	static Syntax							bundle_version			= new Syntax(
 																			BUNDLE_VERSION_ATTRIBUTE,
@@ -33,92 +34,119 @@ public class Syntax implements Constants {
 	static Syntax							path_version			= new Syntax(
 																			VERSION_ATTRIBUTE,
 																			"Specifies the range in the repository, project or file.",
-																			VERSION_ATTRIBUTE + "=project", "project,type", Pattern
+																			VERSION_ATTRIBUTE + "=project",
+																			"project,type", Pattern
 																					.compile("project|type|"
 																							+ Verifier.VERSIONRANGE
 																									.toString()));
 
 	static final Syntax[]					syntaxes				= new Syntax[] {
-			new Syntax(
-					BUNDLE_ACTIVATIONPOLICY,
-					"The " + BUNDLE_ACTIVATIONPOLICY + " header specifies how the framework should activate the bundle once started.",
+			new Syntax(BUNDLE_ACTIVATIONPOLICY, "The " + BUNDLE_ACTIVATIONPOLICY
+					+ " header specifies how the framework should activate the bundle once started.",
 					BUNDLE_ACTIVATIONPOLICY + ": lazy", "lazy", Pattern.compile("lazy")),
 
-			new Syntax(BUNDLE_ACTIVATOR,
-					"The " + BUNDLE_ACTIVATOR + " header specifies the name of the class used to start and stop the bundle.",
-					BUNDLE_ACTIVATOR + ": com.acme.foo.Activator",
-					"${classes;implementing;org.osgi.framework.BundleActivator}", Verifier.FQNPATTERN),
-			new Syntax(BUNDLE_CATEGORY, "The " + BUNDLE_CATEGORY + " header holds a comma-separated list of category names.",
-					BUNDLE_CATEGORY + ": test", "osgi,test,game,util,eclipse,netbeans,jdk,specification", null),
+			new Syntax(BUNDLE_ACTIVATOR, "The " + BUNDLE_ACTIVATOR
+					+ " header specifies the name of the class used to start and stop the bundle.", BUNDLE_ACTIVATOR
+					+ ": com.acme.foo.Activator", "${classes;implementing;org.osgi.framework.BundleActivator}",
+					Verifier.FQNPATTERN),
+			new Syntax(BUNDLE_CATEGORY, "The " + BUNDLE_CATEGORY
+					+ " header holds a comma-separated list of category names.", BUNDLE_CATEGORY + ": test",
+					"osgi,test,game,util,eclipse,netbeans,jdk,specification", null),
 			new Syntax(
 					BUNDLE_CLASSPATH,
-					"The " + BUNDLE_CLASSPATH + " header defines a comma-separated list of JAR file path names or directories (inside the bundle) containing classes and resources. The period (’.’) specifies the root directory of the bundle’s JAR. The period is also the default.",
+					"The "
+							+ BUNDLE_CLASSPATH
+							+ " header defines a comma-separated list of JAR file path names or directories (inside the bundle) containing classes and resources. The period (’.’) specifies the root directory of the bundle’s JAR. The period is also the default.",
 					BUNDLE_CLASSPATH + ": /lib/libnewgen.so, .", null, Verifier.PATHPATTERN),
-			new Syntax(BUNDLE_CONTACTADDRESS,
-					"The " + BUNDLE_CONTACTADDRESS + " header provides the contact address of the vendor.",
-					BUNDLE_CONTACTADDRESS + ": 2400 Oswego Road, Austin, TX 74563", null, null),
-			new Syntax(BUNDLE_COPYRIGHT,
-					"The " + BUNDLE_COPYRIGHT + " header contains the copyright specification for this bundle.",
-					BUNDLE_COPYRIGHT + ": OSGi (c) 2002", null, null),
-			new Syntax(BUNDLE_DESCRIPTION, "The " + BUNDLE_DESCRIPTION + " header defines a short description of this bundle.",
-					BUNDLE_DESCRIPTION + ": Ceci ce n'est pas une bundle", null, null),
+			new Syntax(BUNDLE_CONTACTADDRESS, "The " + BUNDLE_CONTACTADDRESS
+					+ " header provides the contact address of the vendor.", BUNDLE_CONTACTADDRESS
+					+ ": 2400 Oswego Road, Austin, TX 74563", null, null),
+			new Syntax(BUNDLE_COPYRIGHT, "The " + BUNDLE_COPYRIGHT
+					+ " header contains the copyright specification for this bundle.", BUNDLE_COPYRIGHT
+					+ ": OSGi (c) 2002", null, null),
+			new Syntax(BUNDLE_DESCRIPTION, "The " + BUNDLE_DESCRIPTION
+					+ " header defines a short description of this bundle.", BUNDLE_DESCRIPTION
+					+ ": Ceci ce n'est pas une bundle", null, null),
 
-			new Syntax(BUNDLE_DOCURL,
-					"The " + BUNDLE_DOCURL + " header must contain a URL pointing to documentation about this bundle.",
-					BUNDLE_DOCURL + ": http://www.aQute.biz/Code/Bnd", null, Verifier.URLPATTERN),
+			new Syntax(BUNDLE_DOCURL, "The " + BUNDLE_DOCURL
+					+ " header must contain a URL pointing to documentation about this bundle.", BUNDLE_DOCURL
+					+ ": http://www.aQute.biz/Code/Bnd", null, Verifier.URLPATTERN),
 
 			new Syntax(
 					BUNDLE_ICON,
-					"The optional " + BUNDLE_ICON + " header provides a list of (relative) URLs to icons representing this bundle in different sizes.",
-					BUNDLE_ICON + ": /icons/bnd.png;size=64", "/icons/bundle.png", Verifier.URLPATTERN, new Syntax("size",
-							"Icons size in pixels, e.g. 64.", "size=64", "16,32,48,64,128", Verifier.NUMBERPATTERN)),
+					"The optional "
+							+ BUNDLE_ICON
+							+ " header provides a list of (relative) URLs to icons representing this bundle in different sizes.",
+					BUNDLE_ICON + ": /icons/bnd.png;size=64", "/icons/bundle.png", Verifier.URLPATTERN, new Syntax(
+							"size", "Icons size in pixels, e.g. 64.", "size=64", "16,32,48,64,128",
+							Verifier.NUMBERPATTERN)),
 
 			new Syntax(
 					BUNDLE_LICENSE,
-					"The " + BUNDLE_LICENSE + " header provides an optional machine readable form of license information. The purpose of this header is to automate some of the license processing required by many organizations.",
+					"The "
+							+ BUNDLE_LICENSE
+							+ " header provides an optional machine readable form of license information. The purpose of this header is to automate some of the license processing required by many organizations.",
 					BUNDLE_LICENSE + ": http://www.opensource.org/licenses/jabberpl.php",
 					"http://www.apache.org/licenses/LICENSE-2.0,<<EXTERNAL>>", Pattern.compile("("
 							+ Verifier.URLPATTERN + "|<<EXTERNAL>>)"), new Syntax(DESCRIPTION_ATTRIBUTE,
-							"Human readable description of the license.", DESCRIPTION_ATTRIBUTE + "=\"Describe the license here\"",
-							null, Verifier.ANYPATTERN), new Syntax(LINK_ATTRIBUTE, "", "", null, Verifier.URLPATTERN)),
+							"Human readable description of the license.", DESCRIPTION_ATTRIBUTE
+									+ "=\"Describe the license here\"", null, Verifier.ANYPATTERN), new Syntax(
+							LINK_ATTRIBUTE, "", "", null, Verifier.URLPATTERN)),
 			new Syntax(
 					BUNDLE_LOCALIZATION,
-					"The " + BUNDLE_LOCALIZATION + " header contains the location in the bundle where localization files can be found. The default value is OSGI-INF/l10n/bundle. Translations are by default therefore OSGI-INF/l10n/bundle_de.properties, OSGI-INF/l10n/bundle_nl.properties, etc.",
+					"The "
+							+ BUNDLE_LOCALIZATION
+							+ " header contains the location in the bundle where localization files can be found. The default value is OSGI-INF/l10n/bundle. Translations are by default therefore OSGI-INF/l10n/bundle_de.properties, OSGI-INF/l10n/bundle_nl.properties, etc.",
 					BUNDLE_LOCALIZATION + ": OSGI-INF/l10n/bundle", "OSGI-INF/l10n/bundle", Verifier.URLPATTERN),
 			new Syntax(
 					BUNDLE_MANIFESTVERSION,
-					"The " + BUNDLE_MANIFESTVERSION + " header is set by bnd automatically to 2. The header defines that the bundle follows the rules of this specification.",
+					"The "
+							+ BUNDLE_MANIFESTVERSION
+							+ " header is set by bnd automatically to 2. The header defines that the bundle follows the rules of this specification.",
 					"# " + BUNDLE_MANIFESTVERSION + ": 2", "2", Verifier.NUMBERPATTERN),
 			new Syntax(
 					BUNDLE_NAME,
-					"The " + BUNDLE_NAME + " header will be derived from the " + BUNDLE_SYMBOLICNAME + " header if not set. The " + BUNDLE_NAME + " header defines a readable name for this bundle. This should be a short, human-readable name that can contain spaces.",
+					"The "
+							+ BUNDLE_NAME
+							+ " header will be derived from the "
+							+ BUNDLE_SYMBOLICNAME
+							+ " header if not set. The "
+							+ BUNDLE_NAME
+							+ " header defines a readable name for this bundle. This should be a short, human-readable name that can contain spaces.",
 					BUNDLE_NAME + ": My Bundle", null, Verifier.ANYPATTERN),
 			new Syntax(
 					BUNDLE_NATIVECODE,
-					"The " + BUNDLE_NATIVECODE + " header contains a specification of native code libraries contained in this bundle.",
+					"The " + BUNDLE_NATIVECODE
+							+ " header contains a specification of native code libraries contained in this bundle.",
 					BUNDLE_NATIVECODE + ": /lib/http.DLL; osname = QNX; osversion = 3.1",
 					null,
 					Verifier.PATHPATTERN,
-					new Syntax(OSNAME_ATTRIBUTE, "The name of the operating system.", OSNAME_ATTRIBUTE + "=MacOS", Processor.join(
-							Verifier.OSNAMES, ","), Verifier.ANYPATTERN),
+					new Syntax(OSNAME_ATTRIBUTE, "The name of the operating system.", OSNAME_ATTRIBUTE + "=MacOS",
+							Processor.join(Verifier.OSNAMES, ","), Verifier.ANYPATTERN),
 					new Syntax(OSVERSION_ATTRIBUTE, "Operating System Version.", OSVERSION_ATTRIBUTE + "=3.1", null,
 							Verifier.ANYPATTERN),
-					new Syntax(LANGUAGE_ATTRIBUTE, "Language ISO 639 code.", LANGUAGE_ATTRIBUTE + "=nl", null, Verifier.ISO639),
+					new Syntax(LANGUAGE_ATTRIBUTE, "Language ISO 639 code.", LANGUAGE_ATTRIBUTE + "=nl", null,
+							Verifier.ISO639),
 					new Syntax(PROCESSOR_ATTRIBUTE, "Processor name.", PROCESSOR_ATTRIBUTE + "=x86", Processor.join(
 							Verifier.PROCESSORNAMES, ","), Verifier.ANYPATTERN),
 					new Syntax(
 							SELECTION_FILTER_ATTRIBUTE,
 							"The value of this attribute must be a filter expression that indicates if the native code clause should be selected or not.",
-							SELECTION_FILTER_ATTRIBUTE + "=\"(com.acme.windowing=win32)\"", null, Verifier.FILTERPATTERN)),
+							SELECTION_FILTER_ATTRIBUTE + "=\"(com.acme.windowing=win32)\"", null,
+							Verifier.FILTERPATTERN)),
 			new Syntax(
 					BUNDLE_REQUIREDEXECUTIONENVIRONMENT,
-					"The " + BUNDLE_REQUIREDEXECUTIONENVIRONMENT + " contains a comma-separated list of execution environments that must be present on the Service Platform.",
-					BUNDLE_REQUIREDEXECUTIONENVIRONMENT + ": CDC-1.0/Foundation-1.0", Processor.join(Verifier.EES, ","),
-					Verifier.ANYPATTERN),
+					"The "
+							+ BUNDLE_REQUIREDEXECUTIONENVIRONMENT
+							+ " contains a comma-separated list of execution environments that must be present on the Service Platform.",
+					BUNDLE_REQUIREDEXECUTIONENVIRONMENT + ": CDC-1.0/Foundation-1.0",
+					Processor.join(Verifier.EES, ","), Verifier.ANYPATTERN),
 
 			new Syntax(
 					BUNDLE_SYMBOLICNAME,
-					"The " + BUNDLE_SYMBOLICNAME + " header specifies a non-localizable name for this bundle. The bundle symbolic name together with a version must identify a unique bundle. The bundle symbolic name should be based on the reverse domain name convention.",
+					"The "
+							+ BUNDLE_SYMBOLICNAME
+							+ " header specifies a non-localizable name for this bundle. The bundle symbolic name together with a version must identify a unique bundle. The bundle symbolic name should be based on the reverse domain name convention.",
 					BUNDLE_SYMBOLICNAME + ": com.acme.foo.daffy;singleton:=true",
 					"${p}",
 					Verifier.SYMBOLICNAME,
@@ -136,19 +164,23 @@ public class Syntax implements Constants {
 
 			new Syntax(
 					BUNDLE_UPDATELOCATION,
-					"The " + BUNDLE_UPDATELOCATION + " header specifies a URL where an update for this bundle should come from. If the bundle is updated, this location should be used, if present, to retrieve the updated JAR file.",
+					"The "
+							+ BUNDLE_UPDATELOCATION
+							+ " header specifies a URL where an update for this bundle should come from. If the bundle is updated, this location should be used, if present, to retrieve the updated JAR file.",
 					BUNDLE_UPDATELOCATION + ": http://www.acme.com/Firewall/bundle.jar", null, Verifier.URLPATTERN),
 
-			new Syntax(BUNDLE_VENDOR,
-					"The " + BUNDLE_VENDOR + " header contains a human-readable description of the bundle vendor.",
-					BUNDLE_VENDOR + ": OSGi Alliance", null, null),
+			new Syntax(BUNDLE_VENDOR, "The " + BUNDLE_VENDOR
+					+ " header contains a human-readable description of the bundle vendor.", BUNDLE_VENDOR
+					+ ": OSGi Alliance", null, null),
 
 			new Syntax(BUNDLE_VERSION, "The " + BUNDLE_VERSION + " header specifies the version of this bundle.",
 					BUNDLE_VERSION + ": 1.23.4.build200903221000", null, Verifier.VERSION),
 
 			new Syntax(
 					DYNAMICIMPORT_PACKAGE,
-					"The " + DYNAMICIMPORT_PACKAGE + " header contains a comma-separated list of package names that should be dynamically imported when needed.",
+					"The "
+							+ DYNAMICIMPORT_PACKAGE
+							+ " header contains a comma-separated list of package names that should be dynamically imported when needed.",
 					DYNAMICIMPORT_PACKAGE + ": com.acme.plugin.*", "", Verifier.WILDCARDNAMEPATTERN, version,
 					bundle_symbolic_name, bundle_version),
 
@@ -158,9 +190,8 @@ public class Syntax implements Constants {
 					EXPORT_PACKAGE + ": org.osgi.util.tracker;version=1.3",
 					"${packages}",
 					null,
-					new Syntax(
-							NO_IMPORT_DIRECTIVE,
-							"By default, bnd makes all exports also imports. Adding a " + NO_IMPORT_DIRECTIVE + " to an exported package will make it export only.",
+					new Syntax(NO_IMPORT_DIRECTIVE, "By default, bnd makes all exports also imports. Adding a "
+							+ NO_IMPORT_DIRECTIVE + " to an exported package will make it export only.",
 							NO_IMPORT_DIRECTIVE + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 					new Syntax(
 							USES_DIRECTIVE,
@@ -173,8 +204,8 @@ public class Syntax implements Constants {
 							"A comma-separated list of class names that must be visible to an importer.",
 							INCLUDE_DIRECTIVE + "=\"Qux*\"", null, null), new Syntax(EXCLUDE_DIRECTIVE,
 							"A comma-separated list of class names that must not be visible to an importer.",
-							EXCLUDE_DIRECTIVE + "=\"QuxImpl*,BarImpl\"", null, Verifier.WILDCARDNAMEPATTERN), new Syntax(
-							IMPORT_DIRECTIVE, "Experimental.", "", null, null)
+							EXCLUDE_DIRECTIVE + "=\"QuxImpl*,BarImpl\"", null, Verifier.WILDCARDNAMEPATTERN),
+					new Syntax(IMPORT_DIRECTIVE, "Experimental.", "", null, null)
 
 			),
 			new Syntax(EXPORT_SERVICE, "Deprecated.", EXPORT_SERVICE + ": org.osgi.service.log.LogService",
@@ -192,17 +223,20 @@ public class Syntax implements Constants {
 									.compile("framework|bootclasspath")), bundle_version),
 			new Syntax(
 					IMPORT_PACKAGE,
-					"The " + IMPORT_PACKAGE + " header is normally calculated by bnd, however, you can decorate packages or skip packages. The header declares the imported packages for this bundle.",
+					"The "
+							+ IMPORT_PACKAGE
+							+ " header is normally calculated by bnd, however, you can decorate packages or skip packages. The header declares the imported packages for this bundle.",
 					IMPORT_PACKAGE + ": !com.exotic.*, com.acme.foo;vendor=ACME, *",
 					"${exported_packages}",
 					Verifier.WILDCARDNAMEPATTERN,
 					new Syntax(REMOVE_ATTRIBUTE_DIRECTIVE,
-							"Remove the given attributes from matching imported packages.", REMOVE_ATTRIBUTE_DIRECTIVE + "=foo.*",
-							null, Verifier.WILDCARDNAMEPATTERN),
+							"Remove the given attributes from matching imported packages.", REMOVE_ATTRIBUTE_DIRECTIVE
+									+ "=foo.*", null, Verifier.WILDCARDNAMEPATTERN),
 					new Syntax(
 							RESOLUTION_DIRECTIVE,
 							"Indicates that the packages must be resolved if the value is mandatory, which is the default. If mandatory packages cannot be resolved, then the bundle must fail to resolve. A value of optional indicates that the packages are optional.",
-							RESOLUTION_DIRECTIVE + "=optional", "mandatory,optional", Pattern.compile("mandatory|optional")
+							RESOLUTION_DIRECTIVE + "=optional", "mandatory,optional", Pattern
+									.compile("mandatory|optional")
 
 					), version, bundle_symbolic_name, bundle_version),
 
@@ -221,7 +255,8 @@ public class Syntax implements Constants {
 					new Syntax(
 							RESOLUTION_DIRECTIVE,
 							"If the value is mandatory (default) then the required bundle must exist for this bundle to resolve. If the value is optional, the bundle will resolve even if the required bundle does not exist.",
-							RESOLUTION_DIRECTIVE + "=optional", "mandatory,optional", Pattern.compile("mandatory|optional")),
+							RESOLUTION_DIRECTIVE + "=optional", "mandatory,optional", Pattern
+									.compile("mandatory|optional")),
 
 					new Syntax(
 							SPLIT_PACKAGE_DIRECTIVE,
@@ -237,8 +272,8 @@ public class Syntax implements Constants {
 					BUMPPOLICY + "==+0", "==+,=+0,+00", Pattern.compile("[=+-0][=+-0][=+-0]")),
 
 			new Syntax(CONDUIT,
-					"Allows a bnd file to point to files which will be returned when the bnd file is build.",
-					CONDUIT + "= jar/osgi.jar", null, null),
+					"Allows a bnd file to point to files which will be returned when the bnd file is build.", CONDUIT
+							+ "= jar/osgi.jar", null, null),
 
 			new Syntax(
 					DEPENDSON,
@@ -252,10 +287,9 @@ public class Syntax implements Constants {
 					"Regular expression for names of files and directories that should not be copied when discovered.",
 					DONOTCOPY + "=(CVS|\\.svn)", null, null),
 
-			new Syntax(
-					EXPORT_CONTENTS,
-					"Build the JAR in the normal way but use this header for the " + EXPORT_PACKAGE + " header manifest generation, same format.",
-					EXPORT_CONTENTS + "=!*impl*,*;version=3.0", null, null),
+			new Syntax(EXPORT_CONTENTS, "Build the JAR in the normal way but use this header for the " + EXPORT_PACKAGE
+					+ " header manifest generation, same format.", EXPORT_CONTENTS + "=!*impl*,*;version=3.0", null,
+					null),
 
 			new Syntax(FAIL_OK, "Return with an ok status (0) even if the build generates errors.", FAIL_OK + "=true",
 					"true,false", Verifier.TRUEORFALSEPATTERN),
@@ -277,31 +311,31 @@ public class Syntax implements Constants {
 							"Type name for plugin.", "type=bnd", "bnd", null), new Syntax("recipe",
 							"Recipe for the plugin, can use back references.", "recipe=\"bnd/$1.bnd\"", "bnd", null)),
 
-			new Syntax(MANIFEST, "Directly include a manifest, do not use the calculated manifest.",
-					MANIFEST + "=META-INF/MANIFEST.MF", null, null),
+			new Syntax(MANIFEST, "Directly include a manifest, do not use the calculated manifest.", MANIFEST
+					+ "=META-INF/MANIFEST.MF", null, null),
 
 			new Syntax(NOEXTRAHEADERS, "Do not generate housekeeping headers.", NOEXTRAHEADERS + "=true", "true,false",
 					Verifier.TRUEORFALSEPATTERN),
 
-			new Syntax(NOUSES, "Do not calculate the " + USES_DIRECTIVE + " directive on exports.", NOUSES + "=true", "true,false",
-					Verifier.TRUEORFALSEPATTERN),
-
-			new Syntax(PEDANTIC, "Warn about things that are not really wrong but still not right.", PEDANTIC + "=true",
+			new Syntax(NOUSES, "Do not calculate the " + USES_DIRECTIVE + " directive on exports.", NOUSES + "=true",
 					"true,false", Verifier.TRUEORFALSEPATTERN),
 
-			new Syntax(PLUGIN, "Define the plugins.",
-					PLUGIN + "=aQute.lib.spring.SpringComponent,aQute.lib.deployer.FileRepo;location=${repo}", null, null),
+			new Syntax(PEDANTIC, "Warn about things that are not really wrong but still not right.",
+					PEDANTIC + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
-			new Syntax(SERVICE_COMPONENT, "The header for Declarative Services.",
-					SERVICE_COMPONENT + "=com.acme.Foo?;activate='start'", null, null),
+			new Syntax(PLUGIN, "Define the plugins.", PLUGIN
+					+ "=aQute.lib.spring.SpringComponent,aQute.lib.deployer.FileRepo;location=${repo}", null, null),
+
+			new Syntax(SERVICE_COMPONENT, "The header for Declarative Services.", SERVICE_COMPONENT
+					+ "=com.acme.Foo?;activate='start'", null, null),
 
 			new Syntax(POM, "Generate a maven pom.", POM + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
 			new Syntax(RELEASEREPO, "Specifies to which repo the project should be released.", RELEASEREPO + "=cnf",
 					"${repos}", null),
 
-			new Syntax(REMOVEHEADERS, "Remove all headers that match the regular expressions.",
-					REMOVEHEADERS + "=FOO_.*,Proprietary", null, null),
+			new Syntax(REMOVEHEADERS, "Remove all headers that match the regular expressions.", REMOVEHEADERS
+					+ "=FOO_.*,Proprietary", null, null),
 			new Syntax(
 					RESOURCEONLY,
 					"Normally bnd warns when the JAR does not contain any classes, this option suppresses this warning.",
@@ -316,23 +350,21 @@ public class Syntax implements Constants {
 					SUB + "=com.acme.*.bnd", null, null),
 			new Syntax(RUNPROPERTIES, "Properties that are set as system properties before the framework is started.",
 					RUNPROPERTIES + "= foo=3, bar=4", null, null),
-			new Syntax(RUNSYSTEMPACKAGES, "Add additional system packages to a framework run.",
-					RUNSYSTEMPACKAGES + "=com.acme.foo,javax.management", null, null),
-			new Syntax(
-					RUNBUNDLES,
-					"Add additional bundles, specified with their bsn and version like in " + BUILDPATH + ", that are started before the project is run.",
-					RUNBUNDLES + "=osgi;version=\"[4.1,4.2)\", junit.junit, com.acme.foo;version=project", null,
+			new Syntax(RUNSYSTEMPACKAGES, "Add additional system packages to a framework run.", RUNSYSTEMPACKAGES
+					+ "=com.acme.foo,javax.management", null, null),
+			new Syntax(RUNBUNDLES, "Add additional bundles, specified with their bsn and version like in " + BUILDPATH
+					+ ", that are started before the project is run.", RUNBUNDLES
+					+ "=osgi;version=\"[4.1,4.2)\", junit.junit, com.acme.foo;version=project", null,
 					Verifier.SYMBOLICNAME, path_version),
-			new Syntax(RUNPATH, "Additional JARs for the VM path, should include the framework.",
-					RUNPATH + "=org.eclipse.osgi;version=3.5", null, null, path_version),
+			new Syntax(RUNPATH, "Additional JARs for the VM path, should include the framework.", RUNPATH
+					+ "=org.eclipse.osgi;version=3.5", null, null, path_version),
 			new Syntax(
 					RUNVM,
 					"Additional arguments for the VM invokation. Keys that start with a - are added as options, otherwise they are treated as -D properties for the VM.",
 					RUNVM + "=-Xmax=30", null, null),
-			new Syntax(
-					RUNPROGRAMARGS,
-					"Additional arguments for the program invokation.",
-					RUNPROGRAMARGS + "=/some/file /another/file some_argument", null, null)
+			new Syntax(RUNPROGRAMARGS, "Additional arguments for the program invokation.", RUNPROGRAMARGS
+					+ "=/some/file /another/file some_argument", null, null),
+			new Syntax(PACKAGE, "Defines the options for packaging", PACKAGE + "=" + PACKAGE_JPM, null, null)
 																	};
 
 	public final static Map<String,Syntax>	HELP					= new HashMap<String,Syntax>();

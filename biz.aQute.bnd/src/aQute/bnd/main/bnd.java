@@ -829,6 +829,11 @@ public class bnd extends Processor {
 
 		@Description("Profile name. Default no profile")
 		String profile();
+
+		@Description("Use JPM to deliver the -runbundles and -runpath. This will include the SHAs of the jars in the manifest. When JPM installs such a "
+				+ "JAR it will automatically fetchs these jars and place them in the proper place. The filepaths to these artifacts will contain a ${JPMREPO} "
+				+ "macro that points at the directory where the sha based named files are stored.")
+		boolean jpm();
 	}
 
 	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar")
@@ -859,7 +864,9 @@ public class bnd extends Processor {
 		}
 
 		String profile = opts.profile() == null ? "exec" : opts.profile();
-		
+		if (opts.jpm())
+			project.setProperty(Constants.PACKAGE, "jpm");
+
 		// TODO Not sure if we need a project actually?
 		project.build();
 
@@ -880,69 +887,26 @@ public class bnd extends Processor {
 				Workspace ws = project.getWorkspace();
 				project = new Project(ws, getBase(), file);
 				project.setProperty(PROFILE, profile);
-				pack(project, output, path.replaceAll(".bnd(run)?$", "") + ".jar", profile);
-			}
-		}
-	}
-
-	/*
-	 * Pack the project (could be a bndrun file) and save it on disk. Report
-	 * errors if they happen.
-	 */
-	static List<String>	ignore	= new ExtList<String>(BUNDLE_SPECIFIC_HEADERS);
-
-	private void pack(Project project, File output, String path, String profile) throws Exception {
-		Collection< ? extends Builder> subBuilders = project.getSubBuilders();
-
-		if (subBuilders.size() != 1) {
-			error("Project has multiple bnd files, please select one of the bnd files");
-			return;
-		}
-
-		Builder b = subBuilders.iterator().next();
-
-		ignore.remove(BUNDLE_SYMBOLICNAME);
-		ignore.remove(BUNDLE_VERSION);
-		ignore.add(SERVICE_COMPONENT);
-
-		try {
-			project.use(this);
-			ProjectLauncher launcher = project.getProjectLauncher();
-			launcher.getRunProperties().put("profile", profile); // TODO remove
-			launcher.getRunProperties().put(PROFILE, profile);
-			Jar jar = launcher.executable();
-			Manifest m = jar.getManifest();
-			Attributes main = m.getMainAttributes();
-			for (String key : project.getPropertyKeys(true)) {
-				if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
-					main.putValue(key, project.getProperty(key));
+				project.use(this);
+				if ( opts.jpm()) {
+					project.setProperty(Constants.PACKAGE, Constants.PACKAGE_JPM);
 				}
+				
+				try {
+					Jar jar = project.pack(profile);
+					path = path.replaceAll(".bnd(run)?$", "") + ".jar";
+					File out = output;
+					if (output.isDirectory())
+						out = new File(output, path);
+					jar.write(out);
+					jar.close();
+				}
+				catch (Exception e) {
+					messages.ForProject_File_FailedToCreateExecutableException_(project, path, e);
+				}
+				getInfo(project);
 			}
-
-			if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-				main.putValue(BUNDLE_SYMBOLICNAME, b.getBsn());
-
-			if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-				main.putValue(BUNDLE_SYMBOLICNAME, project.getName());
-
-			if (main.getValue(BUNDLE_VERSION) == null) {
-				main.putValue(BUNDLE_VERSION, Version.LOWEST.toString());
-				warning("No version set, uses 0.0.0");
-			}
-
-			jar.setManifest(m);
-			jar.calcChecksums(new String[] {
-					"SHA1", "MD5"
-			});
-			File out = output;
-			if (output.isDirectory())
-				out = new File(output, path);
-			jar.write(out);
 		}
-		catch (Exception e) {
-			messages.ForProject_File_FailedToCreateExecutableException_(project, path, e);
-		}
-		getInfo(project);
 	}
 
 	/**

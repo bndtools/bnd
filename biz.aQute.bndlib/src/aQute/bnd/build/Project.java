@@ -18,6 +18,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.action.*;
 import aQute.bnd.version.*;
+import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
 import aQute.libg.reporter.*;
@@ -2069,7 +2070,7 @@ public class Project extends Processor {
 		if (!packageInfoFile.exists()) {
 			return null;
 		}
-		
+
 		BufferedReader reader = IO.reader(packageInfoFile);
 		try {
 			String line;
@@ -2128,4 +2129,55 @@ public class Project extends Processor {
 	public Collection<Container> getClasspath() {
 		return classpath;
 	}
+
+	/**
+	 * Pack the project (could be a bndrun file) and save it on disk. Report
+	 * errors if they happen.
+	 */
+	static List<String>	ignore	= new ExtList<String>(BUNDLE_SPECIFIC_HEADERS);
+
+	public Jar pack(String profile) throws Exception {
+		Collection< ? extends Builder> subBuilders = getSubBuilders();
+
+		if (subBuilders.size() != 1) {
+			error("Project has multiple bnd files, please select one of the bnd files");
+			return null;
+		}
+
+		Builder b = subBuilders.iterator().next();
+
+		ignore.remove(BUNDLE_SYMBOLICNAME);
+		ignore.remove(BUNDLE_VERSION);
+		ignore.add(SERVICE_COMPONENT);
+
+		ProjectLauncher launcher = getProjectLauncher();
+		launcher.getRunProperties().put("profile", profile); // TODO remove
+		launcher.getRunProperties().put(PROFILE, profile);
+		Jar jar = launcher.executable();
+		Manifest m = jar.getManifest();
+		Attributes main = m.getMainAttributes();
+		for (String key : getPropertyKeys(true)) {
+			if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
+				main.putValue(key, getProperty(key));
+			}
+		}
+
+		if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
+			main.putValue(BUNDLE_SYMBOLICNAME, b.getBsn());
+
+		if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
+			main.putValue(BUNDLE_SYMBOLICNAME, getName());
+
+		if (main.getValue(BUNDLE_VERSION) == null) {
+			main.putValue(BUNDLE_VERSION, Version.LOWEST.toString());
+			warning("No version set, uses 0.0.0");
+		}
+
+		jar.setManifest(m);
+		jar.calcChecksums(new String[] {
+				"SHA1", "MD5"
+		});
+		return jar;
+	}
+
 }
