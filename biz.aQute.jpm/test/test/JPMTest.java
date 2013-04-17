@@ -110,7 +110,7 @@ public class JPMTest extends TestCase {
 		assertNotNull(artifact);
 	}*/
 	
-	public void test_userMode_cache() throws Exception {
+	/*public void test_userMode_cache() throws Exception {
 		JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
 		String[] args = {"-s", "/tmp/settings", "-c", "/tmp/cache"};
 		Main main = new Main(mock);
@@ -209,11 +209,11 @@ public class JPMTest extends TestCase {
 		main.run(args2);
 		exec = new File("/tmp/filemap");
 		assertFalse(exec.exists());
-	}
+	}*/
 	
-	/*public void testPierre() throws Exception {
-		String[] args = {"deinit2", "-f"};
+	public void testPierre() throws Exception {
+		String[] args = {"install", "8329977855209195AB4D82B68EEADC7BA614A053"};
 		Main main = new Main();
 		main.run(args);
-	}*/
+	}
 }

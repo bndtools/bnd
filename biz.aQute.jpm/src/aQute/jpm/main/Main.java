@@ -438,7 +438,7 @@ public class Main extends ReporterAdapter {
 		boolean staged = false;
 
 		if (opts.local() != null) {
-
+			jpm.setLocalInstall(true);
 			File f = IO.getFile(base, opts.local());
 			if (f.isFile()) {
 				trace("Found file %s", f);
@@ -771,6 +771,11 @@ public class Main extends ReporterAdapter {
 
 	@Description("Clean up any stale data, including any downloaded files not used in any commands")
 	public void _gc(GCOptions opts) throws Exception {
+		if (!jpm.hasAccess()) {
+			error("No write acces, might require administrator or root privileges (sudo in *nix)");
+			return;
+		}
+		
 		jpm.gc();
 	}
 

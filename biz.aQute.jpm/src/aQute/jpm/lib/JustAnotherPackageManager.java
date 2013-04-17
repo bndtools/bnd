@@ -25,6 +25,8 @@ import aQute.lib.settings.*;
 import aQute.libg.cryptography.*;
 import aQute.library.remote.*;
 import aQute.service.library.*;
+import aQute.service.library.Library.Revision;
+import aQute.service.library.Library.RevisionRef;
 import aQute.service.library.Library.*;
 import aQute.service.reporter.*;
 import aQute.struct.*;
@@ -85,10 +87,10 @@ public class JustAnotherPackageManager {
 	File				serviceDir;
 	File				service;
 	Platform			platform;
-	RemoteLibrary		library			= new RemoteLibrary(null);
+	XRemoteLibrary		library			= new XRemoteLibrary(null);
 	Reporter			reporter;
 	final List<Service>	startedByDaemon	= new ArrayList<Service>();
-	
+	boolean				localInstall	= false;
 	/**
 	 * Constructor
 	 * 
@@ -151,38 +153,45 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * Garbage collect any service and commands.
+	 * Garbage collect repository
 	 * 
 	 * @throws Exception
 	 */
 	public void gc() throws Exception {
+		HashSet<String> deps = new HashSet<String>();
+		
+		deps.add("service.jar");
+		
 		for (File cmd : commandDir.listFiles()) {
 			CommandData data = getData(CommandData.class, cmd);
-			// File repoFile = new File(data.repoFile);
-			// if (!repoFile.isFile()) {
-			// platform.remove(data);
-			// cmd.delete();
-			// }
+			for (String dep : data.dependencies) {
+				deps.add(new File(dep).getName());
+			}
 		}
 
 		for (File service : serviceDir.listFiles()) {
 			File dataFile = new File(service, "data");
-
 			ServiceData data = getData(ServiceData.class, dataFile);
-
-			// if (!repoFile.isFile()) {
-			// Service s = getService(service.getName());
-			// s.stop();
-			// if (data.work != null)
-			// IO.delete(new File(data.work));
-			// if (data.sdir != null)
-			// IO.delete(new File(data.sdir));
-			// if (data.log != null)
-			// IO.delete(new File(data.log));
-			// platform.remove(data);
-			// IO.delete(service);
-			// }
+			for (String dep : data.dependencies) {
+				deps.add(new File(dep).getName());
+			}
 		}
+		
+		int count = 0;
+		for(File f : repoDir.listFiles()) {
+			String name = f.getName();
+			if(!deps.contains(name)) {
+				if (	!name.endsWith(".json") ||
+						!deps.contains(name.substring(0, name.length()-".json".length()))
+				) { // Remove json files only if the bin is going as well
+					f.delete();
+					count ++;
+				} else {
+					
+				}
+			}
+		}
+		System.out.format("Garbage collection done (%d file(s) removed)%n",  count); 
 	}
 
 	/**
@@ -637,28 +646,44 @@ public class JustAnotherPackageManager {
 							reporter.trace("found %s", candidate);
 							dependencies.add(candidate);
 						}
-					}
-				}
-				/*else {
-					// TODO pierre this is the (pseudo code)
-					// do maven
-					Revision revision = library.getRevision(artifact.sha);
-					for ( Requirement req : revision.requirements ) {
-						if ( req.ns.equals("x-maven")) {
-							String coordinate = (String) req.ps.get("name:");
+						
+						for (ArtifactData data : dependencies) {
+							data.sync();
+							if (data.error != null) {
+								reporter.error("Download of %s failed: %s", data.name, data.error);
+							} else {
+								reporter.trace("adding dependency %s", data.file);
+								artifact.dependencies.add(data.file);
+							}
 						}
 					}
-				}*/
-
-				for (ArtifactData data : dependencies) {
-					data.sync();
-					if (data.error != null) {
-						reporter.error("Download of %s failed: %s", data.name, data.error);
-					} else {
-						reporter.trace("adding dependency %s", data.file);
-						artifact.dependencies.add(data.file);
+				} else if (!localInstall) { // No JPM-Classpath, falling back to server's revision
+					Iterable<RevisionRef> closure = library.getClosure(artifact.sha, false);
+					for (RevisionRef ref : closure) {
+						String sha = Hex.toHexString(ref.revision);
+						reporter.trace("Dependency: %s:%s@%s (%s)", ref.groupId, ref.artifactId, ref.version, sha);
+						
+						
+						// If dependency is not already in cache
+						File depBin = new File(repoDir, sha);
+						if (!depBin.exists()) {
+							File tmp = createTempFile(repoDir, "mtp", ".dep");
+							tmp.deleteOnExit();
+							try {
+								copy(ref.url.toURL(), tmp);
+								sha = Hex.toHexString(SHA1.digest(tmp).digest());
+								depBin = new File(repoDir, sha);
+								rename(tmp, depBin);
+							}
+							finally {
+								tmp.delete();
+							}
+						}
+						artifact.dependencies.add(depBin.toString());
 					}
 				}
+
+				
 			}
 
 			{
@@ -1097,7 +1122,7 @@ public class JustAnotherPackageManager {
 	}
 
 	public void setLibrary(URI url) {
-		library = new RemoteLibrary(url.toString());
+		library = new XRemoteLibrary(url.toString());
 	}
 
 	public void close() {
@@ -1177,8 +1202,12 @@ public class JustAnotherPackageManager {
 		return to;
 	}
 
-	public RemoteLibrary getLibrary() {
+	public XRemoteLibrary getLibrary() {
 		return library;
+	}
+
+	public void setLocalInstall(boolean b) {
+		localInstall = b;
 	}
 
 }
