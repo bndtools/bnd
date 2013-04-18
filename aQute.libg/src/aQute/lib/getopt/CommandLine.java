@@ -118,7 +118,7 @@ public class CommandLine {
 
 				// Check if we're running out of args
 
-				if (i > arguments.size()) {
+				if (i >= arguments.size()) {
 					if (!optional)
 						msg.MissingArgument_(patterns[i]);
 					return help(target, cmd, optionClass);
