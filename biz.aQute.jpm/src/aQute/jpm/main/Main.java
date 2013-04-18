@@ -1511,23 +1511,36 @@ public class Main extends ReporterAdapter {
 	 * Make the setup local
 	 */
 	@Arguments(arg = {
-		"user|global"
+		"[local|global]"
 	})
 	interface setupOptions extends Options {}
 
 	@Description("Make jpm local/global")
-	public void _setup(setupOptions opts) {
+	public void _setup(setupOptions opts) throws Exception {
 
-		
-		String type = opts._().remove(0);
-		if (type.equalsIgnoreCase("user") || type.equalsIgnoreCase("local")) {
-			trace("Making jpm local");
-			settings.put("jpm.runconfig", "local");
-		} else {
-			trace("Making jpm global");
-			settings.put("jpm.runconfig", "global");
+		if (opts._().size() == 0) { // Printing runconfig status
+			if (!settings.containsKey("jpm.runconfig") || settings.get("jpm.runconfig").equalsIgnoreCase("global")) {
+				out.println("jpm is running in global mode");
+			} else if (settings.get("jpm.runconfig").equalsIgnoreCase("local")) {
+				out.println("jpm is running in local mode");
+			} else {
+				out.format("Unrecognized run configuration: %s, defaulting to global mode%n", settings.get("jpm.runconfig"));
+			}
+			out.format(" - Bin directory: %s%n", jpm.getBinDir().getCanonicalPath());
+			out.format(" - Cache: %s%n", jpm.getHomeDir().getCanonicalPath());
+		} else { // Changing runconfig status
+			String type = opts._().remove(0);
+			if (type.equalsIgnoreCase("local")) {
+				trace("Making jpm local");
+				settings.put("jpm.runconfig", "local");
+			} else if (type.equalsIgnoreCase("global")) {
+				trace("Making jpm global");
+				settings.put("jpm.runconfig", "global");
+			} else {
+				error("Unrecognized argument for setup: %s. Possible choices are local or global", type);
+			}
+			settings.save();
 		}
-		settings.save();
 	}
 
 	/**

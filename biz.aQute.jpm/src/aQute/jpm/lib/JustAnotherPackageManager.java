@@ -110,6 +110,14 @@ public class JustAnotherPackageManager {
 		return (binDir.canWrite() && homeDir.canWrite());
 	}
 
+	public File getHomeDir() {
+		return homeDir;
+	}
+
+	public File getBinDir() {
+		return binDir;
+	}
+
 	public List<ServiceData> getServices() throws Exception {
 		return getServices(serviceDir);
 	}
