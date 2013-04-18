@@ -115,7 +115,7 @@ public class Main extends ReporterAdapter {
 	/**
 	 * Commands
 	 */
-	@Arguments(arg = "command")
+	@Arguments(arg = "[command]")
 	@Description("Manage the commands that have been installed so far")
 	public interface CommandOptions extends Options, ModifyCommand {
 		String create();
