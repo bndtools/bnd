@@ -856,6 +856,11 @@ public class Main extends ReporterAdapter {
 		jpm.setHomeDir(opts.cache() == null ? null : IO.getFile(opts.cache()));
 		jpm.setBinDir(opts.bindir() == null ? Platform.getPlatform(this).getBinDir() : IO.getFile(opts.bindir()));
 		
+		if (!jpm.hasAccess()) {
+			error("No write acces, might require administrator or root privileges (sudo in *nix)");
+			return;
+		}
+		
 		try {
 			String s = System.getProperty("java.class.path");
 			if (s == null || s.indexOf(File.pathSeparator) > 0) {
