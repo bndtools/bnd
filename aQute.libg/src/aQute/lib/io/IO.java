@@ -7,8 +7,22 @@ import java.security.*;
 import java.util.*;
 
 public class IO {
+	
 	static final public File	work	= new File(System.getProperty("user.dir"));
-	static final public File	home	= new File(System.getenv("HOME"));
+	static final public File 	home;
+	static {
+		File tmp = null;
+		try {
+			tmp = new File(System.getenv("HOME"));
+		} catch (Exception e) {
+		}
+		if (tmp == null) {
+			tmp = new File(System.getProperty("user.home"));
+		}
+		home = tmp;
+	}
+		
+	
 
 	public static void copy(Reader r, Writer w) throws IOException {
 		try {
