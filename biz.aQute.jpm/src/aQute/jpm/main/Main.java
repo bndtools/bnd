@@ -410,8 +410,8 @@ public class Main extends ReporterAdapter {
 		/**
 		 * Install a file and extra commands
 		 */
-
-		String local();
+		@Description("Install jar without resolving dependencies with the server")
+		boolean local();
 
 		@Description("The path to the log file")
 		String path(); // pl: not used
@@ -436,10 +436,16 @@ public class Main extends ReporterAdapter {
 
 		ArtifactData target = null;
 		boolean staged = false;
-
-		if (opts.local() != null) {
+		
+		if (opts._().isEmpty()) {
+			error("You need to specify a command name or artifact id");
+			return;
+		}
+		String key = opts._().get(0);
+		
+		if (opts.local()) {
 			jpm.setLocalInstall(true);
-			File f = IO.getFile(base, opts.local());
+			File f = IO.getFile(base, key);
 			if (f.isFile()) {
 				trace("Found file %s", f);
 				target = jpm.put(f.toURI());
@@ -447,8 +453,8 @@ public class Main extends ReporterAdapter {
 			} else {
 				try {
 					trace("Found url %s", f);
-					target = jpm.put(new URI(opts.local()));
-					target.coordinates = opts.local();
+					target = jpm.put(new URI(key));
+					target.coordinates = key;
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -460,11 +466,6 @@ public class Main extends ReporterAdapter {
 				return;
 			}
 		} else {
-			if (opts._().isEmpty()) {
-				error("You need to specify a command name or artifact id");
-				return;
-			}
-			String key = opts._().get(0);
 			if (isSha(key) && (target = jpm.get(Hex.toByteArray(key))) != null) {
 
 				// we've got to check for locally installed files
