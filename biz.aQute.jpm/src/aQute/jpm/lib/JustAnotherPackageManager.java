@@ -26,10 +26,10 @@ import aQute.lib.settings.*;
 import aQute.libg.cryptography.*;
 import aQute.library.remote.*;
 import aQute.service.library.*;
-import aQute.service.library.Library.Requirement;
+import aQute.service.library.Library.Phase;
+import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
 import aQute.service.library.Library.RevisionRef;
-import aQute.service.library.Library.*;
 import aQute.service.reporter.*;
 import aQute.struct.*;
 
