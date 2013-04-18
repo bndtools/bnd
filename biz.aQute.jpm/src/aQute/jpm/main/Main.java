@@ -1631,4 +1631,51 @@ public class Main extends ReporterAdapter {
 		this.jpm = jpm;
 	}
 	
-}
+	@Arguments(arg = {
+			"jar file | url", "..."
+	})
+	@Description("Provide information about a jar file")
+	interface WhatOptions extends Options {
+		@Description("Force one liner description for one jar")
+		boolean shortinfo();
+		
+		@Description("Force long information for multiple jars")
+		boolean longinfo();
+	}
+
+	@Description("Provide information about a jar file")
+	public void _what(WhatOptions opts) throws Exception {
+		if(opts._().size() == 0) {
+			error("Syntax: jpm what <jar file | url>");
+			return;
+		}
+		
+		String res;
+		if (opts._().size() == 1) {
+			res = jpm.what(opts._().get(0), opts.shortinfo());
+			if (res != null) {
+				System.out.println(res);
+			} else {
+				System.out.println("No information found for this file");
+			}
+		} else {
+			ArrayList<String> fails = new ArrayList<String>();
+			for (String key : opts._()) {
+				res = jpm.what(key, !opts.longinfo());
+				if (res != null) {
+					out.println(res);
+				} else {
+					fails.add(key);
+				}
+			}
+			
+			if (fails.size() > 0) {
+				out.println("No information found for:");
+				for (String fail : fails) {
+					out.println(" - " + fail);
+				}
+			}
+		}
+	}
+
+} 

@@ -6,6 +6,7 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
 import java.security.*;
+import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.jar.*;
@@ -25,6 +26,7 @@ import aQute.lib.settings.*;
 import aQute.libg.cryptography.*;
 import aQute.library.remote.*;
 import aQute.service.library.*;
+import aQute.service.library.Library.Requirement;
 import aQute.service.library.Library.Revision;
 import aQute.service.library.Library.RevisionRef;
 import aQute.service.library.Library.*;
@@ -1210,4 +1212,74 @@ public class JustAnotherPackageManager {
 		localInstall = b;
 	}
 
+	public String what(String key, boolean oneliner) throws Exception {
+		byte[] sha;
+		
+		Matcher m = SHA_P.matcher(key);
+		if (m.matches()) {
+			sha = Hex.toByteArray(key);
+		} else {
+			File jarfile = new File(key);
+			if (!jarfile.exists()) {
+				reporter.error("File does not exist: %s", jarfile.getCanonicalPath());
+			}
+			sha = SHA1.digest(jarfile).digest();
+		}
+
+		
+		Revision revision = library.getRevision(sha);
+		if (revision == null) {
+			return null;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		Formatter f = new Formatter(sb);
+		Justif justif = new Justif(100, 20, 70, 20, 75);
+		DateFormat dateFormat = DateFormat.getDateInstance();
+		
+		try {
+			if(oneliner) {
+				f.format("%s \t0- %s \t1- %s%n", revision.artifactId, createCoord(revision), dateFormat.format(new Date(revision.created)));
+			} else {
+				f.format("%n%n----------------------------%n");
+				f.format("Artifact: %s (%s)%n", revision.artifactId, revision.organization.name);
+				f.format("Coordinate: %s%n", createCoord(revision));
+				f.format("Created: %s%n", dateFormat.format(new Date(revision.created)));
+				f.format("Size: %d%n", revision.size);
+				f.format("Sha: %s%n", Hex.toHexString(revision._id));
+				f.format("URL: %s%n", createJpmLink(revision));
+				f.format("----------------------------%n");
+				f.format("Description:%n");
+				f.format("%s%n", revision.description);
+				f.format("----------------------------%n");
+				f.format("Dependencies:%n");
+				boolean flag = false;
+				Iterable<RevisionRef> closure = library.getClosure(revision._id, true);
+				for(RevisionRef dep : closure) {
+					f.format(" - %s \t2- %s \t3- %s%n", dep.name, createCoord(dep), dateFormat.format(new Date(dep.created)));
+					flag = true;
+				}
+				if (!flag) {
+					f.format("     None%n");
+				}
+				f.format("----------------------------%n");
+			}
+			f.flush();
+			justif.wrap(sb);
+			return sb.toString();
+		} finally {
+			f.close();
+		}
+			
+		
+	}
+	private String createCoord(Revision rev) {
+		return String.format("%s:%s@%s [%s]", rev.groupId, rev.artifactId, rev.version, rev.phase);
+	}
+	private String createCoord(RevisionRef rev) {
+		return String.format("%s:%s@%s [%s]", rev.groupId, rev.artifactId, rev.version, rev.phase);
+	}
+	private String createJpmLink(Revision rev) {
+		return String.format("http://jpm4j.org/#!/p/sha/%s//%s", Hex.toHexString(rev._id), rev.baseline);
+	}
 }

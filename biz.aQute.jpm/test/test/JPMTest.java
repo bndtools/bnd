@@ -212,7 +212,7 @@ public class JPMTest extends TestCase {
 	}*/
 	
 	public void testPierre() throws Exception {
-		String[] args = {"install", "8329977855209195AB4D82B68EEADC7BA614A053"};
+		String[] args = {"-et", "init"};
 		Main main = new Main();
 		main.run(args);
 	}
