@@ -633,9 +633,23 @@
    
    <extension point="bndtools.core.projectTemplates">
       <template name="Empty Project"
-         priority="-2147483648"
+         priority="-1000"
          class="bndtools.api.EmptyTemplate"
          doc="html/emptyTemplate.html"/>
+   </extension>
+   
+   <extension point="bndtools.core.projectTemplates">
+      <template name="Component Development (OSGi Declarative Services)"
+         priority="500"
+         class="org.bndtools.core.templates.project.ComponentTemplate"
+         doc="html/componentTemplate.xml"/>
+   </extension>
+   
+   <extension point="bndtools.core.projectTemplates">
+      <template name="Integration Testing"
+         priority="200"
+         class="org.bndtools.core.templates.project.IntegrationTestingTemplate"
+         doc="html/integrationTestTemplate.xml"/>
    </extension>
    
    <extension point="bndtools.core.launchTemplates">

@@ -131,7 +131,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
 
     private void loadData() {
         elements = loadConfigurationElements();
-        Arrays.sort(elements, new PriorityConfigurationElementCompator(false));
+        Arrays.sort(elements, new PriorityConfigurationElementCompator(true));
         viewer.setInput(elements);
 
     }
