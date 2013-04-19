@@ -258,7 +258,7 @@ public class Attrs implements Map<String,String> {
 
 		Attrs other = o;
 
-		if (size() != other.size())
+		if (other == null || size() != other.size())
 			return false;
 
 		if (isEmpty())
@@ -270,7 +270,10 @@ public class Attrs implements Map<String,String> {
 			return false;
 
 		for (String key : keySet()) {
-			if (!get(key).equals(other.get(key)))
+			Object value = get(key);
+			Object valueo = other.get(key);
+			if (!((value == null && valueo == null) || (value != null && 
+					value.isEqual(valueo))))
 				return false;
 		}
 		return true;
