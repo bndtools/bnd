@@ -9,8 +9,6 @@ public class Messages extends NLS {
     public static String RunBundlesPart_description;
     public static String RunBundlesPart_errorGettingBuilders;
     public static String RunBundlesPart_title;
-    public static String RunBundlesPart_warningHover;
-    public static String RunBundlesPart_warningKey;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

@@ -32,19 +32,32 @@ public class ProjectRunPage extends FormPage {
 
     private final BndEditModel model;
 
-    public static final IFormPageFactory FACTORY = new IFormPageFactory() {
+    public static final IFormPageFactory FACTORY_PROJECT = new IFormPageFactory() {
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
-            return new ProjectRunPage(editor, model, id, "Run");
+            return new ProjectRunPage(editor, model, id, "Run", false);
         }
 
         public boolean supportsMode(Mode mode) {
-            return mode == Mode.run;
+            return mode == Mode.project;
         }
     };
 
-    public ProjectRunPage(FormEditor editor, BndEditModel model, String id, String title) {
+    public static final IFormPageFactory FACTORY_BNDRUN = new IFormPageFactory() {
+        public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
+            return new ProjectRunPage(editor, model, id, "Run", true);
+        }
+
+        public boolean supportsMode(Mode mode) {
+            return mode == Mode.bndrun;
+        }
+    };
+
+    private final boolean supportsResolve;
+
+    public ProjectRunPage(FormEditor editor, BndEditModel model, String id, String title, boolean supportsResolve) {
         super(editor, id, title);
         this.model = model;
+        this.supportsResolve = supportsResolve;
     }
 
     @Override
@@ -141,16 +154,24 @@ public class ProjectRunPage extends FormPage {
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         vmArgsPart.getSection().setLayoutData(gd);
 
-        // Second column
-        RunRequirementsPart requirementsPart = new RunRequirementsPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
-        managedForm.addPart(requirementsPart);
-        requirementsPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
-        requirementsPart.getSection().addExpansionListener(new ResizeExpansionAdapter(requirementsPart.getSection()));
+        // SECOND COLUMN
+        if (supportsResolve) {
+            RunRequirementsPart requirementsPart = new RunRequirementsPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
+            managedForm.addPart(requirementsPart);
+            requirementsPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+            requirementsPart.getSection().addExpansionListener(new ResizeExpansionAdapter(requirementsPart.getSection()));
 
-        final RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
-        managedForm.addPart(runBundlesPart);
-        runBundlesPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
-        runBundlesPart.getSection().addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
+            RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE);
+            managedForm.addPart(runBundlesPart);
+            runBundlesPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
+            runBundlesPart.getSection().addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
+        } else {
+            RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+            managedForm.addPart(runBundlesPart);
+            runBundlesPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+            runBundlesPart.getSection().addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
+        }
+
     }
 
 }
