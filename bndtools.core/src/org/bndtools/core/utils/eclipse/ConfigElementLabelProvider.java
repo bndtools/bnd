@@ -1,4 +1,4 @@
-package org.bndtools.core.utils.jface;
+package org.bndtools.core.utils.eclipse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,20 +30,31 @@ public class ConfigElementLabelProvider extends StyledCellLabelProvider {
 
     @Override
     public void update(ViewerCell cell) {
-        IConfigurationElement element = (IConfigurationElement) cell.getElement();
-        cell.setText(element.getAttribute("name"));
-
         Image icon = defaultImg;
+        ImageDescriptor iconDescriptor = null;
 
-        String iconPath = element.getAttribute("icon");
-        if (iconPath != null) {
-            ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor().getName(), iconPath);
-            if (descriptor != null) {
-                icon = imgCache.get(descriptor);
-                if (icon == null) {
-                    icon = descriptor.createImage(device);
-                    imgCache.put(descriptor, icon);
-                }
+        Object data = cell.getElement();
+        if (data instanceof ConfigurationElementCategory) {
+            ConfigurationElementCategory category = (ConfigurationElementCategory) data;
+            cell.setText(category.toString());
+            iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/fldr_obj.gif");
+        } else if (data instanceof IConfigurationElement) {
+            IConfigurationElement element = (IConfigurationElement) data;
+            cell.setText(element.getAttribute("name"));
+
+            String iconPath = element.getAttribute("icon");
+            if (iconPath != null)
+                iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor().getName(), iconPath);
+        } else {
+            cell.setText("<<ERROR>>");
+            iconDescriptor = null;
+        }
+
+        if (iconDescriptor != null) {
+            icon = imgCache.get(iconDescriptor);
+            if (icon == null) {
+                icon = iconDescriptor.createImage(device);
+                imgCache.put(iconDescriptor, icon);
             }
         }
 
