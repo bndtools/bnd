@@ -652,6 +652,13 @@
          doc="html/integrationTestTemplate.xml"/>
    </extension>
    
+   <extension point="bndtools.core.projectTemplates">
+      <template name="API Project"
+         priority="400"
+         class="org.bndtools.core.templates.project.APITemplate"
+         doc="html/apiProjectTemplate.xml"/>
+   </extension>
+   
    <extension point="bndtools.core.launchTemplates">
       <template
          name="Apache Felix 4 with Gogo Shell"
