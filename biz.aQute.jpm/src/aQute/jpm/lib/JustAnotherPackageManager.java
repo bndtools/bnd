@@ -204,38 +204,7 @@ public class JustAnotherPackageManager {
 		System.out.format("Garbage collection done (%d file(s) removed)%n",  count); 
 	}
 
-	/**
-	 * Remove the JPM area.
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-
-	public String deinit(boolean force) throws Exception {
-		for ( CommandData d : getCommands(commandDir))  {
-			reporter.trace("delete cmd %s", d.name);
-			deleteCommand(d.name);
-		}
-		
-		for ( ServiceData sd : getServices()) {
-			reporter.trace("delete service %s", sd.name);
-			Service s = getService(sd.name);
-			if ( s != null)
-				s.remove();
-		}
-		
-		
-		reporter.trace("delete repo");
-		IO.delete(repoDir);
-		gc(); 
-		reporter.trace("delete repo, command, and service dir");
-		IO.delete(repoDir);
-		IO.delete(commandDir);
-		IO.delete(serviceDir);
-		return null;
-	}
-
-	public void deinit2(Appendable out, boolean force) throws Exception {
+	public void deinit(Appendable out, boolean force) throws Exception {
 		Settings settings = new Settings(platform.getConfigFile());
 		
 		if(!force) {
@@ -322,15 +291,16 @@ public class JustAnotherPackageManager {
 			for (File f : toDeleteServices) {
 				if (!f.canWrite()) {
 					reporter.error(PERMISSION_ERROR+" ("+f+")");
-					return;
 				}
 			}
 			for (File f : toDelete) {
 				if (!f.canWrite()) {
 					System.out.println(f);
 					reporter.error(PERMISSION_ERROR+" ("+f+")");
-					return;
 				}
+			}
+			if (reporter.getErrors().size() > 0) {
+				return;
 			}
 
 			for (File f : toDeleteServices) {

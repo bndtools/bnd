@@ -780,32 +780,9 @@ public class Main extends ReporterAdapter {
 		jpm.gc();
 	}
 
-	/**
-	 * Remove all traces.
-	 * 
-	 * @param opts
-	 * @throws Exception
-	 */
 	@Description("Remove jpm from the system by deleting all artifacts and metadata")
 	public void _deinit(deinitOptions opts) throws Exception {
-
-		if (opts._().size() != 0)
-			error("Deinit requires no other parameters: %s", opts._());
-		if (!jpm.hasAccess())
-			error("Requires write access to jpm area (sudo?)");
-
-		if (!isOk())
-			return;
-
-		String result = jpm.deinit(opts.force());
-		if (result == null)
-			return;
-
-		error("Cannot doinit due to %s", result);
-	}
-
-	public void _deinit2(deinitOptions opts) throws Exception {
-		jpm.deinit2(out, opts.force());
+		jpm.deinit(out, opts.force());
 	}
 	
 	/**
