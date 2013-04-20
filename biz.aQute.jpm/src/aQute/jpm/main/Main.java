@@ -1564,7 +1564,9 @@ public class Main extends ReporterAdapter {
 	/**
 	 * Alternative for command -r {@code <commandName>}
 	 */
-	@Arguments(arg = "command|service")
+	@Arguments(arg = {
+			"command|service",
+			"..."})
 	@Description("Remove the specified command or service from the system (equivalent to jpm <commmand|service> -r <command|service>)")
 	interface UninstallOptions extends Options {}
 	
@@ -1575,26 +1577,20 @@ public class Main extends ReporterAdapter {
 			return;
 		}
 		
-		if (opts._().isEmpty()) {
-			error("Syntax: jpm remove <command|service>");
-			return;
-		}
-
-		String name = opts._().get(0);
-		Service s = null;
-		
-		if(jpm.getCommand(name) != null) { // Try command first
-			trace("Corresponding command found, removing");
-			jpm.deleteCommand(name);
+		for(String name : opts._()) {
+			Service s = null;
+			if(jpm.getCommand(name) != null) { // Try command first
+				trace("Corresponding command found, removing");
+				jpm.deleteCommand(name);
+				
+			} else if((s = jpm.getService(name)) != null) { // No command matching, try service
+				trace("Corresponding service found, removing");
+				s.remove();
 			
-		} else if((s = jpm.getService(name)) != null) { // No command matching, try service
-			trace("Corresponding service found, removing");
-			s.remove();
-		
-		} else { // No match amongst commands & services
-			error("No matching command or service found");
-		}
-		
+			} else { // No match amongst commands & services
+				error("No matching command or service found for: %s", name);
+			}
+		}		
 	}
 	
 	@Arguments(arg="markdown|bash-completion")
