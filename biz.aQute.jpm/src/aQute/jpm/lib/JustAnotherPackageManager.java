@@ -1276,16 +1276,22 @@ public class JustAnotherPackageManager {
 		public CommandData current;
 		public RevisionRef best;
 	}
-	public void listUpdates(List<UpdateMemo> notFound, List<UpdateMemo> upToDate, List<UpdateMemo>toUpdate) throws Exception {
+	public void listUpdates(List<UpdateMemo> notFound, List<UpdateMemo> upToDate, List<UpdateMemo> toUpdate) throws Exception {
 
 		for (CommandData data : getCommands()) {
 			UpdateMemo memo = new UpdateMemo();
 			memo.current = data;
 
-			if (data.version == null) {
-				reporter.trace("No version for %s", data.name);
+			Matcher m = COORD_P.matcher(data.coordinates);
+			
+			if (data.version == null || !m.matches()) {
 				Revision revision = library.getRevision(data.sha);
+				if (revision == null) {
+					notFound.add(memo);
+					continue;
+				}
 				data.version = new Version(revision.version);
+				data.coordinates = getCoordinates(revision);
 				storeData(new File(commandDir, data.name), data);
 			}
 						
@@ -1296,10 +1302,8 @@ public class JustAnotherPackageManager {
 				best = selectBest(p.revisions, false, null);
 				count++;
 			}
-			if (count != 1 || best == null) { // Both of these conditions are
-												// very bad things, and should
-												// never happen
-				reporter.error("More than 1 program for coord: %s", data.coordinates);
+			if (count != 1 || best == null) { // Both of these conditions are very bad things, and should  never happen
+				notFound.add(memo);
 				continue;
 			}
 			Version bestVersion = new Version(best.version);
@@ -1316,21 +1320,27 @@ public class JustAnotherPackageManager {
 	}
 
 	public void update(UpdateMemo memo) throws Exception {
-		ArtifactData target = put(memo.best.url);
-		Iterable<RevisionRef> closure = library.getClosure(memo.best.revision, false);
-		
 		memo.current.coordinates = null;
 		memo.current.dependencies = new ArrayList<String>();
-		memo.current.sha = target.sha;
-		memo.current.dependencies.add((new File(repoDir, Hex.toHexString(target.sha))).getCanonicalPath());
+		
+		ArtifactData target = put(memo.best.url);
+		//Iterable<RevisionRef> closure = library.getClosure(memo.best.revision, false);
+		
+		
+		/*memo.current.dependencies.add((new File(repoDir, Hex.toHexString(target.sha))).getCanonicalPath());
 		
 		for(RevisionRef ref : closure) {
 			System.out.println(createCoord(ref));
 			memo.current.dependencies.add(installDependency(ref));
-		}
+		}*/
 		
-		memo.current.coordinates = getCoordinates(memo.best);
-		memo.current.version	 = new Version(memo.best.version);
+		memo.current.sha			= target.sha;
+		memo.current.coordinates	= getCoordinates(memo.best);
+		memo.current.version		= new Version(memo.best.version);
+		memo.current.dependencies	= target.dependencies;
+		memo.current.description	= target.description;
+		memo.current.time			= target.time;
+		
 		
 		platform.deleteCommand(memo.current);
 		createCommand(memo.current);

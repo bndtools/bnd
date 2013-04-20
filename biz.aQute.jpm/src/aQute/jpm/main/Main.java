@@ -471,7 +471,7 @@ public class Main extends ReporterAdapter {
 
 				// we've got to check for locally installed files
 				trace("locally installed file found");
-				target.coordinates = "sha:" + key.trim();
+				target.coordinates = "sha-" + key.trim();
 			} else {
 				staged = isSha(key) || opts.staged() || key.indexOf('@') > 0;
 				target = jpm.getCandidate(key, staged);
