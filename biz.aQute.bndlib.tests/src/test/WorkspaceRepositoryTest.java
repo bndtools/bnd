@@ -64,6 +64,14 @@ public class WorkspaceRepositoryTest extends TestCase {
 		assertNotNull(versions);
 		assertEquals(0, versions.size());
 	}
+	
+	public void testVersionsTranslateFromMavenStyle() throws Exception {
+		SortedSet<Version> versions = repo.versions("p5");
+		assertTrue(workspace.check());
+		assertNotNull(versions);
+		assertEquals(1, versions.size());
+		assertEquals("1.0.0.FOOBAR", versions.iterator().next().toString());
+	}
 
 	public void testGetName() {
 		assertEquals("Workspace ws-repo-test", repo.getName());

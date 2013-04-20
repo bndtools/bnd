@@ -8,6 +8,7 @@ import java.net.*;
 import java.security.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.regex.*;
 
 import org.osgi.framework.*;
 import org.osgi.framework.launch.*;
@@ -49,6 +50,11 @@ public class Launcher implements ServiceListener {
 
 			String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
 			if (path != null) {
+				Matcher matcher = Pattern.compile("^([\"'])(.*)\\1$").matcher(path);
+				if (matcher.matches()) {
+					path = matcher.group(2);
+				}
+
 				propertiesFile = new File(path).getAbsoluteFile();
 				if (!propertiesFile.isFile())
 					errorAndExit("Specified launch file `%s' was not found - absolutePath='%s'", path, propertiesFile.getAbsolutePath());

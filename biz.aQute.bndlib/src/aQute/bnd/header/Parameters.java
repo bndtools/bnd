@@ -185,7 +185,7 @@ public class Parameters implements Map<String,Attrs> {
 		if (this == other)
 			return true;
 
-		if (size() != other.size())
+		if (other == null || size() != other.size())
 			return false;
 
 		if (isEmpty())
@@ -197,7 +197,9 @@ public class Parameters implements Map<String,Attrs> {
 			return false;
 
 		for (String key : keySet()) {
-			if (!get(key).isEqual(other.get(key)))
+			Attrs value = get(key);
+			Attrs valueo = other.get(key);
+			if (!(value == valueo || (value != null && value.isEqual(valueo))))
 				return false;
 		}
 		return true;
