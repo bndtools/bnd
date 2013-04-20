@@ -2,6 +2,7 @@ package aQute.jpm.lib;
 
 import java.util.*;
 
+import aQute.bnd.version.*;
 import aQute.lib.data.*;
 import aQute.struct.*;
 
@@ -25,4 +26,5 @@ public class CommandData extends struct {
 	public String		coordinates;
 	public boolean		trace;
 
+	public Version		version;
 }

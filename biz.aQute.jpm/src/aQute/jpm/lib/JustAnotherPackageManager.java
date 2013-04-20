@@ -605,7 +605,6 @@ public class JustAnotherPackageManager {
 			artifact.description = main.getValue("Bundle-Description");
 			artifact.title = main.getValue("JPM-Name");
 
-			List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
 			{
 				if (main.getValue("JPM-Classpath") != null) {
 					Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
@@ -620,6 +619,7 @@ public class JustAnotherPackageManager {
 						reporter.trace("searching %s", key);
 						ArtifactData candidate = getCandidate(key, false);
 
+						List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
 						if (candidate == null) {
 							reporter.error("Missing dependency: %s", key);
 						} else {
@@ -642,27 +642,9 @@ public class JustAnotherPackageManager {
 					for (RevisionRef ref : closure) {
 						String sha = Hex.toHexString(ref.revision);
 						reporter.trace("Dependency: %s:%s@%s (%s)", ref.groupId, ref.artifactId, ref.version, sha);
-						
-						
-						// If dependency is not already in cache
-						File depBin = new File(repoDir, sha);
-						if (!depBin.exists()) {
-							File tmp = createTempFile(repoDir, "mtp", ".dep");
-							tmp.deleteOnExit();
-							try {
-								copy(ref.url.toURL(), tmp);
-								sha = Hex.toHexString(SHA1.digest(tmp).digest());
-								depBin = new File(repoDir, sha);
-								rename(tmp, depBin);
-							}
-							finally {
-								tmp.delete();
-							}
-						}
-						artifact.dependencies.add(depBin.toString());
+						artifact.dependencies.add(installDependency(ref));
 					}
 				}
-
 				
 			}
 
@@ -701,6 +683,27 @@ public class JustAnotherPackageManager {
 			jar.close();
 		}
 
+	}
+
+	private String installDependency(RevisionRef ref) throws Exception {
+		String sha = Hex.toHexString(ref.revision);
+
+		// If dependency is not already in cache
+		File depBin = new File(repoDir, sha);
+		if (!depBin.exists()) {
+			File tmp = createTempFile(repoDir, "mtp", ".dep");
+			tmp.deleteOnExit();
+			try {
+				copy(ref.url.toURL(), tmp);
+				sha = Hex.toHexString(SHA1.digest(tmp).digest());
+				depBin = new File(repoDir, sha);
+				rename(tmp, depBin);
+			}
+			finally {
+				tmp.delete();
+			}
+		}
+		return depBin.getCanonicalPath();
 	}
 
 	private void doCommand(Attrs attrs, CommandData data, ArtifactData artifact) {
@@ -982,7 +985,8 @@ public class JustAnotherPackageManager {
 			if (r != null) {
 				reporter.trace("downloading sha");
 				ArtifactData target = put(r.url);
-				target.coordinates = getCoordinates(r);
+				target.coordinates	= getCoordinates(r);
+				target.version		= new Version(r.version);		
 				return target;
 			}
 			reporter.trace("no sha found");
@@ -1037,7 +1041,8 @@ public class JustAnotherPackageManager {
 			if (target == null)
 				target = put(r.url);
 
-			target.coordinates = getCoordinates(r);
+			target.coordinates	= getCoordinates(r);
+			target.version 		= new Version(r.version);
 			return target;
 		}
 
@@ -1269,7 +1274,6 @@ public class JustAnotherPackageManager {
 
 	public class UpdateMemo {
 		public CommandData current;
-		public Version 	currentVersion;
 		public RevisionRef best;
 	}
 	public void listUpdates(List<UpdateMemo> notFound, List<UpdateMemo> upToDate, List<UpdateMemo>toUpdate) throws Exception {
@@ -1278,32 +1282,13 @@ public class JustAnotherPackageManager {
 			UpdateMemo memo = new UpdateMemo();
 			memo.current = data;
 
-			if (data.coordinates == null) {
-				reporter.trace("No coords for %s", data.name);
+			if (data.version == null) {
+				reporter.trace("No version for %s", data.name);
 				Revision revision = library.getRevision(data.sha);
-				data.coordinates = getCoordinates(revision);
-			}
-			Matcher m = COORD_P.matcher(data.coordinates);
-			if (!m.matches()) {
-				reporter.trace("Invalid coords for %s", data.name);
-				Revision revision = library.getRevision(data.sha);
-				if (revision == null) {
-					notFound.add(memo);
-					continue;
-				}
-				data.coordinates = getCoordinates(revision);
+				data.version = new Version(revision.version);
 				storeData(new File(commandDir, data.name), data);
-				m = COORD_P.matcher(data.coordinates);
 			}
-
-			// From here on down, coordinates should be correct (unless not
-			// found on server)
-			if (!m.matches()) {
-				System.out.println("Double fail :/ " + data.coordinates);
-			}
-			Version currentVersion = new Version(m.group(4));
-			memo.currentVersion = currentVersion;
-			
+						
 			Iterable< ? extends Program> programs = library.getPrograms(data.coordinates);
 			int count = 0;
 			RevisionRef best = null;
@@ -1319,7 +1304,7 @@ public class JustAnotherPackageManager {
 			}
 			Version bestVersion = new Version(best.version);
 
-			if (currentVersion.compareTo(bestVersion) < 0) { // Update available
+			if (data.version.compareTo(bestVersion) < 0) { // Update available
 				memo.best = best;
 				toUpdate.add(memo);
 			} else { // up to date
@@ -1328,5 +1313,31 @@ public class JustAnotherPackageManager {
 
 		}
 
+	}
+
+	public void update(UpdateMemo memo) throws Exception {
+		ArtifactData target = put(memo.best.url);
+		Iterable<RevisionRef> closure = library.getClosure(memo.best.revision, false);
+		
+		memo.current.coordinates = null;
+		memo.current.dependencies = new ArrayList<String>();
+		memo.current.sha = target.sha;
+		memo.current.dependencies.add((new File(repoDir, Hex.toHexString(target.sha))).getCanonicalPath());
+		
+		for(RevisionRef ref : closure) {
+			System.out.println(createCoord(ref));
+			memo.current.dependencies.add(installDependency(ref));
+		}
+		
+		memo.current.coordinates = getCoordinates(memo.best);
+		memo.current.version	 = new Version(memo.best.version);
+		
+		platform.deleteCommand(memo.current);
+		createCommand(memo.current);
+		
+		IO.delete(new File(commandDir, memo.current.name));
+		storeData(new File(commandDir, memo.current.name), memo.current);
+		
+		
 	}
 }

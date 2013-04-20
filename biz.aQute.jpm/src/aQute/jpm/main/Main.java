@@ -1677,7 +1677,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	interface UpdateOptions extends Options {
-		@Description("Make all possible update")
+		@Description("Apply all possible updates")
 		boolean all();
 	}
 	
@@ -1692,9 +1692,11 @@ public class Main extends ReporterAdapter {
 		ArrayList<UpdateMemo> toUpdate = new ArrayList<JustAnotherPackageManager.UpdateMemo>();
 		
 		jpm.listUpdates(notFound, upToDate, toUpdate);
-		
-		if (opts.all()) {
 			
+		if (opts.all()) {
+			for (UpdateMemo memo : toUpdate) {
+				jpm.update(memo);
+			}
 		} else {
 			Justif justif = new Justif(80, 20, 50);
 			StringBuilder sb = new StringBuilder();
@@ -1703,7 +1705,7 @@ public class Main extends ReporterAdapter {
 			if (upToDate.size() > 0) {
 				f.format("Up to date:%n");
 				for (UpdateMemo memo : upToDate) {
-					f.format(" - %s \t0- %s%n", memo.current.name, memo.currentVersion);
+					f.format(" - %s \t0- %s%n", memo.current.name, memo.current.version);
 				}
 				f.format("%n");
 			}
@@ -1711,7 +1713,7 @@ public class Main extends ReporterAdapter {
 			if (toUpdate.size() > 0) {
 				f.format("Update available:%n");
 				for (UpdateMemo memo : toUpdate) {
-					f.format(" - %s \t0- %s \t1-> %s%n", memo.current.name, memo.currentVersion, memo.best.version);
+					f.format(" - %s \t0- %s \t1-> %s%n", memo.current.name, memo.current.version, memo.best.version);
 				}
 				f.format("%n");
 			}
