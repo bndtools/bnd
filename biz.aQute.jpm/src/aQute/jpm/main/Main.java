@@ -15,6 +15,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
 import aQute.jpm.lib.Service;
+import aQute.jpm.lib.JustAnotherPackageManager.*;
 import aQute.jpm.platform.*;
 import aQute.jpm.platform.windows.*;
 import aQute.lib.base64.*;
@@ -491,7 +492,6 @@ public class Main extends ReporterAdapter {
 					error("Error in getting target %s", target.error);
 					return;
 				}
-				target.coordinates = key;
 			}
 		}
 		trace("Target from %s", Hex.toHexString(target.sha));
@@ -1703,4 +1703,58 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
+	interface UpdateOptions extends Options {
+		@Description("Make all possible update")
+		boolean all();
+	}
+	
+	public void _update(UpdateOptions opts) throws Exception {
+		if (!jpm.hasAccess()) {
+			error("No write acces, might require administrator or root privileges (sudo in *nix)");
+			return;
+		}
+		
+		ArrayList<UpdateMemo> notFound = new ArrayList<JustAnotherPackageManager.UpdateMemo>();
+		ArrayList<UpdateMemo> upToDate = new ArrayList<JustAnotherPackageManager.UpdateMemo>();
+		ArrayList<UpdateMemo> toUpdate = new ArrayList<JustAnotherPackageManager.UpdateMemo>();
+		
+		jpm.listUpdates(notFound, upToDate, toUpdate);
+		
+		if (opts.all()) {
+			
+		} else {
+			Justif justif = new Justif(80, 20, 50);
+			StringBuilder sb = new StringBuilder();
+			Formatter f = new Formatter(sb);
+			
+			if (upToDate.size() > 0) {
+				f.format("Up to date:%n");
+				for (UpdateMemo memo : upToDate) {
+					f.format(" - %s \t0- %s%n", memo.current.name, memo.currentVersion);
+				}
+				f.format("%n");
+			}
+			
+			if (toUpdate.size() > 0) {
+				f.format("Update available:%n");
+				for (UpdateMemo memo : toUpdate) {
+					f.format(" - %s \t0- %s \t1-> %s%n", memo.current.name, memo.currentVersion, memo.best.version);
+				}
+				f.format("%n");
+			}
+			
+			if (notFound.size() > 0) {
+				f.format("%nInformation incomplete (local install ?):%n");
+				for (UpdateMemo memo : notFound) {
+					f.format(" - %s%n", memo.current.name);
+				}
+			}
+
+			f.flush();
+			justif.wrap(sb);
+			
+			out.println(sb.toString());
+			f.close();
+		}
+	}
 } 

@@ -980,6 +980,14 @@ public class JustAnotherPackageManager {
 	}
 
 	public String getCoordinates(Revision r) {
+		StringBuilder sb = new StringBuilder(r.groupId).append(":").append(r.artifactId);
+		if (r.classifier != null)
+			sb.append(":").append(r.classifier);
+		sb.append("@").append(r.version);
+
+		return sb.toString();
+	}
+	private String getCoordinates(RevisionRef r) {
 		StringBuilder sb = new StringBuilder(r.groupId).append(":").append(r.artifactId).append(":");
 		if (r.classifier != null)
 			sb.append(r.classifier).append("@");
@@ -1004,7 +1012,7 @@ public class JustAnotherPackageManager {
 			if (r != null) {
 				reporter.trace("downloading sha");
 				ArtifactData target = put(r.url);
-				target.coordinates = key;
+				target.coordinates = getCoordinates(r);
 				return target;
 			}
 			reporter.trace("no sha found");
@@ -1015,7 +1023,6 @@ public class JustAnotherPackageManager {
 		if (f.isFile()) {
 			reporter.trace("is file");
 			ArtifactData target = put(f.toURI());
-			target.coordinates = f.getAbsolutePath();
 			return target;
 		}
 
@@ -1024,7 +1031,6 @@ public class JustAnotherPackageManager {
 			reporter.trace("looks like a url");
 			try {
 				ArtifactData target = put(new URI(key));
-				target.coordinates = key;
 				return target;
 			}
 			catch (Exception e) {
@@ -1061,7 +1067,7 @@ public class JustAnotherPackageManager {
 			if (target == null)
 				target = put(r.url);
 
-			target.coordinates = key;
+			target.coordinates = getCoordinates(r);
 			return target;
 		}
 
@@ -1289,5 +1295,68 @@ public class JustAnotherPackageManager {
 	}
 	private String createJpmLink(Revision rev) {
 		return String.format("http://jpm4j.org/#!/p/sha/%s//%s", Hex.toHexString(rev._id), rev.baseline);
+	}
+
+	public class UpdateMemo {
+		public CommandData current;
+		public Version 	currentVersion;
+		public RevisionRef best;
+	}
+	public void listUpdates(List<UpdateMemo> notFound, List<UpdateMemo> upToDate, List<UpdateMemo>toUpdate) throws Exception {
+
+		for (CommandData data : getCommands()) {
+			UpdateMemo memo = new UpdateMemo();
+			memo.current = data;
+
+			if (data.coordinates == null) {
+				reporter.trace("No coords for %s", data.name);
+				Revision revision = library.getRevision(data.sha);
+				data.coordinates = getCoordinates(revision);
+			}
+			Matcher m = COORD_P.matcher(data.coordinates);
+			if (!m.matches()) {
+				reporter.trace("Invalid coords for %s", data.name);
+				Revision revision = library.getRevision(data.sha);
+				if (revision == null) {
+					notFound.add(memo);
+					continue;
+				}
+				data.coordinates = getCoordinates(revision);
+				storeData(new File(commandDir, data.name), data);
+				m = COORD_P.matcher(data.coordinates);
+			}
+
+			// From here on down, coordinates should be correct (unless not
+			// found on server)
+			if (!m.matches()) {
+				System.out.println("Double fail :/ " + data.coordinates);
+			}
+			Version currentVersion = new Version(m.group(4));
+			memo.currentVersion = currentVersion;
+			
+			Iterable< ? extends Program> programs = library.getPrograms(data.coordinates);
+			int count = 0;
+			RevisionRef best = null;
+			for (Program p : programs) {
+				best = selectBest(p.revisions, false, null);
+				count++;
+			}
+			if (count != 1 || best == null) { // Both of these conditions are
+												// very bad things, and should
+												// never happen
+				reporter.error("More than 1 program for coord: %s", data.coordinates);
+				continue;
+			}
+			Version bestVersion = new Version(best.version);
+
+			if (currentVersion.compareTo(bestVersion) < 0) { // Update available
+				memo.best = best;
+				toUpdate.add(memo);
+			} else { // up to date
+				upToDate.add(memo);
+			}
+
+		}
+
 	}
 }

@@ -53,6 +53,10 @@ _jpm_completion_()
 	    COMPREPLY=( $(compgen -W "$(listServices)" -- ${cur}) )
 	    return 0
 	    ;;
+	setup)
+		COMPREPLY=( $(compgen -W "local global" -- ${cur}) )
+		return 0
+		;;
 	generate)
 		COMPREPLY=( $(compgen -W "markdown bash-completion" -- ${cur}) )
 		return 0
