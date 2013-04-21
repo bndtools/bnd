@@ -1,6 +1,5 @@
-package bndtools.templates;
+package org.bndtools.core.templates.project;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -56,8 +55,7 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
     }
 
     public void modifyInitialBndProject(IBndProject project) {
-        URL testSrc = IntegrationTestingTemplate.class.getResource("ExampleTest.java.txt");
-        project.addResource("src/org/example/tests/ExampleTest.java", testSrc);
+        project.addResource("src/org/example/tests/ExampleTest.java", IntegrationTestingTemplate.class.getResource("ExampleTest.java.txt"));
     }
 
     public boolean enableTestSourceFolder() {

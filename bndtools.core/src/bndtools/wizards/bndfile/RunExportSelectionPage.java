@@ -3,7 +3,7 @@ package bndtools.wizards.bndfile;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bndtools.core.utils.jface.ConfigElementLabelProvider;
+import org.bndtools.core.utils.eclipse.ConfigElementLabelProvider;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IOpenListener;

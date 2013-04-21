@@ -15,27 +15,4 @@
       />
    </extension>
 
-   <extension point="bndtools.core.projectTemplates">
-      <template name="Component Development (Declarative Services)"
-         priority="100"
-         class="bndtools.templates.ComponentTemplate"
-         doc="templateDocs/componentTemplate.xml"/>
-   </extension>
-   
-   <extension point="bndtools.core.projectTemplates">
-      <template name="Integration Testing"
-         priority="200"
-         class="bndtools.templates.IntegrationTestingTemplate"
-         doc="templateDocs/integrationTestTemplate.xml"/>
-   </extension>
-   
-   <!-- BND PLUGINS -->
-   <extension point="bndtools.core.bndPlugins">
-      <plugin
-         class="org.osgi.impl.bundle.bindex.BundleIndexerImpl"
-         icon="icons/cog.png"
-         name="Bundle Indexer (OBR)"
-         path="${repo}/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar"
-         />
-   </extension>
 </plugin>

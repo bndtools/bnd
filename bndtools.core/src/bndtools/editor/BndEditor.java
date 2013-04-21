@@ -95,6 +95,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     static final String CONTENT_PAGE = "__content_page";
     static final String BUILD_PAGE = "__build_page";
     static final String PROJECT_RUN_PAGE = "__project_run_page";
+    static final String BNDRUN_PAGE = "__bndrun_page";
     static final String TEST_SUITES_PAGE = "__test_suites_page";
     static final String SOURCE_PAGE = "__source_page";
 
@@ -111,7 +112,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
         pageFactories.put(DESCRIPTION_PAGE, BundleDescriptionPage.FACTORY);
         pageFactories.put(BUILD_PAGE, ProjectBuildPage.FACTORY);
-        pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY);
+        pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY_PROJECT);
+        pageFactories.put(BNDRUN_PAGE, ProjectRunPage.FACTORY_BNDRUN);
         pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
 
         IConfigurationElement[] configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "editorPages");
@@ -407,9 +409,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
             if (!isSubBundles && page.supportsMode(IFormPageFactory.Mode.bundle))
                 pages.add(pageId);
-            else if (isProjectFile && page.supportsMode(IFormPageFactory.Mode.build))
-                pages.add(pageId);
-            else if (isProjectFile && page.supportsMode(IFormPageFactory.Mode.run))
+            else if (isProjectFile && page.supportsMode(IFormPageFactory.Mode.project))
                 pages.add(pageId);
         }
 
@@ -419,7 +419,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     private List<String> getPagesBndRun() {
         List<String> pageIds = new ArrayList<String>(3);
         for (Entry<String,IFormPageFactory> pageEntry : pageFactories.entrySet()) {
-            if (pageEntry.getValue().supportsMode(IFormPageFactory.Mode.run))
+            if (pageEntry.getValue().supportsMode(IFormPageFactory.Mode.bndrun))
                 pageIds.add(pageEntry.getKey());
         }
         return pageIds;

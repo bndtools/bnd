@@ -5,25 +5,23 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
-
-import org.bndtools.core.utils.jface.ConfigElementLabelProvider;
+import org.bndtools.core.utils.eclipse.CategorisedPrioritisedConfigurationElementTreeContentProvider;
+import org.bndtools.core.utils.eclipse.ConfigElementLabelProvider;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
@@ -38,7 +36,6 @@ import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.utils.BundleUtils;
 import bndtools.utils.FileUtils;
-import bndtools.utils.PriorityConfigurationElementCompator;
 
 public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
     private static final ILogger logger = Logger.getLogger();
@@ -46,8 +43,8 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
     public static final String PROP_ELEMENT = "selectedElement";
     protected final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
-    private Table table;
-    private TableViewer viewer;
+    private Tree tree;
+    private TreeViewer viewer;
     private ScrolledFormText txtDescription;
 
     private IConfigurationElement[] elements;
@@ -67,34 +64,37 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
 
         new Label(container, SWT.NONE).setText("Select Template:");
 
-        table = new Table(container, SWT.BORDER | SWT.FULL_SELECTION);
+        tree = new Tree(container, SWT.BORDER | SWT.FULL_SELECTION);
         GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_table.heightHint = 100;
-        table.setLayoutData(gd_table);
+        tree.setLayoutData(gd_table);
 
-        viewer = new TableViewer(table);
+        viewer = new TreeViewer(tree);
 
         Label lblNewLabel = new Label(container, SWT.NONE);
         lblNewLabel.setText("Description:");
 
         txtDescription = new ScrolledFormText(container, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL, true);
-        txtDescription.setBackground(table.getBackground());
-        txtDescription.getFormText().setBackground(table.getBackground());
-        txtDescription.getFormText().setForeground(table.getForeground());
+        txtDescription.setBackground(tree.getBackground());
+        txtDescription.getFormText().setBackground(tree.getBackground());
+        txtDescription.getFormText().setForeground(tree.getForeground());
 
         GridData gd_txtDescription = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_txtDescription.heightHint = 100;
         txtDescription.setLayoutData(gd_txtDescription);
 
-        viewer.setContentProvider(new ArrayContentProvider());
+        viewer.setContentProvider(new CategorisedPrioritisedConfigurationElementTreeContentProvider(true));
         viewer.setLabelProvider(new ConfigElementLabelProvider(parent.getDisplay(), "icons/template.gif"));
 
         loadData();
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
-                IConfigurationElement element = (IConfigurationElement) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-                setSelectionFromConfigElement(element);
+                Object selected = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+                if (selected instanceof IConfigurationElement)
+                    setSelectionFromConfigElement((IConfigurationElement) selected);
+                else
+                    setSelectionFromConfigElement(null);
                 updateUI();
             }
         });
@@ -131,9 +131,8 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
 
     private void loadData() {
         elements = loadConfigurationElements();
-        Arrays.sort(elements, new PriorityConfigurationElementCompator(false));
         viewer.setInput(elements);
-
+        viewer.expandAll();
     }
 
     private void setSelectionFromConfigElement(IConfigurationElement element) {

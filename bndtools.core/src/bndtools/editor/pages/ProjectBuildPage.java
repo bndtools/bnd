@@ -61,7 +61,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
     private int problemSeverity = 0;
 
     private Image pageImage = null;
-    private ExtendedFormEditor editor;
+    private final ExtendedFormEditor editor;
 
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
@@ -69,7 +69,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         }
 
         public boolean supportsMode(Mode mode) {
-            return mode == Mode.build;
+            return mode == Mode.project;
         }
     };
 

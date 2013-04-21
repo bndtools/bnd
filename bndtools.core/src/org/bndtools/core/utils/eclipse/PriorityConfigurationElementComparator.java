@@ -1,22 +1,22 @@
-package bndtools.utils;
+package org.bndtools.core.utils.eclipse;
 
 import java.io.Serializable;
 import java.util.Comparator;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 
-public class PriorityConfigurationElementCompator implements Comparator<IConfigurationElement>, Serializable {
+public class PriorityConfigurationElementComparator implements Comparator<IConfigurationElement>, Serializable {
     private static final long serialVersionUID = -6344234922378864566L;
 
-    private final boolean invert;
+    private final boolean descending;
 
-    public PriorityConfigurationElementCompator(boolean invert) {
-        this.invert = invert;
+    public PriorityConfigurationElementComparator(boolean descending) {
+        this.descending = descending;
     }
 
     public int compare(IConfigurationElement o1, IConfigurationElement o2) {
-        int result = getPriority(o2) - getPriority(o1);
-        if (invert)
+        int result = getPriority(o1) - getPriority(o2);
+        if (descending)
             result *= -1;
 
         return result;
