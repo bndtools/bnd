@@ -272,7 +272,7 @@ public class CommandLine {
 			// The option is followed by an argument
 
 			if (!last) {
-				msg.Option__WithArgumentNotLastInAvvreviation_(name, name.charAt(0), getTypeDescriptor(type));
+				msg.Option__WithArgumentNotLastInAbbreviation_(name, name.charAt(0), getTypeDescriptor(type));
 				return;
 			}
 

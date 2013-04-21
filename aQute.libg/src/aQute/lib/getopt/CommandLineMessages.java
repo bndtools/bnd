@@ -6,7 +6,7 @@ import aQute.service.reporter.*;
 
 public interface CommandLineMessages extends Messages {
 
-	ERROR Option__WithArgumentNotLastInAvvreviation_(String name, char charAt, String typeDescriptor);
+	ERROR Option__WithArgumentNotLastInAbbreviation_(String name, char charAt, String typeDescriptor);
 
 	ERROR MissingArgument__(String name, char charAt);
 
