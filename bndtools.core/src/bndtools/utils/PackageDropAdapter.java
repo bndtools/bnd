@@ -14,8 +14,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -26,7 +24,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetEvent;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.ui.part.ResourceTransfer;
 
@@ -44,7 +41,7 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 
     @Override
     public boolean validateDrop(Object target, int operation, TransferData transferType) {
-        return TextTransfer.getInstance().isSupportedType(transferType) || ResourceTransfer.getInstance().isSupportedType(transferType) || LocalSelectionTransfer.getTransfer().isSupportedType(transferType);
+        return ResourceTransfer.getInstance().isSupportedType(transferType) || LocalSelectionTransfer.getTransfer().isSupportedType(transferType);
     }
 
     @Override
@@ -65,14 +62,7 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
         }
 
         List<T> newEntries = new ArrayList<T>();
-        if (data instanceof String) {
-            String stringData = (String) data;
-            StringTokenizer tok = new StringTokenizer(stringData, ",");
-            while (tok.hasMoreTokens()) {
-                String pkgName = tok.nextToken().trim();
-                newEntries.add(createNewEntry(pkgName));
-            }
-        } else if (data instanceof IResource[]) {
+        if (data instanceof IResource[]) {
             for (IResource resource : (IResource[]) data) {
                 IJavaElement javaElement = JavaCore.create(resource);
                 if (javaElement instanceof IPackageFragment) {
