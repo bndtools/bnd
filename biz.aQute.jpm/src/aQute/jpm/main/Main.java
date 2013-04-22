@@ -1788,7 +1788,11 @@ public class Main extends ReporterAdapter {
 			if (upToDate.size() > 0) {
 				f.format("Up to date:%n");
 				for (UpdateMemo memo : upToDate) {
-					f.format(" - %s \t0- %s%n", memo.current.name, memo.current.version);
+					if (memo.current instanceof ServiceData) {
+						f.format(" - %s (service) \t0- %s%n", memo.current.name, memo.current.version);
+					} else {
+						f.format(" - %s \t0- %s%n", memo.current.name, memo.current.version);
+					}	
 				}
 				f.format("%n");
 			}
@@ -1796,7 +1800,11 @@ public class Main extends ReporterAdapter {
 			if (toUpdate.size() > 0) {
 				f.format("Update available:%n");
 				for (UpdateMemo memo : toUpdate) {
-					f.format(" - %s \t0- %s \t1-> %s%n", memo.current.name, memo.current.version, memo.best.version);
+					if (memo.current instanceof ServiceData) {
+						f.format(" - %s (service) \t0- %s \t1-> %s%n", memo.current.name, memo.current.version, memo.best.version);
+					} else {
+						f.format(" - %s \t0- %s \t1-> %s%n", memo.current.name, memo.current.version, memo.best.version);
+					}
 				}
 				f.format("%n");
 			}
@@ -1808,7 +1816,12 @@ public class Main extends ReporterAdapter {
 					f.format("Information not found (try including staging versions with the --staged (-s) flag)%n");
 				}
 				for (UpdateMemo memo : notFound) {
-					f.format(" - %s%n", memo.current.name);
+					if (memo.current instanceof ServiceData) {
+						f.format(" - %s (service)%n", memo.current.name);
+					} else {
+						f.format(" - %s%n", memo.current.name);
+					}
+					
 				}
 			}
 

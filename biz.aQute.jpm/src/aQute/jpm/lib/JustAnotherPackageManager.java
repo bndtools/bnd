@@ -1294,9 +1294,9 @@ public class JustAnotherPackageManager {
 			data.version = new Version(revision.version);
 			data.coordinates = getCoordinates(revision);
 			if (data instanceof ServiceData) {
-				storeData(new File(new File(serviceDir, data.name), "data"), data);
+				storeData(IO.getFile(new File(serviceDir, data.name), "data"), data);
 			} else {
-				storeData(new File(commandDir, data.name), data);
+				storeData(IO.getFile(commandDir, data.name), data);
 			}
 		}
 
@@ -1340,13 +1340,13 @@ public class JustAnotherPackageManager {
 			Service service = getService((ServiceData)memo.current);
 			service.remove();
 			createService((ServiceData)memo.current);
-			IO.delete(new File(serviceDir, memo.current.name));
-			storeData(new File(serviceDir, memo.current.name), memo.current);
+			IO.delete(new File(IO.getFile(serviceDir, memo.current.name), "data"));
+			storeData(new File(IO.getFile(serviceDir, memo.current.name), "data"), memo.current);
 		} else {
 			platform.deleteCommand(memo.current);
 			createCommand(memo.current);
-			IO.delete(new File(commandDir, memo.current.name));
-			storeData(new File(commandDir, memo.current.name), memo.current);
+			IO.delete(IO.getFile(commandDir, memo.current.name));
+			storeData(IO.getFile(commandDir, memo.current.name), memo.current);
 		}
 		
 		
