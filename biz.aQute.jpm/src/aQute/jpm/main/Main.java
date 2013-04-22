@@ -26,6 +26,7 @@ import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.justif.*;
 import aQute.lib.settings.*;
+import aQute.libg.glob.*;
 import aQute.libg.reporter.*;
 import aQute.service.library.*;
 import aQute.service.library.Library.Program;
@@ -1577,20 +1578,46 @@ public class Main extends ReporterAdapter {
 			return;
 		}
 		
-		for(String name : opts._()) {
+		ArrayList<String> toDelete = new ArrayList<String>();
+		
+		ArrayList<String> names = new ArrayList<String>();
+		List<CommandData> commands = jpm.getCommands();
+		for (CommandData command : commands) {
+			names.add(command.name);
+		}
+		List<ServiceData> services = jpm.getServices();
+		for (ServiceData service : services) {
+			names.add(service.name);
+		}
+		
+		for (String pattern : opts._()) {
+			Glob glob = new Glob(pattern);
+			for (String name : names) {
+				if (glob.matcher(name).matches()) {
+					toDelete.add(name);
+				}
+			}
+		}
+		
+		int ccount = 0, scount = 0;
+		
+		for(String name : toDelete) {
 			Service s = null;
 			if(jpm.getCommand(name) != null) { // Try command first
 				trace("Corresponding command found, removing");
 				jpm.deleteCommand(name);
+				ccount ++;
 				
 			} else if((s = jpm.getService(name)) != null) { // No command matching, try service
 				trace("Corresponding service found, removing");
 				s.remove();
+				scount ++;
 			
 			} else { // No match amongst commands & services
 				error("No matching command or service found for: %s", name);
 			}
-		}		
+		}	
+		out.format("%d command(s) removed and %d service(s) removed%n", ccount, scount);
 	}
 	
 	@Arguments(arg="markdown|bash-completion")
@@ -1676,9 +1703,15 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
+	@Arguments(arg = {
+			"[command|service]",
+			"..."
+	})
 	interface UpdateOptions extends Options {
 		@Description("Apply all possible updates")
 		boolean all();
+		@Description("Include staging versions for updates")
+		boolean staged();
 	}
 	
 	public void _update(UpdateOptions opts) throws Exception {
@@ -1691,8 +1724,33 @@ public class Main extends ReporterAdapter {
 		ArrayList<UpdateMemo> upToDate = new ArrayList<JustAnotherPackageManager.UpdateMemo>();
 		ArrayList<UpdateMemo> toUpdate = new ArrayList<JustAnotherPackageManager.UpdateMemo>();
 		
-		jpm.listUpdates(notFound, upToDate, toUpdate);
-			
+		ArrayList<CommandData> datas = new ArrayList<CommandData>();
+		if (opts._().size() == 0) {
+			datas.addAll(jpm.getCommands());
+			datas.addAll(jpm.getServices());
+		} else {
+			for (String name : opts._()) {
+				CommandData data = jpm.getCommand(name);
+				if (data == null) {
+					Service service = jpm.getService(name);
+					if (service != null) {
+						data =	service.getServiceData();
+					}
+				}
+				if (data == null) {
+					error("%s is not a command nor a service", name);
+				} else {
+					datas.add(data);
+				}
+			}
+		}
+		
+		
+		
+		for (CommandData data : datas) {
+			jpm.listUpdates(notFound, upToDate, toUpdate, data, opts.staged());
+		}
+		
 		if (opts.all()) {
 			for (UpdateMemo memo : toUpdate) {
 				jpm.update(memo);
@@ -1720,7 +1778,11 @@ public class Main extends ReporterAdapter {
 			}
 			
 			if (notFound.size() > 0) {
-				f.format("Information not found (local install ?):%n");
+				if (opts.staged()) {
+					f.format("Information not found (local install ?):%n");
+				} else {
+					f.format("Information not found (try including staging versions with the --staged (-s) flag)%n");
+				}
 				for (UpdateMemo memo : notFound) {
 					f.format(" - %s%n", memo.current.name);
 				}

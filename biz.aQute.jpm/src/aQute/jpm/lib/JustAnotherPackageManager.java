@@ -1276,47 +1276,43 @@ public class JustAnotherPackageManager {
 		public CommandData current;
 		public RevisionRef best;
 	}
-	public void listUpdates(List<UpdateMemo> notFound, List<UpdateMemo> upToDate, List<UpdateMemo> toUpdate) throws Exception {
+	public void listUpdates(List<UpdateMemo> notFound, List<UpdateMemo> upToDate, List<UpdateMemo> toUpdate, CommandData data, boolean staged) throws Exception {
 
-		for (CommandData data : getCommands()) {
-			UpdateMemo memo = new UpdateMemo();
-			memo.current = data;
+		UpdateMemo memo = new UpdateMemo();
+		memo.current = data;
 
-			Matcher m = COORD_P.matcher(data.coordinates);
-			
-			if (data.version == null || !m.matches()) {
-				Revision revision = library.getRevision(data.sha);
-				if (revision == null) {
-					notFound.add(memo);
-					continue;
-				}
-				data.version = new Version(revision.version);
-				data.coordinates = getCoordinates(revision);
-				storeData(new File(commandDir, data.name), data);
-			}
-						
-			Iterable< ? extends Program> programs = library.getPrograms(data.coordinates);
-			int count = 0;
-			RevisionRef best = null;
-			for (Program p : programs) {
-				best = selectBest(p.revisions, false, null);
-				count++;
-			}
-			if (count != 1 || best == null) { // Both of these conditions are very bad things, and should  never happen
+		Matcher m = COORD_P.matcher(data.coordinates);
+
+		if (data.version == null || !m.matches()) {
+			Revision revision = library.getRevision(data.sha);
+			if (revision == null) {
 				notFound.add(memo);
-				continue;
+				return;
 			}
-			Version bestVersion = new Version(best.version);
-
-			if (data.version.compareTo(bestVersion) < 0) { // Update available
-				memo.best = best;
-				toUpdate.add(memo);
-			} else { // up to date
-				upToDate.add(memo);
-			}
-
+			data.version = new Version(revision.version);
+			data.coordinates = getCoordinates(revision);
+			storeData(new File(commandDir, data.name), data);
 		}
 
+		Iterable< ? extends Program> programs = library.getPrograms(data.coordinates);
+		int count = 0;
+		RevisionRef best = null;
+		for (Program p : programs) {
+			best = selectBest(p.revisions, staged, null);
+			count++;
+		}
+		if (count != 1 || best == null) {
+			notFound.add(memo);
+			return;
+		}
+		Version bestVersion = new Version(best.version);
+
+		if (data.version.compareTo(bestVersion) < 0) { // Update available
+			memo.best = best;
+			toUpdate.add(memo);
+		} else { // up to date
+			upToDate.add(memo);
+		}
 	}
 
 	public void update(UpdateMemo memo) throws Exception {
