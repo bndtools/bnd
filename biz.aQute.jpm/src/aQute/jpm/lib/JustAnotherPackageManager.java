@@ -339,16 +339,18 @@ public class JustAnotherPackageManager {
 		}
 		f.format(" - Services:%n");
 		for (ServiceData sdata : getServices(new File(cache, "service"))) {
-			f.format("    * %s \t0 service directory for \"%s\"%n", sdata.sdir, sdata.name);
-			toDeleteServices.add(new File(sdata.sdir));
-			if(stopServices) {
-				Service s = getService(sdata);
-				try {
-					s.stop();
+			if (sdata != null) {
+				f.format("    * %s \t0 service directory for \"%s\"%n", sdata.sdir, sdata.name);
+				toDeleteServices.add(new File(sdata.sdir));
+				if(stopServices) {
+					Service s = getService(sdata);
+					try {
+						s.stop();
+					}
+					catch (Exception e) {}
 				}
-				catch (Exception e) {}
+				count++;
 			}
-			count++;
 		}
 		f.format("%n");
 		
@@ -545,8 +547,8 @@ public class JustAnotherPackageManager {
 			return codec.dec().from(dataFile).get(clazz);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("Cannot read data file "+dataFile+": " + IO.collect(dataFile));
+			//e.printStackTrace();
+			//System.out.println("Cannot read data file "+dataFile+": " + IO.collect(dataFile));
 			return null;
 		}
 	}
@@ -1291,7 +1293,11 @@ public class JustAnotherPackageManager {
 			}
 			data.version = new Version(revision.version);
 			data.coordinates = getCoordinates(revision);
-			storeData(new File(commandDir, data.name), data);
+			if (data instanceof ServiceData) {
+				storeData(new File(new File(serviceDir, data.name), "data"), data);
+			} else {
+				storeData(new File(commandDir, data.name), data);
+			}
 		}
 
 		Iterable< ? extends Program> programs = library.getPrograms(data.coordinates);
@@ -1320,21 +1326,29 @@ public class JustAnotherPackageManager {
 		memo.current.dependencies = new ArrayList<String>();
 		
 		ArtifactData target = put(memo.best.url);
-		memo.current.dependencies.add((new File(repoDir, Hex.toHexString(target.sha))).getCanonicalPath());
 		
-		memo.current.sha			= target.sha;
 		memo.current.coordinates	= getCoordinates(memo.best);
 		memo.current.version		= new Version(memo.best.version);
+		target.sync();
+		memo.current.sha			= target.sha;
 		memo.current.dependencies	= target.dependencies;
+		memo.current.dependencies.add((new File(repoDir, Hex.toHexString(target.sha))).getCanonicalPath());	
 		memo.current.description	= target.description;
 		memo.current.time			= target.time;
 		
+		if (memo.current instanceof ServiceData) {
+			Service service = getService((ServiceData)memo.current);
+			service.remove();
+			createService((ServiceData)memo.current);
+			IO.delete(new File(serviceDir, memo.current.name));
+			storeData(new File(serviceDir, memo.current.name), memo.current);
+		} else {
+			platform.deleteCommand(memo.current);
+			createCommand(memo.current);
+			IO.delete(new File(commandDir, memo.current.name));
+			storeData(new File(commandDir, memo.current.name), memo.current);
+		}
 		
-		platform.deleteCommand(memo.current);
-		createCommand(memo.current);
-		
-		IO.delete(new File(commandDir, memo.current.name));
-		storeData(new File(commandDir, memo.current.name), memo.current);
 		
 		
 	}
