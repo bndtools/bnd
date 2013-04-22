@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +31,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.osgi.framework.Version;
 import bndtools.api.ILogger;
+import bndtools.utils.Function;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -41,6 +43,8 @@ public class Central {
     private static final ILogger logger = Logger.getLogger();
 
     static Workspace workspace = null;
+    static final List<Function<Workspace,Void>> workspaceInitCallbackQueue = new LinkedList<Function<Workspace,Void>>();
+
     static WorkspaceR5Repository r5Repository = null;
     static RepositoryPlugin workspaceRepo = null;
 
@@ -210,6 +214,12 @@ public class Central {
             // The workspace has been initialized fully, set the field now
             workspace = newWorkspace;
 
+            // Call the queued workspace init callbacks
+            while (!workspaceInitCallbackQueue.isEmpty()) {
+                Function<Workspace,Void> callback = workspaceInitCallbackQueue.remove(0);
+                callback.run(workspace);
+            }
+
             return workspace;
         } catch (final Exception e) {
             if (newWorkspace != null) {
@@ -217,6 +227,13 @@ public class Central {
             }
             throw e;
         }
+    }
+
+    public synchronized static void onWorkspaceInit(Function<Workspace,Void> callback) {
+        if (workspace != null)
+            callback.run(workspace);
+        else
+            workspaceInitCallbackQueue.add(callback);
     }
 
     private static File getWorkspaceDirectory() throws CoreException {

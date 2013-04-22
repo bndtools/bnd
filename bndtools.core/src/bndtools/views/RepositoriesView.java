@@ -61,6 +61,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.ServiceRegistration;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryListenerPlugin;
@@ -68,6 +69,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import bndtools.Activator;
+import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
@@ -76,6 +78,7 @@ import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.RepositoryUtils;
+import bndtools.utils.Function;
 import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
@@ -256,7 +259,17 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         createContextMenu();
 
         // LOAD
-        viewer.setInput(RepositoryUtils.listRepositories(true));
+        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+            public Void run(Workspace a) {
+                final List<RepositoryPlugin> repositories = RepositoryUtils.listRepositories(true);
+                SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                    public void run() {
+                        viewer.setInput(repositories);
+                    }
+                });
+                return null;
+            }
+        });
 
         // LAYOUT
         GridLayout layout = new GridLayout(1, false);
