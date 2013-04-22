@@ -43,4 +43,5 @@ public class BuildPathPart extends RepositoryBundleSelectionPart {
         wizard.setSelectionPageTitle("Project Build Path");
         wizard.setSelectionPageDescription("Select bundles to be added to the project build path for compilation.");
     }
+
 }

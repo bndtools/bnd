@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.bndtools.core.ui.wizards.jpm.AddJpmDependenciesWizard;
 import org.eclipse.core.resources.IFile;
@@ -63,6 +64,8 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.version.Version;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
@@ -297,7 +300,21 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                     AddJpmDependenciesWizard wizard = new AddJpmDependenciesWizard(uri);
                     WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
                     if (dialog.open() == Window.OK) {
-                        // TODO
+                        Set<ResourceDescriptor> resources = wizard.getResult();
+                        List<VersionedClause> newBundles = new ArrayList<VersionedClause>(resources.size());
+                        for (ResourceDescriptor resource : resources) {
+                            Attrs attrs = new Attrs();
+                            attrs.put(Constants.VERSION_ATTRIBUTE, resource.version != null ? resource.version.toString() : Version.emptyVersion.toString());
+                            VersionedClause clause = new VersionedClause(resource.bsn, attrs);
+                            newBundles.add(clause);
+                        }
+
+                        if (!newBundles.isEmpty()) {
+                            bundles.addAll(newBundles);
+                            viewer.add(newBundles.toArray(new Object[newBundles.size()]));
+                            markDirty();
+                        }
+                        return true;
                     }
                     return false;
                 } catch (URISyntaxException e) {
