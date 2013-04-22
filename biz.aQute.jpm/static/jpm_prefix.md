@@ -1,6 +1,6 @@
 # jpm
 
-jpm is the main command. It must be installed to be useful, see [install](#/md/install). The command maintains a repository on a location that depends on the type of the OS. For example, on MacOS the local information is in the `/Library/Java/PackageManager` directory. 
+jpm is the main command. It must be installed to be useful, see [install](#!/md/install). The command maintains a repository on a location that depends on the type of the OS. For example, on MacOS the local information is in the `/Library/Java/PackageManager` directory. 
 
 The purpose of the jpm command is to maintain a set of commands and services available via the command line.
 
@@ -64,4 +64,15 @@ There are a number of recurring types used in the command line.
 
 <pre>coordinates ::= NAME | maven
 maven         ::= NAME ':' NAME ( ':' NAME ) ( '@' VERSION )</pre>
+
+## Configuration
+Several properties can be configured for jpm. The preferred method to configure jpm is via jpm itself:
+
+    $ jpm settings <key>=<value>
+
+* `jpm.runconfig=<local|global>` - Switch between local (user) and global run mode (also possible with `jpm setup <local|global>`).
+* `jpm.cache.<local|global>=...` - Specify cache directory for local/global run mode.
+* `jpm.bin.<local|global>=...` - Specify bin directory for local/global run mode.
+
+Current settings can be displayed with the `jpm settings` command without argument. 
 
