@@ -13,14 +13,13 @@
 	        <echo message="This task executed AFTER compilation."/>
 	     </target>
 	-->
-
+	
 	<!-- 
 	     INIT
 	     The target is a dependent of all other targets.
 	     It's purpose is to set up the environment only once
 	     and avoid it being repeatedly done for each antcall.
 	-->
-
 	<target name="init" unless="initialized">
 		<!-- Initialise some basic properties -->
 		<tstamp>
@@ -29,8 +28,9 @@
 		<dirname property="projectdir" file="${ant.file}" />
 		<dirname property="workspacedir" file="${projectdir}" />
 
-		<!-- Define the location of bnd -->
-		<path id="bnd-classpath" location="${workspacedir}/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd-2.1.0.jar" />
+		<!-- Define the classpath of bnd (location is defined in build.properties) -->
+		<property file="${workspacedir}/cnf/build.properties"/>
+		<path id="bnd-classpath" location="${workspacedir}/cnf/${bnd.location}" />
 
 		<!-- Load bnd and prepare the workspace -->
 		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />

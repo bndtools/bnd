@@ -4,14 +4,26 @@
 
    <extension point="bndtools.core.cnfTemplates">
       <template
+         id="jpm"
+         name="JPM4J"
+         doc="templateDocs/JpmConfig.xml"
+         paths="templates/cnfs/jpm"
+         priority="20"
+         managed="ext/.*,plugins/.*,build-template.xml,build.properties"
+         ignores="/cache/"
+         version="0"
+         category="AAA/Core"
+      />
+      <template
          id="default"
          name="Default Configuration"
          doc="templateDocs/DefaultConfig.xml"
          paths="templates/cnfs/default"
          priority="15"
-         managed="ext/.*,plugins/.*,build-template.xml"
+         managed="ext/.*,plugins/.*,build-template.xml,build.properties"
          ignores="/cache/"
          version="0"
+         category="AAA/Core"
       />
    </extension>
 

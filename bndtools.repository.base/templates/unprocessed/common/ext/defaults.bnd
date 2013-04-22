@@ -16,6 +16,8 @@ target:       ${project}/${target-dir}
 build:        ${workspace}/cnf
 p:            ${basename;${project}}
 project.name: ${p}
+plugin-dir:   ${build}/plugins
+
 
 # Java Compiler Options
 java:         java

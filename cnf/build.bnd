@@ -2,12 +2,16 @@
 base-version: 2.2.0.DEV
 master-version: ${base-version}-${tstamp;yyyyMMdd-HHmm}-${Git-Descriptor}
 
-bndlib-version-base:    2.2
-bndlib-version-ceiling: 2.3
+# Version of bnd/bndlib to use consistently throughout the build
+# NB. this must be specified as full M.m.u version (but no qualifier)
+bndlib-version-base:    2.2.0
+bndlib-version-ceiling: 2.3.0
 bndlib: biz.aQute.bndlib;version='[${bndlib-version-base},${bndlib-version-ceiling})'
 
-aQute-repository-base: 2.1
-aQute-repository-ceiling: 2.2
+# Version of the repository plugin to use consistently throughout the build
+# NB. this must be specified as full M.m.u version (but no qualifier)
+aQute-repository-base:    2.1.0
+aQute-repository-ceiling: 2.2.0
 aQute-repository: biz.aQute.repository;version='[${aQute-repository-base},${aQute-repository-ceiling})'
 
 # We use git

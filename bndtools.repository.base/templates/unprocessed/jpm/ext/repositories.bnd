@@ -1,0 +1,8 @@
+-plugin:\
+	aQute.bnd.deployer.repository.LocalIndexedRepo; name=Release; local=${workspace}/cnf/releaserepo;pretty=true,\
+	aQute.bnd.deployer.repository.LocalIndexedRepo; name=Local;   local=${workspace}/cnf/localrepo;pretty=true,\
+	aQute.library.bnd.JpmRepository;\
+		index=${workspace}/cnf/jpm-index.json;\
+		location=${user.home}/.bnd/cache
+
+-releaserepo: Release
