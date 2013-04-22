@@ -3,11 +3,14 @@ package bndtools.editor.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bndtools.core.ui.wizards.jpm.AddJpmDependenciesWizard;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -15,6 +18,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -33,6 +37,7 @@ import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
+import org.eclipse.swt.dnd.URLTransfer;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -167,30 +172,38 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
             @Override
             public boolean validateDrop(Object target, int operation, TransferData transferType) {
-                if (FileTransfer.getInstance().isSupportedType(transferType)) {
+                if (FileTransfer.getInstance().isSupportedType(transferType))
                     return true;
-                } else if (ResourceTransfer.getInstance().isSupportedType(transferType)) {
+
+                if (ResourceTransfer.getInstance().isSupportedType(transferType))
                     return true;
-                } else {
-                    ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
-                    if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+
+                if (URLTransfer.getInstance().isSupportedType(transferType))
+                    return true;
+
+                ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+                if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+                    return false;
+                }
+
+                Iterator< ? > iterator = ((IStructuredSelection) selection).iterator();
+                while (iterator.hasNext()) {
+                    Object element = iterator.next();
+                    if (!(element instanceof RepositoryBundle) && !(element instanceof RepositoryBundleVersion) && !(element instanceof ProjectBundle)) {
                         return false;
                     }
-
-                    Iterator< ? > iterator = ((IStructuredSelection) selection).iterator();
-                    while (iterator.hasNext()) {
-                        Object element = iterator.next();
-                        if (!(element instanceof RepositoryBundle) && !(element instanceof RepositoryBundleVersion) && !(element instanceof ProjectBundle)) {
-                            return false;
-                        }
-                    }
-                    return true;
                 }
+                return true;
             }
 
             @Override
             public boolean performDrop(Object data) {
-                if (data instanceof String[]) {
+                TransferData transfer = getCurrentEvent().currentDataType;
+
+                if (URLTransfer.getInstance().isSupportedType(transfer)) {
+                    String urlStr = (String) URLTransfer.getInstance().nativeToJava(transfer);
+                    return handleURLDrop(urlStr);
+                } else if (data instanceof String[]) {
                     return handleFileNameDrop((String[]) data);
                 } else if (data instanceof IResource[]) {
                     return handleResourceDrop((IResource[]) data);
@@ -277,11 +290,26 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                 }
                 return true;
             }
+
+            private boolean handleURLDrop(String urlStr) {
+                try {
+                    URI uri = new URI(urlStr);
+                    AddJpmDependenciesWizard wizard = new AddJpmDependenciesWizard(uri);
+                    WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
+                    if (dialog.open() == Window.OK) {
+                        // TODO
+                    }
+                    return false;
+                } catch (URISyntaxException e) {
+                    MessageDialog.openError(getSection().getShell(), "Error", "The dropped URL was invalid: " + urlStr);
+                    return false;
+                }
+            }
         };
         dropAdapter.setFeedbackEnabled(false);
         dropAdapter.setExpandEnabled(false);
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-                LocalSelectionTransfer.getTransfer(), FileTransfer.getInstance(), ResourceTransfer.getInstance()
+                LocalSelectionTransfer.getTransfer(), FileTransfer.getInstance(), ResourceTransfer.getInstance(), URLTransfer.getInstance()
         }, dropAdapter);
 
         table.addKeyListener(new KeyAdapter() {
