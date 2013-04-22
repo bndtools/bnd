@@ -185,7 +185,6 @@ public abstract class Unix extends Platform {
 		ProcessBuilder pb = new ProcessBuilder();
 		Map<String,String> environment = pb.environment();
 		String user = environment.get("USER");
-		System.out.println(user);
 		return user;
 		// Command id = new Command("id -nu");
 		// StringBuilder sb = new StringBuilder();

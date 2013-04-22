@@ -44,7 +44,7 @@ _jpm_completion_()
 	    COMPREPLY=( $(compgen -W "$(listCommands)" -- ${cur}) )
 	    return 0
 	    ;;
-	remove)
+	remove|update)
 	    local result="$(listCommands) $(listServices)"
 	    COMPREPLY=( $(compgen -W "${result}" -- ${cur}) )
 	    return 0
