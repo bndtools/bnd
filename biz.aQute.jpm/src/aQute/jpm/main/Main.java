@@ -1697,6 +1697,7 @@ public class Main extends ReporterAdapter {
 			for (UpdateMemo memo : toUpdate) {
 				jpm.update(memo);
 			}
+			out.format("%d command(s) updated%n", toUpdate.size());
 		} else {
 			Justif justif = new Justif(80, 20, 50);
 			StringBuilder sb = new StringBuilder();
@@ -1719,12 +1720,15 @@ public class Main extends ReporterAdapter {
 			}
 			
 			if (notFound.size() > 0) {
-				f.format("%nInformation incomplete (local install ?):%n");
+				f.format("Information not found (local install ?):%n");
 				for (UpdateMemo memo : notFound) {
 					f.format(" - %s%n", memo.current.name);
 				}
 			}
 
+			if (toUpdate.size() > 0) {
+				f.format("In order to apply all possible updates, run jpm update again with the --all (or -a) flag.%n");
+			}
 			f.flush();
 			justif.wrap(sb);
 			

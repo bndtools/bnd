@@ -1324,15 +1324,7 @@ public class JustAnotherPackageManager {
 		memo.current.dependencies = new ArrayList<String>();
 		
 		ArtifactData target = put(memo.best.url);
-		//Iterable<RevisionRef> closure = library.getClosure(memo.best.revision, false);
-		
-		
-		/*memo.current.dependencies.add((new File(repoDir, Hex.toHexString(target.sha))).getCanonicalPath());
-		
-		for(RevisionRef ref : closure) {
-			System.out.println(createCoord(ref));
-			memo.current.dependencies.add(installDependency(ref));
-		}*/
+		memo.current.dependencies.add((new File(repoDir, Hex.toHexString(target.sha))).getCanonicalPath());
 		
 		memo.current.sha			= target.sha;
 		memo.current.coordinates	= getCoordinates(memo.best);
