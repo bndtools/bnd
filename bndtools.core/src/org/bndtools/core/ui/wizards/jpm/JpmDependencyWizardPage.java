@@ -13,6 +13,10 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
@@ -42,6 +46,8 @@ import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 
 public class JpmDependencyWizardPage extends WizardPage {
 
+    private static final String DEFAULT_MESSAGE = "Review the following dependencies supplied by JPM4J before adding them.";
+
     private final URI originUri;
 
     private TableViewer viewerDirect;
@@ -55,12 +61,13 @@ public class JpmDependencyWizardPage extends WizardPage {
     private Set<ResourceDescriptor> indirectResources;
     private Set<ResourceDescriptor> selectedIndirectResources;
 
+    private ResourceDescriptor selection;
+
     public JpmDependencyWizardPage(URI originUri) {
         super("jpmDependencies");
         this.originUri = originUri;
 
         setTitle("Add Dependencies from JPM4J");
-        setDescription("Review the following dependencies supplied by JPM4J before adding them.");
     }
 
     public void createControl(Composite parent) {
@@ -136,6 +143,27 @@ public class JpmDependencyWizardPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 selectedIndirectResources.clear();
                 updateSelectedCheckboxes();
+            }
+        });
+
+        viewerDirect.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                ISelection sel = event.getSelection();
+                if (sel.isEmpty())
+                    selection = (ResourceDescriptor) ((IStructuredSelection) viewerIndirect.getSelection()).getFirstElement();
+                else
+                    selection = (ResourceDescriptor) ((IStructuredSelection) sel).getFirstElement();
+                getContainer().updateMessage();
+            }
+        });
+        viewerIndirect.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                ISelection sel = event.getSelection();
+                if (sel.isEmpty())
+                    selection = (ResourceDescriptor) ((IStructuredSelection) viewerDirect.getSelection()).getFirstElement();
+                else
+                    selection = (ResourceDescriptor) ((IStructuredSelection) sel).getFirstElement();
+                getContainer().updateMessage();
             }
         });
 
@@ -239,6 +267,14 @@ public class JpmDependencyWizardPage extends WizardPage {
     @Override
     public String getErrorMessage() {
         return errorText;
+    }
+
+    @Override
+    public String getMessage() {
+        if (selection != null)
+            return selection.description;
+        else
+            return DEFAULT_MESSAGE;
     }
 
     public Set<ResourceDescriptor> getDirectResources() {
