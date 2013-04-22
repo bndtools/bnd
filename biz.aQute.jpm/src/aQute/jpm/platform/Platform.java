@@ -180,7 +180,7 @@ public abstract class Platform {
 	}
 
 	public String getConfigFile() throws Exception {
-		return "~/.jpm";
+		return "~/.jpm/settings.json";
 	}
 
 }
