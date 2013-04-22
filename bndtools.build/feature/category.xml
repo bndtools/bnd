@@ -3,18 +3,18 @@
 
    <category-def name="bndtools.category" label="Bndtools" />
 
-   <feature url="features/bndtools.feature_2.1.0.RC1-qualifier" id="bndtools.main.feature"
-      version="2.1.0.RC1-qualifier">
+   <feature url="features/bndtools.feature_2.1.0.RC2-qualifier" id="bndtools.main.feature"
+      version="2.1.0.RC2-qualifier">
       <category name="bndtools.category" />
    </feature>
 
-   <feature url="features/bndtools.jarviewer.feature_2.1.0.RC1-qualifier" id="bndtools.jarviewer.feature"
-      version="2.1.0.RC1-qualifier">
+   <feature url="features/bndtools.jarviewer.feature_2.1.0.RC2-qualifier" id="bndtools.jarviewer.feature"
+      version="2.1.0.RC2-qualifier">
       <category name="bndtools.category" />
    </feature>
 
-	<feature url="features/bndtools.ace.feature_1.1.1.RC1-qualifier" id="bndtools.ace.feature"
-		version="1.1.1.RC1-qualifier">
+	<feature url="features/bndtools.ace.feature_1.1.1.RC2-qualifier" id="bndtools.ace.feature"
+		version="1.1.1.RC2-qualifier">
 		<category name="bndtools.category" />
 	</feature>
    

@@ -13,7 +13,7 @@
 <feature
       id="bndtools.ace.feature"
       label="Bndtools / Apache ACE integration"
-      version="1.1.1.RC1-qualifier"
+      version="1.1.1.RC2-qualifier"
       provider-name="Bndtools"
       plugin="bndtools.ace.plugin">
 
@@ -114,17 +114,19 @@ This Agreement is governed by the laws of the State of New York and the intellec
          install-size="0"
          version="0.0.0"
          unpack="false"/>
- <plugin
+
+   <plugin
          id="bndtools.ace.launcher"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-         
-          <plugin
+
+   <plugin
          id="org.apache.ace.bnd.repository"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
 </feature>
