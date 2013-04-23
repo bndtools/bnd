@@ -967,8 +967,10 @@ public class Main extends ReporterAdapter {
 				error("Non existent service %s", s);
 			else {
 				try {
-					if (service.isRunning())
+					if (service.isRunning()) {
 						service.stop();
+					}
+						
 					String result = service.start();
 					if (result != null)
 						error("Failed to start: %s", result);

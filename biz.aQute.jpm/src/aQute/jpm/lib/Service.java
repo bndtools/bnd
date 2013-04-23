@@ -21,8 +21,9 @@ public class Service {
 	public String start() throws Exception {
 		if (lock.exists())
 			return "Already running";
-
+		
 		if (lock.createNewFile()) {
+			
 			jpm.platform.chown(data.user, false, lock);
 			try {
 				int result = jpm.platform.launchService(data);
@@ -34,6 +35,7 @@ public class Service {
 					Thread.sleep(100);
 					if (getPort() != -1)
 						return null;
+					
 				}
 				lock.delete();
 				return "Could not establish a link to the service, likely failed to start";
@@ -43,7 +45,7 @@ public class Service {
 				return String.format("Failed to start %s for %s", data.name, t.getMessage());
 			}
 		}
-		return "Already running";
+		return "Could not create lock file";
 	}
 
 	public String stop() throws Exception {
@@ -108,6 +110,7 @@ public class Service {
 			return Integer.parseInt(parts[0]);
 		}
 		catch (Exception e) {
+			//e.printStackTrace();
 			return -1;
 		}
 	}

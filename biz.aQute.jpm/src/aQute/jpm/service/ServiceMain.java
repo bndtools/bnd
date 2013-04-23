@@ -19,8 +19,9 @@ public class ServiceMain extends Thread {
 	private boolean			trace	= false;
 
 	public static void main(String args[]) throws Exception, SecurityException, NoSuchMethodException {
+		//System.out.println(args[0]);
 		lock = new File(args[0]).getAbsoluteFile();
-		lock.deleteOnExit();
+		//lock.deleteOnExit();
 
 		if (!lock.exists())
 			throw new IllegalArgumentException("Must start with a valid lock file " + lock);
