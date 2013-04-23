@@ -122,12 +122,10 @@ public abstract class Platform {
 			if (value == null) {
 				value = "";
 			}
-
-			//pl: this is fishy -> epiplog -> epilog + this seems to correspond to a service, not a command
 			
 			// We want to enclose the prolog and epilog so they are
 			// executed as one command and thus logged as one command
-			if ("epiplog".equals(key.getName()) || "prolog".equals(key.getName())) {
+			if ("epilog".equals(key.getName()) || "prolog".equals(key.getName())) {
 				String s = (String) value;
 				if (s != null && s.trim().length() > 0) {
 					value = "(" + s + ")";

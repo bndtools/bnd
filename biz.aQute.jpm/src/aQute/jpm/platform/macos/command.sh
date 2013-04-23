@@ -1,2 +1,2 @@
 #!/bin/sh
-exec java %defines% -Dpid=$$ -Xdock:name="%title%" %jvmArgs% -cp "%classpath%" %main% "$@"
+exec java %defines% -Dpid=$$ -DJPMREPO=%jpmRepoDir% -Xdock:name="%title%" %jvmArgs% -cp "%classpath%" %main% "$@"

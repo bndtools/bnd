@@ -16,6 +16,7 @@ public class ArtifactData extends struct {
 	public String		mainClass;
 	public String		description;
 	public List<String>	dependencies	= new ArrayList<String>();		// shas
+	public List<String>	runbundles		= new ArrayList<String>();
 	public String		title;
 	boolean				busy			= false;
 	public String		file;

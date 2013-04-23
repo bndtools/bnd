@@ -19,6 +19,9 @@ public class CommandData extends struct {
 	public String		main;
 
 	public List<String>	dependencies	= new ArrayList<String>();
+	public List<String> runbundles		= new ArrayList<String>();
+	public String		jpmRepoDir;
+	
 	public boolean		installed;
 	public byte[]		sha;
 	public String		bin;

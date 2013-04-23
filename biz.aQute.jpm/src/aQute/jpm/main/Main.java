@@ -521,7 +521,10 @@ public class Main extends ReporterAdapter {
 			data.name = opts.name();
 			data.sha = target.sha;
 			data.time = System.currentTimeMillis();
+			data.dependencies = target.dependencies;
 			data.dependencies.add(target.file);
+			data.runbundles = target.runbundles;
+			data.jpmRepoDir = jpm.getRepoDir().getCanonicalPath();
 			update(data, opts);
 			if (data.main == null) {
 				error("No main class set");

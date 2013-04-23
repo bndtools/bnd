@@ -1,1 +1,1 @@
-""%java%" %jvmArgs% -cp "%classpath%" %main%" 
+""%java%" -DJPMREPO=%jpmRepoDir% %jvmArgs% -cp "%classpath%" %main%" 

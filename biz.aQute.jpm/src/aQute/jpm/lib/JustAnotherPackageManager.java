@@ -8,11 +8,11 @@ import java.net.*;
 import java.security.*;
 import java.text.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
-import aQute.bnd.build.*;
 import aQute.bnd.header.*;
 import aQute.bnd.version.*;
 import aQute.jpm.platform.*;
@@ -113,6 +113,10 @@ public class JustAnotherPackageManager {
 	public File getHomeDir() {
 		return homeDir;
 	}
+	
+	public File getRepoDir() {
+		return repoDir;
+	}
 
 	public File getBinDir() {
 		return binDir;
@@ -177,12 +181,18 @@ public class JustAnotherPackageManager {
 			for (String dep : data.dependencies) {
 				deps.add(new File(dep).getName());
 			}
+			for (String dep : data.runbundles) {
+				deps.add(new File(dep).getName());
+			}
 		}
 
 		for (File service : serviceDir.listFiles()) {
 			File dataFile = new File(service, "data");
 			ServiceData data = getData(ServiceData.class, dataFile);
 			for (String dep : data.dependencies) {
+				deps.add(new File(dep).getName());
+			}
+			for (String dep : data.runbundles) {
 				deps.add(new File(dep).getName());
 			}
 		}
@@ -610,34 +620,9 @@ public class JustAnotherPackageManager {
 			{
 				if (main.getValue("JPM-Classpath") != null) {
 					Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
-					List<DownloadBlocker> blockers = new ArrayList<DownloadBlocker>();
 
 					for (Map.Entry<String,Attrs> e : requires.entrySet()) {
-						String key = e.getKey();
-						String v = e.getValue().get("version");
-						if (aQute.bnd.osgi.Verifier.isBsn(e.getKey()) && aQute.bnd.osgi.Verifier.isVersion(v)) {
-							key = Library.OSGI_GROUP + ":" + key + ":" + v;
-						}
-						reporter.trace("searching %s", key);
-						ArtifactData candidate = getCandidate(key, false);
-
-						List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
-						if (candidate == null) {
-							reporter.error("Missing dependency: %s", key);
-						} else {
-							reporter.trace("found %s", candidate);
-							dependencies.add(candidate);
-						}
-						
-						for (ArtifactData data : dependencies) {
-							data.sync();
-							if (data.error != null) {
-								reporter.error("Download of %s failed: %s", data.name, data.error);
-							} else {
-								reporter.trace("adding dependency %s", data.file);
-								artifact.dependencies.add(data.file);
-							}
-						}
+						installJPMDependency(e, artifact.dependencies);
 					}
 				} else if (!localInstall) { // No JPM-Classpath, falling back to server's revision
 					Iterable<RevisionRef> closure = library.getClosure(artifact.sha, false);
@@ -646,6 +631,15 @@ public class JustAnotherPackageManager {
 						reporter.trace("Dependency: %s:%s@%s (%s)", ref.groupId, ref.artifactId, ref.version, sha);
 						artifact.dependencies.add(installDependency(ref));
 					}
+				}
+				
+				if (main.getValue("JPM-Runbundles") != null) {
+					Parameters runbundles = OSGiHeader.parseHeader(main.getValue("JPM-Runbundles"));
+
+					for (Map.Entry<String,Attrs> e : runbundles.entrySet()) {
+						installJPMDependency(e, artifact.runbundles);
+					}
+	
 				}
 				
 			}
@@ -687,6 +681,35 @@ public class JustAnotherPackageManager {
 
 	}
 
+	private void installJPMDependency(Entry<String,Attrs> e, List<String> dependencies) throws Exception {
+		String key = e.getKey();
+		String v = e.getValue().get("version");
+		if (aQute.bnd.osgi.Verifier.isBsn(key) && v != null && aQute.bnd.osgi.Verifier.isVersion(v)) {
+			key = Library.OSGI_GROUP + ":" + key + ":" + v;
+		}
+		reporter.trace("searching %s", key);
+		ArtifactData candidate = getCandidate(key, false);
+
+		// List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
+		if (candidate == null) {
+			reporter.error("Missing dependency: %s", key);
+			return;
+		} else {
+			reporter.trace("found %s", candidate);
+			// dependencies.add(candidate);
+		}
+
+		// for (ArtifactData data : dependencies) {
+		candidate.sync();
+		if (candidate.error != null) {
+			reporter.error("Download of %s failed: %s", candidate.name, candidate.error);
+		} else {
+			reporter.trace("adding dependency %s", candidate.file);
+			dependencies.add(candidate.file);
+		}
+		// }
+	}
+
 	private String installDependency(RevisionRef ref) throws Exception {
 		String sha = Hex.toHexString(ref.revision);
 
@@ -708,7 +731,7 @@ public class JustAnotherPackageManager {
 		return depBin.getCanonicalPath();
 	}
 
-	private void doCommand(Attrs attrs, CommandData data, ArtifactData artifact) {
+	private void doCommand(Attrs attrs, CommandData data, ArtifactData artifact) throws Exception {
 		data.sha = artifact.sha;
 		data.description = artifact.description;
 		if (attrs.containsKey("jvmargs"))
@@ -723,6 +746,8 @@ public class JustAnotherPackageManager {
 			data.title = data.name;
 
 		data.dependencies = artifact.dependencies;
+		data.runbundles	  = artifact.runbundles;
+		data.jpmRepoDir	  = repoDir.getCanonicalPath();
 	}
 
 	private void doService(Attrs attrs, ServiceData data, ArtifactData artifact) throws Exception {
@@ -995,7 +1020,7 @@ public class JustAnotherPackageManager {
 			// fall through
 		}
 
-		File f = new File(key);
+		File f = IO.getFile(key);
 		if (f.isFile()) {
 			reporter.trace("is file");
 			ArtifactData target = put(f.toURI());
@@ -1326,9 +1351,7 @@ public class JustAnotherPackageManager {
 	}
 
 	public void update(UpdateMemo memo) throws Exception {
-		memo.current.coordinates = null;
-		memo.current.dependencies = new ArrayList<String>();
-		
+
 		ArtifactData target = put(memo.best.url);
 		
 		memo.current.coordinates	= getCoordinates(memo.best);
@@ -1336,7 +1359,8 @@ public class JustAnotherPackageManager {
 		target.sync();
 		memo.current.sha			= target.sha;
 		memo.current.dependencies	= target.dependencies;
-		memo.current.dependencies.add((new File(repoDir, Hex.toHexString(target.sha))).getCanonicalPath());	
+		memo.current.dependencies.add((new File(repoDir, Hex.toHexString(target.sha))).getCanonicalPath());
+		memo.current.runbundles		= target.runbundles;
 		memo.current.description	= target.description;
 		memo.current.time			= target.time;
 		
