@@ -1233,7 +1233,11 @@ public class JustAnotherPackageManager {
 				f.format("%s \t0- %s \t1- %s%n", revision.artifactId, createCoord(revision), dateFormat.format(new Date(revision.created)));
 			} else {
 				f.format("%n%n----------------------------%n");
-				f.format("Artifact: %s (%s)%n", revision.artifactId, revision.organization.name);
+				f.format("Artifact: %s%n", revision.artifactId);
+				if(revision.organization != null && revision.organization.name != null) {
+					f.format(" (%s)", revision.organization.name);
+				}
+				f.format("%n");
 				f.format("Coordinate: %s%n", createCoord(revision));
 				f.format("Created: %s%n", dateFormat.format(new Date(revision.created)));
 				f.format("Size: %d%n", revision.size);
