@@ -28,7 +28,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	public void start(BundleContext context) throws Exception {
 		this.context = context;
 		active = true;
-		if (context.getProperty(TESTER_SEPARATETHREAD) == null) {			
+		if (!Boolean.valueOf(context.getProperty(TESTER_SEPARATETHREAD)) && 
+				Boolean.valueOf(context.getProperty("launch.services"))) { // can't register services on mini framework
 			Hashtable<String,String> ht = new Hashtable<String,String>();
 			ht.put("main.thread", "true");
 			ht.put(Constants.SERVICE_DESCRIPTION, "JUnit tester");
