@@ -149,7 +149,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                 if (showRepos) {
                     result.add(repo);
                 } else {
-                    RepositoryBundle[] bundles = getRepositoryBundles(repo);
+                    Object[] bundles = getRepositoryBundles(repo);
                     if (bundles != null && bundles.length > 0)
                         result.addAll(Arrays.asList(bundles));
                 }
@@ -166,7 +166,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return false;
     }
 
-    private ProjectBundle[] getProjectBundles(Project project) {
+    Object[] getProjectBundles(Project project) {
         ProjectBundle[] result = null;
         try {
             Collection< ? extends Builder> builders = project.getSubBuilders();
@@ -183,7 +183,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result;
     }
 
-    private RepositoryBundleVersion[] getRepositoryBundleVersions(RepositoryBundle bundle) {
+    Object[] getRepositoryBundleVersions(RepositoryBundle bundle) {
         RepositoryBundleVersion[] result = null;
 
         SortedSet<Version> versions = null;
@@ -202,8 +202,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result;
     }
 
-    private RepositoryBundle[] getRepositoryBundles(RepositoryPlugin repo) {
-        RepositoryBundle[] result = null;
+    Object[] getRepositoryBundles(RepositoryPlugin repo) {
+        Object[] result = null;
 
         List<String> bsns = null;
         try {

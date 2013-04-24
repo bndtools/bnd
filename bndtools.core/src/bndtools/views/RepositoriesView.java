@@ -46,6 +46,8 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.dnd.URLTransfer;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -73,11 +75,12 @@ import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.model.repo.ContinueSearchElement;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
-import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.RepositoryUtils;
+import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 import bndtools.utils.Function;
 import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.utils.SelectionDragAdapter;
@@ -90,7 +93,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     private static final ILogger logger = Logger.getLogger();
 
     private final FilterPanelPart filterPart = new FilterPanelPart(Plugin.getDefault().getScheduler());
-    private final RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider();
+    private final SearchableRepositoryTreeContentProvider contentProvider = new SearchableRepositoryTreeContentProvider();
     private TreeViewer viewer;
 
     private Action collapseAllAction;
@@ -235,13 +238,26 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 addBundlesAction.setEnabled(writableRepoSelected);
             }
         });
-
+        tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseUp(MouseEvent ev) {
+                Object element = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+                if (element instanceof ContinueSearchElement) {
+                    try {
+                        getViewSite().getPage().showView(Plugin.JPM_BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
+                    } catch (PartInitException e) {
+                        Plugin.getDefault().getLog().log(e.getStatus());
+                    }
+                }
+            }
+        });
         viewer.addDoubleClickListener(new IDoubleClickListener() {
             public void doubleClick(DoubleClickEvent event) {
                 if (!event.getSelection().isEmpty()) {
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                    if (selection.getFirstElement() instanceof IAdaptable) {
-                        URI uri = (URI) ((IAdaptable) selection.getFirstElement()).getAdapter(URI.class);
+                    Object element = selection.getFirstElement();
+                    if (element instanceof IAdaptable) {
+                        URI uri = (URI) ((IAdaptable) element).getAdapter(URI.class);
                         if (uri != null) {
                             IWorkbenchPage page = getSite().getPage();
                             try {
@@ -251,7 +267,14 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                                 logger.logError("Error opening editor for " + uri, e);
                             }
                         }
+                    } else if (element instanceof ContinueSearchElement) {
+                        try {
+                            getViewSite().getPage().showView(Plugin.JPM_BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
+                        } catch (PartInitException e) {
+                            Plugin.getDefault().getLog().log(e.getStatus());
+                        }
                     }
+
                 }
             }
         });

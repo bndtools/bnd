@@ -5,7 +5,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
-
+import org.bndtools.core.utils.jface.HyperlinkStyler;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
@@ -95,6 +95,13 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 cell.setText(styledString.getString());
                 cell.setStyleRanges(styledString.getStyleRanges());
             }
+        } else if (element instanceof ContinueSearchElement) {
+            StyledString label = new StyledString("Continue Search on JPM4J.org...", new HyperlinkStyler());
+            cell.setText(label.getString());
+            cell.setStyleRanges(label.getStyleRanges());
+        } else if (element != null) {
+            // Catch-all
+            cell.setText(element.toString());
         }
     }
 
