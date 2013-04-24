@@ -72,7 +72,7 @@ public class ProjectListControl {
 		tableCol.setWidth(50);
 	}
 
-	public void addItemToTable(ProjectDiff projectDiff) {
+	public void addItemToTable(final ProjectDiff projectDiff) {
 		TableItem ti = new TableItem(projects, SWT.NONE, projects.getItemCount());
 		ti.setChecked(projectDiff.isRelease());
 		ti.setText(projectDiff.getProject().getName());
@@ -80,8 +80,19 @@ public class ProjectListControl {
 		ti.setData(projectDiff);
 		
 		TableEditor tEditor = new TableEditor(projects);
-		CCombo combo = new CCombo(projects, SWT.NONE);
+		final CCombo combo = new CCombo(projects, SWT.NONE);
 		combo.setItems(releaseRepos);
+        combo.addSelectionListener(new SelectionListener() {
+            public void widgetSelected(SelectionEvent e) {
+                int index = combo.getSelectionIndex();
+                if (index > -1) {
+                    projectDiff.setReleaseRepository(releaseRepos[index]);
+                }
+            }
+
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+        });
 		
 		if (projectDiff.getDefaultReleaseRepository() != null) {
 			int index = combo.indexOf(projectDiff.getDefaultReleaseRepository());
