@@ -283,7 +283,7 @@ public class JustAnotherPackageManager {
 			ArrayList<File> toDeleteServices = new ArrayList<File>();
 			
 			for(File cache : caches) {
-				if (cache == null) {
+				if (cache == null || !cache.exists()) {
 					continue;
 				}
 				listFiles(cache, toDelete, toDeleteServices);
