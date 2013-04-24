@@ -378,8 +378,11 @@ public class JustAnotherPackageManager {
 				toDelete = new ArrayList<File>();
 			}
 			File confFile = IO.getFile(platform.getConfigFile()).getCanonicalFile();
-			f.format("    * %s \t0 Config file%n", confFile);
-			toDelete.add(confFile);
+			if (confFile.exists()) {
+				f.format("    * %s \t0 Config file%n", confFile);
+				toDelete.add(confFile);
+			}
+			
 			
 			return f.toString();
 		} finally {
