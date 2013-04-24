@@ -50,6 +50,10 @@ public class ReleaseAction implements IObjectActionDelegate {
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
+				// Ignore if trying to release build.bnd
+				if (isBuildBndSelected(me.getValue())) {
+				    continue;
+				}
 				ReleaseDialogJob job;
 				if (isBndBndSelected(me.getValue())) {
 					job = new ReleaseDialogJob(project, null);
@@ -61,6 +65,15 @@ public class ReleaseAction implements IObjectActionDelegate {
 		}
 	}
 
+	private static boolean isBuildBndSelected(List<File> files) {
+        for (File file : files) {
+            if (Workspace.BUILDFILE.equals(file.getName())) {
+                return true;
+            }
+        }
+        return false;
+	    
+	}
 	private static boolean isBndBndSelected(List<File> files) {
 		for (File file : files) {
 			if (Project.BNDFILE.equals(file.getName())) {
