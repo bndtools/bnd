@@ -251,9 +251,12 @@ public class JustAnotherPackageManager {
 					}
 				}			
 				
-				f.format("jpm support files:%n");
-				f.format(listSupportFiles());
-				
+				list = listSupportFiles();
+				if (list != null) {
+					f.format("jpm support files:%n");
+					f.format(list);
+				}
+								
 				f.format("%n%n");
 				
 				f.format("All files listed above will be deleted if deinit is run with the force flag set" +
@@ -377,14 +380,15 @@ public class JustAnotherPackageManager {
 			if (toDelete == null) {
 				toDelete = new ArrayList<File>();
 			}
+			int precount = toDelete.size();
 			File confFile = IO.getFile(platform.getConfigFile()).getCanonicalFile();
 			if (confFile.exists()) {
 				f.format("    * %s \t0 Config file%n", confFile);
 				toDelete.add(confFile);
 			}
 			
-			
-			return f.toString();
+			String result = (toDelete.size() > precount) ? f.toString() : null;
+			return result;
 		} finally {
 			f.close();
 		}
