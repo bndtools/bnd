@@ -631,6 +631,7 @@ public class JustAnotherPackageManager {
 					Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
 
 					for (Map.Entry<String,Attrs> e : requires.entrySet()) {
+						reporter.trace("Dependency: %s%n", e.getKey());
 						retrieveDependency(e.getKey(), e.getValue().getVersion(), dependencies); // Parallel download of JPM dependencies
 					}
 				} else if (!localInstall) { // No JPM-Classpath, falling back to server's revision
@@ -647,7 +648,8 @@ public class JustAnotherPackageManager {
 					Parameters jpmrunbundles = OSGiHeader.parseHeader(main.getValue("JPM-Runbundles"));
 
 					for (Map.Entry<String,Attrs> e : jpmrunbundles.entrySet()) {
-						retrieveDependency(e.getKey(), e.getValue().getVersion(), runbundles); // Parallel download of JPM runbundles
+						reporter.trace("Dependency: %s", e.getKey());
+						retrieveDependency(e.getKey(), e.getValue().getVersion(), dependencies); // Parallel download of JPM runbundles
 					}
 	
 				}
@@ -670,7 +672,7 @@ public class JustAnotherPackageManager {
 					reporter.error("Download of %s failed: %s", data.name, data.error);
 				} else {
 					reporter.trace("adding runbundle %s", data.file);
-					artifact.dependencies.add(data.file);
+					artifact.runbundles.add(data.file);
 				}
 			}
 			
@@ -723,7 +725,7 @@ public class JustAnotherPackageManager {
 		ArtifactData candidate = getCandidateAsync(key, false);
 
 		if (candidate == null) {
-			reporter.error("Missing dependency: %s", key);
+			reporter.error("Missing dependency/runbundle: %s", key);
 			return;
 		} else {
 			reporter.trace("found %s", candidate);
@@ -933,13 +935,22 @@ public class JustAnotherPackageManager {
 
 	public ArtifactData get(byte[] sha) throws Exception {
 		String name = Hex.toHexString(sha);
-		File data = new File(repoDir, name + ".json");
-		if (data.isFile()) {
+		File data = IO.getFile(repoDir, name + ".json");
+		if (data.isFile()) { // Bin + metadata
 			ArtifactData artifact = codec.dec().from(data).get(ArtifactData.class);
-			artifact.file = new File(repoDir, name).getAbsolutePath();
+			artifact.file =  IO.getFile(repoDir, name).getAbsolutePath();
 			return artifact;
-		} else
-			return null;
+		}
+		File bin = IO.getFile(repoDir, name);
+		if (bin.exists()) { // Only bin
+			ArtifactData artifact = new ArtifactData();
+			artifact.file 	= bin.getAbsolutePath();
+			artifact.sha 	= sha;
+			return artifact;
+		}
+			
+			
+		return null;
 	}
 
 	public List<Revision> filter(Collection<Revision> list, EnumSet<Library.Phase> phases) {
@@ -1029,7 +1040,7 @@ public class JustAnotherPackageManager {
 		reporter.trace("getCandidate " + key);
 		// Short cut, see if we alread have it
 		Matcher m = SHA_P.matcher(key);
-		if (m.matches()) {
+		if (m.matches()) { // Is it already in the repo ?
 			byte[] sha = Hex.toByteArray(m.group(1));
 			reporter.trace("sha " + key);
 			ArtifactData art = get(sha);
@@ -1050,14 +1061,14 @@ public class JustAnotherPackageManager {
 		}
 
 		File f = IO.getFile(key);
-		if (f.isFile()) {
+		if (f.isFile()) { // Is it on the filesystem ?
 			reporter.trace("is file");
 			ArtifactData target = putAsync(f.toURI());
 			return target;
 		}
 
 		m = URL_P.matcher(key);
-		if (m.matches()) {
+		if (m.matches()) { // Is it a URL ?
 			reporter.trace("looks like a url");
 			try {
 				ArtifactData target = putAsync(new URI(key));
@@ -1332,23 +1343,18 @@ public class JustAnotherPackageManager {
 		return String.format("http://jpm4j.org/#!/p/sha/%s//%s", Hex.toHexString(rev._id), rev.baseline);
 	}
 
-	public class UpdateMemo {
-		public CommandData current;
+	public class UpdateMemo { 
+		public CommandData current; // Works for commandData and ServiceData, as ServiceData --|> CommandData 
 		public RevisionRef best;
 	}
 	public void listUpdates(List<UpdateMemo> notFound, List<UpdateMemo> upToDate, List<UpdateMemo> toUpdate, CommandData data, boolean staged) throws Exception {
 
 		UpdateMemo memo = new UpdateMemo();
 		memo.current = data;
-
-		if (data.coordinates == null) {
-			notFound.add(memo);
-			return;
-		}
 		
-		Matcher m = COORD_P.matcher(data.coordinates);
+		Matcher m = data.coordinates == null ? null : COORD_P.matcher(data.coordinates);
 
-		if (data.version == null || !m.matches()) {
+		if ( data.version == null || m == null || !m.matches() ) {
 			Revision revision = library.getRevision(data.sha);
 			if (revision == null) {
 				notFound.add(memo);

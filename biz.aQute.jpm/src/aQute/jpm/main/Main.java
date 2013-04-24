@@ -12,10 +12,9 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
-import aQute.bnd.version.*;
 import aQute.jpm.lib.*;
+import aQute.jpm.lib.JustAnotherPackageManager.UpdateMemo;
 import aQute.jpm.lib.Service;
-import aQute.jpm.lib.JustAnotherPackageManager.*;
 import aQute.jpm.platform.*;
 import aQute.jpm.platform.windows.*;
 import aQute.lib.base64.*;
@@ -45,6 +44,46 @@ public class Main extends ReporterAdapter {
 	Settings					settings;
 	boolean						userMode		= false;
 
+	JustAnotherPackageManager	jpm;
+	final PrintStream			err;
+	final PrintStream			out;
+	File						sm;
+	private String				url;
+	static String				encoding	= System.getProperty("file.encoding");
+
+	static {
+		if (encoding == null)
+			encoding = Charset.defaultCharset().name();
+	}
+
+	/**
+	 * Default constructor
+	 * 
+	 * @throws UnsupportedEncodingException
+	 */
+
+	public Main() throws UnsupportedEncodingException {
+		super(new PrintStream(System.err, true, encoding));
+		err = new PrintStream(System.err, true, encoding);
+		out = new PrintStream(System.out, true, encoding);
+	}
+
+	/**
+	 * Main entry
+	 * 
+	 * @throws Exception
+	 */
+	public static void main(String args[]) throws Exception {
+		Main jpm = new Main();
+		try {
+			jpm.run(args);
+		}
+		finally {
+			jpm.err.flush();
+			jpm.out.flush();
+		}
+	}
+	
 	/**
 	 * Show installed binaries
 	 */
@@ -123,75 +162,27 @@ public class Main extends ReporterAdapter {
 	public interface CommandOptions extends Options, ModifyCommand {
 		String create();
 
+		@Description("Remove the given service")
 		boolean remove();
 
 	}
 
-	/**
-	 * Uninstall a binary.
-	 */
-	@Description("Uninstall a jar by bsn.")
-	@Arguments(arg = {
-			"bsn", "..."
-	})
-	public interface uninstallOptions_unused extends Options { //pl: not used ...
-		@Description("Version range that must be matched, if not specified all versions are removed.")
-		Version version();
-	}
-
-	/**
-	 * Uninstall a binary.
-	 */
+	@Description("Remove jpm and all created data from the system (including commands and services). " +
+			"Without the --force flag only list the elements that would be deleted.")
 	public interface deinitOptions extends Options {
+		
+		@Description("Actually remove jpm from the system")
 		boolean force();
 	}
 
 	/**
 	 * garbage collect commands and service
 	 */
-	@Description("Garbage collect any orphan service and commands")
-	@Arguments(arg = {})
+	@Arguments(arg={})
+	@Description("Garbage collect the cache (remove useless dependencies)")
 	public interface GCOptions extends Options {}
 
-	JustAnotherPackageManager	jpm;
-	final PrintStream			err;
-	final PrintStream			out;
-	File						sm;
-	private String				url;
-	static String				encoding	= System.getProperty("file.encoding");
-
-	static {
-		if (encoding == null)
-			encoding = Charset.defaultCharset().name();
-	}
-
-	/**
-	 * Default constructor
-	 * 
-	 * @throws UnsupportedEncodingException
-	 */
-
-	public Main() throws UnsupportedEncodingException {
-		super(new PrintStream(System.err, true, encoding));
-		err = new PrintStream(System.err, true, encoding);
-		out = new PrintStream(System.out, true, encoding);
-	}
-
-	/**
-	 * Main entry
-	 * 
-	 * @throws Exception
-	 */
-	public static void main(String args[]) throws Exception {
-		Main jpm = new Main();
-		try {
-			jpm.run(args);
-		}
-		finally {
-			jpm.err.flush();
-			jpm.out.flush();
-		}
-	}
+	
 
 	/**
 	 * Main options
@@ -249,7 +240,7 @@ public class Main extends ReporterAdapter {
 	 * @throws InterruptedException
 	 * @throws IOException
 	 */
-	@Description("Just Another Package Manager for Java")
+	@Description("Just Another Package Manager for Java (\"jpm help jpm\" to see a list of global options)")
 	public void _jpm(JpmOptions opts) throws IOException {
 		try {
 			setExceptions(opts.exceptions());
@@ -378,50 +369,45 @@ public class Main extends ReporterAdapter {
 	@Arguments(arg = {
 		"command|service"
 	})
-	@Description("Install a jar into the repository. If the jar defines a number of headers it can also be installed as a command and/or a service. ")
+	@Description("Install a jar into the repository. If the jar defines a number of headers it can also be installed as a command and/or a service. " +
+			"If not, additional information such as the name of the command and/or the main class must be specified with the appropriate flags.")
 	public interface installOptions extends ModifyCommand, Options {
-		@Description("Ignore command and service information")
-		boolean ignore(); // pl: not used
+//		@Description("Ignore command and service information")
+//		boolean ignore(); // pl: not used
 
 		@Description("Force overwrite of existing command")
 		boolean force();
 
-		@Description("Require a master version even when version is specified")
-		boolean master(); // pl: not used
+//		@Description("Require a master version even when version is specified")
+//		boolean master(); // pl: not used
 
 		@Description("Include staged revisions in the search")
 		boolean staged();
 
-		@Description("Ignore digest")
-		boolean xdigest(); // pl: not used
+//		@Description("Ignore digest")
+//		boolean xdigest(); // pl: not used
 
-		@Description("Run service (if present) under the given user name, default is the name of the service")
-		String user(); // pl: not used
+//		@Description("Run service (if present) under the given user name, default is the name of the service")
+//		String user(); // pl: not used
 
-		/**
-		 * If specified, will install a revision with the given name and version
-		 * and then add any command/service to the system.
-		 */
-		String bsn(); // pl: not used
+//		/**
+//		 * If specified, will install a revision with the given name and version
+//		 * and then add any command/service to the system.
+//		 */
+//		String bsn(); // pl: not used
 
-		/**
-		 * Specify a version range for the artifact.
-		 * 
-		 * @return
-		 */
-		Version version(); // pl: not used
+//		/**
+//		 * Specify a version range for the artifact.
+//		 * 
+//		 * @return
+//		 */
+//		Version version(); // pl: not used
 
 		/**
 		 * Install a file and extra commands
 		 */
-		@Description("Install jar without resolving dependencies with the server")
+		@Description("Install jar without resolving dependencies with http://www.jpm4j.org")
 		boolean local();
-
-		@Description("The path to the log file")
-		String path(); // pl: not used
-
-		@Description("Specify a command name, overrides the JPM-Command header")
-		String command(); // pl: not used
 
 	}
 
@@ -431,7 +417,7 @@ public class Main extends ReporterAdapter {
 	 * @param opts
 	 *            The options for installing
 	 */
-	@Description("Install an artifact from a url, file, or www.jpm4j.org")
+	@Description("Install an artifact from a url, file, or http://www.jpm4j.org")
 	public void _install(installOptions opts) throws Exception {
 		boolean noCommand = false;
 		
@@ -449,7 +435,7 @@ public class Main extends ReporterAdapter {
 		}
 		String key = opts._().get(0);
 		
-		if (opts.local()) {
+		if (opts.local()) { // local == no dependency resolving from server,
 			jpm.setLocalInstall(true);
 			File f = IO.getFile(base, key);
 			if (f.isFile()) {
@@ -504,7 +490,7 @@ public class Main extends ReporterAdapter {
 		if (target.command != null) {
 			target.command.force = opts.force();
 			target.command.coordinates = target.coordinates;
-			update(target.command, opts);
+			updateData(target.command, opts);
 			target.command.dependencies.add(0, target.file);
 			if (opts.force() && jpm.getCommand(target.command.name) != null)
 				jpm.deleteCommand(target.command.name);
@@ -525,7 +511,7 @@ public class Main extends ReporterAdapter {
 			data.dependencies.add(target.file);
 			data.runbundles = target.runbundles;
 			data.jpmRepoDir = jpm.getRepoDir().getCanonicalPath();
-			update(data, opts);
+			updateData(data, opts);
 			if (data.main == null) {
 				error("No main class set");
 				return;
@@ -621,7 +607,7 @@ public class Main extends ReporterAdapter {
 
 			ServiceData data = target.service;
 			data.coordinates = opts.create();
-			update(data, opts);
+			updateData(data, opts);
 			String result = jpm.createService(data);
 			if (result != null)
 				error("Create service failed: %s", result);
@@ -634,7 +620,7 @@ public class Main extends ReporterAdapter {
 		}
 
 		ServiceData data = s.getServiceData();
-		if (update(data, opts) || opts.coordinates() != null || opts.update()) {
+		if (updateData(data, opts) || opts.coordinates() != null || opts.update()) {
 			if (!jpm.hasAccess()) {
 				error("No write access to update service %s", name);
 				return;
@@ -683,7 +669,7 @@ public class Main extends ReporterAdapter {
 		Data.details(data, out);
 	}
 
-	private boolean update(ServiceData data, ModifyService opts) {
+	private boolean updateData(ServiceData data, ModifyService opts) {
 		boolean update = false;
 		if (opts.args() != null) {
 			data.args = opts.args();
@@ -715,10 +701,10 @@ public class Main extends ReporterAdapter {
 			update = true;
 		}
 
-		return update((CommandData) data, opts) || update;
+		return updateData((CommandData) data, opts) || update;
 	}
 
-	private boolean update(CommandData data, ModifyCommand opts) {
+	private boolean updateData(CommandData data, ModifyCommand opts) {
 		boolean update = false;
 		if (opts.main() != null) {
 			data.main = opts.main();
@@ -773,7 +759,7 @@ public class Main extends ReporterAdapter {
 		if (data == null) {
 			error("Not found: %s", cmd);
 		} else {
-			if (update(data, opts)) {
+			if (updateData(data, opts)) {
 				jpm.deleteCommand(data.name);
 				String result = jpm.createCommand(data);
 				if (result != null)
@@ -836,6 +822,7 @@ public class Main extends ReporterAdapter {
 	 * 
 	 * @throws Exception
 	 */
+	@Description("Install jpm on the current system")
 	interface InitOptions extends Options {
 		
 		@Description("Specify cache for jpm install")
@@ -922,6 +909,7 @@ public class Main extends ReporterAdapter {
 	 * @throws Exception
 	 */
 	@Arguments(arg = {"service"})
+	@Description("Start a service")
 	interface startOptions extends Options {
 		boolean clean();
 	}
@@ -962,8 +950,12 @@ public class Main extends ReporterAdapter {
 	 * @param options
 	 * @throws Exception
 	 */
+	@Arguments(arg="service")
 	@Description("Restart a service")
-	public void _restart(Options options) throws Exception {
+	public interface RestartOptions extends Options {}
+	
+	@Description("Restart a service")
+	public void _restart(RestartOptions options) throws Exception {
 		for (String s : options._()) {
 			Service service = jpm.getService(s);
 			if (service == null)
@@ -1030,7 +1022,10 @@ public class Main extends ReporterAdapter {
 	 * @throws Exception
 	 */
 	@Description("Stop a service")
-	public void _stop(Options options) throws Exception {
+	public interface StopOptions extends Options {}
+	
+	@Description("Stop a service")
+	public void _stop(StopOptions options) throws Exception {
 		for (String s : options._()) {
 			Service service = jpm.getService(s);
 			if (service == null)
@@ -1057,11 +1052,14 @@ public class Main extends ReporterAdapter {
 	 * @param options
 	 * @throws Exception
 	 */
+	@Description("Status of a service")
+	@Arguments(arg={"service", "[service]", "..."})
 	interface statusOptions extends Options {
+		@Description("Prints status for the service(s) every second")
 		boolean continuous();
 	}
 
-	@Description("Status of a service")
+	@Description("Status of a service/services")
 	public void _status(statusOptions options) throws InterruptedException {
 		while (true) {
 			for (String s : options._()) {
@@ -1198,10 +1196,12 @@ public class Main extends ReporterAdapter {
 	 */
 
 	@Arguments(arg = "service")
+	@Description("Show the service log")
 	interface logOptions extends Options {
-
+		@Description("Shows new lines in the service log as they are written")
 		boolean tail();
 
+		@Description("Reset the log file for the service")
 		boolean clear();
 
 	}
@@ -1273,10 +1273,12 @@ public class Main extends ReporterAdapter {
 	/**
 	 * Handle the global settings
 	 */
+	@Description("Manage user settings of jpm (in ~/.jpm). Without argument, print the current settings. " +
+			"Can alse be used to create change a settings with \"jpm settings <key>=<value>\"")
 	interface settingOptions extends Options {
 		boolean clear();
 
-		boolean publicKey();
+		boolean publicKey(); 
 
 		boolean secretKey();
 
@@ -1410,8 +1412,11 @@ public class Main extends ReporterAdapter {
 	 * @throws Exception
 	 */
 
+	@Description("Show a list of candidates for a given request")
+	public interface CandidateOptions extends Options{}
+	
 	@Description("Show the candidate revisions for a given program coordinate")
-	public void _candidates(Options opts) throws Exception {
+	public void _candidates(CandidateOptions opts) throws Exception {
 		for (String key : opts._()) {
 			List<Revision> candidates = jpm.getCandidates(key);
 			if (candidates == null) {
@@ -1457,11 +1462,12 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
+	@Description("Find programs and libraries corresponding to the given query")
 	interface findOptions extends Options {
 
 	}
 
-	@Description("Find programs from a query")
+	@Description("Find programs and libraries corresponding to the given query")
 	public void _find(findOptions opts) throws Exception {
 		String q = new ExtList<String>(opts._()).join(" ");
 		Iterable< ? extends Program> programs = jpm.find(q);
@@ -1515,6 +1521,7 @@ public class Main extends ReporterAdapter {
 	@Arguments(arg = {
 		"[local|global]"
 	})
+	@Description("Make jpm local/global")
 	interface setupOptions extends Options {}
 
 	@Description("Make jpm local/global")
@@ -1587,7 +1594,7 @@ public class Main extends ReporterAdapter {
 	@Arguments(arg = {
 			"command|service",
 			"..."})
-	@Description("Remove the specified command or service from the system (equivalent to jpm <commmand|service> -r <command|service>)")
+	@Description("Remove the specified command(s) or service(s) from the system")
 	interface UninstallOptions extends Options {}
 	
 	@Description("Remove a command or a service from the system")
@@ -1640,7 +1647,7 @@ public class Main extends ReporterAdapter {
 	}
 	
 	@Arguments(arg="markdown|bash-completion")
-	@Description("Generate additional files for jpm (markdown documentation or bash completion file)") 
+	@Description("Print additional files for jpm (markdown documentation or bash completion file) to the standard output.") 
 	interface GenerateOptions extends Options {}
 	
 	@Description("Generate additional files for jpm") 
@@ -1722,6 +1729,9 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
+	@Description("Perform updates for installed commands and services. " +
+			"Without argument (and without the --all flag), list possible updates for all installed commands and services. " +
+			"With arguments, apply possible updates for the specified command(s) and/or service(s).")
 	@Arguments(arg = {
 			"[command|service]",
 			"..."
@@ -1733,6 +1743,7 @@ public class Main extends ReporterAdapter {
 		boolean staged();
 	}
 	
+	@Description("Perform updates for installed commands and services")
 	public void _update(UpdateOptions opts) throws Exception {
 		if (!jpm.hasAccess()) {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
