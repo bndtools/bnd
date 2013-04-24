@@ -8,7 +8,6 @@ import java.net.*;
 import java.security.*;
 import java.text.*;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
 import java.util.regex.*;
@@ -624,33 +623,57 @@ public class JustAnotherPackageManager {
 			artifact.description = main.getValue("Bundle-Description");
 			artifact.title = main.getValue("JPM-Name");
 
+			List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
+			List<ArtifactData> runbundles	= new ArrayList<ArtifactData>();
+			
 			{
 				if (main.getValue("JPM-Classpath") != null) {
 					Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
 
 					for (Map.Entry<String,Attrs> e : requires.entrySet()) {
-						installJPMDependency(e, artifact.dependencies);
+						retrieveDependency(e.getKey(), e.getValue().getVersion(), dependencies); // Parallel download of JPM dependencies
 					}
 				} else if (!localInstall) { // No JPM-Classpath, falling back to server's revision
 					Iterable<RevisionRef> closure = library.getClosure(artifact.sha, false);
 					for (RevisionRef ref : closure) {
 						String sha = Hex.toHexString(ref.revision);
 						reporter.trace("Dependency: %s:%s@%s (%s)", ref.groupId, ref.artifactId, ref.version, sha);
-						artifact.dependencies.add(installDependency(ref));
+						//artifact.dependencies.add(installDependency(ref));
+						retrieveDependency(sha, null, dependencies);
 					}
 				}
 				
 				if (main.getValue("JPM-Runbundles") != null) {
-					Parameters runbundles = OSGiHeader.parseHeader(main.getValue("JPM-Runbundles"));
+					Parameters jpmrunbundles = OSGiHeader.parseHeader(main.getValue("JPM-Runbundles"));
 
-					for (Map.Entry<String,Attrs> e : runbundles.entrySet()) {
-						installJPMDependency(e, artifact.runbundles);
+					for (Map.Entry<String,Attrs> e : jpmrunbundles.entrySet()) {
+						retrieveDependency(e.getKey(), e.getValue().getVersion(), runbundles); // Parallel download of JPM runbundles
 					}
 	
 				}
 				
 			}
 
+			// Add dependencies and runbundle into the target
+			for (ArtifactData data : dependencies) {
+				data.sync();
+				if (data.error != null) {
+					reporter.error("Download of %s failed: %s", data.name, data.error);
+				} else {
+					reporter.trace("adding dependency %s", data.file);
+					artifact.dependencies.add(data.file);
+				}
+			}
+			for (ArtifactData data : runbundles) {
+				data.sync();
+				if (data.error != null) {
+					reporter.error("Download of %s failed: %s", data.name, data.error);
+				} else {
+					reporter.trace("adding runbundle %s", data.file);
+					artifact.dependencies.add(data.file);
+				}
+			}
+			
 			{
 				Parameters service = OSGiHeader.parseHeader(main.getValue("JPM-Service"));
 				if (service.size() > 1)
@@ -678,6 +701,8 @@ public class JustAnotherPackageManager {
 				}
 				reporter.trace("commands %s", artifact.command);
 			}
+			
+			
 
 			reporter.trace("returning " + artifact);
 			return artifact;
@@ -688,36 +713,25 @@ public class JustAnotherPackageManager {
 
 	}
 
-	private void installJPMDependency(Entry<String,Attrs> e, List<String> dependencies) throws Exception {
-		String key = e.getKey();
-		String v = e.getValue().get("version");
-		if (aQute.bnd.osgi.Verifier.isBsn(key) && v != null && aQute.bnd.osgi.Verifier.isVersion(v)) {
-			key = Library.OSGI_GROUP + ":" + key + ":" + v;
+	private void retrieveDependency(String key, String version, List<ArtifactData> dependencies) throws Exception {
+		//String key = e.getKey();
+		//String version = e.getValue().get("version");
+		if (aQute.bnd.osgi.Verifier.isBsn(key) && version != null && aQute.bnd.osgi.Verifier.isVersion(version)) {
+			key = Library.OSGI_GROUP + ":" + key + ":" + version;
 		}
 		reporter.trace("searching %s", key);
-		ArtifactData candidate = getCandidate(key, false);
+		ArtifactData candidate = getCandidateAsync(key, false);
 
-		// List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
 		if (candidate == null) {
 			reporter.error("Missing dependency: %s", key);
 			return;
 		} else {
 			reporter.trace("found %s", candidate);
-			// dependencies.add(candidate);
-		}
-
-		// for (ArtifactData data : dependencies) {
-		candidate.sync();
-		if (candidate.error != null) {
-			reporter.error("Download of %s failed: %s", candidate.name, candidate.error);
-		} else {
-			reporter.trace("adding dependency %s", candidate.file);
-			dependencies.add(candidate.file);
-		}
-		// }
+			dependencies.add(candidate);
+		}		
 	}
 
-	private String installDependency(RevisionRef ref) throws Exception {
+	/*private String installDependency(RevisionRef ref) throws Exception {
 		String sha = Hex.toHexString(ref.revision);
 
 		// If dependency is not already in cache
@@ -736,7 +750,7 @@ public class JustAnotherPackageManager {
 			}
 		}
 		return depBin.getCanonicalPath();
-	}
+	}*/
 
 	private void doCommand(Attrs attrs, CommandData data, ArtifactData artifact) throws Exception {
 		data.sha = artifact.sha;
@@ -1004,6 +1018,14 @@ public class JustAnotherPackageManager {
 	}
 
 	public ArtifactData getCandidate(String key, boolean staged) throws Exception {
+		ArtifactData data = getCandidateAsync(key, staged);
+		if (data != null) {
+			data.sync();
+		}
+		return data;
+	}
+	
+	public ArtifactData getCandidateAsync(String key, boolean staged) throws Exception {
 		reporter.trace("getCandidate " + key);
 		// Short cut, see if we alread have it
 		Matcher m = SHA_P.matcher(key);
@@ -1018,7 +1040,7 @@ public class JustAnotherPackageManager {
 			Revision r = library.getRevision(sha);
 			if (r != null) {
 				reporter.trace("downloading sha");
-				ArtifactData target = put(r.url);
+				ArtifactData target = putAsync(r.url);
 				target.coordinates	= getCoordinates(r);
 				target.version		= new Version(r.version);		
 				return target;
@@ -1030,7 +1052,7 @@ public class JustAnotherPackageManager {
 		File f = IO.getFile(key);
 		if (f.isFile()) {
 			reporter.trace("is file");
-			ArtifactData target = put(f.toURI());
+			ArtifactData target = putAsync(f.toURI());
 			return target;
 		}
 
@@ -1038,7 +1060,7 @@ public class JustAnotherPackageManager {
 		if (m.matches()) {
 			reporter.trace("looks like a url");
 			try {
-				ArtifactData target = put(new URI(key));
+				ArtifactData target = putAsync(new URI(key));
 				return target;
 			}
 			catch (Exception e) {
@@ -1073,7 +1095,7 @@ public class JustAnotherPackageManager {
 
 			ArtifactData target = get(r.revision);
 			if (target == null)
-				target = put(r.url);
+				target = putAsync(r.url);
 
 			target.coordinates	= getCoordinates(r);
 			target.version 		= new Version(r.version);
@@ -1319,6 +1341,11 @@ public class JustAnotherPackageManager {
 		UpdateMemo memo = new UpdateMemo();
 		memo.current = data;
 
+		if (data.coordinates == null) {
+			notFound.add(memo);
+			return;
+		}
+		
 		Matcher m = COORD_P.matcher(data.coordinates);
 
 		if (data.version == null || !m.matches()) {
