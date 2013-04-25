@@ -421,7 +421,8 @@ public class Main extends ReporterAdapter {
 	 */
 	@Description("Install an artifact from a url, file, or http://www.jpm4j.org")
 	public void _install(installOptions opts) throws Exception {
-		boolean noCommand = false;
+		boolean noCommand = true;
+		boolean noService = true;
 		
 		if (!jpm.hasAccess()) {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
@@ -490,6 +491,7 @@ public class Main extends ReporterAdapter {
 		trace("Target from %s", Hex.toHexString(target.sha));
 
 		if (target.command != null) {
+			noCommand = false;
 			target.command.force = opts.force();
 			target.command.coordinates = target.coordinates;
 			updateData(target.command, opts);
@@ -500,38 +502,36 @@ public class Main extends ReporterAdapter {
 			String result = jpm.createCommand(target.command);
 			if (result != null)
 				error("Command creation failed: %s", result);
-		} else if (opts.name() != null) {
-			CommandData data = new CommandData();
-			data.description = "Installed from command line";
-			data.coordinates = target.coordinates;
-			data.force = opts.force();
-			data.main = target.mainClass;
-			data.name = opts.name();
-			data.sha = target.sha;
-			data.time = System.currentTimeMillis();
-			data.dependencies = target.dependencies;
-			data.dependencies.add(target.file);
-			data.runbundles = target.runbundles;
-			data.jpmRepoDir = jpm.getRepoDir().getCanonicalPath();
-			updateData(data, opts);
-			if (data.main == null) {
-				error("No main class set");
-				return;
+			else {
+				out.format(" Created command \"%s\" (%s)%n", target.command.name, target.command.bin);
 			}
-
+				
+			
+		} else if (opts.name() != null) {
+			noCommand = false;
+			CommandData data = populateCommandData(target);
+			
+			if (data == null) 
+				return;
+			
+			updateData(data, opts);
+			data.description = "Installed from command line";
+						
 			if (opts.force() && jpm.getCommand(data.name) != null)
 				jpm.deleteCommand(data.name);
 			String result = jpm.createCommand(data);
 			if (result != null)
 				error("Command creation failed: %s", result);
-		} else {
-			noCommand = true;
-		}
-
+			else {
+				out.format(" Created command \"%s\" (%s)%n", target.command.name, target.command.bin);
+			}
+		} 
+		
 		if (target.service != null) {
 			if(userMode) {
 				warning("Service found in %s, but jpm needs to run in global mode to install it", target.coordinates);
 			} else {
+				noService = false;
 				target.service.force = opts.force();
 				target.service.coordinates = target.coordinates;
 				target.service.dependencies.add(0, target.file);
@@ -542,23 +542,67 @@ public class Main extends ReporterAdapter {
 					s.remove();
 				}
 				String result = jpm.createService(target.service);
-				if (result != null)
+				if (result != null) {
 					error("Service creation failed: %s", result);
-			}
-			
-		} else {
-			
-			if (noCommand) { // No service AND no command, are you kidding me ?
-				if (staged)
-					warning("No command or service found in %s", target.coordinates);
-				else
-					warning("No command found or service in %s. You could try with --staged to find a staged version?",
-							target.coordinates);
+				} else {
+					out.format(" Created service \"%s\"%n", target.service.name);
+				}		
+			}	
+		} 
+		
+		if (noCommand && noService) {
+			if (target.mainClass != null) {
+				noCommand = false;
+				CommandData data = populateCommandData(target);
+				String name = jpm.ArtifactIdFromCoord(target.coordinates);
+				if (name == null) {
+					name = key;
+				}
+				data.name = name;
+				updateData(data, opts);
+				if (opts.force() && jpm.getCommand(data.name) != null)
+					jpm.deleteCommand(data.name);
+				String result = jpm.createCommand(data);
+				if (result != null) {
+					error("Command creation failed: %s", result);
+					return;
+				} else {
+					out.format(" Created command \"%s\" (%s)%n", data.name, data.bin);
+				}
 			}
 		}
+		
+		// Well I give up
+		if (noCommand && noService) {
+			if (staged)
+				warning("No command or service found in %s", target.coordinates);
+			else
+				warning("No command found or service in %s. You could try with --staged to find a staged version?",
+						target.coordinates);
+		}
+
 	}
 	
 	
+
+	private CommandData populateCommandData(ArtifactData target) throws Exception {
+		CommandData data = new CommandData();
+		data.coordinates = target.coordinates;
+		data.main = target.mainClass;
+		data.sha = target.sha;
+		data.time = System.currentTimeMillis();
+		data.dependencies = target.dependencies;
+		data.dependencies.add(target.file);
+		data.runbundles = target.runbundles;
+		data.jpmRepoDir = jpm.getRepoDir().getCanonicalPath();
+		
+		if (data.main == null) {
+			error("No main class set");
+			return null;
+		}
+		
+		return data;
+	}
 
 	/**
 	 * Check if a key is a sha
@@ -610,6 +654,7 @@ public class Main extends ReporterAdapter {
 			ServiceData data = target.service;
 			data.coordinates = opts.create();
 			updateData(data, opts);
+			
 			String result = jpm.createService(data);
 			if (result != null)
 				error("Create service failed: %s", result);

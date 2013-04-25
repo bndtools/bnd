@@ -102,6 +102,15 @@ public class JustAnotherPackageManager {
 		setPlatform(Platform.getPlatform(reporter));
 	}
 
+	public String ArtifactIdFromCoord(String coord) {
+		Matcher m = COORD_P.matcher(coord);
+		if(m.matches()) {
+			return m.group(2);
+		} else {
+			return null;
+		}
+	}
+	
 	public boolean hasAccess() {
 		assert(binDir != null);
 		assert(homeDir != null);
@@ -1113,7 +1122,8 @@ public class JustAnotherPackageManager {
 			if (selected != null) {
 				String desc = selected.description;
 				if (desc == null) {
-					desc = p.wiki.text;
+					if (p.wiki != null)
+						desc = p.wiki.text;
 					if (desc == null)
 						desc = "-";
 				}
