@@ -197,6 +197,7 @@ public abstract class Platform {
 		for(String commandName : commands.keySet()) {
 			sb.append(" "+commandName);
 		}
+		sb.append(" help");
 		
 		sed.replace("%listJpmCommands%", sb.toString().substring(1));
 		sed.doIt();
