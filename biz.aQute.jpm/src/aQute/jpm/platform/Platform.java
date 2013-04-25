@@ -8,6 +8,9 @@ import java.util.*;
 
 import aQute.jpm.lib.*;
 import aQute.lib.collections.*;
+import aQute.lib.getopt.*;
+import aQute.lib.io.*;
+import aQute.libg.reporter.*;
 import aQute.libg.sed.*;
 import aQute.service.reporter.*;
 
@@ -181,4 +184,35 @@ public abstract class Platform {
 		return "~/.jpm/settings.json";
 	}
 
+	public void parseCompletion(Object target, File f) throws Exception {
+		IO.copy(getClass().getResource("unix/jpm-completion.bash"), f);
+		
+		Sed sed = new Sed(f);
+		sed.setBackup(false);
+		
+		Reporter r = new ReporterAdapter();
+		CommandLine c = new CommandLine(r);
+		Map<String,Method> commands = c.getCommands(target);
+		StringBuilder sb = new StringBuilder();
+		for(String commandName : commands.keySet()) {
+			sb.append(" "+commandName);
+		}
+		
+		sed.replace("%listJpmCommands%", sb.toString().substring(1));
+		sed.doIt();
+	}
+
+	public void parseCompletion(Object target, PrintStream out) throws Exception {
+		File tmp = File.createTempFile("jpm-completion", ".tmp");
+		tmp.deleteOnExit();
+		
+		try {
+			parseCompletion(target, tmp);
+			IO.copy(tmp, out);
+		} finally {
+			tmp.delete();
+		}
+	}
+	
+	
 }

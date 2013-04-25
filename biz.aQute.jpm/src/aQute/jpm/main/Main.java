@@ -27,9 +27,11 @@ import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 import aQute.libg.glob.*;
 import aQute.libg.reporter.*;
+import aQute.libg.sed.*;
 import aQute.service.library.*;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
+import aQute.service.reporter.*;
 
 /**
  * The command line interface to JPM
@@ -859,6 +861,7 @@ public class Main extends ReporterAdapter {
 						error(help);
 						return;
 					} 
+					
 					String completionInstallResult = Platform.getPlatform(this).installCompletion(this);
 					if (completionInstallResult != null)
 						trace(completionInstallResult);
@@ -1666,7 +1669,8 @@ public class Main extends ReporterAdapter {
 			CommandLine cl = new CommandLine(this);	
 			cl.generateDocumentation(this, out);
 		} else if (genType.equalsIgnoreCase("bash-completion")) {
-			IO.copy(this.getClass().getResourceAsStream("/aQute/jpm/platform/unix/jpm-completion.bash"), out);
+			jpm.getPlatform().parseCompletion(this, out);
+			//IO.copy(this.getClass().getResourceAsStream("/aQute/jpm/platform/unix/jpm-completion.bash"), out);
 		} else {
 			error("Syntax: jpm generate <markdown|bash-completion>");
 			return;
