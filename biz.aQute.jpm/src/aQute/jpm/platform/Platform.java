@@ -106,6 +106,10 @@ public abstract class Platform {
 	public abstract String user() throws Exception;
 
 	public abstract void deleteCommand(CommandData cmd) throws Exception;
+	
+	public File getInitd(ServiceData data) {
+		return null;
+	}
 
 	public String defaultCacertsPassword() {
 		return "changeme";

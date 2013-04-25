@@ -72,7 +72,7 @@ public abstract class Unix extends Platform {
 		return null;
 	}
 
-	private File getInitd(ServiceData data) {
+	public File getInitd(ServiceData data) {
 		return new File("/etc/init.d/" + data.name);
 	}
 

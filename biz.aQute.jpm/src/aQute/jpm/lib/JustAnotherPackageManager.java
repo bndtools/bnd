@@ -282,15 +282,14 @@ public class JustAnotherPackageManager {
 				caches[3] = IO.getFile(settings.get("jpm.cache.global"));
 			}
 			ArrayList<File> toDelete = new ArrayList<File>();
-			ArrayList<File> toDeleteServices = new ArrayList<File>();
 			
 			for(File cache : caches) {
 				if (cache == null || !cache.exists()) {
 					continue;
 				}
-				listFiles(cache, toDelete, toDeleteServices);
-				if(toDelete.size() + toDeleteServices.size() > count) {
-					count = toDelete.size() + toDeleteServices.size();
+				listFiles(cache, toDelete);
+				if(toDelete.size() > count) {
+					count = toDelete.size();
 					if(!cache.canWrite()) {
 						reporter.error(PERMISSION_ERROR+" ("+cache+")");
 						return;
@@ -300,26 +299,19 @@ public class JustAnotherPackageManager {
 			}
 			listSupportFiles(toDelete);
 				
-			for (File f : toDeleteServices) {
-				if (!f.canWrite()) {
-					reporter.error(PERMISSION_ERROR+" ("+f+")");
-				}
-			}
 			for (File f : toDelete) {
-				if (!f.canWrite()) {
-					System.out.println(f);
+				if (f.exists() && !f.canWrite()) {
 					reporter.error(PERMISSION_ERROR+" ("+f+")");
 				}
 			}
 			if (reporter.getErrors().size() > 0) {
 				return;
 			}
-
-			for (File f : toDeleteServices) {
-				IO.deleteWithException(f);
-			}
+			
 			for (File f : toDelete) {
-				IO.deleteWithException(f);
+				if (f.exists()) {
+					IO.deleteWithException(f);
+				}
 			}
 		}
 
@@ -327,15 +319,12 @@ public class JustAnotherPackageManager {
 		
 	}
 	private String listFiles(final File cache) throws Exception { // Adapter to list without planning to delete
-		return listFiles(cache, null, null);
+		return listFiles(cache, null);
 	}
-	private String listFiles(final File cache, List<File>toDelete, List<File>toDeleteServices) throws Exception {
+	private String listFiles(final File cache, List<File>toDelete) throws Exception {
 		boolean stopServices = false;
 		if (toDelete == null) {
 			toDelete = new ArrayList<File>();
-		}
-		if (toDeleteServices == null) {
-			toDeleteServices = new ArrayList<File>();
 		} else {
 			stopServices = true;
 		}
@@ -353,7 +342,12 @@ public class JustAnotherPackageManager {
 		for (ServiceData sdata : getServices(new File(cache, "service"))) {
 			if (sdata != null) {
 				f.format("    * %s \t0 service directory for \"%s\"%n", sdata.sdir, sdata.name);
-				toDeleteServices.add(new File(sdata.sdir));
+				toDelete.add(new File(sdata.sdir));
+				File initd = platform.getInitd(sdata);
+				if (initd != null && initd.exists()) {
+					f.format("    * %s \t0 init.d file for \"%s\"%n", initd.getCanonicalPath(), sdata.name);
+					toDelete.add(initd);
+				}
 				if(stopServices) {
 					Service s = getService(sdata);
 					try {
