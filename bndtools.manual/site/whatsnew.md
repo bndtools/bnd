@@ -131,7 +131,7 @@ Older Releases
 [2]: https://github.com/bndtools/bndtools/wiki/Changes-in-2.1.0
 [3]: https://github.com/bndtools/bndtools/wiki/Program-Arguments
 [4]: #important-notes
-[5]: https://bndtools.ci.cloudbees.com/job/bnd.master/72/artifact/dist/bundles/biz.aQute.launcher/biz.aQute.launcher-1.0.6.jar
+[5]: https://bndtools.ci.cloudbees.com/job/bnd.master/75/artifact/dist/bundles/biz.aQute.launcher/biz.aQute.launcher-1.0.6.jar
 [6]: https://bndtools.ci.cloudbees.com/job/bndtools.master/lastSuccessfulBuild/artifact/bndtools.build/generated/p2
 [7]: https://github.com/bndtools/bndtools/issues
 [8]: http://bndtools.org/installation.html
