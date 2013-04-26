@@ -105,7 +105,7 @@ public class CommandTest extends TestCase {
 		String Wrong();
 	}
 	@Arguments(arg = {
-		""
+		"..."
 	})
 	interface TwoOptions extends Opt1, Opt2, Options {}
 	interface ThreeOptions extends Opt1, Opt2, Opt3 {}
