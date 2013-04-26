@@ -21,7 +21,6 @@ public class ArtifactData extends struct {
 	boolean				busy			= false;
 	public String		file;
 	public String		coordinates;
-	public Version		version;
 
 	synchronized void done() {
 		busy = false;

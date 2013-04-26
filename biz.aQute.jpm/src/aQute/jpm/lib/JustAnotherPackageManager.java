@@ -1056,7 +1056,6 @@ public class JustAnotherPackageManager {
 				reporter.trace("downloading sha");
 				ArtifactData target = putAsync(r.url);
 				target.coordinates	= getCoordinates(r);
-				target.version		= new Version(r.version);		
 				return target;
 			}
 			reporter.trace("no sha found");
@@ -1112,7 +1111,6 @@ public class JustAnotherPackageManager {
 				target = putAsync(r.url);
 
 			target.coordinates	= getCoordinates(r);
-			target.version 		= new Version(r.version);
 			return target;
 		}
 
