@@ -77,7 +77,7 @@ main = hakyll $ do
         compile $ readPageCompiler >>> processPagePartial
 
     -- Articles
-    match (list ["tutorial.md", "development.md", "faq.md", "concepts.md", "whatsnew2-0-0.md"]) $ do
+    match (list ["concepts.md", "development.md", "faq.md", "tutorial.md", "whatsnew.md", "whatsnew2-0-0.md"]) $ do
         route   $ setExtension ".html"
         compile $ pageCompilerWith defaultHakyllParserState writerOpts
             >>> applyTemplateCompiler "templates/article.html"
