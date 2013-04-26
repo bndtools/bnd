@@ -27,11 +27,9 @@ import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 import aQute.libg.glob.*;
 import aQute.libg.reporter.*;
-import aQute.libg.sed.*;
 import aQute.service.library.*;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
-import aQute.service.reporter.*;
 
 /**
  * The command line interface to JPM
@@ -554,7 +552,7 @@ public class Main extends ReporterAdapter {
 			if (target.mainClass != null) {
 				noCommand = false;
 				CommandData data = populateCommandData(target);
-				String name = jpm.ArtifactIdFromCoord(target.coordinates);
+				String name = jpm.getArtifactIdFromCoord(target.coordinates);
 				if (name == null) {
 					name = key;
 				}

@@ -34,8 +34,8 @@ import aQute.struct.*;
 
 /**
  * JPM is the Java package manager. It manages a local repository in the user
- * global directory and/or a global directory. This class is the main entry point
- * for the command line. This program maintains a repository, a list of
+ * global directory and/or a global directory. This class is the main entry
+ * point for the command line. This program maintains a repository, a list of
  * installed commands, and a list of installed service. It provides the commands
  * to changes these resources. All information is kept in a platform specific
  * area. However, the layout of this area is standardized.
@@ -66,32 +66,40 @@ import aQute.struct.*;
  */
 
 public class JustAnotherPackageManager {
-	static final String	PERMISSION_ERROR	= "No write acces, might require administrator or root privileges (sudo in *nix)";
-	static JSONCodec	codec			= new JSONCodec();
-	static Pattern		BSN_P			= Pattern
-												.compile(
-														"([-a-z0-9_]+(?:\\.[-a-z0-9_]+)+)(?:@([0-9]+(?:\\.[0-9]+(?:\\.[0-9]+(?:\\.[-_a-z0-9]+)?)?)?))?",
-														Pattern.CASE_INSENSITIVE);
-	static Pattern		COORD_P			= Pattern
-												.compile(
-														"([-a-z0-9_.]+):([-a-z0-9_.]+)(?::([-a-z0-9_.]+))?(?:@([-a-z0-9._]+))?",
-														Pattern.CASE_INSENSITIVE);
-	static Pattern		URL_P			= Pattern.compile("([a-z]{3,6}:/.*)", Pattern.CASE_INSENSITIVE);
-	static Pattern		CMD_P			= Pattern.compile("([a-z_][a-z\\d_]*)", Pattern.CASE_INSENSITIVE);
-	static Pattern		SHA_P			= Pattern.compile("(?:sha:)?([a-f0-9]{40,40})", Pattern.CASE_INSENSITIVE);
-	static Executor		executor;
+	private static final String	SERVICE_JAR_FILE	= "service.jar";
+	public static final String	SERVICE				= "service";
+	public static final String	COMMANDS			= "commands";
+	public static final String	LOCK				= "lock";
+	private static final String	JPM_CACHE_LOCAL		= "jpm.cache.local";
+	private static final String	JPM_CACHE_GLOBAL	= "jpm.cache.global";
+	static final String			PERMISSION_ERROR	= "No write acces, might require administrator or root privileges (sudo in *nix)";
+	static JSONCodec			codec				= new JSONCodec();
+	static Pattern				BSN_P				= Pattern
+															.compile(
+																	"([-a-z0-9_]+(?:\\.[-a-z0-9_]+)+)(?:@([0-9]+(?:\\.[0-9]+(?:\\.[0-9]+(?:\\.[-_a-z0-9]+)?)?)?))?",
+																	Pattern.CASE_INSENSITIVE);
+	static Pattern				COORD_P				= Pattern
+															.compile(
+																	"([-a-z0-9_.]+):([-a-z0-9_.]+)(?::([-a-z0-9_.]+))?(?:@([-a-z0-9._]+))?",
+																	Pattern.CASE_INSENSITIVE);
+	static Pattern				URL_P				= Pattern.compile("([a-z]{3,6}:/.*)", Pattern.CASE_INSENSITIVE);
+	static Pattern				CMD_P				= Pattern.compile("([a-z_][a-z\\d_]*)", Pattern.CASE_INSENSITIVE);
+	static Pattern				SHA_P				= Pattern.compile("(?:sha:)?([a-f0-9]{40,40})",
+															Pattern.CASE_INSENSITIVE);
+	static Executor				executor;
 
-	File				homeDir;
-	File				binDir;
-	File				repoDir;
-	File				commandDir;
-	File				serviceDir;
-	File				service;
-	Platform			platform;
-	XRemoteLibrary		library			= new XRemoteLibrary(null);
-	Reporter			reporter;
-	final List<Service>	startedByDaemon	= new ArrayList<Service>();
-	boolean				localInstall	= false;
+	File						homeDir;
+	File						binDir;
+	File						repoDir;
+	File						commandDir;
+	File						serviceDir;
+	File						service;
+	Platform					platform;
+	XRemoteLibrary				library				= new XRemoteLibrary(null);
+	Reporter					reporter;
+	final List<Service>			startedByDaemon		= new ArrayList<Service>();
+	boolean						localInstall		= false;
+
 	/**
 	 * Constructor
 	 * 
@@ -102,26 +110,26 @@ public class JustAnotherPackageManager {
 		setPlatform(Platform.getPlatform(reporter));
 	}
 
-	public String ArtifactIdFromCoord(String coord) {
+	public String getArtifactIdFromCoord(String coord) {
 		Matcher m = COORD_P.matcher(coord);
-		if(m.matches()) {
+		if (m.matches()) {
 			return m.group(2);
 		} else {
 			return null;
 		}
 	}
-	
+
 	public boolean hasAccess() {
-		assert(binDir != null);
-		assert(homeDir != null);
-		
-		return (binDir.canWrite() && homeDir.canWrite());
+		assert (binDir != null);
+		assert (homeDir != null);
+
+		return binDir.canWrite() && homeDir.canWrite();
 	}
 
 	public File getHomeDir() {
 		return homeDir;
 	}
-	
+
 	public File getRepoDir() {
 		return repoDir;
 	}
@@ -133,13 +141,14 @@ public class JustAnotherPackageManager {
 	public List<ServiceData> getServices() throws Exception {
 		return getServices(serviceDir);
 	}
+
 	public List<ServiceData> getServices(File serviceDir) throws Exception {
 		List<ServiceData> result = new ArrayList<ServiceData>();
-		
-		if(!serviceDir.exists()) {
+
+		if (!serviceDir.exists()) {
 			return result;
 		}
-		
+
 		for (File sdir : serviceDir.listFiles()) {
 			File dataFile = new File(sdir, "data");
 			ServiceData data = getData(ServiceData.class, dataFile);
@@ -151,13 +160,14 @@ public class JustAnotherPackageManager {
 	public List<CommandData> getCommands() throws Exception {
 		return getCommands(commandDir);
 	}
+
 	public List<CommandData> getCommands(File commandDir) throws Exception {
 		List<CommandData> result = new ArrayList<CommandData>();
-		
+
 		if (!commandDir.exists()) {
 			return result;
 		}
-		
+
 		for (File f : commandDir.listFiles()) {
 			CommandData data = getData(CommandData.class, f);
 			if (data != null)
@@ -181,142 +191,147 @@ public class JustAnotherPackageManager {
 	 */
 	public void gc() throws Exception {
 		HashSet<String> deps = new HashSet<String>();
-		
-		deps.add("service.jar");
-		
+
+		deps.add(SERVICE_JAR_FILE);
+
 		for (File cmd : commandDir.listFiles()) {
 			CommandData data = getData(CommandData.class, cmd);
-			for (String dep : data.dependencies) {
-				deps.add(new File(dep).getName());
-			}
-			for (String dep : data.runbundles) {
-				deps.add(new File(dep).getName());
-			}
+			addDependencies(deps, data);
 		}
 
 		for (File service : serviceDir.listFiles()) {
 			File dataFile = new File(service, "data");
 			ServiceData data = getData(ServiceData.class, dataFile);
-			for (String dep : data.dependencies) {
-				deps.add(new File(dep).getName());
-			}
-			for (String dep : data.runbundles) {
-				deps.add(new File(dep).getName());
-			}
+			addDependencies(deps, data);
 		}
-		
+
 		int count = 0;
-		for(File f : repoDir.listFiles()) {
+		for (File f : repoDir.listFiles()) {
 			String name = f.getName();
-			if(!deps.contains(name)) {
-				if (	!name.endsWith(".json") ||
-						!deps.contains(name.substring(0, name.length()-".json".length()))
-				) { // Remove json files only if the bin is going as well
+			if (!deps.contains(name)) {
+				if (!name.endsWith(".json") || !deps.contains(name.substring(0, name.length() - ".json".length()))) { // Remove
+																														// json
+																														// files
+																														// only
+																														// if
+																														// the
+																														// bin
+																														// is
+																														// going
+																														// as
+																														// well
 					f.delete();
-					count ++;
+					count++;
 				} else {
-					
+
 				}
 			}
 		}
-		System.out.format("Garbage collection done (%d file(s) removed)%n",  count); 
+		System.out.format("Garbage collection done (%d file(s) removed)%n", count);
+	}
+
+	private void addDependencies(HashSet<String> deps, CommandData data) {
+		for (String dep : data.dependencies) {
+			deps.add(new File(dep).getName());
+		}
+		for (String dep : data.runbundles) {
+			deps.add(new File(dep).getName());
+		}
 	}
 
 	public void deinit(Appendable out, boolean force) throws Exception {
 		Settings settings = new Settings(platform.getConfigFile());
-		
-		if(!force) {
-			Justif justify = new Justif(80,40);
+
+		if (!force) {
+			Justif justify = new Justif(80, 40);
 			StringBuilder sb = new StringBuilder();
 			Formatter f = new Formatter(sb);
-			
-			try {				
+
+			try {
 				String list = listFiles(platform.getGlobal());
 				if (list != null) {
 					f.format("In global default environment:%n");
 					f.format(list);
 				}
-				
+
 				list = listFiles(platform.getLocal());
 				if (list != null) {
 					f.format("In local default environment:%n");
 					f.format(list);
 				}
 
-				if (settings.containsKey("jpm.cache.global")) {
-					list = listFiles(IO.getFile(settings.get("jpm.cache.global")));
+				if (settings.containsKey(JPM_CACHE_GLOBAL)) {
+					list = listFiles(IO.getFile(settings.get(JPM_CACHE_GLOBAL)));
 					if (list != null) {
 						f.format("In global configured environment:%n");
 						f.format(list);
 					}
 				}
-				
-				if (settings.containsKey("jpm.cache.local")) {
-					list = listFiles(IO.getFile(settings.get("jpm.cache.local")));
+
+				if (settings.containsKey(JPM_CACHE_LOCAL)) {
+					list = listFiles(IO.getFile(settings.get(JPM_CACHE_LOCAL)));
 					if (list != null) {
 						f.format("In local configured environment:%n");
 						f.format(list);
 					}
-				}			
-				
+				}
+
 				list = listSupportFiles();
 				if (list != null) {
 					f.format("jpm support files:%n");
 					f.format(list);
 				}
-								
+
 				f.format("%n%n");
-				
-				f.format("All files listed above will be deleted if deinit is run with the force flag set" +
-						" (\"jpm deinit -f\" or \"jpm deinit --force\"%n%n");
+
+				f.format("All files listed above will be deleted if deinit is run with the force flag set"
+						+ " (\"jpm deinit -f\" or \"jpm deinit --force\"%n%n");
 				f.flush();
-				
+
 				justify.wrap(sb);
 				out.append(sb.toString());
-			} finally {
+			}
+			finally {
 				f.close();
 			}
 		} else { // i.e. if(force)
 			int count = 0;
 			File[] caches = {
-					platform.getGlobal(),
-					platform.getLocal(),
-					null,
-					null
+					platform.getGlobal(), platform.getLocal(), null, null
 			};
-			if(settings.containsKey("jpm.cache.local")) {
-				caches[2] = IO.getFile(settings.get("jpm.cache.local"));
+			if (settings.containsKey(JPM_CACHE_LOCAL)) {
+				caches[2] = IO.getFile(settings.get(JPM_CACHE_LOCAL));
 			}
-			if(settings.containsKey("jpm.cache.global")) {
-				caches[3] = IO.getFile(settings.get("jpm.cache.global"));
+			if (settings.containsKey(JPM_CACHE_GLOBAL)) {
+				caches[3] = IO.getFile(settings.get(JPM_CACHE_GLOBAL));
 			}
 			ArrayList<File> toDelete = new ArrayList<File>();
-			
-			for(File cache : caches) {
+
+			for (File cache : caches) {
 				if (cache == null || !cache.exists()) {
 					continue;
 				}
 				listFiles(cache, toDelete);
-				if(toDelete.size() > count) {
+				if (toDelete.size() > count) {
 					count = toDelete.size();
-					if(!cache.canWrite()) {
-						reporter.error(PERMISSION_ERROR+" ("+cache+")");
+					if (!cache.canWrite()) {
+						reporter.error(PERMISSION_ERROR + " (" + cache + ")");
 						return;
 					}
 					toDelete.add(cache);
 				}
 			}
 			listSupportFiles(toDelete);
-				
+
 			for (File f : toDelete) {
 				if (f.exists() && !f.canWrite()) {
-					reporter.error(PERMISSION_ERROR+" ("+f+")");
+					reporter.error(PERMISSION_ERROR + " (" + f + ")");
 				}
 			}
 			if (reporter.getErrors().size() > 0) {
 				return;
 			}
-			
+
 			for (File f : toDelete) {
 				if (f.exists()) {
 					IO.deleteWithException(f);
@@ -324,13 +339,14 @@ public class JustAnotherPackageManager {
 			}
 		}
 
-		
-		
 	}
-	private String listFiles(final File cache) throws Exception { // Adapter to list without planning to delete
+
+	// Adapter to list without planning to delete
+	private String listFiles(final File cache) throws Exception {
 		return listFiles(cache, null);
 	}
-	private String listFiles(final File cache, List<File>toDelete) throws Exception {
+
+	private String listFiles(final File cache, List<File> toDelete) throws Exception {
 		boolean stopServices = false;
 		if (toDelete == null) {
 			toDelete = new ArrayList<File>();
@@ -339,16 +355,16 @@ public class JustAnotherPackageManager {
 		}
 		int count = 0;
 		Formatter f = new Formatter();
-		
+
 		f.format(" - Cache:%n    * %s%n", cache.getCanonicalPath());
 		f.format(" - Commands:%n");
-		for (CommandData cdata : getCommands(new File(cache, "commands"))) {
+		for (CommandData cdata : getCommands(new File(cache, COMMANDS))) {
 			f.format("    * %s \t0 handle for \"%s\"%n", cdata.bin, cdata.name);
 			toDelete.add(new File(cdata.bin));
 			count++;
 		}
 		f.format(" - Services:%n");
-		for (ServiceData sdata : getServices(new File(cache, "service"))) {
+		for (ServiceData sdata : getServices(new File(cache, SERVICE))) {
 			if (sdata != null) {
 				f.format("    * %s \t0 service directory for \"%s\"%n", sdata.sdir, sdata.name);
 				toDelete.add(new File(sdata.sdir));
@@ -357,7 +373,7 @@ public class JustAnotherPackageManager {
 					f.format("    * %s \t0 init.d file for \"%s\"%n", initd.getCanonicalPath(), sdata.name);
 					toDelete.add(initd);
 				}
-				if(stopServices) {
+				if (stopServices) {
 					Service s = getService(sdata);
 					try {
 						s.stop();
@@ -368,14 +384,18 @@ public class JustAnotherPackageManager {
 			}
 		}
 		f.format("%n");
-		
+
 		String result = (count > 0) ? f.toString() : null;
 		f.close();
 		return result;
 	}
-	private String listSupportFiles() throws Exception { // Adapter to list without planning to delete
+
+	private String listSupportFiles() throws Exception { // Adapter to list
+															// without planning
+															// to delete
 		return listSupportFiles(null);
 	}
+
 	private String listSupportFiles(List<File> toDelete) throws Exception {
 		Formatter f = new Formatter();
 		try {
@@ -388,15 +408,16 @@ public class JustAnotherPackageManager {
 				f.format("    * %s \t0 Config file%n", confFile);
 				toDelete.add(confFile);
 			}
-			
+
 			String result = (toDelete.size() > precount) ? f.toString() : null;
 			return result;
-		} finally {
+		}
+		finally {
 			f.close();
 		}
-			
+
 	}
-	
+
 	/**
 	 * @param data
 	 * @param target
@@ -411,7 +432,7 @@ public class JustAnotherPackageManager {
 		}
 		data.sdir = sdir.getAbsolutePath();
 
-		File lock = new File(data.sdir, "lock");
+		File lock = new File(data.sdir, LOCK);
 		data.lock = lock.getAbsolutePath();
 
 		if (data.work == null)
@@ -461,7 +482,7 @@ public class JustAnotherPackageManager {
 			data.bin = new File(binDir, data.name).getAbsolutePath();
 
 		Map<String,String> map = null;
-		if ( data.trace ) {
+		if (data.trace) {
 			map = new HashMap<String,String>();
 			map.put("java.security.manager", "aQute.jpm.service.TraceSecurityManager");
 			reporter.trace("tracing");
@@ -486,9 +507,11 @@ public class JustAnotherPackageManager {
 		File base = new File(serviceDir, serviceName);
 		return getService(base);
 	}
+
 	public Service getService(ServiceData sdata) throws Exception {
 		return getService(new File(sdata.sdir));
 	}
+
 	private Service getService(File base) throws Exception {
 		File dataFile = new File(base, "data");
 		if (!dataFile.isFile())
@@ -539,7 +562,7 @@ public class JustAnotherPackageManager {
 								return "Invalid digest for " + je.getName() + ", " + expected + " != "
 										+ Base64.encodeBase64(md.digest());
 						} else
-							System.out.println("could not find digest for " + algorithm + "-Digest");
+							reporter.error("could not find digest for " + algorithm + "-Digest");
 					}
 					catch (NoSuchAlgorithmException nsae) {
 						return "Missing digest algorithm " + algorithm;
@@ -548,7 +571,6 @@ public class JustAnotherPackageManager {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
 			return "Failed to verify due to exception: " + e.getMessage();
 		}
 		return null;
@@ -566,8 +588,9 @@ public class JustAnotherPackageManager {
 			return codec.dec().from(dataFile).get(clazz);
 		}
 		catch (Exception e) {
-			//e.printStackTrace();
-			//System.out.println("Cannot read data file "+dataFile+": " + IO.collect(dataFile));
+			// e.printStackTrace();
+			// System.out.println("Cannot read data file "+dataFile+": " +
+			// IO.collect(dataFile));
 			return null;
 		}
 	}
@@ -579,10 +602,9 @@ public class JustAnotherPackageManager {
 	public void setPlatform(Platform plf) throws IOException {
 		this.platform = plf;
 		// pl: homeDir should always be provided by Main:_jpm
-		/*if (homeDir == null)
-			homeDir = platform.getGlobal();
-
-		initDirs();*/
+		/*
+		 * if (homeDir == null) homeDir = platform.getGlobal(); initDirs();
+		 */
 	}
 
 	void initDirs() throws IOException {
@@ -595,11 +617,11 @@ public class JustAnotherPackageManager {
 			throw new ExceptionInInitializerError("Could not create directory " + repoDir);
 		}
 
-		commandDir = new File(homeDir, "commands");
-		serviceDir = new File(homeDir, "service");
+		commandDir = new File(homeDir, COMMANDS);
+		serviceDir = new File(homeDir, SERVICE);
 		commandDir.mkdir();
 		serviceDir.mkdir();
-		service = new File(repoDir, "service.jar");
+		service = new File(repoDir, SERVICE_JAR_FILE);
 		if (!service.isFile()) {
 			init();
 		}
@@ -627,36 +649,39 @@ public class JustAnotherPackageManager {
 			artifact.title = main.getValue("JPM-Name");
 
 			List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
-			List<ArtifactData> runbundles	= new ArrayList<ArtifactData>();
-			
+			List<ArtifactData> runbundles = new ArrayList<ArtifactData>();
+
 			{
 				if (main.getValue("JPM-Classpath") != null) {
 					Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
 
 					for (Map.Entry<String,Attrs> e : requires.entrySet()) {
 						reporter.trace("Dependency: %s%n", e.getKey());
-						retrieveDependency(e.getKey(), e.getValue().getVersion(), dependencies); // Parallel download of JPM dependencies
+						retrieveDependency(e.getKey(), e.getValue().getVersion(), dependencies);
 					}
-				} else if (!localInstall) { // No JPM-Classpath, falling back to server's revision
+				} else if (!localInstall) { // No JPM-Classpath, falling back to
+											// server's revision
 					Iterable<RevisionRef> closure = library.getClosure(artifact.sha, false);
 					for (RevisionRef ref : closure) {
 						String sha = Hex.toHexString(ref.revision);
 						reporter.trace("Dependency: %s:%s@%s (%s)", ref.groupId, ref.artifactId, ref.version, sha);
-						//artifact.dependencies.add(installDependency(ref));
 						retrieveDependency(sha, null, dependencies);
 					}
 				}
-				
+
 				if (main.getValue("JPM-Runbundles") != null) {
 					Parameters jpmrunbundles = OSGiHeader.parseHeader(main.getValue("JPM-Runbundles"));
 
 					for (Map.Entry<String,Attrs> e : jpmrunbundles.entrySet()) {
 						reporter.trace("Dependency: %s", e.getKey());
-						retrieveDependency(e.getKey(), e.getValue().getVersion(), dependencies); // Parallel download of JPM runbundles
+						retrieveDependency(e.getKey(), e.getValue().getVersion(), dependencies); // Parallel
+																									// download
+																									// of
+																									// JPM
+																									// runbundles
 					}
-	
 				}
-				
+
 			}
 
 			// Add dependencies and runbundle into the target
@@ -678,7 +703,7 @@ public class JustAnotherPackageManager {
 					artifact.runbundles.add(data.file);
 				}
 			}
-			
+
 			{
 				Parameters service = OSGiHeader.parseHeader(main.getValue("JPM-Service"));
 				if (service.size() > 1)
@@ -706,8 +731,6 @@ public class JustAnotherPackageManager {
 				}
 				reporter.trace("commands %s", artifact.command);
 			}
-			
-			
 
 			reporter.trace("returning " + artifact);
 			return artifact;
@@ -718,9 +741,18 @@ public class JustAnotherPackageManager {
 
 	}
 
+	/**
+	 * Get a depedeny, if it is not in the cache initiate the download but
+	 * return before the dep is actually downloaded.
+	 * 
+	 * @param key
+	 * @param version
+	 * @param dependencies
+	 * @throws Exception
+	 */
 	private void retrieveDependency(String key, String version, List<ArtifactData> dependencies) throws Exception {
-		//String key = e.getKey();
-		//String version = e.getValue().get("version");
+		// String key = e.getKey();
+		// String version = e.getValue().get("version");
 		if (aQute.bnd.osgi.Verifier.isBsn(key) && version != null && aQute.bnd.osgi.Verifier.isVersion(version)) {
 			key = Library.OSGI_GROUP + ":" + key + ":" + version;
 		}
@@ -733,29 +765,8 @@ public class JustAnotherPackageManager {
 		} else {
 			reporter.trace("found %s", candidate);
 			dependencies.add(candidate);
-		}		
-	}
-
-	/*private String installDependency(RevisionRef ref) throws Exception {
-		String sha = Hex.toHexString(ref.revision);
-
-		// If dependency is not already in cache
-		File depBin = new File(repoDir, sha);
-		if (!depBin.exists()) {
-			File tmp = createTempFile(repoDir, "mtp", ".dep");
-			tmp.deleteOnExit();
-			try {
-				copy(ref.url.toURL(), tmp);
-				sha = Hex.toHexString(SHA1.digest(tmp).digest());
-				depBin = new File(repoDir, sha);
-				rename(tmp, depBin);
-			}
-			finally {
-				tmp.delete();
-			}
 		}
-		return depBin.getCanonicalPath();
-	}*/
+	}
 
 	private void doCommand(Attrs attrs, CommandData data, ArtifactData artifact) throws Exception {
 		data.sha = artifact.sha;
@@ -772,8 +783,8 @@ public class JustAnotherPackageManager {
 			data.title = data.name;
 
 		data.dependencies = artifact.dependencies;
-		data.runbundles	  = artifact.runbundles;
-		data.jpmRepoDir	  = repoDir.getCanonicalPath();
+		data.runbundles = artifact.runbundles;
+		data.jpmRepoDir = repoDir.getCanonicalPath();
 	}
 
 	private void doService(Attrs attrs, ServiceData data, ArtifactData artifact) throws Exception {
@@ -794,9 +805,9 @@ public class JustAnotherPackageManager {
 
 				for (Service service : startedByDaemon) {
 					try {
-						System.err.println("Stopping " + service);
+						reporter.error("Stopping " + service);
 						service.stop();
-						System.err.println("Stopped " + service);
+						reporter.error("Stopped " + service);
 					}
 					catch (Exception e) {
 						// Ignore
@@ -816,21 +827,21 @@ public class JustAnotherPackageManager {
 		}
 
 		if (start.isEmpty())
-			System.out.println("No services to start");
+			reporter.warning("No services to start");
 
 		for (ServiceData sd : start) {
 			try {
 				Service service = getService(sd.name);
-				System.err.println("Starting " + service);
+				reporter.trace("Starting " + service);
 				String result = service.start();
 				if (result != null)
-					System.err.println("Started error " + result);
+					reporter.error("Started error " + result);
 				else
 					startedByDaemon.add(service);
-				System.err.println("Started " + service);
+				reporter.trace("Started " + service);
 			}
 			catch (Exception e) {
-				System.err.println("Cannot start daemon " + sd.name);
+				reporter.error("Cannot start daemon %s, due to %s", sd.name, e);
 			}
 		}
 
@@ -838,14 +849,14 @@ public class JustAnotherPackageManager {
 			for (Service sd : startedByDaemon) {
 				try {
 					if (!sd.isRunning()) {
-						System.err.println("Starting due to failure " + sd);
+						reporter.error("Starting due to failure " + sd);
 						String result = sd.start();
 						if (result != null)
-							System.err.println("Started error " + result);
+							reporter.error("Started error " + result);
 					}
 				}
 				catch (Exception e) {
-					System.err.println("Cannot start daemon " + sd);
+					reporter.error("Cannot start daemon %s, due to %s", sd, e);
 				}
 			}
 			Thread.sleep(10000);
@@ -859,7 +870,7 @@ public class JustAnotherPackageManager {
 			return;
 
 		if (cyclic.contains(sd)) {
-			System.err.println("Cyclic dependency for " + sd.name);
+			reporter.error("Cyclic dependency for " + sd.name);
 			return;
 		}
 
@@ -871,7 +882,7 @@ public class JustAnotherPackageManager {
 
 			ServiceData deps = map.get(dependsOn);
 			if (deps == null) {
-				System.err.println("No such service " + dependsOn + " but " + sd.name + " depends on it");
+				reporter.error("No such service " + dependsOn + " but " + sd.name + " depends on it");
 			} else {
 				checkStartup(map, start, deps, cyclic);
 			}
@@ -941,18 +952,17 @@ public class JustAnotherPackageManager {
 		File data = IO.getFile(repoDir, name + ".json");
 		if (data.isFile()) { // Bin + metadata
 			ArtifactData artifact = codec.dec().from(data).get(ArtifactData.class);
-			artifact.file =  IO.getFile(repoDir, name).getAbsolutePath();
+			artifact.file = IO.getFile(repoDir, name).getAbsolutePath();
 			return artifact;
 		}
 		File bin = IO.getFile(repoDir, name);
 		if (bin.exists()) { // Only bin
 			ArtifactData artifact = new ArtifactData();
-			artifact.file 	= bin.getAbsolutePath();
-			artifact.sha 	= sha;
+			artifact.file = bin.getAbsolutePath();
+			artifact.sha = sha;
 			return artifact;
 		}
-			
-			
+
 		return null;
 	}
 
@@ -1022,6 +1032,7 @@ public class JustAnotherPackageManager {
 
 		return sb.toString();
 	}
+
 	private String getCoordinates(RevisionRef r) {
 		StringBuilder sb = new StringBuilder(r.groupId).append(":").append(r.artifactId).append(":");
 		if (r.classifier != null)
@@ -1038,7 +1049,7 @@ public class JustAnotherPackageManager {
 		}
 		return data;
 	}
-	
+
 	public ArtifactData getCandidateAsync(String key, boolean staged) throws Exception {
 		reporter.trace("getCandidate " + key);
 		// Short cut, see if we alread have it
@@ -1055,7 +1066,7 @@ public class JustAnotherPackageManager {
 			if (r != null) {
 				reporter.trace("downloading sha");
 				ArtifactData target = putAsync(r.url);
-				target.coordinates	= getCoordinates(r);
+				target.coordinates = getCoordinates(r);
 				return target;
 			}
 			reporter.trace("no sha found");
@@ -1110,7 +1121,7 @@ public class JustAnotherPackageManager {
 			if (target == null)
 				target = putAsync(r.url);
 
-			target.coordinates	= getCoordinates(r);
+			target.coordinates = getCoordinates(r);
 			return target;
 		}
 
@@ -1145,12 +1156,12 @@ public class JustAnotherPackageManager {
 
 			if (r.classifier == null || classifier == null || classifier.equals(r.classifier)) {
 				if (r.phase == Phase.MASTER || (r.phase == Phase.STAGING && staged)) {
-					Version v = toVersion(r.baseline,r.qualifier);
+					Version v = toVersion(r.baseline, r.qualifier);
 					if (selected == null || v.compareTo(selectedVersion) > 0) {
 						selected = r;
 						selectedVersion = v;
 					}
-						
+
 				}
 			}
 		}
@@ -1167,7 +1178,7 @@ public class JustAnotherPackageManager {
 		if (qualifier == null || qualifier.trim().length() == 0) {
 			return new Version(baseline);
 		} else {
-			return new Version(baseline+"."+qualifier);
+			return new Version(baseline + "." + qualifier);
 		}
 	}
 
@@ -1191,7 +1202,7 @@ public class JustAnotherPackageManager {
 	}
 
 	public void init() throws IOException {
-		URL s = getClass().getClassLoader().getResource("service.jar");
+		URL s = getClass().getClassLoader().getResource(SERVICE_JAR_FILE);
 		IO.copy(s, service);
 	}
 
@@ -1214,13 +1225,13 @@ public class JustAnotherPackageManager {
 		} else {
 			this.homeDir = homeDir;
 		}
-		
+
 		initDirs();
 	}
 
 	public void setBinDir(File binDir) throws IOException {
 		this.binDir = binDir;
-		if(binDir != null && !binDir.exists())
+		if (binDir != null && !binDir.exists())
 			this.binDir.mkdirs();
 	}
 
@@ -1272,91 +1283,102 @@ public class JustAnotherPackageManager {
 
 	public String what(String key, boolean oneliner) throws Exception {
 		byte[] sha;
-		
+
 		Matcher m = SHA_P.matcher(key);
 		if (m.matches()) {
 			sha = Hex.toByteArray(key);
 		} else {
-			File jarfile = new File(key);
-			if (!jarfile.exists()) {
-				reporter.error("File does not exist: %s", jarfile.getCanonicalPath());
+			m = URL_P.matcher(key);
+			if (m.matches()) {
+				URL url = new URL(key);
+				sha = SHA1.digest(url.openStream()).digest();
+			} else {
+				File jarfile = new File(key);
+				if (!jarfile.exists()) {
+					reporter.error("File does not exist: %s", jarfile.getCanonicalPath());
+				}
+				sha = SHA1.digest(jarfile).digest();
 			}
-			sha = SHA1.digest(jarfile).digest();
 		}
-
-		
+		reporter.trace("sha %s", Hex.toHexString(sha));
 		Revision revision = library.getRevision(sha);
 		if (revision == null) {
 			return null;
 		}
-		
+
 		StringBuilder sb = new StringBuilder();
 		Formatter f = new Formatter(sb);
-		Justif justif = new Justif(100, 20, 70, 20, 75);
+		Justif justif = new Justif(120, 20, 70, 20, 75);
 		DateFormat dateFormat = DateFormat.getDateInstance();
-		
+
 		try {
-			if(oneliner) {
-				f.format("%s \t0- %s \t1- %s%n", revision.artifactId, createCoord(revision), dateFormat.format(new Date(revision.created)));
+			if (oneliner) {
+				f.format("%20s %s%n", Hex.toHexString(revision._id), createCoord(revision));
 			} else {
-				f.format("%n%n----------------------------%n");
 				f.format("Artifact: %s%n", revision.artifactId);
-				if(revision.organization != null && revision.organization.name != null) {
+				if (revision.organization != null && revision.organization.name != null) {
 					f.format(" (%s)", revision.organization.name);
 				}
 				f.format("%n");
-				f.format("Coordinate: %s%n", createCoord(revision));
-				f.format("Created: %s%n", dateFormat.format(new Date(revision.created)));
-				f.format("Size: %d%n", revision.size);
-				f.format("Sha: %s%n", Hex.toHexString(revision._id));
-				f.format("URL: %s%n", createJpmLink(revision));
-				f.format("----------------------------%n");
-				f.format("Description:%n");
+				f.format("Coordinates\t0: %s%n", createCoord(revision));
+				f.format("Created\t0: %s%n", dateFormat.format(new Date(revision.created)));
+				f.format("Size\t0: %d%n", revision.size);
+				f.format("Sha\t0: %s%n", Hex.toHexString(revision._id));
+				f.format("URL\t0: %s%n", createJpmLink(revision));
+				f.format("%n");
 				f.format("%s%n", revision.description);
-				f.format("----------------------------%n");
-				f.format("Dependencies:%n");
+				f.format("%n");
+				f.format("Dependencies\t0:%n");
 				boolean flag = false;
 				Iterable<RevisionRef> closure = library.getClosure(revision._id, true);
-				for(RevisionRef dep : closure) {
-					f.format(" - %s \t2- %s \t3- %s%n", dep.name, createCoord(dep), dateFormat.format(new Date(dep.created)));
+				for (RevisionRef dep : closure) {
+					f.format(" - %s \t2- %s \t3- %s%n", dep.name, createCoord(dep),
+							dateFormat.format(new Date(dep.created)));
 					flag = true;
 				}
 				if (!flag) {
 					f.format("     None%n");
 				}
-				f.format("----------------------------%n");
+				f.format("%n");
 			}
 			f.flush();
 			justif.wrap(sb);
 			return sb.toString();
-		} finally {
+		}
+		finally {
 			f.close();
 		}
-			
-		
+
 	}
+
 	private String createCoord(Revision rev) {
 		return String.format("%s:%s@%s [%s]", rev.groupId, rev.artifactId, rev.version, rev.phase);
 	}
+
 	private String createCoord(RevisionRef rev) {
 		return String.format("%s:%s@%s [%s]", rev.groupId, rev.artifactId, rev.version, rev.phase);
 	}
+
 	private String createJpmLink(Revision rev) {
 		return String.format("http://jpm4j.org/#!/p/sha/%s//%s", Hex.toHexString(rev._id), rev.baseline);
 	}
 
-	public class UpdateMemo { 
-		public CommandData current; // Works for commandData and ServiceData, as ServiceData --|> CommandData 
-		public RevisionRef best;
+	public class UpdateMemo {
+		public CommandData	current;	// Works for commandData and
+										// ServiceData, as ServiceData --|>
+										// CommandData
+		public RevisionRef	best;
 	}
-	public void listUpdates(List<UpdateMemo> notFound, List<UpdateMemo> upToDate, List<UpdateMemo> toUpdate, CommandData data, boolean staged) throws Exception {
+
+	public void listUpdates(List<UpdateMemo> notFound, List<UpdateMemo> upToDate, List<UpdateMemo> toUpdate,
+			CommandData data, boolean staged) throws Exception {
 
 		UpdateMemo memo = new UpdateMemo();
 		memo.current = data;
-		
+
 		Matcher m = data.coordinates == null ? null : COORD_P.matcher(data.coordinates);
 
-		if ( data.version == null || m == null || !m.matches() ) {
+		if (data.version == null || m == null || !m.matches()) {
 			Revision revision = library.getRevision(data.sha);
 			if (revision == null) {
 				notFound.add(memo);
@@ -1395,21 +1417,21 @@ public class JustAnotherPackageManager {
 	public void update(UpdateMemo memo) throws Exception {
 
 		ArtifactData target = put(memo.best.url);
-		
-		memo.current.coordinates	= getCoordinates(memo.best);
-		memo.current.version		= new Version(memo.best.version);
+
+		memo.current.coordinates = getCoordinates(memo.best);
+		memo.current.version = new Version(memo.best.version);
 		target.sync();
-		memo.current.sha			= target.sha;
-		memo.current.dependencies	= target.dependencies;
+		memo.current.sha = target.sha;
+		memo.current.dependencies = target.dependencies;
 		memo.current.dependencies.add((new File(repoDir, Hex.toHexString(target.sha))).getCanonicalPath());
-		memo.current.runbundles		= target.runbundles;
-		memo.current.description	= target.description;
-		memo.current.time			= target.time;
-		
+		memo.current.runbundles = target.runbundles;
+		memo.current.description = target.description;
+		memo.current.time = target.time;
+
 		if (memo.current instanceof ServiceData) {
-			Service service = getService((ServiceData)memo.current);
+			Service service = getService((ServiceData) memo.current);
 			service.remove();
-			createService((ServiceData)memo.current);
+			createService((ServiceData) memo.current);
 			IO.delete(new File(IO.getFile(serviceDir, memo.current.name), "data"));
 			storeData(new File(IO.getFile(serviceDir, memo.current.name), "data"), memo.current);
 		} else {
@@ -1418,8 +1440,6 @@ public class JustAnotherPackageManager {
 			IO.delete(IO.getFile(commandDir, memo.current.name));
 			storeData(IO.getFile(commandDir, memo.current.name), memo.current);
 		}
-		
-		
-		
+
 	}
 }
