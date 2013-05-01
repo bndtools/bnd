@@ -48,8 +48,15 @@ public class Workspace extends Processor {
 		projectDir = projectDir.getAbsoluteFile();
 		assert projectDir.isDirectory();
 
-		Workspace ws = getWorkspace(projectDir.getParentFile());
-		return ws.getProjectFromLocation(projectDir);
+		try
+		{
+			Workspace ws = getWorkspace(projectDir.getParentFile());
+			return ws.getProjectFromLocation(projectDir);
+		}
+			catch(IllegalArgumentException err)
+			{
+				return null;
+			}
 	}
 
 	public static Workspace getWorkspace(File parent) throws Exception {
