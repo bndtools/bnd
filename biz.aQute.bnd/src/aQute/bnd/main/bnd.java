@@ -2404,11 +2404,9 @@ public class bnd extends Processor {
 		}
 
 		if (f.isFile()) {
-			File projectDir = f.getParentFile();
-			File workspaceDir = projectDir.getParentFile();
-			Workspace ws = Workspace.getWorkspace(workspaceDir);
-			Project project = ws.getProject(projectDir.getName());
-			if (project.isValid()) {
+			Project project = Workspace.getProject(f.getParentFile());
+			if (project != null) 
+			{
 				project.setTrace(isTrace());
 				project.setPedantic(isPedantic());
 				return project;
