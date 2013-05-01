@@ -296,7 +296,7 @@ public class Workspace extends Processor {
 			{
 				if(file.isDirectory())
 				{
-					Project p = getProject(file);
+					Project p = getProjectFromLocation(file);
 					if(p != null)
 					{
 						projects.add(p);

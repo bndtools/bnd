@@ -35,6 +35,7 @@ public class TestWorkspace  extends TestCase
 				repos.add(f.getAbsolutePath());
 			}
 			Iterator<String> it = repos.iterator();
+			assertTrue("Not test/gitWs/aDir ",it.next().endsWith("test/gitWs/aDir"));
 			assertTrue("Not cnf/repo ",it.next().endsWith("test/gitWs/cnf.repo"));
 			assertTrue("Not repo1 ",it.next().endsWith("test/gitWs/repo1"));
 			assertTrue("Not repo2 ",it.next().endsWith("test/gitWs/repo2"));
