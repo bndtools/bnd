@@ -61,8 +61,7 @@ public class Workspace extends Processor {
 
 	public static Workspace getWorkspace(File parent) throws Exception {
 		File workspaceDir = parent.getAbsoluteFile();
-
-		List<File> projectDirs = new ArrayList<File>();
+		String redirect = null;
 		// the cnf directory can actually be a
 		// file that redirects
 		while (workspaceDir.isDirectory()) {
@@ -77,9 +76,8 @@ public class Workspace extends Processor {
 			}
 				
 			if (test.isFile()) {
-				String redirect = IO.collect(test).trim();
+				redirect = IO.collect(test).trim();
 				test = getFile(test.getParentFile(), redirect).getAbsoluteFile();
-				addProjectDirs(workspaceDir.getParentFile(), redirect, projectDirs);
 				workspaceDir = test;
 			}
 			if (!test.exists())
@@ -92,11 +90,14 @@ public class Workspace extends Processor {
 			Workspace ws;
 			if (wsr == null || (ws = wsr.get()) == null) {
 				ws = new Workspace(workspaceDir);
-				for(File dir : projectDirs)
+				if(redirect != null)
 				{
-					if(!ws.projectDirs.contains(dir))
+					for(File dir : getProjectDirs(parent.getAbsoluteFile().getParentFile(), redirect))
 					{
-						ws.projectDirs.add(dir);
+						if(!ws.projectDirs.contains(dir))
+						{
+							ws.projectDirs.add(dir);
+						}
 					}
 				}
 				cache.put(workspaceDir.getAbsolutePath(), new WeakReference<Workspace>(ws));
@@ -105,8 +106,9 @@ public class Workspace extends Processor {
 		}
 	}
 	
-	protected static void addProjectDirs(File baseDir,String redirect,List<File> projectDirs)
+	protected static List<File> getProjectDirs(File baseDir,String redirect)
 	{
+		List<File> projectDirs = new ArrayList<File>();
 		while(redirect.startsWith(".."))
 		{		
 			for(File dir : baseDir.listFiles())
@@ -119,6 +121,7 @@ public class Workspace extends Processor {
 			redirect = redirect.length() > 3 ? redirect.substring(3) : "";
 			baseDir=baseDir.getParentFile();
 		}
+		return projectDirs;
 	}
 
 	public Workspace(File dir) 

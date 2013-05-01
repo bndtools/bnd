@@ -27,7 +27,7 @@ public class TestWorkspace  extends TestCase
 				throws Exception
 		{
 			Workspace ws = Workspace.getWorkspace(new File("test/gitWs/repo1"));
-			assertEquals(3,ws.projectDirs.size());
+			assertEquals(4,ws.projectDirs.size());
 			
 			TreeSet<String> repos = new TreeSet<String>();
 			for(File f : ws.projectDirs)
@@ -58,26 +58,23 @@ public class TestWorkspace  extends TestCase
 		
 		public void testAddProjectDirs_NoRedirect()
 		{
-			List<File> projectDirs = new ArrayList<File>();
 			File baseDir = new File("test/ws");
-			Workspace.addProjectDirs(baseDir, "/abc", projectDirs);
+			List<File> projectDirs = Workspace.getProjectDirs(baseDir, "/abc");
 			assertEquals(0,projectDirs.size());
 		}
 		
 		public void testAddProjectDirs_RedirectShort()
 		{
-			List<File> projectDirs = new ArrayList<File>();
 			File baseDir = new File("test/gitWs/repo1/proj1");
-			Workspace.addProjectDirs(baseDir, "..", projectDirs);
+			List<File> projectDirs = Workspace.getProjectDirs(baseDir, "..");
 			assertEquals(1,projectDirs.size());
 			assertTrue("Should be dummy "+projectDirs.get(0).getAbsolutePath(),projectDirs.get(0).getAbsolutePath().endsWith("test/gitWs/repo1/proj1/dummy"));
 		}
 		
 		public void testAddProjectDirs_RedirectTwo()
 		{
-			List<File> projectDirs = new ArrayList<File>();
 			File baseDir = new File("test/gitWs/repo1/proj1/dummy");
-			Workspace.addProjectDirs(baseDir, "../..", projectDirs);
+			List<File> projectDirs = Workspace.getProjectDirs(baseDir, "../..");
 			assertEquals(1,projectDirs.size());
 			assertTrue("Should be dummy "+projectDirs.get(0).getAbsolutePath(),projectDirs.get(0).getAbsolutePath().endsWith("test/gitWs/repo1/proj1/dummy"));
 		}
