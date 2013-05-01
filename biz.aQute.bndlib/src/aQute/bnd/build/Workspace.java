@@ -173,6 +173,7 @@ public class Workspace extends Processor {
 		}
 		models.put(getBSNForProject(project) , project);
 		projectLocation.put(project.getBase().getAbsolutePath(), project);
+		projects.clear();
 		return project;
 	}
 
@@ -287,7 +288,7 @@ public class Workspace extends Processor {
 
 	protected List<Project> projects = new ArrayList<Project>();
 	
-	public Collection<Project> getAllProjects() 
+	public synchronized Collection<Project> getAllProjects() 
 		throws Exception 
 	{
 		if(projects.size()>0)
@@ -295,6 +296,7 @@ public class Workspace extends Processor {
 			return projects;
 		}
 		
+		List<Project> list = new ArrayList<Project>();
 		for(File dir : projectDirs)
 		{
 			for (File file : dir.listFiles()) 
@@ -304,11 +306,12 @@ public class Workspace extends Processor {
 					Project p = getProjectFromLocation(file);
 					if(p != null)
 					{
-						projects.add(p);
+						list.add(p);
 					}
 				}
 			}
 		}
+		projects.addAll(list);
 		return projects;
 	}
 
