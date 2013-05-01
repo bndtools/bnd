@@ -285,10 +285,15 @@ public class Workspace extends Processor {
 		all.putAll(commands);
 	}
 
+	protected List<Project> projects = new ArrayList<Project>();
+	
 	public Collection<Project> getAllProjects() 
 		throws Exception 
 	{
-		List<Project> projects = new ArrayList<Project>();
+		if(projects.size()>0)
+		{
+			return projects;
+		}
 		
 		for(File dir : projectDirs)
 		{
