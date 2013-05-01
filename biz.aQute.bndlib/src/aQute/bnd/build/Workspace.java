@@ -26,13 +26,16 @@ public class Workspace extends Processor {
 	public static final String					BNDDIR		= "bnd";
 	public static final String					CACHEDIR	= "cache";
 
-	static Map<File,WeakReference<Workspace>>	cache		= newHashMap();
-	final Map<String,Project>					models		= newHashMap();
+	static Map<String,WeakReference<Workspace>>	cache		= newHashMap();
+	final protected Map<String,Project>					models		= newHashMap();
+	final protected Map<String,Project>					projectLocation		= newHashMap();
 	final Map<String,Action>					commands	= newMap();
-	final File									buildDir;
+	final protected File									buildDir;
 	final Maven									maven		= new Maven(Processor.getExecutor());
 	private boolean								offline		= true;
 	Settings									settings	= new Settings();
+	final protected List<File>							projectDirs = new ArrayList<File>();
+	final protected boolean 								projectNameIsDir;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -46,12 +49,13 @@ public class Workspace extends Processor {
 		assert projectDir.isDirectory();
 
 		Workspace ws = getWorkspace(projectDir.getParentFile());
-		return ws.getProject(projectDir.getName());
+		return ws.getProjectFromLocation(projectDir);
 	}
 
 	public static Workspace getWorkspace(File parent) throws Exception {
 		File workspaceDir = parent.getAbsoluteFile();
 
+		List<File> projectDirs = new ArrayList<File>();
 		// the cnf directory can actually be a
 		// file that redirects
 		while (workspaceDir.isDirectory()) {
@@ -61,29 +65,58 @@ public class Workspace extends Processor {
 				test = new File(workspaceDir, BNDDIR);
 
 			if (test.isDirectory())
+			{
 				break;
-
+			}
+				
 			if (test.isFile()) {
 				String redirect = IO.collect(test).trim();
 				test = getFile(test.getParentFile(), redirect).getAbsoluteFile();
+				addProjectDirs(workspaceDir.getParentFile(), redirect, projectDirs);
 				workspaceDir = test;
 			}
 			if (!test.exists())
 				throw new IllegalArgumentException("No Workspace found from: " + parent);
 		}
 
-		synchronized (cache) {
-			WeakReference<Workspace> wsr = cache.get(workspaceDir);
+		synchronized (cache) 
+		{
+			WeakReference<Workspace> wsr = cache.get(workspaceDir.getAbsolutePath());
 			Workspace ws;
 			if (wsr == null || (ws = wsr.get()) == null) {
 				ws = new Workspace(workspaceDir);
-				cache.put(workspaceDir, new WeakReference<Workspace>(ws));
+				for(File dir : projectDirs)
+				{
+					if(!ws.projectDirs.contains(dir))
+					{
+						ws.projectDirs.add(dir);
+					}
+				}
+				cache.put(workspaceDir.getAbsolutePath(), new WeakReference<Workspace>(ws));
 			}
 			return ws;
 		}
 	}
+	
+	protected static void addProjectDirs(File baseDir,String redirect,List<File> projectDirs)
+	{
+		while(redirect.startsWith(".."))
+		{		
+			for(File dir : baseDir.listFiles())
+			{
+				if(dir.isDirectory())
+				{
+					projectDirs.add(dir);
+				}
+			}
+			redirect = redirect.length() > 3 ? redirect.substring(3) : "";
+			baseDir=baseDir.getParentFile();
+		}
+	}
 
-	public Workspace(File dir) throws Exception {
+	public Workspace(File dir) 
+			throws Exception 
+	{		
 		dir = dir.getAbsoluteFile();
 		if (!dir.exists() && !dir.mkdirs()) {
 			throw new IOException("Could not create directory " + dir);
@@ -101,25 +134,89 @@ public class Workspace extends Processor {
 			warning("No Build File in " + dir);
 
 		setProperties(buildFile, dir);
-		propertiesChanged();
-
+		propertiesChanged();	
+		projectDirs.add(dir);
+		projectNameIsDir = getProperty("-directoryNotBSN") == null;
 	}
+	
+	
 
-	public Project getProject(String bsn) throws Exception {
-		synchronized (models) {
+	public Project getProject(String bsn) 
+		throws Exception 
+	{
+		synchronized (models) 
+		{	
 			Project project = models.get(bsn);
 			if (project != null)
+			{
 				return project;
-
-			File projectDir = getFile(bsn);
-			project = new Project(this, projectDir);
-			if (!project.isValid())
-				return null;
-
-			models.put(bsn, project);
-			return project;
+			}
+			return findProject(bsn);
 		}
 	}
+	
+	protected Project addProject(Project project) 
+	{
+		if(project == null || !project.isValid())
+		{
+			return null;
+		}
+		models.put(getBSNForProject(project) , project);
+		projectLocation.put(project.getBase().getAbsolutePath(), project);
+		return project;
+	}
+
+	
+	protected Project getProjectFromLocation(File projectDir) 
+		throws Exception 
+	{
+		synchronized (models) 
+		{	
+			Project project = projectLocation.get(projectDir.getAbsolutePath());
+			if(project != null)
+			{
+				return project;
+			}
+			return addProject(new Project(this, projectDir));
+		}
+	}
+	
+	
+	protected Project findProject(String bsn) throws Exception 
+	{
+		for(File dir : projectDirs)
+		{
+			if(projectNameIsDir)
+			{
+				Project p = addProject(new Project(this, new File(dir,bsn)));
+				if(p != null)
+				{
+					return p;
+				}
+			}
+			else
+			{
+				for(File possibleDir : dir.listFiles())
+				{
+					if(possibleDir.isDirectory() && !projectLocation.containsKey(possibleDir.getAbsolutePath()))
+					{
+						Project p = addProject(new Project(this, possibleDir));
+						if(p != null && bsn.equals(getBSNForProject(p)))
+						{
+							return p;
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	protected String getBSNForProject(Project project)
+	{
+		return projectNameIsDir ? project.getBase().getName() : project.getProperty("Bundle-SymbolicName");
+	}
+
 
 	public boolean isPresent(String name) {
 		return models.containsKey(name);
@@ -178,11 +275,24 @@ public class Workspace extends Processor {
 		all.putAll(commands);
 	}
 
-	public Collection<Project> getAllProjects() throws Exception {
+	public Collection<Project> getAllProjects() 
+		throws Exception 
+	{
 		List<Project> projects = new ArrayList<Project>();
-		for (File file : getBase().listFiles()) {
-			if (new File(file, Project.BNDFILE).isFile())
-				projects.add(getProject(file));
+		
+		for(File dir : projectDirs)
+		{
+			for (File file : dir.listFiles()) 
+			{
+				if(file.isDirectory())
+				{
+					Project p = getProject(file);
+					if(p != null)
+					{
+						projects.add(p);
+					}
+				}
+			}
 		}
 		return projects;
 	}
