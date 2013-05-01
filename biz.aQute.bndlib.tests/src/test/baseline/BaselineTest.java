@@ -13,7 +13,7 @@ import aQute.service.reporter.*;
 public class BaselineTest extends TestCase {
 
 	public static void testBaslineJar() throws Exception {
-		Workspace ws = new Workspace(new File("test/ws"));
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 
 		Project p3 = ws.getProject("p3");
 

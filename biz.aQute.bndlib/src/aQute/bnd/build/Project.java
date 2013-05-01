@@ -93,7 +93,7 @@ public class Project extends Processor {
 
 	public static Project getUnparented(File propertiesFile) throws Exception {
 		propertiesFile = propertiesFile.getAbsoluteFile();
-		Workspace workspace = new Workspace(propertiesFile.getParentFile());
+		Workspace workspace = Workspace.getWorkspace(propertiesFile.getParentFile());
 		Project project = new Project(workspace, propertiesFile.getParentFile());
 		project.setProperties(propertiesFile);
 		project.setFileMustExist(true);

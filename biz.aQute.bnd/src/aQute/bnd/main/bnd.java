@@ -2021,7 +2021,7 @@ public class bnd extends Processor {
 		int errors = 0;
 		File cwd = new File("").getAbsoluteFile();
 
-		Workspace ws = new Workspace(cwd);
+		Workspace ws =  Workspace.getWorkspace(cwd);
 		File reportDir = getFile("reports");
 
 		IO.delete(reportDir);
