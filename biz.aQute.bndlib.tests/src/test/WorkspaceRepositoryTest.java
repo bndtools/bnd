@@ -16,7 +16,7 @@ public class WorkspaceRepositoryTest extends TestCase {
 		
 	}
 	public void setUp() throws Exception {
-		workspace = new Workspace(new File("test/ws-repo-test"));
+		workspace = Workspace.getWorkspace(new File("test/ws-repo-test"));
 		repo = new WorkspaceRepository(workspace);
 	}
 

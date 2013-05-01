@@ -20,7 +20,7 @@ public class ProjectTest extends TestCase {
 	 */
 	
 	public static void testProjectReferringToItself() throws Exception {
-		Workspace ws = new Workspace(new File("test/ws"));
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project top = ws.getProject("bug194");
 		top.addClasspath(top.getOutput());
 		assertTrue(top.check("Circular dependency context"));
@@ -31,7 +31,7 @@ public class ProjectTest extends TestCase {
 	 */
 	
 	public static void testAddDirToClasspath() throws Exception {
-		Workspace ws = new Workspace(new File("test/ws"));
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project top = ws.getProject("p1");
 		top.addClasspath(top.getOutput());
 		assertTrue(top.check());
@@ -40,7 +40,7 @@ public class ProjectTest extends TestCase {
 	 * Test bnd.bnd of project `foo`: `-runbundles: foo;version=latest`
 	 */
 	public static void testRunBundlesContainsSelf() throws Exception {
-		Workspace ws = new Workspace(new File("test/ws"));
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles", "p1;version=latest");
 		top.setChanged();
@@ -56,7 +56,7 @@ public class ProjectTest extends TestCase {
 	 */
 
 	public static void testSameBsnRunBundles() throws Exception {
-		Workspace ws = new Workspace(new File("test/ws"));
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles",
 				"org.apache.felix.configadmin;version='[1.0.1,1.0.1]',org.apache.felix.configadmin;version='[1.1.0,1.1.0]'");
@@ -71,7 +71,7 @@ public class ProjectTest extends TestCase {
 	 */
 
 	public static void testRunbundleDuplicates() throws Exception {
-		Workspace ws = new Workspace(new File("test/ws"));
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project top = ws.getProject("p1");
 		top.clear();
 		top.setProperty("-runbundles", "org.apache.felix.configadmin,org.apache.felix.configadmin");
@@ -468,7 +468,7 @@ public class ProjectTest extends TestCase {
 	}
 	
 	private static Project testBuildAll(String dependsOn, int count) throws Exception {
-		Workspace ws = new Workspace(new File("test/ws"));
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project all = ws.getProject("build-all");
 		all.setProperty("-dependson", dependsOn);
 		all.prepare();

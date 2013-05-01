@@ -26,16 +26,16 @@ public class Workspace extends Processor {
 	public static final String					BNDDIR		= "bnd";
 	public static final String					CACHEDIR	= "cache";
 
-	static Map<File,WeakReference<Workspace>>	cache		= newHashMap();
-	final Map<String,Project>					models		= newHashMap();
-	final Map<String,Project>					projectLocation		= newHashMap();
+	static Map<String,WeakReference<Workspace>>	cache		= newHashMap();
+	final protected Map<String,Project>					models		= newHashMap();
+	final protected Map<String,Project>					projectLocation		= newHashMap();
 	final Map<String,Action>					commands	= newMap();
-	final File									buildDir;
+	final protected File									buildDir;
 	final Maven									maven		= new Maven(Processor.getExecutor());
 	private boolean								offline		= true;
 	Settings									settings	= new Settings();
-	final List<File>							projectDirs = new ArrayList<File>();
-	final boolean 								projectNameIsDir;
+	final protected List<File>							projectDirs = new ArrayList<File>();
+	final protected boolean 								projectNameIsDir;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -65,7 +65,11 @@ public class Workspace extends Processor {
 				test = new File(workspaceDir, BNDDIR);
 
 			if (test.isDirectory())
+			{
+				workspaceDir=test;
 				break;
+			}
+				
 
 			if (test.isFile()) {
 				String redirect = IO.collect(test).trim();
@@ -78,13 +82,19 @@ public class Workspace extends Processor {
 		}
 
 		synchronized (cache) {
-			WeakReference<Workspace> wsr = cache.get(workspaceDir);
+			WeakReference<Workspace> wsr = cache.get(workspaceDir.getAbsolutePath());
 			Workspace ws;
 			if (wsr == null || (ws = wsr.get()) == null) {
 				ws = new Workspace(workspaceDir);
-				ws.projectDirs.add(workspaceDir);
-				ws.projectDirs.addAll(projectDirs);
-				cache.put(workspaceDir, new WeakReference<Workspace>(ws));
+				if(projectDirs.size()>0)
+				{
+					ws.projectDirs.addAll(projectDirs);
+				}
+				else
+				{
+					ws.projectDirs.add(workspaceDir.getParentFile());
+				}
+				cache.put(workspaceDir.getAbsolutePath(), new WeakReference<Workspace>(ws));
 			}
 			return ws;
 		}
@@ -106,18 +116,10 @@ public class Workspace extends Processor {
 		}
 	}
 
-	public Workspace(File dir) throws Exception {
-		dir = dir.getAbsoluteFile();
-		if (!dir.exists() && !dir.mkdirs()) {
-			throw new IOException("Could not create directory " + dir);
-		}
-		assert dir.isDirectory();
-
-		File buildDir = new File(dir, BNDDIR).getAbsoluteFile();
-		if (!buildDir.isDirectory())
-			buildDir = new File(dir, CNFDIR).getAbsoluteFile();
-
-		this.buildDir = buildDir;
+	private Workspace(File dir) 
+			throws Exception 
+	{		
+		buildDir = dir.getAbsoluteFile();
 
 		File buildFile = new File(buildDir, BUILDFILE).getAbsoluteFile();
 		if (!buildFile.isFile())
@@ -125,13 +127,16 @@ public class Workspace extends Processor {
 
 		setProperties(buildFile, dir);
 		propertiesChanged();
-		projectNameIsDir = getProperty("-directoryNotBSN") == null;
+		
+		projectNameIsDir = !Boolean.valueOf(getProperty("-directoryNotBSN","false"));
 
 	}
 
-	public Project getProject(String bsn) throws Exception {
-		synchronized (models) {
-			
+	public Project getProject(String bsn) 
+		throws Exception 
+	{
+		synchronized (models) 
+		{	
 			Project project = models.get(bsn);
 			if (project != null)
 			{
@@ -141,7 +146,7 @@ public class Workspace extends Processor {
 		}
 	}
 	
-	private Project addProject(Project project) 
+	protected Project addProject(Project project) 
 	{
 		if(project == null || !project.isValid())
 		{
@@ -153,9 +158,11 @@ public class Workspace extends Processor {
 	}
 
 	
-	private Project getProjectFromLocation(File projectDir) throws Exception {
-		synchronized (models) {
-			
+	protected Project getProjectFromLocation(File projectDir) 
+		throws Exception 
+	{
+		synchronized (models) 
+		{	
 			Project project = projectLocation.get(projectDir.getAbsolutePath());
 			if(project != null)
 			{
@@ -166,7 +173,7 @@ public class Workspace extends Processor {
 	}
 	
 	
-	private Project findProject(String bsn) throws Exception 
+	protected Project findProject(String bsn) throws Exception 
 	{
 		for(File dir : projectDirs)
 		{
@@ -185,7 +192,7 @@ public class Workspace extends Processor {
 					if(possibleDir.isDirectory() && !projectLocation.containsKey(possibleDir.getAbsolutePath()))
 					{
 						Project p = addProject(new Project(this, possibleDir));
-						if(p != null && getBSNForProject(p).equals(bsn))
+						if(p != null && bsn.equals(getBSNForProject(p)))
 						{
 							return p;
 						}
@@ -196,7 +203,7 @@ public class Workspace extends Processor {
 		return null;
 	}
 	
-	private String getBSNForProject(Project project)
+	protected String getBSNForProject(Project project)
 	{
 		return projectNameIsDir ? project.getBase().getName() : project.getProperty("Bundle-SymbolicName");
 	}
@@ -259,6 +266,7 @@ public class Workspace extends Processor {
 		all.putAll(commands);
 	}
 
+	// TODO: Need to take into account the directories
 	public Collection<Project> getAllProjects() throws Exception {
 		List<Project> projects = new ArrayList<Project>();
 		for (File file : getBase().listFiles()) {
