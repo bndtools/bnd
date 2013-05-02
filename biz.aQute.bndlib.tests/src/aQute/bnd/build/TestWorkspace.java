@@ -80,26 +80,6 @@ public class TestWorkspace  extends TestCase
 			assertTrue("Should be dummy "+projectDirs.get(0).getAbsolutePath(),projectDirs.get(0).getAbsolutePath().endsWith("test/gitWs/repo1/proj1/dummy"));
 		}
 		
-		public void testGetBSNForProject_NameIsDir()
-			throws Exception
-		{
-			Project p = Workspace.getProject(new File("test/gitWs/repo1/proj1"));
-			assertEquals("proj1",p.getWorkspace().getBSNForProject(p));
-		}
-		
-		public void testGetBSNForProject_NameIsNotDir()
-			throws Exception
-		{
-			Project p = Workspace.getProject(new File("test/directoryNotBSN/proj1"));
-			assertEquals("com.mycompany.package",p.getWorkspace().getBSNForProject(p));
-		}
-		
-		public void testGetBSNForProject_NameIsNotDirMissingBSN()
-			throws Exception
-		{
-			Project p = Workspace.getProject(new File("test/directoryNotBSN/proj2"));
-			assertNull(p.getWorkspace().getBSNForProject(p));
-		}
 		
 		public void testFindProject_BSNisDir()
 				throws Exception
@@ -150,15 +130,14 @@ public class TestWorkspace  extends TestCase
 			throws Exception
 		{
 			Workspace ws = Workspace.getWorkspace(new File("test/gitWs/repo1"));
-			assertNull(ws.addProject(null));
-			assertNull(ws.addProject(new Project(ws, new File("test/gitWs/repo2/bogus"))));
+			assertNull(ws.addProject(new File("test/gitWs/repo2/bogus")));
 		}
 		
 		public void testAddProjectValid()
 				throws Exception
 		{
 			Workspace ws = Workspace.getWorkspace(new File("test/gitWs/repo1"));
-			Project p = ws.addProject(new Project(ws, new File("test/gitWs/repo1/proj1")));
+			Project p = ws.addProject(new File("test/gitWs/repo1/proj1"));
 			assertNotNull(p);
 			assertEquals(p,ws.getProjectFromLocation(new File("test/gitWs/repo1/proj1")));
 			assertEquals(p,ws.getProject("proj1"));

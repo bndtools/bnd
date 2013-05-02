@@ -56,6 +56,7 @@ public class Project extends Processor {
 	static List<Project>		trail					= new ArrayList<Project>();
 	boolean						delayRunDependencies	= false;
 	final ProjectMessages		msgs					= ReporterMessages.base(this, ProjectMessages.class);
+	final String		name;
 
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
@@ -65,6 +66,7 @@ public class Project extends Processor {
 		assert workspace != null;
 		// For backward compatibility reasons, we also read
 		readBuildProperties();
+		name = workspace.isProjectNameDir() ? getBase().getName() : getProperty("Bundle-SymbolicName");
 	}
 
 	public Project(Workspace workspace, File buildDir) throws Exception {
@@ -150,7 +152,7 @@ public class Project extends Processor {
 
 	@Override
 	public String toString() {
-		return getBase().getName();
+		return name;
 	}
 
 	/**
@@ -1411,7 +1413,7 @@ public class Project extends Processor {
 	}
 
 	public String getName() {
-		return getBase().getName();
+		return name;
 	}
 
 	public Map<String,Action> getActions() {

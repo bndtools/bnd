@@ -165,13 +165,15 @@ public class Workspace extends Processor {
 		}
 	}
 	
-	protected Project addProject(Project project) 
+	protected Project addProject(File dir) 
+		throws Exception 
 	{
-		if(project == null || !project.isValid())
+		Project project = new Project(this, dir);
+		if(!project.isValid())
 		{
 			return null;
 		}
-		models.put(getBSNForProject(project) , project);
+		models.put(project.getName() , project);
 		projectLocation.put(project.getBase().getAbsolutePath(), project);
 		projects.clear();
 		return project;
@@ -188,7 +190,7 @@ public class Workspace extends Processor {
 			{
 				return project;
 			}
-			return addProject(new Project(this, projectDir));
+			return addProject(projectDir);
 		}
 	}
 	
@@ -199,7 +201,7 @@ public class Workspace extends Processor {
 		{
 			if(projectNameIsDir)
 			{
-				Project p = addProject(new Project(this, new File(dir,bsn)));
+				Project p = addProject(new File(dir,bsn));
 				if(p != null)
 				{
 					return p;
@@ -211,8 +213,8 @@ public class Workspace extends Processor {
 				{
 					if(possibleDir.isDirectory() && !projectLocation.containsKey(possibleDir.getAbsolutePath()))
 					{
-						Project p = addProject(new Project(this, possibleDir));
-						if(p != null && bsn.equals(getBSNForProject(p)))
+						Project p = addProject(possibleDir);
+						if(p != null && bsn.equals(p.getName()))
 						{
 							return p;
 						}
@@ -223,10 +225,11 @@ public class Workspace extends Processor {
 		return null;
 	}
 	
-	protected String getBSNForProject(Project project)
+	public boolean isProjectNameDir()
 	{
-		return projectNameIsDir ? project.getBase().getName() : project.getProperty("Bundle-SymbolicName");
+		return projectNameIsDir;
 	}
+
 
 
 	public boolean isPresent(String name) {
