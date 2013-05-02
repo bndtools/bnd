@@ -281,8 +281,13 @@ public class Project extends Processor {
 					for (Project project : dependson) {
 						allsourcepath.addAll(project.getSourcePath());
 					}
+					/*
+					 * If there is an error if it keeps getting called does it fixed it? If it is a resolution issue then no.
+					 * 
 					if (isOk())
+					*/
 						preparedPaths = true;
+					
 				}
 				finally {
 					inPrepare = false;
