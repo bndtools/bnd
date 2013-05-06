@@ -284,9 +284,9 @@ public class Project extends Processor {
 					/*
 					 * If there is an error and  it keeps getting called does it correct itself? If it is a resolution issue then no. So why are we saying the
 					 * paths are not prepared? A top level project can blow up the stack and take 20 minutes to do so.
-					 * 
+					 */
 					if (isOk())
-					*/
+				
 						preparedPaths = true;
 					
 				}
