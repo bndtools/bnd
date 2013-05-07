@@ -141,6 +141,7 @@ public class Project extends Processor {
 	public synchronized void setChanged() {
 		// if (refresh()) {
 		preparedPaths = false;
+		projectResolved=false;
 		files = null;
 		revision++;
 		// }
@@ -1428,9 +1429,7 @@ public class Project extends Processor {
 	@Override
 	public void propertiesChanged() {
 		super.propertiesChanged();
-		preparedPaths = false;
-		files = null;
-
+		setChanged();
 	}
 
 	public String getName() {
