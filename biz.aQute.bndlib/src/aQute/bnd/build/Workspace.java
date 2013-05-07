@@ -302,7 +302,7 @@ public class Workspace extends Processor {
 			return projects;
 		}
 		
-		List<Project> list = new ArrayList<Project>();
+		HashMap<String,Project> projs = new HashMap<String,Project>(models);
 		for(File dir : projectDirs)
 		{
 			for (File file : dir.listFiles()) 
@@ -312,12 +312,12 @@ public class Workspace extends Processor {
 					Project p = getProjectFromLocation(file);
 					if(p != null)
 					{
-						list.add(p);
+						projs.put(p.getName(),p);
 					}
 				}
 			}
 		}
-		projects.addAll(list);
+		projects.addAll(projs.values());
 		return projects;
 	}
 
