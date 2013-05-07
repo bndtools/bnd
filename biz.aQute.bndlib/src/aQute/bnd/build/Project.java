@@ -169,6 +169,7 @@ public class Project extends Processor {
 	{
 		projectResolved=false;
 		preparedPaths=false;
+		clear(); // clear the errors
 		prepare();
 	}
 	
