@@ -26,13 +26,16 @@ public class Workspace extends Processor {
 	public static final String					BNDDIR		= "bnd";
 	public static final String					CACHEDIR	= "cache";
 
-	static Map<File,WeakReference<Workspace>>	cache		= newHashMap();
-	final Map<String,Project>					models		= newHashMap();
+	static Map<String,WeakReference<Workspace>>	cache		= newHashMap();
+	final protected Map<String,Project>					models		= newHashMap();
+	final protected Map<String,Project>					projectLocation		= newHashMap();
 	final Map<String,Action>					commands	= newMap();
-	final File									buildDir;
+	final protected File									buildDir;
 	final Maven									maven		= new Maven(Processor.getExecutor());
 	private boolean								offline		= true;
 	Settings									settings	= new Settings();
+	final protected List<File>							projectDirs = new ArrayList<File>();
+	final protected boolean 								projectNameIsDir;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -45,13 +48,20 @@ public class Workspace extends Processor {
 		projectDir = projectDir.getAbsoluteFile();
 		assert projectDir.isDirectory();
 
-		Workspace ws = getWorkspace(projectDir.getParentFile());
-		return ws.getProject(projectDir.getName());
+		try
+		{
+			Workspace ws = getWorkspace(projectDir.getParentFile());
+			return ws.getProjectFromLocation(projectDir);
+		}
+			catch(IllegalArgumentException err)
+			{
+				return null;
+			}
 	}
 
 	public static Workspace getWorkspace(File parent) throws Exception {
 		File workspaceDir = parent.getAbsoluteFile();
-
+		String redirect = null;
 		// the cnf directory can actually be a
 		// file that redirects
 		while (workspaceDir.isDirectory()) {
@@ -61,10 +71,12 @@ public class Workspace extends Processor {
 				test = new File(workspaceDir, BNDDIR);
 
 			if (test.isDirectory())
+			{
 				break;
-
+			}
+				
 			if (test.isFile()) {
-				String redirect = IO.collect(test).trim();
+				redirect = IO.collect(test).trim();
 				test = getFile(test.getParentFile(), redirect).getAbsoluteFile();
 				workspaceDir = test;
 			}
@@ -72,18 +84,53 @@ public class Workspace extends Processor {
 				throw new IllegalArgumentException("No Workspace found from: " + parent);
 		}
 
-		synchronized (cache) {
-			WeakReference<Workspace> wsr = cache.get(workspaceDir);
+		synchronized (cache) 
+		{
+			WeakReference<Workspace> wsr = cache.get(workspaceDir.getAbsolutePath());
 			Workspace ws;
 			if (wsr == null || (ws = wsr.get()) == null) {
 				ws = new Workspace(workspaceDir);
-				cache.put(workspaceDir, new WeakReference<Workspace>(ws));
+				if(redirect != null)
+				{
+					for(File dir : getProjectDirs(parent.getAbsoluteFile().getParentFile(), redirect))
+					{
+						if(!ws.projectDirs.contains(dir))
+						{
+							ws.projectDirs.add(dir);
+							ws.projects.clear();
+						}
+					}
+				}
+				cache.put(workspaceDir.getAbsolutePath(), new WeakReference<Workspace>(ws));
 			}
+			
 			return ws;
 		}
 	}
+	
+	
+	
+	protected static List<File> getProjectDirs(File baseDir,String redirect)
+	{
+		List<File> projectDirs = new ArrayList<File>();
+		while(redirect.startsWith(".."))
+		{		
+			for(File dir : baseDir.listFiles())
+			{
+				if(dir.isDirectory())
+				{
+					projectDirs.add(dir);
+				}
+			}
+			redirect = redirect.length() > 3 ? redirect.substring(3) : "";
+			baseDir=baseDir.getParentFile();
+		}
+		return projectDirs;
+	}
 
-	public Workspace(File dir) throws Exception {
+	public Workspace(File dir) 
+			throws Exception 
+	{		
 		dir = dir.getAbsoluteFile();
 		if (!dir.exists() && !dir.mkdirs()) {
 			throw new IOException("Could not create directory " + dir);
@@ -101,25 +148,93 @@ public class Workspace extends Processor {
 			warning("No Build File in " + dir);
 
 		setProperties(buildFile, dir);
-		propertiesChanged();
-
+		propertiesChanged();	
+		projectDirs.add(dir);
+		projectNameIsDir = getProperty("-directoryNotBSN") == null;
 	}
+	
+	
 
-	public Project getProject(String bsn) throws Exception {
-		synchronized (models) {
+	public Project getProject(String bsn) 
+		throws Exception 
+	{
+		synchronized (models) 
+		{	
 			Project project = models.get(bsn);
 			if (project != null)
+			{
 				return project;
-
-			File projectDir = getFile(bsn);
-			project = new Project(this, projectDir);
-			if (!project.isValid())
-				return null;
-
-			models.put(bsn, project);
-			return project;
+			}
+			return findProject(bsn);
 		}
 	}
+	
+	protected Project addProject(File dir) 
+		throws Exception 
+	{
+		Project project = new Project(this, dir);
+		if(!project.isValid())
+		{
+			return null;
+		}
+		models.put(project.getName() , project);
+		projectLocation.put(project.getBase().getAbsolutePath(), project);
+		projects.clear();
+		return project;
+	}
+
+	
+	protected Project getProjectFromLocation(File projectDir) 
+		throws Exception 
+	{
+		synchronized (models) 
+		{	
+			Project project = projectLocation.get(projectDir.getAbsolutePath());
+			if(project != null)
+			{
+				return project;
+			}
+			return addProject(projectDir);
+		}
+	}
+	
+	
+	protected Project findProject(String bsn) throws Exception 
+	{
+		for(File dir : projectDirs)
+		{
+			if(projectNameIsDir)
+			{
+				Project p = addProject(new File(dir,bsn));
+				if(p != null)
+				{
+					return p;
+				}
+			}
+			else
+			{
+				for(File possibleDir : dir.listFiles())
+				{
+					if(possibleDir.isDirectory() && !projectLocation.containsKey(possibleDir.getAbsolutePath()))
+					{
+						Project p = addProject(possibleDir);
+						if(p != null && bsn.equals(p.getName()))
+						{
+							return p;
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	public boolean isProjectNameDir()
+	{
+		return projectNameIsDir;
+	}
+
+
 
 	public boolean isPresent(String name) {
 		return models.containsKey(name);
@@ -178,12 +293,36 @@ public class Workspace extends Processor {
 		all.putAll(commands);
 	}
 
-	public Collection<Project> getAllProjects() throws Exception {
-		List<Project> projects = new ArrayList<Project>();
-		for (File file : getBase().listFiles()) {
-			if (new File(file, Project.BNDFILE).isFile())
-				projects.add(getProject(file));
+	protected List<Project> projects = new ArrayList<Project>();
+	protected int numDirsScanned = 0;
+	public synchronized Collection<Project> getAllProjects() 
+		throws Exception 
+	{
+		if(projects.size()>0)
+		{
+			return projects;
 		}
+		
+		HashMap<String,Project> projs = new HashMap<String,Project>(models);
+		if(numDirsScanned != projectDirs.size())
+		{
+			for(File dir : projectDirs)
+			{
+				for (File file : dir.listFiles()) 
+				{
+					if(file.isDirectory())
+					{
+						Project p = getProjectFromLocation(file);
+						if(p != null)
+						{
+							projs.put(p.getName(),p);
+						}
+					}
+				}
+			}
+			numDirsScanned = projectDirs.size();
+		}
+		projects.addAll(projs.values());
 		return projects;
 	}
 
@@ -338,7 +477,12 @@ public class Workspace extends Processor {
 
 	public Collection<Project> getBuildOrder() throws Exception {
 		List<Project> result = new ArrayList<Project>();
-		for (Project project : getAllProjects()) {
+		for (Project project : getAllProjects()) 
+		{
+			if(!project.isResolved())
+			{
+				project.refreshPaths();
+			}
 			Collection<Project> dependsOn = project.getDependson();
 			getBuildOrder(dependsOn, result);
 			if (!result.contains(project)) {

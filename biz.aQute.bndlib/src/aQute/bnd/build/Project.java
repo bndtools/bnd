@@ -56,6 +56,7 @@ public class Project extends Processor {
 	static List<Project>		trail					= new ArrayList<Project>();
 	boolean						delayRunDependencies	= false;
 	final ProjectMessages		msgs					= ReporterMessages.base(this, ProjectMessages.class);
+	final String		name;
 
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
@@ -65,6 +66,7 @@ public class Project extends Processor {
 		assert workspace != null;
 		// For backward compatibility reasons, we also read
 		readBuildProperties();
+		name = workspace.isProjectNameDir() ? getBase().getName() : getProperty("Bundle-SymbolicName");
 	}
 
 	public Project(Workspace workspace, File buildDir) throws Exception {
@@ -139,6 +141,7 @@ public class Project extends Processor {
 	public synchronized void setChanged() {
 		// if (refresh()) {
 		preparedPaths = false;
+		projectResolved=false;
 		files = null;
 		revision++;
 		// }
@@ -150,9 +153,26 @@ public class Project extends Processor {
 
 	@Override
 	public String toString() {
-		return getBase().getName();
+		return name;
 	}
 
+	
+	public boolean isResolved()
+	{
+		return projectResolved;
+	}
+	
+	protected boolean projectResolved;
+	
+	public void refreshPaths()
+		throws Exception
+	{
+		projectResolved=false;
+		preparedPaths=false;
+		clear(); // clear the errors
+		prepare();
+	}
+	
 	/**
 	 * Set up all the paths
 	 */
@@ -279,8 +299,13 @@ public class Project extends Processor {
 					for (Project project : dependson) {
 						allsourcepath.addAll(project.getSourcePath());
 					}
-					if (isOk())
-						preparedPaths = true;
+					/*
+					 * If there is an error and  it keeps getting called does it correct itself? If it is a resolution issue then no. So why are we saying the
+					 * paths are not prepared? A top level project can blow up the stack and take 20 minutes to do so.
+					*/
+					projectResolved = isOk();
+					preparedPaths = true;
+					
 				}
 				finally {
 					inPrepare = false;
@@ -1405,13 +1430,11 @@ public class Project extends Processor {
 	@Override
 	public void propertiesChanged() {
 		super.propertiesChanged();
-		preparedPaths = false;
-		files = null;
-
+		setChanged();
 	}
 
 	public String getName() {
-		return getBase().getName();
+		return name;
 	}
 
 	public Map<String,Action> getActions() {

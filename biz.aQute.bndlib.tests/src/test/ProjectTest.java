@@ -450,6 +450,20 @@ public class ProjectTest extends TestCase {
 			IO.deleteWithException(tmp);
 		}
 	}
+	
+	public static void testGetName()
+		throws Exception
+	{
+		Project p = Workspace.getProject(new File("test/gitWs/repo1/proj1"));
+		assertEquals("proj1",p.getName());
+	}
+	
+	public static void testGetNameNotMatchDirectory()
+		throws Exception
+	{
+		Project p = Workspace.getProject(new File("test/directoryNotBSN/proj1"));
+		assertEquals("com.mycompany.package",p.getName());
+	}
 
 	private static void checkPackageInfoFiles(Project project, String packageName, boolean expectPackageInfo, boolean expectPackageInfoJava) throws Exception {
 		File pkgInfo = IO.getFile(project.getSrc(), packageName + "/packageinfo");
