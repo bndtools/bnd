@@ -157,7 +157,7 @@ public class Project extends Processor {
 	}
 
 	
-	public boolean isProjectResolved()
+	public boolean isResolved()
 	{
 		return projectResolved;
 	}

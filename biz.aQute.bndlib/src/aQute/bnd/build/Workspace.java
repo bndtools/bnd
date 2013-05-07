@@ -477,7 +477,12 @@ public class Workspace extends Processor {
 
 	public Collection<Project> getBuildOrder() throws Exception {
 		List<Project> result = new ArrayList<Project>();
-		for (Project project : getAllProjects()) {
+		for (Project project : getAllProjects()) 
+		{
+			if(!project.isResolved())
+			{
+				project.refreshPaths();
+			}
 			Collection<Project> dependsOn = project.getDependson();
 			getBuildOrder(dependsOn, result);
 			if (!result.contains(project)) {
