@@ -90,23 +90,24 @@ public class Workspace extends Processor {
 			Workspace ws;
 			if (wsr == null || (ws = wsr.get()) == null) {
 				ws = new Workspace(workspaceDir);
-				
-				cache.put(workspaceDir.getAbsolutePath(), new WeakReference<Workspace>(ws));
-			}
-			if(redirect != null)
-			{
-				for(File dir : getProjectDirs(parent.getAbsoluteFile().getParentFile(), redirect))
+				if(redirect != null)
 				{
-					if(!ws.projectDirs.contains(dir))
+					for(File dir : getProjectDirs(parent.getAbsoluteFile().getParentFile(), redirect))
 					{
-						ws.projectDirs.add(dir);
-						ws.projects.clear();
+						if(!ws.projectDirs.contains(dir))
+						{
+							ws.projectDirs.add(dir);
+							ws.projects.clear();
+						}
 					}
 				}
+				cache.put(workspaceDir.getAbsolutePath(), new WeakReference<Workspace>(ws));
 			}
+			
 			return ws;
 		}
 	}
+	
 	
 	
 	protected static List<File> getProjectDirs(File baseDir,String redirect)
@@ -293,7 +294,7 @@ public class Workspace extends Processor {
 	}
 
 	protected List<Project> projects = new ArrayList<Project>();
-	
+	protected int numDirsScanned = 0;
 	public synchronized Collection<Project> getAllProjects() 
 		throws Exception 
 	{
@@ -303,19 +304,23 @@ public class Workspace extends Processor {
 		}
 		
 		HashMap<String,Project> projs = new HashMap<String,Project>(models);
-		for(File dir : projectDirs)
+		if(numDirsScanned != projectDirs.size())
 		{
-			for (File file : dir.listFiles()) 
+			for(File dir : projectDirs)
 			{
-				if(file.isDirectory())
+				for (File file : dir.listFiles()) 
 				{
-					Project p = getProjectFromLocation(file);
-					if(p != null)
+					if(file.isDirectory())
 					{
-						projs.put(p.getName(),p);
+						Project p = getProjectFromLocation(file);
+						if(p != null)
+						{
+							projs.put(p.getName(),p);
+						}
 					}
 				}
 			}
+			numDirsScanned = projectDirs.size();
 		}
 		projects.addAll(projs.values());
 		return projects;
