@@ -90,21 +90,24 @@ public class Workspace extends Processor {
 			Workspace ws;
 			if (wsr == null || (ws = wsr.get()) == null) {
 				ws = new Workspace(workspaceDir);
-				if(redirect != null)
+				
+				cache.put(workspaceDir.getAbsolutePath(), new WeakReference<Workspace>(ws));
+			}
+			if(redirect != null)
+			{
+				for(File dir : getProjectDirs(parent.getAbsoluteFile().getParentFile(), redirect))
 				{
-					for(File dir : getProjectDirs(parent.getAbsoluteFile().getParentFile(), redirect))
+					if(!ws.projectDirs.contains(dir))
 					{
-						if(!ws.projectDirs.contains(dir))
-						{
-							ws.projectDirs.add(dir);
-						}
+						ws.projectDirs.add(dir);
+						ws.projects.clear();
 					}
 				}
-				cache.put(workspaceDir.getAbsolutePath(), new WeakReference<Workspace>(ws));
 			}
 			return ws;
 		}
 	}
+	
 	
 	protected static List<File> getProjectDirs(File baseDir,String redirect)
 	{
