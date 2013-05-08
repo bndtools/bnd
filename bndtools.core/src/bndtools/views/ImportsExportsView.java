@@ -39,6 +39,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -50,7 +51,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DragSourceListener;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -67,7 +67,6 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import aQute.bnd.build.model.clauses.HeaderClause;
 import bndtools.Plugin;
 import bndtools.model.importanalysis.ExportPackage;
 import bndtools.model.importanalysis.ImportPackage;
@@ -158,26 +157,14 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
         });
 
         viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
-            TextTransfer.getInstance()
+            LocalSelectionTransfer.getTransfer()
         }, new DragSourceListener() {
             public void dragStart(DragSourceEvent event) {}
 
             public void dragSetData(DragSourceEvent event) {
-                if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-                    StringBuilder builder = new StringBuilder();
-                    Iterator< ? > iterator = ((IStructuredSelection) viewer.getSelection()).iterator();
-                    while (iterator.hasNext()) {
-                        Object item = iterator.next();
-                        if (item instanceof HeaderClause) {
-                            HeaderClause clause = (HeaderClause) item;
-                            builder.append(clause.getName());
-                            if (iterator.hasNext()) {
-                                builder.append(",\n");
-                            }
-                        }
-                    }
-                    event.data = builder.toString();
-                }
+                LocalSelectionTransfer transfer = LocalSelectionTransfer.getTransfer();
+                if (transfer.isSupportedType(event.dataType))
+                    transfer.setSelection(viewer.getSelection());
             }
 
             public void dragFinished(DragSourceEvent event) {}

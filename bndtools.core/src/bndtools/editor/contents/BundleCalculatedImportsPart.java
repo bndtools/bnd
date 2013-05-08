@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -33,7 +34,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceAdapter;
 import org.eclipse.swt.dnd.DragSourceEvent;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -54,7 +54,6 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import aQute.bnd.build.model.clauses.HeaderClause;
 import bndtools.Plugin;
 import bndtools.model.importanalysis.ImportPackage;
 import bndtools.model.importanalysis.ImportTreeContentProvider;
@@ -120,25 +119,13 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             }
         });
         viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
-            TextTransfer.getInstance()
+            LocalSelectionTransfer.getTransfer()
         }, new DragSourceAdapter() {
             @Override
             public void dragSetData(DragSourceEvent event) {
-                if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-                    StringBuilder builder = new StringBuilder();
-                    Iterator< ? > iterator = ((IStructuredSelection) viewer.getSelection()).iterator();
-                    while (iterator.hasNext()) {
-                        Object item = iterator.next();
-                        if (item instanceof HeaderClause) {
-                            HeaderClause clause = (HeaderClause) item;
-                            builder.append(clause.getName());
-                            if (iterator.hasNext()) {
-                                builder.append(",\n"); //$NON-NLS-1$
-                            }
-                        }
-                    }
-                    event.data = builder.toString();
-                }
+                LocalSelectionTransfer transfer = LocalSelectionTransfer.getTransfer();
+                if (transfer.isSupportedType(event.dataType))
+                    transfer.setSelection(viewer.getSelection());
             }
         });
         viewer.addOpenListener(new IOpenListener() {

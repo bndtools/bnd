@@ -27,6 +27,8 @@ import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.ui.part.ResourceTransfer;
 
+import bndtools.model.importanalysis.ImportPackage;
+
 public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 
     public PackageDropAdapter(Viewer viewer) {
@@ -76,6 +78,9 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
                 if (element instanceof IPackageFragment) {
                     IPackageFragment pkg = (IPackageFragment) element;
                     newEntries.add(createNewEntry(pkg.getElementName()));
+                } else if (element instanceof ImportPackage) {
+                    ImportPackage pkg = (ImportPackage) element;
+                    newEntries.add(createNewEntry(pkg.getName()));
                 }
             }
         }
