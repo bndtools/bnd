@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package bndtools.utils;
+package bndtools.editor.common;
 
 import java.util.ArrayList;
 import java.util.Collection;

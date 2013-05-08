@@ -64,11 +64,11 @@ import org.eclipse.ui.part.ResourceTransfer;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
+import bndtools.editor.common.PackageDropAdapter;
 import bndtools.editor.common.PrivatePackageTableLabelProvider;
 import bndtools.internal.pkgselection.IPackageFilter;
 import bndtools.internal.pkgselection.JavaSearchScopePackageLister;
 import bndtools.internal.pkgselection.PackageSelectionDialog;
-import bndtools.utils.PackageDropAdapter;
 
 public class PrivatePackagesPart extends SectionPart implements PropertyChangeListener {
 

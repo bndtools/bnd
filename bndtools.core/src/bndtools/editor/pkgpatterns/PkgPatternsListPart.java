@@ -59,7 +59,7 @@ import org.osgi.framework.Constants;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import bndtools.Plugin;
-import bndtools.utils.PackageDropAdapter;
+import bndtools.editor.common.PackageDropAdapter;
 
 public abstract class PkgPatternsListPart<C extends HeaderClause> extends SectionPart implements PropertyChangeListener {
 
