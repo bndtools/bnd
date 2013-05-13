@@ -45,6 +45,7 @@ import bndtools.Central;
 import bndtools.Logger;
 import bndtools.api.ILogger;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
+import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
@@ -59,6 +60,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
     private final Map<String,VersionedClause> selectedBundles = new LinkedHashMap<String,VersionedClause>();
+    private final DependencyPhase phase;
 
     TreeViewer availableViewer;
     Text selectionSearchTxt;
@@ -90,8 +92,9 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         }
     };
 
-    protected RepoBundleSelectionWizardPage() {
+    protected RepoBundleSelectionWizardPage(DependencyPhase phase) {
         super("bundleSelectionPage");
+        this.phase = phase;
     }
 
     public void setSelectedBundles(Collection<VersionedClause> selectedBundles) {
@@ -285,7 +288,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             if (item instanceof RepositoryBundle) {
                 adding.add(RepositoryUtils.convertRepoBundle((RepositoryBundle) item));
             } else if (item instanceof RepositoryBundleVersion) {
-                adding.add(RepositoryUtils.convertRepoBundleVersion((RepositoryBundleVersion) item));
+                adding.add(RepositoryUtils.convertRepoBundleVersion((RepositoryBundleVersion) item, phase));
             } else if (item instanceof ProjectBundle) {
                 String bsn = ((ProjectBundle) item).getBsn();
                 Attrs attribs = new Attrs();

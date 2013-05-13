@@ -29,6 +29,7 @@ import aQute.bnd.osgi.Constants;
 import bndtools.Logger;
 import bndtools.api.ILogger;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
+import bndtools.model.repo.DependencyPhase;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunBundlesPart extends RepositoryBundleSelectionPart {
@@ -38,7 +39,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
     private final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
 
     public RunBundlesPart(Composite parent, FormToolkit toolkit, int style) {
-        super(Constants.RUNBUNDLES, parent, toolkit, style);
+        super(Constants.RUNBUNDLES, DependencyPhase.Run, parent, toolkit, style);
     }
 
     @Override

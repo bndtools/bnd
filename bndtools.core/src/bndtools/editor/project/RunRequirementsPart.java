@@ -81,6 +81,7 @@ import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.ResolveMode;
+import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
@@ -245,7 +246,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         try {
             Project project = getProject();
 
-            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, new ArrayList<VersionedClause>());
+            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, new ArrayList<VersionedClause>(), DependencyPhase.Run);
             wizard.setSelectionPageTitle("Add Bundle Requirement");
             WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
 

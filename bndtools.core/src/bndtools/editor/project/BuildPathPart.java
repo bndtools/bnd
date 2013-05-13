@@ -9,11 +9,12 @@ import org.eclipse.ui.forms.widgets.Section;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.Constants;
+import bndtools.model.repo.DependencyPhase;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class BuildPathPart extends RepositoryBundleSelectionPart {
     public BuildPathPart(Composite parent, FormToolkit toolkit, int style) {
-        super(Constants.BUILDPATH, parent, toolkit, style);
+        super(Constants.BUILDPATH, DependencyPhase.Build, parent, toolkit, style);
     }
 
     @Override

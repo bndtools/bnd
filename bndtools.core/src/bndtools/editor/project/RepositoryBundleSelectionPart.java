@@ -71,6 +71,7 @@ import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
+import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
@@ -84,6 +85,8 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
     private static final ILogger logger = Logger.getLogger();
 
     private final String propertyName;
+    private final DependencyPhase phase;
+
     private Table table;
     protected TableViewer viewer;
 
@@ -91,9 +94,10 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
     protected List<VersionedClause> bundles;
     protected ToolItem removeItemTool;
 
-    protected RepositoryBundleSelectionPart(String propertyName, Composite parent, FormToolkit toolkit, int style) {
+    protected RepositoryBundleSelectionPart(String propertyName, DependencyPhase phase, Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
         this.propertyName = propertyName;
+        this.phase = phase;
         createSection(getSection(), toolkit);
     }
 
@@ -282,7 +286,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                         adding.add(newClause);
                     } else if (item instanceof RepositoryBundleVersion) {
                         RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) item;
-                        VersionedClause newClause = RepositoryUtils.convertRepoBundleVersion(bundleVersion);
+                        VersionedClause newClause = RepositoryUtils.convertRepoBundleVersion(bundleVersion, phase);
                         adding.add(newClause);
                     }
                 }
@@ -453,7 +457,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
     protected final RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
         // Need to get the project from the input model...
-        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles);
+        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, phase);
         setSelectionWizardTitleAndMessage(wizard);
 
         return wizard;
