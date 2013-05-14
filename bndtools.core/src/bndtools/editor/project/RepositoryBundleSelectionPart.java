@@ -6,9 +6,11 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 
 import org.bndtools.core.ui.wizards.jpm.AddJpmDependenciesWizard;
@@ -261,11 +263,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                             addingClauses.add(new VersionedClause(addingBundle.getFirst(), attribs));
                         }
 
-                        if (!addingClauses.isEmpty()) {
-                            bundles.addAll(addingClauses);
-                            viewer.add(addingClauses.toArray(new Object[addingClauses.size()]));
-                            markDirty();
-                        }
+                        handleAdd(addingClauses);
                     }
                     return true;
                 }
@@ -290,11 +288,8 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                         adding.add(newClause);
                     }
                 }
-                if (!adding.isEmpty()) {
-                    bundles.addAll(adding);
-                    viewer.add(adding.toArray(new Object[adding.size()]));
-                    markDirty();
-                }
+
+                handleAdd(adding);
                 return true;
             }
 
@@ -313,11 +308,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                             newBundles.add(clause);
                         }
 
-                        if (!newBundles.isEmpty()) {
-                            bundles.addAll(newBundles);
-                            viewer.add(newBundles.toArray(new Object[newBundles.size()]));
-                            markDirty();
-                        }
+                        handleAdd(newBundles);
                         return true;
                     }
                     return false;
@@ -325,6 +316,34 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                     MessageDialog.openError(getSection().getShell(), "Error", "The dropped URL was invalid: " + urlStr);
                     return false;
                 }
+            }
+
+            private void handleAdd(Collection<VersionedClause> newClauses) {
+                if (newClauses == null || newClauses.isEmpty())
+                    return;
+
+                List<VersionedClause> toAdd = new LinkedList<VersionedClause>();
+                for (VersionedClause newClause : newClauses) {
+                    boolean found = false;
+                    for (ListIterator<VersionedClause> iter = bundles.listIterator(); iter.hasNext();) {
+                        VersionedClause existing = iter.next();
+                        if (newClause.getName().equals(existing.getName())) {
+                            int index = iter.previousIndex();
+                            iter.set(newClause);
+                            viewer.replace(newClause, index);
+
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                        toAdd.add(newClause);
+                }
+
+                bundles.addAll(toAdd);
+                viewer.add(toAdd.toArray(new Object[toAdd.size()]));
+
+                markDirty();
             }
         };
         dropAdapter.setFeedbackEnabled(false);

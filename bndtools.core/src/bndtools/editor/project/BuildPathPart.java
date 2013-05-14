@@ -13,6 +13,7 @@ import bndtools.model.repo.DependencyPhase;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class BuildPathPart extends RepositoryBundleSelectionPart {
+
     public BuildPathPart(Composite parent, FormToolkit toolkit, int style) {
         super(Constants.BUILDPATH, DependencyPhase.Build, parent, toolkit, style);
     }
