@@ -1,9 +1,8 @@
 package aQute.bnd.service.resolve.hook;
 
-import java.util.Collection;
+import java.util.*;
 
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
+import org.osgi.resource.*;
 
 public interface ResolverHook {
 
@@ -20,6 +19,6 @@ public interface ResolverHook {
      * @param candidates
      *            a collection of candidates that match the requirement
      */
-    void filterMatches(Requirement requirement, Collection<Capability> candidates);
+    void filterMatches(Requirement requirement, List<Capability> candidates);
 
 }

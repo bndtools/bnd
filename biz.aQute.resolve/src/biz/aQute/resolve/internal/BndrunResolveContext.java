@@ -385,7 +385,7 @@ public class BndrunResolveContext extends ResolveContext {
         return new CacheKey(requirement.getNamespace(), requirement.getDirectives().get("filter"), requirement.getAttributes());
     }
 
-    private void callResolverHooks(Requirement requirement, Collection<Capability> candidates) {
+    private void callResolverHooks(Requirement requirement, List<Capability> candidates) {
         if (candidates.size() == 0) {
             return;
         }
