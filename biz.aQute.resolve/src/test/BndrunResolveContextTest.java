@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -26,6 +25,7 @@ import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.service.resolve.hook.ResolverHook;
 import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class BndrunResolveContextTest extends TestCase {
@@ -206,6 +206,66 @@ public class BndrunResolveContextTest extends TestCase {
         BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
         List<Capability> providers = context.findProviders(requirement);
 
+        assertEquals(2, providers.size());
+        assertEquals(new File("testdata/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+        assertEquals(new File("testdata/osgi.cmpn-4.3.0.jar").toURI(), findContentURI(providers.get(1).getResource()));
+    }
+
+    public static void testResolverHookFiltersResult() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml")));
+        registry.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml")));
+
+        // Add a hook that removes all capabilities from resource with id "osgi.cmpn"
+        registry.addPlugin(new ResolverHook() {
+            public void filterMatches(Requirement requirement, List<Capability> candidates) {
+                for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
+                    Object id = iter.next().getResource().getCapabilities("osgi.identity").get(0).getAttributes().get("osgi.identity");
+                    if ("osgi.cmpn".equals(id))
+                        iter.remove();
+                }
+            }
+        });
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+
+        Requirement requirement = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(&(osgi.wiring.package=org.osgi.util.tracker)(version>=1.5)(!(version>=1.6)))").buildSyntheticRequirement();
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+        List<Capability> providers = context.findProviders(requirement);
+
+        assertEquals(1, providers.size());
+        assertEquals(new File("testdata/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+        // The capability from osgi.cmpn is NOT here
+    }
+
+    public static void testResolverHookCannotFilterFrameworkCapabilities() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml")));
+        registry.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml")));
+
+        // Add a hook that tries to remove all capabilities from resource with id "org.apache.felix.framework"
+        registry.addPlugin(new ResolverHook() {
+            public void filterMatches(Requirement requirement, List<Capability> candidates) {
+                for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
+                    Object id = iter.next().getResource().getCapabilities("osgi.identity").get(0).getAttributes().get("osgi.identity");
+                    if ("org.apache.felix.framework".equals(id)) {
+                        fail("this line should not be reached");
+                    }
+                }
+            }
+        });
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+
+        Requirement requirement = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(&(osgi.wiring.package=org.osgi.util.tracker)(version>=1.5)(!(version>=1.6)))").buildSyntheticRequirement();
+
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+        List<Capability> providers = context.findProviders(requirement);
+
+        // The filter was ineffective
         assertEquals(2, providers.size());
         assertEquals(new File("testdata/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
         assertEquals(new File("testdata/osgi.cmpn-4.3.0.jar").toURI(), findContentURI(providers.get(1).getResource()));

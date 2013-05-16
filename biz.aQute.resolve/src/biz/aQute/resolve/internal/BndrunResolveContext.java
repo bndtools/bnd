@@ -16,12 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
@@ -278,20 +275,23 @@ public class BndrunResolveContext extends ResolveContext {
     public List<Capability> findProviders(Requirement requirement) {
         init();
 
-        // Use a linked set for ordering and no duplication
-        LinkedHashSet<Capability> result;
+        List<Capability> result;
+
         CacheKey cacheKey = getCacheKey(requirement);
         List<Capability> cached = providerCache.get(cacheKey);
         if (cached != null) {
-            result = new LinkedHashSet<Capability>(cached);
+            result = cached;
         } else {
-            result = new LinkedHashSet<Capability>();
+            // First stage: framework and self-capabilities. This should never be reordered by preferences or resolver
+            // hooks
+            LinkedHashSet<Capability> firstStageResult = new LinkedHashSet<Capability>();
+
             // The selected OSGi framework always has the first chance to provide the capabilities
             if (frameworkResourceRepo != null) {
                 Map<Requirement,Collection<Capability>> providers = frameworkResourceRepo.findProviders(Collections.singleton(requirement));
                 Collection<Capability> capabilities = providers.get(requirement);
                 if (capabilities != null && !capabilities.isEmpty()) {
-                    result.addAll(capabilities);
+                    firstStageResult.addAll(capabilities);
                 }
             }
 
@@ -302,12 +302,15 @@ public class BndrunResolveContext extends ResolveContext {
                 if (selfCaps != null) {
                     for (Capability selfCap : selfCaps) {
                         if (matches(requirement, selfCap))
-                            result.add(selfCap);
+                            firstStageResult.add(selfCap);
                     }
                 }
             }
 
-            // Now iterate over the repos
+            // Second stage results: repository contents; may be reordered.
+            LinkedHashSet<Capability> secondStageResult = new LinkedHashSet<Capability>();
+
+            // Iterate over the repos
             int order = 0;
             ArrayList<Capability> repoCapabilities = new ArrayList<Capability>();
             for (Repository repo : repos) {
@@ -324,45 +327,42 @@ public class BndrunResolveContext extends ResolveContext {
                     }
                     if (!repoCapabilities.isEmpty()) {
                         Collections.sort(repoCapabilities, capabilityComparator);
-                        result.addAll(repoCapabilities);
+                        secondStageResult.addAll(repoCapabilities);
                     }
                 }
                 order++;
             }
+
+            // Convert second-stage results to a list and post-process
+            ArrayList<Capability> secondStageList = new ArrayList<Capability>(secondStageResult);
+
+            // Post-processing second stage results
+            callResolverHooks(requirement, secondStageList);
+
+            // Prepare final result
+            if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE))) {
+                // Only return the framework and self-capabilities when asked for an optional requirement
+                result = new ArrayList<Capability>(firstStageResult);
+
+                // If the framework couldn't provide the requirement then save the list of potential providers
+                // to the side, in order to work out the optional resources later.
+                if (result.isEmpty())
+                    optionalRequirements.put(requirement, secondStageList);
+
+                Collections.sort(result, capabilityComparator);
+            } else {
+                // Concatenate both stages, eliminating duplicates between the two
+                firstStageResult.addAll(secondStageList);
+                result = new ArrayList<Capability>(firstStageResult);
+
+                // Record as a mandatory requirement
+                mandatoryRequirements.put(requirement, result);
+            }
+
+            providerCache.put(cacheKey, result);
         }
 
-        // Convert result to a list
-        ArrayList<Capability> listResult = new ArrayList<Capability>(result);
-
-        if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE))) {
-            // Only return the framework's capabilities when asked for optional resources.
-            List<Capability> fwkCaps = new ArrayList<Capability>(listResult.size());
-            for (Capability capability : listResult) {
-                if (capability.getResource() == frameworkResource)
-                    fwkCaps.add(capability);
-            }
-
-            // If the framework couldn't provide the requirement then save the list of potential providers
-            // to the side, in order to work out the optional resources later.
-            if (fwkCaps.isEmpty()) {
-                if (cached == null) {
-                    callResolverHooks(requirement, listResult);
-                    providerCache.put(cacheKey, new ArrayList<Capability>(listResult));
-                }
-                optionalRequirements.put(requirement, listResult);
-            }
-            Collections.sort(fwkCaps, capabilityComparator);
-            return fwkCaps;
-        } else {
-            if (cached == null) {
-                callResolverHooks(requirement, listResult);
-                providerCache.put(cacheKey, new ArrayList<Capability>(listResult));
-            }
-            // Record as a mandatory requirement
-            mandatoryRequirements.put(requirement, listResult);
-
-            return listResult;
-        }
+        return result;
     }
 
     private boolean matches(Requirement requirement, Capability selfCap) {
