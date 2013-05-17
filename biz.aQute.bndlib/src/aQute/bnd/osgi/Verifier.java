@@ -23,11 +23,14 @@ public class Verifier extends Processor {
 	private boolean			r3;
 	private boolean			usesRequire;
 
-	final static Pattern	EENAME	= Pattern.compile("CDC-1\\.0/Foundation-1\\.0" + "|CDC-1\\.1/Foundation-1\\.1"
-											+ "|OSGi/Minimum-1\\.[1-9]" + "|JRE-1\\.1" + "|J2SE-1\\.2" + "|J2SE-1\\.3"
-											+ "|J2SE-1\\.4" + "|J2SE-1\\.5" + "|JavaSE-1\\.6" + "|JavaSE-1\\.7"
-											+ "|PersonalJava-1\\.1" + "|PersonalJava-1\\.2"
-											+ "|CDC-1\\.0/PersonalBasis-1\\.0" + "|CDC-1\\.0/PersonalJava-1\\.0");
+	final static Pattern	EENAME	= Pattern.compile("^(?:"
+											+ "CDC-1\\.0/Foundation-1\\.0" + "|CDC-1\\.1/Foundation-1\\.1"
+											+ "|OSGi/(?:Minimum-1\\.[1-9]|EmbeddedDevice-1.0)"
+											+ "|JRE-1\\.1" + "|J2SE-1\\.[2345]"
+											+ "|JavaSE-1\\.[67]"
+											+ "|PersonalJava-1\\.[12]"
+											+ "|CDC-1\\.0/PersonalBasis-1\\.0" + "|CDC-1\\.0/PersonalJava-1\\.0"
+											+ ")$");
 
 	final static int		V1_1	= 45;
 	final static int		V1_2	= 46;
