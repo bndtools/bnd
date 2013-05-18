@@ -271,6 +271,42 @@ public class BndrunResolveContextTest extends TestCase {
         assertEquals(new File("testdata/osgi.cmpn-4.3.0.jar").toURI(), findContentURI(providers.get(1).getResource()));
     }
 
+    public static void testPreferMostCapabilities() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo4/index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+
+        Requirement requirement = new CapReqBuilder("osgi.extender").addDirective("filter", "(osgi.extender=osgi.ds)").buildSyntheticRequirement();
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+        List<Capability> providers = context.findProviders(requirement);
+
+        assertEquals(2, providers.size());
+        // Equinox DS comes first as it has more capabilities (see CapabilityComparator)
+        assertEquals(new File("testdata/repo4/org.eclipse.equinox.ds-1.3.1.jar").toURI(), findContentURI(providers.get(0).getResource()));
+        assertEquals(new File("testdata/repo4/org.apache.felix.scr-1.6.2.jar").toURI(), findContentURI(providers.get(1).getResource()));
+    }
+
+    public static void testResolvePreferences() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(new File("testdata/repo4/index.xml")));
+
+        BndEditModel runModel = new BndEditModel();
+        runModel.setRunFw("org.apache.felix.framework");
+        runModel.genericSet("-resolve.preferences", "org.apache.felix.scr");
+
+        Requirement requirement = new CapReqBuilder("osgi.extender").addDirective("filter", "(osgi.extender=osgi.ds)").buildSyntheticRequirement();
+        BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+        List<Capability> providers = context.findProviders(requirement);
+
+        assertEquals(2, providers.size());
+        // Equinox DS would normally come first as it has more capabilities (see CapabilityComparator)
+        // but we set a preference for Felix SCR.
+        assertEquals(new File("testdata/repo4/org.apache.felix.scr-1.6.2.jar").toURI(), findContentURI(providers.get(0).getResource()));
+        assertEquals(new File("testdata/repo4/org.eclipse.equinox.ds-1.3.1.jar").toURI(), findContentURI(providers.get(1).getResource()));
+    }
+
     public static void testSelfCapabilityPreferredOverRepository() {
         MockRegistry registry = new MockRegistry();
         Repository repo = createRepo(new File("testdata/repo4.index.xml"));

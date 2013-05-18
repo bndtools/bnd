@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,6 +60,7 @@ public class BndrunResolveContext extends ResolveContext {
     private static final String IDENTITY_INITIAL_RESOURCE = "<<INITIAL>>";
 
     public static final String RUN_EFFECTIVE_INSTRUCTION = "-resolve.effective";
+    public static final String PROP_RESOLVE_PREFERENCES = "-resolve.preferences";
 
     private final List<Repository> repos = new LinkedList<Repository>();
     private final ConcurrentMap<Resource,Integer> resourcePriorities = new ConcurrentHashMap<Resource,Integer>();
@@ -84,6 +86,7 @@ public class BndrunResolveContext extends ResolveContext {
     private Set<String> effectiveSet;
     private List<ExportedPackage> sysPkgsExtra;
     private Parameters sysCapsExtraParams;
+    private Parameters resolvePrefs;
 
     public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
         this.runModel = runModel;
@@ -102,6 +105,7 @@ public class BndrunResolveContext extends ResolveContext {
         loadEffectiveSet();
         findFramework();
         constructInputRequirements();
+        loadPreferences();
 
         initialised = true;
     }
@@ -225,6 +229,13 @@ public class BndrunResolveContext extends ResolveContext {
         }
     }
 
+    private void loadPreferences() {
+        String prefsStr = (String) runModel.genericGet(PROP_RESOLVE_PREFERENCES);
+        if (prefsStr == null)
+            prefsStr = "";
+        resolvePrefs = new Parameters(prefsStr);
+    }
+
     public static boolean isInputRequirementResource(Resource resource) {
         Capability id = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0);
         return IDENTITY_INITIAL_RESOURCE.equals(id.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE));
@@ -337,7 +348,7 @@ public class BndrunResolveContext extends ResolveContext {
             ArrayList<Capability> secondStageList = new ArrayList<Capability>(secondStageResult);
 
             // Post-processing second stage results
-            callResolverHooks(requirement, secondStageList);
+            postProcessProviders(requirement, secondStageList);
 
             // Prepare final result
             if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE))) {
@@ -385,13 +396,41 @@ public class BndrunResolveContext extends ResolveContext {
         return new CacheKey(requirement.getNamespace(), requirement.getDirectives().get("filter"), requirement.getAttributes());
     }
 
-    private void callResolverHooks(Requirement requirement, List<Capability> candidates) {
-        if (candidates.size() == 0) {
+    protected void postProcessProviders(Requirement requirement, List<Capability> candidates) {
+        if (candidates.size() == 0)
             return;
+
+        // Process the resolve preferences
+        if (resolvePrefs != null && !resolvePrefs.isEmpty()) {
+            List<Capability> insertions = new LinkedList<Capability>();
+            for (Iterator<Capability> iterator = candidates.iterator(); iterator.hasNext();) {
+                Capability cap = iterator.next();
+                if (resolvePrefs.containsKey(getResourceIdentity(cap.getResource()))) {
+                    iterator.remove();
+                    insertions.add(cap);
+                }
+            }
+
+            if (!insertions.isEmpty())
+                candidates.addAll(0, insertions);
         }
+
+        // Call resolver hooks
         for (ResolverHook resolverHook : registry.getPlugins(ResolverHook.class)) {
             resolverHook.filterMatches(requirement, candidates);
         }
+    }
+
+    private static String getResourceIdentity(Resource resource) throws IllegalArgumentException {
+        List<Capability> identities = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
+        if (identities == null || identities.size() != 1)
+            throw new IllegalArgumentException("Resource element does not contain exactly one identity capability");
+
+        Object idObj = identities.get(0).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+        if (idObj == null || !(idObj instanceof String))
+            throw new IllegalArgumentException("Resource identity capability does not have a string identity attribute");
+
+        return (String) idObj;
     }
 
     Resource getFrameworkResource() {
