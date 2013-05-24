@@ -3,15 +3,12 @@ package biz.aQute.resolve;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.log.LogService;
@@ -24,50 +21,18 @@ import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class ResolveProcess {
 
-    private Map<Resource,Collection<Requirement>> requiredResources;
-    private Map<Resource,Collection<Requirement>> optionalResources;
+    private Map<Resource,List<Wire>> required;
+    // private Map<URI,Map<Capability,Collection<Requirement>>> optionalReasons;
+
     private ResolutionException resolutionException;
 
     public boolean resolve(BndEditModel inputModel, Registry pluginRegistry, Resolver resolver, LogService log) {
-        BndrunResolveContext resolveContext = new BndrunResolveContext(inputModel, pluginRegistry, log);
         try {
-            Map<Resource,List<Wire>> result = resolver.resolve(resolveContext);
-
-            // Find required resources
-            Set<Resource> requiredResourceSet = new HashSet<Resource>(result.size());
-            for (Resource resource : result.keySet()) {
-                if (!resolveContext.isInputRequirementsResource(resource) && !resolveContext.isFrameworkResource(resource)) {
-                    requiredResourceSet.add(resource);
-                }
-            }
-
-            // Process the mandatory requirements and save them as reasons against the required resources
-            requiredResources = new HashMap<Resource,Collection<Requirement>>(requiredResourceSet.size());
-            for (Entry<Requirement,List<Capability>> entry : resolveContext.getMandatoryRequirements().entrySet()) {
-                Requirement req = entry.getKey();
-                Resource requirer = req.getResource();
-                if (requiredResourceSet.contains(requirer)) {
-                    List<Capability> caps = entry.getValue();
-
-                    for (Capability cap : caps) {
-                        Resource requiredResource = cap.getResource();
-                        if (requiredResourceSet.remove(requiredResource)) {
-                            Collection<Requirement> reasons = requiredResources.get(requiredResource);
-                            if (reasons == null) {
-                                reasons = new LinkedList<Requirement>();
-                                requiredResources.put(requiredResource, reasons);
-                            }
-                            reasons.add(req);
-                        }
-                    }
-                }
-            }
-            // Add the remaining resources in the requiredResourceSet (these come from initial requirements)
-            for (Resource resource : requiredResourceSet)
-                requiredResources.put(resource, Collections.<Requirement> emptyList());
-
-            // Find optional resources
-            processOptionalRequirements(resolveContext);
+            // Resolve required resources
+            BndrunResolveContext resolveContext = new BndrunResolveContext(inputModel, pluginRegistry, log);
+            Map<Resource,List<Wire>> wirings = resolver.resolve(resolveContext);
+            required = invertWirings(wirings);
+            removeFrameworkAndInputResources(required, resolveContext);
 
             return true;
         } catch (ResolutionException e) {
@@ -76,26 +41,56 @@ public class ResolveProcess {
         }
     }
 
-    private void processOptionalRequirements(BndrunResolveContext resolveContext) {
-        optionalResources = new HashMap<Resource,Collection<Requirement>>();
-        for (Entry<Requirement,List<Capability>> entry : resolveContext.getOptionalRequirements().entrySet()) {
-            Requirement req = entry.getKey();
-            Resource requirer = req.getResource();
-            if (requiredResources.containsKey(requirer)) {
-                List<Capability> providers = entry.getValue();
-                for (Capability provider : providers) {
-                    Resource providerResource = provider.getResource();
-                    if (requirer != providerResource && !requiredResources.containsKey(providerResource)) {
-                        Collection<Requirement> reasons = optionalResources.get(provider.getResource());
-                        if (reasons == null) {
-                            reasons = new LinkedList<Requirement>();
-                            optionalResources.put(provider.getResource(), reasons);
-                        }
-                        reasons.add(req);
-                    }
+    /*
+     * private void processOptionalRequirements(BndrunResolveContext resolveContext) { optionalReasons = new
+     * HashMap<URI,Map<Capability,Collection<Requirement>>>(); for (Entry<Requirement,List<Capability>> entry :
+     * resolveContext.getOptionalRequirements().entrySet()) { Requirement req = entry.getKey(); Resource requirer =
+     * req.getResource(); if (requiredReasons.containsKey(getResourceURI(requirer))) { List<Capability> caps =
+     * entry.getValue(); for (Capability cap : caps) { Resource providerResource = cap.getResource(); URI resourceUri =
+     * getResourceURI(providerResource); if (requirer != providerResource) { // &&
+     * !requiredResources.containsKey(providerResource)) Map<Capability,Collection<Requirement>> resourceReasons =
+     * optionalReasons.get(cap.getResource()); if (resourceReasons == null) { resourceReasons = new
+     * HashMap<Capability,Collection<Requirement>>(); optionalReasons.put(resourceUri, resourceReasons);
+     * urisToResources.put(resourceUri, providerResource); } Collection<Requirement> capRequirements =
+     * resourceReasons.get(cap); if (capRequirements == null) { capRequirements = new LinkedList<Requirement>();
+     * resourceReasons.put(cap, capRequirements); } capRequirements.add(req); } } } } }
+     */
+
+    private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap, BndrunResolveContext rc) {
+        for (Iterator<Entry<Resource,List<Wire>>> iter = resourceMap.entrySet().iterator(); iter.hasNext();) {
+            Entry<Resource,List<Wire>> entry = iter.next();
+            if (rc.isFrameworkResource(entry.getKey()))
+                iter.remove();
+            else if (rc.isInputRequirementsResource(entry.getKey()))
+                iter.remove();
+        }
+    }
+
+    /**
+     * Inverts the wiring map from the resolver. Whereas the resolver returns a map of resources and the list of wirings
+     * FROM each resource, we want to know the list of wirings TO that resource. This is in order to show the user the
+     * reasons for each resource being present in the result.
+     */
+    private static Map<Resource,List<Wire>> invertWirings(Map<Resource, ? extends Collection<Wire>> wirings) {
+        Map<Resource,List<Wire>> inverted = new HashMap<Resource,List<Wire>>();
+        for (Entry<Resource, ? extends Collection<Wire>> entry : wirings.entrySet()) {
+            Resource requirer = entry.getKey();
+            for (Wire wire : entry.getValue()) {
+                Resource provider = wire.getProvider();
+
+                // Filter out self-capabilities, i.e. requirer and provider are same
+                if (provider == requirer)
+                    continue;
+
+                List<Wire> incoming = inverted.get(provider);
+                if (incoming == null) {
+                    incoming = new LinkedList<Wire>();
+                    inverted.put(provider, incoming);
                 }
+                incoming.add(wire);
             }
         }
+        return inverted;
     }
 
     public ResolutionException getResolutionException() {
@@ -103,18 +98,16 @@ public class ResolveProcess {
     }
 
     public Collection<Resource> getRequiredResources() {
-        return requiredResources != null ? Collections.unmodifiableCollection(requiredResources.keySet()) : Collections.<Resource> emptyList();
+        if (required == null)
+            return Collections.emptyList();
+        return Collections.unmodifiableCollection(required.keySet());
     }
 
-    public Collection<Resource> getOptionalResources() {
-        return optionalResources != null ? Collections.unmodifiableCollection(optionalResources.keySet()) : Collections.<Resource> emptyList();
-    }
-
-    public Collection<Requirement> getReasons(Resource resource) {
-        Collection<Requirement> reasons = requiredResources.get(resource);
-        if (reasons == null)
-            reasons = optionalResources.get(resource);
-        return reasons != null ? Collections.unmodifiableCollection(reasons) : Collections.<Requirement> emptyList();
+    public Collection<Wire> getReasons(Resource resource) {
+        Collection<Wire> wires = required.get(resource);
+        if (wires == null)
+            wires = Collections.emptyList();
+        return wires;
     }
 
 }

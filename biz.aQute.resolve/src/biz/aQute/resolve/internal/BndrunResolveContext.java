@@ -64,8 +64,6 @@ public class BndrunResolveContext extends ResolveContext {
 
     private final List<Repository> repos = new LinkedList<Repository>();
     private final ConcurrentMap<Resource,Integer> resourcePriorities = new ConcurrentHashMap<Resource,Integer>();
-    private final Map<Requirement,List<Capability>> mandatoryRequirements = new HashMap<Requirement,List<Capability>>();
-    private final Map<Requirement,List<Capability>> optionalRequirements = new HashMap<Requirement,List<Capability>>();
 
     private final Map<CacheKey,List<Capability>> providerCache = new HashMap<CacheKey,List<Capability>>();
 
@@ -74,6 +72,7 @@ public class BndrunResolveContext extends ResolveContext {
     private final BndEditModel runModel;
     private final Registry registry;
     private final LogService log;
+    private final Set<Resource> optionalRoots = new HashSet<Resource>();
 
     private boolean initialised = false;
 
@@ -92,6 +91,11 @@ public class BndrunResolveContext extends ResolveContext {
         this.runModel = runModel;
         this.registry = registry;
         this.log = log;
+    }
+
+    public void setOptionalRoots(Collection<Resource> roots) {
+        this.optionalRoots.clear();
+        this.optionalRoots.addAll(roots);
     }
 
     protected synchronized void init() {
@@ -292,12 +296,6 @@ public class BndrunResolveContext extends ResolveContext {
         List<Capability> cached = providerCache.get(cacheKey);
         if (cached != null) {
             result = new ArrayList<Capability>(cached);
-
-            // Although we used the cached result, we still need to record that this requirement led to the result.
-            if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
-                optionalRequirements.put(requirement, result);
-            else
-                mandatoryRequirements.put(requirement, result);
         } else {
             // First stage: framework and self-capabilities. This should never be reordered by preferences or resolver
             // hooks
@@ -324,57 +322,53 @@ public class BndrunResolveContext extends ResolveContext {
                 }
             }
 
-            // Second stage results: repository contents; may be reordered.
-            LinkedHashSet<Capability> secondStageResult = new LinkedHashSet<Capability>();
+            // If the requirement is optional and doesn't come from an optional root resource,
+            // then we are done already, no need to look for providers from the repos.
+            boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
+            if (optional && !optionalRoots.contains(requirement.getResource())) {
 
-            // Iterate over the repos
-            int order = 0;
-            ArrayList<Capability> repoCapabilities = new ArrayList<Capability>();
-            for (Repository repo : repos) {
-                repoCapabilities.clear();
-                Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singleton(requirement));
-                Collection<Capability> capabilities = providers.get(requirement);
-                if (capabilities != null && !capabilities.isEmpty()) {
-                    repoCapabilities.ensureCapacity(capabilities.size());
-                    for (Capability capability : capabilities) {
-                        if (isPermitted(capability.getResource())) {
-                            repoCapabilities.add(capability);
-                            setResourcePriority(order, capability.getResource());
+                result = new ArrayList<Capability>(firstStageResult);
+                Collections.sort(result, capabilityComparator);
+
+            } else {
+
+                // Second stage results: repository contents; may be reordered.
+                LinkedHashSet<Capability> secondStageResult = new LinkedHashSet<Capability>();
+
+                // Iterate over the repos
+                int order = 0;
+                ArrayList<Capability> repoCapabilities = new ArrayList<Capability>();
+                for (Repository repo : repos) {
+                    repoCapabilities.clear();
+                    Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections.singleton(requirement));
+                    Collection<Capability> capabilities = providers.get(requirement);
+                    if (capabilities != null && !capabilities.isEmpty()) {
+                        repoCapabilities.ensureCapacity(capabilities.size());
+                        for (Capability capability : capabilities) {
+                            if (isPermitted(capability.getResource())) {
+                                repoCapabilities.add(capability);
+                                setResourcePriority(order, capability.getResource());
+                            }
+                        }
+                        if (!repoCapabilities.isEmpty()) {
+                            Collections.sort(repoCapabilities, capabilityComparator);
+                            secondStageResult.addAll(repoCapabilities);
                         }
                     }
-                    if (!repoCapabilities.isEmpty()) {
-                        Collections.sort(repoCapabilities, capabilityComparator);
-                        secondStageResult.addAll(repoCapabilities);
-                    }
+                    order++;
                 }
-                order++;
-            }
 
-            // Convert second-stage results to a list and post-process
-            ArrayList<Capability> secondStageList = new ArrayList<Capability>(secondStageResult);
+                // Convert second-stage results to a list and post-process
+                ArrayList<Capability> secondStageList = new ArrayList<Capability>(secondStageResult);
 
-            // Post-processing second stage results
-            postProcessProviders(requirement, secondStageList);
+                // Post-processing second stage results
+                postProcessProviders(requirement, secondStageList);
 
-            // Prepare final result
-            if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE))) {
-                // Only return the framework and self-capabilities when asked for an optional requirement
-                result = new ArrayList<Capability>(firstStageResult);
-
-                // If the framework couldn't provide the requirement then save the list of potential providers
-                // to the side, in order to work out the optional resources later.
-                if (result.isEmpty())
-                    optionalRequirements.put(requirement, secondStageList);
-
-                Collections.sort(result, capabilityComparator);
-            } else {
                 // Concatenate both stages, eliminating duplicates between the two
                 firstStageResult.addAll(secondStageList);
                 result = new ArrayList<Capability>(firstStageResult);
-
-                // Record as a mandatory requirement
-                mandatoryRequirements.put(requirement, result);
             }
+
             providerCache.put(cacheKey, result);
         }
 
@@ -532,14 +526,6 @@ public class BndrunResolveContext extends ResolveContext {
 
     public boolean isFrameworkResource(Resource resource) {
         return resource == frameworkResource;
-    }
-
-    public Map<Requirement,List<Capability>> getMandatoryRequirements() {
-        return mandatoryRequirements;
-    }
-
-    public Map<Requirement,List<Capability>> getOptionalRequirements() {
-        return optionalRequirements;
     }
 
     private static class CacheKey {
