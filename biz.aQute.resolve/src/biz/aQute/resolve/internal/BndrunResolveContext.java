@@ -291,7 +291,7 @@ public class BndrunResolveContext extends ResolveContext {
         CacheKey cacheKey = getCacheKey(requirement);
         List<Capability> cached = providerCache.get(cacheKey);
         if (cached != null) {
-            result = cached;
+            result = new ArrayList<Capability>(cached);
         } else {
             // First stage: framework and self-capabilities. This should never be reordered by preferences or resolver
             // hooks
