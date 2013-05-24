@@ -292,6 +292,12 @@ public class BndrunResolveContext extends ResolveContext {
         List<Capability> cached = providerCache.get(cacheKey);
         if (cached != null) {
             result = new ArrayList<Capability>(cached);
+
+            // Although we used the cached result, we still need to record that this requirement led to the result.
+            if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
+                optionalRequirements.put(requirement, result);
+            else
+                mandatoryRequirements.put(requirement, result);
         } else {
             // First stage: framework and self-capabilities. This should never be reordered by preferences or resolver
             // hooks
@@ -369,7 +375,6 @@ public class BndrunResolveContext extends ResolveContext {
                 // Record as a mandatory requirement
                 mandatoryRequirements.put(requirement, result);
             }
-
             providerCache.put(cacheKey, result);
         }
 
@@ -393,7 +398,7 @@ public class BndrunResolveContext extends ResolveContext {
     }
 
     private static CacheKey getCacheKey(Requirement requirement) {
-        return new CacheKey(requirement.getNamespace(), requirement.getDirectives().get("filter"), requirement.getAttributes());
+        return new CacheKey(requirement.getNamespace(), requirement.getDirectives(), requirement.getAttributes());
     }
 
     protected void postProcessProviders(Requirement requirement, List<Capability> candidates) {
@@ -539,22 +544,22 @@ public class BndrunResolveContext extends ResolveContext {
 
     private static class CacheKey {
         final String namespace;
-        final String filter;
+        final Map<String,String> directives;
         final Map<String,Object> attributes;
         final int hashcode;
 
-        CacheKey(String namespace, String filter, Map<String,Object> attributes) {
+        CacheKey(String namespace, Map<String,String> directives, Map<String,Object> attributes) {
             this.namespace = namespace;
-            this.filter = filter;
+            this.directives = directives;
             this.attributes = attributes;
-            this.hashcode = calculateHashCode(namespace, filter, attributes);
+            this.hashcode = calculateHashCode(namespace, directives, attributes);
         }
 
-        private static int calculateHashCode(String namespace, String filter, Map<String,Object> attributes) {
+        private static int calculateHashCode(String namespace, Map<String,String> directives, Map<String,Object> attributes) {
             final int prime = 31;
             int result = 1;
             result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
-            result = prime * result + ((filter == null) ? 0 : filter.hashCode());
+            result = prime * result + ((directives == null) ? 0 : directives.hashCode());
             result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
             return result;
         }
@@ -578,10 +583,10 @@ public class BndrunResolveContext extends ResolveContext {
                     return false;
             } else if (!attributes.equals(other.attributes))
                 return false;
-            if (filter == null) {
-                if (other.filter != null)
+            if (directives == null) {
+                if (other.directives != null)
                     return false;
-            } else if (!filter.equals(other.filter))
+            } else if (!directives.equals(other.directives))
                 return false;
             if (namespace == null) {
                 if (other.namespace != null)
