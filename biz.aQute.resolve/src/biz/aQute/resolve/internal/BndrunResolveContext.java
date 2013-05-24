@@ -668,7 +668,12 @@ public class BndrunResolveContext extends ResolveContext {
                 }
             }
 
-            // 7. The resource with most capabilities
+            // 7. The resource with the fewest requirements
+            int diff = res1.getRequirements(null).size() - res2.getRequirements(null).size();
+            if (diff != 0)
+                return diff;
+
+            // 8. The resource with most capabilities
             return res2.getCapabilities(null).size() - res1.getCapabilities(null).size();
         }
     }

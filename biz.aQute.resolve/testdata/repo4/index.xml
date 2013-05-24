@@ -1,348 +1,206 @@
 <?xml version='1.0' encoding='utf-8'?>
-<repository increment='1368825027279' name='Untitled' xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>
+<repository increment='1369403113405' name='Untitled' xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>
   <resource>
     <capability namespace='osgi.identity'>
       <attribute name='osgi.identity' value='org.apache.felix.framework'/>
       <attribute name='type' value='osgi.bundle'/>
-      <attribute name='version' type='Version' value='4.2.1'/>
+      <attribute name='version' type='Version' value='4.0.0'/>
     </capability>
     <capability namespace='osgi.content'>
-      <attribute name='osgi.content' value='e6cf259a55bec6f00351d9cd516bdaf774c36afdf4bc194252a99357317d439f'/>
-      <attribute name='url' value='org.apache.felix.framework-4.2.1.jar'/>
-      <attribute name='size' type='Long' value='517118'/>
+      <attribute name='osgi.content' value='b6c4f46b904163020d83b7198dc420b46708e26acc420937d18277c41dac0d30'/>
+      <attribute name='url' value='org.apache.felix.framework-4.0.0.jar'/>
+      <attribute name='size' type='Long' value='481210'/>
       <attribute name='mime' value='application/vnd.osgi.bundle'/>
     </capability>
     <capability namespace='osgi.wiring.bundle'>
       <attribute name='osgi.wiring.bundle' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
     </capability>
     <capability namespace='osgi.wiring.host'>
       <attribute name='osgi.wiring.host' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
       <attribute name='osgi.wiring.package' value='org.osgi.framework.startlevel'/>
       <attribute name='version' type='Version' value='1.0.0'/>
       <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
       <directive name='uses' value='org.osgi.framework'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
       <attribute name='osgi.wiring.package' value='org.osgi.framework.wiring'/>
-      <attribute name='version' type='Version' value='1.1.0'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
       <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
-      <directive name='uses' value='org.osgi.resource,org.osgi.framework'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
+      <directive name='uses' value='org.osgi.framework'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
       <attribute name='osgi.wiring.package' value='org.osgi.framework.hooks.bundle'/>
-      <attribute name='version' type='Version' value='1.1.0'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
       <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
       <directive name='uses' value='org.osgi.framework'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
       <attribute name='osgi.wiring.package' value='org.osgi.framework.hooks.service'/>
       <attribute name='version' type='Version' value='1.1.0'/>
       <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
       <directive name='uses' value='org.osgi.framework'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
       <attribute name='osgi.wiring.package' value='org.osgi.framework.hooks.resolver'/>
       <attribute name='version' type='Version' value='1.0.0'/>
       <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
       <directive name='uses' value='org.osgi.framework.wiring'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.osgi.framework.namespace'/>
+      <attribute name='osgi.wiring.package' value='org.osgi.framework.launch'/>
       <attribute name='version' type='Version' value='1.0.0'/>
       <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
-      <directive name='uses' value='org.osgi.resource'/>
-    </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.osgi.framework.launch'/>
-      <attribute name='version' type='Version' value='1.1.0'/>
-      <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
       <directive name='uses' value='org.osgi.framework'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
       <attribute name='osgi.wiring.package' value='org.osgi.framework'/>
-      <attribute name='version' type='Version' value='1.7.0'/>
+      <attribute name='version' type='Version' value='1.6.0'/>
       <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
       <attribute name='osgi.wiring.package' value='org.osgi.framework.hooks.weaving'/>
       <attribute name='version' type='Version' value='1.0.0'/>
       <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
       <directive name='uses' value='org.osgi.framework.wiring'/>
-    </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.osgi.resource'/>
-      <attribute name='version' type='Version' value='1.0.0'/>
-      <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
-    </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.osgi.service.url'/>
-      <attribute name='version' type='Version' value='1.0.0'/>
-      <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
       <attribute name='osgi.wiring.package' value='org.osgi.service.packageadmin'/>
       <attribute name='version' type='Version' value='1.2.0'/>
       <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
       <directive name='uses' value='org.osgi.framework'/>
+    </capability>
+    <capability namespace='osgi.wiring.package'>
+      <attribute name='osgi.wiring.package' value='org.osgi.service.url'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
+      <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
       <attribute name='osgi.wiring.package' value='org.osgi.service.startlevel'/>
       <attribute name='version' type='Version' value='1.1.0'/>
       <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
       <directive name='uses' value='org.osgi.framework'/>
     </capability>
     <capability namespace='osgi.wiring.package'>
       <attribute name='osgi.wiring.package' value='org.osgi.util.tracker'/>
-      <attribute name='version' type='Version' value='1.5.1'/>
+      <attribute name='version' type='Version' value='1.5.0'/>
       <attribute name='bundle-symbolic-name' value='org.apache.felix.framework'/>
-      <attribute name='bundle-version' type='Version' value='4.2.1'/>
+      <attribute name='bundle-version' type='Version' value='4.0.0'/>
       <directive name='uses' value='org.osgi.framework'/>
     </capability>
     <capability namespace='osgi.contract'>
       <attribute name='osgi.contract' value='OSGiFramework'/>
-      <attribute name='version' type='Version' value='5.0.0'/>
-      <directive name='uses' value='org.osgi.framework.startlevel,org.osgi.framework.wiring,org.osgi.framework.hooks.bundle,org.osgi.framework.hooks.service,org.osgi.framework.hooks.resolver,org.osgi.framework.namespace,org.osgi.framework.launch,org.osgi.framework,org.osgi.framework.hooks.weaving,org.osgi.resource,org.osgi.service.url,org.osgi.service.packageadmin,org.osgi.service.startlevel,org.osgi.util.tracker'/>
+      <attribute name='version' type='Version' value='4.3.0'/>
+      <directive name='uses' value='org.osgi.framework.startlevel,org.osgi.framework.wiring,org.osgi.framework.hooks.bundle,org.osgi.framework.hooks.service,org.osgi.framework.hooks.resolver,org.osgi.framework.launch,org.osgi.framework,org.osgi.framework.hooks.weaving,org.osgi.service.packageadmin,org.osgi.service.url,org.osgi.service.startlevel,org.osgi.util.tracker'/>
     </capability>
   </resource>
   <resource>
     <capability namespace='osgi.identity'>
-      <attribute name='osgi.identity' value='org.apache.felix.scr'/>
+      <attribute name='osgi.identity' value='x.1'/>
       <attribute name='type' value='osgi.bundle'/>
-      <attribute name='version' type='Version' value='1.6.2'/>
+      <attribute name='version' type='Version' value='0.0.0'/>
     </capability>
     <capability namespace='osgi.content'>
-      <attribute name='osgi.content' value='ce6b4bf601e3ee70fcc7db773cd679beda9aff47bbb32ce3a94a4ee41fc65488'/>
-      <attribute name='url' value='org.apache.felix.scr-1.6.2.jar'/>
-      <attribute name='size' type='Long' value='199570'/>
+      <attribute name='osgi.content' value='f6741fe990c203dbcf30afd00d5f631c5e9fa8ecda9028c164a6601825023ea2'/>
+      <attribute name='url' value='x.1.jar'/>
+      <attribute name='size' type='Long' value='597'/>
       <attribute name='mime' value='application/vnd.osgi.bundle'/>
     </capability>
     <capability namespace='osgi.wiring.bundle'>
-      <attribute name='osgi.wiring.bundle' value='org.apache.felix.scr'/>
-      <attribute name='bundle-version' type='Version' value='1.6.2'/>
+      <attribute name='osgi.wiring.bundle' value='x.1'/>
+      <attribute name='bundle-version' type='Version' value='0.0.0'/>
     </capability>
     <capability namespace='osgi.wiring.host'>
-      <attribute name='osgi.wiring.host' value='org.apache.felix.scr'/>
-      <attribute name='bundle-version' type='Version' value='1.6.2'/>
+      <attribute name='osgi.wiring.host' value='x.1'/>
+      <attribute name='bundle-version' type='Version' value='0.0.0'/>
     </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.apache.felix.scr'/>
-      <attribute name='version' type='Version' value='1.7.0'/>
-      <attribute name='bundle-symbolic-name' value='org.apache.felix.scr'/>
-      <attribute name='bundle-version' type='Version' value='1.6.2'/>
-      <directive name='uses' value='org.osgi.framework,org.osgi.service.component'/>
-    </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.apache.felix.scr.component'/>
-      <attribute name='version' type='Version' value='1.0.0'/>
-      <attribute name='status' value='provisional'/>
-      <attribute name='bundle-symbolic-name' value='org.apache.felix.scr'/>
-      <attribute name='bundle-version' type='Version' value='1.6.2'/>
-      <directive name='mandatory' value='status'/>
-      <directive name='uses' value='org.osgi.service.component'/>
-    </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.osgi.service.component'/>
-      <attribute name='version' type='Version' value='1.2.0'/>
-      <attribute name='bundle-symbolic-name' value='org.apache.felix.scr'/>
-      <attribute name='bundle-version' type='Version' value='1.6.2'/>
-      <directive name='uses' value='org.osgi.framework'/>
-    </capability>
-    <capability namespace='osgi.extender'>
-      <attribute name='osgi.extender' value='osgi.ds'/>
-      <attribute name='version' type='Version' value='1.1.0'/>
-      <directive name='uses' value='org.osgi.service.component'/>
-      <directive name='effective' value='active'/>
-    </capability>
+    <capability namespace='w'/>
+    <capability namespace='x'/>
+    <capability namespace='y'/>
+    <capability namespace='z'/>
     <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.felix.scr)(version&gt;=1.7.0)(!(version&gt;=1.8.0)))'/>
+      <directive name='filter' value='(osgi.wiring.package=c)'/>
     </requirement>
     <requirement namespace='osgi.wiring.package'>
-      <attribute name='status' value='provisional'/>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.felix.service.command)(version&gt;=0.6.0)(!(version&gt;=1.0.0)))'/>
-      <directive name='resolution' value='optional'/>
+      <directive name='filter' value='(osgi.wiring.package=a)'/>
     </requirement>
     <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.felix.shell)(version&gt;=1.0.0)(!(version&gt;=1.1.0)))'/>
-      <directive name='resolution' value='optional'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.framework)(version&gt;=1.4.0)(!(version&gt;=2.0.0)))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.component)(version&gt;=1.2.0)(!(version&gt;=1.3.0)))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.log)(version&gt;=1.3.0)(!(version&gt;=2.0.0)))'/>
-      <directive name='resolution' value='optional'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.packageadmin)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))'/>
-      <directive name='resolution' value='optional'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.cm)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))'/>
+      <directive name='filter' value='(osgi.wiring.package=b)'/>
     </requirement>
   </resource>
   <resource>
     <capability namespace='osgi.identity'>
-      <attribute name='osgi.identity' value='org.eclipse.equinox.ds'/>
+      <attribute name='osgi.identity' value='x.2'/>
       <attribute name='type' value='osgi.bundle'/>
-      <attribute name='version' type='Version' value='1.3.1.R37x_v20110701'/>
-      <directive name='singleton' value='true'/>
+      <attribute name='version' type='Version' value='0.0.0'/>
     </capability>
     <capability namespace='osgi.content'>
-      <attribute name='osgi.content' value='5d8c5680f5e31ae68bb32ea6e2a9fa2ebf99ef1469f6588e3480a29f9e157189'/>
-      <attribute name='url' value='org.eclipse.equinox.ds-1.3.1.jar'/>
-      <attribute name='size' type='Long' value='189358'/>
+      <attribute name='osgi.content' value='2a151b8af0051769d250079777c20500cdb8e2232dc61009a5559843002cd3ab'/>
+      <attribute name='url' value='x.2.jar'/>
+      <attribute name='size' type='Long' value='593'/>
       <attribute name='mime' value='application/vnd.osgi.bundle'/>
     </capability>
     <capability namespace='osgi.wiring.bundle'>
-      <attribute name='osgi.wiring.bundle' value='org.eclipse.equinox.ds'/>
-      <attribute name='bundle-version' type='Version' value='1.3.1.R37x_v20110701'/>
+      <attribute name='osgi.wiring.bundle' value='x.2'/>
+      <attribute name='bundle-version' type='Version' value='0.0.0'/>
     </capability>
     <capability namespace='osgi.wiring.host'>
-      <attribute name='osgi.wiring.host' value='org.eclipse.equinox.ds'/>
-      <attribute name='bundle-version' type='Version' value='1.3.1.R37x_v20110701'/>
+      <attribute name='osgi.wiring.host' value='x.2'/>
+      <attribute name='bundle-version' type='Version' value='0.0.0'/>
     </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.ds'/>
+    <capability namespace='x'/>
+    <capability namespace='y'/>
+    <capability namespace='z'/>
+    <requirement namespace='osgi.wiring.package'>
+      <directive name='filter' value='(osgi.wiring.package=b)'/>
+    </requirement>
+    <requirement namespace='osgi.wiring.package'>
+      <directive name='filter' value='(osgi.wiring.package=a)'/>
+    </requirement>
+  </resource>
+  <resource>
+    <capability namespace='osgi.identity'>
+      <attribute name='osgi.identity' value='x.3'/>
+      <attribute name='type' value='osgi.bundle'/>
       <attribute name='version' type='Version' value='0.0.0'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
-      <attribute name='bundle-version' type='Version' value='1.3.1.R37x_v20110701'/>
-      <directive name='x-internal' value='true'/>
     </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.ds.impl'/>
-      <attribute name='version' type='Version' value='0.0.0'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
-      <attribute name='bundle-version' type='Version' value='1.3.1.R37x_v20110701'/>
-      <directive name='x-internal' value='true'/>
+    <capability namespace='osgi.content'>
+      <attribute name='osgi.content' value='50f5f872c25f3b1a90dcb0bd2b96d257975b93a8961ab833c58c767560220239'/>
+      <attribute name='url' value='x.3.jar'/>
+      <attribute name='size' type='Long' value='595'/>
+      <attribute name='mime' value='application/vnd.osgi.bundle'/>
     </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.ds.model'/>
-      <attribute name='version' type='Version' value='0.0.0'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
-      <attribute name='bundle-version' type='Version' value='1.3.1.R37x_v20110701'/>
-      <directive name='x-internal' value='true'/>
+    <capability namespace='osgi.wiring.bundle'>
+      <attribute name='osgi.wiring.bundle' value='x.3'/>
+      <attribute name='bundle-version' type='Version' value='0.0.0'/>
     </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.ds.storage.file'/>
-      <attribute name='version' type='Version' value='0.0.0'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
-      <attribute name='bundle-version' type='Version' value='1.3.1.R37x_v20110701'/>
-      <directive name='x-internal' value='true'/>
+    <capability namespace='osgi.wiring.host'>
+      <attribute name='osgi.wiring.host' value='x.3'/>
+      <attribute name='bundle-version' type='Version' value='0.0.0'/>
     </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.util.io'/>
-      <attribute name='version' type='Version' value='0.0.0'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
-      <attribute name='bundle-version' type='Version' value='1.3.1.R37x_v20110701'/>
-      <directive name='x-internal' value='true'/>
-    </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.util.xml'/>
-      <attribute name='version' type='Version' value='0.0.0'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
-      <attribute name='bundle-version' type='Version' value='1.3.1.R37x_v20110701'/>
-      <directive name='x-internal' value='true'/>
-    </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.util.xml.impl'/>
-      <attribute name='version' type='Version' value='0.0.0'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
-      <attribute name='bundle-version' type='Version' value='1.3.1.R37x_v20110701'/>
-      <directive name='x-internal' value='true'/>
-    </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.eclipse.equinox.internal.util.string'/>
-      <attribute name='version' type='Version' value='0.0.0'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
-      <attribute name='bundle-version' type='Version' value='1.3.1.R37x_v20110701'/>
-      <directive name='x-internal' value='true'/>
-    </capability>
-    <capability namespace='osgi.wiring.package'>
-      <attribute name='osgi.wiring.package' value='org.apache.felix.scr'/>
-      <attribute name='version' type='Version' value='1.6.0'/>
-      <attribute name='bundle-symbolic-name' value='org.eclipse.equinox.ds'/>
-      <attribute name='bundle-version' type='Version' value='1.3.1.R37x_v20110701'/>
-    </capability>
-    <capability namespace='osgi.extender'>
-      <attribute name='osgi.extender' value='osgi.ds'/>
-      <attribute name='version' type='Version' value='1.1.0'/>
-      <directive name='uses' value='org.osgi.service.component'/>
-      <directive name='effective' value='active'/>
-    </capability>
+    <capability namespace='w'/>
+    <capability namespace='x'/>
+    <capability namespace='y'/>
+    <capability namespace='z'/>
     <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.equinox.internal.util.event)(version&gt;=1.0.0))'/>
+      <directive name='filter' value='(osgi.wiring.package=a)'/>
     </requirement>
     <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.equinox.internal.util.hash)(version&gt;=1.0.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.equinox.internal.util.pool)(version&gt;=1.0.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.equinox.internal.util.ref)(version&gt;=1.0.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.equinox.internal.util.threadpool)(version&gt;=1.0.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.equinox.internal.util.timer)(version&gt;=1.0.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.osgi.framework.console)(version&gt;=1.0.0))'/>
-      <directive name='resolution' value='optional'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.osgi.framework.log)(version&gt;=1.0.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.osgi.service.debug)(version&gt;=1.0.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.eclipse.osgi.service.environment)(version&gt;=1.2.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(osgi.wiring.package=org.eclipse.osgi.util)'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.framework)(version&gt;=1.3.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.cm)(version&gt;=1.2.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.component)(version&gt;=1.1.0)(!(version&gt;=1.2.0)))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.service.log)(version&gt;=1.3.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.osgi.util.tracker)(version&gt;=1.3.0))'/>
-    </requirement>
-    <requirement namespace='osgi.wiring.package'>
-      <directive name='filter' value='(&amp;(osgi.wiring.package=org.apache.felix.scr)(version&gt;=1.6.0)(!(version&gt;=1.7.0)))'/>
-    </requirement>
-    <requirement namespace='osgi.ee'>
-      <directive name='filter' value='(|(&amp;(osgi.ee=OSGi/Minimum)(version=1.2))(&amp;(osgi.ee=CDC/Foundation)(version=1.1))(&amp;(osgi.ee=JavaSE)(version=1.4)))'/>
+      <directive name='filter' value='(osgi.wiring.package=b)'/>
     </requirement>
   </resource>
 </repository>
