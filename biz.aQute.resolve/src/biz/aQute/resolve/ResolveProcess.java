@@ -22,7 +22,7 @@ import biz.aQute.resolve.internal.BndrunResolveContext;
 public class ResolveProcess {
 
     private Map<Resource,List<Wire>> required;
-    // private Map<URI,Map<Capability,Collection<Requirement>>> optionalReasons;
+    private Map<Resource,List<Wire>> optional;
 
     private ResolutionException resolutionException;
 
@@ -33,6 +33,20 @@ public class ResolveProcess {
             Map<Resource,List<Wire>> wirings = resolver.resolve(resolveContext);
             required = invertWirings(wirings);
             removeFrameworkAndInputResources(required, resolveContext);
+
+            // Resolve optional resources
+            resolveContext = new BndrunResolveContext(inputModel, pluginRegistry, log);
+            resolveContext.setOptionalRoots(wirings.keySet());
+            Map<Resource,List<Wire>> optionalWirings = resolver.resolve(resolveContext);
+            optional = invertWirings(optionalWirings);
+            removeFrameworkAndInputResources(optional, resolveContext);
+
+            // Remove required resources from optional resource map
+            for (Iterator<Resource> iter = optional.keySet().iterator(); iter.hasNext();) {
+                Resource resource = iter.next();
+                if (required.containsKey(resource))
+                    iter.remove();
+            }
 
             return true;
         } catch (ResolutionException e) {
@@ -57,11 +71,9 @@ public class ResolveProcess {
      */
 
     private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap, BndrunResolveContext rc) {
-        for (Iterator<Entry<Resource,List<Wire>>> iter = resourceMap.entrySet().iterator(); iter.hasNext();) {
-            Entry<Resource,List<Wire>> entry = iter.next();
-            if (rc.isFrameworkResource(entry.getKey()))
-                iter.remove();
-            else if (rc.isInputRequirementsResource(entry.getKey()))
+        for (Iterator<Resource> iter = resourceMap.keySet().iterator(); iter.hasNext();) {
+            Resource resource = iter.next();
+            if (rc.isInputRequirementsResource(resource) || rc.isFrameworkResource(resource))
                 iter.remove();
         }
     }
@@ -103,8 +115,21 @@ public class ResolveProcess {
         return Collections.unmodifiableCollection(required.keySet());
     }
 
-    public Collection<Wire> getReasons(Resource resource) {
+    public Collection<Resource> getOptionalResources() {
+        if (optional == null)
+            return Collections.emptyList();
+        return Collections.unmodifiableCollection(optional.keySet());
+    }
+
+    public Collection<Wire> getRequiredReasons(Resource resource) {
         Collection<Wire> wires = required.get(resource);
+        if (wires == null)
+            wires = Collections.emptyList();
+        return wires;
+    }
+
+    public Collection<Wire> getOptionalReasons(Resource resource) {
+        Collection<Wire> wires = optional.get(resource);
         if (wires == null)
             wires = Collections.emptyList();
         return wires;
