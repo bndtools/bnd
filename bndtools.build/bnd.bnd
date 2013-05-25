@@ -12,7 +12,7 @@
 Include-Resource:\
 	${repo;biz.aQute.bndlib;${bndlib-version-base}},\
 	${repo;biz.aQute.repository;${aQute-repository-base}},\
-	${repo;biz.aQute.resolve;latest},\
+	${repo;biz.aQute.resolve;${aQute-resolve-base}},\
 	${repo;bndtools.core;latest},\
 	${repo;bndtools.jareditor;latest},\
 	${repo;bndtools.repository.base;latest},\

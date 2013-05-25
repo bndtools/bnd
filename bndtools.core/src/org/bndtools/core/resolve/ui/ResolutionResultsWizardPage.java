@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.resolve.ResolveOperation;
-import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
+import org.bndtools.core.ui.resource.WireLabelProvider;
 import org.bndtools.core.utils.resources.ResourceUtils;
 import org.bndtools.core.utils.swt.SWTUtil;
 import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
@@ -53,6 +53,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.resource.Wire;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -160,16 +161,14 @@ public class ResolutionResultsWizardPage extends WizardPage {
         requiredViewer.setLabelProvider(new ResourceLabelProvider());
         requiredViewer.setSorter(new BundleSorter());
 
-        ISelectionChangedListener reasonSelectionListener = new ISelectionChangedListener() {
+        requiredViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
                 IStructuredSelection sel = (IStructuredSelection) event.getSelection();
                 Resource resource = (Resource) sel.getFirstElement();
-                Collection<Requirement> reasons = result.getResolve().getReasons(resource);
-                //                Reason[] reasons = (resource != null) ? result.getReason(resource) : new Reason[0];
+                Collection<Wire> reasons = result.getResolve().getRequiredReasons(resource);
                 reasonsViewer.setInput(reasons);
             }
-        };
-        requiredViewer.addSelectionChangedListener(reasonSelectionListener);
+        });
 
         Composite cmpOptional = new Composite(sashForm, SWT.NONE);
         cmpOptional.setLayout(new GridLayout(2, false));
@@ -202,7 +201,14 @@ public class ResolutionResultsWizardPage extends WizardPage {
                 updateUi();
             }
         });
-        optionalViewer.addSelectionChangedListener(reasonSelectionListener);
+        optionalViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
+                Resource resource = (Resource) sel.getFirstElement();
+                Collection<Wire> reasons = result.getResolve().getOptionalReasons(resource);
+                reasonsViewer.setInput(reasons);
+            }
+        });
 
         Composite cmpOptionalButtons = new Composite(cmpOptional, SWT.NONE);
         cmpOptionalButtons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
@@ -258,7 +264,7 @@ public class ResolutionResultsWizardPage extends WizardPage {
 
         reasonsViewer = new TableViewer(tblReasons);
         reasonsViewer.setContentProvider(ArrayContentProvider.getInstance());
-        reasonsViewer.setLabelProvider(new RequirementWithResourceLabelProvider());
+        reasonsViewer.setLabelProvider(new WireLabelProvider());
 
         sashForm.setWeights(new int[] {
                 3, 3, 1

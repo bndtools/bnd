@@ -86,7 +86,7 @@ eclipse.deps: \
 -buildpath: ee.j2se;version=${javac.ee},\
 	${bndlib},\
 	${aQute-repository},\
-	biz.aQute.resolve;version=0.0.3,\
+	${aQute-resolve},\
 	org.apache.felix.resolver;version=1.0,\
 	junit.osgi,\
 	${eclipse.deps},\

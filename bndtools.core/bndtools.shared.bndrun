@@ -55,7 +55,7 @@ help.bundles: \
 crossplatform.bundles:\
 	${bndlib},\
 	${aQute-repository},\
-	biz.aQute.resolve,\
+	${aQute-resolve},\
 	bndtools.runtime.eclipse.applaunch,\
 	org.osgi.impl.bundle.bindex;version=latest,\
 	stax2-api,\
