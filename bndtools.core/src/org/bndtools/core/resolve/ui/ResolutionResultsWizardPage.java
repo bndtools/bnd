@@ -4,13 +4,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.resolve.ResolveOperation;
-import org.bndtools.core.ui.resource.WireLabelProvider;
 import org.bndtools.core.utils.resources.ResourceUtils;
 import org.bndtools.core.utils.swt.SWTUtil;
 import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
@@ -29,6 +27,7 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardPage;
@@ -47,14 +46,13 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.Tree;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.resource.Wire;
-
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.Filters;
@@ -82,7 +80,8 @@ public class ResolutionResultsWizardPage extends WizardPage {
     private TableViewer requiredViewer;
     private SashFormPanelMaximiser optionalMaximiser;
     private CheckboxTableViewer optionalViewer;
-    private TableViewer reasonsViewer;
+    private TreeViewer reasonsViewer;
+    private final ResolutionTreeContentProvider reasonsContentProvider = new ResolutionTreeContentProvider();
     private Button btnAddResolveOptional;
     private Text txtLog;
 
@@ -165,8 +164,12 @@ public class ResolutionResultsWizardPage extends WizardPage {
             public void selectionChanged(SelectionChangedEvent event) {
                 IStructuredSelection sel = (IStructuredSelection) event.getSelection();
                 Resource resource = (Resource) sel.getFirstElement();
-                Collection<Wire> reasons = result.getResolve().getRequiredReasons(resource);
-                reasonsViewer.setInput(reasons);
+
+                reasonsContentProvider.setOptional(false);
+                reasonsContentProvider.setResolution(result.getResolve());
+
+                reasonsViewer.setInput(resource);
+                reasonsViewer.expandToLevel(2);
             }
         });
 
@@ -205,8 +208,12 @@ public class ResolutionResultsWizardPage extends WizardPage {
             public void selectionChanged(SelectionChangedEvent event) {
                 IStructuredSelection sel = (IStructuredSelection) event.getSelection();
                 Resource resource = (Resource) sel.getFirstElement();
-                Collection<Wire> reasons = result.getResolve().getOptionalReasons(resource);
-                reasonsViewer.setInput(reasons);
+
+                reasonsContentProvider.setOptional(true);
+                reasonsContentProvider.setResolution(result.getResolve());
+
+                reasonsViewer.setInput(resource);
+                reasonsViewer.expandToLevel(2);
             }
         });
 
@@ -259,12 +266,12 @@ public class ResolutionResultsWizardPage extends WizardPage {
 
         cmpReason.setLayout(new GridLayout(1, false));
 
-        Table tblReasons = new Table(cmpReason, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        Tree tblReasons = new Tree(cmpReason, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
         tblReasons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
-        reasonsViewer = new TableViewer(tblReasons);
-        reasonsViewer.setContentProvider(ArrayContentProvider.getInstance());
-        reasonsViewer.setLabelProvider(new WireLabelProvider());
+        reasonsViewer = new TreeViewer(tblReasons);
+        reasonsViewer.setContentProvider(reasonsContentProvider);
+        reasonsViewer.setLabelProvider(new ResolutionTreeLabelProvider());
 
         sashForm.setWeights(new int[] {
                 3, 3, 1
