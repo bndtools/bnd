@@ -1,3 +1,4 @@
+bin:
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
 Bundle-Vendor: Bndtools
 Bundle-Version: ${master-version}
