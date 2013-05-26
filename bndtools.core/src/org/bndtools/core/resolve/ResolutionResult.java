@@ -1,22 +1,29 @@
 package org.bndtools.core.resolve;
 
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.core.runtime.IStatus;
-import biz.aQute.resolve.ResolveProcess;
+import org.osgi.resource.Resource;
+import org.osgi.resource.Wire;
+import org.osgi.service.resolver.ResolutionException;
 
 public class ResolutionResult {
 
     private final Outcome outcome;
+    private final Map<Resource,List<Wire>> resourceWirings;
     private final IStatus status;
-    private final ResolveProcess resolve;
     private final String log;
+    private final ResolutionException resolutionException;
 
     public static enum Outcome {
-        Resolved, Unresolved, Error
+        Resolved, Unresolved, Error, Cancelled
     }
 
-    public ResolutionResult(Outcome outcome, ResolveProcess resolve, IStatus status, String log) {
+    public ResolutionResult(Outcome outcome, Map<Resource,List<Wire>> resourceWirings, ResolutionException resolutionExceptoin, IStatus status, String log) {
         this.outcome = outcome;
-        this.resolve = resolve;
+        this.resourceWirings = resourceWirings;
+        this.resolutionException = resolutionExceptoin;
         this.status = status;
         this.log = log;
     }
@@ -25,8 +32,12 @@ public class ResolutionResult {
         return outcome;
     }
 
-    public ResolveProcess getResolve() {
-        return resolve;
+    public Map<Resource,List<Wire>> getResourceWirings() {
+        return resourceWirings;
+    }
+
+    public ResolutionException getResolutionException() {
+        return resolutionException;
     }
 
     public IStatus getStatus() {

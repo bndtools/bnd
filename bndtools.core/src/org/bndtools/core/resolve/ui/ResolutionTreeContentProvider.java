@@ -13,18 +13,16 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 
-import biz.aQute.resolve.ResolveProcess;
-
 public class ResolutionTreeContentProvider implements ITreeContentProvider {
 
     private boolean optional;
-    private ResolveProcess resolution;
+    private Map<Resource,List<Wire>> resolution;
 
     public void setOptional(boolean optional) {
         this.optional = optional;
     }
 
-    public void setResolution(ResolveProcess resolution) {
+    public void setResolution(Map<Resource,List<Wire>> resolution) {
         this.resolution = resolution;
     }
 
@@ -41,11 +39,7 @@ public class ResolutionTreeContentProvider implements ITreeContentProvider {
             Resource parentResource = (Resource) parent;
 
             Map<Capability,ResolutionTreeItem> items = new HashMap<Capability,ResolutionTreeItem>();
-            if (optional) {
-                Collection<Wire> wires = resolution.getOptionalReasons(parentResource);
-                processWires(wires, items);
-            }
-            Collection<Wire> wires = resolution.getRequiredReasons(parentResource);
+            List<Wire> wires = resolution.get(parentResource);
             processWires(wires, items);
 
             result = items.values().toArray(new Object[items.size()]);

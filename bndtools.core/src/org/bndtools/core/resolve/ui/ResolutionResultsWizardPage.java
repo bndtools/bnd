@@ -166,7 +166,7 @@ public class ResolutionResultsWizardPage extends WizardPage {
                 Resource resource = (Resource) sel.getFirstElement();
 
                 reasonsContentProvider.setOptional(false);
-                reasonsContentProvider.setResolution(result.getResolve());
+                reasonsContentProvider.setResolution(result.getResourceWirings());
 
                 reasonsViewer.setInput(resource);
                 reasonsViewer.expandToLevel(2);
@@ -202,18 +202,6 @@ public class ResolutionResultsWizardPage extends WizardPage {
                     checkedOptional.remove(resource);
                 }
                 updateUi();
-            }
-        });
-        optionalViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            public void selectionChanged(SelectionChangedEvent event) {
-                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
-                Resource resource = (Resource) sel.getFirstElement();
-
-                reasonsContentProvider.setOptional(true);
-                reasonsContentProvider.setResolution(result.getResolve());
-
-                reasonsViewer.setInput(resource);
-                reasonsViewer.expandToLevel(2);
             }
         });
 
@@ -300,7 +288,7 @@ public class ResolutionResultsWizardPage extends WizardPage {
         checkedOptional.clear();
         try {
             ResolveOperation resolver = new ResolveOperation(model);
-            getContainer().run(false, true, resolver);
+            getContainer().run(true, true, resolver);
 
             setResult(resolver.getResult());
         } catch (InvocationTargetException e) {
@@ -345,8 +333,8 @@ public class ResolutionResultsWizardPage extends WizardPage {
     }
 
     private void updateUi() {
-        requiredViewer.setInput(result != null ? result.getResolve().getRequiredResources() : null);
-        optionalViewer.setInput(result != null ? result.getResolve().getOptionalResources() : null);
+        requiredViewer.setInput(result != null ? result.getResourceWirings().keySet() : null);
+        //        optionalViewer.setInput(result != null ? result.getResolve().getOptionalResources() : null);
         resolutionFailurePanel.setInput(result);
 
         String log = result.getLog();

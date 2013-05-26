@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bndtools.core.resolve.ResolutionResult.Outcome;
 import org.bndtools.core.resolve.ResolveJob;
 import org.bndtools.core.resolve.ui.ResolutionWizard;
 import org.bndtools.core.ui.resource.RequirementLabelProvider;
@@ -338,7 +339,9 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         job.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event) {
-                parentShell.getDisplay().asyncExec(showResult);
+                Outcome outcome = job.getResolutionResult().getOutcome();
+                if (outcome != Outcome.Cancelled)
+                    parentShell.getDisplay().asyncExec(showResult);
             }
         });
 

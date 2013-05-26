@@ -116,7 +116,7 @@ public class ResolutionFailurePanel {
         else if (sashForm.isDisposed())
             throw new IllegalStateException("Control already disposed");
 
-        ResolutionException resolutionException = resolutionResult.getResolve().getResolutionException();
+        ResolutionException resolutionException = resolutionResult.getResolutionException();
         Collection<Requirement> unresolved = resolutionException != null ? resolutionException.getUnresolvedRequirements() : Collections.<Requirement> emptyList();
 
         unresolvedViewer.setInput(unresolved);

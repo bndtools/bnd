@@ -1,6 +1,11 @@
 package org.bndtools.core.resolve;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.felix.resolver.ResolverImpl;
+import org.bndtools.core.resolve.ResolutionResult.Outcome;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
@@ -8,11 +13,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.resource.Resource;
+import org.osgi.resource.Wire;
 import org.osgi.service.coordinator.Coordination;
 import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.resolver.ResolutionException;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.deployer.repository.ReporterLogService;
+import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolveProcess;
 import bndtools.Central;
 import bndtools.Plugin;
@@ -20,11 +29,17 @@ import bndtools.Plugin;
 public class ResolveOperation implements IRunnableWithProgress {
 
     private final BndEditModel model;
+    private final List<ResolutionCallback> callbacks;
 
     private ResolutionResult result;
 
     public ResolveOperation(BndEditModel model) {
+        this(model, Collections.<ResolutionCallback> emptyList());
+    }
+
+    public ResolveOperation(BndEditModel model, List<ResolutionCallback> callbacks) {
         this.model = model;
+        this.callbacks = callbacks;
     }
 
     public void run(IProgressMonitor monitor) {
@@ -43,24 +58,24 @@ public class ResolveOperation implements IRunnableWithProgress {
             ResolverImpl felixResolver = new ResolverImpl(logger);
 
             ReporterLogService log = new ReporterLogService(Central.getWorkspace());
-            boolean resolved = resolve.resolve(model, Central.getWorkspace(), felixResolver, log);
-            if (resolved) {
-                result = new ResolutionResult(ResolutionResult.Outcome.Resolved, resolve, status, logger.getLog());
-            } else {
-                ResolutionException exception = resolve.getResolutionException();
-                if (exception != null)
-                    status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, exception.getLocalizedMessage(), exception));
-                else
-                    status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Resolution failed, reason unknown", null));
-
-                result = new ResolutionResult(ResolutionResult.Outcome.Unresolved, resolve, status, logger.getLog());
-            }
-
+            Map<Resource,List<Wire>> wirings = resolve.resolveRequired(model, Central.getWorkspace(), felixResolver, callbacks, log);
+            result = new ResolutionResult(Outcome.Resolved, wirings, null, status, logger.getLog());
             if (coordination != null)
                 coordination.end();
+        } catch (ResolveCancelledException e) {
+            result = new ResolutionResult(Outcome.Cancelled, null, null, status, logger.getLog());
+
+            if (coordination != null)
+                coordination.fail(e);
+        } catch (ResolutionException e) {
+            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, e.getLocalizedMessage(), e));
+            result = new ResolutionResult(Outcome.Unresolved, null, null, status, logger.getLog());
+
+            if (coordination != null)
+                coordination.fail(e);
         } catch (Exception e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Exception during resolution.", e));
-            result = new ResolutionResult(ResolutionResult.Outcome.Error, resolve, status, logger.getLog());
+            result = new ResolutionResult(Outcome.Error, null, null, status, logger.getLog());
 
             if (coordination != null)
                 coordination.fail(e);

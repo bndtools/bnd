@@ -70,7 +70,7 @@ public class ResolutionWizard extends Wizard {
 
         ResolutionResult result = resultsPage.getResult();
         if (result != null && result.getOutcome() == ResolutionResult.Outcome.Resolved)
-            resources = result.getResolve().getRequiredResources();
+            resources = result.getResourceWirings().keySet();
         else
             resources = Collections.emptyList();
 
