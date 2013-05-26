@@ -18,6 +18,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.TextStyle;
 
 public class UIConstants {
+    public static final Styler ITALIC_STYLER = new ItalicStyler(JFaceResources.DEFAULT_FONT, null, null);
     public static final Styler ITALIC_QUALIFIER_STYLER = new ItalicStyler(JFaceResources.DEFAULT_FONT, JFacePreferences.QUALIFIER_COLOR, null);
     public static final Styler BOLD_STYLER = new BoldStyler(JFaceResources.DEFAULT_FONT, null, null);
     public static final Styler BOLD_COUNTER_STYLER = new BoldStyler(JFaceResources.DEFAULT_FONT, JFacePreferences.COUNTER_COLOR, null);

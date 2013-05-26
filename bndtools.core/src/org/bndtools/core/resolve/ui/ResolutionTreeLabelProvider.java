@@ -2,7 +2,8 @@ package org.bndtools.core.resolve.ui;
 
 import java.util.Map.Entry;
 
-import org.bndtools.core.ui.resource.AbstractR5LabelProvider;
+import org.bndtools.core.ui.resource.R5LabelFormatter;
+import org.bndtools.core.utils.jface.ImageCachingLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
@@ -10,7 +11,7 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
-public class ResolutionTreeLabelProvider extends AbstractR5LabelProvider {
+public class ResolutionTreeLabelProvider extends ImageCachingLabelProvider {
 
     @Override
     public void update(ViewerCell cell) {
@@ -21,10 +22,10 @@ public class ResolutionTreeLabelProvider extends AbstractR5LabelProvider {
 
         if (element instanceof ResolutionTreeItem) {
             ResolutionTreeItem item = (ResolutionTreeItem) element;
-            appendCapability(label, item.getCapability());
+            R5LabelFormatter.appendCapability(label, item.getCapability());
 
             // Get the icon from the capability namespace
-            icon = getIcon(item.getCapability().getNamespace());
+            icon = getImage(R5LabelFormatter.getNamespaceImagePath(item.getCapability().getNamespace()), true);
         } else if (element instanceof Requirement) {
             Requirement requirement = (Requirement) element;
             if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
@@ -33,7 +34,7 @@ public class ResolutionTreeLabelProvider extends AbstractR5LabelProvider {
 
             Resource resource = requirement.getResource();
             if (resource != null)
-                appendResourceLabel(label, resource);
+                R5LabelFormatter.appendResourceLabel(label, resource);
             else
                 label.append(" INITIAL");
 
