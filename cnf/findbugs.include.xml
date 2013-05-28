@@ -153,9 +153,6 @@
        <Package name="bndtools.tasks" />
      </Match>
      <Match>
-       <Package name="bndtools.templates" />
-     </Match>
-     <Match>
        <Package name="bndtools.templates.dm" />
      </Match>
      <Match>
@@ -213,16 +210,25 @@
        <Package name="org.bndtools.core.resolve.ui" />
      </Match>
      <Match>
+       <Package name="org.bndtools.core.templates.project" />
+     </Match>
+     <Match>
        <Package name="org.bndtools.core.ui" />
      </Match>
      <Match>
        <Package name="org.bndtools.core.ui.resource" />
      </Match>
      <Match>
+       <Package name="org.bndtools.core.ui.wizards.jpm" />
+     </Match>
+     <Match>
        <Package name="org.bndtools.core.utils.collections" />
      </Match>
      <Match>
        <Package name="org.bndtools.core.utils.dnd" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.utils.eclipse" />
      </Match>
      <Match>
        <Package name="org.bndtools.core.utils.jface" />
