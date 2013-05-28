@@ -53,6 +53,11 @@ public interface SearchableRepository {
 		 * True if this resource was added as a dependency
 		 */
 		public boolean	dependency;
+		
+		/**
+		 * Location of the resource
+		 */
+		public URI url;
 	}
 
 	/**
