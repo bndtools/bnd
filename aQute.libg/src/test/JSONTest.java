@@ -15,6 +15,29 @@ import aQute.libg.map.*;
 public class JSONTest extends TestCase {
 	JSONCodec	codec	= new JSONCodec();
 
+	
+	/**
+	 * An List<byte[]> was translated to a js array :-(
+	 */
+	
+	public static class ListByteArray {
+		public List<byte[]> set;
+	}
+	public void testListOfByteArray() throws Exception {
+		final List<byte[]> l = Arrays.asList( new byte[]{1}, new byte[]{2},new byte[]{3},new byte[]{4});
+		String s = codec.enc().put(l).toString();
+		assertEquals( "[\"01\",\"02\",\"03\",\"04\"]", s);
+		
+		ListByteArray x = new ListByteArray();
+		x.set = l;
+		s = codec.enc().put(x).toString();
+		assertEquals( "{\"set\":[\"01\",\"02\",\"03\",\"04\"]}", s);
+		
+	}
+	
+	
+	
+	
 	/**
 	 * test the hex/base64 encoding
 	 * 

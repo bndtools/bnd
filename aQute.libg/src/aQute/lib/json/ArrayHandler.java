@@ -4,6 +4,8 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
+import aQute.lib.hex.*;
+
 public class ArrayHandler extends Handler {
 	Type	componentType;
 
@@ -13,6 +15,14 @@ public class ArrayHandler extends Handler {
 
 	@Override
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+		
+		// Byte arrays should not be treated as arrays. We treat them
+		// as hex strings
+		
+		if ( object instanceof byte[]) {
+			StringHandler.string(app,  Hex.toHexString((byte[]) object));
+			return;
+		}
 		app.append("[");
 		app.indent();
 		String del = "";
