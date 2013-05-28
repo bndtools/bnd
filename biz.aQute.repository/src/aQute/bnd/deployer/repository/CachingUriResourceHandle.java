@@ -226,18 +226,18 @@ public class CachingUriResourceHandle implements ResourceHandle {
 				// Remote access failed, use the cache if it exists AND if the original SHA was not known.
 				if (cacheExists) {
 					if (reporter != null)
-						reporter.warning("Download of remote resource %s failed, using local cache %s. Original exception: %s. Trace: %s", url, cachedFile, e, collectStackTrace(e));
+						reporter.warning("Using local cache; downloading %s failed (%s).", url, e);
 					return cachedFile;
 				} else {
 					if (reporter != null)
-						reporter.error("Download of remote resource %s failed and cache file %s not available. Original exception: %s. Trace: %s", url, cachedFile, e, collectStackTrace(e));
-					throw new IOException(String.format("Download of remote resource %s failed and cache file %s not available, see log for details.", url, cachedFile));
+						reporter.error("Downloading %s failed (%s) and cache file %s is not available. Trace: %s", url, e, cachedFile, collectStackTrace(e));
+					throw new IOException(String.format("Downloading %s failed and cache file %s is not available, see log for details.", url, cachedFile));
 				}
 			} else {
 				// Can only get here if the cache was missing or didn't match the SHA, and remote access failed.
 				if (reporter != null)
-					reporter.error("Download of remote resource %s failed and cache file %s unavailable/invalid. Original exception: %s. Trace: %s", url, cachedFile, e, collectStackTrace(e));
-				throw new IOException(String.format("Download of remote resource %s failed and cache file %s unavailable/invalid, see log for details.", url, cachedFile));
+					reporter.error("Downloading %s failed (%s) and cache file %s is not available or doesn't match the expected checksum. Trace: %s", url, e, cachedFile, collectStackTrace(e));
+				throw new IOException(String.format("Downloading %s failed and cache file %s is not available or doesn't match the expected checksum, see log for details.", url, cachedFile));
 			}
 		}
 	}
