@@ -1,5 +1,7 @@
 -runfw: org.eclipse.osgi;version='[3.7,4)'
 -runee: JavaSE-1.6
+-runsystemcapabilities: ${native_capability}
+
 
 -runbundles:\
 	org.eclipse.equinox.ds,\
