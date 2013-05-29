@@ -2,4 +2,6 @@
 -runee: JavaSE-1.6
 -runsystemcapabilities: ${native_capability}
 
+-resolve.effective: active
+
 -runvm: -Dosgi.console

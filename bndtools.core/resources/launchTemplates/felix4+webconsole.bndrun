@@ -2,6 +2,7 @@
 -runee: JavaSE-1.6
 -runsystemcapabilities: ${native_capability}
 
+-resolve.effective: active
 
 -runbundles:\
 	org.apache.felix.gogo.runtime,\
@@ -15,9 +16,6 @@
 	org.apache.felix.webconsole,\
 	osgi.cmpn;version=4.2
 
-## Uncomment if you need to change the HTTP port
-#-runproperties: org.osgi.service.http.port=8080
-
 -runrequires:\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
@@ -27,4 +25,6 @@
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.log)',\
 	osgi.identity;filter:='(&(osgi.identity=osgi.cmpn)(version>=4.2))',\
 	osgi.identity;filter:='(&(osgi.identity=org.apache.felix.scr)(version>=1.6.0))'
--resolve.effective: active
+
+## Uncomment if you need to change the HTTP port
+#-runproperties: org.osgi.service.http.port=8080

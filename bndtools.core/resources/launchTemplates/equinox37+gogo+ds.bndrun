@@ -2,6 +2,7 @@
 -runee: JavaSE-1.6
 -runsystemcapabilities: ${native_capability}
 
+-resolve.effective: active
 
 -runbundles:\
 	org.eclipse.equinox.ds,\
@@ -16,4 +17,3 @@
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
 	osgi.identity;filter:='(&(osgi.identity=osgi.cmpn)(version>=4.2))'
--resolve.effective: active

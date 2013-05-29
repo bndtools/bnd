@@ -2,6 +2,8 @@
 -runee: JavaSE-1.6
 -runsystemcapabilities: ${native_capability}
 
+-resolve.effective: active
+
 -runbundles:\
 	org.apache.felix.gogo.runtime,\
 	org.apache.felix.gogo.shell,\
@@ -10,4 +12,3 @@
 -runrequires:\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'
--resolve.effective: active
