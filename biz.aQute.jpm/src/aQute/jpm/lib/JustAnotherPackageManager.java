@@ -650,7 +650,7 @@ public class JustAnotherPackageManager {
 
 			List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
 			List<ArtifactData> runbundles = new ArrayList<ArtifactData>();
-
+			reporter.trace("Parsing %s", source);
 			{
 				if (main.getValue("JPM-Classpath") != null) {
 					Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
@@ -930,7 +930,7 @@ public class JustAnotherPackageManager {
 			byte[] sha = SHA1.digest(tmp).digest();
 			reporter.trace("SHA %s %s", uri, Hex.toHexString(sha));
 			ArtifactData existing = get(sha);
-			if (existing == null) {
+			//if (existing == null) {
 				File meta = new File(repoDir, Hex.toHexString(sha) + ".json");
 				File file = new File(repoDir, Hex.toHexString(sha));
 				rename(tmp, file);
@@ -938,7 +938,7 @@ public class JustAnotherPackageManager {
 				existing.file = file.getAbsolutePath();
 				existing.sha = sha;
 				codec.enc().to(meta).put(existing);
-			}
+			//}
 			xcopy(existing, data);
 			reporter.trace("TD = " + data);
 		}
