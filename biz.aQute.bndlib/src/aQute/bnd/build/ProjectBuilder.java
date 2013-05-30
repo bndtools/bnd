@@ -97,12 +97,29 @@ public class ProjectBuilder extends Builder {
 
 		Jar jar = getBaselineJar(false);
 		if (jar == null) {
+			trace("No baseline jar %s", getProperty(Constants.BASELINE));
 			return;
 		}
+		Version newer = new Version(getVersion());
+		Version older = new Version(jar.getVersion());
+		if ( newer.compareTo(older) <= 0) {
+			error("The baseline version is %s, which is less or equal than our current version %s", older, newer);
+			return;
+		}
+
+		if ( !getBsn().equals(jar.getBsn())){
+			error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(), jar.getBsn());
+			return;
+		}
+		
+		trace("baseline %s-%s against: %s", getBsn(), getVersion(), jar.getName());
 		try {
 			Baseline baseline = new Baseline(this, differ);
 
 			Set<Info> infos = baseline.baseline(dot, jar, null);
+			if ( infos.isEmpty())
+				trace("no deltas");
+			
 			for (Info info : infos) {
 				if (info.mismatch) {
 					error("%s %-50s %-10s %-10s %-10s %-10s %-10s\n", info.mismatch ? '*' : ' ', info.packageName,

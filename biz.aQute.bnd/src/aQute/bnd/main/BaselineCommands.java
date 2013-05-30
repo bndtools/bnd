@@ -9,6 +9,7 @@ import java.util.jar.*;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.*;
 
+import aQute.bnd.build.*;
 import aQute.bnd.differ.*;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.header.*;
@@ -39,7 +40,7 @@ public class BaselineCommands {
 
 	@Description("Compare a newer bundle to a baselined bundle and provide versioning advice")
 	@Arguments(arg = {
-			"newer jar", "older jar"
+			"[newer jar]", "[older jar]"
 	})
 	interface baseLineOptions extends Options {
 		@Description("Output file with fixup info")
@@ -54,6 +55,17 @@ public class BaselineCommands {
 	public void _baseline(baseLineOptions opts) throws Exception {
 
 		List<String> args = opts._();
+		if ( args.size() == 0) {
+			Project project = bnd.getProject();
+			if ( project != null) {
+				ProjectBuilder pb = project.getBuilder(null);
+				project.baseline();
+				bnd.getInfo(project);
+				return;
+			}
+		}
+			
+		
 		if (args.size() != 2) {
 			throw new IllegalArgumentException("Accepts only two argument (<jar>)");
 		}

@@ -2180,4 +2180,18 @@ public class Project extends Processor {
 		return jar;
 	}
 
+	/**
+	 * Do a baseline for this project
+	 * @throws Exception 
+	 */
+	
+	public void baseline() throws Exception {
+		ProjectBuilder b = getBuilder(null);
+		for ( Builder pb : b.getSubBuilders()) {
+			ProjectBuilder ppb = (ProjectBuilder)pb;
+			Jar build = ppb.build();
+			getInfo(ppb);
+		}
+		getInfo(b);
+	}
 }
