@@ -721,7 +721,7 @@ public class Project extends Processor {
 	 */
 	public File release(String name, String jarName, InputStream jarStream) throws Exception {
 		URI uri = releaseURI(name, jarName, jarStream);
-		if (uri != null) {
+		if (uri != null && uri.getScheme().equals("file")) {
 			return new File(uri);
 		}
 		return null;
