@@ -1750,6 +1750,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return this;
 		}
 
+		public SetLocation details(Object details) {
+			this.details = details;
+			return this;
+		}
+
 	}
 
 	private SetLocation location(String s) {

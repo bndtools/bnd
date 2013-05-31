@@ -39,6 +39,10 @@ public class ReporterMessages {
 		public WARNINGImpl(Reporter.SetLocation loc) {
 			this.loc = loc;
 		}
+
+		public SetLocation details(Object details) {
+			return loc.details(details);
+		}
 	}
 
 	static class ERRORImpl extends WARNINGImpl implements ERROR {

@@ -51,6 +51,12 @@ public interface Reporter extends Report {
 		 */
 
 		SetLocation reference(String reference);
+		
+		/**
+		 * Set a reference for the error (url or so)
+		 */
+
+		SetLocation details(Object details);
 	}
 
 	/**

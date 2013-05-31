@@ -52,6 +52,11 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 			this.reference = reference;
 			return this;
 		}
+
+		public SetLocation details(Object details) {
+			this.details = details;
+			return this;
+		}
 		
 	}
 	

@@ -17,6 +17,7 @@ public interface Report {
 		public String	context;
 		public String	reference;
 		public String	methodName;
+		public Object   details;
 	}
 
 
