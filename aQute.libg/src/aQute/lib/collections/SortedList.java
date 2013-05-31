@@ -1,5 +1,6 @@
 package aQute.lib.collections;
 
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -65,7 +66,8 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		}
 
 		public T previous() {
-			return get(n - 1);
+			assert n > start;
+			return list[n - 1];
 		}
 
 		public int nextIndex() {
@@ -173,7 +175,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	@SuppressWarnings("cast")
 	public boolean contains(Object o) {
 		assert type != null & type.isInstance(o);
-		return indexOf((T) o) >= 0;
+		return find((T) o) >= 0;
 	}
 
 	public Iterator<T> iterator() {
@@ -181,15 +183,25 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public Object[] toArray() {
-		return list.clone();
+		if (start == 0 && end == list.length)
+			return list.clone();
+
+		if (type != null)
+			return (Object[]) Array.newInstance(type, size());
+
+		return toArray(new Object[size()]);
 	}
 
 	@SuppressWarnings("hiding")
-	public <T> T[] toArray(T[] a) {
-		if (a == null || a.length < list.length) {
-			return (T[]) list.clone();
-		}
-		System.arraycopy(list, 0, a, 0, list.length);
+	public <X> X[] toArray(X[] a) {
+		int size = size();
+
+		if (a.length < size)
+			a = (X[]) Array.newInstance(a.getClass().getComponentType(), size);
+
+		System.arraycopy(list, start, a, 0, size);
+		if (a.length > size)
+			a[size] = null;
 		return a;
 	}
 
@@ -242,8 +254,8 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public SortedList<T> subSet(T fromElement, T toElement) {
-		int start = indexOf(fromElement);
-		int end = indexOf(toElement);
+		int start = find(fromElement);
+		int end = find(toElement);
 		if (isSubSet() && (start < 0 || end < 0))
 			throw new IllegalArgumentException("This list is a subset");
 		if (start < 0)
@@ -257,36 +269,52 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	public int indexOf(Object o) {
 		assert type != null && type.isInstance(o);
 
-		int n = Arrays.binarySearch(list, (T) o, cmp);
-		if (n >= start && n < end)
-			return n - start;
+		int n = find((T) o);
+		if (n < end && comparator.compare(o, list[n]) == 0)
+			return n;
 
 		return -1;
 	}
 
-	public SortedList<T> headSet(T toElement) {
-		int i = indexOf(toElement);
-		if (i < 0) {
-			if (isSubSet())
-				throw new IllegalArgumentException("This list is a subset");
-			i = end;
+	public int lastIndexOf(Object o) {
+		assert type != null && type.isInstance(o);
+
+		int n = find((T) o);
+		if (n >= end || comparator.compare(o, list[n]) != 0)
+			return -1;
+
+		while (n < end - 1 && comparator.compare(o, list[n + 1]) == 0)
+			n++;
+
+		return n;
+	}
+
+	/**
+	 * Find the first element that is equal or bigger than the given element
+	 * 
+	 * @param toElement
+	 * @return absolute index (not relative!), returns end if not found
+	 */
+	private int find(T toElement) {
+		int i = start;
+		while (i < end) {
+			if (comparator.compare(toElement, list[i]) <= 0)
+				break;
+			else
+				i++;
 		}
 
-		if (i == end)
-			return this;
-
-		return subList(0, i);
+		return i;
 	}
 
 	public SortedSet<T> tailSet(T fromElement) {
-		int i = indexOf(fromElement);
-		if (i < 0) {
-			if (isSubSet())
-				throw new IllegalArgumentException("This list is a subset");
-			i = start;
-		}
+		int i = find(fromElement);
+		return subList(i - start, end - start);
+	}
 
-		return subList(i, end);
+	public SortedList<T> headSet(T toElement) {
+		int i = find(toElement);
+		return subList(0, i - start);
 	}
 
 	public T first() {
@@ -298,7 +326,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	public T last() {
 		if (isEmpty())
 			throw new NoSuchElementException("last");
-		return get(end - 1);
+		return get(size()-1);
 	}
 
 	@Deprecated
@@ -307,7 +335,11 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public T get(int index) {
-		return list[index + start];
+		index += start;
+		if (index >= end)
+			throw new ArrayIndexOutOfBoundsException();
+
+		return list[index];
 	}
 
 	@Deprecated
@@ -323,17 +355,6 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	@Deprecated
 	public T remove(int index) {
 		throw new UnsupportedOperationException("Immutable");
-	}
-
-	public int lastIndexOf(Object o) {
-		int n = indexOf(o);
-		if (n < 0)
-			return -1;
-
-		while (cmp.compare(list[n], (T) o) == 0)
-			n++;
-
-		return n;
 	}
 
 	public ListIterator<T> listIterator() {
@@ -360,6 +381,9 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		fromIndex = Math.min(fromIndex, end);
 		if (fromIndex == start && toIndex == end)
 			return this;
+
+		if (toIndex == fromIndex)
+			return (SortedList<T>) empty();
 
 		return new SortedList<T>(this, fromIndex, toIndex);
 	}
@@ -400,9 +424,9 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
 		String del = "";
-		for (T s : list) {
+		for (T t : this) {
 			sb.append(del);
-			sb.append(s);
+			sb.append(t);
 			del = ", ";
 		}
 
@@ -416,11 +440,14 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 
 		T prev = list[0];
 		for (int i = 1; i < list.length; i++) {
-			if (prev.equals(list[i]))
+			if (comparator.compare(prev, list[i]) == 0)
 				return true;
+
+			prev = list[i];
 		}
 		return false;
 	}
+
 
 	public static <T extends Comparable< ? >> SortedList<T> fromIterator(Iterator<T> it) {
 		IteratorList<T> l = new IteratorList<T>(it);
@@ -435,4 +462,5 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	public static <T> SortedSet<T> empty() {
 		return (SortedSet<T>) empty;
 	}
+
 }
