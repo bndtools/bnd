@@ -67,11 +67,11 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 
 		public T previous() {
 			assert n > start;
-			return list[n - 1];
+			return list[--n];
 		}
 
 		public int nextIndex() {
-			return (n + 1 - start);
+			return (n - start);
 		}
 
 		public int previousIndex() {

@@ -66,15 +66,17 @@ public class CollectionsTest extends TestCase {
 
 	public void testListIterator() throws Exception {
 		Comparator<String> reverseOrder = Collections.reverseOrder();
-		SortedList<String> sl = new SortedList<String>(Arrays.asList("f", "a", "b", "c", "d", "c", "e"), reverseOrder);
-		
+		List<String> sl = new SortedList<String>(Arrays.asList("f", "a", "b", "c", "d", "c", "e"), reverseOrder);
+		//sl = new ArrayList<String>(sl);
 		ListIterator<String> li = sl.listIterator(1);
-		assertEquals( 2, li.nextIndex());
+		assertEquals( 1, li.nextIndex());
 		assertEquals( 0, li.previousIndex());
 		assertTrue(li.hasPrevious());
 		assertTrue(li.hasNext());
 		assertEquals("f", li.previous());
 		assertFalse(li.hasPrevious());
+		assertTrue(li.hasNext());
+		assertEquals("f", li.next());
 		assertTrue(li.hasNext());
 		assertEquals("e", li.next());
 		assertTrue(li.hasNext());
