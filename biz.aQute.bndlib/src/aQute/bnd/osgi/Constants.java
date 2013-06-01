@@ -52,6 +52,7 @@ public interface Constants {
 	String							CREATED_BY									= "Created-By";
 	String							TOOL										= "Tool";
 	String							TESTCASES									= "Test-Cases";
+	String							REPOSITORIES									= "Repositories";
 	/**
 	 * @deprecated Use {@link Constants#TESTCASES}.
 	 */
@@ -66,7 +67,7 @@ public interface Constants {
 			BUNDLE_NAME, BUNDLE_NATIVECODE, BUNDLE_REQUIREDEXECUTIONENVIRONMENT, BUNDLE_SYMBOLICNAME, BUNDLE_VERSION,
 			FRAGMENT_HOST, PRIVATE_PACKAGE, IGNORE_PACKAGE, INCLUDE_RESOURCE, REQUIRE_BUNDLE, IMPORT_SERVICE,
 			EXPORT_SERVICE, CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES, SIGNATURE_TEST, REQUIRE_CAPABILITY,
-			PROVIDE_CAPABILITY, BUNDLE_ICON
+			PROVIDE_CAPABILITY, BUNDLE_ICON, REPOSITORIES
 																				};
 
 	String							BASELINE									= "-baseline";
