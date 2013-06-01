@@ -23,6 +23,10 @@ public class JSONTest extends TestCase {
 	public static class ListByteArray {
 		public List<byte[]> set;
 	}
+	public static class AnotherOne {
+		public byte[] _id;
+		public List<byte[]> content;
+	}
 	public void testListOfByteArray() throws Exception {
 		final List<byte[]> l = Arrays.asList( new byte[]{1}, new byte[]{2},new byte[]{3},new byte[]{4});
 		String s = codec.enc().put(l).toString();
@@ -32,6 +36,11 @@ public class JSONTest extends TestCase {
 		x.set = l;
 		s = codec.enc().put(x).toString();
 		assertEquals( "{\"set\":[\"01\",\"02\",\"03\",\"04\"]}", s);
+		
+		String json = "{\"_id\":\"04DA\",\"content\":[\"AA\"]}";
+		AnotherOne result = codec.dec().from(json).get(AnotherOne.class);
+		
+
 		
 	}
 	

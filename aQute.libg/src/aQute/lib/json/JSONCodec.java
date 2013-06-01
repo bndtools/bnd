@@ -131,6 +131,12 @@ public class JSONCodec {
 		if (File.class == type)
 			return fh;
 
+		if ( type instanceof GenericArrayType) {
+			Type sub = ((GenericArrayType) type).getGenericComponentType();
+			if ( sub==byte.class)
+				return byteh;
+		}
+		
 		Handler h;
 		synchronized (handlers) {
 			h = handlers.get(type);
@@ -200,7 +206,10 @@ public class JSONCodec {
 				}
 			} else if (type instanceof GenericArrayType) {
 				GenericArrayType gat = (GenericArrayType) type;
-				h = new ArrayHandler(getRawClass(type), gat.getGenericComponentType());
+				if ( gat.getGenericComponentType() == byte[].class)
+					h = byteh;
+				else
+					h = new ArrayHandler(getRawClass(type), gat.getGenericComponentType());
 			} else
 				throw new IllegalArgumentException("Found a parameterized type that is not a map or collection");
 		}
@@ -273,7 +282,8 @@ public class JSONCodec {
 				return h.decodeArray(isr);
 
 			case '"' :
-				return h.decode(isr, parseString(isr));
+				String string  =parseString(isr);
+				return h.decode(isr, string);
 
 			case 'n' :
 				isr.expect("ull");
