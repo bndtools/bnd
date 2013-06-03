@@ -89,8 +89,20 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			addAll(errors, processor.getErrors(), prefix);
 		addAll(warnings, processor.getWarnings(), prefix);
 
+		for (String error : processor.getErrors()) {
+			Location loc = processor.getLocation(error);
+			if (loc != null)
+				locations.add(loc);
+		}
+		for (String warning : processor.getWarnings()) {
+			Location loc = processor.getLocation(warning);
+			if (loc != null)
+				locations.add(loc);
+		}
+		
 		processor.getErrors().clear();
 		processor.getWarnings().clear();
+		
 	}
 
 	public void getInfo(Reporter processor) {
