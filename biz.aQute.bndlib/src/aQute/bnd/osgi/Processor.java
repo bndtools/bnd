@@ -1520,52 +1520,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		StringBuilder builder = new StringBuilder().append("osgi.native");
 		
 		try {
-			// Operating System name and version
-			String osnames;
-			Version osversion = null;
-			
-			String sysPropOsName = System.getProperty("os.name");
-			String sysPropOsVersion = System.getProperty("os.version");
-			if (sysPropOsName.startsWith("Windows")) {
-				if (sysPropOsVersion.startsWith("6.2")) {
-					osversion = new Version(6,2,0);
-					osnames = "Windows8,Windows 8,Win32"; 
-				} else if (sysPropOsVersion.startsWith("6.1")) {
-					osversion = new Version(6, 1, 0);
-					osnames = "Windows7,Windows 7,Win32";
-				} else if (sysPropOsName.startsWith("6.0")) {
-					osversion = new Version(6, 0, 0);
-					osnames = "WindowsVista,WinVista,Windows Vista,Win32";
-				} else if (sysPropOsName.startsWith("5.1")) {
-					osversion = new Version(5, 1, 0);
-					osnames = "WindowsXP,WinXP,Windows XP,Win32";
-				} else {
-					throw new IllegalArgumentException(String.format("Unrecognised or unsupported Windows version while processing ${native_capability} macro: %s version %s. Supported: XP, Vista, Win7, Win8.", sysPropOsName, sysPropOsVersion));
-				}
-			} else if (sysPropOsName.startsWith("Mac OS X")) {
-				osnames = "MacOSX,Mac OS X";
-			} else if (sysPropOsName.toLowerCase().startsWith("linux")) {
-				osnames = "Linux";
-			} else if (sysPropOsName.startsWith("Solaris")) {
-				osnames = "Solaris";
-			} else if (sysPropOsName.startsWith("AIX")) {
-				osnames = "AIX";
-			} else if (sysPropOsName.startsWith("HP-UX")) {
-				osnames = "HPUX,hp-ux";
-			} else {
-				throw new IllegalArgumentException(String.format("Unrecognised or unsupported OS while processing ${native_capability} macro: %s version %s. Supported: Windows, Mac OS X, Linux, Solaris, AIX, HP-UX.", sysPropOsName, sysPropOsVersion));
-			}
-			builder.append(";osgi.native.osname:List<String>=\"").append(osnames).append('"');
-			
-			try {
-				if (osversion == null)
-					osversion = new Version(sysPropOsVersion);
-				builder.append(";osgi.native.osversion:Version=").append(osversion.toString());
-			} catch (IllegalArgumentException e) {
-				warning("Unable to parse OS version '%s' as an OSGi version. Omitting version from ${native_capability} macro result.", sysPropOsVersion);
-			}
-			
-			// Processor
 			String processorNames;
 			
 			String arch = System.getProperty("os.arch");
@@ -1575,6 +1529,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				processorNames = "x86,pentium,i386,i486,i586,i686";
 			else
 				throw new IllegalArgumentException(String.format("Unrecognised/unsupported processor name '%s' in ${native_capability} macro.", arch));
+
+			OSInformation osInformation = new OSInformation();
+
+			builder.append(";osgi.native.osname:List<String>=\"").append(osInformation.osnames).append('"');
+			builder.append(";osgi.native.osversion:Version=").append(osInformation.osversion.toString());
 			builder.append(";osgi.native.processor:List<String>=\"").append(processorNames).append('"');
 			
 		} catch (SecurityException e) {
