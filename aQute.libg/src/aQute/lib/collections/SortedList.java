@@ -183,6 +183,10 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public Object[] toArray() {
+		if(list == null) {
+			return new Object[0];
+		}
+		
 		if (start == 0 && end == list.length)
 			return list.clone();
 
