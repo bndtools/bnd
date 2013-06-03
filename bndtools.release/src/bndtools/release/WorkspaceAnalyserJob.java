@@ -142,8 +142,9 @@ public class WorkspaceAnalyserJob extends Job {
 							shell, projectDiffs);
 					int ret = dialog.open();
 					if (ret == WorkspaceReleaseDialog.OK) {
+					    boolean updateOnly = dialog.isUpdateOnly();
 						WorkspaceReleaseJob releaseJob = new WorkspaceReleaseJob(
-								projectDiffs, false);
+								projectDiffs, updateOnly);
 						releaseJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
 						releaseJob.schedule();
 					}

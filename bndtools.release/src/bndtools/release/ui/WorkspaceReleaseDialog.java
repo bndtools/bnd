@@ -13,6 +13,7 @@ package bndtools.release.ui;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -25,12 +26,19 @@ import org.eclipse.swt.widgets.TableItem;
 import bndtools.release.ProjectDiff;
 import bndtools.release.ProjectListControl;
 import bndtools.release.ReleaseHelper;
+import bndtools.release.nl.Messages;
 
 public class WorkspaceReleaseDialog extends Dialog implements SelectionListener {
+
+    private static final int UPDATE_RELEASE_BUTTON = IDialogConstants.CLIENT_ID + 1;
+    private static final int UPDATE_BUTTON = IDialogConstants.CLIENT_ID + 3;
+    private static final int CANCEL_BUTTON = IDialogConstants.CLIENT_ID + 2;
 
 	private List<ProjectDiff> projectDiffs;
 	private ProjectListControl projectListControl;
 	private BundleTree bundleRelease;
+
+	private boolean updateOnly = false;
 
 	public WorkspaceReleaseDialog(Shell parentShell, List<ProjectDiff> projectDiffs) {
 		super(parentShell);
@@ -113,6 +121,31 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 
 	}
 
+   @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        createButton(parent, UPDATE_RELEASE_BUTTON, Messages.updateVersionsAndRelease, true);
+        createButton(parent, UPDATE_BUTTON, Messages.updateVersions, false);
+        createButton(parent, CANCEL_BUTTON, IDialogConstants.CANCEL_LABEL, false);
+    }
+
+   @Override
+   protected void buttonPressed(int buttonId) {
+       if (CANCEL_BUTTON == buttonId) {
+           cancelPressed();
+           return;
+       }
+
+       if (UPDATE_BUTTON == buttonId) {
+           updateOnly = true;
+       }
+       super.okPressed();
+   }
+
+
 	public void widgetDefaultSelected(SelectionEvent e) {
 	}
+
+    public boolean isUpdateOnly() {
+        return updateOnly;
+    }
 }
