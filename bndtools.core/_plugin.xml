@@ -34,7 +34,10 @@
       name="Build Listeners"
       schema="schema/buildListeners.exsd"
    />
-   
+   <extension-point id="buildErrorDetailsHandlers"
+      name="Build Error Details Handlers"
+      schema="schema/buildErrorDetailsHandlers.exsd"
+   />
    <extension-point id="runExportWizards"
       name="Run Descriptor Export Wizards"
       schema="schema/runExportWizards.exsd"
@@ -636,6 +639,13 @@
       <listener
           name="Bundle Index Generation"
           class="org.bndtools.core.build.indexer.BuiltBundleIndexer"
+      />
+   </extension>
+   
+   <extension point="buildErrorDetailsHandlers">
+      <handler
+         typeMatch="aQute.bnd.differ.Baseline$Info"
+         class="org.bndtools.core.build.handlers.baseline.BaselineErrorHandler"
       />
    </extension>
    

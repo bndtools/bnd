@@ -12,9 +12,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.bndtools.build.api.BuildErrorDetailsHandler;
 import org.bndtools.core.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -50,6 +52,7 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
+import aQute.service.reporter.Report.Location;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
@@ -74,6 +77,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
     private Project model;
     private BuildListeners listeners;
+    private BuildErrorDetailsHandlers buildErrorDetailsHandlers;
     private Collection< ? extends Builder> subBuilders;
 
     private List<String> classpathErrors;
@@ -95,8 +99,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
         buildLog = new ArrayList<String>(5);
 
         try {
-            // Prepare build listeners
+            // Prepare build listeners and build error handlers
             listeners = new BuildListeners();
+            buildErrorDetailsHandlers = new BuildErrorDetailsHandlers();
 
             // Get the initial project
             IProject myProject = getProject();
@@ -106,7 +111,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 model = Workspace.getProject(myProject.getLocation().toFile());
             } catch (Exception e) {
                 clearBuildMarkers();
-                createBuildMarkers(Collections.singletonList(e.getMessage()), Collections.<String> emptyList());
+                addBuildMarker(e.getMessage(), IMarker.SEVERITY_ERROR);
             }
             if (model == null)
                 return null;
@@ -611,9 +616,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         targetFolder.refreshLocal(IResource.DEPTH_INFINITE, null);
 
         // Report errors
-        List<String> errors = new ArrayList<String>(model.getErrors());
-        List<String> warnings = new ArrayList<String>(model.getWarnings());
-        createBuildMarkers(errors, warnings);
+        createBuildMarkers(model);
 
         return built.length > 0;
     }
@@ -754,7 +757,10 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return true;
     }
 
-    private void createBuildMarkers(Collection< ? extends String> errors, Collection< ? extends String> warnings) throws CoreException {
+    private void createBuildMarkers(Project model) throws Exception {
+        List<String> errors = model.getErrors();
+        List<String> warnings = model.getWarnings();
+
         for (String error : errors) {
             addBuildMarker(error, IMarker.SEVERITY_ERROR);
         }
@@ -773,37 +779,42 @@ public class NewBuilder extends IncrementalProjectBuilder {
     }
 
     private void clearBuildMarkers() throws CoreException {
-        IFile bndFile = getProject().getFile(Project.BNDFILE);
+        getProject().deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
+    }
 
-        if (bndFile.exists()) {
-            bndFile.deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
+    private void addBuildMarker(String message, int severity) throws Exception {
+        Location location = model != null ? model.getLocation(message) : null;
+        if (location != null) {
+
+            BuildErrorDetailsHandler handler = buildErrorDetailsHandlers.findHandler(location);
+            IResource resource = handler.findMarkerTargetResource(getProject(), model, location);
+            if (resource == null)
+                return;
+
+            IMarker marker = resource.createMarker(MARKER_BND_PROBLEM);
+            marker.setAttribute(IMarker.SEVERITY, severity);
+            String type = location.details != null ? location.details.getClass().getName() : null;
+            marker.setAttribute("bndType", type);
+
+            Map<String,Object> attributes = handler.createMarkerAttributes(getProject(), model, location, resource);
+            if (attributes != null) {
+                for (Entry<String,Object> attrib : attributes.entrySet()) {
+                    marker.setAttribute(attrib.getKey(), attrib.getValue());
+                }
+            }
+        } else {
+            IMarker marker = DefaultBuildErrorDetailsHandler.getDefaultResource(getProject()).createMarker(MARKER_BND_PROBLEM);
+            marker.setAttribute(IMarker.SEVERITY, severity);
+            marker.setAttribute(IMarker.MESSAGE, message);
         }
     }
 
-    private IResource getBuildMarkerTargetResource() {
-        IProject project = getProject();
-        IResource bndFile = project.getFile(Project.BNDFILE);
-        if (bndFile == null || !bndFile.exists())
-            return project;
-        return bndFile;
-    }
-
-    private void addBuildMarker(String message, int severity) throws CoreException {
-        IResource resource = getBuildMarkerTargetResource();
-
-        IMarker marker = resource.createMarker(MARKER_BND_PROBLEM);
-        marker.setAttribute(IMarker.SEVERITY, severity);
-        marker.setAttribute(IMarker.MESSAGE, message);
-        // marker.setAttribute(IMarker.LINE_NUMBER, 1);
-    }
-
     private void addClasspathMarker(String message, int severity) throws CoreException {
-        IResource resource = getBuildMarkerTargetResource();
+        IResource resource = DefaultBuildErrorDetailsHandler.getDefaultResource(getProject());
 
         IMarker marker = resource.createMarker(BndContainerInitializer.MARKER_BND_CLASSPATH_PROBLEM);
         marker.setAttribute(IMarker.SEVERITY, severity);
         marker.setAttribute(IMarker.MESSAGE, message);
-        // marker.setAttribute(IMarker.LINE_NUMBER, 1);
     }
 
     private void addClasspathMarker(IStatus status) throws CoreException {
