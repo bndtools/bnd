@@ -486,6 +486,27 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     }
 
     public void bundleAdded(final RepositoryPlugin repository, Jar jar, File file) {
+        // TODO: make this smarter!
+        if (viewer != null)
+            SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                public void run() {
+                    viewer.refresh(repository);
+                }
+            });
+    }
+
+    public void bundleRemoved(final RepositoryPlugin repository, Jar jar, File file) {
+        // TODO: make this smarter!
+        if (viewer != null)
+            SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                public void run() {
+                    viewer.refresh(repository);
+                }
+            });
+    }
+
+    public void repositoryRefreshed(final RepositoryPlugin repository) {
+        // TODO: make this smarter!
         if (viewer != null)
             SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
                 public void run() {

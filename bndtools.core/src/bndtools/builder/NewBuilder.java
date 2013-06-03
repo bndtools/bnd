@@ -47,6 +47,8 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.service.RepositoryListenerPlugin;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
 import bndtools.Central;
 import bndtools.Logger;
@@ -126,6 +128,16 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 } else {
                     log(LOG_FULL, "classpaths did not need to change");
                 }
+
+                // Notify the repository listeners that ALL repo contents may have changed.
+                List<RepositoryListenerPlugin> repoListeners = Central.getWorkspace().getPlugins(RepositoryListenerPlugin.class);
+                List<RepositoryPlugin> repos = Central.getWorkspace().getRepositories();
+                for (RepositoryListenerPlugin repoListener : repoListeners) {
+                    for (RepositoryPlugin repo : repos) {
+                        repoListener.repositoryRefreshed(repo);
+                    }
+                }
+
                 return dependsOn;
             }
 
