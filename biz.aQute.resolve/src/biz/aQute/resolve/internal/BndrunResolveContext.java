@@ -36,6 +36,8 @@ import org.osgi.service.repository.Repository;
 import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolveContext;
 
+import biz.aQute.resolve.ResolutionCallback;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
@@ -71,6 +73,7 @@ public class BndrunResolveContext extends ResolveContext {
 
     private final BndEditModel runModel;
     private final Registry registry;
+    private final List<ResolutionCallback> callbacks = new LinkedList<ResolutionCallback>();
     private final LogService log;
     private final Set<Resource> optionalRoots = new HashSet<Resource>();
 
@@ -96,6 +99,10 @@ public class BndrunResolveContext extends ResolveContext {
     public void setOptionalRoots(Collection<Resource> roots) {
         this.optionalRoots.clear();
         this.optionalRoots.addAll(roots);
+    }
+
+    public void addCallbacks(Collection<ResolutionCallback> callbacks) {
+        this.callbacks.addAll(callbacks);
     }
 
     protected synchronized void init() {
@@ -362,7 +369,7 @@ public class BndrunResolveContext extends ResolveContext {
                 ArrayList<Capability> secondStageList = new ArrayList<Capability>(secondStageResult);
 
                 // Post-processing second stage results
-                postProcessProviders(requirement, secondStageList);
+                postProcessProviders(requirement, firstStageResult, secondStageList);
 
                 // Concatenate both stages, eliminating duplicates between the two
                 firstStageResult.addAll(secondStageList);
@@ -395,11 +402,17 @@ public class BndrunResolveContext extends ResolveContext {
         return new CacheKey(requirement.getNamespace(), requirement.getDirectives(), requirement.getAttributes());
     }
 
-    protected void postProcessProviders(Requirement requirement, List<Capability> candidates) {
+    protected void postProcessProviders(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
         if (candidates.size() == 0)
             return;
 
+        // Call resolver hooks
+        for (ResolverHook resolverHook : registry.getPlugins(ResolverHook.class)) {
+            resolverHook.filterMatches(requirement, candidates);
+        }
+
         // Process the resolve preferences
+        boolean prefsUsed = false;
         if (resolvePrefs != null && !resolvePrefs.isEmpty()) {
             List<Capability> insertions = new LinkedList<Capability>();
             for (Iterator<Capability> iterator = candidates.iterator(); iterator.hasNext();) {
@@ -410,13 +423,17 @@ public class BndrunResolveContext extends ResolveContext {
                 }
             }
 
-            if (!insertions.isEmpty())
+            if (!insertions.isEmpty()) {
                 candidates.addAll(0, insertions);
+                prefsUsed = true;
+            }
         }
 
-        // Call resolver hooks
-        for (ResolverHook resolverHook : registry.getPlugins(ResolverHook.class)) {
-            resolverHook.filterMatches(requirement, candidates);
+        // If preferences were applied, then don't need to call the callbacks
+        if (!prefsUsed) {
+            for (ResolutionCallback callback : callbacks) {
+                callback.processCandidates(requirement, wired, candidates);
+            }
         }
     }
 

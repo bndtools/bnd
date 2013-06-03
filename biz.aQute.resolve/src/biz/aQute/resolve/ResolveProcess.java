@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
@@ -17,6 +18,7 @@ import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.service.Registry;
+import aQute.bnd.service.resolve.hook.ResolverHook;
 import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class ResolveProcess {
@@ -26,7 +28,35 @@ public class ResolveProcess {
 
     private ResolutionException resolutionException;
 
-    public boolean resolve(BndEditModel inputModel, Registry pluginRegistry, Resolver resolver, LogService log) {
+    public Map<Resource,List<Wire>> resolveRequired(BndEditModel inputModel, Registry plugins, Resolver resolver, Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
+        BndrunResolveContext rc = new BndrunResolveContext(inputModel, plugins, log);
+        rc.addCallbacks(callbacks);
+
+        Map<Resource,List<Wire>> wirings = resolver.resolve(rc);
+        removeFrameworkAndInputResources(wirings, rc);
+
+        return invertWirings(wirings);
+    }
+
+    public Map<Resource,List<Wire>> resolveOptional(BndEditModel inputModel, Set<Resource> requiredResources, Registry plugins, Resolver resolver, Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
+        BndrunResolveContext rc = new BndrunResolveContext(inputModel, plugins, log);
+        rc.addCallbacks(callbacks);
+        rc.setOptionalRoots(requiredResources);
+
+        Map<Resource,List<Wire>> wirings = resolver.resolve(rc);
+        removeFrameworkAndInputResources(wirings, rc);
+
+        // Remove requiredResources
+        for (Iterator<Resource> iter = wirings.keySet().iterator(); iter.hasNext();) {
+            Resource resource = iter.next();
+            if (requiredResources.contains(resource))
+                iter.remove();
+        }
+
+        return invertWirings(wirings);
+    }
+
+    public boolean XXXresolve(BndEditModel inputModel, Registry pluginRegistry, Resolver resolver, LogService log) {
         try {
             // Resolve required resources
             BndrunResolveContext resolveContext = new BndrunResolveContext(inputModel, pluginRegistry, log);
