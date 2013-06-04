@@ -16,6 +16,54 @@ import aQute.lib.io.*;
 public class ProjectTest extends TestCase {
 	
 	/**
+	 * Two subsequent builds should not change the last modified if none of
+	 * the source inputs have been modified. 
+	 * 
+	 * @throws Exception
+	 */
+	public static void testLastModified() throws Exception {
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
+		Project project = ws.getProject("p3");
+		File bnd = new File("test/ws/p3/bnd.bnd");
+		assertTrue(bnd.exists());
+
+		project.clean();
+		File pt = project.getTarget();
+		if (!pt.exists() && !pt.mkdirs()) {
+			throw new IOException("Could not create directory " + pt);
+		}
+		try {
+			// Now we build it.
+			File[] files = project.build();
+			assertTrue(project.check());
+			assertNotNull(files);
+			assertEquals(1, files.length);
+
+			Jar older = new Jar(files[0]);
+			String lastmodified = older.getManifest().getMainAttributes().getValue(Constants.BND_LASTMODIFIED);
+			older.close();
+			
+			Thread.sleep(3000); // Ensure system time granularity is < than wait
+
+			files[0].delete();
+			
+			project.build();
+			assertTrue(project.check());
+			assertNotNull(files);
+			assertEquals(1, files.length);
+			
+			Jar newer = new Jar(files[0]);
+			String lastmodifiedn = newer.getManifest().getMainAttributes().getValue(Constants.BND_LASTMODIFIED);
+			newer.close();
+			
+			assertEquals(lastmodified,lastmodifiedn);
+		}
+		finally {
+			project.clean();
+		}
+	}
+	
+	/**
 	 * #194 StackOverflowError when -runbundles in bnd.bnd refers to itself
 	 */
 	
