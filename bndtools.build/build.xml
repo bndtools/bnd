@@ -29,6 +29,10 @@
  	  <zip destfile="${target}/features/bndtools.dm.feature.jar">
    	   	<fileset dir="${target}/features/dm" includes="feature.xml" />
    	  </zip>
+   	
+   	  <zip destfile="${target}/features/bndtools.amdatu.feature.jar">
+	   	<fileset dir="${target}/features/amdatu" includes="feature.xml" />
+   	  </zip>
    </target>
 	
 	<!-- Build the Eclipse "plugins" directory -->

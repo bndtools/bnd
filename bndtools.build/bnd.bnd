@@ -4,6 +4,7 @@
 	bndtools.jareditor,\
 	bndtools.repository.base,\
 	bndtools.template.dm,\
+	bndtools.template.amdatu,\
 	bndtools.release,\
 	org.bndtools.embeddedrepo,\
 	bndtools.ace.launcher,\
@@ -17,6 +18,7 @@ Include-Resource:\
 	${repo;bndtools.jareditor;latest},\
 	${repo;bndtools.repository.base;latest},\
 	${repo;bndtools.template.dm;latest},\
+	${repo;bndtools.template.amdatu;latest},\
 	${repo;bndtools.release;latest},\
 	${repo;org.bndtools.embeddedrepo;latest},\
 	${repo;javax.xml;latest},\

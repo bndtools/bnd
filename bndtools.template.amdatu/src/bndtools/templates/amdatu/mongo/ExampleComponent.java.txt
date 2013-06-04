@@ -1,0 +1,31 @@
+package org.example.mongo;
+
+import org.osgi.service.log.LogService;
+import org.example.api.*;
+import java.util.List;
+import java.util.ArrayList;
+import net.vz.mongodb.jackson.DBCursor;
+import net.vz.mongodb.jackson.JacksonDBCollection;
+import org.amdatu.mongo.MongoDBService;
+import com.mongodb.DBCollection;
+
+public class ExampleComponent implements Example {
+	private static final String COLLECTION = "example";
+	private volatile LogService m_log;
+	private volatile MongoDBService m_mongoDBService;
+
+	@Override
+	public List<ExampleDocument> list() {
+		DBCollection coll = m_mongoDBService.getDB().getCollection(COLLECTION);
+        JacksonDBCollection<ExampleDocument, String> documents = JacksonDBCollection.wrap(coll, ExampleDocument.class, String.class);
+        
+        List<ExampleDocument> result = new ArrayList<>();
+        DBCursor<ExampleDocument> cursor = documents.find();
+        
+        while(cursor.hasNext()) {
+        	result.add(cursor.next());
+        }
+        	
+        return result;
+	}
+}

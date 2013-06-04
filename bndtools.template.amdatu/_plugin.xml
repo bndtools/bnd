@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="bndtools.core.projectTemplates">
+      <template name="Amdatu REST"
+         priority="100"
+         class="bndtools.templates.amdatu.rest.AmdatuRestTemplate"
+         doc="templateDocs/amdatuRestTemplate.xml" />
+         
+      <template name="Amdatu Mongo"
+         priority="100"
+         class="bndtools.templates.amdatu.mongo.AmdatuMongoTemplate"
+         doc="templateDocs/amdatuMongoTemplate.xml" />
+         
+         <template name="Amdatu Mongo and REST"
+         priority="100"
+         class="bndtools.templates.amdatu.mixed.AmdatuMixedTemplate"
+         doc="templateDocs/amdatuMixedTemplate.xml" />
+   </extension>
+</plugin>

@@ -1,0 +1,16 @@
+package org.example.api;
+
+import net.vz.mongodb.jackson.ObjectId;
+
+public class ExampleDocument {
+	@ObjectId
+    private String _id;
+    
+    public String get_id() {
+    	return _id;
+    }
+    
+    public void set_id(String id) {
+    	this._id = id;
+    }
+}
