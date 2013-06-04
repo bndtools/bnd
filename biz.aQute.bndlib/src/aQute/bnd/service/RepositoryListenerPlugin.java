@@ -33,5 +33,10 @@ public interface RepositoryListenerPlugin {
 	 * @param repository
 	 */
 	void repositoryRefreshed(RepositoryPlugin repository);
+	
+	/**
+	 * Called when a large or unknown set of changes have occurred, or may have occurred, in any or all repositories.
+	 */
+	void repositoriesRefreshed();
 
 }
