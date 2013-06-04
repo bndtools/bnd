@@ -44,7 +44,7 @@ public class DiffHelper {
 			if (builder instanceof ProjectBuilder) {
 				Jar jar = builder.build();
 
-				Jar currentJar = ((ProjectBuilder) builder).getBaselineJar();
+				Jar currentJar = ((ProjectBuilder) builder).getLastRevision();
 				if (currentJar == null) {
 				    currentJar = new Jar("."); //$NON-NLS-1$
 				}
