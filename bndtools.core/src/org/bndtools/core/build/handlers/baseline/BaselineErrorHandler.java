@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
 import bndtools.Logger;
 
@@ -108,6 +110,19 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
         }
 
         return result;
+    }
+
+    @Override
+    public List<ICompletionProposal> getProposals(IMarker marker) {
+        List<ICompletionProposal> proposals = new LinkedList<ICompletionProposal>();
+
+        String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
+        int start = marker.getAttribute(IMarker.CHAR_START, 0);
+        int end = marker.getAttribute(IMarker.CHAR_END, 0);
+        CompletionProposal proposal = new CompletionProposal("version " + suggestedVersion, start, end - start, end, null, "Change package version to " + suggestedVersion, null, null);
+        proposals.add(proposal);
+
+        return proposals;
     }
 
     @SuppressWarnings("resource")

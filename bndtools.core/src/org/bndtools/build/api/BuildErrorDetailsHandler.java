@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
 
 import aQute.bnd.build.Project;
@@ -23,5 +24,7 @@ public interface BuildErrorDetailsHandler {
     List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception;
 
     List<IMarkerResolution> getResolutions(IMarker marker);
+
+    List<ICompletionProposal> getProposals(IMarker marker);
 
 }

@@ -10,15 +10,15 @@ import org.eclipse.core.runtime.Platform;
 import bndtools.Logger;
 import bndtools.Plugin;
 
-class BuildErrorDetailsHandlers {
+public class BuildErrorDetailsHandlers {
 
-    static final BuildErrorDetailsHandlers INSTANCE = new BuildErrorDetailsHandlers();
+    public static final BuildErrorDetailsHandlers INSTANCE = new BuildErrorDetailsHandlers();
 
     private final ConcurrentMap<String,BuildErrorDetailsHandler> cache = new ConcurrentHashMap<String,BuildErrorDetailsHandler>();
 
     private BuildErrorDetailsHandlers() {}
 
-    BuildErrorDetailsHandler findHandler(String type) {
+    public BuildErrorDetailsHandler findHandler(String type) {
         if (type == null)
             return DefaultBuildErrorDetailsHandler.INSTANCE;
 

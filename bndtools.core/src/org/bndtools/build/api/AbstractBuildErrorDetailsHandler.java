@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
 
 import aQute.bnd.build.Project;
@@ -24,6 +25,10 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
     }
 
     public List<IMarkerResolution> getResolutions(IMarker marker) {
+        return Collections.emptyList();
+    }
+
+    public List<ICompletionProposal> getProposals(IMarker marker) {
         return Collections.emptyList();
     }
 

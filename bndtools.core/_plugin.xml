@@ -83,6 +83,13 @@
             id="bndtools.bndWorkspaceConfigEditor"
             name="Bnd Workspace Config Editor"
       />
+      <editor
+            class="org.bndtools.core.editors.pkginfo.PackageInfoEditor"
+            default="true"
+            filenames="packageinfo"
+            id="bndtools.packageInfoEditor"
+            name="Package Info Editor"
+      />
    </extension>
    <extension
          point="org.eclipse.ui.newWizards">

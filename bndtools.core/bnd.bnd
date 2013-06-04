@@ -81,7 +81,8 @@ eclipse.deps: \
 	org.eclipse.ltk.ui.refactoring,\
 	org.eclipse.core.filebuffers,\
 	org.eclipse.core.expressions,\
-	org.eclipse.core.filesystem
+	org.eclipse.core.filesystem,\
+	org.eclipse.core.contenttype
 
 -buildpath: ee.j2se;version=${javac.ee},\
 	${bndlib},\
