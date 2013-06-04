@@ -1,0 +1,15 @@
+<form>Creates a project for developing multi-bundle Amdatu Mongo/REST components. The following dependencies are added to the build path:
+<li>OSGi Core</li>
+<li>OSGi Compendium</li>
+<li>Apache Felix Dependency Manager</li>
+<li>Amdatu Mongo</li>
+<li>Mongo Java Driver</li>
+<li>Mongo Jackson Mapper</li>
+<li>Jackson Core</li>
+<li>Jackson Mapper</li>
+<li>Jackson BSON</li>
+<li>Servlet API</li>
+<li>Amdatu REST Docs</li>
+<li>Amdatu JAX-RS</li>
+<li>Amdatu Token Provider</li>
+</form>

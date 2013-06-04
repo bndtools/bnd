@@ -1,0 +1,7 @@
+package org.example.api;
+
+import java.util.List;
+
+public interface Example {
+    List<ExampleDocument> list();
+}

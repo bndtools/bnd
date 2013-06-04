@@ -1,0 +1,22 @@
+-dependson: bndtools.repository.base
+
+-buildpath:\
+	ee.j2se;version=${javac.ee},\
+	bndtools.core;version=snapshot,\
+	bndtools.repository.base;version=snapshot,\
+	osgi.core,\
+	${bndlib}
+
+Bundle-SymbolicName: bndtools.template.amdatu;singleton:=true
+Bundle-Vendor: Bndtools
+Bundle-Version: ${master-version}
+
+Include-Resource:\
+	plugin.xml=_plugin.xml,\
+	templateDocs/=templateDocs,\
+
+Private-Package: bndtools.templates.amdatu.rest,\
+	bndtools.templates.amdatu.mongo,\
+	bndtools.templates.amdatu.mixed
+
+-removeheaders: Private-Package

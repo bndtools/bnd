@@ -22,4 +22,9 @@
       version="2.2.0.DEV-qualifier">
       <category name="bndtools.category" />
    </feature>
+   
+   <feature url="features/bndtools.amdatu.feature_2.2.0.DEV-qualifier" id="bndtools.amdatu.feature"
+      version="2.2.0.DEV-qualifier">
+      <category name="bndtools.category" />
+   </feature>
 </site>
