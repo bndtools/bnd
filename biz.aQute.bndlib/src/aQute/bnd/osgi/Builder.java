@@ -456,6 +456,7 @@ public class Builder extends Analyzer {
 		// use destructively
 		MultiMap<String,Jar> packages = new MultiMap<String,Jar>();
 		for (Jar srce : getClasspath()) {
+			dot.updateModified(srce.lastModified, srce + " (" + srce.lastModifiedReason + ")");
 			for (Entry<String,Map<String,Resource>> e : srce.getDirectories().entrySet()) {
 				if (e.getValue() != null)
 					packages.add(e.getKey(), srce);
