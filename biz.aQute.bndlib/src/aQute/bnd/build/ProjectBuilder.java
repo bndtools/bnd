@@ -98,7 +98,7 @@ public class ProjectBuilder extends Builder {
 	@Override
 	protected void doBaseline(Jar dot) throws Exception {
 
-		Jar jar = getBaselineJar(false);
+		Jar jar = getBaselineJar();
 		if (jar == null) {
 			trace("No baseline jar %s", getProperty(Constants.BASELINE));
 			return;
@@ -141,8 +141,15 @@ public class ProjectBuilder extends Builder {
 		}
 	}
 
-	public Jar getBaselineJar(boolean fallbackToReleaseRepo) throws Exception {
-		return getBaselineJar();
+	public Jar getLastRevision() throws Exception {
+		RepositoryPlugin releaseRepo = getReleaseRepo();
+		SortedSet<Version> versions = releaseRepo.versions(getBsn());
+		if (versions.isEmpty())
+			return null;
+		
+		Jar jar = new Jar(releaseRepo.get(getBsn(), versions.last(), null));
+		addClose(jar);
+		return jar;
 	}
 
 	/**
