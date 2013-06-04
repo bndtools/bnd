@@ -51,7 +51,6 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.service.RepositoryListenerPlugin;
-import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Report.Location;
 import bndtools.Central;
@@ -135,11 +134,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
                 // Notify the repository listeners that ALL repo contents may have changed.
                 List<RepositoryListenerPlugin> repoListeners = Central.getWorkspace().getPlugins(RepositoryListenerPlugin.class);
-                List<RepositoryPlugin> repos = Central.getWorkspace().getRepositories();
                 for (RepositoryListenerPlugin repoListener : repoListeners) {
-                    for (RepositoryPlugin repo : repos) {
-                        repoListener.repositoryRefreshed(repo);
-                    }
+                    repoListener.repositoriesRefreshed();
                 }
 
                 return dependsOn;

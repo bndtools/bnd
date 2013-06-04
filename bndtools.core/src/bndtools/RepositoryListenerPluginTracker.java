@@ -39,4 +39,12 @@ public class RepositoryListenerPluginTracker extends ServiceTracker implements R
             }
     }
 
+    public void repositoriesRefreshed() {
+        Object[] snapshot = getServices();
+        if (snapshot != null)
+            for (Object l : snapshot) {
+                ((RepositoryListenerPlugin) l).repositoriesRefreshed();
+            }
+    }
+
 }

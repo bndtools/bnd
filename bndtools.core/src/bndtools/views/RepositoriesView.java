@@ -486,7 +486,6 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     }
 
     public void bundleAdded(final RepositoryPlugin repository, Jar jar, File file) {
-        // TODO: make this smarter!
         if (viewer != null)
             SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
                 public void run() {
@@ -496,7 +495,6 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     }
 
     public void bundleRemoved(final RepositoryPlugin repository, Jar jar, File file) {
-        // TODO: make this smarter!
         if (viewer != null)
             SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
                 public void run() {
@@ -506,11 +504,19 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     }
 
     public void repositoryRefreshed(final RepositoryPlugin repository) {
-        // TODO: make this smarter!
         if (viewer != null)
             SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
                 public void run() {
                     viewer.refresh(repository);
+                }
+            });
+    }
+
+    public void repositoriesRefreshed() {
+        if (viewer != null)
+            SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                public void run() {
+                    viewer.setInput(RepositoryUtils.listRepositories(true));
                 }
             });
     }
