@@ -27,7 +27,9 @@ import bndtools.Logger;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.differ.Baseline.Info;
-import aQute.lib.collections.LineCollection;
+import aQute.bnd.properties.IRegion;
+import aQute.bnd.properties.LineType;
+import aQute.bnd.properties.PropertiesLineReader;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Report.Location;
 
@@ -125,29 +127,33 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
         return proposals;
     }
 
-    @SuppressWarnings("resource")
     private LineLocation findVersionLocation(File file) {
-        int lineNum = 1;
-        LineCollection lines = null;
+        String content;
         try {
-            lines = new LineCollection(file);
-            while (lines.hasNext()) {
-                String line = lines.next();
-                if (line.startsWith("version")) {
-                    LineLocation loc = new LineLocation();
-                    loc.lineNum = lineNum;
-                    loc.start = 0;
-                    loc.end = line.length();
-                    return loc;
+            content = IO.collect(file);
+            PropertiesLineReader reader = new PropertiesLineReader(content);
+
+            int lineNum = 1;
+            LineType type = reader.next();
+            while (type != LineType.eof) {
+                if (type == LineType.entry) {
+                    String key = reader.key();
+                    if ("version".equals(key)) {
+                        LineLocation loc = new LineLocation();
+                        loc.lineNum = lineNum;
+                        IRegion region = reader.region();
+                        loc.start = region.getOffset();
+                        loc.end = region.getOffset() + region.getLength();
+                        return loc;
+                    }
                 }
+                type = reader.next();
                 lineNum++;
             }
         } catch (Exception e) {
             // ignore
-        } finally {
-            if (lines != null)
-                IO.close(lines);
         }
+
         return null;
     }
 }
