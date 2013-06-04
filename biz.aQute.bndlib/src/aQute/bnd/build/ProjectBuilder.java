@@ -200,9 +200,29 @@ public class ProjectBuilder extends Builder {
 		trace("version: %s all: %s tail: %s", version.getWithoutQualifier(), versions, tail);
 		if (!tail.isEmpty()) {
 			Version already = tail.first();
+			
 			if (already.getMajor() == version.getMajor()) {
-				error("The repository %s already contains later or equal version(s) %s for %s-%s with the same major number",
-						repo.getName(), tail, bsn, version);
+				File releasedJarFile = repo.get(bsn, tail.first(), null);
+				if(releasedJarFile != null) {
+					Jar jar = new Jar(releasedJarFile);
+					//Check if the jar is actually changed
+					try {
+						String lastModifiedReleased = jar.getManifest().getMainAttributes().getValue(Constants.BND_LASTMODIFIED);
+						String currentLastModified = getJar().getManifest().getMainAttributes().getValue(Constants.BND_LASTMODIFIED);
+						if(lastModifiedReleased != null && currentLastModified != null) {
+							long lastModifiedOld = Long.parseLong(lastModifiedReleased);
+							long lastModifiedNew = Long.parseLong(currentLastModified);
+							
+							if(lastModifiedOld < lastModifiedNew) {
+								error("The repository %s already contains later or equal version(s) %s for %s-%s with the same major number",
+										repo.getName(), tail, bsn, version);
+							}
+						}
+					} finally {
+						jar.close();
+					}
+				}
+				
 				return null;
 			}
 		}
