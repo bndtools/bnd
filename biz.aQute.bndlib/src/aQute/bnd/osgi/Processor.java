@@ -1500,7 +1500,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		return new String(array);
 	}
-	
+
+	private static final String	OSGI_NATIVE		= "osgi.native";
+	private static final String	OS_NAME			= "osname";
+	private static final String	OS_VERSION		= "osversion";
+	private static final String	OS_PROCESSOR	= "processor";
+
 	/**
 	 * <p>
 	 * Generates a Capability string, in the format specified by the OSGi
@@ -1517,7 +1522,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 *            Ignored; reserved for future use.
 	 */
 	public String _native_capability(String[] args) {
-		StringBuilder builder = new StringBuilder().append("osgi.native");
+		StringBuilder builder = new StringBuilder().append(OSGI_NATIVE);
 		
 		try {
 			String processorNames;
@@ -1532,9 +1537,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 			OSInformation osInformation = new OSInformation();
 
-			builder.append(";osgi.native.osname:List<String>=\"").append(osInformation.osnames).append('"');
-			builder.append(";osgi.native.osversion:Version=").append(osInformation.osversion.toString());
-			builder.append(";osgi.native.processor:List<String>=\"").append(processorNames).append('"');
+			builder.append(";" + OSGI_NATIVE + "." + OS_NAME + ":List<String>=\"").append(osInformation.osnames).append('"');
+			builder.append(";" + OSGI_NATIVE + "." + OS_VERSION + ":Version=").append(osInformation.osversion.toString());
+			builder.append(";" + OSGI_NATIVE + "." + OS_PROCESSOR + ":List<String>=\"").append(processorNames).append('"');
 			
 		} catch (SecurityException e) {
 			throw new IllegalArgumentException("Security error retrieving system properties while processing ${native_capability} macro.");
