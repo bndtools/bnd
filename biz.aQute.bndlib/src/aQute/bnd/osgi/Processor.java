@@ -1519,32 +1519,109 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * </pre>
 	 * 
 	 * @param args
-	 *            Ignored; reserved for future use.
+	 *            The array of properties. For example: the macro invocation of
+	 *            "${native_capability;osversion=3.2.4;osname=Linux}" results in
+	 *            an args array of
+	 *            [native_capability,&nbsp;osversion=3.2.4,&nbsp;osname=Linux]
 	 */
-	public String _native_capability(String[] args) {
+	public String _native_capability(String[] args) throws IllegalArgumentException {
 		StringBuilder builder = new StringBuilder().append(OSGI_NATIVE);
-		
+
+		String processorNames = null;
+		OSInformation osInformation = null;
+		IllegalArgumentException osInformationException = null;
 		try {
-			String processorNames;
-			
+			/*
+			 * Determine the processor information
+			 */
+
 			String arch = System.getProperty("os.arch");
 			if ("x86_64".equals(arch) || "amd64".equals(arch) || "em64t".equals(arch))
 				processorNames = "x86-64,amd64,em64t,x86_64";
 			else if ("x86".equals(arch))
 				processorNames = "x86,pentium,i386,i486,i586,i686";
-			else
-				throw new IllegalArgumentException(String.format("Unrecognised/unsupported processor name '%s' in ${native_capability} macro.", arch));
 
-			OSInformation osInformation = new OSInformation();
+			/*
+			 * Determine the OS information
+			 */
 
-			builder.append(";" + OSGI_NATIVE + "." + OS_NAME + ":List<String>=\"").append(osInformation.osnames).append('"');
-			builder.append(";" + OSGI_NATIVE + "." + OS_VERSION + ":Version=").append(osInformation.osversion.toString());
-			builder.append(";" + OSGI_NATIVE + "." + OS_PROCESSOR + ":List<String>=\"").append(processorNames).append('"');
-			
-		} catch (SecurityException e) {
-			throw new IllegalArgumentException("Security error retrieving system properties while processing ${native_capability} macro.");
+			try {
+				osInformation = new OSInformation();
+			}
+			catch (IllegalArgumentException e) {
+				osInformationException = e;
+			}
 		}
+		catch (SecurityException e) {
+			throw new IllegalArgumentException(
+					"Security error retrieving system properties while processing ${native_capability} macro.");
+		}
+
+		/*
+		 * Determine overrides
+		 */
+
+		String osnameOverride = null;
+		Version osversionOverride = null;
+		String processorNamesOverride = null;
+
+		if (args.length > 1) {
+			assert ("native_capability".equals(args[0]));
+			for (int i = 1; i < args.length; i++) {
+				String arg = args[i];
+				String[] fields = arg.split("=", 2);
+				if (fields.length != 2) {
+					throw new IllegalArgumentException("Illegal property syntax in \"" + arg + "\", use \"key=value\"");
+				}
+				String key = fields[0];
+				String value = fields[1];
+				if (OS_NAME.equals(key)) {
+					osnameOverride = value;
+				} else if (OS_VERSION.equals(key)) {
+					osversionOverride = new Version(value);
+				} else if (OS_PROCESSOR.equals(key)) {
+					processorNamesOverride = value;
+				} else {
+					throw new IllegalArgumentException("Unrecognised/unsupported property. Supported: " + OS_NAME
+							+ ", " + OS_VERSION + ", " + OS_PROCESSOR + ".");
+				}
+			}
+		}
+
+		/*
+		 * Determine effective values: put determined value into override if
+		 * there is no override
+		 */
+
+		if (osnameOverride == null && osInformation != null) {
+			osnameOverride = osInformation.osnames;
+		}
+		if (osversionOverride == null && osInformation != null) {
+			osversionOverride = osInformation.osversion;
+		}
+		if (processorNamesOverride == null && processorNames != null) {
+			processorNamesOverride = processorNames;
+		}
+
+		/*
+		 * Construct result string
+		 */
+
+		builder.append(";" + OSGI_NATIVE + "." + OS_NAME + ":List<String>=\"").append(osnameOverride).append('"');
+		builder.append(";" + OSGI_NATIVE + "." + OS_VERSION + ":Version=").append(osversionOverride);
+		builder.append(";" + OSGI_NATIVE + "." + OS_PROCESSOR + ":List<String>=\"").append(processorNamesOverride)
+				.append('"');
+
+		/*
+		 * Report error if needed
+		 */
 		
+		if (osnameOverride == null || osversionOverride == null || processorNamesOverride == null) {
+			throw new IllegalArgumentException(
+					"At least one of the required parameters could not be detected; specify an override. Detected: "
+							+ builder.toString(), osInformationException);
+		}
+
 		return builder.toString();
 	}
 
