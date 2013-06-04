@@ -7,22 +7,20 @@ import java.security.*;
 import java.util.*;
 
 public class IO {
-	
+
 	static final public File	work	= new File(System.getProperty("user.dir"));
-	static final public File 	home;
+	static final public File	home;
 	static {
 		File tmp = null;
 		try {
 			tmp = new File(System.getenv("HOME"));
-		} catch (Exception e) {
 		}
+		catch (Exception e) {}
 		if (tmp == null) {
 			tmp = new File(System.getProperty("user.home"));
 		}
 		home = tmp;
 	}
-		
-	
 
 	public static void copy(Reader r, Writer w) throws IOException {
 		try {
@@ -523,4 +521,47 @@ public class IO {
 	public static PrintWriter writer(OutputStream out) throws IOException {
 		return writer(out, "UTF-8");
 	}
+
+	static public OutputStream	nullStream	= new OutputStream() {
+
+												@Override
+												public void write(int var0) throws IOException {}
+
+												@Override
+												public void write(byte[] var0) throws IOException {}
+
+												@Override
+												public void write(byte[] var0, int from, int l) throws IOException {}
+											};
+	static public Writer		nullWriter	= new Writer() {
+												public java.io.Writer append(char var0) throws java.io.IOException {
+													return null;
+												}
+
+												public java.io.Writer append(java.lang.CharSequence var0)
+														throws java.io.IOException {
+													return null;
+												}
+
+												public java.io.Writer append(java.lang.CharSequence var0, int var1,
+														int var2) throws java.io.IOException {
+													return null;
+												}
+
+												public void write(int var0) throws java.io.IOException {}
+
+												public void write(java.lang.String var0) throws java.io.IOException {}
+
+												public void write(java.lang.String var0, int var1, int var2)
+														throws java.io.IOException {}
+
+												public void write(char[] var0) throws java.io.IOException {}
+
+												public void write(char[] var0, int var1, int var2)
+														throws java.io.IOException {}
+
+												public void close() throws IOException {}
+
+												public void flush() throws IOException {}
+											};
 }
