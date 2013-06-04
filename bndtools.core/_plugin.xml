@@ -649,6 +649,13 @@
       />
    </extension>
    
+   <extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+         markerType="bndtools.core.bndproblem"
+         class="bndtools.builder.BndtoolsMarkerResolutionGenerator"
+      />
+   </extension>
+   
    <extension point="bndtools.core.projectTemplates">
       <template name="Component Development (OSGi Declarative Services)"
          priority="500"

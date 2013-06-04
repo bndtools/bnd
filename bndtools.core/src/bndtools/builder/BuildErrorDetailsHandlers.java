@@ -7,23 +7,21 @@ import org.bndtools.build.api.BuildErrorDetailsHandler;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 
-import aQute.service.reporter.Report.Location;
 import bndtools.Logger;
 import bndtools.Plugin;
 
 class BuildErrorDetailsHandlers {
 
+    static final BuildErrorDetailsHandlers INSTANCE = new BuildErrorDetailsHandlers();
+
     private final ConcurrentMap<String,BuildErrorDetailsHandler> cache = new ConcurrentHashMap<String,BuildErrorDetailsHandler>();
 
-    BuildErrorDetailsHandler findHandler(Location location) {
-        if (location == null || location.details == null)
-            return DefaultBuildErrorDetailsHandler.INSTANCE;
-
-        String type = location.details.getClass().getName();
-        return findHandler(type);
-    }
+    private BuildErrorDetailsHandlers() {}
 
     BuildErrorDetailsHandler findHandler(String type) {
+        if (type == null)
+            return DefaultBuildErrorDetailsHandler.INSTANCE;
+
         BuildErrorDetailsHandler handler = cache.get(type);
         if (handler != null)
             return handler;

@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.build.api.BuildErrorDetailsHandler;
+import org.bndtools.build.api.MarkerData;
 import org.bndtools.core.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -77,7 +78,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
     private Project model;
     private BuildListeners listeners;
-    private BuildErrorDetailsHandlers buildErrorDetailsHandlers;
     private Collection< ? extends Builder> subBuilders;
 
     private List<String> classpathErrors;
@@ -101,7 +101,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
         try {
             // Prepare build listeners and build error handlers
             listeners = new BuildListeners();
-            buildErrorDetailsHandlers = new BuildErrorDetailsHandlers();
 
             // Get the initial project
             IProject myProject = getProject();
@@ -111,7 +110,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
                 model = Workspace.getProject(myProject.getLocation().toFile());
             } catch (Exception e) {
                 clearBuildMarkers();
-                addBuildMarker(e.getMessage(), IMarker.SEVERITY_ERROR);
+                addBuildMarkers(e.getMessage(), IMarker.SEVERITY_ERROR);
             }
             if (model == null)
                 return null;
@@ -511,7 +510,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
             switch (CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY))) {
             case skip :
-                addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
+                addBuildMarkers(String.format("Will not build OSGi bundle(s) for project %s until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
                 log(LOG_BASIC, "SKIPPING due to Java problem markers");
                 return false;
             case build :
@@ -525,7 +524,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(getProject()), Plugin.PLUGIN_ID);
             switch (CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY))) {
             case skip :
-                addBuildMarker(String.format("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
+                addBuildMarkers(String.format("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
                 log(LOG_BASIC, "SKIPPING due to classpath resolution problem markers");
                 return false;
             case build :
@@ -762,10 +761,10 @@ public class NewBuilder extends IncrementalProjectBuilder {
         List<String> warnings = model.getWarnings();
 
         for (String error : errors) {
-            addBuildMarker(error, IMarker.SEVERITY_ERROR);
+            addBuildMarkers(error, IMarker.SEVERITY_ERROR);
         }
         for (String warning : warnings) {
-            addBuildMarker(warning, IMarker.SEVERITY_WARNING);
+            addBuildMarkers(warning, IMarker.SEVERITY_WARNING);
         }
         for (String error : classpathErrors) {
             addClasspathMarker(error, IMarker.SEVERITY_ERROR);
@@ -782,25 +781,20 @@ public class NewBuilder extends IncrementalProjectBuilder {
         getProject().deleteMarkers(MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
     }
 
-    private void addBuildMarker(String message, int severity) throws Exception {
+    private void addBuildMarkers(String message, int severity) throws Exception {
         Location location = model != null ? model.getLocation(message) : null;
         if (location != null) {
-
-            BuildErrorDetailsHandler handler = buildErrorDetailsHandlers.findHandler(location);
-            IResource resource = handler.findMarkerTargetResource(getProject(), model, location);
-            if (resource == null)
-                return;
-
-            IMarker marker = resource.createMarker(MARKER_BND_PROBLEM);
-            marker.setAttribute(IMarker.SEVERITY, severity);
             String type = location.details != null ? location.details.getClass().getName() : null;
-            marker.setAttribute("bndType", type);
+            BuildErrorDetailsHandler handler = BuildErrorDetailsHandlers.INSTANCE.findHandler(type);
 
-            Map<String,Object> attributes = handler.createMarkerAttributes(getProject(), model, location, resource);
-            if (attributes != null) {
-                for (Entry<String,Object> attrib : attributes.entrySet()) {
+            List<MarkerData> markers = handler.generateMarkerData(getProject(), model, location);
+            for (MarkerData markerData : markers) {
+                IMarker marker = markerData.getResource().createMarker(MARKER_BND_PROBLEM);
+                marker.setAttribute(IMarker.SEVERITY, severity);
+                marker.setAttribute("$bndType", type);
+                marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
+                for (Entry<String,Object> attrib : markerData.getAttribs().entrySet())
                     marker.setAttribute(attrib.getKey(), attrib.getValue());
-                }
             }
         } else {
             IMarker marker = DefaultBuildErrorDetailsHandler.getDefaultResource(getProject()).createMarker(MARKER_BND_PROBLEM);

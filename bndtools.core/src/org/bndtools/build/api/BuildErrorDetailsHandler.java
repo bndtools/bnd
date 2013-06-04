@@ -1,9 +1,10 @@
 package org.bndtools.build.api;
 
-import java.util.Map;
+import java.util.List;
 
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.ui.IMarkerResolution;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Processor;
@@ -17,8 +18,10 @@ import aQute.service.reporter.Report.Location;
  */
 public interface BuildErrorDetailsHandler {
 
-    IResource findMarkerTargetResource(IProject project, Project model, Location location) throws Exception;
+    public static String PROP_HAS_RESOLUTIONS = "bndHasResolutions";
 
-    Map<String,Object> createMarkerAttributes(IProject project, Project model, Location location, IResource resource) throws Exception;
+    List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception;
+
+    List<IMarkerResolution> getResolutions(IMarker marker);
 
 }
