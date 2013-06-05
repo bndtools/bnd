@@ -74,7 +74,6 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	final CachingMode	mode;
 
 	Reporter			reporter;
-	ProgressPlugin		progress;
 
 	@Deprecated
 	public CachingUriResourceHandle(URI uri, File cacheDir, CachingMode mode) throws IOException {
@@ -115,10 +114,6 @@ public class CachingUriResourceHandle implements ResourceHandle {
 
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
-	}
-	
-	public void setProgress(ProgressPlugin progress) {
-		this.progress = progress;
 	}
 
 	static File resolveFile(String baseFileName, String fileName) {
@@ -211,8 +206,6 @@ public class CachingUriResourceHandle implements ResourceHandle {
 
 		try {
 			InputStream data = connector.connect(url);
-			if (progress != null)
-				data = new ProgressWrappingStream(data, "Downloading " + url, -1, progress);
 
 			// Save the data to the cache
 			ensureCacheDirExists();
@@ -248,7 +241,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			}
 		}
 	}
-
+	
 	private String copyWithSHA(InputStream input, FileOutputStream output) throws IOException {
 		MessageDigest digest;
 		
