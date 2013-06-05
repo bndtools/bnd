@@ -28,18 +28,26 @@ public class Baseline {
 		public Version				suggestedIfProviders;
 		public boolean				mismatch;
 		public String				warning	= "";
-
 	}
 
-	final Differ	differ;
-	final Reporter	bnd;
-	Diff			diff;
-	Set<Info>		infos;
-	String 			bsn;
-	Version			newerVersion;
-	Version			olderVersion;
-	Version			suggestedVersion;
-	String			releaseRepository;
+	public class BundleInfo {
+		public String	bsn;
+		public Version	version;
+		public Version	suggestedVersion;
+		public boolean	mismatch;
+	}
+
+	final Differ		differ;
+	final Reporter		bnd;
+	final BundleInfo	binfo	= new BundleInfo();
+
+	Diff				diff;
+	Set<Info>			infos;
+	String				bsn;
+	Version				newerVersion;
+	Version				olderVersion;
+	Version				suggestedVersion;
+	String				releaseRepository;
 
 	public Baseline(Reporter bnd, Differ differ) throws IOException {
 		this.differ = differ;
@@ -170,6 +178,25 @@ public class Baseline {
 		} else {
 			suggestedVersion = bumpBundle(highestDelta, olderVersion, 1, 0);
 		}
+		
+		binfo.bsn = bsn;
+		binfo.suggestedVersion = suggestedVersion;
+		binfo.version = olderVersion;
+
+		if ( newerVersion.getWithoutQualifier().equals(olderVersion.getWithoutQualifier())) {
+			// We have a special case, the current and repository revisions
+			// have the same version, this happens after a release, only want
+			// to generate an error when they really differ.
+			
+			if ( getDiff().getDelta() == Delta.UNCHANGED ) 
+				return infos;
+		}
+		
+		// Ok, now our bundle version must be >= the suggestedVersion
+		if ( newerVersion.getWithoutQualifier().compareTo(getSuggestedVersion())< 0) {
+			binfo.mismatch = true;
+		}
+
 		return infos;
 	}
 
@@ -245,7 +272,7 @@ public class Baseline {
 
 		return OSGiHeader.parseHeader(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 	}
-	
+
 	private Version getVersion(Tree top) {
 		Tree manifest = top.get("<manifest>");
 		if (manifest == null) {
@@ -283,5 +310,9 @@ public class Baseline {
 			default :
 				return new Version(last.getMajor(), last.getMinor(), last.getMicro() + offset);
 		}
+	}
+
+	public BundleInfo getBundleInfo() {
+		return binfo;
 	}
 }

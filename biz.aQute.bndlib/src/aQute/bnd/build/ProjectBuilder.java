@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
+import org.osgi.service.deploymentadmin.*;
+
 import aQute.bnd.differ.*;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.header.*;
@@ -132,18 +134,13 @@ public class ProjectBuilder extends Builder {
 					l.details(info);
 				}
 			}
-			if ( newer.getWithoutQualifier().equals(older.getWithoutQualifier())) {
-				// We have a special case, the current and repository revisions
-				// have the same version, this happens after a release, only want
-				// to generate an error when they really differ.
-				
-				if ( baseliner.getDiff().getDelta() == Delta.UNCHANGED ) 
-					return;
-			}
-			
-			// Ok, now our bundle version must be > the suggestedVersion
-			if ( newer.getWithoutQualifier().compareTo(baseliner.getSuggestedVersion())< 0) {
-				error("The bundle version %s is too low, must be at least %s", newer, baseliner.getSuggestedVersion());
+			aQute.bnd.differ.Baseline.BundleInfo binfo = baseliner.getBundleInfo();
+			if ( binfo.mismatch) {
+				SetLocation error = error("The bundle version %s is too low, must be at least %s", binfo.version, binfo.suggestedVersion);
+				error.file(getPropertiesFile().getAbsolutePath());
+				error.context("Baselining");
+				error.header(Constants.BUNDLE_VERSION);
+				error.details(binfo);
 			}
 		}
 		finally {
