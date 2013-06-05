@@ -16,6 +16,9 @@ public class ClauseListConverter<R> implements Converter<List<R>,String> {
 	}
 
 	public List<R> convert(String input) throws IllegalArgumentException {
+		if (input == null) 
+			return null;
+
 		List<R> result = new ArrayList<R>();
 
 		Parameters header = new Parameters(input);

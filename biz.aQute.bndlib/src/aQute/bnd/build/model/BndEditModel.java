@@ -70,6 +70,7 @@ public class BndEditModel {
 																											public VersionedClause convert(
 																													Pair<String,Attrs> input)
 																													throws IllegalArgumentException {
+																												if (input == null) return null;
 																												return new VersionedClause(
 																														input.getFirst(),
 																														input.getSecond());
@@ -80,6 +81,7 @@ public class BndEditModel {
 																											public VersionedClause convert(
 																													Pair<String,Attrs> input)
 																													throws IllegalArgumentException {
+																												if (input == null) return null;
 																												return new VersionedClause(
 																														input.getFirst(),
 																														input.getSecond());
@@ -103,6 +105,7 @@ public class BndEditModel {
 																										new Converter<ExportedPackage,Pair<String,Attrs>>() {
 																											public ExportedPackage convert(
 																													Pair<String,Attrs> input) {
+																												if (input == null) return null;
 																												return new ExportedPackage(
 																														input.getFirst(),
 																														input.getSecond());
@@ -113,6 +116,7 @@ public class BndEditModel {
 																											public ServiceComponent convert(
 																													Pair<String,Attrs> input)
 																													throws IllegalArgumentException {
+																												if (input == null) return null;
 																												return new ServiceComponent(
 																														input.getFirst(),
 																														input.getSecond());
@@ -123,6 +127,7 @@ public class BndEditModel {
 																											public ImportPattern convert(
 																													Pair<String,Attrs> input)
 																													throws IllegalArgumentException {
+																												if (input == null) return null;
 																												return new ImportPattern(
 																														input.getFirst(),
 																														input.getSecond());

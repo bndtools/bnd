@@ -13,6 +13,8 @@ public class RequirementListConverter extends ClauseListConverter<Requirement> {
 	public RequirementListConverter() {
 		super(new Converter<Requirement,Pair<String,Attrs>>() {
 			public Requirement convert(Pair<String,Attrs> input) throws IllegalArgumentException {
+				if (input == null)
+					return null;
 				String namespace = input.getFirst();
 				CapReqBuilder builder = new CapReqBuilder(namespace);
 				for (Entry<String,String> entry : input.getSecond().entrySet()) {
