@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
@@ -84,34 +85,37 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void getInfo(Reporter processor, String prefix) {
 		if (isFailOk())
-			addAll(warnings, processor.getErrors(), prefix);
+			addAll(warnings, processor.getErrors(), prefix, processor);
 		else
-			addAll(errors, processor.getErrors(), prefix);
-		addAll(warnings, processor.getWarnings(), prefix);
+			addAll(errors, processor.getErrors(), prefix, processor);
+		addAll(warnings, processor.getWarnings(), prefix, processor);
 
-		for (String error : processor.getErrors()) {
-			Location loc = processor.getLocation(error);
-			if (loc != null)
-				locations.add(loc);
-		}
-		for (String warning : processor.getWarnings()) {
-			Location loc = processor.getLocation(warning);
-			if (loc != null)
-				locations.add(loc);
-		}
-		
 		processor.getErrors().clear();
 		processor.getWarnings().clear();
-		
+
 	}
 
 	public void getInfo(Reporter processor) {
 		getInfo(processor, "");
 	}
 
-	private <T> void addAll(List<String> to, List< ? extends T> from, String prefix) {
-		for (T x : from) {
-			to.add(prefix + x);
+	private void addAll(List<String> to, List<String> from, String prefix, Reporter reporter) {
+		try {
+			for (String message : from) {
+				String newMessage = prefix + message;
+				to.add(newMessage);
+
+				Location location = reporter.getLocation(message);
+				if (location != null) {
+					SetLocation newer = location(newMessage);
+					for (Field f : newer.getClass().getFields()) {
+						f.set(newer, f.get(location));
+					}
+				}
+			}
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -671,8 +675,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public boolean refresh() {
 		plugins = null; // We always refresh our plugins
-		
-		
+
 		if (propertiesFile == null)
 			return false;
 
@@ -687,7 +690,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		profile = getProperty(PROFILE); // Used in property access
-		
+
 		if (changed) {
 			forceRefresh();
 			return true;
@@ -828,7 +831,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				value = getReplacer().getMacro(key, null);
 			}
 		}
-
 
 		if (value != null)
 			return getReplacer().process(value, source);
@@ -1609,12 +1611,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		builder.append(";" + OSGI_NATIVE + "." + OS_NAME + ":List<String>=\"").append(osnameOverride).append('"');
 		builder.append(";" + OSGI_NATIVE + "." + OS_VERSION + ":Version=").append(osversionOverride);
-		builder.append(";" + OSGI_NATIVE + "." + OS_PROCESSOR + ":List<String>=\"").append(processorNamesOverride).append('"');
+		builder.append(";" + OSGI_NATIVE + "." + OS_PROCESSOR + ":List<String>=\"").append(processorNamesOverride)
+				.append('"');
 
 		/*
 		 * Report error if needed
 		 */
-		
+
 		if (osnameOverride == null || osversionOverride == null || processorNamesOverride == null) {
 			throw new IllegalArgumentException(
 					"At least one of the required parameters could not be detected; specify an override. Detected: "
