@@ -67,7 +67,7 @@ public class OSInformation {
 
 				s = s.substring(matchedDigit.length());
 
-				if (s.charAt(0) != '.') {
+				if (s.length() == 0 || s.charAt(0) != '.') {
 					break;
 				}
 
