@@ -12,6 +12,7 @@ import org.apache.tools.ant.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
+import aQute.bnd.service.*;
 
 public class PrepareTask extends BaseTask {
 	File	basedir;
@@ -24,7 +25,21 @@ public class PrepareTask extends BaseTask {
 			if (basedir == null || !basedir.isDirectory())
 				throw new BuildException("The given base dir does not exist " + basedir);
 
-			Project project = Workspace.getProject(basedir);
+			Workspace workspace = Workspace.getWorkspace(basedir.getParentFile());
+			workspace.addBasicPlugin(new ProgressPlugin() {
+				public void startedTask(String taskName, int size) {
+					System.out.println(taskName);
+				}
+				public void worked(int units) {
+					// TODO
+				}
+				public void done() {
+					System.out.println("Done");
+				}
+			});
+
+			
+			Project project = workspace.getProject(basedir.getName());
 			if (project == null)
 				throw new BuildException("Unable to find bnd project in directory: " + basedir);
 
