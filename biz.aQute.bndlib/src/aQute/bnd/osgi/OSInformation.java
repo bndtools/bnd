@@ -11,7 +11,6 @@ import aQute.bnd.version.*;
 public class OSInformation {
 	String					osnames							= null;
 	Version					osversion						= null;
-	String					qualifier						= null;
 
 	static private String	regexQualifierNotAllowedChars	= "[^\\p{Alnum}-_]";
 	static private Pattern	digitPattern					= Pattern.compile("(\\d+).*");
@@ -77,7 +76,10 @@ public class OSInformation {
 			}
 		} while (index < 3);
 
-		qualifier = s.replaceAll(regexQualifierNotAllowedChars, "_");
+		if (s.length() != 0) {
+			String qualifier = s.replaceAll(regexQualifierNotAllowedChars, "_");
+			osversion = new Version(osversion.getMajor(), osversion.getMinor(),osversion.getMicro(),  qualifier);
+		}
 	}
 
 	/**
