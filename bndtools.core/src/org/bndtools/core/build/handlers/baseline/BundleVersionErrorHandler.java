@@ -13,7 +13,10 @@ import org.bndtools.core.utils.parse.properties.PropertiesLineReader;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.build.Project;
@@ -29,12 +32,26 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
     public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
         List<MarkerData> result = new LinkedList<MarkerData>();
 
+        IFile bndFile = null;
+        LineLocation loc = null;
+
         BundleInfo info = (BundleInfo) location.details;
         for (Builder builder : model.getSubBuilders()) {
             if (builder.getBsn().equals(info.bsn)) {
-                // no-sub bundles.. this is bnd.bnd
-                IFile bndFile = project.getFile(Project.BNDFILE);
-                LineLocation loc = findBundleVersionHeader(bndFile);
+                File propsFile = builder.getPropertiesFile();
+                // Try to find in the sub-bundle file
+                if (propsFile != null) {
+                    bndFile = project.getWorkspace().getRoot().getFileForLocation(new Path(propsFile.getAbsolutePath()));
+                    if (bndFile != null) {
+                        loc = findBundleVersionHeader(bndFile);
+                    }
+                }
+
+                if (loc == null) {
+                    // Not found in sub-bundle file, try bnd.bnd
+                    bndFile = project.getFile(Project.BNDFILE);
+                    loc = findBundleVersionHeader(bndFile);
+                }
 
                 if (loc != null) {
                     Map<String,Object> attribs = new HashMap<String,Object>();
@@ -49,8 +66,6 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
                 }
             }
         }
-
-        // TODO: what if it's on a sub-bundle
 
         return result;
     }
@@ -81,6 +96,19 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
         }
 
         return null;
+    }
+
+    @Override
+    public List<ICompletionProposal> getProposals(IMarker marker) {
+        List<ICompletionProposal> result = new LinkedList<ICompletionProposal>();
+
+        String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
+        int start = marker.getAttribute(IMarker.CHAR_START, 0);
+        int end = marker.getAttribute(IMarker.CHAR_END, 0);
+        CompletionProposal proposal = new CompletionProposal(Constants.BUNDLE_VERSION + ": " + suggestedVersion, start, end - start, end, null, "Change bundle version to " + suggestedVersion, null, null);
+        result.add(proposal);
+
+        return result;
     }
 
 }

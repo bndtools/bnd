@@ -18,7 +18,8 @@ public class BndMarkerAnnotationHover implements IAnnotationHover {
                 IMarker marker = ((MarkerAnnotation) annotation).getMarker();
 
                 int markerLine = marker.getAttribute(IMarker.LINE_NUMBER, 0);
-                if (markerLine == lineNum) {
+                // Hover line is zero-based and marker line is one-based. FML.
+                if (markerLine == lineNum + 1) {
                     return marker.getAttribute(IMarker.MESSAGE, null);
                 }
             }
