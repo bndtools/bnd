@@ -9,6 +9,7 @@ import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.diff.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 
@@ -125,12 +126,24 @@ public class ProjectBuilder extends Builder {
 							"Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s\n",
 							info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
 							info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
-					System.out.println(l);
 					l.header(Constants.BASELINE);
 					if (getPropertiesFile() != null)
 						l.file(getPropertiesFile().getAbsolutePath());
 					l.details(info);
 				}
+			}
+			if ( newer.getWithoutQualifier().equals(older.getWithoutQualifier())) {
+				// We have a special case, the current and repository revisions
+				// have the same version, this happens after a release, only want
+				// to generate an error when they really differ.
+				
+				if ( baseline.getDiff().getDelta() == Delta.UNCHANGED ) 
+					return;
+			}
+			
+			// Ok, now our bundle version must be > the suggestedVersion
+			if ( newer.getWithoutQualifier().compareTo(baseline.getSuggestedVersion())< 0) {
+				error("The bundle version %s is too low, must be at least %s", newer, baseline.getSuggestedVersion());
 			}
 		}
 		finally {
