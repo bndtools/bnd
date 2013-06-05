@@ -131,6 +131,9 @@
 	-->
 	<target name="junit" depends="build" unless="no.junit">
 		<junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
+			<assertions>
+				<enable />
+			</assertions>
 			<classpath path="${project.buildpath}" />
 			<formatter type="xml" />
 			<batchtest todir="${target}">
