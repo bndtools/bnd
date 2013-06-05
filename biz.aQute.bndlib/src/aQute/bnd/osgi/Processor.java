@@ -109,7 +109,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				if (location != null) {
 					SetLocation newer = location(newMessage);
 					for (Field f : newer.getClass().getFields()) {
-						f.set(newer, f.get(location));
+						if (!"message".equals(f.getName())) {
+							f.set(newer, f.get(location));
+						}
 					}
 				}
 			}
