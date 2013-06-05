@@ -7,10 +7,12 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -380,7 +382,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         refreshAction = new Action() {
             @Override
             public void run() {
-                viewer.setInput(RepositoryUtils.listRepositories(true));
+                doRefresh();
             }
         };
         refreshAction.setText("Refresh");
@@ -478,6 +480,29 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         });
     }
 
+    private void doRefresh() {
+        // Remember names of expanded repositories
+        Set<String> expandedRepoNames = new HashSet<String>();
+        Object[] expandedElems = viewer.getExpandedElements();
+        for (Object expandedElem : expandedElems) {
+            if (expandedElem instanceof RepositoryPlugin) {
+                expandedRepoNames.add(((RepositoryPlugin) expandedElem).getName());
+            }
+        }
+
+        // Reload repositories
+        List<RepositoryPlugin> repos = RepositoryUtils.listRepositories(true);
+        viewer.setInput(repos);
+
+        // Expand any repos that have the same name as a repository that
+        // was expanded before the reload.
+        for (RepositoryPlugin repo : repos) {
+            if (expandedRepoNames.contains(repo.getName())) {
+                viewer.setExpandedState(repo, true);
+            }
+        }
+    }
+
     private void fillToolBar(IToolBarManager toolBar) {
         toolBar.add(refreshAction);
         toolBar.add(collapseAllAction);
@@ -516,7 +541,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         if (viewer != null)
             SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
                 public void run() {
-                    viewer.setInput(RepositoryUtils.listRepositories(true));
+                    doRefresh();
                 }
             });
     }

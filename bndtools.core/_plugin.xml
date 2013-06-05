@@ -235,25 +235,38 @@
                   <equals value="bndtools.perspective"/>
                </with>
             </visibleWhen>
+            <command commandId="bndtools.workspace.refreshRepos" mnemonic="R"/>
+            <separator
+               name="main"
+               visible="true"
+            />
             <command commandId="bndtools.workspace.openMainConfig" mnemonic="M"/>
             <dynamic id="bndtools.workspace.openExtConfigs"
                class="bndtools.OpenExtConfigsContributionItem"/>
-            <command commandId="bndtools.workspace.refreshRepos"/>
             <separator
                name="additions"
-               visible="true"
+               visible="false"
             />
          </menu>
       </menuContribution>
    </extension>
    
    <extension point="org.eclipse.ui.bindings">
-      <key
+       <!-- M1 == Shift -->
+       <!-- M2 == Ctrl on Win, Cmd on Mac -->
+       <!-- M3 == Alt -->
+       <key
             commandId="bndtools.workspace.openMainConfig"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+M"> <!-- M2 is Ctrl on Win, Cmd on Mac. M1 is Shift -->
-      </key>
+            sequence="M1+M2+M"
+      />
+      <key
+            commandId="bndtools.workspace.refreshRepos"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+F"
+      />
    </extension>
    
    <extension
