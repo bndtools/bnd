@@ -105,11 +105,7 @@ public class ProjectBuilder extends Builder {
 		}
 		Version newer = new Version(getVersion());
 		Version older = new Version(jar.getVersion());
-		if (newer.compareTo(older) <= 0) {
-			error("The baseline version is %s, which is less or equal than our current version %s", older, newer);
-			return;
-		}
-
+		
 		if (!getBsn().equals(jar.getBsn())) {
 			error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(), jar.getBsn());
 			return;
@@ -125,12 +121,13 @@ public class ProjectBuilder extends Builder {
 
 			for (Info info : infos) {
 				if (info.mismatch) {
-					SetLocation l = error("Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s\n", info.packageName, info.packageDiff.getDelta(),
-							info.newerVersion, info.olderVersion, info.suggestedVersion,
-							info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
+					SetLocation l = error(
+							"Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s\n",
+							info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
+							info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 					System.out.println(l);
 					l.header(Constants.BASELINE);
-					if (getPropertiesFile()!=null)
+					if (getPropertiesFile() != null)
 						l.file(getPropertiesFile().getAbsolutePath());
 					l.details(info);
 				}
@@ -178,9 +175,9 @@ public class ProjectBuilder extends Builder {
 	 */
 	public Jar getBaselineJar() throws Exception {
 		String bl = getProperty(Constants.BASELINE);
-		if ( bl == null || Constants.NONE.equals(bl))
+		if (bl == null || Constants.NONE.equals(bl))
 			return null;
-		
+
 		Instructions baselines = new Instructions(getProperty(Constants.BASELINE));
 		if (baselines.isEmpty())
 			return null; // no baselining
@@ -191,49 +188,14 @@ public class ProjectBuilder extends Builder {
 
 		String bsn = getBsn();
 		Version version = new Version(getVersion());
-		SortedSet<Version> versions = removeStaged(repo.versions(bsn));
+		SortedSet<Version> versions = removeStagedAndFilter(repo.versions(bsn));
 
 		if (versions.isEmpty()) {
 			error("There are no versions for %s in the %s repo", bsn, repo);
 			return null;
 		}
 
-		//
-		// Get any versions in the repo that have the same major version or
-		// higher
-		//
-
-		SortedSet<Version> tail = versions.tailSet(version.getWithoutQualifier());
-		trace("version: %s all: %s tail: %s", version.getWithoutQualifier(), versions, tail);
-		if (!tail.isEmpty()) {
-			Version already = tail.first();
-			
-			if (already.getMajor() == version.getMajor()) {
-				File releasedJarFile = repo.get(bsn, tail.first(), null);
-				if(releasedJarFile != null) {
-					Jar jar = new Jar(releasedJarFile);
-					//Check if the jar is actually changed
-					try {
-						String lastModifiedReleased = jar.getManifest().getMainAttributes().getValue(Constants.BND_LASTMODIFIED);
-						String currentLastModified = getJar().getManifest().getMainAttributes().getValue(Constants.BND_LASTMODIFIED);
-						if(lastModifiedReleased != null && currentLastModified != null) {
-							long lastModifiedOld = Long.parseLong(lastModifiedReleased);
-							long lastModifiedNew = Long.parseLong(currentLastModified);
-							
-							if(lastModifiedOld < lastModifiedNew) {
-								error("The repository %s already contains later or equal version(s) %s for %s-%s with the same major number",
-										repo.getName(), tail, bsn, version);
-							}
-						}
-					} finally {
-						jar.close();
-					}
-				}
-				
-				return null;
-			}
-		}
-
+		
 		//
 		// Loop over the instructions, first match commits.
 		//
@@ -254,29 +216,21 @@ public class ProjectBuilder extends Builder {
 					}
 
 					Version base = new Version(v);
-
-					// Get the tail (includes the specified base if present)
-
-					SortedSet<Version> set = versions.tailSet(base);
-					if (set.isEmpty()) {
-						error("There is no higher or equal version for %s than the current version %s in %s", bsn,
-								version, repo);
+					SortedSet<Version> later = versions.tailSet(base);
+					if ( later.isEmpty()) {
+						error("For baselineing %s-%s, specified version %s not found", bsn, version, base);
 						return null;
 					}
 
 					// First element is equal or next to the base we desire
 
-					target = set.first();
+					target = later.first();
 
 					// Now, we could end up with a higher version than our
 					// current
 					// project
 
-					if (target.compareTo(version) >= 0) {
-						error("The baseline version %s is higher or equal than the current version %s for %s in %s",
-								target, version, bsn, repo);
-						return null;
-					}
+					
 				} else if (attrs.containsKey("file")) {
 
 					// Can be useful to specify a file
@@ -291,24 +245,17 @@ public class ProjectBuilder extends Builder {
 					error("Specified file for baseline but could not find it %s", f);
 					return null;
 				} else {
-
-					// Ok, now we need to locate a version that is prior
-					// to the current version. The head is < then current.
-
-					SortedSet<Version> head = versions.headSet(version);
-					if (head.isEmpty()) {
-						error("There is no lower version for %s than the current version %s in %s", bsn, version, repo);
-						return null;
-					}
-
-					// The last in the head set must be the last valid
-					// version to compare against
-
-					target = head.last();
+					target = versions.last();
 				}
 
 				// Fetch the revision
 
+				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) > 0) {
+					error("The baseline version %s is higher or equal than the current version %s for %s in %s",
+							target, version, bsn, repo);
+					return null;
+				}
+				
 				File file = repo.get(bsn, target, attrs);
 				if (file == null || !file.isFile()) {
 					error("Decided on version %s-%s but cannot get file from repo %s", bsn, version, repo);
@@ -321,7 +268,6 @@ public class ProjectBuilder extends Builder {
 		}
 
 		// Ignore, nothing matched
-
 		return null;
 	}
 
@@ -331,7 +277,7 @@ public class ProjectBuilder extends Builder {
 	 * @param versions
 	 * @return
 	 */
-	private SortedSet<Version> removeStaged(SortedSet<Version> versions) {
+	private SortedSet<Version> removeStagedAndFilter(SortedSet<Version> versions) {
 		List<Version> filtered = new ArrayList<Version>(versions);
 		Collections.reverse(filtered);
 
@@ -344,7 +290,7 @@ public class ProjectBuilder extends Builder {
 				last = current;
 		}
 		SortedList<Version> set = new SortedList<Version>(filtered);
-		trace("filtered for only latest staged: %s from %s", set, versions);
+		trace("filtered for only latest staged: %s from %s in range ", set, versions);
 		return set;
 	}
 
