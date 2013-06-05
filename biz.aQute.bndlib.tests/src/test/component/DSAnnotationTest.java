@@ -1130,4 +1130,56 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertNamespace("http://www.osgi.org/xmlns/scr/v1.1.0");
 	}
 
+	@Component()
+	public static class issue347 implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		/*
+		 * #347 - When using DS 1.2 annotations @Reference on private methods and no @Activate/@Deactivate annotations then bnd generates component.xml without namespace (1.0) 
+		 */
+		
+		@SuppressWarnings("unused")
+		@Reference
+		private void setLogService(LogService log) {}
+
+		@SuppressWarnings("unused")
+		private void unsetLogService(LogService log) {}
+
+		@SuppressWarnings("unused")
+		private void updatedLogService(LogService log) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	public static void testIssue347() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.*issue347");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		{
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$issue347.xml");
+			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.2.0");
+			// Test the defaults
+			xt.assertAttribute("test.component.DSAnnotationTest$issue347", "scr:component/implementation/@class");
+
+			// Default must be the implementation class
+			xt.assertAttribute("test.component.DSAnnotationTest$issue347", "scr:component/@name");
+
+			xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
+			xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
+			xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
+
+		}
+	}
 }
