@@ -773,7 +773,7 @@ public class BndEditModel {
 			result = converter.convert(properties.getProperty(name));
 			objectProperties.put(name, result);
 		} else {
-			result = null;
+			result = converter.convert(null);
 		}
 		return result;
 	}
