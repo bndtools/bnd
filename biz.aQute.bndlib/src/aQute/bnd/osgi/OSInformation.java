@@ -91,6 +91,11 @@ public class OSInformation {
 		String sysPropOsName = System.getProperty("os.name");
 		String sysPropOsVersion = System.getProperty("os.version");
 
+		if (sysPropOsName == null || sysPropOsName.length() == 0 || sysPropOsVersion == null
+				|| sysPropOsVersion.length() == 0) {
+			return;
+		}
+
 		if (sysPropOsName.startsWith("Windows")) {
 			if (sysPropOsVersion.startsWith("6.2")) {
 				osversion = new Version(6, 2, 0);
