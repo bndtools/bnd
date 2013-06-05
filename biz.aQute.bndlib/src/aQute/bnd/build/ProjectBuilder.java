@@ -255,7 +255,11 @@ public class ProjectBuilder extends Builder {
 							target, version, bsn, repo);
 					return null;
 				}
-				
+				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) > 0) {
+					if ( isPedantic()) {
+						warning("Baselining against jar");
+					}
+				}				
 				File file = repo.get(bsn, target, attrs);
 				if (file == null || !file.isFile()) {
 					error("Decided on version %s-%s but cannot get file from repo %s", bsn, version, repo);
