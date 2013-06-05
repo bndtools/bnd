@@ -130,7 +130,7 @@ public class MacroTest extends TestCase {
 			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
 
 			System.setProperty("os.name", "Windows 7");
 			System.setProperty("os.version", "6.1.7601.17514");
