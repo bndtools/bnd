@@ -687,6 +687,13 @@
       />
    </extension>
    
+   <extension point="buildErrorDetailsHandlers">
+      <handler
+         typeMatch="aQute.bnd.differ.Baseline$BundleInfo"
+         class="org.bndtools.core.build.handlers.baseline.BundleVersionErrorHandler"
+      />
+   </extension>
+   
    <extension point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
          markerType="bndtools.core.bndproblem"

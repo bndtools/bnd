@@ -38,12 +38,6 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
     private static final String PACKAGEINFO = "packageinfo";
     private static final String PROP_SUGGESTED_VERSION = "suggestedVersion";
 
-    private static class LineLocation {
-        int lineNum;
-        int start;
-        int end;
-    }
-
     public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
         List<MarkerData> result = new LinkedList<MarkerData>();
 

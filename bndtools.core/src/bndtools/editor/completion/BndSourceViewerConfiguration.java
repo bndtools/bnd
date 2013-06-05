@@ -2,9 +2,13 @@ package bndtools.editor.completion;
 
 import java.util.*;
 
+import org.bndtools.core.editors.BndMarkerAnnotationHover;
+import org.bndtools.core.editors.BndMarkerQuickAssistProcessor;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.jface.text.presentation.*;
+import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
+import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.rules.*;
 import org.eclipse.jface.text.source.*;
 import org.eclipse.swt.*;
@@ -85,7 +89,12 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
 
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        return new BndHover();
+        return new BndHover(sourceViewer);
+    }
+
+    @Override
+    public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
+        return new BndMarkerAnnotationHover();
     }
 
     @Override
@@ -96,4 +105,14 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
         assistant.enableAutoActivation(true);
         return assistant;
     }
+
+    @Override
+    public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
+        QuickAssistAssistant assistant = new QuickAssistAssistant();
+
+        assistant.setQuickAssistProcessor(new BndMarkerQuickAssistProcessor());
+
+        return assistant;
+    }
+
 }

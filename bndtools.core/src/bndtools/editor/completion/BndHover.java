@@ -1,11 +1,22 @@
 package bndtools.editor.completion;
 
 import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.source.ISourceViewer;
 
 import aQute.bnd.help.Syntax;
 
-public class BndHover implements ITextHover {
+public class BndHover extends DefaultTextHover {
+
+    public BndHover(ISourceViewer sourceViewer) {
+        super(sourceViewer);
+    }
+
+    @Override
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
+        String info = super.getHoverInfo(textViewer, hoverRegion);
+        if (info != null)
+            return info;
+
         if (hoverRegion != null) {
             IDocument doc = textViewer.getDocument();
             try {
@@ -33,6 +44,7 @@ public class BndHover implements ITextHover {
         return null;
     }
 
+    @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
         IDocument doc = textViewer.getDocument();
         try {

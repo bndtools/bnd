@@ -58,8 +58,6 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
     public BndSourceEditorPage(String id, BndEditor formEditor) {
         this.id = id;
         this.formEditor = formEditor;
-        setSourceViewerConfiguration(new BndSourceViewerConfiguration(getSharedColors()));
-
         formEditor.getEditModel().addPropertyChangeListener(propChangeListener);
         ImageDescriptor iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_white_text.png");
         icon = iconDescriptor.createImage();
@@ -109,6 +107,14 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
     }
 
     public void initialize(FormEditor formEditor) {}
+
+    @Override
+    protected void initializeEditor() {
+        super.initializeEditor();
+        setDocumentProvider(new BndSourceDocumentProvider());
+        setRulerContextMenuId("#BndSourceRulerContext");
+        setSourceViewerConfiguration(new BndSourceViewerConfiguration(getSharedColors()));
+    }
 
     public boolean isActive() {
         return this.equals(formEditor.getActivePageInstance());

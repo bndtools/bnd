@@ -1,0 +1,30 @@
+package org.bndtools.core.editors;
+
+import java.util.Iterator;
+
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.text.source.IAnnotationHover;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.ui.texteditor.MarkerAnnotation;
+
+public class BndMarkerAnnotationHover implements IAnnotationHover {
+
+    public String getHoverInfo(ISourceViewer sourceViewer, int lineNum) {
+        @SuppressWarnings("rawtypes")
+        Iterator iter = sourceViewer.getAnnotationModel().getAnnotationIterator();
+        while (iter.hasNext()) {
+            Object annotation = iter.next();
+            if (annotation instanceof MarkerAnnotation) {
+                IMarker marker = ((MarkerAnnotation) annotation).getMarker();
+
+                int markerLine = marker.getAttribute(IMarker.LINE_NUMBER, 0);
+                if (markerLine == lineNum) {
+                    return marker.getAttribute(IMarker.MESSAGE, null);
+                }
+            }
+        }
+
+        return null;
+    }
+
+}

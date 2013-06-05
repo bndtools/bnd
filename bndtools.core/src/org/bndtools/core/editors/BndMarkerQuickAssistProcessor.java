@@ -66,6 +66,10 @@ public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
             }
         }
 
+        if (proposals.isEmpty()) {
+            proposals.add(new NoCompletionsProposal());
+        }
+
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
     }
 
