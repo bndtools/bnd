@@ -61,7 +61,7 @@ public class FileResource implements Resource, Closeable {
 	static void traverse(Jar jar, int rootlength, File directory, Pattern doNotCopy) {
 		if (doNotCopy != null && doNotCopy.matcher(directory.getName()).matches())
 			return;
-		jar.updateModified(directory.lastModified(), "Dir change");
+		jar.updateModified(directory.lastModified(), "Dir change " + directory);
 
 		File files[] = directory.listFiles();
 		for (int i = 0; i < files.length; i++) {

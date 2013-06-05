@@ -22,9 +22,17 @@ public class ProjectTest extends TestCase {
 	 * @throws Exception
 	 */
 	public static void testLastModified() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
-		Project project = ws.getProject("p3");
-		File bnd = new File("test/ws/p3/bnd.bnd");
+		File tmp = new File("tmp-ws");
+		if (tmp.exists())
+			IO.deleteWithException(tmp);
+		tmp.mkdir();
+		assertTrue(tmp.isDirectory());
+		try {
+		IO.copy(new File("test/ws"), tmp);
+		
+		Workspace ws = Workspace.getWorkspace(tmp);
+		Project project = ws.getProject("p6");
+		File bnd = new File("test/ws/p6/bnd.bnd");
 		assertTrue(bnd.exists());
 
 		project.clean();
@@ -40,9 +48,9 @@ public class ProjectTest extends TestCase {
 			assertEquals(1, files.length);
 
 			Jar older = new Jar(files[0]);
-			String lastmodified = older.getManifest().getMainAttributes().getValue(Constants.BND_LASTMODIFIED);
+			byte[] olderDigest = older.getTimelessDigest();
 			older.close();
-			
+			System.out.println();
 			Thread.sleep(3000); // Ensure system time granularity is < than wait
 
 			files[0].delete();
@@ -53,13 +61,16 @@ public class ProjectTest extends TestCase {
 			assertEquals(1, files.length);
 			
 			Jar newer = new Jar(files[0]);
-			String lastmodifiedn = newer.getManifest().getMainAttributes().getValue(Constants.BND_LASTMODIFIED);
+			byte[] newerDigest = newer.getTimelessDigest();
 			newer.close();
 			
-			assertEquals(lastmodified,lastmodifiedn);
+			assertTrue(Arrays.equals(olderDigest,newerDigest));
 		}
 		finally {
 			project.clean();
+		}
+		} finally {
+			IO.delete(tmp);
 		}
 	}
 	

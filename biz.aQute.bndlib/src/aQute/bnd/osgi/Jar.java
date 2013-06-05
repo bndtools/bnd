@@ -10,6 +10,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 import java.util.zip.*;
 
+import aQute.bnd.version.*;
 import aQute.lib.base64.*;
 import aQute.lib.io.*;
 import aQute.service.reporter.*;
@@ -857,5 +858,40 @@ public class Jar implements Closeable {
 
 	public void setDigestAlgorithms(String[] algorithms) {
 		this.algorithms = algorithms;
+	}
+	
+
+	public byte[] getTimelessDigest() throws Exception {
+		check();
+		
+		MessageDigest md = MessageDigest.getInstance("SHA1");
+		OutputStream dout = new DigestOutputStream(IO.nullStream, md);
+		//dout = System.out;
+		
+		Manifest m = getManifest();
+
+		
+		
+		if ( m != null) {
+			Manifest m2 = new Manifest(m);
+			Attributes main = m2.getMainAttributes();
+			String lastmodified = (String) main.remove(new Attributes.Name(Constants.BND_LASTMODIFIED));
+			String version = main.getValue(new Attributes.Name(Constants.BUNDLE_VERSION));
+			if ( version != null && Verifier.isVersion(version)) {
+				Version v = new Version(version);
+				main.putValue( Constants.BUNDLE_VERSION, v.getWithoutQualifier().toString());
+			}
+			writeManifest(m2, dout);
+			
+			for ( Map.Entry<String,Resource> entry : getResources().entrySet()) {
+				String path = entry.getKey();
+				if ( path.equals( "META-INF/MANIFEST.MF"))
+					continue;
+				Resource resource = entry.getValue();
+				dout.write(path.getBytes("UTF-8"));
+				resource.write(dout);
+			}
+		}
+		return md.digest();
 	}
 }

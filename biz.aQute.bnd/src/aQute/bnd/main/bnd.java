@@ -2887,7 +2887,7 @@ public class bnd extends Processor {
 	}
 
 	enum Alg {
-		SHA1, MD5
+		SHA1, MD5, TIMELESS
 	};
 
 	/**
@@ -2914,6 +2914,7 @@ public class bnd extends Processor {
 
 		@Description("Specify the algorithms")
 		List<Alg> algorithm();
+		
 	}
 
 	@Description("Digests a number of files")
@@ -2930,7 +2931,7 @@ public class bnd extends Processor {
 
 				outer: for (Alg alg : algs) {
 					long now = System.currentTimeMillis();
-					Digest digest;
+					byte[] digest;
 
 					switch (alg) {
 						default :
@@ -2938,10 +2939,15 @@ public class bnd extends Processor {
 							continue outer;
 
 						case SHA1 :
-							digest = SHA1.digest(f);
+							digest = SHA1.digest(f).digest();
 							break;
 						case MD5 :
-							digest = MD5.digest(f);
+							digest = MD5.digest(f).digest();
+							break;
+							
+						case TIMELESS:
+							Jar j = new Jar(f);
+							digest = j.getTimelessDigest();
 							break;
 					}
 
@@ -2949,11 +2955,11 @@ public class bnd extends Processor {
 					String del = "";
 
 					if (o.hex() || !o.b64()) {
-						sb.append(del).append(digest.asHex());
+						sb.append(del).append(Hex.toHexString(digest));
 						del = " ";
 					}
 					if (o.b64()) {
-						sb.append(del).append(Base64.encodeBase64(digest.digest()));
+						sb.append(del).append(Base64.encodeBase64(digest));
 						del = " ";
 					}
 					if (o.name()) {
@@ -3020,4 +3026,5 @@ public class bnd extends Processor {
 			tmp.delete();
 		}
 	}
+	
 }
