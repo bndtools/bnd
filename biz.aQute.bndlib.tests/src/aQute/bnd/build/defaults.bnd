@@ -1,0 +1,5 @@
+# Replaces the "real" defaults.bnd
+# Used by WorkspaceTest.testPropertyDefaulting()
+myprop1: defaults
+myprop2: defaults
+myprop3: defaults

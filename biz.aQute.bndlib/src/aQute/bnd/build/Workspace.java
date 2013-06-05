@@ -28,6 +28,7 @@ public class Workspace extends Processor {
 	public static final String					CACHEDIR	= "cache";
 
 	static Map<File,WeakReference<Workspace>>	cache		= newHashMap();
+	static Processor							defaults	= null;
 	final Map<String,Project>					models		= newHashMap();
 	final Map<String,Action>					commands	= newMap();
 	final File									buildDir;
@@ -49,7 +50,27 @@ public class Workspace extends Processor {
 		Workspace ws = getWorkspace(projectDir.getParentFile());
 		return ws.getProject(projectDir.getName());
 	}
-
+	
+	static synchronized Processor getDefaults() {
+		if (defaults != null)
+			return defaults;
+		
+		Properties props = new Properties();
+		InputStream propStream = Workspace.class.getResourceAsStream("defaults.bnd");
+		if (propStream != null) {
+			try {
+				props.load(propStream);
+			} catch (IOException e) {
+				throw new IllegalArgumentException("Unable to load bnd defaults.", e);
+			} finally {
+				IO.close(propStream);
+			}
+		}
+		defaults = new Processor(props);
+		
+		return defaults;
+	}
+	
 	public static Workspace getWorkspace(File parent) throws Exception {
 		File workspaceDir = parent.getAbsoluteFile();
 
@@ -85,6 +106,7 @@ public class Workspace extends Processor {
 	}
 
 	public Workspace(File dir) throws Exception {
+		super(getDefaults());
 		dir = dir.getAbsoluteFile();
 		if (!dir.exists() && !dir.mkdirs()) {
 			throw new IOException("Could not create directory " + dir);

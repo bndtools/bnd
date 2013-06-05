@@ -1,0 +1,5 @@
+# will not be overriden by the project
+myprop2: workspace
+
+# will be overridden by the project
+myprop3: workspace

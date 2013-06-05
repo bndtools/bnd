@@ -22,5 +22,14 @@ public class WorkspaceTest extends TestCase {
 		assertEquals("true", ws.getProperty("testcnf"));
 		assertEquals("true", ws.getProperty("ext"));
 	}
+	
+	public static void testPropertyDefaulting() throws Exception {
+		Workspace ws = Workspace.getWorkspace(new File("test/ws-defaulting"));
+		
+		Project p = ws.getProject("p1");
+		assertEquals("defaults", p.getProperty("myprop1"));
+		assertEquals("workspace", p.getProperty("myprop2"));
+		assertEquals("project", p.getProperty("myprop3"));
+	}
 
 }
