@@ -114,6 +114,9 @@
 
 	<target name="junit" depends="init,compileTests" if="testDirExists">
 		<junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
+			<assertions>
+				<enable />
+			</assertions>
 			<classpath path="${project.buildpath}:bin_test/" />
 			<formatter type="xml"/>
 			<batchtest todir="${target}">
