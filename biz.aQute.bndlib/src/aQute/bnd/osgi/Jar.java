@@ -502,12 +502,7 @@ public class Jar implements Closeable {
 		if (s.indexOf('\n') < 0)
 			return s;
 
-		StringBuilder sb = new StringBuilder(s);
-		for (int i = 0; i < sb.length(); i++) {
-			if (sb.charAt(i) == '\n')
-				sb.insert(++i, ' ');
-		}
-		return sb.toString();
+		return s.replaceAll("(\n|\r)+", " ");
 	}
 
 	private void writeResource(ZipOutputStream jout, Set<String> directories, String path, Resource resource)

@@ -2,6 +2,7 @@ package test;
 
 import java.io.*;
 import java.util.jar.*;
+import java.util.jar.Attributes.*;
 import java.util.zip.*;
 
 import junit.framework.*;
@@ -64,5 +65,27 @@ public class JarTest extends TestCase {
 		// the modification time has changed
 		jar.putResource("asm", new FileResource(file));
 		assertEquals(file.lastModified(), jar.lastModified());
+	}
+
+	public static void testNewLine() throws Exception {
+		Jar jar = new Jar("dot");
+		Manifest manifest = new Manifest();
+		jar.setManifest(manifest);
+
+		String value =         "Test\nTest\nTest\nTest";
+		String expectedValue = "Test Test Test Test";
+
+		manifest.getMainAttributes().putValue(Constants.BUNDLE_DESCRIPTION, value);
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		jar.write(bout);
+
+		JarInputStream jin = new JarInputStream(new ByteArrayInputStream(bout.toByteArray()));
+		Manifest m = jin.getManifest();
+		assertNotNull(m);
+
+		String parsedValue = m.getMainAttributes().getValue(Constants.BUNDLE_DESCRIPTION);
+
+		assertEquals(expectedValue, parsedValue);
 	}
 }
