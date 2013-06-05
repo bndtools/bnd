@@ -98,10 +98,10 @@ public class OSInformation {
 			} else if (sysPropOsVersion.startsWith("6.1")) {
 				osversion = new Version(6, 1, 0);
 				osnames = "Windows7,Windows 7,Win32";
-			} else if (sysPropOsName.startsWith("6.0")) {
+			} else if (sysPropOsVersion.startsWith("6.0")) {
 				osversion = new Version(6, 0, 0);
 				osnames = "WindowsVista,WinVista,Windows Vista,Win32";
-			} else if (sysPropOsName.startsWith("5.1")) {
+			} else if (sysPropOsVersion.startsWith("5.1")) {
 				osversion = new Version(5, 1, 0);
 				osnames = "WindowsXP,WinXP,Windows XP,Win32";
 			} else {
