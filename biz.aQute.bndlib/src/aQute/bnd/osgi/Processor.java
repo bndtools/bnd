@@ -1609,8 +1609,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		builder.append(";" + OSGI_NATIVE + "." + OS_NAME + ":List<String>=\"").append(osnameOverride).append('"');
 		builder.append(";" + OSGI_NATIVE + "." + OS_VERSION + ":Version=").append(osversionOverride);
-		builder.append(";" + OSGI_NATIVE + "." + OS_PROCESSOR + ":List<String>=\"").append(processorNamesOverride)
-				.append('"');
+		builder.append(";" + OSGI_NATIVE + "." + OS_PROCESSOR + ":List<String>=\"").append(processorNamesOverride).append('"');
 
 		/*
 		 * Report error if needed
