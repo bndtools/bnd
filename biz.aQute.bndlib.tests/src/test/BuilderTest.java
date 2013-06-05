@@ -14,6 +14,50 @@ import aQute.lib.collections.*;
 import aQute.lib.io.*;
 
 public class BuilderTest extends BndTestCase {
+	
+	/**
+	 * https://github.com/bndtools/bnd/issues/359
+	 * Starts with a bundle that has one package 'a' containing classes A and B.
+	 * First removes B from 'a', and checks that the last modified date of the resulting bundle changed.
+	 * Then removes A from 'a', and checks again that the last modified data changed.
+	 */
+	public static void testRemoveClassFromPackage() throws Exception {
+		try {
+			Builder b = new Builder();
+			(new File("bin/a1/a")).mkdirs();
+			IO.copy(IO.getFile("bin/a/A.class"), new File("bin/a1/a/A.class"));
+			IO.copy(IO.getFile("bin/a/B.class"), new File("bin/a1/a/B.class"));
+			Jar classpath = new Jar(IO.getFile("bin/a1"));
+			b.addClasspath(classpath);
+			b.setPrivatePackage("a");
+			Jar result = b.build();
+			Resource ra = result.getResource("a/A.class");
+			Resource rb = result.getResource("a/B.class");
+			long lm1 = result.lastModified();
+			assertTrue("Last modified date of bundle > 0", lm1 > 0);
+
+			IO.getFile("bin/a1/a/B.class").delete();
+			classpath.remove("a/B.class");
+			classpath.updateModified(System.currentTimeMillis(), "Removed file B");
+			result = b.build();
+			long lm2 = result.lastModified();
+			assertTrue("Last modified date of bundle has increased after deleting class from package", lm2 > lm1);
+			
+			IO.getFile("bin/a1/a/A.class").delete();
+			classpath.remove("a/A.class");
+			classpath.updateModified(System.currentTimeMillis(), "Removed file A");
+			result = b.build();
+			long lm3 = result.lastModified();
+			assertTrue("Last modified date of bundle has increased after deleting last class from package", lm3 > lm2);
+
+		}
+		finally {
+			try { IO.getFile("bin/a1/a/A.class").delete(); } catch (Exception e) {}
+			try { IO.getFile("bin/a1/a/B.class").delete(); } catch (Exception e) {}
+			try { IO.getFile("bin/a1/a").delete(); } catch (Exception e) {}
+			try { IO.getFile("bin/a1").delete(); } catch (Exception e) {}
+		}
+	}
 
 	/**
 	 * https://github.com/bndtools/bnd/issues/315
