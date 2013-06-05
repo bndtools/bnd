@@ -8,6 +8,7 @@ import aQute.bnd.osgi.*;
 
 public class CorruptManifest extends TestCase {
 	static String	ltext	= "bla bla \nbla bla bla bla \nbla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla ";
+	static String	rtext	= "bla bla  bla bla bla bla  bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla ";
 
 	public static void testCorruptJar() throws Exception {
 		Builder b = new Builder();
@@ -44,6 +45,7 @@ public class CorruptManifest extends TestCase {
 		assertNull(main.getValue("NL1"));
 		assertNull(main.getValue("NL2"));
 		assertEquals(".", main.getValue("NL3"));
-		assertEquals("..", main.getValue("NL4"));
+		assertEquals(". . ", main.getValue("NL4"));
+		assertEquals(rtext, main.getValue("NL5"));
 	}
 }
