@@ -12,7 +12,7 @@
                class="bndtools.release.ReleaseAction"
                enablesFor="+"
                id="bndtools.release.releaseBundle"
-               icon="icons/bricks_release.png"
+               icon="icons/lorry.png"
                label="%releaseBundle"
                menubarPath="additions"
                tooltip="%releaseBundle.tooltip">
@@ -26,7 +26,7 @@
                class="bndtools.release.WorkspaceReleaseAction"
                enablesFor="+"
                id="bndtools.release.releaseBundles"
-               icon="icons/bricks_release.png"
+               icon="icons/lorry.png"
                label="%releaseBundles"
                menubarPath="additions"
                style="push">
@@ -46,7 +46,7 @@
                class="bndtools.release.WorkspaceReleaseAction"
                enablesFor="+"
                id="bndtools.release.releaseBundlesWorkingSets"
-               icon="icons/bricks_release.png"
+               icon="icons/lorry.png"
                label="%releaseBundles"
                menubarPath="additions"
                style="push">
