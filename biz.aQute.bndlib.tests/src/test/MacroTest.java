@@ -132,12 +132,157 @@ public class MacroTest extends TestCase {
 			assertEquals(0, p.getErrors().size());
 			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
 
+			System.setProperty("os.name", "Linux");
+			System.setProperty("os.arch", "em64t");
+			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
+			processed = p.getProperty("a");
+			assertEquals(0, p.getErrors().size());
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+
+			System.setProperty("os.name", "Windows XP");
+			System.setProperty("os.version", "5.1.7601.17514");
+			System.setProperty("os.arch", "x86");
+			processed = p.getProperty("a");
+			assertEquals(0, p.getErrors().size());
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"WindowsXP,WinXP,Windows XP,Win32\";osgi.native.osversion:Version=5.1.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"", processed);
+
+			System.setProperty("os.name", "Windows Vista");
+			System.setProperty("os.version", "6.0.7601.17514");
+			System.setProperty("os.arch", "x86");
+			processed = p.getProperty("a");
+			assertEquals(0, p.getErrors().size());
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"WindowsVista,WinVista,Windows Vista,Win32\";osgi.native.osversion:Version=6.0.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"", processed);
+
 			System.setProperty("os.name", "Windows 7");
 			System.setProperty("os.version", "6.1.7601.17514");
 			System.setProperty("os.arch", "x86");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
 			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Windows7,Windows 7,Win32\";osgi.native.osversion:Version=6.1.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"", processed);
+
+			System.setProperty("os.name", "Windows 8");
+			System.setProperty("os.version", "6.2.7601.17514");
+			System.setProperty("os.arch", "x86");
+			processed = p.getProperty("a");
+			assertEquals(0, p.getErrors().size());
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Windows8,Windows 8,Win32\";osgi.native.osversion:Version=6.2.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"", processed);
+
+			System.setProperty("os.name", "Windows 3.1");
+			System.setProperty("os.version", "3.1.7601.17514");
+			System.setProperty("os.arch", "x86");
+			processed = p.getProperty("a");
+			assertEquals(1, p.getErrors().size());
+			p.getErrors().clear();
+
+			System.setProperty("os.name", "Solaris");
+			System.setProperty("os.arch", "amd64");
+			System.setProperty("os.version", "3.8");
+			processed = p.getProperty("a");
+			assertEquals(0, p.getErrors().size());
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Solaris\";osgi.native.osversion:Version=3.8.0;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+
+			System.setProperty("os.name", "AIX");
+			System.setProperty("os.arch", "amd64");
+			System.setProperty("os.version", "3.8-202.x86_64");
+			processed = p.getProperty("a");
+			assertEquals(0, p.getErrors().size());
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"AIX\";osgi.native.osversion:Version=3.8.0.-202_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+
+			System.setProperty("os.name", "HP-UX");
+			System.setProperty("os.arch", "amd64");
+			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
+			processed = p.getProperty("a");
+			assertEquals(0, p.getErrors().size());
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"HPUX,hp-ux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+
+			/* unknown processor */
+			System.setProperty("os.name", "Linux");
+			System.setProperty("os.arch", "mips12345");
+			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
+			processed = p.getProperty("a");
+			assertEquals(1, p.getErrors().size());
+			p.getErrors().clear();
+
+			/* unknown OS */
+			System.setProperty("os.name", "Some Very Cool OS");
+			System.setProperty("os.arch", "mips12345");
+			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
+			processed = p.getProperty("a");
+			assertEquals(1, p.getErrors().size());
+			p.getErrors().clear();
+
+			/*
+			 * overrides
+			 */
+
+			System.setProperty("os.name", "Linux");
+			System.setProperty("os.arch", "amd64");
+			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
+
+			p.setProperty("a", "${native_capability;osname=Some Very Cool OS;}");
+			processed = p.getProperty("a");
+			assertEquals(0, p.getErrors().size());
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Some Very Cool OS\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+
+			p.setProperty("a", "${native_capability;osversion=3.2.0.qualifier;}");
+			processed = p.getProperty("a");
+			assertEquals(0, p.getErrors().size());
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.2.0.qualifier;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+
+			p.setProperty("a", "${native_capability;processor=mips12345;}");
+			processed = p.getProperty("a");
+			assertEquals(0, p.getErrors().size());
+			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"mips12345\"", processed);
+
+			/* invalid override field */
+			p.setProperty("a", "${native_capability;invalidoverridefield=value}");
+			processed = p.getProperty("a");
+			assertEquals(1, p.getErrors().size());
+			p.getErrors().clear();
+
+			/* invalid override format */
+			p.setProperty("a", "${native_capability;processor}");
+			processed = p.getProperty("a");
+			assertEquals(1, p.getErrors().size());
+			p.getErrors().clear();
+
+			/* no os name */
+			System.clearProperty("os.name");
+			System.setProperty("os.arch", "amd64");
+			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
+			processed = p.getProperty("a");
+			assertEquals(1, p.getErrors().size());
+			p.getErrors().clear();
+
+			System.setProperty("os.name", "");
+			System.setProperty("os.arch", "amd64");
+			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
+			processed = p.getProperty("a");
+			assertEquals(1, p.getErrors().size());
+			p.getErrors().clear();
+
+			/* no os version */
+			System.setProperty("os.name", "Linux");
+			System.setProperty("os.arch", "amd64");
+			System.clearProperty("os.version");
+			processed = p.getProperty("a");
+			assertEquals(1, p.getErrors().size());
+			p.getErrors().clear();
+
+			System.setProperty("os.name", "Linux");
+			System.setProperty("os.arch", "amd64");
+			System.setProperty("os.version", "");
+			processed = p.getProperty("a");
+			assertEquals(1, p.getErrors().size());
+			p.getErrors().clear();
+
+			/* no processor */
+			System.setProperty("os.name", "Linux");
+			System.clearProperty("os.arch");
+			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
+			processed = p.getProperty("a");
+			assertEquals(1, p.getErrors().size());
+			p.getErrors().clear();
 		} finally {
 			System.setProperty("os.name", origOsName);
 			System.setProperty("os.version", origOsVersion);
