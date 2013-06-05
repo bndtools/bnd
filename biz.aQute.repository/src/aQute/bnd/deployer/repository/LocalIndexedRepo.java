@@ -14,7 +14,6 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
 
 public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant {
 
@@ -127,7 +126,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		gatherFiles(allFiles);
 
 		FileOutputStream out = null;
-		boolean generateChecksum = false;
 		try {
 			if (!storageDir.exists() && !storageDir.mkdirs()) {
 				throw new IOException("Could not create directory " + storageDir);
@@ -136,31 +134,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 			URI rootUri = storageDir.getCanonicalFile().toURI();
 			provider.generateIndex(allFiles, out, this.getName(), rootUri, pretty, registry, logService);
-			generateChecksum = true;
 		}
 		finally {
 			IO.close(out);
-			out = null;
-		}
-		if (generateChecksum) {
-			MessageDigest md = MessageDigest.getInstance(SHA256.ALGORITHM);
-			IO.copy(indexFile, md);
-
-			byte[] mdbytes = md.digest();
-			StringBuffer sb = new StringBuffer();
-			for (int i = 0; i < mdbytes.length; i++) {
-				sb.append(String.format("%02x", (int) (mdbytes[i] & 0xff)));
-			}
-
-			try {
-				out = new FileOutputStream(indexFile + ".sha256");
-				out.write(sb.toString().getBytes());
-			}
-			finally {
-				if (out != null) {
-					out.close();
-				}
-			}
 		}
 	}
 
