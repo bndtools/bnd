@@ -30,7 +30,7 @@ public class Baseline {
 		public String				warning	= "";
 	}
 
-	public class BundleInfo {
+	public static class BundleInfo {
 		public String	bsn;
 		public Version	version;
 		public Version	suggestedVersion;

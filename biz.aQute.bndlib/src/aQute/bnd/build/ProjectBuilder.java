@@ -4,14 +4,11 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
-import org.osgi.service.deploymentadmin.*;
-
 import aQute.bnd.differ.*;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
-import aQute.bnd.service.diff.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 
