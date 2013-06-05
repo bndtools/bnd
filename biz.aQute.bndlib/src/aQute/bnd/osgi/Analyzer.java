@@ -331,8 +331,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * One of the main workhorses of this class. This will analyze the current
-	 * setp and calculate a new manifest according to this setup. This method
-	 * will also set the manifest on the main jar dot
+	 * setup and calculate a new manifest according to this setup. 
 	 * 
 	 * @return
 	 * @throws IOException
