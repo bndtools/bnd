@@ -175,6 +175,11 @@
          name="Open main bnd config"
          description=""
       />
+      <command
+         id="bndtools.workspace.refreshRepos"
+         name="Refresh Repositories"
+         description=""
+      />
    </extension>
    <extension point="org.eclipse.ui.commandImages">
       <image
@@ -184,6 +189,10 @@
       <image
          commandId="bndtools.workspace.openMainConfig"
          icon="icons/bndtools-logo-16x16.png"
+      />
+      <image
+         commandId="bndtools.workspace.refreshRepos"
+         icon="icons/arrow_refresh.png"
       />
    </extension>
    <extension point="org.eclipse.ui.handlers">
@@ -202,6 +211,10 @@
        <handler
          commandId="bndtools.workspace.openMainConfig"
          class="bndtools.OpenMainConfigHandler"
+       />
+       <handler
+          commandId="bndtools.workspace.refreshRepos"
+          class="bndtools.RefreshReposHandler"
        />
    </extension>
    
@@ -225,6 +238,11 @@
             <command commandId="bndtools.workspace.openMainConfig" mnemonic="M"/>
             <dynamic id="bndtools.workspace.openExtConfigs"
                class="bndtools.OpenExtConfigsContributionItem"/>
+            <command commandId="bndtools.workspace.refreshRepos"/>
+            <separator
+               name="additions"
+               visible="true"
+            />
          </menu>
       </menuContribution>
    </extension>

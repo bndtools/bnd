@@ -62,7 +62,14 @@
       />
    </extension>
 
-      <extension point="org.eclipse.ui.handlers">
+   <extension point="org.eclipse.ui.commandImages">
+      <image
+         commandId="bndtools.release.releaseWorkspaceBundles"
+         icon="icons/lorry.png"
+      />
+   </extension>
+
+   <extension point="org.eclipse.ui.handlers">
        <handler
          commandId="bndtools.release.releaseWorkspaceBundles"
          class="bndtools.release.ReleaseWorkspaceHandler"
@@ -70,7 +77,7 @@
    </extension>
 
    <extension point="org.eclipse.ui.menus">
-      <menuContribution locationURI="menu:bndtools"><!-- ?after=bndtools.workspace.openMainConfig -->
+      <menuContribution locationURI="menu:bndtools?after=additions">
           <command commandId="bndtools.release.releaseWorkspaceBundles" mnemonic="R"/>
       </menuContribution>
    </extension>
