@@ -84,7 +84,7 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
         });
         // BUNDLE_DESCRIPTION
         toolkit.createLabel(composite, "Description:");
-        bundleDescription = toolkit.createText(composite, "", SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
+        bundleDescription = toolkit.createText(composite, "", SWT.BORDER);
         ToolTips.setupMessageAndToolTipFromSyntax(bundleDescription, Constants.BUNDLE_DESCRIPTION);
         bundleDescription.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
@@ -118,7 +118,6 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
         bundleName.setLayoutData(gd);
         gd = new GridData(SWT.FILL, SWT.TOP, true, false);
         gd.horizontalIndent = 5;
-        gd.heightHint = 150;
         bundleDescription.setLayoutData(gd);
         gd = new GridData(SWT.FILL, SWT.TOP, true, false);
         gd.horizontalIndent = 5;
