@@ -134,7 +134,6 @@ public class ProjectBuilder extends Builder {
 			aQute.bnd.differ.Baseline.BundleInfo binfo = baseliner.getBundleInfo();
 			if ( binfo.mismatch) {
 				SetLocation error = error("The bundle version %s is too low, must be at least %s", binfo.version, binfo.suggestedVersion);
-				error.file(getPropertiesFile().getAbsolutePath());
 				error.context("Baselining");
 				error.header(Constants.BUNDLE_VERSION);
 				error.details(binfo);
