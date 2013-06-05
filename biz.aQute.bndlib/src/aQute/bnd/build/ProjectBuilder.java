@@ -99,24 +99,24 @@ public class ProjectBuilder extends Builder {
 	@Override
 	protected void doBaseline(Jar dot) throws Exception {
 
-		Jar jar = getBaselineJar();
-		if (jar == null) {
+		Jar fromRepo = getBaselineJar();
+		if (fromRepo == null) {
 			trace("No baseline jar %s", getProperty(Constants.BASELINE));
 			return;
 		}
 		Version newer = new Version(getVersion());
-		Version older = new Version(jar.getVersion());
+		Version older = new Version(fromRepo.getVersion());
 		
-		if (!getBsn().equals(jar.getBsn())) {
-			error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(), jar.getBsn());
+		if (!getBsn().equals(fromRepo.getBsn())) {
+			error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(), fromRepo.getBsn());
 			return;
 		}
 
-		trace("baseline %s-%s against: %s", getBsn(), getVersion(), jar.getName());
+		trace("baseline %s-%s against: %s", getBsn(), getVersion(), fromRepo.getName());
 		try {
-			Baseline baseline = new Baseline(this, differ);
+			Baseline baseliner = new Baseline(this, differ);
 
-			Set<Info> infos = baseline.baseline(dot, jar, null);
+			Set<Info> infos = baseliner.baseline(dot, fromRepo, null);
 			if (infos.isEmpty())
 				trace("no deltas");
 
@@ -137,17 +137,17 @@ public class ProjectBuilder extends Builder {
 				// have the same version, this happens after a release, only want
 				// to generate an error when they really differ.
 				
-				if ( baseline.getDiff().getDelta() == Delta.UNCHANGED ) 
+				if ( baseliner.getDiff().getDelta() == Delta.UNCHANGED ) 
 					return;
 			}
 			
 			// Ok, now our bundle version must be > the suggestedVersion
-			if ( newer.getWithoutQualifier().compareTo(baseline.getSuggestedVersion())< 0) {
-				error("The bundle version %s is too low, must be at least %s", newer, baseline.getSuggestedVersion());
+			if ( newer.getWithoutQualifier().compareTo(baseliner.getSuggestedVersion())< 0) {
+				error("The bundle version %s is too low, must be at least %s", newer, baseliner.getSuggestedVersion());
 			}
 		}
 		finally {
-			jar.close();
+			fromRepo.close();
 		}
 	}
 

@@ -5,11 +5,13 @@ import static aQute.bnd.service.diff.Delta.*;
 import java.io.*;
 import java.util.*;
 import java.util.jar.*;
+import java.util.regex.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.service.diff.Tree.Data;
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
@@ -48,6 +50,7 @@ public class DiffPluginImpl implements Differ {
 		MAJOR_HEADERS.add(Constants.BUNDLE_NATIVECODE);
 		MAJOR_HEADERS.add(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT);
 		MAJOR_HEADERS.add(Constants.DYNAMICIMPORT_PACKAGE);
+		MAJOR_HEADERS.add(Constants.BUNDLE_VERSION);
 
 		IGNORE_HEADERS.add(Constants.TOOL);
 		IGNORE_HEADERS.add(Constants.BND_LASTMODIFIED);
@@ -120,16 +123,27 @@ public class DiffPluginImpl implements Differ {
 	 * @return
 	 * @throws Exception
 	 */
+	static Pattern META_INF_P = Pattern.compile("META-INF/[^/]+");
+	
 	private Element resourcesElement(Jar jar) throws Exception {
 		List<Element> resources = new ArrayList<Element>();
 		for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
-
+			
+			//
+			// The manifest and other (signer) files are ignored
+			// since they are extremely sensitive to time
+			//
+			
+			if ( META_INF_P.matcher(entry.getKey()).matches())
+				continue;
+			
 			InputStream in = entry.getValue().openInputStream();
 			try {
 				Digester<SHA1> digester = SHA1.getDigester();
 				IO.copy(in, digester);
 				String value = Hex.toHexString(digester.digest().digest());
-				resources.add(new Element(Type.RESOURCE, entry.getKey(), Arrays.asList(new Element(Type.SHA,value)), CHANGED, CHANGED, null));
+				resources.add(new Element(Type.RESOURCE, entry.getKey(), Arrays.asList(new Element(Type.SHA, value)),
+						CHANGED, CHANGED, null));
 			}
 			finally {
 				in.close();
@@ -153,27 +167,34 @@ public class DiffPluginImpl implements Differ {
 		for (Object key : manifest.getMainAttributes().keySet()) {
 			String header = key.toString();
 			String value = manifest.getMainAttributes().getValue(header);
+
 			if (IGNORE_HEADERS.contains(header))
 				continue;
 
 			if (MAJOR_HEADERS.contains(header)) {
-				Parameters clauses = OSGiHeader.parseHeader(value);
-				Collection<Element> clausesDef = new ArrayList<Element>();
-				for (Map.Entry<String,Attrs> clause : clauses.entrySet()) {
-					Collection<Element> parameterDef = new ArrayList<Element>();
-					for (Map.Entry<String,String> parameter : clause.getValue().entrySet()) {
-						String paramValue = parameter.getValue();
-						if (Constants.EXPORT_PACKAGE.equals(header) && Constants.USES_DIRECTIVE.equals(parameter.getKey())) {
-							ExtList<String> uses = ExtList.from(parameter.getValue());
-							Collections.sort(uses);
-							paramValue = uses.join();
+				if (header.equalsIgnoreCase(Constants.BUNDLE_VERSION)) {
+					Version v = new Version(value).getWithoutQualifier();
+					result.add(new Element(Type.HEADER, header + ":" + v.toString(), null, CHANGED, CHANGED, null));
+				} else {
+					Parameters clauses = OSGiHeader.parseHeader(value);
+					Collection<Element> clausesDef = new ArrayList<Element>();
+					for (Map.Entry<String,Attrs> clause : clauses.entrySet()) {
+						Collection<Element> parameterDef = new ArrayList<Element>();
+						for (Map.Entry<String,String> parameter : clause.getValue().entrySet()) {
+							String paramValue = parameter.getValue();
+							if (Constants.EXPORT_PACKAGE.equals(header)
+									&& Constants.USES_DIRECTIVE.equals(parameter.getKey())) {
+								ExtList<String> uses = ExtList.from(parameter.getValue());
+								Collections.sort(uses);
+								paramValue = uses.join();
+							}
+							parameterDef.add(new Element(Type.PARAMETER, parameter.getKey() + ":" + paramValue, null,
+									CHANGED, CHANGED, null));
 						}
-						parameterDef.add(new Element(Type.PARAMETER, parameter.getKey() + ":" + paramValue,
-								null, CHANGED, CHANGED, null));
+						clausesDef.add(new Element(Type.CLAUSE, clause.getKey(), parameterDef, CHANGED, CHANGED, null));
 					}
-					clausesDef.add(new Element(Type.CLAUSE, clause.getKey(), parameterDef, CHANGED, CHANGED, null));
+					result.add(new Element(Type.HEADER, header, clausesDef, CHANGED, CHANGED, null));
 				}
-				result.add(new Element(Type.HEADER, header, clausesDef, CHANGED, CHANGED, null));
 			} else if (ORDERED_HEADERS.contains(header)) {
 				ExtList<String> values = ExtList.from(value);
 				Collections.sort(values);

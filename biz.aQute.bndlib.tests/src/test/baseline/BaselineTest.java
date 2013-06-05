@@ -1,10 +1,11 @@
 package test.baseline;
 
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+
 import java.io.*;
 import java.util.*;
-
-import org.mockito.*;
-import static org.mockito.Mockito.*;
+import java.util.regex.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
@@ -13,9 +14,11 @@ import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.diff.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
+import aQute.libg.reporter.*;
 
 public class BaselineTest extends TestCase {
 
@@ -64,6 +67,66 @@ public class BaselineTest extends TestCase {
 		// assertEquals("p3", jar.getBsn());
 		// assertEquals("1.1.0", jar.getVersion());
 
+	}
+
+	/**
+	 * When a JAR is build the manifest is not set in the resources but in a
+	 * instance var.
+	 * 
+	 * @throws Exception
+	 */
+	public void testPrematureJar() throws Exception {
+		Builder b1 = new Builder();
+		b1.addClasspath(IO.getFile(new File(""), "jar/osgi.jar"));
+		b1.setProperty(Constants.BUNDLE_VERSION, "1.0.0.${tstamp}");
+		b1.setExportPackage("org.osgi.service.event");
+		Jar j1 = b1.build();
+		System.out.println(j1.getResources().keySet());
+		assertTrue(b1.check());
+
+		File tmp = new File("tmp.jar");
+		try {
+			j1.write(tmp);
+			Jar j11 = new Jar(tmp);
+
+			Thread.sleep(2000);
+
+			Builder b2 = new Builder();
+			b2.addClasspath(IO.getFile(new File(""), "jar/osgi.jar"));
+			b2.setProperty(Constants.BUNDLE_VERSION, "1.0.0.${tstamp}");
+			b2.setExportPackage("org.osgi.service.event");
+			Jar j2 = b2.build();
+			assertTrue(b2.check());
+			System.out.println(j2.getResources().keySet());
+
+			DiffPluginImpl differ = new DiffPluginImpl();
+
+			ReporterAdapter ra = new ReporterAdapter();
+			Baseline baseline = new Baseline(ra, differ);
+			ra.setTrace(true);
+			ra.setPedantic(true);
+			Set<Info> infos = baseline.baseline(j2, j11, null);
+			print(baseline.getDiff(), " ");
+			
+			assertEquals(Delta.UNCHANGED, baseline.getDiff().getDelta());
+		}
+		finally {
+			tmp.delete();
+		}
+	}
+
+	static Pattern	VERSION_HEADER_P	= Pattern.compile("Bundle-Header:(" + Verifier.VERSION_STRING + ")",
+												Pattern.CASE_INSENSITIVE);
+
+
+	void print(Diff diff, String indent) {
+		if (diff.getDelta() == Delta.UNCHANGED)
+			return;
+
+		System.out.println(indent + " " + diff);
+		for (Diff sub : diff.getChildren()) {
+			print(sub, indent + " ");
+		}
 	}
 
 	/**
