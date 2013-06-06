@@ -3,6 +3,8 @@
 	bndtools.core,\
 	bndtools.jareditor,\
 	bndtools.repository.base,\
+	bndtools.repository.amdatu,\
+	bndtools.gradle.template,\
 	bndtools.template.dm,\
 	bndtools.template.amdatu,\
 	bndtools.release,\
@@ -17,6 +19,8 @@ Include-Resource:\
 	${repo;bndtools.core;latest},\
 	${repo;bndtools.jareditor;latest},\
 	${repo;bndtools.repository.base;latest},\
+	${repo;bndtools.repository.amdatu;latest},\
+	${repo;bndtools.gradle.template;latest},\
 	${repo;bndtools.template.dm;latest},\
 	${repo;bndtools.template.amdatu;latest},\
 	${repo;bndtools.release;latest},\

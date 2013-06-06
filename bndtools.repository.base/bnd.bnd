@@ -19,20 +19,6 @@ bundlehub-template-resources: \
 	${bundlehub-template}/buildrepo/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\
 	${bundlehub-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest},\
 
-amdatu-template: templates/cnfs/amdatu
-amdatu-template-resources: \
-	${amdatu-template}=templates/unprocessed/common,\
-	${amdatu-template}=templates/unprocessed/amdatu,\
-	{${amdatu-template}=templates/processed/common},\
-	{${amdatu-template}=templates/processed/amdatu},\
-	${amdatu-template}/buildrepo/=templates/repos/buildrepo,\
-	${amdatu-template}/localrepo/=templates/repos/localrepo,\
-	${amdatu-template}/releaserepo/=templates/repos/releaserepo,\
-	${amdatu-template}/plugins/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
-	${amdatu-template}/plugins/biz.aQute.repository/=${repo;biz.aQute.repository;${aQute-repository-base}},\
-	${amdatu-template}/buildrepo/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\
-	${amdatu-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest},\
-
 jpm-template: templates/cnfs/jpm
 jpm-template-resources: \
 	${jpm-template}=templates/unprocessed/common,\

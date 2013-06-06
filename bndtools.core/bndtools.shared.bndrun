@@ -7,13 +7,15 @@
 workspace.bundles: \
 	bndtools.core;version=snapshot,\
 	bndtools.repository.base;version=snapshot,\
+	bndtools.repository.amdatu;version=snapshot,\
 	bndtools.template.dm;version=snapshot,\
 	bndtools.template.amdatu;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
 	bndtools.release;version=snapshot,\
 	org.bndtools.embeddedrepo;version=snapshot,\
 	bndtools.ace.plugin;version=snapshot,\
-	bndtools.ace.launcher;version=snapshot
+	bndtools.ace.launcher;version=snapshot,\
+	bndtools.gradle.template;version=snapshot
 
 p2.bundles: org.eclipse.equinox.p2.core,\
 	org.eclipse.equinox.p2.engine,\

@@ -26,19 +26,6 @@
          version="10"
          category="AAA/Core"
       />
-      <!-- 
-      <template
-         id="amdatu"
-         name="Amdatu Configuration"
-         doc="templateDocs/AmdatuConfig.xml"
-         paths="templates/cnfs/amdatu"
-         priority="0"
-         managed="ext/.*,plugins/.*,build-template.xml,build.properties"
-         ignores="/cache/"
-         version="0"
-         category="AAA/Core"
-      />
-       -->
    </extension>
 
 </plugin>

@@ -108,6 +108,10 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <update label="Bndtools Extras Update Site" url="http://bndtools-extras.s3.amazonaws.com/"/>
    </url>
 
+   <requires>
+      <import plugin="bndtools.core"/>
+   </requires>
+
    <plugin
          id="bndtools.template.amdatu"
          download-size="0"
@@ -115,4 +119,10 @@ This Agreement is governed by the laws of the State of New York and the intellec
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="bndtools.repository.amdatu"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 </feature>
