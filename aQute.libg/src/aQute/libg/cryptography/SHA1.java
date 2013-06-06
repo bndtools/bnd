@@ -4,7 +4,7 @@ import java.io.*;
 import java.security.*;
 
 public class SHA1 extends Digest {
-	public final static String	ALGORITHM	= "SHA1";
+	public final static String	ALGORITHM	= "SHA-1";
 
 	public static Digester<SHA1> getDigester(OutputStream... out) throws NoSuchAlgorithmException {
 		MessageDigest md = MessageDigest.getInstance(ALGORITHM);
