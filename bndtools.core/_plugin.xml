@@ -106,6 +106,16 @@
             project="false">
       </wizard>
       <wizard
+            id="bndtools.newBlueprintXml"
+            category="bndtools.wizardCategory"
+            class="org.bndtools.core.ui.wizards.blueprint.BlueprintXmlFileWizard"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
+            icon="icons/brick_blueprint.png"
+            name="Blueprint Descriptor"
+            project="false">
+      </wizard>
+      <wizard
             id="bndtools.bndrunWizard"
             category="bndtools.wizardCategory"
             class="bndtools.wizards.bndfile.BndRunFileWizard"
