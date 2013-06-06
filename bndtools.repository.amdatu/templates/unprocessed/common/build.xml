@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="master" default="none">
+	
+	<import file="build-template.xml"/>
+	
+	<!--
+		Use this file to provide your workspace-specific tasks. Several examples follow.
+
+		Note: make sure that all defined targets depends on the template.init target.
+		
+		1. To execute tasks before/after compilation:
+		
+		<target name="compile" depends="template.init">
+			<echo message="This task executed before compilation..."/>
+			<antcall target="template.compile"/>
+			<echo message="This task executed AFTER compilation."/>
+		</target>
+		
+		2. Insert a build target:
+		
+		<target name="build" dependencies="template.init,template.build, findbugs"/>
+		<target name="findbugs">
+			...
+		</target>
+	-->
+
+</project>

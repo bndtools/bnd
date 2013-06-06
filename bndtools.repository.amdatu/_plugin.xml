@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension point="bndtools.core.cnfTemplates">
+      <template
+         id="amdatu"
+         name="Amdatu Configuration"
+         doc="templateDocs/AmdatuConfig.xml"
+         paths="templates/cnfs/amdatu"
+         priority="0"
+         managed="ext/.*,plugins/.*,build-template.xml,build.properties"
+         ignores="/cache/"
+         version="0"
+         category="AAA/Core"
+      />
+   </extension>
+
+</plugin>
