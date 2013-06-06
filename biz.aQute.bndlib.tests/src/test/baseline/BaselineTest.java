@@ -19,6 +19,7 @@ import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.reporter.*;
+import aQute.service.reporter.*;
 
 public class BaselineTest extends TestCase {
 
@@ -205,9 +206,11 @@ public class BaselineTest extends TestCase {
 			builder.setProperty(Constants.BASELINE, "*");
 			builder.setProperty(Constants.BASELINEREPO, "Baseline");
 			builder.build();
-			if (!builder.check())
+			
+			if (!builder.check("The bundle version 1.2.0 is too low, must be at least 1.3.0"))
 				fail();
 
+			
 		}
 	}
 

@@ -7,7 +7,6 @@ import junit.framework.*;
 import aQute.bnd.build.*;
 import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
-import aQute.service.reporter.*;
 
 public class LocationTest extends TestCase {
 	Workspace	ws;
@@ -43,15 +42,16 @@ public class LocationTest extends TestCase {
 		assertTrue( find( sub2, "sub2", "p1/sub2.bnd", 3));
 		assertTrue( find( sub2, "bnd.bnd", "p1/bnd.bnd", 4));
 		assertTrue( find( sub2, "workspace", "cnf/build.bnd", 6));
+		assertTrue( find( project, "workspace", "cnf/build.bnd", 6));
+		assertTrue( find( project.getWorkspace(), "workspace", "cnf/build.bnd", 6));
 	}
 
-	private boolean find(Processor p, String what, String file, int line) throws IOException {
-		Reporter.Location l = new Reporter.Location();
+	private boolean find(Processor p, String what, String file, int line) throws Exception {
 		Pattern pattern = Pattern.compile("^"+what, Pattern.MULTILINE);
-		
-		assertTrue( what, p.getHeader(l,pattern ));
-		assertTrue( l.file.endsWith(file));
-		assertEquals(line,l.line);
+		Processor.FileLine fl = p.getHeader(pattern );
+		assertNotNull( fl);
+		assertTrue( fl.file.getAbsolutePath().endsWith(file));
+		assertEquals(line,fl.line);
 		return true;
 	}
 
