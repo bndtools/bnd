@@ -14,7 +14,6 @@ import org.osgi.service.log.*;
 import org.osgi.service.repository.*;
 
 import aQute.bnd.deployer.http.*;
-import aQute.bnd.deployer.repository.CachingUriResourceHandle.CachingMode;
 import aQute.bnd.deployer.repository.api.*;
 import aQute.bnd.deployer.repository.providers.*;
 import aQute.bnd.osgi.*;
@@ -191,8 +190,11 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		synchronized (this) {
 			connector = registry != null ? registry.getPlugin(URLConnector.class) : null;
 		}
-		if (connector == null)
-			connector = new DefaultURLConnector();
+		if (connector == null) {
+			DefaultURLConnector defaultConnector = new DefaultURLConnector();
+			defaultConnector.setRegistry(registry);
+			connector = defaultConnector;
+		}
 		return connector;
 	}
 

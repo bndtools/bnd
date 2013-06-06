@@ -76,11 +76,6 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	Reporter			reporter;
 
 	@Deprecated
-	public CachingUriResourceHandle(URI uri, File cacheDir, CachingMode mode) throws IOException {
-		this(uri, cacheDir, new DefaultURLConnector(), mode);
-	}
-	
-	@Deprecated
 	public CachingUriResourceHandle(URI uri, File cacheDir, URLConnector connector, CachingMode mode) throws IOException {
 		this(uri, cacheDir, connector, mode, null);
 	}
@@ -115,7 +110,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 	}
-
+	
 	static File resolveFile(String baseFileName, String fileName) {
 		File resolved;
 
@@ -241,7 +236,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			}
 		}
 	}
-	
+
 	private String copyWithSHA(InputStream input, FileOutputStream output) throws IOException {
 		MessageDigest digest;
 		

@@ -29,6 +29,7 @@ Bnd-Plugins:
 	aQute.bnd.deployer.deployer.http.HttpBasicAuthURLConnector
 
 Export-Package:\
+	aQute.bnd.service.progress,\
 	aQute.bnd.deployer.http,\
 	aQute.bnd.deployer.obr,\
 	aQute.bnd.deployer.repository,\
