@@ -197,6 +197,18 @@ public class BaselineTest extends TestCase {
 				fail();
 
 		}
+		{
+			// check for no error when repository has the same version
+			builder = (ProjectBuilder) p3.getBuilder(null).getSubBuilder();
+			builder.setBundleVersion("1.2.0.b");
+			builder.setTrace(true);
+			builder.setProperty(Constants.BASELINE, "*");
+			builder.setProperty(Constants.BASELINEREPO, "Baseline");
+			builder.build();
+			if (!builder.check())
+				fail();
+
+		}
 	}
 
 	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)

@@ -23,6 +23,7 @@ import aQute.lib.io.*;
 import aQute.libg.generics.*;
 import aQute.libg.reporter.*;
 import aQute.libg.sed.*;
+import aQute.service.reporter.Report.*;
 
 /**
  * This class is NOT threadsafe
@@ -1828,7 +1829,19 @@ public class Project extends Processor {
 		}
 		return null;
 	}
-
+	/**
+	 * Return a build that maps to the sub file.
+	 * @param string
+	 * @throws Exception 
+	 */
+	public ProjectBuilder getSubBuilder(String string) throws Exception {
+		Collection< ? extends Builder> builders = getSubBuilders();
+		for ( Builder b : builders) {
+			if ( b.getBsn().equals(string) || b.getBsn().endsWith("." + string))
+				return (ProjectBuilder) b;
+		}
+		return null;
+	}
 	/**
 	 * Answer the container associated with a given bsn.
 	 * 
@@ -2182,16 +2195,19 @@ public class Project extends Processor {
 
 	/**
 	 * Do a baseline for this project
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
-	
+
 	public void baseline() throws Exception {
 		ProjectBuilder b = getBuilder(null);
-		for ( Builder pb : b.getSubBuilders()) {
-			ProjectBuilder ppb = (ProjectBuilder)pb;
+		for (Builder pb : b.getSubBuilders()) {
+			ProjectBuilder ppb = (ProjectBuilder) pb;
 			Jar build = ppb.build();
 			getInfo(ppb);
 		}
 		getInfo(b);
 	}
+
+
 }
