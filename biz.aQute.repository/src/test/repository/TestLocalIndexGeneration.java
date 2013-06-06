@@ -59,6 +59,9 @@ public class TestLocalIndexGeneration extends TestCase {
 		File indexFile = IO.getFile("generated/testoutput/index.xml.gz");
 		assertTrue(indexFile.exists());
 
+		File indexFileSha = IO.getFile("generated/testoutput/index.xml.gz.sha");
+		assertTrue(indexFileSha.exists());
+
 		AbstractIndexedRepo repo2 = createRepoForIndex(indexFile);
 		File[] files = repo2.get("name.njbartlett.osgi.emf.minimal", null);
 		assertNotNull(files);

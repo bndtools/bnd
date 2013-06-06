@@ -48,6 +48,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	public static final String									REPO_TYPE_R5					= R5RepoContentProvider.NAME;
 	public static final String									REPO_TYPE_OBR					= ObrContentProvider.NAME;
+	public static final String									REPO_INDEX_SHA_EXTENSION		= ".sha";
 
 	private static final int									READ_AHEAD_MAX					= 5 * 1024 * 1024;
 

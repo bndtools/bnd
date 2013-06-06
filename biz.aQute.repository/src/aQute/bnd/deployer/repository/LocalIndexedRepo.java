@@ -11,9 +11,12 @@ import org.osgi.service.log.*;
 import aQute.bnd.deployer.repository.api.*;
 import aQute.bnd.filerepo.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.lib.hex.*;
 import aQute.lib.io.*;
+import aQute.libg.cryptography.*;
 
 public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant {
 
@@ -126,6 +129,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		gatherFiles(allFiles);
 
 		FileOutputStream out = null;
+		File shaFile = new File(indexFile.getPath() + REPO_INDEX_SHA_EXTENSION);
 		try {
 			if (!storageDir.exists() && !storageDir.mkdirs()) {
 				throw new IOException("Could not create directory " + storageDir);
@@ -137,6 +141,21 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		}
 		finally {
 			IO.close(out);
+			out = null;
+			shaFile.delete();
+		}
+
+		MessageDigest md = MessageDigest.getInstance(SHA256.ALGORITHM);
+		IO.copy(indexFile, md);
+
+		try {
+			out = new FileOutputStream(shaFile);
+			out.write(Hex.toHexString(md.digest()).toLowerCase().toString().getBytes());
+		}
+		finally {
+			if (out != null) {
+				out.close();
+			}
 		}
 	}
 
