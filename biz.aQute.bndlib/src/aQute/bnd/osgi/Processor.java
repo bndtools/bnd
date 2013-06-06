@@ -16,6 +16,7 @@ import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
 import aQute.service.reporter.*;
+import aQute.service.reporter.Report.*;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
 
@@ -1812,6 +1813,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return this;
 		}
 
+		public Location location() {
+			return this;
+		}
+
 	}
 
 	private SetLocation location(String s) {
@@ -1826,6 +1831,79 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return l;
 
 		return null;
+	}
+
+	/**
+	 * Get a header relative to this processor, tking its parents and includes
+	 * into account.
+	 * 
+	 * @param location
+	 * @param header
+	 * @return
+	 * @throws IOException
+	 */
+	public boolean getHeader(Location location, Pattern header) throws IOException {
+		File f = getPropertiesFile();
+		if (f != null) {
+			// Find in "our" local file
+			if (findHeader(f, location, header))
+				return true;
+
+			// Get the includes (actuall should parse the header
+			// to see if they override or only provide defaults?
+
+			List<File> result = getIncluded();
+			if (result != null) {
+				ExtList<File> reversed = new ExtList<File>(result);
+				Collections.reverse(reversed);
+
+				for (File included : reversed) {
+					if (findHeader(included, location, header))
+						return true;
+				}
+			}
+		}
+		// Ok, not on this level ...
+		if (getParent() != null) {
+			if (getParent().getHeader(location, header))
+				return true;
+		}
+
+		// Ok, report the error on the sub file 
+		// Sometimes we do not have a file ...
+		if (f == null && parent!=null)
+			f = parent.getPropertiesFile();
+
+		if ( f == null)
+			return false;
+		
+		location.file = f.getAbsolutePath();
+		location.line = 0;
+		location.length = 0;
+		return false;
+	}
+
+	public static boolean findHeader(File f, Location location, Pattern header) throws IOException {
+		String s = IO.collect(f);
+		Matcher matcher = header.matcher(s);
+		if (matcher.find()) {
+			location.length = matcher.group().length();
+			location.line = getLine(s, matcher.start(0));
+			location.file = f.getAbsolutePath();
+			return true;
+		}
+		return false;
+	}
+
+	public static int getLine(String s, int index) {
+		int n = 0;
+		while (--index > 0) {
+			char c = s.charAt(index);
+			if (c == '\n') {
+				n++;
+			}
+		}
+		return n;
 	}
 
 }
