@@ -1,0 +1,5 @@
+Export-Package: bar, foo, baz;version=4.5.6
+InSub1: sub1
+
+where=sub1
+sub1=yes

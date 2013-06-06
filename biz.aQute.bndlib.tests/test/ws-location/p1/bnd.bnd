@@ -1,0 +1,8 @@
+-include: i1.bnd
+
+Bundle-Version: 1.2.3
+
+bnd.bnd=yes
+where=bnd.bnd
+
+-sub: sub*.bnd

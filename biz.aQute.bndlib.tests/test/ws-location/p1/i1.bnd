@@ -1,0 +1,5 @@
+# comment
+where=i1
+i1=yes
+
+-include: i2.bnd
