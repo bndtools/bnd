@@ -174,7 +174,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 
 	@SuppressWarnings("cast")
 	public boolean contains(Object o) {
-		assert type != null & type.isInstance(o);
+		assert type == null || type.isInstance(o);
 		return find((T) o) >= 0;
 	}
 
@@ -271,7 +271,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public int indexOf(Object o) {
-		assert type != null && type.isInstance(o);
+		assert type == null || type.isInstance(o);
 
 		int n = find((T) o);
 		if (n < end && comparator.compare(o, list[n]) == 0)
@@ -281,7 +281,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public int lastIndexOf(Object o) {
-		assert type != null && type.isInstance(o);
+		assert type == null || type.isInstance(o);
 
 		int n = find((T) o);
 		if (n >= end || comparator.compare(o, list[n]) != 0)
