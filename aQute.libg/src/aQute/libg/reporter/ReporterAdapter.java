@@ -61,6 +61,11 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 		public Location location() {
 			return this;
 		}
+
+		public SetLocation length(int length) {
+			this.length = length;
+			return this;
+		}
 		
 	}
 	

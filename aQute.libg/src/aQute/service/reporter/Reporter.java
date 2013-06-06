@@ -59,6 +59,8 @@ public interface Reporter extends Report {
 		SetLocation details(Object details);
 		
 		Location location();
+
+		SetLocation length(int length);
 	}
 
 	/**

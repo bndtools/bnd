@@ -48,6 +48,10 @@ public class ReporterMessages {
 		public Location location() {
 			return loc.location();
 		}
+		public SetLocation length(int length) {
+			loc.length(length);
+			return this;
+		}
 	}
 
 	static class ERRORImpl extends WARNINGImpl implements ERROR {
