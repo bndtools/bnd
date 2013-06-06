@@ -105,7 +105,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </license>
 
    <url>
-      <update label="Bndtools Update Site" url="http://bndtools-updates.s3.amazonaws.com/"/>
+      <update label="Bndtools Extras Update Site" url="http://bndtools-extras.s3.amazonaws.com/"/>
    </url>
 
    <plugin
@@ -114,5 +114,5 @@ This Agreement is governed by the laws of the State of New York and the intellec
          install-size="0"
          version="0.0.0"
          unpack="false"/>
- 
+
 </feature>

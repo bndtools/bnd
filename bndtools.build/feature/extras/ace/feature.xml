@@ -11,18 +11,18 @@
 
 -->
 <feature
-      id="bndtools.amdatu.feature"
-      label="Bndtools / Amdatu integration"
+      id="bndtools.ace.feature"
+      label="Bndtools / Apache ACE integration"
       version="2.2.0.DEV-qualifier"
       provider-name="Bndtools"
-      plugin="bndtools.template.amdatu">
+      plugin="bndtools.ace.plugin">
 
    <description url="http://bndtools-updates.s3.amazonaws.com/">
-      Amdatu integration for BndTools.
+      Apache ACE integration for BndTools.
    </description>
 
    <copyright>
-      Copyright Neil Bartlett and others, 2013
+      Copyright Neil Bartlett and others, 2011
 
 This software uses icons from the FamFamFam &quot;Silk&quot; icon set by Mark James (http://www.famfamfam.com/lab/icons/silk/)
    </copyright>
@@ -105,14 +105,32 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </license>
 
    <url>
-      <update label="Bndtools Update Site" url="http://bndtools-updates.s3.amazonaws.com/"/>
+      <update label="Bndtools Extras Update Site" url="http://bndtools-extras.s3.amazonaws.com/"/>
    </url>
 
+   <requires>
+      <import plugin="bndtools.core"/>
+   </requires>
+
    <plugin
-         id="bndtools.template.amdatu"
+         id="bndtools.ace.plugin"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
- 
+
+   <plugin
+         id="bndtools.ace.launcher"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.ace.bnd.repository"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
 </feature>

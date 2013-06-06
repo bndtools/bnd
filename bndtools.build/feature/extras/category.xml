@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/bndtools.ace.feature_2.2.0.DEV-qualifier" id="bndtools.ace.feature" version="2.2.0.DEV-qualifier">
+      <category name="bndtools.extras.category"/>
+   </feature>
+   <feature url="features/bndtools.dm.feature_2.2.0.DEV-qualifier" id="bndtools.dm.feature" version="2.2.0.DEV-qualifier">
+      <category name="bndtools.extras.category"/>
+   </feature>
+   <feature url="features/bndtools.amdatu.feature_2.2.0.DEV-qualifier" id="bndtools.amdatu.feature" version="2.2.0.DEV-qualifier">
+      <category name="bndtools.extras.category"/>
+   </feature>
+   <category-def name="bndtools.extras.category" label="Bndtools Optional Extras and Third Party plugins"/>
+</site>

@@ -7,52 +7,83 @@
    <target name="features.dir" depends="init" description="Generate the Eclipse Feature JAR">
       <!-- Copy Feature XML Descriptors -->
       <copy todir="${target}/features">
-         <fileset dir="feature" includes="category.xml,**/feature.xml" />
+         <fileset dir="feature" includes="**/category.xml,**/feature.xml" />
       </copy>
 
       <!-- Replace the qualifier string with a timestamp -->
-      <replace dir="${target}/features" includes="category.xml,**/feature.xml" token="qualifier" value="${NOW}" summary="true" />
+      <replace dir="${target}/features" includes="**/category.xml,**/feature.xml" token="qualifier" value="${NOW}" summary="true" />
 
       <!-- Zip Main Feature -->
-      <zip destfile="${target}/features/bndtools.feature.jar">
-         <fileset dir="${target}/features/main" includes="feature.xml" />
+      <zip destfile="${target}/features/main/bndtools.feature.jar">
+         <fileset dir="${target}/features/main/bndtools" includes="feature.xml" />
       </zip>
       <!-- Zip JarViewer Feature -->
-      <zip destfile="${target}/features/bndtools.jarviewer.feature.jar">
-         <fileset dir="${target}/features/jarviewer" includes="feature.xml" />
+      <zip destfile="${target}/features/main/bndtools.jarviewer.feature.jar">
+         <fileset dir="${target}/features/main/jarviewer" includes="feature.xml" />
       </zip>
    	
-      <zip destfile="${target}/features/bndtools.ace.feature.jar">
-   	     <fileset dir="${target}/features/ace" includes="feature.xml" />
+   	  <!-- 
+   	  		Extra Features - TODO move these out of the core bndtools git repository
+   	  -->
+      <zip destfile="${target}/features/extras/bndtools.ace.feature.jar">
+   	     <fileset dir="${target}/features/extras/ace" includes="feature.xml" />
    	  </zip>
    	
- 	  <zip destfile="${target}/features/bndtools.dm.feature.jar">
-   	   	<fileset dir="${target}/features/dm" includes="feature.xml" />
+ 	  <zip destfile="${target}/features/extras/bndtools.dm.feature.jar">
+   	   	<fileset dir="${target}/features/extras/dm" includes="feature.xml" />
    	  </zip>
    	
-   	  <zip destfile="${target}/features/bndtools.amdatu.feature.jar">
-	   	<fileset dir="${target}/features/amdatu" includes="feature.xml" />
+   	  <zip destfile="${target}/features/extras/bndtools.amdatu.feature.jar">
+	   	<fileset dir="${target}/features/extras/amdatu" includes="feature.xml" />
    	  </zip>
    </target>
 	
 	<!-- Build the Eclipse "plugins" directory -->
 	<target name="plugins.dir" depends="init" description="Expand the required bundles">
-		<mkdir dir="${target}/plugins"/>
-		<unjar dest="${target}/plugins" src="${target}/${project.name}.jar">
+		<mkdir dir="${target}/plugins/main"/>
+		<unjar dest="${target}/plugins/main" src="${target}/${project.name}.jar">
+		    <patternset>
+		      <exclude name="*ace*"/>
+		      <exclude name="*template*"/>
+		      <include name="*.jar"/>
+		    </patternset>
+		</unjar>
+		<unjar dest="${target}/plugins/extras" src="${target}/${project.name}.jar">
 			<patternset>
-				<include name="*.jar"/>
+				<include name="*ace*"/>
+			    <include name="*template*"/>
 			</patternset>
 		</unjar>
+
 	</target>
 	
 	<!-- Generate the p2 repository and index -->
 	<target name="p2" depends="build,features.dir,plugins.dir" description="Generate the p2 repository">
-		<echo message="Publishing Features and Bundles" />
+		<echo message="Publishing Features and Bundles - Main" />
 		<java jar="${workspacedir}/cnf/eclipse-3.5.2/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar" fork="true" failonerror="true">
 			<arg line="-consoleLog"/>
 			<arg line="-application org.eclipse.ant.core.antRunner"/>
 			<arg line="-data ${target}"/>
 			<arg line="-buildfile build.xml __internal_p2"/>
+		</java>
+
+		<!-- Append the category info -->
+		<echo message="Categorising Repository" />
+		<java jar="${workspacedir}/cnf/eclipse-3.5.2/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar" fork="true" failonerror="true">
+			 <arg line="-consoleLog"/>
+			<arg line="-application org.eclipse.equinox.p2.publisher.CategoryPublisher"/>
+			<arg line="-data ${target}"/>
+			<arg line="-metadataRepository file:${target}/p2"/>
+			<arg line="-categoryDefinition file:${target}/features/main/category.xml"/>
+			<arg line="-compress"/>
+		</java>
+
+		<echo message="Publishing Features and Bundles - Extras" />
+		<java jar="${workspacedir}/cnf/eclipse-3.5.2/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar" fork="true" failonerror="true">
+			<arg line="-consoleLog"/>
+			<arg line="-application org.eclipse.ant.core.antRunner"/>
+			<arg line="-data ${target}"/>
+			<arg line="-buildfile build.xml __internal_p2_extras"/>
 		</java>
 		
 		<!-- Append the category info -->
@@ -61,14 +92,22 @@
 			 <arg line="-consoleLog"/>
 			<arg line="-application org.eclipse.equinox.p2.publisher.CategoryPublisher"/>
 			<arg line="-data ${target}"/>
-			<arg line="-metadataRepository file:${target}/p2"/>
-			<arg line="-categoryDefinition file:${target}/features/category.xml"/>
+			<arg line="-metadataRepository file:${target}/extras/p2/child"/>
+			<arg line="-categoryDefinition file:${target}/features/extras/category.xml"/>
 			<arg line="-compress"/>
 		</java>
 		
 		<!-- Build the archive -->
 		<zip file="${target}/bndtools-latest.zip">
 			<zipfileset dir="${target}/p2" includes="**"/>
+		</zip>
+		
+		<copy file="feature/extras/compositeContent.xml" todir="${target}/extras/p2"/>
+		<copy file="feature/extras/compositeArtifacts.xml" todir="${target}/extras/p2"/>
+		
+		<!-- Build the archive -->
+		<zip file="${target}/bndtools-extras-latest.zip">
+			<zipfileset dir="${target}/extras/p2" includes="**"/>
 		</zip>
 	</target>
 	
@@ -80,8 +119,22 @@
 				append="false"
 				repositoryname="Bndtools"
 				compress="true">
-			<features dir="${target}/features" includes="*.jar"/>
-			<bundles dir="${target}/plugins" includes="*.jar"/>
+			<features dir="${target}/features/main" includes="*.jar"/>
+			<bundles dir="${target}/plugins/main" includes="*.jar"/>
+		</p2.publish.featuresAndBundles>
+	</target>
+
+	<!-- Called internally by the Eclipse embedded ANT application -->
+	<target name="__internal_p2_extras" depends="init">
+		<p2.publish.featuresAndBundles
+				source="${workspacedir}"
+				repository="file:${target}/extras/p2/child"
+				append="false"
+				repositoryname="BndtoolsExtras"
+				compress="true"
+			>
+			<features dir="${target}/features/extras" includes="*.jar"/>
+			<bundles dir="${target}/plugins/extras" includes="*.jar"/>
 		</p2.publish.featuresAndBundles>
 	</target>
 
