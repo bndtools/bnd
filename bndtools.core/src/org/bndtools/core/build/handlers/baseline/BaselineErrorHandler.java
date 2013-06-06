@@ -4,13 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
+import org.bndtools.core.utils.jdt.ASTUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -31,11 +31,11 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
-import bndtools.Logger;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.differ.Baseline.Info;
@@ -48,6 +48,7 @@ import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Report.Location;
+import bndtools.Logger;
 
 public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
@@ -120,9 +121,12 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                     if (Delta.ADDED == classMemberDiff.getDelta()) {
                         Tree classMember = classMemberDiff.getNewer();
                         if (Type.METHOD == classMember.getType())
-                            markers.addAll(generateAddedMethodMarker(javaProject, className, classMember.getName(), packageDelta));
+                            markers.addAll(generateAddedMethodMarker(javaProject, className, classMember.getName(), classMember.ifAdded()));
                     } else if (Delta.REMOVED == classMemberDiff.getDelta()) {
-                        // TODO
+                        Tree classMember = classMemberDiff.getOlder();
+                        if (Type.METHOD == classMember.getType()) {
+                            markers.addAll(generateRemovedMethodMarker(javaProject, className, classMember.getName(), classMember.ifRemoved()));
+                        }
                     }
                 }
             }
@@ -131,69 +135,73 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
         return markers;
     }
 
-    List<MarkerData> generateAddedMethodMarker(IJavaProject javaProject, String className, final String methodName, final Delta packageDelta) throws JavaModelException {
-        final List<MarkerData> markers = new LinkedList<MarkerData>();
-
+    CompilationUnit createAST(IJavaProject javaProject, String className) throws JavaModelException {
         IType type = javaProject.findType(className);
         if (type == null)
-            return markers;
+            return null;
 
         final ICompilationUnit cunit = type.getCompilationUnit();
         if (cunit == null)
-            return markers; // not a source type
+            return null; // not a source type
 
         ASTParser parser = ASTParser.newParser(AST.JLS4);
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         parser.setSource(cunit);
         parser.setResolveBindings(true);
-        CompilationUnit compilation = (CompilationUnit) parser.createAST(null);
-        compilation.accept(new ASTVisitor() {
+        return (CompilationUnit) parser.createAST(null);
+    }
+
+    List<MarkerData> generateAddedMethodMarker(IJavaProject javaProject, String className, final String methodName, final Delta requiresDelta) throws JavaModelException {
+        final List<MarkerData> markers = new LinkedList<MarkerData>();
+        final CompilationUnit ast = createAST(javaProject, className);
+        ast.accept(new ASTVisitor() {
             @Override
             public boolean visit(MethodDeclaration methodDecl) {
-                String signature = buildMethodSignature(methodDecl);
+                String signature = ASTUtil.buildMethodSignature(methodDecl);
                 if (signature.equals(methodName)) {
                     // Create the marker attribs here
                     Map<String,Object> attribs = new HashMap<String,Object>();
                     attribs.put(IMarker.CHAR_START, methodDecl.getStartPosition());
                     attribs.put(IMarker.CHAR_END, methodDecl.getStartPosition() + methodDecl.getLength());
 
-                    String message = String.format("This method was added, which requires a %s change to the package.", packageDelta);
+                    String message = String.format("This method was added, which requires a %s change to the package.", requiresDelta);
                     attribs.put(IMarker.MESSAGE, message);
 
-                    markers.add(new MarkerData(cunit.getResource(), attribs, false));
+                    markers.add(new MarkerData(ast.getJavaElement().getResource(), attribs, false));
                 }
 
                 return false;
             }
         });
-
         return markers;
     }
 
-    private String buildMethodSignature(MethodDeclaration method) {
-        StringBuilder builder = new StringBuilder();
+    List<MarkerData> generateRemovedMethodMarker(IJavaProject javaProject, final String className, final String methodName, final Delta requiresDelta) throws JavaModelException {
+        final List<MarkerData> markers = new LinkedList<MarkerData>();
+        final CompilationUnit ast = createAST(javaProject, className);
+        ast.accept(new ASTVisitor() {
+            @Override
+            public boolean visit(TypeDeclaration typeDecl) {
+                ITypeBinding typeBinding = typeDecl.resolveBinding();
+                if (typeBinding != null) {
+                    if (typeBinding.getBinaryName().equals(className)) {
+                        Map<String,Object> attribs = new HashMap<String,Object>();
+                        SimpleName nameNode = typeDecl.getName();
+                        attribs.put(IMarker.CHAR_START, nameNode.getStartPosition());
+                        attribs.put(IMarker.CHAR_END, nameNode.getStartPosition() + nameNode.getLength());
 
-        builder.append(method.getName());
-        builder.append('(');
+                        String message = String.format("The method '%s' was removed, which requires a %s change to the package.", methodName, requiresDelta);
+                        attribs.put(IMarker.MESSAGE, message);
 
-        @SuppressWarnings("unchecked")
-        List<SingleVariableDeclaration> params = method.parameters();
-        for (Iterator<SingleVariableDeclaration> iter = params.iterator(); iter.hasNext();) {
-            String paramType;
-            SingleVariableDeclaration param = iter.next();
-            ITypeBinding typeBinding = param.getType().resolveBinding();
-            if (typeBinding != null)
-                paramType = typeBinding.getQualifiedName();
-            else
-                paramType = param.getName().getIdentifier();
+                        markers.add(new MarkerData(ast.getJavaElement().getResource(), attribs, false));
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
 
-            builder.append(paramType);
-            if (iter.hasNext())
-                builder.append(",");
-        }
-
-        builder.append(')');
-        return builder.toString();
+        return markers;
     }
 
     @Override
