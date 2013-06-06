@@ -45,7 +45,8 @@ public class BndEditModel {
 			// BndConstants.RUNVMARGS,
 			// BndConstants.TESTSUITES,
 			aQute.bnd.osgi.Constants.TESTCASES, aQute.bnd.osgi.Constants.PLUGIN, aQute.bnd.osgi.Constants.PLUGINPATH,
-			aQute.bnd.osgi.Constants.RUNREPOS, aQute.bnd.osgi.Constants.RUNREQUIRES, aQute.bnd.osgi.Constants.RUNEE};
+			aQute.bnd.osgi.Constants.RUNREPOS, aQute.bnd.osgi.Constants.RUNREQUIRES, aQute.bnd.osgi.Constants.RUNEE,
+			Constants.BUNDLE_BLUEPRINT, Constants.INCLUDE_RESOURCE};
 
 	public static final String										BUNDLE_VERSION_MACRO		= "${"
 																										+ Constants.BUNDLE_VERSION
@@ -210,6 +211,8 @@ public class BndEditModel {
 		converters.put(aQute.bnd.osgi.Constants.RUNEE, eeConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNREPOS, listConverter);
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
+		converters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListConverter);
+		converters.put(Constants.INCLUDE_RESOURCE, listConverter);
 
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_LICENSE, newlineEscapeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_CATEGORY, newlineEscapeFormatter);
@@ -248,6 +251,8 @@ public class BndEditModel {
 		formatters.put(aQute.bnd.osgi.Constants.RUNEE, eeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.RUNREPOS, runReposFormatter);
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
+		formatters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListFormatter);
+		formatters.put(Constants.INCLUDE_RESOURCE, stringListFormatter);
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -829,5 +834,43 @@ public class BndEditModel {
 
 	public void setBndResourceName(String bndResourceName) {
 		this.bndResourceName = bndResourceName;
+	}
+	
+	public List<HeaderClause> getBundleBlueprint() {
+		return doGetObject(aQute.bnd.osgi.Constants.BUNDLE_BLUEPRINT, headerClauseListConverter);
+	}
+
+	public void setBundleBlueprint(List<HeaderClause> bundleBlueprint) {
+		List<HeaderClause> old = getPlugins();
+		doSetObject(aQute.bnd.osgi.Constants.BUNDLE_BLUEPRINT, old, bundleBlueprint, headerClauseListFormatter);
+	}
+	
+	public void addBundleBlueprint(String location) {
+		List<HeaderClause> bpLocations = getBundleBlueprint();
+		if (bpLocations == null)
+			bpLocations = new ArrayList<HeaderClause>();
+		else
+			bpLocations = new ArrayList<HeaderClause>(bpLocations);
+		bpLocations.add(new HeaderClause(location, null));
+		setBundleBlueprint(bpLocations);
+	}
+
+	public List<String> getIncludeResource() {
+		return doGetObject(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, listConverter);
+	}
+	
+	public void setIncludeResource(List<String> includeResource) {
+		List<String> old = getIncludeResource();
+		doSetObject(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, old, includeResource, stringListFormatter);
+	}
+	
+	public void addIncludeResource(String resource) {
+		List<String> includeResource = getIncludeResource();
+		if (includeResource == null)
+			includeResource = new ArrayList<String>();
+		else
+			includeResource = new ArrayList<String>(includeResource);
+		includeResource.add(resource);
+		setIncludeResource(includeResource);
 	}
 }

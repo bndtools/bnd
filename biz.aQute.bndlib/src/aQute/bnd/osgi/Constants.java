@@ -15,7 +15,7 @@ public interface Constants {
 	String							BND_ADDXMLTOTEST							= "Bnd-AddXMLToTest";
 	String							BUNDLE_ACTIVATIONPOLICY						= "Bundle-ActivationPolicy";
 	String							BUNDLE_ACTIVATOR							= "Bundle-Activator";
-	String							BUNDLE_BLUEPRINT							= "Bundle-Copyright";
+	String							BUNDLE_BLUEPRINT							= "Bundle-Blueprint";
 	String							BUNDLE_CATEGORY								= "Bundle-Category";
 	String							BUNDLE_CLASSPATH							= "Bundle-ClassPath";
 	String							BUNDLE_CONTACTADDRESS						= "Bundle-ContactAddress";
