@@ -16,7 +16,6 @@ import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
 import aQute.service.reporter.*;
-import aQute.service.reporter.Report.*;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
 
@@ -53,6 +52,23 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	CL								pluginLoader;
 	Collection<String>				filter;
 	HashSet<String>					missingCommand;
+
+	public static class FileLine {
+		final public File	file;
+		final public int	line;
+		final public int	length;
+		
+		public FileLine(File file, int line, int length) {
+			assert file != null;
+			assert line >= 0;
+			assert length >= 0;
+			
+			this.file = file;
+			this.line = line;
+			this.length = length;
+					
+		}
+	}
 
 	public Processor() {
 		properties = new Properties();
@@ -785,7 +801,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param deflt
 	 * @return
 	 */
-	@SuppressWarnings("resource")
 	public String getProperty(String key, String deflt) {
 
 		String value = null;
@@ -1816,6 +1831,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		public Location location() {
 			return this;
 		}
+		
+		public SetLocation length(int length) {
+			this.length = length;
+			return this;
+		}
 
 	}
 
@@ -1842,14 +1862,31 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return
 	 * @throws IOException
 	 */
-	public boolean getHeader(Location location, Pattern header) throws IOException {
+	public FileLine getHeader(Pattern header) throws Exception {
+		FileLine fl = getHeader0(header);
+		if ( fl != null)
+			return fl;
+		
+		Processor rover = this;
+		while ( rover.getPropertiesFile() == null)
+			if ( rover.parent == null)
+				return null;
+			else
+				rover = rover.parent;
+		
+		return new FileLine(rover.getPropertiesFile(),0,0);
+	}
+	private FileLine getHeader0(Pattern header) throws Exception {
+		FileLine fl;
+
 		File f = getPropertiesFile();
 		if (f != null) {
 			// Find in "our" local file
-			if (findHeader(f, location, header))
-				return true;
+			fl = findHeader(f, header);
+			if (fl != null)
+				return fl;
 
-			// Get the includes (actuall should parse the header
+			// Get the includes (actually should parse the header
 			// to see if they override or only provide defaults?
 
 			List<File> result = getIncluded();
@@ -1858,41 +1895,38 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				Collections.reverse(reversed);
 
 				for (File included : reversed) {
-					if (findHeader(included, location, header))
-						return true;
+					fl = findHeader(included, header);
+					if (fl != null)
+
+						return fl;
 				}
 			}
 		}
 		// Ok, not on this level ...
 		if (getParent() != null) {
-			if (getParent().getHeader(location, header))
-				return true;
+			fl = getParent().getHeader(header);
+			if (fl != null)
+				return fl;
 		}
 
-		// Ok, report the error on the sub file 
+		// Ok, report the error on the sub file
 		// Sometimes we do not have a file ...
-		if (f == null && parent!=null)
+		if (f == null && parent != null)
 			f = parent.getPropertiesFile();
 
-		if ( f == null)
-			return false;
-		
-		location.file = f.getAbsolutePath();
-		location.line = 0;
-		location.length = 0;
-		return false;
+		if (f == null)
+			return null;
+
+		return new FileLine(f,0,0);
 	}
 
-	public static boolean findHeader(File f, Location location, Pattern header) throws IOException {
+	public static FileLine findHeader(File f, Pattern header) throws IOException {
 		String s = IO.collect(f);
 		Matcher matcher = header.matcher(s);
-		if (matcher.find()) {
-			location.length = matcher.group().length();
-			location.line = getLine(s, matcher.start(0));
-			location.file = f.getAbsolutePath();
-			return true;
-		}
-		return false;
+		if (!matcher.find())
+			return null;
+
+		return new FileLine(f, getLine(s, matcher.start(0)), matcher.group().length());
 	}
 
 	public static int getLine(String s, int index) {
