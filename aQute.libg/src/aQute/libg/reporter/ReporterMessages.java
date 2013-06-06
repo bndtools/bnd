@@ -4,6 +4,7 @@ import java.lang.reflect.*;
 import java.util.*;
 
 import aQute.service.reporter.*;
+import aQute.service.reporter.Report.Location;
 import aQute.service.reporter.Messages.*;
 import aQute.service.reporter.Reporter.SetLocation;
 
@@ -42,6 +43,10 @@ public class ReporterMessages {
 
 		public SetLocation details(Object details) {
 			return loc.details(details);
+		}
+
+		public Location location() {
+			return loc.location();
 		}
 	}
 

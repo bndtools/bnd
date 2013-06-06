@@ -57,6 +57,10 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 			this.details = details;
 			return this;
 		}
+
+		public Location location() {
+			return this;
+		}
 		
 	}
 	

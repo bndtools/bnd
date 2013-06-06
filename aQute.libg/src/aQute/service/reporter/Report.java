@@ -18,6 +18,7 @@ public interface Report {
 		public String	reference;
 		public String	methodName;
 		public Object   details;
+		public int	length;
 	}
 
 
