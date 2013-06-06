@@ -3,6 +3,7 @@ package aQute.bnd.build;
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.regex.*;
 
 import aQute.bnd.differ.*;
 import aQute.bnd.differ.Baseline.Info;
@@ -11,6 +12,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
+import aQute.lib.io.*;
 
 public class ProjectBuilder extends Builder {
 	private final DiffPluginImpl	differ	= new DiffPluginImpl();
@@ -96,7 +98,7 @@ public class ProjectBuilder extends Builder {
 	 * @throws Exception
 	 */
 	@Override
-	protected void doBaseline(Jar dot) throws Exception {
+	public void doBaseline(Jar dot) throws Exception {
 
 		Jar fromRepo = getBaselineJar();
 		if (fromRepo == null) {
@@ -105,9 +107,10 @@ public class ProjectBuilder extends Builder {
 		}
 		Version newer = new Version(getVersion());
 		Version older = new Version(fromRepo.getVersion());
-		
+
 		if (!getBsn().equals(fromRepo.getBsn())) {
-			error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(), fromRepo.getBsn());
+			error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(),
+					fromRepo.getBsn());
 			return;
 		}
 
@@ -126,21 +129,84 @@ public class ProjectBuilder extends Builder {
 							info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
 							info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 					l.header(Constants.BASELINE);
+
+					fillInLocationForPackageInfo(l.location(), info.packageName);
 					if (getPropertiesFile() != null)
 						l.file(getPropertiesFile().getAbsolutePath());
 					l.details(info);
 				}
 			}
 			aQute.bnd.differ.Baseline.BundleInfo binfo = baseliner.getBundleInfo();
-			if ( binfo.mismatch) {
-				SetLocation error = error("The bundle version %s is too low, must be at least %s", binfo.version, binfo.suggestedVersion);
+			if (binfo.mismatch) {
+				SetLocation error = error("The bundle version %s is too low, must be at least %s", binfo.version,
+						binfo.suggestedVersion);
 				error.context("Baselining");
 				error.header(Constants.BUNDLE_VERSION);
 				error.details(binfo);
+				FileLine fl = getHeader(Pattern.compile("^"+Constants.BUNDLE_VERSION, Pattern.MULTILINE));
+				error.file(fl.file.getAbsolutePath());
+				error.line(fl.line);
+				error.length(fl.length);
 			}
 		}
 		finally {
 			fromRepo.close();
+		}
+	}
+
+	//*
+	
+	public void fillInLocationForPackageInfo(Location location, String packageName) throws Exception {
+		Parameters eps = getExportPackage();
+		Attrs attrs = eps.get(packageName);
+		FileLine fl;
+		
+		if (attrs != null && attrs.containsKey(Constants.VERSION_ATTRIBUTE)) {
+			fl = getHeader(Pattern.compile(Constants.EXPORT_PACKAGE, Pattern.CASE_INSENSITIVE));
+			if (fl!=null) {
+				location.file = fl.file.getAbsolutePath();
+				location.line = fl.line;
+				location.length = fl.length;
+				return;
+			}
+		}
+
+		Parameters ecs = getExportContents();
+		attrs = ecs.get(packageName);
+		if (attrs != null && attrs.containsKey(Constants.VERSION_ATTRIBUTE)) {
+			fl = getHeader(Pattern.compile(Constants.EXPORT_CONTENTS, Pattern.CASE_INSENSITIVE));
+			if (fl != null) {
+				location.file = fl.file.getAbsolutePath();
+				location.line = fl.line;
+				location.length = fl.length;
+				return;
+			}
+		}
+
+		for ( File src : project.getSourcePath()) {
+			String path = packageName.replace('.', '/');
+			File packageDir = IO.getFile(src, path);
+			File pi = IO.getFile(packageDir, "package-info.java");
+			if ( pi.isFile()) {
+				fl = findHeader(pi, Pattern.compile("@Version\\s*([^)]+)"));
+				if (fl != null) { 
+					location.file = fl.file.getAbsolutePath();
+					location.line = fl.line;
+					location.length = fl.length;
+					return;
+				}
+			}
+			pi = IO.getFile(packageDir, "packageinfo");
+			if ( pi.isFile()) {
+				fl = findHeader(pi, Pattern.compile("^\\s*version.*$"));
+				if (fl!=null) {
+					location.file = fl.file.getAbsolutePath();
+					location.line = fl.line;
+					location.length = fl.length;
+					return;
+				}
+			}
+			
 		}
 	}
 
@@ -149,7 +215,7 @@ public class ProjectBuilder extends Builder {
 		SortedSet<Version> versions = releaseRepo.versions(getBsn());
 		if (versions.isEmpty())
 			return null;
-		
+
 		Jar jar = new Jar(releaseRepo.get(getBsn(), versions.last(), null));
 		addClose(jar);
 		return jar;
@@ -201,7 +267,6 @@ public class ProjectBuilder extends Builder {
 			return null;
 		}
 
-		
 		//
 		// Loop over the instructions, first match commits.
 		//
@@ -223,7 +288,7 @@ public class ProjectBuilder extends Builder {
 
 					Version base = new Version(v);
 					SortedSet<Version> later = versions.tailSet(base);
-					if ( later.isEmpty()) {
+					if (later.isEmpty()) {
 						error("For baselineing %s-%s, specified version %s not found", bsn, version, base);
 						return null;
 					}
@@ -236,7 +301,6 @@ public class ProjectBuilder extends Builder {
 					// current
 					// project
 
-					
 				} else if (attrs.containsKey("file")) {
 
 					// Can be useful to specify a file
@@ -262,10 +326,10 @@ public class ProjectBuilder extends Builder {
 					return null;
 				}
 				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) > 0) {
-					if ( isPedantic()) {
+					if (isPedantic()) {
 						warning("Baselining against jar");
 					}
-				}				
+				}
 				File file = repo.get(bsn, target, attrs);
 				if (file == null || !file.isFile()) {
 					error("Decided on version %s-%s but cannot get file from repo %s", bsn, version, repo);
