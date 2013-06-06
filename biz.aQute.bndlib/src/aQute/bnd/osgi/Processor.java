@@ -458,6 +458,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void clear() {
 		errors.clear();
 		warnings.clear();
+		locations.clear();
 	}
 
 	public void trace(String msg, Object... parms) {
