@@ -13,7 +13,8 @@ workspace.bundles: \
 	bndtools.release;version=snapshot,\
 	org.bndtools.embeddedrepo;version=snapshot,\
 	bndtools.ace.plugin;version=snapshot,\
-	bndtools.ace.launcher;version=snapshot
+	bndtools.ace.launcher;version=snapshot,\
+	bndtools.gradle.template;version=snapshot
 
 p2.bundles: org.eclipse.equinox.p2.core,\
 	org.eclipse.equinox.p2.engine,\
