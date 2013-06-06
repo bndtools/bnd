@@ -5,19 +5,19 @@ Bundle-Version: ${master-version}
 
 jpm-plugin-version:  1.1.3
 
-default-template: templates/cnfs/default
-default-template-resources: \
-	${default-template}=templates/unprocessed/common,\
-	${default-template}=templates/unprocessed/default,\
-	{${default-template}=templates/processed/common},\
-	{${default-template}=templates/processed/default},\
-	${default-template}/buildrepo/=templates/repos/buildrepo,\
-	${default-template}/localrepo/=templates/repos/localrepo,\
-	${default-template}/releaserepo/=templates/repos/releaserepo,\
-	${default-template}/plugins/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
-	${default-template}/plugins/biz.aQute.repository/=${repo;biz.aQute.repository;${aQute-repository-base}},\
-	${default-template}/buildrepo/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\
-	${default-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest},\
+bundlehub-template: templates/cnfs/bundlehub
+bundlehub-template-resources: \
+	${bundlehub-template}=templates/unprocessed/common,\
+	${bundlehub-template}=templates/unprocessed/bundlehub,\
+	{${bundlehub-template}=templates/processed/common},\
+	{${bundlehub-template}=templates/processed/bundlehub},\
+	${bundlehub-template}/buildrepo/=templates/repos/buildrepo,\
+	${bundlehub-template}/localrepo/=templates/repos/localrepo,\
+	${bundlehub-template}/releaserepo/=templates/repos/releaserepo,\
+	${bundlehub-template}/plugins/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
+	${bundlehub-template}/plugins/biz.aQute.repository/=${repo;biz.aQute.repository;${aQute-repository-base}},\
+	${bundlehub-template}/buildrepo/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\
+	${bundlehub-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest},\
 
 amdatu-template: templates/cnfs/amdatu
 amdatu-template-resources: \
@@ -49,8 +49,7 @@ Include-Resource:\
 	plugin.xml=_plugin.xml,\
 	icons/=icons,\
 	templateDocs/=templateDocs,\
-	${default-template-resources},\
-	${amdatu-template-resources},\
+	${bundlehub-template-resources},\
 	${jpm-template-resources}
 
 -removeheaders: Include-Resource, Private-Package

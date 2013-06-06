@@ -28,6 +28,7 @@ import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.osgi.framework.Bundle;
 
@@ -74,10 +75,22 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         Label lblNewLabel = new Label(container, SWT.NONE);
         lblNewLabel.setText("Description:");
 
-        txtDescription = new ScrolledFormText(container, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL, true);
+        Composite cmpDescription = new Composite(container, SWT.BORDER);
+        cmpDescription.setBackground(tree.getBackground());
+
+        txtDescription = new ScrolledFormText(cmpDescription, SWT.V_SCROLL | SWT.H_SCROLL, false);
+        FormText formText = new FormText(txtDescription, SWT.NO_FOCUS);
+        txtDescription.setFormText(formText);
         txtDescription.setBackground(tree.getBackground());
-        txtDescription.getFormText().setBackground(tree.getBackground());
-        txtDescription.getFormText().setForeground(tree.getForeground());
+        formText.setBackground(tree.getBackground());
+        formText.setForeground(tree.getForeground());
+
+        GridData gd_cmpDescription = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd_cmpDescription.heightHint = 100;
+        cmpDescription.setLayoutData(gd_cmpDescription);
+
+        GridLayout layout_cmpDescription = new GridLayout(1, false);
+        cmpDescription.setLayout(layout_cmpDescription);
 
         GridData gd_txtDescription = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_txtDescription.heightHint = 100;

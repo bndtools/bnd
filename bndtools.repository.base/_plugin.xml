@@ -3,11 +3,12 @@
 <plugin>
 
    <extension point="bndtools.core.cnfTemplates">
+
       <template
-         id="jpm"
-         name="JPM4J"
-         doc="templateDocs/JpmConfig.xml"
-         paths="templates/cnfs/jpm"
+         id="bundle-hub"
+         name="Bundle-Hub Configuration"
+         doc="templateDocs/BundleHubConfig.xml"
+         paths="templates/cnfs/bundlehub"
          priority="20"
          managed="ext/.*,plugins/.*,build-template.xml,build.properties"
          ignores="/cache/"
@@ -15,27 +16,29 @@
          category="AAA/Core"
       />
       <template
-         id="default"
-         name="Default Configuration"
-         doc="templateDocs/DefaultConfig.xml"
-         paths="templates/cnfs/default"
-         priority="15"
+         id="jpm"
+         name="JPM4J Configuration (Experimental)"
+         doc="templateDocs/JpmConfig.xml"
+         paths="templates/cnfs/jpm"
+         priority="0"
          managed="ext/.*,plugins/.*,build-template.xml,build.properties"
          ignores="/cache/"
-         version="0"
+         version="10"
          category="AAA/Core"
       />
+      <!-- 
       <template
          id="amdatu"
          name="Amdatu Configuration"
          doc="templateDocs/AmdatuConfig.xml"
          paths="templates/cnfs/amdatu"
-         priority="15"
+         priority="0"
          managed="ext/.*,plugins/.*,build-template.xml,build.properties"
          ignores="/cache/"
          version="0"
          category="AAA/Core"
       />
+       -->
    </extension>
 
 </plugin>
