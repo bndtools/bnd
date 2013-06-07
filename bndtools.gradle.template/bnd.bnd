@@ -1,1 +1,1 @@
-Private-Package: bndtools.gradle.template
+-includeresource: resources
