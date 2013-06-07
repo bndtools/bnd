@@ -713,17 +713,19 @@ public class Analyzer extends Processor {
 		return getBndInfo("version", "<unknown>");
 	}
 
-	static SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd hh:mm:ss z yyyy");
+	static SimpleDateFormat	df	= new SimpleDateFormat("EEE MMM dd hh:mm:ss z yyyy");
+
 	public long getBndLastModified() {
 		String time = getBndInfo("lastmodified", "0");
-		if ( time.matches("\\d+"))
+		if (time.matches("\\d+"))
 			return Long.parseLong(time);
-		
+
 		try {
 			Date parse = df.parse(time);
-			if ( parse != null)
+			if (parse != null)
 				return parse.getTime();
-		} catch( ParseException e) {
+		}
+		catch (ParseException e) {
 			// Ignore
 		}
 		return 0;
@@ -1234,9 +1236,10 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Provide any macro substitutions and versions for exported packages.
+	 * @throws IOException 
 	 */
 
-	void augmentExports(Packages exports) {
+	void augmentExports(Packages exports) throws IOException {
 		for (PackageRef packageRef : exports.keySet()) {
 			String packageName = packageRef.getFQN();
 			setProperty(CURRENT_PACKAGE, packageName);
@@ -1253,6 +1256,7 @@ public class Analyzer extends Processor {
 
 					// dont overwrite and no directives
 					if (!key.endsWith(":") && !attributes.containsKey(key)) {
+						verifyAttribute(exporterAttributes.get("from:"), "package info for "+packageRef, key, entry.getValue());
 						attributes.put(key, entry.getValue());
 					}
 				}
@@ -1458,6 +1462,11 @@ public class Analyzer extends Processor {
 			}
 			for (Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
 				String key = t.nextElement();
+				String propvalue = p.getProperty(key);
+				File f = null;
+				if (r instanceof FileResource)
+					f = ((FileResource) r).getFile();
+
 				String value = map.get(key);
 				if (value == null) {
 					value = p.getProperty(key);
@@ -1471,11 +1480,44 @@ public class Analyzer extends Processor {
 						value = value.substring(1);
 					}
 					map.put(key, value);
+					if (f != null)
+						map.put("from:", f.getAbsolutePath());
 				}
 			}
 		}
 		catch (Exception e) {
 			msgs.NoSuchFile_(r);
+		}
+	}
+
+	/**
+	 * Verify an attribute
+	 * 
+	 * @param f
+	 * @param where
+	 * @param key
+	 * @param propvalue
+	 * @throws IOException
+	 */
+	private void verifyAttribute(String path, String where, String key, String value) throws IOException {
+		SetLocation location;
+		if (!Verifier.isExtended(key)) {
+			location = error("%s attribute [%s='%s'], key must be an EXTENDED (CORE1.3.2 %s)", where, key, value,
+					Verifier.EXTENDED);
+		} else if (value == null || value.trim().length() == 0) {
+			location = error("%s attribute [%s='%s'], value is empty which is not allowed in ARGUMENT (CORE1.3.2 %s)",
+					where, key, value, Verifier.ARGUMENT);
+		} else if (!Verifier.isArgument(value)) {
+			location = error("%s attribute [%s='%s'], value not an ARGUMENT (CORE1.3.2 %s)", where, key, value, key,
+					Verifier.ARGUMENT);
+		} else
+			return;
+		if ( path != null) {
+			File f = new File(path);
+			if ( f.isFile() ) {
+				FileLine fl = findHeader(f, key);
+				fl.set(location);
+			}
 		}
 	}
 
@@ -1935,7 +1977,8 @@ public class Analyzer extends Processor {
 			try {
 				VersionRange vr = new VersionRange(version);
 				return version;
-			} catch( Exception e) {
+			}
+			catch (Exception e) {
 				// ignore
 			}
 		}
@@ -1996,9 +2039,11 @@ public class Analyzer extends Processor {
 	 * TRhe cleanup version got confused when people used numeric dates like
 	 * 201209091230120 as qualifiers. These are too large for Integers. This
 	 * method checks if the all digit string fits in an integer.
+	 * 
 	 * <pre>
 	 * maxint = 2,147,483,647 = 10 digits
-	 * </pre>	 
+	 * </pre>
+	 * 
 	 * @param integer
 	 * @return if this fits in an integer
 	 */

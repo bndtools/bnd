@@ -101,6 +101,10 @@ public class FileResource implements Resource, Closeable {
 		deleteOnClose = b;
 	}
 	
+	public File getFile() {
+		return file;
+	}
+	
 	@Override
 	protected void finalize() throws Throwable {
 		if ( deleteOnClose) 

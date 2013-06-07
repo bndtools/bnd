@@ -54,6 +54,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	HashSet<String>					missingCommand;
 
 	public static class FileLine {
+		public static final FileLine	DUMMY	= new FileLine(null,0,0);
 		final public File	file;
 		final public int	line;
 		final public int	length;
@@ -67,6 +68,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			this.line = line;
 			this.length = length;
 					
+		}
+		public void set(SetLocation sl) {
+			sl.file(file.getAbsolutePath());
+			sl.line(line);
+			sl.length(length);
 		}
 	}
 
@@ -1863,6 +1869,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return
 	 * @throws IOException
 	 */
+	public FileLine getHeader(String header) throws Exception {
+		return getHeader(Pattern.compile("^[ \t]*"+Pattern.quote(header), Pattern.MULTILINE+Pattern.CASE_INSENSITIVE));
+	}
 	public FileLine getHeader(Pattern header) throws Exception {
 		FileLine fl = getHeader0(header);
 		if ( fl != null)
@@ -1921,6 +1930,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return new FileLine(f,0,0);
 	}
 
+	public static FileLine findHeader(File f, String header) throws IOException {
+		return findHeader(f, Pattern.compile("^[ \t]*"+Pattern.quote(header), Pattern.MULTILINE+Pattern.CASE_INSENSITIVE));
+	}
 	public static FileLine findHeader(File f, Pattern header) throws IOException {
 		String s = IO.collect(f);
 		Matcher matcher = header.matcher(s);

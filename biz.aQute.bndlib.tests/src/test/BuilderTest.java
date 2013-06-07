@@ -12,19 +12,45 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
+import aQute.service.reporter.Report.Location;
 
 public class BuilderTest extends BndTestCase {
-	
+
 	/**
-	 * https://github.com/bndtools/bnd/issues/359
-	 * Starts with a bundle that has one package 'a' containing classes A and B.
-	 * First removes B from 'a', and checks that the last modified date of the resulting bundle changed.
-	 * Then removes A from 'a', and checks again that the last modified data changed.
+	 * Using a package info without the version keyword gives strange results in
+	 * the manifest, should generate an error.
+	 */
+
+	public void testBadPackageInfo() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setExportPackage("test.package_info_versioniskey");
+		b.build();
+		b.getJar().getManifest().write(System.out);
+		String message = b.getErrors().get(0);
+		assertTrue( "The lacking version error first", message.startsWith("package info for test.package_info_versioniskey attribute [1.0.0=''],"));
+		Location location = b.getLocation(message);
+		assertNotNull("Supposed to have a location", location);
+		assertNotNull("And that must have a file", location.file);
+		assertEquals( "Which should be the packaginfo file", "packageinfo", new File(location.file).getName() );
+		assertEquals( 4, location.line);
+		assertEquals( 5, location.length);
+		
+		assertTrue(b
+				.check("package info for test.package_info_versioniskey attribute \\[1.0.0=''\\],"));
+		
+	}
+
+	/**
+	 * https://github.com/bndtools/bnd/issues/359 Starts with a bundle that has
+	 * one package 'a' containing classes A and B. First removes B from 'a', and
+	 * checks that the last modified date of the resulting bundle changed. Then
+	 * removes A from 'a', and checks again that the last modified data changed.
 	 */
 	public static void testRemoveClassFromPackage() throws Exception {
 		try {
 			Builder b = new Builder();
-			(new File("bin/a1/a")).mkdirs();
+			new File("bin/a1/a").mkdirs();
 			IO.copy(IO.getFile("bin/a/A.class"), new File("bin/a1/a/A.class"));
 			IO.copy(IO.getFile("bin/a/B.class"), new File("bin/a1/a/B.class"));
 			Jar classpath = new Jar(IO.getFile("bin/a1"));
@@ -52,21 +78,33 @@ public class BuilderTest extends BndTestCase {
 
 		}
 		finally {
-			try { IO.getFile("bin/a1/a/A.class").delete(); } catch (Exception e) {}
-			try { IO.getFile("bin/a1/a/B.class").delete(); } catch (Exception e) {}
-			try { IO.getFile("bin/a1/a").delete(); } catch (Exception e) {}
-			try { IO.getFile("bin/a1").delete(); } catch (Exception e) {}
+			try {
+				IO.getFile("bin/a1/a/A.class").delete();
+			}
+			catch (Exception e) {}
+			try {
+				IO.getFile("bin/a1/a/B.class").delete();
+			}
+			catch (Exception e) {}
+			try {
+				IO.getFile("bin/a1/a").delete();
+			}
+			catch (Exception e) {}
+			try {
+				IO.getFile("bin/a1").delete();
+			}
+			catch (Exception e) {}
 		}
 	}
 
 	/**
-	 * https://github.com/bndtools/bnd/issues/315
-	 * Turns out bnd doesn't seem to support a class in a capitalized package
-	 * name. I accidentally called a package with a capital letter and I get the
-	 * strange error message and a refusal to build it. (See title for error
-	 * message) My package could be named "Coffee" and the package named
-	 * "CoffeeClient", The bnd.bnd file could have: Private-Package: Coffee I'm
-	 * running 2.0.0REL with Eclipse Juno.
+	 * https://github.com/bndtools/bnd/issues/315 Turns out bnd doesn't seem to
+	 * support a class in a capitalized package name. I accidentally called a
+	 * package with a capital letter and I get the strange error message and a
+	 * refusal to build it. (See title for error message) My package could be
+	 * named "Coffee" and the package named "CoffeeClient", The bnd.bnd file
+	 * could have: Private-Package: Coffee I'm running 2.0.0REL with Eclipse
+	 * Juno.
 	 */
 	public static void testUpperCasePackage() throws Exception {
 		Builder b = new Builder();
@@ -1368,7 +1406,7 @@ public class BuilderTest extends BndTestCase {
 		b.setProperties(p);
 		b.setPedantic(true);
 		b.build();
-		assertTrue(b.check("Imports that lack version ranges", "Invalid package name"));
+		assertTrue(b.check("Imports that lack version ranges", "Invalid package name", "value is empty which is not allowed in ARGUMENT"));
 	}
 
 	/**

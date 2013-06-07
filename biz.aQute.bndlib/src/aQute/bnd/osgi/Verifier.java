@@ -42,7 +42,8 @@ public class Verifier extends Processor {
 		String	name;
 		int		target;
 
-		EE(String name, @SuppressWarnings("unused") int source, int target) {
+		EE(String name, @SuppressWarnings("unused")
+		int source, int target) {
 			this.name = name;
 			this.target = target;
 		}
@@ -104,6 +105,12 @@ public class Verifier extends Processor {
 	public final static Pattern	TRUEORFALSEPATTERN				= Pattern.compile("true|false|TRUE|FALSE");
 	public static final Pattern	WILDCARDNAMEPATTERN				= Pattern.compile(".*");
 	public static final Pattern	BUNDLE_ACTIVATIONPOLICYPATTERN	= Pattern.compile("lazy");
+	public static String		EXTENDED						= "[-a-zA-Z0-9_.]+";
+	public static Pattern		EXTENDED_P						= Pattern.compile(EXTENDED);
+	public static String		QUOTEDSTRING					= "\"[^\"]*\"";
+	public static Pattern		QUOTEDSTRING_P					= Pattern.compile(QUOTEDSTRING);
+	public static String		ARGUMENT						= "(:?" + EXTENDED + ")|(?:" + QUOTEDSTRING + ")";
+	public static Pattern		ARGUMENT_P						= Pattern.compile(ARGUMENT);
 
 	public final static String	EES[]							= {
 			"CDC-1.0/Foundation-1.0", "CDC-1.1/Foundation-1.1", "OSGi/Minimum-1.0", "OSGi/Minimum-1.1",
@@ -489,7 +496,9 @@ public class Verifier extends Processor {
 		}
 	}
 
-	private void verifyType(@SuppressWarnings("unused") Attrs.Type type, @SuppressWarnings("unused") String string) {
+	private void verifyType(@SuppressWarnings("unused")
+	Attrs.Type type, @SuppressWarnings("unused")
+	String string) {
 
 	}
 
@@ -911,5 +920,42 @@ public class Verifier extends Processor {
 		if (missingDigest.size() > 0) {
 			error("Entries in the manifest are missing digests: %s", missingDigest);
 		}
+	}
+
+	/**
+	 * Verify the EXTENDED syntax
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static boolean isExtended(String key) {
+		if (key == null)
+			return false;
+
+		return EXTENDED_P.matcher(key).matches();
+	}
+	/**
+	 * Verify the ARGUMENT syntax
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static boolean isArgument(String arg) {
+		if (arg == null)
+			return false;
+
+		return ARGUMENT_P.matcher(arg).matches();
+	}
+	/**
+	 * Verify the QUOTEDSTRING syntax
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static boolean isQuotedString(String s) {
+		if (s == null)
+			return false;
+
+		return QUOTEDSTRING_P.matcher(s).matches();
 	}
 }
