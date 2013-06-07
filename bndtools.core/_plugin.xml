@@ -116,6 +116,19 @@
             project="false">
       </wizard>
       <wizard
+            name="DS Component"
+            icon="icons/bullet_green.png"
+            category="org.eclipse.jdt.ui.java"
+            id="bndtools.newDsComponentWizard">
+         <class class="org.bndtools.core.ui.wizards.ds.NewDSComponentWizard">
+            <parameter name="javatype" value="true"/>
+         </class>
+         <description>
+            %NewJavaClass.description
+         </description>
+         <keywordReference id="org.eclipse.jdt.ui.wizards.java"/>
+      </wizard>
+      <wizard
             id="bndtools.bndrunWizard"
             category="bndtools.wizardCategory"
             class="bndtools.wizards.bndfile.BndRunFileWizard"
