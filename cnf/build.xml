@@ -222,6 +222,7 @@
 			in="${target}/${project.name}.findbugs.xml"
 			out="${target}/${project.name}.findbugs.html"
 			style="${workspacedir}/cnf/findbugs/src/xsl/default.xsl"
+			failOnError="false"
 		/>
 	</target>
 
