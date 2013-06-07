@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-	The is main OSGi build file. It is included from projects
-	as is.
-	
-	It is described in http://www2.osgi.org/members/Build/HomePage 
--->
 <project name="master" default="none">
 
 	<!-- 
@@ -16,9 +10,9 @@
 
 	<target name="init" unless="initialized">
 		<tstamp>
-			<format property="NOW" pattern="yyyyMMdd-HHmmss"/>
+			<format property="NOW" pattern="yyyyMMdd-HHmmss" timezone="UTC" />
 		</tstamp>
-		
+
 		<dirname property="projectdir" file="${ant.file}" />
 		<dirname property="workspacedir" file="${projectdir}" />
 		<taskdef resource="aQute/bnd/ant/taskdef.properties">
@@ -29,7 +23,7 @@
 
 		<echo message="Preparing in ${projectdir}"/>
 		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
-		
+
 		<available property="dochecking" file="classycle.ddf"/>
 		<taskdef name="classcycle" classname="classycle.ant.DependencyCheckingTask">
 			<classpath>
@@ -72,6 +66,8 @@
 
 	<!--
 	     Test
+	     
+	     These are the OSGi tests.
 	-->
 	<target name="test" depends="compile">
 		<bnd command="test" exceptions="true" basedir="${project}" />
@@ -105,8 +101,10 @@
 	</target>
 
 	<!-- 
-		JARS
-		Iterate of the jars to build.
+		build
+		
+		Use bnd to build this project. Assumption is that any projects that
+		this project depends on are already build. See dependencies.
 	-->
 	<target name="build" depends="checks">
 		<mkdir dir="${target}"/>
@@ -130,17 +128,24 @@
 		</copy>
 	</target>
 
+	<!--
+		Junit
+		
+		Run all the tests. If the -nojunit property is set then this project
+		cannot run junit tests and they should not be run. These are normal
+		junit tests, not OSGi junit tests.
+	-->
 	<target name="junit" depends="init,compileTests" if="testDirExists">
 		<junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
 			<assertions>
 				<enable />
 			</assertions>
 			<classpath path="${project.buildpath}:bin_test/" />
-			<formatter type="xml"/>
-			<batchtest todir="${target}" >
-			    <fileset dir="test">
-			      <include name="**/*.java"/>
-			    </fileset>
+			<formatter type="xml" />
+			<batchtest todir="${target}">
+				<fileset dir="test">
+					<include name="**/*.java" />
+				</fileset>
 			</batchtest>
 		</junit>
 	</target>
@@ -235,9 +240,9 @@
 
 	<target name="clean" depends="init">
 		<bnd command="clean" exceptions="true" basedir="${project}" />
-		<delete dir="bin"/>
-		<delete dir="bin_test"/>
-		<delete dir="${target}"/>
+		<delete dir="bin" />
+		<delete dir="bin_test" />
+		<delete dir="${target}" />
 	</target>
 
 	<!--
@@ -259,6 +264,7 @@
 		<echo>javac.debug:            ${javac.debug}</echo>
 		<echo>javac.source:           ${javac.source}</echo>
 		<echo>javac.target:           ${javac.target}</echo>
+		<echo>javac.ee:               ${javac.ee}</echo>
 		<echo>p:                      ${p}</echo>
 		<echo>btool.manifestVersion:  ${btool.manifestVersion}</echo>
 		<echo>btool.analyse:          ${btool.analyse}</echo>
@@ -273,12 +279,13 @@
 		<echo>release.target:         ${release.target}</echo>
 		<echo>licensed repo:          ${licensed-repo}</echo>
 		<echo>repo:                   ${repo}</echo>
+		<echo>releaserepo:            ${releaserepo}</echo>
 		<echo>use.bnd:                ${use.bnd}</echo>
 		<echo>nodeploy:               ${nodeploy}</echo>
 		<echo>-dependson:             ${-dependson}</echo>
 
 	</target>
-	
+
 	<!--
 	     Default Target
 	-->
