@@ -150,19 +150,69 @@
 		<property name="project.testpath.adjusted" value="${project.testpath}" />
 
 		<!-- filter out some jars and directories -->
-		<for list="[^:]+/ee\.j2se-[0-9\.]+\.jar#${project.output}#^:+#:+$" delimiter="#" param="regex">
+		<for
+			list="[^:]+/ee\.j2se-[0-9\.]+\.jar#${project.output}#^:+#:+$"
+			delimiter="#"
+			param="regex">
 			<sequential>
-				<propertyregex property="project.bootclasspath.adjusted" input="${project.bootclasspath.adjusted}" defaultValue="${project.bootclasspath.adjusted}" regexp="@{regex}" replace="" override="true" global="yes" />
-				<propertyregex property="project.buildpath.adjusted" input="${project.buildpath.adjusted}" defaultValue="${project.buildpath.adjusted}" regexp="@{regex}" replace="" override="true" global="yes" />
-				<propertyregex property="project.testpath.adjusted" input="${project.testpath.adjusted}" defaultValue="${project.testpath.adjusted}" regexp="@{regex}" replace="" override="true" global="yes" />
+				<propertyregex
+					property="project.bootclasspath.adjusted"
+					input="${project.bootclasspath.adjusted}"
+					defaultValue="${project.bootclasspath.adjusted}"
+					regexp="@{regex}"
+					replace=""
+					override="true"
+					global="yes" />
+				<propertyregex
+					property="project.buildpath.adjusted"
+					input="${project.buildpath.adjusted}"
+					defaultValue="${project.buildpath.adjusted}"
+					regexp="@{regex}"
+					replace=""
+					override="true"
+					global="yes" />
+				<propertyregex
+					property="project.testpath.adjusted"
+					input="${project.testpath.adjusted}"
+					defaultValue="${project.testpath.adjusted}"
+					regexp="@{regex}"
+					replace=""
+					override="true"
+					global="yes" />
 			</sequential>
 		</for>
 		<!-- fixups -->
-		<propertyregex property="project.bootclasspath.adjusted" input="${project.bootclasspath.adjusted}" defaultValue="${project.bootclasspath.adjusted}" regexp=":+" replace=":" override="true" global="yes" />
-		<propertyregex property="project.buildpath.adjusted" input="${project.buildpath.adjusted}" defaultValue="${project.buildpath.adjusted}" regexp=":+" replace=":" override="true" global="yes" />
-		<propertyregex property="project.testpath.adjusted" input="${project.testpath.adjusted}" defaultValue="${project.testpath.adjusted}" regexp=":+" replace=":" override="true" global="yes" />
+		<propertyregex
+			property="project.bootclasspath.adjusted"
+			input="${project.bootclasspath.adjusted}"
+			defaultValue="${project.bootclasspath.adjusted}"
+			regexp=":+"
+			replace=":"
+			override="true"
+			global="yes" />
+		<propertyregex
+			property="project.buildpath.adjusted"
+			input="${project.buildpath.adjusted}"
+			defaultValue="${project.buildpath.adjusted}"
+			regexp=":+"
+			replace=":"
+			override="true"
+			global="yes" />
+		<propertyregex
+			property="project.testpath.adjusted"
+			input="${project.testpath.adjusted}"
+			defaultValue="${project.testpath.adjusted}"
+			regexp=":+"
+			replace=":"
+			override="true"
+			global="yes" />
 
-		<findbugs home="${workspacedir}/cnf/findbugs" includeFilter="${workspacedir}/cnf/findbugs.include.xml" excludeFilter="${workspacedir}/cnf/findbugs.exclude.xml" output="xml:withMessages" outputFile="${target}/${project.name}.findbugs.xml">
+		<findbugs
+			home="${workspacedir}/cnf/findbugs"
+			includeFilter="${workspacedir}/cnf/findbugs.include.xml"
+			excludeFilter="${workspacedir}/cnf/findbugs.exclude.xml"
+			output="xml:withMessages"
+			outputFile="${target}/${project.name}.findbugs.xml">
 			<sourcePath path="${project.sourcepath}" />
 			<auxClasspath path="${project.bootclasspath.adjusted}:${project.buildpath.adjusted}:${project.testpath.adjusted}" />
 			<class location="${target}" />
@@ -197,6 +247,7 @@
 	-->
 	<target name="echo" depends="init">
 		<echo>verbose:                ${verbose}</echo>
+		<echo>build:                  ${build}</echo>
 		<echo>project.name:           ${project.name}</echo>
 		<echo>Bundle-Version:         ${Bundle-Version}</echo>
 		<echo>project.output:         ${project.output}</echo>
