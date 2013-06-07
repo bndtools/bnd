@@ -167,6 +167,12 @@
 			<auxClasspath path="${project.bootclasspath.adjusted}:${project.buildpath.adjusted}:${project.testpath.adjusted}" />
 			<class location="${target}" />
 		</findbugs>
+		<xslt
+			in="${target}/${project.name}.findbugs.xml"
+			out="${target}/${project.name}.findbugs.html"
+			style="${workspacedir}/cnf/findbugs/src/xsl/default.xsl"
+			failOnError="false"
+		/>
 	</target>
 
 	<!--
