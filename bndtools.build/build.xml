@@ -44,7 +44,8 @@
 		<unjar dest="${target}/plugins/main" src="${target}/${project.name}.jar">
 		    <patternset>
 		      <exclude name="*ace*"/>
-		      <exclude name="*template*"/>
+		      <exclude name="*amdatu*"/>
+		      <exclude name="*template.dm*"/>
 		      <include name="*.jar"/>
 		    </patternset>
 		</unjar>
