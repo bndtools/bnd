@@ -68,6 +68,14 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
     }
 
     @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible) {
+            setFocus();
+        }
+    }
+
+    @Override
     protected String getSuperInterfacesLabel() {
         return "Service Interfaces:";
     }
