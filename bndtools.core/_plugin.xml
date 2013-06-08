@@ -111,8 +111,8 @@
             class="org.bndtools.core.ui.wizards.blueprint.BlueprintXmlFileWizard"
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
-            icon="icons/brick_blueprint.png"
-            name="Blueprint Descriptor"
+            icon="icons/blueprint.png"
+            name="OSGi Blueprint Descriptor"
             project="false">
       </wizard>
       <wizard
