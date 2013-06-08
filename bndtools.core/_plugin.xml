@@ -116,16 +116,17 @@
             project="false">
       </wizard>
       <wizard
-            name="DS Component"
-            icon="icons/bullet_green.png"
-            category="org.eclipse.jdt.ui.java"
+            name="OSGi Declarative Services Component"
+            icon="icons/led.png"
+            category="bndtools.wizardCategory"
             id="bndtools.newDsComponentWizard">
          <class class="org.bndtools.core.ui.wizards.ds.NewDSComponentWizard">
             <parameter name="javatype" value="true"/>
          </class>
          <description>
-            %NewJavaClass.description
+            Create an OSGi Declarative Services Component
          </description>
+         <!-- This is used to add the wizard to the "New Java Type" toolbar dropdown -->
          <keywordReference id="org.eclipse.jdt.ui.wizards.java"/>
       </wizard>
       <wizard
