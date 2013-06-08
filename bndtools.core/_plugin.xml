@@ -95,8 +95,8 @@
          point="org.eclipse.ui.newWizards">
       <category
             id="bndtools.wizardCategory"
-            name="Bndtools">
-      </category>
+            name="Bndtools"
+      />
       <wizard
             id="bndtools.newBndFile"
             category="bndtools.wizardCategory"
@@ -146,6 +146,7 @@
             name="Bndtools OSGi Project"
             project="true">
       </wizard>
+      <!-- Disable until we fix it 
       <wizard
             id="bndtools.newWrapProjWiz"
             category="bndtools.wizardCategory"
@@ -156,6 +157,7 @@
             name="Wrap JAR as OSGi Bundle Project"
             project="true">
       </wizard>
+       -->
    </extension>
    <extension
          point="org.eclipse.ui.views">
