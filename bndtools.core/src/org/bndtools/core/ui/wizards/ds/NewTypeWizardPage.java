@@ -2307,6 +2307,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Construct the type annotations to add to the class. This base implementation does nothing, subclasses may extend.
      */
+    @SuppressWarnings("unused")
     protected void constructTypeAnnotationStubs(StringBuffer buffer, ImportsManager imports, String lineDelimiter) {}
 
     /**
