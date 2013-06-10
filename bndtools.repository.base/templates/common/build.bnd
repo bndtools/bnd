@@ -10,9 +10,9 @@
 #-verbose:     true
 #src:          src
 #bin:          bin
-#target:       ${project}/generated
-#build:        ${workspace}/cnf
-#plugin-dir:   ${build}/plugins
+#target:       \${project}/generated
+#build:        \${workspace}/cnf
+#plugin-dir:   \${build}/plugins
 
 #java:         java
 #javac:        javac
@@ -21,12 +21,12 @@
 #javac.debug:  on
 
 #-sources:       true
-#-sourcepath:    ${project}/src
+#-sourcepath:    \${project}/src
 
 ## Properties from ext/*.bnd can be referenced in order to extend them.
 ## For example, to add one additional plugin to the list defined in ext/repositories.bnd:
-# -plugin: ${ext.repositories.-plugin}, org.example.MyPlugin
+# -plugin: \${ext.repositories.-plugin}, org.example.MyPlugin
 
 ## If you use git, you might want to uncomment the following lines:
-# Git-Descriptor: ${system-allow-fail;git describe --dirty --always}
-# Git-SHA: ${system-allow-fail;git rev-list -1 HEAD}
+# Git-Descriptor: \${system-allow-fail;git describe --dirty --always}
+# Git-SHA: \${system-allow-fail;git rev-list -1 HEAD}

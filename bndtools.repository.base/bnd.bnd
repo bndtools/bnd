@@ -7,13 +7,10 @@ jpm-plugin-version:  1.1.3
 
 bundlehub-template: templates/cnfs/bundlehub
 bundlehub-template-resources: \
-	${bundlehub-template}=templates/unprocessed/common,\
-	${bundlehub-template}=templates/unprocessed/bundlehub,\
-	{${bundlehub-template}=templates/processed/common},\
-	{${bundlehub-template}=templates/processed/bundlehub},\
-	${bundlehub-template}/buildrepo/=templates/repos/buildrepo,\
-	${bundlehub-template}/localrepo/=templates/repos/localrepo,\
-	${bundlehub-template}/releaserepo/=templates/repos/releaserepo,\
+	${bundlehub-template}=templates/ant,\
+	{${bundlehub-template}=templates/common},\
+	{${bundlehub-template}=templates/bundlehub},\
+	${bundlehub-template}=templates/repos,\
 	${bundlehub-template}/plugins/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
 	${bundlehub-template}/plugins/biz.aQute.repository/=${repo;biz.aQute.repository;${aQute-repository-base}},\
 	${bundlehub-template}/buildrepo/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\
@@ -21,10 +18,9 @@ bundlehub-template-resources: \
 
 jpm-template: templates/cnfs/jpm
 jpm-template-resources: \
-	${jpm-template}=templates/unprocessed/common,\
-	${jpm-template}=templates/unprocessed/jpm,\
-	{${jpm-template}=templates/processed/common},\
-	{${jpm-template}=templates/processed/jpm},\
+	${jpm-template}=templates/ant,\
+	{${jpm-template}=templates/common},\
+	{${jpm-template}=templates/jpm},\
 	${jpm-template}/localrepo/=templates/repos/localrepo,\
 	${jpm-template}/releaserepo/=templates/repos/releaserepo,\
 	${jpm-template}/plugins/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
