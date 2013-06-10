@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.bndtools.utils.collections.CollectionUtils;
 import org.bndtools.utils.jface.StrikeoutStyler;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -36,6 +37,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.IDE;
@@ -63,6 +65,8 @@ public class RepositorySelectionPart extends BndEditorPart {
     private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
 
     private final ILogger logger = Logger.getLogger(RepositorySelectionPart.class);
+
+    private final Object MESSAGE_KEY = new Object();
 
     private CheckboxTableViewer viewer;
     private ToolItem btnMoveUp;
@@ -271,7 +275,8 @@ public class RepositorySelectionPart extends BndEditorPart {
         try {
             allRepos.addAll(Central.getWorkspace().getPlugins(Repository.class));
         } catch (Exception e) {
-            logger.logError("Failed to reload repositories", e);
+            IMessageManager messages = getManagedForm().getMessageManager();
+            messages.addMessage(MESSAGE_KEY, "Repository List: Unable to load OSGi Repositories. " + e.getMessage(), e, IMessageProvider.ERROR, viewer.getControl());
         }
         viewer.setInput(allRepos);
         updateButtons();
@@ -331,6 +336,9 @@ public class RepositorySelectionPart extends BndEditorPart {
 
     @Override
     protected void refreshFromModel() {
+        IMessageManager messages = getManagedForm().getMessageManager();
+        messages.removeMessage(MESSAGE_KEY, viewer.getControl());
+
         List<String> tmp = model.getRunRepos();
         includedRepos = tmp == null ? null : new LinkedList<String>(tmp);
         reloadRepos();
