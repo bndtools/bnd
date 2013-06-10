@@ -105,12 +105,18 @@ public class Verifier extends Processor {
 	public final static Pattern	TRUEORFALSEPATTERN				= Pattern.compile("true|false|TRUE|FALSE");
 	public static final Pattern	WILDCARDNAMEPATTERN				= Pattern.compile(".*");
 	public static final Pattern	BUNDLE_ACTIVATIONPOLICYPATTERN	= Pattern.compile("lazy");
-	public static String		EXTENDED						= "[-a-zA-Z0-9_.]+";
-	public static Pattern		EXTENDED_P						= Pattern.compile(EXTENDED);
+
+	public final static String	VERSION_S						= "[0-9]{1,9}(:?\\.[0-9]{1,9}(:?\\.[0-9]{1,9}(:?\\.[0-9A-Za-z_-]+)?)?)?";
+	public final static Pattern	VERSION_P						= Pattern.compile(VERSION_S);
+	public final static String	VERSION_RANGE_S					= "(?:(:?\\(|\\[)" + VERSION_S + "," + VERSION_S
+																		+ "(\\]|\\)))|" + VERSION_S;
+	public final static Pattern	VERSIONRANGE_P					= VERSIONRANGE;
+	public static String		EXTENDED_S						= "[-a-zA-Z0-9_.]+";
+	public static Pattern		EXTENDED_P						= Pattern.compile(EXTENDED_S);
 	public static String		QUOTEDSTRING					= "\"[^\"]*\"";
 	public static Pattern		QUOTEDSTRING_P					= Pattern.compile(QUOTEDSTRING);
-	public static String		ARGUMENT						= "(:?" + EXTENDED + ")|(?:" + QUOTEDSTRING + ")";
-	public static Pattern		ARGUMENT_P						= Pattern.compile(ARGUMENT);
+	public static String		ARGUMENT_S						= "(:?" + EXTENDED_S + ")|(?:" + QUOTEDSTRING + ")";
+	public static Pattern		ARGUMENT_P						= Pattern.compile(ARGUMENT_S);
 
 	public final static String	EES[]							= {
 			"CDC-1.0/Foundation-1.0", "CDC-1.1/Foundation-1.1", "OSGi/Minimum-1.0", "OSGi/Minimum-1.1",
@@ -923,7 +929,7 @@ public class Verifier extends Processor {
 	}
 
 	/**
-	 * Verify the EXTENDED syntax
+	 * Verify the EXTENDED_S syntax
 	 * 
 	 * @param key
 	 * @return
@@ -934,18 +940,17 @@ public class Verifier extends Processor {
 
 		return EXTENDED_P.matcher(key).matches();
 	}
+
 	/**
-	 * Verify the ARGUMENT syntax
+	 * Verify the ARGUMENT_S syntax
 	 * 
 	 * @param key
 	 * @return
 	 */
 	public static boolean isArgument(String arg) {
-		if (arg == null)
-			return false;
-
-		return ARGUMENT_P.matcher(arg).matches();
+		return arg != null && ARGUMENT_P.matcher(arg).matches();
 	}
+
 	/**
 	 * Verify the QUOTEDSTRING syntax
 	 * 
@@ -953,9 +958,10 @@ public class Verifier extends Processor {
 	 * @return
 	 */
 	public static boolean isQuotedString(String s) {
-		if (s == null)
-			return false;
+		return s != null && QUOTEDSTRING_P.matcher(s).matches();
+	}
 
-		return QUOTEDSTRING_P.matcher(s).matches();
+	public static boolean isVersionRange(String range) {
+		return range != null && VERSIONRANGE_P.matcher(range).matches();
 	}
 }
