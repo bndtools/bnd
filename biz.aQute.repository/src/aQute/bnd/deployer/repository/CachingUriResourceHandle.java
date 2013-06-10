@@ -156,7 +156,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	}
 
 	private static File mapSHAFile(File cachedFile) {
-		return new File(cachedFile.getAbsolutePath() + ".sha");
+		return new File(cachedFile.getAbsolutePath() + AbstractIndexedRepo.REPO_INDEX_SHA_EXTENSION);
 	}
 
 	public String getName() {

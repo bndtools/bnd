@@ -55,7 +55,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 							.getAbsolutePath(),
 					result.getAbsolutePath());
 
-			File shaFile = new File(result.getAbsolutePath() + ".sha");
+			File shaFile = new File(result.getAbsolutePath() + AbstractIndexedRepo.REPO_INDEX_SHA_EXTENSION);
 			assertEquals(EXPECTED_SHA, IO.collect(shaFile));
 
 			result.delete();
@@ -89,7 +89,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		long cacheTimestamp = cached.lastModified();
 
 		// Clear the SHA so the file appears modified
-		File shaFile = new File(cached.getAbsolutePath() + ".sha");
+		File shaFile = new File(cached.getAbsolutePath() + AbstractIndexedRepo.REPO_INDEX_SHA_EXTENSION);
 		IO.copy(IO.stream("00000000"), shaFile);
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
@@ -112,7 +112,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		File cached = new File("testdata/httpcache/6/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		cached.delete();
 
-		File shaFile = new File(cached.getAbsolutePath() + ".sha");
+		File shaFile = new File(cached.getAbsolutePath() + AbstractIndexedRepo.REPO_INDEX_SHA_EXTENSION);
 		shaFile.delete();
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
