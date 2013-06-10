@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
@@ -25,6 +26,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -53,6 +55,8 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
     private ComboViewer vwrActivateStub;
 
     private ActivateSignature activateSignature = ActivateSignature.NoActivate;
+    private IStatus activateSignatureStatus = Status.OK_STATUS;
+
     private IType fCreatedType;
 
     public NewDSComponentWizardPage() {
@@ -80,14 +84,6 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
         return "Service Interfaces:";
     }
 
-    /*
-    public void setMethodStubSelection(boolean createMain, boolean createConstructors, boolean createInherited, boolean canBeModified) {
-        fMethodStubsButtons.setSelection(0, createConstructors);
-        fMethodStubsButtons.setSelection(1, createInherited);
-        fMethodStubsButtons.setEnabled(canBeModified);
-    }
-    */
-
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
@@ -109,10 +105,9 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
         createSeparator(composite, nColumns);
 
         createTypeNameControls(composite, nColumns);
-
-        createSuperClassControls(composite, nColumns);
+        createLifecycleMethodStubControls(composite, nColumns);
         createSuperInterfacesControls(composite, nColumns);
-
+        createSuperClassControls(composite, nColumns);
         createMethodStubSelectionControls(composite, nColumns);
 
         setControl(composite);
@@ -151,7 +146,7 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
     private void doStatusUpdate() {
         // status of all used components
         IStatus[] status = new IStatus[] {
-                fContainerStatus, isEnclosingTypeSelected() ? fEnclosingTypeStatus : fPackageStatus, fTypeNameStatus, fSuperClassStatus, fSuperInterfacesStatus
+                fContainerStatus, isEnclosingTypeSelected() ? fEnclosingTypeStatus : fPackageStatus, fTypeNameStatus, fSuperClassStatus, fSuperInterfacesStatus, activateSignatureStatus
         };
 
         // the mode severe status will be displayed and the OK button enabled/disabled.
@@ -165,20 +160,11 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
         fMethodStubsButtons.setEnabled(canBeModified);
     }
 
-    protected void createMethodStubSelectionControls(Composite composite, int nColumns) {
-        // Create stubs for constructors and abstract methods
-        Control labelControl = fMethodStubsButtons.getLabelControl(composite);
-        LayoutUtil.setHorizontalSpan(labelControl, nColumns);
-
-        DialogField.createEmptySpace(composite);
-
-        Control buttonGroup = fMethodStubsButtons.getSelectionButtonsGroup(composite);
-        LayoutUtil.setHorizontalSpan(buttonGroup, nColumns - 1);
-
+    protected void createLifecycleMethodStubControls(Composite composite, int nColumns) {
         // Create stubs for lifecycle methods (activate and deactivate)
         Label lblLifecycleMethods = new Label(composite, SWT.NONE);
         lblLifecycleMethods.setText("Lifecycle Methods:");
-        LayoutUtil.setHorizontalSpan(labelControl, nColumns);
+        LayoutUtil.setHorizontalSpan(lblLifecycleMethods, 1);
 
         Combo cmbActivateStub = new Combo(composite, SWT.READ_ONLY);
         vwrActivateStub = new ComboViewer(cmbActivateStub);
@@ -199,10 +185,29 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
                 } else {
                     activateSignature = ActivateSignature.NoActivate;
                 }
+                activateSignatureStatus = activateSignatureChanged();
+                handleFieldChanged("activateSignature");
             }
         });
+        //        LayoutUtil.setHorizontalSpan(cmbActivateStub, nColumns - 1);
+        GridData gd = new GridData(SWT.LEFT, SWT.FILL, false, false, nColumns - 1, 1);
+        gd.horizontalIndent = -4; // counteract the weird additional space added to combos
+        cmbActivateStub.setLayoutData(gd);
+    }
 
-        LayoutUtil.setHorizontalSpan(cmbActivateStub, nColumns - 1);
+    protected IStatus activateSignatureChanged() {
+        return Status.OK_STATUS;
+    }
+
+    protected void createMethodStubSelectionControls(Composite composite, int nColumns) {
+        // Create stubs for constructors and abstract methods
+        Control labelControl = fMethodStubsButtons.getLabelControl(composite);
+        LayoutUtil.setHorizontalSpan(labelControl, nColumns);
+
+        DialogField.createEmptySpace(composite);
+
+        Control buttonGroup = fMethodStubsButtons.getSelectionButtonsGroup(composite);
+        LayoutUtil.setHorizontalSpan(buttonGroup, nColumns - 1);
     }
 
     @Override
