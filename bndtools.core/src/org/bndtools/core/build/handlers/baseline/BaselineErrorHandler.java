@@ -108,32 +108,45 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
             if (pkgMemberDiff.getDelta().ordinal() < packageDelta.ordinal())
                 continue;
 
-            Tree pkgMember = pkgMemberDiff.getNewer();
-            if (Type.INTERFACE == pkgMember.getType() || Type.CLASS == pkgMember.getType()) {
-                String className = pkgMember.getName();
+            if (Delta.ADDED == pkgMemberDiff.getDelta()) {
+                Tree pkgMember = pkgMemberDiff.getNewer();
+                //                markers.addAll(generateAddedTypeMarker(javaProject, pkgMember.getName(), pkgMember.ifAdded()));
+            } else if (Delta.REMOVED == pkgMemberDiff.getDelta()) {} else {
+                Tree pkgMember = pkgMemberDiff.getOlder();
+                if (pkgMember != null && Type.INTERFACE == pkgMember.getType() || Type.CLASS == pkgMember.getType()) {
+                    String className = pkgMember.getName();
 
-                // Iterate into the class member diffs
-                for (Diff classMemberDiff : pkgMemberDiff.getChildren()) {
-                    // Skip deltas that have lesser significance than the overall package delta (again)
-                    if (classMemberDiff.getDelta().ordinal() < packageDelta.ordinal())
-                        continue;
+                    // Iterate into the class member diffs
+                    for (Diff classMemberDiff : pkgMemberDiff.getChildren()) {
+                        // Skip deltas that have lesser significance than the overall package delta (again)
+                        if (classMemberDiff.getDelta().ordinal() < packageDelta.ordinal())
+                            continue;
 
-                    if (Delta.ADDED == classMemberDiff.getDelta()) {
-                        Tree classMember = classMemberDiff.getNewer();
-                        if (Type.METHOD == classMember.getType())
-                            markers.addAll(generateAddedMethodMarker(javaProject, className, classMember.getName(), classMember.ifAdded()));
-                    } else if (Delta.REMOVED == classMemberDiff.getDelta()) {
-                        Tree classMember = classMemberDiff.getOlder();
-                        if (Type.METHOD == classMember.getType()) {
-                            markers.addAll(generateRemovedMethodMarker(javaProject, className, classMember.getName(), classMember.ifRemoved()));
+                        if (Delta.ADDED == classMemberDiff.getDelta()) {
+                            Tree classMember = classMemberDiff.getNewer();
+                            if (Type.METHOD == classMember.getType())
+                                markers.addAll(generateAddedMethodMarker(javaProject, className, classMember.getName(), classMember.ifAdded()));
+                        } else if (Delta.REMOVED == classMemberDiff.getDelta()) {
+                            Tree classMember = classMemberDiff.getOlder();
+                            if (Type.METHOD == classMember.getType()) {
+                                markers.addAll(generateRemovedMethodMarker(javaProject, className, classMember.getName(), classMember.ifRemoved()));
+                            }
                         }
                     }
                 }
             }
+
         }
 
         return markers;
     }
+
+    /*
+    List<MarkerData> generateAddedTypeMarker(IJavaProject javaProject, String name, Delta ifAdded) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    */
 
     CompilationUnit createAST(IJavaProject javaProject, String className) throws JavaModelException {
         IType type = javaProject.findType(className);
