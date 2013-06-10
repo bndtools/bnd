@@ -195,7 +195,10 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         URI location = operation.getLocation() != null ? operation.getLocation().toFile().toURI() : null;
         JavaCapabilityConfigurationPage.createProject(cnfProject, location, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
         IJavaProject cnfJavaProject = JavaCore.create(cnfProject);
-        configureJavaProject(cnfJavaProject, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+
+        if (!Boolean.FALSE.toString().equalsIgnoreCase(templateConfig.getAttribute("javaProject"))) {
+            configureJavaProject(cnfJavaProject, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+        }
 
         String bsn = templateConfig.getContributor().getName();
         Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);

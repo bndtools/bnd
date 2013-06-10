@@ -9,6 +9,7 @@
          name="Minimal Maven/M2E Configuration"
          doc="docs/maven-minimal.xml"
          paths="templates/maven-minimal"
+         javaProject="false"
          priority="0"
          managed="ext/.*,plugins/.*"
          ignores="/cache/"

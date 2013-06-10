@@ -40,6 +40,7 @@
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="javaProject" type="boolean"/>
       </complexType>
    </element>
 
