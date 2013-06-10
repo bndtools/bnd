@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.resolve.ResolveOperation;
@@ -53,6 +54,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.resource.Wire;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -334,7 +336,8 @@ public class ResolutionResultsWizardPage extends WizardPage {
     }
 
     private void updateUi() {
-        requiredViewer.setInput(result != null ? result.getResourceWirings().keySet() : null);
+        Map<Resource,List<Wire>> wirings = (result != null) ? result.getResourceWirings() : null;
+        requiredViewer.setInput(wirings != null ? wirings.keySet() : null);
         //        optionalViewer.setInput(result != null ? result.getResolve().getOptionalResources() : null);
         resolutionFailurePanel.setInput(result);
 
