@@ -95,6 +95,10 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		return indexes;
 	}
 
+	/**
+	 * @param contentProvider the repository content provider
+	 * @return the filename of the index on local storage
+	 */
 	private File getIndexFile(IRepositoryContentProvider contentProvider) {
 		String indexFileName = contentProvider.getDefaultIndexName(pretty);
 		File indexFile = new File(storageDir, indexFileName);

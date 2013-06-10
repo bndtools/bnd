@@ -87,8 +87,15 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		capabilityIndex.clear();
 	}
 
+	/**
+	 * @return a list of URIs, parsed from the 'locations' property
+	 */
 	protected abstract List<URI> loadIndexes() throws Exception;
 
+	/**
+	 * Add all repository content providers that are in the registry (through
+	 * workspace plugins) to the known content providers
+	 */
 	protected synchronized void loadAllContentProviders() {
 		if (registry == null)
 			return;
@@ -186,6 +193,11 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return Collections.unmodifiableList(indexLocations);
 	}
 
+	/**
+	 * @return the class to use for URL connections. It's retrieved from the
+	 *         registry under the URLConnector class, or it will be the
+	 *         DefaultURLConnector if the former was not found.
+	 */
 	private URLConnector getConnector() {
 		URLConnector connector;
 		synchronized (this) {
@@ -639,8 +651,9 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	 * 
 	 * @param locationsStr
 	 *            Comma-separated list of URLs
+	 * @return a list of URIs
 	 * @throws MalformedURLException
-	 * @throws URISyntaxException 
+	 * @throws URISyntaxException
 	 */
 	protected static List<URI> parseLocations(String locationsStr) throws MalformedURLException, URISyntaxException {
 		StringTokenizer tok = new StringTokenizer(locationsStr, ",");
