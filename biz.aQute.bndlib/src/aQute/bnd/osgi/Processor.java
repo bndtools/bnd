@@ -1879,8 +1879,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		
 		Processor rover = this;
 		while ( rover.getPropertiesFile() == null)
-			if ( rover.parent == null)
-				return null;
+			if ( rover.parent == null) {
+				return new FileLine(new File("ANONYMOUS"),0,0);
+			}
 			else
 				rover = rover.parent;
 		
