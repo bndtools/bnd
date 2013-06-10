@@ -1,6 +1,7 @@
 # Master Version Settings
 base-version: 2.2.0.DEV
-master-version: ${base-version}-${tstamp;yyyyMMdd-HHmm}-${Git-Descriptor}
+version-qualifier: ${tstamp;yyyyMMdd-HHmm}-${Git-Descriptor}
+master-version: ${base-version}-${version-qualifier}
 
 # Version of bnd/bndlib to use consistently throughout the build
 # NB. this must be specified as full M.m.u version (but no qualifier)

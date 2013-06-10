@@ -10,6 +10,7 @@ workspace.bundles: \
 	bndtools.builder;version=snapshot,\
 	bndtools.repository.base;version=snapshot,\
 	bndtools.repository.amdatu;version=snapshot,\
+	bndtools.repository.maven;version=snapshot,\
 	bndtools.template.dm;version=snapshot,\
 	bndtools.template.amdatu;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\

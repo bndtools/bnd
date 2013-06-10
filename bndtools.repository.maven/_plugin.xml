@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension point="bndtools.core.cnfTemplates">
+
+      <template
+         id="bundle-hub"
+         name="Minimal Maven/M2E Configuration"
+         doc="docs/maven-minimal.xml"
+         paths="templates/maven-minimal"
+         priority="0"
+         managed="ext/.*,plugins/.*"
+         ignores="/cache/"
+         version="0"
+         category="MMM/Maven"
+      />
+   </extension>
+
+</plugin>
