@@ -3,6 +3,7 @@ package bndtools.editor.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -20,27 +21,32 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.forms.IManagedForm;
-import org.eclipse.ui.forms.SectionPart;
+import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
-import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import bndtools.BndConstants;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
 import bndtools.central.Central;
 import bndtools.utils.ModificationLock;
+import bndtools.editor.common.BndEditorPart;
+import bndtools.utils.ModificationLock;
 
-public class RunFrameworkPart extends SectionPart implements PropertyChangeListener {
+public class RunFrameworkPart extends BndEditorPart implements PropertyChangeListener {
     private static final ILogger logger = Logger.getLogger(RunFrameworkPart.class);
+
+    private static final String[] PROPERTIES = new String[] {
+            BndConstants.RUNFW, BndConstants.RUNEE
+    };
+
+    private final Object MESSAGE_KEY = new Object();
 
     private final ModificationLock lock = new ModificationLock();
     private final OSGiFrameworkContentProvider fwkContentProvider = new OSGiFrameworkContentProvider();
 
-    private BndEditModel model;
     private String selectedFramework = null;
     private EE selectedEE = null;
 
@@ -75,11 +81,6 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         frameworkViewer = new ComboViewer(cmbFramework);
         frameworkViewer.setUseHashlookup(true);
         frameworkViewer.setContentProvider(fwkContentProvider);
-        try {
-            frameworkViewer.setInput(Central.getWorkspace());
-        } catch (Exception e) {
-            logger.logError("Error accessing bnd workspace.", e);
-        }
 
         Label lblExecEnv = tk.createLabel(composite, "Execution Env.:");
         cmbExecEnv = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -152,27 +153,22 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
     }
 
     @Override
-    public void initialize(IManagedForm form) {
-        super.initialize(form);
-        model = (BndEditModel) form.getInput();
-
-        model.addPropertyChangeListener(BndConstants.RUNFW, this);
-        model.addPropertyChangeListener(BndConstants.RUNEE, this);
+    protected String[] getProperties() {
+        return PROPERTIES;
     }
 
     @Override
-    public void dispose() {
-        super.dispose();
-        if (model != null) {
-            model.removePropertyChangeListener(BndConstants.RUNEE, this);
-            model.removePropertyChangeListener(BndConstants.RUNFW, this);
-        }
-    }
-
-    @Override
-    public void refresh() {
+    protected void refreshFromModel() {
         lock.modifyOperation(new Runnable() {
             public void run() {
+                IMessageManager messages = getManagedForm().getMessageManager();
+                messages.removeMessage(MESSAGE_KEY, cmbFramework);
+                try {
+                    frameworkViewer.setInput(Central.getWorkspace());
+                } catch (Exception e) {
+                    messages.addMessage(MESSAGE_KEY, "Unable to load OSGi Framework list. " + e.getMessage(), null, IMessageProvider.ERROR, cmbFramework);
+                }
+
                 selectedFramework = model.getRunFw();
                 if (selectedFramework == null)
                     selectedFramework = "";
@@ -182,11 +178,10 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
                 eeViewer.setSelection(selectedEE != null ? new StructuredSelection(selectedEE) : StructuredSelection.EMPTY);
             }
         });
-        super.refresh();
     }
 
     @Override
-    public void commit(boolean onSave) {
+    public void commitToModel(boolean onSave) {
         super.commit(onSave);
         try {
             committing = true;
@@ -197,6 +192,7 @@ public class RunFrameworkPart extends SectionPart implements PropertyChangeListe
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (!committing) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();
