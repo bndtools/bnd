@@ -1185,7 +1185,7 @@ public class Analyzer extends Processor {
 				removeAttributes(importAttributes);
 
 				String result = importAttributes.get(Constants.VERSION_ATTRIBUTE);
-				if (result == null)
+				if (result == null || !Verifier.isVersionRange(result))
 					noimports.add(packageRef);
 			}
 			finally {
@@ -1503,13 +1503,13 @@ public class Analyzer extends Processor {
 		SetLocation location;
 		if (!Verifier.isExtended(key)) {
 			location = error("%s attribute [%s='%s'], key must be an EXTENDED (CORE1.3.2 %s)", where, key, value,
-					Verifier.EXTENDED);
+					Verifier.EXTENDED_S);
 		} else if (value == null || value.trim().length() == 0) {
-			location = error("%s attribute [%s='%s'], value is empty which is not allowed in ARGUMENT (CORE1.3.2 %s)",
-					where, key, value, Verifier.ARGUMENT);
+			location = error("%s attribute [%s='%s'], value is empty which is not allowed in ARGUMENT_S (CORE1.3.2 %s)",
+					where, key, value, Verifier.ARGUMENT_S);
 		} else if (!Verifier.isArgument(value)) {
-			location = error("%s attribute [%s='%s'], value not an ARGUMENT (CORE1.3.2 %s)", where, key, value, key,
-					Verifier.ARGUMENT);
+			location = error("%s attribute [%s='%s'], value not an ARGUMENT_S (CORE1.3.2 %s)", where, key, value, key,
+					Verifier.ARGUMENT_S);
 		} else
 			return;
 		if ( path != null) {
