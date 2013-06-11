@@ -22,8 +22,7 @@ public class InitializeMojo extends AbstractMojo {
 			getLog().info("Current " + session.getCurrentProject()  + session.getProjects());
 			ProjectDependencyGraph pg = session.getProjectDependencyGraph();
 			List<MavenProject> projects = session.getProjects();
-        	throw new Exception();
-			
+			project.addProjectReference(project);
 		} catch (Exception e) {
 			e.printStackTrace();
 			new RuntimeException(e);
