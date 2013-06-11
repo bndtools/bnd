@@ -1,5 +1,4 @@
 -dependson: demo
--nobundles: true
 
 -buildpath: biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
