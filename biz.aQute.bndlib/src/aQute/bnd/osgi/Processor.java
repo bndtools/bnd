@@ -60,10 +60,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		final public int	length;
 		
 		public FileLine(File file, int line, int length) {
-			assert file != null;
-			assert line >= 0;
-			assert length >= 0;
-			
 			this.file = file;
 			this.line = line;
 			this.length = length;
