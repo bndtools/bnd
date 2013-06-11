@@ -36,19 +36,25 @@
 					</configuration>
 				</plugin>
 				<plugin>
-					<groupId>org.ops4j.pax.bnd</groupId>
-					<artifactId>pax-bnd-mavenplugin</artifactId>
-					<version>0.1.0-SNAPSHOT</version>
+					<groupId>biz.aQute.bnd</groupId>
+					<artifactId>bnd-maven-plugin</artifactId>
+					<version>0.2.0-SNAPSHOT</version>
 					<extensions>true</extensions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
 			<plugin>
-				<groupId>org.ops4j.pax.bnd</groupId>
-				<artifactId>pax-bnd-mavenplugin</artifactId>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-maven-plugin</artifactId>
 				<extensions>true</extensions>
 			</plugin>
 		</plugins>
+		<extensions>
+			<extension>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-maven-plugin</artifactId>
+			</extension>
+		</extensions>
 	</build>
 </project>
