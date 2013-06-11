@@ -57,6 +57,7 @@ public final class LaunchUtils {
         return getBndProject(targetResource);
     }
 
+    @SuppressWarnings("resource")
     public static Project getBndProject(IResource targetResource) throws CoreException {
         Project result;
 
@@ -73,8 +74,7 @@ public final class LaunchUtils {
             try {
                 Project parent = new Project(Central.getWorkspace(), projectDir, bndbnd);
                 result = new Project(Central.getWorkspace(), projectDir, runFile);
-                if (bndbnd.isFile())
-                    result.setParent(parent);
+                result.setParent(parent);
             } catch (Exception e) {
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to create synthetic project for run file {0} in project {1}.", targetResource.getProjectRelativePath().toString(),
                         project.getName()), e));
