@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>biz.aQute.bnd</groupId>
+	<artifactId>parent</artifactId>
+	<version>0.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>../aQute.libg</module>
+		<module>../biz.aQute.bndlib</module>
+		<module>../biz.aQute.bndlib.tests</module>
+		<module>../biz.aQute.junit</module>
+		<module>../biz.aQute.launcher</module>
+		<module>../biz.aQute.repository</module>
+		<module>../biz.aQute.resolve</module>
+		<module>../biz.aQute.bnd</module>
+		<module>../biz.aQute.jpm</module>
+	</modules>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.0</version>
+					<configuration>
+						<source>1.6</source>
+						<target>1.6</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.ops4j.pax.bnd</groupId>
+					<artifactId>pax-bnd-mavenplugin</artifactId>
+					<version>0.1.0-SNAPSHOT</version>
+					<extensions>true</extensions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.ops4j.pax.bnd</groupId>
+				<artifactId>pax-bnd-mavenplugin</artifactId>
+				<extensions>true</extensions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
