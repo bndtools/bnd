@@ -19,7 +19,7 @@
 	</target>
 
 	<target name="p2">
-		<ant dir="bndtools.build" target="p2" />
+		<ant dir="build" target="p2" />
 	</target>
 
 
