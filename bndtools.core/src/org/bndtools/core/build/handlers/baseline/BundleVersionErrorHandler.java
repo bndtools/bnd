@@ -8,8 +8,8 @@ import java.util.Map;
 
 import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
-import org.bndtools.core.utils.parse.properties.LineType;
-import org.bndtools.core.utils.parse.properties.PropertiesLineReader;
+import org.bndtools.utils.parse.properties.LineType;
+import org.bndtools.utils.parse.properties.PropertiesLineReader;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;

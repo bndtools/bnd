@@ -1,11 +1,17 @@
 package org.bndtools.core.ui.resource;
 
-import org.bndtools.core.utils.jface.ImageCachingLabelProvider;
+import org.bndtools.utils.jface.ImageCachingLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.osgi.resource.Requirement;
 
+import bndtools.Plugin;
+
 public class RequirementLabelProvider extends ImageCachingLabelProvider {
+
+    public RequirementLabelProvider() {
+        super(Plugin.PLUGIN_ID);
+    }
 
     @Override
     public void update(ViewerCell cell) {

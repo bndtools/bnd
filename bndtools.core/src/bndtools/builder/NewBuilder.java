@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.build.api.BuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
-import org.bndtools.core.utils.workspace.WorkspaceUtils;
+import org.bndtools.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;

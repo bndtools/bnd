@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.bndtools.core.utils.collections.CollectionUtils;
+import org.bndtools.utils.collections.CollectionUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.Flags;

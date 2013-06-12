@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.bndtools.core.utils.resources.ResourceUtils;
+import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.osgi.framework.Version;

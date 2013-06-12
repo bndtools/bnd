@@ -2,7 +2,7 @@ package org.bndtools.core.resolve.ui;
 
 import java.net.URI;
 
-import org.bndtools.core.utils.resources.ResourceUtils;
+import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;

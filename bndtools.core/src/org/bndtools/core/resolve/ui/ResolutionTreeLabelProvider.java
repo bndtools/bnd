@@ -3,7 +3,7 @@ package org.bndtools.core.resolve.ui;
 import java.util.Map.Entry;
 
 import org.bndtools.core.ui.resource.R5LabelFormatter;
-import org.bndtools.core.utils.jface.ImageCachingLabelProvider;
+import org.bndtools.utils.jface.ImageCachingLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
@@ -11,7 +11,13 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import bndtools.Plugin;
+
 public class ResolutionTreeLabelProvider extends ImageCachingLabelProvider {
+
+    public ResolutionTreeLabelProvider() {
+        super(Plugin.PLUGIN_ID);
+    }
 
     @Override
     public void update(ViewerCell cell) {

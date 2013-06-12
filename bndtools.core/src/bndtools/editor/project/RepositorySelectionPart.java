@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.bndtools.core.utils.collections.CollectionUtils;
-import org.bndtools.core.utils.jface.StrikeoutStyler;
+import org.bndtools.utils.collections.CollectionUtils;
+import org.bndtools.utils.jface.StrikeoutStyler;
 import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ArrayContentProvider;

@@ -5,10 +5,11 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+
 import org.bndtools.core.resolve.ResolutionResult;
+import org.bndtools.core.ui.SashFormPanelMaximiser;
 import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
-import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
-import org.bndtools.core.utils.swt.SashHighlightForm;
+import org.bndtools.utils.swt.SashHighlightForm;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;

@@ -9,10 +9,10 @@ import java.util.List;
 
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.resolve.ResolveOperation;
-import org.bndtools.core.utils.resources.ResourceUtils;
-import org.bndtools.core.utils.swt.SWTUtil;
-import org.bndtools.core.utils.swt.SashFormPanelMaximiser;
-import org.bndtools.core.utils.swt.SashHighlightForm;
+import org.bndtools.core.ui.SashFormPanelMaximiser;
+import org.bndtools.utils.resources.ResourceUtils;
+import org.bndtools.utils.swt.SWTUtil;
+import org.bndtools.utils.swt.SashHighlightForm;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -53,6 +53,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.Filters;

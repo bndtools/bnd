@@ -30,7 +30,8 @@ Private-Package: \
 
 Conditional-Package:\
 	aQute.lib.*;-split-package:=merge-first,\
-	aQute.libg.*;-split-package:=merge-first
+	aQute.libg.*;-split-package:=merge-first, \
+	org.bndtools.utils.*
 
 Export-Package: bndtools.api.*,\
 	bndtools.types,\
@@ -97,4 +98,5 @@ eclipse.deps: \
 	javax.xml.stream,\
 	osgi.r5;version=1.0.1,\
 	libs/org.osgi.service.obr-1.0.2.jar;version=file,\
-	libs/jcip-annotations.jar;version=file
+	libs/jcip-annotations.jar;version=file, \
+	bndtools.utils; version=project

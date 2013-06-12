@@ -5,8 +5,9 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.bndtools.core.utils.eclipse.CategorisedPrioritisedConfigurationElementTreeContentProvider;
-import org.bndtools.core.utils.eclipse.ConfigElementLabelProvider;
+
+import org.bndtools.core.ui.ConfigElementLabelProvider;
+import org.bndtools.utils.eclipse.CategorisedPrioritisedConfigurationElementTreeContentProvider;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ISelection;

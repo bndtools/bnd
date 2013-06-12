@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.bndtools.core.utils.collections.CollectionUtils;
+import org.bndtools.utils.collections.CollectionUtils;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IBaseLabelProvider;

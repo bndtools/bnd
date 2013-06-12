@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bndtools.build.api.BuildListener;
+import org.bndtools.utils.Function;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
@@ -15,7 +16,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
-import bndtools.utils.Function;
 
 public class BuildListeners {
     private static final ILogger logger = Logger.getLogger();

@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.bndtools.core.ui.resource.R5LabelFormatter;
-import org.bndtools.core.utils.jface.ImageCachingLabelProvider;
-import org.bndtools.core.utils.resources.ResourceUtils;
+import org.bndtools.utils.jface.ImageCachingLabelProvider;
+import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.resource.JFaceResources;
@@ -30,6 +30,7 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import bndtools.Plugin;
 import bndtools.UIConstants;
 
 public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
@@ -208,6 +209,11 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
     }
 
     private static class CapabilityResourceLabelProvider extends ImageCachingLabelProvider {
+
+        public CapabilityResourceLabelProvider() {
+            super(Plugin.PLUGIN_ID);
+        }
+
         @Override
         public void update(ViewerCell cell) {
             Capability capability = (Capability) cell.getElement();

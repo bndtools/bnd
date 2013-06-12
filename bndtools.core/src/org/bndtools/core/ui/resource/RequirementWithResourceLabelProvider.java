@@ -1,6 +1,6 @@
 package org.bndtools.core.ui.resource;
 
-import org.bndtools.core.utils.resources.ResourceUtils;
+import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.viewers.StyledString;
 import org.osgi.framework.Version;
 import org.osgi.resource.Capability;

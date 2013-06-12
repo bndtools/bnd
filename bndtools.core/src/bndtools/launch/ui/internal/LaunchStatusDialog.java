@@ -4,8 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
-import org.bndtools.core.utils.jface.StatusLabelProvider;
-import org.bndtools.core.utils.jface.StatusTreeContentProvider;
+import org.bndtools.core.ui.StatusLabelProvider;
+import org.bndtools.utils.jface.StatusTreeContentProvider;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;

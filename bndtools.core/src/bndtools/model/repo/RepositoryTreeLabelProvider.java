@@ -5,7 +5,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
-import org.bndtools.core.utils.jface.HyperlinkStyler;
+
+import org.bndtools.utils.jface.HyperlinkStyler;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;

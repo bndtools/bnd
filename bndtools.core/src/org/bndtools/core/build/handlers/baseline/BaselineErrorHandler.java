@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
-import org.bndtools.core.utils.jdt.ASTUtil;
+import org.bndtools.utils.jdt.ASTUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;

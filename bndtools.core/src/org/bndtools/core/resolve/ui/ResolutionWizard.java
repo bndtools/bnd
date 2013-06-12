@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bndtools.core.resolve.ResolutionResult;
-import org.bndtools.core.utils.resources.ResourceUtils;
+import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.wizard.Wizard;
 import org.osgi.framework.Constants;

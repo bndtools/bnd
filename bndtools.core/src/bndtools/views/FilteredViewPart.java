@@ -1,6 +1,6 @@
 package bndtools.views;
 
-import org.bndtools.core.utils.swt.FilterPanelPart;
+import org.bndtools.utils.swt.FilterPanelPart;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;

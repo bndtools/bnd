@@ -3,7 +3,7 @@ package bndtools.editor.workspace;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.bndtools.core.utils.jface.StrikeoutStyler;
+import org.bndtools.utils.jface.StrikeoutStyler;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
