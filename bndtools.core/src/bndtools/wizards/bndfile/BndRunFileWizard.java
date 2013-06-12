@@ -30,13 +30,13 @@ import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
 import org.eclipse.ui.ide.IDE;
 import org.osgi.framework.Bundle;
 
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.utils.BundleUtils;
 
 public class BndRunFileWizard extends Wizard implements INewWizard {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(BndRunFileWizard.class);
 
     protected IStructuredSelection selection;
     protected IWorkbench workbench;

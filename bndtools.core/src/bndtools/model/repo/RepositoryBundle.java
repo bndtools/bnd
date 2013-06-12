@@ -18,15 +18,15 @@ import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 /**
  * Abstracts the Bundle in repository views, it wraps the underlying Repository Plugin with the bsn of the bundle. It
  * supports {@code Actionable} by implementing its methods but forwarding them to the Repository Plugin.
  */
 public class RepositoryBundle implements IAdaptable, Actionable {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RepositoryBundle.class);
 
     private final RepositoryPlugin repo;
     private final String bsn;

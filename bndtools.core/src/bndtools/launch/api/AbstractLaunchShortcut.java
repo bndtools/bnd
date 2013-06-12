@@ -33,14 +33,14 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.launch.LaunchConstants;
 import bndtools.launch.util.LaunchUtils;
 
 public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(AbstractLaunchShortcut.class);
 
     private final String launchId;
 

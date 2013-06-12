@@ -26,14 +26,14 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunBundlesPart extends RepositoryBundleSelectionPart {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RunBundlesPart.class);
 
     private final List<Builder> projectBuilders = new ArrayList<Builder>();
     private final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);

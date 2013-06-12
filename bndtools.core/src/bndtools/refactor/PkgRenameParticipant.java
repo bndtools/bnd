@@ -32,12 +32,12 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.utils.FileUtils;
 
 public class PkgRenameParticipant extends RenameParticipant implements ISharableParticipant {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(PkgRenameParticipant.class);
 
     private final Map<IPackageFragment,RenameArguments> pkgFragments = new HashMap<IPackageFragment,RenameArguments>();
     private String changeTitle = null;

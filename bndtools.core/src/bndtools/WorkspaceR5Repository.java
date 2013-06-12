@@ -29,6 +29,7 @@ import aQute.bnd.deployer.repository.api.Referral;
 import aQute.bnd.deployer.repository.providers.R5RepoContentProvider;
 import aQute.lib.io.IO;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class WorkspaceR5Repository implements Repository {
 
@@ -37,7 +38,7 @@ public class WorkspaceR5Repository implements Repository {
     private final Map<IProject,CapabilityIndex> projectMap = new HashMap<IProject,CapabilityIndex>();
     private final IRepositoryContentProvider contentProvider = new R5RepoContentProvider();
 
-    private final ILogger logger = Logger.getLogger();
+    private final ILogger logger = Logger.getLogger(WorkspaceR5Repository.class);
     private final LogService logAdapter = new LogServiceAdapter(logger);
 
     void init() throws Exception {

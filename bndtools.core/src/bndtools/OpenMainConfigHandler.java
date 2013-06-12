@@ -11,9 +11,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
 
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class OpenMainConfigHandler extends AbstractHandler {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(OpenMainConfigHandler.class);
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
         try {

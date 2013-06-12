@@ -13,11 +13,11 @@ import org.eclipse.core.runtime.Path;
 
 import aQute.bnd.service.Actionable;
 import aQute.bnd.version.Version;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class RepositoryBundleVersion implements IAdaptable, Actionable {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RepositoryBundleVersion.class);
 
     private final Version version;
     private final RepositoryBundle bundle;

@@ -22,13 +22,13 @@ import org.eclipse.swt.widgets.Table;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 
 class LocalRepositorySelectionPage extends WizardPage {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(LocalRepositorySelectionPage.class);
 
     public static final String PROP_SELECTED_REPO = "selectedRepository";
 

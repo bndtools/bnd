@@ -44,14 +44,14 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.osgi.Jar;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.types.Pair;
 import bndtools.utils.FileExtensionFilter;
 
 public class AddFilesToRepositoryWizardPage extends WizardPage {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(AddFilesToRepositoryWizardPage.class);
 
     private final Image jarImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/jar_obj.gif").createImage();
     private final Image warnImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/warning_obj.gif").createImage();

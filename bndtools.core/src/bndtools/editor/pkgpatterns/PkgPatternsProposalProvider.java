@@ -32,13 +32,13 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.javamodel.IJavaSearchContext;
 import bndtools.utils.CachingContentProposalProvider;
 
 public class PkgPatternsProposalProvider extends CachingContentProposalProvider {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(PkgPatternsProposalProvider.class);
 
     private final IJavaSearchContext searchContext;
 

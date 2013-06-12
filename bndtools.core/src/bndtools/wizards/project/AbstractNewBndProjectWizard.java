@@ -38,15 +38,15 @@ import org.eclipse.ui.ide.IDE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.Document;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.editor.model.BndProject;
 import bndtools.utils.FileUtils;
 import bndtools.versioncontrol.util.VersionControlUtils;
 
 abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(AbstractNewBndProjectWizard.class);
 
     protected final NewBndProjectWizardPageOne pageOne;
     protected final NewJavaProjectWizardPageTwo pageTwo;

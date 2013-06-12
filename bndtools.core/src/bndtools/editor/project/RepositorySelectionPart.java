@@ -44,10 +44,10 @@ import org.osgi.service.repository.Repository;
 
 import bndtools.BndConstants;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.WorkspaceR5Repository;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.editor.common.BndEditorPart;
 
 public class RepositorySelectionPart extends BndEditorPart {
@@ -62,7 +62,7 @@ public class RepositorySelectionPart extends BndEditorPart {
     private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png").createImage();
     private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
 
-    private final ILogger logger = Logger.getLogger();
+    private final ILogger logger = Logger.getLogger(RepositorySelectionPart.class);
 
     private CheckboxTableViewer viewer;
     private ToolItem btnMoveUp;

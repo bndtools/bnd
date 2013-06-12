@@ -11,11 +11,11 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.ui.forms.editor.IFormPage;
 
 import aQute.bnd.build.model.BndEditModel;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class DelayedPageFactory implements IFormPageFactory {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(DelayedPageFactory.class);
     private final IConfigurationElement configElem;
     private final Set<Mode> modes = EnumSet.noneOf(Mode.class);
 

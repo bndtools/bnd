@@ -40,11 +40,12 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 import bndtools.api.ILogger;
 import bndtools.api.IStartupParticipant;
+import bndtools.api.Logger;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {
 
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(Plugin.class);
 
     public static final String PLUGIN_ID = "bndtools.core";
     public static final String BND_EDITOR_ID = PLUGIN_ID + ".bndEditor";
@@ -73,8 +74,6 @@ public class Plugin extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         registerWorkspaceURLHandler(context);
         super.start(context);
-        plugin = this;
-        Logger.setPlugin(this);
         this.bundleContext = context;
 
         scheduler = Executors.newScheduledThreadPool(1);
@@ -157,7 +156,6 @@ public class Plugin extends AbstractUIPlugin {
         resourceIndexerTracker.close();
         indexerTracker.close();
         this.bundleContext = null;
-        Logger.setPlugin(null);
         plugin = null;
         super.stop(context);
         unregisterWorkspaceURLHandler();

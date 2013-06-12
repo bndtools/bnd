@@ -22,12 +22,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class WizardBndFileSelector extends WizardPage {
 
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(WizardBndFileSelector.class);
 
     private CheckboxTreeViewer checkboxTreeViewer;
 

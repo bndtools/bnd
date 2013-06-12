@@ -42,8 +42,8 @@ import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
@@ -54,7 +54,7 @@ import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.RepositoryUtils;
 
 public class RepoBundleSelectionWizardPage extends WizardPage {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RepoBundleSelectionWizardPage.class);
 
     public static final String PROP_SELECTION = "selection";
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);

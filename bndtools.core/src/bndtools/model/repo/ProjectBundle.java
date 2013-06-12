@@ -10,11 +10,11 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 
 import aQute.bnd.build.Project;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class ProjectBundle implements IAdaptable {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(ProjectBundle.class);
 
     private final Project project;
     private final String bsn;

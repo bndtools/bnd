@@ -11,11 +11,11 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class RepositoryUtils {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RepositoryUtils.class);
 
     private static final Object CACHE_REPO = "cache";
     private static final String VERSION_LATEST = "latest";

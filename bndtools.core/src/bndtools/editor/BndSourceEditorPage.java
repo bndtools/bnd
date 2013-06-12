@@ -29,14 +29,14 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import aQute.bnd.properties.IDocument;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
 import bndtools.editor.model.IDocumentWrapper;
 
 public class BndSourceEditorPage extends TextEditor implements IFormPage {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(BndSourceEditorPage.class);
 
     private final Image icon;
 

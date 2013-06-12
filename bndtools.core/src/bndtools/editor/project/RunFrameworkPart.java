@@ -30,12 +30,12 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import bndtools.BndConstants;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.utils.ModificationLock;
 
 public class RunFrameworkPart extends SectionPart implements PropertyChangeListener {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RunFrameworkPart.class);
 
     private final ModificationLock lock = new ModificationLock();
     private final OSGiFrameworkContentProvider fwkContentProvider = new OSGiFrameworkContentProvider();

@@ -31,13 +31,13 @@ import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.launch.util.LaunchUtils;
 
 public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(OSGiRunLaunchDelegate.class);
 
     private ProjectLauncher bndLauncher = null;
 

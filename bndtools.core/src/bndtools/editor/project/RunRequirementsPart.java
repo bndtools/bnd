@@ -78,9 +78,9 @@ import aQute.libg.filters.SimpleFilter;
 import aQute.libg.qtokens.QuotedTokenizer;
 import bndtools.BndConstants;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.api.ResolveMode;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
@@ -89,7 +89,7 @@ import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunRequirementsPart extends SectionPart implements PropertyChangeListener {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RunRequirementsPart.class);
 
     private Table table;
     private TableViewer viewer;

@@ -75,9 +75,9 @@ import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import bndtools.Activator;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.model.repo.ContinueSearchElement;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
@@ -92,7 +92,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     final static Pattern LABEL_PATTERN = Pattern.compile("(-)?(!)?([^{}]+)(?:\\{([^}]+)\\})?");
     private static final String DROP_TARGET = "dropTarget";
 
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RepositoriesView.class);
 
     private final FilterPanelPart filterPart = new FilterPanelPart(Plugin.getDefault().getScheduler());
     private final SearchableRepositoryTreeContentProvider contentProvider = new SearchableRepositoryTreeContentProvider();

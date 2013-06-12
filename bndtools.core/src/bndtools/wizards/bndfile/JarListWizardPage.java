@@ -57,14 +57,14 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.utils.ClassPathLabelProvider;
 import bndtools.utils.FileExtensionFilter;
 
 public class JarListWizardPage extends WizardPage {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(JarListWizardPage.class);
 
     public static final String PROP_PATHS = "paths";
 

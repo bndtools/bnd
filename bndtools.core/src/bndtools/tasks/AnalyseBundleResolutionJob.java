@@ -47,9 +47,9 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.model.importanalysis.ExportPackage;
 import bndtools.model.importanalysis.ImportPackage;
 import bndtools.model.importanalysis.RequiredBundle;
@@ -57,7 +57,7 @@ import bndtools.utils.BundleUtils;
 import bndtools.utils.FileUtils;
 
 public class AnalyseBundleResolutionJob extends Job {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(AnalyseBundleResolutionJob.class);
 
     private final File[] files;
 

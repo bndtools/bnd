@@ -29,8 +29,8 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.io.IO;
 import bndtools.BndConstants;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class ResolutionWizard extends Wizard {
 
@@ -38,7 +38,7 @@ public class ResolutionWizard extends Wizard {
     private static final String CAPABILITY_WORKSPACE = "bndtools.workspace";
     private static final String RESOLVED_PATHS_EXTENSION = ".resolved";
 
-    private final ILogger logger = Logger.getLogger();
+    private final ILogger logger = Logger.getLogger(ResolutionWizard.class);
 
     private final ResolutionResultsWizardPage resultsPage;
     private final Comparator<Entry<String,String>> clauseAttributeSorter = new Comparator<Map.Entry<String,String>>() {

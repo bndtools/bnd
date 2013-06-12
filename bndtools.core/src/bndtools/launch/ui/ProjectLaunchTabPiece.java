@@ -41,15 +41,15 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.BndtoolsConstants;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.launch.LaunchConstants;
 import bndtools.utils.FileExtensionFilter;
 
 public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(ProjectLaunchTabPiece.class);
 
     private static final String PROP_LAUNCH_TARGET = "targetName";
     private static final String PROP_ENABLE_TRACE = "enableTrace";

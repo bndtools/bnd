@@ -5,9 +5,10 @@ import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class WorkspaceServiceFactory implements ServiceFactory {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(WorkspaceServiceFactory.class);
 
     public Object getService(Bundle bundle, ServiceRegistration registration) {
         try {

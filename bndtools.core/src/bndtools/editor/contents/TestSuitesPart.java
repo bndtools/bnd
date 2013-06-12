@@ -67,15 +67,15 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.internal.testcaseselection.ITestCaseFilter;
 import bndtools.internal.testcaseselection.JavaSearchScopeTestCaseLister;
 import bndtools.internal.testcaseselection.TestCaseSelectionDialog;
 
 public class TestSuitesPart extends SectionPart implements PropertyChangeListener {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(TestSuitesPart.class);
 
     private BndEditModel model;
     private List<String> testSuites;

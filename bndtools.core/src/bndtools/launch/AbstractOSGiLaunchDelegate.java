@@ -24,14 +24,14 @@ import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.launch.util.LaunchUtils;
 import bndtools.preferences.BndPreferences;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(AbstractOSGiLaunchDelegate.class);
 
     protected Project model;
 

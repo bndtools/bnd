@@ -57,9 +57,9 @@ import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.editor.contents.PackageInfoDialog;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import bndtools.internal.pkgselection.IPackageFilter;
@@ -68,7 +68,7 @@ import bndtools.internal.pkgselection.PackageSelectionDialog;
 import bndtools.preferences.BndPreferences;
 
 public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage> {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(ExportPatternsListPart.class);
 
     private static final String PACKAGEINFO = "packageinfo";
 

@@ -20,12 +20,12 @@ import aQute.bnd.build.Project;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RepositoryTreeLabelProvider.class);
 
     final Image localRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database.png").createImage();
     final Image remoteRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database_link.png").createImage();

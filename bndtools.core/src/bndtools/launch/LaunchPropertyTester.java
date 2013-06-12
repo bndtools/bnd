@@ -5,12 +5,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 
-import bndtools.Logger;
 import bndtools.api.BndtoolsConstants;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class LaunchPropertyTester extends PropertyTester {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(LaunchPropertyTester.class);
 
     public static final String PROP_IS_IN_BND_JAVA_PROJECT = "isInBndJavaProject";
 

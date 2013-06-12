@@ -67,9 +67,9 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.BndConstants;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.api.ResolveMode;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.model.IDocumentWrapper;
@@ -85,7 +85,7 @@ import bndtools.types.Pair;
 import bndtools.utils.SWTConcurrencyUtil;
 
 public class BndEditor extends ExtendedFormEditor implements IResourceChangeListener {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(BndEditor.class);
 
     public static final String WORKSPACE_EDITOR = "bndtools.bndWorkspaceConfigEditor";
 

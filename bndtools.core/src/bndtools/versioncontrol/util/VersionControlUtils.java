@@ -19,8 +19,8 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.team.core.RepositoryProvider;
 
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.api.ProjectPaths;
 import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
@@ -40,7 +40,7 @@ import bndtools.versioncontrol.VersionControlSystem;
  */
 public class VersionControlUtils {
     /** the logger */
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(VersionControlUtils.class);
 
     /**
      * <p>

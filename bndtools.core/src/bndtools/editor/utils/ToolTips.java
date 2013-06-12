@@ -5,11 +5,11 @@ import java.util.regex.Pattern;
 
 import org.eclipse.swt.widgets.Control;
 import aQute.bnd.help.Syntax;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class ToolTips {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(ToolTips.class);
 
     static private String getStrippedExample(Syntax syntax, String constant) {
         String example = syntax.getExample();

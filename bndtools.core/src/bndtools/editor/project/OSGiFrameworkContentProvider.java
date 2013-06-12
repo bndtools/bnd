@@ -16,13 +16,13 @@ import org.osgi.framework.Bundle;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.utils.BundleUtils;
 
 public class OSGiFrameworkContentProvider implements IStructuredContentProvider {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(OSGiFrameworkContentProvider.class);
 
     List<OSGiFramework> frameworks = new ArrayList<OSGiFramework>();
 

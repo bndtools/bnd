@@ -33,14 +33,14 @@ import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.osgi.framework.Bundle;
 
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.utils.BundleUtils;
 import bndtools.utils.FileUtils;
 
 public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(AbstractTemplateSelectionWizardPage.class);
 
     public static final String PROP_ELEMENT = "selectedElement";
     protected final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);

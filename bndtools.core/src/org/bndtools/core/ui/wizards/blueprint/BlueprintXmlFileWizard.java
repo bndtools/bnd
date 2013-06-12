@@ -42,9 +42,9 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.osgi.Builder;
 import aQute.libg.glob.Glob;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.editor.BndEditor;
 import bndtools.editor.model.IDocumentWrapper;
 import bndtools.utils.FileUtils;
@@ -54,7 +54,7 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
     private static final String BLUEPRINT_TEMPLATES_EMPTY_XML = "/blueprintTemplates/empty.xml";
     private static final String BLUEPRINT_XML = "blueprint.xml";
 
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(BlueprintXmlFileWizard.class);
 
     protected IStructuredSelection selection;
     protected IWorkbench workbench;

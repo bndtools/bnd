@@ -35,10 +35,10 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.BndtoolsConstants;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.project.BuildOperationsPart;
@@ -47,7 +47,7 @@ import bndtools.editor.project.SubBundlesPart;
 import bndtools.utils.MessageHyperlinkAdapter;
 
 public class ProjectBuildPage extends FormPage implements IPriority, IResourceChangeListener {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(ProjectBuildPage.class);
 
     private final BndEditModel model;
     private final Image imgError = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK);

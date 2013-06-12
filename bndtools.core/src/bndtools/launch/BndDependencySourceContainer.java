@@ -20,12 +20,12 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContai
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.launch.util.LaunchUtils;
 
 public class BndDependencySourceContainer extends CompositeSourceContainer {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(BndDependencySourceContainer.class);
 
     public static final String TYPE_ID = "org.bndtools.core.launch.sourceContainerTypes.bndDependencies";
 

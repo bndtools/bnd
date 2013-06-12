@@ -6,10 +6,13 @@ import java.util.concurrent.ConcurrentMap;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 
-import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public final class BuildErrorDetailsHandlers {
+
+    private static ILogger logger = Logger.getLogger(BuildErrorDetailsHandlers.class);
 
     public static final BuildErrorDetailsHandlers INSTANCE = new BuildErrorDetailsHandlers();
 
@@ -34,7 +37,7 @@ public final class BuildErrorDetailsHandlers {
                         handler = (BuildErrorDetailsHandler) element.createExecutableExtension("class");
                         break;
                     } catch (Exception e) {
-                        Logger.getLogger().logError("Error instantiating build error handler for type " + type, e);
+                        logger.logError("Error instantiating build error handler for type " + type, e);
                     }
                 }
             }

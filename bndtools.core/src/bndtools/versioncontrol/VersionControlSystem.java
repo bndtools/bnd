@@ -3,8 +3,8 @@ package bndtools.versioncontrol;
 import java.util.Map;
 import java.util.TreeMap;
 
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 /**
  * Supported version control systems
@@ -105,7 +105,7 @@ public enum VersionControlSystem {
      */
 
     /** the logger */
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(VersionControlSystem.class);
 
     /**
      * Constructor.

@@ -21,9 +21,11 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class OpenExtConfigsContributionItem extends CompoundContributionItem {
-    private static final ILogger logger = Logger.getLogger();
+
+    private static final ILogger logger = Logger.getLogger(OpenExtConfigsContributionItem.class);
 
     private static final IContributionItem[] EMPTY = new IContributionItem[0];
     private static final ImageDescriptor extFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bullet_go.png");

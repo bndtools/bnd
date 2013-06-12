@@ -69,9 +69,9 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
@@ -84,7 +84,7 @@ import bndtools.wizards.repo.RepoBundleSelectionWizard;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RepositoryBundleSelectionPart.class);
 
     private final String propertyName;
     private final DependencyPhase phase;

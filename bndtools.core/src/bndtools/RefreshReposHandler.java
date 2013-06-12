@@ -15,10 +15,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class RefreshReposHandler extends AbstractHandler {
 
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RefreshReposHandler.class);
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);

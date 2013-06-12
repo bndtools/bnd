@@ -32,6 +32,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.osgi.framework.Version;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -40,7 +41,8 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
 
 public class Central {
-    private static final ILogger logger = Logger.getLogger();
+
+    private static final ILogger logger = Logger.getLogger(Central.class);
 
     static Workspace workspace = null;
     static final List<Function<Workspace,Void>> workspaceInitCallbackQueue = new LinkedList<Function<Workspace,Void>>();

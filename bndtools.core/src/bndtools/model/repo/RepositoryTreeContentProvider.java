@@ -20,13 +20,13 @@ import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.version.Version;
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
     private static final String CACHE_REPOSITORY = "cache";
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(RepositoryTreeContentProvider.class);
 
     private final EnumSet<ResolutionPhase> phases;
 

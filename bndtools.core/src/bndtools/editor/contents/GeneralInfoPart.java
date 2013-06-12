@@ -74,10 +74,10 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.ServiceComponent;
 import aQute.bnd.header.Attrs;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.editor.utils.ToolTips;
 import bndtools.utils.CachingContentProposalProvider;
 import bndtools.utils.JavaContentProposal;
@@ -86,7 +86,7 @@ import bndtools.utils.JavaTypeContentProposal;
 import bndtools.utils.ModificationLock;
 
 public class GeneralInfoPart extends SectionPart implements PropertyChangeListener {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(GeneralInfoPart.class);
 
     private static final String[] EDITABLE_PROPERTIES = new String[] {
             Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.DSANNOTATIONS

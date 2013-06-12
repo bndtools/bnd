@@ -7,11 +7,11 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 
 public class OpenBrowserActionDelegate implements IWorkbenchWindowActionDelegate {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(OpenBrowserActionDelegate.class);
 
     private IWorkbenchWindow window;
 

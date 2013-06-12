@@ -40,9 +40,9 @@ import org.osgi.framework.Bundle;
 import aQute.bnd.build.Workspace;
 import aQute.lib.io.IO;
 import bndtools.Central;
-import bndtools.Logger;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.utils.BundleUtils;
 import bndtools.versioncontrol.util.VersionControlUtils;
 import bndtools.wizards.workspace.CnfInfo.Existence;
@@ -54,7 +54,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
 
     private static final String BUILD_GRADLE_FILENAME = "build.gradle";
 
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(CnfSetupTask.class);
 
     private final IConfigurationElement templateConfig;
     private final CnfSetupOperation operation;

@@ -9,12 +9,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import bndtools.Logger;
 import bndtools.api.ILogger;
+import bndtools.api.Logger;
 import bndtools.perspective.BndPerspective;
 
 public class JUnitViewOpenerStatusHandler implements IStatusHandler {
-    private static final ILogger logger = Logger.getLogger();
+    private static final ILogger logger = Logger.getLogger(JUnitViewOpenerStatusHandler.class);
 
     public Object handleStatus(IStatus status, Object source) throws CoreException {
         Runnable runnable = new Runnable() {
