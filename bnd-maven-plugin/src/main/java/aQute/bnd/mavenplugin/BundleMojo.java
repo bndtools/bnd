@@ -38,9 +38,6 @@ public class BundleMojo extends AbstractMojo {
 	protected MavenProject project;
 
 	@Component
-	private MavenProjectHelper m_projectHelper;
-
-	@Component
 	private ArtifactHandlerManager m_artifactHandlerManager;
 
 	static Pattern JAR_FILE_NAME_P = Pattern.compile("([-a-zA-Z0-9._]+)\\.jar");

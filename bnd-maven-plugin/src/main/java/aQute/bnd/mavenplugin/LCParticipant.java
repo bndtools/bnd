@@ -70,8 +70,6 @@ public class LCParticipant extends AbstractMavenLifecycleParticipant {
 					}
 				}
 			}
-
-			System.out.println(session.getProjects());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

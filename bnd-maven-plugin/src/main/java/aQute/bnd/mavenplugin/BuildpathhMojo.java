@@ -12,8 +12,10 @@ import org.apache.maven.plugin.*;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.project.*;
+import org.codehaus.plexus.util.xml.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
 
 /**
@@ -23,6 +25,7 @@ import aQute.lib.io.*;
  */
 @Mojo(name = "prepare")
 public class BuildpathhMojo extends AbstractMojo {
+	private static final String ORG_APACHE_MAVEN_PLUGINS_MAVEN_COMPILER_PLUGIN = "org.apache.maven.plugins:maven-compiler-plugin";
 	Set<Project> built = new HashSet<Project>();
 	@Component
 	private MavenSession session;
@@ -62,30 +65,58 @@ public class BuildpathhMojo extends AbstractMojo {
 
 			build.setDirectory(p.getTarget().getAbsolutePath());
 			build.setSourceDirectory(p.getSrc().getAbsolutePath());
+			
+			
+			
+			Plugin plugin = project
+					.getPlugin(ORG_APACHE_MAVEN_PLUGINS_MAVEN_COMPILER_PLUGIN);
+			if (plugin == null) {
+				getLog().error(
+						"For some weird reason cannot find compiler plugin "
+								+ ORG_APACHE_MAVEN_PLUGINS_MAVEN_COMPILER_PLUGIN);
+			} else {
+				for (PluginExecution pe : plugin.getExecutions()) {
+					Xpp3Dom config = (Xpp3Dom) pe.getConfiguration();
+					System.out.println("Compiler config before " + config);
+					set(config, "source", p.getProperty("javac.source"));
+					set(config, "target", p.getProperty("javac.target"));
+					set(config, "optimize", p.getProperty("javac.optimize"));
+					set(config,
+							"debug",
+							""
+									+ Processor.isTrue(p.getProperty(
+											"javac.debug", "" + true)));
+					pe.setConfiguration(config);
+					plugin.setConfiguration(config);
+					
+					System.out.println("Compiler config after " + config + " for " + pe );
+				}
 
+			}
 			// Hmm, the compiler seems special ...
 			for (File src : p.getSourcePath())
 				project.addCompileSourceRoot(src.getAbsolutePath());
 
-
-			
 			// Ensure we've build all our dependencies
 			// before we compile ourselves
 			for (Project dep : p.getDependson()) {
-				if ( dep.isStale())
-					getLog().error("Depends on " + dep
-							+ " but this project is stale. Might be building in wrong order" );
-				
+				if (dep.isStale())
+					getLog().error(
+							"Depends on "
+									+ dep
+									+ " but this project is stale. Might be building in wrong order or a sole project that depends on another project");
+
 				if (!dep.isOk())
-					getLog().error("Depends on " + dep
-							+ " but this project cannot be build: "
-							+ dep.getErrors());
+					getLog().error(
+							"Depends on " + dep
+									+ " but this project cannot be build: "
+									+ dep.getErrors());
 			}
 
 			// Handle any source resources since the standard
 			// java compiler does not copy them
 			copyResources(p);
-			
+
 			for (Container entry : p.getBuildpath()) {
 				if (entry.getError() != null) {
 					getLog().error(
@@ -105,6 +136,18 @@ public class BuildpathhMojo extends AbstractMojo {
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
+		}
+	}
+
+	private void set(Xpp3Dom config, String key, String value) {
+		if (config != null && value != null) {
+			Xpp3Dom child = config.getChild(key);
+			if (child == null) {
+				child = new Xpp3Dom(key);
+				config.addChild(child);
+			}
+			child.setValue(value);
+			project.getProperties().setProperty("maven.compiler." + key, value);
 		}
 	}
 

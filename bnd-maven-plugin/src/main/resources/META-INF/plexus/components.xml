@@ -1,6 +1,6 @@
 <component-set>
   <components>
-    <component>
+<!--     <component>
       <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
       <role-hint>bundle</role-hint>
       <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
@@ -8,14 +8,14 @@
         <lifecycles>
           <lifecycle>
             <id>default</id>
-            <!-- START SNIPPET: bundle-lifecycle -->
+            START SNIPPET: bundle-lifecycle
             <phases>
-              <validate>biz.aQute.bnd:bnd-maven-plugin:init</validate>
+              <validate>biz.aQute.bnd:bnd-maven-plugin:prepare</validate>
               <process-resources>
-              	org.apache.maven.plugins:maven-resources-plugin:resources,
-              	biz.aQute.bnd:bnd-maven-plugin:prepare
+              	org.apache.maven.plugins:maven-resources-plugin:resources
               </process-resources>
-              <compile>org.apache.maven.plugins:maven-compiler-plugin:compile</compile>
+              <compile>             biz.aQute.bnd:bnd-maven-plugin:compiler,
+              org.apache.maven.plugins:maven-compiler-plugin:compile</compile>
               <process-test-resources>org.apache.maven.plugins:maven-resources-plugin:testResources</process-test-resources>
               <test-compile>org.apache.maven.plugins:maven-compiler-plugin:testCompile</test-compile>
               <test>org.apache.maven.plugins:maven-surefire-plugin:test</test>
@@ -27,12 +27,12 @@
                 org.apache.maven.plugins:maven-deploy-plugin:deploy
               </deploy>
             </phases>
-            <!-- END SNIPPET: bundle-lifecycle -->
+            END SNIPPET: bundle-lifecycle
           </lifecycle>
         </lifecycles>
       </configuration>
     </component>
-    <component>
+ -->    <component>
       <role>org.apache.maven.artifact.handler.ArtifactHandler</role>
       <role-hint>bundle</role-hint>
       <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
