@@ -57,6 +57,9 @@ public class ConfigureMavenProject extends AbstractMojo {
 			// The bnd project might have some different ideas about
 			// source and bin folders. So get them and set them.
 
+			if ( project.getVersion() != null && !project.getVersion().isEmpty())
+				project.setVersion( bndProject.getProperty(Constants.BUNDLE_VERSION, "0"));
+			
 			Build build = project.getBuild();
 			build.setOutputDirectory(bndProject.getOutput().getAbsolutePath());
 			build.setTestOutputDirectory(bndProject.getOutput()
