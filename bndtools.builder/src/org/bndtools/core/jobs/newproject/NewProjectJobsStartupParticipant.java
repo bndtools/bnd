@@ -3,7 +3,7 @@ package org.bndtools.core.jobs.newproject;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 
-import bndtools.IStartupParticipant;
+import bndtools.api.IStartupParticipant;
 
 public class NewProjectJobsStartupParticipant implements IStartupParticipant {
 

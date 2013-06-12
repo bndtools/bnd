@@ -30,7 +30,7 @@ import org.eclipse.jface.wizard.WizardPage;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
-import bndtools.builder.BndProjectNature;
+import bndtools.api.BndtoolsConstants;
 
 public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 
@@ -57,12 +57,12 @@ public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
         IProjectDescription desc = project.getDescription();
         String[] natures = desc.getNatureIds();
         for (String nature : natures) {
-            if (BndProjectNature.NATURE_ID.equals(nature))
+            if (BndtoolsConstants.NATURE_ID.equals(nature))
                 return;
         }
         String[] newNatures = new String[natures.length + 1];
         System.arraycopy(natures, 0, newNatures, 0, natures.length);
-        newNatures[natures.length] = BndProjectNature.NATURE_ID;
+        newNatures[natures.length] = BndtoolsConstants.NATURE_ID;
         desc.setNatureIds(newNatures);
         project.setDescription(desc, null);
     }

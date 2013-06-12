@@ -43,8 +43,8 @@ import aQute.bnd.build.Workspace;
 import bndtools.Central;
 import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.BndtoolsConstants;
 import bndtools.api.ILogger;
-import bndtools.builder.BndProjectNature;
 import bndtools.launch.LaunchConstants;
 import bndtools.utils.FileExtensionFilter;
 
@@ -229,7 +229,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
                 return MessageFormat.format("Project {0} is closed.", targetName);
             }
             try {
-                if (!project.hasNature(BndProjectNature.NATURE_ID)) {
+                if (!project.hasNature(BndtoolsConstants.NATURE_ID)) {
                     return MessageFormat.format("Project {0} is not a Bnd OSGi project.", targetName);
                 }
             } catch (CoreException e) {

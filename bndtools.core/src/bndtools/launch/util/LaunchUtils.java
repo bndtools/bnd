@@ -15,7 +15,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.Central;
 import bndtools.Plugin;
-import bndtools.builder.BndProjectNature;
+import bndtools.api.BndtoolsConstants;
 import bndtools.launch.LaunchConstants;
 
 public final class LaunchUtils {
@@ -81,7 +81,7 @@ public final class LaunchUtils {
             }
         } else if (targetResource.getType() == IResource.PROJECT || targetResource.getName().equals(Project.BNDFILE)) {
             // Use the main project (i.e. bnd.bnd)
-            if (!project.hasNature(BndProjectNature.NATURE_ID))
+            if (!project.hasNature(BndtoolsConstants.NATURE_ID))
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("The configured run project \"{0}\"is not a Bnd project.", project.getName()), null));
             try {
                 result = Workspace.getProject(projectDir);

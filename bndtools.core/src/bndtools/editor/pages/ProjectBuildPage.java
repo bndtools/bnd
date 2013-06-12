@@ -37,9 +37,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Logger;
 import bndtools.Plugin;
+import bndtools.api.BndtoolsConstants;
 import bndtools.api.ILogger;
-import bndtools.builder.NewBuilder;
-import bndtools.classpath.BndContainerInitializer;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.project.BuildOperationsPart;
@@ -152,9 +151,9 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
             try {
                 IMarker[] markers;
 
-                markers = resource.findMarkers(BndContainerInitializer.MARKER_BND_CLASSPATH_PROBLEM, true, 0);
+                markers = resource.findMarkers(BndtoolsConstants.MARKER_BND_CLASSPATH_PROBLEM, true, 0);
                 loadMarkers(markers);
-                markers = resource.findMarkers(NewBuilder.MARKER_BND_PROBLEM, true, 0);
+                markers = resource.findMarkers(BndtoolsConstants.MARKER_BND_PROBLEM, true, 0);
                 loadMarkers(markers);
             } catch (CoreException e) {
                 logger.logError("Error retrieving problem markers", e);

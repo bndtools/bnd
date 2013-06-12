@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.bndtools.build.api.BuildErrorDetailsHandler;
+import org.bndtools.build.api.BuildErrorDetailsHandlers;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -15,8 +16,6 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
-
-import bndtools.builder.BuildErrorDetailsHandlers;
 
 public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
 

@@ -41,9 +41,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
+import bndtools.api.BndtoolsConstants;
 import bndtools.api.IProjectTemplate;
 import bndtools.api.ProjectPaths;
-import bndtools.classpath.BndContainerInitializer;
 
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
@@ -128,7 +128,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         result.addAll(Arrays.asList(entries));
 
         // Add the Bnd classpath container entry
-        IPath bndContainerPath = BndContainerInitializer.PATH_ID;
+        IPath bndContainerPath = BndtoolsConstants.BND_CLASSPATH_ID;
         IClasspathEntry bndContainerEntry = JavaCore.newContainerEntry(bndContainerPath, false);
         result.add(bndContainerEntry);
 

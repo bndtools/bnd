@@ -60,9 +60,6 @@ import bndtools.utils.JarUtils;
 public class BndContainerInitializer extends ClasspathContainerInitializer implements ModelListener {
     private static final ILogger logger = Logger.getLogger();
 
-    public static final Path PATH_ID = new Path("aQute.bnd.classpath.container");
-    public static final String MARKER_BND_CLASSPATH_PROBLEM = Plugin.PLUGIN_ID + ".bnd_classpath_problem";
-
     static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
 
     final Central central = Plugin.getDefault().getCentral();

@@ -39,6 +39,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 import bndtools.api.ILogger;
+import bndtools.api.IStartupParticipant;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {

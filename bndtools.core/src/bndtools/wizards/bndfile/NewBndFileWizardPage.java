@@ -27,7 +27,7 @@ import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
-import bndtools.builder.BndProjectNature;
+import bndtools.api.BndtoolsConstants;
 
 public class NewBndFileWizardPage extends WizardNewFileCreationPage {
 
@@ -66,7 +66,7 @@ public class NewBndFileWizardPage extends WizardNewFileCreationPage {
         }
 
         try {
-            if (!project.hasNature(BndProjectNature.NATURE_ID)) {
+            if (!project.hasNature(BndtoolsConstants.NATURE_ID)) {
                 warning = Messages.NewBndFileWizardPage_warningNonBndProject;
             }
         } catch (CoreException e) {

@@ -337,34 +337,6 @@
       </perspective>
    </extension>
    <extension
-         id="bndnature"
-         name="Bndtools Nature"
-         point="org.eclipse.core.resources.natures">
-      <runtime>
-         <run
-               class="bndtools.builder.BndProjectNature">
-         </run>
-      </runtime>
-      <requires-nature
-            id="org.eclipse.jdt.core.javanature">
-      </requires-nature>
-      <builder
-            id="bndtools.core.bndbuilder">
-      </builder>
-   </extension>
-   <extension
-         id="bndbuilder"
-         name="Bndtools Builder"
-         point="org.eclipse.core.resources.builders">
-      <builder
-            callOnEmptyDelta="true"
-            hasNature="true">
-         <run
-               class="bndtools.builder.NewBuilder">
-         </run>
-      </builder>
-   </extension>
-   <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
             adaptable="true"
@@ -417,33 +389,6 @@
       
    </extension>
    
-   <!-- Contribute a LightweightDecorator for marking exported packages -->
-   <extension 
-	    point="org.eclipse.ui.decorators">
-		
-		<decorator
-			adaptable="true"
-			label="Bndtools OSGi Package Decorations"
-			objectClass="org.eclipse.jdt.core.IPackageFragment"
-			state="true"
-			lightweight="true"
-			class="bndtools.internal.ui.PackageDecorator"
-			id="bndtools.packageDecorator"
-			location="TOP_LEFT"> 
-			<description>Marks exported packages with a '+' decoration, and excluded packages with a strike-through.</description>
-		</decorator>
-	</extension>
-   <extension
-         point="org.eclipse.core.resources.markers"
-         id="bndproblem"
-         name="Bndtools Problem Marker">
-      <persistent
-            value="true">
-      </persistent>
-      <super
-            type="org.eclipse.core.resources.problemmarker">
-      </super>
-   </extension>
    <extension point="org.eclipse.ui.perspectiveExtensions">
       <!-- Add lots of lovely Bndtools stuff to the Java perspective -->
       <perspectiveExtension targetID="org.eclipse.jdt.ui.JavaPerspective">
@@ -460,32 +405,6 @@
          <perspectiveShortcut id="bndtools.perspective"/>
       </perspectiveExtension>
    </extension>
-   <extension
-         id="bnd_classpath_problem"
-         name="Bnd Classpath Resolution Problem"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.eclipse.jdt.core.buildpath_problem">
-      </super>
-      <persistent
-            value="false">
-      </persistent>
-   </extension>
-   <extension
-       point="org.eclipse.jdt.core.classpathContainerInitializer">
-      <classpathContainerInitializer
-          id="aQute.bnd.classpath.container"
-          class="bndtools.classpath.BndContainerInitializer"/>
-   </extension>
-   
-   <extension 
-       point="org.eclipse.jdt.ui.classpathContainerPage">
-      <classpathContainerPage
-          id="aQute.bnd.classpath.container"
-          name="Bnd Bundle Path"
-          class="bndtools.classpath.BndContainerPage"/>
-   </extension>
-   
    <!-- COMPLETION PROPOSALS
    <extension
       point="org.eclipse.jdt.ui.javaCompletionProposalComputer"
@@ -674,6 +593,18 @@
              name="Bndtools OSGi">
        </page>
     </extension>
+	<extension point="org.eclipse.ui.propertyPages">
+		<page id="org.bndtools.core.propPages.project" name="Bndtools"
+			adaptable="true" objectClass="org.eclipse.core.resources.IProject"
+			class="bndtools.preferences.ui.BndProjectPropertyPage">
+			<enabledWhen>
+				<adapt type="org.eclipse.core.resources.IProject">
+					<test property="org.eclipse.core.resources.projectNature"
+						value="bndtools.core.bndnature" />
+				</adapt>
+			</enabledWhen>
+		</page>
+	</extension>
     <extension
           point="org.eclipse.debug.ui.launchConfigurationTypeImages">
        <launchConfigurationTypeImage
@@ -691,80 +622,7 @@
          point="org.eclipse.help.contexts">
          <contexts file="contexthelp.xml"/>
     </extension>
-   <extension point="bndtoolsStartupParticipant">
-      <startupParticipant class="org.bndtools.core.jobs.newproject.NewProjectJobsStartupParticipant" />
-   </extension>
-   
-   <extension point="buildListeners">
-      <listener name="Workspace Setup" class="bndtools.wizards.workspace.CnfSetupBuildListener"/>
-   </extension>
-   
-   <extension point="buildListeners">
-      <listener
-          name="Bundle Index Generation"
-          class="org.bndtools.core.build.indexer.BuiltBundleIndexer"
-      />
-   </extension>
-   
-   <extension point="buildErrorDetailsHandlers">
-      <handler
-         typeMatch="aQute.bnd.differ.Baseline$Info"
-         class="org.bndtools.core.build.handlers.baseline.BaselineErrorHandler"
-      />
-   </extension>
-   
-   <extension point="buildErrorDetailsHandlers">
-      <handler
-         typeMatch="aQute.bnd.differ.Baseline$BundleInfo"
-         class="org.bndtools.core.build.handlers.baseline.BundleVersionErrorHandler"
-      />
-   </extension>
-   
-   <extension point="org.eclipse.ui.ide.markerResolution">
-      <markerResolutionGenerator
-         markerType="bndtools.core.bndproblem"
-         class="bndtools.builder.BndtoolsMarkerResolutionGenerator"
-      />
-   </extension>
-   
-   <extension point="bndtools.core.projectTemplates">
-      <template name="Component Development (OSGi Declarative Services)"
-         priority="500"
-         category="AAA/Core"
-         class="org.bndtools.core.templates.project.ComponentTemplate"
-         doc="html/componentTemplate.xml"
-         icon="icons/cog.png"
-         />
-   </extension>
-   
-   <extension point="bndtools.core.projectTemplates">
-      <template name="Empty Project"
-         priority="-1000"
-         category="AAA/Core"
-         class="bndtools.api.EmptyTemplate"
-         doc="html/emptyTemplate.html"
-         icon="icons/template_empty.gif"
-         />
-   </extension>
-   
-   <extension point="bndtools.core.projectTemplates">
-      <template name="Integration Testing"
-         priority="200"
-         category="AAA/Core"
-         class="org.bndtools.core.templates.project.IntegrationTestingTemplate"
-         doc="html/integrationTestTemplate.xml"
-         icon="icons/junit.gif"
-         />
-   </extension>
-   
-   <extension point="bndtools.core.projectTemplates">
-      <template name="API Project"
-         priority="400"
-         category="AAA/Core"
-         class="org.bndtools.core.templates.project.APITemplate"
-         doc="html/apiProjectTemplate.xml"/>
-   </extension>
-   
+
    <extension point="bndtools.core.launchTemplates">
       <template
          name="Apache Felix 4 with Gogo Shell"
@@ -882,6 +740,30 @@
       </plugin>
 
    </extension>
+   
+	<extension point="bndtools.core.projectTemplates">
+		<template name="Component Development (OSGi Declarative Services)"
+			priority="500" category="AAA/Core"
+			class="org.bndtools.core.templates.project.ComponentTemplate" doc="html/componentTemplate.xml"
+			icon="icons/cog.png" />
+	</extension>
+
+	<extension point="bndtools.core.projectTemplates">
+		<template name="Empty Project" priority="-1000" category="AAA/Core"
+			class="bndtools.api.EmptyTemplate" doc="html/emptyTemplate.html"
+			icon="icons/template_empty.gif" />
+	</extension>
+
+	<extension point="bndtools.core.projectTemplates">
+		<template name="Integration Testing" priority="200" category="AAA/Core"
+			class="org.bndtools.core.templates.project.IntegrationTestingTemplate"
+			doc="html/integrationTestTemplate.xml" icon="icons/junit.gif" />
+	</extension>
+
+	<extension point="bndtools.core.projectTemplates">
+		<template name="API Project" priority="400" category="AAA/Core"
+			class="org.bndtools.core.templates.project.APITemplate" doc="html/apiProjectTemplate.xml" />
+	</extension>
 
    <extension point="org.eclipse.ui.intro.configExtension">
       <configExtension configId="org.eclipse.ui.intro.universalConfig" content="/intro/whatsnewExtensionContent.xml" />
@@ -900,25 +782,6 @@
          plugin="bndtools.core"
          code="999"
       />
-   </extension>
-   
-   <extension point="bndtools.core.validators">
-      <validator name="BSN check" class="org.bndtools.core.build.validate.BsnValidator"/>
-   </extension>
-   
-   <extension point="org.eclipse.ui.propertyPages">
-      <page
-         id="org.bndtools.core.propPages.project"
-         name="Bndtools"
-         adaptable="true"
-         objectClass="org.eclipse.core.resources.IProject"
-         class="bndtools.preferences.ui.BndProjectPropertyPage">
-         <enabledWhen>
-            <adapt type="org.eclipse.core.resources.IProject">
-               <test property="org.eclipse.core.resources.projectNature" value="bndtools.core.bndnature"/>
-            </adapt>
-         </enabledWhen>
-      </page>
    </extension>
    
    <extension point="runExportWizards">

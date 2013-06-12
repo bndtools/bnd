@@ -1,4 +1,4 @@
-package bndtools.wizards.workspace;
+package org.bndtools.builder.listeners;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -8,6 +8,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.progress.UIJob;
+
+import bndtools.wizards.workspace.CnfSetupWizard;
 
 public class CnfSetupBuildListener extends AbstractBuildListener {
 

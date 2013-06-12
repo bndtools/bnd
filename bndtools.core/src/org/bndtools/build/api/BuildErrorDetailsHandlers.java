@@ -1,16 +1,15 @@
-package bndtools.builder;
+package org.bndtools.build.api;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.bndtools.build.api.BuildErrorDetailsHandler;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 
 import bndtools.Logger;
 import bndtools.Plugin;
 
-public class BuildErrorDetailsHandlers {
+public final class BuildErrorDetailsHandlers {
 
     public static final BuildErrorDetailsHandlers INSTANCE = new BuildErrorDetailsHandlers();
 

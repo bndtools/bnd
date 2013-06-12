@@ -1,6 +1,7 @@
 -dependson:\
 	bndtools.bndplugins,\
 	bndtools.core,\
+	bndtools.builder,\
 	bndtools.jareditor,\
 	bndtools.repository.base,\
 	bndtools.repository.amdatu,\

@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.build.api.BuildErrorDetailsHandler;
+import org.bndtools.build.api.BuildErrorDetailsHandlers;
+import org.bndtools.build.api.DefaultBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
 import org.bndtools.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IFile;
@@ -69,7 +71,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private static final ILogger logger = Logger.getLogger();
 
     public static final String BUILDER_ID = Plugin.PLUGIN_ID + ".bndbuilder";
-    public static final String MARKER_BND_PROBLEM = Plugin.PLUGIN_ID + ".bndproblem";
 
     private static final int LOG_FULL = 2;
     private static final int LOG_BASIC = 1;

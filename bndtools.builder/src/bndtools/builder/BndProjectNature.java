@@ -32,8 +32,6 @@ import bndtools.classpath.BndContainerInitializer;
 
 public class BndProjectNature implements IProjectNature {
 
-    public static final String NATURE_ID = Plugin.PLUGIN_ID + ".bndnature";
-
     private IProject project;
 
     public IProject getProject() {

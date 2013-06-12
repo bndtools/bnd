@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+
+	<extension
+		point="org.eclipse.core.resources.natures"
+		id="bndnature"
+		name="Bndtools Nature"
+		>
+		<runtime>
+			<run class="bndtools.builder.BndProjectNature" />
+		</runtime>
+		<requires-nature id="org.eclipse.jdt.core.javanature" />
+		<builder id="bndtools.core.bndbuilder" />
+	</extension>
+
+	<extension
+		point="org.eclipse.core.resources.builders"
+		id="bndbuilder"
+		name="Bndtools Builder"
+		>
+		<builder callOnEmptyDelta="true" hasNature="true">
+			<run class="bndtools.builder.NewBuilder" />
+		</builder>
+	</extension>
+
+	<extension point="org.eclipse.ui.decorators">
+		<decorator adaptable="true" label="Bndtools OSGi Package Decorations"
+			objectClass="org.eclipse.jdt.core.IPackageFragment" state="true"
+			lightweight="true" class="bndtools.internal.ui.PackageDecorator" id="bndtools.packageDecorator"
+			location="TOP_LEFT">
+			<description>Marks exported packages with a '+' decoration, and
+				excluded packages with a strike-through.</description>
+		</decorator>
+	</extension>
+	
+	<extension
+		point="org.eclipse.core.resources.markers"
+		id="bndproblem"
+		name="Bndtools Problem Marker"
+		>
+		<persistent value="true"/>
+		<super type="org.eclipse.core.resources.problemmarker"/>
+	</extension>
+
+	<extension
+		point="org.eclipse.core.resources.markers"
+		id="bnd_classpath_problem"
+		name="Bnd Classpath Resolution Problem"
+		>
+		<super type="org.eclipse.jdt.core.buildpath_problem">
+		</super>
+		<persistent value="false">
+		</persistent>
+	</extension>
+
+	<extension point="org.eclipse.jdt.core.classpathContainerInitializer">
+		<classpathContainerInitializer
+			id="aQute.bnd.classpath.container"
+			class="bndtools.classpath.BndContainerInitializer"
+		/>
+	</extension>
+
+	<extension point="org.eclipse.jdt.ui.classpathContainerPage">
+		<classpathContainerPage
+			id="aQute.bnd.classpath.container"
+			name="Bnd Bundle Path"
+			class="bndtools.classpath.BndContainerPage"
+		/>
+	</extension>
+
+	<extension point="bndtoolsStartupParticipant">
+		<startupParticipant
+			class="org.bndtools.core.jobs.newproject.NewProjectJobsStartupParticipant" />
+	</extension>
+   
+	<extension point="buildListeners">
+		<listener name="Workspace Setup"
+			class="org.bndtools.builder.listeners.CnfSetupBuildListener" />
+	</extension>
+
+	<extension point="buildListeners">
+		<listener name="Bundle Index Generation"
+			class="org.bndtools.core.build.indexer.BuiltBundleIndexer" />
+	</extension>
+
+	<extension point="buildErrorDetailsHandlers">
+		<handler typeMatch="aQute.bnd.differ.Baseline$Info"
+			class="org.bndtools.core.build.handlers.baseline.BaselineErrorHandler" />
+	</extension>
+
+	<extension point="buildErrorDetailsHandlers">
+		<handler typeMatch="aQute.bnd.differ.Baseline$BundleInfo"
+			class="org.bndtools.core.build.handlers.baseline.BundleVersionErrorHandler" />
+	</extension>
+
+	<extension point="org.eclipse.ui.ide.markerResolution">
+		<markerResolutionGenerator markerType="bndtools.core.bndproblem"
+			class="bndtools.builder.BndtoolsMarkerResolutionGenerator" />
+	</extension>
+
+	<extension point="bndtools.core.validators">
+		<validator name="BSN check"
+			class="org.bndtools.core.build.validate.BsnValidator" />
+	</extension>
+
+</plugin>

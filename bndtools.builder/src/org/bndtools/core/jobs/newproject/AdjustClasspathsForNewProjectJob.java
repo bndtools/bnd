@@ -21,12 +21,12 @@ import bndtools.Logger;
 import bndtools.api.ILogger;
 import bndtools.classpath.BndContainerInitializer;
 
-public class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
+class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
     private static final ILogger logger = Logger.getLogger();
 
     private final IProject addedProject;
 
-    public AdjustClasspathsForNewProjectJob(IProject addedProject) {
+    AdjustClasspathsForNewProjectJob(IProject addedProject) {
         super("Adjusting classpaths for new project: " + addedProject.getName());
         this.addedProject = addedProject;
     }
