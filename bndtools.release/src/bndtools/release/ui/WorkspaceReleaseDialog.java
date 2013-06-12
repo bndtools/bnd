@@ -65,9 +65,7 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 
 		bundleRelease = new BundleTree(composite);
 
-		for (ProjectDiff projectDiff : projectDiffs) {
-			projectListControl.addItemToTable(projectDiff);
-		}
+		projectListControl.setInput(projectDiffs);
 		setSelected(0);
 
 		return composite;
@@ -91,6 +89,10 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 	}
 
 	public void widgetSelected(SelectionEvent e) {
+
+        if (e.item == null || e.item.isDisposed()) {
+            return;
+        }
 
 		ProjectDiff projectDiff = (ProjectDiff) ((TableItem) e.item).getData();
 		if (projectDiff != null) {
