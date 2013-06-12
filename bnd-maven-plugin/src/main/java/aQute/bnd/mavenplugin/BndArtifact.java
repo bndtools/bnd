@@ -4,6 +4,10 @@ import org.apache.maven.artifact.*;
 
 import aQute.bnd.build.*;
 
+/**
+ * Provides a Maven artifact based on a bnd Container.
+ *
+ */
 public class BndArtifact extends DefaultArtifact {
 
 	private final Container container;
