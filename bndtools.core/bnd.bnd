@@ -21,28 +21,26 @@ Private-Package: \
 	bndtools,\
 	bndtools.*,\
 	org.bndtools.core.*,\
-	org.osgi.service.indexer.impl.types,\
-	org.osgi.service.indexer.impl,\
-	org.osgi.service.indexer.impl.util,\
-	org.apache.felix.resolver,\
-	org.kxml2.io,\
-	org.xmlpull.v1
+	org.apache.felix.resolver
 
 Conditional-Package:\
 	aQute.lib.*;-split-package:=merge-first,\
 	aQute.libg.*;-split-package:=merge-first, \
 	org.bndtools.utils.*
 
-Export-Package: bndtools.api.*,\
+Export-Package: \
+	bndtools.central, \
 	bndtools.types,\
 	bndtools.editor.model,\
 	bndtools.launch.ui,\
 	bndtools.model.clauses,\
+	bndtools.preferences,\
 	org.bndtools.build.api,\
 	org.bndtools.core.ui,\
 	org.osgi.service.resolver;provide:=true;-split-package:=merge-first,\
 	bndtools.launch.util,\
-	bndtools.launch.api
+	bndtools.launch.api,\
+	bndtools.wizards.workspace
 
 Include-Resource: plugin.xml=_plugin.xml,\
 	resources
@@ -99,4 +97,5 @@ eclipse.deps: \
 	osgi.r5;version=1.0.1,\
 	libs/org.osgi.service.obr-1.0.2.jar;version=file,\
 	libs/jcip-annotations.jar;version=file, \
+	bndtools.api; version=latest, \
 	bndtools.utils; version=project

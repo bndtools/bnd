@@ -5,7 +5,9 @@
 -runfw: org.eclipse.osgi
 
 workspace.bundles: \
+	bndtools.api;version=snapshot,\
 	bndtools.core;version=snapshot,\
+	bndtools.builder;version=snapshot,\
 	bndtools.repository.base;version=snapshot,\
 	bndtools.repository.amdatu;version=snapshot,\
 	bndtools.template.dm;version=snapshot,\

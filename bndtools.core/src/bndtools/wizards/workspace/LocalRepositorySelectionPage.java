@@ -21,9 +21,9 @@ import org.eclipse.swt.widgets.Table;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.Central;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
+import bndtools.central.Central;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 

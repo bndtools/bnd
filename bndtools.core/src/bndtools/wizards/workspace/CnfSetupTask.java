@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -39,11 +40,10 @@ import org.osgi.framework.Bundle;
 
 import aQute.bnd.build.Workspace;
 import aQute.lib.io.IO;
-import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
-import bndtools.utils.BundleUtils;
+import bndtools.central.Central;
 import bndtools.versioncontrol.util.VersionControlUtils;
 import bndtools.wizards.workspace.CnfInfo.Existence;
 

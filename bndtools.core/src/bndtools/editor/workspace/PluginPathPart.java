@@ -43,8 +43,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
-import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.central.Central;
 
 public class PluginPathPart extends SectionPart implements PropertyChangeListener {
 

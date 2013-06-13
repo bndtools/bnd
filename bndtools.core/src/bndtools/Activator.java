@@ -25,9 +25,9 @@ public class Activator extends AbstractUIPlugin {
     public static final String PLUGIN_ID = "aQute.bmaker";
 
     // The shared instance
-    static volatile Activator instance;
+    public static volatile Activator instance;
+    public RepositoryListenerPluginTracker repoListenerTracker;
     BundleContext context;
-    RepositoryListenerPluginTracker repoListenerTracker;
 
     /*
      * (non-Javadoc)

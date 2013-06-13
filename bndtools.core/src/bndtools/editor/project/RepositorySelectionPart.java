@@ -43,11 +43,11 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.service.repository.Repository;
 
 import bndtools.BndConstants;
-import bndtools.Central;
 import bndtools.Plugin;
-import bndtools.WorkspaceR5Repository;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
+import bndtools.central.Central;
+import bndtools.central.WorkspaceR5Repository;
 import bndtools.editor.common.BndEditorPart;
 
 public class RepositorySelectionPart extends BndEditorPart {

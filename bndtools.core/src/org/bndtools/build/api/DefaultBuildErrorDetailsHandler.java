@@ -11,9 +11,9 @@ import org.eclipse.core.resources.IProject;
 import aQute.bnd.build.Project;
 import aQute.service.reporter.Report.Location;
 
-final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDetailsHandler {
+public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDetailsHandler {
 
-    static final DefaultBuildErrorDetailsHandler INSTANCE = new DefaultBuildErrorDetailsHandler();
+    public static final DefaultBuildErrorDetailsHandler INSTANCE = new DefaultBuildErrorDetailsHandler();
 
     public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
         Map<String,Object> attribs = new HashMap<String,Object>();

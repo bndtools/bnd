@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.Attributes;
 
+import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
@@ -21,9 +22,8 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Plugin;
-import bndtools.RefreshFileJob;
+import bndtools.central.RefreshFileJob;
 import bndtools.types.Pair;
-import bndtools.utils.BundleUtils;
 
 public class AddFilesToRepositoryWizard extends Wizard {
 

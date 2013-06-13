@@ -37,8 +37,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.central.Central;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.repository.SearchableRepository;

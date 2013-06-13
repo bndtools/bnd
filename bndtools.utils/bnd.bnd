@@ -16,7 +16,8 @@
     org.eclipse.ui.workbench, \
     org.eclipse.jdt.core, \
     org.eclipse.text, \
-    junit.osgi
+    junit.osgi, \
+    bndtools.api; version=latest
 
 # No exports. This is bundle is not intended for runtime use.
 Private-Package: org.bndtools.utils.*

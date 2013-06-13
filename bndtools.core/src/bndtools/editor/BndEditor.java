@@ -25,6 +25,7 @@ import org.bndtools.core.resolve.ResolveJob;
 import org.bndtools.core.resolve.ui.ResolutionWizard;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
+import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -66,11 +67,11 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.BndConstants;
-import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
 import bndtools.api.ResolveMode;
+import bndtools.central.Central;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.model.IDocumentWrapper;
 import bndtools.editor.pages.BundleContentPage;
@@ -82,7 +83,6 @@ import bndtools.editor.pages.WorkspacePage;
 import bndtools.launch.LaunchConstants;
 import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
-import bndtools.utils.SWTConcurrencyUtil;
 
 public class BndEditor extends ExtendedFormEditor implements IResourceChangeListener {
     private static final ILogger logger = Logger.getLogger(BndEditor.class);

@@ -16,6 +16,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Stack;
 
+import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -47,7 +48,6 @@ import bndtools.api.ILogger;
 import bndtools.api.Logger;
 import bndtools.editor.BndEditor;
 import bndtools.editor.model.IDocumentWrapper;
-import bndtools.utils.FileUtils;
 
 public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
     private static final String OSGI_INF_BLUEPRINT_XML = "OSGI-INF/blueprint/*.xml";

@@ -2,6 +2,7 @@ package bndtools.launch;
 
 import java.text.MessageFormat;
 
+import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -24,7 +25,6 @@ import aQute.bnd.build.ProjectTester;
 import aQute.bnd.service.EclipseJUnitTester;
 import bndtools.Plugin;
 import bndtools.launch.util.LaunchUtils;
-import bndtools.utils.BundleUtils;
 
 public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 

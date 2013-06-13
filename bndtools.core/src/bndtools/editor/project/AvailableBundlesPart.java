@@ -33,11 +33,11 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import bndtools.BndConstants;
 import bndtools.Plugin;
+import bndtools.central.RepositoryUtils;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
-import bndtools.model.repo.RepositoryUtils;
 import bndtools.utils.SelectionDragAdapter;
 
 public class AvailableBundlesPart extends BndEditorPart {

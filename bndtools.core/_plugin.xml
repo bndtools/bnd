@@ -47,7 +47,12 @@
       name="Bnd Editor Pages"
       schema="schema/editorPages"
    />
-   
+
+	<extension point="bndtoolsStartupParticipant">
+		<startupParticipant
+			class="bndtools.central.Central" />
+	</extension>
+
    <!-- Popup Menus -->
    <extension
          point="org.eclipse.ui.editors">

@@ -30,10 +30,10 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
-import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
+import bndtools.central.Central;
 import bndtools.launch.util.LaunchUtils;
 
 public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {

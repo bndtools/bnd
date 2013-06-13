@@ -1,0 +1,8 @@
+-buildpath: \
+	ee.j2se;version="[1.5,1.6)", \
+	osgi.core; version=4.1, \
+	${bndlib}, \
+	org.eclipse.equinox.common, \
+	org.eclipse.core.runtime
+
+Export-Package: bndtools.api

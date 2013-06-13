@@ -8,6 +8,8 @@ import java.net.URL;
 
 import org.bndtools.core.ui.ConfigElementLabelProvider;
 import org.bndtools.utils.eclipse.CategorisedPrioritisedConfigurationElementTreeContentProvider;
+import org.bndtools.utils.osgi.BundleUtils;
+import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -36,8 +38,6 @@ import org.osgi.framework.Bundle;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
-import bndtools.utils.BundleUtils;
-import bndtools.utils.FileUtils;
 
 public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
     private static final ILogger logger = Logger.getLogger(AbstractTemplateSelectionWizardPage.class);

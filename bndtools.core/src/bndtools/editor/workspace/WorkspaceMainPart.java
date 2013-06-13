@@ -28,8 +28,8 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.central.Central;
 
 public class WorkspaceMainPart extends SectionPart {
 

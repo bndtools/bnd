@@ -40,11 +40,11 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.BndtoolsConstants;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
+import bndtools.central.Central;
 import bndtools.launch.LaunchConstants;
 import bndtools.utils.FileExtensionFilter;
 

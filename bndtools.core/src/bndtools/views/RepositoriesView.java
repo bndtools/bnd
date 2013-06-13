@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import org.bndtools.utils.Function;
 import org.bndtools.utils.swt.FilterPanelPart;
+import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
@@ -74,17 +75,16 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import bndtools.Activator;
-import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
+import bndtools.central.Central;
+import bndtools.central.RepositoryUtils;
 import bndtools.model.repo.ContinueSearchElement;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
-import bndtools.model.repo.RepositoryUtils;
 import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
-import bndtools.utils.SWTConcurrencyUtil;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 

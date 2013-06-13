@@ -32,8 +32,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import aQute.bnd.build.Workspace;
-import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.central.Central;
 
 public class ProjectLocationGroup {
 

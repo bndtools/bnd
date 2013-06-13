@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -28,7 +29,6 @@ import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import bndtools.Plugin;
-import bndtools.utils.FileUtils;
 import bndtools.wizards.bndfile.JarListWizardPage;
 
 class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {

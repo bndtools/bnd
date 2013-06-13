@@ -68,12 +68,11 @@ public class Plugin extends AbstractUIPlugin {
 
     private volatile ScheduledExecutorService scheduler;
 
-    private volatile Central central;
-
     @Override
     public void start(BundleContext context) throws Exception {
         registerWorkspaceURLHandler(context);
         super.start(context);
+        plugin = this;
         this.bundleContext = context;
 
         scheduler = Executors.newScheduledThreadPool(1);
@@ -88,8 +87,6 @@ public class Plugin extends AbstractUIPlugin {
         resourceIndexerTracker.open();
 
         registerWorkspaceServiceFactory(context);
-
-        central = new Central();
 
         runStartupParticipants();
     }
@@ -152,7 +149,6 @@ public class Plugin extends AbstractUIPlugin {
         stopStartupParticipants();
 
         bndActivator.stop(context);
-        central.close();
         resourceIndexerTracker.close();
         indexerTracker.close();
         this.bundleContext = null;
@@ -262,10 +258,6 @@ public class Plugin extends AbstractUIPlugin {
                 ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
             }
         });
-    }
-
-    public Central getCentral() {
-        return central;
     }
 
     public static ImageDescriptor imageDescriptorFromPlugin(String imageFilePath) {

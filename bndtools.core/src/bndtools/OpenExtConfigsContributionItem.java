@@ -22,6 +22,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
+import bndtools.central.Central;
 
 public class OpenExtConfigsContributionItem extends CompoundContributionItem {
 

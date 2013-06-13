@@ -23,6 +23,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
+import bndtools.central.RepositoryUtils;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
     private static final ILogger logger = Logger.getLogger(RepositoryTreeLabelProvider.class);

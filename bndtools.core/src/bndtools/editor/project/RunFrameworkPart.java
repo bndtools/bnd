@@ -29,9 +29,9 @@ import org.eclipse.ui.forms.widgets.Section;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import bndtools.BndConstants;
-import bndtools.Central;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
+import bndtools.central.Central;
 import bndtools.utils.ModificationLock;
 
 public class RunFrameworkPart extends SectionPart implements PropertyChangeListener {

@@ -6,6 +6,7 @@ import org.osgi.framework.ServiceRegistration;
 
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
+import bndtools.central.Central;
 
 public class WorkspaceServiceFactory implements ServiceFactory {
     private static final ILogger logger = Logger.getLogger(WorkspaceServiceFactory.class);

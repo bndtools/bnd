@@ -19,6 +19,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Map;
 
+import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -42,7 +43,6 @@ import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
 import bndtools.editor.model.BndProject;
-import bndtools.utils.FileUtils;
 import bndtools.versioncontrol.util.VersionControlUtils;
 
 abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {

@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -34,7 +35,6 @@ import org.eclipse.text.edits.TextEdit;
 
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
-import bndtools.utils.FileUtils;
 
 public class PkgRenameParticipant extends RenameParticipant implements ISharableParticipant {
     private static final ILogger logger = Logger.getLogger(PkgRenameParticipant.class);

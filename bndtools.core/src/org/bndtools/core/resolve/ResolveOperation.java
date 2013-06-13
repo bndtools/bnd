@@ -23,8 +23,8 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.deployer.repository.ReporterLogService;
 import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolveProcess;
-import bndtools.Central;
 import bndtools.Plugin;
+import bndtools.central.Central;
 
 public class ResolveOperation implements IRunnableWithProgress {
 

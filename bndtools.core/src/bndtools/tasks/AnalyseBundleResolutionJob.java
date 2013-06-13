@@ -26,6 +26,8 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import org.bndtools.utils.collections.CollectionUtils;
+import org.bndtools.utils.osgi.BundleUtils;
+import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -50,11 +52,10 @@ import aQute.lib.collections.MultiMap;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
+import bndtools.central.Central;
 import bndtools.model.importanalysis.ExportPackage;
 import bndtools.model.importanalysis.ImportPackage;
 import bndtools.model.importanalysis.RequiredBundle;
-import bndtools.utils.BundleUtils;
-import bndtools.utils.FileUtils;
 
 public class AnalyseBundleResolutionJob extends Job {
     private static final ILogger logger = Logger.getLogger(AnalyseBundleResolutionJob.class);
@@ -162,7 +163,7 @@ public class AnalyseBundleResolutionJob extends Job {
 
         // Calculate the manifest
         try {
-            Project bndProject = Plugin.getDefault().getCentral().getModel(JavaCore.create(project));
+            Project bndProject = Central.getInstance().getModel(JavaCore.create(project));
             if (bndProject == null)
                 return null;
             Builder builder;

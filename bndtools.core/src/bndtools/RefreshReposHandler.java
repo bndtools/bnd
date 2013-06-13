@@ -16,6 +16,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
+import bndtools.central.Central;
 
 public class RefreshReposHandler extends AbstractHandler {
 

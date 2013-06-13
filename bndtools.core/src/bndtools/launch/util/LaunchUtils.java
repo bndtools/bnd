@@ -13,9 +13,9 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import bndtools.Central;
 import bndtools.Plugin;
 import bndtools.api.BndtoolsConstants;
+import bndtools.central.Central;
 import bndtools.launch.LaunchConstants;
 
 public final class LaunchUtils {
