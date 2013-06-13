@@ -80,7 +80,14 @@ public class BundleReleaseDialog extends Dialog {
 		label.setText(Messages.releaseToRepo);
 
 		String[] items = ReleaseHelper.getReleaseRepositories();
-		String defaultRepo = project.getProperty(Constants.RELEASEREPO);
+
+		RepositoryPlugin repo = ReleaseHelper.getReleaseRepo(project);
+		String defaultRepo;
+		if (repo != null) {
+		    defaultRepo = repo.getName();
+		} else {
+		    defaultRepo = null;
+		}
 		int idx = 0;
 		for (int i = 0; i < items.length; i++) {
 			if (defaultRepo != null) {

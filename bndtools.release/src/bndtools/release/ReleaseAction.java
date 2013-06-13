@@ -26,6 +26,8 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 
+import bndtools.release.nl.Messages;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 
@@ -34,10 +36,15 @@ public class ReleaseAction implements IObjectActionDelegate {
 //	private IWorkbenchPart targetPart;
 
 	private Map<Project, List<File>> bndFiles;
-	
+
 	public void run(IAction action) {
 
 		if (bndFiles != null) {
+            if (ReleaseHelper.getReleaseRepositories().length == 0) {
+                Activator.message(Messages.noReleaseRepos);
+                return;
+            }
+
 			if (!PlatformUI.getWorkbench().saveAllEditors(true)) {
 				return;
 			}

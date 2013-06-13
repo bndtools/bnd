@@ -16,10 +16,17 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.PlatformUI;
 
+import bndtools.release.nl.Messages;
+
 public class ReleaseWorkspaceHandler extends AbstractHandler {
 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		try {
+
+            if (ReleaseHelper.getReleaseRepositories().length == 0) {
+                Activator.message(Messages.noReleaseRepos);
+                return null;
+            }
 
 			if (!PlatformUI.getWorkbench().saveAllEditors(true)) {
 				return null;

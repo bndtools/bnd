@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
@@ -27,6 +28,9 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PlatformUI;
 
+import aQute.bnd.osgi.Constants;
+import bndtools.release.nl.Messages;
+
 public class WorkspaceReleaseAction implements IObjectActionDelegate {
 
     private Set<IProject> projects = Collections.emptySet();
@@ -34,6 +38,11 @@ public class WorkspaceReleaseAction implements IObjectActionDelegate {
     public void run(IAction action) {
 
         if (projects.size() > 0) {
+            if (ReleaseHelper.getReleaseRepositories().length == 0) {
+                Activator.message(Messages.noReleaseRepos);
+                return;
+            }
+
             if (!PlatformUI.getWorkbench().saveAllEditors(true)) {
                 return;
             }
@@ -59,9 +68,15 @@ public class WorkspaceReleaseAction implements IObjectActionDelegate {
                     IWorkingSet workingSet = (IWorkingSet) selected;
                     for (IAdaptable adaptable : workingSet.getElements()) {
                         IProject project = (IProject) adaptable.getAdapter(IProject.class);
-                        if (project != null) {
+                        if (project != null && !projects.contains(project)) {
                             projects.add(project);
                         }
+                    }
+                } else if (selected instanceof IFile) {
+                    IFile bndFile = (IFile) selected;
+                    if (bndFile.getName().endsWith(Constants.DEFAULT_BND_EXTENSION)) {
+                        if (!projects.contains(bndFile.getProject()))
+                        projects.add(bndFile.getProject());
                     }
                 }
             }

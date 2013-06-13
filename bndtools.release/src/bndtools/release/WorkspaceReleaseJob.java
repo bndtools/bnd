@@ -27,11 +27,13 @@ public class WorkspaceReleaseJob extends Job {
 
 	private List<ProjectDiff> projectDiffs;
 	private boolean updateOnly;
+	private final boolean showMessage;
 
-	public WorkspaceReleaseJob(List<ProjectDiff> projectDiffs, boolean updateOnly) {
+	public WorkspaceReleaseJob(List<ProjectDiff> projectDiffs, boolean updateOnly, boolean showMessage) {
 		super(Messages.workspaceReleaseJob2);
 		this.projectDiffs = projectDiffs;
 		this.updateOnly = updateOnly;
+		this.showMessage = showMessage;
 	}
 
 	@Override
@@ -47,7 +49,7 @@ public class WorkspaceReleaseJob extends Job {
 				}
 
 				ReleaseContext context = new ReleaseContext(projectDiff.getProject(), projectDiff.getBaselines(), release, updateOnly);
-				ReleaseJob job = new ReleaseJob(context, false);
+				ReleaseJob job = new ReleaseJob(context, showMessage);
 				job.setRule(ResourcesPlugin.getWorkspace().getRoot());
 				job.run(new SubProgressMonitor(monitor, 1));
 			}

@@ -139,12 +139,11 @@ public class WorkspaceAnalyserJob extends Job {
 			Runnable runnable = new Runnable() {
 				public void run() {
 					WorkspaceReleaseDialog dialog = new WorkspaceReleaseDialog(
-							shell, projectDiffs);
+							shell, projectDiffs, false);
 					int ret = dialog.open();
 					if (ret == WorkspaceReleaseDialog.OK) {
-					    boolean updateOnly = dialog.isUpdateOnly();
 						WorkspaceReleaseJob releaseJob = new WorkspaceReleaseJob(
-								projectDiffs, updateOnly);
+								projectDiffs, dialog.isUpdateOnly(), dialog.isShowMessage());
 						releaseJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
 						releaseJob.schedule();
 					}

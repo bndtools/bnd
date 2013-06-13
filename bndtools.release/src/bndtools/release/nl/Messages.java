@@ -27,18 +27,18 @@ public class Messages extends NLS {
     public static String message; /* bndtools.release.ErrorList::createControl */
     public static String symbolicName; /* bndtools.release.ErrorList::createControl */
     public static String version1; /* bndtools.release.ErrorList::createControl */
-    
+
     public static String project1; /* bndtools.release.ProjectListControl::createTable */
     public static String repository; /* bndtools.release.ProjectListControl::createTable */
     public static String bundles; /* bndtools.release.ProjectListControl::createTable */
-    
+
     public static String releaseJob; /* bndtools.release.ReleaseDialogJob::ReleaseDialogJob */
     public static String cleaningProject; /* bndtools.release.ReleaseDialogJob::ReleaseDialogJob */
     public static String releasing; /* bndtools.release.ReleaseDialogJob::ReleaseDialogJob */
     public static String checkingExported; /* bndtools.release.ReleaseDialogJob::ReleaseDialogJob */
 
     public static String fileDoesNotExist; /* bndtools.release.ReleaseHelper::writeFully */
-    
+
     public static String bundleReleaseJob; /* bndtools.release.ReleaseJob::ReleaseJob */
     public static String project2; /* bndtools.release.ReleaseJob::run */
     public static String updatedVersionInfo; /* bndtools.release.ReleaseJob::run */
@@ -56,7 +56,7 @@ public class Messages extends NLS {
 
     public static String workspaceReleaseJob2; /* bndtools.release.WorkspaceReleaseJob::WorkspaceReleaseJob */
     public static String releasingProjects; /* bndtools.release.WorkspaceReleaseJob::run */
-    
+
     public static String releaseDialogTitle1; /* bndtools.release.BundleReleaseDialog::configureShell */
     public static String updateVersionsAndRelease; /* bndtools.release.BundleReleaseDialog::createButtonsForButtonBar */
     public static String updateVersions; /* bndtools.release.BundleReleaseDialog::createButtonsForButtonBar */
@@ -67,6 +67,7 @@ public class Messages extends NLS {
     public static String bundleAndPackageName; /* bndtools.release.ui.BundleTree::createInfoViewer */
     public static String newVersion; /* bndtools.release.ui.BundleTree::createInfoViewer */
     public static String version2; /* bndtools.release.ui.BundleTree::createInfoViewer */
+    public static String noReleaseRepos; /* bndtools.release.WorkspaceReleaseAction::run */
 
     static {
         NLS.initializeMessages(RESOURCE_BUNDLE, Messages.class);

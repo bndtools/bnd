@@ -39,11 +39,13 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 	private BundleTree bundleRelease;
 
 	private boolean updateOnly = false;
+	private final boolean showMessage;
 
-	public WorkspaceReleaseDialog(Shell parentShell, List<ProjectDiff> projectDiffs) {
+	public WorkspaceReleaseDialog(Shell parentShell, List<ProjectDiff> projectDiffs, boolean showMessage) {
 		super(parentShell);
 		super.setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
 		this.projectDiffs = projectDiffs;
+		this.showMessage = showMessage;
 	}
 
 	@Override
@@ -149,5 +151,9 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 
     public boolean isUpdateOnly() {
         return updateOnly;
+    }
+
+    public boolean isShowMessage() {
+        return showMessage;
     }
 }

@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -325,15 +324,42 @@ public class ReleaseHelper {
 				}
 			}
 		}
-		Collections.reverse(ret);
 		return ret.toArray(new String[ret.size()]);
 	}
+
+    public static RepositoryPlugin getReleaseRepo(Project project) {
+        RepositoryPlugin repo = null;
+        String repoName = project.getProperty(Constants.RELEASEREPO);
+
+        if (repoName != null && Constants.NONE.equals(repoName))
+            return null;
+
+        List<RepositoryPlugin> repos = project.getPlugins(RepositoryPlugin.class);
+        for (RepositoryPlugin r : repos) {
+            if (r.canWrite()) {
+                if (repoName == null || r.getName().equals(repoName)) {
+                    repo = r;
+                    break;
+                }
+            }
+        }
+        return repo;
+    }
+
 
 
 	public static void initializeProjectDiffs(List<ProjectDiff> projects) {
 		String[] repos =  getReleaseRepositories();
 		for (ProjectDiff projectDiff : projects) {
-			String repo = projectDiff.getProject().getProperty(Project.RELEASEREPO);
+
+            RepositoryPlugin repoPlugin = ReleaseHelper.getReleaseRepo(projectDiff.getProject());
+            String repo;
+            if (repoPlugin != null) {
+                repo = repoPlugin.getName();
+            } else {
+                repo = null;
+            }
+
 			if (repo == null) {
 				if (repos.length > 0) {
 					repo = repos[0];

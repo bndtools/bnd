@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -26,14 +27,14 @@ import aQute.bnd.build.Project;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Builder;
 import bndtools.release.nl.Messages;
-import bndtools.release.ui.BundleReleaseDialog;
+import bndtools.release.ui.WorkspaceReleaseDialog;
 
 public class ReleaseDialogJob extends Job {
 
 	protected final Shell shell;
 	protected final Project project;
 	private final List<File> subBundles;
-	
+
 	public ReleaseDialogJob(Project project, List<File> subBundles) {
 		super(Messages.releaseJob);
 		this.project = project;
@@ -75,8 +76,16 @@ public class ReleaseDialogJob extends Job {
 
 			Runnable runnable = new Runnable() {
 				public void run() {
-					BundleReleaseDialog dialog = new BundleReleaseDialog(shell, project, diffs);
-					dialog.open();
+				    List<ProjectDiff> projectDiffs = new ArrayList<ProjectDiff>();
+				    projectDiffs.add(new ProjectDiff(project, diffs));
+		            ReleaseHelper.initializeProjectDiffs(projectDiffs);
+				    WorkspaceReleaseDialog dialog = new WorkspaceReleaseDialog(shell, projectDiffs, true);
+					if (dialog.open() == WorkspaceReleaseDialog.OK) {
+                        WorkspaceReleaseJob releaseJob = new WorkspaceReleaseJob(
+                                projectDiffs, dialog.isUpdateOnly(), dialog.isShowMessage());
+                        releaseJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
+                        releaseJob.schedule();
+					}
 				}
 			};
 
@@ -85,16 +94,16 @@ public class ReleaseDialogJob extends Job {
 			} else {
 				runnable.run();
 			}
-			
+
 			monitor.worked(33);
 	        return Status.OK_STATUS;
         } catch (Exception e) {
         	return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error : " + e.getMessage(), e);
         } finally {
-        	
+
         	monitor.done();
         }
 
 	}
-	
+
 }
