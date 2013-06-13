@@ -30,11 +30,13 @@ public class BundlePackager extends AbstractMojo {
 			"jar", "bundle" });
 
 	@Component
-	protected MavenProject mavenProject
-	;
+	protected MavenProject mavenProject;
 
 	@Component
 	private ArtifactHandlerManager m_artifactHandlerManager;
+	
+	@Component
+	private BndWorkspace bndWorkspace;
 
 	static Pattern JAR_FILE_NAME_P = Pattern.compile("([-a-zA-Z0-9._]+)\\.jar");
 
@@ -43,8 +45,7 @@ public class BundlePackager extends AbstractMojo {
 		File[] files = null;
 
 		try {
-			Workspace workspace = InitializeForBnd.getWorkspace(new File(
-					session.getExecutionRootDirectory()));
+			Workspace workspace = bndWorkspace.getWorkspace(session);
 			Project bndProject = workspace.getProject(mavenProject.getArtifactId());
 			if ( bndProject == null)
 				throw new MojoExecutionException("Cannot find the bnd project " + mavenProject.getArtifactId() + " in workspace " + workspace );
