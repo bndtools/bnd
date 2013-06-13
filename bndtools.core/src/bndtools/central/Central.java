@@ -30,10 +30,11 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.Version;
 
-import bndtools.Activator;
-import bndtools.WorkspaceListener;
+import bndtools.api.BndtoolsConstants;
 import bndtools.api.ILogger;
 import bndtools.api.IStartupParticipant;
 import bndtools.api.Logger;
@@ -62,23 +63,33 @@ public class Central implements IStartupParticipant {
     static final ConcurrentMap<String,Collection<String>> containedPackageMap = new ConcurrentHashMap<String,Collection<String>>();
     static final ConcurrentMap<String,Collection<IResource>> sourceFolderMap = new ConcurrentHashMap<String,Collection<IResource>>();
 
-    final Map<IJavaProject,Project> javaProjectToModel = new HashMap<IJavaProject,Project>();
-    final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
+    private final BundleContext bundleContext;
+    private final Map<IJavaProject,Project> javaProjectToModel = new HashMap<IJavaProject,Project>();
+    private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
+
+    private RepositoryListenerPluginTracker repoListenerTracker;
 
     /**
      * WARNING: Do not instantiate this class. It must be public to allow instantiation by the Eclipse registry, but it
      * is not intended for direct creation by clients. Instead call Central.getInstance().
      */
     @Deprecated
-    public Central() {}
+    public Central() {
+        bundleContext = FrameworkUtil.getBundle(Central.class).getBundleContext();
+    }
 
     public void start() {
         synchronized (Central.class) {
             instance = this;
         }
+
+        repoListenerTracker = new RepositoryListenerPluginTracker(bundleContext);
+        repoListenerTracker.open();
     }
 
     public void stop() {
+        repoListenerTracker.close();
+
         synchronized (Central.class) {
             instance = null;
         }
@@ -176,7 +187,7 @@ public class Central implements IStartupParticipant {
                         return true;
                     } catch (Exception e) {
                         e.printStackTrace();
-                        throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, "During checking project changes", e));
+                        throw new CoreException(new Status(Status.ERROR, BndtoolsConstants.CORE_PLUGIN_ID, "During checking project changes", e));
                     }
                 }
 
@@ -188,9 +199,7 @@ public class Central implements IStartupParticipant {
 
             }
         } catch (CoreException e) {
-            Activator.getDefault().error("While handling changes", e);
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.logError("While handling changes", e);
         }
     }
 
@@ -225,6 +234,9 @@ public class Central implements IStartupParticipant {
     }
 
     public synchronized static Workspace getWorkspace() throws Exception {
+        if (instance == null)
+            throw new IllegalStateException("Central has not been initialised");
+
         if (workspace != null)
             return workspace;
 
@@ -234,7 +246,7 @@ public class Central implements IStartupParticipant {
             newWorkspace = Workspace.getWorkspace(getWorkspaceDirectory());
 
             newWorkspace.addBasicPlugin(new WorkspaceListener(newWorkspace));
-            newWorkspace.addBasicPlugin(Activator.instance.repoListenerTracker);
+            newWorkspace.addBasicPlugin(instance.repoListenerTracker);
             newWorkspace.addBasicPlugin(getWorkspaceR5Repository());
 
             // Initialize projects in synchronized block
@@ -344,7 +356,7 @@ public class Central implements IStartupParticipant {
                         }
                         return true;
                     } catch (Exception e) {
-                        throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, "During checking project changes", e));
+                        throw new CoreException(new Status(Status.ERROR, BndtoolsConstants.CORE_PLUGIN_ID, "During checking project changes", e));
                     }
                 }
 
@@ -431,7 +443,7 @@ public class Central implements IStartupParticipant {
                 }
             }
         } catch (Exception e) {
-            Activator.getDefault().error("While refreshing path " + path, e);
+            logger.logError("While refreshing path " + path, e);
         }
     }
 

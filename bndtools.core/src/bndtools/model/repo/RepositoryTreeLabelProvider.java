@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.bndtools.utils.jface.HyperlinkStyler;
+import org.bndtools.utils.repos.RepoUtils;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
@@ -23,7 +24,6 @@ import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
 import bndtools.api.Logger;
-import bndtools.central.RepositoryUtils;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
     private static final ILogger logger = Logger.getLogger(RepositoryTreeLabelProvider.class);
@@ -50,7 +50,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 cell.setText(repo.getName());
 
                 Image image;
-                if (RepositoryUtils.isWorkspaceRepo(repo))
+                if (RepoUtils.isWorkspaceRepo(repo))
                     image = projectImg;
                 else if (isRemoteRepo((RepositoryPlugin) element))
                     image = remoteRepoImg;
@@ -149,7 +149,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         Image img = null;
         if (element instanceof RepositoryPlugin) {
             RepositoryPlugin repo = (RepositoryPlugin) element;
-            if (RepositoryUtils.isWorkspaceRepo(repo))
+            if (RepoUtils.isWorkspaceRepo(repo))
                 img = projectImg;
             else
                 img = isRemoteRepo(repo) ? remoteRepoImg : localRepoImg;

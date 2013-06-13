@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.bndtools.utils.repos.RepoUtils;
+
 import aQute.bnd.build.Workspace;
-import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
@@ -49,7 +50,7 @@ public class RepositoryUtils {
 
     public static VersionedClause convertRepoBundle(RepositoryBundle bundle) {
         Attrs attribs = new Attrs();
-        if (isWorkspaceRepo(bundle.getRepo())) {
+        if (RepoUtils.isWorkspaceRepo(bundle.getRepo())) {
             attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
         }
         return new VersionedClause(bundle.getBsn(), attribs);
@@ -57,7 +58,7 @@ public class RepositoryUtils {
 
     public static VersionedClause convertRepoBundleVersion(RepositoryBundleVersion bundleVersion, DependencyPhase phase) {
         Attrs attribs = new Attrs();
-        if (isWorkspaceRepo(bundleVersion.getBundle().getRepo()))
+        if (RepoUtils.isWorkspaceRepo(bundleVersion.getBundle().getRepo()))
             attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
         else {
             StringBuilder builder = new StringBuilder();
@@ -70,12 +71,6 @@ public class RepositoryUtils {
             attribs.put(Constants.VERSION_ATTRIBUTE, builder.toString());
         }
         return new VersionedClause(bundleVersion.getBundle().getBsn(), attribs);
-    }
-
-    public static boolean isWorkspaceRepo(RepositoryPlugin repo) {
-        if (repo.getClass() == WorkspaceRepository.class)
-            return true;
-        return false;
     }
 
 }
