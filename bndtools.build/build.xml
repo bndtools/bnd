@@ -41,21 +41,36 @@
 	<!-- Build the Eclipse "plugins" directory -->
 	<target name="plugins.dir" depends="init" description="Expand the required bundles">
 		<mkdir dir="${target}/plugins/main"/>
+
+		<!-- Core -->
 		<unjar dest="${target}/plugins/main" src="${target}/${project.name}.jar">
 		    <patternset>
+		      <!-- mirror these excludes as includes in the unjar below -->
 		      <exclude name="*ace*"/>
 		      <exclude name="*amdatu*"/>
 		      <exclude name="*template.dm*"/>
+
 		      <include name="*.jar"/>
 		    </patternset>
 		</unjar>
+
+		<!-- Extras -->
 		<unjar dest="${target}/plugins/extras" src="${target}/${project.name}.jar">
 			<patternset>
-				<include name="*ace*"/>
-			    <include name="*template*"/>
+			  <!-- mirror these includes as excludes in the unjar above -->
+			  <include name="*ace*"/>
+			  <include name="*amdatu*"/>
+			  <include name="*template.dm*"/>
 			</patternset>
 		</unjar>
+		<!--
+		  Copy in dependencies
 
+		  This feels really dirty, but works.
+		  We need a better way of letting the projects specify additional
+		  resources to be copied in.
+		-->
+		<copy file="../cnf/deps/org.apache.ace.bnd.repository/org.apache.ace.bnd.repository-latest.jar" todir="${target}/plugins/extras"/>
 	</target>
 	
 	<!-- Generate the p2 repository and index -->
