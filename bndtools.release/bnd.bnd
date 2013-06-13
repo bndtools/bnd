@@ -23,8 +23,6 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 -buildpath:\
 	ee.j2se;version=${javac.ee},\
 	bndtools.core;version=latest, \
-	${bndlib}, \
-	${junit},\
 	org.eclipse.core.runtime,\
 	org.eclipse.core.contenttype,\
 	org.eclipse.jface,\
@@ -54,5 +52,8 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	org.eclipse.team.core,\
 	org.eclipse.core.filesystem, \
 	org.eclipse.equinox.preferences, \
-	osgi.core
+	osgi.core,\
+	${bndlib}, \
+	${junit},\
+
 Export-Package: bndtools.release.api

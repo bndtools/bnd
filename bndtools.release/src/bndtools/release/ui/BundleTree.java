@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Widget;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.version.Version;
+import bndtools.release.Activator;
 import bndtools.release.nl.Messages;
 
 public class BundleTree extends Composite {
@@ -277,7 +278,7 @@ public class BundleTree extends Composite {
 
 		public InlineComboEditingSupport(ColumnViewer viewer) {
 			super(viewer);
-			this.editor = new ComboBoxCellEditor((Composite) viewer.getControl(), new String[] {}, SWT.READ_ONLY);
+			this.editor = new ComboBoxCellEditor((Composite) viewer.getControl(), new String[] {});
 
 			Control control = editor.getControl();
 			((CCombo) control).addSelectionListener(new SelectionListener() {
@@ -292,9 +293,6 @@ public class BundleTree extends Composite {
 
 		@Override
         protected boolean canEdit(Object element) {
-			if (element instanceof Info) {
-				return true;
-			}
             if (element instanceof Baseline) {
                 return true;
             }
@@ -346,15 +344,15 @@ public class BundleTree extends Composite {
 			 }
 
 			 String[] items = ((ComboBoxCellEditor)cellEditor).getItems();
-			 int idx = 0;
+			 int idx = -1;
 			 for (int i = 0; i < items.length; i++) {
 			     if (items[i].equals(selectedVersion)) {
 			         idx = i;
 			         break;
 			     }
 			 }
-
-			 cellEditor.setValue(idx);
+			 if (idx > -1)
+			     cellEditor.setValue(idx);
 			 cell.setText(selectedVersion);
 		}
 
@@ -363,13 +361,27 @@ public class BundleTree extends Composite {
 			int idx = ((Integer) cellEditor.getValue()).intValue();
 			String[] items = ((ComboBoxCellEditor) cellEditor).getItems();
 
-			String selectedVersion = items[idx];
+			String selectedVersion;
+			if (idx > -1) {
+			    selectedVersion = items[idx];
+			} else {
+			    selectedVersion = ((CCombo) cellEditor.getControl()).getText();
+			}
+
+			Version version;
+			try {
+			    version = Version.parseVersion(selectedVersion);
+			} catch (IllegalArgumentException e) {
+			    Activator.message(String.format(Messages.versionInvalid, selectedVersion));
+			    return;
+			}
+
 			cell.setText(selectedVersion);
 
             if (cell.getElement() instanceof Baseline) {
-                ((Baseline)cell.getElement()).setSuggestedVersion(Version.parseVersion(selectedVersion));
+                ((Baseline)cell.getElement()).setSuggestedVersion(version);
             } else if (cell.getElement() instanceof Info) {
-			    ((Info)cell.getElement()).suggestedVersion = Version.parseVersion(selectedVersion);
+			    ((Info)cell.getElement()).suggestedVersion = version;
 			}
 		}
 	}
