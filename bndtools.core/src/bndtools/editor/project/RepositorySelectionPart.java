@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bndtools.utils.Function;
 import org.bndtools.utils.collections.CollectionUtils;
 import org.bndtools.utils.jface.StrikeoutStyler;
+import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.JFaceResources;
@@ -44,6 +46,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.service.repository.Repository;
 
+import aQute.bnd.build.Workspace;
 import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.api.ILogger;
@@ -271,12 +274,28 @@ public class RepositorySelectionPart extends BndEditorPart {
     }
 
     private void reloadRepos() {
+        final IMessageManager messages = getManagedForm().getMessageManager();
+        messages.removeMessage(MESSAGE_KEY, viewer.getControl());
         allRepos.clear();
+
         try {
             allRepos.addAll(Central.getWorkspace().getPlugins(Repository.class));
         } catch (Exception e) {
-            IMessageManager messages = getManagedForm().getMessageManager();
             messages.addMessage(MESSAGE_KEY, "Repository List: Unable to load OSGi Repositories. " + e.getMessage(), e, IMessageProvider.ERROR, viewer.getControl());
+
+            // Load the repos and clear the error message if the Workspace is initialised later.
+            Central.onWorkspaceInit(new Function<Workspace,Void>() {
+                public Void run(final Workspace ws) {
+                    SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                        public void run() {
+                            allRepos.clear();
+                            allRepos.addAll(ws.getPlugins(Repository.class));
+                            messages.removeMessage(MESSAGE_KEY, viewer.getControl());
+                        }
+                    });
+                    return null;
+                }
+            });
         }
         viewer.setInput(allRepos);
         updateButtons();
@@ -336,14 +355,10 @@ public class RepositorySelectionPart extends BndEditorPart {
 
     @Override
     protected void refreshFromModel() {
-        IMessageManager messages = getManagedForm().getMessageManager();
-        messages.removeMessage(MESSAGE_KEY, viewer.getControl());
-
         List<String> tmp = model.getRunRepos();
         includedRepos = tmp == null ? null : new LinkedList<String>(tmp);
         reloadRepos();
         updateButtons();
-
     }
 
     @Override
