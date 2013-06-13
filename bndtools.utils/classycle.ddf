@@ -1,0 +1,7 @@
+show allResults
+
+# Define package sets
+[utils-all] = org.bndtools.utils.*
+
+# Absolutely no package cycles!!
+check absenceOfPackageCycles > 1 in [utils-all]
