@@ -11,7 +11,8 @@
 	bndtools.release,\
 	org.bndtools.embeddedrepo,\
 	bndtools.ace.launcher,\
-	bndtools.ace.plugin
+	bndtools.ace.plugin,\
+	bndtools.api
 
 Include-Resource:\
 	${repo;biz.aQute.bndlib;${bndlib-version-base}},\
@@ -32,4 +33,6 @@ Include-Resource:\
 	${repo;woodstox-core-asl;latest},\
 	${repo;bndtools.ace.plugin;latest},\
     ${repo;org.apache.ace.bnd.repository;latest},\
-    ${repo;bndtools.ace.launcher;latest}
+    ${repo;bndtools.ace.launcher;latest},\
+    ${repo;bndtools.api;latest},\
+    ${repo;bndtools.builder;latest}
