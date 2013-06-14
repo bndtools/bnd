@@ -30,15 +30,16 @@ import aQute.bnd.build.*;
 public class InitializeForBnd extends AbstractMavenLifecycleParticipant {
 
 	@Requirement
-	Logger logger;
-	static Workspace workspace;
+	private Logger logger;
+	
+	@Requirement
+	private BndWorkspace bndWorkspace;
 
 	@Override
 	public void afterProjectsRead(MavenSession session)
 			throws MavenExecutionException {
 		try {
-			Workspace workspace = InitializeForBnd.getWorkspace(new File(session
-					.getExecutionRootDirectory()));
+			Workspace workspace = bndWorkspace.getWorkspace(session);
 
 			// Build an index and an inverted list of the projects
 
@@ -88,34 +89,4 @@ public class InitializeForBnd extends AbstractMavenLifecycleParticipant {
 	public void afterSessionStart(MavenSession session)
 			throws MavenExecutionException {
 	}
-
-	
-	/**
-	 * Get the workspace and keep a local copy as a static (YUCK!!!!!!!!!).
-	 * 
-	 * TODO figure out how to share an instance between phases and goals
-	 * 
-	 * @param executionRoot
-	 * @return
-	 * @throws Exception
-	 */
-	static Workspace getWorkspace(File executionRoot) throws Exception {
-	    if ( InitializeForBnd.workspace != null)
-	    	return InitializeForBnd.workspace;
-	    
-	    File currentFolder = new File("cnf").getCanonicalFile();
-	    if (currentFolder.exists() && currentFolder.isDirectory())
-	        return InitializeForBnd.workspace=new Workspace(currentFolder.getParentFile());
-	    
-	    File sessionRoot = new File(executionRoot,"/cnf").getCanonicalFile();
-	    if (sessionRoot.exists() && sessionRoot.isDirectory())
-	        return InitializeForBnd.workspace=new Workspace(sessionRoot.getParentFile());
-	    
-	    File upFolder = new File("../cnf").getCanonicalFile();
-	    if (upFolder.exists() && upFolder.isDirectory())
-	        return InitializeForBnd.workspace=new Workspace(upFolder.getParentFile());
-	
-	    throw new MojoFailureException("No workspace folder found!");
-	}
-
 }

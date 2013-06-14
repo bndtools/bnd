@@ -31,6 +31,9 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 	@Component
 	protected MavenProject project;
+	
+	@Component
+	private BndWorkspace bndWorkspace;
 
 	/**
 	 * Called to setup this project.
@@ -41,9 +44,7 @@ public class ConfigureMavenProject extends AbstractMojo {
 		Set<Artifact> classpath = new LinkedHashSet<Artifact>();
 
 		try {
-			Workspace workspace = InitializeForBnd.getWorkspace(new File(
-					session.getExecutionRootDirectory()));
-
+			Workspace workspace = bndWorkspace.getWorkspace(session);
 			
 			Project bndProject = workspace.getProject(project.getArtifactId());
 			if ( bndProject == null) {
