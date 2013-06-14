@@ -1,0 +1,60 @@
+package aQute.lib.strings;
+
+import java.util.regex.*;
+
+import aQute.lib.collections.*;
+
+public class Strings {
+
+	public static String join(String middle, Iterable< ? > objects) {
+		return join(middle, objects, null, null);
+	}
+
+	public static String join(Iterable< ? > objects) {
+		return join(",", objects, null, null);
+	}
+
+	public static String join(String middle, Iterable< ? > objects, Pattern pattern, String replace) {
+		StringBuilder sb = new StringBuilder();
+		join(sb, middle, objects, pattern, replace);
+		return sb.toString();
+	}
+
+	public static void join(StringBuilder sb, String middle, Iterable< ? > objects, Pattern pattern, String replace) {
+		String del = "";
+		if (objects == null)
+			return;
+
+		for (Object o : objects) {
+			if (o != null) {
+				sb.append(del);
+				String s = o.toString();
+				if (pattern != null) {
+					Matcher matcher = pattern.matcher(s);
+					if (!matcher.matches())
+						continue;
+
+					s = matcher.replaceAll(replace);
+				}
+				sb.append(s);
+				del = middle;
+			}
+		}
+	}
+
+	public static String join(String middle, Object[] segments) {
+		return join(middle, new ExtList<Object>(segments));
+	}
+
+	public static String display(Object o, Object... ifNull) {
+		if (o != null)
+			return o.toString();
+
+		for (int i = 0; i < ifNull.length; i++) {
+			if (ifNull[i] != null)
+				return ifNull[i].toString();
+		}
+		return "";
+	}
+	
+}
