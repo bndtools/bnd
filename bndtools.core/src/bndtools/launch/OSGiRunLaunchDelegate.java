@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -31,8 +33,6 @@ import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 import bndtools.launch.util.LaunchUtils;
 

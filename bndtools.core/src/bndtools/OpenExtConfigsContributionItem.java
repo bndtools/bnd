@@ -3,6 +3,8 @@ package bndtools;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -20,8 +22,6 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 
 public class OpenExtConfigsContributionItem extends CompoundContributionItem {

@@ -3,6 +3,8 @@ package bndtools.launch.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -34,8 +36,6 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.launch.LaunchConstants;
 import bndtools.launch.util.LaunchUtils;
 

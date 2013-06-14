@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.core.resources.IFile;
@@ -29,8 +31,6 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.io.IO;
 import bndtools.BndConstants;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class ResolutionWizard extends Wizard {
 

@@ -6,6 +6,8 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.utils.jface.HyperlinkStyler;
 import org.bndtools.utils.repos.RepoUtils;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -22,8 +24,6 @@ import aQute.bnd.service.Actionable;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
     private static final ILogger logger = Logger.getLogger(RepositoryTreeLabelProvider.class);

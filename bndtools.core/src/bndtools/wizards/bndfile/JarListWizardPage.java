@@ -19,6 +19,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.Manifest;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -58,8 +60,6 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.utils.ClassPathLabelProvider;
 import bndtools.utils.FileExtensionFilter;
 

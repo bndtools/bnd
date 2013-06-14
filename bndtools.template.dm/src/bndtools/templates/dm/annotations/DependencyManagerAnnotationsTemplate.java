@@ -9,9 +9,9 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.BndEditModel;
-import bndtools.api.IBndProject;
-import bndtools.api.IProjectTemplate;
 
+import org.bndtools.api.IBndProject;
+import org.bndtools.api.IProjectTemplate;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import aQute.bnd.build.model.clauses.VersionedClause;

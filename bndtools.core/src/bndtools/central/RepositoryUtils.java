@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.utils.repos.RepoUtils;
 
 import aQute.bnd.build.Workspace;
@@ -11,8 +13,6 @@ import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;

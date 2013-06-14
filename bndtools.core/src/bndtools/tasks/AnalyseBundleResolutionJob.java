@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.utils.collections.CollectionUtils;
 import org.bndtools.utils.osgi.BundleUtils;
 import org.bndtools.utils.workspace.FileUtils;
@@ -50,8 +52,6 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 import bndtools.model.importanalysis.ExportPackage;
 import bndtools.model.importanalysis.ImportPackage;

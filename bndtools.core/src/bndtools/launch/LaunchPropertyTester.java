@@ -1,13 +1,13 @@
 package bndtools.launch;
 
+import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 
-import bndtools.api.BndtoolsConstants;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class LaunchPropertyTester extends PropertyTester {
     private static final ILogger logger = Logger.getLogger(LaunchPropertyTester.class);

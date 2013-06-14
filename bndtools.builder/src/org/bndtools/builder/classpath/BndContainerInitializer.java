@@ -15,6 +15,10 @@ import java.util.StringTokenizer;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 
+import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
+import org.bndtools.api.ModelListener;
 import org.bndtools.utils.jar.JarUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -42,10 +46,6 @@ import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Parameters;
-import bndtools.api.BndtoolsConstants;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
-import bndtools.api.ModelListener;
 import bndtools.central.Central;
 import bndtools.central.RefreshFileJob;
 

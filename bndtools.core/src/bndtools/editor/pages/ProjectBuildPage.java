@@ -4,6 +4,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.core.resources.IMarker;
@@ -36,9 +39,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
-import bndtools.api.BndtoolsConstants;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.project.BuildOperationsPart;

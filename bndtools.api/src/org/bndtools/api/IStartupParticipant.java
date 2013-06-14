@@ -1,4 +1,4 @@
-package bndtools.api;
+package org.bndtools.api;
 
 public interface IStartupParticipant {
     void start();

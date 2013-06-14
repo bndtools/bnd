@@ -3,6 +3,8 @@ package bndtools.model.repo;
 import java.io.File;
 import java.text.MessageFormat;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -10,8 +12,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 
 import aQute.bnd.build.Project;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class ProjectBundle implements IAdaptable {
     private static final ILogger logger = Logger.getLogger(ProjectBundle.class);

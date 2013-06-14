@@ -3,6 +3,9 @@ package org.bndtools.builder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.build.api.BuildListener;
 import org.bndtools.utils.Function;
 import org.eclipse.core.resources.IProject;
@@ -13,9 +16,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 
-import bndtools.api.BndtoolsConstants;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class BuildListeners {
     private static final ILogger logger = Logger.getLogger(BuildListeners.class);

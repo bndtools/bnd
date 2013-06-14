@@ -14,6 +14,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
@@ -30,8 +32,6 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import aQute.bnd.properties.IDocument;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
 import bndtools.editor.model.IDocumentWrapper;
 

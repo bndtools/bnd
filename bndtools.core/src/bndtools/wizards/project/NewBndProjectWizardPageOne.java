@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.IProjectTemplate;
+import org.bndtools.api.ProjectPaths;
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -41,9 +44,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import bndtools.api.BndtoolsConstants;
-import bndtools.api.IProjectTemplate;
-import bndtools.api.ProjectPaths;
 
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 

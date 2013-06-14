@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
@@ -20,8 +22,6 @@ import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.version.Version;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class RepositoryTreeContentProvider implements ITreeContentProvider {
 

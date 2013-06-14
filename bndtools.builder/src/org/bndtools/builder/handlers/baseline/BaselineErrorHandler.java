@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
 import org.bndtools.utils.jdt.ASTUtil;
@@ -48,8 +50,6 @@ import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Report.Location;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 

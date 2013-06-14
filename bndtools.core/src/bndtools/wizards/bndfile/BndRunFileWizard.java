@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -32,8 +34,6 @@ import org.eclipse.ui.ide.IDE;
 import org.osgi.framework.Bundle;
 
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class BndRunFileWizard extends Wizard implements INewWizard {
     private static final ILogger logger = Logger.getLogger(BndRunFileWizard.class);

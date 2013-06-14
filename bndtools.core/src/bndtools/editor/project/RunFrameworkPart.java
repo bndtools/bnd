@@ -3,6 +3,8 @@ package bndtools.editor.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
@@ -28,8 +30,6 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.EE;
 import bndtools.BndConstants;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 import bndtools.utils.ModificationLock;
 import bndtools.editor.common.BndEditorPart;

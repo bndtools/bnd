@@ -3,10 +3,10 @@ package bndtools.editor.utils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.swt.widgets.Control;
 import aQute.bnd.help.Syntax;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class ToolTips {
     private static final ILogger logger = Logger.getLogger(ToolTips.class);

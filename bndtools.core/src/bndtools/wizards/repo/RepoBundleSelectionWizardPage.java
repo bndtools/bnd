@@ -9,6 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -41,8 +43,6 @@ import org.eclipse.swt.widgets.Tree;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 import bndtools.central.RepositoryUtils;
 import bndtools.model.clauses.VersionedClauseLabelProvider;

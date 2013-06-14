@@ -1,5 +1,7 @@
 package bndtools.launch.ui.internal;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.IStatusHandler;
@@ -9,8 +11,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.perspective.BndPerspective;
 
 public class JUnitViewOpenerStatusHandler implements IStatusHandler {

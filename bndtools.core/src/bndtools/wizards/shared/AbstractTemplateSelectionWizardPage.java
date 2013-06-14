@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.core.ui.ConfigElementLabelProvider;
 import org.bndtools.utils.eclipse.CategorisedPrioritisedConfigurationElementTreeContentProvider;
 import org.bndtools.utils.osgi.BundleUtils;
@@ -36,8 +38,6 @@ import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.osgi.framework.Bundle;
 
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
     private static final ILogger logger = Logger.getLogger(AbstractTemplateSelectionWizardPage.class);

@@ -17,6 +17,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.IStartupParticipant;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -38,9 +41,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
-import bndtools.api.ILogger;
-import bndtools.api.IStartupParticipant;
-import bndtools.api.Logger;
 import bndtools.services.WorkspaceURLStreamHandlerService;
 
 public class Plugin extends AbstractUIPlugin {

@@ -3,12 +3,12 @@ package org.bndtools.build.api;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public final class BuildErrorDetailsHandlers {
 

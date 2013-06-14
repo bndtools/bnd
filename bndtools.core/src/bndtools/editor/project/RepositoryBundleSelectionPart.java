@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.core.ui.wizards.jpm.AddJpmDependenciesWizard;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -69,8 +71,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 import bndtools.central.RepositoryUtils;
 import bndtools.model.clauses.VersionedClauseLabelProvider;

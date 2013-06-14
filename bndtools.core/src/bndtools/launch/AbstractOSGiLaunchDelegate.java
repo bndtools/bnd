@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -25,8 +27,6 @@ import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.launch.util.LaunchUtils;
 import bndtools.preferences.BndPreferences;
 

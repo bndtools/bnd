@@ -1,9 +1,9 @@
 package org.bndtools.utils.log;
 
+import org.bndtools.api.ILogger;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
 
-import bndtools.api.ILogger;
 
 public class LogServiceAdapter implements LogService {
 

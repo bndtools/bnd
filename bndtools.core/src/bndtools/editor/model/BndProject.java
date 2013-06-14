@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bndtools.api.IBndProject;
 import org.eclipse.core.resources.IProject;
 
-import bndtools.api.IBndProject;
 
 public class BndProject implements IBndProject {
 

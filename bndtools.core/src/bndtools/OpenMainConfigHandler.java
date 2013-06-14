@@ -1,5 +1,7 @@
 package bndtools;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -10,8 +12,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
 
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 
 public class OpenMainConfigHandler extends AbstractHandler {

@@ -3,6 +3,7 @@ package bndtools.launch.util;
 import java.io.File;
 import java.text.MessageFormat;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -14,7 +15,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
-import bndtools.api.BndtoolsConstants;
 import bndtools.central.Central;
 import bndtools.launch.LaunchConstants;
 

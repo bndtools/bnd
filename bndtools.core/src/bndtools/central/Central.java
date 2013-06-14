@@ -14,6 +14,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.ILogger;
+import org.bndtools.api.IStartupParticipant;
+import org.bndtools.api.Logger;
+import org.bndtools.api.ModelListener;
 import org.bndtools.utils.Function;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -34,11 +39,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.Version;
 
-import bndtools.api.BndtoolsConstants;
-import bndtools.api.ILogger;
-import bndtools.api.IStartupParticipant;
-import bndtools.api.Logger;
-import bndtools.api.ModelListener;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;

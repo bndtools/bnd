@@ -9,6 +9,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
+import org.bndtools.api.ProjectPaths;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -19,9 +22,6 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.team.core.RepositoryProvider;
 
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
-import bndtools.api.ProjectPaths;
 import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
 import bndtools.versioncontrol.VersionControlSystem;

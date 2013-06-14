@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
@@ -18,8 +20,6 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class OSGiFrameworkContentProvider implements IStructuredContentProvider {
     private static final ILogger logger = Logger.getLogger(OSGiFrameworkContentProvider.class);

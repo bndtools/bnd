@@ -3,6 +3,8 @@ package bndtools.editor.project;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
@@ -26,8 +28,6 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;

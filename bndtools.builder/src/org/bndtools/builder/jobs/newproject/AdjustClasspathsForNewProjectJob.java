@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.builder.classpath.BndContainerInitializer;
 import org.bndtools.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IProject;
@@ -17,8 +19,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 
 import aQute.bnd.build.Project;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 
 class AdjustClasspathsForNewProjectJob extends WorkspaceJob {

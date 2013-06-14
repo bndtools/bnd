@@ -18,7 +18,6 @@ Import-Package: junit.framework;resolution:=optional,\
 # Bundle Content
 
 Private-Package: \
-	bndtools,\
 	bndtools.*,\
 	org.bndtools.core.*,\
 	org.apache.felix.resolver

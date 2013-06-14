@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.build.api.AbstractBuildListener;
 import org.bndtools.utils.log.LogServiceAdapter;
 import org.eclipse.core.resources.IFile;
@@ -32,8 +34,6 @@ import org.osgi.service.indexer.impl.RepoIndex;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.io.IO;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 import bndtools.central.WorkspaceR5Repository;
 

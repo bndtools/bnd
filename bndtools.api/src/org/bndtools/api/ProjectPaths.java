@@ -1,4 +1,4 @@
-package bndtools.api;
+package org.bndtools.api;
 
 public class ProjectPaths {
     public static final String PATH_SRC = "src";

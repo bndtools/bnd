@@ -20,6 +20,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -76,8 +78,6 @@ import aQute.bnd.build.model.clauses.ServiceComponent;
 import aQute.bnd.header.Attrs;
 import bndtools.Plugin;
 import bndtools.UIConstants;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.editor.utils.ToolTips;
 import bndtools.utils.CachingContentProposalProvider;
 import bndtools.utils.JavaContentProposal;

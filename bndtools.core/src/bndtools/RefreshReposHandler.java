@@ -2,6 +2,8 @@ package bndtools;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -14,8 +16,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 
 public class RefreshReposHandler extends AbstractHandler {

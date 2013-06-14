@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.utils.Function;
 import org.bndtools.utils.collections.CollectionUtils;
 import org.bndtools.utils.jface.StrikeoutStyler;
@@ -49,8 +51,6 @@ import org.osgi.service.repository.Repository;
 import aQute.bnd.build.Workspace;
 import bndtools.BndConstants;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 import bndtools.central.WorkspaceR5Repository;
 import bndtools.editor.common.BndEditorPart;

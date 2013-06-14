@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.Attributes;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -45,8 +47,6 @@ import org.osgi.framework.Constants;
 
 import aQute.bnd.osgi.Jar;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.types.Pair;
 import bndtools.utils.FileExtensionFilter;
 

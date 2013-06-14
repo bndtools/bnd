@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.utils.Function;
 import org.bndtools.utils.swt.FilterPanelPart;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
@@ -76,8 +78,6 @@ import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import bndtools.Activator;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 import bndtools.central.RepositoryUtils;
 import bndtools.model.repo.ContinueSearchElement;

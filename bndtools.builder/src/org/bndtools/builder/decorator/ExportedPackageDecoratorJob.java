@@ -13,6 +13,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IProject;
@@ -34,8 +36,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 
 public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule {

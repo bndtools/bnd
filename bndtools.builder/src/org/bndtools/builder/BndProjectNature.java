@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -27,7 +28,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
-import bndtools.api.BndtoolsConstants;
 
 public class BndProjectNature implements IProjectNature {
 

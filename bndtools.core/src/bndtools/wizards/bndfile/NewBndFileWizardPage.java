@@ -12,6 +12,7 @@ package bndtools.wizards.bndfile;
 
 import java.io.InputStream;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -27,7 +28,6 @@ import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
-import bndtools.api.BndtoolsConstants;
 
 public class NewBndFileWizardPage extends WizardNewFileCreationPage {
 

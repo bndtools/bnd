@@ -1,5 +1,7 @@
 package org.bndtools.core.actions;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -7,8 +9,6 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class OpenBrowserActionDelegate implements IWorkbenchWindowActionDelegate {
     private static final ILogger logger = Logger.getLogger(OpenBrowserActionDelegate.class);

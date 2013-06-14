@@ -3,8 +3,9 @@ package bndtools.versioncontrol;
 import java.util.Map;
 import java.util.TreeMap;
 
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
+
 
 /**
  * Supported version control systems

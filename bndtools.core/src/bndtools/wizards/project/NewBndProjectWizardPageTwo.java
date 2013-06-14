@@ -13,6 +13,7 @@ package bndtools.wizards.project;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -30,7 +31,6 @@ import org.eclipse.jface.wizard.WizardPage;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
-import bndtools.api.BndtoolsConstants;
 
 public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 

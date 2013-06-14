@@ -13,12 +13,12 @@ package bndtools.wizards.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import org.bndtools.api.IProjectTemplate;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 
 import aQute.bnd.build.model.BndEditModel;
-import bndtools.api.IProjectTemplate;
 import bndtools.editor.model.BndProject;
 
 class NewBndProjectWizard extends AbstractNewBndProjectWizard {

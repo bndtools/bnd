@@ -2,13 +2,14 @@ package bndtools.central;
 
 import java.io.File;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
+
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.BndListener;
 import aQute.service.reporter.Reporter;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public final class WorkspaceListener extends BndListener {
     private static final ILogger logger = Logger.getLogger(WorkspaceListener.class);

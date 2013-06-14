@@ -5,4 +5,5 @@
 	org.eclipse.equinox.common, \
 	org.eclipse.core.runtime
 
-Export-Package: bndtools.api
+Export-Package: org.bndtools.api
+Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!

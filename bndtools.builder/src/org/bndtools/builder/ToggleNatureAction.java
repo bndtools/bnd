@@ -12,6 +12,7 @@ package org.bndtools.builder;
 
 import java.util.Iterator;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
@@ -22,7 +23,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
-import bndtools.api.BndtoolsConstants;
 
 public class ToggleNatureAction implements IObjectActionDelegate {
 

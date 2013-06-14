@@ -1,10 +1,10 @@
 package org.bndtools.builder;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.utils.Predicate;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.launching.JavaRuntime;
 
-import bndtools.api.BndtoolsConstants;
 
 /**
  * Filter for {@linkIClasspathContainer} instances that removes the Bnd and JRE containers

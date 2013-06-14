@@ -4,6 +4,8 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.core.runtime.CoreException;
@@ -11,8 +13,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.ui.forms.editor.IFormPage;
 
 import aQute.bnd.build.model.BndEditModel;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class DelayedPageFactory implements IFormPageFactory {
     private static final ILogger logger = Logger.getLogger(DelayedPageFactory.class);

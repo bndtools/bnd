@@ -5,6 +5,8 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Map;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -13,8 +15,6 @@ import org.eclipse.core.runtime.Path;
 
 import aQute.bnd.service.Actionable;
 import aQute.bnd.version.Version;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class RepositoryBundleVersion implements IAdaptable, Actionable {
     private static final ILogger logger = Logger.getLogger(RepositoryBundleVersion.class);

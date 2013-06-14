@@ -16,6 +16,8 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Stack;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -44,8 +46,6 @@ import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.osgi.Builder;
 import aQute.libg.glob.Glob;
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.editor.BndEditor;
 import bndtools.editor.model.IDocumentWrapper;
 

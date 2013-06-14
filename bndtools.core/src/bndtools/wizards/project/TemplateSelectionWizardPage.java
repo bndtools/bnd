@@ -3,14 +3,14 @@ package bndtools.wizards.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.IProjectTemplate;
+import org.bndtools.api.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 
 import bndtools.Plugin;
-import bndtools.api.ILogger;
-import bndtools.api.IProjectTemplate;
-import bndtools.api.Logger;
 import bndtools.wizards.shared.AbstractTemplateSelectionWizardPage;
 
 public class TemplateSelectionWizardPage extends AbstractTemplateSelectionWizardPage {

@@ -3,13 +3,13 @@ package org.bndtools.builder.classpath.ui;
 import java.util.Collections;
 import java.util.List;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 
 public class RepositoryBundlesContentProvider implements ITreeContentProvider {
 

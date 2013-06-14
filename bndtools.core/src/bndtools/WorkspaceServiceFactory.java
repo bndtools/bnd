@@ -1,11 +1,11 @@
 package bndtools;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 
-import bndtools.api.ILogger;
-import bndtools.api.Logger;
 import bndtools.central.Central;
 
 public class WorkspaceServiceFactory implements ServiceFactory {

@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -34,7 +35,6 @@ import org.eclipse.swt.widgets.TableColumn;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
-import bndtools.api.BndtoolsConstants;
 import bndtools.central.Central;
 
 public class BndContainerPage extends WizardPage implements IClasspathContainerPage, IClasspathContainerPageExtension {

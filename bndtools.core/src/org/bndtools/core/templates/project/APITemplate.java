@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bndtools.api.IBndProject;
+import org.bndtools.api.IProjectTemplate;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
-import bndtools.api.IBndProject;
-import bndtools.api.IProjectTemplate;
 
 public class APITemplate implements IProjectTemplate {
 

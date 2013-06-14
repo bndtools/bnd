@@ -1,11 +1,11 @@
 package org.bndtools.builder.validate;
 
+import org.bndtools.api.IValidator;
 import org.bndtools.builder.NewBuilder;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import aQute.bnd.osgi.Builder;
-import bndtools.api.IValidator;
 
 public class BsnValidator implements IValidator {
 
