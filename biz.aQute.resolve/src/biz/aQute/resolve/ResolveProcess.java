@@ -18,7 +18,6 @@ import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.service.Registry;
-import aQute.bnd.service.resolve.hook.ResolverHook;
 import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class ResolveProcess {
@@ -33,9 +32,10 @@ public class ResolveProcess {
         rc.addCallbacks(callbacks);
 
         Map<Resource,List<Wire>> wirings = resolver.resolve(rc);
-        removeFrameworkAndInputResources(wirings, rc);
+        Map<Resource,List<Wire>> result = invertWirings(wirings);
+        removeFrameworkAndInputResources(result, rc);
 
-        return invertWirings(wirings);
+        return result;
     }
 
     public Map<Resource,List<Wire>> resolveOptional(BndEditModel inputModel, Set<Resource> requiredResources, Registry plugins, Resolver resolver, Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
