@@ -83,7 +83,7 @@ public class Windows extends Platform {
 	public void uninstall() throws IOException {}
 
 	@Override
-	public String createCommand(CommandData data, Map<String,String> map, String... extra) throws Exception {
+	public String createCommand(CommandData data, Map<String,String> map, boolean force, String... extra) throws Exception {
 		if (data.bin == null)
 			data.bin = getExecutable(data);
 
@@ -93,7 +93,7 @@ public class Windows extends Platform {
 			data.bin = f.getAbsolutePath();
 		}
 
-		if (!data.force && f.exists())
+		if (!force && f.exists())
 			return "Command already exists " + data.bin + ", try to use --force";
 
 		if (data.name.equals("jpm")) {
@@ -114,7 +114,7 @@ public class Windows extends Platform {
 	}
 
 	@Override
-	public String createService(ServiceData data, Map<String,String> map, String... extra) throws Exception {
+	public String createService(ServiceData data, Map<String,String> map, boolean force, String... extra) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}

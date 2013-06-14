@@ -25,11 +25,12 @@ import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.justif.*;
 import aQute.lib.settings.*;
+import aQute.lib.strings.*;
 import aQute.libg.glob.*;
 import aQute.libg.reporter.*;
 import aQute.service.library.*;
 import aQute.service.library.Library.Program;
-import aQute.service.library.Library.Revision;
+import aQute.struct.struct.Error;
 
 /**
  * The command line interface to JPM
@@ -49,7 +50,12 @@ public class Main extends ReporterAdapter {
 	final PrintStream			out;
 	File						sm;
 	private String				url;
-	static String				encoding	= System.getProperty("file.encoding");
+	private JpmOptions			options;
+	static String				encoding		= System.getProperty("file.encoding");
+	int							width			= 120;																// characters
+	int							tabs[]			= {
+			40, 48, 56, 64, 72, 80, 88, 96, 104, 112
+												};
 
 	static {
 		if (encoding == null)
@@ -83,7 +89,7 @@ public class Main extends ReporterAdapter {
 			jpm.out.flush();
 		}
 	}
-	
+
 	/**
 	 * Show installed binaries
 	 */
@@ -150,7 +156,7 @@ public class Main extends ReporterAdapter {
 		@Description("Update the service with the latest master/staged version (see --staged)")
 		boolean update();
 
-		@Description("Specify the coordinates of the service, identifies the main binary")
+		@Description("Specify the coordinate of the service, identifies the main binary")
 		String coordinates();
 	}
 
@@ -167,10 +173,10 @@ public class Main extends ReporterAdapter {
 
 	}
 
-	@Description("Remove jpm and all created data from the system (including commands and services). " +
-			"Without the --force flag only list the elements that would be deleted.")
+	@Description("Remove jpm and all created data from the system (including commands and services). "
+			+ "Without the --force flag only list the elements that would be deleted.")
 	public interface deinitOptions extends Options {
-		
+
 		@Description("Actually remove jpm from the system")
 		boolean force();
 	}
@@ -178,11 +184,9 @@ public class Main extends ReporterAdapter {
 	/**
 	 * garbage collect commands and service
 	 */
-	@Arguments(arg={})
+	@Arguments(arg = {})
 	@Description("Garbage collect the cache (remove useless dependencies)")
 	public interface GCOptions extends Options {}
-
-	
 
 	/**
 	 * Main options
@@ -203,7 +207,7 @@ public class Main extends ReporterAdapter {
 
 		@Description("Specify a new base directory (default working directory).")
 		String base();
-		
+
 		@Description("Do not return error status for error that match this given regular expression.")
 		String[] failok();
 
@@ -218,18 +222,22 @@ public class Main extends ReporterAdapter {
 
 		@Description("Show the release notes")
 		boolean release();
-		
+
 		@Description("Run jpm with local configurations (repository -> cache.local setting or platform default, binaries -> bin.local or platform default)")
 		boolean user();
-		
+
 		@Description("Run jpm with global configurations (repository -> cache.global setting or platform default, binaries -> bin.global or platform default)")
 		boolean global();
-		
+
 		@Description("Change settings file (one-shot)")
 		String settings();
-		
+
 		@Description("Specify executables directory (one-shot)")
 		String bindir();
+
+		boolean xtesting();
+
+		int width();
 	}
 
 	/**
@@ -243,20 +251,23 @@ public class Main extends ReporterAdapter {
 	@Description("Just Another Package Manager for Java (\"jpm help jpm\" to see a list of global options)")
 	public void _jpm(JpmOptions opts) throws IOException {
 		try {
+			this.options = opts;
+			if (opts.xtesting())
+				jpm.setUnderTest();
+
 			setExceptions(opts.exceptions());
 			setTrace(opts.trace());
 			setPedantic(opts.pedantic());
 			trace("set the options");
 
-			if(opts.settings() != null) {	
+			if (opts.settings() != null) {
 				settings = new Settings(opts.settings());
 				trace("Using settings file: %s", opts.settings());
 			} else {
 				settings = new Settings(Platform.getPlatform(this).getConfigFile());
 				trace("Using settings file: %s", Platform.getPlatform(this).getConfigFile());
 			}
-			
-			
+
 			if (opts.base() != null)
 				base = IO.getFile(base, opts.base());
 
@@ -264,8 +275,7 @@ public class Main extends ReporterAdapter {
 			if (url == null)
 				url = settings.get("library.url");
 
-			if (url != null)
-				jpm.setLibrary(new URI(url));
+			jpm.setLibrary(url == null ? null : new URI(url));
 
 			File homeDir;
 			if (opts.cache() != null) {
@@ -276,7 +286,7 @@ public class Main extends ReporterAdapter {
 			} else if (opts.global()) {
 				homeDir = setGlobal();
 			} else if (settings.containsKey("jpm.runconfig")) {
-				if(settings.get("jpm.runconfig").equalsIgnoreCase("local")) {
+				if (settings.get("jpm.runconfig").equalsIgnoreCase("local")) {
 					homeDir = setLocal();
 				} else {
 					homeDir = setGlobal();
@@ -285,11 +295,11 @@ public class Main extends ReporterAdapter {
 				homeDir = setGlobal();
 			}
 			jpm.setHomeDir(homeDir);
-			
-			if(opts.bindir() != null) {
+
+			if (opts.bindir() != null) {
 				jpm.setBinDir(IO.getFile(opts.bindir()));
-			} 
-			
+			}
+
 			CommandLine handler = opts._command();
 			List<String> arguments = opts._();
 
@@ -305,6 +315,9 @@ public class Main extends ReporterAdapter {
 					err.println(help);
 				}
 			}
+
+			if (options.width() > 0)
+				this.width = options.width();
 		}
 
 		catch (InvocationTargetException t) {
@@ -332,12 +345,12 @@ public class Main extends ReporterAdapter {
 
 	private File setLocal() throws Exception {
 		userMode = true;
-		if(settings.containsKey("jpm.bin.local")) {
+		if (settings.containsKey("jpm.bin.local")) {
 			jpm.setBinDir(IO.getFile(settings.get("jpm.bin.local")).getAbsoluteFile());
 		} else {
 			jpm.setBinDir(Platform.getPlatform(this).getBinDir());
 		}
-		
+
 		if (settings.containsKey("jpm.cache.local")) {
 			trace("Using local dir (from configuration)");
 			return IO.getFile(base, settings.get("jpm.cache.local"));
@@ -346,14 +359,14 @@ public class Main extends ReporterAdapter {
 			return Platform.getPlatform(this).getLocal();
 		}
 	}
-	
+
 	private File setGlobal() throws Exception {
-		if(settings.containsKey("jpm.bin.global")) {
+		if (settings.containsKey("jpm.bin.global")) {
 			jpm.setBinDir(IO.getFile(settings.get("jpm.bin.global")).getAbsoluteFile());
 		} else {
 			jpm.setBinDir(Platform.getPlatform(this).getBinDir());
 		}
-		
+
 		if (settings.containsKey("jpm.cache.global")) {
 			trace("Using global dir (from configuration)");
 			return IO.getFile(base, settings.get("jpm.cache.global"));
@@ -362,46 +375,44 @@ public class Main extends ReporterAdapter {
 			return Platform.getPlatform(this).getGlobal();
 		}
 	}
-	
+
 	/**
 	 * Install a jar options
 	 */
 	@Arguments(arg = {
 		"command|service"
 	})
-	@Description("Install a jar into the repository. If the jar defines a number of headers it can also be installed as a command and/or a service. " +
-			"If not, additional information such as the name of the command and/or the main class must be specified with the appropriate flags.")
+	@Description("Install a jar into the repository. If the jar defines a number of headers it can also be installed as a command and/or a service. "
+			+ "If not, additional information such as the name of the command and/or the main class must be specified with the appropriate flags.")
 	public interface installOptions extends ModifyCommand, Options {
-//		@Description("Ignore command and service information")
-//		boolean ignore(); // pl: not used
+		// @Description("Ignore command and service information")
+		// boolean ignore(); // pl: not used
 
 		@Description("Force overwrite of existing command")
 		boolean force();
 
-//		@Description("Require a master version even when version is specified")
-//		boolean master(); // pl: not used
+		// @Description("Require a master version even when version is specified")
+		// boolean master(); // pl: not used
 
-		@Description("Include staged revisions in the search")
-		boolean staged();
+		// @Description("Ignore digest")
+		// boolean xdigest(); // pl: not used
 
-//		@Description("Ignore digest")
-//		boolean xdigest(); // pl: not used
+		// @Description("Run service (if present) under the given user name, default is the name of the service")
+		// String user(); // pl: not used
 
-//		@Description("Run service (if present) under the given user name, default is the name of the service")
-//		String user(); // pl: not used
+		// /**
+		// * If specified, will install a revision with the given name and
+		// version
+		// * and then add any command/service to the system.
+		// */
+		// String bsn(); // pl: not used
 
-//		/**
-//		 * If specified, will install a revision with the given name and version
-//		 * and then add any command/service to the system.
-//		 */
-//		String bsn(); // pl: not used
-
-//		/**
-//		 * Specify a version range for the artifact.
-//		 * 
-//		 * @return
-//		 */
-//		Version version(); // pl: not used
+		// /**
+		// * Specify a version range for the artifact.
+		// *
+		// * @return
+		// */
+		// Version version(); // pl: not used
 
 		/**
 		 * Install a file and extra commands
@@ -409,207 +420,61 @@ public class Main extends ReporterAdapter {
 		@Description("Install jar without resolving dependencies with http://www.jpm4j.org")
 		boolean local();
 
+		/**
+		 * Do not look for command
+		 */
+		@Description("Install jar but do not look for a command in the jar")
+		boolean ignore();
 	}
 
 	/**
-	 * The command line command for install.
-	 * 
-	 * @param opts
-	 *            The options for installing
+	 * A better way to install
 	 */
+
 	@Description("Install an artifact from a url, file, or http://www.jpm4j.org")
 	public void _install(installOptions opts) throws Exception {
-		boolean noCommand = true;
-		boolean noService = true;
-		
-		if (!jpm.hasAccess()) {
+
+		if (!this.options.user() && !jpm.hasAccess()) {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
 			return;
 		}
 
-		ArtifactData target = null;
-		boolean staged = false;
-		
-		if (opts._().isEmpty()) {
-			error("You need to specify a command name or artifact id");
-			return;
-		}
-		String key = opts._().get(0);
-		
-		if (opts.local()) { // local == no dependency resolving from server,
-			jpm.setLocalInstall(true);
-			File f = IO.getFile(base, key);
-			if (f.isFile()) {
-				trace("Found file %s", f);
-				target = jpm.put(f.toURI());
-				target.coordinates = f.toURI().toString();
-			} else {
-				try {
-					trace("Found url %s", f);
-					target = jpm.put(new URI(key));
-					target.coordinates = key;
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-					// ignore
-				}
-			}
-			if (target == null) {
-				error("Could not install from file/url: %s", opts.local());
-				return;
-			}
-		} else {
-			if (isSha(key) && (target = jpm.get(Hex.toByteArray(key))) != null) {
+		for (String coordinate : opts._()) {
 
-				// we've got to check for locally installed files
-				trace("locally installed file found");
-				target.coordinates = "sha-" + key.trim();
+			File file = IO.getFile(base, coordinate);
+			if (file.isFile())
+				coordinate = file.toURI().toString();
+
+			ArtifactData artifact = jpm.getCandidate(coordinate);
+			if (artifact == null) {
+				if (jpm.isWildcard(coordinate))
+					error("no candidate found for %s", coordinate);
+				else
+					error("no candidate found for %s, you could try %s@* to also see staged and withdrawn revisions",
+							coordinate, coordinate);
 			} else {
-				staged = isSha(key) || opts.staged() || key.indexOf('@') > 0;
-				target = jpm.getCandidate(key, staged);
-				if (target == null) {
-					if (!staged) {
-						target = jpm.getCandidate(key, true);
-						if (target != null) {
-							error("No candidate %s found, but found staged version(s): %s", key, target);
-							return;
+
+				if (!opts.ignore()) {
+					CommandData cmd = jpm.parseCommandData(artifact.sha);
+					updateCommandData(cmd, opts);
+					if (cmd.main != null) {
+						List<Error> errors = cmd.validate();
+						if (!errors.isEmpty()) {
+							error("Command not valid");
+							for (Error error : errors) {
+								error("[%s] %s %s %s %s", error.code, error.description, error.path, error.failure,
+										error.value);
+							}
+						} else {
+							String result = jpm.createCommand(cmd, opts.force());
+							if (result != null) {
+								error("[%s] %s", coordinate, result);
+							}
 						}
 					}
-					error("No such candidate %s", key);
-					return;
-				}
-
-				target.sync();
-				if (target.error != null) {
-					error("Error in getting target %s", target.error);
-					return;
 				}
 			}
 		}
-		trace("Target from %s", Hex.toHexString(target.sha));
-
-		if (target.command != null) {
-			noCommand = false;
-			target.command.force = opts.force();
-			target.command.coordinates = target.coordinates;
-			updateData(target.command, opts);
-			target.command.dependencies.add(0, target.file);
-			if (opts.force() && jpm.getCommand(target.command.name) != null)
-				jpm.deleteCommand(target.command.name);
-
-			String result = jpm.createCommand(target.command);
-			if (result != null)
-				error("Command creation failed: %s", result);
-			else {
-				out.format(" Created command \"%s\" (%s)%n", target.command.name, target.command.bin);
-			}
-				
-			
-		} else if (opts.name() != null) {
-			noCommand = false;
-			CommandData data = populateCommandData(target);
-			
-			if (data == null) 
-				return;
-			
-			updateData(data, opts);
-			data.description = "Installed from command line";
-						
-			if (opts.force() && jpm.getCommand(data.name) != null)
-				jpm.deleteCommand(data.name);
-			String result = jpm.createCommand(data);
-			if (result != null)
-				error("Command creation failed: %s", result);
-			else {
-				out.format(" Created command \"%s\" (%s)%n", target.command.name, target.command.bin);
-			}
-		} 
-		
-		if (target.service != null) {
-			if(userMode) {
-				warning("Service found in %s, but jpm needs to run in global mode to install it", target.coordinates);
-			} else {
-				noService = false;
-				target.service.force = opts.force();
-				target.service.coordinates = target.coordinates;
-				target.service.dependencies.add(0, target.file);
-				Service s = jpm.getService(target.service.name);
-				trace("existing service %s", s);
-				if (opts.force() && s != null) {
-					trace("will remove %s", s.getServiceData().bin);
-					s.remove();
-				}
-				String result = jpm.createService(target.service);
-				if (result != null) {
-					error("Service creation failed: %s", result);
-				} else {
-					out.format(" Created service \"%s\"%n", target.service.name);
-				}		
-			}	
-		} 
-		
-		if (noCommand && noService) {
-			if (target.mainClass != null) {
-				noCommand = false;
-				CommandData data = populateCommandData(target);
-				String name = jpm.getArtifactIdFromCoord(target.coordinates);
-				if (name == null) {
-					name = key;
-				}
-				data.name = name;
-				updateData(data, opts);
-				if (opts.force() && jpm.getCommand(data.name) != null)
-					jpm.deleteCommand(data.name);
-				String result = jpm.createCommand(data);
-				if (result != null) {
-					error("Command creation failed: %s", result);
-					return;
-				} else {
-					out.format(" Created command \"%s\" (%s)%n", data.name, data.bin);
-				}
-			}
-		}
-		
-		// Well I give up
-		if (noCommand && noService) {
-			if (staged)
-				warning("No command or service found in %s", target.coordinates);
-			else
-				warning("No command found or service in %s. You could try with --staged to find a staged version?",
-						target.coordinates);
-		}
-
-	}
-	
-	
-
-	private CommandData populateCommandData(ArtifactData target) throws Exception {
-		CommandData data = new CommandData();
-		data.coordinates = target.coordinates;
-		data.main = target.mainClass;
-		data.sha = target.sha;
-		data.time = System.currentTimeMillis();
-		data.dependencies = target.dependencies;
-		data.dependencies.add(target.file);
-		data.runbundles = target.runbundles;
-		data.jpmRepoDir = jpm.getRepoDir().getCanonicalPath();
-		
-		if (data.main == null) {
-			error("No main class set");
-			return null;
-		}
-		
-		return data;
-	}
-
-	/**
-	 * Check if a key is a sha
-	 * 
-	 * @param key
-	 * @return
-	 */
-	private boolean isSha(String key) {
-		return key != null && key.length() == 40 && key.matches("[\\da-fA-F]{40,40}");
 	}
 
 	@Description("Manage the jpm4j services")
@@ -645,14 +510,13 @@ public class Main extends ReporterAdapter {
 				return;
 			}
 
-			ArtifactData target = jpm.getCandidate(opts.create(), opts.staged());
+			ArtifactData target = jpm.getCandidate(opts.create());
 			if (target == null)
 				return;
 
-			ServiceData data = target.service;
-			data.coordinates = opts.create();
-			updateData(data, opts);
-			
+			ServiceData data = null; // TODO target.service;
+			updateServiceData(data, opts);
+
 			String result = jpm.createService(data);
 			if (result != null)
 				error("Create service failed: %s", result);
@@ -665,7 +529,7 @@ public class Main extends ReporterAdapter {
 		}
 
 		ServiceData data = s.getServiceData();
-		if (updateData(data, opts) || opts.coordinates() != null || opts.update()) {
+		if (updateServiceData(data, opts) || opts.coordinates() != null || opts.update()) {
 			if (!jpm.hasAccess()) {
 				error("No write access to update service %s", name);
 				return;
@@ -673,18 +537,15 @@ public class Main extends ReporterAdapter {
 
 			//
 			// Check if we have to update the underlying artifact
-			// This is triggered by --coordinates, which provides
-			// the new coordinates or just --update which reuses the
-			// old coordinates without version
+			// This is triggered by --coordinate, which provides
+			// the new coordinate or just --update which reuses the
+			// old coordinate without version
 			//
 
 			if (opts.coordinates() != null || opts.update()) {
 				String coordinates = opts.coordinates();
-				if (coordinates == null || coordinates.equals(".")) {
-					coordinates = data.coordinates;
-				}
 				if (coordinates == null) {
-					error("No coordinates found in old service record");
+					error("No coordinate found in old service record");
 					return;
 				}
 
@@ -692,19 +553,18 @@ public class Main extends ReporterAdapter {
 				if (n > 0)
 					coordinates = coordinates.substring(0, n);
 
-				trace("Updating from coordinates: %s", coordinates);
-				ArtifactData target = jpm.getCandidate(coordinates, opts.staged());
+				trace("Updating from coordinate: %s", coordinates);
+				ArtifactData target = jpm.getCandidate(coordinates);
 				if (target == null) {
 					error("No candidates found for %s (%s)", coordinates, opts.staged() ? "staged" : "only masters");
 					return;
 				}
 
-				data.dependencies.clear();
-				data.dependencies.add(target.file);
-				data.dependencies.addAll(target.dependencies);
-				data.coordinates = coordinates;
+				// data.dependencies.clear();
+				// data.dependencies.add(target.file);
+				// data.dependencies.addAll(target.dependencies);
+				// data.coordinates = coordinates;
 			}
-			data.force = true;
 			String result = jpm.createService(data);
 			if (result != null)
 				error("Update service failed: %s", result);
@@ -714,7 +574,7 @@ public class Main extends ReporterAdapter {
 		Data.details(data, out);
 	}
 
-	private boolean updateData(ServiceData data, ModifyService opts) {
+	private boolean updateServiceData(ServiceData data, ModifyService opts) {
 		boolean update = false;
 		if (opts.args() != null) {
 			data.args = opts.args();
@@ -746,10 +606,10 @@ public class Main extends ReporterAdapter {
 			update = true;
 		}
 
-		return updateData((CommandData) data, opts) || update;
+		return updateCommandData((CommandData) data, opts) || update;
 	}
 
-	private boolean updateData(CommandData data, ModifyCommand opts) {
+	private boolean updateCommandData(CommandData data, ModifyCommand opts) {
 		boolean update = false;
 		if (opts.main() != null) {
 			data.main = opts.main();
@@ -793,8 +653,7 @@ public class Main extends ReporterAdapter {
 		}
 
 		if (opts._().isEmpty()) {
-			for (CommandData sd : jpm.getCommands())
-				out.printf("%-40s %s%n", sd.name, sd.description == null ? "" : sd.description);
+			print(jpm.getCommands());
 			return;
 		}
 
@@ -804,19 +663,60 @@ public class Main extends ReporterAdapter {
 		if (data == null) {
 			error("Not found: %s", cmd);
 		} else {
-			if (updateData(data, opts)) {
+			CommandData newer = new CommandData();
+			JustAnotherPackageManager.xcopy(data, newer);
+
+			if (updateCommandData(newer, opts)) {
 				jpm.deleteCommand(data.name);
-				String result = jpm.createCommand(data);
+				String result = jpm.createCommand(newer, true);
 				if (result != null)
 					error("Failed to update command %s: %s", cmd, result);
 			}
-
-			out.printf("%-40s %s%n", data.name, data.description == null ? "" : data.description);
-			out.printf("  %-38s %s%n", "Classpath", data.dependencies);
-			out.printf("  %-38s %s%n", "JVM Args", data.jvmArgs);
-			out.printf("  %-38s %s%n", "Main class", data.main);
-			out.printf("  %-38s %s%n", "Time", new Date(data.time));
+			print(newer);
 		}
+	}
+
+	private void print(CommandData command) {
+		Justif j = new Justif(width, tabs);
+		Formatter f = j.formatter();
+		f.format("%n[%s]%n", command.name);
+		f.format("%s\n\n", Strings.display(command.description, command.title));
+		f.format("SHA-1\t1%s%n", Hex.toHexString(command.sha));
+		f.format("Bundle Symbolic Name\t1%s%n", Strings.display(command.bsn, "<no bsn>"));
+		f.format("Version\t1%s%n", Strings.display(command.version, "<no version>"));
+		f.format("JVMArgs\t1%s%n", "JVM Args", command.jvmArgs);
+		f.format("Main class\t1%s%n", command.main);
+		f.format("Install time\t1%s%n", new Date(command.time));
+		f.format("Path\t1%s%n", command.bin);
+		f.format("Installed\t1%s%n", command.installed);
+		f.format("JRE\t1%s%n", Strings.display(command.java, "<default>"));
+		f.format("Trace\t1%s%n", command.trace ? "On" : "Off");
+		list(f, "Dependencies", command.dependencies);
+		list(f, "Runbundles", command.runbundles);
+
+		out.append(j.wrap());
+	}
+
+	private void list(Formatter f, String title, List< ? > elements) {
+		if (elements == null || elements.isEmpty())
+			return;
+
+		f.format("[%s]\t1", title);
+		String del = "";
+		for (Object element : elements) {
+			f.format("%s%s", del, element);
+			del = "\f";
+		}
+		f.format("%n");
+	}
+
+	private void print(List<CommandData> commands) {
+		Justif j = new Justif(width, tabs);
+		Formatter f = j.formatter();
+		for (CommandData command : commands) {
+			f.format("%s\t1%s%n", command.name, Strings.display(command.description, command.title));
+		}
+		out.append(j.wrap());
 	}
 
 	@Description("Clean up any stale data, including any downloaded files not used in any commands")
@@ -825,7 +725,7 @@ public class Main extends ReporterAdapter {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
 			return;
 		}
-		
+
 		jpm.gc();
 	}
 
@@ -833,7 +733,7 @@ public class Main extends ReporterAdapter {
 	public void _deinit(deinitOptions opts) throws Exception {
 		jpm.deinit(out, opts.force());
 	}
-	
+
 	/**
 	 * Main entry for the command line
 	 * 
@@ -841,10 +741,10 @@ public class Main extends ReporterAdapter {
 	 * @throws Exception
 	 */
 	public void run(String[] args) throws Exception {
-		if(jpm == null) { 
+		if (jpm == null) {
 			jpm = new JustAnotherPackageManager(this);
 		}
-		
+
 		try {
 			if (args.length > 0 && args[0].equals("daemon"))
 				jpm.daemon();
@@ -869,10 +769,10 @@ public class Main extends ReporterAdapter {
 	 */
 	@Description("Install jpm on the current system")
 	interface InitOptions extends Options {
-		
+
 		@Description("Specify cache for jpm install")
 		String cache();
-		
+
 		@Description("Specify the directory for the jpm executable file")
 		String bindir();
 	}
@@ -882,12 +782,12 @@ public class Main extends ReporterAdapter {
 		// Reset config, or respect init flags
 		jpm.setHomeDir(opts.cache() == null ? null : IO.getFile(opts.cache()));
 		jpm.setBinDir(opts.bindir() == null ? Platform.getPlatform(this).getBinDir() : IO.getFile(opts.bindir()));
-		
+
 		if (!jpm.hasAccess()) {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
 			return;
 		}
-		
+
 		try {
 			String s = System.getProperty("java.class.path");
 			if (s == null || s.indexOf(File.pathSeparator) > 0) {
@@ -903,8 +803,8 @@ public class Main extends ReporterAdapter {
 					if (help != null) {
 						error(help);
 						return;
-					} 
-					
+					}
+
 					String completionInstallResult = Platform.getPlatform(this).installCompletion(this);
 					if (completionInstallResult != null)
 						trace(completionInstallResult);
@@ -954,7 +854,9 @@ public class Main extends ReporterAdapter {
 	 * @param options
 	 * @throws Exception
 	 */
-	@Arguments(arg = {"service"})
+	@Arguments(arg = {
+		"service"
+	})
 	@Description("Start a service")
 	interface startOptions extends Options {
 		boolean clean();
@@ -996,10 +898,10 @@ public class Main extends ReporterAdapter {
 	 * @param options
 	 * @throws Exception
 	 */
-	@Arguments(arg="service")
+	@Arguments(arg = "service")
 	@Description("Restart a service")
 	public interface RestartOptions extends Options {}
-	
+
 	@Description("Restart a service")
 	public void _restart(RestartOptions options) throws Exception {
 		for (String s : options._()) {
@@ -1011,7 +913,7 @@ public class Main extends ReporterAdapter {
 					if (service.isRunning()) {
 						service.stop();
 					}
-						
+
 					String result = service.start();
 					if (result != null)
 						error("Failed to start: %s", result);
@@ -1069,7 +971,7 @@ public class Main extends ReporterAdapter {
 	 */
 	@Description("Stop a service")
 	public interface StopOptions extends Options {}
-	
+
 	@Description("Stop a service")
 	public void _stop(StopOptions options) throws Exception {
 		for (String s : options._()) {
@@ -1099,7 +1001,9 @@ public class Main extends ReporterAdapter {
 	 * @throws Exception
 	 */
 	@Description("Status of a service")
-	@Arguments(arg={"service", "[service]", "..."})
+	@Arguments(arg = {
+			"service", "[service]", "..."
+	})
 	interface statusOptions extends Options {
 		@Description("Prints status for the service(s) every second")
 		boolean continuous();
@@ -1319,12 +1223,12 @@ public class Main extends ReporterAdapter {
 	/**
 	 * Handle the global settings
 	 */
-	@Description("Manage user settings of jpm (in ~/.jpm). Without argument, print the current settings. " +
-			"Can alse be used to create change a settings with \"jpm settings <key>=<value>\"")
+	@Description("Manage user settings of jpm (in ~/.jpm). Without argument, print the current settings. "
+			+ "Can alse be used to create change a settings with \"jpm settings <key>=<value>\"")
 	interface settingOptions extends Options {
 		boolean clear();
 
-		boolean publicKey(); 
+		boolean publicKey();
 
 		boolean secretKey();
 
@@ -1417,8 +1321,8 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Turned out that StartSSL HTTPS certificates are not recognized by the Java
-	 * certificate store. So we have a command to get the certificate chain
+	 * Turned out that StartSSL HTTPS certificates are not recognized by the
+	 * Java certificate store. So we have a command to get the certificate chain
 	 */
 
 	@Arguments(arg = "host")
@@ -1452,32 +1356,13 @@ public class Main extends ReporterAdapter {
 				opts.cacerts(), opts.install());
 	}
 
-	/**
-	 * List candidates
-	 * 
-	 * @throws Exception
-	 */
-
-	@Description("Show a list of candidates for a given request")
-	public interface CandidateOptions extends Options{}
-	
-	@Description("Show the candidate revisions for a given program coordinate")
-	public void _candidates(CandidateOptions opts) throws Exception {
-		for (String key : opts._()) {
-			List<Revision> candidates = jpm.getCandidates(key);
-			if (candidates == null) {
-				error("No candidates found for %s", key);
-			} else
-				print(candidates);
-		}
-	}
-
-	void print(Iterable<Revision> revisions) {
-		for (Revision r : revisions) {
-			out.printf("%-40s %s %s\n", jpm.getCoordinates(r), Hex.toHexString(r._id), (r.description == null ? ""
-					: r.description));
-		}
-	}
+	// void print(Iterable<RevisionRef> revisions) {
+	// for (RevisionRef r : revisions) {
+	// out.printf("%-40s %s %s\n", jpm.getCoordinates(r),
+	// Hex.toHexString(r._id), (r.description == null ? ""
+	// : r.description));
+	// }
+	// }
 
 	void printPrograms(Iterable< ? extends Program> programs) {
 		Justif j = new Justif(120, 40, 42, 100);
@@ -1511,12 +1396,30 @@ public class Main extends ReporterAdapter {
 	@Description("Find programs and libraries corresponding to the given query")
 	interface findOptions extends Options {
 
+		/**
+		 * Number of search items to skip
+		 * 
+		 * @return
+		 */
+		@Description("Number of programs to skip")
+		int skip();
+
+		@Description("Maximum number of programs per listing")
+		int limit();
+
 	}
 
 	@Description("Find programs and libraries corresponding to the given query")
 	public void _find(findOptions opts) throws Exception {
+		int skip = 0;
+		int limit = 0;
+		if (opts.skip() > 0)
+			skip = opts.skip();
+		if (opts.limit() > 0)
+			limit = opts.limit();
+
 		String q = new ExtList<String>(opts._()).join(" ");
-		Iterable< ? extends Program> programs = jpm.find(q);
+		List<Program> programs = jpm.find(q, skip, limit);
 		printPrograms(programs);
 	}
 
@@ -1581,7 +1484,8 @@ public class Main extends ReporterAdapter {
 			} else if (settings.get("jpm.runconfig").equalsIgnoreCase("local")) {
 				f.format("jpm is running in local mode%n");
 			} else {
-				f.format("Unrecognized run configuration: %s, defaulting to global mode%n", settings.get("jpm.runconfig"));
+				f.format("Unrecognized run configuration: %s, defaulting to global mode%n",
+						settings.get("jpm.runconfig"));
 			}
 			f.format(" - Bin directory: \t0%s%n", jpm.getBinDir().getCanonicalPath());
 			f.format(" - Cache: \t0%s%n", jpm.getHomeDir().getCanonicalPath());
@@ -1622,36 +1526,36 @@ public class Main extends ReporterAdapter {
 
 		@Description("Override email")
 		String email();
-		
+
 	}
 
 	@Description("Deposit a file in a private depository")
 	public void _deposit(DepositOptions options) {
 		File f = IO.getFile(base, options._().get(0));
-		if ( f.isFile()) {
+		if (f.isFile()) {
 			error("No such file %s", f);
 		}
 
 	}
-	
+
 	/**
 	 * Alternative for command -r {@code <commandName>}
 	 */
 	@Arguments(arg = {
-			"command|service",
-			"..."})
+			"command|service", "..."
+	})
 	@Description("Remove the specified command(s) or service(s) from the system")
 	interface UninstallOptions extends Options {}
-	
+
 	@Description("Remove a command or a service from the system")
 	public void _remove(UninstallOptions opts) throws Exception {
-		if(!jpm.hasAccess()) {
+		if (!jpm.hasAccess()) {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
 			return;
 		}
-		
+
 		ArrayList<String> toDelete = new ArrayList<String>();
-		
+
 		ArrayList<String> names = new ArrayList<String>();
 		List<CommandData> commands = jpm.getCommands();
 		for (CommandData command : commands) {
@@ -1661,7 +1565,7 @@ public class Main extends ReporterAdapter {
 		for (ServiceData service : services) {
 			names.add(service.name);
 		}
-		
+
 		for (String pattern : opts._()) {
 			Glob glob = new Glob(pattern);
 			for (String name : names) {
@@ -1670,57 +1574,60 @@ public class Main extends ReporterAdapter {
 				}
 			}
 		}
-		
+
 		int ccount = 0, scount = 0;
-		
-		for(String name : toDelete) {
+
+		for (String name : toDelete) {
 			Service s = null;
-			if(jpm.getCommand(name) != null) { // Try command first
+			if (jpm.getCommand(name) != null) { // Try command first
 				trace("Corresponding command found, removing");
 				jpm.deleteCommand(name);
-				ccount ++;
-				
-			} else if((s = jpm.getService(name)) != null) { // No command matching, try service
+				ccount++;
+
+			} else if ((s = jpm.getService(name)) != null) { // No command
+																// matching, try
+																// service
 				trace("Corresponding service found, removing");
 				s.remove();
-				scount ++;
-			
+				scount++;
+
 			} else { // No match amongst commands & services
 				error("No matching command or service found for: %s", name);
 			}
-		}	
+		}
 		out.format("%d command(s) removed and %d service(s) removed%n", ccount, scount);
 	}
-	
-	@Arguments(arg="markdown|bash-completion")
-	@Description("Print additional files for jpm (markdown documentation or bash completion file) to the standard output.") 
+
+	@Arguments(arg = "markdown|bash-completion")
+	@Description("Print additional files for jpm (markdown documentation or bash completion file) to the standard output.")
 	interface GenerateOptions extends Options {}
-	
-	@Description("Generate additional files for jpm") 
+
+	@Description("Generate additional files for jpm")
 	public void _generate(GenerateOptions opts) throws Exception {
-		
+
 		if (opts._().isEmpty()) {
 			error("Syntax: jpm generate <markdown|bash-completion>");
 			return;
 		}
 
 		String genType = opts._().get(0);
-		
+
 		if (genType.equalsIgnoreCase("markdown")) {
 			IO.copy(this.getClass().getResourceAsStream("/static/jpm_prefix.md"), out);
-			
-			CommandLine cl = new CommandLine(this);	
+
+			CommandLine cl = new CommandLine(this);
 			cl.generateDocumentation(this, out);
 		} else if (genType.equalsIgnoreCase("bash-completion")) {
 			jpm.getPlatform().parseCompletion(this, out);
-			//IO.copy(this.getClass().getResourceAsStream("/aQute/jpm/platform/unix/jpm-completion.bash"), out);
+			// IO.copy(this.getClass().getResourceAsStream("/aQute/jpm/platform/unix/jpm-completion.bash"),
+			// out);
 		} else {
 			error("Syntax: jpm generate <markdown|bash-completion>");
 			return;
 		}
-		
+
 	}
-	
+
 	/**
 	 * Constructor for testing purposes
 	 */
@@ -1728,7 +1635,7 @@ public class Main extends ReporterAdapter {
 		this();
 		this.jpm = jpm;
 	}
-	
+
 	@Arguments(arg = {
 			"jar file | url", "..."
 	})
@@ -1736,18 +1643,18 @@ public class Main extends ReporterAdapter {
 	interface WhatOptions extends Options {
 		@Description("Force one liner description for one jar")
 		boolean shortinfo();
-		
+
 		@Description("Force long information for multiple jars")
 		boolean longinfo();
 	}
 
 	@Description("Provide information about a jar file")
 	public void _what(WhatOptions opts) throws Exception {
-		if(opts._().size() == 0) {
+		if (opts._().size() == 0) {
 			error("Syntax: jpm what <jar file | url>");
 			return;
 		}
-		
+
 		String res;
 		if (opts._().size() == 1) {
 			res = jpm.what(opts._().get(0), opts.shortinfo());
@@ -1766,7 +1673,7 @@ public class Main extends ReporterAdapter {
 					fails.add(key);
 				}
 			}
-			
+
 			if (fails.size() > 0) {
 				out.println("No information found for:");
 				for (String fail : fails) {
@@ -1776,27 +1683,27 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
-	@Description("Perform updates for installed commands and services. " +
-			"Without argument (and without the --all flag), list possible updates for all installed commands and services. " +
-			"With arguments, apply possible updates for the specified command(s) and/or service(s).")
+	@Description("Perform updates for installed commands and services. "
+			+ "Without argument (and without the --all flag), list possible updates for all installed commands and services. "
+			+ "With arguments, apply possible updates for the specified command(s) and/or service(s).")
 	@Arguments(arg = {
-			"[command|service]",
-			"..."
+			"[command|service]", "..."
 	})
 	interface UpdateOptions extends Options {
 		@Description("Apply all possible updates")
 		boolean all();
+
 		@Description("Include staging versions for updates")
 		boolean staged();
 	}
-	
+
 	@Description("Perform updates for installed commands and services")
 	public void _update(UpdateOptions opts) throws Exception {
 		if (!jpm.hasAccess()) {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
 			return;
 		}
-		
+
 		ArrayList<String> refs = new ArrayList<String>();
 		for (CommandData data : jpm.getCommands()) {
 			refs.add(data.name);
@@ -1804,11 +1711,11 @@ public class Main extends ReporterAdapter {
 		for (ServiceData data : jpm.getServices()) {
 			refs.add(data.name);
 		}
-		
+
 		ArrayList<UpdateMemo> notFound = new ArrayList<JustAnotherPackageManager.UpdateMemo>();
 		ArrayList<UpdateMemo> upToDate = new ArrayList<JustAnotherPackageManager.UpdateMemo>();
 		ArrayList<UpdateMemo> toUpdate = new ArrayList<JustAnotherPackageManager.UpdateMemo>();
-		
+
 		ArrayList<CommandData> datas = new ArrayList<CommandData>();
 		if (opts._().size() == 0) {
 			datas.addAll(jpm.getCommands());
@@ -1822,7 +1729,7 @@ public class Main extends ReporterAdapter {
 						if (data == null) {
 							Service service = jpm.getService(name);
 							if (service != null) {
-								data =	service.getServiceData();
+								data = service.getServiceData();
 							}
 						}
 						if (data != null) {
@@ -1830,14 +1737,14 @@ public class Main extends ReporterAdapter {
 						}
 					}
 				}
-				
+
 			}
 		}
-				
+
 		for (CommandData data : datas) {
 			jpm.listUpdates(notFound, upToDate, toUpdate, data, opts.staged());
 		}
-		
+
 		if (opts.all() || opts._().size() > 0) {
 			for (UpdateMemo memo : toUpdate) {
 				jpm.update(memo);
@@ -1847,7 +1754,7 @@ public class Main extends ReporterAdapter {
 			Justif justif = new Justif(100, 20, 50);
 			StringBuilder sb = new StringBuilder();
 			Formatter f = new Formatter(sb);
-			
+
 			if (upToDate.size() > 0) {
 				f.format("Up to date:%n");
 				for (UpdateMemo memo : upToDate) {
@@ -1855,23 +1762,24 @@ public class Main extends ReporterAdapter {
 						f.format(" - %s (service) \t0- %s%n", memo.current.name, memo.current.version);
 					} else {
 						f.format(" - %s \t0- %s%n", memo.current.name, memo.current.version);
-					}	
+					}
 				}
 				f.format("%n");
 			}
-			
+
 			if (toUpdate.size() > 0) {
 				f.format("Update available:%n");
 				for (UpdateMemo memo : toUpdate) {
 					if (memo.current instanceof ServiceData) {
-						f.format(" - %s (service) \t0- %s \t1-> %s%n", memo.current.name, memo.current.version, memo.best.version);
+						f.format(" - %s (service) \t0- %s \t1-> %s%n", memo.current.name, memo.current.version,
+								memo.best.version);
 					} else {
 						f.format(" - %s \t0- %s \t1-> %s%n", memo.current.name, memo.current.version, memo.best.version);
 					}
 				}
 				f.format("%n");
 			}
-			
+
 			if (notFound.size() > 0) {
 				if (opts.staged()) {
 					f.format("Information not found (local install ?):%n");
@@ -1884,7 +1792,7 @@ public class Main extends ReporterAdapter {
 					} else {
 						f.format(" - %s%n", memo.current.name);
 					}
-					
+
 				}
 			}
 
@@ -1893,9 +1801,9 @@ public class Main extends ReporterAdapter {
 			}
 			f.flush();
 			justif.wrap(sb);
-			
+
 			out.println(sb.toString());
 			f.close();
 		}
 	}
-} 
+}

@@ -30,7 +30,7 @@ class MacOS extends Unix {
 	}
 
 	@Override
-	public String createCommand(CommandData data, Map<String,String> map, String... extra) throws Exception {
+	public String createCommand(CommandData data, Map<String,String> map, boolean force, String... extra) throws Exception {
 		if (data.bin == null)
 			data.bin = getExecutable(data);
 
@@ -40,7 +40,7 @@ class MacOS extends Unix {
 			data.bin = f.getAbsolutePath();
 		}
 
-		if (!data.force && f.exists())
+		if (!force && f.exists())
 			return "Command already exists " + data.bin;
 
 		process("macos/command.sh", data, data.bin, map, extra);
@@ -48,10 +48,10 @@ class MacOS extends Unix {
 	}
 
 	@Override
-	public String createService(ServiceData data, Map<String,String> map, String ... extra) throws Exception {
+	public String createService(ServiceData data, Map<String,String> map, boolean force, String ... extra) throws Exception {
 		// File initd = getInitd(data);
 		File launch = getLaunch(data);
-		if (!data.force && launch.exists())
+		if (!force && launch.exists())
 			return "Cannot create service " + data.name + " because it exists";
 
 		process("macos/launch.sh", data, launch.getAbsolutePath(), map, add(extra, data.serviceLib));

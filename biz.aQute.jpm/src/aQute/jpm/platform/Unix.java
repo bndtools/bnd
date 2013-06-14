@@ -31,7 +31,7 @@ public abstract class Unix extends Platform {
 	}
 
 	@Override
-	public String createCommand(CommandData data, Map<String, String> map, String... extra) throws Exception {
+	public String createCommand(CommandData data, Map<String, String> map, boolean force, String... extra) throws Exception {
 		if (data.bin == null)
 			data.bin = getExecutable(data);
 
@@ -41,7 +41,7 @@ public abstract class Unix extends Platform {
 			data.bin = f.getAbsolutePath();
 		}
 
-		if (!data.force && f.exists())
+		if (!force && f.exists())
 			return "Command already exists " + data.bin;
 
 		process("unix/command.sh", data, data.bin, map, extra);
@@ -55,11 +55,11 @@ public abstract class Unix extends Platform {
 	}
 
 	@Override
-	public String createService(ServiceData data,  Map<String,String> map, String ... extra) throws Exception {
+	public String createService(ServiceData data,  Map<String,String> map, boolean force, String ... extra) throws Exception {
 		File initd = getInitd(data);
 		File launch = getLaunch(data);
 
-		if (!data.force) {
+		if (!force) {
 			if (initd.exists())
 				return "Service already exists in " + initd + ", use --force to override";
 

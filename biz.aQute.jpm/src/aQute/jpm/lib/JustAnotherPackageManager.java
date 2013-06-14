@@ -14,7 +14,9 @@ import java.util.regex.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.version.*;
+import aQute.jpm.facade.repo.*;
 import aQute.jpm.platform.*;
+import aQute.jsonrpc.proxy.*;
 import aQute.lib.base64.*;
 import aQute.lib.converter.*;
 import aQute.lib.hex.*;
@@ -23,9 +25,8 @@ import aQute.lib.json.*;
 import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 import aQute.libg.cryptography.*;
-import aQute.library.remote.*;
+import aQute.rest.urlclient.*;
 import aQute.service.library.*;
-import aQute.service.library.Library.Phase;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
 import aQute.service.library.Library.RevisionRef;
@@ -84,7 +85,7 @@ public class JustAnotherPackageManager {
 																	Pattern.CASE_INSENSITIVE);
 	static Pattern				URL_P				= Pattern.compile("([a-z]{3,6}:/.*)", Pattern.CASE_INSENSITIVE);
 	static Pattern				CMD_P				= Pattern.compile("([a-z_][a-z\\d_]*)", Pattern.CASE_INSENSITIVE);
-	static Pattern				SHA_P				= Pattern.compile("(?:sha:)?([a-f0-9]{40,40})",
+	static Pattern				SHA_P				= Pattern.compile("(?:sha:)?([a-fA-F0-9]{40,40})",
 															Pattern.CASE_INSENSITIVE);
 	static Executor				executor;
 
@@ -95,10 +96,12 @@ public class JustAnotherPackageManager {
 	File						serviceDir;
 	File						service;
 	Platform					platform;
-	XRemoteLibrary				library				= new XRemoteLibrary(null);
+	JpmRepo						library;
 	Reporter					reporter;
 	final List<Service>			startedByDaemon		= new ArrayList<Service>();
 	boolean						localInstall		= false;
+	private URLClient			host;
+	private boolean				underTest;
 
 	/**
 	 * Constructor
@@ -460,7 +463,7 @@ public class JustAnotherPackageManager {
 
 		platform.chown(data.user, true, new File(data.sdir));
 
-		String s = platform.createService(data, null);
+		String s = platform.createService(data, null, false);
 		if (s == null)
 			storeData(new File(data.sdir, "data"), data);
 		return s;
@@ -472,7 +475,7 @@ public class JustAnotherPackageManager {
 	 * @throws Exception
 	 * @throws IOException
 	 */
-	public String createCommand(CommandData data) throws Exception, IOException {
+	public String createCommand(CommandData data, boolean force) throws Exception, IOException {
 
 		// TODO
 		// if (Data.validate(data) != null)
@@ -487,7 +490,7 @@ public class JustAnotherPackageManager {
 			map.put("java.security.manager", "aQute.jpm.service.TraceSecurityManager");
 			reporter.trace("tracing");
 		}
-		String s = platform.createCommand(data, map, service.getAbsolutePath());
+		String s = platform.createCommand(data, map, force, service.getAbsolutePath());
 		if (s == null)
 			storeData(new File(commandDir, data.name), data);
 		return s;
@@ -627,173 +630,6 @@ public class JustAnotherPackageManager {
 		}
 	}
 
-	public ArtifactData parse(File source) throws Exception {
-		assert source.isFile();
-
-		JarFile jar = new JarFile(source);
-		try {
-			ArtifactData artifact = new ArtifactData();
-			artifact.sha = SHA1.digest(source).digest();
-
-			Manifest m = jar.getManifest();
-			Attributes main = m.getMainAttributes();
-			String name = main.getValue("Bundle-SymbolicName");
-			String version = main.getValue("Bundle-Version");
-			if (version != null)
-				name += "-" + version;
-
-			artifact.name = name;
-
-			artifact.mainClass = main.getValue("Main-Class");
-			artifact.description = main.getValue("Bundle-Description");
-			artifact.title = main.getValue("JPM-Name");
-
-			List<ArtifactData> dependencies = new ArrayList<ArtifactData>();
-			List<ArtifactData> runbundles = new ArrayList<ArtifactData>();
-			reporter.trace("Parsing %s", source);
-			{
-				if (main.getValue("JPM-Classpath") != null) {
-					Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
-
-					for (Map.Entry<String,Attrs> e : requires.entrySet()) {
-						reporter.trace("Dependency: %s%n", e.getKey());
-						retrieveDependency(e.getKey(), e.getValue().getVersion(), dependencies);
-					}
-				} else if (!localInstall) { // No JPM-Classpath, falling back to
-											// server's revision
-					Iterable<RevisionRef> closure = library.getClosure(artifact.sha, false);
-					for (RevisionRef ref : closure) {
-						String sha = Hex.toHexString(ref.revision);
-						reporter.trace("Dependency: %s:%s@%s (%s)", ref.groupId, ref.artifactId, ref.version, sha);
-						retrieveDependency(sha, null, dependencies);
-					}
-				}
-
-				if (main.getValue("JPM-Runbundles") != null) {
-					Parameters jpmrunbundles = OSGiHeader.parseHeader(main.getValue("JPM-Runbundles"));
-
-					for (Map.Entry<String,Attrs> e : jpmrunbundles.entrySet()) {
-						reporter.trace("Dependency: %s", e.getKey());
-						retrieveDependency(e.getKey(), e.getValue().getVersion(), dependencies); // Parallel
-																									// download
-																									// of
-																									// JPM
-																									// runbundles
-					}
-				}
-
-			}
-
-			// Add dependencies and runbundle into the target
-			for (ArtifactData data : dependencies) {
-				data.sync();
-				if (data.error != null) {
-					reporter.error("Download of %s failed: %s", data.name, data.error);
-				} else {
-					reporter.trace("adding dependency %s", data.file);
-					artifact.dependencies.add(data.file);
-				}
-			}
-			for (ArtifactData data : runbundles) {
-				data.sync();
-				if (data.error != null) {
-					reporter.error("Download of %s failed: %s", data.name, data.error);
-				} else {
-					reporter.trace("adding runbundle %s", data.file);
-					artifact.runbundles.add(data.file);
-				}
-			}
-
-			{
-				Parameters service = OSGiHeader.parseHeader(main.getValue("JPM-Service"));
-				if (service.size() > 1)
-					reporter.error("Only one service can be specified");
-				for (Map.Entry<String,Attrs> e : service.entrySet()) {
-					Attrs attrs = e.getValue();
-					ServiceData data = new ServiceData();
-					data.name = e.getKey();
-					doService(attrs, data, artifact);
-					data.name = e.getKey();
-					artifact.service = data;
-				}
-				reporter.trace("service %s", artifact.service);
-			}
-			{
-				Parameters command = OSGiHeader.parseHeader(main.getValue("JPM-Command"));
-				if (command.size() > 1)
-					reporter.error("Only one command can be specified");
-				for (Map.Entry<String,Attrs> e : command.entrySet()) {
-					Attrs attrs = e.getValue();
-					CommandData data = new CommandData();
-					doCommand(attrs, data, artifact);
-					data.name = e.getKey();
-					artifact.command = data;
-				}
-				reporter.trace("commands %s", artifact.command);
-			}
-
-			reporter.trace("returning " + artifact);
-			return artifact;
-		}
-		finally {
-			jar.close();
-		}
-
-	}
-
-	/**
-	 * Get a depedeny, if it is not in the cache initiate the download but
-	 * return before the dep is actually downloaded.
-	 * 
-	 * @param key
-	 * @param version
-	 * @param dependencies
-	 * @throws Exception
-	 */
-	private void retrieveDependency(String key, String version, List<ArtifactData> dependencies) throws Exception {
-		// String key = e.getKey();
-		// String version = e.getValue().get("version");
-		if (aQute.bnd.osgi.Verifier.isBsn(key) && version != null && aQute.bnd.osgi.Verifier.isVersion(version)) {
-			key = Library.OSGI_GROUP + ":" + key + ":" + version;
-		}
-		reporter.trace("searching %s", key);
-		ArtifactData candidate = getCandidateAsync(key, false);
-
-		if (candidate == null) {
-			reporter.error("Missing dependency/runbundle: %s", key);
-			return;
-		} else {
-			reporter.trace("found %s", candidate);
-			dependencies.add(candidate);
-		}
-	}
-
-	private void doCommand(Attrs attrs, CommandData data, ArtifactData artifact) throws Exception {
-		data.sha = artifact.sha;
-		data.description = artifact.description;
-		if (attrs.containsKey("jvmargs"))
-			data.jvmArgs = attrs.get("jvmargs");
-		data.main = artifact.mainClass;
-		data.title = attrs.get("title");
-
-		if (data.title != null)
-			data.title = artifact.title;
-
-		if (data.title != null)
-			data.title = data.name;
-
-		data.dependencies = artifact.dependencies;
-		data.runbundles = artifact.runbundles;
-		data.jpmRepoDir = repoDir.getCanonicalPath();
-	}
-
-	private void doService(Attrs attrs, ServiceData data, ArtifactData artifact) throws Exception {
-		doCommand(attrs, data, artifact);
-		data.user = platform.user();
-		if (attrs.containsKey("args"))
-			data.args = attrs.get("args");
-	}
-
 	/**
 	 * This is called when JPM runs in the background to start jobs
 	 * 
@@ -904,6 +740,7 @@ public class JustAnotherPackageManager {
 					put(uri, data);
 				}
 				catch (Throwable e) {
+					e.printStackTrace();
 					data.error = e.toString();
 				}
 				finally {
@@ -930,16 +767,18 @@ public class JustAnotherPackageManager {
 			byte[] sha = SHA1.digest(tmp).digest();
 			reporter.trace("SHA %s %s", uri, Hex.toHexString(sha));
 			ArtifactData existing = get(sha);
-			//if (existing == null) {
-				File meta = new File(repoDir, Hex.toHexString(sha) + ".json");
-				File file = new File(repoDir, Hex.toHexString(sha));
-				rename(tmp, file);
-				existing = parse(file);
-				existing.file = file.getAbsolutePath();
-				existing.sha = sha;
-				codec.enc().to(meta).put(existing);
-			//}
-			xcopy(existing, data);
+			if ( existing != null) {
+				xcopy(existing, data);
+				return;
+			}
+			
+			File meta = new File(repoDir, Hex.toHexString(sha) + ".json");
+			File file = new File(repoDir, Hex.toHexString(sha));
+			rename(tmp, file);
+			reporter.trace("file %s", file);
+			data.file = file.getAbsolutePath();
+			data.sha = sha;
+			codec.enc().to(meta).put(data);
 			reporter.trace("TD = " + data);
 		}
 		finally {
@@ -1033,7 +872,7 @@ public class JustAnotherPackageManager {
 		return sb.toString();
 	}
 
-	private String getCoordinates(RevisionRef r) {
+	public String getCoordinates(RevisionRef r) {
 		StringBuilder sb = new StringBuilder(r.groupId).append(":").append(r.artifactId).append(":");
 		if (r.classifier != null)
 			sb.append(r.classifier).append("@");
@@ -1042,144 +881,47 @@ public class JustAnotherPackageManager {
 		return sb.toString();
 	}
 
-	public ArtifactData getCandidate(String key, boolean staged) throws Exception {
-		ArtifactData data = getCandidateAsync(key, staged);
+	public ArtifactData getCandidate(String key) throws Exception {
+		ArtifactData data = getCandidateAsync(key);
 		if (data != null) {
 			data.sync();
 		}
 		return data;
 	}
 
-	public ArtifactData getCandidateAsync(String key, boolean staged) throws Exception {
-		reporter.trace("getCandidate " + key);
-		// Short cut, see if we alread have it
-		Matcher m = SHA_P.matcher(key);
-		if (m.matches()) { // Is it already in the repo ?
-			byte[] sha = Hex.toByteArray(m.group(1));
-			reporter.trace("sha " + key);
-			ArtifactData art = get(sha);
-			if (art != null)
-				return art;
-
-			reporter.trace("sha not in cache");
-			Revision r = library.getRevision(sha);
-			if (r != null) {
-				reporter.trace("downloading sha");
-				ArtifactData target = putAsync(r.url);
-				target.coordinates = getCoordinates(r);
-				return target;
-			}
-			reporter.trace("no sha found");
-			// fall through
-		}
-
-		File f = IO.getFile(key);
-		if (f.isFile()) { // Is it on the filesystem ?
-			reporter.trace("is file");
-			ArtifactData target = putAsync(f.toURI());
-			return target;
-		}
-
-		m = URL_P.matcher(key);
-		if (m.matches()) { // Is it a URL ?
-			reporter.trace("looks like a url");
+	public ArtifactData getCandidateAsync(String coordinate) throws Exception {
+		// Try to find locally
+		reporter.trace("coordinate = %s", coordinate);
+		Matcher matcher = SHA_P.matcher(coordinate);
+		if (matcher.matches()) {
+			String sha = matcher.group(1); 
+			reporter.trace("sha = %s", sha);
+			byte[] id = Hex.toByteArray(sha);
+			ArtifactData r = get(id);
+			if (r != null)
+				return r;
+		} else if (isUrl(coordinate)) {
 			try {
-				ArtifactData target = putAsync(new URI(key));
-				return target;
+				return putAsync(new URI(coordinate));
 			}
 			catch (Exception e) {
-				// Ignore
-				reporter.trace("hmm, not a valid url");
+				reporter.trace("hmm, not a valid url %s, will try the server", coordinate);
 			}
-			// fall through
+		} else {
+			Matcher m = COORD_P.matcher(coordinate);
+			if (m.matches() && m.group(1).equals(Library.SHA_GROUP)) {
+				byte[] id = Hex.toByteArray(m.group(2));
+				ArtifactData r = get(id);
+				if (r != null)
+					return r;
+			}
 		}
 
-		reporter.trace("get the programs for %s", key);
-		Iterable< ? extends Program> ps = library.getPrograms(key);
-		if (ps == null)
+		Revision revision = library.getRevision(coordinate);
+		if (revision == null)
 			return null;
 
-		Matcher matcher = COORD_P.matcher(key);
-		String classifier = matcher.matches() ? matcher.group(3) : null;
-		reporter.trace("filter for valid versions, classifier %s", classifier);
-		List<RevisionRef> refs = new ArrayList<RevisionRef>();
-		for (Program p : ps) {
-			RevisionRef selected = selectBest(p.revisions, staged, classifier);
-			if (selected != null)
-				refs.add(selected);
-		}
-		if (refs.isEmpty()) {
-			reporter.trace("no valid versions found");
-			return null;
-		}
-
-		if (refs.size() == 1) {
-			reporter.trace("found 1 program %s:%s", refs.get(0).groupId, refs.get(0).artifactId);
-			RevisionRef r = refs.get(0);
-
-			ArtifactData target = get(r.revision);
-			if (target == null)
-				target = putAsync(r.url);
-
-			target.coordinates = getCoordinates(r);
-			return target;
-		}
-
-		System.out.printf("Multiple candidates for this name, select with its sha\n");
-		for (Program p : ps) {
-			RevisionRef selected = selectBest(p.revisions, staged, classifier);
-			if (selected != null) {
-				String desc = selected.description;
-				if (desc == null) {
-					if (p.wiki != null)
-						desc = p.wiki.text;
-					if (desc == null)
-						desc = "-";
-				}
-
-				System.out.printf("%-20s:%20s %-10s %s %s\n", selected.groupId, selected.artifactId, selected.version,
-						Hex.toHexString(selected.revision), desc);
-			}
-		}
-		return null;
-	}
-
-	private RevisionRef selectBest(List<RevisionRef> revisions, boolean staged, String classifier) {
-		long date = 0;
-		RevisionRef selected = null;
-		Version selectedVersion = null;
-		for (RevisionRef r : revisions) {
-			reporter.trace("%s:%s:%s@%s %s", r.groupId, r.artifactId, r.classifier, r.version, classifier);
-			if (r.classifier == null && classifier != null || r.classifier != null && classifier == null) {
-				continue;
-			}
-
-			if (r.classifier == null || classifier == null || classifier.equals(r.classifier)) {
-				if (r.phase == Phase.MASTER || (r.phase == Phase.STAGING && staged)) {
-					Version v = toVersion(r.baseline, r.qualifier);
-					if (selected == null || v.compareTo(selectedVersion) > 0) {
-						selected = r;
-						selectedVersion = v;
-					}
-
-				}
-			}
-		}
-		if (selected == null) {
-			reporter.trace("no candidate found");
-		} else {
-			reporter.trace("selected %s:%s:%s@%s", selected.groupId, selected.artifactId, selected.classifier,
-					selected.version);
-		}
-		return selected;
-	}
-
-	private Version toVersion(String baseline, String qualifier) {
-		if (qualifier == null || qualifier.trim().length() == 0) {
-			return new Version(baseline);
-		} else {
-			return new Version(baseline + "." + qualifier);
-		}
+		return putAsync(revision.url);
 	}
 
 	public static Executor getExecutor() {
@@ -1192,8 +934,12 @@ public class JustAnotherPackageManager {
 		JustAnotherPackageManager.executor = executor;
 	}
 
-	public void setLibrary(URI url) {
-		library = new XRemoteLibrary(url.toString());
+	public void setLibrary(URI url) throws Exception {
+		if (url == null)
+			url = new URI("http://repo.jpm4j.org/");
+
+		this.host = new URLClient(url.toString());
+		library = JSONRPCProxy.createRPC(JpmRepo.class, host, "jpm");
 	}
 
 	public void close() {
@@ -1203,20 +949,12 @@ public class JustAnotherPackageManager {
 
 	public void init() throws IOException {
 		URL s = getClass().getClassLoader().getResource(SERVICE_JAR_FILE);
+		if (s == null)
+			if (underTest)
+				return;
+			else
+				throw new Error("No " + SERVICE_JAR_FILE + " resource in jar");
 		IO.copy(s, service);
-	}
-
-	public List<Revision> getCandidates(String key) throws Exception {
-		Iterable<Revision> revisions = library.getRevisions(key);
-		List<Revision> revs = new ArrayList<Revision>();
-		for (Revision r : revisions) {
-			revs.add(r);
-		}
-		return revs;
-	}
-
-	public Iterable< ? extends Program> find(String q) throws Exception {
-		return library.findProgram().query(q);
 	}
 
 	public void setHomeDir(File homeDir) throws IOException {
@@ -1273,7 +1011,7 @@ public class JustAnotherPackageManager {
 		return to;
 	}
 
-	public XRemoteLibrary getLibrary() {
+	public JpmRepo getLibrary() {
 		return library;
 	}
 
@@ -1373,59 +1111,59 @@ public class JustAnotherPackageManager {
 	public void listUpdates(List<UpdateMemo> notFound, List<UpdateMemo> upToDate, List<UpdateMemo> toUpdate,
 			CommandData data, boolean staged) throws Exception {
 
-		UpdateMemo memo = new UpdateMemo();
-		memo.current = data;
-
-		Matcher m = data.coordinates == null ? null : COORD_P.matcher(data.coordinates);
-
-		if (data.version == null || m == null || !m.matches()) {
-			Revision revision = library.getRevision(data.sha);
-			if (revision == null) {
-				notFound.add(memo);
-				return;
-			}
-			data.version = new Version(revision.version);
-			data.coordinates = getCoordinates(revision);
-			if (data instanceof ServiceData) {
-				storeData(IO.getFile(new File(serviceDir, data.name), "data"), data);
-			} else {
-				storeData(IO.getFile(commandDir, data.name), data);
-			}
-		}
-
-		Iterable< ? extends Program> programs = library.getPrograms(data.coordinates);
-		int count = 0;
-		RevisionRef best = null;
-		for (Program p : programs) {
-			best = selectBest(p.revisions, staged, null);
-			count++;
-		}
-		if (count != 1 || best == null) {
-			notFound.add(memo);
-			return;
-		}
-		Version bestVersion = new Version(best.version);
-
-		if (data.version.compareTo(bestVersion) < 0) { // Update available
-			memo.best = best;
-			toUpdate.add(memo);
-		} else { // up to date
-			upToDate.add(memo);
-		}
+//		UpdateMemo memo = new UpdateMemo();
+//		memo.current = data;
+//
+//		Matcher m = data.coordinates == null ? null : COORD_P.matcher(data.coordinates);
+//
+//		if (data.version == null || m == null || !m.matches()) {
+//			Revision revision = library.getRevision(data.sha);
+//			if (revision == null) {
+//				notFound.add(memo);
+//				return;
+//			}
+//			data.version = new Version(revision.version);
+//			data.coordinates = getCoordinates(revision);
+//			if (data instanceof ServiceData) {
+//				storeData(IO.getFile(new File(serviceDir, data.name), "data"), data);
+//			} else {
+//				storeData(IO.getFile(commandDir, data.name), data);
+//			}
+//		}
+//
+//		Iterable< ? extends Program> programs = library.getQueryPrograms(data.coordinates, 0, 0);
+//		int count = 0;
+//		RevisionRef best = null;
+//		for (Program p : programs) {
+//			// best = selectBest(p.revisions, staged, null);
+//			count++;
+//		}
+//		if (count != 1 || best == null) {
+//			notFound.add(memo);
+//			return;
+//		}
+//		Version bestVersion = new Version(best.version);
+//
+//		if (data.version.compareTo(bestVersion) < 0) { // Update available
+//			memo.best = best;
+//			toUpdate.add(memo);
+//		} else { // up to date
+//			upToDate.add(memo);
+//		}
 	}
 
 	public void update(UpdateMemo memo) throws Exception {
 
 		ArtifactData target = put(memo.best.url);
 
-		memo.current.coordinates = getCoordinates(memo.best);
 		memo.current.version = new Version(memo.best.version);
 		target.sync();
 		memo.current.sha = target.sha;
-		memo.current.dependencies = target.dependencies;
-		memo.current.dependencies.add((new File(repoDir, Hex.toHexString(target.sha))).getCanonicalPath());
-		memo.current.runbundles = target.runbundles;
-		memo.current.description = target.description;
+		// memo.current.dependencies = target.dependencies;
+		// memo.current.dependencies.add((new File(repoDir,
+		// Hex.toHexString(target.sha))).getCanonicalPath());
+		// memo.current.runbundles = target.runbundles;
+		// memo.current.description = target.description;
 		memo.current.time = target.time;
 
 		if (memo.current instanceof ServiceData) {
@@ -1436,10 +1174,125 @@ public class JustAnotherPackageManager {
 			storeData(new File(IO.getFile(serviceDir, memo.current.name), "data"), memo.current);
 		} else {
 			platform.deleteCommand(memo.current);
-			createCommand(memo.current);
+			createCommand(memo.current, false);
 			IO.delete(IO.getFile(commandDir, memo.current.name));
 			storeData(IO.getFile(commandDir, memo.current.name), memo.current);
 		}
 
+	}
+
+	public ArtifactData getRevision(String coordinate) throws Exception {
+		if (isUrl(coordinate)) {
+			return put(new URI(coordinate));
+		}
+		Revision revision = library.getRevision(coordinate);
+		if (revision == null)
+			return null;
+
+		return put(revision.url);
+	}
+
+	private boolean isUrl(String coordinate) {
+		return URL_P.matcher(coordinate).matches();
+	}
+
+	/**
+	 * Find programs
+	 * 
+	 * @throws Exception
+	 */
+
+	public List<Program> find(String query, int skip, int limit) throws Exception {
+		return library.getQueryPrograms(query, skip, limit);
+	}
+
+	public boolean isWildcard(String coordinate) {
+		return coordinate != null && coordinate.endsWith("@*");
+	}
+
+	public CommandData parseCommandData(byte[] sha) throws Exception {
+		ArtifactData artifact = get(sha);
+		File source = new File(artifact.file);
+		if (!source.isFile())
+			throw new FileNotFoundException();
+
+		CommandData data = new CommandData();
+		data.sha = sha;
+		data.jpmRepoDir = repoDir.getCanonicalPath();
+		JarFile jar = new JarFile(source);
+		try {
+			reporter.trace("Parsing %s", source);
+			Manifest m = jar.getManifest();
+			Attributes main = m.getMainAttributes();
+			data.name = data.bsn = main.getValue("Bundle-SymbolicName");
+			String version = main.getValue("Bundle-Version");
+			if (version == null)
+				data.version = Version.LOWEST;
+			else
+				data.version = new Version(version);
+
+			if (main.getValue("Bundle-Name") != null)
+				data.name = main.getValue("Bundle-Name");
+
+			data.main = main.getValue("Main-Class");
+			data.description = main.getValue("Bundle-Description");
+			data.title = main.getValue("JPM-Name");
+
+			DependencyCollector path = new DependencyCollector(this);
+			path.add(Hex.toHexString(sha));
+			DependencyCollector bundles = new DependencyCollector(this);
+			if (main.getValue("JPM-Classpath") != null) {
+				Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
+
+				for (Map.Entry<String,Attrs> e : requires.entrySet()) {
+					path.add(e.getKey()); // coordinate
+				}
+			} else if (!localInstall) { // No JPM-Classpath, falling back to
+										// server's revision
+				Iterable<RevisionRef> closure = library.getClosure(artifact.sha, false);
+				for (RevisionRef ref : closure) {
+					path.add(Hex.toHexString(ref.revision));
+				}
+			}
+
+			if (main.getValue("JPM-Runbundles") != null) {
+				Parameters jpmrunbundles = OSGiHeader.parseHeader(main.getValue("JPM-Runbundles"));
+
+				for (Map.Entry<String,Attrs> e : jpmrunbundles.entrySet()) {
+					bundles.add(e.getKey());
+				}
+			}
+
+			data.dependencies.addAll(path.getPaths());
+			data.runbundles.addAll(bundles.getPaths());
+
+			Parameters command = OSGiHeader.parseHeader(main.getValue("JPM-Command"));
+			if (command.size() > 1)
+				reporter.error("Only one command can be specified");
+
+			for (Map.Entry<String,Attrs> e : command.entrySet()) {
+				data.name = e.getKey();
+
+				Attrs attrs = e.getValue();
+
+				if (attrs.containsKey("jvmargs"))
+					data.jvmArgs = attrs.get("jvmargs");
+
+				if (attrs.containsKey("title"))
+					data.title = attrs.get("title");
+
+				if (data.title != null)
+					data.title = data.name;
+
+			}
+			return data;
+		}
+		finally {
+			jar.close();
+		}
+	}
+
+	public void setUnderTest() {
+		underTest = true;
 	}
 }

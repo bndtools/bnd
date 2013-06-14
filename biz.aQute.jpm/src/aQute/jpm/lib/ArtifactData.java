@@ -1,26 +1,16 @@
 package aQute.jpm.lib;
 
-import java.util.*;
+import java.net.*;
 
-import aQute.bnd.version.*;
 import aQute.struct.*;
 
 public class ArtifactData extends struct {
-	public byte[]		sha;
-	public long			time			= System.currentTimeMillis();
-	public CommandData	command;
-	public ServiceData	service;
-	public String		error;
-
-	public String		name;
-	public String		mainClass;
-	public String		description;
-	public List<String>	dependencies	= new ArrayList<String>();		// shas
-	public List<String>	runbundles		= new ArrayList<String>();
-	public String		title;
-	boolean				busy			= false;
-	public String		file;
-	public String		coordinates;
+	public byte[]	sha;
+	public long		time	= System.currentTimeMillis();
+	public String	error;
+	public URI		url;
+	boolean			busy	= false;
+	public String	file;
 
 	synchronized void done() {
 		busy = false;

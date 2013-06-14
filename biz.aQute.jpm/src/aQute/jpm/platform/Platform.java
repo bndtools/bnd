@@ -87,9 +87,9 @@ public abstract class Platform {
 		return runtime.exec(args).waitFor();
 	}
 
-	public abstract String createCommand(CommandData data, Map<String,String> map, String... deps) throws Exception;
+	public abstract String createCommand(CommandData data, Map<String,String> map, boolean force, String... deps) throws Exception;
 
-	public abstract String createService(ServiceData data, Map<String,String> map, String... deps) throws Exception;
+	public abstract String createService(ServiceData data, Map<String,String> map, boolean force, String... deps) throws Exception;
 
 	public abstract String remove(CommandData data) throws Exception;
 
