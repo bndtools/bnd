@@ -48,4 +48,19 @@ class DependencyCollector {
 		return paths;
 	}
 
+	public List<byte[]> getDigests() throws InterruptedException {
+		sync();
+		List<byte[]> digests = new ArrayList<byte[]>();
+		for (ArtifactData artifact : list) {
+			if ( artifact.error == null) {
+				digests.add( artifact.sha);
+			}
+		}
+		return digests;
+	}
+
+	public void add(ArtifactData artifact) {
+		list.add(artifact);
+		
+	}
 }

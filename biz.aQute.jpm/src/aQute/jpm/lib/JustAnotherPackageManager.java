@@ -24,6 +24,7 @@ import aQute.lib.io.*;
 import aQute.lib.json.*;
 import aQute.lib.justif.*;
 import aQute.lib.settings.*;
+import aQute.lib.strings.*;
 import aQute.libg.cryptography.*;
 import aQute.rest.urlclient.*;
 import aQute.service.library.*;
@@ -110,7 +111,7 @@ public class JustAnotherPackageManager {
 	 */
 	public JustAnotherPackageManager(Reporter reporter) throws IOException {
 		this.reporter = reporter;
-		setPlatform(Platform.getPlatform(reporter));
+		setPlatform(Platform.getPlatform(reporter, this));
 	}
 
 	public String getArtifactIdFromCoord(String coord) {
@@ -193,9 +194,9 @@ public class JustAnotherPackageManager {
 	 * @throws Exception
 	 */
 	public void gc() throws Exception {
-		HashSet<String> deps = new HashSet<String>();
+		HashSet<byte[]> deps = new HashSet<byte[]>();
 
-		deps.add(SERVICE_JAR_FILE);
+		//deps.add(SERVICE_JAR_FILE);
 
 		for (File cmd : commandDir.listFiles()) {
 			CommandData data = getData(CommandData.class, cmd);
@@ -233,12 +234,12 @@ public class JustAnotherPackageManager {
 		System.out.format("Garbage collection done (%d file(s) removed)%n", count);
 	}
 
-	private void addDependencies(HashSet<String> deps, CommandData data) {
-		for (String dep : data.dependencies) {
-			deps.add(new File(dep).getName());
+	private void addDependencies(HashSet<byte[]> deps, CommandData data) {
+		for (byte[] dep : data.dependencies) {
+			deps.add(dep);
 		}
-		for (String dep : data.runbundles) {
-			deps.add(new File(dep).getName());
+		for (byte[] dep : data.runbundles) {
+			deps.add(dep);
 		}
 	}
 
@@ -771,13 +772,19 @@ public class JustAnotherPackageManager {
 				xcopy(existing, data);
 				return;
 			}
-			
 			File meta = new File(repoDir, Hex.toHexString(sha) + ".json");
 			File file = new File(repoDir, Hex.toHexString(sha));
 			rename(tmp, file);
 			reporter.trace("file %s", file);
 			data.file = file.getAbsolutePath();
 			data.sha = sha;
+			
+			CommandData cmddata = parseCommandData(data);
+			if ( cmddata.bsn != null) {
+				data.name = cmddata.bsn + "-" + cmddata.version;
+			} else
+				data.name = Strings.display(cmddata.title, cmddata.bsn, cmddata.name, uri);
+			
 			codec.enc().to(meta).put(data);
 			reporter.trace("TD = " + data);
 		}
@@ -1210,14 +1217,13 @@ public class JustAnotherPackageManager {
 		return coordinate != null && coordinate.endsWith("@*");
 	}
 
-	public CommandData parseCommandData(byte[] sha) throws Exception {
-		ArtifactData artifact = get(sha);
+	public CommandData parseCommandData(ArtifactData artifact) throws Exception {
 		File source = new File(artifact.file);
 		if (!source.isFile())
 			throw new FileNotFoundException();
 
 		CommandData data = new CommandData();
-		data.sha = sha;
+		data.sha = artifact.sha;
 		data.jpmRepoDir = repoDir.getCanonicalPath();
 		JarFile jar = new JarFile(source);
 		try {
@@ -1239,7 +1245,7 @@ public class JustAnotherPackageManager {
 			data.title = main.getValue("JPM-Name");
 
 			DependencyCollector path = new DependencyCollector(this);
-			path.add(Hex.toHexString(sha));
+			path.add(artifact);
 			DependencyCollector bundles = new DependencyCollector(this);
 			if (main.getValue("JPM-Classpath") != null) {
 				Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
@@ -1263,8 +1269,8 @@ public class JustAnotherPackageManager {
 				}
 			}
 
-			data.dependencies.addAll(path.getPaths());
-			data.runbundles.addAll(bundles.getPaths());
+			data.dependencies.addAll(path.getDigests());
+			data.runbundles.addAll(bundles.getDigests());
 
 			Parameters command = OSGiHeader.parseHeader(main.getValue("JPM-Command"));
 			if (command.size() > 1)
@@ -1294,5 +1300,25 @@ public class JustAnotherPackageManager {
 
 	public void setUnderTest() {
 		underTest = true;
+	}
+	
+	/**
+	 * Turn the shas into a readable form
+	 * @param dependencies
+	 * @return
+	 * @throws Exception 
+	 */
+
+	public List< ? > toString(List<byte[]> dependencies) throws Exception {
+		List<String> out = new ArrayList<String>();
+		for ( byte[] dependency : dependencies ) {
+			ArtifactData data = get(dependency);
+			if ( data == null)
+				out.add(Hex.toHexString(dependency));
+			else {
+				out.add( Strings.display(data.name, Hex.toHexString(dependency)) );
+			}
+		}
+		return out;
 	}
 }

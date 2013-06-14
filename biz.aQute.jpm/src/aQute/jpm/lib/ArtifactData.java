@@ -11,6 +11,7 @@ public class ArtifactData extends struct {
 	public URI		url;
 	boolean			busy	= false;
 	public String	file;
+	public String	name;
 
 	synchronized void done() {
 		busy = false;

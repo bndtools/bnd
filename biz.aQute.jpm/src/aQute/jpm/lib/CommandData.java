@@ -16,8 +16,8 @@ public class CommandData extends struct {
 	@Define(optional = true)
 	public String		jvmArgs;
 
-	public List<String>	dependencies	= list();
-	public List<String>	runbundles		= list();
+	public List<byte[]>	dependencies	= list();
+	public List<byte[]>	runbundles		= list();
 	public String		jpmRepoDir;
 
 	public boolean		installed;

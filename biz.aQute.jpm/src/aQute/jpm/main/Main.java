@@ -14,8 +14,6 @@ import java.util.regex.*;
 import aQute.bnd.osgi.*;
 import aQute.jpm.lib.*;
 import aQute.jpm.lib.JustAnotherPackageManager.UpdateMemo;
-import aQute.jpm.lib.Service;
-import aQute.jpm.platform.*;
 import aQute.jpm.platform.windows.*;
 import aQute.lib.base64.*;
 import aQute.lib.collections.*;
@@ -264,8 +262,8 @@ public class Main extends ReporterAdapter {
 				settings = new Settings(opts.settings());
 				trace("Using settings file: %s", opts.settings());
 			} else {
-				settings = new Settings(Platform.getPlatform(this).getConfigFile());
-				trace("Using settings file: %s", Platform.getPlatform(this).getConfigFile());
+				settings = new Settings(jpm.getPlatform().getConfigFile());
+				trace("Using settings file: %s", jpm.getPlatform().getConfigFile());
 			}
 
 			if (opts.base() != null)
@@ -348,7 +346,7 @@ public class Main extends ReporterAdapter {
 		if (settings.containsKey("jpm.bin.local")) {
 			jpm.setBinDir(IO.getFile(settings.get("jpm.bin.local")).getAbsoluteFile());
 		} else {
-			jpm.setBinDir(Platform.getPlatform(this).getBinDir());
+			jpm.setBinDir(jpm.getPlatform().getBinDir());
 		}
 
 		if (settings.containsKey("jpm.cache.local")) {
@@ -356,7 +354,7 @@ public class Main extends ReporterAdapter {
 			return IO.getFile(base, settings.get("jpm.cache.local"));
 		} else {
 			trace("Using local dir (platform default)");
-			return Platform.getPlatform(this).getLocal();
+			return jpm.getPlatform().getLocal();
 		}
 	}
 
@@ -364,7 +362,7 @@ public class Main extends ReporterAdapter {
 		if (settings.containsKey("jpm.bin.global")) {
 			jpm.setBinDir(IO.getFile(settings.get("jpm.bin.global")).getAbsoluteFile());
 		} else {
-			jpm.setBinDir(Platform.getPlatform(this).getBinDir());
+			jpm.setBinDir(jpm.getPlatform().getBinDir());
 		}
 
 		if (settings.containsKey("jpm.cache.global")) {
@@ -372,7 +370,7 @@ public class Main extends ReporterAdapter {
 			return IO.getFile(base, settings.get("jpm.cache.global"));
 		} else {
 			trace("Using global dir (platform default)");
-			return Platform.getPlatform(this).getGlobal();
+			return jpm.getPlatform().getGlobal();
 		}
 	}
 
@@ -455,7 +453,7 @@ public class Main extends ReporterAdapter {
 			} else {
 
 				if (!opts.ignore()) {
-					CommandData cmd = jpm.parseCommandData(artifact.sha);
+					CommandData cmd = jpm.parseCommandData(artifact);
 					updateCommandData(cmd, opts);
 					if (cmd.main != null) {
 						List<Error> errors = cmd.validate();
@@ -676,7 +674,7 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
-	private void print(CommandData command) {
+	private void print(CommandData command) throws Exception {
 		Justif j = new Justif(width, tabs);
 		Formatter f = j.formatter();
 		f.format("%n[%s]%n", command.name);
@@ -691,8 +689,8 @@ public class Main extends ReporterAdapter {
 		f.format("Installed\t1%s%n", command.installed);
 		f.format("JRE\t1%s%n", Strings.display(command.java, "<default>"));
 		f.format("Trace\t1%s%n", command.trace ? "On" : "Off");
-		list(f, "Dependencies", command.dependencies);
-		list(f, "Runbundles", command.runbundles);
+		list(f, "Dependencies", jpm.toString(command.dependencies));
+		list(f, "Runbundles", jpm.toString(command.runbundles));
 
 		out.append(j.wrap());
 	}
@@ -781,7 +779,7 @@ public class Main extends ReporterAdapter {
 	public void _init(InitOptions opts) throws Exception {
 		// Reset config, or respect init flags
 		jpm.setHomeDir(opts.cache() == null ? null : IO.getFile(opts.cache()));
-		jpm.setBinDir(opts.bindir() == null ? Platform.getPlatform(this).getBinDir() : IO.getFile(opts.bindir()));
+		jpm.setBinDir(opts.bindir() == null ? jpm.getPlatform().getBinDir() : IO.getFile(opts.bindir()));
 
 		if (!jpm.hasAccess()) {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
@@ -805,7 +803,7 @@ public class Main extends ReporterAdapter {
 						return;
 					}
 
-					String completionInstallResult = Platform.getPlatform(this).installCompletion(this);
+					String completionInstallResult = jpm.getPlatform().installCompletion(this);
 					if (completionInstallResult != null)
 						trace(completionInstallResult);
 
@@ -1352,7 +1350,7 @@ public class Main extends ReporterAdapter {
 			error("Must be administrator");
 
 		InstallCert.installCert(this, opts._().get(0), opts.port() == 0 ? 443 : opts.port(),
-				opts.secret() == null ? Platform.getPlatform(this).defaultCacertsPassword() : opts.secret(),
+				opts.secret() == null ? jpm.getPlatform().defaultCacertsPassword() : opts.secret(),
 				opts.cacerts(), opts.install());
 	}
 

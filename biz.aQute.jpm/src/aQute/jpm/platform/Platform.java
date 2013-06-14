@@ -18,7 +18,8 @@ public abstract class Platform {
 	static Platform	platform;
 	static Runtime	runtime	= Runtime.getRuntime();
 	Reporter		reporter;
-
+	JustAnotherPackageManager jpm;
+	
 	/**
 	 * Get the current platform manager.
 	 * 
@@ -26,8 +27,7 @@ public abstract class Platform {
 	 * @param jpmx
 	 * @return
 	 */
-	public static Platform getPlatform(Reporter reporter) {
-
+	public static Platform getPlatform(Reporter reporter, JustAnotherPackageManager jpm) {
 		if (platform == null) {
 
 			String osName = System.getProperty("os.name").toLowerCase();
@@ -39,6 +39,7 @@ public abstract class Platform {
 			else
 				platform = new Linux();
 			platform.reporter = reporter;
+			platform.jpm = jpm;
 			reporter.trace("platform=%s", platform.reporter);
 		}
 		return platform;
@@ -142,7 +143,13 @@ public abstract class Platform {
 			v = v.replace("\\", "\\\\");
 			sed.replace("%" + key.getName() + "%", v);
 		}
-		ExtList<String> deps = new ExtList<String>(data.dependencies);
+		
+		
+		ExtList<String> deps = new ExtList<String>();
+		for ( byte[] dependency : data.dependencies) {
+			ArtifactData d = jpm.get(dependency);
+			deps.add( d.file);
+		}
 		for (String x : extra) {
 			deps.add(x);
 		}
