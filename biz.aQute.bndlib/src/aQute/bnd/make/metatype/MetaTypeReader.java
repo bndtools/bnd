@@ -24,6 +24,9 @@ public class MetaTypeReader extends WriteResource {
 
 	// Resource
 	String					extra;
+	
+	// Should we process super interfaces
+	boolean					inherit;
 
 	// One time init
 	boolean					finished;
@@ -44,6 +47,7 @@ public class MetaTypeReader extends WriteResource {
 	public MetaTypeReader(Clazz clazz, Analyzer reporter) {
 		this.clazz = clazz;
 		this.reporter = reporter;
+		this.inherit = Processor.isTrue(reporter.getProperty("-metatype-inherit"));
 	}
 
 	/**
@@ -313,6 +317,41 @@ public class MetaTypeReader extends WriteResource {
 
 			this.object.addAttribute("ocdref", id);
 
+			
+			if (inherit) {
+				handleInheritedClasses(clazz);
+			}
+		}
+	}
+	
+	private void handleInheritedClasses(Clazz child) throws Exception {
+		TypeRef[] ifaces = child.getInterfaces();
+		if(ifaces != null) {
+			for(TypeRef ref : ifaces) {
+				parseAndMergeInheritedMetadata(ref, child);
+			}
+		}
+		TypeRef superClazz = child.getSuper();
+		if(superClazz != null) {
+			parseAndMergeInheritedMetadata(superClazz, child);
+		}
+	}
+
+	private void parseAndMergeInheritedMetadata(TypeRef ref, Clazz child) throws Exception {
+		if (ref.isJava())
+			return;
+		Clazz ec = reporter.findClass(ref);
+		if (ec == null) {
+			reporter.error("Missing inherited class for Metatype annotations: " + ref + " from "
+					+ child.getClassName());
+		} else {
+			MetaTypeReader mtr = new MetaTypeReader(ec, reporter);
+			mtr.setDesignate(designatePid, factory);
+			mtr.finish();
+			for (Map.Entry<MethodDef,Meta.AD> entry : mtr.methods.entrySet())
+				addMethod(entry.getKey(), entry.getValue());
+
+			handleInheritedClasses(ec);
 		}
 	}
 

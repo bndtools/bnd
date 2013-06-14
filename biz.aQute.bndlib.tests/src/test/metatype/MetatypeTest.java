@@ -824,6 +824,50 @@ public class MetatypeTest extends TestCase {
 				});
 	}
 
+	/**
+	 * Test the AD inheritance.
+	 */
+
+	@Meta.OCD(description = "adinheritance-super-one")
+	public static interface TestADWithInheritanceSuperOne {
+		@Meta.AD
+		String fromSuperOne();
+	}
+
+	@Meta.OCD(description = "adinheritance-super")
+	public static interface TestADWithInheritanceSuperTwo {
+		@Meta.AD
+		String fromSuperTwo();
+	}
+
+	@Meta.OCD(description = "adinheritance-child")
+	public static interface TestADWithInheritanceChild extends TestADWithInheritanceSuperOne,
+		TestADWithInheritanceSuperTwo {
+		@Meta.AD
+		String fromChild();
+	}
+	
+	public static void testADWithInheritance() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty("-metatype", "*");
+		b.setProperty("-metatype-inherit", "true");
+		b.build();
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$TestADWithInheritanceChild.xml");
+		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+		System.err.println(b.getJar().getResources().keySet());
+		assertNotNull(r);
+		IO.copy(r.openInputStream(), System.err);
+		
+		Document d = db.parse(r.openInputStream());
+		
+		assertAD(d, "fromChild", "From child", "fromChild", null, null, null, 0, "String", null, null, null);
+		assertAD(d, "fromSuperOne", "From super one", "fromSuperOne", null, null, null, 0, "String", null, null, null);
+		assertAD(d, "fromSuperTwo", "From super two", "fromSuperTwo", null, null, null, 0, "String", null, null, null);
+	}
+
 	static void assertAD(Document d, @SuppressWarnings("unused")
 	String mname, String name, String id, String min, String max, String deflt, int cardinality, String type,
 			String description, @SuppressWarnings("unused")
