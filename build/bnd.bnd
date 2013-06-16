@@ -37,9 +37,7 @@ Include-Resource:\
 	${repo;biz.aQute.resolve;${aQute-resolve-base}},\
 	${repo;javax.xml;latest},\
 	${repo;javax.xml.stream;latest},\
-	${repo;org.apache.ace.bnd.repository;latest},\
-	${repo;stax2-api;latest},\
-	${repo;woodstox-core-asl;latest}
+	${repo;org.apache.ace.bnd.repository;latest}
 
 # Missing here:
 # ${repo;bndtools.bndplugins;latest}

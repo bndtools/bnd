@@ -64,8 +64,6 @@ crossplatform.bundles:\
 	${aQute-resolve},\
 	bndtools.runtime.eclipse.applaunch,\
 	org.osgi.impl.bundle.bindex;version=latest,\
-	stax2-api,\
-	woodstox-core-asl,\
 	javax.xml,\
 	javax.xml.stream,\
 	com.ibm.icu,\
