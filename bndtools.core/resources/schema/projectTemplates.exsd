@@ -72,7 +72,7 @@
                   
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn=":bndtools.api.repository.RemoteRepositoryFactory"/>
+                  <meta.attribute kind="java" basedOn=":org.bndtools.api.repository.RemoteRepositoryFactory"/>
                </appinfo>
             </annotation>
          </attribute>

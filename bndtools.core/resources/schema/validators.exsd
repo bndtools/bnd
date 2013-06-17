@@ -55,7 +55,7 @@
                   
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn=":bndtools.api.IValidator"/>
+                  <meta.attribute kind="java" basedOn=":org.bndtools.api.IValidator"/>
                </appinfo>
             </annotation>
          </attribute>
