@@ -15,22 +15,13 @@
        <Package name="bndtools.ace.launch.ui" />
      </Match>
      <Match>
-       <Package name="bndtools.api" />
-     </Match>
-     <Match>
        <Package name="bndtools.bndplugins.repo" />
      </Match>
      <Match>
        <Package name="bndtools.bndplugins.repo.git" />
      </Match>
      <Match>
-       <Package name="bndtools.builder" />
-     </Match>
-     <Match>
-       <Package name="bndtools.classpath" />
-     </Match>
-     <Match>
-       <Package name="bndtools.classpath.ui" />
+       <Package name="bndtools.central" />
      </Match>
      <Match>
        <Package name="bndtools.editor" />
@@ -69,19 +60,10 @@
        <Package name="bndtools.editor.workspace" />
      </Match>
      <Match>
-       <Package name="bndtools.internal.decorator" />
-     </Match>
-     <Match>
-       <Package name="bndtools.internal.libs" />
-     </Match>
-     <Match>
        <Package name="bndtools.internal.pkgselection" />
      </Match>
      <Match>
        <Package name="bndtools.internal.testcaseselection" />
-     </Match>
-     <Match>
-       <Package name="bndtools.internal.ui" />
      </Match>
      <Match>
        <Package name="bndtools.jareditor.internal" />
@@ -153,6 +135,15 @@
        <Package name="bndtools.tasks" />
      </Match>
      <Match>
+       <Package name="bndtools.templates.amdatu.mixed" />
+     </Match>
+     <Match>
+       <Package name="bndtools.templates.amdatu.mongo" />
+     </Match>
+     <Match>
+       <Package name="bndtools.templates.amdatu.rest" />
+     </Match>
+     <Match>
        <Package name="bndtools.templates.dm" />
      </Match>
      <Match>
@@ -189,19 +180,49 @@
        <Package name="bndtools.wizards.workspace" />
      </Match>
      <Match>
+       <Package name="org.bndtools.api" />
+     </Match>
+     <Match>
        <Package name="org.bndtools.build.api" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.builder" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.builder.classpath" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.builder.classpath.ui" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.builder.decorator" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.builder.decorator.ui" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.builder.handlers.baseline" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.builder.indexer" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.builder.jobs.newproject" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.builder.listeners" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.builder.validate" />
      </Match>
      <Match>
        <Package name="org.bndtools.core.actions" />
      </Match>
      <Match>
-       <Package name="org.bndtools.core.build.indexer" />
+       <Package name="org.bndtools.core.editors" />
      </Match>
      <Match>
-       <Package name="org.bndtools.core.build.validate" />
-     </Match>
-     <Match>
-       <Package name="org.bndtools.core.jobs.newproject" />
+       <Package name="org.bndtools.core.editors.pkginfo" />
      </Match>
      <Match>
        <Package name="org.bndtools.core.resolve" />
@@ -219,37 +240,61 @@
        <Package name="org.bndtools.core.ui.resource" />
      </Match>
      <Match>
+       <Package name="org.bndtools.core.ui.wizards.blueprint" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.core.ui.wizards.ds" />
+     </Match>
+     <Match>
        <Package name="org.bndtools.core.ui.wizards.jpm" />
      </Match>
      <Match>
-       <Package name="org.bndtools.core.utils.collections" />
-     </Match>
-     <Match>
-       <Package name="org.bndtools.core.utils.dnd" />
-     </Match>
-     <Match>
-       <Package name="org.bndtools.core.utils.eclipse" />
-     </Match>
-     <Match>
-       <Package name="org.bndtools.core.utils.jface" />
-     </Match>
-     <Match>
-       <Package name="org.bndtools.core.utils.parse" />
-     </Match>
-     <Match>
-       <Package name="org.bndtools.core.utils.parse.properties" />
-     </Match>
-     <Match>
-       <Package name="org.bndtools.core.utils.resources" />
-     </Match>
-     <Match>
-       <Package name="org.bndtools.core.utils.swt" />
-     </Match>
-     <Match>
-       <Package name="org.bndtools.core.utils.workspace" />
-     </Match>
-     <Match>
        <Package name="org.bndtools.core.views.jpm" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.collections" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.dnd" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.eclipse" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.jar" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.jdt" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.jface" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.log" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.osgi" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.parse" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.parse.properties" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.repos" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.resources" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.swt" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.workspace" />
      </Match>
      <Match>
        <Package name="test.bndtools.bndplugins.repo.git" />
