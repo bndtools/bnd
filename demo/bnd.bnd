@@ -25,11 +25,13 @@ Import-Package: \
 	*
 
 -buildpath: osgi.core,\
-	ee.minimum;version=1.2.1,\
+	ee.j2se;version=1.5.0,\
 	junit.osgi
 	
-javac.target=1.4
-javac.source=1.4
+javac.target=1.5
+javac.source=1.5
 
 -runtrace: true
 -runee: JavaSE-1.6
+
+Bundle-Version: 1.1.0
