@@ -591,7 +591,7 @@ public class Launcher implements ServiceListener {
 			systemBundle.waitForStop(parms.timeout);
 
 			ThreadGroup group = Thread.currentThread().getThreadGroup();
-			Thread[] threads = new Thread[20000];
+			Thread[] threads = new Thread[group.activeCount()+100];
 			group.enumerate(threads);
 			{
 				for (Thread t : threads) {
