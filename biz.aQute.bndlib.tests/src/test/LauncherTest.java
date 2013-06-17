@@ -167,6 +167,7 @@ public class LauncherTest extends TestCase {
 	static Project getProject() throws Exception {
 		Workspace workspace = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile());
 		Project project = workspace.getProject("demo");
+		project.clear();
 		return project;
 	}
 
@@ -209,14 +210,38 @@ public class LauncherTest extends TestCase {
 		assertEquals(ProjectLauncher.TIMEDOUT, l.launch());
 	}
 
+	/**
+	 * Allowing Runnable and Callable, with Callable as priority
+	 * 
+	 * @throws Exception
+	 */
 	public static void testMainThread() throws Exception {
+		assertExitCode("main.thread", ProjectLauncher.OK);
+	}
+	
+	public static void testMainThreadBoth() throws Exception {
+		assertExitCode("main.thread.both", 43);
+	}
+	
+	public static void testMainThreadCallableNull() throws Exception {
+		assertExitCode("main.thread.callablenull", 0);
+	}
+	
+	public static void testMainThreadInvalidType() throws Exception {
+		assertExitCode("main.thread.callableinvalidtype", 0);
+	}
+	public static void testMainThreadCallable() throws Exception {
+		assertExitCode("main.thread.callable", 42);
+	}
+
+	private static void assertExitCode(String cmd, int rv) throws Exception {
 		Project project = getProject();
 		project.clear();
 
 		ProjectLauncher l = project.getProjectLauncher();
-		l.setTimeout(10000, TimeUnit.MILLISECONDS);
-		l.setTrace(false);
-		l.getRunProperties().put("test.cmd", "main.thread");
-		assertEquals(ProjectLauncher.OK, l.launch());
+		l.setTimeout(5000, TimeUnit.MILLISECONDS);
+		l.setTrace(true);
+		l.getRunProperties().put("test.cmd", cmd);
+		assertEquals(rv, l.launch());
 	}
 }

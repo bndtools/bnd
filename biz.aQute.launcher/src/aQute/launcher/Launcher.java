@@ -8,6 +8,8 @@ import java.net.*;
 import java.security.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 import java.util.regex.*;
 
 import org.osgi.framework.*;
@@ -34,54 +36,67 @@ public class Launcher implements ServiceListener {
 	private final Properties			properties;
 	private boolean						security;
 	private SimplePermissionPolicy		policy;
-	private Runnable					mainThread;
+	private Callable<Integer>			mainThread;
 	private PackageAdmin				padmin;
-	private final List<BundleActivator>	embedded			= new ArrayList<BundleActivator>();
-	private final Map<Bundle,Throwable>	errors				= new HashMap<Bundle,Throwable>();
-	private final Map<File,Bundle>		installedBundles	= new LinkedHashMap<File,Bundle>();
-	private File						home				= new File(System.getProperty("user.home"));
-	private File						bnd					= new File(home, "bnd");
-	private List<Bundle>				wantsToBeStarted	= new ArrayList<Bundle>();
+	private final List<BundleActivator>	embedded							= new ArrayList<BundleActivator>();
+	private final Map<Bundle,Throwable>	errors								= new HashMap<Bundle,Throwable>();
+	private final Map<File,Bundle>		installedBundles					= new LinkedHashMap<File,Bundle>();
+	private File						home								= new File(System.getProperty("user.home"));
+	private File						bnd									= new File(home, "bnd");
+	private List<Bundle>				wantsToBeStarted					= new ArrayList<Bundle>();
+	AtomicBoolean						active								= new AtomicBoolean();
 
 	public static void main(String[] args) {
 		try {
-			final InputStream in;
-			final File propertiesFile;
-
-			String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
-			if (path != null) {
-				Matcher matcher = Pattern.compile("^([\"'])(.*)\\1$").matcher(path);
-				if (matcher.matches()) {
-					path = matcher.group(2);
-				}
-
-				propertiesFile = new File(path).getAbsoluteFile();
-				if (!propertiesFile.isFile())
-					errorAndExit("Specified launch file `%s' was not found - absolutePath='%s'", path, propertiesFile.getAbsolutePath());
-				in = new FileInputStream(propertiesFile);
-			} else {
-				propertiesFile = null;
-				in = Launcher.class.getClassLoader().getResourceAsStream(DEFAULT_LAUNCHER_PROPERTIES);
-				if (in == null) {
-					printUsage();
-					errorAndExit("Launch file not specified, and no embedded properties found.");
-				}
-			}
-
-			Properties properties = new Properties();
+			int exitcode = 0;
 			try {
-				properties.load(in);
+				final InputStream in;
+				final File propertiesFile;
+
+				String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
+				if (path != null) {
+					Matcher matcher = Pattern.compile("^([\"'])(.*)\\1$").matcher(path);
+					if (matcher.matches()) {
+						path = matcher.group(2);
+					}
+
+					propertiesFile = new File(path).getAbsoluteFile();
+					if (!propertiesFile.isFile())
+						errorAndExit("Specified launch file `%s' was not found - absolutePath='%s'", path,
+								propertiesFile.getAbsolutePath());
+					in = new FileInputStream(propertiesFile);
+				} else {
+					propertiesFile = null;
+					in = Launcher.class.getClassLoader().getResourceAsStream(DEFAULT_LAUNCHER_PROPERTIES);
+					if (in == null) {
+						printUsage();
+						errorAndExit("Launch file not specified, and no embedded properties found.");
+					}
+				}
+
+				Properties properties = new Properties();
+				try {
+					properties.load(in);
+				}
+				finally {
+					if (in != null)
+						in.close();
+				}
+				Launcher target = new Launcher(properties, propertiesFile);
+				exitcode = target.run(args);
 			}
-			finally {
-				if (in != null)
-					in.close();
+			catch (Throwable t) {
+				exitcode = 127;
+				// Last resort ... errors should be handled lower
+				t.printStackTrace(System.err);
 			}
-			Launcher target = new Launcher(properties, propertiesFile);
-			target.run(args);
+
+			// We exit, even if there are non-daemon threads active
+			// though we've reported those
+			System.exit(exitcode);
 		}
-		catch (Throwable t) {
-			// Last resort ... errors should be handled lower
-			t.printStackTrace(System.err);
+		finally {
+			System.out.println("gone");
 		}
 	}
 
@@ -91,7 +106,7 @@ public class Launcher implements ServiceListener {
 
 	private static void errorAndExit(String message, Object... args) {
 		System.err.println(String.format(message, args));
-		System.exit(1);
+		System.exit(ERROR);
 	}
 
 	public Launcher(Properties properties, final File propertiesFile) throws Exception {
@@ -136,11 +151,11 @@ public class Launcher implements ServiceListener {
 					}
 				}
 			};
-			new Timer().scheduleAtFixedRate(watchdog, 5000, 1000);
+			new Timer(true).scheduleAtFixedRate(watchdog, 5000, 1000);
 		}
 	}
 
-	private void run(String args[]) throws Throwable {
+	private int run(String args[]) throws Throwable {
 		try {
 			int status = activate();
 			if (status != 0) {
@@ -172,16 +187,19 @@ public class Launcher implements ServiceListener {
 					wait();
 				}
 			}
-			trace("Will run %s as main thread", mainThread);
-			mainThread.run();
+			trace("will call main");
+			Integer exitCode = mainThread.call();
+			trace("main return, code " + exitCode);
+			return exitCode == null ? 0 : exitCode;
 		}
 		catch (Throwable e) {
 			error("Unexpected error in the run body: %s", e);
 			throw e;
 		}
 		finally {
-			systemBundle.stop();
+			deactivate();
 			trace("stopped system bundle due to leaving run body");
+			// TODO should we wait here?
 		}
 	}
 
@@ -198,6 +216,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	public int activate() throws Exception {
+		active.set(true);
 		Policy.setPolicy(new AllPolicy());
 
 		systemBundle = createFramework();
@@ -219,7 +238,8 @@ public class Launcher implements ServiceListener {
 		} else
 			trace("could not get package admin");
 
-		systemContext.addServiceListener(this, "(&(objectclass=java.lang.Runnable)(main.thread=true))");
+		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
+				+ Callable.class.getName() + "))(main.thread=true))");
 
 		// Start embedded activators
 		trace("start embedded activators");
@@ -389,18 +409,19 @@ public class Launcher implements ServiceListener {
 	}
 
 	/**
-	 * Convert a path to native when it contains a macro. This is needed
-	 * for the jpm option since it stores the paths with a macro in the JAR
-	 * through the packager. This path is platform independent and must therefore
-	 * be translated to the executing platform. if no macro is present, we assume
+	 * Convert a path to native when it contains a macro. This is needed for the
+	 * jpm option since it stores the paths with a macro in the JAR through the
+	 * packager. This path is platform independent and must therefore be
+	 * translated to the executing platform. if no macro is present, we assume
 	 * the path is already native.
+	 * 
 	 * @param s
 	 * @return
 	 */
 	private String toNativePath(String s) {
-		if( !s.contains("${"))
+		if (!s.contains("${"))
 			return s;
-		
+
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
@@ -410,20 +431,20 @@ public class Launcher implements ServiceListener {
 					break;
 
 				case '$' :
-					if (s.length() -3 > i) {
+					if (s.length() - 3 > i) {
 						char rover = s.charAt(++i);
-						if ( rover == '{') {
+						if (rover == '{') {
 							rover = s.charAt(++i);
 							StringBuilder var = new StringBuilder();
-							while ( i < s.length() - 1 && rover != '}' ) {
+							while (i < s.length() - 1 && rover != '}') {
 								var.append(rover);
 								rover = s.charAt(++i);
 							}
 							String key = var.toString();
 							String value = System.getProperty(key);
-							if ( value == null)
+							if (value == null)
 								value = System.getenv(key);
-							if ( value != null)
+							if (value != null)
 								sb.append(value);
 							else
 								sb.append("${").append(key).append("}");
@@ -432,9 +453,9 @@ public class Launcher implements ServiceListener {
 					} else
 						sb.append('$');
 					break;
-					
+
 				case '\\' :
-					if (s.length() -1 > i)
+					if (s.length() - 1 > i)
 						sb.append(s.charAt(++i));
 					break;
 
@@ -501,13 +522,19 @@ public class Launcher implements ServiceListener {
 			public void run() {
 				try {
 					FrameworkEvent result = systemBundle.waitForStop(parms.timeout);
+					if (!active.get()) {
+						trace("ignoring timeout handler because framework is already no longer active, shutdown is orderly handled");
+						return;
+					}
+
 					trace("framework event " + result + " " + result.getType());
-					Thread.sleep(1000);
 					switch (result.getType()) {
 						case FrameworkEvent.STOPPED :
-							System.exit(LauncherConstants.OK);
+							trace("framework event stopped");
 							break;
+
 						case FrameworkEvent.WAIT_TIMEDOUT :
+							trace("framework event timedout");
 							System.exit(LauncherConstants.TIMEDOUT);
 							break;
 
@@ -521,6 +548,7 @@ public class Launcher implements ServiceListener {
 
 						case FrameworkEvent.STOPPED_BOOTCLASSPATH_MODIFIED :
 						case FrameworkEvent.STOPPED_UPDATE :
+							trace("framework event update");
 							System.exit(UPDATE_NEEDED);
 							break;
 					}
@@ -528,13 +556,11 @@ public class Launcher implements ServiceListener {
 				catch (InterruptedException e) {
 					System.exit(CANCELED);
 				}
-				finally {
-					System.err.println("System exiting due to timeout of " + parms.timeout);
-				}
 			}
 		};
 		wait.start();
 	}
+	
 
 	private void doSecurity() {
 		try {
@@ -560,10 +586,22 @@ public class Launcher implements ServiceListener {
 	}
 
 	public void deactivate() throws Exception {
-		if (systemBundle != null) {
+		if (active.getAndSet(false)) {
 			systemBundle.stop();
 			systemBundle.waitForStop(parms.timeout);
-		}
+
+			ThreadGroup group = Thread.currentThread().getThreadGroup();
+			Thread[] threads = new Thread[20000];
+			group.enumerate(threads);
+			{
+				for (Thread t : threads) {
+					if (t != null && !t.isDaemon() && t.isAlive()) {
+						trace("alive thread " + t);
+					}
+				}
+			}
+		} else
+			errorAndExit("Huh? Already deactivated.");
 	}
 
 	public void addSystemPackage(String packageName) {
@@ -950,9 +988,48 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
+	/**
+	 * Monitor the services. If a service is registered with the
+	 * {@code main.thread} property then check if it is a {@code Runnable}
+	 * (priority for backward compatibility) or a {@code Callable<Integer>}. If
+	 * so, we set it as the main thread runner and call it once the
+	 * initialization is all done.
+	 */
+
+	@SuppressWarnings("unchecked")
 	public synchronized void serviceChanged(ServiceEvent event) {
 		if (event.getType() == ServiceEvent.REGISTERED) {
-			mainThread = (Runnable) systemBundle.getBundleContext().getService(event.getServiceReference());
+			final Object service = systemBundle.getBundleContext().getService(event.getServiceReference());
+			String[] objectclasses = (String[]) event.getServiceReference().getProperty(Constants.OBJECTCLASS);
+
+			// This looks a bit more complicated than necessary but for backward
+			// compatibility reasons we require the Callable or Runnable to be
+			// registered as such. Under that condition, we prefer the Callable.
+
+			for (String objectclass : objectclasses) {
+				if (Callable.class.getName().equals(objectclass)) {
+					Method m;
+					try {
+						m = service.getClass().getMethod("call");
+						if (m.getReturnType() != Integer.class)
+							throw new IllegalArgumentException("Found a main thread service which is Callable<"
+									+ m.getReturnType().getName() + "> which should be Callable<Integer> "
+									+ event.getServiceReference());
+						mainThread = (Callable<Integer>) service;
+					}
+					catch (NoSuchMethodException e) {
+						assert false;
+					}
+				}
+			}
+			if (mainThread == null) {
+				mainThread = new Callable<Integer>() {
+					public Integer call() throws Exception {
+						((Runnable) service).run();
+						return 0;
+					}
+				};
+			}
 			notifyAll();
 		}
 	}

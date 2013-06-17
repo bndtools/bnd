@@ -1,6 +1,7 @@
 package test;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 import org.osgi.framework.*;
 
@@ -27,6 +28,66 @@ public class TestActivator implements BundleActivator {
 			Properties props = new Properties();
 			props.setProperty("main.thread", "true");
 			context.registerService(Runnable.class.getName(), r, props);
+		} else if ("main.thread.callable".equals(p)) {
+			Callable<Integer> r = new Callable<Integer>() {
+
+				public Integer call() throws Exception {
+					System.err.println("Running in main");
+					return 42;
+				}
+
+			};
+			Properties props = new Properties();
+			props.setProperty("main.thread", "true");
+			context.registerService(Callable.class.getName(), r, props);
+		} else if ("main.thread.both".equals(p)) {
+			class Both implements Callable<Integer>, Runnable {
+
+				public void run() {
+					throw new RuntimeException("Wrong, really wrong. The callable has preference");
+				}
+
+				public Integer call() throws Exception {
+					return 43;
+				}
+
+			}
+			Both r = new Both();
+			Properties props = new Properties();
+			props.setProperty("main.thread", "true");
+			context.registerService(new String[] {
+					Runnable.class.getName(), Callable.class.getName()
+			}, r, props);
+		} else if ("main.thread.callableinvalidtype".equals(p)) {
+			Callable<Double> r = new Callable<Double>() {
+
+				public Double call() throws Exception {
+					System.exit(44); // really wrong
+					return 44D;
+				}
+
+			};
+			Properties props = new Properties();
+			props.setProperty("main.thread", "true");
+			context.registerService(Callable.class.getName(), r, props);
+			
+			// Give the launcher some time to finish
+			// printing the report. etc.
+			Thread.sleep(1000);
+			System.exit(0);
+		} else if ("main.thread.callablenull".equals(p)) {
+			Callable<Integer> r = new Callable<Integer>() {
+
+				public Integer call() throws Exception {
+					System.err.println("In main, return null");
+					return null;
+				}
+
+			};
+			Properties props = new Properties();
+			props.setProperty("main.thread", "true");
+			context.registerService(Callable.class.getName(), r, props);
+			// throws exception ...
 		}
 
 		System.err.println("Done " + p);
