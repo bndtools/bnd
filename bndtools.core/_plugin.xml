@@ -755,7 +755,7 @@
 
 	<extension point="bndtools.core.projectTemplates">
 		<template name="Empty Project" priority="-1000" category="AAA/Core"
-			class="bndtools.api.EmptyTemplate" doc="html/emptyTemplate.html"
+			class="org.bndtools.api.EmptyTemplate" doc="html/emptyTemplate.html"
 			icon="icons/template_empty.gif" />
 	</extension>
 
