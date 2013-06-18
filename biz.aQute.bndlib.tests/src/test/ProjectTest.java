@@ -14,10 +14,10 @@ import aQute.lib.deployer.*;
 import aQute.lib.io.*;
 
 public class ProjectTest extends TestCase {
-	
+
 	/**
-	 * Two subsequent builds should not change the last modified if none of
-	 * the source inputs have been modified. 
+	 * Two subsequent builds should not change the last modified if none of the
+	 * source inputs have been modified.
 	 * 
 	 * @throws Exception
 	 */
@@ -28,73 +28,77 @@ public class ProjectTest extends TestCase {
 		tmp.mkdir();
 		assertTrue(tmp.isDirectory());
 		try {
-		IO.copy(new File("test/ws"), tmp);
-		
-		Workspace ws = Workspace.getWorkspace(tmp);
-		Project project = ws.getProject("p6");
-		File bnd = new File("test/ws/p6/bnd.bnd");
-		assertTrue(bnd.exists());
+			IO.copy(new File("test/ws"), tmp);
 
-		project.clean();
-		File pt = project.getTarget();
-		if (!pt.exists() && !pt.mkdirs()) {
-			throw new IOException("Could not create directory " + pt);
-		}
-		try {
-			// Now we build it.
-			File[] files = project.build();
-			assertTrue(project.check());
-			assertNotNull(files);
-			assertEquals(1, files.length);
+			Workspace ws = Workspace.getWorkspace(tmp);
+			Project project = ws.getProject("p6");
+			File bnd = new File("test/ws/p6/bnd.bnd");
+			assertTrue(bnd.exists());
 
-			Jar older = new Jar(files[0]);
-			byte[] olderDigest = older.getTimelessDigest();
-			older.close();
-			System.out.println();
-			Thread.sleep(3000); // Ensure system time granularity is < than wait
+			project.clean();
+			File pt = project.getTarget();
+			if (!pt.exists() && !pt.mkdirs()) {
+				throw new IOException("Could not create directory " + pt);
+			}
+			try {
+				// Now we build it.
+				File[] files = project.build();
+				assertTrue(project.check());
+				assertNotNull(files);
+				assertEquals(1, files.length);
 
-			files[0].delete();
-			
-			project.build();
-			assertTrue(project.check());
-			assertNotNull(files);
-			assertEquals(1, files.length);
-			
-			Jar newer = new Jar(files[0]);
-			byte[] newerDigest = newer.getTimelessDigest();
-			newer.close();
-			
-			assertTrue(Arrays.equals(olderDigest,newerDigest));
+				Jar older = new Jar(files[0]);
+				byte[] olderDigest = older.getTimelessDigest();
+				older.close();
+				System.out.println();
+				Thread.sleep(3000); // Ensure system time granularity is < than
+									// wait
+
+				files[0].delete();
+
+				project.build();
+				assertTrue(project.check());
+				assertNotNull(files);
+				assertEquals(1, files.length);
+
+				Jar newer = new Jar(files[0]);
+				byte[] newerDigest = newer.getTimelessDigest();
+				newer.close();
+
+				assertTrue(Arrays.equals(olderDigest, newerDigest));
+			}
+			finally {
+				project.clean();
+			}
 		}
 		finally {
-			project.clean();
-		}
-		} finally {
 			IO.delete(tmp);
 		}
 	}
-	
+
 	/**
 	 * #194 StackOverflowError when -runbundles in bnd.bnd refers to itself
 	 */
-	
+
 	public static void testProjectReferringToItself() throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project top = ws.getProject("bug194");
 		top.addClasspath(top.getOutput());
 		assertTrue(top.check("Circular dependency context"));
 	}
+
 	/**
-	 * Test if you can add directories and files to the
-	 * classpath. Originally checked only for files
+	 * Test if you can add directories and files to the classpath. Originally
+	 * checked only for files
 	 */
-	
+
 	public static void testAddDirToClasspath() throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project top = ws.getProject("p1");
 		top.addClasspath(top.getOutput());
 		assertTrue(top.check());
 	}
+
 	/**
 	 * Test bnd.bnd of project `foo`: `-runbundles: foo;version=latest`
 	 */
@@ -195,13 +199,14 @@ public class ProjectTest extends TestCase {
 	public static void testMultipleRepos() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p1");
-		
+
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.EXACT, null));
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.HIGHEST, null));
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.LOWEST, null));
-		
-		List<Container> bundles = project.getBundles(Strategy.LOWEST, "org.apache.felix.configadmin;version=1.1.0,org.apache.felix.configadmin;version=1.1.0", "test");
-		assertTrue( project.check("Multiple bundles with the same final URL"));
+
+		List<Container> bundles = project.getBundles(Strategy.LOWEST,
+				"org.apache.felix.configadmin;version=1.1.0,org.apache.felix.configadmin;version=1.1.0", "test");
+		assertTrue(project.check("Multiple bundles with the same final URL"));
 		assertEquals(1, bundles.size());
 	}
 
@@ -210,33 +215,41 @@ public class ProjectTest extends TestCase {
 	 */
 
 	public static void testSubBuilders() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
-		Project project = ws.getProject("p4-sub");
+		File tmp = new File("tmp");
+		tmp.mkdirs();
+		try {
+			IO.copy(new File("test/ws"), tmp);
+			Workspace ws = Workspace.getWorkspace(tmp);
+			Project project = ws.getProject("p4-sub");
 
-		Collection< ? extends Builder> bs = project.getSubBuilders();
-		assertNotNull(bs);
-		assertEquals(3, bs.size());
-		Set<String> names = new HashSet<String>();
-		for (Builder b : bs) {
-			names.add(b.getBsn());
+			Collection< ? extends Builder> bs = project.getSubBuilders();
+			assertNotNull(bs);
+			assertEquals(3, bs.size());
+			Set<String> names = new HashSet<String>();
+			for (Builder b : bs) {
+				names.add(b.getBsn());
+			}
+			assertTrue(names.contains("p4-sub.a"));
+			assertTrue(names.contains("p4-sub.b"));
+			assertTrue(names.contains("p4-sub.c"));
+
+			File[] files = project.build();
+			assertTrue(project.check());
+
+			System.err.println(Processor.join(project.getErrors(), "\n"));
+			System.err.println(Processor.join(project.getWarnings(), "\n"));
+			assertEquals(0, project.getErrors().size());
+			assertEquals(0, project.getWarnings().size());
+			assertNotNull(files);
+			assertEquals(3, files.length);
+			for (File file : files) {
+				Jar jar = new Jar(file);
+				Manifest m = jar.getManifest();
+				assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
+			}
 		}
-		assertTrue(names.contains("p4-sub.a"));
-		assertTrue(names.contains("p4-sub.b"));
-		assertTrue(names.contains("p4-sub.c"));
-
-		File[] files = project.build();
-		assertTrue(project.check());
-
-		System.err.println(Processor.join(project.getErrors(), "\n"));
-		System.err.println(Processor.join(project.getWarnings(), "\n"));
-		assertEquals(0, project.getErrors().size());
-		assertEquals(0, project.getWarnings().size());
-		assertNotNull(files);
-		assertEquals(3, files.length);
-		for (File file : files) {
-			Jar jar = new Jar(file);
-			Manifest m = jar.getManifest();
-			assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
+		finally {
+			IO.deleteWithException(tmp);
 		}
 	}
 
@@ -457,7 +470,7 @@ public class ProjectTest extends TestCase {
 			Project project = ws.getProject("p5");
 			project.setTrace(true);
 
-			Version newVersion = new Version(2,0,0);
+			Version newVersion = new Version(2, 0, 0);
 
 			// Package with no package info
 			project.setPackageInfo("pkg1", newVersion);
@@ -471,13 +484,15 @@ public class ProjectTest extends TestCase {
 			assertEquals(newVersion, version);
 			checkPackageInfoFiles(project, "pkg2", false, true);
 
-			// Package with package-info.java containing @aQute.bnd.annotations.Version("1.0.0")
+			// Package with package-info.java containing
+			// @aQute.bnd.annotations.Version("1.0.0")
 			project.setPackageInfo("pkg3", newVersion);
 			version = project.getPackageInfo("pkg3");
 			assertEquals(newVersion, version);
 			checkPackageInfoFiles(project, "pkg3", false, true);
 
-			// Package with package-info.java containing @aQute.bnd.annotations.Version(value="1.0.0")
+			// Package with package-info.java containing
+			// @aQute.bnd.annotations.Version(value="1.0.0")
 			project.setPackageInfo("pkg4", newVersion);
 			version = project.getPackageInfo("pkg4");
 			assertEquals(newVersion, version);
@@ -489,7 +504,8 @@ public class ProjectTest extends TestCase {
 			assertEquals(newVersion, version);
 			checkPackageInfoFiles(project, "pkg5", true, true);
 
-			// Package with package-info.java NOT containing version + packageinfo
+			// Package with package-info.java NOT containing version +
+			// packageinfo
 			project.setPackageInfo("pkg6", newVersion);
 			version = project.getPackageInfo("pkg6");
 			assertEquals(newVersion, version);
@@ -501,7 +517,7 @@ public class ProjectTest extends TestCase {
 			assertEquals(newVersion, version);
 			checkPackageInfoFiles(project, "pkg7", true, true);
 
-			newVersion = new Version(2,2,0);
+			newVersion = new Version(2, 2, 0);
 
 			// Update packageinfo file
 			project.setPackageInfo("pkg1", newVersion);
@@ -515,22 +531,39 @@ public class ProjectTest extends TestCase {
 		}
 	}
 
-	private static void checkPackageInfoFiles(Project project, String packageName, boolean expectPackageInfo, boolean expectPackageInfoJava) throws Exception {
+	private static void checkPackageInfoFiles(Project project, String packageName, boolean expectPackageInfo,
+			boolean expectPackageInfoJava) throws Exception {
 		File pkgInfo = IO.getFile(project.getSrc(), packageName + "/packageinfo");
 		File pkgInfoJava = IO.getFile(project.getSrc(), packageName + "/package-info.java");
 		assertEquals(expectPackageInfo, pkgInfo.exists());
 		assertEquals(expectPackageInfoJava, pkgInfoJava.exists());
 	}
-	
+
 	public static void testBuildAll() throws Exception {
-		assertTrue(testBuildAll("*", 15).check()); //there are 14 projects
-		assertTrue(testBuildAll("p*", 9).check()); //7 begin with p, plus build-all
-		assertTrue(testBuildAll("!p*, *", 6).check()); // negation: 6 don't begin with p, including build-all
-		assertTrue(testBuildAll("*-*", 7).check()); //more than one wildcard: 7 have a dash
-		assertTrue(testBuildAll("!p*, p1, *", 6).check("Missing dependson p1")); //check that an unused instruction is an error
-		assertTrue(testBuildAll("p*, !*-*, *", 12).check()); // check that negation works after some projects have been selected.
+		assertTrue(testBuildAll("*", 15).check()); // there are 14 projects
+		assertTrue(testBuildAll("p*", 9).check()); // 7 begin with p, plus
+													// build-all
+		assertTrue(testBuildAll("!p*, *", 6).check()); // negation: 6 don't
+														// begin with p,
+														// including build-all
+		assertTrue(testBuildAll("*-*", 7).check()); // more than one wildcard: 7
+													// have a dash
+		assertTrue(testBuildAll("!p*, p1, *", 6).check("Missing dependson p1")); // check
+																					// that
+																					// an
+																					// unused
+																					// instruction
+																					// is
+																					// an
+																					// error
+		assertTrue(testBuildAll("p*, !*-*, *", 12).check()); // check that
+																// negation
+																// works after
+																// some projects
+																// have been
+																// selected.
 	}
-	
+
 	private static Project testBuildAll(String dependsOn, int count) throws Exception {
 		Workspace ws = new Workspace(new File("test/ws"));
 		Project all = ws.getProject("build-all");
