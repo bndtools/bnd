@@ -94,6 +94,7 @@
             filenames="packageinfo"
             id="bndtools.packageInfoEditor"
             name="Package Info Editor"
+            icon="icons/information.gif"
       />
    </extension>
    <extension
