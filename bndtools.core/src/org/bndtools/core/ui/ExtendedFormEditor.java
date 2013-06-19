@@ -10,6 +10,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 /**
  * A {@link FormPage} that allows updating of tab titles, images and overlay images.
@@ -17,6 +18,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  * @author Neil Bartlett
  */
 public abstract class ExtendedFormEditor extends FormEditor {
+
+    private ITextEditor sourcePage;
 
     private ImageDescriptor baseImageDescriptor;
     private Image titleImage;
@@ -94,6 +97,14 @@ public abstract class ExtendedFormEditor extends FormEditor {
         Image image = page.getTitleImage();
         if (image != null)
             setPageImage(index, page.getTitleImage());
+    }
+
+    public ITextEditor getSourcePage() {
+        return sourcePage;
+    }
+
+    protected void setSourcePage(ITextEditor sourcePage) {
+        this.sourcePage = sourcePage;
     }
 
 }

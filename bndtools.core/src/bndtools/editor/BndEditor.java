@@ -89,15 +89,16 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     public static final String WORKSPACE_EDITOR = "bndtools.bndWorkspaceConfigEditor";
 
-    static final String WORKSPACE_PAGE = "__workspace_page";
-    static final String WORKSPACE_EXT_PAGE = "__workspace_ext_page";
-    static final String DESCRIPTION_PAGE = "__description_page";
-    static final String CONTENT_PAGE = "__content_page";
-    static final String BUILD_PAGE = "__build_page";
-    static final String PROJECT_RUN_PAGE = "__project_run_page";
-    static final String BNDRUN_PAGE = "__bndrun_page";
-    static final String TEST_SUITES_PAGE = "__test_suites_page";
-    static final String SOURCE_PAGE = "__source_page";
+    public static final String SOURCE_PAGE = "__source_page";
+
+    public static final String CONTENT_PAGE = "__content_page";
+    public static final String WORKSPACE_PAGE = "__workspace_page";
+    public static final String WORKSPACE_EXT_PAGE = "__workspace_ext_page";
+    public static final String DESCRIPTION_PAGE = "__description_page";
+    public static final String BUILD_PAGE = "__build_page";
+    public static final String PROJECT_RUN_PAGE = "__project_run_page";
+    public static final String BNDRUN_PAGE = "__bndrun_page";
+    public static final String TEST_SUITES_PAGE = "__test_suites_page";
 
     private final Map<String,IFormPageFactory> pageFactories = new LinkedHashMap<String,IFormPageFactory>();
 
@@ -429,6 +430,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
         sourcePage.init(site, input);
+
+        setSourcePage(sourcePage);
 
         setPartNameForInput(input);
 

@@ -1,12 +1,16 @@
 package bndtools.editor.pages;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.build.api.BuildErrorDetailsHandler;
+import org.bndtools.build.api.BuildErrorDetailsHandlers;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.core.resources.IMarker;
@@ -16,7 +20,10 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
@@ -36,9 +43,11 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
+import bndtools.editor.BndEditor;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.project.BuildOperationsPart;
@@ -56,7 +65,8 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
     private final ImageDescriptor imgErrorOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/error_co.gif");
     private final ImageDescriptor imgWarningOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_co.gif");
 
-    private final Map<String,Integer> messageMap = new LinkedHashMap<String,Integer>();
+    private final Map<String,Integer> messageSeverityMap = new LinkedHashMap<String,Integer>();
+    private final Map<String,IAction[]> messageFixesMap = new HashMap<String,IAction[]>();
     private int problemSeverity = 0;
 
     private Image pageImage = null;
@@ -145,7 +155,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
     void loadProblems() {
         IResource resource = ResourceUtil.getResource(getEditorInput());
         problemSeverity = 0;
-        messageMap.clear();
+        messageSeverityMap.clear();
 
         if (resource != null) {
             try {
@@ -180,10 +190,44 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
             int severity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
             String message = marker.getAttribute(IMarker.MESSAGE, "");
 
-            messageMap.put(message, severity);
+            messageSeverityMap.put(message, severity);
+
+            generateFixes(message, marker);
 
             problemSeverity = Math.max(problemSeverity, severity);
         }
+    }
+
+    // look for available quick-fixes from the bnd build error details
+    private void generateFixes(String message, IMarker marker) {
+        boolean fixable = marker.getAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, false);
+        if (!fixable)
+            return;
+
+        ITextEditor sourcePage = editor.getSourcePage();
+        if (sourcePage == null)
+            return;
+        IDocument document = sourcePage.getDocumentProvider().getDocument(getEditorInput());
+
+        String type = marker.getAttribute("$bndType", (String) null);
+        if (type == null)
+            return;
+
+        BuildErrorDetailsHandler handler = BuildErrorDetailsHandlers.INSTANCE.findHandler(type);
+        if (handler == null)
+            return;
+
+        List<ICompletionProposal> proposals = handler.getProposals(marker);
+        if (proposals.isEmpty())
+            return;
+
+        IAction[] fixes = new IAction[proposals.size()];
+
+        int i = 0;
+        for (ICompletionProposal proposal : proposals)
+            fixes[i++] = new ApplyCompletionProposalAction(proposal, editor.getSourcePage(), editor, BndEditor.SOURCE_PAGE);
+
+        messageFixesMap.put(message, fixes);
     }
 
     void reportProblemsInHeader() {
@@ -194,12 +238,13 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         IMessageManager manager = mform.getMessageManager();
         manager.removeMessages();
 
-        for (Entry<String,Integer> entry : messageMap.entrySet()) {
-            int mappedSeverity = entry.getValue() + 1; // severities in
-                                                       // IMessageProvider are
-                                                       // 1 higher than in
-                                                       // IMarker
-            manager.addMessage(entry.getKey(), entry.getKey(), null, mappedSeverity);
+        for (Entry<String,Integer> entry : messageSeverityMap.entrySet()) {
+            // severities in IMessageProvider are 1 higher than in IMarker
+            int mappedSeverity = entry.getValue() + 1;
+
+            IAction[] fixes = messageFixesMap.get(entry.getKey()); // may be null
+
+            manager.addMessage(entry.getKey(), entry.getKey(), fixes, mappedSeverity);
         }
     }
 
