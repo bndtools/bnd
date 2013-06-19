@@ -196,7 +196,7 @@ public class JustAnotherPackageManager {
 	public void gc() throws Exception {
 		HashSet<byte[]> deps = new HashSet<byte[]>();
 
-		//deps.add(SERVICE_JAR_FILE);
+		// deps.add(SERVICE_JAR_FILE);
 
 		for (File cmd : commandDir.listFiles()) {
 			CommandData data = getData(CommandData.class, cmd);
@@ -768,7 +768,7 @@ public class JustAnotherPackageManager {
 			byte[] sha = SHA1.digest(tmp).digest();
 			reporter.trace("SHA %s %s", uri, Hex.toHexString(sha));
 			ArtifactData existing = get(sha);
-			if ( existing != null) {
+			if (existing != null) {
 				xcopy(existing, data);
 				return;
 			}
@@ -778,13 +778,13 @@ public class JustAnotherPackageManager {
 			reporter.trace("file %s", file);
 			data.file = file.getAbsolutePath();
 			data.sha = sha;
-			
+
 			CommandData cmddata = parseCommandData(data);
-			if ( cmddata.bsn != null) {
+			if (cmddata.bsn != null) {
 				data.name = cmddata.bsn + "-" + cmddata.version;
 			} else
 				data.name = Strings.display(cmddata.title, cmddata.bsn, cmddata.name, uri);
-			
+
 			codec.enc().to(meta).put(data);
 			reporter.trace("TD = " + data);
 		}
@@ -896,35 +896,24 @@ public class JustAnotherPackageManager {
 		return data;
 	}
 
-	public ArtifactData getCandidateAsync(String coordinate) throws Exception {
-		// Try to find locally
-		reporter.trace("coordinate = %s", coordinate);
-		Matcher matcher = SHA_P.matcher(coordinate);
-		if (matcher.matches()) {
-			String sha = matcher.group(1); 
-			reporter.trace("sha = %s", sha);
-			byte[] id = Hex.toByteArray(sha);
-			ArtifactData r = get(id);
-			if (r != null)
-				return r;
-		} else if (isUrl(coordinate)) {
+	public ArtifactData getCandidateAsync(String arg) throws Exception {
+		if (isUrl(arg))
 			try {
-				return putAsync(new URI(coordinate));
+				return putAsync(new URI(arg));
 			}
 			catch (Exception e) {
-				reporter.trace("hmm, not a valid url %s, will try the server", coordinate);
+				reporter.trace("hmm, not a valid url %s, will try the server", arg);
 			}
-		} else {
-			Matcher m = COORD_P.matcher(coordinate);
-			if (m.matches() && m.group(1).equals(Library.SHA_GROUP)) {
-				byte[] id = Hex.toByteArray(m.group(2));
-				ArtifactData r = get(id);
-				if (r != null)
-					return r;
-			}
+			
+		Coordinate c = new Coordinate(arg);
+		
+		if (c.isSha()) {
+			ArtifactData r = get(c.getSha());
+			if (r != null)
+				return r;
 		}
-
-		Revision revision = library.getRevision(coordinate);
+		
+		Revision revision = library.getRevisionByCoordinate(c);
 		if (revision == null)
 			return null;
 
@@ -1118,45 +1107,47 @@ public class JustAnotherPackageManager {
 	public void listUpdates(List<UpdateMemo> notFound, List<UpdateMemo> upToDate, List<UpdateMemo> toUpdate,
 			CommandData data, boolean staged) throws Exception {
 
-//		UpdateMemo memo = new UpdateMemo();
-//		memo.current = data;
-//
-//		Matcher m = data.coordinates == null ? null : COORD_P.matcher(data.coordinates);
-//
-//		if (data.version == null || m == null || !m.matches()) {
-//			Revision revision = library.getRevision(data.sha);
-//			if (revision == null) {
-//				notFound.add(memo);
-//				return;
-//			}
-//			data.version = new Version(revision.version);
-//			data.coordinates = getCoordinates(revision);
-//			if (data instanceof ServiceData) {
-//				storeData(IO.getFile(new File(serviceDir, data.name), "data"), data);
-//			} else {
-//				storeData(IO.getFile(commandDir, data.name), data);
-//			}
-//		}
-//
-//		Iterable< ? extends Program> programs = library.getQueryPrograms(data.coordinates, 0, 0);
-//		int count = 0;
-//		RevisionRef best = null;
-//		for (Program p : programs) {
-//			// best = selectBest(p.revisions, staged, null);
-//			count++;
-//		}
-//		if (count != 1 || best == null) {
-//			notFound.add(memo);
-//			return;
-//		}
-//		Version bestVersion = new Version(best.version);
-//
-//		if (data.version.compareTo(bestVersion) < 0) { // Update available
-//			memo.best = best;
-//			toUpdate.add(memo);
-//		} else { // up to date
-//			upToDate.add(memo);
-//		}
+		// UpdateMemo memo = new UpdateMemo();
+		// memo.current = data;
+		//
+		// Matcher m = data.coordinates == null ? null :
+		// COORD_P.matcher(data.coordinates);
+		//
+		// if (data.version == null || m == null || !m.matches()) {
+		// Revision revision = library.getRevision(data.sha);
+		// if (revision == null) {
+		// notFound.add(memo);
+		// return;
+		// }
+		// data.version = new Version(revision.version);
+		// data.coordinates = getCoordinates(revision);
+		// if (data instanceof ServiceData) {
+		// storeData(IO.getFile(new File(serviceDir, data.name), "data"), data);
+		// } else {
+		// storeData(IO.getFile(commandDir, data.name), data);
+		// }
+		// }
+		//
+		// Iterable< ? extends Program> programs =
+		// library.getQueryPrograms(data.coordinates, 0, 0);
+		// int count = 0;
+		// RevisionRef best = null;
+		// for (Program p : programs) {
+		// // best = selectBest(p.revisions, staged, null);
+		// count++;
+		// }
+		// if (count != 1 || best == null) {
+		// notFound.add(memo);
+		// return;
+		// }
+		// Version bestVersion = new Version(best.version);
+		//
+		// if (data.version.compareTo(bestVersion) < 0) { // Update available
+		// memo.best = best;
+		// toUpdate.add(memo);
+		// } else { // up to date
+		// upToDate.add(memo);
+		// }
 	}
 
 	public void update(UpdateMemo memo) throws Exception {
@@ -1192,7 +1183,9 @@ public class JustAnotherPackageManager {
 		if (isUrl(coordinate)) {
 			return put(new URI(coordinate));
 		}
-		Revision revision = library.getRevision(coordinate);
+		Coordinate c = new Coordinate(coordinate);
+		
+		Revision revision = library.getRevisionByCoordinate(c);
 		if (revision == null)
 			return null;
 
@@ -1244,6 +1237,7 @@ public class JustAnotherPackageManager {
 			data.description = main.getValue("Bundle-Description");
 			data.title = main.getValue("JPM-Name");
 
+			reporter.trace("name " + data.name + " " + data.main + " " + data.title);
 			DependencyCollector path = new DependencyCollector(this);
 			path.add(artifact);
 			DependencyCollector bundles = new DependencyCollector(this);
@@ -1301,22 +1295,23 @@ public class JustAnotherPackageManager {
 	public void setUnderTest() {
 		underTest = true;
 	}
-	
+
 	/**
 	 * Turn the shas into a readable form
+	 * 
 	 * @param dependencies
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 
 	public List< ? > toString(List<byte[]> dependencies) throws Exception {
 		List<String> out = new ArrayList<String>();
-		for ( byte[] dependency : dependencies ) {
+		for (byte[] dependency : dependencies) {
 			ArtifactData data = get(dependency);
-			if ( data == null)
+			if (data == null)
 				out.add(Hex.toHexString(dependency));
 			else {
-				out.add( Strings.display(data.name, Hex.toHexString(dependency)) );
+				out.add(Strings.display(data.name, Hex.toHexString(dependency)));
 			}
 		}
 		return out;
