@@ -2,6 +2,7 @@ package bndtools.central;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.text.MessageFormat;
@@ -52,7 +53,7 @@ public class WorkspaceR5Repository implements Repository {
         for (IProject project : projects) {
             Project model = Workspace.getProject(project.getLocation().toFile());
             if (model != null) {
-                File targetDir = model.getTarget();
+                File targetDir = getTarget(model);
                 if (targetDir != null) {
                     File indexFile = new File(targetDir, ".index");
                     if (indexFile != null && indexFile.isFile()) {
@@ -61,6 +62,19 @@ public class WorkspaceR5Repository implements Repository {
                 }
             }
         }
+    }
+
+    // This is equivalent to Project.getTarget0(). It gets the target dir without a prepare,
+    // which would initialise the plugins too early.
+    private File getTarget(Project project) throws IOException {
+        File target = project.getFile(project.getProperty("target", "generated"));
+        if (!target.exists()) {
+            if (!target.mkdirs()) {
+                throw new IOException("Could not create directory " + target);
+            }
+            project.getWorkspace().changedFile(target);
+        }
+        return target;
     }
 
     public void loadProjectIndex(final IProject project, InputStream index, URI baseUri) {
