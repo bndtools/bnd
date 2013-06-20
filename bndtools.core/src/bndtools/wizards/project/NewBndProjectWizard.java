@@ -39,7 +39,8 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
     public void addPages() {
         addPage(pageOne);
         addPage(templatePage);
-        addPage(pageTwo);
+        // Don't show pageTwo... our templates support only the standard layout anyway!
+        // However it still needs to be created because our superclass from JDT requires it to exist.
     }
 
     /**
