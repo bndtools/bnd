@@ -178,7 +178,8 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
                                 IResource resource = delta.getResource();
                                 if (resource.getType() == IResource.FILE) {
-                                    boolean isRunBundle = runBundleSet.contains(resource.getLocation().toPortableString());
+                                    IPath location = resource.getLocation();
+                                    boolean isRunBundle = location != null ? runBundleSet.contains(location.toPortableString()) : false;
                                     update.compareAndSet(false, isRunBundle);
                                     return false;
                                 }
