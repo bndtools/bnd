@@ -52,9 +52,7 @@ public class RepositoryBundle implements IAdaptable, Actionable {
     public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         Object result = null;
 
-        if (IFile.class.equals(adapter)) { // ||
-                                           // IResource.class.equals(adapter))
-                                           // {
+        if (IFile.class.equals(adapter)) {
             try {
                 File file = getFile();
                 if (file != null) {

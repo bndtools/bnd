@@ -332,9 +332,16 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
             if (element instanceof IFile)
                 files.add(((IFile) element).getLocation().toFile());
             else if (element instanceof IAdaptable) {
-                IFile ifile = (IFile) ((IAdaptable) element).getAdapter(IFile.class);
-                if (ifile != null)
+                IAdaptable adaptable = (IAdaptable) element;
+                IFile ifile = (IFile) adaptable.getAdapter(IFile.class);
+                if (ifile != null) {
                     files.add(ifile.getLocation().toFile());
+                } else {
+                    File file = (File) adaptable.getAdapter(File.class);
+                    if (file != null) {
+                        files.add(file);
+                    }
+                }
             }
         }
 
