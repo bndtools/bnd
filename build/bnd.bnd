@@ -1,38 +1,39 @@
 -dependson:\
-	bndtools.bndplugins,\
-	bndtools.core,\
-	bndtools.builder,\
-	bndtools.jareditor,\
-	bndtools.repository.base,\
-	bndtools.repository.amdatu,\
-	bndtools.gradle.template,\
-	bndtools.template.dm,\
-	bndtools.template.amdatu,\
-	bndtools.release,\
-	org.bndtools.embeddedrepo,\
 	bndtools.ace.launcher,\
 	bndtools.ace.plugin,\
-	bndtools.api
+	bndtools.api,\
+	bndtools.bndplugins,\
+	bndtools.builder,\
+	bndtools.core,\
+	bndtools.gradle.template,\
+	bndtools.jareditor,\
+	bndtools.release,\
+	bndtools.repository.amdatu,\
+	bndtools.repository.base,\
+	bndtools.template.amdatu,\
+	bndtools.template.dm,\
+	org.bndtools.embeddedrepo
+
 
 Include-Resource:\
+	${repo;bndtools.ace.launcher;latest},\
+	${repo;bndtools.ace.plugin;latest},\
+	${repo;bndtools.api;latest},\
+	${repo;bndtools.builder;latest},\
+	${repo;bndtools.core;latest},\
+	${repo;bndtools.gradle.template;latest},\
+	${repo;bndtools.jareditor;latest},\
+	${repo;bndtools.release;latest},\
+	${repo;bndtools.repository.amdatu;latest},\
+	${repo;bndtools.repository.base;latest},\
+	${repo;bndtools.template.amdatu;latest},\
+	${repo;bndtools.template.dm;latest},\
+	${repo;org.bndtools.embeddedrepo;latest},\
 	${repo;biz.aQute.bndlib;${bndlib-version-base}},\
 	${repo;biz.aQute.repository;${aQute-repository-base}},\
 	${repo;biz.aQute.resolve;${aQute-resolve-base}},\
-	${repo;bndtools.core;latest},\
-	${repo;bndtools.jareditor;latest},\
-	${repo;bndtools.repository.base;latest},\
-	${repo;bndtools.repository.amdatu;latest},\
-	${repo;bndtools.gradle.template;latest},\
-	${repo;bndtools.template.dm;latest},\
-	${repo;bndtools.template.amdatu;latest},\
-	${repo;bndtools.release;latest},\
-	${repo;org.bndtools.embeddedrepo;latest},\
 	${repo;javax.xml;latest},\
 	${repo;javax.xml.stream;latest},\
+	${repo;org.apache.ace.bnd.repository;latest},\
 	${repo;stax2-api;latest},\
-	${repo;woodstox-core-asl;latest},\
-	${repo;bndtools.ace.plugin;latest},\
-    ${repo;org.apache.ace.bnd.repository;latest},\
-    ${repo;bndtools.ace.launcher;latest},\
-    ${repo;bndtools.api;latest},\
-    ${repo;bndtools.builder;latest}
+	${repo;woodstox-core-asl;latest}
