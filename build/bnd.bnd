@@ -14,6 +14,9 @@
 	bndtools.template.dm,\
 	org.bndtools.embeddedrepo
 
+# Missing here:
+# bndtools.repository.maven
+# bndtools.utils                            Always used as Conditional-Package
 
 Include-Resource:\
 	${repo;bndtools.ace.launcher;latest},\
@@ -37,3 +40,8 @@ Include-Resource:\
 	${repo;org.apache.ace.bnd.repository;latest},\
 	${repo;stax2-api;latest},\
 	${repo;woodstox-core-asl;latest}
+
+# Missing here:
+# ${repo;bndtools.bndplugins;latest}
+# ${repo;bndtools.repository.maven;latest}
+# ${repo;bndtools.utils;latest}             Always used as Conditional-Package
