@@ -27,25 +27,27 @@ import java.util.Set;
  * representation by indexing resource capabilities and requirements.
  */
 public interface ResourceIndexer {
-
-	/** enable pretty-printing: non-gzipped, indented XML */
+	/**
+	 * Name of the configuration variable to enable pretty-printing:
+	 * non-gzipped, indented XML
+	 */
 	public static final String PRETTY = "pretty";
 
 	/** the default repository name */
 	public static final String REPOSITORYNAME_DEFAULT = "Untitled";
 
-	/** the name of the OBR XML representation */
+	/** Name of the configuration variable for the repository name */
 	public static final String REPOSITORY_NAME = "repository.name";
 
-	/** the default stylesheet for the OBR XML representation */
+	/** the default stylesheet for the XML representation */
 	public static final String STYLESHEET_DEFAULT = "http://www.osgi.org/www/obr2html.xsl";
 
-	/** the stylesheet of the OBR XML representation */
+	/** Name of the configuration variable for the stylesheet of the XML representation */
 	public static final String STYLESHEET = "stylesheet";
 
 	/**
-	 * Template for the URLs in the OBR XML representation. It can contain the
-	 * following symbols:
+	 * Name of the configuration variable for the template for the URLs in the
+	 * XML representation. A template can contain the following symbols:
 	 * <ul>
 	 * <li>%s is the symbolic name</li>
 	 * <li>%v is the version number</li>
@@ -55,47 +57,61 @@ public interface ResourceIndexer {
 	 */
 	public static final String URL_TEMPLATE = "url.template";
 
-	/** the root (directory) URL of the OBR */
+	/**
+	 * Name of the configuration variable for the root (directory) URL of the
+	 * repository
+	 */
 	public static final String ROOT_URL = "root.url";
 
-	/** the license URL of the OBR XML representation */
+	/**
+	 * Name of the configuration variable for the license URL of the repository
+	 */
 	public static final String LICENSE_URL = "license.url";
 
+	/** Name of the configuration variable for the verbose mode */
 	public static final String VERBOSE = "verbose";
-
 
 	/**
 	 * Index a set of input files and write the Repository XML representation to
-	 * the given writer
+	 * the stream
 	 * 
 	 * @param files
 	 *            a set of input files
 	 * @param out
-	 *            the OutputStream to write the OBR XML representation
+	 *            the stream to write the XML representation to
 	 * @param config
 	 *            a set of optional parameters (use the interface constants as
 	 *            keys)
 	 * @throws Exception
+	 *             in case of an error
 	 */
 	void index(Set<File> files, OutputStream out, Map<String, String> config) throws Exception;
 
 	/**
+	 * <p>
 	 * Index a set of input files and write a Repository XML fragment to the
-	 * given writer. Note that the result will be one or more XML
-	 * <code>resource</code> elements <em>without</em> a top-level surrounding
-	 * <code>repository</code> element. The resulting XML is therefore not
-	 * well-formed. This method may be useful for repository managers that wish
-	 * to (re-)index individual resources and assemble the XML fragments into a
-	 * complete repository document later.
+	 * given writer.
+	 * </p>
+	 * <p>
+	 * Note that the result will be one or more XML <code>resource</code>
+	 * elements <em>without</em> a top-level surrounding <code>repository</code>
+	 * element. The resulting XML is therefore not well-formed.
+	 * </p>
+	 * <p>
+	 * This method may be useful for repository managers that wish to (re-)index
+	 * individual resources and assemble the XML fragments into a complete
+	 * repository document later.
+	 * </p>
 	 * 
 	 * @param files
 	 *            a set of input files
 	 * @param out
-	 *            the Writer to write the Repository XML representation
+	 *            the writer to write the Repository XML representation to
 	 * @param config
 	 *            a set of optional parameter (use the interface constants as
 	 *            keys)
 	 * @throws Exception
+	 *             in case of an error
 	 */
 	void indexFragment(Set<File> files, Writer out, Map<String, String> config) throws Exception;
 }
