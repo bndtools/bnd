@@ -3,7 +3,7 @@
 	osgi.core;version=4.2,\
 	junit.osgi,\
 	lib/kxml2-min.jar;version=file,\
-	osgi.cmpn,\
+	osgi.cmpn;version=4.2,\
 	org.mockito.mockito-all;version='[1.8,1.9)'
 
 Bundle-Name: BIndex2: Repository Index Generator

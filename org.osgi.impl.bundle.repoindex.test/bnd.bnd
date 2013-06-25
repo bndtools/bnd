@@ -1,6 +1,6 @@
 -buildpath:\
   osgi.core;version=4.2,\
-  osgi.cmpn,\
+  osgi.cmpn;version=4.2,\
   junit.osgi,\
   org.mockito.mockito-all;version='[1.8,1.9)',\
   org.osgi.impl.bundle.repoindex.lib;version=snapshot,\
@@ -15,7 +15,7 @@ Conditional-Package: org.example.tests.utils
 
 -runbundles: org.mockito.mockito-all;version='[1.8,1.9)',\
   org.osgi.impl.bundle.repoindex.lib;version=latest,\
-  osgi.cmpn
+  osgi.cmpn;version=4.2
   
 -runvm: -ea
 -runfw: org.apache.felix.framework;version=4.0
