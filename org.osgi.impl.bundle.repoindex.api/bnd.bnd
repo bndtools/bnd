@@ -1,4 +1,4 @@
-Bundle-Version: 0.0.2
+Bundle-Version: 1.0.2
 Export-Package: org.osgi.service.indexer
 -buildpath: junit.osgi,\
 	ee.j2se;version='[1.5,1.6)'
