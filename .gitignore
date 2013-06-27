@@ -2,9 +2,9 @@
 *.bak
 *.findbugs.xml
 /*/tmp
-/*/generated
-/*/bin
-/*/bin_test
+/*/generated/
+/*/bin/
+/*/bin_test/
 .metadata/
 Archive
 .DS_Store
