@@ -68,7 +68,7 @@ public class MavenTest extends TestCase {
 	 * @throws Exception
 	 */
 	protected static Project getProject(String name) throws Exception {
-		File wsf = IO.getFile(cwd, "test/ws");
+		File wsf = IO.getFile(cwd, "testresources/ws");
 		Workspace ws = Workspace.getWorkspace(wsf);
 
 		assertNotNull(ws);
@@ -90,7 +90,7 @@ public class MavenTest extends TestCase {
 
 		Processor processor = new Processor(ws);
 		processor.setProperty(Constants.PLUGIN,
-				"aQute.bnd.maven.support.MavenRemoteRepository;repositories=test/ws/maven1/m2");
+				"aQute.bnd.maven.support.MavenRemoteRepository;repositories=testresources/ws/maven1/m2");
 
 		MavenRemoteRepository mr = processor.getPlugin(MavenRemoteRepository.class);
 		assertNotNull(mr);
@@ -132,7 +132,7 @@ public class MavenTest extends TestCase {
 
 	public static void testProjectPom() throws Exception {
 		Maven maven = new Maven(null);
-		ProjectPom pom = maven.createProjectModel(IO.getFile(cwd, "test/ws/maven1/testpom.xml"));
+		ProjectPom pom = maven.createProjectModel(IO.getFile(cwd, "testresources/ws/maven1/testpom.xml"));
 		assertEquals("artifact", pom.getArtifactId());
 		assertEquals("group-parent", pom.getGroupId());
 		assertEquals("1.0.0", pom.getVersion());
@@ -201,7 +201,7 @@ public class MavenTest extends TestCase {
 		me.remove();
 
 		mr.setRepositories(new URI[] {
-			IO.getFile(new File("").getAbsoluteFile(), "test/ws/maven1/m2").toURI()
+			IO.getFile(new File("").getAbsoluteFile(), "testresources/ws/maven1/m2").toURI()
 		});
 
 		Map<String,String> map = new HashMap<String,String>();
@@ -248,7 +248,7 @@ public class MavenTest extends TestCase {
 
 	public static void testPomParser() throws Exception {
 		PomParser parser = new PomParser();
-		Properties p = parser.getProperties(new File("test/ws/maven1/pom.xml"));
+		Properties p = parser.getProperties(new File("testresources/ws/maven1/pom.xml"));
 		p.store(System.err, "testing");
 		assertEquals("Apache Felix Metatype Service", p.get("pom.name"));
 		assertEquals("org.apache.felix", p.get("pom.groupId")); // is from
@@ -278,7 +278,7 @@ public class MavenTest extends TestCase {
 	// graph.addRepository( new URL("http://repo1.maven.org/maven2/"));
 	// graph.addRepository( new
 	// URL("http://repository.springsource.com/maven/bundles/external"));
-	// // graph.root.add( new File("test/poms/pom-1.xml").toURI().toURL());
+	// // graph.root.add( new File("testresources/poms/pom-1.xml").toURI().toURL());
 	//
 	// }
 
@@ -286,7 +286,7 @@ public class MavenTest extends TestCase {
 	// MavenRepository maven = new MavenRepository();
 	// maven.setReporter(processor);
 	// maven.setProperties(new HashMap<String, String>());
-	// maven.setRoot(processor.getFile("test/maven-repo"));
+	// maven.setRoot(processor.getFile("testresources/maven-repo"));
 	//
 	// File files[] = maven.get("activation.activation", null);
 	// assertNotNull(files);
@@ -324,7 +324,7 @@ public class MavenTest extends TestCase {
 	// MavenRepository maven = new MavenRepository();
 	// maven.setReporter(processor);
 	// Map<String, String> map = new HashMap<String, String>();
-	// map.put("root", IO.getFile(cwd,"test/maven-repo").getAbsolutePath());
+	// map.put("root", IO.getFile(cwd,"testresources/maven-repo").getAbsolutePath());
 	// maven.setProperties(map);
 	//
 	// File files[] = maven.get("org.apache.felix.framework", null);

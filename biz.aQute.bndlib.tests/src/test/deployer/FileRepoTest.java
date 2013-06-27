@@ -88,7 +88,7 @@ public class FileRepoTest extends TestCase {
 		MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
 		File dstBundle = null;
 		try {
-			File srcBundle = new File("test/test.jar");
+			File srcBundle = new File("testresources/test.jar");
 			byte[] srcSha = calculateHash(sha1, srcBundle);
 
 			PutOptions options = new RepositoryPlugin.PutOptions();
@@ -112,9 +112,9 @@ public class FileRepoTest extends TestCase {
 		File tmp = new File("tmp");
 		try {
 			FileRepo repo = new FileRepo("tmp", tmp, true);
-			File srcBundle = new File("test/test.jar");
+			File srcBundle = new File("testresources/test.jar");
 
-			PutResult r = repo.put(IO.stream(new File("test/test.jar")), null);
+			PutResult r = repo.put(IO.stream(new File("testresources/test.jar")), null);
 
 			assertNotNull(r);
 			assertNotNull(r.artifact);
@@ -145,7 +145,7 @@ public class FileRepoTest extends TestCase {
 			return;
 		}
 		try {
-			nonExistentRepo.put(new BufferedInputStream(new FileInputStream("test/test.jar")),
+			nonExistentRepo.put(new BufferedInputStream(new FileInputStream("testresources/test.jar")),
 					new RepositoryPlugin.PutOptions());
 			fail("Should have thrown exception");
 		}

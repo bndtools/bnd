@@ -14,7 +14,7 @@ public class JarTest extends TestCase {
 		Jar jar = new Jar("dot");
 		jar.setManifest(new Manifest());
 		jar.setDoNotTouchManifest();
-		jar.putResource("a/b", new FileResource(new File("test/bnd.jar")));
+		jar.putResource("a/b", new FileResource(new File("testresources/bnd.jar")));
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		jar.write(bout);
@@ -30,7 +30,7 @@ public class JarTest extends TestCase {
 		Jar jar = new Jar("dot");
 		jar.setManifest(new Manifest());
 		jar.setDoNotTouchManifest();
-		jar.putResource("a/b", new FileResource(new File("test/bnd.jar")));
+		jar.putResource("a/b", new FileResource(new File("testresources/bnd.jar")));
 		jar.putResource("META-INF/MANIFEST.MF", new EmbeddedResource("Manifest-Version: 1\r\nX: 1\r\n\r\n".getBytes(),
 				0));
 

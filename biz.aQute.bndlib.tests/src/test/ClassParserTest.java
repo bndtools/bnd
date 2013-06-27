@@ -185,7 +185,7 @@ public class ClassParserTest extends TestCase {
 	// a.addClasspath(new File("bin"));
 	// a.setProperty("Private-Package", "test");
 	// a.build();
-	// Clazz c = a.getClassspace().get("test/Implemented.class");
+	// Clazz c = a.getClassspace().get("testresources/Implemented.class");
 	// Set<PackageRef> s = Create.set();
 	//
 	// Clazz.getImplementedPackages(s, a, c);
@@ -246,7 +246,7 @@ public class ClassParserTest extends TestCase {
 
 	public static void testJQuantlib() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("test/jquantlib-0.1.2.jar"));
+		b.addClasspath(new File("testresources/jquantlib-0.1.2.jar"));
 		b.setProperty("Export-Package", "*");
 		b.build();
 	}

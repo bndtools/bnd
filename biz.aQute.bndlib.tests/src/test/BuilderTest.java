@@ -200,11 +200,11 @@ public class BuilderTest extends BndTestCase {
 			return;
 
 		Builder b = new Builder();
-		b.setIncludeResource("test/ls;cmd='ls /etc | grep hosts'");
+		b.setIncludeResource("testresources/ls;cmd='ls /etc | grep hosts'");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		assertTrue(b.check());
-		Resource r = jar.getResource("test/ls");
+		Resource r = jar.getResource("testresources/ls");
 		assertNotNull(r);
 		String s = IO.collect(r.openInputStream());
 		assertTrue(s.contains("hosts"));
@@ -221,7 +221,7 @@ public class BuilderTest extends BndTestCase {
 			return;
 
 		Builder b = new Builder();
-		b.setIncludeResource("test/x;cmd='I do not exist!!!!!!!!!!!'");
+		b.setIncludeResource("testresources/x;cmd='I do not exist!!!!!!!!!!!'");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		assertTrue(b.check("Cmd 'I do not exist!!!!!!!!!!!' failed"));
@@ -1775,7 +1775,7 @@ public class BuilderTest extends BndTestCase {
 		assertTrue(bmaker.check());
 
 		report("testBundleClasspath", bmaker, jar);
-		jar.exists("test/activator/Activator.class");
+		jar.exists("testresources/activator/Activator.class");
 		assertEquals(bmaker.getErrors().size(), 0);
 		assertEquals(bmaker.getWarnings().size(), 0);
 	}

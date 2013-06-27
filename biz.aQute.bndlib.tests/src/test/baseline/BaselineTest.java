@@ -24,7 +24,7 @@ import aQute.service.reporter.*;
 public class BaselineTest extends TestCase {
 
 	public static void testBaslineJar() throws Exception {
-		// Workspace ws = new Workspace(new File("test/ws"));
+		// Workspace ws = new Workspace(new File("testresources/ws"));
 		//
 		// Project p3 = ws.getProject("p3");
 		//
@@ -141,7 +141,7 @@ public class BaselineTest extends TestCase {
 	 * @throws Exception
 	 */
 	public static void testRepository() throws Exception {
-		Workspace ws = new Workspace(new File("test/ws"));
+		Workspace ws = new Workspace(new File("testresources/ws"));
 
 		Jar v1_2_0_a = mock(Jar.class);
 		when(v1_2_0_a.getVersion()).thenReturn("1.2.0.b");
@@ -150,7 +150,7 @@ public class BaselineTest extends TestCase {
 		RepositoryPlugin repo = mock(RepositoryPlugin.class);
 		ws.addBasicPlugin(repo);
 		when(repo.get(anyString(), any(Version.class), any(Map.class))).thenReturn(
-				IO.getFile("test/ws/cnf/releaserepo/p3/p3-1.2.0.jar"));
+				IO.getFile("testresources/ws/cnf/releaserepo/p3/p3-1.2.0.jar"));
 		System.out.println(repo.get("p3", new Version("1.2.0.b"), new Attrs()));
 
 		when(repo.canWrite()).thenReturn(true);
@@ -221,8 +221,8 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(new File("test/api-orig.jar"));
-		Jar newer = new Jar(new File("test/api-providerbump.jar"));
+		Jar older = new Jar(new File("testresources/api-orig.jar"));
+		Jar newer = new Jar(new File("testresources/api-providerbump.jar"));
 
 		Set<Info> infoSet = baseline.baseline(newer, older, null);
 
@@ -241,8 +241,8 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(new File("test/api-orig.jar"));
-		Jar newer = new Jar(new File("test/api-consumerbump.jar"));
+		Jar older = new Jar(new File("testresources/api-orig.jar"));
+		Jar newer = new Jar(new File("testresources/api-consumerbump.jar"));
 
 		Set<Info> infoSet = baseline.baseline(newer, older, null);
 

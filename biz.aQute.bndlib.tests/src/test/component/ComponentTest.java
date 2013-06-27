@@ -271,9 +271,9 @@ public class ComponentTest extends TestCase {
 
 	/*
 	 * public void testWildcards() throws Exception { Builder b = new Builder();
-	 * b .setProperty(Analyzer.SERVICE_COMPONENT, "test/component/*.xml");
+	 * b .setProperty(Analyzer.SERVICE_COMPONENT, "testresources/component/*.xml");
 	 * b.setProperty("-resourceonly", "true"); b.setProperty("Include-Resource",
-	 * "test/component=test/component"); Jar jar = b.build();
+	 * "testresources/component=testresources/component"); Jar jar = b.build();
 	 * System.err.println(b.getErrors()); System.err.println(b.getWarnings());
 	 * assertEquals(0, b.getErrors().size()); assertEquals(0,
 	 * b.getWarnings().size()); }

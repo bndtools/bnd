@@ -13,7 +13,7 @@ public class LocationTest extends TestCase {
 
 	public void setUp() throws Exception {
 		File tmp = new File("tmp");
-		IO.copy(new File("test/ws-location"), tmp);
+		IO.copy(new File("testresources/ws-location"), tmp);
 		ws = new Workspace(tmp);
 
 	}

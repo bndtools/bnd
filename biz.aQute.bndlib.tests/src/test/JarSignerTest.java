@@ -15,7 +15,7 @@ public class JarSignerTest extends TestCase {
 		Builder b = new Builder();
 		b.setProperty("-sign", "test");
 		b.setProperty(Constants.PLUGIN, JartoolSigner.class.getName()
-				+ ";keystore=test/keystore;keypass=testtest;storepass=testtest;sigfile=test");
+				+ ";keystore=testresources/keystore;keypass=testtest;storepass=testtest;sigfile=test");
 		b.setProperty("-nomanifest", "true");
 		b.setProperty("-resourceonly", "true");
 		b.setProperty("Include-Resource", "WEB-INF/classes=@jar/osgi.jar");
@@ -35,12 +35,12 @@ public class JarSignerTest extends TestCase {
 	public static void testError() throws Exception {
 		JartoolSigner signer = new JartoolSigner();
 		Map<String,String> properties = Create.map();
-		properties.put("keystore", "test/keystore");
+		properties.put("keystore", "testresources/keystore");
 		properties.put("keypass", "testtest");
 		properties.put("storepass", "notvalid");
 		signer.setProperties(properties);
 
-		Jar jar = new Jar(new File("test/test.jar"));
+		Jar jar = new Jar(new File("testresources/test.jar"));
 		Builder b = new Builder();
 		b.setTrace(true);
 		b.setJar(jar);
@@ -53,14 +53,14 @@ public class JarSignerTest extends TestCase {
 	public static void testSimple() throws Exception {
 		JartoolSigner signer = new JartoolSigner();
 		Map<String,String> properties = Create.map();
-		properties.put("keystore", "test/keystore");
+		properties.put("keystore", "testresources/keystore");
 		properties.put("keypass", "testtest");
 		properties.put("storepass", "testtest");
 		properties.put("sigFile", "test");
 		properties.put("digestalg", "SHA1");
 		signer.setProperties(properties);
 
-		Jar jar = new Jar(new File("test/test.jar"));
+		Jar jar = new Jar(new File("testresources/test.jar"));
 		Set<String> names = new HashSet<String>(jar.getResources().keySet());
 		names.remove("META-INF/MANIFEST.MF");
 		Builder b = new Builder();

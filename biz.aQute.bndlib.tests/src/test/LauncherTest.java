@@ -172,7 +172,7 @@ public class LauncherTest extends TestCase {
 	}
 
 	static Project getProjectFromWorkspaceWithSpace() throws Exception {
-		Workspace workspace = Workspace.getWorkspace(new File("test/a space"));
+		Workspace workspace = Workspace.getWorkspace(new File("testresources/a space"));
 		Project project = workspace.getProject("test");
 		return project;
 	}
