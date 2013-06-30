@@ -4,7 +4,9 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 
 public class Indent {
-	
+	/** the platform specific EOL */
+	static private String eol = String.format("%n");
+
 	private final boolean newLine;
 	private final int level;
 	private final int increment;
@@ -25,7 +27,7 @@ public class Indent {
 
 	public void print(PrintWriter pw) {
 		if (newLine)
-			pw.print('\n');
+			pw.print(eol);
 		pw.print(indent);
 	}
 
