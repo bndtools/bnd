@@ -33,6 +33,18 @@ public class VersionRange implements Comparable<VersionRange> {
 	static Pattern RANGE = Pattern.compile("(\\(|\\[)\\s*(" + V + ")\\s*,\\s*("
 			+ V + ")\\s*(\\)|\\])");
 
+	public VersionRange(boolean lowInclusive, Version low, Version high, boolean highInclusive) {
+		if (low.compareTo(high) > 0)
+			throw new IllegalArgumentException(
+					"Low Range is higher than High Range: " + low + "-"
+							+ high);
+
+		this.low = low;
+		this.high = high;
+		this.start = lowInclusive ? '[' : '(';
+		this.end = highInclusive ? ']' : ')';
+	}
+
 	public VersionRange(String string) {
 		string = string.trim();
 		Matcher m = RANGE.matcher(string);
@@ -46,8 +58,11 @@ public class VersionRange implements Comparable<VersionRange> {
 						"Low Range is higher than High Range: " + low + "-"
 								+ high);
 
-		} else
+		} else {
+			start = '[';
 			high = low = new Version(string);
+			end = ']';
+		}
 	}
 
 	public boolean isRange() {
