@@ -115,7 +115,7 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 				else if (NS_1_1.equals(uri))
 					setVersion(new Version(1,1,0));
 				else if (NS_1_0.equals(uri))
-					setVersion(new Version(1,2,0));
+					setVersion(new Version(1,0,0));
 			}
 		}
 		
