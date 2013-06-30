@@ -1,6 +1,7 @@
 package org.osgi.service.indexer.impl.util;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 public class Indent {
 	
@@ -8,6 +9,9 @@ public class Indent {
 	private final int level;
 	private final int increment;
 	
+	/** the indent string */
+	private char[] indent;
+
 	public static final Indent NONE = new Indent(false, 0, 0);
 	public static final Indent PRETTY = new Indent(true, 0, 2);
 	
@@ -15,14 +19,14 @@ public class Indent {
 		this.newLine = newLine;
 		this.level = level;
 		this.increment = increment;
+		this.indent = new char[level];
+		Arrays.fill(this.indent, ' ');
 	}
 
 	public void print(PrintWriter pw) {
 		if (newLine)
 			pw.print('\n');
-		int n = level;
-		while (n-- > 0)
-			pw.print(' ');
+		pw.print(indent);
 	}
 
 	public Indent next() {
