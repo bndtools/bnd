@@ -64,8 +64,7 @@ public class RepoIndex implements ResourceIndexer {
 			addAnalyzer(blueprintAnalyzer, allFilter);
 
 		} catch (InvalidSyntaxException e) {
-			// Can't happen...?
-			throw new RuntimeException("Unexpected internal error compiling filter");
+			throw new ExceptionInInitializerError("Unexpected internal error compiling filter");
 		}
 	}
 	
