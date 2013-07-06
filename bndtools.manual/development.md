@@ -26,13 +26,13 @@ If you have Bndtools installed in your Eclipse IDE already (e.g. using Marketpla
 Building With bnd/ANT
 =====================
 
-Assuming you have Apache ANT (version 1.7 or better) installed, you can build bndtools from the command line by changing to the `bndtools.build` directory and typing:
+Assuming you have Apache ANT (version 1.7 or better) installed, you can build bndtools from the command line by changing to the `build` directory and typing:
 
 	ant build p2
 
 After a minute or two, a directory named `generated/p2` will appear. This contains an Eclipse Update Site that you can use to install bndtools from the code you have just built.
 
-To install from the generated Update Site, open the Help menu in Eclipse and select "Install New Software". In the update dialog, click the "Add" button (near the top left) and then click the "Local" button. Browse to the location of the `bndtools.build/generated/p2` directory that you just built. Then set the name of this update site to "Bndtools Local Snapshot" (or whatever you like, it's not really important so long as you enter *something*). Click "OK".
+To install from the generated Update Site, open the Help menu in Eclipse and select "Install New Software". In the update dialog, click the "Add" button (near the top left) and then click the "Local" button. Browse to the location of the `build/generated/p2` directory that you just built. Then set the name of this update site to "Bndtools Local Snapshot" (or whatever you like, it's not really important so long as you enter *something*). Click "OK".
 
 Back in the update dialog, Bndtools will appear in the category list. Place a check next to it and click Next. Drive the rest of the wizard to completion... congratulations, you have just built and installed bndtools!
 
@@ -46,13 +46,18 @@ Open the File menu and select "Import" and then "Existing Projects into Workspac
 Ensure that all the following projects are checked:
 
 * `cnf`
+* `bndtools.api`
 * `bndtools.bndplugins`
+* `bndtools.builder`
 * `bndtools.core`
+* `bndtools.gradle.template`
 * `bndtools.jareditor`
-* `bndtools.build`
 * `bndtools.manual`
 * `bndtools.release`
 * `bndtools.repository.base`
+* `bndtools.utils`
+* `build`
+* `org.bndtools.embedddedrepo`
 
 NB: These projects must all be in the same directory!
 
