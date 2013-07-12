@@ -862,7 +862,7 @@ public class Clazz {
 		else if ("ConstantValue".equals(attributeName))
 			doConstantValue(in);
 		else if ("AnnotationDefault".equals(attributeName))
-			doElementValue(in, member, RetentionPolicy.RUNTIME, cd!=null, access_flags);
+			doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
 		else if ("Exceptions".equals(attributeName))
 			doExceptions(in, access_flags);
 		else {
@@ -972,14 +972,19 @@ public class Clazz {
 	void doSignature(DataInputStream in, ElementType member, int access_flags) throws IOException {
 		int signature_index = in.readUnsignedShort();
 		String signature = (String) pool[signature_index];
+		try {
 
-		parseDescriptor(signature, access_flags);
+			parseDescriptor(signature, access_flags);
 
-		if (last != null)
-			last.signature = signature;
+			if (last != null)
+				last.signature = signature;
 
-		if (cd != null)
-			cd.signature(signature);
+			if (cd != null)
+				cd.signature(signature);
+		}
+		catch (Exception e) {
+			new RuntimeException("Signature failed for" + signature, e);
+		}
 	}
 
 	/**
@@ -1419,11 +1424,17 @@ public class Clazz {
 
 			char c = descriptor.charAt(index);
 
+			if ( c == '[') {
+				c = descriptor.charAt(++index);
+			}
+			
 			// Class Bound?
 			if (c == 'L' || c == 'T') {
 				index = parseReference(descriptor, index, modifiers); // class
 																		// reference
 				c = descriptor.charAt(index);
+			} else {
+				index ++;
 			}
 
 			// Interface Bounds

@@ -1,6 +1,7 @@
 package test;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 
 import junit.framework.*;
@@ -9,6 +10,22 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 
 public class ClazzTest extends TestCase {
 
+	/**
+	 * {@code java.lang.IllegalArgumentException: Expected IDENTIFIER: <S:Z>()V;}
+	 * 
+	 * This actually looks wrong since 
+	 */
+	
+	public void test375() throws Exception {
+		Analyzer a = new Analyzer();
+		Clazz c = new Clazz(a,"",null);
+		c.parseDescriptor("<S:[LFoo;>()V", Modifier.PUBLIC);
+		c.parseDescriptor("<S:[Z>()V", Modifier.PUBLIC);
+		c.parseDescriptor("<S:Z>()V", Modifier.PUBLIC);
+		
+	}
+	
+	
 	/**
 	 * Complaint from Groovy that the dynamic instruction fails.
 	 * 

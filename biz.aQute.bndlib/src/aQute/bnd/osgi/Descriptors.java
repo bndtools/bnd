@@ -150,8 +150,6 @@ public class Descriptors {
 		final PackageRef	packageRef;
 
 		ConcreteRef(PackageRef packageRef, String binaryName) {
-			if (packageRef.getFQN().length() < 2)
-				System.err.println("in default pack? " + binaryName);
 			this.binaryName = binaryName;
 			this.fqn = binaryToFQN(binaryName);
 			this.primitive = false;
