@@ -438,12 +438,16 @@ public class Main extends ReporterAdapter {
 		}
 
 		for (String coordinate : opts._()) {
-
+			Coordinate crd = new Coordinate(coordinate);
+			trace("install %s", coordinate);
 			File file = IO.getFile(base, coordinate);
 			if (file.isFile())
 				coordinate = file.toURI().toString();
 
+			trace("install %s", coordinate);
+			
 			ArtifactData artifact = jpm.getCandidate(coordinate);
+			trace("candidate %s", artifact);
 			if (artifact == null) {
 				if (jpm.isWildcard(coordinate))
 					error("no candidate found for %s", coordinate);
@@ -456,6 +460,9 @@ public class Main extends ReporterAdapter {
 					CommandData cmd = jpm.parseCommandData(artifact);
 					updateCommandData(cmd, opts);
 					if (cmd.main != null) {
+						if ( cmd.name == null) {
+							cmd.name = crd.getArtifactId();
+						}
 						List<Error> errors = cmd.validate();
 						if (!errors.isEmpty()) {
 							error("Command not valid");
@@ -812,6 +819,8 @@ public class Main extends ReporterAdapter {
 			}
 			catch (InvocationTargetException e) {
 				exception(e.getTargetException(), "Could not install jpm, %s", e.getTargetException().getMessage());
+				if ( isExceptions())
+					e.printStackTrace();
 			}
 		}
 		catch (Throwable e) {

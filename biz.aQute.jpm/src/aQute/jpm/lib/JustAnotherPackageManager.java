@@ -738,6 +738,7 @@ public class JustAnotherPackageManager {
 
 			public void run() {
 				try {
+					reporter.trace("downloading %s" , uri);
 					put(uri, data);
 				}
 				catch (Throwable e) {
@@ -745,6 +746,7 @@ public class JustAnotherPackageManager {
 					data.error = e.toString();
 				}
 				finally {
+					reporter.trace("done downloading %s" , uri);
 					data.done();
 				}
 			}
@@ -761,6 +763,7 @@ public class JustAnotherPackageManager {
 	}
 
 	void put(final URI uri, ArtifactData data) throws Exception {
+		reporter.trace("put %s %s", uri, data);
 		File tmp = createTempFile(repoDir, "mtp", ".whatever");
 		tmp.deleteOnExit();
 		try {
@@ -769,6 +772,7 @@ public class JustAnotherPackageManager {
 			reporter.trace("SHA %s %s", uri, Hex.toHexString(sha));
 			ArtifactData existing = get(sha);
 			if (existing != null) {
+				reporter.trace("existing");
 				xcopy(existing, data);
 				return;
 			}
@@ -778,18 +782,18 @@ public class JustAnotherPackageManager {
 			reporter.trace("file %s", file);
 			data.file = file.getAbsolutePath();
 			data.sha = sha;
-
+			data.busy = false;
 			CommandData cmddata = parseCommandData(data);
 			if (cmddata.bsn != null) {
 				data.name = cmddata.bsn + "-" + cmddata.version;
 			} else
 				data.name = Strings.display(cmddata.title, cmddata.bsn, cmddata.name, uri);
-
 			codec.enc().to(meta).put(data);
 			reporter.trace("TD = " + data);
 		}
 		finally {
 			tmp.delete();
+			reporter.trace("puted %s %s", uri, data);
 		}
 	}
 
@@ -897,27 +901,31 @@ public class JustAnotherPackageManager {
 	}
 
 	public ArtifactData getCandidateAsync(String arg) throws Exception {
+		reporter.trace("coordinate %s",arg);
 		if (isUrl(arg))
 			try {
-				return putAsync(new URI(arg));
+				ArtifactData data = putAsync(new URI(arg));
+				data.local = true;
+				return data;
 			}
 			catch (Exception e) {
 				reporter.trace("hmm, not a valid url %s, will try the server", arg);
 			}
-			
+
 		Coordinate c = new Coordinate(arg);
-		
+
 		if (c.isSha()) {
 			ArtifactData r = get(c.getSha());
 			if (r != null)
 				return r;
 		}
-		
+
 		Revision revision = library.getRevisionByCoordinate(c);
 		if (revision == null)
 			return null;
 
-		return putAsync(revision.url);
+		URI url = revision.urls.iterator().next();
+		return putAsync(url);
 	}
 
 	public static Executor getExecutor() {
@@ -1152,7 +1160,7 @@ public class JustAnotherPackageManager {
 
 	public void update(UpdateMemo memo) throws Exception {
 
-		ArtifactData target = put(memo.best.url);
+		ArtifactData target = put(memo.best.urls.iterator().next());
 
 		memo.current.version = new Version(memo.best.version);
 		target.sync();
@@ -1184,12 +1192,12 @@ public class JustAnotherPackageManager {
 			return put(new URI(coordinate));
 		}
 		Coordinate c = new Coordinate(coordinate);
-		
+
 		Revision revision = library.getRevisionByCoordinate(c);
 		if (revision == null)
 			return null;
 
-		return put(revision.url);
+		return put(revision.urls.iterator().next());
 	}
 
 	private boolean isUrl(String coordinate) {
@@ -1247,12 +1255,16 @@ public class JustAnotherPackageManager {
 				for (Map.Entry<String,Attrs> e : requires.entrySet()) {
 					path.add(e.getKey()); // coordinate
 				}
-			} else if (!localInstall) { // No JPM-Classpath, falling back to
-										// server's revision
-				Iterable<RevisionRef> closure = library.getClosure(artifact.sha, false);
-				for (RevisionRef ref : closure) {
-					path.add(Hex.toHexString(ref.revision));
-				}
+			} else if (!artifact.local) { // No JPM-Classpath, falling back to
+											// server's revision
+//				Iterable<RevisionRef> closure = library.getClosure(artifact.sha, false);
+//				System.out.println("getting closure " + artifact.url + " " + Strings.join("\n",closure));
+				
+//				if (closure != null) {
+//					for (RevisionRef ref : closure) {
+//						path.add(Hex.toHexString(ref.revision));
+//					}
+//				}
 			}
 
 			if (main.getValue("JPM-Runbundles") != null) {

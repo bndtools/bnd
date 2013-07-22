@@ -12,6 +12,7 @@ public class ArtifactData extends struct {
 	boolean			busy	= false;
 	public String	file;
 	public String	name;
+	public boolean	local;
 
 	synchronized void done() {
 		busy = false;

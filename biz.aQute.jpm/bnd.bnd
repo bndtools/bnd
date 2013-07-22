@@ -28,7 +28,7 @@ Bundle-Version: 				1.0.2
 	com.springsource.junit,\
 	org.mockito.mockito-all;version=1.9.0,\
 	biz.aQute.bndlib;version=latest,\
-	aQute.jpm.clnt;version=1.0
+	aQute.jpm.clnt;version=latest
 	
 
 -digests: MD5, SHA1
