@@ -658,7 +658,8 @@ public class Clazz {
 			}
 			if (cd != null)
 				cd.memberEnd();
-
+			last = null;
+			
 			doAttributes(in, ElementType.TYPE, false, accessx);
 
 			//
@@ -975,7 +976,6 @@ public class Clazz {
 		try {
 
 			parseDescriptor(signature, access_flags);
-
 			if (last != null)
 				last.signature = signature;
 
