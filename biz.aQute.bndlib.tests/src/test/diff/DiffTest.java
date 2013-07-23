@@ -6,9 +6,62 @@ import junit.framework.*;
 import aQute.bnd.differ.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.diff.*;
+import aQute.lib.io.*;
 
 public class DiffTest extends TestCase {
 	static DiffPluginImpl	differ	= new DiffPluginImpl();
+
+	
+	public void testInheritanceII() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty(Constants.EXPORT_PACKAGE, "test.diff.inherit");
+		b.build();
+		Tree newer = differ.tree(b);
+		System.out.println(newer.get("<api>"));
+		Tree older = differ.tree(b);
+		assertTrue(newer.diff(older).getDelta() == Delta.UNCHANGED);
+	}
+
+	/**
+	 * The diff command reports changes on (at least) the guava bundles when
+	 * they have not changed, even when I feed it the same file at both ends.
+	 * Even stranger is the fact that, though always about the same class, the
+	 * actual diff is not consistent. Tested with several versions of bnd
+	 * (including master HEAD) as well as several versions of the guava bundles
+	 * from maven central. Reproduced by @bnd .
+	 * 
+	 * <pre>
+	 * $ java -jar biz.aQute.bnd.jar diff guava-14.0.1.jar guava-14.0.1.jar
+	 * MINOR      PACKAGE    com.google.common.collect
+	 *  MINOR      CLASS      com.google.common.collect.ContiguousSet
+	 *   MINOR      METHOD     tailSet(java.lang.Object,boolean)
+	 *    ADDED      RETURN     com.google.common.collect.ImmutableCollection
+	 *    ADDED      RETURN     com.google.common.collect.ImmutableSet
+	 *    ADDED      RETURN     com.google.common.collect.ImmutableSortedSet
+	 *    ADDED      RETURN
+	 * com.google.common.collect.ImmutableSortedSetFauxverideShim
+	 *    ADDED      RETURN     com.google.common.collect.SortedIterable
+	 *    ADDED      RETURN     java.io.Serializable
+	 *    ADDED      RETURN     java.lang.Iterable
+	 *    ADDED      RETURN     java.lang.Iterable
+	 *    ADDED      RETURN     java.lang.Iterable
+	 *    ADDED      RETURN     java.util.Collection
+	 *    ADDED      RETURN     java.util.Collection
+	 *    ADDED      RETURN     java.util.Set
+	 * </pre>
+	 * 
+	 * @throws Exception
+	 */
+
+	public void testGuavaDiff() throws Exception {
+		File guava = IO.getFile("testresources/guava-14.0.1.jar");
+		Tree one = differ.tree(guava);
+		System.out.println(one.get("<api>"));
+		Tree two = differ.tree(guava);
+		Diff diff = one.diff(two);
+		assertTrue(diff.getDelta() == Delta.UNCHANGED);
+	}
 
 	public static void testAwtGeom() throws Exception {
 		Tree newer = differ.tree(new File("../cnf/repo/ee.j2se/ee.j2se-1.5.0.jar"));
@@ -18,13 +71,17 @@ public class DiffTest extends TestCase {
 	}
 
 	public static final class Final {
-		public void foo() {}
+		public Final foo() {
+			return null;
+		}
 	}
 
 	public static class II {
 		final int	x	= 3;
 
-		public void foo() {}
+		public II foo() {
+			return null;
+		}
 	}
 
 	public static class I extends II {
@@ -33,7 +90,9 @@ public class DiffTest extends TestCase {
 		}
 
 		@Override
-		public void foo() {}
+		public I foo() {
+			return null;
+		}
 	}
 
 	public static void testInheritance() throws Exception {
@@ -43,8 +102,12 @@ public class DiffTest extends TestCase {
 		b.build();
 		Tree newer = differ.tree(b);
 		Tree older = differ.tree(b);
+		System.out.println(newer);
+		System.out.println(older);
+
 		Diff diff = newer.diff(older);
 		Diff p = diff.get("<api>").get("test.diff");
+		assertTrue(p.getDelta() == Delta.UNCHANGED);
 		show(p, 0);
 		Diff c = p.get("test.diff.DiffTest$I");
 		assertNotNull(c.get("hashCode()"));

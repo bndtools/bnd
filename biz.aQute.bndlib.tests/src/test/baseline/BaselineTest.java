@@ -19,7 +19,6 @@ import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.reporter.*;
-import aQute.service.reporter.*;
 
 public class BaselineTest extends TestCase {
 
@@ -225,6 +224,7 @@ public class BaselineTest extends TestCase {
 		Jar newer = new Jar(new File("testresources/api-providerbump.jar"));
 
 		Set<Info> infoSet = baseline.baseline(newer, older, null);
+		System.out.println(differ.tree(newer).get("<api>"));
 
 		assertEquals(1, infoSet.size());
 		Info info = infoSet.iterator().next();

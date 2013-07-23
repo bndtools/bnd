@@ -127,7 +127,7 @@ class JavaElement {
 	}
 
 	private Element getLocalAPI() throws Exception {
-		List<Element> result = new ArrayList<Element>();
+		Set<Element> result = new HashSet<Element>();
 
 		for (Map.Entry<PackageRef,List<Element>> entry : packages.entrySet()) {
 			List<Element> set = entry.getValue();
@@ -171,8 +171,8 @@ class JavaElement {
 			return e;
 
 		final StringBuilder comment = new StringBuilder();
-		final Set<Element> members = new HashSet<Element>();
-		final Set<MethodDef> methods = Create.set();
+		final Set<Element> members = new LinkedHashSet<Element>();
+		final Set<MethodDef> methods = new LinkedHashSet<MethodDef>();
 		final Set<Clazz.FieldDef> fields = Create.set();
 		final MultiMap<Clazz.Def,Element> annotations = new MultiMap<Clazz.Def,Element>();
 
@@ -422,8 +422,10 @@ class JavaElement {
 
 		// Remove all synthetic methods, we need
 		// to treat them special for the covariant returns
+		// We must do this in the correct order so please
+		// keep the linked hashset in place!
 
-		Set<MethodDef> synthetic = Create.set();
+		Set<MethodDef> synthetic = new LinkedHashSet<MethodDef>();
 		for (Iterator<MethodDef> i = methods.iterator(); i.hasNext();) {
 			MethodDef m = i.next();
 			if (m.isSynthetic()) {
@@ -432,10 +434,12 @@ class JavaElement {
 			}
 		}
 
+		//System.out.println("methods/synthetic " + clazz+ " " + methods + " " + synthetic);
 		for (MethodDef m : methods) {
-			List<Element> children = annotations.get(m);
+			
+			Collection<Element> children = annotations.get(m);
 			if (children == null)
-				children = new ArrayList<Element>();
+				children = new HashSet<Element>();
 
 			access(children, m.getAccess(), m.isDeprecated());
 
@@ -477,9 +481,9 @@ class JavaElement {
 		 * Repeat for the remaining synthetic methods
 		 */
 		for (MethodDef m : synthetic) {
-			List<Element> children = annotations.get(m);
+			Collection<Element> children = annotations.get(m);
 			if (children == null)
-				children = new ArrayList<Element>();
+				children = new HashSet<Element>();
 			access(children, m.getAccess(), m.isDeprecated());
 
 			// A final class cannot be extended, ergo,
@@ -509,9 +513,9 @@ class JavaElement {
 		}
 
 		for (Clazz.FieldDef f : fields) {
-			List<Element> children = annotations.get(f);
+			Collection<Element> children = annotations.get(f);
 			if (children == null)
-				children = new ArrayList<Element>();
+				children = new HashSet<Element>();
 
 			// Fields can have a constant value, this is a new element
 			if (f.getConstant() != null) {

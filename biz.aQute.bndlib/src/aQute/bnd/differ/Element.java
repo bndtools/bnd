@@ -139,7 +139,16 @@ class Element implements Tree {
 
 	@Override
 	public String toString() {
-		return type + " " + name + " (" + add + "/" + remove + ")";
+		StringBuilder sb = new StringBuilder();
+		toString(sb, "");
+		return sb.toString();
+	}
+
+	private void toString(StringBuilder sb, String indent) {
+		sb.append(indent).append(type).append(" ").append(name).append(" (").append(add).append("/").append(remove)
+				.append(")").append("\n");
+		for (Element e : children)
+			e.toString(sb, indent + " ");
 	}
 
 }
