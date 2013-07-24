@@ -105,6 +105,7 @@ public class ProjectBuilder extends Builder {
 			trace("No baseline jar %s", getProperty(Constants.BASELINE));
 			return;
 		}
+		
 		Version newer = new Version(getVersion());
 		Version older = new Version(fromRepo.getVersion());
 
@@ -263,7 +264,11 @@ public class ProjectBuilder extends Builder {
 		SortedSet<Version> versions = removeStagedAndFilter(repo.versions(bsn));
 
 		if (versions.isEmpty()) {
-			error("There are no versions for %s in the %s repo", bsn, repo);
+			// We have a repo
+			Version v = new Version(getVersion());
+			if ( v.getWithoutQualifier().compareTo(Version.ONE) > 0) {
+				error("There is no baseline for %s in the baseline repo %s. The build is for version %s, which is <= 1.0.0 which suggests that there should be a prior version.", getBsn(),repo,v);
+			}
 			return null;
 		}
 
@@ -370,12 +375,7 @@ public class ProjectBuilder extends Builder {
 
 	private RepositoryPlugin getReleaseRepo() {
 		RepositoryPlugin repo = null;
-		String repoName = getProperty(Constants.BASELINEREPO);
-		if (repoName == null)
-			repoName = getProperty(Constants.RELEASEREPO);
-
-		if (repoName != null && Constants.NONE.equals(repoName))
-			return null;
+		String repoName = getReleaseRepoName();
 
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
 		for (RepositoryPlugin r : repos) {
@@ -396,6 +396,17 @@ public class ProjectBuilder extends Builder {
 
 		return repo;
 
+	}
+
+	private String getReleaseRepoName() {
+		String repoName = getProperty(Constants.BASELINEREPO);
+		if (repoName == null)
+			repoName = getProperty(Constants.RELEASEREPO);
+
+		if (repoName != null && Constants.NONE.equals(repoName))
+			return null;
+		
+		return repoName;
 	}
 
 }

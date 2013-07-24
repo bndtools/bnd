@@ -11,7 +11,6 @@ public class TestSelfBuild extends TestCase {
 		Project project = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile()).getProject(
 				"biz.aQute.bndlib");
 		project.setPedantic(true);
-		project.action("build");
 
 		File files[] = project.build();
 		assertTrue(project.check("Imports that lack version ranges", "for exported package aQute.bnd.service.resolve.hook"));

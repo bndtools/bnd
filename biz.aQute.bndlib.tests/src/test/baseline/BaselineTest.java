@@ -107,7 +107,7 @@ public class BaselineTest extends TestCase {
 			ra.setPedantic(true);
 			Set<Info> infos = baseline.baseline(j2, j11, null);
 			print(baseline.getDiff(), " ");
-			
+
 			assertEquals(Delta.UNCHANGED, baseline.getDiff().getDelta());
 		}
 		finally {
@@ -117,7 +117,6 @@ public class BaselineTest extends TestCase {
 
 	static Pattern	VERSION_HEADER_P	= Pattern.compile("Bundle-Header:(" + Verifier.VERSION_STRING + ")",
 												Pattern.CASE_INSENSITIVE);
-
 
 	void print(Diff diff, String indent) {
 		if (diff.getDelta() == Delta.UNCHANGED)
@@ -205,11 +204,47 @@ public class BaselineTest extends TestCase {
 			builder.setProperty(Constants.BASELINE, "*");
 			builder.setProperty(Constants.BASELINEREPO, "Baseline");
 			builder.build();
-			
+
 			if (!builder.check("The bundle version 1.2.0 is too low, must be at least 1.3.0"))
 				fail();
 
-			
+		}
+	}
+
+	/**
+	 * Check what happens when there is nothing in the repo ... We do not
+	 * generate an error when version <=1.0.0, otherwise we generate an error.
+	 * 
+	 * @throws Exception
+	 */
+	public static void testNothingInRepo() throws Exception {
+		File tmp = new File("tmp");
+		tmp.mkdirs();
+		try {
+			IO.copy(new File("testresources/ws"), tmp);
+			Workspace ws = new Workspace(tmp);
+			RepositoryPlugin repo = mock(RepositoryPlugin.class);
+			when(repo.canWrite()).thenReturn(true);
+			when(repo.getName()).thenReturn("Baseline");
+			when(repo.versions("p3")).thenReturn(new TreeSet<Version>());
+			ws.addBasicPlugin(repo);
+			Project p3 = ws.getProject("p3");
+			p3.setProperty(Constants.BASELINE, "*");
+			p3.setProperty(Constants.BASELINEREPO, "Baseline");
+			p3.setBundleVersion("0");
+			p3.build();
+			assertTrue(p3.check());
+
+			p3.setBundleVersion("1.0.0.XXXXXX");
+			p3.build();
+			assertTrue(p3.check());
+
+			p3.setBundleVersion("5");
+			p3.build();
+			assertTrue(p3.check("There is no baseline for p3 in the baseline repo"));
+		}
+		finally {
+			IO.delete(tmp);
 		}
 	}
 
