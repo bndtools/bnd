@@ -504,8 +504,11 @@ public class Launcher implements ServiceListener {
 	Bundle install(File f) throws Exception {
 		BundleContext context = systemBundle.getBundleContext();
 		try {
-			trace("will install %s with reference", f.getAbsolutePath());
-			String reference = "reference:" + f.toURI().toURL().toExternalForm();
+			String reference;
+			if ( !isWindows() )
+				reference = "reference:" + f.toURI().toURL().toExternalForm();
+			else 
+				reference = f.toURI().toURL().toExternalForm();
 			Bundle b = context.installBundle(reference);
 			if (b.getLastModified() < f.lastModified()) {
 				b.update();
@@ -523,6 +526,10 @@ public class Launcher implements ServiceListener {
 				in.close();
 			}
 		}
+	}
+
+	private boolean isWindows() {
+		return File.separatorChar == '\\';
 	}
 
 	private void doTimeoutHandler() {
