@@ -13,6 +13,19 @@ import aQute.lib.io.*;
 public class LauncherTest extends TestCase {
 
 	/**
+	 * Test the java agent
+	 * @throws Exception
+	 */
+	public static void testAgent() throws Exception {
+		Project project = getProject();
+		project.clear();
+		project.setProperty("-javaagent", "true");
+		ProjectLauncher l = project.getProjectLauncher();
+		l.setTrace(true);
+		l.getRunProperties().put("test.cmd", "agent");
+		assertEquals(55, l.launch());
+	}
+	/**
 	 * Tests if the properties are cleaned up. This requires some knowledge of
 	 * the launcher unfortunately. It is also not sure if the file is not just
 	 * deleted by the onExit ...
@@ -168,6 +181,7 @@ public class LauncherTest extends TestCase {
 		Workspace workspace = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile());
 		Project project = workspace.getProject("demo");
 		project.clear();
+		project.forceRefresh();
 		return project;
 	}
 

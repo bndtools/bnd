@@ -1,5 +1,6 @@
 package test;
 
+import java.lang.instrument.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -7,7 +8,7 @@ import org.osgi.framework.*;
 
 public class TestActivator implements BundleActivator {
 
-	public void start(BundleContext context) throws Exception {
+	public void start(final BundleContext context) throws Exception {
 		System.err.println("Hello world");
 		context.registerService(TestActivator.class.getName(), this, null);
 
@@ -17,6 +18,22 @@ public class TestActivator implements BundleActivator {
 			System.exit(42);
 		else if ("timeout".equals(p)) {
 			Thread.sleep(10000);
+		} else if ("agent".equals(p)) {
+			Hashtable<String,Object> ht = new Hashtable<String,Object>();
+			ht.put("main.thread", true);
+			context.registerService(Callable.class.getName(), new Callable<Integer>() {
+
+				public Integer call() throws Exception {
+					ServiceReference ref = context.getServiceReference(Instrumentation.class.getName());
+					if ( ref == null) 
+						return -1;
+					
+					Instrumentation i = (Instrumentation) context.getService(ref);
+					if ( i == null)
+						return -2;
+
+					return 55;
+				}}, ht);
 		} else if ("main.thread".equals(p)) {
 			Runnable r = new Runnable() {
 

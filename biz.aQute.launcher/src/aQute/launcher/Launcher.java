@@ -3,6 +3,7 @@ package aQute.launcher;
 import static aQute.launcher.constants.LauncherConstants.*;
 
 import java.io.*;
+import java.lang.instrument.*;
 import java.lang.reflect.*;
 import java.net.*;
 import java.security.*;
@@ -17,6 +18,7 @@ import org.osgi.framework.launch.*;
 import org.osgi.service.packageadmin.*;
 import org.osgi.service.permissionadmin.*;
 
+import aQute.launcher.agent.*;
 import aQute.launcher.constants.*;
 import aQute.launcher.minifw.*;
 
@@ -25,10 +27,10 @@ import aQute.launcher.minifw.*;
  * 1.4.
  */
 public class Launcher implements ServiceListener {
-	
+
 	// Use our own constant for this rather than depend on OSGi core 4.3
-	private static final String FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA = "org.osgi.framework.system.capabilities.extra";
-	
+	private static final String			FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA	= "org.osgi.framework.system.capabilities.extra";
+
 	private PrintStream					out;
 	LauncherConstants					parms;
 	Framework							systemBundle;
@@ -168,6 +170,15 @@ public class Launcher implements ServiceListener {
 			// Register the command line with ourselves as the
 			// service.
 			if (parms.services) { // Does not work for our dummy framework
+				
+				if (LauncherAgent.instrumentation != null) {
+					Hashtable<String,Object> argprops = new Hashtable<String,Object>();
+					if ( LauncherAgent.agentArgs != null) 
+						argprops.put("agent.arguments", LauncherAgent.agentArgs);
+					systemBundle.getBundleContext().registerService(Instrumentation.class.getName(),
+							LauncherAgent.instrumentation, argprops);
+				}
+
 				Hashtable<String,Object> argprops = new Hashtable<String,Object>();
 				argprops.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
 				argprops.put(LauncherConstants.LAUNCHER_READY, "true");

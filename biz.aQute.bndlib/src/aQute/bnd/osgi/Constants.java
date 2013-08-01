@@ -52,7 +52,7 @@ public interface Constants {
 	String							CREATED_BY									= "Created-By";
 	String							TOOL										= "Tool";
 	String							TESTCASES									= "Test-Cases";
-	String							REPOSITORIES									= "Repositories";
+	String							REPOSITORIES								= "Repositories";
 	/**
 	 * @deprecated Use {@link Constants#TESTCASES}.
 	 */
@@ -90,6 +90,8 @@ public interface Constants {
 	String							FAIL_OK										= "-failok";
 	String							INCLUDE										= "-include";
 	String							INCLUDERESOURCE								= "-includeresource";
+	String							JAVAAGENT									= "-javaagent";
+
 	String							MAKE										= "-make";
 	String							METATYPE									= "-metatype";
 	String							MANIFEST									= "-manifest";

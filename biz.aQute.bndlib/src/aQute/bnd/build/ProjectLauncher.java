@@ -40,6 +40,7 @@ public abstract class ProjectLauncher {
 	private boolean				keep;
 	private int					framework;
 	private File				cwd;
+	private Collection<String>	agents = new ArrayList<String>();
 
 	public final static int		SERVICES			= 10111;
 	public final static int		NONE				= 20123;
@@ -101,7 +102,8 @@ public abstract class ProjectLauncher {
 		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
-		List<Container> fws = project.getBundles(Strategy.HIGHEST, project.getProperty(Constants.RUNFW), Constants.RUNFW);
+		List<Container> fws = project.getBundles(Strategy.HIGHEST, project.getProperty(Constants.RUNFW),
+				Constants.RUNFW);
 		runpath.addAll(fws);
 
 		for (Container c : runpath) {
@@ -135,11 +137,22 @@ public abstract class ProjectLauncher {
 			for (Container m : members) {
 				String path = m.getFile().getAbsolutePath();
 				if (!classpath.contains(path)) {
-					classpath.add(path);
 
 					Manifest manifest = m.getManifest();
 
 					if (manifest != null) {
+
+						// We are looking for any agents, used if
+						// -javaagent=true is set
+						String agentClassName = manifest.getMainAttributes().getValue("Premain-Class");
+						if (agentClassName != null) {
+							String agent = path;
+							if ( container.attributes != null && container.attributes.get("agent")!=null) {
+								agent += "=" + container.attributes.get("agent");
+							}
+							agents.add(path);
+						}
+
 						Parameters exports = project.parseHeader(manifest.getMainAttributes().getValue(
 								Constants.EXPORT_PACKAGE));
 						for (Entry<String,Attrs> e : exports.entrySet()) {
@@ -156,6 +169,7 @@ public abstract class ProjectLauncher {
 						if (activator != null)
 							activators.add(activator);
 					}
+					classpath.add(path);
 				}
 			}
 		}
@@ -214,6 +228,12 @@ public abstract class ProjectLauncher {
 		prepare();
 		java = new Command();
 		java.add(project.getProperty("java", "java"));
+		String javaagent = project.getProperty(Constants.JAVAAGENT);
+		if (Processor.isTrue(javaagent)) {
+			for (String agent : agents) {
+				java.add("-javaagent:" + agent);
+			}
+		}
 		java.add("-cp");
 		java.add(Processor.join(getClasspath(), File.pathSeparator));
 		java.addAll(getRunVM());
@@ -221,10 +241,12 @@ public abstract class ProjectLauncher {
 		java.addAll(getRunProgramArgs());
 		if (timeout != 0)
 			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
-		
-		File cwd = getCwd();
-		if (cwd != null) java.setCwd(cwd);
 
+		File cwd = getCwd();
+		if (cwd != null)
+			java.setCwd(cwd);
+
+		project.trace("cmd line %s", java);
 		try {
 			int result = java.execute(System.in, System.err, System.err);
 			if (result == Integer.MIN_VALUE)
@@ -283,7 +305,7 @@ public abstract class ProjectLauncher {
 	public Map<String, ? extends Map<String,String>> getSystemPackages() {
 		return runsystempackages.asMapMap();
 	}
-	
+
 	public String getSystemCapabilities() {
 		return runsystemcapabilities;
 	}
@@ -385,7 +407,7 @@ public abstract class ProjectLauncher {
 		String formatted = String.format(message, args);
 		warnings.add(formatted);
 	}
-	
+
 	public File getCwd() {
 		return cwd;
 	}
