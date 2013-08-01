@@ -36,6 +36,7 @@ public class LauncherConstants {
 	final static String			LAUNCH_ACTIVATORS			= "launch.activators";
 	final static String			LAUNCH_EMBEDDED				= "launch.embedded";
 	final static String			LAUNCH_NAME					= "launch.name";
+	final static String			LAUNCH_NOREFERENCES			= "launch.noreferences";
 	/**
 	 * The command line arguments of the launcher. Launcher are not supposed to
 	 * eat any arguments, they should use -D VM arguments so that applications
@@ -44,6 +45,7 @@ public class LauncherConstants {
 	 */
 
 	public boolean				services;
+	public boolean				noreferences;
 	public File					storageDir;
 	public boolean				keep;
 	public final List<String>	runbundles					= new ArrayList<String>();
@@ -63,6 +65,7 @@ public class LauncherConstants {
 	 */
 	public Properties getProperties() {
 		Properties p = new Properties();
+		p.setProperty(LAUNCH_NOREFERENCES, noreferences + "");
 		p.setProperty(LAUNCH_SERVICES, services + "");
 		if (storageDir != null)
 			p.setProperty(LAUNCH_STORAGE_DIR, storageDir.getAbsolutePath());
@@ -106,6 +109,7 @@ public class LauncherConstants {
 		services = Boolean.valueOf(p.getProperty(LAUNCH_SERVICES));
 		if (p.getProperty(LAUNCH_STORAGE_DIR) != null)
 			storageDir = new File(p.getProperty(LAUNCH_STORAGE_DIR));
+		noreferences = Boolean.valueOf(p.getProperty(LAUNCH_NOREFERENCES));
 		keep = Boolean.valueOf(p.getProperty(LAUNCH_KEEP));
 		runbundles.addAll(split(p.getProperty(LAUNCH_RUNBUNDLES), ","));
 		systemPackages = p.getProperty(LAUNCH_SYSTEMPACKAGES);

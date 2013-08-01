@@ -505,10 +505,11 @@ public class Launcher implements ServiceListener {
 		BundleContext context = systemBundle.getBundleContext();
 		try {
 			String reference;
-			if ( !isWindows() )
+			if ( !isWindows() && !parms.noreferences)
 				reference = "reference:" + f.toURI().toURL().toExternalForm();
 			else 
 				reference = f.toURI().toURL().toExternalForm();
+			
 			Bundle b = context.installBundle(reference);
 			if (b.getLastModified() < f.lastModified()) {
 				b.update();

@@ -12,6 +12,15 @@ import aQute.lib.io.*;
 
 public class LauncherTest extends TestCase {
 
+	public static void testNoReferences() throws Exception {
+		Project project = getProject();
+		project.setProperty("-runnoreferences", true+"");
+
+		ProjectLauncher l = project.getProjectLauncher();
+		l.setTrace(true);
+		l.getRunProperties().put("test.cmd", "noreference");
+		assertEquals(15, l.launch());
+	}
 	/**
 	 * Try launching a workspace with spaces
 	 */

@@ -18,6 +18,14 @@ public class TestActivator implements BundleActivator {
 			System.exit(42);
 		else if ("timeout".equals(p)) {
 			Thread.sleep(10000);
+		}else if ("noreference".equals(p)) {
+			String location = context.getBundle().getLocation();
+			
+			if ( location.startsWith("reference:"))
+				System.exit(-1);
+			else
+				System.exit(15);
+				
 		} else if ("agent".equals(p)) {
 			Hashtable<String,Object> ht = new Hashtable<String,Object>();
 			ht.put("main.thread", true);
