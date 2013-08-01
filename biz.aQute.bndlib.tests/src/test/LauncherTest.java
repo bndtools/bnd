@@ -13,7 +13,34 @@ import aQute.lib.io.*;
 public class LauncherTest extends TestCase {
 
 	/**
+	 * Try launching a workspace with spaces
+	 */
+	public static void testSpaces() throws Exception {
+		File f = new File("t m p");
+		try {
+			File cnf = new File(f, "cnf");
+			File demo = new File(f, "demo");
+			IO.copy(IO.getFile("../cnf"), IO.getFile(f, "cnf"));
+			IO.copy(IO.getFile("../demo"), IO.getFile(f, "demo"));
+			IO.copy(IO.getFile("../biz.aQute.launcher"), IO.getFile(f, "biz.aQute.launcher"));
+			IO.copy(IO.getFile("../biz.aQute.junit"), IO.getFile(f, "biz.aQute.junit"));
+
+			Workspace ws = Workspace.getWorkspace(f);
+			Project p = ws.getProject("demo");
+			p.build();
+			ProjectLauncher l = p.getProjectLauncher();
+			l.setTrace(true);
+			l.getRunProperties().put("test.cmd", "exit");
+			assertEquals(42, l.launch());
+		}
+		finally {
+			IO.delete(f);
+		}
+	}
+
+	/**
 	 * Test the java agent
+	 * 
 	 * @throws Exception
 	 */
 	public static void testAgent() throws Exception {
@@ -25,6 +52,7 @@ public class LauncherTest extends TestCase {
 		l.getRunProperties().put("test.cmd", "agent");
 		assertEquals(55, l.launch());
 	}
+
 	/**
 	 * Tests if the properties are cleaned up. This requires some knowledge of
 	 * the launcher unfortunately. It is also not sure if the file is not just
@@ -90,6 +118,7 @@ public class LauncherTest extends TestCase {
 
 	/**
 	 * Test the packager
+	 * 
 	 * @throws Exception
 	 */
 	public static void testPackager() throws Exception {
@@ -103,12 +132,13 @@ public class LauncherTest extends TestCase {
 		l.setTrace(true);
 		Jar executable = l.executable();
 		assertNotNull(executable);
-		assertEquals( "exec", project.getProperty("testprop"));
-		assertEquals( "exec", project.getProperty("Header"));
+		assertEquals("exec", project.getProperty("testprop"));
+		assertEquals("exec", project.getProperty("Header"));
 	}
 
 	/**
 	 * Test the sha packager
+	 * 
 	 * @throws Exception
 	 */
 	public static void testShaPackager() throws Exception {
@@ -124,53 +154,52 @@ public class LauncherTest extends TestCase {
 		System.out.flush();
 		assertNotNull(m.getMainAttributes().getValue("JPM-Classpath"));
 		assertNotNull(m.getMainAttributes().getValue("JPM-Runbundles"));
-		
-		Resource r= executable.getResource( "launcher.properties");
+
+		Resource r = executable.getResource("launcher.properties");
 		assertNotNull(r);
-		
+
 		Properties p = new Properties();
 		p.load(r.openInputStream());
-		
+
 		System.out.println(p);
-		
+
 		String s = p.getProperty("launch.bundles");
-		assertTrue( s.contains("${JPMREPO}/"));
-		assertEquals( "false", p.getProperty("launch.embedded"));
+		assertTrue(s.contains("${JPMREPO}/"));
+		assertEquals("false", p.getProperty("launch.embedded"));
 	}
-
-
 
 	/**
 	 * This needs to be adapted because the previous left lots of files after
-	 * testing. This current one does not work since the demo project
-	 * uses the snapshots of the launcher and tester, and when copied
-	 * they are not there in that workspace. So we need another demo project
-	 * that does not use OSGi and has not special deps. Then the following code
-	 * can be used.
+	 * testing. This current one does not work since the demo project uses the
+	 * snapshots of the launcher and tester, and when copied they are not there
+	 * in that workspace. So we need another demo project that does not use OSGi
+	 * and has not special deps. Then the following code can be used.
+	 * 
 	 * @throws Exception
 	 */
 	public static void testWorkspaceWithSpace() throws Exception {
-//		// reuse built .class files from the demo project.
-//		String base = new File("").getAbsoluteFile().getParentFile().getAbsolutePath();
-//		File ws = IO.getFile("tmp/ space ");
-//		try {
-//			IO.delete(ws);
-//			ws.mkdirs();
-//			IO.copy( IO.getFile("../demo"), IO.getFile(ws, "demo"));
-//			IO.getFile(ws, "cnf").mkdirs();
-//			IO.copy( IO.getFile("../cnf"), IO.getFile(ws, "cnf"));
-//			Workspace wp = new Workspace(ws);
-//			
-//			Project p = wp.getProject("demo");
-//			p.clear();
-//			ProjectLauncher l = p.getProjectLauncher();
-//			l.setTrace(true);
-//			l.getRunProperties().put("test.cmd", "exit");
-//			assertEquals(42, l.launch());			
-//		}
-//		finally {
-//			IO.delete(ws);
-//		}
+		// // reuse built .class files from the demo project.
+		// String base = new
+		// File("").getAbsoluteFile().getParentFile().getAbsolutePath();
+		// File ws = IO.getFile("tmp/ space ");
+		// try {
+		// IO.delete(ws);
+		// ws.mkdirs();
+		// IO.copy( IO.getFile("../demo"), IO.getFile(ws, "demo"));
+		// IO.getFile(ws, "cnf").mkdirs();
+		// IO.copy( IO.getFile("../cnf"), IO.getFile(ws, "cnf"));
+		// Workspace wp = new Workspace(ws);
+		//
+		// Project p = wp.getProject("demo");
+		// p.clear();
+		// ProjectLauncher l = p.getProjectLauncher();
+		// l.setTrace(true);
+		// l.getRunProperties().put("test.cmd", "exit");
+		// assertEquals(42, l.launch());
+		// }
+		// finally {
+		// IO.delete(ws);
+		// }
 	}
 
 	/**
@@ -232,18 +261,19 @@ public class LauncherTest extends TestCase {
 	public static void testMainThread() throws Exception {
 		assertExitCode("main.thread", ProjectLauncher.OK);
 	}
-	
+
 	public static void testMainThreadBoth() throws Exception {
 		assertExitCode("main.thread.both", 43);
 	}
-	
+
 	public static void testMainThreadCallableNull() throws Exception {
 		assertExitCode("main.thread.callablenull", 0);
 	}
-	
+
 	public static void testMainThreadInvalidType() throws Exception {
 		assertExitCode("main.thread.callableinvalidtype", 0);
 	}
+
 	public static void testMainThreadCallable() throws Exception {
 		assertExitCode("main.thread.callable", 42);
 	}
