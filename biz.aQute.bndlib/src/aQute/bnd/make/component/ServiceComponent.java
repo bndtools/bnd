@@ -246,14 +246,15 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * 
 		 * @param name
 		 * @param config
+		 * @throws Exception 
 		 */
-		private boolean designate(String name, String config, boolean factory) {
+		private boolean designate(String name, String config, boolean factory) throws Exception {
 			if (config == null)
 				return false;
 
 			for (String c : Processor.split(config)) {
 				TypeRef ref = analyzer.getTypeRefFromFQN(c);
-				Clazz clazz = analyzer.getClassspace().get(ref);
+				Clazz clazz = analyzer.findClass(ref);
 				if (clazz != null) {
 					analyzer.referTo(ref);
 					MetaTypeReader r = new MetaTypeReader(clazz, analyzer);
