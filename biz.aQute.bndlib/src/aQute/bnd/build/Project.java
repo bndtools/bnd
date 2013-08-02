@@ -23,7 +23,6 @@ import aQute.lib.io.*;
 import aQute.libg.generics.*;
 import aQute.libg.reporter.*;
 import aQute.libg.sed.*;
-import aQute.service.reporter.Report.*;
 
 /**
  * This class is NOT threadsafe
@@ -321,6 +320,14 @@ public class Project extends Processor {
 		return new File(getBase(), getProperty("src", "src"));
 	}
 
+	public File getTestSrc() {
+		return new File(getBase(), getProperty("test", "test"));
+	}
+	
+	public File getTestOutput() throws Exception {
+		return new File(getBase(), getProperty("bin_test", "bin_test"));
+	}
+	
 	private void traverse(Collection<Project> dependencies, Set<Project> visited) throws Exception {
 		if (visited.contains(this))
 			return;
@@ -619,6 +626,7 @@ public class Project extends Processor {
 		prepare();
 		return output;
 	}
+
 
 	private void doEclipseClasspath() throws Exception {
 		EclipseClasspath eclipse = new EclipseClasspath(this, getWorkspace().getBase(), getBase());
@@ -2077,7 +2085,6 @@ public class Project extends Processor {
 		return Version.emptyVersion;
 	}
 
-	@SuppressWarnings("resource")
 	Version getPackageInfoVersion(String packageName) throws IOException {
 		File packageInfoFile = getPackageInfoFile(packageName);
 		if (!packageInfoFile.exists()) {
