@@ -101,7 +101,7 @@ public interface Constants {
 	String							NODEFAULTVERSION							= "-nodefaultversion";
 	String							NOEXTRAHEADERS								= "-noextraheaders";
 	String							NOMANIFEST									= "-nomanifest";
-	String							NOREFERENCE										= "-noreference";
+	String							NOREFERENCE									= "-noreference";
 	String							NOUSES										= "-nouses";
 	String							NOBUNDLES									= "-nobundles";
 	String							PACKAGE										= "-package";
@@ -115,6 +115,7 @@ public interface Constants {
 	String							RESOURCEONLY								= "-resourceonly";
 	String							SOURCES										= "-sources";
 	String							SOURCEPATH									= "-sourcepath";
+	String							STRICT										= "-strict";
 	String							SUB											= "-sub";
 	String							RUNPROPERTIES								= "-runproperties";
 	String							RUNSYSTEMPACKAGES							= "-runsystempackages";
@@ -171,7 +172,7 @@ public interface Constants {
 			SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES, RUNSYSTEMCAPABILITIES, RUNPROPERTIES, REPORTNEWER,
 			UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST,
 			RUNVM, RUNPROGRAMARGS, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION,
-			DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, NOREFERENCE, JAVAAGENT
+			DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, NOREFERENCE, JAVAAGENT, STRICT
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make

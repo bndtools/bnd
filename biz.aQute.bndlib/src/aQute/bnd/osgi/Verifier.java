@@ -9,6 +9,7 @@ import java.util.regex.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.version.*;
 import aQute.lib.base64.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
@@ -187,6 +188,7 @@ public class Verifier extends Processor {
 	}
 
 	public Verifier(Analyzer analyzer) throws Exception {
+		super(analyzer);
 		this.analyzer = analyzer;
 		this.dot = analyzer.getJar();
 		this.manifest = dot.getManifest();
@@ -379,6 +381,8 @@ public class Verifier extends Processor {
 		verifyActivationPolicy();
 		verifyComponent();
 		verifyNative();
+		verifyImports();
+		verifyExports();
 		verifyUnresolvedReferences();
 		verifySymbolicName();
 		verifyListHeader("Bundle-RequiredExecutionEnvironment", EENAME, false);
@@ -398,6 +402,122 @@ public class Verifier extends Processor {
 
 		verifyRequirements();
 		verifyCapabilities();
+	}
+
+	/**
+	 * Verify that the imports properly use version ranges.
+	 */
+	private void verifyImports() {
+		if (isStrict()) {
+			Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.IMPORT_PACKAGE));
+			Set<String> noimports = new HashSet<String>();
+			Set<String> toobroadimports = new HashSet<String>();
+
+			for (Entry<String,Attrs> e : map.entrySet()) {
+				String version = e.getValue().get(Constants.VERSION_ATTRIBUTE);
+				if (version == null) {
+					if (!e.getKey().startsWith("javax.")) {
+						noimports.add(e.getKey());
+					}
+				} else {
+					if (!VERSIONRANGE.matcher(version).matches()) {
+						Location location = error("Import Package %s has an invalid version range syntax %s",
+								e.getKey(), version).location();
+						location.header = Constants.IMPORT_PACKAGE;
+						location.context = e.getKey();
+					} else {
+						try {
+							VersionRange range = new VersionRange(version);
+							if (!range.isRange()) {
+								toobroadimports.add(e.getKey());
+							}
+							if ( range.includeHigh() == false && range.includeLow() == false && range.getLow().equals(range.getHigh())) {
+								Location location = error("Import Package %s has an empty version range syntax %s, likely want to use [%s,%s]",
+										e.getKey(), version, range.getLow(), range.getHigh()).location();
+								location.header = Constants.IMPORT_PACKAGE;
+								location.context = e.getKey();
+							}
+							// TODO check for exclude low, include high?
+						}
+						catch (Exception ee) {
+							Location location = error("Import Package %s has an invalid version range syntax %s:%s",
+									e.getKey(), version,ee.getMessage()).location();
+							location.header = Constants.IMPORT_PACKAGE;
+							location.context = e.getKey();
+						}
+					}
+				}
+			}
+
+			if (!noimports.isEmpty()) {
+				Location location = error("Import Package clauses without version range (excluding javax.*): %s",
+						noimports).location();
+				location.header = Constants.IMPORT_PACKAGE;
+			}
+			if (!toobroadimports.isEmpty()) {
+				Location location = error(
+						"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: %s",
+						toobroadimports).location();
+				location.header = Constants.IMPORT_PACKAGE;
+			}
+		}
+	}
+
+	/**
+	 * Verify that the exports only use versions.
+	 */
+	private void verifyExports() {
+		if (isStrict()) {
+			Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+			Set<String> noexports = new HashSet<String>();
+
+			for (Entry<String,Attrs> e : map.entrySet()) {
+
+				String version = e.getValue().get(Constants.VERSION_ATTRIBUTE);
+				if (version == null) {
+					noexports.add(e.getKey());
+				} else {
+					if (!VERSION.matcher(version).matches()) {
+						Location location;
+						if (VERSIONRANGE.matcher(version).matches()) {
+							location = error(
+									"Export Package %s version is a range: %s; Exports do not allow for ranges.",
+									e.getKey(), version).location();
+						} else {
+							location = error("Export Package %s version has invalid syntax: %s", e.getKey(), version)
+									.location();
+						}
+						location.header = Constants.EXPORT_PACKAGE;
+						location.context = e.getKey();
+					}
+				}
+
+				if (e.getValue().containsKey(Constants.SPECIFICATION_VERSION)) {
+					Location location = error(
+							"Export Package %s uses deprecated specification-version instead of version", e.getKey())
+							.location();
+					location.header = Constants.EXPORT_PACKAGE;
+					location.context = e.getKey();
+				}
+
+				String mandatory = e.getValue().get(Constants.MANDATORY_DIRECTIVE);
+				if (mandatory != null) {
+					Set<String> missing = new HashSet<String>(split(mandatory));
+					missing.removeAll(e.getValue().keySet());
+					if (!missing.isEmpty()) {
+						Location location = error("Export Package %s misses mandatory attribute: %s", e.getKey(),
+								missing).location();
+						location.header = Constants.EXPORT_PACKAGE;
+						location.context = e.getKey();
+					}
+				}
+			}
+
+			if (!noexports.isEmpty()) {
+				Location location = error("Export Package clauses without version range: %s", noexports).location();
+				location.header = Constants.EXPORT_PACKAGE;
+			}
+		}
 	}
 
 	private void verifyRequirements() {

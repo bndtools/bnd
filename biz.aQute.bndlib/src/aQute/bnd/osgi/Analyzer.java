@@ -331,7 +331,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * One of the main workhorses of this class. This will analyze the current
-	 * setup and calculate a new manifest according to this setup. 
+	 * setup and calculate a new manifest according to this setup.
 	 * 
 	 * @return
 	 * @throws IOException
@@ -1235,38 +1235,37 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Provide any macro substitutions and versions for exported packages.
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 
 	void augmentExports(Packages exports) throws IOException {
 		for (PackageRef packageRef : exports.keySet()) {
 			String packageName = packageRef.getFQN();
 			setProperty(CURRENT_PACKAGE, packageName);
+			Attrs attributes = exports.get(packageRef);
 			try {
-				Attrs attributes = exports.get(packageRef);
 				Attrs exporterAttributes = classpathExports.get(packageRef);
-				if (exporterAttributes == null)
-					continue;
+				if (exporterAttributes != null) {
+					for (Map.Entry<String,String> entry : exporterAttributes.entrySet()) {
+						String key = entry.getKey();
+						if (key.equalsIgnoreCase(SPECIFICATION_VERSION))
+							key = VERSION_ATTRIBUTE;
 
-				for (Map.Entry<String,String> entry : exporterAttributes.entrySet()) {
-					String key = entry.getKey();
-					if (key.equalsIgnoreCase(SPECIFICATION_VERSION))
-						key = VERSION_ATTRIBUTE;
-
-					// dont overwrite and no directives
-					if (!key.endsWith(":") && !attributes.containsKey(key)) {
-						verifyAttribute(exporterAttributes.get("from:"), "package info for "+packageRef, key, entry.getValue());
-						attributes.put(key, entry.getValue());
+						// dont overwrite and no directives
+						if (!key.endsWith(":") && !attributes.containsKey(key)) {
+							verifyAttribute(exporterAttributes.get("from:"), "package info for " + packageRef, key,
+									entry.getValue());
+							attributes.put(key, entry.getValue());
+						}
 					}
 				}
-
-				fixupAttributes(attributes);
-				removeAttributes(attributes);
-
 			}
 			finally {
 				unsetProperty(CURRENT_PACKAGE);
 			}
+			fixupAttributes(attributes);
+			removeAttributes(attributes);
 		}
 	}
 

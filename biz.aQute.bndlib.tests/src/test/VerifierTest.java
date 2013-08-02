@@ -10,6 +10,26 @@ import aQute.bnd.osgi.*;
 
 public class VerifierTest extends TestCase {
 
+	/**
+	 * Test the strict flag
+	 */
+	public void testStrict() throws Exception {
+		Builder bmaker = new Builder();
+		bmaker.addClasspath(new File("jar/osgi.jar"));
+		bmaker.addClasspath(new File("bin"));
+		bmaker.setProperty("Export-Package", "org.osgi.service.eventadmin;version='[1,2)',org.osgi.framework;version=x13,test;-remove-attribute:=version,test.lib;specification-version=12,test.split");
+		bmaker.setProperty("Import-Package", "foo;version=1,bar;version='[1,x2)',baz;version='[2,1)',baz2;version='(1,1)'");
+		bmaker.setProperty("-strict", "true");
+		Jar jar = bmaker.build();
+		assertTrue(bmaker.check("Import Package bar has an invalid version range syntax \\[1,x2\\)",
+				"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",
+				"Import Package baz has an invalid version range syntax \\[2,1\\):Low Range is higher than High Range: 2.0.0-1.0.0",
+				"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: \\[foo\\]",
+				"Export Package org.osgi.framework version has invalid syntax: x13",
+				"Export Package test.lib uses deprecated specification-version instead of version",
+				"Export Package org.osgi.service.eventadmin version is a range: \\[1,2\\); Exports do not allow for ranges."));
+	}
+
 	public static void testCapability() throws Exception {
 
 		Parameters h = OSGiHeader

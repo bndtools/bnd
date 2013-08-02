@@ -721,6 +721,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
+	 * If strict is true, then extra verification is done.
+	 */
+	boolean isStrict() {
+		if ( strict == null)
+			strict = isTrue(getProperty(STRICT)); // Used in property access
+		return strict;
+	}
+
+	/**
 	 * 
 	 */
 	public void forceRefresh() {
