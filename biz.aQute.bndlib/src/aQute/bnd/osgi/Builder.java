@@ -19,6 +19,7 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
 import aQute.bnd.service.diff.*;
 import aQute.lib.collections.*;
+import aQute.lib.io.*;
 import aQute.libg.generics.*;
 
 /**
@@ -836,7 +837,7 @@ public class Builder extends Analyzer {
 	 * @param extra
 	 * @param preprocess
 	 * @param absentIsOk
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private void doCommand(Jar jar, String source, String destination, Map<String,String> extra, boolean preprocess,
 			boolean absentIsOk) throws Exception {
@@ -854,10 +855,15 @@ public class Builder extends Analyzer {
 			} else
 				lastModified = findLastModifiedWhileOlder(file, lastModified());
 		}
-		
+
 		String cmd = extra.get("cmd");
 
-		Collection<String> items = Processor.split(repeat);
+		List<String> paths = new ArrayList<String>();
+
+		for (String item : Processor.split(repeat)) {
+			File f = IO.getFile(item);
+			traverse(paths,f);
+		}
 
 		CombinedResource cr = null;
 
@@ -866,35 +872,44 @@ public class Builder extends Analyzer {
 			cr.lastModified = lastModified;
 		}
 
-		for (String item : items) {
-			setProperty("@", item);
-			try {
-				String path = getReplacer().process(destination);
-				String command = getReplacer().process(cmd);
-				File file = getFile(item);
-				if (file.exists())
-					lastModified = Math.max(lastModified, file.lastModified());
+		setProperty("@requires", join(requires, " "));
+		try {
+			for (String item : paths) {
+				setProperty("@", item);
+				try {
+					String path = getReplacer().process(destination);
+					String command = getReplacer().process(cmd);
+					File file = getFile(item);
+					if (file.exists())
+						lastModified = Math.max(lastModified, file.lastModified());
 
-				Resource r = new CommandResource(command, this, lastModified, getBase());
+					CommandResource cmdresource = new CommandResource(command, this, lastModified, getBase());
 
-				// Turn this resource into a file resource
-				// so we execute the command now and catch its
-				// errors
-				FileResource fr = new FileResource(r);
-				addClose(fr);
-				r = fr;
+					Resource r = cmdresource;
 
-				if (preprocess)
-					r = new PreprocessResource(this, r);
+					// Turn this resource into a file resource
+					// so we execute the command now and catch its
+					// errors
+					FileResource fr = new FileResource(r);
 
-				if (cr == null)
-					jar.putResource(path, r);
-				else
-					cr.addResource(r);
+					addClose(fr);
+					r = fr;
+
+					if (preprocess)
+						r = new PreprocessResource(this, r);
+
+					if (cr == null)
+						jar.putResource(path, r);
+					else
+						cr.addResource(r);
+				}
+				finally {
+					unsetProperty("@");
+				}
 			}
-			finally {
-				unsetProperty("@");
-			}
+		}
+		finally {
+			unsetProperty("@requires");
 		}
 
 		// Add last so the correct modification date is used
@@ -903,6 +918,18 @@ public class Builder extends Analyzer {
 			jar.putResource(destination, cr);
 
 		updateModified(lastModified, "Include-Resource: cmd");
+	}
+
+	private void traverse(List<String> paths, File item) {
+		
+		if (item.isDirectory()) {
+			for ( File sub : item.listFiles()) {
+				traverse(paths, sub);
+			}
+		} else if ( item.isFile())
+			paths.add(item.getAbsolutePath());
+		else
+			paths.add(item.getName());
 	}
 
 	/**
@@ -1215,7 +1242,6 @@ public class Builder extends Analyzer {
 			File file = members.remove(0);
 
 			// Check if the file is one of our parents
-			@SuppressWarnings("resource")
 			Processor p = this;
 			while (p != null) {
 				if (file.equals(p.getPropertiesFile()))

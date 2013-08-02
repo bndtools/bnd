@@ -179,7 +179,7 @@ public class Macro {
 		String value = getMacro(key, link);
 		if (value != null)
 			return value;
-		if (!flattening && !key.equals("@"))
+		if (!flattening && !key.startsWith("@"))
 			domain.warning("No translation found for macro: " + key);
 		return "${" + key + "}";
 	}

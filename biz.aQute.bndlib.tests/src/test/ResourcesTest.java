@@ -6,8 +6,103 @@ import java.util.zip.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 public class ResourcesTest extends TestCase {
+	
+	/**
+	 * Command facility in Include-Resource
+	 */
+	
+	public void testCommand() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("Include-Resource", "xkeystore; requires='testresources/keystore';cmd='file ${@requires}', ");
+		b.setProperty("-resourceonly", "true");
+		Jar jar = b.build();
+		assertTrue(b.check());
+		Resource r = jar.getResource("xkeystore");
+		assertNotNull(r);
+		String s = IO.collect(r.openInputStream());
+		assertEquals("testresources/keystore: Java KeyStore\n", s);
+	}
+	/**
+	 * Test the Include-Resource facility to generate resources on the fly. This
+	 * is a a case where multiple resources and up in a single combined
+	 * resource.
+	 */
+
+	public static void testOnTheFlyMerge() throws Exception {
+		Builder b = new Builder();
+		b.setIncludeResource("count;for='1,2,3';cmd='echo YES_${@}'");
+		b.setProperty("-resourceonly", "true");
+		Jar jar = b.build();
+		assertTrue(b.check());
+		Resource r = jar.getResource("count");
+		assertNotNull(r);
+
+		String s = IO.collect(r.openInputStream());
+		assertEquals("YES_1\nYES_2\nYES_3\n", s);
+		b.close();
+	}
+
+	/**
+	 * Test the Include-Resource facility to generate resources on the fly. This
+	 * is a simple case of one resource.
+	 */
+
+	public static void testOnTheFlySingle() throws Exception {
+		// disable this test on windows
+		if (!"/".equals(File.separator))
+			return;
+
+		Builder b = new Builder();
+		b.setIncludeResource("testresources/ls;cmd='ls /etc | grep hosts'");
+		b.setProperty("-resourceonly", "true");
+		Jar jar = b.build();
+		assertTrue(b.check());
+		Resource r = jar.getResource("testresources/ls");
+		assertNotNull(r);
+		String s = IO.collect(r.openInputStream());
+		assertTrue(s.contains("hosts"));
+	}
+
+	/**
+	 * Test the Include-Resource facility to generate resources on the fly. This
+	 * is a simple case of one resource with an error.
+	 */
+
+	public static void testOnTheFlySingleError() throws Exception {
+		// disable this test on windows
+		if (!"/".equals(File.separator))
+			return;
+
+		Builder b = new Builder();
+		b.setIncludeResource("testresources/x;cmd='I do not exist!!!!!!!!!!!'");
+		b.setProperty("-resourceonly", "true");
+		Jar jar = b.build();
+		assertTrue(b.check("Cmd 'I do not exist!!!!!!!!!!!' failed"));
+		b.close();
+	}
+
+	/**
+	 * Test the Include-Resource facility to generate resources on the fly. This
+	 * is a a case where multiple resources and up in a single combined
+	 * resource.
+	 */
+
+	public static void testOnTheFlyMultiple() throws Exception {
+		Builder b = new Builder();
+		b.setIncludeResource("count/${@};for='1,2,3';cmd='echo YES_${@}'");
+		b.setProperty("-resourceonly", "true");
+		Jar jar = b.build();
+		assertTrue(b.check());
+		assertNotNull(jar.getResource("count/1"));
+		Resource r = jar.getResource("count/2");
+		assertNotNull(jar.getResource("count/3"));
+
+		String s = IO.collect(r.openInputStream());
+		assertEquals("YES_2\n", s);
+	}
 
 	/**
 	 * If a name starts with a - sign then it is ok if it does not exist. The -
