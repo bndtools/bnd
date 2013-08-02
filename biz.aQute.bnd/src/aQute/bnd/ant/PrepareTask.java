@@ -12,7 +12,6 @@ import org.apache.tools.ant.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
-import aQute.bnd.service.*;
 
 public class PrepareTask extends BaseTask {
 	File	basedir;
