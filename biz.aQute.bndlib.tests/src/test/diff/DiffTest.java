@@ -11,7 +11,6 @@ import aQute.lib.io.*;
 public class DiffTest extends TestCase {
 	static DiffPluginImpl	differ	= new DiffPluginImpl();
 
-	
 	public void testInheritanceII() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
@@ -135,11 +134,14 @@ public class DiffTest extends TestCase {
 
 	public static void testSimple() throws Exception {
 
+		DiffPluginImpl differ = new DiffPluginImpl();
+		differ.setIgnore("Bundle-Copyright,Bundle-Description,Bundle-License,Bundle-Name,bundle-manifestversion,Export-Package,Import-Package,Bundle-Vendor,Bundle-Version");
 		Tree newer = differ.tree(new Jar(new File("jar/osgi.core-4.3.0.jar")));
 		Tree older = differ.tree(new Jar(new File("jar/osgi.core.jar"))); // 4.2
-		Diff diff = newer.diff(older);
+		Diff diff = newer.get("<manifest>").diff(older.get("<manifest>"));
 
 		show(diff, 0);
+		assertEquals(Delta.UNCHANGED, diff.getDelta());
 	}
 
 	static abstract class SBB {}

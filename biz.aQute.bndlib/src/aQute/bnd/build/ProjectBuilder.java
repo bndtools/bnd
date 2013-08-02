@@ -22,6 +22,12 @@ public class ProjectBuilder extends Builder {
 	public ProjectBuilder(Project project) {
 		super(project);
 		this.project = project;
+	
+		
+		String diffignore = project.getProperty(Constants.DIFFIGNORE);
+		if ( diffignore != null)
+			differ.setIgnore(diffignore);
+		
 	}
 
 	public ProjectBuilder(ProjectBuilder builder) {
