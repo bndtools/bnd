@@ -52,6 +52,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	CL								pluginLoader;
 	Collection<String>				filter;
 	HashSet<String>					missingCommand;
+	Boolean	strict;
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null,0,0);
