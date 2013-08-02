@@ -189,6 +189,7 @@ public interface Constants {
 	char							DUPLICATE_MARKER							= '~';
 	String							SPECIFICATION_VERSION						= "specification-version";
 	String							SPLIT_PACKAGE_DIRECTIVE						= "-split-package:";
+	String							EFFECTIVE_DIRECTIVE							= "effective:";
 	String							IMPORT_DIRECTIVE							= "-import:";
 	String							NO_IMPORT_DIRECTIVE							= "-noimport:";
 	String							REMOVE_ATTRIBUTE_DIRECTIVE					= "-remove-attribute:";
@@ -200,6 +201,7 @@ public interface Constants {
 	String							INCLUDE_DIRECTIVE							= "include:";
 	String							PROVIDE_DIRECTIVE							= "provide:";
 	String							EXCLUDE_DIRECTIVE							= "exclude:";
+	String							FILTER_DIRECTIVE							= "filter";
 	String							PRESENCE_DIRECTIVE							= "presence:";
 	String							PRIVATE_DIRECTIVE							= "private:";
 	String							SINGLETON_DIRECTIVE							= "singleton:";
@@ -236,7 +238,8 @@ public interface Constants {
 			SPLIT_PACKAGE_DIRECTIVE, NO_IMPORT_DIRECTIVE, IMPORT_DIRECTIVE, RESOLUTION_DIRECTIVE, INCLUDE_DIRECTIVE,
 			USES_DIRECTIVE, EXCLUDE_DIRECTIVE, KEYSTORE_LOCATION_DIRECTIVE, KEYSTORE_PROVIDER_DIRECTIVE,
 			KEYSTORE_PASSWORD_DIRECTIVE, SIGN_PASSWORD_DIRECTIVE, COMMAND_DIRECTIVE, NOANNOTATIONS, LIB_DIRECTIVE,
-			RUNPATH_LAUNCHER_DIRECTIVE, FROM_DIRECTIVE, PRIVATE_DIRECTIVE, LITERAL_ATTRIBUTE
+			RUNPATH_LAUNCHER_DIRECTIVE, FROM_DIRECTIVE, PRIVATE_DIRECTIVE, LITERAL_ATTRIBUTE, EFFECTIVE_DIRECTIVE,
+			FILTER_DIRECTIVE
 
 																				// TODO
 																				};

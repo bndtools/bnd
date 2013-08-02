@@ -265,6 +265,48 @@ public class Syntax implements Constants {
 									.compile("merge-first|merge-last|error|first")), bundle_version
 
 			),
+			new Syntax(
+					PROVIDE_CAPABILITY,
+					"The " + PROVIDE_CAPABILITY
+							+ " header specifies that a bundle provides a set of Capabilities, other bundles can use "
+							+ REQUIRE_CAPABILITY + " to match this capability.",
+					PROVIDE_CAPABILITY + ": com.acme.dictionary; from:String=nl; to=de; version:Version=3.4",
+					null,
+					Verifier.WILDCARDNAMEPATTERN,
+
+					new Syntax(
+							EFFECTIVE_DIRECTIVE,
+							"(resolve) Specifies the time a capabiltity is available, either resolve (default) or another name. The OSGi framework resolver only considers Capabilities without an effective directive or effective:=resolve. Capabilties with other values for the effective directive can be considered by an external agent.",
+							EFFECTIVE_DIRECTIVE + "=resolve", "resolve or another word", null),
+
+					new Syntax(
+							USES_DIRECTIVE,
+							"The uses directive lists package names that are used by this Capability. This information is intended to be used for uses constraints.",
+							USES_DIRECTIVE + "='foo,bar,baz'", null, null)),
+			new Syntax(
+					REQUIRE_CAPABILITY,
+					"The " + REQUIRE_CAPABILITY
+							+ " header specifies that a bundle requires other bundles to provide a Capability, see "
+							+ PROVIDE_CAPABILITY,
+					REQUIRE_CAPABILITY + ": com.microsoft; filter:='(&(api=win32)(version=7))'",
+					null,
+					Verifier.WILDCARDNAMEPATTERN,
+
+					new Syntax(
+							EFFECTIVE_DIRECTIVE,
+							"(resolve) Specifies the time a Requirement is considered, either resolve (default) or another name. The OSGi framework resolver only considers Requirements without an effective directive or effective:=resolve. Other Requirements can be considered by an external agent. Additonal names for the effective directive should be registered with the OSGi Alliance.",
+							EFFECTIVE_DIRECTIVE + "=resolve", "resolve or another word", null),
+
+					new Syntax(
+							RESOLUTION_DIRECTIVE,
+							"(mandatory|optional) A mandatory Requirement forbids the bundle to resolve when the Requirement is not satisfied; an optional Requirement allows a bundle to resolve even if the Requirement is not satisfied. No wirings are created when this Requirement cannot be resolved, this can result in Class Not Found Exceptions when the bundle attempts to use a package that was not resolved because it was optional.",
+							RESOLUTION_DIRECTIVE + "=optional", "mandatory,optional", Pattern
+									.compile("mandatory|optional")),
+					new Syntax(
+							FILTER_DIRECTIVE,
+							" (Filter) A filter expression that is asserted on the Capabilities belonging to the given namespace. The matching of the filter against the Capability is done on one Capability at a time. A filter like (&(a=1)(b=2)) matches only a Capability that specifies both attributes at the required value, not two capabilties that each specify one of the attributes correctly. A filter is optional, if no filter directive is specified the Requirement always matches.",
+							FILTER_DIRECTIVE + "= (&(a=1)(b=2))", null, null)
+			),
 			new Syntax(BUILDPATH,
 					"Provides the class path for building the jar. The entries are references to the repository.",
 					BUILDPATH + "=osgi;version=4.1", "${repo;bsns}", Verifier.SYMBOLICNAME, path_version),
@@ -397,7 +439,10 @@ public class Syntax implements Constants {
 	}
 
 	public String getPattern() {
-		return lead;
+		if ( pattern == null)
+			return ".*";
+		
+		return pattern.pattern();
 	}
 
 	public Syntax[] getChildren() {
