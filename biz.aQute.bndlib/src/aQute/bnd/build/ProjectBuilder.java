@@ -22,12 +22,11 @@ public class ProjectBuilder extends Builder {
 	public ProjectBuilder(Project project) {
 		super(project);
 		this.project = project;
-	
-		
+
 		String diffignore = project.getProperty(Constants.DIFFIGNORE);
-		if ( diffignore != null)
+		if (diffignore != null)
 			differ.setIgnore(diffignore);
-		
+
 	}
 
 	public ProjectBuilder(ProjectBuilder builder) {
@@ -111,7 +110,7 @@ public class ProjectBuilder extends Builder {
 			trace("No baseline jar %s", getProperty(Constants.BASELINE));
 			return;
 		}
-		
+
 		Version newer = new Version(getVersion());
 		Version older = new Version(fromRepo.getVersion());
 
@@ -150,10 +149,12 @@ public class ProjectBuilder extends Builder {
 				error.context("Baselining");
 				error.header(Constants.BUNDLE_VERSION);
 				error.details(binfo);
-				FileLine fl = getHeader(Pattern.compile("^"+Constants.BUNDLE_VERSION, Pattern.MULTILINE));
-				error.file(fl.file.getAbsolutePath());
-				error.line(fl.line);
-				error.length(fl.length);
+				FileLine fl = getHeader(Pattern.compile("^" + Constants.BUNDLE_VERSION, Pattern.MULTILINE));
+				if (fl != null) {
+					error.file(fl.file.getAbsolutePath());
+					error.line(fl.line);
+					error.length(fl.length);
+				}
 			}
 		}
 		finally {
@@ -161,16 +162,16 @@ public class ProjectBuilder extends Builder {
 		}
 	}
 
-	//*
-	
+	// *
+
 	public void fillInLocationForPackageInfo(Location location, String packageName) throws Exception {
 		Parameters eps = getExportPackage();
 		Attrs attrs = eps.get(packageName);
 		FileLine fl;
-		
+
 		if (attrs != null && attrs.containsKey(Constants.VERSION_ATTRIBUTE)) {
 			fl = getHeader(Pattern.compile(Constants.EXPORT_PACKAGE, Pattern.CASE_INSENSITIVE));
-			if (fl!=null) {
+			if (fl != null) {
 				location.file = fl.file.getAbsolutePath();
 				location.line = fl.line;
 				location.length = fl.length;
@@ -190,13 +191,13 @@ public class ProjectBuilder extends Builder {
 			}
 		}
 
-		for ( File src : project.getSourcePath()) {
+		for (File src : project.getSourcePath()) {
 			String path = packageName.replace('.', '/');
 			File packageDir = IO.getFile(src, path);
 			File pi = IO.getFile(packageDir, "package-info.java");
-			if ( pi.isFile()) {
+			if (pi.isFile()) {
 				fl = findHeader(pi, Pattern.compile("@Version\\s*([^)]+)"));
-				if (fl != null) { 
+				if (fl != null) {
 					location.file = fl.file.getAbsolutePath();
 					location.line = fl.line;
 					location.length = fl.length;
@@ -204,16 +205,16 @@ public class ProjectBuilder extends Builder {
 				}
 			}
 			pi = IO.getFile(packageDir, "packageinfo");
-			if ( pi.isFile()) {
+			if (pi.isFile()) {
 				fl = findHeader(pi, Pattern.compile("^\\s*version.*$"));
-				if (fl!=null) {
+				if (fl != null) {
 					location.file = fl.file.getAbsolutePath();
 					location.line = fl.line;
 					location.length = fl.length;
 					return;
 				}
 			}
-			
+
 		}
 	}
 
@@ -272,8 +273,9 @@ public class ProjectBuilder extends Builder {
 		if (versions.isEmpty()) {
 			// We have a repo
 			Version v = new Version(getVersion());
-			if ( v.getWithoutQualifier().compareTo(Version.ONE) > 0) {
-				error("There is no baseline for %s in the baseline repo %s. The build is for version %s, which is <= 1.0.0 which suggests that there should be a prior version.", getBsn(),repo,v);
+			if (v.getWithoutQualifier().compareTo(Version.ONE) > 0) {
+				error("There is no baseline for %s in the baseline repo %s. The build is for version %s, which is <= 1.0.0 which suggests that there should be a prior version.",
+						getBsn(), repo, v);
 			}
 			return null;
 		}
@@ -411,7 +413,7 @@ public class ProjectBuilder extends Builder {
 
 		if (repoName != null && Constants.NONE.equals(repoName))
 			return null;
-		
+
 		return repoName;
 	}
 
