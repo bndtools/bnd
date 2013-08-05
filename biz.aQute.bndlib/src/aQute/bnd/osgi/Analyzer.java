@@ -1514,7 +1514,8 @@ public class Analyzer extends Processor {
 			File f = new File(path);
 			if ( f.isFile() ) {
 				FileLine fl = findHeader(f, key);
-				fl.set(location);
+				if( fl != null)
+					fl.set(location);
 			}
 		}
 	}
