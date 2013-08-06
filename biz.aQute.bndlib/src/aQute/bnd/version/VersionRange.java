@@ -100,16 +100,16 @@ public class VersionRange {
 		Formatter f = new Formatter();
 		try {
 			if (isRange()) {
-				f.format("(&(");
+				f.format("(&");
 				if (includeLow())
 					f.format("(version>=%s)", getLow());
 				else
-					f.format("(!(version<%s))", getLow());
+					f.format("(!(version<=%s))", getLow());
 				if (includeHigh())
 					f.format("(version<=%s)", getHigh());
 				else
-					f.format("(!(version>%s))", getHigh());
-				f.format("))");
+					f.format("(!(version>=%s))", getHigh());
+				f.format(")");
 			} else {
 				f.format("(version>=%s)", getLow());
 			}

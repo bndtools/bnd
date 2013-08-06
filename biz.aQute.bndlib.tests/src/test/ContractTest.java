@@ -105,7 +105,7 @@ public class ContractTest extends TestCase {
 		Attrs attrs = p.get("osgi.contract");
 		String alpha = attrs.get("alpha");
 		assertEquals("1", alpha);
-		assertEquals("&((osgi.contract=atest)(&((version>=2.5.0)(!(version>3.0.0)))))", attrs.get("filter:"));
+		assertEquals("(&(osgi.contract=atest)(&(version>=2.5.0)(!(version>=3.0.0))))", attrs.get("filter:"));
 	}
 
 	/**

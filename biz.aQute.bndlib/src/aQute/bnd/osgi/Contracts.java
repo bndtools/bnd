@@ -166,7 +166,7 @@ class Contracts {
 
 			Formatter f = new Formatter();
 			try {
-				f.format("&((%s=%s)%s)", ContractNamespace.CONTRACT_NAMESPACE, c.name, r.toFilter());
+				f.format("(&(%s=%s)%s)", ContractNamespace.CONTRACT_NAMESPACE, c.name, r.toFilter());
 
 				// TODO : shall we also assert the attributes?
 
