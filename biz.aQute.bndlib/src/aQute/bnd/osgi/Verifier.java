@@ -11,6 +11,7 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.version.*;
 import aQute.lib.base64.*;
+import aQute.lib.filter.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.qtokens.*;
@@ -431,8 +432,10 @@ public class Verifier extends Processor {
 							if (!range.isRange()) {
 								toobroadimports.add(e.getKey());
 							}
-							if ( range.includeHigh() == false && range.includeLow() == false && range.getLow().equals(range.getHigh())) {
-								Location location = error("Import Package %s has an empty version range syntax %s, likely want to use [%s,%s]",
+							if (range.includeHigh() == false && range.includeLow() == false
+									&& range.getLow().equals(range.getHigh())) {
+								Location location = error(
+										"Import Package %s has an empty version range syntax %s, likely want to use [%s,%s]",
 										e.getKey(), version, range.getLow(), range.getHigh()).location();
 								location.header = Constants.IMPORT_PACKAGE;
 								location.context = e.getKey();
@@ -441,7 +444,7 @@ public class Verifier extends Processor {
 						}
 						catch (Exception ee) {
 							Location location = error("Import Package %s has an invalid version range syntax %s:%s",
-									e.getKey(), version,ee.getMessage()).location();
+									e.getKey(), version, ee.getMessage()).location();
 							location.header = Constants.IMPORT_PACKAGE;
 							location.context = e.getKey();
 						}
@@ -525,6 +528,13 @@ public class Verifier extends Processor {
 		for (String key : map.keySet()) {
 			Attrs attrs = map.get(key);
 			verify(attrs, "filter:", FILTERPATTERN, false, "Requirement %s filter not correct", key);
+
+			String filter = attrs.get("filter:");
+			if (filter != null) {
+				String verify = new Filter(filter).verify();
+				if (verify != null)
+					error("Invalid filter syntax in requirement %s=%s. Reason %s", key, attrs, verify);
+			}
 			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false, "Requirement %s cardinality not correct", key);
 			verify(attrs, "resolution:", RESOLUTION_PATTERN, false, "Requirement %s resolution not correct", key);
 
