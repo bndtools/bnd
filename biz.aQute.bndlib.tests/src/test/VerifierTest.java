@@ -10,6 +10,32 @@ import aQute.bnd.osgi.*;
 
 public class VerifierTest extends TestCase {
 
+	
+	/**
+	 * Create a require capality verification test
+	 * @throws Exception 
+	 */
+	
+	public void testInvalidFilterOnRequirement() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("jar/osgi.jar"));
+		b.setExportPackage("org.osgi.framework");
+		b.setProperty("Require-Capability","test; filter:=\"(&(test=aName)(version>=1.1.0))\", "
+				+ " test; filter:=\"(&(version>=1.1)(string~=astring))\", "
+				+ " test; filter:=\"(&(version>=1.1)(long>=99))\", "
+				+ " test; filter:=\"(&(version>=1.1)(double>=1.0))\",  "
+				+ " test; filter:=\"(&(version>=1.1)(version.list=1.0)(version.list=1.1)(version.list=1.2))\", "
+				+ " test; filter:=\"(&(version>=1.1)(long.list=1)(long.list=2)(long.list=3)(long.list=4))\", "
+				+ " test; filter:=\"(&(version>=1.1)(double.list=1.001)(double.list=1.002)(double.list=1.003)(double.list<=1.3))\", "
+				+ " test; filter:=\"(&(version>=1.1)(string.list~=astring)(string.list~=bstring)(string.list=cString))\", "
+				+ " test; filter:=\"(&(version>=1.1)(string.list2=a\\\"quote)(string.list2=a\\,comma)(string.list2= aSpace )(string.list2=\\\"start)(string.list2=\\,start)(string.list2=end\\\")(string.list2=end\\,))\", "
+				+ " test; filter:=\"(&(version>=1.1)(string.list3= aString )(string.list3= bString )(string.list3= cString ))\", "
+				+ " test.effective; effective:=\"active\"; filter:=\"(willResolve=false)\", test.no.attrs");
+		
+		b.build();
+		assertTrue(b.check());
+	}
+	
 	/**
 	 * Test the strict flag
 	 */

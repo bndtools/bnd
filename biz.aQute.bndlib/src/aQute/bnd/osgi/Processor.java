@@ -52,20 +52,21 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	CL								pluginLoader;
 	Collection<String>				filter;
 	HashSet<String>					missingCommand;
-	Boolean	strict;
+	Boolean							strict;
 
 	public static class FileLine {
-		public static final FileLine	DUMMY	= new FileLine(null,0,0);
-		final public File	file;
-		final public int	line;
-		final public int	length;
-		
+		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
+		final public File				file;
+		final public int				line;
+		final public int				length;
+
 		public FileLine(File file, int line, int length) {
 			this.file = file;
 			this.line = line;
 			this.length = length;
-					
+
 		}
+
 		public void set(SetLocation sl) {
 			sl.file(file.getAbsolutePath());
 			sl.line(line);
@@ -725,7 +726,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * If strict is true, then extra verification is done.
 	 */
 	boolean isStrict() {
-		if ( strict == null)
+		if (strict == null)
 			strict = isTrue(getProperty(STRICT)); // Used in property access
 		return strict;
 	}
@@ -989,7 +990,20 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				|| Verifier.TOKEN.matcher(value).matches();
 		if (!clean)
 			sb.append("\"");
-		sb.append(value);
+		for (int i = 0; i < value.length(); i++) {
+			char c = value.charAt(i);
+			switch (c) {
+				case '"' :
+					sb.append('\\').append('"');
+					break;
+				case '\\' :
+					sb.append('\\').append('\\');
+					break;
+
+				default :
+					sb.append(c);
+			}
+		}
 		if (!clean)
 			sb.append("\"");
 		return clean;
@@ -1844,7 +1858,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		public Location location() {
 			return this;
 		}
-		
+
 		public SetLocation length(int length) {
 			this.length = length;
 			return this;
@@ -1876,23 +1890,25 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	public FileLine getHeader(String header) throws Exception {
-		return getHeader(Pattern.compile("^[ \t]*"+Pattern.quote(header), Pattern.MULTILINE+Pattern.CASE_INSENSITIVE));
+		return getHeader(Pattern.compile("^[ \t]*" + Pattern.quote(header), Pattern.MULTILINE
+				+ Pattern.CASE_INSENSITIVE));
 	}
+
 	public FileLine getHeader(Pattern header) throws Exception {
 		FileLine fl = getHeader0(header);
-		if ( fl != null)
+		if (fl != null)
 			return fl;
-		
+
 		Processor rover = this;
-		while ( rover.getPropertiesFile() == null)
-			if ( rover.parent == null) {
-				return new FileLine(new File("ANONYMOUS"),0,0);
-			}
-			else
+		while (rover.getPropertiesFile() == null)
+			if (rover.parent == null) {
+				return new FileLine(new File("ANONYMOUS"), 0, 0);
+			} else
 				rover = rover.parent;
-		
-		return new FileLine(rover.getPropertiesFile(),0,0);
+
+		return new FileLine(rover.getPropertiesFile(), 0, 0);
 	}
+
 	private FileLine getHeader0(Pattern header) throws Exception {
 		FileLine fl;
 
@@ -1934,12 +1950,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (f == null)
 			return null;
 
-		return new FileLine(f,0,0);
+		return new FileLine(f, 0, 0);
 	}
 
 	public static FileLine findHeader(File f, String header) throws IOException {
-		return findHeader(f, Pattern.compile("^[ \t]*"+Pattern.quote(header), Pattern.MULTILINE+Pattern.CASE_INSENSITIVE));
+		return findHeader(f,
+				Pattern.compile("^[ \t]*" + Pattern.quote(header), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE));
 	}
+
 	public static FileLine findHeader(File f, Pattern header) throws IOException {
 		String s = IO.collect(f);
 		Matcher matcher = header.matcher(s);
