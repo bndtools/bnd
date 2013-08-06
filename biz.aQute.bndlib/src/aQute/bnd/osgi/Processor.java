@@ -986,6 +986,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {
+		if ( value.startsWith("\\\""))
+			value = value.substring(2);
+		if ( value.endsWith("\\\""))
+			value = value.substring(0, value.length()-2);
+		if ( value.startsWith("\"") && value.endsWith("\""))
+			value = value.substring(1, value.length()-1);
+		
 		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')
 				|| Verifier.TOKEN.matcher(value).matches();
 		if (!clean)
