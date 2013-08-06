@@ -66,6 +66,7 @@ public class Analyzer extends Processor {
 	private final MultiMap<PackageRef,PackageRef>	apiUses					= new MultiMap<PackageRef,PackageRef>(
 																					PackageRef.class, PackageRef.class,
 																					true);
+	private final Contracts							contracts				= new Contracts(this);
 	private final Packages							classpathExports		= new Packages();
 	private final Descriptors						descriptors				= new Descriptors();
 	private final List<Jar>							classpath				= list();
@@ -123,7 +124,8 @@ public class Analyzer extends Processor {
 			apiUses.clear();
 			classspace.clear();
 			classpathExports.clear();
-
+			contracts.clear();
+			
 			// Parse all the class in the
 			// the jar according to the OSGi bcp
 			analyzeBundleClasspath();
@@ -137,11 +139,12 @@ public class Analyzer extends Processor {
 
 			//
 			// Get exported packages from the
-			// entries on the classpath
+			// entries on the classpath and
+			// collect any contracts
 			//
 
 			for (Jar current : getClasspath()) {
-				getExternalExports(current, classpathExports);
+				getManifestInfoFromClasspath(current, classpathExports, contracts);
 				for (String dir : current.getDirectories().keySet()) {
 					PackageRef packageRef = getPackageRef(dir);
 					Resource resource = current.getResource(dir + "/packageinfo");
@@ -382,6 +385,24 @@ public class Analyzer extends Processor {
 			else
 				main.putValue(BUNDLE_CLASSPATH, printClauses(bcp));
 
+			// ----- Require/Capabilities section
+
+			Parameters requirements = getRequireCapability();
+			Parameters capabilities = getProvideCapability();
+
+			//
+			// Do any contracts contracts
+			//
+			contracts.addToRequirements(requirements);
+
+			if (!requirements.isEmpty())
+				main.putValue(REQUIRE_CAPABILITY, requirements.toString());
+
+			if (!capabilities.isEmpty())
+				main.putValue(PROVIDE_CAPABILITY, capabilities.toString());
+
+			// -----
+
 			doNamesection(dot, manifest);
 
 			for (Enumeration< ? > h = getProperties().propertyNames(); h.hasMoreElements();) {
@@ -400,7 +421,8 @@ public class Analyzer extends Processor {
 					continue;
 				}
 
-				if (header.equals(BUNDLE_CLASSPATH) || header.equals(EXPORT_PACKAGE) || header.equals(IMPORT_PACKAGE))
+				if (header.equals(BUNDLE_CLASSPATH) || header.equals(EXPORT_PACKAGE) || header.equals(IMPORT_PACKAGE)
+						|| header.equals(REQUIRE_CAPABILITY) || header.equals(PROVIDE_CAPABILITY))
 					continue;
 
 				if (header.equalsIgnoreCase("Name")) {
@@ -1086,8 +1108,10 @@ public class Analyzer extends Processor {
 
 	/**
 	 * @param jar
+	 * @param contracts
+	 * @param contracted
 	 */
-	private void getExternalExports(Jar jar, Packages classpathExports) {
+	private void getManifestInfoFromClasspath(Jar jar, Packages classpathExports, Contracts contracts) {
 		try {
 			Manifest m = jar.getManifest();
 			if (m != null) {
@@ -1102,9 +1126,16 @@ public class Analyzer extends Processor {
 						classpathExports.put(ref, e.getValue());
 					}
 				}
+
+				//
+				// Collect any declared contracts
+				//
+				Parameters pcs = domain.getProvideCapability();
+				contracts.collectContracts(jar.getName(), pcs);
 			}
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 			warning("Erroneous Manifest for " + jar + " " + e);
 		}
 	}
@@ -1131,6 +1162,18 @@ public class Analyzer extends Processor {
 				String exportVersion = exportAttributes.getVersion();
 				String importRange = importAttributes.getVersion();
 
+				//
+				// Check if we have a contract. If we have a contract
+				// then we should remove the version
+				//
+				if (contracts.isContracted(packageRef)) {
+					// yes, contract based, so remove
+					// the version and don't do the
+					// version policy stuff
+					importAttributes.remove(VERSION_ATTRIBUTE);
+					continue;
+				}
+
 				if (exportVersion == null) {
 					// TODO Should check if the source is from a bundle.
 
@@ -1149,19 +1192,7 @@ public class Analyzer extends Processor {
 
 					exportVersion = cleanupVersion(exportVersion);
 
-					try {
-						setProperty("@", exportVersion);
-
-						if (importRange != null) {
-							importRange = cleanupVersion(importRange);
-							importRange = getReplacer().process(importRange);
-						} else
-							importRange = getVersionPolicy(provider);
-
-					}
-					finally {
-						unsetProperty("@");
-					}
+					importRange = applyVersionPolicy(exportVersion, importRange, provider);
 					importAttributes.put(VERSION_ATTRIBUTE, importRange);
 				}
 
@@ -1195,6 +1226,23 @@ public class Analyzer extends Processor {
 		if (isPedantic() && noimports.size() != 0) {
 			warning("Imports that lack version ranges: %s", noimports);
 		}
+	}
+
+	String applyVersionPolicy(String exportVersion, String importRange, boolean provider) {
+		try {
+			setProperty("@", exportVersion);
+
+			if (importRange != null) {
+				importRange = cleanupVersion(importRange);
+				importRange = getReplacer().process(importRange);
+			} else
+				importRange = getVersionPolicy(provider);
+
+		}
+		finally {
+			unsetProperty("@");
+		}
+		return importRange;
 	}
 
 	/**
@@ -2698,4 +2746,20 @@ public class Analyzer extends Processor {
 		return xref;
 	}
 
+
+	public String _exports(String[] args) {
+		return join( filter(getExports().keySet(),args));
+	}
+	public String _imports(String[] args) {
+		return join( filter(getImports().keySet(),args));
+	}
+
+	private <T> Collection<T> filter( Collection<T> list, String[] args) {
+		if ( args == null || args.length <= 1)
+			return list;
+		if ( args.length > 2)
+			warning("Too many arguments for ${"+args[0]+"} macro");
+		 Instructions instrs = new Instructions(args[1]);
+		 return instrs.select(list, false);
+	}
 }

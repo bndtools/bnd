@@ -76,6 +76,7 @@ public interface Constants {
 	String							BUILDPACKAGES								= "-buildpackages";
 	String							BUMPPOLICY									= "-bumppolicy";
 	String							CONDUIT										= "-conduit";
+	String							CONTRACT									= "-contract";
 	String							DIFFIGNORE									= "-diffignore";
 	String							COMPILER_SOURCE								= "-source";
 	String							COMPILER_TARGET								= "-target";
@@ -174,7 +175,7 @@ public interface Constants {
 			UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST,
 			RUNVM, RUNPROGRAMARGS, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION,
 			DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, NOREFERENCE, JAVAAGENT,
-			STRICT, DIFFIGNORE
+			STRICT, DIFFIGNORE, CONTRACT
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make
