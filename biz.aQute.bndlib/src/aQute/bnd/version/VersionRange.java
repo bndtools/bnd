@@ -91,4 +91,32 @@ public class VersionRange {
 		return list;
 	}
 
+	/**
+	 * Convert to an OSGi filter expression
+	 * 
+	 * @return
+	 */
+	public String toFilter() {
+		Formatter f = new Formatter();
+		try {
+			if (isRange()) {
+				f.format("(&(");
+				if (includeLow())
+					f.format("(version>=%s)", getLow());
+				else
+					f.format("(!(version<%s))", getLow());
+				if (includeHigh())
+					f.format("(version<=%s)", getHigh());
+				else
+					f.format("(!(version>%s))", getHigh());
+				f.format("))");
+			} else {
+				f.format("(version>=%s)", getLow());
+			}
+			return f.toString();
+		}
+		finally {
+			f.close();
+		}
+	}
 }
