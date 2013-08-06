@@ -36,7 +36,7 @@ public class FileResource implements Resource, Closeable {
 
 	@Override
 	public String toString() {
-		return ":" + file.getName() + ":";
+		return file.getAbsolutePath();
 	}
 
 	public void write(OutputStream out) throws Exception {

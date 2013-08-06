@@ -17,6 +17,26 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/**
+	 * An old osgi 3.0.0 jar had an old packageinfo in it. This included some
+	 * never well developed syntax which now clashes with the proprty syntax.
+	 * 
+	 * @throws Exception
+	 */
+	public void testVeryOldPackageInfo() throws Exception {
+		Builder b = new Builder();
+		try {
+			b.addClasspath(new File("jar/osgi-3.0.0.jar"));
+			b.setExportPackage("*");
+			Jar build = b.build();
+			assertTrue(b.check());
+		}
+		finally {
+			b.close();
+		}
+
+	}
+
+	/**
 	 * Using a package info without the version keyword gives strange results in
 	 * the manifest, should generate an error.
 	 */
@@ -26,19 +46,21 @@ public class BuilderTest extends BndTestCase {
 		b.addClasspath(new File("bin"));
 		b.setExportPackage("test.package_info_versioniskey");
 		b.build();
+		b.check();
+		
 		b.getJar().getManifest().write(System.out);
 		String message = b.getErrors().get(0);
-		assertTrue( "The lacking version error first", message.startsWith("package info for test.package_info_versioniskey attribute [1.0.0=''],"));
+		assertTrue("The lacking version error first",
+				message.startsWith("package info for test.package_info_versioniskey attribute [1.0.0=''],"));
 		Location location = b.getLocation(message);
 		assertNotNull("Supposed to have a location", location);
 		assertNotNull("And that must have a file", location.file);
-		assertEquals( "Which should be the packaginfo file", "packageinfo", new File(location.file).getName() );
-		assertEquals( 4, location.line);
-		assertEquals( 5, location.length);
-		
-		assertTrue(b
-				.check("package info for test.package_info_versioniskey attribute \\[1.0.0=''\\],"));
-		
+		assertEquals("Which should be the packaginfo file", "packageinfo", new File(location.file).getName());
+		assertEquals(4, location.line);
+		assertEquals(5, location.length);
+
+		assertTrue(b.check("package info for test.package_info_versioniskey attribute \\[1.0.0=''\\],"));
+
 	}
 
 	/**
@@ -68,7 +90,7 @@ public class BuilderTest extends BndTestCase {
 			result = b.build();
 			long lm2 = result.lastModified();
 			assertTrue("Last modified date of bundle has increased after deleting class from package", lm2 > lm1);
-			
+
 			IO.getFile("bin/a1/a/A.class").delete();
 			classpath.remove("a/A.class");
 			classpath.updateModified(System.currentTimeMillis(), "Removed file A");
@@ -113,8 +135,8 @@ public class BuilderTest extends BndTestCase {
 		b.build();
 		assertTrue(b.check());
 		b.getExports().containsFQN("UPPERCASEPACKAGE");
-	}	
-	
+	}
+
 	/**
 	 * Dave Smith <dave.smith@candata.com> I have pulled the latest from git and
 	 * am testing out 2.0 with our current application. I am getting the
@@ -168,8 +190,6 @@ public class BuilderTest extends BndTestCase {
 		b.close();
 		other.close();
 	}
-
-
 
 	/**
 	 * FELIX-3407 Utterly confusing example that states that generic references
@@ -1329,7 +1349,8 @@ public class BuilderTest extends BndTestCase {
 		b.setProperties(p);
 		b.setPedantic(true);
 		b.build();
-		assertTrue(b.check("Imports that lack version ranges", "Invalid package name", "value is empty which is not allowed in ARGUMENT"));
+		assertTrue(b.check("Imports that lack version ranges", "Invalid package name",
+				"value is empty which is not allowed in ARGUMENT"));
 	}
 
 	/**

@@ -1440,6 +1440,8 @@ public class Analyzer extends Processor {
 	 * @param value
 	 * @throws Exception
 	 */
+	static Pattern OLD_PACKAGEINFO_SYNTAX_P = Pattern.compile("class\\s+(.+)\\s+version\\s+("+Verifier.VERSION_S+")");
+	
 	void getExportVersionsFromPackageInfo(PackageRef packageRef, Resource r, Packages classpathExports)
 			throws Exception {
 		if (r == null)
@@ -1461,13 +1463,25 @@ public class Analyzer extends Processor {
 			for (Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
 				String key = t.nextElement();
 				String propvalue = p.getProperty(key);
-				File f = null;
-				if (r instanceof FileResource)
-					f = ((FileResource) r).getFile();
 
+				if ( key.equalsIgnoreCase("include") ) {
+					
+					// Ouch, could be really old syntax
+					// We ignore the include part since we 
+					// ignored it long before.
+					
+					Matcher m = OLD_PACKAGEINFO_SYNTAX_P.matcher(propvalue);
+					if ( m.matches()) {
+						key = Constants.VERSION_ATTRIBUTE;
+						propvalue = m.group(2);
+						if ( isPedantic())
+							warning("found old syntax in package info in package %s, from resource %s" , packageRef, r);
+					}
+				}
+				
 				String value = map.get(key);
 				if (value == null) {
-					value = p.getProperty(key);
+					value = propvalue;
 
 					// Messy, to allow directives we need to
 					// allow the value to start with a ':' since we cannot
@@ -1478,8 +1492,7 @@ public class Analyzer extends Processor {
 						value = value.substring(1);
 					}
 					map.put(key, value);
-					if (f != null)
-						map.put("from:", f.getAbsolutePath());
+					map.put("from:", r.toString());
 				}
 			}
 		}
