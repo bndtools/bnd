@@ -3,20 +3,26 @@ package aQute.bnd.header;
 import java.util.*;
 import java.util.regex.*;
 
+import aQute.bnd.osgi.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 
 public class Attrs implements Map<String,String> {
 	public enum Type {
-		STRING(null), LONG(null), VERSION(null), DOUBLE(null), STRINGS(STRING), LONGS(LONG), VERSIONS(VERSION), DOUBLES(
-				DOUBLE);
+		STRING(null, "String"), LONG(null, "Long"), VERSION(null, "Version"), DOUBLE(null, "Double"), STRINGS(STRING,
+				"String"), LONGS(LONG, "List<Long>"), VERSIONS(VERSION, ":ist<Long>"), DOUBLES(DOUBLE, "List<Double>");
 
 		Type	sub;
+		String	toString;
 
-		Type(Type sub) {
+		Type(Type sub, String toString) {
 			this.sub = sub;
+			this.toString = toString;
 		}
 
+		public String toString() {
+			return toString;
+		}
 	}
 
 	/**
@@ -48,6 +54,8 @@ public class Attrs implements Map<String,String> {
 		for (Attrs a : attrs) {
 			if (a != null) {
 				putAll(a);
+				if (a.types != null)
+					types.putAll(a.types);
 			}
 		}
 	}
@@ -230,13 +238,26 @@ public class Attrs implements Map<String,String> {
 	}
 
 	public void append(StringBuilder sb) {
-		String del = "";
-		for (Map.Entry<String,String> e : entrySet()) {
-			sb.append(del);
-			sb.append(e.getKey());
-			sb.append("=");
-			sb.append(e.getValue());
-			del = ";";
+		try {
+			String del = "";
+			for (Map.Entry<String,String> e : entrySet()) {
+				sb.append(del);
+				sb.append(e.getKey());
+
+				if (types != null) {
+					Type type = types.get(e.getKey());
+					if (type != null) {
+						sb.append(":").append(type);
+					}
+				}
+				sb.append("=");
+				Processor.quote(sb, e.getValue());
+				del = ";";
+			}
+		}
+		catch (Exception e) {
+			// Cannot happen
+			e.printStackTrace();
 		}
 	}
 
@@ -296,7 +317,7 @@ public class Attrs implements Map<String,String> {
 					return Version.parseVersion(s);
 				case DOUBLE :
 					return Double.parseDouble(s.trim());
-					
+
 				case DOUBLES :
 				case LONGS :
 				case STRINGS :
@@ -307,13 +328,13 @@ public class Attrs implements Map<String,String> {
 			return null;
 		}
 		List<Object> list = new ArrayList<Object>();
-		
+
 		List<String> split = splitListAttribute(s);
 		for (String p : split)
 			list.add(convert(t.sub, p));
 		return list;
 	}
-	
+
 	static List<String> splitListAttribute(String input) throws IllegalArgumentException {
 		List<String> result = new LinkedList<String>();
 
