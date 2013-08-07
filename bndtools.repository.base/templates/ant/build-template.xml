@@ -86,11 +86,17 @@
 		<bnd command="build" exceptions="true" basedir="${project}" />
 	</target>
 
+	<!--
+		Release
+	-->
+	<target name="_release" depends="init">
+		<bndrelease/>
+	</target>
+
 	<target name="release" depends="build">
-		<subant target="release" inheritAll="false" buildpath="${project.dependson}">
+		<subant target="_release" inheritAll="false" buildpath="${project.dependson}">
 			<property name="donotrecurse" value="true" />
 		</subant>
-		<bndrelease/>
 	</target>
 
 	<!-- 
