@@ -112,7 +112,7 @@
 		</copy>
 	</target>
 
-	<target name="junit" depends="init,compileTests" if="testDirExists">
+	<target name="junit" depends="init,compileTests" if="testDirExists" unless="no.junit">
 		<junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
 			<assertions>
 				<enable />
