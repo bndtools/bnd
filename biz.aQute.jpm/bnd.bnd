@@ -44,3 +44,4 @@ Bundle-Developers: \
 		roles="architect,developer"; \
       	timezone=1
 
+no.junit: true
