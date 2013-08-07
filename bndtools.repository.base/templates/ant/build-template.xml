@@ -15,6 +15,14 @@
 
 
     <!--
+         Default Target
+    -->
+    <target name="none">
+        <fail message="This ant script should never be called directly." />
+    </target>
+
+
+    <!--
          INIT
 
          All other targets depend on init.
@@ -59,14 +67,6 @@
 
 
     <!--
-         TEST
-    -->
-    <target name="test" depends="compile">
-        <bndtest/>
-    </target>
-
-
-    <!--
          COMPILE
 
          Compile the sources.
@@ -96,22 +96,6 @@
     <target name="build" depends="compile">
         <mkdir dir="${target}"/>
         <bnd command="build" exceptions="true" basedir="${project}" />
-    </target>
-
-
-    <!--
-        RELEASE
-
-        Run the bnd release task on the project and its dependencies.
-    -->
-    <target name="_release" depends="init">
-        <bndrelease/>
-    </target>
-
-    <target name="release" depends="build">
-        <subant target="_release" inheritAll="false" buildpath="${project.dependson}">
-            <property name="donotrecurse" value="true" />
-        </subant>
     </target>
 
 
@@ -149,6 +133,30 @@
                 </fileset>
             </batchtest>
         </junit>
+    </target>
+
+
+    <!--
+         TEST
+    -->
+    <target name="test" depends="compile">
+        <bndtest/>
+    </target>
+
+
+    <!--
+        RELEASE
+
+        Run the bnd release task on the project and its dependencies.
+    -->
+    <target name="_release" depends="init">
+        <bndrelease/>
+    </target>
+
+    <target name="release" depends="build">
+        <subant target="_release" inheritAll="false" buildpath="${project.dependson}">
+            <property name="donotrecurse" value="true" />
+        </subant>
     </target>
 
 
@@ -206,13 +214,5 @@
         <echo>use.bnd:                ${use.bnd}</echo>
         <echo>nodeploy:               ${nodeploy}</echo>
         <echo>-dependson:             ${-dependson}</echo>
-    </target>
-
-
-    <!--
-         Default Target
-    -->
-    <target name="none">
-        <fail message="This ant script should never be directly called." />
     </target>
 </project>
