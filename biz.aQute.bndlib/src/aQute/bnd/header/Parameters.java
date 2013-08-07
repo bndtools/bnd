@@ -2,6 +2,7 @@ package aQute.bnd.header;
 
 import java.util.*;
 
+import aQute.bnd.osgi.*;
 import aQute.lib.collections.*;
 import aQute.service.reporter.*;
 
@@ -159,7 +160,7 @@ public class Parameters implements Map<String,Attrs> {
 		String del = "";
 		for (Map.Entry<String,Attrs> s : entrySet()) {
 			sb.append(del);
-			sb.append(s.getKey());
+			sb.append(Processor.removeDuplicateMarker(s.getKey()));
 			if (!s.getValue().isEmpty()) {
 				sb.append(';');
 				s.getValue().append(sb);

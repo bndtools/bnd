@@ -1004,7 +1004,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					sb.append('\\').append('"');
 					break;
 				case '\\' :
-					sb.append('\\').append('\\');
+					sb.append('\\');
 					break;
 
 				default :

@@ -10,6 +10,29 @@ import aQute.bnd.version.*;
 
 public class ParseHeaderTest extends TestCase {
 
+	public void testTyped() {
+		{
+			// It should be string.list2:List="a\"quote,a\,comma, aSpace ,\"start,\,start,end\",end\," (not handling escape of comma) 
+			Parameters pp = new Parameters("a;b:List=\"a\\\"quote,a\\\\,comma, aSpace ,\\\"start,,start,end\"");
+			assertEquals("a;b:List=\"a\\\"quote,a\\,comma, aSpace ,\\\"start,,start,end\"", pp.toString());
+		}
+
+		{
+			Parameters pp = new Parameters("a;a:List<String>='abc'");
+			assertEquals("a;a:List<String>=abc", pp.toString());
+		}
+
+		Parameters p = new Parameters("a;a:Long=1," + "a;b:Double=3.2," + "a;c:String=abc," + "a;d:Version=1,"
+				+ "a;e:List<Long>='1,2,3'," + "a;f:List<Double>='1.0,1.1,1.2'," + "a;g:List<String>='abc,def,ghi',"
+				+ "a;h:List<Version>='1.0.1,1.0.2'");
+
+		String s = p.toString();
+		System.out.println(s);
+		assertEquals("a;a:Long=1," + "a;b:Double=\"3.2\"," + "a;c:String=abc," + "a;d:Version=1,"
+				+ "a;e:List<Long>=\"1,2,3\"," + "a;f:List<Double>=\"1.0,1.1,1.2\","
+				+ "a;g:List<String>=\"abc,def,ghi\"," + "a;h:List<Version>=\"1.0.1,1.0.2\"", s);
+	}
+
 	public static void testPropertiesSimple() {
 		Map<String,String> p = OSGiHeader.parseProperties("a=1, b=\"3   3\", c=c");
 		assertEquals("1", p.get("a"));
@@ -105,19 +128,19 @@ public class ParseHeaderTest extends TestCase {
 
 		System.err.println(map);
 	}
-	
+
 	public static void testParseMultiValueAttribute() {
 		String s = "capability;foo:List<String>=\"MacOSX,Mac OS X\";version:List<Version>=\"1.0, 2.0, 2.1\"";
 		Parameters map = Processor.parseHeader(s, null);
-		
+
 		Attrs attrs = map.get("capability");
-		
+
 		assertEquals(Type.STRINGS, attrs.getType("foo"));
 		List<String> foo = (List<String>) attrs.getTyped("foo");
 		assertEquals(2, foo.size());
 		assertEquals("MacOSX", foo.get(0));
 		assertEquals("Mac OS X", foo.get(1));
-		
+
 		assertEquals(Type.VERSIONS, attrs.getType("version"));
 		List<Version> version = (List<Version>) attrs.getTyped("version");
 		assertEquals(3, version.size());

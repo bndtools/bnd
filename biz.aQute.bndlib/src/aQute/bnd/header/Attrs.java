@@ -10,7 +10,7 @@ import aQute.lib.collections.*;
 public class Attrs implements Map<String,String> {
 	public enum Type {
 		STRING(null, "String"), LONG(null, "Long"), VERSION(null, "Version"), DOUBLE(null, "Double"), STRINGS(STRING,
-				"String"), LONGS(LONG, "List<Long>"), VERSIONS(VERSION, ":ist<Long>"), DOUBLES(DOUBLE, "List<Double>");
+				"List<String>"), LONGS(LONG, "List<Long>"), VERSIONS(VERSION, "List<Version>"), DOUBLES(DOUBLE, "List<Double>");
 
 		Type	sub;
 		String	toString;
