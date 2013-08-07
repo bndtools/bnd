@@ -1,36 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="project" default="build">
-	<macrodef name="iterate">
-		<attribute name="target" />
-		<sequential>
-			<subant target="@{target}">
-				<fileset dir="." includes="*/build.xml" excludes="cnf/*" />
-			</subant>
-		</sequential>
-	</macrodef>
+
+	<target name="__mainiterateinit" unless="__mainiterateinit_done">
+		<!-- tasks and macros must be defined in a task or we'll get
+		     'Trying to override old definition of task ...' reports -->
+
+		<macrodef name="iterate">
+			<attribute name="target" />
+			<sequential>
+				<subant target="@{target}">
+					<fileset dir="." includes="*/build.xml" excludes="cnf/*" />
+				</subant>
+			</sequential>
+		</macrodef>
+
+		<!-- mark __mainiterateinit has been run -->
+		<property name="__mainiterateinit_done" value="set" />
+	</target>
+
 	<target name="build">
 		<ant dir="biz.aQute.bnd" target="build" />
 		<ant dir="biz.aQute.repository" target="build" />
 		<ant dir="biz.aQute.resolve" target="build" />
 	</target>
+
+	<target name="junit" depends="__mainiterateinit">
+		<iterate target="junit" />
+	</target>
+
 	<target name="dist" >
 		<ant dir="dist" target="release" />
 	</target>
+
 	<target name="release">
 		<ant dir="biz.aQute.bnd" target="release" />
 		<ant dir="biz.aQute.repository" target="release" />
 		<ant dir="biz.aQute.resolve" target="release" />
 	</target>
-	<target name="clean">
+
+	<target name="clean" depends="__mainiterateinit">
 		<iterate target="clean" />
 	</target>
-	<target name="junit">
-		<iterate target="junit" />
-	</target>
+
 	<target name="findbugs-prepare">
 		<exec dir="." executable="./cnf/scripts/fb_generate_includes.bash" osfamily="unix" />
 	</target>
-	<target name="findbugs">
+
+	<target name="findbugs" depends="__mainiterateinit">
 		<iterate target="findbugs" />
 	</target>
 </project>

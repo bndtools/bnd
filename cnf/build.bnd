@@ -1,70 +1,59 @@
-# We use git
-Git-Descriptor: ${system-allow-fail;git describe --dirty --always}
-Git-SHA: ${system-allow-fail;git rev-list -1 HEAD}
+########################
+## BND BUILD SETTINGS ##
+########################
 
-Bundle-SCM				= git://github.com/bndtools/bnd.git
+## Global defaults are loaded from the bnd library, place your specific settings here.
 
-# Very general
-project.dependson       = ${p-dependson;:}
-project.bootclasspath   = ${p-bootclasspath;:}
-project.buildpath       = ${p-buildpath;:}
-project.sourcepath      = ${p-sourcepath;:}
-project.allsourcepath   = ${p-allsourcepath;:}
-project.output          = ${p-output}
-project.testpath        = ${p-testpath;:}
+## Additional settings are inherited from ext/*.bnd and they will be overridden by anything
+## you specify in this file.
 
--verbose				= true
-project                 = ${basedir}
-src                     = src
-bin                     = bin
-target					= ${project}/${target-dir}
-build					= ${workspace}/cnf
-repo					= ${build}/repo
-releaserepo				= ${workspace}/dist/bundles
-target-dir				= generated
-p                       = ${basename;${project}}
-project.name            = ${p}
+#-verbose:          true
+#src:               src
+#bin:               bin
+#target:            ${project}/generated
+#build:             ${workspace}/cnf
+#plugin-dir:        ${build}/plugins
 
-# Java compiler options
-java 					= java
-javac 					= javac
-javac.debug				= on
-javac.source 			= 1.5
-javac.target 			= 1.5
-javac.ee				= '[1.5,1.6)'
+#java:              java
+#javac:             javac
+#javac.source:      1.5
+#javac.target:      1.5
+#javac.debug:       on
+javac.ee:           '[1.5,1.6)'
+
+#-sources:          true
+#-sourcepath:       ${project}/src
+
+repo:               ${workspace}/cnf/repo
+releaserepo:        ${workspace}/dist/bundles
+
+## Properties from ext/*.bnd can be referenced in order to extend them.
+## For example, to add one additional plugin to the list defined in ext/repositories.bnd:
+# -plugin: ${ext.repositories.-plugin}, org.example.MyPlugin
+
+## If you use git, you might want to uncomment the following lines:
+Git-Descriptor:     ${system-allow-fail;git describe --dirty --always}
+Git-SHA:            ${system-allow-fail;git rev-list -1 HEAD}
+
+copyright:          Copyright (c) aQute (2000, ${tstamp;yyyy}). All Rights Reserved.
+copyright.html:     Copyright &copy; aQute (2000, ${tstamp;yyyy}). All Rights Reserved.
+
+Bundle-Vendor:      aQute SARL http://www.aQute.biz
+Bundle-Copyright:   ${copyright}
+Bundle-License:     http://www.opensource.org/licenses/apache2.0.php;\
+                      description="Apache 2.0 Licensed";\
+                      link=LICENSE
+Bundle-SCM:         git://github.com/bndtools/bnd.git
+
 
 # default version policies
 #   -provider-policy =  ${range;[==,=+)}
 #   -consumer-policy =  ${range;[==,+)}
 
-#Bnd options
--sources               	= true
--sourcepath             = ${project}/src 
+-make:              (*).(jar);type=bnd; recipe="bnd/$1.bnd"
 
--plugin	            	= \
-	aQute.lib.deployer.FileRepo;name='Main';location=${repo},\
-	aQute.lib.deployer.FileRepo;name='Release';location=${releaserepo}, 
-	aQute.bnd.signer.JartoolSigner
-	
--releaserepo: Release
-  						  
--make                   =  \
-  (*).(jar);                             type=bnd;  recipe="bnd/$1.bnd"
+-removeheader:      Include-Resource
 
-
-copyright = Copyright (c) aQute (2000, ${tstamp;yyyy}). All Rights Reserved.
-copyright.html = Copyright &copy; aQute (2000, ${tstamp;yyyy}). All Rights Reserved.
-
-
-# Documentation
-Bundle-Vendor: 					aQute SARL http://www.aQute.biz
-Bundle-Copyright:				${copyright}
-Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
-									description="Apache 2.0 Licensed"; \
-									link=LICENSE
--removeheader			= Include-Resource
-
--runpath							= \
-	org.eclipse.osgi;		version=3.5,\
-	com.springsource.junit; export="junit.framework;version=3.8"
-
+-runpath:\
+	org.eclipse.osgi;version=3.5,\
+	com.springsource.junit;export="junit.framework;version=3.8"
