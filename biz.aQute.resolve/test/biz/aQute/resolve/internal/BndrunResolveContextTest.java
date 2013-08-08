@@ -1,6 +1,7 @@
-package test;
+package biz.aQute.resolve.internal;
 
-import static test.lib.Utils.*;
+import static test.lib.Utils.createRepo;
+import static test.lib.Utils.findContentURI;
 
 import java.io.File;
 import java.util.Arrays;
@@ -22,11 +23,10 @@ import test.lib.MockRegistry;
 import test.lib.NullLogService;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.header.*;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.service.resolve.hook.ResolverHook;
-import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class BndrunResolveContextTest extends TestCase {
 

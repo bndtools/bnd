@@ -1,4 +1,4 @@
-package test;
+package biz.aQute.resolve.internal;
 
 import static test.lib.Utils.createRepo;
 
@@ -25,7 +25,6 @@ import test.lib.MockRegistry;
 import test.lib.NullLogService;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.resource.CapReqBuilder;
-import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class ResolveTest extends TestCase {
 
