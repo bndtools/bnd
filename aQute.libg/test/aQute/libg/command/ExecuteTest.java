@@ -1,7 +1,6 @@
 package aQute.libg.command;
 
 import junit.framework.*;
-import aQute.libg.command.*;
 
 public class ExecuteTest extends TestCase {
 

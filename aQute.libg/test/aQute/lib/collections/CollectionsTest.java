@@ -3,8 +3,6 @@ package aQute.lib.collections;
 import java.util.*;
 
 import junit.framework.*;
-import junit.runner.*;
-import aQute.lib.collections.*;
 
 public class CollectionsTest extends TestCase {
 	

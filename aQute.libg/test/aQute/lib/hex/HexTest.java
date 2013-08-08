@@ -4,7 +4,6 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.lib.base64.*;
-import aQute.lib.hex.*;
 
 public class HexTest extends TestCase {
 

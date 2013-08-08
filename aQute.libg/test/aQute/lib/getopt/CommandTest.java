@@ -5,7 +5,6 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.lib.collections.*;
-import aQute.lib.getopt.*;
 import aQute.lib.justif.*;
 import aQute.libg.reporter.*;
 

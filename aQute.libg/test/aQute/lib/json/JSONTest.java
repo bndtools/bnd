@@ -9,7 +9,6 @@ import java.util.regex.*;
 import junit.framework.*;
 import aQute.lib.converter.*;
 import aQute.lib.io.*;
-import aQute.lib.json.*;
 import aQute.libg.map.*;
 
 public class JSONTest extends TestCase {

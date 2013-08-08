@@ -5,7 +5,6 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.libg.reporter.*;
-import aQute.libg.sed.*;
 
 public class ReplacerTest extends TestCase {
 

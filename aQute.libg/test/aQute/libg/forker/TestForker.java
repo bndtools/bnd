@@ -3,7 +3,6 @@ package aQute.libg.forker;
 import java.util.*;
 
 import junit.framework.*;
-import aQute.libg.forker.*;
 
 public class TestForker extends TestCase {
 

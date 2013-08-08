@@ -3,7 +3,6 @@ package aQute.lib.justif;
 import java.util.*;
 
 import junit.framework.*;
-import aQute.lib.justif.*;
 
 public class JustifTest extends TestCase {
 

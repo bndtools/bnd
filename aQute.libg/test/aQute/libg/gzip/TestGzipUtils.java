@@ -4,7 +4,6 @@ import java.io.*;
 
 import junit.framework.*;
 import aQute.lib.io.*;
-import aQute.libg.gzip.*;
 
 public class TestGzipUtils extends TestCase {
 

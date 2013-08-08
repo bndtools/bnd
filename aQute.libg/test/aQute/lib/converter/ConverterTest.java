@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import junit.framework.*;
-import aQute.lib.converter.*;
 import aQute.lib.converter.Converter.Hook;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;

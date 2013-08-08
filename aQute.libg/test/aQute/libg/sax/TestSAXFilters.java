@@ -8,7 +8,6 @@ import junit.framework.*;
 
 import org.xml.sax.*;
 
-import aQute.libg.sax.*;
 import aQute.libg.sax.filters.*;
 
 public class TestSAXFilters extends TestCase {

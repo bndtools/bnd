@@ -5,7 +5,6 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.lib.io.*;
-import aQute.lib.settings.*;
 
 public class SettingsTest extends TestCase {
 

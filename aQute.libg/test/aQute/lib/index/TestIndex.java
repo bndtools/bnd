@@ -3,7 +3,6 @@ package aQute.lib.index;
 import java.io.*;
 
 import junit.framework.*;
-import aQute.lib.index.*;
 
 public class TestIndex extends TestCase {
 

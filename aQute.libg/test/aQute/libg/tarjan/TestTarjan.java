@@ -4,7 +4,6 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.lib.collections.*;
-import aQute.libg.tarjan.*;
 
 public class TestTarjan extends TestCase {
 
