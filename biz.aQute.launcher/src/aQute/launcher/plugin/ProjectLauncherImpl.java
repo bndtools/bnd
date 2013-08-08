@@ -90,7 +90,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		project.trace("preparing the aQute launcher plugin");
 
 		LauncherConstants lc = new LauncherConstants();
-		lc.noreferences = Processor.isTrue(project.getProperty("-runnoreferences"));
+		lc.noreferences = Processor.isTrue(project.getProperty(Constants.RUNNOREFERENCES));
 		lc.runProperties = getRunProperties();
 		lc.storageDir = getStorageDir();
 		lc.keep = isKeep();

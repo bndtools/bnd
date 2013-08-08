@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
+import java.util.jar.*;
 import java.util.regex.*;
 
 import org.osgi.framework.*;
@@ -102,6 +103,33 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
+	private static String getVersion() {
+		try {
+			Enumeration<URL> manifests = Launcher.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+			StringBuilder sb = new StringBuilder();
+			String del = "";
+			for ( Enumeration<URL> u=manifests; u.hasMoreElements(); ) {
+				URL url = u.nextElement();
+				InputStream in = url.openStream();
+				try {
+					Manifest m = new Manifest(in);
+					String bsn =m.getMainAttributes().getValue("Bundle-SymbolicName"); 
+					String version =m.getMainAttributes().getValue("Bundle-Version");
+					if ( bsn != null && version != null) {
+						sb.append(del).append(bsn).append(";version=").append(version);
+						del = ", ";
+					}
+				} finally {
+					in.close();
+				}
+			}
+			return sb.toString();
+		}
+		catch (Exception e) {
+			return "Cannot read manifest: " + e.getMessage();
+		}
+	}
+
 	private static void printUsage() {
 		System.out.println("Usage: java -Dlauncher.properties=<launcher.properties> -jar <launcher.jar>");
 	}
@@ -133,7 +161,8 @@ public class Launcher implements ServiceListener {
 				long	begin	= propertiesFile.lastModified();
 
 				public void run() {
-					if (begin < propertiesFile.lastModified()) {
+					long now = propertiesFile.lastModified();
+					if (begin < now) {
 						try {
 							FileInputStream in = new FileInputStream(propertiesFile);
 							Properties properties = new Properties();
@@ -144,12 +173,12 @@ public class Launcher implements ServiceListener {
 								in.close();
 							}
 							parms = new LauncherConstants(properties);
-							update();
+							update(now);
 						}
 						catch (Exception e) {
 							error("Error in updating the framework from the properties: %s", e);
 						}
-						begin = propertiesFile.lastModified();
+						begin = now;
 					}
 				}
 			};
@@ -159,6 +188,8 @@ public class Launcher implements ServiceListener {
 
 	private int run(String args[]) throws Throwable {
 		try {
+			trace("version %s", getVersion());
+
 			int status = activate();
 			if (status != 0) {
 				report(out);
@@ -170,10 +201,10 @@ public class Launcher implements ServiceListener {
 			// Register the command line with ourselves as the
 			// service.
 			if (parms.services) { // Does not work for our dummy framework
-				
+
 				if (LauncherAgent.instrumentation != null) {
 					Hashtable<String,Object> argprops = new Hashtable<String,Object>();
-					if ( LauncherAgent.agentArgs != null) 
+					if (LauncherAgent.agentArgs != null)
 						argprops.put("agent.arguments", LauncherAgent.agentArgs);
 					systemBundle.getBundleContext().registerService(Instrumentation.class.getName(),
 							LauncherAgent.instrumentation, argprops);
@@ -269,7 +300,7 @@ public class Launcher implements ServiceListener {
 			}
 		}
 
-		update();
+		update(System.currentTimeMillis() + 100);
 
 		if (parms.trace) {
 			report(out);
@@ -293,15 +324,17 @@ public class Launcher implements ServiceListener {
 	 * Ensure that all the bundles in the parameters are actually started. We
 	 * can start in embedded mode (bundles are inside our main jar) or in file
 	 * system mode.
+	 * 
+	 * @param begin
 	 */
-	void update() throws Exception {
-		trace("Updating framework with %s", parms.runbundles);
+	void update(long before) throws Exception {
 
+		trace("Updating framework with %s", parms.runbundles);
 		List<Bundle> tobestarted = new ArrayList<Bundle>();
 		if (parms.embedded)
 			installEmbedded(tobestarted);
 		else
-			synchronizeFiles(tobestarted);
+			synchronizeFiles(tobestarted, before);
 
 		if (padmin != null) {
 			inrefresh = true;
@@ -312,6 +345,7 @@ public class Launcher implements ServiceListener {
 			// when we created the framework.
 			while (inrefresh)
 				Thread.sleep(100);
+
 		} else
 			trace("cannot refresh the bundles because there is no Package Admin");
 
@@ -336,7 +370,7 @@ public class Launcher implements ServiceListener {
 		List<Bundle> all = new ArrayList<Bundle>(tobestarted);
 		// Add all bundles that we've tried to start but failed
 		all.addAll(wantsToBeStarted);
-		
+
 		for (Bundle b : tobestarted) {
 			try {
 				trace("starting %s", b.getSymbolicName());
@@ -355,7 +389,7 @@ public class Launcher implements ServiceListener {
 	/**
 	 * @param tobestarted
 	 */
-	void synchronizeFiles(List<Bundle> tobestarted) {
+	void synchronizeFiles(List<Bundle> tobestarted, long before) {
 		// Turn the bundle location paths into files
 		List<File> desired = new ArrayList<File>();
 		for (Object o : parms.runbundles) {
@@ -404,15 +438,24 @@ public class Launcher implements ServiceListener {
 		for (File f : tobeupdated)
 			try {
 				Bundle b = installedBundles.get(f);
-				if (b.getLastModified() < f.lastModified()) {
-					trace("updating %s", f);
-					if (b.getState() == Bundle.ACTIVE) {
-						tobestarted.add(b);
-						b.stop();
-					}
-					b.update();
-				} else
-					trace("bundle is still current according to timestamp %s", f);
+
+				//
+				// Ensure we only update bundles that
+				// we're modified before the properties file was modified.
+				// Otherwise we might update bundles that are still being
+				// written by bnd
+				//
+				if (f.lastModified() <= before) {
+					if (b.getLastModified() < f.lastModified()) {
+						trace("updating %s", f);
+						if (b.getState() == Bundle.ACTIVE) {
+							tobestarted.add(b);
+							b.stop();
+						}
+						b.update();
+					} else
+						trace("bundle is still current according to timestamp %s", f);
+				}
 			}
 			catch (Exception e) {
 				error("Failed to update bundle %s, exception %s", f, e);
@@ -505,11 +548,12 @@ public class Launcher implements ServiceListener {
 		BundleContext context = systemBundle.getBundleContext();
 		try {
 			String reference;
-			if ( !isWindows() && !parms.noreferences)
-				reference = "reference:" + f.toURI().toURL().toExternalForm();
-			else 
+			if (isWindows() || parms.noreferences) {
+				trace("no reference: url %s", parms.noreferences);
 				reference = f.toURI().toURL().toExternalForm();
-			
+			} else
+				reference = "reference:" + f.toURI().toURL().toExternalForm();
+
 			Bundle b = context.installBundle(reference);
 			if (b.getLastModified() < f.lastModified()) {
 				b.update();
@@ -579,7 +623,6 @@ public class Launcher implements ServiceListener {
 		};
 		wait.start();
 	}
-	
 
 	private void doSecurity() {
 		try {
@@ -610,7 +653,7 @@ public class Launcher implements ServiceListener {
 			systemBundle.waitForStop(parms.timeout);
 
 			ThreadGroup group = Thread.currentThread().getThreadGroup();
-			Thread[] threads = new Thread[group.activeCount()+100];
+			Thread[] threads = new Thread[group.activeCount() + 100];
 			group.enumerate(threads);
 			{
 				for (Thread t : threads) {
@@ -669,7 +712,7 @@ public class Launcher implements ServiceListener {
 			p.setProperty(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, parms.systemPackages);
 			trace("system packages used: %s", parms.systemPackages);
 		}
-		
+
 		if (parms.systemCapabilities != null) {
 			p.setProperty(FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA, parms.systemCapabilities);
 			trace("system capabilities used: %s", parms.systemCapabilities);
@@ -713,7 +756,7 @@ public class Launcher implements ServiceListener {
 						case FrameworkEvent.ERROR :
 						case FrameworkEvent.WAIT_TIMEDOUT :
 							trace("Refresh will end due to error or timeout %s", event.toString());
-							
+
 						case FrameworkEvent.PACKAGES_REFRESHED :
 							inrefresh = false;
 							trace("refresh ended");
