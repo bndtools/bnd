@@ -1,5 +1,8 @@
 <FindBugsFilter>
      <Match>
+       <Package name="a" />
+     </Match>
+     <Match>
        <Package name="aQute.bnd.annotation" />
      </Match>
      <Match>
@@ -108,7 +111,13 @@
        <Package name="aQute.bnd.service.diff" />
      </Match>
      <Match>
+       <Package name="aQute.bnd.service.progress" />
+     </Match>
+     <Match>
        <Package name="aQute.bnd.service.repository" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.service.resolve.hook" />
      </Match>
      <Match>
        <Package name="aQute.bnd.service.url" />
@@ -157,6 +166,9 @@
      </Match>
      <Match>
        <Package name="aQute.launcher" />
+     </Match>
+     <Match>
+       <Package name="aQute.launcher.agent" />
      </Match>
      <Match>
        <Package name="aQute.launcher.constants" />
@@ -279,6 +291,9 @@
        <Package name="aQute.lib.justif" />
      </Match>
      <Match>
+       <Package name="aQute.lib.markdown" />
+     </Match>
+     <Match>
        <Package name="aQute.lib.putjar" />
      </Match>
      <Match>
@@ -286,6 +301,9 @@
      </Match>
      <Match>
        <Package name="aQute.lib.spring" />
+     </Match>
+     <Match>
+       <Package name="aQute.lib.strings" />
      </Match>
      <Match>
        <Package name="aQute.lib.tag" />
@@ -322,6 +340,9 @@
      </Match>
      <Match>
        <Package name="eclipse_jsr14" />
+     </Match>
+     <Match>
+       <Package name="foo" />
      </Match>
      <Match>
        <Package name="pkg2" />
@@ -393,6 +414,9 @@
        <Package name="test.diff" />
      </Match>
      <Match>
+       <Package name="test.diff.inherit" />
+     </Match>
+     <Match>
        <Package name="test.genericinterf.a" />
      </Match>
      <Match>
@@ -424,6 +448,9 @@
      </Match>
      <Match>
        <Package name="test.packageinfo.ref" />
+     </Match>
+     <Match>
+       <Package name="test.package_info_versioniskey" />
      </Match>
      <Match>
        <Package name="test.privateimport" />
@@ -489,6 +516,9 @@
        <Package name="test.uses.implement" />
      </Match>
      <Match>
+       <Package name="test.uses.multi" />
+     </Match>
+     <Match>
        <Package name="test.uses.order" />
      </Match>
      <Match>
@@ -508,5 +538,8 @@
      </Match>
      <Match>
        <Package name="test.versionpolicy.uses" />
+     </Match>
+     <Match>
+       <Package name="UPPERCASEPACKAGE" />
      </Match>
 </FindBugsFilter>
