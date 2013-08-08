@@ -10,7 +10,7 @@ import aQute.launcher.constants.*;
 
 public class ProjectLaunchImplTest extends TestCase {
 	public static void testParseRunProperties() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("test/test/ws"));
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p1");
 		String lb = null;
 
@@ -34,11 +34,11 @@ public class ProjectLaunchImplTest extends TestCase {
 			project.close();
 			ws.close();
 		}
-		assertEquals(new File("test/test/ws/p1/generated/p1.jar").getAbsolutePath(), lb);
+		assertEquals(new File("test/ws/p1/generated/p1.jar").getAbsolutePath(), lb);
 	}
 
 	public static void testParseSystemCapabilities() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("test/test/ws"));
+		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
 		Project project = ws.getProject("p1");
 		String systemCaps =null;
 		
