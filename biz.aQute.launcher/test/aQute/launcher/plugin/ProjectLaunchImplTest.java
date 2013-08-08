@@ -1,4 +1,4 @@
-package test;
+package aQute.launcher.plugin;
 
 import java.io.*;
 import java.util.*;
@@ -7,7 +7,6 @@ import java.util.regex.*;
 import junit.framework.*;
 import aQute.bnd.build.*;
 import aQute.launcher.constants.*;
-import aQute.launcher.plugin.*;
 
 public class ProjectLaunchImplTest extends TestCase {
 	public static void testParseRunProperties() throws Exception {

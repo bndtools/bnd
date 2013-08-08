@@ -1,4 +1,4 @@
-package test;
+package aQute.launcher.minifw;
 
 import java.io.*;
 import java.net.*;
@@ -7,8 +7,6 @@ import java.util.*;
 import junit.framework.*;
 
 import org.osgi.framework.*;
-
-import aQute.launcher.minifw.*;
 
 public class MiniFrameworkTest extends TestCase {
 
