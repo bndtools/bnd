@@ -1,7 +1,6 @@
-package test;
+package aQute.bnd.main;
 
 import junit.framework.*;
-import aQute.bnd.main.*;
 
 public class TestBuild extends TestCase {
 
