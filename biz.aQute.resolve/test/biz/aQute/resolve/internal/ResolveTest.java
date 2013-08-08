@@ -1,30 +1,22 @@
 package biz.aQute.resolve.internal;
 
-import static test.lib.Utils.createRepo;
+import static test.lib.Utils.*;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
-import org.apache.felix.resolver.ResolverImpl;
-import org.osgi.framework.Version;
-import org.osgi.framework.namespace.IdentityNamespace;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
-import org.osgi.resource.Resource;
-import org.osgi.resource.Wire;
-import org.osgi.service.log.LogService;
-import org.osgi.service.resolver.ResolutionException;
-import org.osgi.service.resolver.Resolver;
+import org.apache.felix.resolver.*;
+import org.osgi.framework.*;
+import org.osgi.framework.namespace.*;
+import org.osgi.resource.*;
+import org.osgi.service.log.*;
+import org.osgi.service.resolver.*;
 
-import test.lib.MockRegistry;
-import test.lib.NullLogService;
-import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.osgi.resource.CapReqBuilder;
+import test.lib.*;
+import aQute.bnd.build.model.*;
+import aQute.bnd.osgi.resource.*;
 
 public class ResolveTest extends TestCase {
 
