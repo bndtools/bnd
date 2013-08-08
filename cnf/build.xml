@@ -69,7 +69,7 @@
         </copy>
     </target>
 
-    <target name="mainJunit" depends="template.junit,maininit,mainCompileTests" if="srcTestDirExists" unless="no.junit">
+    <target name="mainJunit" depends="maininit,template.junit,mainCompileTests" if="srcTestDirExists" unless="no.junit">
         <junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
             <assertions>
                 <enable />
@@ -91,7 +91,7 @@
         First release all dependents (set in bnd.bnd -dependson) and then
         create an index.
     -->
-    <target name="mainRelease" depends="template.release">
+    <target name="mainRelease" depends="maininit,template.release">
         <bindex repositoryfile="bundles/repository.xml" root="bundles" quiet="true">
             <fileset dir="bundles" includes="**/*.jar" />
         </bindex>
@@ -117,7 +117,7 @@
     <!--
          INIT for FINDBUGS
     -->
-    <target name="fbinit" unless="fbinitialized">
+    <target name="fbinit" depends="maininit" unless="fbinitialized">
         <path id="antlib-classpath" location="${workspacedir}/cnf/ant-contrib/ant-contrib-1.0b3.jar" />
         <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="antlib-classpath" />
 
