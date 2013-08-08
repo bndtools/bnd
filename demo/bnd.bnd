@@ -35,3 +35,5 @@ javac.source=1.5
 -runee: JavaSE-1.6
 
 Bundle-Version: 1.1.0
+
+no.junit: true
