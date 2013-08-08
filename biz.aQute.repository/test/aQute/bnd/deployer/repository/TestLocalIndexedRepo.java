@@ -1,4 +1,4 @@
-package test.repository;
+package aQute.bnd.deployer.repository;
 
 import java.io.*;
 import java.net.*;
@@ -6,7 +6,6 @@ import java.util.*;
 
 import junit.framework.*;
 import test.lib.*;
-import aQute.bnd.deployer.repository.*;
 import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
 

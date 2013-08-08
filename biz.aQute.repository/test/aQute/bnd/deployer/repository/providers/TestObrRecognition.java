@@ -1,4 +1,4 @@
-package test.repository;
+package aQute.bnd.deployer.repository.providers;
 
 import static aQute.bnd.deployer.repository.api.Decision.*;
 
@@ -12,7 +12,6 @@ import org.osgi.impl.bundle.bindex.*;
 import org.osgi.service.bindex.*;
 
 import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.deployer.repository.providers.*;
 
 public class TestObrRecognition extends TestCase {
 

@@ -1,4 +1,4 @@
-package test.repository;
+package aQute.bnd.deployer.repository.providers;
 
 import static aQute.bnd.deployer.repository.api.Decision.*;
 
@@ -8,7 +8,6 @@ import javax.xml.stream.*;
 
 import junit.framework.*;
 import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.deployer.repository.providers.*;
 
 public class TestR5Recognition extends TestCase {
 

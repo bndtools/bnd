@@ -1,4 +1,4 @@
-package test.r5repository;
+package aQute.bnd.deployer.repository;
 
 import java.io.*;
 import java.util.*;
@@ -8,7 +8,6 @@ import junit.framework.*;
 import org.osgi.framework.*;
 import org.osgi.resource.*;
 
-import aQute.bnd.deployer.repository.*;
 import aQute.bnd.osgi.resource.*;
 
 public class FindProvidersTest extends TestCase {

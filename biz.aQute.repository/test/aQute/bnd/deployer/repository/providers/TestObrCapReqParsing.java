@@ -1,4 +1,4 @@
-package test.repository;
+package aQute.bnd.deployer.repository.providers;
 
 import java.io.*;
 import java.net.*;
@@ -12,7 +12,6 @@ import org.osgi.resource.*;
 
 import aQute.bnd.deployer.repository.*;
 import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.deployer.repository.providers.*;
 
 public class TestObrCapReqParsing extends TestCase {
 

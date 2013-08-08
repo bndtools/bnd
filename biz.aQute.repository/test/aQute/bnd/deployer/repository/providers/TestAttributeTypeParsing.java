@@ -1,7 +1,6 @@
-package test.repository;
+package aQute.bnd.deployer.repository.providers;
 
 import junit.framework.*;
-import aQute.bnd.deployer.repository.providers.*;
 
 public class TestAttributeTypeParsing extends TestCase {
 

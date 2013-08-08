@@ -1,4 +1,4 @@
-package test.http;
+package aQute.bnd.deployer.repository;
 
 import java.io.*;
 import java.net.*;
@@ -6,8 +6,6 @@ import java.net.*;
 import junit.framework.*;
 import test.lib.*;
 import aQute.bnd.deployer.http.*;
-import aQute.bnd.deployer.repository.*;
-import aQute.bnd.deployer.repository.CachingUriResourceHandle.CachingMode;
 import aQute.lib.io.*;
 
 public class CachingUriResourceHandlerTest extends TestCase {

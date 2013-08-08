@@ -9,7 +9,7 @@ import org.osgi.service.log.*;
 import aQute.bnd.deployer.repository.api.*;
 import aQute.bnd.service.*;
 
-class NonGeneratingProvider implements IRepositoryContentProvider {
+public class NonGeneratingProvider implements IRepositoryContentProvider {
 
 	public String getName() {
 		return "Nongenerating";

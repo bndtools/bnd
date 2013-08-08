@@ -1,4 +1,4 @@
-package test.http;
+package aQute.bnd.deployer.http;
 
 import java.io.*;
 import java.net.*;
@@ -16,7 +16,7 @@ import org.eclipse.jetty.server.ssl.*;
 import org.eclipse.jetty.util.security.*;
 import org.eclipse.jetty.util.ssl.*;
 
-import aQute.bnd.deployer.http.*;
+import test.http.*;
 import aQute.bnd.service.url.*;
 import aQute.lib.io.*;
 

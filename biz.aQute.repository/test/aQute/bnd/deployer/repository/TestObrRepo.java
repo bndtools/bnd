@@ -1,4 +1,4 @@
-package test.repository;
+package aQute.bnd.deployer.repository;
 
 import java.io.*;
 import java.util.*;
@@ -6,15 +6,14 @@ import java.util.*;
 import junit.framework.*;
 import test.helpers.*;
 import test.lib.*;
-import aQute.bnd.deployer.repository.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 
-public class TestCompressedObrRepo extends TestCase {
+public class TestObrRepo extends TestCase {
 
 	private static final String obrSrc = "testdata/fullobr.xml";
-	private static final String obrDst = "testdata/fullobr.xml.gz";
+	private static final String obrDst = "testdata/fullobr.tmp.xml";
 	private static FixedIndexedRepo	obr;
 	private static NanoHTTPD			httpd;
 	private static int					httpdPort;
@@ -23,9 +22,9 @@ public class TestCompressedObrRepo extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		httpd = new NanoHTTPD(0, new File("testdata/http"));
-		httpdPort = httpd .getPort();
+		httpdPort = httpd.getPort();
 
-		Sed.file2GzFile(obrSrc, "__httpdPort__", Integer.toString(httpdPort), obrDst);
+		Sed.file2File(obrSrc, "__httpdPort__", Integer.toString(httpdPort), obrDst);
 
 		reporter = new Processor();
 		obr = new FixedIndexedRepo();
@@ -97,6 +96,27 @@ public class TestCompressedObrRepo extends TestCase {
 		File result = obr.get("name.njbartlett.osgi.emf.xmi", null, Strategy.HIGHEST, null);
 		assertNotNull(result);
 		assertEquals("name.njbartlett.osgi.emf.xmi-2.7.0.jar", result.getName());
+	}
+
+	public static void testGetBsnExcactNoMatch() throws Exception {
+		File result = obr.get("name.njbartlett.osgi.emf.xmi", "2.4.0", Strategy.EXACT, null);
+		assertNull(result);
+	}
+
+	public static void testGetBsnExcactWithQualifier() throws Exception {
+		File result = obr.get("name.njbartlett.osgi.emf.xmi", "2.7.0.201104130744", Strategy.EXACT, null);
+		assertNotNull(result);
+		assertEquals("name.njbartlett.osgi.emf.xmi-2.7.0.jar", result.getName());
+	}
+
+	public static void testGetBsnExcact() throws Exception {
+		File result = obr.get("name.njbartlett.osgi.emf.xmi", "2.7.0", Strategy.EXACT, null);
+		assertNotNull(result);
+		assertEquals("name.njbartlett.osgi.emf.xmi-2.7.0.jar", result.getName());
+
+		result = obr.get("name.njbartlett.osgi.emf.xmi", "2.5.0", Strategy.EXACT, null);
+		assertNotNull(result);
+		assertEquals("name.njbartlett.osgi.emf.xmi-2.5.0.jar", result.getName());
 	}
 
 	public static void testGetBsnLowestWithRange() throws Exception {

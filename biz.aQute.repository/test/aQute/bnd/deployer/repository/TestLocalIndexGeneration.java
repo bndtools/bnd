@@ -1,11 +1,11 @@
-package test.repository;
+package aQute.bnd.deployer.repository;
 
 import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
 import test.lib.*;
-import aQute.bnd.deployer.repository.*;
+import test.repository.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.PutResult;

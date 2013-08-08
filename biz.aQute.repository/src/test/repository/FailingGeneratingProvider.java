@@ -9,7 +9,7 @@ import org.osgi.service.log.*;
 import aQute.bnd.deployer.repository.api.*;
 import aQute.bnd.service.*;
 
-class FailingGeneratingProvider implements IRepositoryContentProvider {
+public class FailingGeneratingProvider implements IRepositoryContentProvider {
 
 	public String getName() {
 		return "Fail";
