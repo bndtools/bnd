@@ -106,15 +106,18 @@ public class ConverterTest extends TestCase {
 
 	public void testDigest() throws Exception {
 		Digester<SHA1> digester = SHA1.getDigester();
-		IO.copy("ABC".getBytes(), digester);
-		SHA1 digest = digester.digest();
-		byte[] out = converter.convert(byte[].class, digest);
-		assertTrue(Arrays.equals(digest.digest(), out));
+		try {
+			IO.copy("ABC".getBytes(), digester);
+			SHA1 digest = digester.digest();
+			byte[] out = converter.convert(byte[].class, digest);
+			assertTrue(Arrays.equals(digest.digest(), out));
 
-		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		bout.write("Hello World".getBytes());
-		assertTrue(Arrays.equals("Hello World".getBytes(), converter.convert(byte[].class, bout)));
-
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			bout.write("Hello World".getBytes());
+			assertTrue(Arrays.equals("Hello World".getBytes(), converter.convert(byte[].class, bout)));
+		} finally {
+			digester.close();
+		}
 	}
 
 	/**
