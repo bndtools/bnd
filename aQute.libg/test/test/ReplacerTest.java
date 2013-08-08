@@ -99,6 +99,7 @@ public class ReplacerTest extends TestCase {
 	public static void testifDir() {
 		Processor top = new Processor();
 		top.getMap().put("presentd", "${if;${isdir;src};YES;NO}");
+		top.getMap().put("presentd", "${if;${isdir;test};YES;NO}");
 		top.getMap().put("absentd", "${if;${isdir;xxx};YES;NO}");
 		top.getMap().put("wrongd", "${if;${isdir;bnd.bnd};YES;NO}");
 		assertEquals("YES", top.getProcessed("presentd"));
@@ -261,12 +262,12 @@ public class ReplacerTest extends TestCase {
 
 	public static void testWc() {
 		Processor p = new Processor();
-		String a = p.process("${lsr;" + new File("src" + File.separator + "test").getAbsolutePath() + ";*.java}");
+		String a = p.process("${lsr;" + new File("test" + File.separator + "test").getAbsolutePath() + ";*.java}");
 		assertTrue(a.contains("ReplacerTest.java"));
-		assertFalse(a.contains("src" + File.separator + "test" + File.separator + "ReplacerTest.java"));
+		assertFalse(a.contains("test" + File.separator + "test" + File.separator + "ReplacerTest.java"));
 
-		String b = p.process("${lsa;" + new File("src" + File.separator + "test").getAbsolutePath() + ";*.java}");
-		assertTrue(b.contains("src" + File.separator + "test" + File.separator + "ReplacerTest.java"));
+		String b = p.process("${lsa;" + new File("test" + File.separator + "test").getAbsolutePath() + ";*.java}");
+		assertTrue(b.contains("test" + File.separator + "test" + File.separator + "ReplacerTest.java"));
 		p.check();
 	}
 
