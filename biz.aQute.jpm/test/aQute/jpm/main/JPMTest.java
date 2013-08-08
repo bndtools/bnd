@@ -1,11 +1,10 @@
-package test;
+package aQute.jpm.main;
 
 import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
 import aQute.jpm.lib.*;
-import aQute.jpm.main.*;
 import aQute.jpm.platform.*;
 import aQute.lib.io.*;
 import aQute.lib.settings.*;
