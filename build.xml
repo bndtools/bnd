@@ -25,28 +25,32 @@
 	</target>
 
 	<target name="junit" depends="__mainiterateinit">
-		<iterate target="junit" />
+		<iterate target="mainJunit" />
 	</target>
 
 	<target name="dist" >
-		<ant dir="dist" target="release" />
+		<ant dir="dist" target="mainRelease" />
 	</target>
 
 	<target name="release">
-		<ant dir="biz.aQute.bnd" target="release" />
-		<ant dir="biz.aQute.repository" target="release" />
-		<ant dir="biz.aQute.resolve" target="release" />
+		<ant dir="biz.aQute.bnd" target="mainRelease" />
+		<ant dir="biz.aQute.repository" target="mainRelease" />
+		<ant dir="biz.aQute.resolve" target="mainRelease" />
 	</target>
 
 	<target name="clean" depends="__mainiterateinit">
-		<iterate target="clean" />
+		<iterate target="mainClean" />
 	</target>
 
 	<target name="findbugs-prepare">
 		<exec dir="." executable="./cnf/scripts/fb_generate_includes.bash" osfamily="unix" />
 	</target>
 
-	<target name="findbugs" depends="__mainiterateinit">
+	<target name="findbugs" depends="__mainiterateinit,findbugs-prepare">
 		<iterate target="findbugs" />
+	</target>
+
+	<target name="echo" depends="__mainiterateinit">
+		<iterate target="echo" />
 	</target>
 </project>

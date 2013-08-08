@@ -31,7 +31,7 @@
          It's purpose is to set up the environment only once
          and avoid it being repeatedly done for each antcall.
     -->
-    <target name="init" depends="template.init" unless="maininitialized">
+    <target name="maininit" depends="template.init" unless="maininitialized">
         <condition property="srcTestDirExists">
             <available file="${basedir}/src/test" type="dir"/>
         </condition>
@@ -53,7 +53,7 @@
     <!--
         JUNIT
     -->
-    <target name="compileTests" depends="template.init,template.build" if="srcTestDirExists">
+    <target name="mainCompileTests" depends="maininit,template.build" if="srcTestDirExists">
         <mkdir dir="bin"/>
         <javac fork="yes" executable="${javac}" srcdir="src" destdir="bin" classpath="${project.buildpath}:${project.testpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
         <!--
@@ -69,7 +69,7 @@
         </copy>
     </target>
 
-    <target name="junitSrc" depends="template.init,compileTests" if="srcTestDirExists">
+    <target name="mainJunit" depends="template.junit,maininit,mainCompileTests" if="srcTestDirExists" unless="no.junit">
         <junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
             <assertions>
                 <enable />
@@ -84,8 +84,6 @@
         </junit>
     </target>
 
-    <target name="junit" depends="junitSrc,template.junit" unless="no.junit"/>
-
 
     <!--
         Release
@@ -93,7 +91,7 @@
         First release all dependents (set in bnd.bnd -dependson) and then
         create an index.
     -->
-    <target name="release" depends="template.release">
+    <target name="mainRelease" depends="template.release">
         <bindex repositoryfile="bundles/repository.xml" root="bundles" quiet="true">
             <fileset dir="bundles" includes="**/*.jar" />
         </bindex>
@@ -106,11 +104,11 @@
     <!--
          CLEAN
     -->
-    <target name="deepclean" depends="template.init,template.clean" if="project.dependson">
+    <target name="mainDeepClean" depends="maininit,template.clean" if="project.dependson">
         <subant target="template.clean" inheritAll="false" buildpath="${project.dependson}" />
     </target>
 
-    <target name="clean" depends="template.init,template.clean">
+    <target name="mainClean" depends="maininit,template.clean">
         <delete dir="${workspacedir}/cnf/tmp" />
         <delete dir="${workspacedir}/cnf/p2target" />
     </target>
@@ -139,7 +137,7 @@
     <!--
          FINDBUGS
     -->
-    <target name="findbugs" depends="template.init,fbinit,template.build">
+    <target name="findbugs" depends="maininit,fbinit,template.build">
         <property name="project.bootclasspath.adjusted" value="${project.bootclasspath}" />
         <property name="project.buildpath.adjusted" value="${project.buildpath}" />
         <property name="project.testpath.adjusted" value="${project.testpath}" />
