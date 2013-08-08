@@ -1,4 +1,4 @@
-package test;
+package aQute.libg.command;
 
 import junit.framework.*;
 import aQute.libg.command.*;

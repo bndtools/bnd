@@ -1,4 +1,4 @@
-package test;
+package aQute.lib.converter;
 
 import java.io.*;
 import java.lang.reflect.*;

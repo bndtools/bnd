@@ -1,4 +1,4 @@
-package test;
+package aQute.libg.sed;
 
 import java.io.*;
 import java.util.*;

@@ -1,4 +1,4 @@
-package test;
+package aQute.lib.json;
 
 import java.io.*;
 import java.lang.reflect.*;

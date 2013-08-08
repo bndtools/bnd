@@ -1,4 +1,4 @@
-package test;
+package aQute.lib.putjar;
 
 import java.io.*;
 

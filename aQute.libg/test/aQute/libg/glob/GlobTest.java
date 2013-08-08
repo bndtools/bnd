@@ -1,4 +1,4 @@
-package test;
+package aQute.libg.glob;
 
 import junit.framework.*;
 import aQute.libg.glob.*;

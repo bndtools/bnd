@@ -1,4 +1,4 @@
-package test;
+package aQute.libg.gzip;
 
 import java.io.*;
 

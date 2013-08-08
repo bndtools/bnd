@@ -1,4 +1,4 @@
-package test;
+package aQute.lib.index;
 
 import java.io.*;
 

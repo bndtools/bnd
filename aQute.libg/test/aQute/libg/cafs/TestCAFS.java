@@ -1,4 +1,4 @@
-package test;
+package aQute.libg.cafs;
 
 import java.io.*;
 
@@ -23,21 +23,21 @@ public class TestCAFS extends TestCase {
 	//
 	// DigestInputStream dis = new
 	// DigestInputStream(getClass().getResourceAsStream(
-	// "cafs/file1.txt"), digester);
+	// "file1.txt"), digester);
 	// SHA1 sha1 = cafs.write(dis);
 	//
 	// assertEquals(new SHA1(digester.digest()), sha1);
 	//
 	// digester.reset();
 	// dis = new
-	// DigestInputStream(getClass().getResourceAsStream("cafs/file1-1.txt"),
+	// DigestInputStream(getClass().getResourceAsStream("file1-1.txt"),
 	// digester);
 	//
 	// SHA1 sha1_1 = cafs.write(dis);
 	// assertEquals(sha1, sha1_1);
 	// assertEquals( new SHA1(digester.digest()), sha1_1);
 	//
-	// SHA1 sha2 = cafs.write(getClass().getResourceAsStream("cafs/file2.txt"));
+	// SHA1 sha2 = cafs.write(getClass().getResourceAsStream("file2.txt"));
 	//
 	// assertFalse( sha1.equals(sha2));
 	//

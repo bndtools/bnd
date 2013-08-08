@@ -1,4 +1,4 @@
-package test;
+package aQute.lib.collections;
 
 import java.util.*;
 

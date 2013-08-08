@@ -1,4 +1,4 @@
-package test;
+package aQute.lib.getopt;
 
 import java.io.*;
 import java.util.*;

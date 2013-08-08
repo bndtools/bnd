@@ -1,4 +1,4 @@
-package test;
+package aQute.lib.settings;
 
 import java.io.*;
 import java.util.*;
