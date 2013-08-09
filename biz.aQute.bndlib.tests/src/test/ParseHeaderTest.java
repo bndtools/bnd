@@ -12,7 +12,7 @@ public class ParseHeaderTest extends TestCase {
 
 	public void testTyped() {
 		{
-			// It should be string.list2:List="a\"quote,a\,comma, aSpace ,\"start,\,start,end\",end\," (not handling escape of comma) 
+			// Spaces at end of quoted string 
 			Parameters pp = new Parameters("a;string.list3:List<String>=\" aString , bString , cString \"");
 			assertEquals("a;string.list3:List<String>=\" aString , bString , cString \"", pp.toString());
 		}
