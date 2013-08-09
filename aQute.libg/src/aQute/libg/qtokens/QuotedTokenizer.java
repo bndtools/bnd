@@ -38,13 +38,19 @@ public class QuotedTokenizer {
 
 		StringBuilder sb = new StringBuilder();
 
+		boolean hadstring = false; // means no further trimming
+		boolean validspace = false; // means include spaces
+
 		while (index < string.length()) {
 			char c = string.charAt(index++);
 
 			if (Character.isWhitespace(c)) {
 				if (index == string.length())
 					break;
-//				sb.append(c);
+
+				if (validspace)
+					sb.append(c);
+
 				continue;
 			}
 
@@ -59,14 +65,21 @@ public class QuotedTokenizer {
 			switch (c) {
 				case '"' :
 				case '\'' :
+					hadstring = true;
 					quotedString(sb, c);
+					// skip remaining space
+					validspace = false;
 					break;
 
 				default :
 					sb.append(c);
+					validspace = true;
 			}
 		}
 		String result = sb.toString();
+		if (!hadstring)
+			result = result.trim();
+
 		if (result.length() == 0 && index == string.length())
 			return null;
 		return result;

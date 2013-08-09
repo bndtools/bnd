@@ -323,11 +323,11 @@ public class Project extends Processor {
 	public File getTestSrc() {
 		return new File(getBase(), getProperty("test", "test"));
 	}
-	
+
 	public File getTestOutput() throws Exception {
 		return new File(getBase(), getProperty("bin_test", "bin_test"));
 	}
-	
+
 	private void traverse(Collection<Project> dependencies, Set<Project> visited) throws Exception {
 		if (visited.contains(this))
 			return;
@@ -460,6 +460,8 @@ public class Project extends Processor {
 					for (Container cc : libs) {
 						if (result.contains(cc))
 							warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
+						else if (cc.getError() != null)
+							warning("Cannot find %s in %s from %s due to %s", cc, spec, source, cc.getError());
 						else
 							result.add(cc);
 					}
@@ -626,7 +628,6 @@ public class Project extends Processor {
 		prepare();
 		return output;
 	}
-
 
 	private void doEclipseClasspath() throws Exception {
 		EclipseClasspath eclipse = new EclipseClasspath(this, getWorkspace().getBase(), getBase());
@@ -1837,19 +1838,22 @@ public class Project extends Processor {
 		}
 		return null;
 	}
+
 	/**
 	 * Return a build that maps to the sub file.
+	 * 
 	 * @param string
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public ProjectBuilder getSubBuilder(String string) throws Exception {
 		Collection< ? extends Builder> builders = getSubBuilders();
-		for ( Builder b : builders) {
-			if ( b.getBsn().equals(string) || b.getBsn().endsWith("." + string))
+		for (Builder b : builders) {
+			if (b.getBsn().equals(string) || b.getBsn().endsWith("." + string))
 				return (ProjectBuilder) b;
 		}
 		return null;
 	}
+
 	/**
 	 * Answer the container associated with a given bsn.
 	 * 
@@ -2215,6 +2219,5 @@ public class Project extends Processor {
 		}
 		getInfo(b);
 	}
-
 
 }

@@ -10,7 +10,31 @@ import aQute.bnd.version.*;
 
 public class ParseHeaderTest extends TestCase {
 
+	
 	public void testTyped() {
+		Parameters p = new Parameters("a;a:Long=1;b:Double=3.2;c:String=abc;d:Version=1"
+				+ ";e:List<Long>='1,2,3';f:List<Double>='1.0,1.1,1.2';g:List<String>='abc,def,ghi';h:List<Version>='1.0.1,1.0.2'");
+
+		String s = p.toString();
+		System.out.println(s);
+		assertEquals("a;a:Long=1;b:Double=\"3.2\";c:String=abc;d:Version=1;"
+				+ "e:List<Long>=\"1,2,3\";f:List<Double>=\"1.0,1.1,1.2\";g:List<String>=\"abc,def,ghi\";h:List<Version>=\"1.0.1,1.0.2\"", s);
+		
+		Attrs attrs = p.get("a");
+		assertNotNull(attrs);
+		
+		assertEquals( 1L, attrs.getTyped("a"));
+		assertEquals( 3.2d, attrs.getTyped("b"));
+		assertEquals( "abc", attrs.getTyped("c"));
+		assertEquals( new Version("1"), attrs.getTyped("d"));
+		assertEquals( Arrays.asList(1L,2L,3L), attrs.getTyped("e"));
+		assertEquals( Arrays.asList(1.0D,1.1D,1.2D), attrs.getTyped("f"));
+		assertEquals( Arrays.asList("abc","def","ghi"), attrs.getTyped("g"));
+		assertEquals( Arrays.asList(new Version("1.0.1"), new Version("1.0.2")), attrs.getTyped("h"));
+	}
+	
+	public void testEscaping() {
+		
 		{
 			// Spaces at end of quoted string 
 			Parameters pp = new Parameters("a;string.list3:List<String>=\" aString , bString , cString \"");
@@ -27,14 +51,6 @@ public class ParseHeaderTest extends TestCase {
 			assertEquals("a;a:List<String>=abc", pp.toString());
 		}
 
-		Parameters p = new Parameters("a;a:Long=1," + "a;b:Double=3.2," + "a;c:String=abc," + "a;d:Version=1,"
-				+ "a;e:List<Long>='1,2,3'," + "a;f:List<Double>='1.0,1.1,1.2'," + "a;g:List<String>='abc,def,ghi',"
-				+ "a;h:List<Version>='1.0.1,1.0.2'");
-
-		String s = p.toString();
-		System.out.println(s);
-		assertEquals("a;a:Long=1," + "a;b:Double=\"3.2\"," + "a;c:String=abc," + "a;d:Version=1,"
-				+ "a;e:List<Long>=\"1,2,3\",a;f:List<Double>=\"1.0,1.1,1.2\",a;g:List<String>=\"abc,def,ghi\"," + "a;h:List<Version>=\"1.0.1,1.0.2\"", s);
 	}
 
 	public static void testPropertiesSimple() {

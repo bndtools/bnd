@@ -120,7 +120,7 @@ public class OSGiHeader {
 				value = qt.nextToken(",=");
 				del = qt.getSeparator();
 			}
-			result.put(key, value);
+			result.put(key.trim(), value);
 		}
 		if (del != 0) {
 			if (logger == null)
