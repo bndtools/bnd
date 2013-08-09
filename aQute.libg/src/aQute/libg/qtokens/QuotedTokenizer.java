@@ -44,7 +44,7 @@ public class QuotedTokenizer {
 			if (Character.isWhitespace(c)) {
 				if (index == string.length())
 					break;
-				sb.append(c);
+//				sb.append(c);
 				continue;
 			}
 
@@ -66,7 +66,7 @@ public class QuotedTokenizer {
 					sb.append(c);
 			}
 		}
-		String result = sb.toString().trim();
+		String result = sb.toString();
 		if (result.length() == 0 && index == string.length())
 			return null;
 		return result;

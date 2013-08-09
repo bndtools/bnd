@@ -73,7 +73,7 @@ public class OSGiHeader {
 								logger.error("No value after '=' sign for attribute " + adname);
 							advalue = "";
 						}
-						clause.put(adname.trim(), advalue.trim());
+						clause.put(adname.trim(), advalue);
 						del = qt.getSeparator();
 						hadAttribute = true;
 					}

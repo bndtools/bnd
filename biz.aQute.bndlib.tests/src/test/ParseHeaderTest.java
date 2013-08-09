@@ -13,6 +13,11 @@ public class ParseHeaderTest extends TestCase {
 	public void testTyped() {
 		{
 			// It should be string.list2:List="a\"quote,a\,comma, aSpace ,\"start,\,start,end\",end\," (not handling escape of comma) 
+			Parameters pp = new Parameters("a;string.list3:List<String>=\" aString , bString , cString \"");
+			assertEquals("a;string.list3:List<String>=\" aString , bString , cString \"", pp.toString());
+		}
+		{
+			// It should be string.list2:List="a\"quote,a\,comma, aSpace ,\"start,\,start,end\",end\," (not handling escape of comma) 
 			Parameters pp = new Parameters("a;b:List=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"");
 			assertEquals("a;b:List=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"", pp.toString());
 		}
@@ -29,15 +34,14 @@ public class ParseHeaderTest extends TestCase {
 		String s = p.toString();
 		System.out.println(s);
 		assertEquals("a;a:Long=1," + "a;b:Double=\"3.2\"," + "a;c:String=abc," + "a;d:Version=1,"
-				+ "a;e:List<Long>=\"1,2,3\"," + "a;f:List<Double>=\"1.0,1.1,1.2\","
-				+ "a;g:List<String>=\"abc,def,ghi\"," + "a;h:List<Version>=\"1.0.1,1.0.2\"", s);
+				+ "a;e:List<Long>=\"1,2,3\",a;f:List<Double>=\"1.0,1.1,1.2\",a;g:List<String>=\"abc,def,ghi\"," + "a;h:List<Version>=\"1.0.1,1.0.2\"", s);
 	}
 
 	public static void testPropertiesSimple() {
 		Map<String,String> p = OSGiHeader.parseProperties("a=1, b=\"3   3\", c=c");
+		assertEquals("c", p.get("c"));
 		assertEquals("1", p.get("a"));
 		assertEquals("3   3", p.get("b"));
-		assertEquals("c", p.get("c"));
 	}
 
 	public static void testClauseName() {
