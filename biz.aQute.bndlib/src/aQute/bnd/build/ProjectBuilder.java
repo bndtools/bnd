@@ -274,7 +274,7 @@ public class ProjectBuilder extends Builder {
 			// We have a repo
 			Version v = new Version(getVersion());
 			if (v.getWithoutQualifier().compareTo(Version.ONE) > 0) {
-				error("There is no baseline for %s in the baseline repo %s. The build is for version %s, which is <= 1.0.0 which suggests that there should be a prior version.",
+				warning("There is no baseline for %s in the baseline repo %s. The build is for version %s, which is <= 1.0.0 which suggests that there should be a prior version.",
 						getBsn(), repo, v);
 			}
 			return null;
