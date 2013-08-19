@@ -103,6 +103,7 @@ public interface Constants {
 	String							NODEFAULTVERSION							= "-nodefaultversion";
 	String							NOEXTRAHEADERS								= "-noextraheaders";
 	String							NOMANIFEST									= "-nomanifest";
+	String							MANIFEST_NAME								= "-manifest-name";
 	String							NOUSES										= "-nouses";
 	String							NOBUNDLES									= "-nobundles";
 	String							PACKAGE										= "-package";

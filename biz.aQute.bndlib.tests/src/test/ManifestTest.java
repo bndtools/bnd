@@ -142,6 +142,28 @@ public class ManifestTest extends TestCase {
 		assertNotNull(entry);
 		assertNull(entry.getExtra());
 	}
+	
+	public static void testRenameManifest() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-manifest-name", "META-INF/FESTYMAN.MF");
+		b.setProperty("Subsystem-Wibble", "hullo");
+		b.setProperty("Export-Package", "org.osgi.service.event.*");
+
+		b.addClasspath(new File("jar/osgi.jar"));
+		Jar jar = b.build();
+		
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		jar.write(bout);
+		b.close();
+		jar.close();
+		
+		ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
+		ZipInputStream zin = new ZipInputStream(bin);
+		assertEquals("META-INF/FESTYMAN.MF", zin.getNextEntry().getName());
+		Manifest manifest = new Manifest(zin);
+		assertEquals("hullo", manifest.getMainAttributes().getValue("Subsystem-Wibble"));
+		zin.close();
+	}
 
 	public static void testNames() throws Exception {
 		Manifest m = new Manifest();
