@@ -43,6 +43,25 @@ public class JarTest extends TestCase {
 		assertEquals("1", m.getMainAttributes().getValue("X"));
 		jin.close();
 	}
+	
+	public static void testRenameManifest() throws Exception {
+		Jar jar = new Jar("dot");
+		Manifest manifest = new Manifest();
+		manifest.getMainAttributes().putValue("X", "1");
+		jar.setManifest(manifest);
+		jar.setManifestName("META-INF/FESTYMAN.MF");
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		jar.write(bout);
+
+		ZipInputStream zin = new ZipInputStream(new ByteArrayInputStream(bout.toByteArray()));
+		ZipEntry firstEntry = zin.getNextEntry();
+		assertEquals("META-INF/FESTYMAN.MF", firstEntry.getName());
+		manifest = new Manifest(zin);
+		
+		assertEquals("1", manifest.getMainAttributes().getValue("X"));
+		zin.close();
+	}
 
 	public static void testSimple() throws ZipException, IOException {
 		File file = new File("jar/asm.jar");

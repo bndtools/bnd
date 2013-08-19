@@ -20,11 +20,14 @@ public class Jar implements Closeable {
 		DEFLATE, STORE
 	}
 
+	static final String	DEFAULT_MANIFEST_NAME	= "META-INF/MANIFEST.MF";
+
 	public static final Object[]			EMPTY_ARRAY	= new Jar[0];
 	final Map<String,Resource>				resources	= new TreeMap<String,Resource>();
 	final Map<String,Map<String,Resource>>	directories	= new TreeMap<String,Map<String,Resource>>();
 	Manifest								manifest;
 	boolean									manifestFirst;
+	String									manifestName = DEFAULT_MANIFEST_NAME;
 	String									name;
 	File									source;
 	ZipFile									zipFile;
@@ -114,7 +117,7 @@ public class Jar implements Closeable {
 		while (path.startsWith("/"))
 			path = path.substring(1);
 
-		if (path.equals("META-INF/MANIFEST.MF")) {
+		if (path.equals(manifestName)) {
 			manifest = null;
 			if (resources.isEmpty())
 				manifestFirst = true;
@@ -185,7 +188,7 @@ public class Jar implements Closeable {
 	public Manifest getManifest() throws Exception {
 		check();
 		if (manifest == null) {
-			Resource manifestResource = getResource("META-INF/MANIFEST.MF");
+			Resource manifestResource = getResource(manifestName);
 			if (manifestResource != null) {
 				InputStream in = manifestResource.openInputStream();
 				manifest = new Manifest(in);
@@ -216,6 +219,13 @@ public class Jar implements Closeable {
 		finally {
 			fin.close();
 		}
+	}
+	
+	public void setManifestName(String manifestName) {
+		check();
+		if (manifestName == null || manifestName.length() == 0)
+			throw new IllegalArgumentException("Manifest name cannot be null or empty!");
+		this.manifestName = manifestName;
 	}
 
 	public void write(File file) throws Exception {
@@ -293,10 +303,10 @@ public class Jar implements Closeable {
 
 		Set<String> directories = new HashSet<String>();
 		if (doNotTouchManifest) {
-			Resource r = getResource("META-INF/MANIFEST.MF");
+			Resource r = getResource(manifestName);
 			if (r != null) {
-				writeResource(jout, directories, "META-INF/MANIFEST.MF", r);
-				done.add("META-INF/MANIFEST.MF");
+				writeResource(jout, directories, manifestName, r);
+				done.add(manifestName);
 			}
 		} else
 			doManifest(done, jout);
@@ -314,7 +324,7 @@ public class Jar implements Closeable {
 		if (nomanifest)
 			return;
 
-		JarEntry ze = new JarEntry("META-INF/MANIFEST.MF");
+		JarEntry ze = new JarEntry(manifestName);
 
 		jout.putNextEntry(ze);
 		writeManifest(jout);
@@ -573,7 +583,7 @@ public class Jar implements Closeable {
 		check();
 		boolean dupl = false;
 		for (String name : sub.getResources().keySet()) {
-			if ("META-INF/MANIFEST.MF".equals(name))
+			if (manifestName.equals(name))
 				continue;
 
 			if (filter == null || filter.matches(name) != filter.isNegated())
@@ -696,7 +706,7 @@ public class Jar implements Closeable {
 		for (Map.Entry<String,Resource> entry : resources.entrySet()) {
 
 			// Skip the manifest
-			if (entry.getKey().equals("META-INF/MANIFEST.MF"))
+			if (entry.getKey().equals(manifestName))
 				continue;
 
 			Resource r = entry.getValue();
@@ -880,7 +890,7 @@ public class Jar implements Closeable {
 			
 			for ( Map.Entry<String,Resource> entry : getResources().entrySet()) {
 				String path = entry.getKey();
-				if ( path.equals( "META-INF/MANIFEST.MF"))
+				if ( path.equals(manifestName))
 					continue;
 				Resource resource = entry.getValue();
 				dout.write(path.getBytes("UTF-8"));

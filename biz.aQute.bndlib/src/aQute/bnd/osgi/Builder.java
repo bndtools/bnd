@@ -92,11 +92,15 @@ public class Builder extends Analyzer {
 				error(MANIFEST + ", no such file " + mf);
 			}
 		}
-
-		if (getProperty(NOMANIFEST) == null)
+		
+		if (getProperty(NOMANIFEST) == null) {
 			dot.setManifest(manifest);
-		else
+			String manifestName = getProperty(MANIFEST_NAME);
+			if (manifestName != null)
+				dot.setManifestName(manifestName);
+		} else {
 			dot.setDoNotTouchManifest();
+		}
 
 		// This must happen after we analyzed so
 		// we know what it is on the classpath
