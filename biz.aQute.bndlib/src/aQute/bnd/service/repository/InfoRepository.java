@@ -14,5 +14,5 @@ public interface InfoRepository {
 	 * @param version The exact version (must also match qualifier)
 	 * @return a ResourceDescriptor describing the artifact
 	 */
-	ResourceDescriptor get(String bsn, Version version);
+	ResourceDescriptor getDescriptor(String bsn, Version version) throws Exception;
 }
