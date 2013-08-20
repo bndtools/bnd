@@ -129,7 +129,7 @@ public class ProjectBuilder extends Builder {
 		if (newer.getWithoutQualifier().equals(older.getWithoutQualifier())) {
 			RepositoryPlugin rr = getReleaseRepo();
 			if (rr instanceof InfoRepository) {
-				ResourceDescriptor descriptor = ((InfoRepository) rr).get(getBsn(), older);
+				ResourceDescriptor descriptor = ((InfoRepository) rr).getDescriptor(getBsn(), older);
 				if (descriptor != null && descriptor.phase != Phase.STAGING) {
 					error("Baselining %s against same version %s but the repository says the older repository version is not the required %s but is instead %s",
 							getBsn(), getVersion(), Phase.STAGING, descriptor.phase);
