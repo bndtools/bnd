@@ -10,6 +10,8 @@ import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.repository.*;
+import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
@@ -118,6 +120,22 @@ public class ProjectBuilder extends Builder {
 			error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(),
 					fromRepo.getBsn());
 			return;
+		}
+
+		//
+		// Check if we want to overwrite an equal version that is not staging
+		//
+
+		if (newer.getWithoutQualifier().equals(older.getWithoutQualifier())) {
+			RepositoryPlugin rr = getReleaseRepo();
+			if (rr instanceof InfoRepository) {
+				ResourceDescriptor descriptor = ((InfoRepository) rr).get(getBsn(), older);
+				if (descriptor != null && descriptor.phase != Phase.STAGING) {
+					error("Baselining %s against same version %s but the repository says the older repository version is not the required %s but is instead %s",
+							getBsn(), getVersion(), Phase.STAGING, descriptor.phase);
+					return;
+				}
+			}
 		}
 
 		trace("baseline %s-%s against: %s", getBsn(), getVersion(), fromRepo.getName());
@@ -334,11 +352,11 @@ public class ProjectBuilder extends Builder {
 				// Fetch the revision
 
 				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) > 0) {
-					error("The baseline version %s is higher or equal than the current version %s for %s in %s",
-							target, version, bsn, repo);
+					error("The baseline version %s is higher than the current version %s for %s in %s", target,
+							version, bsn, repo);
 					return null;
 				}
-				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) > 0) {
+				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) == 0) {
 					if (isPedantic()) {
 						warning("Baselining against jar");
 					}
