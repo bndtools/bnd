@@ -14,6 +14,7 @@ import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.service.reporter.Report.Location;
 
+@SuppressWarnings("resource")
 public class BuilderTest extends BndTestCase {
 
 	/**

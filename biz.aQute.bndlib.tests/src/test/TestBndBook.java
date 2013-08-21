@@ -5,6 +5,7 @@ import java.io.*;
 import junit.framework.*;
 import aQute.bnd.osgi.*;
 
+@SuppressWarnings("resource")
 public class TestBndBook extends TestCase {
 
 	public static void testFilterout() throws Exception {

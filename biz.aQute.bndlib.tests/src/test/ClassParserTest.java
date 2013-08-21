@@ -69,6 +69,7 @@ class Implemented implements Plugin {
 	public void setReporter(Reporter processor) {}
 }
 
+@SuppressWarnings("resource")
 public class ClassParserTest extends TestCase {
 	static Analyzer	a	= new Analyzer();
 

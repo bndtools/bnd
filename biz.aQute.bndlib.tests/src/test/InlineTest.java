@@ -4,6 +4,7 @@ import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+@SuppressWarnings("resource")
 
 public class InlineTest extends TestCase {
 	public static void testSimple() throws Exception {

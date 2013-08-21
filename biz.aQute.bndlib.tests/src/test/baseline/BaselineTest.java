@@ -20,6 +20,7 @@ import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.reporter.*;
 
+@SuppressWarnings("resource")
 public class BaselineTest extends TestCase {
 
 	public static void testBaslineJar() throws Exception {

@@ -11,6 +11,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.lib.io.*;
 
+@SuppressWarnings("resource")
 public class TestLocalIndexGeneration extends TestCase {
 
 	private static Processor				reporter;

@@ -7,6 +7,7 @@ import junit.framework.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 
+@SuppressWarnings("resource")
 public class UsesTest extends TestCase {
 
 	public static void testUsesExtend() throws Exception {

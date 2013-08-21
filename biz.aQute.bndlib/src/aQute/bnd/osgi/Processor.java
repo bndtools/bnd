@@ -842,6 +842,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return sb.toString();
 		}
 
+		@SuppressWarnings("resource")
 		Processor source = this;
 
 		// Use the key as is first, if found ok
@@ -1903,6 +1904,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (fl != null)
 			return fl;
 
+		@SuppressWarnings("resource")
 		Processor rover = this;
 		while (rover.getPropertiesFile() == null)
 			if (rover.parent == null) {

@@ -19,6 +19,7 @@ import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
 
+@SuppressWarnings("resource")
 public class MetatypeTest extends TestCase {
 	static DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpathf	= XPathFactory.newInstance();

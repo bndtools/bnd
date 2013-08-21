@@ -7,6 +7,7 @@ import java.util.jar.*;
 import junit.framework.*;
 import aQute.bnd.osgi.*;
 
+@SuppressWarnings("resource")
 public class ClasspathTest extends TestCase {
 
 	/**

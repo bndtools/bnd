@@ -25,7 +25,6 @@ import aQute.lib.io.*;
 
 public class ObrContentProvider implements IRepositoryContentProvider {
 
-	private static final String	NULL_CONTENT	= "[null]";
 
 	public static final String	NAME						= "OBR";
 

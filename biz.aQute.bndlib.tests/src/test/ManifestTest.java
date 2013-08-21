@@ -10,6 +10,7 @@ import junit.framework.*;
 import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
 
+@SuppressWarnings("resource")
 public class ManifestTest extends TestCase {
 
 	public static void testNameSection() throws Exception {
