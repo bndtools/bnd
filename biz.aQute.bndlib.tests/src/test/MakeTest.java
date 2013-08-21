@@ -9,8 +9,8 @@ import aQute.bnd.osgi.*;
 /**
  * Tests the make functionality.
  * 
- * @author aqute
  */
+@SuppressWarnings("resource")
 public class MakeTest extends TestCase {
 
 	/**

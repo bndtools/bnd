@@ -2,11 +2,11 @@ package test;
 
 import java.io.*;
 import java.util.jar.*;
-import java.util.jar.Attributes.*;
 import java.util.zip.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+@SuppressWarnings("resource")
 
 public class JarTest extends TestCase {
 

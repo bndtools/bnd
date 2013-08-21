@@ -6,6 +6,7 @@ import java.util.jar.*;
 import junit.framework.*;
 import aQute.bnd.osgi.*;
 
+@SuppressWarnings("resource")
 public class ClassReferenceTest extends TestCase {
 	class Inner {
 

@@ -18,6 +18,7 @@ import aQute.bnd.version.*;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
+@SuppressWarnings("resource")
 
 public class FileRepoTest extends TestCase {
 

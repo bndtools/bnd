@@ -9,6 +9,7 @@ import junit.framework.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.service.reporter.*;
+@SuppressWarnings("resource")
 
 public class PluginTest extends TestCase {
 	static Processor	main	= new Processor();

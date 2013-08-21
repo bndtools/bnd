@@ -17,6 +17,7 @@ import aQute.bnd.test.*;
 /**
  * #118
  */
+@SuppressWarnings("resource")
 public class DSAnnotationTest extends BndTestCase {
 
 	/**
@@ -140,7 +141,9 @@ public class DSAnnotationTest extends BndTestCase {
 		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
 
 		@Reference
-		void xsetLogService(@SuppressWarnings("unused") LogService log, @SuppressWarnings("unused")  Map map) {
+		void xsetLogService(@SuppressWarnings("unused") LogService log, @SuppressWarnings({
+				"unused", "rawtypes"
+		})  Map map) {
 
 		}
 
@@ -174,7 +177,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		void unxsetLogService(@SuppressWarnings("unused") LogService log, @SuppressWarnings("unused")  Map map) {
+		void unxsetLogService(@SuppressWarnings("unused") LogService log, @SuppressWarnings("unused")  Map< ? , ? > map) {
 
 		}
 

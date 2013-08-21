@@ -23,6 +23,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.*;
 import aQute.bnd.service.repository.*;
 
+@SuppressWarnings("resource")
 public class BNDAnnotationTest extends TestCase {
 	static final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
 	static final XPathFactory			xpathf	= XPathFactory.newInstance();

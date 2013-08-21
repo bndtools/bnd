@@ -1246,6 +1246,8 @@ public class Builder extends Analyzer {
 			File file = members.remove(0);
 
 			// Check if the file is one of our parents
+			@SuppressWarnings("resource")
+
 			Processor p = this;
 			while (p != null) {
 				if (file.equals(p.getPropertiesFile()))

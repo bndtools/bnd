@@ -13,6 +13,7 @@ import aQute.bnd.version.*;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
 
+@SuppressWarnings("resource")
 public class ProjectTest extends TestCase {
 
 	/**

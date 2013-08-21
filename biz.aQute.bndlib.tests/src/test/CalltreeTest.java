@@ -7,6 +7,7 @@ import junit.framework.*;
 import aQute.bnd.make.calltree.*;
 import aQute.bnd.osgi.*;
 
+@SuppressWarnings("resource")
 public class CalltreeTest extends TestCase {
 	public static void testCalltree() throws Exception {
 		StringWriter sw = new StringWriter();

@@ -8,6 +8,7 @@ import junit.framework.*;
 import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
 
+@SuppressWarnings("resource")
 public class ResourcesTest extends TestCase {
 	
 	/**
