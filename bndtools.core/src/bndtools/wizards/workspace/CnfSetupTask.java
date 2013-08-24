@@ -118,6 +118,11 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
     }
 
     private void createGradleBuildFile(IProgressMonitor monitor) throws CoreException {
+        Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), BNDTOOLS_GRADLE_TEMPLATE_BUNDLE, null);
+        if (bundle == null) {
+            return;
+        }
+
         IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         File rootDir = workspaceRoot.getLocation().toFile();
         File gradleBuildFile = new File(rootDir, BUILD_GRADLE_FILENAME);
@@ -126,7 +131,6 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
             return;
         }
 
-        Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), BNDTOOLS_GRADLE_TEMPLATE_BUNDLE, null);
         InputStream templateInputStream = null;
         String buildFileTemplate;
 
