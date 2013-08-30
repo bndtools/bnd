@@ -4,7 +4,7 @@ public class Pair<A, B> {
 
 	private final A first;
 	private final B second;
-	
+
 	public static <A, B> Pair<A, B> create(A first, B second) {
 		return new Pair<A, B>(first, second);
 	}

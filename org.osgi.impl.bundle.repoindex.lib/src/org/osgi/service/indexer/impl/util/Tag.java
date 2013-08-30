@@ -202,14 +202,14 @@ public class Tag {
 	 */
 	public void print(Indent indent, PrintWriter pw) {
 		boolean empty = content.size() == 0;
-		
+
 		printOpen(indent, pw, empty);
 		if (!empty) {
 			printContents(indent, pw);
 			printClose(indent, pw);
 		}
 	}
-	
+
 	public void printOpen(Indent indent, PrintWriter pw, boolean andClose) {
 		indent.print(pw);
 		pw.print('<');
@@ -228,13 +228,13 @@ public class Tag {
 			pw.print(value);
 			pw.print(quote);
 		}
-		
+
 		if (andClose)
 			pw.print("/>");
 		else
 			pw.print('>');
 	}
-	
+
 	public void printContents(Indent indent, PrintWriter pw) {
 		for (Object content : this.content) {
 			Indent nextIndent = indent.next();
@@ -246,7 +246,7 @@ public class Tag {
 			}
 		}
 	}
-	
+
 	public void printClose(Indent indent, PrintWriter pw) {
 		indent.print(pw);
 		pw.print("</");
@@ -319,11 +319,8 @@ public class Tag {
 	}
 
 	/**
-	 * Make spaces.
-	void spaces(PrintWriter pw, int n) {
-		while (n-- > 0)
-			pw.print(' ');
-	}
+	 * Make spaces. void spaces(PrintWriter pw, int n) { while (n-- > 0)
+	 * pw.print(' '); }
 	 */
 
 	/**
@@ -374,8 +371,7 @@ public class Tag {
 		for (Object o : content) {
 			if (o instanceof Tag) {
 				Tag child = (Tag) o;
-				if (child.getName().equals(elementName)
-						|| elementName.equals("*"))
+				if (child.getName().equals(elementName) || elementName.equals("*"))
 					child.select(remainder, results, mapping);
 			}
 		}
@@ -406,12 +402,9 @@ public class Tag {
 		if (mapping == null) {
 			return (tn == null && sn == null) || (sn != null && sn.equals(tn));
 		} else {
-			String suri = sn == null ? mapping.getAttribute("xmlns") : mapping
-					.getAttribute("xmlns:" + sn);
-			String turi = tn == null ? child.findRecursiveAttribute("xmlns")
-					: child.findRecursiveAttribute("xmlns:" + tn);
-			return turi == suri
-					|| (turi != null && suri != null && turi.equals(suri));
+			String suri = sn == null ? mapping.getAttribute("xmlns") : mapping.getAttribute("xmlns:" + sn);
+			String turi = tn == null ? child.findRecursiveAttribute("xmlns") : child.findRecursiveAttribute("xmlns:" + tn);
+			return turi == suri || (turi != null && suri != null && turi.equals(suri));
 		}
 	}
 
@@ -482,8 +475,7 @@ public class Tag {
 		name = string;
 	}
 
-	public static void convert(Collection<Map<String, String>> c, String type,
-			Tag parent) {
+	public static void convert(Collection<Map<String, String>> c, String type, Tag parent) {
 		for (Map<String, String> map : c) {
 			parent.addContent(new Tag(type, map));
 		}

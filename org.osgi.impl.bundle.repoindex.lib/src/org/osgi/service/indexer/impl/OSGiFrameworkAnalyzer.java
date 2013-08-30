@@ -12,16 +12,17 @@ import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.log.LogService;
 
 /**
- * Detects JARs that are OSGi Frameworks, using the presence of META-INF/services/org.osgi.framework.launch.FrameworkFactory
+ * Detects JARs that are OSGi Frameworks, using the presence of
+ * META-INF/services/org.osgi.framework.launch.FrameworkFactory
  */
 public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
-	
+
 	private static final String SERVICE_FRAMEWORK_FACTORY = "META-INF/services/org.osgi.framework.launch.FrameworkFactory";
 	private static final String FRAMEWORK_PACKAGE = "org.osgi.framework";
-	
+
 	@SuppressWarnings("unused")
 	private final LogService log;
-	
+
 	public OSGiFrameworkAnalyzer(LogService log) {
 		this.log = log;
 	}
@@ -34,7 +35,7 @@ public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
 			Version specVersion = null;
 			StringBuilder uses = new StringBuilder();
 			boolean firstPkg = true;
-			
+
 			for (Capability cap : caps) {
 				if (Namespaces.NS_WIRING_PACKAGE.equals(cap.getNamespace())) {
 					// Add to the uses directive
@@ -43,18 +44,19 @@ public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
 					String pkgName = (String) cap.getAttributes().get(Namespaces.NS_WIRING_PACKAGE);
 					uses.append(pkgName);
 					firstPkg = false;
-					
-					// If it's org.osgi.framework, get the package version and map to OSGi spec version
+
+					// If it's org.osgi.framework, get the package version and
+					// map to OSGi spec version
 					if (FRAMEWORK_PACKAGE.equals(pkgName)) {
 						Version frameworkPkgVersion = (Version) cap.getAttributes().get(Namespaces.ATTR_VERSION);
 						specVersion = mapFrameworkPackageVersion(frameworkPkgVersion);
 					}
 				}
 			}
-			
+
 			if (specVersion != null)
 				builder.addAttribute(Namespaces.ATTR_VERSION, specVersion);
-			
+
 			builder.addDirective(Namespaces.DIRECTIVE_USES, uses.toString());
 			caps.add(builder.buildCapability());
 		}

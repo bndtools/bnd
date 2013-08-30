@@ -10,7 +10,7 @@ public class Activator implements BundleActivator {
 
 	private LogTracker logTracker;
 	private AnalyzerTracker analyzerTracker;
-	
+
 	private ServiceRegistration registration;
 
 	public void start(BundleContext context) throws Exception {
@@ -18,7 +18,7 @@ public class Activator implements BundleActivator {
 		logTracker.open();
 
 		RepoIndex indexer = new RepoIndex(logTracker);
-		
+
 		analyzerTracker = new AnalyzerTracker(context, indexer, logTracker);
 		analyzerTracker.open();
 

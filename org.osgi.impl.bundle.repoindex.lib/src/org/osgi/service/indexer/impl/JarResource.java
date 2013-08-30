@@ -19,43 +19,43 @@ import java.util.jar.Manifest;
 import org.osgi.service.indexer.Resource;
 
 class JarResource implements Resource {
-	
+
 	private final File file;
 	private final JarFile jarFile;
 	private final String location;
-	
-	private final Dictionary<String, Object>properties = new Hashtable<String, Object>();
-	
+
+	private final Dictionary<String, Object> properties = new Hashtable<String, Object>();
+
 	private final Map<String, List<JarEntry>> prefixMap = new HashMap<String, List<JarEntry>>();
 	private final Map<String, JarEntry> paths = new HashMap<String, JarEntry>();
-	
+
 	private Manifest manifest;
 
 	public JarResource(File file) throws IOException {
 		this.file = file;
-		
+
 		this.location = file.getPath();
 		this.jarFile = new JarFile(file);
-		
+
 		properties.put(NAME, file.getName());
 		properties.put(LOCATION, location);
 		properties.put(SIZE, file.length());
 		properties.put(LAST_MODIFIED, file.lastModified());
-		
+
 		Enumeration<JarEntry> entries = jarFile.entries();
 		while (entries.hasMoreElements()) {
 			JarEntry entry = entries.nextElement();
-			
+
 			String path = entry.getName();
 			paths.put(path, entry);
-			
+
 			String parentPath = getParentPath(path);
-			
+
 			List<JarEntry> list = getOrCreatePrefix(parentPath);
 			list.add(entry);
 		}
 	}
-	
+
 	private static String getParentPath(String path) {
 		int index;
 		if (path.endsWith("/")) {
@@ -63,7 +63,7 @@ class JarResource implements Resource {
 		} else {
 			index = path.lastIndexOf("/");
 		}
-		
+
 		String parentPath;
 		if (index == -1)
 			parentPath = "";
@@ -71,7 +71,7 @@ class JarResource implements Resource {
 			parentPath = path.substring(0, index + 1);
 		return parentPath;
 	}
-	
+
 	private synchronized List<JarEntry> getOrCreatePrefix(String prefix) {
 		List<JarEntry> list = prefixMap.get(prefix);
 		if (list == null) {
@@ -80,15 +80,15 @@ class JarResource implements Resource {
 		}
 		return list;
 	}
-	
+
 	public String getLocation() {
 		return location;
 	}
-	
+
 	public Dictionary<String, Object> getProperties() {
 		return properties;
 	}
-	
+
 	public long getSize() {
 		return file.length();
 	}
@@ -98,7 +98,7 @@ class JarResource implements Resource {
 	}
 
 	public Manifest getManifest() throws IOException {
-		synchronized (this) { 
+		synchronized (this) {
 			if (manifest == null) {
 				Resource manifestResource = getChild("META-INF/MANIFEST.MF");
 				if (manifestResource != null) {
@@ -117,7 +117,7 @@ class JarResource implements Resource {
 		List<JarEntry> entries = prefixMap.get(prefix);
 		if (entries == null)
 			return null;
-		
+
 		List<String> result = new ArrayList<String>(entries.size());
 		for (JarEntry entry : entries) {
 			String unprefixedPath = entry.getName().substring(prefix.length());
@@ -128,7 +128,7 @@ class JarResource implements Resource {
 
 	public Resource getChild(String path) throws IOException {
 		String childLocation = getLocation() + "#" + path;
-		
+
 		JarEntry entry = paths.get(path);
 		if (entry == null)
 			return null;

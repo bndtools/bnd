@@ -9,11 +9,11 @@ import org.osgi.service.log.LogService;
 import org.osgi.util.tracker.ServiceTracker;
 
 class LogTracker extends ServiceTracker implements LogService {
-	
+
 	public LogTracker(BundleContext context) {
 		super(context, LogService.class.getName(), null);
 	}
-	
+
 	public void log(int level, String message) {
 		log(null, level, message, null);
 	}
@@ -28,7 +28,7 @@ class LogTracker extends ServiceTracker implements LogService {
 
 	public void log(ServiceReference sr, int level, String message, Throwable exception) {
 		LogService log = (LogService) getService();
-		
+
 		if (log != null)
 			log.log(sr, level, message, exception);
 		else {
@@ -41,6 +41,5 @@ class LogTracker extends ServiceTracker implements LogService {
 				exception.printStackTrace(stream);
 		}
 	}
-
 
 }

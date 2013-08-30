@@ -50,23 +50,23 @@ class AnalyzerTracker extends ServiceTracker {
 		}
 		return struct;
 	}
-	
+
 	@Override
 	public void modifiedService(ServiceReference reference, Object service) {
 		TrackingStruct struct = (TrackingStruct) service;
-		
+
 		if (struct.valid) {
 			indexer.removeAnalyzer(struct.analyzer, struct.filter);
 		}
-		
+
 		try {
 			String filterStr = (String) reference.getProperty(ResourceAnalyzer.FILTER);
 			Filter filter = (filterStr != null) ? FrameworkUtil.createFilter(filterStr) : null;
-			
+
 			struct = new TrackingStruct();
 			struct.filter = filter;
 			struct.valid = true;
-			
+
 			indexer.addAnalyzer(struct.analyzer, filter);
 		} catch (InvalidSyntaxException e) {
 			struct.valid = false;

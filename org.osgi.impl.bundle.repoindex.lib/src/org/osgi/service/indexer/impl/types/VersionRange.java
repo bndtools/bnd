@@ -22,22 +22,19 @@ import java.util.regex.Pattern;
 import org.osgi.framework.Version;
 
 public class VersionRange implements Comparable<VersionRange> {
-	
+
 	final Version high;
 	final Version low;
-	
+
 	char start = '[';
 	char end = ']';
 
 	static String V = "[0-9]+(\\.[0-9]+(\\.[0-9]+(\\.[a-zA-Z0-9_-]+)?)?)?";
-	static Pattern RANGE = Pattern.compile("(\\(|\\[)\\s*(" + V + ")\\s*,\\s*("
-			+ V + ")\\s*(\\)|\\])");
+	static Pattern RANGE = Pattern.compile("(\\(|\\[)\\s*(" + V + ")\\s*,\\s*(" + V + ")\\s*(\\)|\\])");
 
 	public VersionRange(boolean lowInclusive, Version low, Version high, boolean highInclusive) {
 		if (low.compareTo(high) > 0)
-			throw new IllegalArgumentException(
-					"Low Range is higher than High Range: " + low + "-"
-							+ high);
+			throw new IllegalArgumentException("Low Range is higher than High Range: " + low + "-" + high);
 
 		this.low = low;
 		this.high = high;
@@ -54,9 +51,7 @@ public class VersionRange implements Comparable<VersionRange> {
 			high = new Version(m.group(6));
 			end = m.group(10).charAt(0);
 			if (low.compareTo(high) > 0)
-				throw new IllegalArgumentException(
-						"Low Range is higher than High Range: " + low + "-"
-								+ high);
+				throw new IllegalArgumentException("Low Range is higher than High Range: " + low + "-" + high);
 
 		} else {
 			start = '[';
@@ -128,28 +123,28 @@ public class VersionRange implements Comparable<VersionRange> {
 		else
 			return 1;
 	}
-	
+
 	public Version getHigh() {
 		return high;
 	}
-	
+
 	public Version getLow() {
 		return low;
 	}
-	
+
 	public boolean match(Version version) {
 		int lowmatch = version.compareTo(low);
 		if (lowmatch < 0)
 			return false;
 		if (lowmatch == 0 && !includeLow())
 			return false;
-		
+
 		int highmatch = version.compareTo(high);
 		if (highmatch > 0)
 			return false;
 		if (highmatch == 0 && !includeHigh())
 			return false;
-		
+
 		return true;
 	}
 }

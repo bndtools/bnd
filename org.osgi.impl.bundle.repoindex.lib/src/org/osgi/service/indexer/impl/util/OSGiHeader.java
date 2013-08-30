@@ -63,10 +63,10 @@ public class OSGiHeader {
 								logger.error("No value after '=' sign for attribute " + adname);
 							advalue = "";
 						}
-						
-						while(clause.containsKey(adname.trim()))
+
+						while (clause.containsKey(adname.trim()))
 							adname = adname.trim() + DUPLICATE_MARKER;
-						
+
 						clause.put(adname.trim(), advalue.trim());
 						del = qt.getSeparator();
 						hadAttribute = true;

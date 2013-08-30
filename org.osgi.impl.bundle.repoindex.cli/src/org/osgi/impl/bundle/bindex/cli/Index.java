@@ -40,10 +40,10 @@ import de.kalpatec.pojosr.framework.launch.ClasspathScanner;
 import de.kalpatec.pojosr.framework.launch.PojoServiceRegistryFactory;
 
 public class Index {
-	
+
 	public static final String DEFAULT_FILENAME_UNCOMPRESSED = "index.xml";
 	public static final String DEFAULT_FILENAME_COMPRESSED = "index.xml" + ".gz";
-	
+
 	/**
 	 * Main entry point. See -help for options.
 	 * 
@@ -53,16 +53,16 @@ public class Index {
 	public static void main(String args[]) {
 		try {
 			printCopyright(System.err);
-			
+
 			// Configure PojoSR
 			Map<String, Object> pojoSrConfig = new HashMap<String, Object>();
 			pojoSrConfig.put(PojoServiceRegistryFactory.BUNDLE_DESCRIPTORS, new ClasspathScanner());
-			
+
 			// Start PojoSR 'framework'
 			Framework framework = new PojoServiceRegistryFactoryImpl().newFramework(pojoSrConfig);
 			framework.init();
 			framework.start();
-			
+
 			// Look for indexer and run index generation
 			ServiceTracker tracker = new ServiceTracker(framework.getBundleContext(), ResourceIndexer.class.getName(), null);
 			tracker.open();
@@ -74,30 +74,32 @@ public class Index {
 			Set<File> fileList = new LinkedHashSet<File>();
 			Map<String, String> config = new HashMap<String, String>();
 			File outputFile = processArgs(args, config, fileList, framework.getBundleContext());
-			
+
 			// Run
 			if (fileList.isEmpty())
 				printUsage();
-			else try {
-				index.index(fileList, new FileOutputStream(outputFile), config);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			else
+				try {
+					index.index(fileList, new FileOutputStream(outputFile), config);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
 
-		// We really need to ensure all non-daemon threads -- which may have been started by a bundle -- are terminated.
+		// We really need to ensure all non-daemon threads -- which may have
+		// been started by a bundle -- are terminated.
 		System.exit(0);
 	}
-	
+
 	private static File processArgs(String[] args, Map<String, String> config, Collection<? super File> fileList, BundleContext context) throws Exception {
 		File output = new File(DEFAULT_FILENAME_COMPRESSED);
-		
+
 		KnownBundleAnalyzer knownBundleAnalyzer = null;
 		File knownBundlesExtraFile = null;
-		
+
 		for (int i = 0; i < args.length; i++) {
 			try {
 				if (args[i].startsWith("-n")) {
@@ -125,7 +127,7 @@ public class Index {
 					knownBundleAnalyzer = new KnownBundleAnalyzer(new Properties());
 				} else if (args[i].equals("-k")) {
 					knownBundlesExtraFile = new File(args[++i]);
-				} else if(args[i].equalsIgnoreCase("--noincrement")) {
+				} else if (args[i].equalsIgnoreCase("--noincrement")) {
 					config.put("-repository.increment.override", "");
 				} else if (args[i].startsWith("-h")) {
 					printUsage();
@@ -139,51 +141,49 @@ public class Index {
 				System.exit(1);
 			}
 		}
-		
+
 		if (knownBundleAnalyzer == null)
 			knownBundleAnalyzer = new KnownBundleAnalyzer();
-		
+
 		if (knownBundlesExtraFile != null) {
 			Properties props = loadPropertiesFile(knownBundlesExtraFile);
 			knownBundleAnalyzer.setKnownBundlesExtra(props);
 		}
-		
+
 		context.registerService(ResourceAnalyzer.class.getName(), knownBundleAnalyzer, null);
-		
+
 		return output;
 	}
 
-	private static Properties loadPropertiesFile(File knownBundles)
-			throws FileNotFoundException, IOException {
+	private static Properties loadPropertiesFile(File knownBundles) throws FileNotFoundException, IOException {
 		Properties props = new Properties();
 		FileInputStream stream = null;
 		try {
 			stream = new FileInputStream(knownBundles);
 			props.load(stream);
 		} finally {
-			if (stream != null) stream.close();
+			if (stream != null)
+				stream.close();
 		}
 		return props;
 	}
-	
+
 	public static void printCopyright(PrintStream out) {
 		out.println("Bindex2 | Resource Indexer v1.0");
 		out.println("(c) 2012 OSGi, All Rights Reserved");
 	}
 
 	private static void printUsage() {
-		System.err
-				.printf("Arguments:%n" //
-						+ "  [-r index.xml(.gz)]                                              --> Output file name.%n" //
-						+ "  [--pretty]                                                       --> Non-compressed, indented output.%n" //
-						+ "  [-n Untitled]                                                    --> Repository name.%n"
-						+ "  [-k known-bundles.properties]                                    --> Load extra known-bundles data from file.%n"
-						+ "  [-K]                                                             --> Override built-in known-bundles data.%n"
-						+ "  [-t \"%%s\" symbolic name \"%%v\" version \"%%f\" filename \"%%p\" dirpath ] --> Resource URL template.%n" //
-						+ "  [-d rootdir]                                                     --> Root directory.%n"
-						+ "  [-l file:license.html]                                           --> Licence file.%n"
-						+ "  [-v]                                                             --> Verbose reporting.%n"
-						+ "  [-stylesheet http://www.osgi.org/www/obr2html.xsl]               --> Stylesheet URL.%n"
-						+ "  <file> [<file>*]%n");
+		System.err.printf("Arguments:%n" //
+				+ "  [-r index.xml(.gz)]                                              --> Output file name.%n" //
+				+ "  [--pretty]                                                       --> Non-compressed, indented output.%n" //
+				+ "  [-n Untitled]                                                    --> Repository name.%n"
+				+ "  [-k known-bundles.properties]                                    --> Load extra known-bundles data from file.%n"
+				+ "  [-K]                                                             --> Override built-in known-bundles data.%n"
+				+ "  [-t \"%%s\" symbolic name \"%%v\" version \"%%f\" filename \"%%p\" dirpath ] --> Resource URL template.%n" //
+				+ "  [-d rootdir]                                                     --> Root directory.%n"
+				+ "  [-l file:license.html]                                           --> Licence file.%n"
+				+ "  [-v]                                                             --> Verbose reporting.%n"
+				+ "  [-stylesheet http://www.osgi.org/www/obr2html.xsl]               --> Stylesheet URL.%n" + "  <file> [<file>*]%n");
 	}
 }

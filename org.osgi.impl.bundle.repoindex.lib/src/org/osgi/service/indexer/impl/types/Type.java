@@ -58,7 +58,7 @@ class Type {
 	public String toString() {
 		return list ? "List<" + type.name() + ">" : type.name();
 	}
-	
+
 	public String convertToString(Object value) {
 		String result;
 		if (list) {

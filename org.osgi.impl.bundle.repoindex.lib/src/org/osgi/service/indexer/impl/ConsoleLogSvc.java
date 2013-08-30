@@ -21,7 +21,7 @@ public class ConsoleLogSvc implements LogService {
 
 	public void log(ServiceReference sr, int level, String message, Throwable exception) {
 		PrintStream out = level <= LOG_WARNING ? System.err : System.out;
-		
+
 		StringBuilder builder = new StringBuilder();
 		switch (level) {
 		case LOG_DEBUG:
@@ -41,15 +41,15 @@ public class ConsoleLogSvc implements LogService {
 		}
 		builder.append(": ");
 		builder.append(message);
-		
+
 		if (exception != null) {
 			builder.append(" [");
 			builder.append(exception.getLocalizedMessage());
 			builder.append("]");
 		}
-		
+
 		out.println(builder.toString());
-		
+
 		if (exception != null)
 			exception.printStackTrace(out);
 	}

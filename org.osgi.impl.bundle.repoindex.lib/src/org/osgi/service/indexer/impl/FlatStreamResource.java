@@ -10,28 +10,28 @@ import java.util.jar.Manifest;
 import org.osgi.service.indexer.Resource;
 
 class FlatStreamResource implements Resource {
-	
+
 	private final String location;
 	private final InputStream stream;
 
-	private final Dictionary<String, Object>properties = new Hashtable<String, Object>();
+	private final Dictionary<String, Object> properties = new Hashtable<String, Object>();
 
 	FlatStreamResource(String name, String location, InputStream stream) {
 		this.location = location;
 		this.stream = stream;
-		
+
 		properties.put(NAME, name);
 		properties.put(LOCATION, location);
 	}
-	
+
 	public String getLocation() {
 		return location;
 	}
-	
+
 	public Dictionary<String, Object> getProperties() {
 		return properties;
 	}
-	
+
 	public long getSize() {
 		return 0L;
 	}

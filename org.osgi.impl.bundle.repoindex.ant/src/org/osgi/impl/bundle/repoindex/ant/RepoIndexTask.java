@@ -26,21 +26,21 @@ public class RepoIndexTask extends Task {
 
 	private final List<FileSet> fileSets = new LinkedList<FileSet>();
 	private final Map<String, String> config = new HashMap<String, String>();
-	
+
 	private File repositoryFile = null;
-	
+
 	public void setName(String name) {
 		config.put(ResourceIndexer.REPOSITORY_NAME, name);
 	}
-	
+
 	public void setVerbose(boolean verbose) {
 		config.put(ResourceIndexer.VERBOSE, Boolean.toString(verbose));
 	}
-	
+
 	public void setPretty(boolean pretty) {
 		config.put(ResourceIndexer.PRETTY, Boolean.toString(pretty));
 	}
-	
+
 	public void setRootURL(String root) {
 		config.put(ResourceIndexer.ROOT_URL, root);
 	}
@@ -52,24 +52,24 @@ public class RepoIndexTask extends Task {
 	public void addFileset(FileSet fs) {
 		fileSets.add(fs);
 	}
-	
+
 	@Override
 	public void execute() throws BuildException {
 		printCopyright(System.err);
-		
+
 		if (repositoryFile == null)
 			throw new BuildException("Output file not specified");
-		
+
 		try {
 			// Configure PojoSR
 			Map<String, Object> pojoSrConfig = new HashMap<String, Object>();
 			pojoSrConfig.put(PojoServiceRegistryFactory.BUNDLE_DESCRIPTORS, new ClasspathScanner());
-			
+
 			// Start PojoSR 'framework'
 			Framework framework = new PojoServiceRegistryFactoryImpl().newFramework(pojoSrConfig);
 			framework.init();
 			framework.start();
-			
+
 			// Look for indexer and run index generation
 			ServiceTracker tracker = new ServiceTracker(framework.getBundleContext(), ResourceIndexer.class.getName(), null);
 			tracker.open();
@@ -93,7 +93,7 @@ public class RepoIndexTask extends Task {
 			throw new BuildException(e);
 		}
 	}
-	
+
 	public static void printCopyright(PrintStream out) {
 		out.println("Bindex2 | Resource Indexer v1.0");
 		out.println("(c) 2012 OSGi, All Rights Reserved");

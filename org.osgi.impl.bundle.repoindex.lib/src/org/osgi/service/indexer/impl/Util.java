@@ -23,7 +23,7 @@ import org.osgi.service.indexer.impl.util.OSGiHeader;
 import org.osgi.service.indexer.impl.util.QuotedTokenizer;
 
 public class Util {
-	
+
 	public static SymbolicName getSymbolicName(Resource resource) throws IOException {
 		Manifest manifest = resource.getManifest();
 		if (manifest == null)
@@ -40,7 +40,7 @@ public class Util {
 		Entry<String, Map<String, String>> entry = map.entrySet().iterator().next();
 		return new SymbolicName(entry.getKey(), entry.getValue());
 	}
-	
+
 	public static Version getVersion(Resource resource) throws IOException {
 		Manifest manifest = resource.getManifest();
 		if (manifest == null)
@@ -57,15 +57,13 @@ public class Util {
 		String bsn = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
 		if (bsn == null)
 			return MimeType.Jar;
-		
+
 		String fragmentHost = manifest.getMainAttributes().getValue(Constants.FRAGMENT_HOST);
 		if (fragmentHost != null)
 			return MimeType.Fragment;
-		
+
 		return MimeType.Bundle;
 	}
-
-
 
 	public static void addVersionFilter(StringBuilder filter, VersionRange version, VersionKey key) {
 		if (version.isRange()) {
@@ -98,28 +96,28 @@ public class Util {
 			filter.append(")");
 		}
 	}
-	
+
 	public static Object parseValue(String value, String typeStr) {
 		Object result;
-		
+
 		if (typeStr.startsWith("List<")) {
 			typeStr = typeStr.substring("List<".length(), typeStr.length() - 1);
 			result = parseListValue(value, typeStr);
 		} else {
 			result = parseScalarValue(value, typeStr);
 		}
-		
+
 		return result;
 	}
 
 	private static List<?> parseListValue(String value, String typeStr) throws IllegalArgumentException {
-		
+
 		QuotedTokenizer tokenizer = new QuotedTokenizer(value, ",");
 		String[] tokens = tokenizer.getTokens();
 		List<Object> result = new ArrayList<Object>(tokens.length);
 		for (String token : tokens)
 			result.add(parseScalarValue(token, typeStr));
-		
+
 		return result;
 	}
 
@@ -142,13 +140,13 @@ public class Util {
 	public static void copyAttribsToBuilder(Builder builder, Map<String, String> attribs) {
 		for (Entry<String, String> attrib : attribs.entrySet()) {
 			String key = attrib.getKey();
-			
+
 			if (key.endsWith(":")) {
 				String directiveName = key.substring(0, key.length() - 1);
 				builder.addDirective(directiveName, attrib.getValue());
 			} else {
 				int colonIndex = key.lastIndexOf(":");
-				
+
 				String name;
 				String typeStr;
 				if (colonIndex > -1) {
@@ -158,15 +156,15 @@ public class Util {
 					name = key;
 					typeStr = ScalarType.String.name();
 				}
-				
+
 				Object value = Util.parseValue(attrib.getValue(), typeStr);
 				builder.addAttribute(name, value);
 			}
 		}
 	}
-	
+
 	private static final Pattern MACRO_PATTERN = Pattern.compile("\\$\\{([^\\{\\}]*)\\}");
-	
+
 	public static String readProcessedProperty(String propName, Properties... propsList) {
 		String value = null;
 		for (Properties props : propsList) {
@@ -176,14 +174,14 @@ public class Util {
 		}
 		if (value == null)
 			return null;
-		
+
 		StringBuilder builder = new StringBuilder(value);
 		Matcher matcher = MACRO_PATTERN.matcher(builder);
-		
+
 		while (matcher.find()) {
 			int start = matcher.start();
 			int end = matcher.end();
-			
+
 			String varName = matcher.group(1);
 			String processed = readProcessedProperty(varName, propsList);
 			if (processed != null) {
@@ -191,22 +189,22 @@ public class Util {
 				matcher.reset(builder);
 			}
 		}
-		
+
 		return builder.toString();
 	}
-	
+
 	/**
 	 * Returns a list of resource paths matching the glob pattern, e.g.
 	 * {@code OSGI-INF/blueprint/*.xml}. Wildcards only permitted in the final
 	 * path segment.
 	 * 
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static final List<String> findMatchingPaths(Resource resource, String globPattern) throws IOException {
 		String prefix;
 		String suffix;
-		
+
 		int index = globPattern.lastIndexOf('/');
 		if (index == -1) {
 			prefix = "";
@@ -219,21 +217,21 @@ public class Util {
 			else
 				suffix = globPattern.substring(next);
 		}
-		
+
 		String regexp = suffix.replaceAll("\\*", ".*");
 		Pattern pattern = Pattern.compile(regexp);
-		
+
 		List<String> children = resource.listChildren(prefix);
 		if (children == null)
 			return Collections.emptyList();
-		
+
 		List<String> result = new ArrayList<String>(children.size());
-		
+
 		for (String child : children) {
 			if (pattern.matcher(child).matches())
 				result.add(prefix + child);
 		}
-		
+
 		return result;
 	}
 

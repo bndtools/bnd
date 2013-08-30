@@ -157,7 +157,8 @@ public class RepoIndex implements ResourceIndexer {
 			resourceTag.print(indent.next(), pw);
 		}
 		repoTag.printClose(indent, pw);
-		pw.flush(); pw.close();
+		pw.flush();
+		pw.close();
 	}
 
 	public void indexFragment(Set<File> files, Writer out, Map<String, String> config) throws Exception {
@@ -189,8 +190,7 @@ public class RepoIndex implements ResourceIndexer {
 					rootURL = rootDir.toURI().toURL();
 				else
 					rootURL = new URL(rootURLStr);
-			}
-			else
+			} else
 				rootURL = new File(System.getProperty("user.dir")).toURI().toURL();
 
 			String urlTemplate = config.get(ResourceIndexer.URL_TEMPLATE);
@@ -210,7 +210,8 @@ public class RepoIndex implements ResourceIndexer {
 						try {
 							analyzer.analyzeResource(resource, caps, reqs);
 						} catch (Exception e) {
-							log(LogService.LOG_ERROR, MessageFormat.format("Error calling analyzer \"{0}\" on resource {1}.", analyzer.getClass().getName(), resource.getLocation()), e);
+							log(LogService.LOG_ERROR,
+									MessageFormat.format("Error calling analyzer \"{0}\" on resource {1}.", analyzer.getClass().getName(), resource.getLocation()), e);
 						}
 					}
 				}

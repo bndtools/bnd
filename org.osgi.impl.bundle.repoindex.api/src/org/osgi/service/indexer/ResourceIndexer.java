@@ -42,7 +42,10 @@ public interface ResourceIndexer {
 	/** the default stylesheet for the XML representation */
 	public static final String STYLESHEET_DEFAULT = "http://www.osgi.org/www/obr2html.xsl";
 
-	/** Name of the configuration variable for the stylesheet of the XML representation */
+	/**
+	 * Name of the configuration variable for the stylesheet of the XML
+	 * representation
+	 */
 	public static final String STYLESHEET = "stylesheet";
 
 	/**
