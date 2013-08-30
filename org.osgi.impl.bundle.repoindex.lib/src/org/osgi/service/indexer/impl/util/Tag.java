@@ -404,7 +404,7 @@ public class Tag {
 			return false;
 
 		if (mapping == null) {
-			return tn == sn || (sn != null && sn.equals(tn));
+			return (tn == null && sn == null) || (sn != null && sn.equals(tn));
 		} else {
 			String suri = sn == null ? mapping.getAttribute("xmlns") : mapping
 					.getAttribute("xmlns:" + sn);

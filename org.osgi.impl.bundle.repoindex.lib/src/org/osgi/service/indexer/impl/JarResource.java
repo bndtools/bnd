@@ -109,8 +109,8 @@ class JarResource implements Resource {
 					}
 				}
 			}
+			return manifest;
 		}
-		return manifest;
 	}
 
 	public List<String> listChildren(String prefix) throws IOException {

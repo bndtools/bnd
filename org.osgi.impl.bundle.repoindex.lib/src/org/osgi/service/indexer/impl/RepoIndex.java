@@ -4,6 +4,7 @@ import static org.osgi.framework.FrameworkUtil.createFilter;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URL;
@@ -129,7 +130,7 @@ public class RepoIndex implements ResourceIndexer {
 		PrintWriter pw;
 		if (config.get(ResourceIndexer.PRETTY) != null) {
 			indent = Indent.PRETTY;
-			pw = new PrintWriter(out);
+			pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
 		} else {
 			indent = Indent.NONE;
 			pw = new PrintWriter(new GZIPOutputStream(out, Deflater.BEST_COMPRESSION));
