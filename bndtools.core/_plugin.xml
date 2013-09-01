@@ -738,7 +738,7 @@
       </plugin>
       
       <plugin
-         class="aQute.lib.deployer.http.HttpBasicAuthURLConnector"
+         class="aQute.bnd.deployer.http.HttpBasicAuthURLConnector"
          icon="icons/lock.png"
          name="Authenticated HTTP(S) Connector">
          <property name="configs" type="string" description="List of config files (comma-separated paths)"/>
