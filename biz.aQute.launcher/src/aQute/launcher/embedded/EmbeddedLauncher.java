@@ -43,7 +43,7 @@ public class EmbeddedLauncher {
 	}
 
 	private static URL toFileURL(URL resource) throws IOException {
-		File f = File.createTempFile("resource", "jar");
+		File f = File.createTempFile("resource", ".jar");
 		f.getParentFile().mkdirs();
 		InputStream in = resource.openStream();
 		try {
