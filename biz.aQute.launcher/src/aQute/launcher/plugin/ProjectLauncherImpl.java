@@ -102,16 +102,18 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.name = getProject().getName();
 
 		try {
-			// If the workspace contains a newer version of biz.aQute.launcher than the version of bnd(tools) used
+			// If the workspace contains a newer version of biz.aQute.launcher
+			// than the version of bnd(tools) used
 			// then this could throw NoSuchMethodError. For now just ignore it.
 			Map<String, ? extends Map<String,String>> systemPkgs = getSystemPackages();
 			if (systemPkgs != null && !systemPkgs.isEmpty())
 				lc.systemPackages = Processor.printClauses(systemPkgs);
-		} catch (Throwable e) {
 		}
-		
+		catch (Throwable e) {}
+
 		try {
-			// If the workspace contains a newer version of biz.aQute.launcher than the version of bnd(tools) used
+			// If the workspace contains a newer version of biz.aQute.launcher
+			// than the version of bnd(tools) used
 			// then this could throw NoSuchMethodError. For now just ignore it.
 			String systemCaps = getSystemCapabilities();
 			if (systemCaps != null) {
@@ -119,8 +121,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				if (systemCaps.length() > 0)
 					lc.systemCapabilities = systemCaps;
 			}
-		} catch (Throwable e) {
 		}
+		catch (Throwable e) {}
 		return lc;
 
 	}
@@ -141,13 +143,37 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		Parameters packageHeader = OSGiHeader.parseHeader(project.getProperty("-package"));
 		boolean useShas = packageHeader.containsKey("jpm");
 		project.trace("useshas %s %s", useShas, packageHeader);
-		
+
 		Jar jar = new Jar(project.getName());
+
+		List<String> runpath = getRunpath();
+
+		//
+		// We create a manifest that is
+		// the combination of all manifests
+		// in general this is the result
+		// of the framework + launcher
+		//
+		// Construct a manifest where the last one wins (this is generally
+		// the framework and this is mandatory in Equinox
+
+		Manifest m = new Manifest();
+		for (String path : runpath) {
+			project.trace("embedding runpath %s", path);
+			File file = new File(path);
+			if (!file.isFile())
+				project.error("Invalid entry on runpath %s", file);
+			else {
+				Manifest rm = getManifest(file);
+				if (rm != null) {
+					m.getMainAttributes().putAll(rm.getMainAttributes());
+				}
+			}
+		}
 
 		// Copy the class path of the launched VM to this bundle
 		// but in reverse order so that the order matches the classpath (first
 		// wins).
-		List<String> runpath = getRunpath();
 		Collections.reverse(runpath);
 
 		Set<String> runpathShas = new LinkedHashSet<String>();
@@ -156,9 +182,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		for (String path : runpath) {
 			project.trace("embedding runpath %s", path);
 			File file = new File(path);
-			if (!file.isFile())
-				project.error("Invalid entry on runpath %s", file);
-			else {
+			if (file.isFile()) {
 				if (useShas)
 					runpathShas.add(SHA1.digest(file).asHex());
 				else {
@@ -183,9 +207,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				if (useShas) {
 					String sha = SHA1.digest(file).asHex();
 					runbundleShas.add(sha);
-					actualPaths.add("${JPMREPO}/"+sha);
-				}
-				else {
+					actualPaths.add("${JPMREPO}/" + sha);
+				} else {
 					String newPath = "jar/" + file.getName();
 					jar.putResource(newPath, new FileResource(file));
 					actualPaths.add(newPath);
@@ -194,7 +217,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		}
 
 		LauncherConstants lc = getConstants(actualPaths);
-		lc.embedded = ! useShas;
+		lc.embedded = !useShas;
 		lc.storageDir = null; // cannot use local info
 
 		final Properties p = lc.getProperties();
@@ -214,15 +237,25 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		for (String path : set)
 			jar.remove(path);
 
-		// And set the manifest
-		Manifest m = new Manifest();
 		m.getMainAttributes().putValue("Main-Class", "aQute.launcher.Launcher");
+		m.getMainAttributes().remove( new Attributes.Name(Constants.IMPORT_PACKAGE));
+		
 		if (useShas) {
 			m.getMainAttributes().putValue("JPM-Classpath", Processor.join(runpathShas));
 			m.getMainAttributes().putValue("JPM-Runbundles", Processor.join(runbundleShas));
 		}
 		jar.setManifest(m);
 		return jar;
+	}
+
+	private Manifest getManifest(File file) throws IOException {
+		JarFile jf = new JarFile(file);
+		try {
+			return jf.getManifest();
+		}
+		finally {
+			jf.close();
+		}
 	}
 
 }
