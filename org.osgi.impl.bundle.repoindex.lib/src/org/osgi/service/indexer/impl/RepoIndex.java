@@ -180,44 +180,48 @@ public class RepoIndex implements ResourceIndexer {
 		List<Capability> caps = new AddOnlyList<Capability>(new LinkedList<Capability>());
 		List<Requirement> reqs = new AddOnlyList<Requirement>(new LinkedList<Requirement>());
 
-		// Read config settings and save in thread local state
-		if (config != null) {
-			URL rootURL;
-			String rootURLStr = config.get(ResourceIndexer.ROOT_URL);
-			if (rootURLStr != null) {
-				File rootDir = new File(rootURLStr);
-				if (rootDir.isDirectory())
-					rootURL = rootDir.toURI().toURL();
-				else
-					rootURL = new URL(rootURLStr);
-			} else
-				rootURL = new File(System.getProperty("user.dir")).toURI().toURL();
-
-			String urlTemplate = config.get(ResourceIndexer.URL_TEMPLATE);
-			bundleAnalyzer.setStateLocal(new GeneratorState(rootURL, urlTemplate));
-		} else {
-			bundleAnalyzer.setStateLocal(null);
-		}
-
-		// Iterate over the analyzers
 		try {
-			synchronized (analyzers) {
-				for (Pair<ResourceAnalyzer, Filter> entry : analyzers) {
-					ResourceAnalyzer analyzer = entry.getFirst();
-					Filter filter = entry.getSecond();
+			// Read config settings and save in thread local state
+			if (config != null) {
+				URL rootURL;
+				String rootURLStr = config.get(ResourceIndexer.ROOT_URL);
+				if (rootURLStr != null) {
+					File rootDir = new File(rootURLStr);
+					if (rootDir.isDirectory())
+						rootURL = rootDir.toURI().toURL();
+					else
+						rootURL = new URL(rootURLStr);
+				} else
+					rootURL = new File(System.getProperty("user.dir")).toURI().toURL();
 
-					if (filter == null || filter.match(resource.getProperties())) {
-						try {
-							analyzer.analyzeResource(resource, caps, reqs);
-						} catch (Exception e) {
-							log(LogService.LOG_ERROR,
-									MessageFormat.format("Error calling analyzer \"{0}\" on resource {1}.", analyzer.getClass().getName(), resource.getLocation()), e);
+				String urlTemplate = config.get(ResourceIndexer.URL_TEMPLATE);
+				bundleAnalyzer.setStateLocal(new GeneratorState(rootURL, urlTemplate));
+			} else {
+				bundleAnalyzer.setStateLocal(null);
+			}
+
+			// Iterate over the analyzers
+			try {
+				synchronized (analyzers) {
+					for (Pair<ResourceAnalyzer, Filter> entry : analyzers) {
+						ResourceAnalyzer analyzer = entry.getFirst();
+						Filter filter = entry.getSecond();
+
+						if (filter == null || filter.match(resource.getProperties())) {
+							try {
+								analyzer.analyzeResource(resource, caps, reqs);
+							} catch (Exception e) {
+								log(LogService.LOG_ERROR,
+										MessageFormat.format("Error calling analyzer \"{0}\" on resource {1}.", analyzer.getClass().getName(), resource.getLocation()), e);
+							}
 						}
 					}
 				}
+			} finally {
+				bundleAnalyzer.setStateLocal(null);
 			}
 		} finally {
-			bundleAnalyzer.setStateLocal(null);
+			resource.close();
 		}
 
 		Tag resourceTag = new Tag(Schema.ELEM_RESOURCE);
