@@ -9,6 +9,23 @@ import aQute.bnd.osgi.*;
 
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
+	/**
+	 * Test the custom macros
+	 */
+	
+	public void testCustomMacros() {
+		assertTemplate("this is 1 abc, and this is def", "this is 1 ${1}, and this is ${2}", "abc;def");
+		assertTemplate("abc,def", "${*}", "abc;def");
+		
+	}
+	
+	void assertTemplate(String result, String template, String params) {
+		Processor top = new Processor();
+		top.setProperty("template", template);
+		top.setProperty("macro", "${template;"+params+"}");
+		String expanded = top.getProperty("macro");
+		assertEquals( result, expanded);
+	}
 
 	/**
 	 * Test replacement of ./ with cwd
