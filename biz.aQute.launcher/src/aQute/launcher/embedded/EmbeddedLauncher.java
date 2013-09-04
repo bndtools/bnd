@@ -12,6 +12,7 @@ public class EmbeddedLauncher {
 	static byte[]				buffer				= new byte[30000];
 
 	public static void main(String... args) throws Exception {
+
 		ClassLoader cl = EmbeddedLauncher.class.getClassLoader();
 		Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 		while (manifests.hasMoreElements()) {
@@ -49,8 +50,8 @@ public class EmbeddedLauncher {
 			OutputStream out = new FileOutputStream(f);
 			try {
 				int size = in.read(buffer);
-				while ( size > 0 ) {
-					out.write( buffer, 0, size);
+				while (size > 0) {
+					out.write(buffer, 0, size);
 					size = in.read(buffer);
 				}
 			}
@@ -61,6 +62,7 @@ public class EmbeddedLauncher {
 		finally {
 			in.close();
 		}
+		f.deleteOnExit();
 		return f.toURL();
 	}
 
