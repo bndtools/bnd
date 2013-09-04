@@ -18,7 +18,6 @@ public class EmbeddedLauncher {
 		while (manifests.hasMoreElements()) {
 
 			Manifest m = new Manifest(manifests.nextElement().openStream());
-			m.write(System.out);
 			String runpath = m.getMainAttributes().getValue(EMBEDDED_RUNPATH);
 			if (runpath != null) {
 				List<URL> classpath = new ArrayList<URL>();
@@ -29,7 +28,6 @@ public class EmbeddedLauncher {
 				}
 
 				URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[classpath.size()]));
-				System.out.println("URLS: " + Arrays.toString(urlc.getURLs()));
 				Class< ? > embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
 				Method method = embeddedLauncher.getMethod("main", new Class< ? >[] {
 					String[].class
