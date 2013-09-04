@@ -3,15 +3,19 @@ package aQute.launcher.plugin;
 import java.io.*;
 import java.text.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.launcher.constants.*;
+import aQute.launcher.embedded.*;
 import aQute.libg.cryptography.*;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
+	private static final String	EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.embedded.EmbeddedLauncher";
+	private static final String	EMBEDDED_LAUNCHER	= "aQute/launcher/embedded/EmbeddedLauncher.class";
 	final private Project	project;
 	final private File		propertiesFile;
 	boolean					prepared;
@@ -148,37 +152,10 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		List<String> runpath = getRunpath();
 
-		//
-		// We create a manifest that is
-		// the combination of all manifests
-		// in general this is the result
-		// of the framework + launcher
-		//
-		// Construct a manifest where the last one wins (this is generally
-		// the framework and this is mandatory in Equinox
-
-		Manifest m = new Manifest();
-		for (String path : runpath) {
-			project.trace("embedding runpath %s", path);
-			File file = new File(path);
-			if (!file.isFile())
-				project.error("Invalid entry on runpath %s", file);
-			else {
-				Manifest rm = getManifest(file);
-				if (rm != null) {
-					m.getMainAttributes().putAll(rm.getMainAttributes());
-				}
-			}
-		}
-
-		// Copy the class path of the launched VM to this bundle
-		// but in reverse order so that the order matches the classpath (first
-		// wins).
-		Collections.reverse(runpath);
-
 		Set<String> runpathShas = new LinkedHashSet<String>();
 		Set<String> runbundleShas = new LinkedHashSet<String>();
-
+		List<String> classpath = new ArrayList<String>();
+		
 		for (String path : runpath) {
 			project.trace("embedding runpath %s", path);
 			File file = new File(path);
@@ -186,9 +163,9 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				if (useShas)
 					runpathShas.add(SHA1.digest(file).asHex());
 				else {
-					Jar from = new Jar(file);
-					jar.addAll(from);
-					project.addClose(from);
+					String newPath = "jar/" + file.getName();
+					jar.putResource(newPath, new FileResource(file));
+					classpath.add(newPath);
 				}
 			}
 		}
@@ -226,36 +203,34 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		p.store(bout, "");
 		jar.putResource(LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES, new EmbeddedResource(bout.toByteArray(), 0L));
 
-		// Remove signer files, we have a different manifest now
-		Set<String> set = new HashSet<String>();
-		for (Object pp : jar.getResources().keySet()) {
-			String path = (String) pp;
-			if (path.matches("META-INF/.*\\.(SF|RSA|DSA)$"))
-				set.add(path);
+		URLResource urlResource = new URLResource(this.getClass().getResource("/" + EMBEDDED_LAUNCHER));
+		jar.putResource(EMBEDDED_LAUNCHER, urlResource );
+		
+
+		Manifest m = new Manifest();
+		Attributes main = m.getMainAttributes();
+		
+		for ( Entry<Object,Object> e: project.getFlattenedProperties().entrySet()) {
+			String key = (String) e.getKey();
+			if ( key.length() > 0 && Character.isUpperCase(key.charAt(0)))
+				main.putValue(key, (String) e.getValue());
 		}
-
-		for (String path : set)
-			jar.remove(path);
-
-		m.getMainAttributes().putValue("Main-Class", "aQute.launcher.Launcher");
-		m.getMainAttributes().remove( new Attributes.Name(Constants.IMPORT_PACKAGE));
+		
+		Instructions instructions = new Instructions(project.getProperty(Constants.REMOVEHEADERS));
+		Collection<Object> result = instructions.select(main.keySet(), false);
+		main.keySet().removeAll(result);
 		
 		if (useShas) {
+			m.getMainAttributes().putValue("Main-Class", "aQute.launcher.Launcher");
 			m.getMainAttributes().putValue("JPM-Classpath", Processor.join(runpathShas));
 			m.getMainAttributes().putValue("JPM-Runbundles", Processor.join(runbundleShas));
+		} else {
+			m.getMainAttributes().putValue("Main-Class", EMBEDDED_LAUNCHER_FQN);
+			// Remove all the headers mentioned in -removeheaders
+			m.getMainAttributes().putValue(EmbeddedLauncher.EMBEDDED_RUNPATH, Processor.join(classpath));
 		}
 		jar.setManifest(m);
 		return jar;
-	}
-
-	private Manifest getManifest(File file) throws IOException {
-		JarFile jf = new JarFile(file);
-		try {
-			return jf.getManifest();
-		}
-		finally {
-			jf.close();
-		}
 	}
 
 }
