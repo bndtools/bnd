@@ -42,7 +42,7 @@ public class PrepareTask extends BaseTask {
 
 			project.setExceptions(true);
 			Properties properties = project.getFlattenedProperties();
-			if (report() || report(project))
+			if (report() || report(workspace) || report(project))
 				throw new BuildException("Errors during Eclipse Path inspection");
 
 			copyProperties(properties);
