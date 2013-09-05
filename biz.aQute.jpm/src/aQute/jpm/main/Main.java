@@ -438,14 +438,13 @@ public class Main extends ReporterAdapter {
 		}
 
 		for (String coordinate : opts._()) {
-			Coordinate crd = new Coordinate(coordinate);
 			trace("install %s", coordinate);
 			File file = IO.getFile(base, coordinate);
-			if (file.isFile())
+			if (file.isFile()) {
 				coordinate = file.toURI().toString();
+				trace("is existing file: %s", coordinate);
+			}
 
-			trace("install %s", coordinate);
-			
 			ArtifactData artifact = jpm.getCandidate(coordinate);
 			trace("candidate %s", artifact);
 			if (artifact == null) {
@@ -460,8 +459,9 @@ public class Main extends ReporterAdapter {
 					CommandData cmd = jpm.parseCommandData(artifact);
 					updateCommandData(cmd, opts);
 					if (cmd.main != null) {
-						if ( cmd.name == null) {
-							cmd.name = crd.getArtifactId();
+						if ( cmd.name == null && !artifact.local) {
+							if ( artifact.name != null)
+								cmd.name = artifact.name;
 						}
 						List<Error> errors = cmd.validate();
 						if (!errors.isEmpty()) {

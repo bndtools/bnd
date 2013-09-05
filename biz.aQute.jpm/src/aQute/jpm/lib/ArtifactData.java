@@ -2,6 +2,7 @@ package aQute.jpm.lib;
 
 import java.net.*;
 
+import aQute.service.library.*;
 import aQute.struct.*;
 
 public class ArtifactData extends struct {
@@ -13,6 +14,7 @@ public class ArtifactData extends struct {
 	public String	file;
 	public String	name;
 	public boolean	local;
+	public Coordinate	coordinate;
 
 	synchronized void done() {
 		busy = false;

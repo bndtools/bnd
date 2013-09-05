@@ -738,7 +738,7 @@ public class JustAnotherPackageManager {
 
 			public void run() {
 				try {
-					reporter.trace("downloading %s" , uri);
+					reporter.trace("downloading %s", uri);
 					put(uri, data);
 				}
 				catch (Throwable e) {
@@ -746,7 +746,7 @@ public class JustAnotherPackageManager {
 					data.error = e.toString();
 				}
 				finally {
-					reporter.trace("done downloading %s" , uri);
+					reporter.trace("done downloading %s", uri);
 					data.done();
 				}
 			}
@@ -901,7 +901,7 @@ public class JustAnotherPackageManager {
 	}
 
 	public ArtifactData getCandidateAsync(String arg) throws Exception {
-		reporter.trace("coordinate %s",arg);
+		reporter.trace("coordinate %s", arg);
 		if (isUrl(arg))
 			try {
 				ArtifactData data = putAsync(new URI(arg));
@@ -925,7 +925,9 @@ public class JustAnotherPackageManager {
 			return null;
 
 		URI url = revision.urls.iterator().next();
-		return putAsync(url);
+		ArtifactData artifactData = putAsync(url);
+		artifactData.coordinate = c;
+		return artifactData;
 	}
 
 	public static Executor getExecutor() {
@@ -1253,29 +1255,34 @@ public class JustAnotherPackageManager {
 				Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
 
 				for (Map.Entry<String,Attrs> e : requires.entrySet()) {
-					path.add(e.getKey()); // coordinate
+					path.add(e.getKey(),e.getValue().get("name")); // coordinate
 				}
 			} else if (!artifact.local) { // No JPM-Classpath, falling back to
 											// server's revision
-//				Iterable<RevisionRef> closure = library.getClosure(artifact.sha, false);
-//				System.out.println("getting closure " + artifact.url + " " + Strings.join("\n",closure));
-				
-//				if (closure != null) {
-//					for (RevisionRef ref : closure) {
-//						path.add(Hex.toHexString(ref.revision));
-//					}
-//				}
+											// Iterable<RevisionRef> closure =
+											// library.getClosure(artifact.sha,
+											// false);
+				// System.out.println("getting closure " + artifact.url + " " +
+				// Strings.join("\n",closure));
+
+				// if (closure != null) {
+				// for (RevisionRef ref : closure) {
+				// path.add(Hex.toHexString(ref.revision));
+				// }
+				// }
 			}
 
 			if (main.getValue("JPM-Runbundles") != null) {
 				Parameters jpmrunbundles = OSGiHeader.parseHeader(main.getValue("JPM-Runbundles"));
 
 				for (Map.Entry<String,Attrs> e : jpmrunbundles.entrySet()) {
-					bundles.add(e.getKey());
+					bundles.add(e.getKey(), e.getValue().get("name"));
 				}
 			}
 
+			reporter.trace("collect digests runpath");
 			data.dependencies.addAll(path.getDigests());
+			reporter.trace("collect digests bundles");
 			data.runbundles.addAll(bundles.getDigests());
 
 			Parameters command = OSGiHeader.parseHeader(main.getValue("JPM-Command"));
