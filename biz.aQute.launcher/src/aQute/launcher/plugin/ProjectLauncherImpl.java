@@ -160,8 +160,10 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			project.trace("embedding runpath %s", path);
 			File file = new File(path);
 			if (file.isFile()) {
-				if (useShas)
-					runpathShas.add(SHA1.digest(file).asHex());
+				if (useShas) {
+					String sha = SHA1.digest(file).asHex();
+					runpathShas.add(sha+";name=\""+file.getName()+"\"");
+				}
 				else {
 					String newPath = "jar/" + file.getName();
 					jar.putResource(newPath, new FileResource(file));
@@ -183,7 +185,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			else {
 				if (useShas) {
 					String sha = SHA1.digest(file).asHex();
-					runbundleShas.add(sha);
+					runbundleShas.add(sha+";name=\""+file.getName()+"\"");
 					actualPaths.add("${JPMREPO}/" + sha);
 				} else {
 					String newPath = "jar/" + file.getName();
