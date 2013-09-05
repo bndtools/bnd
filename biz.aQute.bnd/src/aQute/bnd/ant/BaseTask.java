@@ -29,18 +29,20 @@ public class BaseTask extends Task implements Reporter {
 	}
 
 	protected boolean report(Reporter reporter) {
-		if (reporter.getWarnings().size() > 0) {
-			System.err.println("Warnings");
-			for (Iterator<String> e = reporter.getWarnings().iterator(); e.hasNext();) {
-				System.err.println(" " + e.next());
-			}
-		}
-		if (reporter.getErrors().size() > 0) {
-			System.err.println(reporter.getErrors().size() + " Errors");
-			for (Iterator<String> e = reporter.getErrors().iterator(); e.hasNext();) {
-				System.err.println(" " + e.next());
+		int errCount = reporter.getErrors().size();
+		if (errCount > 0) {
+			System.err.printf("%d ERRORS%n", errCount);
+			for (String e : reporter.getErrors()) {
+				System.err.println(" " + e);
 			}
 			return true;
+		}
+		int warnCount = reporter.getErrors().size();
+		if (warnCount > 0) {
+			System.err.printf("%d WARNINGS%n", warnCount);
+			for (String w : reporter.getWarnings()) {
+				System.err.println(" " + w);
+			}
 		}
 		return false;
 	}
