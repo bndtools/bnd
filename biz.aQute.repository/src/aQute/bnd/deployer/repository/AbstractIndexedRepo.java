@@ -180,7 +180,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					readIndex(indexFile.getName(), indexLocation, indexStream, processor);
 				}
 				catch (Exception e) {
-					warning("Unable to read index at URL '%s': %s", indexLocation, e);
+					error("Unable to read index at URL '%s': %s", indexLocation, e);
 				}
 			}
 
@@ -475,7 +475,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 				warning("No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.",
 						selectedProvider.getName());
 			} else {
-				throw new IOException("No content provider understands the specified index.");
+				throw new IOException("Invalid repository index: no configured content provider understands the specified index.");
 			}
 		}
 
