@@ -10,15 +10,18 @@ import aQute.bnd.build.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.launcher.constants.*;
-import aQute.launcher.embedded.*;
+import aQute.launcher.pre.*;
 import aQute.libg.cryptography.*;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
-	private static final String	EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.embedded.EmbeddedLauncher";
-	private static final String	EMBEDDED_LAUNCHER	= "aQute/launcher/embedded/EmbeddedLauncher.class";
-	final private Project	project;
-	final private File		propertiesFile;
-	boolean					prepared;
+	private static final String	EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.pre.EmbeddedLauncher";
+	private static final String	EMBEDDED_LAUNCHER		= "aQute/launcher/pre/EmbeddedLauncher.class";
+	private static final String	JPM_LAUNCHER			= "aQute/launcher/pre/JpmLauncher.class";
+	private static final String	JPM_LAUNCHER_FQN		= "aQute.launcher.pre.JpmLauncher";
+	
+	final private Project		project;
+	final private File			propertiesFile;
+	boolean						prepared;
 
 	public ProjectLauncherImpl(Project project) throws Exception {
 		super(project);
@@ -146,7 +149,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		// TODO use constants in the future
 		Parameters packageHeader = OSGiHeader.parseHeader(project.getProperty("-package"));
 		boolean useShas = packageHeader.containsKey("jpm");
-		project.trace("useshas %s %s", useShas, packageHeader);
+		project.trace("Useshas %s %s", useShas, packageHeader);
 
 		Jar jar = new Jar(project.getName());
 
@@ -155,16 +158,15 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		Set<String> runpathShas = new LinkedHashSet<String>();
 		Set<String> runbundleShas = new LinkedHashSet<String>();
 		List<String> classpath = new ArrayList<String>();
-		
+
 		for (String path : runpath) {
 			project.trace("embedding runpath %s", path);
 			File file = new File(path);
 			if (file.isFile()) {
 				if (useShas) {
 					String sha = SHA1.digest(file).asHex();
-					runpathShas.add(sha+";name=\""+file.getName()+"\"");
-				}
-				else {
+					runpathShas.add(sha + ";name=\"" + file.getName() + "\"");
+				} else {
 					String newPath = "jar/" + file.getName();
 					jar.putResource(newPath, new FileResource(file));
 					classpath.add(newPath);
@@ -185,7 +187,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			else {
 				if (useShas) {
 					String sha = SHA1.digest(file).asHex();
-					runbundleShas.add(sha+";name=\""+file.getName()+"\"");
+					runbundleShas.add(sha + ";name=\"" + file.getName() + "\"");
 					actualPaths.add("${JPMREPO}/" + sha);
 				} else {
 					String newPath = "jar/" + file.getName();
@@ -205,31 +207,33 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		p.store(bout, "");
 		jar.putResource(LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES, new EmbeddedResource(bout.toByteArray(), 0L));
 
-		URLResource urlResource = new URLResource(this.getClass().getResource("/" + EMBEDDED_LAUNCHER));
-		jar.putResource(EMBEDDED_LAUNCHER, urlResource );
-		
 
 		Manifest m = new Manifest();
 		Attributes main = m.getMainAttributes();
-		
-		for ( Entry<Object,Object> e: project.getFlattenedProperties().entrySet()) {
+
+		for (Entry<Object,Object> e : project.getFlattenedProperties().entrySet()) {
 			String key = (String) e.getKey();
-			if ( key.length() > 0 && Character.isUpperCase(key.charAt(0)))
+			if (key.length() > 0 && Character.isUpperCase(key.charAt(0)))
 				main.putValue(key, (String) e.getValue());
 		}
-		
+
 		Instructions instructions = new Instructions(project.getProperty(Constants.REMOVEHEADERS));
 		Collection<Object> result = instructions.select(main.keySet(), false);
 		main.keySet().removeAll(result);
-		
+
 		if (useShas) {
-			m.getMainAttributes().putValue("Main-Class", "aQute.launcher.Launcher");
+			project.trace("Use JPM launcher");
+			m.getMainAttributes().putValue("Main-Class", JPM_LAUNCHER_FQN);
 			m.getMainAttributes().putValue("JPM-Classpath", Processor.join(runpathShas));
 			m.getMainAttributes().putValue("JPM-Runbundles", Processor.join(runbundleShas));
+			URLResource jpmLauncher = new URLResource(this.getClass().getResource("/" + JPM_LAUNCHER));
+			jar.putResource(JPM_LAUNCHER, jpmLauncher);
 		} else {
+			project.trace("Use Embedded launcher");
 			m.getMainAttributes().putValue("Main-Class", EMBEDDED_LAUNCHER_FQN);
-			// Remove all the headers mentioned in -removeheaders
 			m.getMainAttributes().putValue(EmbeddedLauncher.EMBEDDED_RUNPATH, Processor.join(classpath));
+			URLResource embeddedLauncher = new URLResource(this.getClass().getResource("/" + EMBEDDED_LAUNCHER));
+			jar.putResource(EMBEDDED_LAUNCHER, embeddedLauncher);
 		}
 		jar.setManifest(m);
 		return jar;
