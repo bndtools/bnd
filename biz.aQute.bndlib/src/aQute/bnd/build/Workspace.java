@@ -406,7 +406,9 @@ public class Workspace extends Processor {
 	protected void setTypeSpecificPlugins(Set<Object> list) {
 		super.setTypeSpecificPlugins(list);
 		list.add(maven);
-		list.add(new CachedFileRepo());
+		if (!isTrue(getProperty(NOBUILDINCACHE))) {
+			list.add(new CachedFileRepo());
+		}
 	}
 
 	/**
