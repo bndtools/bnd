@@ -28,6 +28,7 @@ import aQute.libg.glob.*;
 import aQute.libg.reporter.*;
 import aQute.service.library.*;
 import aQute.service.library.Library.Program;
+import aQute.service.library.Library.Revision;
 import aQute.struct.struct.Error;
 
 /**
@@ -1400,6 +1401,41 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
+	interface RevisionPrintOptions {
+		boolean coordinate();
+		boolean description();
+	}
+	void printRevisions(Iterable<? extends Revision> revisions, RevisionPrintOptions po) {
+		if ( po.coordinate()) {
+			for (Revision r : revisions) {
+				out.println( new Coordinate(r));
+			}			
+			return;
+		}
+		
+		Justif j = new Justif(120, 40, 70, 80, 82, 100);
+		Formatter f = j.formatter();
+		try {
+			for (Revision r : revisions) {
+				f.format("[%s] ", r.phase.getIdentifier());
+				if (r.groupId.equals(Library.OSGI_GROUP) || r.groupId.equals(Library.SHA_GROUP))
+					f.format("%s ", r.artifactId);
+				else
+					f.format("%s:%s ", r.groupId, r.artifactId);
+
+				f.format("\t0%s\t1%s",r.version, Hex.toHexString(r._id));
+				if ( po.description() && r.description != null) {
+					f.format("\n \t1%s", r.description);
+				}
+
+				f.format("\n");
+			}
+			out.println(j.wrap());
+		}
+		finally {
+			f.close();
+		}
+	}
 	@Description("Find programs and libraries corresponding to the given query")
 	interface findOptions extends Options {
 
@@ -1813,4 +1849,24 @@ public class Main extends ReporterAdapter {
 			f.close();
 		}
 	}
+	
+	/**
+	 * Show a list of candidates from a coordinate
+	 * 
+	 */
+	@Arguments(arg="coordinate")
+	interface CandidateOptions extends Options, RevisionPrintOptions {
+		
+	}
+	public void _candidates(CandidateOptions options) throws Exception {
+		String c = options._().get(0);
+
+		if ( !Coordinate.COORDINATE_P.matcher(c).matches())  {
+			error("Not a proper coordinate %s", c);
+			return;
+		}
+
+		printRevisions(jpm.getCandidates(new Coordinate(c)), options);
+	}
+
 }

@@ -738,7 +738,6 @@ public class JustAnotherPackageManager {
 
 			public void run() {
 				try {
-					reporter.trace("downloading %s", uri);
 					put(uri, data);
 				}
 				catch (Throwable e) {
@@ -800,6 +799,7 @@ public class JustAnotherPackageManager {
 	public ArtifactData get(byte[] sha) throws Exception {
 		String name = Hex.toHexString(sha);
 		File data = IO.getFile(repoDir, name + ".json");
+		reporter.trace("artifact data file %s", data);
 		if (data.isFile()) { // Bin + metadata
 			ArtifactData artifact = codec.dec().from(data).get(ArtifactData.class);
 			artifact.file = IO.getFile(repoDir, name).getAbsolutePath();
@@ -923,7 +923,15 @@ public class JustAnotherPackageManager {
 		Revision revision = library.getRevisionByCoordinate(c);
 		if (revision == null)
 			return null;
-
+		
+		reporter.trace("revision %s", Hex.toHexString(revision._id));
+		
+		ArtifactData ad = get(revision._id);
+		if ( ad != null) {
+			reporter.trace("found in cache");
+			return ad;
+		}
+		
 		URI url = revision.urls.iterator().next();
 		ArtifactData artifactData = putAsync(url);
 		artifactData.coordinate = c;
@@ -945,6 +953,7 @@ public class JustAnotherPackageManager {
 			url = new URI("http://repo.jpm4j.org/");
 
 		this.host = new URLClient(url.toString());
+		host.setReporter(reporter);
 		library = JSONRPCProxy.createRPC(JpmRepo.class, host, "jpm");
 	}
 
@@ -1189,18 +1198,6 @@ public class JustAnotherPackageManager {
 
 	}
 
-	public ArtifactData getRevision(String coordinate) throws Exception {
-		if (isUrl(coordinate)) {
-			return put(new URI(coordinate));
-		}
-		Coordinate c = new Coordinate(coordinate);
-
-		Revision revision = library.getRevisionByCoordinate(c);
-		if (revision == null)
-			return null;
-
-		return put(revision.urls.iterator().next());
-	}
 
 	private boolean isUrl(String coordinate) {
 		return URL_P.matcher(coordinate).matches();
@@ -1255,7 +1252,7 @@ public class JustAnotherPackageManager {
 				Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
 
 				for (Map.Entry<String,Attrs> e : requires.entrySet()) {
-					path.add(e.getKey(),e.getValue().get("name")); // coordinate
+					path.add(e.getKey(), e.getValue().get("name")); // coordinate
 				}
 			} else if (!artifact.local) { // No JPM-Classpath, falling back to
 											// server's revision
@@ -1334,5 +1331,15 @@ public class JustAnotherPackageManager {
 			}
 		}
 		return out;
+	}
+
+	/**
+	 * Get a list of candidates from a coordinate
+	 * 
+	 * @param c
+	 * @throws Exception
+	 */
+	public Iterable<Revision> getCandidates(Coordinate c) throws Exception {
+		return library.getRevisionsByCoordinate(c);
 	}
 }
