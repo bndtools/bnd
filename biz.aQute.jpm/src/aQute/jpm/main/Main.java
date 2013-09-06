@@ -1412,8 +1412,7 @@ public class Main extends ReporterAdapter {
 			}			
 			return;
 		}
-		
-		Justif j = new Justif(120, 40, 70, 80, 82, 100);
+		Justif j = new Justif(140, 40, 70, 82, 100, 120);
 		Formatter f = j.formatter();
 		try {
 			for (Revision r : revisions) {
@@ -1423,7 +1422,7 @@ public class Main extends ReporterAdapter {
 				else
 					f.format("%s:%s ", r.groupId, r.artifactId);
 
-				f.format("\t0%s\t1%s",r.version, Hex.toHexString(r._id));
+				f.format("\t0%s\t1%tF\t2%s",r.version, new Date(r.modified),Hex.toHexString(r._id));
 				if ( po.description() && r.description != null) {
 					f.format("\n \t1%s", r.description);
 				}
