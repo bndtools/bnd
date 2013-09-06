@@ -447,7 +447,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
-		boolean haslatest = false;
 		File dir = new File(root, bsn);
 		if (dir.isDirectory()) {
 			String versions[] = dir.list();
@@ -456,14 +455,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				Matcher m = REPO_FILE.matcher(v);
 				if (m.matches()) {
 					String version = m.group(2);
-					if (version.equals("latest"))
-						haslatest = true;
-					else
+					if (!version.equals("latest"))
 						list.add(new Version(version));
 				}
 			}
-			if ( list.isEmpty() && haslatest)
-				list.add( new Version(MAX_MAJOR,0,0));
 			return new SortedList<Version>(list);
 		}
 		return SortedList.empty();
