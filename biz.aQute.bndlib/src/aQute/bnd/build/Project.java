@@ -1116,7 +1116,10 @@ public class Project extends Processor {
 
 		for (String bsn : parts) {
 			Container container = getBundle(bsn, version, strategy, null);
-			add(paths, container);
+			if (container.getError() != null) {
+				error("${repo} macro refers to an artifact %s-%s (%s) that has an error: %s", bsn, version, strategy, container.getError());
+			} else
+				add(paths, container);
 		}
 		return join(paths);
 	}
