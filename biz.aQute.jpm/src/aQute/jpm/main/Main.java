@@ -1402,7 +1402,9 @@ public class Main extends ReporterAdapter {
 	}
 
 	interface RevisionPrintOptions {
+		@Description("Just show the coordinate only")
 		boolean coordinate();
+		@Description("Include the description field")
 		boolean description();
 	}
 	void printRevisions(Iterable<? extends Revision> revisions, RevisionPrintOptions po) {
@@ -1854,9 +1856,16 @@ public class Main extends ReporterAdapter {
 	 * 
 	 */
 	@Arguments(arg="coordinate")
+	@Description("Print out the candidates from a coordinate specification. A coordinate is:\n\n"
+			+ "    coordinate \t0:\t1[groupId ':'] artifactId \n\t1[ '@' [ version ] ( '*' | '=' | '~' | '!')]\n"
+			+ "    '*'        \t0:\t1Version, if specified, is treated as required prefix of the actual version. Sees MASTER | STAGING | LOCKED\n"
+			+ "    '='        \t0:\t1Version, if specified, must match exactly. Sees MASTER\n"
+			+ "    '~'        \t0:\t1Version, if specified, is treated as required prefix of the actual version. Sees all phases\n"
+			+ "    '!'        \t0:\t1Version, if specified, is treated as required prefix of the actual version. Sees normally invisible phases")
 	interface CandidateOptions extends Options, RevisionPrintOptions {
 		
 	}
+	@Description("List the candidates for a coordinate")
 	public void _candidates(CandidateOptions options) throws Exception {
 		String c = options._().get(0);
 
