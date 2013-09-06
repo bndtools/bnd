@@ -182,7 +182,6 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 
     @Override
     public void commitToModel(boolean onSave) {
-        super.commit(onSave);
         try {
             committing = true;
             model.setRunFw(selectedFramework.trim().length() > 0 ? selectedFramework.trim() : null);
