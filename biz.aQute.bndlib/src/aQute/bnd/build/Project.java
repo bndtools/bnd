@@ -1950,6 +1950,7 @@ public class Project extends Processor {
 						if (!target.isAssignableFrom(clz)) {
 							msgs.IncompatibleHandler_For_(launcher, defaultHandler);
 						} else {
+							trace("found handler %s from %s", defaultHandler, c);
 							handlerClass = clz.asSubclass(target);
 							Constructor< ? extends T> constructor = handlerClass.getConstructor(Project.class);
 							return constructor.newInstance(this);
