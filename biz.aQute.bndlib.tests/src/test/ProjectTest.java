@@ -17,6 +17,26 @@ import aQute.lib.io.*;
 public class ProjectTest extends TestCase {
 
 	/**
+	 * https://github.com/bndtools/bnd/issues/395
+	 * 
+	 * Repo macro does not refer to anything
+	 */
+
+	public static void testRepoMacro2() throws Exception {
+		Workspace ws = new Workspace(new File("testresources/ws"));
+		Project top = ws.getProject("p2");
+		top.addClasspath(top.getOutput());
+		
+		top.setProperty("a", "${repo;org.apache.felix.configadmin;latest}");
+		assertTrue(top.getProperty("a").endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.2.0.jar"));
+		
+		top.setProperty("a", "${repo;IdoNotExist;latest}");
+		top.getProperty("a");
+		assertTrue(top.check("macro refers to an artifact IdoNotExist-latest.*that has an error"));
+		assertEquals("", top.getProperty("a"));
+	}
+	
+	/**
 	 * Two subsequent builds should not change the last modified if none of the
 	 * source inputs have been modified.
 	 * 
@@ -333,7 +353,7 @@ public class ProjectTest extends TestCase {
 		assertTrue(s.contains("org.apache.felix.ipojo" + File.separator + "org.apache.felix.ipojo-1.0.0.jar"));
 
 		s = project.getReplacer().process(("${repo;libtestxyz}"));
-		assertTrue(s.matches("<<[^>]+>>"));
+		assertTrue(s.matches(""));
 
 		s = project.getReplacer().process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
 		assertTrue(s.endsWith("org.apache.felix.configadmin-1.2.0.jar"));
