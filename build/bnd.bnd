@@ -10,6 +10,7 @@
 	bndtools.release,\
 	bndtools.repository.amdatu,\
 	bndtools.repository.base,\
+	bndtools.repository.maven,\
 	bndtools.template.amdatu,\
 	bndtools.template.dm,\
 	org.bndtools.embeddedrepo
@@ -29,6 +30,7 @@ Include-Resource:\
 	${repo;bndtools.release;latest},\
 	${repo;bndtools.repository.amdatu;latest},\
 	${repo;bndtools.repository.base;latest},\
+	${repo;bndtools.repository.maven;latest},\
 	${repo;bndtools.template.amdatu;latest},\
 	${repo;bndtools.template.dm;latest},\
 	${repo;org.bndtools.embeddedrepo;latest},\
