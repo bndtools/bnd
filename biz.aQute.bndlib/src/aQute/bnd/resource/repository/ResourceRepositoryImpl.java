@@ -208,7 +208,6 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 					synchronized (queues) {
 						ok(queues.get(path).toArray(EMPTY_LISTENER), path);
 					}
-					ok(blockers, path);
 				}
 				catch (Exception e) {
 					synchronized (queues) {

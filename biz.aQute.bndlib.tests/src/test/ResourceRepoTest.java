@@ -24,6 +24,7 @@ public class ResourceRepoTest extends TestCase {
 	File tmp = new File("tmp");
 
 	public void setUp() throws Exception {
+		IO.delete(tmp);
 		tmp.mkdirs();
 		repoImpl.setCache(new File(tmp, "cache"));
 		repoImpl.setExecutor(Executors.newCachedThreadPool());
@@ -86,12 +87,14 @@ public class ResourceRepoTest extends TestCase {
 
 			@Override
 			public void success(File file) throws Exception {
+				System.out.println("Success");
 				s.release();
 				success.set(true);
 			}
 
 			@Override
 			public void failure(File file, String reason) throws Exception {
+				System.out.println("Failure");
 				s.release();
 				success.set(false);
 			}
