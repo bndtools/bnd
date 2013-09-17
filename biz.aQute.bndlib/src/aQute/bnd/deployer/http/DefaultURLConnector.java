@@ -5,7 +5,6 @@ import java.net.*;
 import java.security.*;
 import java.util.*;
 
-import aQute.bnd.deployer.repository.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.progress.*;
 import aQute.bnd.service.url.*;
