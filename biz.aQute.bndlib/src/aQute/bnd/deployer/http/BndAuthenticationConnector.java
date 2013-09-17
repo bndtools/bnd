@@ -10,7 +10,7 @@ import aQute.service.reporter.*;
 
 public class BndAuthenticationConnector implements URLConnector, Plugin, RegistryPlugin {
 
-	public void setRegistry(Registry registry) throws Exception {
+	public void setRegistry(Registry registry) {
 		// TODO Auto-generated method stub
 		
 	}
