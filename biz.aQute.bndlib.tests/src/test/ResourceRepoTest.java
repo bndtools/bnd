@@ -88,15 +88,15 @@ public class ResourceRepoTest extends TestCase {
 			@Override
 			public void success(File file) throws Exception {
 				System.out.println("Success");
-				s.release();
 				success.set(true);
+				s.release();
 			}
 
 			@Override
 			public void failure(File file, String reason) throws Exception {
 				System.out.println("Failure");
-				s.release();
 				success.set(false);
+				s.release();
 			}
 
 			@Override
