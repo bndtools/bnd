@@ -34,7 +34,7 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.bnd.build.model.clauses,\
 	aQute.service.reporter,\
 	aQute.bnd.maven.support,\
-	aQute.bnd.deployer.http
+	aQute.bnd.url
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 Include-Resource: 				LICENSE, img/=img/

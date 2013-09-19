@@ -1,7 +1,6 @@
 package test;
 
 import java.io.*;
-import java.net.*;
 import java.security.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -10,11 +9,11 @@ import java.util.concurrent.atomic.*;
 import junit.framework.*;
 import aQute.bnd.resource.repository.*;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
-import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.ResourceRepository.Listener;
 import aQute.bnd.service.repository.ResourceRepository.ResourceRepositoryEvent;
+import aQute.bnd.service.repository.ResourceRepository.TYPE;
+import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.service.url.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
@@ -28,7 +27,10 @@ public class ResourceRepoTest extends TestCase {
 		tmp.mkdirs();
 		repoImpl.setCache(new File(tmp, "cache"));
 		repoImpl.setExecutor(Executors.newCachedThreadPool());
-		repoImpl.setIndexFile(new File(tmp, "index.json"));
+		File file = new File(tmp, "index.json");
+		file.delete();
+		repoImpl.setIndexFile(file);
+		
 	}
 	
 	public void tearDown() throws Exception {
@@ -170,31 +172,6 @@ public class ResourceRepoTest extends TestCase {
 		final Semaphore s = new Semaphore(0);
 		final AtomicInteger downloads = new AtomicInteger();
 
-		repoImpl.setURLConnector( new URLConnector() {
-			
-			@Override
-			public TaggedData connectTagged(URL url, String tag) throws IOException {
-				return connectTagged(url);
-			}
-			
-			@Override
-			public TaggedData connectTagged(URL url) throws IOException {
-				
-				return null;
-			}
-			
-			@Override
-			public InputStream connect(URL url) throws IOException {
-				try {
-					s.acquire();
-				}
-				catch (InterruptedException e) {
-					//
-				}
-				downloads.incrementAndGet();
-				return url.openStream();
-			}
-		});
 		
 		ResourceDescriptor rd = create("jar/osgi.jar");
 		repoImpl.add(rd);
@@ -210,6 +187,7 @@ public class ResourceRepoTest extends TestCase {
 
 			@Override
 			public void failure(File file, String reason) throws Exception {
+				System.out.println("failure! " + file + " " + reason);
 			}
 
 			@Override
@@ -217,6 +195,22 @@ public class ResourceRepoTest extends TestCase {
 				return false;
 			}
 		};
+		
+		repoImpl.addListener(new Listener() {
+			
+			@Override
+			public void events(ResourceRepositoryEvent... events) throws Exception {
+				for ( ResourceRepositoryEvent event : events) {
+					if ( event.type == TYPE.START_DOWNLOAD) {
+						System.out.println("trying to acquire s");
+						s.acquire();
+						System.out.println("got it");
+						downloads.incrementAndGet();
+					}
+				}
+				
+			}
+		});
 		File f1 = repoImpl.getResource(rd.id, l);
 		File f2 = repoImpl.getResource(rd.id, l);
 		assertFalse( f1.isFile());
@@ -232,6 +226,16 @@ public class ResourceRepoTest extends TestCase {
 		assertEquals( 1, downloads.get());
 	}
 
+	public void testStore() throws Exception {
+		assertEquals( 0, repoImpl.list(null).size());
+		repoImpl.add(create("jar/osgi.jar"));
+		assertEquals( 1, repoImpl.list(null).size());
+		repoImpl = new ResourceRepositoryImpl();
+		repoImpl.setCache(new File(tmp, "cache"));
+		repoImpl.setExecutor(Executors.newCachedThreadPool());
+		repoImpl.setIndexFile(new File(tmp, "index.json"));
+		assertEquals( 1, repoImpl.list(null).size());
+	}
 		
 	private SearchableRepository.ResourceDescriptor create(String path) throws NoSuchAlgorithmException, Exception {
 		SearchableRepository.ResourceDescriptor rd = new SearchableRepository.ResourceDescriptor();
