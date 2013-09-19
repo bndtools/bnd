@@ -20,6 +20,12 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	private HostnameVerifier			verifier;
 	private final List<X509Certificate>	certificates	= new ArrayList<X509Certificate>();
 
+	/**
+	 * Initialize the SSL Context, factory and verifier.
+	 * 
+	 * @throws NoSuchAlgorithmException
+	 * @throws KeyManagementException
+	 */
 	private synchronized void init() throws NoSuchAlgorithmException, KeyManagementException {
 		if (factory == null) {
 			final X509Certificate trusted[] = certificates.toArray(new X509Certificate[certificates.size()]);
@@ -53,6 +59,9 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 		}
 	}
 
+	/**
+	 * Ensure Https verification is disabled or matches given certificates
+	 */
 	public void handle(URLConnection connection) throws Exception {
 
 		if (connection instanceof HttpsURLConnection && matches(connection)) {
@@ -66,6 +75,9 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 		}
 	}
 
+	/**
+	 * Set the properties
+	 */
 	@Override
 	public void setProperties(Map<String,String> map) throws Exception {
 		super.setProperties(map);
