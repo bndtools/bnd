@@ -5,16 +5,23 @@ import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
 import java.util.jar.*;
 
 import javax.naming.*;
 
+import aQute.bnd.header.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.resource.repository.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
+import aQute.bnd.service.extension.*;
+import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.url.*;
+import aQute.bnd.version.*;
 import aQute.lib.deployer.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
@@ -50,27 +57,29 @@ public class Workspace extends Processor {
 		Workspace ws = getWorkspace(projectDir.getParentFile());
 		return ws.getProject(projectDir.getName());
 	}
-	
+
 	static synchronized Processor getDefaults() {
 		if (defaults != null)
 			return defaults;
-		
+
 		Properties props = new Properties();
 		InputStream propStream = Workspace.class.getResourceAsStream("defaults.bnd");
 		if (propStream != null) {
 			try {
 				props.load(propStream);
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				throw new IllegalArgumentException("Unable to load bnd defaults.", e);
-			} finally {
+			}
+			finally {
 				IO.close(propStream);
 			}
 		}
 		defaults = new Processor(props);
-		
+
 		return defaults;
 	}
-	
+
 	public static Workspace getWorkspace(File parent) throws Exception {
 		return getWorkspace(parent, BNDDIR);
 	}
@@ -254,6 +263,7 @@ public class Workspace extends Processor {
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
 	final ThreadLocal<Reporter>	signalBusy	= new ThreadLocal<Reporter>();
+	private ResourceRepositoryImpl	resourceRepositoryImpl;
 
 	public void signal(Reporter reporter) {
 		if (signalBusy.get() != null)
@@ -404,10 +414,111 @@ public class Workspace extends Processor {
 
 	@Override
 	protected void setTypeSpecificPlugins(Set<Object> list) {
-		super.setTypeSpecificPlugins(list);
-		list.add(maven);
-		if (!isTrue(getProperty(NOBUILDINCACHE))) {
-			list.add(new CachedFileRepo());
+		try {
+			super.setTypeSpecificPlugins(list);
+			list.add(maven);
+			if (!isTrue(getProperty(NOBUILDINCACHE))) {
+				list.add(new CachedFileRepo());
+			}
+
+			resourceRepositoryImpl = new ResourceRepositoryImpl();
+			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, "~/.bnd/caches/shas")));
+			resourceRepositoryImpl.setExecutor(getExecutor());
+			resourceRepositoryImpl.setIndexFile(getFile(CNFDIR + "/repo.json"));
+
+			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));
+			customize(resourceRepositoryImpl, null);
+			list.add(resourceRepositoryImpl);
+		}
+		catch (RuntimeException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Add any extensions listed
+	 * 
+	 * @param list
+	 * @param rri
+	 */
+	@Override
+	protected void addExtensions(Set<Object> list) {
+		//
+		// <bsn>; version=<range>
+		//
+		Parameters extensions = new Parameters(getProperty(EXTENSION));
+		Map<DownloadBlocker,Attrs> blockers = new HashMap<DownloadBlocker,Attrs>();
+
+		for (Entry<String,Attrs> i : extensions.entrySet()) {
+			String bsn = removeDuplicateMarker(i.getKey());
+			String stringRange = i.getValue().get(VERSION_ATTRIBUTE);
+
+			trace("Adding extension %s-%s", bsn, stringRange);
+
+			if (stringRange == null)
+				stringRange = Version.LOWEST.toString();
+			else if (!VersionRange.isVersionRange(stringRange)) {
+				error("Invalid version range %s on extension %s", stringRange, bsn);
+				continue;
+			}
+			try {
+				ResourceDescriptor highest = resourceRepositoryImpl.findBestMatch(bsn, new VersionRange(stringRange));
+				if (highest == null) {
+					error("Extension %s;version=%s not found in base repo", bsn, stringRange);
+					continue;
+				}
+
+				DownloadBlocker blocker = new DownloadBlocker(this);
+				blockers.put(blocker, i.getValue());
+				resourceRepositoryImpl.getResource(highest.id, blocker);
+			}
+			catch (Exception e) {
+				error("Failed to load extension %s-%s, %s", bsn, stringRange, e);
+			}
+		}
+
+		trace("Found extensions %s", blockers);
+
+		for (Entry<DownloadBlocker,Attrs> blocker : blockers.entrySet()) {
+			try {
+				String reason = blocker.getKey().getReason();
+				if (reason != null) {
+					error("Extension load failed: %s", reason);
+					continue;
+				}
+				
+				URLClassLoader cl = new URLClassLoader(new URL[] {
+					blocker.getKey().getFile().toURL()
+				});
+				Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
+				while (manifests.hasMoreElements()) {
+					Manifest m = new Manifest(manifests.nextElement().openStream());
+					Parameters activators = new Parameters(m.getMainAttributes().getValue("Extension-Activator"));
+					for (Entry<String,Attrs> e : activators.entrySet()) {
+						try {
+							Class< ? > c = cl.loadClass(e.getKey());
+							ExtensionActivator extensionActivator = (ExtensionActivator) c.newInstance();
+							customize(extensionActivator, blocker.getValue());
+							List< ? > plugins = extensionActivator.activate(this, blocker.getValue());
+							list.add(extensionActivator);
+
+							if (plugins != null)
+								for (Object plugin : plugins) {
+									list.add(plugin);
+								}
+						}
+						catch (ClassNotFoundException cnfe) {
+							error("Loading extension %s, extension activator missing: %s (ignored)", blocker, e.getKey());
+						}
+					}
+				}
+			}
+			catch (Exception e) {
+				error("failed to install extension %s due to %s", blocker, e);
+			}
 		}
 	}
 
@@ -454,6 +565,10 @@ public class Workspace extends Processor {
 		return null;
 	}
 
+	public Settings getSettings() {
+		return settings;
+	}
+
 	/**
 	 * Return the repository signature digests. These digests are a unique id
 	 * for the contents of the repository
@@ -484,11 +599,11 @@ public class Workspace extends Processor {
 				digests.add(Hex.toHexString(digest));
 			}
 			catch (Exception e) {
-				if ( args.length != 1)
+				if (args.length != 1)
 					error("Specified repo %s for digests is not found", repo.getName());
 				// else Ignore
 			}
 		}
-		return join(digests,",");
+		return join(digests, ",");
 	}
 }

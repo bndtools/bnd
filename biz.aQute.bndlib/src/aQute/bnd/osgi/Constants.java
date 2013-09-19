@@ -77,6 +77,7 @@ public interface Constants {
 	String							BUMPPOLICY									= "-bumppolicy";
 	String							CONDUIT										= "-conduit";
 	String							CONTRACT									= "-contract";
+	String							CACHEDIR									= "-cachedir";
 	String							DIFFIGNORE									= "-diffignore";
 	String							COMPILER_SOURCE								= "-source";
 	String							COMPILER_TARGET								= "-target";
@@ -89,6 +90,7 @@ public interface Constants {
 	String							DEBUG										= "-debug";
 	String							EXPERIMENTS									= "-experiments";
 	String							EXPORT_CONTENTS								= "-exportcontents";
+	String							EXTENSION									= "-extension";
 	String							FAIL_OK										= "-failok";
 	String							INCLUDE										= "-include";
 	String							INCLUDERESOURCE								= "-includeresource";
@@ -177,7 +179,7 @@ public interface Constants {
 			UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST,
 			RUNVM, RUNPROGRAMARGS, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION,
 			DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT,
-			STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE
+			STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make

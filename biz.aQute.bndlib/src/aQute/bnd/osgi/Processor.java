@@ -308,19 +308,20 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * 
 	 * @return
 	 */
-	protected synchronized Set<Object> getPlugins() {
-		if (this.plugins != null)
-			return this.plugins;
+	protected Set<Object> getPlugins() {
+		synchronized (this) {
+			if (this.plugins != null)
+				return this.plugins;
 
-		missingCommand = new HashSet<String>();
-		Set<Object> list = new LinkedHashSet<Object>();
-
+			plugins = new LinkedHashSet<Object>();
+			missingCommand = new HashSet<String>();
+		}
 		// The owner of the plugin is always in there.
-		list.add(this);
-		setTypeSpecificPlugins(list);
+		plugins.add(this);
+		setTypeSpecificPlugins(plugins);
 
 		if (parent != null)
-			list.addAll(parent.getPlugins());
+			plugins.addAll(parent.getPlugins());
 
 		// We only use plugins now when they are defined on our level
 		// and not if it is in our parent. We inherit from our parent
@@ -332,10 +333,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return new LinkedHashSet<Object>();
 
 			String pluginPath = getProperty(PLUGINPATH);
-			loadPlugins(list, spe, pluginPath);
+			loadPlugins(plugins, spe, pluginPath);
 		}
 
-		return this.plugins = list;
+		addExtensions(plugins);
+		return this.plugins;
+	}
+
+	/**
+	 * Is called when all plugins are loaded
+	 * @param plugins
+	 */
+	protected void addExtensions(Set<Object> plugins) {
+		
 	}
 
 	/**
@@ -434,10 +444,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	protected <T> T customize(T plugin, Attrs map) {
 		if (plugin instanceof Plugin) {
-			if (map != null)
-				((Plugin) plugin).setProperties(map);
-
 			((Plugin) plugin).setReporter(this);
+			try {
+				if (map == null)
+					map = Attrs.EMPTY_ATTRS;
+				((Plugin) plugin).setProperties(map);
+			}
+			catch (Exception e) {
+				error("While setting properties %s on plugin %s, %s", map, plugin, e);
+			}
 		}
 		if (plugin instanceof RegistryPlugin) {
 			((RegistryPlugin) plugin).setRegistry(this);
@@ -987,13 +1002,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {
-		if ( value.startsWith("\\\""))
+		if (value.startsWith("\\\""))
 			value = value.substring(2);
-		if ( value.endsWith("\\\""))
-			value = value.substring(0, value.length()-2);
-		if ( value.startsWith("\"") && value.endsWith("\""))
-			value = value.substring(1, value.length()-1);
-		
+		if (value.endsWith("\\\""))
+			value = value.substring(0, value.length() - 2);
+		if (value.startsWith("\"") && value.endsWith("\""))
+			value = value.substring(1, value.length() - 1);
+
 		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')
 				|| Verifier.TOKEN.matcher(value).matches();
 		if (!clean)
@@ -1248,7 +1263,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		trace = x;
 	}
 
-	static class CL extends URLClassLoader {
+	public static class CL extends URLClassLoader {
 
 		CL() {
 			super(new URL[0], Processor.class.getClassLoader());
@@ -1283,7 +1298,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 	}
 
-	private CL getLoader() {
+	protected CL getLoader() {
 		if (pluginLoader == null) {
 			pluginLoader = new CL();
 		}
