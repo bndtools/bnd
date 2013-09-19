@@ -10,7 +10,8 @@ import aQute.lib.collections.*;
 public class Attrs implements Map<String,String> {
 	public enum Type {
 		STRING(null, "String"), LONG(null, "Long"), VERSION(null, "Version"), DOUBLE(null, "Double"), STRINGS(STRING,
-				"List<String>"), LONGS(LONG, "List<Long>"), VERSIONS(VERSION, "List<Version>"), DOUBLES(DOUBLE, "List<Double>");
+				"List<String>"), LONGS(LONG, "List<Long>"), VERSIONS(VERSION, "List<Version>"), DOUBLES(DOUBLE,
+				"List<Double>");
 
 		Type	sub;
 		String	toString;
@@ -40,15 +41,19 @@ public class Attrs implements Map<String,String> {
 	 * ’List<’ scalar ’>’
 	 * </pre>
 	 */
-	static String							EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
-	static String							SCALAR		= "String|Version|Long|Double";
-	static String							LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
-	public static final Pattern				TYPED		= Pattern.compile("\\s*(" + EXTENDED + ")\\s*:\\s*(" + SCALAR
-																+ "|" + LIST + ")\\s*");
+	static String				EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
+	static String				SCALAR		= "String|Version|Long|Double";
+	static String				LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
+	public static final Pattern	TYPED		= Pattern.compile("\\s*(" + EXTENDED + ")\\s*:\\s*(" + SCALAR + "|" + LIST
+													+ ")\\s*");
 
-	private LinkedHashMap<String,String>	map;
-	private Map<String,Type>				types;
-	static Map<String,String>				EMPTY		= Collections.emptyMap();
+	private Map<String,String>	map;
+	private Map<String,Type>	types;
+	static Map<String,String>	EMPTY		= Collections.emptyMap();
+	public static Attrs			EMPTY_ATTRS	= new Attrs();
+	static {
+		EMPTY_ATTRS.map = Collections.emptyMap();
+	}
 
 	public Attrs(Attrs... attrs) {
 		for (Attrs a : attrs) {
@@ -361,4 +366,5 @@ public class Attrs implements Map<String,String> {
 		result.add(builder.toString());
 		return result;
 	}
+
 }
