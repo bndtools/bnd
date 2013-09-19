@@ -17,8 +17,9 @@ public interface Plugin {
 	 * 
 	 * @param map
 	 *            attributes and directives for this plugin's clause
+	 * @throws Exception 
 	 */
-	void setProperties(Map<String,String> map);
+	void setProperties(Map<String,String> map) throws Exception;
 
 	/**
 	 * Set the current reporter. This is called at init time. This plugin should
