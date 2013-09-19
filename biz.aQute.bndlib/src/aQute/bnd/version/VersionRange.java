@@ -119,4 +119,8 @@ public class VersionRange {
 			f.close();
 		}
 	}
+
+	public static boolean isVersionRange(String stringRange) {
+		return RANGE.matcher(stringRange).matches();
+	}
 }
