@@ -106,7 +106,7 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 		String email = map.get(EMAIL);
 		if (email == null) {
 			Workspace ws = registry.getPlugin(Workspace.class);
-			Settings settings = ws.getSettings();
+			Settings settings = registry.getPlugin(Settings.class);
 			email = settings.getEmail();
 			if (email == null) {
 				error("The bnd authentication URL connection handler has no email set as property, nor have the bnd settings been set");

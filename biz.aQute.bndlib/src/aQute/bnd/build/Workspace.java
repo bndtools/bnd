@@ -409,6 +409,7 @@ public class Workspace extends Processor {
 		try {
 			super.setTypeSpecificPlugins(list);
 			list.add(maven);
+			list.add(settings);
 			if (!isTrue(getProperty(NOBUILDINCACHE))) {
 				list.add(new CachedFileRepo());
 			}
@@ -555,10 +556,6 @@ public class Workspace extends Processor {
 			return args[2];
 
 		return null;
-	}
-
-	public Settings getSettings() {
-		return settings;
 	}
 
 	/**
