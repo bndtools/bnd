@@ -1,6 +1,7 @@
 package aQute.lib.hex;
 
 import java.io.*;
+import java.util.regex.*;
 
 /*
  * Hex converter.
@@ -8,6 +9,8 @@ import java.io.*;
  * TODO Implement string to byte[]
  */
 public class Hex {
+	static Pattern	HEX_P					= Pattern.compile("(?:[0-9a-fA-F][0-9a-fA-Z])+");
+	
 	final static char[]	HEX	= {
 			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 							};
@@ -58,5 +61,9 @@ public class Hex {
 
 	private final static char nibble(int i) {
 		return HEX[i & 0xF];
+	}
+
+	public static boolean isHex(String pub) {
+		return HEX_P.matcher(pub).matches();
 	}
 }
