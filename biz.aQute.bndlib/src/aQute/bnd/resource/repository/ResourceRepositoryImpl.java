@@ -4,13 +4,15 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.zip.*;
 
-import aQute.bnd.deployer.http.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.service.url.*;
+import aQute.bnd.url.*;
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
@@ -37,20 +39,21 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	private Reporter							reporter		= new ReporterAdapter(System.out);
 	private Executor							executor;
 	private File								indexFile;
-	private URLConnector						connector		= new DefaultURLConnector();
+	private URLConnectionHandler				connector		= new DefaultURLConnectionHandler();
 	final MultiMap<File,DownloadListener>		queues			= new MultiMap<File,RepositoryPlugin.DownloadListener>();
 	final Semaphore								limitDownloads	= new Semaphore(5);
 
 	{
-		((ReporterAdapter)reporter).setTrace(true);
+		((ReporterAdapter) reporter).setTrace(true);
 	}
+
 	/**
 	 * Class maintains the info stored in the text file in the cnf directory
 	 * that holds our contents.
 	 */
 	static public class FileLayout {
 		public int							version;
-		final List<ResourceDescriptorImpl>	descriptors	= new ArrayList<ResourceDescriptorImpl>();
+		public List<ResourceDescriptorImpl>	descriptors	= new ArrayList<ResourceDescriptorImpl>();
 		public int							increment;
 		public long							date;
 
@@ -113,6 +116,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		}
 		return false;
 	}
+
 	/**
 	 * Add a resource descriptor to the index.
 	 */
@@ -320,9 +324,45 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		path.getParentFile().mkdirs();
 		File tmp = IO.createTempFile(path.getParentFile(), "tmp", ".jar");
 		URL u = url.toURL();
-		InputStream in = connector.connect(u);
-		if (in == null)
-			in = u.openStream();
+
+		URLConnection conn = u.openConnection();
+		InputStream in;
+		if (conn instanceof HttpURLConnection) {
+			HttpURLConnection http = (HttpURLConnection) conn;
+			http.setRequestProperty("Accept-Encoding", "deflate");
+			http.setInstanceFollowRedirects(true);
+
+			connector.handle(conn);
+
+			int result = http.getResponseCode();
+			if (result / 100 != 2) {
+				String s = "";
+				InputStream err = http.getErrorStream();
+				try {
+					if (err != null)
+						s = IO.collect(err);
+					if (result == 404) {
+						reporter.trace("not found ");
+						throw new FileNotFoundException("Cannot find " + url + " : " + s);
+					}
+					throw new IOException("Failed request " + result + ":" + http.getResponseMessage() + " " + s);
+				}
+				finally {
+					if (err != null)
+						err.close();
+				}
+			}
+
+			String deflate = http.getHeaderField("Content-Encoding");
+			in = http.getInputStream();
+			if (deflate != null && deflate.toLowerCase().contains("deflate")) {
+				in = new InflaterInputStream(in);
+				reporter.trace("inflate");
+			}
+		} else {
+			connector.handle(conn);
+			in = conn.getInputStream();
+		}
 
 		IO.copy(in, tmp);
 
@@ -345,8 +385,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	private void event(TYPE type, ResourceDescriptor rds, Exception exception) {
 		for (Listener l : listeners) {
 			try {
-				l.events(new ResourceRepositoryEvent(type,rds,exception));
-			} catch( Exception e) {
+				l.events(new ResourceRepositoryEvent(type, rds, exception));
+			}
+			catch (Exception e) {
 				reporter.trace("listener %s throws exception %s", l, e);
 			}
 		}
@@ -354,6 +395,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 	/**
 	 * Sleep function that does not throw {@link InterruptedException}
+	 * 
 	 * @param i
 	 * @return
 	 */
@@ -423,10 +465,23 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		this.executor = executor;
 	}
 
-	public void setURLConnector(URLConnector connector) throws Exception {
+	public void setURLConnector(URLConnectionHandler connector) throws Exception {
 		this.connector = connector;
 	}
 
+	public ResourceDescriptor findBestMatch(String bsn, VersionRange range) throws Exception {
+		SearchableRepository.ResourceDescriptor highest = null;
+		for (SearchableRepository.ResourceDescriptor r : list(null)) {
+			if (!bsn.equals(r.bsn))
+				continue;
 
+			if (!range.includes(r.version))
+				continue;
+
+			if (highest == null || highest.version.compareTo(r.version) < 0)
+				highest = r;
+		}
+		return highest;
+	}
 
 }

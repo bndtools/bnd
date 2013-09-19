@@ -5,6 +5,7 @@ import java.util.*;
 
 import aQute.bnd.service.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.version.*;
 
 /**
  * A Resource Repository represents a repository local to the workspace. A
@@ -58,4 +59,6 @@ public interface ResourceRepository {
 	void addListener(Listener rrl);
 	
 	boolean deleteCache(byte[] id) throws Exception;
+	
+	ResourceDescriptor findBestMatch(String bsn, VersionRange range) throws Exception;
 }
