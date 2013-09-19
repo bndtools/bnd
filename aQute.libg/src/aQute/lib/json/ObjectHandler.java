@@ -100,8 +100,12 @@ public class ObjectHandler extends Handler {
 			if (f != null) {
 				// We have a field and thus a type
 				Object value = r.codec.decode(f.getGenericType(), r);
-				if (value != null || !r.codec.ignorenull)
+				if (value != null || !r.codec.ignorenull) {
+					if ( Modifier.isFinal(f.getModifiers()))
+						throw new IllegalArgumentException("Field " + f + " is final");
+							
 					f.set(targetObject, value);
+				}
 			} else {
 				// No field, but may extra is defined
 				if (extra == null) {
