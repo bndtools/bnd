@@ -19,12 +19,14 @@ public class RunconfigToDistributionTask extends Task {
 	private String			outputDir;
 	private File			bndFile;
 	private boolean			allowSnapshots;
+	private boolean         verbose;
 	private Map<String,Jar>	snapshots;
 
 	@Override
 	public void execute() throws BuildException {
 		try {
 			createReleaseDir();
+
 			Project bndProject = new Project(new Workspace(rootDir), buildProject, bndFile);
 			List<RepositoryPlugin> repositories = bndProject.getPlugins(RepositoryPlugin.class);
 			if (allowSnapshots) {
@@ -40,17 +42,13 @@ public class RunconfigToDistributionTask extends Task {
 					Jar jar = snapshots.get(bsn);
 					jar.write(new File(outputDir, runBundle.getFile().getName()));
 				} else {
-					Version version = null;
-					File foundJar = null;
+					Version version = Version.parseVersion(runBundle.getVersion());
 
+					File foundJar = null;
 					for (RepositoryPlugin repo : repositories) {
-						SortedSet<Version> versions = repo.versions(bsn);
-						if (!versions.isEmpty()) {
-							Version foundVersion = versions.last();
-							if (version == null || foundVersion.compareTo(version) == 1) {
-								version = foundVersion;
-								foundJar = repo.get(bsn, version, null);
-							}
+						foundJar = repo.get(bsn, version, null);
+						if (foundJar != null) {
+							break;
 						}
 					}
 
@@ -74,7 +72,7 @@ public class RunconfigToDistributionTask extends Task {
 							}
 						}
 					} else {
-						log(bsn + " could not be found in any repository");
+						log(bsn + " could not be found in any repository", org.apache.tools.ant.Project.MSG_WARN);
 					}
 				}
 			}
@@ -90,13 +88,13 @@ public class RunconfigToDistributionTask extends Task {
 		File releaseDir = new File(outputDir);
 		boolean deleted = releaseDir.delete();
 		if (deleted) {
-			log("Deleted directory " + outputDir);
+			log("Deleted directory " + outputDir, getLogLevel());
 		}
 
-		boolean created = releaseDir.mkdir();
+		boolean created = releaseDir.mkdirs();
 		if (created) {
-			log("Created directory " + outputDir);
-		} else {
+			log("Created directory " + outputDir, getLogLevel());
+		} else if (!releaseDir.exists() && releaseDir.isDirectory()) {
 			throw new BuildException("Output directory '" + outputDir + "' could not be created");
 		}
 
@@ -115,13 +113,14 @@ public class RunconfigToDistributionTask extends Task {
 					snapshots.put(jar.getBsn(), jar);
 				}
 				catch (Exception e) {
-					log("Error creating a bundle from " + generatedFile.getAbsolutePath());
+					// Probably not a bundle...
+					log("Error creating a bundle from " + generatedFile.getAbsolutePath(), org.apache.tools.ant.Project.MSG_WARN);
 					e.printStackTrace();
 				}
 			}
 		}
 
-		log("Indexed " + snapshots.size() + " snapshots");
+		log("Indexed " + snapshots.size() + " snapshots", getLogLevel());
 		return snapshots;
 	}
 
@@ -133,16 +132,10 @@ public class RunconfigToDistributionTask extends Task {
 		}
 
 		private boolean containsGeneratedFolder(File projectFolder) {
-			if (projectFolder.isDirectory()) {
-				List<File> files = Arrays.asList(projectFolder.listFiles());
-				for (File file : files) {
-					if (file.isDirectory() && file.getName().equals("generated")) {
-						return true;
-					}
-				}
+			if (!projectFolder.isDirectory()) {
+				return false;
 			}
-
-			return false;
+			return new File(projectFolder, "generated").isDirectory();
 		}
 	}
 
@@ -174,4 +167,11 @@ public class RunconfigToDistributionTask extends Task {
 		this.allowSnapshots = allowSnapshots;
 	}
 
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
+	}
+
+	private int getLogLevel() {
+		return this.verbose ? org.apache.tools.ant.Project.MSG_INFO : org.apache.tools.ant.Project.MSG_VERBOSE;
+	}
 }
