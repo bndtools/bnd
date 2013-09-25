@@ -19,16 +19,20 @@ public class RunconfigToDistributionTask extends Task {
 	private String			outputDir;
 	private File			bndFile;
 	private boolean			allowSnapshots;
+	private boolean			verbose;
+	private boolean			cleanOutputDir;
 	private Map<String,Jar>	snapshots;
 
 	@Override
 	public void execute() throws BuildException {
 		try {
-			createReleaseDir();
+			createReleaseDir(outputDir);
+
 			Project bndProject = new Project(new Workspace(rootDir), buildProject, bndFile);
 			List<RepositoryPlugin> repositories = bndProject.getPlugins(RepositoryPlugin.class);
+
 			if (allowSnapshots) {
-				snapshots = indexBundleSnapshots();
+				snapshots = indexBundleSnapshots(rootDir);
 			}
 
 			for (Container runBundle : bndProject.getRunbundles()) {
@@ -40,41 +44,20 @@ public class RunconfigToDistributionTask extends Task {
 					Jar jar = snapshots.get(bsn);
 					jar.write(new File(outputDir, runBundle.getFile().getName()));
 				} else {
-					Version version = null;
-					File foundJar = null;
+					Version version = Version.parseVersion(runBundle.getVersion());
 
+					File foundJar = null;
 					for (RepositoryPlugin repo : repositories) {
-						SortedSet<Version> versions = repo.versions(bsn);
-						if (!versions.isEmpty()) {
-							Version foundVersion = versions.last();
-							if (version == null || foundVersion.compareTo(version) == 1) {
-								version = foundVersion;
-								foundJar = repo.get(bsn, version, null);
-							}
+						foundJar = repo.get(bsn, version, null);
+						if (foundJar != null) {
+							break;
 						}
 					}
 
 					if (foundJar != null) {
-						File outputFile = new File(outputDir, foundJar.getName());
-						FileChannel source = null;
-						FileChannel destination = null;
-
-						try {
-							source = new FileInputStream(foundJar).getChannel();
-							destination = new FileOutputStream(outputFile).getChannel();
-							destination.transferFrom(source, 0, source.size());
-						}
-						finally {
-							if (source != null) {
-								source.close();
-							}
-
-							if (destination != null) {
-								destination.close();
-							}
-						}
+						copyJar(outputDir, foundJar);
 					} else {
-						log(bsn + " could not be found in any repository");
+						log(bsn + " could not be found in any repository", org.apache.tools.ant.Project.MSG_WARN);
 					}
 				}
 			}
@@ -86,26 +69,24 @@ public class RunconfigToDistributionTask extends Task {
 		}
 	}
 
-	private File createReleaseDir() {
-		File releaseDir = new File(outputDir);
-		boolean deleted = releaseDir.delete();
-		if (deleted) {
-			log("Deleted directory " + outputDir);
+	private File createReleaseDir(String dir) {
+		File releaseDir = new File(dir);
+		if (cleanOutputDir && cleanRecursive(releaseDir)) {
+			log("Deleted directory " + outputDir, getLogLevel());
 		}
 
-		boolean created = releaseDir.mkdir();
-		if (created) {
-			log("Created directory " + outputDir);
-		} else {
+		if (releaseDir.mkdirs()) {
+			log("Created directory " + dir, getLogLevel());
+		} else if (!releaseDir.exists() && releaseDir.isDirectory()) {
 			throw new BuildException("Output directory '" + outputDir + "' could not be created");
 		}
 
 		return releaseDir;
 	}
 
-	private Map<String,Jar> indexBundleSnapshots() {
+	private Map<String,Jar> indexBundleSnapshots(File dir) {
 		Map<String,Jar> snapshots = new HashMap<String,Jar>();
-		File[] projectFolders = rootDir.listFiles(new NonTestProjectFileFilter());
+		File[] projectFolders = dir.listFiles(new NonTestProjectFileFilter());
 		for (File projectFolder : projectFolders) {
 			File[] generatedFiles = new File(projectFolder, "generated").listFiles(new JarFileFilter());
 			for (File generatedFile : generatedFiles) {
@@ -115,13 +96,15 @@ public class RunconfigToDistributionTask extends Task {
 					snapshots.put(jar.getBsn(), jar);
 				}
 				catch (Exception e) {
-					log("Error creating a bundle from " + generatedFile.getAbsolutePath());
+					// Probably not a bundle...
+					log("Error creating a bundle from " + generatedFile.getAbsolutePath(),
+							org.apache.tools.ant.Project.MSG_WARN);
 					e.printStackTrace();
 				}
 			}
 		}
 
-		log("Indexed " + snapshots.size() + " snapshots");
+		log("Indexed " + snapshots.size() + " snapshots", getLogLevel());
 		return snapshots;
 	}
 
@@ -133,16 +116,10 @@ public class RunconfigToDistributionTask extends Task {
 		}
 
 		private boolean containsGeneratedFolder(File projectFolder) {
-			if (projectFolder.isDirectory()) {
-				List<File> files = Arrays.asList(projectFolder.listFiles());
-				for (File file : files) {
-					if (file.isDirectory() && file.getName().equals("generated")) {
-						return true;
-					}
-				}
+			if (!projectFolder.isDirectory()) {
+				return false;
 			}
-
-			return false;
+			return new File(projectFolder, "generated").isDirectory();
 		}
 	}
 
@@ -174,4 +151,46 @@ public class RunconfigToDistributionTask extends Task {
 		this.allowSnapshots = allowSnapshots;
 	}
 
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
+	}
+	
+	public void setCleanOutputDir(boolean cleanOutputDir) {
+		this.cleanOutputDir = cleanOutputDir;
+	}
+	
+	private boolean cleanRecursive(File dir) {
+		boolean result = true;
+		if (dir.isDirectory()) {
+			for (File file : dir.listFiles()) {
+				result &= cleanRecursive(file);
+			}
+		}
+		return result && dir.delete();
+	}
+
+	private void copyJar(String dir, File foundJar) throws FileNotFoundException, IOException {
+		File outputFile = new File(dir, foundJar.getName());
+		FileChannel source = null;
+		FileChannel destination = null;
+
+		try {
+			source = new FileInputStream(foundJar).getChannel();
+			destination = new FileOutputStream(outputFile).getChannel();
+			destination.transferFrom(source, 0, source.size());
+		}
+		finally {
+			if (source != null) {
+				source.close();
+			}
+
+			if (destination != null) {
+				destination.close();
+			}
+		}
+	}
+
+	private int getLogLevel() {
+		return this.verbose ? org.apache.tools.ant.Project.MSG_INFO : org.apache.tools.ant.Project.MSG_VERBOSE;
+	}
 }
