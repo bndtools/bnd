@@ -402,8 +402,8 @@ public class Syntax implements Constants {
 					+ "=org.eclipse.osgi;version=3.5", null, null, path_version),
 			new Syntax(
 					RUNVM,
-					"Additional arguments for the VM invokation. Keys that start with a - are added as options, otherwise they are treated as -D properties for the VM.",
-					RUNVM + "=-Xmax=30", null, null),
+					"Additional arguments for the VM invocation. Keys that start with a - are added as options, otherwise they are treated as -D properties for the VM.",
+					RUNVM + "=-Xmax=30, secondOption=secondValue", null, null),
 			new Syntax(RUNPROGRAMARGS, "Additional arguments for the program invokation.", RUNPROGRAMARGS
 					+ "=/some/file /another/file some_argument", null, null),
 			new Syntax(PACKAGE, "Defines the options for packaging", PACKAGE + "=" + PACKAGE_JPM, null, null)
