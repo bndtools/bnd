@@ -4,7 +4,7 @@
 	<extensionContent id="bndtools.core" name="Bndtools"
 		style="css/whatsnew.css" alt-style="css/whatsnew.properties" path="whatsnew/@">
 		<group id="content-group" style-id="content-group">
-			<link label="Bndtools" url="http://bndtools.org/whatsnew.html" id="bndtools-noteworthy" style-id="content-link">
+			<link label="Bndtools" url="http://bndtools.org/whatsnew2-2-0.html" id="bndtools-noteworthy" style-id="content-link">
 				<text>
 					Find out what's new in Bndtools!
 				</text>
