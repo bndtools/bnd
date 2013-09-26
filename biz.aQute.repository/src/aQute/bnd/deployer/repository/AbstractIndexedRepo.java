@@ -548,7 +548,11 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 		CachingUriResourceHandle handle;
 		try {
-			handle = new CachingUriResourceHandle(getContentUrl(resource), getCacheDirectory(), getConnector(), getContentSha(resource));
+			String contentSha = getContentSha(resource);
+			handle = new CachingUriResourceHandle(getContentUrl(resource), getCacheDirectory(), getConnector(), contentSha);
+			if (contentSha == null) {
+				handle.sha = handle.getCachedSHA();
+			}
 		}
 		catch (FileNotFoundException e) {
 			throw new FileNotFoundException("Broken link in repository index: " + e.getMessage());

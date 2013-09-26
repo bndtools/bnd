@@ -60,7 +60,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 
 	// The resolved, absolute URL of the resource
 	final URL			url;
-	final String		sha;
+	String		sha;
 
 	// The local file, if the resource IS a file, otherwise null.
 	final File			localFile;
@@ -74,20 +74,10 @@ public class CachingUriResourceHandle implements ResourceHandle {
 
 	Reporter			reporter;
 
-	@Deprecated
-	public CachingUriResourceHandle(URI uri, File cacheDir, URLConnector connector, CachingMode mode) throws IOException {
-		this(uri, cacheDir, connector, mode, null);
-	}
-
 	public CachingUriResourceHandle(URI uri, final File cacheDir, URLConnector connector, String sha) throws IOException {
-		this(uri, cacheDir, connector, CachingMode.PreferRemote, sha);
-	}
-	
-	@Deprecated
-	public CachingUriResourceHandle(URI uri, final File cacheDir, URLConnector connector, CachingMode mode, String sha) throws IOException {
 		this.cacheDir = cacheDir;
 		this.connector = connector;
-		this.mode = mode;
+		this.mode = CachingMode.PreferRemote;
 		this.sha = sha;
 
 		if (!uri.isAbsolute())
@@ -183,16 +173,10 @@ public class CachingUriResourceHandle implements ResourceHandle {
 
 		// Check whether the cached copy exist and has the right SHA.
 		boolean cacheExists = cachedFile.isFile();
-		boolean cacheValidated;
-		if (cacheExists) {
-			if (sha == null)
-				cacheValidated = false;
-			else {
-				String cachedSHA = getCachedSHA();
-				cacheValidated = sha.equalsIgnoreCase(cachedSHA);
-			}
-		} else {
-			cacheValidated = false;
+		boolean cacheValidated = false;
+		if (cacheExists && sha != null) {
+			String cachedSHA = getCachedSHA();
+			cacheValidated = sha.equalsIgnoreCase(cachedSHA);
 		}
 
 		if (cacheValidated)
@@ -290,12 +274,17 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		String content = readSHAFile();
 		if (content == null) {
 			content = calculateSHA(cachedFile);
-			saveSHAFile(content);
+			if (content != null) {
+				saveSHAFile(content);
+			}
 		}
 		return content;
 	}
 	
 	static String calculateSHA(File file) throws IOException {
+		if (file == null || !file.exists()) {
+			return null;
+		}
 		MessageDigest digest;
 		byte[] buf = new byte[1024];
 		
