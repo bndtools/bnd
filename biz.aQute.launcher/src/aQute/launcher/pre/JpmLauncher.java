@@ -35,7 +35,7 @@ public class JpmLauncher {
 				+ "on https://www.jpm4j.org");
 	}
 
-	private static void installjpm() throws IOException {
+	 static void installjpm() throws IOException {
 		Process exec = Runtime.getRuntime().exec("jpm version");
 		String version = collect( exec.getInputStream());
 		if ( exec.exitValue() == -1 ) {
