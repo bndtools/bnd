@@ -58,6 +58,5 @@ Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
 Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com
 Bundle-SCM: git@github.com:bndtools/bnd.git
 
--releaserepo:  Main
 -baselinerepo: Main
 -baseline: *
