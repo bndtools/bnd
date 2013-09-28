@@ -11,3 +11,4 @@
 
 -runtrace: true
 
+Bundle-Version: 2.3.0.${tstamp}

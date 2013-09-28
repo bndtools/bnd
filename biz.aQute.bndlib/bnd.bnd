@@ -47,7 +47,7 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 	osgi.r5;version=1.0.1,\
 	ee.j2se;version=${javac.ee}
 
-Bundle-Version: 2.2.0.${tstamp;yyyyMMdd-HHmmss}
+Bundle-Version: 2.3.0.${tstamp;yyyyMMdd-HHmmss}
 Import-Package: junit.framework;resolution:=optional,\
 	org.osgi.resource;resolution:=optional,\
 	org.osgi.framework;version='[1.5,2)',\
@@ -57,3 +57,7 @@ Bundle-Icon: img/bnd-64.png;size=64
 Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
 Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com
 Bundle-SCM: git@github.com:bndtools/bnd.git
+
+-releaserepo:  Main
+-baselinerepo: Main
+-baseline: *
