@@ -54,6 +54,9 @@
        <Package name="aQute.bnd.differ" />
      </Match>
      <Match>
+       <Package name="aQute.bnd.ext.test" />
+     </Match>
+     <Match>
        <Package name="aQute.bnd.filerepo" />
      </Match>
      <Match>
@@ -102,6 +105,9 @@
        <Package name="aQute.bnd.properties" />
      </Match>
      <Match>
+       <Package name="aQute.bnd.resource.repository" />
+     </Match>
+     <Match>
        <Package name="aQute.bnd.service" />
      </Match>
      <Match>
@@ -109,6 +115,9 @@
      </Match>
      <Match>
        <Package name="aQute.bnd.service.diff" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.service.extension" />
      </Match>
      <Match>
        <Package name="aQute.bnd.service.progress" />
@@ -127,6 +136,9 @@
      </Match>
      <Match>
        <Package name="aQute.bnd.test" />
+     </Match>
+     <Match>
+       <Package name="aQute.bnd.url" />
      </Match>
      <Match>
        <Package name="aQute.bnd.version" />
@@ -178,6 +190,9 @@
      </Match>
      <Match>
        <Package name="aQute.launcher.plugin" />
+     </Match>
+     <Match>
+       <Package name="aQute.launcher.pre" />
      </Match>
      <Match>
        <Package name="aQute.lib.base64" />
@@ -441,9 +456,6 @@
        <Package name="test.metatype" />
      </Match>
      <Match>
-       <Package name="test.obr" />
-     </Match>
-     <Match>
        <Package name="test.packageinfo" />
      </Match>
      <Match>
@@ -457,9 +469,6 @@
      </Match>
      <Match>
        <Package name="test.properties" />
-     </Match>
-     <Match>
-       <Package name="test.r5repository" />
      </Match>
      <Match>
        <Package name="test.refer" />
