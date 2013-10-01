@@ -891,10 +891,10 @@ public class bnd extends Processor {
 				project = new Project(ws, getBase(), file);
 				project.setProperty(PROFILE, profile);
 				project.use(this);
-				if ( opts.jpm()) {
+				if (opts.jpm()) {
 					project.setProperty(Constants.PACKAGE, Constants.PACKAGE_JPM);
 				}
-				
+
 				try {
 					Jar jar = project.pack(profile);
 					path = path.replaceAll(".bnd(run)?$", "") + ".jar";
@@ -1514,13 +1514,40 @@ public class bnd extends Processor {
 			table.add("Workspace", project.getWorkspace().toString());
 			table.addAll("Plugins", project.getPlugins(Object.class));
 			table.addAll("Repos", project.getWorkspace().getRepositories());
+			table.add("Base", project.getBase());
 			printxref(table, "|");
+
+			table.clear();
+
+			table.addAll("All Source Path", project.getAllsourcepath());
+			table.addAll("Boot Class Path", project.getBootclasspath());
+			table.addAll("Build Path", project.getBuildpath());
+			table.addAll("Deliverables", project.getDeliverables());
+			table.addAll("Depends On", project.getDependson());
+			table.addAll("Run Path", project.getRunpath());
+			table.addAll("Test Path", project.getTestpath());
+			table.addAll("Source Path", project.getSourcePath());
+			table.addAll("Run Program Args", project.getRunProgramArgs());
+			table.addAll("Run VM", project.getRunVM());
+			if (project.getIncluded() != null)
+				table.addAll("Included Files", project.getIncluded());
+			table.addAll("Run Bundles", project.getRunbundles());
+			printxref(table, "|");
+
+			if (project.getSubBuilders() != null)
+				for (Builder sub : project.getSubBuilders()) {
+					table.clear();
+					out.printf("Sub: %s-%s\n", sub.getBsn(), sub.getVersion());
+					if (sub.getIncluded() != null)
+						table.addAll("Included Files", sub.getIncluded());
+					printxref(table, "|");
+				}
 		} else
 			err.println("No project");
 
 		target = this;
 
-		MultiMap<String,String> table = new MultiMap<String,String>();
+		MultiMap<String,Object> table = new MultiMap<String,Object>();
 
 		for (Iterator<String> i = target.iterator(); i.hasNext();) {
 			String key = i.next();
@@ -1528,7 +1555,6 @@ public class bnd extends Processor {
 			Collection<String> set = split(s);
 			table.addAll(key, set);
 		}
-		printxref(table, "|");
 
 	}
 
@@ -2914,7 +2940,7 @@ public class bnd extends Processor {
 
 		@Description("Specify the algorithms")
 		List<Alg> algorithm();
-		
+
 	}
 
 	@Description("Digests a number of files")
@@ -2944,8 +2970,8 @@ public class bnd extends Processor {
 						case MD5 :
 							digest = MD5.digest(f).digest();
 							break;
-							
-						case TIMELESS:
+
+						case TIMELESS :
 							Jar j = new Jar(f);
 							digest = j.getTimelessDigest();
 							break;
@@ -2998,33 +3024,34 @@ public class bnd extends Processor {
 		mc.run(options._().toArray(new String[0]), 1);
 		getInfo(mc);
 	}
-	
+
 	@Description("Generate autocompletion file for bash")
 	public void _generate(Options options) throws Exception {
 		File tmp = File.createTempFile("bnd-completion", ".tmp");
 		tmp.deleteOnExit();
-		
+
 		try {
 			IO.copy(getClass().getResource("bnd-completion.bash"), tmp);
-			
+
 			Sed sed = new Sed(tmp);
 			sed.setBackup(false);
-			
+
 			Reporter r = new ReporterAdapter();
 			CommandLine c = new CommandLine(r);
 			Map<String,Method> commands = c.getCommands(this);
 			StringBuilder sb = new StringBuilder();
-			for(String commandName : commands.keySet()) {
-				sb.append(" "+commandName);
+			for (String commandName : commands.keySet()) {
+				sb.append(" " + commandName);
 			}
 			sb.append(" help");
-			
+
 			sed.replace("%listCommands%", sb.toString().substring(1));
 			sed.doIt();
 			IO.copy(tmp, out);
-		} finally {
+		}
+		finally {
 			tmp.delete();
 		}
 	}
-	
+
 }
