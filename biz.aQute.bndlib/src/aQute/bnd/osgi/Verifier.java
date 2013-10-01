@@ -69,6 +69,7 @@ public class Verifier extends Processor {
 			new EE("JavaSE-1.6", V1_6, V1_6), //
 			new EE("PersonalJava-1.1", V1_1, V1_1), //
 			new EE("JavaSE-1.7", V1_7, V1_7), //
+			new EE("JavaSE-1.8", V1_8, V1_8), //
 			new EE("PersonalJava-1.1", V1_1, V1_1), //
 			new EE("PersonalJava-1.2", V1_1, V1_1), new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),
 			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1), new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),
@@ -403,6 +404,7 @@ public class Verifier extends Processor {
 
 		verifyRequirements();
 		verifyCapabilities();
+		verifyMetaPersistence();
 	}
 
 	/**
@@ -1093,5 +1095,23 @@ public class Verifier extends Processor {
 
 	public static boolean isVersionRange(String range) {
 		return range != null && VERSIONRANGE_P.matcher(range).matches();
+	}
+	
+	/**
+	 * Verify the Meta-Persistence header
+	 * @throws Exception 
+	 */
+	
+	public void verifyMetaPersistence() throws Exception {
+		List<String> list = new ArrayList<String>();
+		for( String location : OSGiHeader.parseHeader(dot.getManifest().getMainAttributes().getValue("Meta-Persistence")).keySet()) {
+			Resource resource = dot.getResource(location);
+			if ( resource == null)
+				list.add(location);
+		}
+		if ( list.isEmpty())
+			return;
+		
+		error("Meta-Persistence refers to resources not in the bundle: %s", list).header("Meta-Persistence");
 	}
 }
