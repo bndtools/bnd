@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
+import aQute.bnd.build.*;
 import aQute.bnd.build.model.*;
 import aQute.bnd.properties.*;
 import aQute.lib.io.*;

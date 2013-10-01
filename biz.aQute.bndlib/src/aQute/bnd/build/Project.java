@@ -701,6 +701,24 @@ public class Project extends Processor {
 	public String _p_bootclasspath(String args[]) throws Exception {
 		return list(args, getBootclasspath());
 	}
+	
+	public String getPropertyRawValue(String propertyName) {
+		return getProperties().getProperty(propertyName);
+	}
+	
+	/**
+	 * Use ${p-rawvalue;<variable>} in .bnd file to obtain the raw property from the project model.
+	 * @param args arg1 = method name, arg2 = variable name
+	 * @return Raw value of a project property. 
+	 * @throws Exception If illegal arguments.
+	 */
+	public String _p_rawvalue(String args[]) throws Exception {
+		if (args.length != 2) {
+			throw new IllegalArgumentException("${" + args[0] + ";<variable>} has wrong arguments: "
+					+ Arrays.toString(args));
+		}
+		return getPropertyRawValue(args[1]);
+	}
 
 	public String _p_output(String args[]) throws Exception {
 		if (args.length != 1)
