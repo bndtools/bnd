@@ -49,7 +49,11 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public static final String									REPO_TYPE_R5					= R5RepoContentProvider.NAME;
 	public static final String									REPO_TYPE_OBR					= ObrContentProvider.NAME;
 	public static final String									REPO_INDEX_SHA_EXTENSION		= ".sha";
+	public static final String									PROP_CACHE_TIMEOUT				= "timeout";
+	
+	private final static int DEFAULT_CACHE_TIMEOUT = 5;
 
+	
 	private static final int									READ_AHEAD_MAX					= 5 * 1024 * 1024;
 
 	private final BundleIndexer								obrIndexer						= new BundleIndexerImpl();
@@ -70,6 +74,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	private final CapabilityIndex							capabilityIndex					= new CapabilityIndex();
 	private final Map<String,SortedMap<Version,Resource>>	bsnMap							= new HashMap<String,SortedMap<Version,Resource>>();
+	private int cacheTimeoutSeconds = DEFAULT_CACHE_TIMEOUT;
 
 	protected AbstractIndexedRepo() {
 		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
@@ -174,6 +179,10 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			for (URI indexLocation : indexLocations) {
 				try {
 					CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null);
+					if (indexHandle.cachedFile != null && System.currentTimeMillis() - indexHandle.cachedFile.lastModified() < this.cacheTimeoutSeconds * 1000) {
+						// Within cache timeout, skipping download
+						indexHandle.sha = indexHandle.getCachedSHA();
+					}
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
 					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
@@ -234,6 +243,15 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 						error("Unknown OBR resolution mode: " + token);
 					}
 				}
+			}
+		}
+		
+		if (map.containsKey(PROP_CACHE_TIMEOUT)) {
+			try {
+				this.cacheTimeoutSeconds = Integer.parseInt(map.get(PROP_CACHE_TIMEOUT));
+			}
+			catch (NumberFormatException e) {
+				error("Bad timeout setting. Must be integer number of milliseconds.");
 			}
 		}
 
