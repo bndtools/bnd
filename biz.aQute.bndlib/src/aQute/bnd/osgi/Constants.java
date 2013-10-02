@@ -39,6 +39,7 @@ public interface Constants {
 	String							FRAGMENT_HOST								= "Fragment-Host";
 	String							IMPORT_PACKAGE								= "Import-Package";
 	String							IMPORT_SERVICE								= "Import-Service";
+	String							META_PERSISTENCE							= "Meta-Persistence";
 	String							PROVIDE_CAPABILITY							= "Provide-Capability";
 	String							REQUIRE_BUNDLE								= "Require-Bundle";
 	String							REQUIRE_CAPABILITY							= "Require-Capability";
@@ -67,7 +68,7 @@ public interface Constants {
 			BUNDLE_NAME, BUNDLE_NATIVECODE, BUNDLE_REQUIREDEXECUTIONENVIRONMENT, BUNDLE_SYMBOLICNAME, BUNDLE_VERSION,
 			FRAGMENT_HOST, PRIVATE_PACKAGE, IGNORE_PACKAGE, INCLUDE_RESOURCE, REQUIRE_BUNDLE, IMPORT_SERVICE,
 			EXPORT_SERVICE, CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES, SIGNATURE_TEST, REQUIRE_CAPABILITY,
-			PROVIDE_CAPABILITY, BUNDLE_ICON, REPOSITORIES
+			PROVIDE_CAPABILITY, BUNDLE_ICON, REPOSITORIES, META_PERSISTENCE
 																				};
 
 	String							BASELINE									= "-baseline";
