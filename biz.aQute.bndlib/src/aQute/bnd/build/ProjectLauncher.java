@@ -82,7 +82,7 @@ public abstract class ProjectLauncher {
 			if (file != null && (file.isFile() || file.isDirectory())) {
 				runbundles.add(file.getAbsolutePath());
 			} else {
-				warning("Bundle file \"%s\" does not exist", file);
+				error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
 			}
 		}
 
