@@ -139,13 +139,13 @@ public class bnd extends Processor {
 			return;
 		}
 
-		Project project = getProject();
-		if (project != null) {
-			Action a = project.getActions().get(arg);
-			if (a != null) {
-				args.add(0, "project");
-			}
-		}
+//		Project project = getProject();
+//		if (project != null) {
+//			Action a = project.getActions().get(arg);
+//			if (a != null) {
+//				args.add(0, "project");
+//			}
+//		}
 
 		m = COMMAND.matcher(args.get(0));
 		if (!m.matches()) {
@@ -693,6 +693,9 @@ public class bnd extends Processor {
 	interface testOptions extends Options {
 		@Description("Path to another project than the current project")
 		String project();
+
+		@Description("Verify all the dependencies before launching (runpath, runbundles, testpath)")
+		boolean verify();
 	}
 
 	@Description("Test a project according to an OSGi test")
@@ -702,13 +705,33 @@ public class bnd extends Processor {
 			messages.NoProject();
 			return;
 		}
+
+		if (!verifyDependencies(project, opts.verify(), true))
+			return;
 		project.test();
+		getInfo(project);
+	}
+
+	private boolean verifyDependencies(Project project, boolean implies, boolean test) throws Exception {
+		if (!implies) {
+			return true;
+		}
+
+		project.verifyDependencies(test);
+		getInfo(project);
+		if (isOk()) 
+			return true;
+
+		return false;
 	}
 
 	@Description("Run a project in the OSGi launcher")
 	interface runOptions extends Options {
 		@Description("Path to another project than the current project")
 		String project();
+
+		@Description("Verify all the dependencies before launching (runpath, runbundles)")
+		boolean verify();
 	}
 
 	@Description("Run a project in the OSGi launcher")
@@ -718,7 +741,11 @@ public class bnd extends Processor {
 			messages.NoProject();
 			return;
 		}
+		if (!verifyDependencies(project, opts.verify(), true))
+			return;
+
 		project.run();
+		getInfo(project);
 	}
 
 	@Description("Clean a project")
@@ -735,6 +762,7 @@ public class bnd extends Processor {
 			return;
 		}
 		project.clean();
+		getInfo(project);
 	}
 
 	@Description("Access the internal bnd database of keywords and options")

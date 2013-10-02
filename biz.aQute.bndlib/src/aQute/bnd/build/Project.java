@@ -20,6 +20,7 @@ import aQute.bnd.service.action.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
+import aQute.lib.strings.*;
 import aQute.libg.generics.*;
 import aQute.libg.reporter.*;
 import aQute.libg.sed.*;
@@ -460,10 +461,11 @@ public class Project extends Processor {
 					for (Container cc : libs) {
 						if (result.contains(cc))
 							warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
-						else if (cc.getError() != null)
-							warning("Cannot find %s in %s from %s due to %s", cc, spec, source, cc.getError());
-						else
+						else {
+							if (cc.getError() != null)
+								warning("Cannot find %s", cc);
 							result.add(cc);
+						}
 					}
 				} else {
 					// Oops, not a bundle in sight :-(
@@ -1117,7 +1119,8 @@ public class Project extends Processor {
 		for (String bsn : parts) {
 			Container container = getBundle(bsn, version, strategy, null);
 			if (container.getError() != null) {
-				error("${repo} macro refers to an artifact %s-%s (%s) that has an error: %s", bsn, version, strategy, container.getError());
+				error("${repo} macro refers to an artifact %s-%s (%s) that has an error: %s", bsn, version, strategy,
+						container.getError());
 			} else
 				add(paths, container);
 		}
@@ -2222,6 +2225,38 @@ public class Project extends Processor {
 			getInfo(ppb);
 		}
 		getInfo(b);
+	}
+
+	/**
+	 * Method to verify that the paths are correct, ie no missing dependencies
+	 * 
+	 * @param test
+	 *            for test cases, also adds -testpath
+	 * @throws Exception
+	 */
+	public void verifyDependencies(boolean test) throws Exception {
+		verifyDependencies(RUNBUNDLES, getRunbundles());
+		verifyDependencies(RUNPATH, getRunpath());
+		if (test)
+			verifyDependencies(TESTPATH, getTestpath());
+		verifyDependencies(BUILDPATH, getBuildpath());
+	}
+
+	private void verifyDependencies(String title, Collection<Container> path) throws Exception {
+		List<String> msgs = new ArrayList<String>();
+		for (Container c : new ArrayList<Container>(path)) {
+			for (Container cc : c.getMembers()) {
+				if (cc.getError() != null)
+					msgs.add(cc + " - " + cc.getError());
+				else if (!cc.getFile().isFile() && !cc.getFile().equals(cc.getProject().getOutput())
+						&& !cc.getFile().equals(cc.getProject().getTestOutput()))
+					msgs.add(cc + " file does not exists: " + cc.getFile());
+			}
+		}
+		if (msgs.isEmpty())
+			return;
+
+		error("%s: has errors: %s", title, Strings.join(msgs));
 	}
 
 }
