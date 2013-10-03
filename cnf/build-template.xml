@@ -36,6 +36,7 @@
         <dirname property="projectdir" file="${ant.file}" />
         <dirname property="workspacedir" file="${projectdir}" />
         <property file="${workspacedir}/cnf/build.properties"/>
+    	<mkdir dir="${workspacedir}/cnf/cache"/>
 
 		<!-- Define where we store bnd -->
 		<property name="bnd.location" value="${workspacedir}/cnf/cache/biz.aQute.bnd-${bnd.version}.jar" />
