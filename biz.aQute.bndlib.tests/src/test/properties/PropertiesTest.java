@@ -12,8 +12,8 @@ public class PropertiesTest extends TestCase {
 
 	public static void testBndEditModel() throws Exception {
 		
-		Document doc = new Document("Bundle-Description:\tTest\n" +
-									"Bundle-SymbolicName:\ttest.properties\n" +
+		Document doc = new Document("# Hello\nBundle-Description:\tTest \u2649\n" +
+									"\n\nBundle-SymbolicName:\ttest.properties\n" +
 									"Private-Package:\tpp1\n");
 		
 		
@@ -27,11 +27,12 @@ public class PropertiesTest extends TestCase {
 		model.setBundleVersion("1.0.0");
 		model.setBundleVersion("1.1.0");
 		
-		model.saveChangesTo(doc);
+		System.out.println(doc.get());
 		
 		File file = File.createTempFile("test", ".properties");
-		IO.store(doc.get(), file, "ISO-8859-1");
+		IO.copy(model.toAsciiStream(doc), file);
 
+		
 		model = new BndEditModel();
 		model.loadFrom(file);
 		
@@ -49,5 +50,8 @@ public class PropertiesTest extends TestCase {
 			assertTrue(privatePackages.remove(pkg));
 		}
 		assertEquals(0, privatePackages.size());
+
+		String desc = props.getProperty("Bundle-Description");
+		assertEquals(desc,"Test \u2649");
 	}
 }
