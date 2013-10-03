@@ -14,6 +14,7 @@ import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.properties.*;
 import aQute.bnd.version.*;
+import aQute.lib.io.*;
 import aQute.libg.tuple.*;
 
 /**
@@ -256,12 +257,34 @@ public class BndEditModel {
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
-		InputStream inputStream = new ByteArrayInputStream(document.get().getBytes(ISO_8859_1));
-		loadFrom(inputStream);
+		InputStream	in = toEscaped(document.get());
+		loadFrom(in);
+	}
+	
+	public InputStream toEscaped(String text) throws IOException {
+		StringReader unicode = new StringReader(text);
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		
+		while ( true) {
+			int c = unicode.read();
+			if ( c < 0)
+				break;
+			if ( c >= 0x7F)
+				bout.write(String.format("\\u%04X",c).getBytes());
+			else
+				bout.write((char)c);
+		}
+		
+		return new ByteArrayInputStream(bout.toByteArray());
+	}
+	
+	public InputStream toAsciiStream(IDocument doc) throws IOException {
+		saveChangesTo(doc);
+		return toEscaped(doc.get());
 	}
 
 	public void loadFrom(File file) throws IOException {
-		loadFrom(new BufferedInputStream(new FileInputStream(file)));
+		loadFrom(IO.stream(file));
 	}
 
 	public void loadFrom(InputStream inputStream) throws IOException {
@@ -314,7 +337,7 @@ public class BndEditModel {
 		String newEntry;
 		if (value != null) {
 			StringBuilder buffer = new StringBuilder();
-			buffer.append(name).append(": ").append(value);
+			buffer.append(name).append(":").append(value);
 			newEntry = buffer.toString();
 		} else {
 			newEntry = "";
@@ -873,4 +896,9 @@ public class BndEditModel {
 		includeResource.add(resource);
 		setIncludeResource(includeResource);
 	}
+	
+	
+	/**
+	 * Save a document to 
+	 */
 }
