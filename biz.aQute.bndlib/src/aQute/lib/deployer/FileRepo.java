@@ -179,9 +179,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 */
 	static final PutOptions		DEFAULTOPTIONS		= new PutOptions();
 
-	public static final int	MAX_MAJOR	= 999999999;
+	public static final int		MAX_MAJOR			= 999999999;
 
-	
 	String						shell;
 	String						path;
 	String						init;
@@ -198,7 +197,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File				root;
 	Registry					registry;
 	boolean						canWrite			= true;
-	Pattern						REPO_FILE			= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+|latest)\\.(jar|lib)");
+	Pattern						REPO_FILE			= Pattern
+															.compile("(?:([-a-zA-z0-9_\\.]+)-)([0-9\\.]+|latest)\\.(jar|lib)");
 	Reporter					reporter;
 	boolean						dirty;
 	String						name;
@@ -605,19 +605,28 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File getLocal(String bsn, Version version, Map<String,String> properties) {
 		File dir = new File(root, bsn);
 
-		if ( version.getMajor() == MAX_MAJOR && version.getMinor()== 0 && version.getMicro() == 0 && version.getQualifier() == null) {
+		if (version.getMajor() == MAX_MAJOR && version.getMinor() == 0 && version.getMicro() == 0
+				&& version.getQualifier() == null) {
 			File fjar = new File(dir, bsn + "-latest.jar");
 			if (fjar.isFile())
 				return fjar.getAbsoluteFile();
 		}
-		
+
 		File fjar = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".jar");
 		if (fjar.isFile())
 			return fjar.getAbsoluteFile();
 
+		File sfjar = new File(dir, version.getWithoutQualifier() + ".jar");
+		if (sfjar.isFile())
+			return sfjar.getAbsoluteFile();
+
 		File flib = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".lib");
 		if (flib.isFile())
 			return flib.getAbsoluteFile();
+
+		File sflib = new File(dir, version.getWithoutQualifier() + ".lib");
+		if (sflib.isFile())
+			return sflib.getAbsoluteFile();
 
 		return fjar.getAbsoluteFile();
 	}
@@ -630,8 +639,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (file.getName().endsWith(".lib")) {
 			sb.append(del).append("L");
 			del = "";
-		}
-		if (!file.getName().endsWith(".jar")) {
+		} else if (!file.getName().endsWith(".jar")) {
 			sb.append(del).append("?");
 			del = "";
 		}
@@ -804,8 +812,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			else
 				IO.delete(f);
 		}
-		if ( versions(bsn).isEmpty())
-			IO.delete( new File(root,bsn));
+		if (versions(bsn).isEmpty())
+			IO.delete(new File(root, bsn));
 	}
 
 }
