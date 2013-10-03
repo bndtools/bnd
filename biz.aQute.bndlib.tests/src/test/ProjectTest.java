@@ -157,6 +157,7 @@ public class ProjectTest extends TestCase {
 	public static void testRunbundleDuplicates() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project top = ws.getProject("p1");
+		top.setPedantic(true);
 		top.clear();
 		top.setProperty("-runbundles", "org.apache.felix.configadmin,org.apache.felix.configadmin");
 		Collection<Container> runbundles = top.getRunbundles();
@@ -220,7 +221,7 @@ public class ProjectTest extends TestCase {
 	public static void testMultipleRepos() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("testresources/ws"));
 		Project project = ws.getProject("p1");
-
+		project.setPedantic(true);
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.EXACT, null));
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.HIGHEST, null));
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.LOWEST, null));
