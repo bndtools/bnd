@@ -1557,6 +1557,7 @@ public class bnd extends Processor {
 			table.addAll("Source Path", project.getSourcePath());
 			table.addAll("Run Program Args", project.getRunProgramArgs());
 			table.addAll("Run VM", project.getRunVM());
+			table.addAll("Run Fw", project.getRunFw());
 			if (project.getIncluded() != null)
 				table.addAll("Included Files", project.getIncluded());
 			table.addAll("Run Bundles", project.getRunbundles());

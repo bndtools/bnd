@@ -44,6 +44,7 @@ public class Project extends Processor {
 	final Collection<Container>	testpath				= new LinkedHashSet<Container>();
 	final Collection<Container>	runpath					= new LinkedHashSet<Container>();
 	final Collection<Container>	runbundles				= new LinkedHashSet<Container>();
+	final Collection<Container>	runfw			= new LinkedHashSet<Container>();
 	File						runstorage;
 	final Collection<File>		sourcepath				= new LinkedHashSet<File>();
 	final Collection<File>		allsourcepath			= new LinkedHashSet<File>();
@@ -392,6 +393,10 @@ public class Project extends Processor {
 		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNBUNDLES), Constants.RUNBUNDLES);
 	}
 
+	private List<Container> parseRunFw() throws Exception {
+		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNFW), Constants.RUNFW);
+	}
+	
 	private List<Container> parseTestpath() throws Exception {
 		return getBundles(Strategy.HIGHEST, getProperty(Constants.TESTPATH), Constants.TESTPATH);
 	}
@@ -594,6 +599,16 @@ public class Project extends Processor {
 		prepare();
 		justInTime(runbundles, parseRunbundles());
 		return runbundles;
+	}
+
+	/**
+	 * Return the run framework
+	 * @throws Exception 
+	 */
+	public Collection<Container> getRunFw() throws Exception {
+		prepare();
+		justInTime(runfw, parseRunFw());
+		return runfw;
 	}
 
 	public File getRunStorage() throws Exception {
