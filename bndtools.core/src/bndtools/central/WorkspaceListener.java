@@ -4,7 +4,8 @@ import java.io.File;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-
+import org.bndtools.utils.Function;
+import org.eclipse.core.runtime.NullProgressMonitor;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
@@ -24,9 +25,18 @@ public final class WorkspaceListener extends BndListener {
     @Override
     public void changed(final File file) {
         try {
-            RefreshFileJob job = new RefreshFileJob(file, true);
+            final RefreshFileJob job = new RefreshFileJob(file, true);
             if (job.needsToSchedule()) {
-                job.schedule();
+                if (!Central.isWorkspaceReady()) {
+                    Central.onWorkspaceInit(new Function<Workspace,Void>() {
+                        public Void run(final Workspace ws) {
+                            job.run(new NullProgressMonitor());
+                            return null;
+                        }
+                    });
+                } else {
+                    job.schedule();
+                }
             }
         } catch (Exception e) {
             logger.logError("Error refreshing workspace", e);
