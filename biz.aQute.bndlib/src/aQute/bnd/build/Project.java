@@ -464,8 +464,10 @@ public class Project extends Processor {
 				if (found != null) {
 					List<Container> libs = found.getMembers();
 					for (Container cc : libs) {
-						if (result.contains(cc))
-							warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
+						if (result.contains(cc)){
+							if ( isPedantic())
+								warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
+						}
 						else {
 							if (cc.getError() != null)
 								warning("Cannot find %s", cc);

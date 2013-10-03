@@ -1158,7 +1158,7 @@ public class bnd extends Processor {
 			if (e == null) {
 				// ignore
 			} else {
-				Set<Object> set = new HashSet<Object>(e);
+				Set<Object> set = new LinkedHashSet<Object>(e);
 				set.remove(element);
 				Iterator< ? > row = set.iterator();
 				String first = "";
@@ -1571,6 +1571,7 @@ public class bnd extends Processor {
 						table.addAll("Included Files", sub.getIncluded());
 					printxref(table, "|");
 				}
+			getInfo(project);
 		} else
 			err.println("No project");
 
