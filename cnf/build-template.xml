@@ -35,10 +35,19 @@
         </tstamp>
         <dirname property="projectdir" file="${ant.file}" />
         <dirname property="workspacedir" file="${projectdir}" />
-
-        <!-- Define the classpath of bnd (location is defined in build.properties) -->
         <property file="${workspacedir}/cnf/build.properties"/>
-        <path id="bnd-classpath" location="${workspacedir}/cnf/${bnd.location}" />
+
+		<!-- Define where we store bnd -->
+		<property name="bnd.location" value="${workspacedir}/cnf/cache/biz.aQute.bnd-${bnd.version}.jar" />
+
+		<!-- Download bnd if it does not exist -->
+		<get src="${bnd.url}" 
+		    dest="${bnd.location}"
+		    verbose="on"
+			skipexisting="true"
+		    usetimestamp="true"/>
+
+        <path id="bnd-classpath" location="${bnd.location}" />
 
         <!-- Load bnd and prepare the workspace -->
         <taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />
