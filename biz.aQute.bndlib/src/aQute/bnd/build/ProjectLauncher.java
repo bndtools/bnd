@@ -102,9 +102,7 @@ public abstract class ProjectLauncher {
 		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
-		List<Container> fws = project.getBundles(Strategy.HIGHEST, project.getProperty(Constants.RUNFW),
-				Constants.RUNFW);
-		runpath.addAll(fws);
+		runpath.addAll(project.getRunFw());
 
 		for (Container c : runpath) {
 			addClasspath(c);
