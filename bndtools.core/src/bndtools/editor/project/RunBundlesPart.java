@@ -24,10 +24,10 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import bndtools.central.Central;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
@@ -57,7 +57,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 
     private void loadBuilders(IProject project) {
         try {
-            Project model = Workspace.getProject(project.getLocation().toFile());
+            Project model = Central.getProject(project.getLocation().toFile());
             if (model != null)
                 projectBuilders.addAll(model.getSubBuilders());
         } catch (Exception e) {

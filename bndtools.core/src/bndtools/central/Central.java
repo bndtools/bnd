@@ -39,7 +39,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.Version;
 
-
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
@@ -107,10 +106,10 @@ public class Central implements IStartupParticipant {
             if (model == null) {
                 File projectDir = project.getProject().getLocation().makeAbsolute().toFile();
                 try {
-                    model = Workspace.getProject(projectDir);
+                    model = getProject(projectDir);
                 } catch (IllegalArgumentException e) {
                     // initialiseWorkspace();
-                    // model = Workspace.getProject(projectDir);
+                    // model = Central.getProject(projectDir);
                     return null;
                 }
                 if (workspace == null) {
@@ -511,5 +510,13 @@ public class Central implements IStartupParticipant {
         } else {
             sourceFolderMap.put(key, sourceFolders);
         }
+    }
+
+    public static Project getProject(File projectDir) throws Exception {
+        File projectDirAbsolute = projectDir.getAbsoluteFile();
+        assert projectDirAbsolute.isDirectory();
+
+        Workspace ws = getWorkspace();
+        return ws.getProject(projectDir.getName());
     }
 }

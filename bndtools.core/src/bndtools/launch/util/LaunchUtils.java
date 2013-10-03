@@ -84,7 +84,7 @@ public final class LaunchUtils {
             if (!project.hasNature(BndtoolsConstants.NATURE_ID))
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("The configured run project \"{0}\"is not a Bnd project.", project.getName()), null));
             try {
-                result = Workspace.getProject(projectDir);
+                result = Central.getProject(projectDir);
             } catch (Exception e) {
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to retrieve Bnd project model for project \"{0}\".", project.getName()), null));
             }

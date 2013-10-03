@@ -505,7 +505,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
             IFile resource = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
             File projectDir = resource.getProject().getLocation().toFile();
             if (Project.BNDFILE.equals(resource.getName())) {
-                project = Workspace.getProject(projectDir);
+                project = Central.getProject(projectDir);
             } else {
                 project = new Project(Central.getWorkspace(), projectDir, resource.getLocation().toFile());
             }

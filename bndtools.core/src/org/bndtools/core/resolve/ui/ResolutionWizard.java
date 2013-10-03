@@ -24,13 +24,13 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.io.IO;
 import bndtools.BndConstants;
+import bndtools.central.Central;
 
 public class ResolutionWizard extends Wizard {
 
@@ -77,7 +77,7 @@ public class ResolutionWizard extends Wizard {
         // Open stream for physical paths list in target dir
         PrintStream pathsStream = null;
         try {
-            Project project = Workspace.getProject(file.getProject().getLocation().toFile());
+            Project project = Central.getProject(file.getProject().getLocation().toFile());
             File targetDir = project.getTarget();
             if (!targetDir.exists() && !targetDir.mkdirs()) {
                 throw new IOException("Could not create directory " + targetDir);

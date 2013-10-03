@@ -26,6 +26,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 
+import bndtools.central.Central;
 import bndtools.release.nl.Messages;
 
 import aQute.bnd.build.Project;
@@ -87,7 +88,7 @@ public class ReleaseAction implements IObjectActionDelegate {
 			File file = iFile.getLocation().toFile();
 			Project project;
 			try {
-				project = Workspace.getProject(file.getParentFile());
+				project = Central.getProject(file.getParentFile());
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}

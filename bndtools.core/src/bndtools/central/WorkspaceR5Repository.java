@@ -51,7 +51,7 @@ public class WorkspaceR5Repository implements Repository {
     void init() throws Exception {
         IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
         for (IProject project : projects) {
-            Project model = Workspace.getProject(project.getLocation().toFile());
+            Project model = Central.getProject(project.getLocation().toFile());
             if (model != null) {
                 File targetDir = getTarget(model);
                 if (targetDir != null) {

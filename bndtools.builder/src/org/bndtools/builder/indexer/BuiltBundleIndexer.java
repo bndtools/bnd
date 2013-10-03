@@ -70,7 +70,7 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
         File indexFile;
         OutputStream output = null;
         try {
-            Project model = Workspace.getProject(project.getLocation().toFile());
+            Project model = Central.getProject(project.getLocation().toFile());
             File target = model.getTarget();
             indexFile = new File(target, INDEX_FILENAME);
 

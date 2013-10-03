@@ -245,7 +245,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
             IPath path = Central.toPath(bndFile);
             IFile resource = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
             File projectDir = resource.getProject().getLocation().toFile();
-            project = Workspace.getProject(projectDir);
+            project = Central.getProject(projectDir);
         } catch (Exception e) {
             logger.logError("Error getting project from editor model", e);
         }
