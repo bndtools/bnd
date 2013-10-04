@@ -12,6 +12,7 @@ import org.apache.tools.ant.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
+import aQute.bnd.osgi.*;
 
 public class PrepareTask extends BaseTask {
 	File	basedir;
@@ -26,7 +27,7 @@ public class PrepareTask extends BaseTask {
 
 			Workspace workspace = Workspace.getWorkspace(basedir.getParentFile());
 			workspace.addBasicPlugin(new ConsoleProgress());
-			
+
 			Project project = workspace.getProject(basedir.getName());
 			if (project == null)
 				throw new BuildException("Unable to find bnd project in directory: " + basedir);
@@ -41,9 +42,13 @@ public class PrepareTask extends BaseTask {
 				project.setProperty("top", top);
 
 			project.setExceptions(true);
+
 			Properties properties = project.getFlattenedProperties();
+
+			checkForTesting(project, properties);
+
 			if (report() || report(workspace) || report(project))
-				throw new BuildException("Errors during Eclipse Path inspection");
+				throw new BuildException("Errors during preparing bnd");
 
 			copyProperties(properties);
 		}
@@ -51,6 +56,23 @@ public class PrepareTask extends BaseTask {
 			e.printStackTrace();
 			throw new BuildException(e);
 		}
+	}
+
+	private void checkForTesting(Project project, Properties properties) throws Exception {
+
+		//
+		// Only run junit when we have a junit dependency on the cp
+		// with "junit" in it.
+		//
+
+		boolean junit = project.getTestSrc().isDirectory() && !Processor.isTrue(project.getProperty(Constants.NOJUNIT));
+		boolean junitOsgi = project.getProperty("Test-Cases") != null
+				&& !Processor.isTrue(project.getProperty(Constants.NOJUNITOSGI));
+
+		if (junit)
+			properties.setProperty("project.junit", "true");
+		if (junitOsgi)
+			properties.setProperty("project.junit.osgi", "true");
 	}
 
 	private void copyProperties(Properties flattened) {
