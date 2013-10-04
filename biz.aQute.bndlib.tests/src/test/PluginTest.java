@@ -18,7 +18,7 @@ public class PluginTest extends TestCase {
 		Builder p = new Builder();
 		p.setProperty("-plugin", "missing;command:=\"-abc,-def\"");
 		/* List<?> plugins = */p.getPlugins(Object.class);
-		assertEquals(0, p.getErrors().size());
+		assertTrue(p.check());
 
 		p.setProperty("-abc", "whatever");
 		p.setProperty("-resourceonly", "true");
@@ -64,7 +64,7 @@ public class PluginTest extends TestCase {
 		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");
 
 		p.getPlugins(Object.class);
-		assertEquals(1, p.getErrors().size());
+		assertTrue(p.check("plugin thinlet.Thinlet"));
 	}
 
 	public static void testLoadPluginWithPath() {

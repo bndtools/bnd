@@ -305,8 +305,7 @@ public class Syntax implements Constants {
 					new Syntax(
 							FILTER_DIRECTIVE,
 							" (Filter) A filter expression that is asserted on the Capabilities belonging to the given namespace. The matching of the filter against the Capability is done on one Capability at a time. A filter like (&(a=1)(b=2)) matches only a Capability that specifies both attributes at the required value, not two capabilties that each specify one of the attributes correctly. A filter is optional, if no filter directive is specified the Requirement always matches.",
-							FILTER_DIRECTIVE + "= (&(a=1)(b=2))", null, null)
-			),
+							FILTER_DIRECTIVE + "= (&(a=1)(b=2))", null, null)),
 			new Syntax(BUILDPATH,
 					"Provides the class path for building the jar. The entries are references to the repository.",
 					BUILDPATH + "=osgi;version=4.1", "${repo;bsns}", Verifier.SYMBOLICNAME, path_version),
@@ -367,6 +366,10 @@ public class Syntax implements Constants {
 
 			new Syntax(PLUGIN, "Define the plugins.", PLUGIN
 					+ "=aQute.lib.spring.SpringComponent,aQute.lib.deployer.FileRepo;location=${repo}", null, null),
+			new Syntax(PLUGINPATH, "Define the plugins load path.", PLUGINPATH
+					+ "=${workspace}/cnf/cache/plugins-2.2.0.jar", null, null, new Syntax(PLUGINPATH_URL_ATTR,
+					"Specify a URL to download this file from if it does not exist",
+					"url=url=http://example.com/download/plugins-2.2.0.jar", null, null)),
 
 			new Syntax(SERVICE_COMPONENT, "The header for Declarative Services.", SERVICE_COMPONENT
 					+ "=com.acme.Foo?;activate='start'", null, null),
@@ -439,9 +442,9 @@ public class Syntax implements Constants {
 	}
 
 	public String getPattern() {
-		if ( pattern == null)
+		if (pattern == null)
 			return ".*";
-		
+
 		return pattern.pattern();
 	}
 

@@ -11,9 +11,12 @@ import java.util.regex.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.url.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
+import aQute.lib.hex.*;
 import aQute.lib.io.*;
+import aQute.libg.cryptography.*;
 import aQute.libg.generics.*;
 import aQute.service.reporter.*;
 
@@ -342,18 +345,32 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Is called when all plugins are loaded
+	 * 
 	 * @param plugins
 	 */
 	protected void addExtensions(Set<Object> plugins) {
-		
+
 	}
 
 	/**
-	 * @param list
-	 * @param spe
+	 * Magic to load the plugins. This is quite tricky actually since we allow
+	 * plugins to be downloaded (this is mainly intended for repositories since
+	 * in general plugins should use extensions, however to bootstrap the
+	 * extensions we need more). Since downloads might need plugins for
+	 * passwords and protocols we need to first load the paths specified on the
+	 * plugin clause, then check if there are any local plugins (starting with
+	 * aQute.bnd and be able to load from our own class loader).
+	 * <p>
+	 * After that, we load the plugin paths, these can use the built in
+	 * connectors.
+	 * <p>
+	 * Last but not least, we load the remaining plugins.
+	 * 
+	 * @param instances
+	 * @param pluginString
 	 */
-	protected void loadPlugins(Set<Object> list, String spe, String pluginPath) {
-		Parameters plugins = new Parameters(spe);
+	protected void loadPlugins(Set<Object> instances, String pluginString, String pluginPathString) {
+		Parameters plugins = new Parameters(pluginString);
 		CL loader = getLoader();
 
 		// First add the plugin-specific paths from their path: directives
@@ -374,62 +391,194 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			}
 		}
 
-		// Next add -pluginpath entries
-		if (pluginPath != null && pluginPath.length() > 0) {
-			StringTokenizer tokenizer = new StringTokenizer(pluginPath, ",");
-			while (tokenizer.hasMoreTokens()) {
-				String path = tokenizer.nextToken().trim();
-				try {
-					File f = getFile(path).getAbsoluteFile();
-					loader.add(f.toURI().toURL());
-				}
-				catch (Exception e) {
-					error("Problem adding path %s from global plugin path. Exception: %s", path, e);
-				}
-			}
-		}
+		//
+		// Try to load any plugins that are local
+		// these must start with aQute.bnd.* and
+		// and be possible to load. The main intention
+		// of this code is to load the URL connectors so that
+		// any access to remote plugins can use the connector
+		// model.
+		//
 
-		// Load the plugins
+		Set<String> loaded = new HashSet<String>();
 		for (Entry<String,Attrs> entry : plugins.entrySet()) {
-			String key = entry.getKey();
+			String className = removeDuplicateMarker(entry.getKey());
+			Attrs attrs = entry.getValue();
 
-			try {
-				trace("Using plugin %s", key);
+			trace("Trying pre-plugin %s", className);
 
-				// Plugins could use the same class with different
-				// parameters so we could have duplicate names Remove
-				// the ! added by the parser to make each name unique.
-				key = removeDuplicateMarker(key);
-
-				try {
-					Class< ? > c = loader.loadClass(key);
-					Object plugin = c.newInstance();
-					customize(plugin, entry.getValue());
-					if (plugin instanceof Closeable) {
-						addClose((Closeable) plugin);
-					}
-					list.add(plugin);
-				}
-				catch (Throwable t) {
-					// We can defer the error if the plugin specifies
-					// a command name. In that case, we'll verify that
-					// a bnd file does not contain any references to a
-					// plugin
-					// command. The reason this feature was added was
-					// to compile plugin classes with the same build.
-					String commands = entry.getValue().get(COMMAND_DIRECTIVE);
-					if (commands == null)
-						error("Problem loading the plugin: %s exception: (%s)", key, t);
-					else {
-						Collection<String> cs = split(commands);
-						missingCommand.addAll(cs);
-					}
-				}
-			}
-			catch (Throwable e) {
-				error("Problem loading the plugin: %s exception: (%s)", key, e);
+			Object plugin = loadPlugin(getClass().getClassLoader(), attrs, className, true);
+			if (plugin != null) {
+				// with the marker!!
+				loaded.add(entry.getKey());
+				instances.add(plugin);
 			}
 		}
+
+		//
+		// Make sure we load each plugin only once
+		// by removing the entries that were successfully loaded
+		//
+		plugins.keySet().removeAll(loaded);
+
+		loadPluginPath(instances, pluginPathString, loader);
+
+		//
+		// Load the remaining plugins
+		//
+
+		for (Entry<String,Attrs> entry : plugins.entrySet()) {
+			String className = removeDuplicateMarker(entry.getKey());
+			Attrs attrs = entry.getValue();
+
+			trace("Loading secondary plugin %s", className);
+
+			// We can defer the error if the plugin specifies
+			// a command name. In that case, we'll verify that
+			// a bnd file does not contain any references to a
+			// plugin
+			// command. The reason this feature was added was
+			// to compile plugin classes with the same build.
+			String commands = attrs.get(COMMAND_DIRECTIVE);
+			
+			Object plugin = loadPlugin(loader, attrs, className, commands != null);
+			if (plugin != null)
+				instances.add(plugin);
+			else {
+				if (commands == null)
+					error("Cannot load the plugin %s", className);
+				else {
+					Collection<String> cs = split(commands);
+					missingCommand.addAll(cs);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Add the @link {@link Constants#PLUGINPATH} entries (which are file names)
+	 * to the class loader. If this file does not exist, and there is a
+	 * {@link Constants#PLUGINPATH_URL_ATTR} attribute then we download it first
+	 * from that url. You can then also specify a
+	 * {@link Constants#PLUGINPATH_SHA1_ATTR} attribute to verify the file.
+	 * 
+	 * @see PLUGINPATH
+	 * @param pluginPath
+	 *            the clauses for the plugin path
+	 * @param loader
+	 *            The class loader to extend
+	 */
+	private void loadPluginPath(Set<Object> instances, String pluginPath, CL loader) {
+		Parameters pluginpath = new Parameters(pluginPath);
+
+		nextClause: for (Entry<String,Attrs> entry : pluginpath.entrySet()) {
+
+			File f = getFile(entry.getKey()).getAbsoluteFile();
+			if (!f.isFile()) {
+
+				//
+				// File does not exist! Check if we need to download
+				//
+
+				String url = entry.getValue().get(PLUGINPATH_URL_ATTR);
+				if (url != null) {
+					try {
+
+						trace("downloading %s to %s", url, f.getAbsoluteFile());
+						URL u = new URL(url);
+						URLConnection connection = u.openConnection();
+
+						//
+						// Allow the URLCOnnectionHandlers to interact with the
+						// connection so they can sign it or decorate it with
+						// a password etc.
+						//
+						for (Object plugin : instances) {
+							if (plugin instanceof URLConnectionHandler) {
+								URLConnectionHandler handler = (URLConnectionHandler) plugin;
+								if (handler.matches(u))
+									handler.handle(connection);
+							}
+						}
+
+						//
+						// Copy the url to the file
+						//
+						f.getParentFile().mkdirs();
+						IO.copy(connection.getInputStream(), f);
+
+						//
+						// If there is a sha specified, we verify the download
+						// of the
+						// the file.
+						//
+						String digest = entry.getValue().get(PLUGINPATH_SHA1_ATTR);
+						if (digest != null) {
+							if (Hex.isHex(digest.trim())) {
+								byte[] sha1 = Hex.toByteArray(digest);
+								byte[] filesha1 = SHA1.digest(f).digest();
+								if (!Arrays.equals(sha1, filesha1)) {
+									error("Plugin path: %s, specified url %s and a sha1 but the file does not match the sha",
+											entry.getKey(), url);
+								}
+							} else {
+								error("Plugin path: %s, specified url %s and a sha1 '%s' but this is not a hexadecimal",
+										entry.getKey(), url, digest);
+							}
+						}
+					}
+					catch (Exception e) {
+						error("Failed to download plugin %s from %s, error %s", entry.getKey(), url, e);
+						continue nextClause;
+					}
+				} else {
+					error("No such file %s from %s and no 'url' attribute on the path so it can be downloaded",
+							entry.getKey(), this);
+					continue nextClause;
+				}
+			}
+			trace("Adding %s to loader for plugins", f);
+			try {
+				loader.add(f.toURI().toURL());
+			}
+			catch (MalformedURLException e) {
+				// Cannot happen since every file has a correct url
+			}
+		}
+	}
+
+	/**
+	 * Load a plugin and customize it. If the plugin cannot be loaded then we
+	 * return null.
+	 * 
+	 * @param loader
+	 *            Name of the loader
+	 * @param attrs
+	 * @param className
+	 * @return
+	 */
+	private Object loadPlugin(ClassLoader loader, Attrs attrs, String className, boolean ignoreError) {
+		try {
+			Class< ? > c = loader.loadClass(className);
+			Object plugin = c.newInstance();
+			customize(plugin, attrs);
+			if (plugin instanceof Closeable) {
+				addClose((Closeable) plugin);
+			}
+			return plugin;
+		}
+		catch (NoClassDefFoundError e) {
+			if (!ignoreError)
+				error("Failed to load plugin %s;%s, error: %s ", className, attrs, e.getMessage());
+		}
+		catch (ClassNotFoundException e) {
+			if (!ignoreError)
+				error("Failed to load plugin %s;%s, error: %s ", className, attrs, e.getMessage());
+		}
+		catch (Exception e) {
+			error("Unexpected error loading plugin %s-%s: %s", className, attrs, e);
+		}
+		return null;
 	}
 
 	protected void setTypeSpecificPlugins(Set<Object> list) {
@@ -439,6 +588,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
+	 * Set the initial parameters of a plugin
+	 * 
 	 * @param plugin
 	 * @param entry
 	 */

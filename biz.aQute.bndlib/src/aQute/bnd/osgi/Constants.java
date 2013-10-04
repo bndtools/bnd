@@ -115,6 +115,8 @@ public interface Constants {
 	String							PEDANTIC									= "-pedantic";
 	String							PLUGIN										= "-plugin";
 	String							PLUGINPATH									= "-pluginpath";
+	String							PLUGINPATH_URL_ATTR							= "url";
+	String							PLUGINPATH_SHA1_ATTR						= "sha1";
 	String							POM											= "-pom";
 	String							RELEASEREPO									= "-releaserepo";
 	String							REMOVEHEADERS								= "-removeheaders";
