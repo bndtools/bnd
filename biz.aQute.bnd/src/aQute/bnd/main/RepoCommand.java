@@ -1,6 +1,7 @@
 package aQute.bnd.main;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 
 import aQute.bnd.build.*;
@@ -309,43 +310,53 @@ public class RepoCommand {
 			return;
 		}
 
-		while (args.size() > 0) {
-			File file = bnd.getFile(args.remove(0));
+		nextArgument: while (args.size() > 0) {
+			boolean delete=false;
+			String source = args.remove(0);
+			File file = bnd.getFile(source);
 			if (!file.isFile()) {
-				bnd.error("No such file %s", file);
-			} else {
-
-				bnd.trace("put %s", file);
-
-				Jar jar = new Jar(file);
+				file = File.createTempFile("jar", ".jar");
+				delete = true;
 				try {
-					String bsn = jar.getBsn();
-					if (bsn == null) {
-						bnd.error("File %s is not a bundle (it has no bsn) ", file);
-						return;
-					}
-
-					bnd.trace("bsn %s version %s", bsn, jar.getVersion());
-
-					if (!opts.force()) {
-						Verifier v = new Verifier(jar);
-						v.setTrace(true);
-						v.setExceptions(true);
-						v.verify();
-						bnd.getInfo(v);
-					}
-
-					if (bnd.isOk()) {
-						PutResult r = writable.put(new BufferedInputStream(new FileInputStream(file)),
-								new RepositoryPlugin.PutOptions());
-						bnd.trace("put %s in %s (%s) into %s", file, writable.getName(), writable.getLocation(),
-								r.artifact);
-					}
+					IO.copy(new URL(source).openStream(), file);
 				}
-				finally {
-					jar.close();
+				catch (Exception e) {
+					bnd.error("No such file %s", source);
+					continue nextArgument;
 				}
 			}
+
+			bnd.trace("put %s", file);
+
+			Jar jar = new Jar(file);
+			try {
+				String bsn = jar.getBsn();
+				if (bsn == null) {
+					bnd.error("File %s is not a bundle (it has no bsn) ", file);
+					return;
+				}
+
+				bnd.trace("bsn %s version %s", bsn, jar.getVersion());
+
+				if (!opts.force()) {
+					Verifier v = new Verifier(jar);
+					v.setTrace(true);
+					v.setExceptions(true);
+					v.verify();
+					bnd.getInfo(v);
+				}
+
+				if (bnd.isOk()) {
+					PutResult r = writable.put(new BufferedInputStream(new FileInputStream(file)),
+							new RepositoryPlugin.PutOptions());
+					bnd.trace("put %s in %s (%s) into %s", source, writable.getName(), writable.getLocation(), r.artifact);
+				}
+			}
+			finally {
+				jar.close();
+			}
+			if ( delete)
+				file.delete();
 		}
 	}
 
