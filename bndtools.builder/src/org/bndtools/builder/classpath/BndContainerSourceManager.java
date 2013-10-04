@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
 import org.bndtools.builder.NewBuilder;
 import org.bndtools.builder.Plugin;
@@ -26,7 +28,8 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.Jar;
+import aQute.bnd.build.WorkspaceRepository;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
@@ -140,15 +143,21 @@ public class BndContainerSourceManager {
             bundlePath = resource.getLocation();
         }
 
-        Jar jar = null;
+        JarInputStream jarStream = null;
         try {
-            jar = new Jar(bundlePath.toFile());
-
-            String bsn = jar.getBsn();
-            String version = jar.getVersion();
+            jarStream = new JarInputStream(new FileInputStream(bundlePath.toFile()), false);
+            Manifest mf = jarStream.getManifest();
+            if (mf == null) {
+                return null;
+            }
+            String bsn = mf.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+            String version = mf.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
 
             for (RepositoryPlugin repo : RepositoryUtils.listRepositories(true)) {
                 if (repo == null) {
+                    continue;
+                }
+                if (repo instanceof WorkspaceRepository) {
                     continue;
                 }
                 File sourceBundle = repo.get(bsn + ".source", new Version(version), null);
@@ -159,7 +168,7 @@ public class BndContainerSourceManager {
         } catch (final Exception e) {
             // Ignore, something went wrong, or we could not find the source bundle
         } finally {
-            IO.close(jar);
+            IO.close(jarStream);
         }
 
         return null;
