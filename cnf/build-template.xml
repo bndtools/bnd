@@ -38,19 +38,22 @@
         <property file="${workspacedir}/cnf/build.properties"/>
     	<mkdir dir="${workspacedir}/cnf/cache"/>
 
-		<!-- Define where we store bnd -->
+    	<!-- We download bnd and the repoindex -->
+    	
 		<property name="bnd.location" value="${workspacedir}/cnf/cache/biz.aQute.bnd-${bnd.version}.jar" />
+		<property name="repoindex.location" value="${workspacedir}/cnf/cache/org.osgi.impl.bundle.repoindex.ant-${repoindex.version}.jar" />
 
-		<!-- Download bnd if it does not exist -->
-		<get src="${bnd.url}" 
-		    dest="${bnd.location}"
-		    verbose="off"
-			skipexisting="true"/>
+		<get src="${bnd.url}" dest="${bnd.location}" verbose="false" skipexisting="true" />
+		<get src="${repoindex.url}" dest="${repoindex.location}" verbose="false" skipexisting="true" />
 
-        <path id="bnd-classpath" location="${bnd.location}" />
+		<path id="bnd-classpath" 		location="${bnd.location}" />
+        <path id="repoindex-classpath" 	location="${repoindex.location}" />
+		
+        <taskdef resource="taskdef.properties" classpathref="repoindex-classpath"/>
+		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />
+    	
 
-        <!-- Load bnd and prepare the workspace -->
-        <taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />
+    	<!-- prepare, get bnds context -->
         <bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 
         <condition property="testDirExists">
