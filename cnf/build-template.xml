@@ -44,9 +44,8 @@
 		<!-- Download bnd if it does not exist -->
 		<get src="${bnd.url}" 
 		    dest="${bnd.location}"
-		    verbose="on"
-			skipexisting="true"
-		    usetimestamp="true"/>
+		    verbose="off"
+			skipexisting="true"/>
 
         <path id="bnd-classpath" location="${bnd.location}" />
 
@@ -149,7 +148,7 @@
     <!--
          TEST
     -->
-    <target name="test" depends="compile">
+    <target name="test" depends="compile" if="Test-Cases">
         <bndtest/>
     </target>
 
