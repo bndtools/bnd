@@ -72,7 +72,7 @@ public class PrepareTask extends BaseTask {
 		if (junit)
 			properties.setProperty("project.junit", "true");
 		if (junitOsgi)
-			properties.setProperty("project.junit.osgi", "true");
+			properties.setProperty("project.osgi.junit", "true");
 	}
 
 	private void copyProperties(Properties flattened) {
