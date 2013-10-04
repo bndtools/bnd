@@ -42,12 +42,14 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 				result = emptyOutput;
 			} else {
 				StringBuilder buffer = new StringBuilder();
-				String del  = initial;
+				String del  = initial == null ? "" : initial;
 				for (T item : input) {
 					buffer.append(del);
 					buffer.append(itemFormatter.convert(item));
 					del = separator;
 				}
+				if ( suffix != null)
+					buffer.append(suffix);
 				result = buffer.toString();
 			}
 		}
