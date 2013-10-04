@@ -48,13 +48,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * If set, will trace to stdout. Works only if no reporter is set.
 	 */
-	public final static String	TRACE				= "trace";
+	public final static String				TRACE				= "trace";
 
 	/**
 	 * Property name for the location of the repo, must be a valid path name
 	 * using forward slashes (see {@link IO#getFile(String)}.
 	 */
-	public final static String	LOCATION			= "location";
+	public final static String				LOCATION			= "location";
 
 	/**
 	 * Property name for the readonly state of the repository. If no, will
@@ -62,25 +62,25 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * {@link Boolean#parseBoolean(String)}. Read only repositories will not
 	 * accept writes.
 	 */
-	public final static String	READONLY			= "readonly";
+	public final static String				READONLY			= "readonly";
 
 	/**
 	 * Set the name of this repository (optional)
 	 */
-	public final static String	NAME				= "name";
+	public final static String				NAME				= "name";
 
 	/**
 	 * Path property for commands. A comma separated path for directories to be
 	 * searched for command. May contain $ @} which will be replaced by the
 	 * system path. If this property is not set, the system path is assumed.
 	 */
-	public static final String	CMD_PATH			= "cmd.path";
+	public static final String				CMD_PATH			= "cmd.path";
 
 	/**
 	 * The name ( and path) of the shell to execute the commands. By default
 	 * this is sh and searched in the path.
 	 */
-	public static final String	CMD_SHELL			= "cmd.shell";
+	public static final String				CMD_SHELL			= "cmd.shell";
 
 	/**
 	 * Property for commands. The command only runs when the location does not
@@ -89,7 +89,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param rootFile
 	 *            the root of the repo (directory exists)
 	 */
-	public static final String	CMD_INIT			= "cmd.init";
+	public static final String				CMD_INIT			= "cmd.init";
 
 	/**
 	 * Property for commands. Command is run before the repo is first used. </p>
@@ -97,7 +97,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param $0
 	 *            rootFile the root of the repo (directory exists)
 	 */
-	public static final String	CMD_OPEN			= "cmd.open";
+	public static final String				CMD_OPEN			= "cmd.open";
 
 	/**
 	 * Property for commands. The command runs after a put operation. </p>
@@ -109,7 +109,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param $2
 	 *            the hex checksum of the file
 	 */
-	public static final String	CMD_AFTER_PUT		= "cmd.after.put";
+	public static final String				CMD_AFTER_PUT		= "cmd.after.put";
 
 	/**
 	 * Property for commands. The command runs when the repository is refreshed.
@@ -118,7 +118,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param $
 	 *            {0} the root of the repo (directory exists)
 	 */
-	public static final String	CMD_REFRESH			= "cmd.refresh";
+	public static final String				CMD_REFRESH			= "cmd.refresh";
 
 	/**
 	 * Property for commands. The command runs after the file is put. </p>
@@ -128,7 +128,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param $1
 	 *            the path to a temporary file
 	 */
-	public static final String	CMD_BEFORE_PUT		= "cmd.before.put";
+	public static final String				CMD_BEFORE_PUT		= "cmd.before.put";
 
 	/**
 	 * Property for commands. The command runs when a put is aborted after file
@@ -139,7 +139,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param $1
 	 *            the temporary file that was used (optional)
 	 */
-	public static final String	CMD_ABORT_PUT		= "cmd.abort.put";
+	public static final String				CMD_ABORT_PUT		= "cmd.abort.put";
 
 	/**
 	 * Property for commands. The command runs after the file is put. </p>
@@ -147,7 +147,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param $0
 	 *            the root of the repo (directory exists)
 	 */
-	public static final String	CMD_CLOSE			= "cmd.close";
+	public static final String				CMD_CLOSE			= "cmd.close";
 
 	/**
 	 * Property for commands. Will be run after an action has been executed.
@@ -160,7 +160,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param $2
 	 *            the action executed
 	 */
-	public static final String	CMD_AFTER_ACTION	= "cmd.after.action";
+	public static final String				CMD_AFTER_ACTION	= "cmd.after.action";
 
 	/**
 	 * Called before a before get.
@@ -172,38 +172,42 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param $2
 	 *            the version
 	 */
-	public static final String	CMD_BEFORE_GET		= "cmd.before.get";
+	public static final String				CMD_BEFORE_GET		= "cmd.before.get";
 
 	/**
 	 * Options used when the options are null
 	 */
-	static final PutOptions		DEFAULTOPTIONS		= new PutOptions();
+	static final PutOptions					DEFAULTOPTIONS		= new PutOptions();
 
-	public static final int		MAX_MAJOR			= 999999999;
+	public static final int					MAX_MAJOR			= 999999999;
 
-	String						shell;
-	String						path;
-	String						init;
-	String						open;
-	String						refresh;
-	String						beforePut;
-	String						afterPut;
-	String						abortPut;
-	String						beforeGet;
-	String						close;
-	String						action;
+	private static final SortedSet<Version>	LATEST_SET			= new TreeSet<Version>(
+																		Collections.singleton(new Version(MAX_MAJOR, 0,
+																				0)));
 
-	File[]						EMPTY_FILES			= new File[0];
-	protected File				root;
-	Registry					registry;
-	boolean						canWrite			= true;
-	Pattern						REPO_FILE			= Pattern
-															.compile("(?:([-a-zA-z0-9_\\.]+)-)([0-9\\.]+|latest)\\.(jar|lib)");
-	Reporter					reporter;
-	boolean						dirty;
-	String						name;
-	boolean						inited;
-	boolean						trace;
+	String									shell;
+	String									path;
+	String									init;
+	String									open;
+	String									refresh;
+	String									beforePut;
+	String									afterPut;
+	String									abortPut;
+	String									beforeGet;
+	String									close;
+	String									action;
+
+	File[]									EMPTY_FILES			= new File[0];
+	protected File							root;
+	Registry								registry;
+	boolean									canWrite			= true;
+	Pattern									REPO_FILE			= Pattern
+																		.compile("(?:([-a-zA-z0-9_\\.]+)-)([0-9\\.]+|latest)\\.(jar|lib)");
+	Reporter								reporter;
+	boolean									dirty;
+	String									name;
+	boolean									inited;
+	boolean									trace;
 
 	public FileRepo() {}
 
