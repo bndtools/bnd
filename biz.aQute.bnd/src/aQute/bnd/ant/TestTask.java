@@ -44,6 +44,12 @@ public class TestTask extends BaseTask {
 				}
 			}
 
+			// Bnd #372: clear projects first, to ensure projects with multiple 
+			// runfiles do not clear previous results... 
+			for (Project project : projects) {
+				project.clear();
+			}
+
 			// Test them
 			for (Project project : projects) {
 				executeProject(project);
@@ -57,7 +63,6 @@ public class TestTask extends BaseTask {
 
 	private void executeProject(Project project) throws Exception {
 		System.out.println("Testing " + project.getPropertiesFile());
-		project.clear();
 
 		ProjectTester tester = project.getProjectTester();
 		tester.setContinuous(continuous);
