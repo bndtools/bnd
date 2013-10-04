@@ -262,6 +262,7 @@ public class Project extends Processor {
 					doPath(buildpath, dependencies, parseBuildpath(), bootclasspath);
 					doPath(testpath, dependencies, parseTestpath(), bootclasspath);
 					if (!delayRunDependencies) {
+						doPath(runfw, dependencies, parseRunFw(), null);
 						doPath(runpath, dependencies, parseRunpath(), null);
 						doPath(runbundles, dependencies, parseRunbundles(), null);
 					}
