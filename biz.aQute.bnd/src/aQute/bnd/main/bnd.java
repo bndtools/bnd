@@ -67,6 +67,7 @@ public class bnd extends Processor {
 	final public PrintStream	out			= System.out;
 	Justif						justif		= new Justif(80, 40, 42, 70);
 	BndMessages					messages	= ReporterMessages.base(this, BndMessages.class);
+	private Workspace	ws;
 
 	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
@@ -258,6 +259,9 @@ public class bnd extends Processor {
 		}
 		out.flush();
 		err.flush();
+		if ( ws != null)
+			getInfo(ws);
+		
 		if (!check(options.ignore())) {
 			System.err.flush();
 			System.err.flush();
@@ -827,7 +831,10 @@ public class bnd extends Processor {
 			workspaceDir = new File(System.getProperty("user.home") + File.separator + ".bnd");
 		}
 		Workspace ws = Workspace.getWorkspace(workspaceDir);
-
+		ws.setTrace(isTrace());
+		ws.setPedantic(isPedantic());
+		ws.setExceptions(isExceptions());
+		
 		Project project = new Project(ws, projectDir, file);
 
 		project.setTrace(isTrace());
@@ -840,6 +847,7 @@ public class bnd extends Processor {
 			messages.Project_RunFailed_(project, e);
 		}
 		getInfo(project);
+		getInfo(ws);
 	}
 
 	/**
@@ -2434,6 +2442,14 @@ public class bnd extends Processor {
 		return getProject(null);
 	}
 
+	public Workspace getWorkspace(File workspaceDir) throws Exception {
+		ws = Workspace.getWorkspace(workspaceDir);
+		ws.setTrace(isTrace());
+		ws.setPedantic(isPedantic());
+		ws.setExceptions(isExceptions());
+		return ws;
+	}
+	
 	public Project getProject(String where) throws Exception {
 		if (where == null || where.equals("."))
 			where = Project.BNDFILE;
@@ -2446,7 +2462,7 @@ public class bnd extends Processor {
 		if (f.isFile()) {
 			File projectDir = f.getParentFile();
 			File workspaceDir = projectDir.getParentFile();
-			Workspace ws = Workspace.getWorkspace(workspaceDir);
+			ws = getWorkspace(workspaceDir);
 			Project project = ws.getProject(projectDir.getName());
 			if (project.isValid()) {
 				project.setTrace(isTrace());
