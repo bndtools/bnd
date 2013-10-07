@@ -42,7 +42,7 @@
       name="Run Descriptor Export Wizards"
       schema="schema/runExportWizards.exsd"
    />
-   
+
    <extension-point id="editorPages"
       name="Bnd Editor Pages"
       schema="schema/editorPages"
@@ -152,7 +152,7 @@
             name="Bndtools OSGi Project"
             project="true">
       </wizard>
-      <!-- Disable until we fix it 
+      <!-- Disable until we fix it
       <wizard
             id="bndtools.newWrapProjWiz"
             category="bndtools.wizardCategory"
@@ -249,14 +249,14 @@
           class="bndtools.RefreshReposHandler"
        />
    </extension>
-   
+
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
          <command commandId="bndtools.core.removeRepoResource">
             <visibleWhen checkEnabled="true"/>
          </command>
       </menuContribution>
-      
+
       <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=project">
          <menu
             id="bndtools"
@@ -282,7 +282,7 @@
          </menu>
       </menuContribution>
    </extension>
-   
+
    <extension point="org.eclipse.ui.bindings">
        <!-- M1 == Shift -->
        <!-- M2 == Ctrl on Win, Cmd on Mac -->
@@ -300,14 +300,14 @@
             sequence="M1+M2+F"
       />
    </extension>
-   
+
    <extension
       point="org.eclipse.ui.actionSets">
       <actionSet
          id="bndtools.actions"
          label="Bndtools"
          visible="false">
-         
+
          <action
             id="bndtools.actions.openBrowser"
             label="Open Web Browser"
@@ -342,59 +342,7 @@
          icon="icons/bndtools-logo-16x16.png">
       </perspective>
    </extension>
-   <extension
-         point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            adaptable="true"
-            id="bndtools.nonBndProjectContribution"
-            objectClass="org.eclipse.core.resources.IProject">
-         <action
-               class="bndtools.builder.ToggleNatureAction"
-               enablesFor="+"
-               icon="icons/bnd_nature_add.png"
-               id="bndtools.addBndNatureAction"
-               label="Add Bndtools Project Nature"
-               menubarPath="org.eclipse.ui.projectConfigure/additions"
-               style="push">
-         </action>
-         <visibility>
-            <and>
-               <objectState
-                     name="projectNature"
-                     value="org.eclipse.jdt.core.javanature">
-               </objectState>
-               <not>
-                  <objectState
-                        name="projectNature"
-                        value="bndtools.core.bndnature">
-                  </objectState>
-               </not>
-            </and>
-         </visibility>
-      </objectContribution>
-      <objectContribution
-            adaptable="true"
-            id="bndtools.bndProjectContribution"
-            objectClass="org.eclipse.core.resources.IProject">
-         <action
-               class="bndtools.builder.ToggleNatureAction"
-               enablesFor="1"
-               icon="icons/bnd_nature_remove.png"
-               id="bndtools.removeBndNatureAction"
-               label="Remove Bndtools Project Nature"
-               menubarPath="org.eclipse.ui.projectConfigure/additions"
-               style="push">
-         </action>
-         <visibility>
-            <objectState
-                  name="projectNature"
-                  value="bndtools.core.bndnature">
-            </objectState>
-         </visibility>
-      </objectContribution>
-      
-   </extension>
-   
+
    <extension point="org.eclipse.ui.perspectiveExtensions">
       <!-- Add lots of lovely Bndtools stuff to the Java perspective -->
       <perspectiveExtension targetID="org.eclipse.jdt.ui.JavaPerspective">
@@ -404,7 +352,7 @@
          <viewShortcut id="bndtools.impExpView"/>
          <perspectiveShortcut id="bndtools.perspective"/>
       </perspectiveExtension>
-      
+
       <!-- Add a way back to the Bndtools perspective from the Debug perspective -->
       <perspectiveExtension targetID="org.eclipse.debug.ui.DebugPerspective">
          <viewShortcut id="bndtools.impExpView"/>
@@ -429,7 +377,7 @@
       </javaCompletionProposalComputer>
    </extension>
    -->
-   
+
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
@@ -443,7 +391,7 @@
             type="bndtools.launch.junit">
       </launchConfigurationTabGroup>
    </extension>
-   
+
    <!-- DEFINE LAUNCH CONFIGURATION TYPES -->
    <extension point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
@@ -480,7 +428,7 @@
          icon="icons/bricks.png"
       />
    </extension>
-   
+
    <!-- DEFINE THE SOURCE LOOKUP DIRECTOR -->
    <extension point="org.eclipse.debug.core.sourceLocators">
       <sourceLocator
@@ -497,7 +445,7 @@
          class="bndtools.launch.LaunchPropertyTester"
          type="org.eclipse.jdt.core.IJavaElement"/>
    </extension>
-   
+
    <!-- LAUNCH SHORTCUTS -->
 	   <extension
          point="org.eclipse.debug.ui.launchShortcuts">
@@ -527,7 +475,7 @@
                            <test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true" />
                            <test property="org.bndtools.core.isInBndJavaProject" forcePluginActivation="true" />
                         </adapt>
-                        
+
 						<!-- bnd.bnd or *.bndrun file -->
 						<and>
 							<instanceof value="org.eclipse.core.resources.IResource" />
@@ -553,7 +501,7 @@
                mode="run">
          </description>
       </shortcut>
-      
+
       <shortcut
             class="bndtools.launch.RunShortcut"
             icon="icons/bricks_run.png"
@@ -573,7 +521,7 @@
                            <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
                            <test property="org.eclipse.jdt.launching.hasProjectNature" args="bndtools.core.bndnature"/>
                         </and>
-                        
+
 						<!-- bnd.bnd or *.bndrun file -->
 						<and>
 							<instanceof value="org.eclipse.core.resources.IResource" />
@@ -590,7 +538,7 @@
       </shortcut>
 
    </extension>
-   
+
     <extension
           point="org.eclipse.ui.preferencePages">
        <page
@@ -660,7 +608,7 @@
          path="launchTemplates/empty.bndrun"
          doc="html/empty.form.xml"/>
    </extension>
-   
+
    <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
       <renameParticipant
          id="bndtools.refactoring.pkgRenameParticipant"
@@ -678,14 +626,14 @@
          </enablement>
       </renameParticipant>
    </extension>
-   
+
    <extension point="bndtools.core.osgiFrameworks">
       <framework name="Apache Felix" bsn="org.apache.felix.framework" icon="icons/felix.gif"/>
       <framework name="Eclipse Equinox" bsn="org.eclipse.osgi" icon="icons/equinox.gif"/>
       <framework name="Knopflerfish" bsn="org.knopflerfish.framework" icons="icons/knopflerfish_16x16.gif"/>
       <framework name="PojoSR" bsn="de.kalpatec.pojosr.framework" updateable="false"/>
    </extension>
-   
+
    <!-- BND PLUGINS -->
    <extension point="bndtools.core.bndPlugins">
       <plugin
@@ -697,7 +645,7 @@
          <property name="location" type="string" description="Local directory path"/>
          <property name="readonly" type="boolean" default="false"/>
       </plugin>
-      
+
       <plugin
          class="aQute.bnd.deployer.repository.FixedIndexedRepo"
          icon="icons/database.png"
@@ -707,7 +655,7 @@
          <property name="cache" type="string" description="Local cache for downloaded remote resources" deprecated="true"/>
          <property name="phase" type="string" description="Resolution phase (build, runtime or any)"/>
       </plugin>
-      
+
       <plugin
          class="aQute.bnd.deployer.repository.LocalIndexedRepo"
          icon="icons/database.png"
@@ -719,24 +667,24 @@
          <property name="readonly" type="boolean" default="false"/>
          <property name="type" type="string" description="Index types, separated by '|'. E.g. 'R5|OBR'"/>
       </plugin>
-      
+
       <plugin
          class="aQute.lib.spring.SpringXMLType"
          icon="icons/magnifier.png"
          name="Spring Component Analyzer"/>
-      
+
       <plugin
          class="aQute.lib.spring.JPAComponent"
          icon="icons/magnifier.png"
          name="JPA Component Analyzer"/>
-         
+
       <plugin
          class="aQute.lib.deployer.http.DefaultURLConnector"
          icon="icons/link.png"
          name="HTTP(S) Connector">
          <property name="disableServerVerify" type="boolean" description="Disable verification of server's X509 certificate (insecure, for testing only!)"/>
       </plugin>
-      
+
       <plugin
          class="aQute.bnd.deployer.http.HttpBasicAuthURLConnector"
          icon="icons/lock.png"
@@ -746,7 +694,7 @@
       </plugin>
 
    </extension>
-   
+
 	<extension point="bndtools.core.projectTemplates">
 		<template name="Component Development (OSGi Declarative Services)"
 			priority="500" category="AAA/Core"
@@ -774,7 +722,7 @@
    <extension point="org.eclipse.ui.intro.configExtension">
       <configExtension configId="org.eclipse.ui.intro.universalConfig" content="/intro/whatsnewExtensionContent.xml" />
    </extension>
-   
+
    <extension point="org.eclipse.debug.core.statusHandlers">
       <statusHandler
          id="bndtools.core.debug.statusHandler"
@@ -789,7 +737,7 @@
          code="999"
       />
    </extension>
-   
+
    <extension point="runExportWizards">
       <wizard
          name="Executable JAR"
@@ -797,5 +745,5 @@
          icon="icons/jar_exec.gif"
       />
    </extension>
-   
+
  </plugin>

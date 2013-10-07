@@ -37,7 +37,7 @@
 				excluded packages with a strike-through.</description>
 		</decorator>
 	</extension>
-	
+
 	<extension
 		point="org.eclipse.core.resources.markers"
 		id="bndproblem"
@@ -107,5 +107,58 @@
 		<validator name="BSN check"
 			class="org.bndtools.builder.validate.BsnValidator" />
 	</extension>
+
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="true"
+            id="bndtools.nonBndProjectContribution"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="org.bndtools.builder.ToggleNatureAction"
+               enablesFor="+"
+               icon="icons/bnd_nature_add.png"
+               id="bndtools.addBndNatureAction"
+               label="Add Bndtools Project Nature"
+               menubarPath="org.eclipse.ui.projectConfigure/additions"
+               style="push">
+         </action>
+         <visibility>
+            <and>
+               <objectState
+                     name="projectNature"
+                     value="org.eclipse.jdt.core.javanature">
+               </objectState>
+               <not>
+                  <objectState
+                        name="projectNature"
+                        value="bndtools.core.bndnature">
+                  </objectState>
+               </not>
+            </and>
+         </visibility>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="bndtools.bndProjectContribution"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="org.bndtools.builder.ToggleNatureAction"
+               enablesFor="1"
+               icon="icons/bnd_nature_remove.png"
+               id="bndtools.removeBndNatureAction"
+               label="Remove Bndtools Project Nature"
+               menubarPath="org.eclipse.ui.projectConfigure/additions"
+               style="push">
+         </action>
+         <visibility>
+            <objectState
+                  name="projectNature"
+                  value="bndtools.core.bndnature">
+            </objectState>
+         </visibility>
+      </objectContribution>
+
+   </extension>
 
 </plugin>
