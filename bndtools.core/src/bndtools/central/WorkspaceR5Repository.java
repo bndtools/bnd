@@ -50,22 +50,17 @@ public class WorkspaceR5Repository implements Repository {
     WorkspaceR5Repository() {}
 
     void init() throws Exception {
+        Central.onWorkspaceInit(new Function<Workspace,Void>() {
 
-        if (!Central.isWorkspaceReady()) {
-            Central.onWorkspaceInit(new Function<Workspace,Void>() {
-
-                public Void run(Workspace a) {
-                    try {
-                        setupProjects();
-                    } catch (Exception e) {
-                        logger.logError("Error initializing workspace repository", e);
-                    }
-                    return null;
+            public Void run(Workspace a) {
+                try {
+                    setupProjects();
+                } catch (Exception e) {
+                    logger.logError("Error initializing workspace repository", e);
                 }
-            });
-        } else {
-            setupProjects();
-        }
+                return null;
+            }
+        });
     }
 
     void setupProjects() throws Exception {
