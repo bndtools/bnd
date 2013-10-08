@@ -519,9 +519,4 @@ public class Central implements IStartupParticipant {
         Workspace ws = getWorkspace();
         return ws.getProject(projectDir.getName());
     }
-
-    public static boolean isWorkspaceReady() {
-        return workspace != null;
-    }
-
 }
