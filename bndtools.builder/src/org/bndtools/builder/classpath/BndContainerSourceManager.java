@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -29,7 +30,8 @@ import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
-import aQute.bnd.osgi.Constants;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
@@ -146,12 +148,18 @@ public class BndContainerSourceManager {
         JarInputStream jarStream = null;
         try {
             jarStream = new JarInputStream(new FileInputStream(bundlePath.toFile()), false);
-            Manifest mf = jarStream.getManifest();
-            if (mf == null) {
+            Manifest manifest = jarStream.getManifest();
+            if (manifest == null) {
                 return null;
             }
-            String bsn = mf.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
-            String version = mf.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
+
+            Domain domain = Domain.domain(manifest);
+            Entry<String, Attrs> bsnAttrs = domain.getBundleSymbolicName();
+            if (bsnAttrs == null) {
+                return null;
+            }
+            String bsn = bsnAttrs.getKey();
+            String version = domain.getBundleVersion();
 
             for (RepositoryPlugin repo : RepositoryUtils.listRepositories(true)) {
                 if (repo == null) {
