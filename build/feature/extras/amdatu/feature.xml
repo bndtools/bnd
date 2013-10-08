@@ -13,7 +13,7 @@
 <feature
       id="bndtools.amdatu.feature"
       label="Bndtools / Amdatu integration"
-      version="2.2.0.REL-qualifier"
+      version="2.2.1.RC1-qualifier"
       provider-name="Bndtools"
       plugin="bndtools.template.amdatu">
 

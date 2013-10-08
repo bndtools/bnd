@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/bndtools.feature_2.2.0.REL-qualifier" id="bndtools.main.feature" version="2.2.0.REL-qualifier">
+   <feature url="features/bndtools.feature_2.2.1.RC1-qualifier" id="bndtools.main.feature" version="2.2.1.RC1-qualifier">
       <category name="bndtools.category"/>
    </feature>
-   <feature url="features/bndtools.jarviewer.feature_2.2.0.REL-qualifier" id="bndtools.jarviewer.feature" version="2.2.0.REL-qualifier">
+   <feature url="features/bndtools.jarviewer.feature_2.2.1.RC1-qualifier" id="bndtools.jarviewer.feature" version="2.2.1.RC1-qualifier">
       <category name="bndtools.category"/>
    </feature>
    <category-def name="bndtools.category" label="Bndtools"/>
