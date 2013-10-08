@@ -1,7 +1,7 @@
 bin:
 Bundle-SymbolicName: bndtools.repository.maven;singleton:=true
 Bundle-Vendor: Bndtools
-Bundle-Version: 1.0.0.${version-qualifier}
+Bundle-Version: ${master-version}
 
 maven-minimal-template: templates/maven-minimal
 maven-minimal-template-resources: \
