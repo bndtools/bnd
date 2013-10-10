@@ -311,7 +311,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * 
 	 * @return
 	 */
-	protected Set<Object> getPlugins() {
+	public Set<Object> getPlugins() {
 		synchronized (this) {
 			if (this.plugins != null)
 				return this.plugins;

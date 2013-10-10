@@ -432,12 +432,17 @@ public class Project extends Processor {
 				String versionRange = attrs.get("version");
 
 				if (versionRange != null) {
-					if (versionRange.equals("latest") || versionRange.equals("snapshot")) {
+					if (versionRange.equals(VERSION_ATTR_LATEST) || versionRange.equals(VERSION_ATTR_SNAPSHOT)) {
 						found = getBundle(bsn, versionRange, strategyx, attrs);
 					}
 				}
 				if (found == null) {
-					if (versionRange != null && (versionRange.equals("project") || versionRange.equals("latest"))) {
+					
+					//
+					// TODO This looks like a duplicate 
+					// of what is done in getBundle??
+					//
+					if (versionRange != null && (versionRange.equals("project") || versionRange.equals(VERSION_ATTR_LATEST))) {
 						Project project = getWorkspace().getProject(bsn);
 						if (project != null && project.exists()) {
 							File f = project.getOutput();
@@ -470,8 +475,9 @@ public class Project extends Processor {
 								warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
 						}
 						else {
-							if (cc.getError() != null)
+							if (cc.getError() != null) {
 								warning("Cannot find %s", cc);
+							}
 							result.add(cc);
 						}
 					}
@@ -848,13 +854,13 @@ public class Project extends Processor {
 		if (range == null)
 			range = "0";
 
-		if ("snapshot".equals(range)) {
+		if (VERSION_ATTR_SNAPSHOT.equals(range) || VERSION_ATTR_PROJECT.equals(range)) {
 			return getBundleFromProject(bsn, attrs);
 		}
 
 		Strategy useStrategy = strategy;
 
-		if ("latest".equals(range)) {
+		if (VERSION_ATTR_LATEST.equals(range)) {
 			Container c = getBundleFromProject(bsn, attrs);
 			if (c != null)
 				return c;
@@ -881,7 +887,7 @@ public class Project extends Processor {
 					return toContainer(bsn, range, attrs, result, blocker);
 			}
 		} else {
-			VersionRange versionRange = "latest".equals(range) ? new VersionRange("0") : new VersionRange(range);
+			VersionRange versionRange = VERSION_ATTR_LATEST.equals(range) ? new VersionRange("0") : new VersionRange(range);
 
 			// We have a range search. Gather all the versions in all the repos
 			// and make a decision on that choice. If the same version is found
@@ -949,7 +955,17 @@ public class Project extends Processor {
 
 		//
 		// If we get this far we ran into an error somewhere
+		//
+		// Check if we try to find a BSN that is in the workspace but marked latest
+		//
 
+		if ( !range.equals(VERSION_ATTR_LATEST)) {
+			Container c = getBundleFromProject(bsn, attrs);
+			return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range + " Not found because latest was not specified."
+					+ " It is, however, present in the workspace. Add '"+bsn+";version=(latest|snapshot)' to see the bundle in the workspace.", null, null);
+		}
+
+		
 		return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range + " Not found in "
 				+ plugins, null, null);
 
