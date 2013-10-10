@@ -212,7 +212,7 @@ public interface Constants {
 	String							INCLUDE_DIRECTIVE							= "include:";
 	String							PROVIDE_DIRECTIVE							= "provide:";
 	String							EXCLUDE_DIRECTIVE							= "exclude:";
-	String							FILTER_DIRECTIVE							= "filter";
+	String							FILTER_DIRECTIVE							= "filter:";
 	String							PRESENCE_DIRECTIVE							= "presence:";
 	String							PRIVATE_DIRECTIVE							= "private:";
 	String							SINGLETON_DIRECTIVE							= "singleton:";
@@ -296,36 +296,36 @@ public interface Constants {
 	/**
 	 * Component constants
 	 */
-	public final static String		NAMESPACE_STEM								= "http://www.osgi.org/xmlns/scr";
-	public final static String		JIDENTIFIER									= "<<identifier>>";
-	public final static String		COMPONENT_NAME								= "name:";
-	public final static String		COMPONENT_FACTORY							= "factory:";
-	public final static String		COMPONENT_SERVICEFACTORY					= "servicefactory:";
-	public final static String		COMPONENT_IMMEDIATE							= "immediate:";
-	public final static String		COMPONENT_ENABLED							= "enabled:";
-	public final static String		COMPONENT_DYNAMIC							= "dynamic:";
-	public final static String		COMPONENT_MULTIPLE							= "multiple:";
-	public final static String		COMPONENT_GREEDY							= "greedy:";
-	public final static String		COMPONENT_PROVIDE							= "provide:";
-	public final static String		COMPONENT_OPTIONAL							= "optional:";
-	public final static String		COMPONENT_PROPERTIES						= "properties:";
-	public final static String		COMPONENT_IMPLEMENTATION					= "implementation:";
-	public final static String		COMPONENT_DESIGNATE							= "designate:";
-	public final static String		COMPONENT_DESIGNATEFACTORY					= "designateFactory:";
-	public final static String		COMPONENT_DESCRIPTORS						= ".descriptors:";
+	String							NAMESPACE_STEM								= "http://www.osgi.org/xmlns/scr";
+	String							JIDENTIFIER									= "<<identifier>>";
+	String							COMPONENT_NAME								= "name:";
+	String							COMPONENT_FACTORY							= "factory:";
+	String							COMPONENT_SERVICEFACTORY					= "servicefactory:";
+	String							COMPONENT_IMMEDIATE							= "immediate:";
+	String							COMPONENT_ENABLED							= "enabled:";
+	String							COMPONENT_DYNAMIC							= "dynamic:";
+	String							COMPONENT_MULTIPLE							= "multiple:";
+	String							COMPONENT_GREEDY							= "greedy:";
+	String							COMPONENT_PROVIDE							= "provide:";
+	String							COMPONENT_OPTIONAL							= "optional:";
+	String							COMPONENT_PROPERTIES						= "properties:";
+	String							COMPONENT_IMPLEMENTATION					= "implementation:";
+	String							COMPONENT_DESIGNATE							= "designate:";
+	String							COMPONENT_DESIGNATEFACTORY					= "designateFactory:";
+	String							COMPONENT_DESCRIPTORS						= ".descriptors:";
 
 	// v1.1.0
-	public final static String		COMPONENT_VERSION							= "version:";
-	public final static String		COMPONENT_CONFIGURATION_POLICY				= "configuration-policy:";
-	public final static String		COMPONENT_MODIFIED							= "modified:";
-	public final static String		COMPONENT_ACTIVATE							= "activate:";
-	public final static String		COMPONENT_DEACTIVATE						= "deactivate:";
+	String							COMPONENT_VERSION							= "version:";
+	String							COMPONENT_CONFIGURATION_POLICY				= "configuration-policy:";
+	String							COMPONENT_MODIFIED							= "modified:";
+	String							COMPONENT_ACTIVATE							= "activate:";
+	String							COMPONENT_DEACTIVATE						= "deactivate:";
 
-	public final static String		COMPONENT_NAMESPACE							= "xmlns:";
+	String							COMPONENT_NAMESPACE							= "xmlns:";
 
 	final static Map<String,String>	EMPTY										= Collections.emptyMap();
 
-	public final static String[]	componentDirectives							= new String[] {
+	String[]						componentDirectives							= new String[] {
 			COMPONENT_FACTORY, COMPONENT_IMMEDIATE, COMPONENT_ENABLED, COMPONENT_DYNAMIC, COMPONENT_MULTIPLE,
 			COMPONENT_PROVIDE, COMPONENT_OPTIONAL, COMPONENT_PROPERTIES, COMPONENT_IMPLEMENTATION,
 			COMPONENT_SERVICEFACTORY, COMPONENT_VERSION, COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED,
@@ -333,10 +333,10 @@ public interface Constants {
 			COMPONENT_DESIGNATEFACTORY, COMPONENT_GREEDY, COMPONENT_NAMESPACE
 																				};
 
-	public final static Set<String>	SET_COMPONENT_DIRECTIVES					= new HashSet<String>(
+	Set<String>						SET_COMPONENT_DIRECTIVES					= new HashSet<String>(
 																						Arrays.asList(componentDirectives));
 
-	public final static Set<String>	SET_COMPONENT_DIRECTIVES_1_1				= //
+	Set<String>						SET_COMPONENT_DIRECTIVES_1_1				= //
 																				new HashSet<String>(Arrays.asList(
 																						COMPONENT_VERSION,
 																						COMPONENT_CONFIGURATION_POLICY,
@@ -344,6 +344,10 @@ public interface Constants {
 																						COMPONENT_ACTIVATE,
 																						COMPONENT_DEACTIVATE));
 
-	public final static Set<String>	SET_COMPONENT_DIRECTIVES_1_2				= new HashSet<String>(
+	Set<String>						SET_COMPONENT_DIRECTIVES_1_2				= new HashSet<String>(
 																						Arrays.asList(COMPONENT_GREEDY));
+
+	String							VERSION_ATTR_LATEST							= "latest";
+	String							VERSION_ATTR_SNAPSHOT						= "snapshot";
+	String							VERSION_ATTR_PROJECT						= "project";
 }
