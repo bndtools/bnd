@@ -25,7 +25,7 @@ import aQute.bnd.help.*;
 import aQute.bnd.main.BaselineCommands.baseLineOptions;
 import aQute.bnd.main.BaselineCommands.schemaOptions;
 import aQute.bnd.main.DiffCommand.diffOptions;
-import aQute.bnd.main.RepoCommand.repoOptions;
+import aQute.bnd.main.RepoCommand.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.Def;
@@ -34,6 +34,7 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.*;
+import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.version.*;
 import aQute.configurable.*;
@@ -67,7 +68,7 @@ public class bnd extends Processor {
 	final public PrintStream	out			= System.out;
 	Justif						justif		= new Justif(80, 40, 42, 70);
 	BndMessages					messages	= ReporterMessages.base(this, BndMessages.class);
-	private Workspace	ws;
+	private Workspace			ws;
 
 	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
@@ -140,13 +141,13 @@ public class bnd extends Processor {
 			return;
 		}
 
-//		Project project = getProject();
-//		if (project != null) {
-//			Action a = project.getActions().get(arg);
-//			if (a != null) {
-//				args.add(0, "project");
-//			}
-//		}
+		// Project project = getProject();
+		// if (project != null) {
+		// Action a = project.getActions().get(arg);
+		// if (a != null) {
+		// args.add(0, "project");
+		// }
+		// }
 
 		m = COMMAND.matcher(args.get(0));
 		if (!m.matches()) {
@@ -259,9 +260,9 @@ public class bnd extends Processor {
 		}
 		out.flush();
 		err.flush();
-		if ( ws != null)
+		if (ws != null)
 			getInfo(ws);
-		
+
 		if (!check(options.ignore())) {
 			System.err.flush();
 			System.err.flush();
@@ -3100,4 +3101,59 @@ public class bnd extends Processor {
 		}
 	}
 
+	/**
+	 * List actions of the repositories if they implement Actionable and allow
+	 * them to be executed
+	 */
+
+	@Description("Execute an action on a repo, or if no name is give, list the actions")
+	interface ActionOptions extends projectOptions {
+		Glob filter();
+
+		boolean tooltip();
+	}
+
+	@Description("Execute an action on a repo, or if no name is give, list the actions")
+	public void _action(ActionOptions opts) throws Exception {
+		Project project = getProject(opts.project());
+		if (project == null) {
+			error("Not in a project directory");
+			return;
+		}
+
+		Glob filter = opts.filter();
+		if (filter == null)
+			filter = new Glob("*");
+		List<Actionable> actionables = project.getPlugins(Actionable.class);
+		if (actionables.isEmpty()) {
+			error("No actionables in [%s]", project.getPlugins());
+			return;
+		}
+		for (Actionable o : actionables) {
+			if (filter.matcher(o.title()).matches()) {
+				trace("actionable %s - %s", o, o.title());
+				Map<String,Runnable> map = o.actions();
+				if (map != null) {
+					if (opts._().isEmpty()) {
+						out.printf("# %s%n", o.title());
+						if (opts.tooltip() && o.tooltip() != null) {
+							out.printf("%s%n", o.tooltip());
+						}
+						out.printf("## actions%n");
+						for (String entry : map.keySet()) {
+							out.printf("  %s%n", entry);
+						}
+					} else {
+						for (String entry : opts._()) {
+							Runnable r = map.get(entry);
+							if (r != null) {
+								r.run();
+							}
+						}
+					}
+				}
+			}
+		}
+		getInfo(project);
+	}
 }
