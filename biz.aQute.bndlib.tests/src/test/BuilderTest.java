@@ -52,7 +52,7 @@ public class BuilderTest extends BndTestCase {
 		b.getJar().getManifest().write(System.out);
 		String message = b.getErrors().get(0);
 		assertTrue("The lacking version error first",
-				message.startsWith("package info for test.package_info_versioniskey attribute [1.0.0=''],"));
+				message.contains("package info for test.package_info_versioniskey attribute [1.0.0=''],"));
 		Location location = b.getLocation(message);
 		assertNotNull("Supposed to have a location", location);
 		assertNotNull("And that must have a file", location.file);

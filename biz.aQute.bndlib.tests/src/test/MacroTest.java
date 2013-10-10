@@ -662,15 +662,16 @@ public class MacroTest extends TestCase {
 		m.process("    ${warning;xw;1;2;3 ${three}}");
 		m.process("    ${error;xe;1;2;3 ${three}}");
 		m.process("    ${if;1;$<a>}");
-		assertEquals("xw", p.getWarnings().get(0));
-		assertEquals("1", p.getWarnings().get(1));
-		assertEquals("2", p.getWarnings().get(2));
-		assertEquals("3 333", p.getWarnings().get(3));
+		
+		assertTrue("xw", p.getWarnings().get(0).endsWith("xw"));
+		assertTrue("1", p.getWarnings().get(1).endsWith("1"));
+		assertTrue("2", p.getWarnings().get(2).endsWith("2"));
+		assertTrue("3 333", p.getWarnings().get(3).endsWith("3 333"));
 
-		assertEquals("xe", p.getErrors().get(0));
-		assertEquals("1", p.getErrors().get(1));
-		assertEquals("2", p.getErrors().get(2));
-		assertEquals("3 333", p.getErrors().get(3));
+		assertTrue("xw", p.getErrors().get(0).endsWith("xe"));
+		assertTrue("1", p.getErrors().get(1).endsWith("1"));
+		assertTrue("2", p.getErrors().get(2).endsWith("2"));
+		assertTrue("3 333", p.getErrors().get(3).endsWith("3 333"));
 	}
 
 	public static void testNestedReplace() {
