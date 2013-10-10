@@ -125,7 +125,7 @@ public class ParseHeaderTest extends TestCase {
 			System.err.println(p.getWarnings());
 			assertTrue(p.getWarnings().size() > 0);
 			String w = p.getWarnings().get(0);
-			assertTrue(w.startsWith(expectedWarning));
+			assertTrue(w.contains(expectedWarning));
 		} else
 			assertEquals(0, p.getWarnings().size());
 	}
