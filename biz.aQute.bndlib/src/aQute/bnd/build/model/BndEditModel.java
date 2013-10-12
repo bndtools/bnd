@@ -29,8 +29,6 @@ public class BndEditModel {
 	public static final String										NEWLINE_LINE_SEPARATOR		= "\\n\\\n\t";
 	public static final String										LIST_SEPARATOR				= ",\\\n\t";
 
-	private static final String									ISO_8859_1					= "ISO-8859-1";												//$NON-NLS-1$
-
 	private static String[]										KNOWN_PROPERTIES			= new String[] {
 			Constants.BUNDLE_LICENSE, Constants.BUNDLE_CATEGORY,
 			Constants.BUNDLE_NAME, Constants.BUNDLE_DESCRIPTION, Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_UPDATELOCATION,
