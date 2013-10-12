@@ -62,7 +62,7 @@ import aQute.service.reporter.*;
  * @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
-	static Pattern				ASSIGNMENT	= Pattern.compile("\\s*([-\\w\\d_.]+)\\s*(?:=\\s*([^\\s]+)\\s*)?");
+	static Pattern				ASSIGNMENT	= Pattern.compile("\\s*([-\\w\\d_.]+)\\s*(?:(=)\\s*([^\\s]+)?\\s*)?");
 	Settings					settings	= new Settings();
 	final PrintStream			err			= System.err;
 	final public PrintStream	out			= System.out;
@@ -701,6 +701,9 @@ public class bnd extends Processor {
 
 		@Description("Verify all the dependencies before launching (runpath, runbundles, testpath)")
 		boolean verify();
+
+		@Description("Launch the test even if this bundle does not contain Test-Cases")
+		boolean force();
 	}
 
 	@Description("Test a project according to an OSGi test")
@@ -713,6 +716,16 @@ public class bnd extends Processor {
 
 		if (!verifyDependencies(project, opts.verify(), true))
 			return;
+
+		if (project.getProperty(TESTCASES) == null)
+			if (opts.force())
+				project.setProperty(TESTCASES, "");
+			else {
+				warning("No %s set on this bundle. Use -f/--force to try this test anyway (this works if another bundle provides the testcases)",
+						TESTCASES);
+				return;
+			}
+
 		project.test();
 		getInfo(project);
 	}
@@ -724,7 +737,7 @@ public class bnd extends Processor {
 
 		project.verifyDependencies(test);
 		getInfo(project);
-		if (isOk()) 
+		if (isOk())
 			return true;
 
 		return false;
@@ -835,7 +848,7 @@ public class bnd extends Processor {
 		ws.setTrace(isTrace());
 		ws.setPedantic(isPedantic());
 		ws.setExceptions(isExceptions());
-		
+
 		Project project = new Project(ws, projectDir, file);
 
 		project.setTrace(isTrace());
@@ -2450,7 +2463,7 @@ public class bnd extends Processor {
 		ws.setExceptions(isExceptions());
 		return ws;
 	}
-	
+
 	public Project getProject(String where) throws Exception {
 		if (where == null || where.equals("."))
 			where = Project.BNDFILE;
@@ -2918,17 +2931,23 @@ public class bnd extends Processor {
 					Matcher m = ASSIGNMENT.matcher(s);
 					trace("try %s", s);
 					if (m.matches()) {
-						trace("matches %s %s %s", s, m.group(1), m.group(2));
 						String key = m.group(1);
 						Instructions instr = new Instructions(key);
 						Collection<String> select = instr.select(settings.keySet(), true);
 
-						String value = m.group(2);
+						String value = m.group(3);
 						if (value == null) {
-							trace("list wildcard " + instr + " " + select + " " + settings.keySet());
-							list(select, settings);
+							if (m.group(2) == null) {
+								list(select, settings);
+							} else {
+								for (String k : select) {
+									trace("remove %s=%s", k, settings.get(k));
+									settings.remove(k);
+									set = true;
+								}
+							}
 						} else {
-							trace("assignment 	");
+							trace("assignment %s=%s", key,value);
 							settings.put(key, value);
 							set = true;
 						}
