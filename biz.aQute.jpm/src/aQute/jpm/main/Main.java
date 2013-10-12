@@ -461,8 +461,7 @@ public class Main extends ReporterAdapter {
 					updateCommandData(cmd, opts);
 					if (cmd.main != null) {
 						if ( cmd.name == null && !artifact.local) {
-							if ( artifact.name != null)
-								cmd.name = artifact.name;
+							cmd.name = artifact.coordinate.getArtifactId();
 						}
 						List<Error> errors = cmd.validate();
 						if (!errors.isEmpty()) {

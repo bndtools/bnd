@@ -1237,9 +1237,6 @@ public class JustAnotherPackageManager {
 			else
 				data.version = new Version(version);
 
-			if (main.getValue("Bundle-Name") != null)
-				data.name = main.getValue("Bundle-Name");
-
 			data.main = main.getValue("Main-Class");
 			data.description = main.getValue("Bundle-Description");
 			data.title = main.getValue("JPM-Name");
