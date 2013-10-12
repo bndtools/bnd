@@ -18,6 +18,7 @@ import aQute.lib.deployer.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
 import aQute.lib.json.*;
+import aQute.libg.glob.*;
 
 public class RepoCommand {
 	final static JSONCodec	codec	= new JSONCodec();
@@ -29,7 +30,7 @@ public class RepoCommand {
 	})
 	interface repoOptions extends Options {
 		@Description("Add a File Repository")
-		Collection<String> repo();
+		Collection<String> filerepo();
 
 		@Description("Include the maven repository")
 		boolean maven();
@@ -40,6 +41,10 @@ public class RepoCommand {
 
 		@Description("Include the cache repository")
 		boolean cache();
+		
+		@Description("Override the name of the release repository (-releaserepo)")
+		Glob release();
+
 	}
 
 	final bnd						bnd;
@@ -70,8 +75,8 @@ public class RepoCommand {
 
 		// Repos given by the --repo option
 
-		if (opts.repo() != null) {
-			for (String r : opts.repo()) {
+		if (opts.filerepo() != null) {
+			for (String r : opts.filerepo()) {
 				bnd.trace("file repo " + r);
 				FileRepo repo = new FileRepo();
 				repo.setReporter(bnd);
@@ -101,7 +106,8 @@ public class RepoCommand {
 				rp.remove();
 			}
 			if (w == null && rpp.canWrite()) {
-				w = rpp;
+				if ( opts.release() == null || opts.release().matcher(rpp.getName()).matches())
+					w = rpp;
 			}
 		}
 		this.writable = w;
@@ -294,7 +300,7 @@ public class RepoCommand {
 	})
 	interface putOptions extends Options {
 		@Description("Put in repository even if verification fails (actually, no verification is done).")
-		boolean force();
+		boolean force();		
 	}
 
 	@Description("Put an artifact into the repository after it has been verified.")
