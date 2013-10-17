@@ -55,7 +55,12 @@ public class ProjectBuildOrderTask extends BaseTask {
 				}
 			} else {
 				Project p = new Project(workspace, projectLocation, new File(projectLocation, bndFile));
-				projects = p.getDependson();
+				try {
+					projects = p.getDependson();
+				}
+				finally {
+					p.close();
+				}
 			}
 
 			StringBuilder sb = new StringBuilder();
