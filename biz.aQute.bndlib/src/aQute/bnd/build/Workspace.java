@@ -81,6 +81,10 @@ public class Workspace extends Processor {
 	}
 
 	public static Workspace getWorkspace(File parent) throws Exception {
+		return getWorkspace(parent, BNDDIR);
+	}
+
+	public static Workspace getWorkspace(File parent, String bndDir) throws Exception {
 		File workspaceDir = parent.getAbsoluteFile();
 
 		// the cnf directory can actually be a
@@ -89,7 +93,7 @@ public class Workspace extends Processor {
 			File test = new File(workspaceDir, CNFDIR);
 
 			if (!test.exists())
-				test = new File(workspaceDir, BNDDIR);
+				test = new File(workspaceDir, bndDir);
 
 			if (test.isDirectory())
 				break;
@@ -107,7 +111,7 @@ public class Workspace extends Processor {
 			WeakReference<Workspace> wsr = cache.get(workspaceDir);
 			Workspace ws;
 			if (wsr == null || (ws = wsr.get()) == null) {
-				ws = new Workspace(workspaceDir);
+				ws = new Workspace(workspaceDir, bndDir);
 				cache.put(workspaceDir, new WeakReference<Workspace>(ws));
 			}
 			return ws;
@@ -115,6 +119,10 @@ public class Workspace extends Processor {
 	}
 
 	public Workspace(File dir) throws Exception {
+		this(dir, BNDDIR);
+	}
+
+	public Workspace(File dir, String bndDir) throws Exception {
 		super(getDefaults());
 		dir = dir.getAbsoluteFile();
 		if (!dir.exists() && !dir.mkdirs()) {
@@ -122,7 +130,7 @@ public class Workspace extends Processor {
 		}
 		assert dir.isDirectory();
 
-		File buildDir = new File(dir, BNDDIR).getAbsoluteFile();
+		File buildDir = new File(dir, bndDir).getAbsoluteFile();
 		if (!buildDir.isDirectory())
 			buildDir = new File(dir, CNFDIR).getAbsoluteFile();
 
