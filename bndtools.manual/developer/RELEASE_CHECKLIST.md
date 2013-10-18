@@ -32,6 +32,8 @@ Update Whats New
 
 Create a `Changes-in-A-B-C` page on the [bndtools wiki](https://github.com/bndtools/bndtools/wiki).
 
+Also add this new page to the [changelogs page](https://github.com/bndtools/bndtools/wiki/Changelogs).
+
 Update Versions
 ---------------
 

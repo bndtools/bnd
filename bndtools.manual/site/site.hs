@@ -63,21 +63,13 @@ main = hakyll $ do
         route idRoute
         compile $ readPageCompiler >>> processPage
 
-    -- What's new pages
-    match "whatsnew1-0-0/*.html" $ do
-        route idRoute
-        compile $ readPageCompiler >>> processPage
-    match "whatsnew1-0-0/*.png" $ do
-        route idRoute
-        compile copyFileCompiler
-
     -- 404 page must not use relativized URLs
     match "404.html" $ do
         route idRoute
         compile $ readPageCompiler >>> processPagePartial
 
     -- Articles
-    match (list ["concepts.md", "development.md", "faq.md", "tutorial.md", "whatsnew.md", "whatsnew2-0-0.md"]) $ do
+    match (list ["concepts.md", "development.md", "faq.md", "tutorial.md"]) $ do
         route   $ setExtension ".html"
         compile $ pageCompilerWith defaultHakyllParserState writerOpts
             >>> applyTemplateCompiler "templates/article.html"
