@@ -1479,22 +1479,6 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	/**
-	 * Spaces at the end of a clause cause the preprocess to fail.
-	 * 
-	 * @throws Exception
-	 */
-	public static void testPreProcess() throws Exception {
-		Properties base = new Properties();
-		base.put(Analyzer.INCLUDE_RESOURCE, "{src/test/top.mf}     ");
-		Builder analyzer = new Builder();
-		analyzer.setProperties(base);
-		analyzer.build();
-		assertTrue(analyzer.check());
-
-		Jar jar = analyzer.getJar();
-		assertTrue(jar.getResource("top.mf") != null);
-	}
 
 	/**
 	 * Check if we can use findpath to build the Bundle-Classpath.

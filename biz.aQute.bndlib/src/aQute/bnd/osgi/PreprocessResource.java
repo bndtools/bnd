@@ -33,6 +33,8 @@ public class PreprocessResource extends AbstractResource {
 			byte[] data = bout.toByteArray();
 			return data;
 
+		} catch( Exception e) {
+			throw new IllegalArgumentException("Invalid resource to pre-process, likely binary");
 		}
 		finally {
 			if (rdr != null) {
