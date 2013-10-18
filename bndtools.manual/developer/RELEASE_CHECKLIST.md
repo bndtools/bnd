@@ -30,7 +30,7 @@ Release Checklist for Bndtools
 Update Whats New
 ----------------
 
-Create a whatsnewA-B-C.html page in the bndtools.github.com repo.
+Create a `Changes-in-A-B-C` page on the [bndtools wiki](https://github.com/bndtools/bndtools/wiki).
 
 Update Versions
 ---------------
