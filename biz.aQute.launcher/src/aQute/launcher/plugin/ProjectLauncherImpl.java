@@ -146,13 +146,27 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public Jar executable() throws Exception {
+		
 		// TODO use constants in the future
 		Parameters packageHeader = OSGiHeader.parseHeader(project.getProperty("-package"));
 		boolean useShas = packageHeader.containsKey("jpm");
 		project.trace("Useshas %s %s", useShas, packageHeader);
 
 		Jar jar = new Jar(project.getName());
-
+		
+		Builder b = new Builder();
+		project.addClose(b);
+		
+		if (!project.getIncludeResource().isEmpty()) {
+			b.setIncludeResource(project.getIncludeResource().toString());
+			b.setProperty(Constants.RESOURCEONLY, "true");
+			b.build();
+			if ( b.isOk()) {
+				jar.addAll(b.getJar());
+			}
+			project.getInfo(b);
+		}
+		
 		List<String> runpath = getRunpath();
 
 		Set<String> runpathShas = new LinkedHashSet<String>();
@@ -207,7 +221,6 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		p.store(bout, "");
 		jar.putResource(LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES, new EmbeddedResource(bout.toByteArray(), 0L));
 
-
 		Manifest m = new Manifest();
 		Attributes main = m.getMainAttributes();
 
@@ -235,6 +248,10 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			URLResource embeddedLauncher = new URLResource(this.getClass().getResource("/" + EMBEDDED_LAUNCHER));
 			jar.putResource(EMBEDDED_LAUNCHER, embeddedLauncher);
 		}
+		if ( project.getProperty(Constants.DIGESTS) != null)
+			jar.setDigestAlgorithms(project.getProperty(Constants.DIGESTS).trim().split("\\s*,\\s*"));
+		else
+			jar.setDigestAlgorithms(new String[]{"SHA-1", "MD-5"});
 		jar.setManifest(m);
 		return jar;
 	}
