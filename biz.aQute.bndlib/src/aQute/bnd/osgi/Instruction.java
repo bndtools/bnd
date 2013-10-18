@@ -50,6 +50,7 @@ public class Instruction {
 	final boolean		duplicate;
 	final boolean		literal;
 	final boolean		any;
+	final boolean	caseInsensitive;
 
 	public Instruction(String input) {
 		this.input = input;
@@ -63,6 +64,12 @@ public class Instruction {
 		} else
 			negated = false;
 
+		if ( s.endsWith(":i")) {
+			caseInsensitive = true;
+			s = s.substring(0, s.length()-2);
+		} else
+			caseInsensitive = false;
+		
 		if (input.equals("*")) {
 			any = true;
 			literal = false;
@@ -152,7 +159,10 @@ public class Instruction {
 
 	public Matcher getMatcher(String value) {
 		if (pattern == null) {
-			pattern = Pattern.compile(match);
+			if ( !caseInsensitive)
+				pattern = Pattern.compile(match);
+			else
+				pattern = Pattern.compile(match, Pattern.CASE_INSENSITIVE);
 		}
 		return pattern.matcher(value);
 	}
