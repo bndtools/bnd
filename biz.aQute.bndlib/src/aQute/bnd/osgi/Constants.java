@@ -121,6 +121,7 @@ public interface Constants {
 	String							PLUGINPATH_URL_ATTR							= "url";
 	String							PLUGINPATH_SHA1_ATTR						= "sha1";
 	String							POM											= "-pom";
+	String							PREPROCESSMATCHERS							= "-preprocessmatchers";
 	String							RELEASEREPO									= "-releaserepo";
 	String							REMOVEHEADERS								= "-removeheaders";
 	String							RESOURCEONLY								= "-resourceonly";
@@ -185,7 +186,7 @@ public interface Constants {
 			UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST,
 			RUNVM, RUNPROGRAMARGS, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION,
 			DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT,
-			STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI
+			STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make
@@ -350,4 +351,9 @@ public interface Constants {
 	String							VERSION_ATTR_LATEST							= "latest";
 	String							VERSION_ATTR_SNAPSHOT						= "snapshot";
 	String							VERSION_ATTR_PROJECT						= "project";
+
+	/**
+	 * List of standard matchers for preprocessing
+	 */
+	String							DEFAULT_PREPROCESSS_MATCHERS				= "!*.(jpg|jpeg|jif|jfif|jp2|jpx|j2k|j2c|fpx|png|gif|swf|doc|pdf|tiff|tif|raw|bmp|ppm|pgm|pbm|pnm|pfm|webp|zip|jar|gz|tar|tgz|exe|com|bin|mp[0-9]|mpeg|mov|):i";
 }
