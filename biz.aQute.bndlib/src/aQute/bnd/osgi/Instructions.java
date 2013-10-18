@@ -6,6 +6,7 @@ import aQute.bnd.header.*;
 
 public class Instructions implements Map<Instruction,Attrs> {
 	private LinkedHashMap<Instruction,Attrs>	map;
+	public static Instructions					ALWAYS	= new Instructions();
 	static Map<Instruction,Attrs>				EMPTY	= Collections.emptyMap();
 
 	public Instructions(Instructions other) {
