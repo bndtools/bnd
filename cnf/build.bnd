@@ -1,5 +1,5 @@
 # Master Version Settings
-base-version: 2.2.1.REL
+base-version: 2.2.2.REL
 version-qualifier: ${tstamp;yyyyMMdd-HHmm}-${Git-Descriptor}
 master-version: ${base-version}-${version-qualifier}
 
