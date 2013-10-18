@@ -437,7 +437,13 @@ public class Analyzer extends Processor {
 							main.remove(header);
 						else if (value.trim().equals(EMPTY_HEADER))
 							main.putValue(header, "");
-						else
+						else if (header.compareTo(Constants.SERVICE_COMPONENT) == 0) {
+							//[cs] This ensures we sort teh Service components. 
+							// If we don't, non-deterministic runtime with 2 what-should-be identical runs.
+							ExtList<String> values = ExtList.from(value);
+							Collections.sort(values);
+							main.putValue(header, values.join());
+						} else
 							main.putValue(header, value);
 					}
 				} else {
