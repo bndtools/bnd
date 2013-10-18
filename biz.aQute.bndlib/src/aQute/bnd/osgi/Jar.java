@@ -270,7 +270,6 @@ public class Jar implements Closeable {
 			algorithms = null;
 			try {
 				File f = File.createTempFile(getName(), ".jar");
-				System.out.println("Created tmp file " + f);
 				write(f);
 				Jar tmp = new Jar(f);
 				try {
