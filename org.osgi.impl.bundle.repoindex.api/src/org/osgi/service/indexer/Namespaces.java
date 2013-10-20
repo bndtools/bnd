@@ -4,6 +4,9 @@ package org.osgi.service.indexer;
  * Predefined namespaces
  */
 public final class Namespaces {
+	/** Root of the OSGi namespaces */
+	public static final String NS_OSGI = "http://www.osgi.org/xmlns";
+
 	/** Basic namespaces */
 	public static final String NS_IDENTITY = "osgi.identity";
 	public static final String NS_CONTENT = "osgi.content";

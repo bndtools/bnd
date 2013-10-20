@@ -24,10 +24,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class SCRAnalyzer implements ResourceAnalyzer {
+	public static final String NS_1_0 = Namespaces.NS_OSGI + "/scr/v1.0.0";
+	public static final String NS_1_1 = Namespaces.NS_OSGI + "/scr/v1.1.0";
+	public static final String NS_1_2 = Namespaces.NS_OSGI + "/scr/v1.2.0";
 
-	public static final String NS_1_0 = "http://www.osgi.org/xmlns/scr/v1.0.0";
-	public static final String NS_1_1 = "http://www.osgi.org/xmlns/scr/v1.1.0";
-	public static final String NS_1_2 = "http://www.osgi.org/xmlns/scr/v1.2.0";
 
 	private LogService log;
 
