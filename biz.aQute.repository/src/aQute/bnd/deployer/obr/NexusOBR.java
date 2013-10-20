@@ -56,12 +56,17 @@ public class NexusOBR extends AbstractIndexedRepo {
 	public static final String PROP_READONLY = "readonly";
 	public static final String PROP_USERNAME = "username";
 	public static final String PROP_PASSWORD = "password";
+	public static final String PROP_PUTURL = "puturl";
 	protected File cacheDir = new File(System.getProperty("user.home")
 			+ File.separator + DEFAULT_CACHE_DIR);
 	private String nexusRepositoryUrl;
 	private boolean readOnly;
 	private String username = DEFAULT_USERNAME;
 	private String password = DEFAULT_PASSWORD;
+	/**
+	 * if null, nexusRepositoryUrl is used for puts.
+	 */
+	private String puturl = null;
 
 	@Override
 	public synchronized void setProperties(Map<String, String> map) {
@@ -77,7 +82,13 @@ public class NexusOBR extends AbstractIndexedRepo {
 		if (nexusRepositoryUrl != null && !nexusRepositoryUrl.endsWith("/")) {
 			nexusRepositoryUrl = nexusRepositoryUrl + '/';
 		}
-
+		if (map.containsKey(PROP_PUTURL)) {
+			puturl = map.get(PROP_PUTURL);
+		}
+		if (puturl != null && !puturl.endsWith("/")) {
+			puturl = puturl + '/';
+		}
+		
 		String cachePath = map.get(PROP_CACHE);
 		if (cachePath != null) {
 			cacheDir = new File(cachePath);
@@ -273,7 +284,8 @@ public class NexusOBR extends AbstractIndexedRepo {
 
 	private URL getTargetURL(String bsn, Version version)
 			throws MalformedURLException {
-		return new URL(nexusRepositoryUrl + bsn + "/" + bsn + "-" + version
+		String url = puturl != null ? puturl : nexusRepositoryUrl;
+		return new URL(url + bsn + "/" + bsn + "-" + version
 				+ ".jar");
 	}
 
