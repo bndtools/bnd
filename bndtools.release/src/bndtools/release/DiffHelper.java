@@ -17,6 +17,7 @@ import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 
 public class DiffHelper {
@@ -48,7 +49,13 @@ public class DiffHelper {
 				if (currentJar == null) {
 				    currentJar = new Jar("."); //$NON-NLS-1$
 				}
-				Baseline baseline = new Baseline(builder, new DiffPluginImpl());
+
+				DiffPluginImpl differ = new DiffPluginImpl();
+		        String diffignore = builder.getProperty(Constants.DIFFIGNORE);
+		        if (diffignore != null)
+		            differ.setIgnore(diffignore);
+
+				Baseline baseline = new Baseline(builder, differ);
 
 				baseline.baseline(jar, currentJar, null);
 				return baseline;
