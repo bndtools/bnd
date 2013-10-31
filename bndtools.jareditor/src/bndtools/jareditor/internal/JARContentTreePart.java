@@ -21,6 +21,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -210,7 +211,11 @@ public class JARContentTreePart extends AbstractFormPart {
             entryMap = new TreeMap<String,ZipTreeNode>();
             URI uri = null;
             if (newInput instanceof IFileEditorInput) {
-                uri = ((IFileEditorInput) newInput).getFile().getLocationURI();
+                IFile file = ((IFileEditorInput) newInput).getFile();
+                uri = file.getLocationURI();
+                if (!uri.getScheme().equals("file")) {
+                    uri = file.getLocation().toFile().toURI();
+                }
             } else if (newInput instanceof IURIEditorInput) {
                 uri = ((IURIEditorInput) newInput).getURI();
             }
