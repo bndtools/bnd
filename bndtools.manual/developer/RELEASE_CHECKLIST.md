@@ -1,68 +1,74 @@
-Release Cycle
-=============
+# Release Cycle
 
 The following release cycle is used:
+```
+----> DEV ---> RCx ---> REL --+
+ ^ ^       ^        |         |
+ | |       |        |         |
+ | |       +-- +1 --+         |
+ | |        next RC |         |
+ | |                |         |
+ | +----------------+         |
+ |  cancelled release         |
+ |                            |
+ +----------------------------+
+  next release cycle
 
-	----> DEV ---> RCxx ---> REL --+
-	 ^ ^       ^         |         |
-	 | |       |         |         |
-	 | |       +-- +1 ---+         |
-	 | |        next RC  |         |
-	 | |                 |         |
-	 | +-----------------+         |
-	 |  cancelled release          |
-	 |                             |
-	 +-----------------------------+
-	  next release cycle
-
-	  with xx e [01, 99]
-
+  with x e {1, 2, 3, ...}
+```
 
 The versions to use:
-* DEV: a.b.c.DEV-qualifier
-* RCxx: a.b.c.RCxx-qualifier
-* REL: a.b.c.REL
+* DEV: `a.b.c.DEV`
+* RCx: `a.b.c.RCx`
+* REL: `a.b.c.REL`
 
 
-Release Checklist for Bndtools
-==============================
+# Prerequisites
 
-Update Whats New
-----------------
+You must:
+* Be a bndtools committer
+* Have checked out the source code in a directory of your choice
+* Not be afraid to use the commandline
+* Be able to run a bash script from the commandline
+* Have `git` installed in such a fashion that the `git` executable is in the search path.
 
-Create a `Changes-in-A-B-C` page on the [bndtools wiki](https://github.com/bndtools/bndtools/wiki).
+# Release Procedure for Bndtools
 
-Also add this new page to the [changelogs page](https://github.com/bndtools/bndtools/wiki/Changelogs).
+The procuedure described here is going to release version `a.b.c.REL` from the `master` branch in a local checkout of the source code. You can ofcourse release from a different branch, this is just an example.
 
-Update Versions
----------------
+We assume that changes to the source code will be pushed to the git remote repository with the `github` alias.
 
-1. Update `base-version` in `cnf/build.bnd`.
-2. Update versions in
-    * `build/feature/extras/ace/feature.xml`
-    * `build/feature/extras/amdatu/feature.xml`
-    * `build/feature/extras/category.xml`
-    * `build/feature/extras/dm/feature.xml`
-    * `build/feature/main/bndtools/feature.xml`
-    * `build/feature/main/category.xml`
-    * `build/feature/main/jarviewer/feature.xml`
-    * `bndtools.core/resources/intro/whatsnewExtensionContent.xml`
-
-Git Tag
--------
-
-	git tag -a <version>
-	git push
-
-Build
------
-
-	git clean -fdx     (Note: will destroy any unversioned changes)
-	git reset --hard   (Note: will destroy any uncommitted changes)
-	ant p2
-
-
-IMPORTANT NOTES
----------------
-* We should release bnd and bndtools at the same time, with the same version.
-* The builds corresponding to the releases should be kept forever on the cloudbees Jenkins server
+* Make sure that the `Changes-in-a-b-c` page is added to / present on the [changelogs page](https://github.com/bndtools/bndtools/wiki/Changelogs). If it is not present, then edit the page, add the snippet below, and save the page.
+```
+[Changes in a.b.c](https://github.com/bndtools/bndtools/wiki/Changes-in-a.b.c)
+```
+* Click on the `Changes in a.b.c` page link to go to it, and make sure it is up-to-date.
+* Open a bash shell and enter the directory in which you have checked out the source code.
+* Clean the source code checkout (this will destroy any changes)
+```
+git clean -fdx
+git reset --hard
+```
+* Switch to the `master` branch
+```
+git checkout master
+```
+* Update the versions in the source code. From the root of the checkout, run the script
+```
+./cnf/scripts/setVersion.bash a.b.c.REL
+```
+* Create a git tag and push it (and the `master` branch as well)
+```
+git tag -a a.b.c.REL
+git push github master a.b.c.REL
+```
+* Let Jenkins on [Cloudbees](https://bndtools.ci.cloudbees.com/) build the release, wait for the build to finish and be successful.
+* Lock the Cloudbees build so that it is kept forever, and set the build information to `Bndtools a.b.c.REL`
+* Update the versions for the next development build, run the script
+```
+./cnf/scripts/setVersion.bash a.d.0.DEV
+```
+* Push the version change.
+```
+git push github master
+```

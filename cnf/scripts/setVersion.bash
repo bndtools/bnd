@@ -6,15 +6,19 @@ set -u
 
 # these are the files in which the version must be adjusted
 declare -a filesToAdjust=( \
-  bndtools.build/feature/ace/feature.xml \
-  bndtools.build/feature/dm/feature.xml \
-  bndtools.build/feature/jarviewer/feature.xml \
-  bndtools.build/feature/main/feature.xml \
-  bndtools.build/feature/category.xml \
+  build/feature/extras/ace/feature.xml \
+  build/feature/extras/amdatu/feature.xml \
+  build/feature/extras/dm/feature.xml \
+  build/feature/extras/category.xml \
+  build/feature/main/bndtools/feature.xml \
+  build/feature/main/category.xml \
+  build/feature/main/jarviewer/feature.xml \
   cnf/build.bnd \
 )
 
-
+declare -a filesToAdjustNoQualifier=( \
+  bndtools.core/resources/intro/whatsnewExtensionContent.xml \
+)
 
 
 script="${0}"
@@ -55,7 +59,7 @@ function getCurrentVersion() {
 function validateNewVersion() {
   local newVersion="$(stringTrim "${1}")"
 
-  local regex="[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\.(DEV|RC[[:digit:]]{1,2}|REL)"
+  local regex="[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\.(DEV|RC[[:digit:]]+|REL)"
   local validated="$(echo "${newVersion}" | grep -E "^${regex}$")"
 
   if [[ -z "${validated}" ]]; then
@@ -67,17 +71,48 @@ function validateNewVersion() {
 }
 
 
+function stripQualifier() {
+  echo "${1}" | sed 's/\.[^\.]*$//'
+}
+
+
+function checkCleanWorkspace() {
+  pushd "${workspaceDir}" &> /dev/null
+  local status="$(git describe --always --dirty=-DIRTY)"
+  if [ -n "$(echo "${status}" | grep -E '\-DIRTY$')" ]; then
+    echo "ERROR: the workspace is dirty, first clean it up by doing"
+    echo "         git clean -fdx"
+    echo "         git reset --hard"
+    exit 1
+  fi
+
+  popd &> /dev/null
+}
+
+
 #
 # Adjust the versions
 #
 function adjustVersion() {
   local currentVersion="$(stringTrim "${1}")"
   local newVersion="$(stringTrim "${2}")"
+  local currentVersionNoQualifier="$(stripQualifier "${currentVersion}")"
+  local newVersionNoQualifier="$(stripQualifier "${newVersion}")"
 
   local fileToAdjust=""
-  for fileToAdjust in "${filesToAdjust[@]}"; do
-    sed -i "s/${currentVersion}/${newVersion}/g" "${fileToAdjust}"
-  done
+  if [ ${#filesToAdjust[*]} -gt 0 ]; then
+    for fileToAdjust in "${filesToAdjust[@]}"; do
+      sed -i "s/${currentVersion}/${newVersion}/g" "${fileToAdjust}"
+      git add "${fileToAdjust}"
+    done
+  fi
+
+  if [ ${#filesToAdjustNoQualifier[*]} -gt 0 ]; then
+    for fileToAdjust in "${filesToAdjustNoQualifier[@]}"; do
+      sed -i "s/${currentVersionNoQualifier}/${newVersionNoQualifier}/g" "${fileToAdjust}"
+      git add "${fileToAdjust}"
+    done
+  fi
 }
 
 
@@ -96,6 +131,8 @@ if [[ ${#} -ne 1 ]]; then
   exit 1
 fi
 
+checkCleanWorkspace
+
 declare newVersion="$(stringTrim "${1}")"
 validateNewVersion "${newVersion}"
 
@@ -106,3 +143,4 @@ if [[ -z "${currentVersion}" ]]; then
 fi
 
 adjustVersion "${currentVersion}" "${newVersion}"
+git commit -s -m "Update to version ${newVersion}"
