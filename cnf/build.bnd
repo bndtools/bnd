@@ -1,39 +1,64 @@
-# Very general
-project.dependson       = ${p-dependson;:}
-project.bootclasspath   = ${p-bootclasspath;:}
-project.buildpath       = ${p-buildpath;:}
-project.sourcepath      = ${p-sourcepath;:}
-project.allsourcepath   = ${p-allsourcepath;:}
-project.output          = ${p-output}
-project.testpath        = ${p-testpath;:}
+########################
+## BND BUILD SETTINGS ##
+########################
 
--verbose:     false
-project:      ${basedir}
-src:          src
-bin:          bin
-target:       ${project}/${target-dir}
-build:        ${workspace}/cnf
-target-dir:   generated
-p:            ${basename;${project}}
-project.name: ${p}
 
-# Java Compiler Options
-java:         java
-javac:        javac
-javac.source: 1.5
-javac.target: 1.5
-javac.debug:  on
-javac.ee:     '[1.5,1.6)'
+## Global defaults are loaded from the bnd library (as shown below), place your
+## specific settings here. Additional settings are inherited from ext/*.bnd and
+## they will be overridden by anything you specify in this file.
 
-# Bnd Options
--sources:       true
--sourcepath:    ${project}/src
+## General Options
+#project.dependson:     ${p-dependson;:}
+#project.bootclasspath: ${p-bootclasspath;:}
+#project.buildpath:     ${p-buildpath;:}
+#project.sourcepath:    ${p-sourcepath;:}
+#project.allsourcepath: ${p-allsourcepath;:}
+#project.output:        ${p-output}
+#project.testpath:      ${p-testpath;:}
+
+#-verbose:              true
+#project:               ${basedir}
+#src:                   src
+#bin:                   bin
+#target-dir:            generated
+#target:                ${project}/${target-dir}
+#build:                 ${workspace}/cnf
+#p:                     ${basename;${project}}
+#project.name:          ${p}
+#plugin-dir:            ${build}/plugins
+
+## Java Compiler Options
+#java:                  java
+#javac:                 javac
+#javac.source:          1.5
+#javac.target:          1.5
+#javac.debug:           on
+
+## Bnd Options
+#-sources:              true
+#-sourcepath:           ${project}/src
+
+
+## Properties from ext/*.bnd can be referenced in order to extend them. For
+## example, to add one additional plugin to the list defined in
+## ext/repositories.bnd:
+# -plugin: ${ext.repositories.-plugin}, org.example.MyPlugin
+
+
+## If you use git, you might want to uncomment the following lines:
+# Git-Descriptor:       ${system-allow-fail;git describe --dirty --always}
+# Git-SHA:              ${system-allow-fail;git rev-list -1 HEAD}
+
 
 
 
 #
 # Customised Settings
 #
+
+-verbose:     false
+javac.ee:     '[1.5,1.6)'
+
 
 # Master Version Settings
 base-version: 2.3.0.DEV
@@ -58,7 +83,7 @@ aQute-resolve: biz.aQute.resolve;version='[${aQute-resolve-base},${aQute-resolve
 
 # We use git
 Git-Descriptor: ${system-allow-fail;git describe --dirty --always}
-Git-SHA: ${system-allow-fail;git rev-list -1 HEAD}
+Git-SHA:        ${system-allow-fail;git rev-list -1 HEAD}
 
 # Recipe for embedded JARs
 -make: (*).(jar);type=bnd;recipe="bnd/$1.bnd"
