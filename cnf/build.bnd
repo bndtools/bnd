@@ -56,41 +56,43 @@
 # Customised Settings
 #
 
--verbose:     false
-javac.ee:     '[1.5,1.6)'
+-verbose:                 false
+javac.ee:                 '[1.5,1.6)'
 
 
 # Master Version Settings
-base-version: 2.3.0.DEV
-version-qualifier: ${tstamp;yyyyMMdd-HHmm}-${Git-Descriptor}
-master-version: ${base-version}-${version-qualifier}
+base-version:             2.3.0.DEV
+version-qualifier:        ${tstamp;yyyyMMdd-HHmm}-${Git-Descriptor}
+master-version:           ${base-version}-${version-qualifier}
 
 # Version of bnd/bndlib to use consistently throughout the build
 # NB. this must be specified as full M.m.u version (but no qualifier)
-bndlib-version-base:    2.2.0
-bndlib-version-ceiling: 2.3.0
-bndlib: biz.aQute.bndlib;version='[${bndlib-version-base},${bndlib-version-ceiling})'
+bndlib-version-base:      2.2.0
+bndlib-version-ceiling:   2.3.0
+bndlib:                   biz.aQute.bndlib;version='[${bndlib-version-base},${bndlib-version-ceiling})'
 
 # Version of the repository plugin to use consistently throughout the build
 # NB. this must be specified as full M.m.u version (but no qualifier)
 aQute-repository-base:    2.1.0
 aQute-repository-ceiling: 2.2.0
-aQute-repository: biz.aQute.repository;version='[${aQute-repository-base},${aQute-repository-ceiling})'
+aQute-repository:         biz.aQute.repository;version='[${aQute-repository-base},${aQute-repository-ceiling})'
 
-aQute-resolve-base :   0.1.0
-aQute-resolve-ceiling: 0.1.1
-aQute-resolve: biz.aQute.resolve;version='[${aQute-resolve-base},${aQute-resolve-ceiling})'
+aQute-resolve-base :      0.1.0
+aQute-resolve-ceiling:    0.1.1
+aQute-resolve:            biz.aQute.resolve;version='[${aQute-resolve-base},${aQute-resolve-ceiling})'
 
 # We use git
-Git-Descriptor: ${system-allow-fail;git describe --dirty --always}
-Git-SHA:        ${system-allow-fail;git rev-list -1 HEAD}
+Git-Descriptor:           ${system-allow-fail;git describe --dirty --always}
+Git-SHA:                  ${system-allow-fail;git rev-list -1 HEAD}
 
 # Recipe for embedded JARs
--make: (*).(jar);type=bnd;recipe="bnd/$1.bnd"
+-make:                    (*).(jar);type=bnd;recipe="bnd/$1.bnd"
 
 # Runtime Options and Variables
-junit:    junit.osgi;version=3.8.2;export="junit.framework;version=3.8.2"
+junit:                    junit.osgi;version=3.8.2;export="junit.framework;version=3.8.2"
+
 -runpath: org.eclipse.osgi;version=3.7.2,\
           ${junit}
 
-Bundle-License: http://www.eclipse.org/legal/epl-v10.html
+# Extra Headers
+Bundle-License:           http://www.eclipse.org/legal/epl-v10.html
