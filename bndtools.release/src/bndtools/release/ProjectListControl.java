@@ -77,7 +77,7 @@ public class ProjectListControl {
         composite.setLayout(layout);
 
         // Instantiate TableViewer
-        tableViewer = new TableViewer(composite, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
+        tableViewer = new TableViewer(composite, SWT.CHECK | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
         tableViewer.setUseHashlookup(true);
         projects = tableViewer.getTable();
         projects.setHeaderVisible(true);
