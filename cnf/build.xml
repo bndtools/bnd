@@ -1,28 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="master" default="none">
 
-	<!-- 
-	     INIT
-	     The target is a dependent of all other targets.
-	     It's purpose is to set up the environment only once
-	     and avoid it being repeatedly done for each antcall.
-	-->
 
+    <!--
+         Default Target
+    -->
+    <target name="none">
+        <fail message="This ant script should never be called directly." />
+    </target>
+
+
+    <!--
+         INIT
+
+         All other targets depend on init.
+         It's purpose is to set up the environment only once and avoid it being repeated for each antcall.
+    -->
 	<target name="init" unless="initialized">
-		<tstamp>
-			<format property="NOW" pattern="yyyyMMdd-HHmmss" timezone="UTC" />
-		</tstamp>
-
+        <!-- Initialise some basic properties -->
+        <tstamp>
+            <format property="NOW" pattern="yyyyMMdd-HHmmss" timezone="UTC"/>
+        </tstamp>
 		<dirname property="projectdir" file="${ant.file}" />
-		<dirname property="workspacedir" file="${projectdir}" />
-		<taskdef resource="aQute/bnd/ant/taskdef.properties">
-			<classpath>
-				<path location="${workspacedir}/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd-2.2.0.jar"/>
-			</classpath>
-		</taskdef>
+        <dirname property="workspacedir" file="${projectdir}" />
 
-		<echo message="Preparing in ${projectdir}"/>
-		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
+        <!-- Define the classpath of bnd (location is defined in build.properties) -->
+        <property file="${workspacedir}/cnf/build.properties"/>
+        <path id="bnd-classpath" location="${workspacedir}/cnf/${bnd.location}" />
+
+        <!-- Load bnd and prepare the workspace -->
+        <taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />
+        <bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
+
+        <condition property="testDirExists">
+            <available file="${basedir}/test" type="dir"/>
+        </condition>
 
 		<available property="dochecking" file="classycle.ddf"/>
 		<taskdef name="classcycle" classname="classycle.ant.DependencyCheckingTask">
@@ -45,13 +57,9 @@
 			</classpath>
 		</taskdef>
 
-		<condition property="testDirExists">
-			<available file="${basedir}/test" type="dir"/>
-		</condition>
-
-		<!-- mark init has been run -->
-		<property name="initialized" value="set" />
-		<echo message="Enter project ${project.name}"/>
+        <!-- Create a marker property to indicate that initialisation has been completed -->
+        <property name="initialized" value="set" />
+        <echo message="Enter project ${project.name}"/>
 	</target>
 
 	<!-- 
@@ -284,13 +292,6 @@
 		<echo>nodeploy:               ${nodeploy}</echo>
 		<echo>-dependson:             ${-dependson}</echo>
 
-	</target>
-
-	<!--
-	     Default Target
-	-->
-	<target name="none">
-		<fail message="This ant script should never be directly called." />
 	</target>
 
 </project>
