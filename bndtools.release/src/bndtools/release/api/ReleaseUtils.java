@@ -34,7 +34,7 @@ import org.eclipse.team.core.subscribers.Subscriber;
 import org.eclipse.team.core.synchronize.SyncInfoSet;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
@@ -48,9 +48,8 @@ public class ReleaseUtils {
 	 */
 	public static String getJarFileName(Jar jar) {
 		try {
-			String symbName = jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
-			String version = jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_VERSION);
-			return symbName + '-' + stripVersionQualifier(version) + ".jar";
+		    Domain domain = Domain.domain(jar.getManifest());
+			return domain.getBundleSymbolicName().getKey() + '-' + stripVersionQualifier(domain.getBundleVersion()) + ".jar";
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -74,8 +73,8 @@ public class ReleaseUtils {
 
 	public static String getBundleSymbolicName(Jar jar) {
 		try {
-			String bsn = jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME); 
-			return stripInstructions(bsn);
+		    Domain domain = Domain.domain(jar.getManifest());
+		    return domain.getBundleSymbolicName().getKey();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -84,7 +83,8 @@ public class ReleaseUtils {
 
 	public static String getBundleVersion(Jar jar) {
 		try {
-			return jar.getManifest().getMainAttributes().getValue(Constants.BUNDLE_VERSION);
+            Domain domain = Domain.domain(jar.getManifest());
+            return domain.getBundleVersion();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -219,7 +219,7 @@ public class ReleaseUtils {
 		}
 		return res.toArray(new IResource[res.size()]);
 	}
-	
+
 	public static String stripInstructions(String header) {
 		if (header == null) {
 			return null;
