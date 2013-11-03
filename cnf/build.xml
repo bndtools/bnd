@@ -1,39 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="master" default="none">
 
-	<!-- 
-	     INIT
-	     The target is a dependent of all other targets.
-	     It's purpose is to set up the environment only once
-	     and avoid it being repeatedly done for each antcall.
-	-->
+    <import file="build-template.xml" />
 
-	<target name="init" unless="initialized">
-		<tstamp>
-			<format property="NOW" pattern="yyyyMMdd-HHmmss" timezone="UTC" />
-		</tstamp>
+    <!--
+        Use this file to provide your workspace-specific tasks. Several examples follow.
 
-		<dirname property="projectdir" file="${ant.file}" />
-		<dirname property="workspacedir" file="${projectdir}" />
-		<taskdef resource="aQute/bnd/ant/taskdef.properties">
-			<classpath>
-				<path location="${workspacedir}/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd-2.2.0.jar"/>
-			</classpath>
-		</taskdef>
+        Note: make sure that all defined targets depends on the template.init target.
 
-		<echo message="Preparing in ${projectdir}"/>
-		<bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
+        1. To execute tasks before/after compilation:
 
-		<available property="dochecking" file="classycle.ddf"/>
+        <target name="compile" depends="template.init">
+            <echo message="This task executed before compilation..."/>
+            <antcall target="template.compile"/>
+            <echo message="This task executed AFTER compilation."/>
+        </target>
+
+        2. Insert a build target:
+
+        <target name="build" dependencies="template.init,template.build, findbugs"/>
+        <target name="findbugs">
+            ...
+        </target>
+    -->
+
+
+	<!--
+         INIT
+
+         Override to define extra tasks
+    -->
+	<target name="init" depends="template.init" unless="outer-initialized">
+		<available property="dochecking" file="classycle.ddf" />
 		<taskdef name="classcycle" classname="classycle.ant.DependencyCheckingTask">
 			<classpath>
-				<pathelement location="${workspacedir}/cnf/buildlib/classycle.jar"/>
+				<pathelement location="${workspacedir}/cnf/buildlib/classycle.jar" />
 			</classpath>
 		</taskdef>
 
 		<taskdef resource="net/sf/antcontrib/antlib.xml">
 			<classpath>
-				<pathelement location="${workspacedir}/cnf/ant-contrib/ant-contrib-1.0b3.jar"/>
+				<pathelement location="${workspacedir}/cnf/ant-contrib/ant-contrib-1.0b3.jar" />
 			</classpath>
 		</taskdef>
 
@@ -45,111 +52,46 @@
 			</classpath>
 		</taskdef>
 
-		<condition property="testDirExists">
-			<available file="${basedir}/test" type="dir"/>
-		</condition>
-
-		<!-- mark init has been run -->
-		<property name="initialized" value="set" />
-		<echo message="Enter project ${project.name}"/>
+		<!-- Create a marker property to indicate that initialisation has been completed -->
+		<property name="outer-initialized" value="set" />
 	</target>
 
-	<!-- 
-		DEPENDENCIES
-		Build project dependencies.
-	-->
-	<target name="dependencies" depends="init" if="project.dependson" unless="donotrecurse">
-		<subant target="build" inheritAll="false" buildpath="${project.dependson}">
-			<property name="donotrecurse" value="true" />
-		</subant>
-	</target>
 
 	<!--
-	     Test
-	     
-	     These are the OSGi tests.
-	-->
-	<target name="test" depends="compile">
-		<bnd command="test" exceptions="true" basedir="${project}" />
-	</target>
+         CHECKS
 
-	<!--
-	     COMPILE
-	     Compile the sources. 
-	-->
-	<target name="compile" depends="dependencies" if="project.sourcepath">
-		<mkdir dir="${project.output}"/>
-		<javac fork="yes" executable="${javac}" srcdir="${project.sourcepath}" destdir="${project.output}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
-		<!-- 
-		  The eclipse compiler copies resources but the Javac compiler does not
-		  If ${src} == ${bin} then this is not necessary, but unfortunately, now 
-		  it is. 
-		-->
-		<copy todir="${project.output}" verbose="${verbose}" preservelastmodified="true">
-			<fileset dir="${project.sourcepath}">
-				<exclude name="**/*.java" />
-				<exclude name="**/*.class" />
-			</fileset>
-		</copy>
-	</target>
-
-	<target name="checks" depends="compile" if="dochecking">
-		<echo message="Performing dependency checks specified in ${projectdir}/classycle.ddf"/>
+         Check for class cycles
+    -->
+	<target name="checks" depends="init,template.compile" if="dochecking">
 		<classcycle failOnUnwantedDependencies="true" definitionFile="${projectdir}/classycle.ddf">
 			<fileset dir="${project.output}" includes="**/*.class"/>
 		</classcycle>
 	</target>
 
-	<!-- 
-		build
-		
-		Use bnd to build this project. Assumption is that any projects that
-		this project depends on are already build. See dependencies.
-	-->
-	<target name="build" depends="checks">
-		<mkdir dir="${target}"/>
-		<echo message="Building project ${project}."/>
-		<bnd command="build" exceptions="true" basedir="${project}" />
-	</target>
 
-	<target name="compileTests" depends="init,build" if="testDirExists">
-		<mkdir dir="bin_test"/>
-		<javac fork="yes" executable="${javac}" srcdir="test" destdir="bin_test" classpath="${project.buildpath}:${project.testpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
-		<!--
-		  The eclipse compiler copies resources but the Javac compiler does not
-		  If ${src} == ${bin} then this is not necessary, but unfortunately, now
-		  it is.
-		-->
-		<copy todir="bin_test" verbose="${verbose}" preservelastmodified="true">
-			<fileset dir="test">
-				<exclude name="**/*.java" />
-				<exclude name="**/*.class" />
-			</fileset>
-		</copy>
-	</target>
+    <!--
+        BUILD
+
+        Override to run the checks before building
+    -->
+    <target name="build" depends="init,checks,template.build" />
+
 
 	<!--
-		Junit
-		
-		Run all the tests. If the -nojunit property is set then this project
-		cannot run junit tests and they should not be run. These are normal
-		junit tests, not OSGi junit tests.
-	-->
-	<target name="junit" depends="init,compileTests" if="testDirExists">
-		<junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
-			<assertions>
-				<enable />
-			</assertions>
-			<classpath path="${project.buildpath}:bin_test/" />
-			<formatter type="xml" />
-			<batchtest todir="${target}">
-				<fileset dir="test">
-					<include name="**/*.java" />
-				</fileset>
-			</batchtest>
-		</junit>
+         ECHO
+
+         Print extra settings
+    -->
+	<target name="echo" depends="init,template.echo">
+		<echo>build:                  ${build}</echo>
+		<echo>javac.ee:               ${javac.ee}</echo>
+		<echo>releaserepo:            ${releaserepo}</echo>
 	</target>
 
+
+	<!--
+	     FINDBUGS
+	-->
 	<target name="findbugs" depends="init,build">
 		<property name="project.bootclasspath.adjusted" value="${project.bootclasspath}"/>
 		<property name="project.buildpath.adjusted" value="${project.buildpath}"/>
@@ -230,67 +172,4 @@
 			failOnError="false"
 		/>
 	</target>
-
-	<!--
-	     CLEAN
-	-->
-	<target name="deepclean" depends="init,clean" if="project.dependson">
-		<subant target="clean" inheritAll="false" buildpath="${project.dependson}" />
-	</target>
-
-	<target name="clean" depends="init">
-		<bnd command="clean" exceptions="true" basedir="${project}" />
-		<delete dir="bin" />
-		<delete dir="bin_test" />
-		<delete dir="${target}" />
-	</target>
-
-	<!--
-	     ECHO
-	-->
-	<target name="echo" depends="init">
-		<echo>verbose:                ${verbose}</echo>
-		<echo>build:                  ${build}</echo>
-		<echo>project.name:           ${project.name}</echo>
-		<echo>Bundle-Version:         ${Bundle-Version}</echo>
-		<echo>project.output:         ${project.output}</echo>
-		<echo>project.sourcepath:     ${project.sourcepath}</echo>
-		<echo>project.allsourcepath:  ${project.allsourcepath}</echo>
-		<echo>project.buildpath:      ${project.buildpath}</echo>
-		<echo>project.testpath:       ${project.testpath}</echo>
-		<echo>project.dependson:      ${project.dependson}</echo>
-		<echo>project.bootclasspath:  ${project.bootclasspath}</echo>
-		<echo>javac:                  ${javac}</echo>
-		<echo>javac.debug:            ${javac.debug}</echo>
-		<echo>javac.source:           ${javac.source}</echo>
-		<echo>javac.target:           ${javac.target}</echo>
-		<echo>javac.ee:               ${javac.ee}</echo>
-		<echo>p:                      ${p}</echo>
-		<echo>btool.manifestVersion:  ${btool.manifestVersion}</echo>
-		<echo>btool.analyse:          ${btool.analyse}</echo>
-		<echo>btool.showmanifest:     ${btool.showmanifest}</echo>
-		<echo>btool.noversion:     	  ${btool.noversion}</echo>
-		<echo>btool.sources:     	  ${btool.sources}</echo>
-		<echo>btool.noextraheaders:   ${btool.noextraheaders}</echo>
-		<echo>jars.compile.order:     ${jars.compile.order}</echo>
-		<echo>bin.includes:           ${bin.includes}</echo>
-		<echo>base.modfied:           ${base.modified} (${base.modified.readable})</echo>
-		<echo>target:                 ${target}</echo>
-		<echo>release.target:         ${release.target}</echo>
-		<echo>licensed repo:          ${licensed-repo}</echo>
-		<echo>repo:                   ${repo}</echo>
-		<echo>releaserepo:            ${releaserepo}</echo>
-		<echo>use.bnd:                ${use.bnd}</echo>
-		<echo>nodeploy:               ${nodeploy}</echo>
-		<echo>-dependson:             ${-dependson}</echo>
-
-	</target>
-
-	<!--
-	     Default Target
-	-->
-	<target name="none">
-		<fail message="This ant script should never be directly called." />
-	</target>
-
 </project>

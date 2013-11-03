@@ -1,32 +1,39 @@
-## Plugin Locations
--pluginpath: ${workspace}/cnf/plugins/biz.aQute.repository/biz.aQute.repository-2.1.0.jar
+#
+# Eclipse Repositories
+#
 
-## Eclipse SDK 3.7.2
-eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo; \
-	locations=http://eclipse-repo-3.7.2.s3.amazonaws.com/index.xml.gz; \
-	name=Eclipse SDK 3.7.2
+# SDK 3.7.2
+eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo; name=Eclipse SDK 3.7.2; locations=http://eclipse-repo-3.7.2.s3.amazonaws.com/index.xml.gz
 
-## Eclipse SDK 4.2RC4
-#eclipse-repo: aQute.lib.deployer.obr.OBR;locations=https://s3.amazonaws.com/eclipse-obr-4.2RC4/repository.xml;name=Eclipse SDK 4.2RC4
+# SDK 4.2RC4
+#eclipse-repo: aQute.lib.deployer.obr.OBR; name=Eclipse SDK 4.2RC4; locations=https://s3.amazonaws.com/eclipse-obr-4.2RC4/repository.xml
 
-## Local Dependencies
-deps: ${workspace}/cnf/deps
 
-## Remote Bnd Repository (Known good build on Jenkins).
+
+
+#
+# Bnd Repositories
+#
+
+# Remote
 bndBuildNum: 75
-remoteRepo: https://bndtools.ci.cloudbees.com/job/bnd.master/${bndBuildNum}/artifact/dist/bundles/index.xml
+bnd-repo-remote-number: https://bndtools.ci.cloudbees.com/job/bnd.master/${bndBuildNum}/artifact/dist/bundles/index.xml
+bnd-repo-remote-master: https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/index.xml
+bnd-repo-remote-next:   https://bndtools.ci.cloudbees.com/job/bnd.next/lastSuccessfulBuild/artifact/dist/bundles/index.xml
 
-## Remote Bnd Repository (Latest successful build on Jenkins)
-latestMasterRemoteRepo: https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/index.xml
-latestNextRemoteRepo: https://bndtools.ci.cloudbees.com/job/bnd.next/lastSuccessfulBuild/artifact/dist/bundles/index.xml
+# Local (Assumes bnd is checked out as "bnd" directory next to current workspace directory)
+bnd-repo-local:         file:///${workspace}/../bnd/dist/bundles/index.xml
 
-## Local Bnd Repository (Assumes bnd is checked out as "bnd" directory next to current workspace directory)
-localRepo:  file:///${workspace}/../bnd/dist/bundles/index.xml
+
+
 
 ## REPOSITORY SELECTION
-## Switch locations between remoteRepo/latestMasterRemoteRepo/latestNextRemoteRepo/localRepo as required
-## WARNING: localRepo will break the build if pushed to GitHub... it is used for local testing only!!
+## Switch locations between bnd-repo-remote-number/bnd-repo-remote-master/bnd-repo-remote-next/bnd-repo-local as required
+## WARNING: bnd-repo-local will break the build if pushed to GitHub... it is used for local testing only!!
 -plugin:\
-	aQute.lib.deployer.FileRepo;name=Dependencies;location=${deps},\
-	aQute.bnd.deployer.repository.FixedIndexedRepo;locations=${latestMasterRemoteRepo};name=bnd,\
+	aQute.bnd.deployer.repository.LocalIndexedRepo; name=Release; local=${workspace}/cnf/releaserepo;pretty=true,\
+	aQute.lib.deployer.FileRepo;                    name=Build;   location=${workspace}/cnf/buildrepo,\
+	aQute.bnd.deployer.repository.FixedIndexedRepo; name=bnd;     locations=${bnd-repo-remote-master},\
 	${eclipse-repo}
+
+-releaserepo: Release
