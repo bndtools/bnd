@@ -121,11 +121,10 @@
 
         Build the project after building its dependencies.
     -->
-	<target name="build" depends="checks">
-		<mkdir dir="${target}"/>
-		<echo message="Building project ${project}."/>
-		<bnd command="build" exceptions="true" basedir="${project}" />
-	</target>
+    <target name="build" depends="checks">
+        <mkdir dir="${target}"/>
+        <bnd command="build" exceptions="true" basedir="${project}" />
+    </target>
 
 
     <!--
