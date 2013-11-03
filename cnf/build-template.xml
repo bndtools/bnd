@@ -48,13 +48,6 @@
             <available file="${basedir}/test" type="dir"/>
         </condition>
 
-		<available property="dochecking" file="classycle.ddf"/>
-		<taskdef name="classcycle" classname="classycle.ant.DependencyCheckingTask">
-			<classpath>
-				<pathelement location="${workspacedir}/cnf/buildlib/classycle.jar"/>
-			</classpath>
-		</taskdef>
-
         <!-- Create a marker property to indicate that initialisation has been completed -->
         <property name="initialized" value="set" />
         <echo message="Enter project ${project.name}"/>
@@ -94,20 +87,13 @@
 		</copy>
 	</target>
 
-	<target name="checks" depends="compile" if="dochecking">
-		<echo message="Performing dependency checks specified in ${projectdir}/classycle.ddf"/>
-		<classcycle failOnUnwantedDependencies="true" definitionFile="${projectdir}/classycle.ddf">
-			<fileset dir="${project.output}" includes="**/*.class"/>
-		</classcycle>
-	</target>
-
 
     <!--
         BUILD
 
         Build the project after building its dependencies.
     -->
-    <target name="build" depends="checks">
+    <target name="build" depends="compile">
         <mkdir dir="${target}"/>
         <bnd command="build" exceptions="true" basedir="${project}" />
     </target>

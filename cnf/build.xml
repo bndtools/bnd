@@ -31,6 +31,13 @@
          Override to define extra tasks
     -->
 	<target name="init" depends="template.init" unless="outer-initialized">
+		<available property="dochecking" file="classycle.ddf" />
+		<taskdef name="classcycle" classname="classycle.ant.DependencyCheckingTask">
+			<classpath>
+				<pathelement location="${workspacedir}/cnf/buildlib/classycle.jar" />
+			</classpath>
+		</taskdef>
+
 		<taskdef resource="net/sf/antcontrib/antlib.xml">
 			<classpath>
 				<pathelement location="${workspacedir}/cnf/ant-contrib/ant-contrib-1.0b3.jar" />
@@ -51,6 +58,27 @@
 
 
 	<!--
+         CHECKS
+
+         Check for class cycles
+    -->
+	<target name="checks" depends="init,template.compile" if="dochecking">
+		<echo message="Performing dependency checks specified in ${projectdir}/classycle.ddf"/>
+		<classcycle failOnUnwantedDependencies="true" definitionFile="${projectdir}/classycle.ddf">
+			<fileset dir="${project.output}" includes="**/*.class"/>
+		</classcycle>
+	</target>
+
+
+    <!--
+        BUILD
+
+        Override to run the checks before building
+    -->
+    <target name="build" depends="init,checks,template.build" />
+
+
+	<!--
          ECHO
 
          Print extra settings
@@ -65,7 +93,7 @@
 	<!--
 	     FINDBUGS
 	-->
-	<target name="findbugs" depends="init,template.build">
+	<target name="findbugs" depends="init,build">
 		<property name="project.bootclasspath.adjusted" value="${project.bootclasspath}"/>
 		<property name="project.buildpath.adjusted" value="${project.buildpath}"/>
 		<property name="project.testpath.adjusted" value="${project.testpath}"/>
