@@ -58,9 +58,12 @@ public class Messages extends NLS {
     public static String releasingProjects; /* bndtools.release.WorkspaceReleaseJob::run */
 
     public static String releaseDialogTitle1; /* bndtools.release.BundleReleaseDialog::configureShell */
+    public static String release; /* bndtools.release.BundleReleaseDialog::createButtonsForButtonBar */
     public static String updateVersionsAndRelease; /* bndtools.release.BundleReleaseDialog::createButtonsForButtonBar */
     public static String updateVersions; /* bndtools.release.BundleReleaseDialog::createButtonsForButtonBar */
     public static String releaseToRepo; /* bndtools.release.BundleReleaseDialog::BundleReleaseDialog */
+    public static String releaseOption; /* bndtools.release.BundleReleaseDialog::BundleReleaseDialog */
+    public static String comboSelectText; /* bndtools.release.BundleReleaseDialog::BundleReleaseDialog */
 
     public static String symbNameResources; /* bndtools.release.ui.BundleTree::createBundleTreeViewer */
     public static String showAllPackages; /* bndtools.release.ui.BundleTree::createButtons */

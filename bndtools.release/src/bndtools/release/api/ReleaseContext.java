@@ -23,6 +23,7 @@ import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.release.api.IReleaseParticipant.Scope;
+import bndtools.release.ui.ReleaseOption;
 
 public class ReleaseContext {
 
@@ -30,23 +31,28 @@ public class ReleaseContext {
 	private List<Baseline> diffs;
 	private RepositoryPlugin releaseRepo;
 	private IProgressMonitor progressMonitor;
-	
+
 	private List<Jar> releasedJars;
 	private Map<String, Object> properties;
 	private ErrorHandler errorHandler;
 	private Scope currentScope;
-	private boolean updateOnly;
-	
-	public ReleaseContext(Project project, List<Baseline> diffs, RepositoryPlugin releaseRepo, boolean updateOnly) {
+	private ReleaseOption releaseOption;
+
+	public ReleaseContext(Project project, List<Baseline> diffs, RepositoryPlugin releaseRepo, ReleaseOption releaseOption) {
 		this.project = project;
 		this.diffs = diffs;
 		this.releaseRepo = releaseRepo;
-		this.updateOnly = updateOnly;
-		
+		this.releaseOption = releaseOption;
+
 		this.releasedJars = new ArrayList<Jar>();
 		this.properties = new HashMap<String, Object>();
 		this.errorHandler = new ErrorHandler();
 	}
+
+	@Deprecated
+    public ReleaseContext(Project project, List<Baseline> diffs, RepositoryPlugin releaseRepo, boolean updateOnly) {
+        this(project, diffs, releaseRepo, updateOnly ? ReleaseOption.UPDATE : ReleaseOption.UPDATE_RELEASE);
+    }
 
 	public Project getProject() {
 		return project;
@@ -70,23 +76,23 @@ public class ReleaseContext {
 	public void addReleasedJar(Jar jar) {
 		releasedJars.add(jar);
 	}
-	
+
 	public List<Jar> getReleasedJars() {
 		return releasedJars;
 	}
-	
+
 	public void setProperty(String name, Object value) {
 		properties.put(name, value);
 	}
-	
+
 	public Object getProperty(String name) {
 		return properties.get(name);
 	}
-	
+
 	public Map<String, Object> getPropertyMap() {
 		return properties;
 	}
-	
+
 	public Scope getCurrentScope() {
 		return currentScope;
 	}
@@ -98,22 +104,22 @@ public class ReleaseContext {
 	public ErrorHandler getErrorHandler() {
 		return errorHandler;
 	}
-	
+
 	public class ErrorHandler {
-		
+
 		private List<Error> errors = new LinkedList<Error>();
-		
+
 		protected ErrorHandler() {
 			super();
 		}
-		
+
 		public void error(String message) {
 			Error error = new Error();
 			error.scope = getCurrentScope();
 			error.message = message;
 			errors.add(error);
 		}
-		
+
 		public Error error(String symbName, String version, String message) {
 			Error error = new Error();
 			error.scope = getCurrentScope();
@@ -136,14 +142,32 @@ public class ReleaseContext {
 		}
 	}
 
+	/**
+	 * @deprecated Use getReleaseOption instead
+	 * @return
+	 */
+	@Deprecated
 	public boolean isUpdateOnly() {
-		return updateOnly;
+		return releaseOption == ReleaseOption.UPDATE;
 	}
 
+    /**
+     * @deprecated Use setReleaseOption instead
+     * @return
+     */
+    @Deprecated
 	public void setUpdateOnly(boolean updateOnly) {
-		this.updateOnly = updateOnly;
+		this.releaseOption = updateOnly ? ReleaseOption.UPDATE : ReleaseOption.UPDATE_RELEASE;
 	}
-	
+
+	public void setReleaseOption(ReleaseOption releaseOption) {
+	    this.releaseOption = releaseOption;
+	}
+
+	public ReleaseOption getReleaseOption() {
+	    return releaseOption;
+	}
+
 	public static class Error {
 
 		protected Scope scope;
@@ -152,7 +176,7 @@ public class ReleaseContext {
 		protected String version;
 		protected String[][] list;
 		protected String[] headers;
-		
+
 		public Scope getScope() {
 			return scope;
 		}

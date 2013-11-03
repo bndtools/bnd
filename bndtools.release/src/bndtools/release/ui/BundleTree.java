@@ -37,8 +37,10 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.Widget;
 
@@ -55,6 +57,7 @@ public class BundleTree extends Composite {
 
 	protected SashForm sashForm;
 	protected Button showAll;
+	protected Combo options;
 
 	protected TreeViewer infoViewer;
 	protected Composite infoViewerComposite;
@@ -93,7 +96,8 @@ public class BundleTree extends Composite {
 		composite.setLayoutData(createFillGridData());
 
 		createBundleTreeViewer(composite);
-		showAll = createButtons(composite);
+
+		createButtons(composite);
 
 		sashForm.setWeights(new int[] { 30, 70 });
 	}
@@ -178,16 +182,20 @@ public class BundleTree extends Composite {
 		bundleTreeViewer.setAutoExpandLevel(3);
 	}
 
-	private Button createButtons(Composite comp) {
+	private void createButtons(Composite parent) {
 
-		final Button showAll = new Button(comp, SWT.CHECK);
+	    GridLayout gridLayout = createGridLayout();
+	    gridLayout.numColumns = 2;
+
+	    Composite composite = new Composite(parent, SWT.NONE);
+	    composite.setLayout(gridLayout);
+	    GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+	    gridData.grabExcessHorizontalSpace = true;
+	    composite.setLayoutData(gridData);
+
+		showAll = new Button(composite, SWT.CHECK);
 		showAll.setText(Messages.showAllPackages);
 		showAll.setFont(getFont());
-
-		GridData data = new GridData();
-		data.grabExcessHorizontalSpace = true;
-		data.horizontalIndent = -1;
-		showAll.setLayoutData(data);
 		showAll.addSelectionListener(new SelectionAdapter() {
 			@Override
             public void widgetSelected(SelectionEvent event) {
@@ -211,7 +219,27 @@ public class BundleTree extends Composite {
 				}
 			}
 		});
-		return showAll;
+
+		Composite dropdown = new Composite(composite, SWT.NONE);
+		gridLayout = createGridLayout();
+		gridLayout.numColumns = 2;
+		dropdown.setLayout(gridLayout);
+        gridData = createFillGridData();
+        gridData.grabExcessVerticalSpace = false;
+        gridData.horizontalAlignment = SWT.RIGHT;
+        gridData.grabExcessHorizontalSpace = true;
+	    dropdown.setLayoutData(gridData);
+
+	    Label label = new Label(dropdown, SWT.NONE);
+	    label.setText(Messages.releaseOption);
+
+		options = new Combo(dropdown, SWT.DROP_DOWN | SWT.READ_ONLY);
+//		String items[] = { Messages.updateVersionsAndRelease, Messages.updateVersions, Messages.release };
+	    String items[] = { Messages.updateVersionsAndRelease, Messages.updateVersions};
+		options.setItems(items);
+		options.add(Messages.comboSelectText, 0);
+		options.select(0);
+
 	}
 
 	public void setInput(Object input) {
@@ -382,6 +410,9 @@ public class BundleTree extends Composite {
 		}
 	}
 
+	public ReleaseOption getReleaseOption() {
+	    return ReleaseOption.parse(options.getText());
+	}
     private static GridLayout createGridLayout() {
         GridLayout gridLayout = new GridLayout();
         gridLayout.numColumns = 1;

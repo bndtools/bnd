@@ -82,7 +82,7 @@ public class ReleaseDialogJob extends Job {
 				    WorkspaceReleaseDialog dialog = new WorkspaceReleaseDialog(shell, projectDiffs, true);
 					if (dialog.open() == WorkspaceReleaseDialog.OK) {
                         WorkspaceReleaseJob releaseJob = new WorkspaceReleaseJob(
-                                projectDiffs, dialog.isUpdateOnly(), dialog.isShowMessage());
+                                projectDiffs, dialog.getReleaseOption(), dialog.isShowMessage());
                         releaseJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
                         releaseJob.schedule();
 					}

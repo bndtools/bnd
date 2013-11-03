@@ -52,6 +52,7 @@ import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseContext.Error;
 import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
+import bndtools.release.ui.ReleaseOption;
 
 public class ReleaseHelper {
 
@@ -141,47 +142,68 @@ public class ReleaseHelper {
 
 		List<IReleaseParticipant> participants = Activator.getReleaseParticipants();
 
-		if (!preUpdateProjectVersions(context, participants)) {
-			postRelease(context, participants, false);
-			displayErrors(context);
-			return false;
-		}
-
-		ReleaseHelper.updateProject(context);
-
-		IProject proj = ReleaseUtils.getProject(context.getProject());
-		proj.refreshLocal(IResource.DEPTH_INFINITE, context.getProgressMonitor());
-
-		if (context.isUpdateOnly()) {
-			return true;
-		}
-
-		if (!preRelease(context, participants)) {
-			postRelease(context, participants, false);
-			displayErrors(context);
-			return false;
-		}
-
-		for (Baseline diff : diffs) {
-			Collection<? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
-			Builder builder = null;
-			for (Builder b : builders) {
-				if (b.getBsn().equals(diff.getBsn())) {
-					builder = b;
-					break;
-				}
-			}
-			if (builder != null) {
-				if (!release(context, participants, builder)) {
-					ret = false;
-				}
-			}
+		switch (context.getReleaseOption()) {
+		case UPDATE:
+		    if (!doUpdateVersions(context, participants)) {
+		        return false;
+		    }
+		    break;
+        case RELEASE:
+            ret = doRelease(context, diffs, participants);
+            break;
+        case UPDATE_RELEASE:
+            if (!doUpdateVersions(context, participants)) {
+                return false;
+            }
+            ret = doRelease(context, diffs, participants);
+            break;
 		}
 
 		postRelease(context, participants, ret);
 		return ret;
 	}
 
+    private static boolean doUpdateVersions(ReleaseContext context, List<IReleaseParticipant> participants) throws Exception {
+
+        if (!preUpdateProjectVersions(context, participants)) {
+            postRelease(context, participants, false);
+            displayErrors(context);
+            return false;
+        }
+
+        ReleaseHelper.updateProject(context);
+
+        IProject proj = ReleaseUtils.getProject(context.getProject());
+        proj.refreshLocal(IResource.DEPTH_INFINITE, context.getProgressMonitor());
+
+        return true;
+    }
+
+    private static boolean doRelease(ReleaseContext context, List<Baseline> diffs, List<IReleaseParticipant> participants) throws Exception {
+        boolean ret = true;
+        if (!preRelease(context, participants)) {
+            postRelease(context, participants, false);
+            displayErrors(context);
+            return false;
+        }
+
+        for (Baseline diff : diffs) {
+            Collection<? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
+            Builder builder = null;
+            for (Builder b : builders) {
+                if (b.getBsn().equals(diff.getBsn())) {
+                    builder = b;
+                    break;
+                }
+            }
+            if (builder != null) {
+                if (!release(context, participants, builder)) {
+                    ret = false;
+                }
+            }
+        }
+        return ret;
+    }
 	private static void handleBuildErrors(ReleaseContext context, Reporter reporter, Jar jar) {
 		String symbName = null;
 		String version = null;
@@ -225,7 +247,19 @@ public class ReleaseHelper {
 
 	private static boolean release(ReleaseContext context, List<IReleaseParticipant> participants, Builder builder) throws Exception {
 
-		Jar jar = builder.build();
+	    Jar jar;
+
+	    if (context.getReleaseOption() == ReleaseOption.UPDATE_RELEASE) {
+	        jar = builder.build();
+	    } else {
+	        // No need to rebuild if release only
+	        File jarFile = new File(context.getProject().getTarget(), builder.getBsn() + ".jar");
+	        if (jarFile.isFile()) {
+	            jar = new Jar(jarFile);
+	        } else {
+	            jar = builder.build();
+	        }
+	    }
 
 		handleBuildErrors(context, builder, jar);
 
