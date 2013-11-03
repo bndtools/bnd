@@ -51,6 +51,18 @@
 
 
 	<!--
+         ECHO
+
+         Print extra settings
+    -->
+	<target name="echo" depends="init,template.echo">
+		<echo>build:                  ${build}</echo>
+		<echo>javac.ee:               ${javac.ee}</echo>
+		<echo>releaserepo:            ${releaserepo}</echo>
+	</target>
+
+
+	<!--
 	     FINDBUGS
 	-->
 	<target name="findbugs" depends="init,template.build">
