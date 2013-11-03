@@ -1,5 +1,3 @@
-/bin
-/bin_test
-/generated
-/runtimefw
-/workspace
+/bin/
+/bin_test/
+/generated/
