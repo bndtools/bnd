@@ -1,6 +1,3 @@
-## Plugin Locations
--pluginpath: ${workspace}/cnf/plugins/biz.aQute.repository/biz.aQute.repository-2.1.0.jar
-
 ## Eclipse SDK 3.7.2
 eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo; \
 	locations=http://eclipse-repo-3.7.2.s3.amazonaws.com/index.xml.gz; \
