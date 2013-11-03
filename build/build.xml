@@ -70,7 +70,7 @@
 		  We need a better way of letting the projects specify additional
 		  resources to be copied in.
 		-->
-		<copy file="../cnf/deps/org.apache.ace.bnd.repository/org.apache.ace.bnd.repository-latest.jar" todir="${target}/plugins/extras"/>
+		<copy file="../cnf/buildrepo/org.apache.ace.bnd.repository/org.apache.ace.bnd.repository-latest.jar" todir="${target}/plugins/extras"/>
 	</target>
 	
 	<!-- Generate the p2 repository and index -->
