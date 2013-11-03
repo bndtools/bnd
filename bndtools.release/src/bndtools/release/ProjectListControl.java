@@ -13,13 +13,17 @@ package bndtools.release;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ColumnPixelData;
+import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -59,51 +63,51 @@ public class ProjectListControl {
 		this.releaseRepos = releaseRepos;
 	}
 
-	public void createControl(Composite parent) {
-		createTable(parent);
-		createTableViewer();
-	}
+    public void createControl(final Composite parent) {
+        createTableLayout(parent);
+    }
 
-	private void createTable(Composite parent) {
+    private void createTableLayout(Composite parent) {
+        // Create the composite
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
-	    projects = new Table (parent, SWT.CHECK | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
-		projects.setLinesVisible (true);
-		projects.setHeaderVisible (true);
+        // Add TableColumnLayout
+        TableColumnLayout layout = new TableColumnLayout();
+        composite.setLayout(layout);
 
-		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gridData.heightHint = 300;
-		projects.setLayoutData (gridData);
-		projects.addSelectionListener(new SelectionListener() {
-			public void widgetSelected(SelectionEvent e) {
-				selectionListener.widgetSelected(e);
-			}
-			public void widgetDefaultSelected(SelectionEvent e) {
-				selectionListener.widgetDefaultSelected(e);
-			}
-		});
-
-		// Project
-		TableColumn tableCol = new TableColumn(projects, SWT.LEFT, 0);
-		tableCol.setText(Messages.project1);
-		tableCol.setWidth(200);
-
-		// Repository
-		tableCol = new TableColumn(projects, SWT.LEFT, 1);
-		tableCol.setText(Messages.repository);
-		tableCol.setWidth(100);
-
-		// Number of Bundles
-		tableCol = new TableColumn(projects, SWT.CENTER, 2);
-		tableCol.setText(Messages.bundles);
-		tableCol.setWidth(50);
-	}
-
-    private void createTableViewer() {
-
-        tableViewer = new TableViewer(projects);
+        // Instantiate TableViewer
+        tableViewer = new TableViewer(composite, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
         tableViewer.setUseHashlookup(true);
+        projects = tableViewer.getTable();
+        projects.setHeaderVisible(true);
+        projects.setLinesVisible(true);
+        projects.addSelectionListener(new SelectionListener() {
+            public void widgetSelected(SelectionEvent e) {
+                selectionListener.widgetSelected(e);
+            }
+            public void widgetDefaultSelected(SelectionEvent e) {
+                selectionListener.widgetDefaultSelected(e);
+            }
+        });
 
-        tableViewer.setColumnProperties(columnNames);
+        // Project
+        TableViewerColumn tableViewerColumn = new TableViewerColumn(tableViewer, SWT.LEFT);
+        TableColumn tableCol = tableViewerColumn.getColumn();
+        layout.setColumnData(tableCol, new ColumnWeightData(20, 100, true));
+        tableCol.setText(Messages.project1);
+
+        // Repository
+        tableViewerColumn = new TableViewerColumn(tableViewer, SWT.LEFT);
+        tableCol = tableViewerColumn.getColumn();
+        layout.setColumnData(tableCol, new ColumnWeightData(15, 80, true));
+        tableCol.setText(Messages.repository);
+
+        // Bundles
+        tableViewerColumn = new TableViewerColumn(tableViewer, SWT.CENTER);
+        tableCol = tableViewerColumn.getColumn();
+        layout.setColumnData(tableCol, new ColumnPixelData(35, true, true));
+        tableCol.setText(Messages.bundles);
 
         // Create the cell editors
         CellEditor[] editors = new CellEditor[columnNames.length];
@@ -126,8 +130,9 @@ public class ProjectListControl {
         tableViewer.setCellModifier(new TableCellModifier());
         tableViewer.setContentProvider(new ContentProvider());
         tableViewer.setLabelProvider(new TableLabelProvider());
-    }
+        tableViewer.setColumnProperties(columnNames);
 
+    }
 
     public void setInput(List<ProjectDiff> projectDiffs) {
         this.projectDiffs = projectDiffs;

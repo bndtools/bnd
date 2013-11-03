@@ -15,8 +15,10 @@ import java.util.List;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -37,6 +39,7 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 	private List<ProjectDiff> projectDiffs;
 	private ProjectListControl projectListControl;
 	private BundleTree bundleRelease;
+	protected SashForm sashForm;
 
 	private boolean updateOnly = false;
 	private final boolean showMessage;
@@ -52,25 +55,39 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 	protected Control createDialogArea(Composite parent) {
 		Composite composite = (Composite) super.createDialogArea(parent);
 
-		GridLayout gridLayout = new GridLayout();
-		gridLayout.numColumns = 2;
-		gridLayout.horizontalSpacing = 0;
-		gridLayout.verticalSpacing = 5;
-		gridLayout.marginWidth = 0;
-		gridLayout.marginHeight = 0;
-		composite.setLayout(gridLayout);
+		int screenWidth = getShell().getDisplay().getClientArea().width;
+	    int screenHeight = getShell().getDisplay().getClientArea().height;
+
+		GridData gridData = createFillGridData();
+		gridData.heightHint = Math.min(screenHeight, 500);
+		gridData.widthHint = Math.min(screenWidth, 800);
+
+	    sashForm = new SashForm(composite, SWT.HORIZONTAL);
+	    sashForm.setLayout(createGridLayout());
+	    sashForm.setLayoutData(gridData);
+	    sashForm.setSashWidth(10);
+
+	    Composite left = new Composite(sashForm, SWT.NONE);
+	    left.setLayout(createGridLayout());
+	    left.setLayoutData(createFillGridData());
+
+        Composite right = new Composite(sashForm, SWT.NONE);
+        right.setLayout(createGridLayout());
+        right.setLayoutData(createFillGridData());
 
 		String[] items = ReleaseHelper.getReleaseRepositories();
 
 		projectListControl = new ProjectListControl(this, items);
-		projectListControl.createControl(composite);
+		projectListControl.createControl(left);
 
-		bundleRelease = new BundleTree(composite);
+		bundleRelease = new BundleTree(right);
 
 		projectListControl.setInput(projectDiffs);
 		setSelected(0);
 
-		return composite;
+        sashForm.setWeights(new int[] { 40, 60 });
+
+		return sashForm;
 	}
 
 	public void setSelected(int index) {
@@ -155,5 +172,19 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 
     public boolean isShowMessage() {
         return showMessage;
+    }
+
+    private static GridLayout createGridLayout() {
+        GridLayout gridLayout = new GridLayout();
+        gridLayout.numColumns = 1;
+        gridLayout.horizontalSpacing = 0;
+        gridLayout.verticalSpacing = 0;
+        gridLayout.marginWidth = 0;
+        gridLayout.marginHeight = 0;
+        return gridLayout;
+    }
+
+    private static GridData createFillGridData() {
+        return new GridData(GridData.FILL, GridData.FILL, true, true);
     }
 }

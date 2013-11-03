@@ -18,9 +18,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -32,12 +34,12 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.Widget;
 
 import aQute.bnd.differ.Baseline;
@@ -76,77 +78,78 @@ public class BundleTree extends Composite {
 
 	public void createControl() {
 
+	    setLayout(createGridLayout());
+	    setLayoutData(createFillGridData());
+
 		sashForm = new SashForm(this, SWT.VERTICAL);
-		sashForm.setLayout(new FillLayout());
+		sashForm.setLayout(createGridLayout());
+        sashForm.setLayoutData(createFillGridData());
 		sashForm.setSashWidth(10);
 
 		createInfoViewer(sashForm);
-		createBundleTreeViewer(sashForm);
 
-		showAll = createButtons(this);
+		Composite composite = new Composite(sashForm, SWT.NONE);
+		composite.setLayout(createGridLayout());
+		composite.setLayoutData(createFillGridData());
 
-		setLayout(new BundleTreeLayout());
+		createBundleTreeViewer(composite);
+		showAll = createButtons(composite);
 
 		sashForm.setWeights(new int[] { 30, 70 });
-
 	}
 
 	private void createInfoViewer(Composite container) {
 
-		GridLayout gridLayout = new GridLayout();
-		gridLayout.numColumns = 1;
-		gridLayout.horizontalSpacing = 0;
-		gridLayout.verticalSpacing = 0;
-		gridLayout.marginWidth = 0;
-		gridLayout.marginHeight = 0;
-
 		infoViewerComposite = new Composite(container, SWT.NONE);
-		infoViewerComposite.setLayout(gridLayout);
+		infoViewerComposite.setLayoutData(createFillGridData());
+
+		TreeColumnLayout layout = new TreeColumnLayout();
+		infoViewerComposite.setLayout(layout);
 
 		infoViewer = new TreeViewer(infoViewerComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		infoViewer.setUseHashlookup(true);
-
-		GridData gd = new GridData(GridData.FILL, GridData.FILL, true, true);
-
-		infoViewer.getTree().setLayoutData(gd);
 		infoViewer.getTree().setHeaderVisible(true);
 
-		TreeViewerColumn treeColumn = new TreeViewerColumn(infoViewer, SWT.NONE);
-		treeColumn.getColumn().setText(Messages.bundleAndPackageName);
-		treeColumn.getColumn().setWidth(450);
-		treeColumn.setLabelProvider(new InfoLabelProvider());
+		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(infoViewer, SWT.NONE);
+        TreeColumn treeColumn = treeViewerColumn.getColumn();
+        layout.setColumnData(treeColumn, new ColumnWeightData(450, 180, true));
+        treeColumn.setText(Messages.bundleAndPackageName);
+        treeViewerColumn.setLabelProvider(new InfoLabelProvider());
 
-		TreeViewerColumn currentVersion = new TreeViewerColumn(infoViewer, SWT.NONE);
-		currentVersion.getColumn().setText(Messages.version2);
-		currentVersion.getColumn().setWidth(80);
-		currentVersion.setLabelProvider(new ColumnLabelProvider() {
-			@Override
+        treeViewerColumn = new TreeViewerColumn(infoViewer, SWT.NONE);
+        treeColumn = treeViewerColumn.getColumn();
+        layout.setColumnData(treeColumn, new ColumnWeightData(80, 80, true));
+        treeColumn.setText(Messages.version2);
+        treeViewerColumn.setLabelProvider(new ColumnLabelProvider() {
+            @Override
             public String getText(Object element) {
                 if (element instanceof Baseline) {
                     return ((Baseline) element).getOlderVersion().getWithoutQualifier().toString();
                 }
-				if (element instanceof Info) {
-					return ((Info) element).olderVersion.toString();
-				}
-				return ""; //$NON-NLS-1$
-			}
-		});
-		TreeViewerColumn suggestedVersion = new TreeViewerColumn(infoViewer, SWT.NONE);
-		suggestedVersion.getColumn().setText(Messages.newVersion);
-		suggestedVersion.getColumn().setWidth(80);
-		suggestedVersion.setLabelProvider(new ColumnLabelProvider() {
-			@Override
+                if (element instanceof Info) {
+                    return ((Info) element).olderVersion.toString();
+                }
+                return ""; //$NON-NLS-1$
+            }
+        });
+
+        treeViewerColumn = new TreeViewerColumn(infoViewer, SWT.NONE);
+        treeColumn = treeViewerColumn.getColumn();
+        layout.setColumnData(treeColumn, new ColumnWeightData(80, 80, true));
+        treeColumn.setText(Messages.newVersion);
+        treeViewerColumn.setLabelProvider(new ColumnLabelProvider() {
+            @Override
             public String getText(Object element) {
                 if (element instanceof Baseline) {
                     return ((Baseline) element).getSuggestedVersion().toString();
                 }
-				if (element instanceof Info) {
-					return ((Info) element).suggestedVersion != null ? ((Info) element).suggestedVersion.toString() : ""; //$NON-NLS-1$
-				}
-				return ""; //$NON-NLS-1$
-			}
-		});
-		suggestedVersion.setEditingSupport(new InlineComboEditingSupport(infoViewer));
+                if (element instanceof Info) {
+                    return ((Info) element).suggestedVersion != null ? ((Info) element).suggestedVersion.toString() : ""; //$NON-NLS-1$
+                }
+                return ""; //$NON-NLS-1$
+            }
+        });
+        treeViewerColumn.setEditingSupport(new InlineComboEditingSupport(infoViewer));
 
 		infoViewer.setContentProvider(infoTreeViewerProvider);
 		infoViewer.setAutoExpandLevel(2);
@@ -155,28 +158,21 @@ public class BundleTree extends Composite {
 
 	private void createBundleTreeViewer(Composite container) {
 
-		GridLayout gridLayout = new GridLayout();
-		gridLayout.numColumns = 1;
-		gridLayout.horizontalSpacing = 0;
-		gridLayout.verticalSpacing = 0;
-		gridLayout.marginWidth = 0;
-		gridLayout.marginHeight = 0;
-
 		bundleTreeViewerComposite = new Composite(container, SWT.NONE);
-		bundleTreeViewerComposite.setLayout(gridLayout);
+		bundleTreeViewerComposite.setLayoutData(createFillGridData());
+
+		TreeColumnLayout layout = new TreeColumnLayout();
+		bundleTreeViewerComposite.setLayout(layout);
 
 		bundleTreeViewer = new TreeViewer(bundleTreeViewerComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		bundleTreeViewer.setUseHashlookup(true);
-
-		GridData gd = new GridData(GridData.FILL, GridData.FILL, true, true);
-
-		bundleTreeViewer.getTree().setLayoutData(gd);
 		bundleTreeViewer.getTree().setHeaderVisible(true);
 
-		TreeViewerColumn treeColumn = new TreeViewerColumn(bundleTreeViewer, SWT.NONE);
-		treeColumn.getColumn().setText(Messages.symbNameResources);
-		treeColumn.getColumn().setWidth(610);
-		treeColumn.setLabelProvider(new TreeLabelProvider());
+		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(bundleTreeViewer, SWT.NONE);
+		TreeColumn treeColumn = treeViewerColumn.getColumn();
+		layout.setColumnData(treeColumn, new ColumnWeightData(100, 340, true));
+		treeColumn.setText(Messages.symbNameResources);
+		treeViewerColumn.setLabelProvider(new TreeLabelProvider());
 
 		bundleTreeViewer.setContentProvider(bundleTreeViewerProvider);
 		bundleTreeViewer.setAutoExpandLevel(3);
@@ -385,4 +381,18 @@ public class BundleTree extends Composite {
 			}
 		}
 	}
+
+    private static GridLayout createGridLayout() {
+        GridLayout gridLayout = new GridLayout();
+        gridLayout.numColumns = 1;
+        gridLayout.horizontalSpacing = 0;
+        gridLayout.verticalSpacing = 0;
+        gridLayout.marginWidth = 0;
+        gridLayout.marginHeight = 0;
+        return gridLayout;
+    }
+
+    private static GridData createFillGridData() {
+        return new GridData(GridData.FILL, GridData.FILL, true, true);
+    }
 }
