@@ -52,6 +52,11 @@
 			</classpath>
 		</taskdef>
 
+		<fileset dir="${project}" id="srcjavafiles">
+			<include name="${src}/**/*.java"/>
+		</fileset>
+		<pathconvert refid="srcjavafiles" property="srcjavafiles.present" setonempty="false"/>
+
 		<!-- Create a marker property to indicate that initialisation has been completed -->
 		<property name="outer-initialized" value="set" />
 	</target>
@@ -86,6 +91,32 @@
 		<echo>build:                  ${build}</echo>
 		<echo>javac.ee:               ${javac.ee}</echo>
 		<echo>releaserepo:            ${releaserepo}</echo>
+	</target>
+
+
+    <!--
+         JAVADOC
+    -->
+	<target name="javadoc" depends="init,build" if="srcjavafiles.present">
+		<javadoc
+			windowtitle="${project.name}"
+			doctitle="${project.name}"
+			destdir="${target}/javadoc"
+			source="${javac.source}"
+			sourcepath="${src}"
+			classpath="${project.buildpath}"
+			access="private"
+			author="true"
+			nodeprecated="false"
+			nodeprecatedlist="false"
+			noindex="false"
+			nonavbar="false"
+			notree="false"
+			splitindex="true"
+			use="true"
+			version="true"
+			maxmemory="256M">
+		</javadoc>
 	</target>
 
 
