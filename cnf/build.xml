@@ -63,7 +63,6 @@
          Check for class cycles
     -->
 	<target name="checks" depends="init,template.compile" if="dochecking">
-		<echo message="Performing dependency checks specified in ${projectdir}/classycle.ddf"/>
 		<classcycle failOnUnwantedDependencies="true" definitionFile="${projectdir}/classycle.ddf">
 			<fileset dir="${project.output}" includes="**/*.class"/>
 		</classcycle>
