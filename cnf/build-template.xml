@@ -167,9 +167,9 @@
     <!--
          TEST
     -->
-	<target name="test" depends="compile">
-		<bnd command="test" exceptions="true" basedir="${project}" />
-	</target>
+    <target name="test" depends="compile">
+        <bndtest/>
+    </target>
 
 
     <!--
