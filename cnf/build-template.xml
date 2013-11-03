@@ -173,6 +173,22 @@
 
 
     <!--
+        RELEASE
+
+        Run the bnd release task on the project and its dependencies.
+    -->
+    <target name="_release" depends="init">
+        <bndrelease/>
+    </target>
+
+    <target name="release" depends="build">
+        <subant target="_release" inheritAll="false" buildpath="${project.dependson}">
+            <property name="donotrecurse" value="true" />
+        </subant>
+    </target>
+
+
+    <!--
          CLEAN
 
          Clean up the project.
