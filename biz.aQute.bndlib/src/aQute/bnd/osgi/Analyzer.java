@@ -30,8 +30,11 @@ import java.util.jar.*;
 import java.util.jar.Attributes.Name;
 import java.util.regex.*;
 
+import org.osgi.framework.namespace.*;
+
 import aQute.bnd.annotation.*;
 import aQute.bnd.header.*;
+import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -125,7 +128,7 @@ public class Analyzer extends Processor {
 			classspace.clear();
 			classpathExports.clear();
 			contracts.clear();
-			
+
 			// Parse all the class in the
 			// the jar according to the OSGi bcp
 			analyzeBundleClasspath();
@@ -394,6 +397,29 @@ public class Analyzer extends Processor {
 			// Do any contracts contracts
 			//
 			contracts.addToRequirements(requirements);
+
+			//
+			// We want to add the minimum EE as a requirement
+			// based on the class version
+			//
+
+			if (!ees.isEmpty() // no use otherwise 
+					&& since(About._2_3) // we want people to not have to automatically add it
+					&& !requirements.containsKey(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE) // and it should not be there already
+					) {
+				StringBuilder sb = new StringBuilder();
+
+				for (JAVA ee : ees) {
+					sb.append(ee.getFilter());
+				}
+
+				if (ees.size() > 1)
+					sb.insert(0, "(|").append(")");
+
+				Attrs attrs = new Attrs();
+				attrs.put(Constants.FILTER_DIRECTIVE, sb.toString());
+				requirements.add(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, attrs);
+			}
 
 			if (!requirements.isEmpty())
 				main.putValue(REQUIRE_CAPABILITY, requirements.toString());
@@ -1488,8 +1514,9 @@ public class Analyzer extends Processor {
 	 * @param value
 	 * @throws Exception
 	 */
-	static Pattern OLD_PACKAGEINFO_SYNTAX_P = Pattern.compile("class\\s+(.+)\\s+version\\s+("+Verifier.VERSION_S+")");
-	
+	static Pattern	OLD_PACKAGEINFO_SYNTAX_P	= Pattern.compile("class\\s+(.+)\\s+version\\s+(" + Verifier.VERSION_S
+														+ ")");
+
 	void getExportVersionsFromPackageInfo(PackageRef packageRef, Resource r, Packages classpathExports)
 			throws Exception {
 		if (r == null)
@@ -1512,27 +1539,27 @@ public class Analyzer extends Processor {
 				String key = t.nextElement();
 				String propvalue = p.getProperty(key);
 
-				if ( key.equalsIgnoreCase("include") ) {
-					
+				if (key.equalsIgnoreCase("include")) {
+
 					// Ouch, could be really old syntax
-					// We ignore the include part since we 
+					// We ignore the include part upto we
 					// ignored it long before.
-					
+
 					Matcher m = OLD_PACKAGEINFO_SYNTAX_P.matcher(propvalue);
-					if ( m.matches()) {
+					if (m.matches()) {
 						key = Constants.VERSION_ATTRIBUTE;
 						propvalue = m.group(2);
-						if ( isPedantic())
-							warning("found old syntax in package info in package %s, from resource %s" , packageRef, r);
+						if (isPedantic())
+							warning("found old syntax in package info in package %s, from resource %s", packageRef, r);
 					}
 				}
-				
+
 				String value = map.get(key);
 				if (value == null) {
 					value = propvalue;
 
 					// Messy, to allow directives we need to
-					// allow the value to start with a ':' since we cannot
+					// allow the value to start with a ':' upto we cannot
 					// encode this in a property name
 
 					if (value.startsWith(":")) {
@@ -1564,18 +1591,19 @@ public class Analyzer extends Processor {
 			location = error("%s attribute [%s='%s'], key must be an EXTENDED (CORE1.3.2 %s)", where, key, value,
 					Verifier.EXTENDED_S);
 		} else if (value == null || value.trim().length() == 0) {
-			location = error("%s attribute [%s='%s'], value is empty which is not allowed in ARGUMENT_S (CORE1.3.2 %s)",
-					where, key, value, Verifier.ARGUMENT_S);
+			location = error(
+					"%s attribute [%s='%s'], value is empty which is not allowed in ARGUMENT_S (CORE1.3.2 %s)", where,
+					key, value, Verifier.ARGUMENT_S);
 		} else if (!Verifier.isArgument(value)) {
 			location = error("%s attribute [%s='%s'], value not an ARGUMENT_S (CORE1.3.2 %s)", where, key, value, key,
 					Verifier.ARGUMENT_S);
 		} else
 			return;
-		if ( path != null) {
+		if (path != null) {
 			File f = new File(path);
-			if ( f.isFile() ) {
+			if (f.isFile()) {
 				FileLine fl = findHeader(f, key);
-				if( fl != null)
+				if (fl != null)
 					fl.set(location);
 			}
 		}
@@ -1827,7 +1855,7 @@ public class Analyzer extends Processor {
 
 						// For each package we encounter for the first
 						// time. Unfortunately we can only do this once
-						// we found a class since the bcp has a tendency
+						// we found a class upto the bcp has a tendency
 						// to overlap
 						if (!packageRef.isMetaData()) {
 							Resource pinfo = jar.getResource(prefix + packageRef.getPath() + "/packageinfo");
@@ -2746,20 +2774,20 @@ public class Analyzer extends Processor {
 		return xref;
 	}
 
-
 	public String _exports(String[] args) {
-		return join( filter(getExports().keySet(),args));
-	}
-	public String _imports(String[] args) {
-		return join( filter(getImports().keySet(),args));
+		return join(filter(getExports().keySet(), args));
 	}
 
-	private <T> Collection<T> filter( Collection<T> list, String[] args) {
-		if ( args == null || args.length <= 1)
+	public String _imports(String[] args) {
+		return join(filter(getImports().keySet(), args));
+	}
+
+	private <T> Collection<T> filter(Collection<T> list, String[] args) {
+		if (args == null || args.length <= 1)
 			return list;
-		if ( args.length > 2)
-			warning("Too many arguments for ${"+args[0]+"} macro");
-		 Instructions instrs = new Instructions(args[1]);
-		 return instrs.select(list, false);
+		if (args.length > 2)
+			warning("Too many arguments for ${" + args[0] + "} macro");
+		Instructions instrs = new Instructions(args[1]);
+		return instrs.select(list, false);
 	}
 }
