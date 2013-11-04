@@ -38,8 +38,12 @@ import aQute.bnd.version.*;
 public class About {
 	/**
 	 * <ul>
-	 * <li>Implemented the {@see Processor#since} functionality.
+	 * <li>Implemented the {@see Processor#since} functionality with the
+	 * {@link Constants#UPTO} instruction.
+	 * <li>Automatically adding the EE to the Require Capability header based on
+	 * the compiled class file version.
+	 * <li>Added 1.7 and 1.8 compiler files and EEs
 	 * </ul>
 	 */
-	static Version _2_3 = new Version(2,3,0);
+	static Version	_2_3	= new Version(2, 3, 0);
 }
