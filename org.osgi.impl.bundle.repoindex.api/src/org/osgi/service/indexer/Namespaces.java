@@ -1,5 +1,6 @@
 package org.osgi.service.indexer;
 
+
 /**
  * Predefined namespaces
  */

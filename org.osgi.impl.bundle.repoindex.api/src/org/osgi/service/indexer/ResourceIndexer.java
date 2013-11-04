@@ -22,10 +22,13 @@ import java.io.Writer;
 import java.util.Map;
 import java.util.Set;
 
+import aQute.bnd.annotation.ProviderType;
+
 /**
  * ResourceIndexer is an OSGi service that creates a Repository XML
  * representation by indexing resource capabilities and requirements.
  */
+@ProviderType
 public interface ResourceIndexer {
 	/**
 	 * Name of the configuration variable to enable pretty-printing: indented

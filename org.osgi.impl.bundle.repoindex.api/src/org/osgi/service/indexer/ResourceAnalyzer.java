@@ -2,6 +2,8 @@ package org.osgi.service.indexer;
 
 import java.util.List;
 
+import aQute.bnd.annotation.ConsumerType;
+
 /**
  * <p>
  * A resource analyzer is responsible for analyzing a resource for some specific
@@ -15,6 +17,7 @@ import java.util.List;
  * 
  * @author Neil Bartlett <njbartlett@gmail.com>
  */
+@ConsumerType
 public interface ResourceAnalyzer {
 	/**
 	 * The service property used to declare a resource filter, so that the

@@ -6,9 +6,12 @@ import java.util.Dictionary;
 import java.util.List;
 import java.util.jar.Manifest;
 
+import aQute.bnd.annotation.ProviderType;
+
 /**
  * A resource that is to be indexed.
  */
+@ProviderType
 public interface Resource {
 	/** the name of the name attribute */
 	static String NAME = "name";
