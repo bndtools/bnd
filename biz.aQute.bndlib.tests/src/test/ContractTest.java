@@ -29,6 +29,7 @@ public class ContractTest extends TestCase {
 
 		Domain domain = Domain.domain(ajar.getManifest());
 		Parameters p = domain.getRequireCapability();
+		p.remove("osgi.ee");
 		assertEquals(0, p.size());
 	}
 	/**
@@ -51,6 +52,7 @@ public class ContractTest extends TestCase {
 
 		Domain domain = Domain.domain(ajar.getManifest());
 		Parameters p = domain.getRequireCapability();
+		p.remove("osgi.ee");
 		assertEquals(0, p.size());
 	}
 
@@ -74,6 +76,7 @@ public class ContractTest extends TestCase {
 
 		Domain domain = Domain.domain(ajar.getManifest());
 		Parameters p = domain.getRequireCapability();
+		p.remove("osgi.ee");
 		assertEquals(0, p.size());
 	}
 
@@ -100,6 +103,7 @@ public class ContractTest extends TestCase {
 
 		Domain domain = Domain.domain(ajar.getManifest());
 		Parameters p = domain.getRequireCapability();
+		p.remove("osgi.ee");
 		assertNotNull(p);
 		assertEquals(1, p.size());
 		Attrs attrs = p.get("osgi.contract");
@@ -143,6 +147,7 @@ public class ContractTest extends TestCase {
 		assertTrue(a.check());
 		Domain domain = Domain.domain(ajar.getManifest());
 		Parameters rc = domain.getRequireCapability();
+		rc.remove("osgi.ee");
 		System.out.println(rc);
 		assertEquals(1, rc.size());
 
