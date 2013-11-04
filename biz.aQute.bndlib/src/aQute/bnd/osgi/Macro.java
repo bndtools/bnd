@@ -176,7 +176,7 @@ public class Macro {
 							}
 							ExtList<String> args = new ExtList<String>(parts);
 							domain.setProperty("@", args.remove(0));
-							domain.setProperty("*", args.join());
+							domain.setProperty("#", args.join());
 							try {
 								value = process(template, new Link(domain, link, key));
 								if (value != null)

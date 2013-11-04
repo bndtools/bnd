@@ -15,8 +15,8 @@ public class MacroTest extends TestCase {
 	
 	public void testCustomMacros() {
 		assertTemplate("this is 1 abc, and this is def", "this is 1 ${1}, and this is ${2}", "abc;def");
-		//assertTemplate("abc,def", "${*}", "abc;def");
-		
+		assertTemplate("abc,def", "${#}", "abc;def");
+		assertTemplate("osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.6))'", "osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.${1}))'", "6");
 	}
 	
 	void assertTemplate(String result, String template, String params) {
