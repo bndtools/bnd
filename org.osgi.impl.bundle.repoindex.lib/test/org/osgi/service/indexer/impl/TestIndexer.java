@@ -159,9 +159,10 @@ public class TestIndexer extends TestCase {
 
 	public void testFullIndexPrettyCompressedPermutations() throws Exception {
 		Boolean pretties[] = { null, Boolean.FALSE, Boolean.TRUE };
+		Boolean compressions[] = { null, Boolean.FALSE, Boolean.TRUE };
 
-		boolean outPretties[] = { false, true, true };
-		boolean outCompressions[] = { true, false, false };
+		boolean outPretties[] = { false, false, false, true, false, false, true, true, true };
+		boolean outCompressions[] = { true, false, true, false, false, true, false, false, true };
 
 		String expectedPretty = Utils.readStream(new FileInputStream("testdata/full-03+06.txt"));
 		String expectedNotPretty = Utils.readStream(new FileInputStream("testdata/full-03+06-not-pretty.txt"));
@@ -177,23 +178,28 @@ public class TestIndexer extends TestCase {
 
 		int outIndex = 0;
 		for (Boolean pretty : pretties) {
-			config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
-			config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
-			if (pretty != null) {
-				config.put(ResourceIndexer.PRETTY, pretty.toString().toLowerCase());
-			}
-			indexer.index(files, out, config);
+			for (Boolean compression : compressions) {
+				config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
+				config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
+				if (pretty != null) {
+					config.put(ResourceIndexer.PRETTY, pretty.toString().toLowerCase());
+				}
+				if (compression != null) {
+					config.put(ResourceIndexer.COMPRESSED, compression.toString().toLowerCase());
+				}
+				indexer.index(files, out, config);
 
-			String expected = outPretties[outIndex] ? expectedPretty : expectedNotPretty;
-			if (!outCompressions[outIndex]) {
-				assertEquals("pretty = " + pretty, expected, out.toString());
-			} else {
-				assertEquals("pretty = " + pretty, expected, Utils.decompress(out.toByteArray()));
-			}
+				String expected = outPretties[outIndex] ? expectedPretty : expectedNotPretty;
+				if (!outCompressions[outIndex]) {
+					assertEquals("pretty/compression = " + pretty + "/" + compression, expected, out.toString());
+				} else {
+					assertEquals("pretty/compression = " + pretty + "/" + compression, expected, Utils.decompress(out.toByteArray()));
+				}
 
-			config.clear();
-			out.reset();
-			outIndex++;
+				config.clear();
+				out.reset();
+				outIndex++;
+			}
 		}
 	}
 

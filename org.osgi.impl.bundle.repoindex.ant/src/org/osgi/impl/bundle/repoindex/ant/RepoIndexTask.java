@@ -41,6 +41,10 @@ public class RepoIndexTask extends Task {
 		config.put(ResourceIndexer.PRETTY, Boolean.toString(pretty));
 	}
 
+	public void setCompressed(boolean compressed) {
+		config.put(ResourceIndexer.COMPRESSED, Boolean.toString(compressed));
+	}
+
 	public void setRootURL(String root) {
 		config.put(ResourceIndexer.ROOT_URL, root);
 	}

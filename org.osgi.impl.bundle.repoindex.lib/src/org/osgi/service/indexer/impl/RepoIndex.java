@@ -129,16 +129,25 @@ public class RepoIndex implements ResourceIndexer {
 		Indent indent;
 		PrintWriter pw;
 		String prettySetting = config.get(ResourceIndexer.PRETTY);
+		String compressedSetting = config.get(ResourceIndexer.COMPRESSED);
 		/**
 		 * <pre>
-		 * pretty      out-pretty    out-compressed
-		 *   null     Indent.NONE              true
-		 *  false   Indent.PRETTY             false
-		 *   true   Indent.PRETTY             false
+		 * pretty   compressed         out-pretty     out-compressed
+		 *   null         null        Indent.NONE               true*
+		 *   null        false        Indent.NONE              false
+		 *   null         true        Indent.NONE               true
+		 *  false         null      Indent.PRETTY              false*
+		 *  false        false        Indent.NONE              false
+		 *  false         true        Indent.NONE               true
+		 *   true         null      Indent.PRETTY              false*
+		 *   true        false      Indent.PRETTY              false
+		 *   true         true      Indent.PRETTY               true
+		 *   
+		 *   * = original behaviour, before compressed was introduced
 		 * </pre>
 		 */
-		indent = (prettySetting == null) ? Indent.NONE : Indent.PRETTY;
-		boolean compressed = (prettySetting == null);
+		indent = (prettySetting == null || (!Boolean.parseBoolean(prettySetting) && compressedSetting != null)) ? Indent.NONE : Indent.PRETTY;
+		boolean compressed = (prettySetting == null && compressedSetting == null) || Boolean.parseBoolean(compressedSetting);
 		if (!compressed) {
 			pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
 		} else {

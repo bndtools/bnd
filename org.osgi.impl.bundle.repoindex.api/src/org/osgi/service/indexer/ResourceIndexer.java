@@ -28,10 +28,15 @@ import java.util.Set;
  */
 public interface ResourceIndexer {
 	/**
-	 * Name of the configuration variable to enable pretty-printing:
-	 * non-gzipped, indented XML
+	 * Name of the configuration variable to enable pretty-printing: indented
+	 * XML
 	 */
 	public static final String PRETTY = "pretty";
+
+	/**
+	 * Name of the configuration variable to enable compression: gzipped XML
+	 */
+	public static final String COMPRESSED = "compressed";
 
 	/** the default repository name */
 	public static final String REPOSITORYNAME_DEFAULT = "Untitled";

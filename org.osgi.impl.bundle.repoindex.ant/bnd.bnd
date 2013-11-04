@@ -36,4 +36,4 @@ Private-Package: \
 Include-Resource: taskdef.properties
 Bundle-Activator: org.osgi.service.indexer.osgi.Activator
 
-Bundle-Version: 0.0.1.${tstamp}
+Bundle-Version: 0.1.0.${tstamp}
