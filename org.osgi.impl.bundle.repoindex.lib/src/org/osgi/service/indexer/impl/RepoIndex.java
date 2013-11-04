@@ -128,6 +128,14 @@ public class RepoIndex implements ResourceIndexer {
 
 		Indent indent;
 		PrintWriter pw;
+		/**
+		 * <pre>
+		 * pretty      out-pretty    out-compressed
+		 *   null     Indent.NONE              true
+		 *  false   Indent.PRETTY             false
+		 *   true   Indent.PRETTY             false
+		 * </pre>
+		 */
 		if (config.get(ResourceIndexer.PRETTY) != null) {
 			indent = Indent.PRETTY;
 			pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
