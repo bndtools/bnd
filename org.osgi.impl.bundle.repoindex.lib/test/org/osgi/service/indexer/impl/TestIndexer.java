@@ -157,22 +157,44 @@ public class TestIndexer extends TestCase {
 		assertEquals(expected, Utils.decompress(out.toByteArray()));
 	}
 
-	public void testFullIndexPrettyPrint() throws Exception {
-		RepoIndex indexer = new RepoIndex();
+	public void testFullIndexPrettyCompressedPermutations() throws Exception {
+		Boolean pretties[] = { null, Boolean.FALSE, Boolean.TRUE };
 
+		boolean outPretties[] = { false, true, true };
+		boolean outCompressions[] = { true, false, false };
+
+		String expectedPretty = Utils.readStream(new FileInputStream("testdata/full-03+06.txt"));
+		String expectedNotPretty = Utils.readStream(new FileInputStream("testdata/full-03+06-not-pretty.txt"));
+
+		RepoIndex indexer = new RepoIndex();
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
+
 		Set<File> files = new LinkedHashSet<File>();
 		files.add(new File("testdata/03-export.jar"));
 		files.add(new File("testdata/06-requirebundle.jar"));
 
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
-		config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
-		config.put(ResourceIndexer.PRETTY, "true");
-		indexer.index(files, out, config);
 
-		String expected = Utils.readStream(new FileInputStream("testdata/full-03+06.txt"));
-		assertEquals(expected, out.toString());
+		int outIndex = 0;
+		for (Boolean pretty : pretties) {
+			config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
+			config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
+			if (pretty != null) {
+				config.put(ResourceIndexer.PRETTY, pretty.toString().toLowerCase());
+			}
+			indexer.index(files, out, config);
+
+			String expected = outPretties[outIndex] ? expectedPretty : expectedNotPretty;
+			if (!outCompressions[outIndex]) {
+				assertEquals("pretty = " + pretty, expected, out.toString());
+			} else {
+				assertEquals("pretty = " + pretty, expected, Utils.decompress(out.toByteArray()));
+			}
+
+			config.clear();
+			out.reset();
+			outIndex++;
+		}
 	}
 
 	public void testAddAnalyzer() throws Exception {
