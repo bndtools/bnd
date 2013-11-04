@@ -25,6 +25,12 @@ public class Parameters implements Map<String,Attrs> {
 		map.clear();
 	}
 
+	
+	public void add(String key, Attrs attrs) {
+		while ( containsKey(key))
+			key += Constants.DUPLICATE_MARKER;
+		put(key,attrs);
+	}
 	public boolean containsKey(final String name) {
 		if (map == null)
 			return false;
