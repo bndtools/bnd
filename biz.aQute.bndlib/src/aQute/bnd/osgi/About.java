@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
 import aQute.bnd.header.*;
+import aQute.bnd.version.*;
 
 /**
  * This package contains a number of classes that assists by analyzing JARs and
@@ -35,5 +36,10 @@ import aQute.bnd.header.*;
  * @version $Revision: 1.2 $
  */
 public class About {
-	// Empty
+	/**
+	 * <ul>
+	 * <li>Implemented the {@see Processor#since} functionality.
+	 * </ul>
+	 */
+	static Version _2_3 = new Version(2,3,0);
 }
