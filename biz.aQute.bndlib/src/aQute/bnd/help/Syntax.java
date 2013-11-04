@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 
 public class Syntax implements Constants {
 	final String							header;
@@ -409,7 +410,8 @@ public class Syntax implements Constants {
 					RUNVM + "=-Xmax=30, secondOption=secondValue", null, null),
 			new Syntax(RUNPROGRAMARGS, "Additional arguments for the program invokation.", RUNPROGRAMARGS
 					+ "=/some/file /another/file some_argument", null, null),
-			new Syntax(PACKAGE, "Defines the options for packaging", PACKAGE + "=" + PACKAGE_JPM, null, null)
+			new Syntax(PACKAGE, "Defines the options for packaging", PACKAGE + "=" + PACKAGE_JPM, null, null),
+			new Syntax(UPTO, "Limit bnd's behavior like it was up to the given version", "-upto: 2.3.1", null, Version.VERSION)
 																	};
 
 	public final static Map<String,Syntax>	HELP					= new HashMap<String,Syntax>();
