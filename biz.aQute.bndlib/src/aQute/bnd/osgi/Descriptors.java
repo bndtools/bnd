@@ -381,6 +381,14 @@ public class Descriptors {
 		if (ref != null)
 			return ref;
 
+		//
+		// Check here if a package is actually a nested class
+		// com.example.Foo.Bar should have package com.example,
+		// not com.example.Foo.
+		//
+		
+		
+
 		ref = new PackageRef(binaryPackName);
 		packageCache.put(binaryPackName, ref);
 		return ref;
