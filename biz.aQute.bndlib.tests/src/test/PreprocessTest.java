@@ -29,6 +29,8 @@ public class PreprocessTest extends TestCase {
 		SHA1 d1 = SHA1.digest(f);
 		SHA1 d2 = SHA1.digest(resource.openInputStream());
 		assertEquals(d1, d2);
+		
+		b.close();
 	}
 
 	/**
@@ -56,6 +58,7 @@ public class PreprocessTest extends TestCase {
 		System.out.println(s);
 		assertTrue( s.contains("Yes!"));
 		assertFalse( s.contains("${var}"));
+		b.close();
 	}
 
 	/**
@@ -75,6 +78,7 @@ public class PreprocessTest extends TestCase {
 		assertNotNull(s);
 		
 		assertTrue( s.contains("${var}"));
+		b.close();
 	}
 	
 	/**
@@ -92,6 +96,7 @@ public class PreprocessTest extends TestCase {
 
 		Jar jar = analyzer.getJar();
 		assertTrue(jar.getResource("top.mf") != null);
+		analyzer.close();
 	}
 
 
