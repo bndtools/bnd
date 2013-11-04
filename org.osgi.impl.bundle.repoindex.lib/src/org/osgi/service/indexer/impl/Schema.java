@@ -2,7 +2,7 @@ package org.osgi.service.indexer.impl;
 
 public final class Schema {
 
-	public static final Object XML_PROCESSING_INSTRUCTION = "<?xml version='1.0' encoding='utf-8'?>";
+	public static final Object XML_PROCESSING_INSTRUCTION = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 	public static final String NAMESPACE = "http://www.osgi.org/xmlns/repository/v1.0.0";
 
 	public static final String ELEM_REPOSITORY = "repository";

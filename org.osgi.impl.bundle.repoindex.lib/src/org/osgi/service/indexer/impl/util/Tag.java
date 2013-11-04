@@ -215,17 +215,15 @@ public class Tag {
 		pw.print('<');
 		pw.print(name);
 
+		String quote = "\"";
 		for (Map.Entry<String, String> e : attributes.entrySet()) {
 			String key = e.getKey();
 			String value = escape(e.getValue());
 			pw.print(' ');
 			pw.print(key);
 			pw.print("=");
-			String quote = "'";
-			if (value.indexOf(quote) >= 0)
-				quote = "\"";
 			pw.print(quote);
-			pw.print(value);
+			pw.print(value.replaceAll("\"", "&quot;"));
 			pw.print(quote);
 		}
 
