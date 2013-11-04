@@ -127,56 +127,61 @@ public class RepoIndex implements ResourceIndexer {
 			config = new HashMap<String, String>(0);
 
 		Indent indent;
-		PrintWriter pw;
-		String prettySetting = config.get(ResourceIndexer.PRETTY);
-		String compressedSetting = config.get(ResourceIndexer.COMPRESSED);
-		/**
-		 * <pre>
-		 * pretty   compressed         out-pretty     out-compressed
-		 *   null         null        Indent.NONE               true*
-		 *   null        false        Indent.NONE              false
-		 *   null         true        Indent.NONE               true
-		 *  false         null      Indent.PRETTY              false*
-		 *  false        false        Indent.NONE              false
-		 *  false         true        Indent.NONE               true
-		 *   true         null      Indent.PRETTY              false*
-		 *   true        false      Indent.PRETTY              false
-		 *   true         true      Indent.PRETTY               true
-		 *   
-		 *   * = original behaviour, before compressed was introduced
-		 * </pre>
-		 */
-		indent = (prettySetting == null || (!Boolean.parseBoolean(prettySetting) && compressedSetting != null)) ? Indent.NONE : Indent.PRETTY;
-		boolean compressed = (prettySetting == null && compressedSetting == null) || Boolean.parseBoolean(compressedSetting);
-		if (!compressed) {
-			pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
-		} else {
-			pw = new PrintWriter(new GZIPOutputStream(out, Deflater.BEST_COMPRESSION));
+		PrintWriter pw = null;
+		try {
+			String prettySetting = config.get(ResourceIndexer.PRETTY);
+			String compressedSetting = config.get(ResourceIndexer.COMPRESSED);
+			/**
+			 * <pre>
+			 * pretty   compressed         out-pretty     out-compressed
+			 *   null         null        Indent.NONE               true*
+			 *   null        false        Indent.NONE              false
+			 *   null         true        Indent.NONE               true
+			 *  false         null      Indent.PRETTY              false*
+			 *  false        false        Indent.NONE              false
+			 *  false         true        Indent.NONE               true
+			 *   true         null      Indent.PRETTY              false*
+			 *   true        false      Indent.PRETTY              false
+			 *   true         true      Indent.PRETTY               true
+			 *   
+			 *   * = original behaviour, before compressed was introduced
+			 * </pre>
+			 */
+			indent = (prettySetting == null || (!Boolean.parseBoolean(prettySetting) && compressedSetting != null)) ? Indent.NONE : Indent.PRETTY;
+			boolean compressed = (prettySetting == null && compressedSetting == null) || Boolean.parseBoolean(compressedSetting);
+			if (!compressed) {
+				pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
+			} else {
+				pw = new PrintWriter(new GZIPOutputStream(out, Deflater.BEST_COMPRESSION));
+			}
+
+			pw.print(Schema.XML_PROCESSING_INSTRUCTION);
+			Tag repoTag = new Tag(Schema.ELEM_REPOSITORY);
+
+			String repoName = config.get(REPOSITORY_NAME);
+			if (repoName == null)
+				repoName = REPOSITORYNAME_DEFAULT;
+			repoTag.addAttribute(Schema.ATTR_NAME, repoName);
+
+			String increment = config.get(REPOSITORY_INCREMENT_OVERRIDE);
+			if (increment == null)
+				increment = Long.toString(System.currentTimeMillis());
+			repoTag.addAttribute(Schema.ATTR_INCREMENT, increment);
+
+			repoTag.addAttribute(Schema.ATTR_XML_NAMESPACE, Schema.NAMESPACE);
+
+			repoTag.printOpen(indent, pw, false);
+			for (File file : files) {
+				Tag resourceTag = generateResource(file, config);
+				resourceTag.print(indent.next(), pw);
+			}
+			repoTag.printClose(indent, pw);
+		} finally {
+			if (pw != null) {
+				pw.flush();
+				pw.close();
+			}
 		}
-
-		pw.print(Schema.XML_PROCESSING_INSTRUCTION);
-		Tag repoTag = new Tag(Schema.ELEM_REPOSITORY);
-
-		String repoName = config.get(REPOSITORY_NAME);
-		if (repoName == null)
-			repoName = REPOSITORYNAME_DEFAULT;
-		repoTag.addAttribute(Schema.ATTR_NAME, repoName);
-
-		String increment = config.get(REPOSITORY_INCREMENT_OVERRIDE);
-		if (increment == null)
-			increment = Long.toString(System.currentTimeMillis());
-		repoTag.addAttribute(Schema.ATTR_INCREMENT, increment);
-
-		repoTag.addAttribute(Schema.ATTR_XML_NAMESPACE, Schema.NAMESPACE);
-
-		repoTag.printOpen(indent, pw, false);
-		for (File file : files) {
-			Tag resourceTag = generateResource(file, config);
-			resourceTag.print(indent.next(), pw);
-		}
-		repoTag.printClose(indent, pw);
-		pw.flush();
-		pw.close();
 	}
 
 	public void indexFragment(Set<File> files, Writer out, Map<String, String> config) throws Exception {
