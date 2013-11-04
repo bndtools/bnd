@@ -43,6 +43,10 @@ public class About {
 	 * <li>Automatically adding the EE to the Require Capability header based on
 	 * the compiled class file version.
 	 * <li>Added 1.7 and 1.8 compiler files and EEs
+	 * <li>The package command not faithfully provides the classpath. In the
+	 * previous version it flattened all jars
+	 * <li>Supports parameters in macros: ${x;a;b} -> x = ${1}/${2} -> a/b. ${#}
+	 * is an array with arguments. $ @} is the name of the function.
 	 * </ul>
 	 */
 	static Version	_2_3	= new Version(2, 3, 0);
