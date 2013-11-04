@@ -14,7 +14,7 @@ import org.osgi.service.indexer.Requirement;
 
 public class Utils {
 	public static final String readStream(InputStream stream) throws IOException {
-		InputStreamReader reader = new InputStreamReader(stream);
+		InputStreamReader reader = new InputStreamReader(stream, "UTF-8");
 		StringBuilder result = new StringBuilder();
 
 		char[] buf = new char[1024];
