@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnPixelData;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
@@ -22,7 +23,6 @@ import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
@@ -38,12 +38,14 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import bndtools.release.nl.Messages;
+import bndtools.release.ui.TableSortingEnabler;
+import bndtools.release.ui.TableSortingEnabler.IColumnContentProvider;
 
 public class ProjectListControl {
 
 	private Table projects;
 	private String[] releaseRepos;
-	private TableViewer tableViewer;
+	private CheckboxTableViewer tableViewer;
 	private final SelectionListener selectionListener;
 	private List<ProjectDiff> projectDiffs;
 
@@ -77,9 +79,7 @@ public class ProjectListControl {
         composite.setLayout(layout);
 
         // Instantiate TableViewer
-        tableViewer = new TableViewer(composite, SWT.CHECK | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
-        tableViewer.setUseHashlookup(true);
-        projects = tableViewer.getTable();
+        projects = new Table(composite, SWT.CHECK | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
         projects.setHeaderVisible(true);
         projects.setLinesVisible(true);
         projects.addSelectionListener(new SelectionListener() {
@@ -90,6 +90,8 @@ public class ProjectListControl {
                 selectionListener.widgetDefaultSelected(e);
             }
         });
+        tableViewer = new CheckboxTableViewer(projects);
+        tableViewer.setUseHashlookup(true);
 
         // Project
         TableViewerColumn tableViewerColumn = new TableViewerColumn(tableViewer, SWT.LEFT);
@@ -131,7 +133,7 @@ public class ProjectListControl {
         tableViewer.setContentProvider(new ContentProvider());
         tableViewer.setLabelProvider(new TableLabelProvider());
         tableViewer.setColumnProperties(columnNames);
-
+        TableSortingEnabler.applyTableColumnSorting(tableViewer);
     }
 
     public void setInput(List<ProjectDiff> projectDiffs) {
@@ -150,7 +152,7 @@ public class ProjectListControl {
 		projects.select(index);
 	}
 
-	private class ContentProvider implements IStructuredContentProvider {
+	private class ContentProvider implements IStructuredContentProvider, IColumnContentProvider {
 
         public void dispose() {
         }
@@ -161,6 +163,25 @@ public class ProjectListControl {
 
         public Object[] getElements(Object parent) {
             return projectDiffs.toArray();
+        }
+
+        public Comparable<?> getValue(Object element, int columnIndex) {
+            ProjectDiff diff = (ProjectDiff) element;
+            switch (columnIndex) {
+            case 0:
+                return diff.getProject().getName();
+            case 1:
+                return diff.getReleaseRepository();
+            case 2:
+                int bundles = -1;
+                try {
+                    bundles = diff.getProject().getSubBuilders().size();
+                } catch (Exception e) {
+                    /* ignore */
+                }
+                return new Integer(bundles);
+            }
+            return "";
         }
 	}
 
