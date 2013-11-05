@@ -27,7 +27,10 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
 
         newBuildPath.add(createBundleRef("osgi.core", "[4.2,5)"));
         newBuildPath.add(createBundleRef("osgi.cmpn", null));
-        newBuildPath.add(createBundleRef("junit.osgi", null));
+        Attrs attrs = new Attrs();
+        attrs.put(Constants.VERSION_ATTRIBUTE, "file");
+        newBuildPath.add(new VersionedClause("${workspace}/cnf/buildrepo/org.junit/junit-latest.jar", attrs));
+        newBuildPath.add(new VersionedClause("${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar", attrs));
         newBuildPath.add(createBundleRef("org.mockito.mockito-all", null));
         model.setBuildPath(newBuildPath);
 

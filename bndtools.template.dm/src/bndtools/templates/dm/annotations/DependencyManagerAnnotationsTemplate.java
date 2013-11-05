@@ -12,8 +12,10 @@ import aQute.bnd.build.model.BndEditModel;
 
 import org.bndtools.api.IBndProject;
 import org.bndtools.api.IProjectTemplate;
+import org.osgi.framework.Constants;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
+
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.build.model.clauses.HeaderClause;
 
@@ -29,7 +31,10 @@ public class DependencyManagerAnnotationsTemplate implements IProjectTemplate {
         buildPath.add(new VersionedClause("osgi.core", new Attrs()));
         buildPath.add(new VersionedClause("osgi.cmpn", new Attrs()));
         buildPath.add(new VersionedClause("${build}/plugins/org.apache.felix.dependencymanager.annotation-3.1.1-SNAPSHOT.jar;version=file", new Attrs()));
-        buildPath.add(new VersionedClause("junit.osgi", new Attrs()));
+        Attrs attrs = new Attrs();
+        attrs.put(Constants.VERSION_ATTRIBUTE, "file");
+        buildPath.add(new VersionedClause("${workspace}/cnf/buildrepo/org.junit/junit-latest.jar", attrs));
+        buildPath.add(new VersionedClause("${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar", attrs));
 
         model.setBuildPath(buildPath);
 

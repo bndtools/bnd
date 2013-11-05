@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.bndtools.api.IBndProject;
 import org.bndtools.api.IProjectTemplate;
+import org.osgi.framework.Constants;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ServiceComponent;
@@ -34,7 +35,11 @@ public class ComponentTemplate implements IProjectTemplate {
         buildPath.add(new VersionedClause("osgi.core", new Attrs()));
         buildPath.add(new VersionedClause("osgi.cmpn", new Attrs()));
         buildPath.add(new VersionedClause("biz.aQute.bnd.annotation", new Attrs()));
-        buildPath.add(new VersionedClause("junit.osgi", new Attrs()));
+        Attrs attrs = new Attrs();
+        attrs.put(Constants.VERSION_ATTRIBUTE, "file");
+        buildPath.add(new VersionedClause("${workspace}/cnf/buildrepo/org.junit/junit-latest.jar", attrs));
+        buildPath.add(new VersionedClause("${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar", attrs));
+
         model.setBuildPath(buildPath);
     }
 
