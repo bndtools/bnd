@@ -118,6 +118,8 @@ public class OSGiHeader {
 			del = qt.getSeparator();
 			if (del == '=') {
 				value = qt.nextToken(",=");
+				if ( value == null)
+					value = "";
 				del = qt.getSeparator();
 			}
 			result.put(key.trim(), value);
