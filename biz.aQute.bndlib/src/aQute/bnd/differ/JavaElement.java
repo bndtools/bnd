@@ -612,24 +612,24 @@ class JavaElement {
 		}
 
 		Element current = new Element(RETURN, type.getFQN());
-		Clazz clazz = analyzer.findClass(type);
-		if (clazz == null) {
+//		Clazz clazz = analyzer.findClass(type);
+//		if (clazz == null) {
 			elements.add(current);
 			return;
-		}
-
-		set = Create.list();
-		set.add(current);
-		getCovariantReturns(set, clazz.getSuper());
-
-		TypeRef[] interfaces = clazz.getInterfaces();
-		if (interfaces != null)
-			for (TypeRef intf : interfaces) {
-				getCovariantReturns(set, intf);
-			}
-
-		covariant.put(type, set);
-		elements.addAll(set);
+//		}
+//
+//		set = Create.list();
+//		set.add(current);
+//		getCovariantReturns(set, clazz.getSuper());
+//
+//		TypeRef[] interfaces = clazz.getInterfaces();
+//		if (interfaces != null)
+//			for (TypeRef intf : interfaces) {
+//				getCovariantReturns(set, intf);
+//			}
+//
+//		covariant.put(type, set);
+//		elements.addAll(set);
 	}
 
 	private static void access(Collection<Element> children, int access, @SuppressWarnings("unused") boolean deprecated) {
