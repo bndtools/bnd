@@ -8,9 +8,20 @@ import junit.framework.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.lib.io.*;
 
 public class TestFixedIndexedRepo extends TestCase {
 
+	static File tmp;
+	public void setUp() {
+		tmp = IO.getFile("tmp");
+		IO.delete(tmp);
+		tmp.mkdirs();
+	}
+	public void tearDown() {
+		IO.delete(tmp);
+	}
+	
 	private static int countBundles(RepositoryPlugin repo) throws Exception {
 		int count = 0;
 
@@ -31,6 +42,8 @@ public class TestFixedIndexedRepo extends TestCase {
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("name", "index1");
 		props.put("locations", new File("testdata/index1.xml").toURI().toString());
+		props.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
+		
 		repo.setProperties(props);
 		repo.setReporter(reporter);
 
@@ -50,6 +63,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("name", "index2");
 		props.put("locations", new File("testdata/index2.xml").toURI().toString());
+		props.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(props);
 		repo.setReporter(reporter);
 
@@ -64,6 +78,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("name", "index2");
 		props.put("locations", new File("testdata/index2.xml.gz").toURI().toString());
+		props.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(props);
 		repo.setReporter(reporter);
 
@@ -80,6 +95,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		config.put("name", "obr");
 		config.put("locations", new File("testdata/fullobr.xml").toURI().toString());
 		config.put("type", "OBR");
+		config.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 
@@ -99,6 +115,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("locations", new File("testdata/ambiguous.xml").toURI().toString());
+		config.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 
@@ -126,6 +143,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		};
 		config = new HashMap<String,String>();
 		config.put("locations", new File("testdata/xmlWithDtdRef.xml").toURI().toString());
+		config.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 		repo.list(null);
@@ -138,6 +156,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		};
 		config = new HashMap<String,String>();
 		config.put("locations", new File("testdata/xmlWithDtdRef.xml").toURI().toString());
+		config.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 		repo.list(null);
