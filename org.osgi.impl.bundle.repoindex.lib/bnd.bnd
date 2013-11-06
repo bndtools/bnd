@@ -1,10 +1,11 @@
 -buildpath: ee.j2se;version='[1.5,1.6)',\
 	org.osgi.impl.bundle.repoindex.api;version=project,\
 	osgi.core;version=4.2,\
-	junit.osgi,\
 	lib/kxml2-min.jar;version=file,\
 	osgi.cmpn;version=4.2,\
-	org.mockito.mockito-all;version='[1.8,1.9)'
+	org.mockito.mockito-all;version='[1.8,1.9)',\
+	${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file,\
+	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file
 
 Bundle-Name: BIndex2: Repository Index Generator
 Bundle-Activator: org.osgi.service.indexer.osgi.Activator

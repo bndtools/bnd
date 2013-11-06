@@ -9,9 +9,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+import org.junit.Ignore;
 import org.osgi.service.indexer.Capability;
 import org.osgi.service.indexer.Requirement;
 
+@Ignore
 public class Utils {
 	public static final String readStream(InputStream stream) throws IOException {
 		InputStreamReader reader = new InputStreamReader(stream, "UTF-8");
