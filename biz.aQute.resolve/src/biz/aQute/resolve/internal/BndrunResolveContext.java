@@ -340,7 +340,7 @@ public class BndrunResolveContext extends ResolveContext {
             } else {
 
                 // Second stage results: repository contents; may be reordered.
-                LinkedHashSet<Capability> secondStageResult = new LinkedHashSet<Capability>();
+            	ArrayList<Capability> secondStageResult = new ArrayList<Capability>();
 
                 // Iterate over the repos
                 int order = 0;
@@ -357,13 +357,11 @@ public class BndrunResolveContext extends ResolveContext {
                                 setResourcePriority(order, capability.getResource());
                             }
                         }
-                        if (!repoCapabilities.isEmpty()) {
-                            Collections.sort(repoCapabilities, capabilityComparator);
-                            secondStageResult.addAll(repoCapabilities);
-                        }
+                        secondStageResult.addAll(repoCapabilities);
                     }
                     order++;
                 }
+                Collections.sort(secondStageResult, capabilityComparator);
 
                 // Convert second-stage results to a list and post-process
                 ArrayList<Capability> secondStageList = new ArrayList<Capability>(secondStageResult);
