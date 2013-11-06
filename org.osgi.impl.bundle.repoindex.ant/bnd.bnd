@@ -4,8 +4,9 @@
 	org.osgi.impl.bundle.repoindex.lib;version=project,\
 	de.kalpatec.pojosr.framework;version=0.1.8,\
 	osgi.cmpn;version=4.2,\
-	junit.osgi,\
-	ee.j2se;version='[1.5,1.6)'
+	ee.j2se;version='[1.5,1.6)',\
+	${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file,\
+	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file
 
 bindex-pkgs:\
 	org.osgi.service.indexer.impl,\

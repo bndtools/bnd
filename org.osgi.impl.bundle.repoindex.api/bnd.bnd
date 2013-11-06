@@ -1,4 +1,6 @@
 Bundle-Version: 1.1.0
 Export-Package: org.osgi.service.indexer
--buildpath: junit.osgi,\
-	ee.j2se;version='[1.5,1.6)'
+-buildpath: \
+	ee.j2se;version='[1.5,1.6)',\
+	${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file,\
+	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file

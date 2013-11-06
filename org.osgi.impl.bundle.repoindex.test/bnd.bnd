@@ -1,11 +1,12 @@
 -buildpath:\
   osgi.core;version=4.2,\
   osgi.cmpn;version=4.2,\
-  junit.osgi,\
   org.mockito.mockito-all;version='[1.8,1.9)',\
   org.osgi.impl.bundle.repoindex.lib;version=snapshot,\
   org.osgi.impl.bundle.repoindex.lib;version=project,\
-  ee.j2se;version='[1.5,1.6)'
+  ee.j2se;version='[1.5,1.6)',\
+  ${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file,\
+  ${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file
 
 # This is required to ensure the cli JAR is built before
 # running the integration tests
