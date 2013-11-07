@@ -38,6 +38,7 @@ import aQute.bnd.version.*;
 public class About {
 	/**
 	 * <ul>
+	 * <li>Error when version=project is used in -runbundles
 	 * <li>The classes macro and other places that crawl for classes now get a sorted list by the class name.
 	 * <li>The bnd diff and baseline command now can take the current project as source for the 2 JARs
 	 * <li>The -diffignore parameter (and the -i option in the bnd commands) can now take wildcards
@@ -66,5 +67,5 @@ public class About {
 	 * <li>It is now possible to specify a URL on a plugin path so that if the resource is not on the file system it will get downloaded.
 	 * </ul>
 	 */
-	static Version	_2_3	= new Version(2, 3, 0);
+	public static Version	_2_3	= new Version(2, 3, 0);
 }

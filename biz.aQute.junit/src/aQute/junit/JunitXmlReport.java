@@ -71,8 +71,10 @@ public class JunitXmlReport implements TestReporter {
 			bundle.addAttribute("modified", df.format(new Date(bs[i].getLastModified())));
 			bundle.addAttribute("state", bs[i].getState());
 			bundle.addAttribute("id", bs[i].getBundleId() + "");
-			bundle.addAttribute("bsn", bs[i].getSymbolicName());
-			bundle.addAttribute("version", bs[i].getVersion());
+			if ( bs[i].getSymbolicName() != null)
+				bundle.addAttribute("bsn", bs[i].getSymbolicName());
+			if ( bs[i].getVersion() != null)
+				bundle.addAttribute("version", bs[i].getVersion());
 
 			if (bs[i].equals(targetBundle))
 				bundle.addAttribute("target", "true");
