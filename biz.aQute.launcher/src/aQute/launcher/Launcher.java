@@ -521,7 +521,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	/**
-	 * Install the bundles from the current jar.
+	 * Install/Update the bundles from the current jar.
 	 * 
 	 * @param tobestarted
 	 * @throws BundleException
@@ -535,7 +535,11 @@ public class Launcher implements ServiceListener {
 			trace("installing %s", path);
 			InputStream in = getClass().getClassLoader().getResourceAsStream(path);
 			try {
-				Bundle bundle = context.installBundle(path, in);
+				Bundle bundle = getBundleByLocation(path);
+				if (bundle == null)
+					bundle = context.installBundle(path, in);
+				else
+					bundle.update(in);
 				tobestarted.add(bundle);
 			}
 			finally {
@@ -1150,4 +1154,18 @@ public class Launcher implements ServiceListener {
 		message("! ", msg, objects);
 	}
 
+	/**
+	 * Find a bundle by its location.
+	 * 
+	 * @param path the location to find
+	 * @return
+	 */
+	private Bundle getBundleByLocation(String path) {
+		BundleContext context = systemBundle.getBundleContext();
+		for ( Bundle b : context.getBundles() ) {
+			if ( b.getLocation().equals(path))
+				return b;
+		}
+		return null;
+	}
 }
