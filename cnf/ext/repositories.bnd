@@ -15,25 +15,33 @@ eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo; name=Eclipse SDK 3
 # Bnd Repositories
 #
 
-# Remote
-bndBuildNum: 75
-bnd-repo-remote-number: https://bndtools.ci.cloudbees.com/job/bnd.master/${bndBuildNum}/artifact/dist/bundles/index.xml
-bnd-repo-remote-master: https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/index.xml
-bnd-repo-remote-next:   https://bndtools.ci.cloudbees.com/job/bnd.next/lastSuccessfulBuild/artifact/dist/bundles/index.xml
-
-# Local (Assumes bnd is checked out as "bnd" directory next to current workspace directory)
-bnd-repo-local:         file:///${workspace}/../bnd/dist/bundles/index.xml
+bnd-repo-cb-2-0-0-REL:       https://bndtools.ci.cloudbees.com/job/bnd.master/49/artifact/dist/bundles/repository.xml
+bnd-repo-cb-2-1-0-REL:       https://bndtools.ci.cloudbees.com/job/bnd.master/75/artifact/dist/bundles/index.xml
+bnd-repo-cb-2-2-0-REL:       https://bndtools.ci.cloudbees.com/job/bnd.master/87/artifact/dist/bundles/index.xml
+bnd-repo-cb-master:          https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/index.xml
+bnd-repo-local:              file:///${workspace}/../bnd/dist/bundles/index.xml
 
 
 
 
-## REPOSITORY SELECTION
-## Switch locations between bnd-repo-remote-number/bnd-repo-remote-master/bnd-repo-remote-next/bnd-repo-local as required
-## WARNING: bnd-repo-local will break the build if pushed to GitHub... it is used for local testing only!!
+#
+# REPOSITORY SELECTION
+#
+# Switch locations as required
+# WARNING: bnd-repo-local will break the build if pushed to GitHub... it is used for local testing only!!
+
+bndRepo: ${bnd-repo-cb-master}
+
+
+
+
+#
+# Don't touch below
+#
 -plugin:\
 	aQute.bnd.deployer.repository.LocalIndexedRepo; name=Release; local=${workspace}/cnf/releaserepo;pretty=true,\
 	aQute.lib.deployer.FileRepo;                    name=Build;   location=${workspace}/cnf/buildrepo,\
-	aQute.bnd.deployer.repository.FixedIndexedRepo; name=bnd;     locations=${bnd-repo-remote-master},\
+	aQute.bnd.deployer.repository.FixedIndexedRepo; name=bnd;     locations=${bndRepo},\
 	${eclipse-repo}
 
 -releaserepo: Release
