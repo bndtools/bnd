@@ -3,6 +3,7 @@ package aQute.bnd.main;
 import java.io.*;
 import java.util.*;
 
+import aQute.bnd.build.*;
 import aQute.bnd.differ.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.diff.*;
@@ -17,8 +18,13 @@ public class DiffCommand {
 		this.bnd = bnd;
 	}
 
+	@Description("Compares two jars. Without specifying the JARs (and when there is a "
+			+ "current project) the jars of this project are diffed against their "
+			+ "baseline in the baseline repository, using the sub-builder's options (these can be overridden). "
+			+ "If one JAR is given, the tree is shown. Otherwise 2 JARs must be specified and they are "
+			+ "then compared to eachother.")
 	@Arguments(arg = {
-			"newer file", "[older file]"
+			"[newer file]", "[older file]"
 	})
 	interface diffOptions extends Options {
 		@Config(description = "Print the API")
@@ -39,7 +45,7 @@ public class DiffCommand {
 		@Config(description = "Where to send the output")
 		File output();
 
-		@Config(description = "Limit to these packages")
+		@Config(description = "Limit to these packages (can have wildcards)")
 		Collection<String> pack();
 
 		@Config(description = "Ignore headers")
@@ -47,20 +53,53 @@ public class DiffCommand {
 	}
 
 	public void diff(diffOptions options) throws Exception {
+		DiffPluginImpl di = new DiffPluginImpl();
 
-		if (options._().size() == 1) {
+		List<String> args = options._();
+		if (args.size() == 0) {
+			Project project = bnd.getProject();
+			if (project != null) {
+				for (Builder b : project.getSubBuilders()) {
+					ProjectBuilder pb = (ProjectBuilder) b;
+					Jar newer = pb.build();
+					Jar older = pb.getBaselineJar();
+					di.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
+					diff(options, di, newer, older);
+					bnd.getInfo(b);
+				}
+				bnd.getInfo(project);
+				return;
+			}
+		} else if (options._().size() == 1) {
 			bnd.trace("Show tree");
 			showTree(bnd, options);
 			return;
 		}
+
 		if (options._().size() != 2) {
 			throw new IllegalArgumentException("Requires 2 jar files input");
 		}
-		File fout = options.output();
+
+		Jar newer = bnd.getJar(args.get(0));
+		Jar older = bnd.getJar(args.get(1));
+		diff(options, di, newer, older);
+	}
+
+	private void diff(diffOptions options, DiffPluginImpl di, Jar newer, Jar older) throws Exception {
+		if (newer == null) {
+			bnd.error("No newer file specified");
+			return;
+		}
+
+		if (older == null) {
+			bnd.error("No older file specified");
+			return;
+		}
+
 		PrintWriter pw = null;
-		Jar newer = null;
-		Jar older = null;
 		try {
+			File fout = options.output();
+
 			if (fout == null)
 				pw = new PrintWriter(bnd.out);
 			else
@@ -68,20 +107,9 @@ public class DiffCommand {
 
 			Instructions packageFilters = new Instructions(options.pack());
 
-			Iterator<String> it = options._().iterator();
-			newer = bnd.getJar(it.next());
-			if (newer == null)
-				return;
-
-			older = bnd.getJar(it.next());
-			if (older == null)
-				return;
-
-			DiffPluginImpl di = new DiffPluginImpl();
-
 			if (options.ignore() != null)
 				di.setIgnore(Processor.join(options.ignore()));
-			
+
 			Tree n = di.tree(newer);
 			Tree o = di.tree(older);
 			Diff diff = n.diff(o);
