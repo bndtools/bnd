@@ -38,6 +38,9 @@ import aQute.bnd.version.*;
 public class About {
 	/**
 	 * <ul>
+	 * <li>The classes macro and other places that crawl for classes now get a sorted list by the class name.
+	 * <li>The bnd diff and baseline command now can take the current project as source for the 2 JARs
+	 * <li>The -diffignore parameter (and the -i option in the bnd commands) can now take wildcards
 	 * <li>Ant fetches bnd.jar remotely and stores it in the ~/.bnd directory so it is shared
 	 * <li>Added an optional :i suffix to instructions for case insensitive matching
 	 * <li>Packaged/embedded launch configurations now also update bundles, previously they were only installed.
