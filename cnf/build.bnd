@@ -67,8 +67,9 @@ master-version:           ${base-version}-${version-qualifier}
 
 # Version of bnd/bndlib to use consistently throughout the build
 # NB. this must be specified as full M.m.u version (but no qualifier)
-bndlib-version-base:      2.2.0
-bndlib-version-ceiling:   2.3.0
+# On advice of Peter we use an up-to-major version range
+bndlib-version-base:      2.3.0
+bndlib-version-ceiling:   3.0.0
 bndlib:                   biz.aQute.bndlib;version='[${bndlib-version-base},${bndlib-version-ceiling})'
 
 # Version of the repository plugin to use consistently throughout the build
