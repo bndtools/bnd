@@ -38,6 +38,8 @@ import aQute.bnd.version.*;
 public class About {
 	/**
 	 * <ul>
+	 * <li>Removed synthetic methods from the binary compatibility check since the compilers generate different methods.
+	 * <li>Added check for filenames that do not work on windows
 	 * <li>Implemented the {@see Processor#since} functionality with the
 	 * {@link Constants#UPTO} instruction.
 	 * <li>Automatically adding the EE to the Require Capability header based on
