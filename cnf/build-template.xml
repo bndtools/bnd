@@ -37,11 +37,14 @@
         <dirname property="workspacedir" file="${projectdir}" />
         <property file="${workspacedir}/cnf/build.properties"/>
     	<mkdir dir="${workspacedir}/cnf/cache"/>
+    	
+        <property name="build.deps" value="${user.home}/.bnd/build-deps" />
+    	<mkdir dir="${build.deps}"/>
 
     	<!-- We download bnd and the repoindex -->
     	
-		<property name="bnd.location" value="${workspacedir}/cnf/cache/biz.aQute.bnd-${bnd.version}.jar" />
-		<property name="repoindex.location" value="${workspacedir}/cnf/cache/org.osgi.impl.bundle.repoindex.ant-${repoindex.version}.jar" />
+		<property name="bnd.location" value="${build.deps}/biz.aQute.bnd-${bnd.version}.jar" />
+		<property name="repoindex.location" value="${build.deps}/org.osgi.impl.bundle.repoindex.ant-${repoindex.version}.jar" />
 
 		<get src="${bnd.url}" dest="${bnd.location}" verbose="false" skipexisting="true" />
 		<get src="${repoindex.url}" dest="${repoindex.location}" verbose="false" skipexisting="true" />
