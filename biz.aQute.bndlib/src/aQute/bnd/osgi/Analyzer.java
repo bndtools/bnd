@@ -2229,7 +2229,7 @@ public class Analyzer extends Processor {
 				}
 			}
 		}
-		return matched;
+		return new SortedList<Clazz>(matched, Clazz.NAME_COMPARATOR);
 	}
 
 	/**

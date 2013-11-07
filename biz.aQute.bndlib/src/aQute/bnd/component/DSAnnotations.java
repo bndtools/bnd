@@ -17,7 +17,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 			return false;
 
 		Instructions instructions = new Instructions(header);
-		Set<Clazz> list = new HashSet<Clazz>(analyzer.getClassspace().values());
+		Collection<Clazz> list = analyzer.getClassspace().values();
 		String sc = analyzer.getProperty(Constants.SERVICE_COMPONENT);
 		List<String> names = new ArrayList<String>();
 		if (sc != null && sc.trim().length() > 0)

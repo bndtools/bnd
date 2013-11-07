@@ -7,7 +7,6 @@ import java.nio.*;
 import java.util.*;
 import java.util.regex.*;
 
-
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -390,6 +389,14 @@ public class Clazz {
 			-1, // 17 Not defined
 			4, // 18 CONSTANT_InvokeDynamic
 									};
+
+	public static final Comparator<Clazz>	NAME_COMPARATOR	= new Comparator<Clazz>() {
+
+		public int compare(Clazz a, Clazz b) {
+			return a.className.compareTo(b.className);
+		}
+		
+	};
 
 	boolean				hasRuntimeAnnotations;
 	boolean				hasClassAnnotations;
