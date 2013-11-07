@@ -403,10 +403,17 @@ public class Analyzer extends Processor {
 			// based on the class version
 			//
 
-			if (!ees.isEmpty() // no use otherwise 
-					&& since(About._2_3) // we want people to not have to automatically add it
-					&& !requirements.containsKey(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE) // and it should not be there already
-					) {
+			if (!ees.isEmpty() // no use otherwise
+					&& since(About._2_3) // we want people to not have to
+											// automatically add it
+					&& !requirements.containsKey(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE) // and
+																												// it
+																												// should
+																												// not
+																												// be
+																												// there
+																												// already
+			) {
 				StringBuilder sb = new StringBuilder();
 
 				for (JAVA ee : ees) {
@@ -2546,9 +2553,15 @@ public class Analyzer extends Processor {
 		return ees.first();
 	}
 
-	public String _ee(@SuppressWarnings("unused")
-	String args[]) {
-		return getLowestEE().getEE();
+	public Clazz.JAVA getHighestEE() {
+		if (ees.isEmpty())
+			return Clazz.JAVA.JDK1_4;
+
+		return ees.last();
+	}
+
+	public String _ee(String args[]) {
+		return getHighestEE().getEE();
 	}
 
 	/**
