@@ -38,6 +38,8 @@ import aQute.bnd.version.*;
 public class About {
 	/**
 	 * <ul>
+	 * <li>Added an optional :i suffix to instructions for case insensitive matching
+	 * <li>Packaged/embedded launch configurations now also update bundles, previously they were only installed.
 	 * <li>Removed synthetic methods from the binary compatibility check since the compilers generate different methods.
 	 * <li>Added check for filenames that do not work on windows
 	 * <li>Implemented the {@see Processor#since} functionality with the
@@ -49,6 +51,15 @@ public class About {
 	 * previous version it flattened all jars
 	 * <li>Supports parameters in macros: ${x;a;b} -> x = ${1}/${2} -> a/b. ${#}
 	 * is an array with arguments. $ @} is the name of the function.
+	 * <li>Automatically excludes files from preprocessing for given extensions. The default list can be
+	 * overridden with -preprocessmatchers
+	 * <li>Uses XML v1.0 instead of v1.1 in some places.
+	 * <li>Can now delete variables in ~/.bnd/settings.json with the command line
+	 * <li>Better checking for errors on -runbundles and -runpath.
+	 * <li>Can now execute actions from the command line
+	 * <li>Set two properties (project.junit and project.junit.osgi) that indicate the availability of tests.
+	 * <li>Support URLs in the bnd repo put command
+	 * <li>It is now possible to specify a URL on a plugin path so that if the resource is not on the file system it will get downloaded.
 	 * </ul>
 	 */
 	static Version	_2_3	= new Version(2, 3, 0);
