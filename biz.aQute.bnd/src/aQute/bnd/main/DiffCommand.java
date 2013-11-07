@@ -41,6 +41,9 @@ public class DiffCommand {
 
 		@Config(description = "Limit to these packages")
 		Collection<String> pack();
+
+		@Config(description = "Ignore headers")
+		Collection<String> ignore();
 	}
 
 	public void diff(diffOptions options) throws Exception {
@@ -74,7 +77,11 @@ public class DiffCommand {
 			if (older == null)
 				return;
 
-			Differ di = new DiffPluginImpl();
+			DiffPluginImpl di = new DiffPluginImpl();
+
+			if (options.ignore() != null)
+				di.setIgnore(Processor.join(options.ignore()));
+			
 			Tree n = di.tree(newer);
 			Tree o = di.tree(older);
 			Diff diff = n.diff(o);
