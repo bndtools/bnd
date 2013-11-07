@@ -27,8 +27,8 @@ public class Verifier extends Processor {
 
 	final static Pattern	EENAME	= Pattern.compile("CDC-1\\.0/Foundation-1\\.0" + "|CDC-1\\.1/Foundation-1\\.1"
 											+ "|OSGi/Minimum-1\\.[1-9]" + "|JRE-1\\.1" + "|J2SE-1\\.2" + "|J2SE-1\\.3"
-											+ "|J2SE-1\\.4" + "|J2SE-1\\.5" + "|JavaSE-1\\.6" + "|JavaSE-1\\.7"+ "|JavaSE-1\\.8"
-											+ "|PersonalJava-1\\.1" + "|PersonalJava-1\\.2"
+											+ "|J2SE-1\\.4" + "|J2SE-1\\.5" + "|JavaSE-1\\.6" + "|JavaSE-1\\.7"
+											+ "|JavaSE-1\\.8" + "|PersonalJava-1\\.1" + "|PersonalJava-1\\.2"
 											+ "|CDC-1\\.0/PersonalBasis-1\\.0" + "|CDC-1\\.0/PersonalJava-1\\.0");
 
 	final static int		V1_1	= 45;
@@ -75,6 +75,13 @@ public class Verifier extends Processor {
 			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1), new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),
 			new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)
 																};
+
+	public final static Pattern	ReservedFileNames				= Pattern
+																		.compile(
+																				"CON(\\..+)?|PRN(\\..+)?|AUX(\\..+)?|CLOCK$|NUL(\\..+)?|COM[1-9](\\..+)?|LPT[1-9](\\..+)?|"
+																						+ "\\$Mft|\\$MftMirr|\\$LogFile|\\$Volume|\\$AttrDef|\\$Bitmap|\\$Boot|\\$BadClus|\\$Secure|"
+																						+ "\\$Upcase|\\$Extend|\\$Quota|\\$ObjId|\\$Reparse|app",
+																				Pattern.CASE_INSENSITIVE);
 
 	final static Pattern		CARDINALITY_PATTERN				= Pattern.compile("single|multiple");
 	final static Pattern		RESOLUTION_PATTERN				= Pattern.compile("optional|mandatory");
@@ -405,6 +412,49 @@ public class Verifier extends Processor {
 		verifyRequirements();
 		verifyCapabilities();
 		verifyMetaPersistence();
+		verifyPathNames();
+	}
+
+	/**
+	 * Verify of the path names in the JAR are valid on all OS's (mainly
+	 * windows)
+	 */
+	void verifyPathNames() {
+		if (!since(About._2_3))
+			return;
+
+		Set<String> invalidPaths = new HashSet<String>();
+		Pattern pattern = ReservedFileNames;
+		setProperty("@", ReservedFileNames.pattern());
+		String p = getProperty(INVALIDFILENAMES);
+		unsetProperty("@");
+		if (p != null) {
+			try {
+				pattern = Pattern.compile(p, Pattern.CASE_INSENSITIVE);
+			}
+			catch (Exception e) {
+				SetLocation error = error("%s is not a valid regular expression %s: %s", INVALIDFILENAMES,
+						e.getMessage(), p);
+				error.context(p).header(INVALIDFILENAMES);
+				return;
+			}
+		}
+
+		Set<String> segments = new HashSet<String>();
+		for (String path : dot.getResources().keySet()) {
+			String parts[] = path.split("/");
+			for (String part : parts) {
+				if (segments.add(part) && pattern.matcher(part).matches()) {
+					invalidPaths.add(path);
+				}
+			}
+		}
+
+		if (invalidPaths.isEmpty())
+			return;
+
+		error("Invalid file/directory names for Windows in JAR: %s. You can set the regular expression used with %s, the default expression is %s",
+				invalidPaths, INVALIDFILENAMES, ReservedFileNames.pattern());
 	}
 
 	/**
@@ -962,12 +1012,12 @@ public class Verifier extends Processor {
 		return true;
 	}
 
-	@Override
-	public String getProperty(String key, String deflt) {
-		if (properties == null)
-			return deflt;
-		return properties.getProperty(key, deflt);
-	}
+//	@Override
+//	public String getProperty(String key, String deflt) {
+//		if (properties == null)
+//			return deflt;
+//		return properties.getProperty(key, deflt);
+//	}
 
 	public static boolean isVersion(String version) {
 		return VERSION.matcher(version).matches();
@@ -1096,22 +1146,24 @@ public class Verifier extends Processor {
 	public static boolean isVersionRange(String range) {
 		return range != null && VERSIONRANGE_P.matcher(range).matches();
 	}
-	
+
 	/**
 	 * Verify the Meta-Persistence header
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
-	
+
 	public void verifyMetaPersistence() throws Exception {
 		List<String> list = new ArrayList<String>();
-		for( String location : OSGiHeader.parseHeader(dot.getManifest().getMainAttributes().getValue("Meta-Persistence")).keySet()) {
+		for (String location : OSGiHeader.parseHeader(
+				dot.getManifest().getMainAttributes().getValue("Meta-Persistence")).keySet()) {
 			Resource resource = dot.getResource(location);
-			if ( resource == null)
+			if (resource == null)
 				list.add(location);
 		}
-		if ( list.isEmpty())
+		if (list.isEmpty())
 			return;
-		
+
 		error("Meta-Persistence refers to resources not in the bundle: %s", list).header("Meta-Persistence");
 	}
 }

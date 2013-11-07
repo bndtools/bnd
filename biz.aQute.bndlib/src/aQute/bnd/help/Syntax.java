@@ -340,7 +340,12 @@ public class Syntax implements Constants {
 					INCLUDE,
 					"Include files. If an entry starts with '-', it does not have to exist. If it starts with '~', it must not overwrite any existing properties.",
 					INCLUDE + ": -${java.user}/.bnd", null, null),
-
+			new Syntax(
+					INVALIDFILENAMES,
+					"Specify a regular expressions to match against file or directory names. This is the segment, not the whole path."
+							+ " The intention is to provide a check for files and directories that cannot be used on Windows. However, it can also be used "
+							+ "on other platforms. You can specify the ${@} macro to refer to the default regular expressions used for this.",
+					INVALIDFILENAMES + ":" + Verifier.ReservedFileNames, null, null),
 			new Syntax(
 					INCLUDERESOURCE,
 					"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
@@ -411,7 +416,8 @@ public class Syntax implements Constants {
 			new Syntax(RUNPROGRAMARGS, "Additional arguments for the program invokation.", RUNPROGRAMARGS
 					+ "=/some/file /another/file some_argument", null, null),
 			new Syntax(PACKAGE, "Defines the options for packaging", PACKAGE + "=" + PACKAGE_JPM, null, null),
-			new Syntax(UPTO, "Limit bnd's behavior like it was up to the given version", "-upto: 2.3.1", null, Version.VERSION)
+			new Syntax(UPTO, "Limit bnd's behavior like it was up to the given version", "-upto: 2.3.1", null,
+					Version.VERSION)
 																	};
 
 	public final static Map<String,Syntax>	HELP					= new HashMap<String,Syntax>();
