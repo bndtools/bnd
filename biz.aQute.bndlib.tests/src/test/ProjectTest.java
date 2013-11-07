@@ -16,6 +16,21 @@ import aQute.lib.io.*;
 @SuppressWarnings("resource")
 public class ProjectTest extends TestCase {
 
+	
+	/**
+	 * Check if a project=version, which is illegal on -runbundles, 
+	 * is actually reported as an error.
+	 * @throws Exception 
+	 */
+	public void testErrorOnVersionIsProjectInRunbundles() throws Exception {
+		Workspace ws = new Workspace(new File("testresources/ws"));
+		Project top = ws.getProject("p1");
+		top.setProperty("-runbundles", "p2;version=project;p3;version=latest");
+		top.getRunbundles();
+		assertTrue(top.check("p1: Adding a version=project "));
+	}
+	
+	
 	/**
 	 * https://github.com/bndtools/bnd/issues/395
 	 * 

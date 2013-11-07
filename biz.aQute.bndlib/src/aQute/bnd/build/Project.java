@@ -44,7 +44,7 @@ public class Project extends Processor {
 	final Collection<Container>	testpath				= new LinkedHashSet<Container>();
 	final Collection<Container>	runpath					= new LinkedHashSet<Container>();
 	final Collection<Container>	runbundles				= new LinkedHashSet<Container>();
-	final Collection<Container>	runfw			= new LinkedHashSet<Container>();
+	final Collection<Container>	runfw					= new LinkedHashSet<Container>();
 	File						runstorage;
 	final Collection<File>		sourcepath				= new LinkedHashSet<File>();
 	final Collection<File>		allsourcepath			= new LinkedHashSet<File>();
@@ -259,12 +259,12 @@ public class Project extends Processor {
 					// path and extracts the projects so we can build them
 					// before.
 
-					doPath(buildpath, dependencies, parseBuildpath(), bootclasspath);
-					doPath(testpath, dependencies, parseTestpath(), bootclasspath);
+					doPath(buildpath, dependencies, parseBuildpath(), bootclasspath, false, BUILDPATH);
+					doPath(testpath, dependencies, parseTestpath(), bootclasspath, false, TESTPATH);
 					if (!delayRunDependencies) {
-						doPath(runfw, dependencies, parseRunFw(), null);
-						doPath(runpath, dependencies, parseRunpath(), null);
-						doPath(runbundles, dependencies, parseRunbundles(), null);
+						doPath(runfw, dependencies, parseRunFw(), null, false, RUNFW);
+						doPath(runpath, dependencies, parseRunpath(), null, false, RUNPATH);
+						doPath(runbundles, dependencies, parseRunbundles(), null, true, RUNBUNDLES);
 					}
 
 					// We now know all dependent projects. But we also depend
@@ -355,12 +355,18 @@ public class Project extends Processor {
 	 *            The input list of classpath entries
 	 */
 	private void doPath(Collection<Container> resultpath, Collection<Project> projects, Collection<Container> entries,
-			Collection<Container> bootclasspath) {
+			Collection<Container> bootclasspath, boolean noproject, String name) {
 		for (Container cpe : entries) {
 			if (cpe.getError() != null)
 				error(cpe.getError());
 			else {
 				if (cpe.getType() == Container.TYPE.PROJECT) {
+					if (noproject && since(About._2_3))
+						error("Adding a version=project bundle to %s. This set requires actual "
+								+ "bundles, not a project's bin directory. Use version=latest to get "
+								+ "the latest bundle. Frameworks cannot always install directories.",
+								name);
+
 					projects.add(cpe.getProject());
 				}
 				if (bootclasspath != null
@@ -397,7 +403,7 @@ public class Project extends Processor {
 	private List<Container> parseRunFw() throws Exception {
 		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNFW), Constants.RUNFW);
 	}
-	
+
 	private List<Container> parseTestpath() throws Exception {
 		return getBundles(Strategy.HIGHEST, getProperty(Constants.TESTPATH), Constants.TESTPATH);
 	}
@@ -437,12 +443,13 @@ public class Project extends Processor {
 					}
 				}
 				if (found == null) {
-					
+
 					//
-					// TODO This looks like a duplicate 
+					// TODO This looks like a duplicate
 					// of what is done in getBundle??
 					//
-					if (versionRange != null && (versionRange.equals("project") || versionRange.equals(VERSION_ATTR_LATEST))) {
+					if (versionRange != null
+							&& (versionRange.equals("project") || versionRange.equals(VERSION_ATTR_LATEST))) {
 						Project project = getWorkspace().getProject(bsn);
 						if (project != null && project.exists()) {
 							File f = project.getOutput();
@@ -470,11 +477,10 @@ public class Project extends Processor {
 				if (found != null) {
 					List<Container> libs = found.getMembers();
 					for (Container cc : libs) {
-						if (result.contains(cc)){
-							if ( isPedantic())
+						if (result.contains(cc)) {
+							if (isPedantic())
 								warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
-						}
-						else {
+						} else {
 							if (cc.getError() != null) {
 								warning("Cannot find %s", cc);
 							}
@@ -593,30 +599,31 @@ public class Project extends Processor {
 	 * @param testpath2
 	 * @param parseTestpath
 	 */
-	private void justInTime(Collection<Container> path, List<Container> entries) {
+	private void justInTime(Collection<Container> path, List<Container> entries, boolean noproject, String name) {
 		if (delayRunDependencies && path.isEmpty())
-			doPath(path, dependson, entries, null);
+			doPath(path, dependson, entries, null, noproject, name);
 	}
 
 	public Collection<Container> getRunpath() throws Exception {
 		prepare();
-		justInTime(runpath, parseRunpath());
+		justInTime(runpath, parseRunpath(), false, RUNPATH);
 		return runpath;
 	}
 
 	public Collection<Container> getRunbundles() throws Exception {
 		prepare();
-		justInTime(runbundles, parseRunbundles());
+		justInTime(runbundles, parseRunbundles(), true, RUNBUNDLES);
 		return runbundles;
 	}
 
 	/**
 	 * Return the run framework
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	public Collection<Container> getRunFw() throws Exception {
 		prepare();
-		justInTime(runfw, parseRunFw());
+		justInTime(runfw, parseRunFw(), false, RUNFW);
 		return runfw;
 	}
 
@@ -887,7 +894,8 @@ public class Project extends Processor {
 					return toContainer(bsn, range, attrs, result, blocker);
 			}
 		} else {
-			VersionRange versionRange = VERSION_ATTR_LATEST.equals(range) ? new VersionRange("0") : new VersionRange(range);
+			VersionRange versionRange = VERSION_ATTR_LATEST.equals(range) ? new VersionRange("0") : new VersionRange(
+					range);
 
 			// We have a range search. Gather all the versions in all the repos
 			// and make a decision on that choice. If the same version is found
@@ -956,16 +964,18 @@ public class Project extends Processor {
 		//
 		// If we get this far we ran into an error somewhere
 		//
-		// Check if we try to find a BSN that is in the workspace but marked latest
+		// Check if we try to find a BSN that is in the workspace but marked
+		// latest
 		//
 
-		if ( !range.equals(VERSION_ATTR_LATEST)) {
+		if (!range.equals(VERSION_ATTR_LATEST)) {
 			Container c = getBundleFromProject(bsn, attrs);
-			return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range + " Not found because latest was not specified."
-					+ " It is, however, present in the workspace. Add '"+bsn+";version=(latest|snapshot)' to see the bundle in the workspace.", null, null);
+			return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range
+					+ " Not found because latest was not specified."
+					+ " It is, however, present in the workspace. Add '" + bsn
+					+ ";version=(latest|snapshot)' to see the bundle in the workspace.", null, null);
 		}
 
-		
 		return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range + " Not found in "
 				+ plugins, null, null);
 
