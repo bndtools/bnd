@@ -5,8 +5,9 @@
 	aQute.libg;version="[2.7.3,3)",\
 	com.jcraft.jsch,\
 	org.eclipse.jgit,\
-	junit.osgi,\
 	org.osgi.impl.bundle.bindex,\
-	ee.j2se;version=${javac.ee}
+	ee.j2se;version=${javac.ee},\
+	${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file,\
+	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file
 
 -sub: *.bnd

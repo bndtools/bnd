@@ -16,8 +16,9 @@
     org.eclipse.ui.workbench, \
     org.eclipse.jdt.core, \
     org.eclipse.text, \
-    junit.osgi, \
-    bndtools.api; version=latest
+    bndtools.api; version=latest, \
+    ${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file, \
+    ${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file
 
 # No exports. This is bundle is not intended for runtime use.
 Private-Package: org.bndtools.utils.*

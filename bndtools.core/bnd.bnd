@@ -86,7 +86,6 @@ eclipse.deps: \
 	${aQute-repository},\
 	${aQute-resolve},\
 	org.apache.felix.resolver;version=1.0,\
-	junit.osgi,\
 	${eclipse.deps},\
 	javax.xml,\
 	javax.xml.stream,\
