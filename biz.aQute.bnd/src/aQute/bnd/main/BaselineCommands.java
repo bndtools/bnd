@@ -45,47 +45,77 @@ public class BaselineCommands {
 	interface baseLineOptions extends Options {
 		@Description("Output file with fixup info")
 		String fixup();
+
+		@Description("Show any differences")
+		boolean diff();
+
+		@Description("Be quiet, only report errors")
+		boolean quiet();
+
+		@Description("Show all, also unchanged")
+		boolean all();
 	}
 
 	/**
 	 * Compare
 	 */
 
-	@Description("Compare a newer bundle to a baselined bundle and provide versioning advice")
+	@Description("Compare a newer bundle to a baselined bundle and provide versioning advice. If no parameters are given, and there "
+			+ "is a local project, then we use the projects current build and the baseline jar in the release repo.")
 	public void _baseline(baseLineOptions opts) throws Exception {
 
 		List<String> args = opts._();
-		if ( args.size() == 0) {
+		if (args.size() == 0) {
 			Project project = bnd.getProject();
-			if ( project != null) {
-				ProjectBuilder pb = project.getBuilder(null);
-				project.baseline();
+			if (project != null) {
+				for (Builder b : project.getSubBuilders()) {
+					ProjectBuilder pb = (ProjectBuilder) b;
+					Jar newer = pb.build();
+					try {
+						Jar older = pb.getBaselineJar();
+						try {
+							differ.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
+							baseline(opts, newer, older);
+							bnd.getInfo(b);
+						}
+						finally {
+							older.close();
+						}
+					}
+					finally {
+						newer.close();
+					}
+				}
 				bnd.getInfo(project);
 				return;
 			}
 		}
-			
-		
+
 		if (args.size() != 2) {
 			throw new IllegalArgumentException("Accepts only two argument (<jar>)");
 		}
+		File newer = bnd.getFile(args.get(0));
+		if (!newer.isFile())
+			throw new IllegalArgumentException("Not a valid newer input file: " + newer);
+
+		File older = bnd.getFile(args.get(0));
+		if (!older.isFile())
+			throw new IllegalArgumentException("Not a valid older input file: " + older);
+
+		Jar nj = new Jar(newer);
+		Jar oj = new Jar(older);
+		baseline(opts, nj, oj);
+	}
+
+	private void baseline(baseLineOptions opts, Jar newer, Jar older) throws FileNotFoundException,
+			UnsupportedEncodingException, IOException, Exception {
 		PrintStream out = null;
 
 		if (opts.fixup() != null) {
 			out = new PrintStream(bnd.getFile(opts.fixup()), "UTF-8");
 		}
 
-		File newer = bnd.getFile(args.get(0));
-		if (!newer.isFile())
-			throw new IllegalArgumentException("Not a valid newer input file: " + newer);
-
-		File older = bnd.getFile(args.get(1));
-		if (!older.isFile())
-			throw new IllegalArgumentException("Not a valid older input file: " + older);
-
-		Jar nj = new Jar(newer);
-		Jar oj = new Jar(older);
-		Set<Info> infos = baseline.baseline(nj, oj, null);
+		Set<Info> infos = baseline.baseline(newer, older, null);
 		Info[] sorted = infos.toArray(new Info[infos.size()]);
 		Arrays.sort(sorted, new Comparator<Info>() {
 			public int compare(Info o1, Info o2) {
@@ -93,18 +123,26 @@ public class BaselineCommands {
 			}
 		});
 
-		bnd.out.printf("  %-50s %-10s %-10s %-10s %-10s %-10s%n", "Package", "Delta", "New", "Old", "Suggest",
-				"If Prov.");
-		for (Info info : sorted) {
-			bnd.out.printf("%s %-50s %-10s %-10s %-10s %-10s %-10s%n", info.mismatch ? '*' : ' ', info.packageName,
-					info.packageDiff.getDelta(), info.newerVersion, info.olderVersion, info.suggestedVersion,
-					info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
+		if (!opts.quiet()) {
+			boolean hadHeader = false;
+			for (Info info : sorted) {
+				if (info.packageDiff.getDelta() != Delta.UNCHANGED || opts.all()) {
+					if (!hadHeader) {
+						bnd.out.printf("  %-50s %-10s %-10s %-10s %-10s %-10s%n", "Package", "Delta", "New", "Old",
+								"Suggest", "If Prov.");
+						hadHeader = true;
+					}
+					bnd.out.printf("%s %-50s %-10s %-10s %-10s %-10s %-10s%n", info.mismatch ? '*' : ' ',
+							info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
+							info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
+				}
+			}
 		}
 
 		if (out != null) {
 			// Create a fixup file
 
-			Manifest manifest = nj.getManifest();
+			Manifest manifest = newer.getManifest();
 			if (manifest == null)
 				manifest = new Manifest();
 
