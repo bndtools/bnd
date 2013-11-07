@@ -38,11 +38,12 @@ The procuedure described here is going to release version `a.b.c.REL` from the `
 
 We assume that changes to the source code will be pushed to the git remote repository with the `github` alias.
 
+
 * Make sure that the `Changes-in-a-b-c` page is added to / present on the [changelogs page](https://github.com/bndtools/bndtools/wiki/Changelogs). If it is not present, then edit the page, add the snippet below, and save the page.
 ```
 [Changes in a.b.c](https://github.com/bndtools/bndtools/wiki/Changes-in-a.b.c)
 ```
-* Click on the `Changes in a.b.c` page link to go to it, and make sure it is up-to-date.
+* Click on the `Changes in a.b.c` page link to go to it. Usually the `Changes-in-a-b-c` page will be build up during development as the `Changes-on-master` page. If that page is present, then copy its contents into the `Changes-in-a-b-c` page and adjust it. Otherwise, just make sure it is up-to-date.
 * Open a bash shell and enter the directory in which you have checked out the source code.
 * Clean the source code checkout (this will destroy any changes)
 ```
@@ -64,6 +65,13 @@ git push github master a.b.c.REL
 ```
 * Let Jenkins on [Cloudbees](https://bndtools.ci.cloudbees.com/) build the release, wait for the build to finish and be successful.
 * Lock the Cloudbees build so that it is kept forever, and set the build information to `Bndtools a.b.c.REL`
+* Download a ZIP file with the relevant archived artifacts from https://bndtools.ci.cloudbees.com/job/bndtools.master/lastSuccessfulBuild/artifact/build/generated/*zip*/generated.zip
+* Unpack the ZIP file and store the following artifacts in the `releases` repository (https://github.com/bndtools/releases). These artifacts must be stored in the `bndtools/a.b.c.REL` directory of the `releases` repository.
+  * generated/extras
+  * generated/p2
+  * generated/bndtools-extras-latest.zip
+  * generated/bndtools-latest.zip
+* Push the changes in the `release` repository.
 * Update the versions for the next development build, run the script
 ```
 ./cnf/scripts/setVersion.bash a.d.0.DEV
