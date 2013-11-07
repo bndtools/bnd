@@ -60,7 +60,7 @@ public class DiffPluginImpl implements Differ {
 		ORDERED_HEADERS.add(Constants.TESTCASES);
 	}
 
-	Instructions localIgnore = Instructions.ALWAYS;
+	Instructions localIgnore = null;
 
 	/**
 	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.resource.Jar,
@@ -173,8 +173,9 @@ public class DiffPluginImpl implements Differ {
 			if (IGNORE_HEADERS.contains(header))
 				continue;
 
-			if (localIgnore.matches(header))
+			if (localIgnore != null && localIgnore.matches(header)) {
 				continue;
+			}
 
 			if (MAJOR_HEADERS.contains(header)) {
 				if (header.equalsIgnoreCase(Constants.BUNDLE_VERSION)) {
@@ -216,8 +217,10 @@ public class DiffPluginImpl implements Differ {
 	}
 
 	public void setIgnore(String diffignore) {
-		if ( diffignore == null)
+		if ( diffignore == null) {
+			localIgnore = null;
 			return;
+		}
 		
 		Parameters p = new Parameters(diffignore);
 		localIgnore = new Instructions(p); 
