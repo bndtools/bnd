@@ -460,13 +460,16 @@ class JavaElement {
 
 			getCovariantReturns(children, m.getType());
 
-			for (Iterator<MethodDef> i = synthetic.iterator(); i.hasNext();) {
-				MethodDef s = i.next();
-				if (s.getName().equals(m.getName()) && Arrays.equals(s.getPrototype(), m.getPrototype())) {
-					i.remove();
-					getCovariantReturns(children, s.getType());
-				}
-			}
+			/**
+			 * No longer includes synthetic methods in the tree
+			 */
+//			for (Iterator<MethodDef> i = synthetic.iterator(); i.hasNext();) {
+//				MethodDef s = i.next();
+//				if (s.getName().equals(m.getName()) && Arrays.equals(s.getPrototype(), m.getPrototype())) {
+//					i.remove();
+//					getCovariantReturns(children, s.getType());
+//				}
+//			}
 
 			Element member = new Element(Type.METHOD, m.getName() + toString(m.getPrototype()), children, add, remove,
 					null);
@@ -479,38 +482,46 @@ class JavaElement {
 
 		/**
 		 * Repeat for the remaining synthetic methods
+		 * 
+		 * After long discussions with BJ we decided to skip the
+		 * synthetic methods since they do not seem to contribute
+		 * to the binary compatibility. They also seem to cause
+		 * problems between compilers. ECJ onlyu adds a synthetic methods
+		 * for the super class while Javac traverse the whole super chain.
+		 * I've actually not been able to figure out how ECJ gets away with this
+		 * but the behavior seems ok.
 		 */
-		for (MethodDef m : synthetic) {
-			Collection<Element> children = annotations.get(m);
-			if (children == null)
-				children = new HashSet<Element>();
-			access(children, m.getAccess(), m.isDeprecated());
-
-			// A final class cannot be extended, ergo,
-			// all methods defined in it are by definition
-			// final. However, marking them final (either
-			// on the method or inheriting it from the class)
-			// will create superfluous changes if we
-			// override a method from a super class that was not
-			// final. So we actually remove the final for methods
-			// in a final class.
-			if (clazz.isFinal())
-				children.remove(FINAL);
-
-			// for covariant types we need to add the return types
-			// and all the implemented and extended types. This is already
-			// done for us when we get the element of the return type.
-
-			getCovariantReturns(children, m.getType());
-
-			Element member = new Element(Type.METHOD, m.getName() + toString(m.getPrototype()), children, add, remove,
-					"synthetic");
-
-			if (!members.add(member)) {
-				members.remove(member);
-				members.add(member);
-			}
-		}
+//		for (MethodDef m : synthetic) {
+//			Collection<Element> children = annotations.get(m);
+//			if (children == null)
+//				children = new HashSet<Element>();
+//			access(children, m.getAccess(), m.isDeprecated());
+//
+//			// A final class cannot be extended, ergo,
+//			// all methods defined in it are by definition
+//			// final. However, marking them final (either
+//			// on the method or inheriting it from the class)
+//			// will create superfluous changes if we
+//			// override a method from a super class that was not
+//			// final. So we actually remove the final for methods
+//			// in a final class.
+//			if (clazz.isFinal())
+//				children.remove(FINAL);
+//
+//			// for covariant types we need to add the return types
+//			// and all the implemented and extended types. This is already
+//			// done for us when we get the element of the return type.
+//
+//			getCovariantReturns(children, m.getType());
+//
+//			Element member = new Element(Type.METHOD, m.getName() + toString(m.getPrototype()), children, add, remove,
+//					"synthetic");
+//
+//			if (!members.add(member)) {
+//				members.remove(member);
+//				members.add(member);
+//			}
+//		}
 
 		for (Clazz.FieldDef f : fields) {
 			Collection<Element> children = annotations.get(f);
@@ -604,18 +615,20 @@ class JavaElement {
 			elements.add(e);
 			return;
 		}
-
-		List<Element> set = covariant.get(type);
-		if (set != null) {
-			elements.addAll(set);
-			return;
-		}
-
 		Element current = new Element(RETURN, type.getFQN());
+		elements.add(current);
+
+//		List<Element> set = covariant.get(type);
+//		if (set != null) {
+//			elements.addAll(set);
+//			return;
+//		}
+//
+//		Element current = new Element(RETURN, type.getFQN());
 //		Clazz clazz = analyzer.findClass(type);
 //		if (clazz == null) {
-			elements.add(current);
-			return;
+//			elements.add(current);
+//			return;
 //		}
 //
 //		set = Create.list();
