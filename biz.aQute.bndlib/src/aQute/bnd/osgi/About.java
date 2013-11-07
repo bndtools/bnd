@@ -38,6 +38,7 @@ import aQute.bnd.version.*;
 public class About {
 	/**
 	 * <ul>
+	 * <li>Ant fetches bnd.jar remotely and stores it in the ~/.bnd directory so it is shared
 	 * <li>Added an optional :i suffix to instructions for case insensitive matching
 	 * <li>Packaged/embedded launch configurations now also update bundles, previously they were only installed.
 	 * <li>Removed synthetic methods from the binary compatibility check since the compilers generate different methods.

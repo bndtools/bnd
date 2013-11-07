@@ -42,6 +42,34 @@ public class Syntax implements Constants {
 																									.toString()));
 
 	static final Syntax[]					syntaxes				= new Syntax[] {
+			new Syntax(
+					".bnd",
+					"Home directory usage (~/.bnd) in bnd.",
+					null,
+					null,
+					null,
+					new Syntax[] {
+						new Syntax(
+								"build-deps",
+								"Stores build dependencies of bnd from gradle, ant, etc. In general, bnd will be "
+								+ "among this. The files in this directory must be fully versioned",
+					"~/.bnd/biz.aQute.bnd-2.2.0.jar", null, null),
+						new Syntax(
+								"settings.json",
+								"Contains the settings used by bnd in json format. These settings are maintained by "
+								+ "bnd command line (bnd help settings). These settings can be used through macros " 
+								+ "and can provide passwords, user ids, and platform specific settings. Names starting with"
+								+ "a dot (.) are considered protected",
+								"{\"id\":\"30...001\",\"map\":{\".github.secret\":\"xxxxxx\",\"github.user\":\"minime\","
+								+ "\"email\":\"Peter.Kriens@aQute.biz\"},\"secret\":\"308...CC56\"}", null, null, new Syntax[] {
+										new Syntax("email", "The user's email address", null, null, null),
+										new Syntax("id", "The public key for this machine", null, null, null),
+										new Syntax("secret", "The private key for this machine", null, null, null),
+								}),
+								new Syntax("caches/shas", "Directory with sha artifacts. The sha is the name of the "
+										+ "directory, it contains the artifact with a normal bsn-version.jar name",
+										null, null, null)
+					}),
 			new Syntax(BUNDLE_ACTIVATIONPOLICY, "The " + BUNDLE_ACTIVATIONPOLICY
 					+ " header specifies how the framework should activate the bundle once started.",
 					BUNDLE_ACTIVATIONPOLICY + ": lazy", "lazy", Pattern.compile("lazy")),
