@@ -24,11 +24,6 @@ public class ProjectBuilder extends Builder {
 	public ProjectBuilder(Project project) {
 		super(project);
 		this.project = project;
-
-		String diffignore = project.getProperty(Constants.DIFFIGNORE);
-		if (diffignore != null)
-			differ.setIgnore(diffignore);
-
 	}
 
 	public ProjectBuilder(ProjectBuilder builder) {
@@ -106,6 +101,10 @@ public class ProjectBuilder extends Builder {
 	 */
 	@Override
 	public void doBaseline(Jar dot) throws Exception {
+
+		String diffignore = project.getProperty(Constants.DIFFIGNORE);
+		trace("ignore headers %s", diffignore);
+		differ.setIgnore(diffignore);
 
 		Jar fromRepo = getBaselineJar();
 		if (fromRepo == null) {
