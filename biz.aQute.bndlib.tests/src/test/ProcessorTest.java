@@ -8,6 +8,21 @@ public class ProcessorTest extends TestCase {
 	public static void testPlugins() {
 
 	}
+	
+	public void testFixupMessages() {
+		Processor p = new Processor();
+		p.error("abc");
+		assertFalse(p.isOk());
+		
+		p.setProperty(Constants.FIXUPMESSAGES, "abc");
+		assertTrue(p.isOk());
+		
+		p.error("abc");
+		p.setProperty(Constants.FIXUPMESSAGES, "abc;replace=def");
+		assertFalse(p.isOk());
+		assertEquals("def", p.getErrors().get(0));
+		p.close();
+	}
 
 	public static void testDuplicates() {
 		assertEquals("", Processor.removeDuplicateMarker("~"));

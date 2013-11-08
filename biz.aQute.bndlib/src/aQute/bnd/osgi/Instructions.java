@@ -206,17 +206,31 @@ public class Instructions implements Map<Instruction,Attrs> {
 		return result;
 	}
 
+	public Instruction matcher(String value) {
+		for (Instruction i : keySet()) {
+			if (i.matches(value)) {
+				return i;
+			}
+		}
+		return null;
+	}
+	
+	public Instruction finder(String value) {
+		for (Instruction i : keySet()) {
+			if (i.finds(value)) {
+				return i;
+			}
+		}
+		return null;
+	}
+	
 	public boolean matches(String value) {
 		if (size() == 0)
 			return true;
 
-		for (Instruction i : keySet()) {
-			if (i.matches(value)) {
-				if (i.isNegated())
-					return false; // we deny this one explicitly
-				return true; // we allow it explicitly
-			}
-		}
+		Instruction instr = matcher(value);
+		if (instr==null || instr.isNegated())
+			return false; // we deny this one explicitly
 		return false;
 	}
 

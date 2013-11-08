@@ -363,7 +363,7 @@ public class Syntax implements Constants {
 
 			new Syntax(FAIL_OK, "Return with an ok status (0) even if the build generates errors.", FAIL_OK + "=true",
 					"true,false", Verifier.TRUEORFALSEPATTERN),
-
+new Syntax(FIXUPMESSAGES, "Rearrange and/or replace errors and warnings. Errors that should be ignore or be warnings (and vice versa for warnings) can be moved or rewritten by specifying a globbing pattern for the message.",FIXUPMESSAGES+"='Version mismatch';replace:='************* ${@}';restrict:=error", null, null, new Syntax[] {}),
 			new Syntax(
 					INCLUDE,
 					"Include files. If an entry starts with '-', it does not have to exist. If it starts with '~', it must not overwrite any existing properties.",
