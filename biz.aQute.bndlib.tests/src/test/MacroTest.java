@@ -14,6 +14,10 @@ public class MacroTest extends TestCase {
 	 */
 	
 	public void testCustomMacros() {
+		Processor x = new Processor();
+		x.setProperty("foo", "Hello ${1}");
+		assertEquals("Hello Peter", x.getReplacer().process("${foo;Peter}"));
+		
 		assertTemplate("this is 1 abc, and this is def", "this is 1 ${1}, and this is ${2}", "abc;def");
 		assertTemplate("abc,def", "${#}", "abc;def");
 		assertTemplate("osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.6))'", "osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.${1}))'", "6");
