@@ -13,7 +13,7 @@ public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements Re
 	
 	private static final String	PROP_DATA	= "data";
 
-	private Reporter	reporter;
+	Reporter	reporter;
 
 	public KnownBundleAnalyzerPlugin() {
 		super(new Properties());

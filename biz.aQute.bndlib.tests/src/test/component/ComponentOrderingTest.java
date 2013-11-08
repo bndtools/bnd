@@ -7,6 +7,7 @@ import aQute.bnd.differ.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.diff.*;
 
+@SuppressWarnings("resource")
 public class ComponentOrderingTest extends TestCase {
 
 	static DiffPluginImpl	differ	= new DiffPluginImpl();

@@ -5,6 +5,7 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+@SuppressWarnings("resource")
 
 public class IncludeHeaderTest extends TestCase {
 

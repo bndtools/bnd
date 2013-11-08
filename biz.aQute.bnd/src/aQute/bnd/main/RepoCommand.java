@@ -1,6 +1,7 @@
 package aQute.bnd.main;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 
 import aQute.bnd.build.*;
@@ -17,6 +18,7 @@ import aQute.lib.deployer.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
 import aQute.lib.json.*;
+import aQute.libg.glob.*;
 
 public class RepoCommand {
 	final static JSONCodec	codec	= new JSONCodec();
@@ -28,7 +30,7 @@ public class RepoCommand {
 	})
 	interface repoOptions extends Options {
 		@Description("Add a File Repository")
-		Collection<String> repo();
+		Collection<String> filerepo();
 
 		@Description("Include the maven repository")
 		boolean maven();
@@ -39,6 +41,10 @@ public class RepoCommand {
 
 		@Description("Include the cache repository")
 		boolean cache();
+		
+		@Description("Override the name of the release repository (-releaserepo)")
+		Glob release();
+
 	}
 
 	final bnd						bnd;
@@ -69,8 +75,8 @@ public class RepoCommand {
 
 		// Repos given by the --repo option
 
-		if (opts.repo() != null) {
-			for (String r : opts.repo()) {
+		if (opts.filerepo() != null) {
+			for (String r : opts.filerepo()) {
 				bnd.trace("file repo " + r);
 				FileRepo repo = new FileRepo();
 				repo.setReporter(bnd);
@@ -100,7 +106,8 @@ public class RepoCommand {
 				rp.remove();
 			}
 			if (w == null && rpp.canWrite()) {
-				w = rpp;
+				if ( opts.release() == null || opts.release().matcher(rpp.getName()).matches())
+					w = rpp;
 			}
 		}
 		this.writable = w;
@@ -293,7 +300,7 @@ public class RepoCommand {
 	})
 	interface putOptions extends Options {
 		@Description("Put in repository even if verification fails (actually, no verification is done).")
-		boolean force();
+		boolean force();		
 	}
 
 	@Description("Put an artifact into the repository after it has been verified.")
@@ -309,43 +316,53 @@ public class RepoCommand {
 			return;
 		}
 
-		while (args.size() > 0) {
-			File file = bnd.getFile(args.remove(0));
+		nextArgument: while (args.size() > 0) {
+			boolean delete=false;
+			String source = args.remove(0);
+			File file = bnd.getFile(source);
 			if (!file.isFile()) {
-				bnd.error("No such file %s", file);
-			} else {
-
-				bnd.trace("put %s", file);
-
-				Jar jar = new Jar(file);
+				file = File.createTempFile("jar", ".jar");
+				delete = true;
 				try {
-					String bsn = jar.getBsn();
-					if (bsn == null) {
-						bnd.error("File %s is not a bundle (it has no bsn) ", file);
-						return;
-					}
-
-					bnd.trace("bsn %s version %s", bsn, jar.getVersion());
-
-					if (!opts.force()) {
-						Verifier v = new Verifier(jar);
-						v.setTrace(true);
-						v.setExceptions(true);
-						v.verify();
-						bnd.getInfo(v);
-					}
-
-					if (bnd.isOk()) {
-						PutResult r = writable.put(new BufferedInputStream(new FileInputStream(file)),
-								new RepositoryPlugin.PutOptions());
-						bnd.trace("put %s in %s (%s) into %s", file, writable.getName(), writable.getLocation(),
-								r.artifact);
-					}
+					IO.copy(new URL(source).openStream(), file);
 				}
-				finally {
-					jar.close();
+				catch (Exception e) {
+					bnd.error("No such file %s", source);
+					continue nextArgument;
 				}
 			}
+
+			bnd.trace("put %s", file);
+
+			Jar jar = new Jar(file);
+			try {
+				String bsn = jar.getBsn();
+				if (bsn == null) {
+					bnd.error("File %s is not a bundle (it has no bsn) ", file);
+					return;
+				}
+
+				bnd.trace("bsn %s version %s", bsn, jar.getVersion());
+
+				if (!opts.force()) {
+					Verifier v = new Verifier(jar);
+					v.setTrace(true);
+					v.setExceptions(true);
+					v.verify();
+					bnd.getInfo(v);
+				}
+
+				if (bnd.isOk()) {
+					PutResult r = writable.put(new BufferedInputStream(new FileInputStream(file)),
+							new RepositoryPlugin.PutOptions());
+					bnd.trace("put %s in %s (%s) into %s", source, writable.getName(), writable.getLocation(), r.artifact);
+				}
+			}
+			finally {
+				jar.close();
+			}
+			if ( delete)
+				file.delete();
 		}
 	}
 

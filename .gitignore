@@ -12,3 +12,4 @@ Archive
 buildfiles
 .ant-targets-build.xml
 biz.aQute.jpm/global/
+cnf/plugins/biz.aQute.bnd/biz.aQute.bnd-2.2.0.jar

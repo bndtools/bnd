@@ -6,6 +6,7 @@ import java.util.jar.*;
 import junit.framework.*;
 import aQute.bnd.osgi.*;
 
+@SuppressWarnings("resource")
 public class ClassReferenceTest extends TestCase {
 	class Inner {
 
@@ -27,10 +28,12 @@ public class ClassReferenceTest extends TestCase {
 		Properties properties = new Properties();
 		properties.put("-classpath", "compilerversions/compilerversions.jar");
 		String[] packages = {
-				"sun_1_1", "sun_1_6", "eclipse_1_1", "sun_1_2", "sun_1_3", "sun_1_4", "sun_1_5", "sun_jsr14",
-				"eclipse_1_5", "eclipse_1_6", "eclipse_1_2", "eclipse_1_3", "eclipse_1_4", "eclipse_jsr14"
+				"sun_1_1", "sun_1_2", "sun_1_3", "sun_1_4", "sun_1_5", "sun_jsr14", "sun_1_6", "sun_1_7", "sun_1_8",//
+				"eclipse_1_1", "eclipse_1_2", "eclipse_1_3", "eclipse_1_4",
+				"eclipse_1_5", "eclipse_1_6", "eclipse_jsr14", "eclipse_1_7"
 		};
 		for (int i = 0; i < packages.length; i++) {
+			System.out.println("compiler version " + packages[i]);
 			Builder builder = new Builder();
 			properties.put("Export-Package", packages[i]);
 			builder.setProperties(properties);

@@ -78,6 +78,9 @@ Bundle-SCM:             git://github.com/bndtools/bnd.git
 
 -make:                  (*).(jar);type=bnd; recipe="bnd/$1.bnd"
 
+-releaserepo:  Release
+-baselinerepo: Main
+
 -removeheader:          Include-Resource
 
 -runpath:\

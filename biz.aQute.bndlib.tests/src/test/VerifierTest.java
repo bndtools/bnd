@@ -8,34 +8,82 @@ import junit.framework.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 
+@SuppressWarnings("resource")
 public class VerifierTest extends TestCase {
 
-	
+	/**
+	 * Check for reserved file names (INVALIDFILENAMES)
+	 * 
+	 * @throws Exception
+	 */
+	public void testInvalidFileNames() throws Exception {
+		testFileName("0ABC", null, true);
+		testFileName("0ABC", "[0-9].*|${@}", false);
+		testFileName("com1", null, false);
+		testFileName("COM1", null, false);
+		testFileName("cOm1", null, false);
+		testFileName("aux", null, false);
+		testFileName("AUX", null, false);
+		testFileName("XYZ", null, true);
+		testFileName("XYZ", "XYZ|${@}", false);
+		testFileName("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", ".{33,}|${@}", false);
+		testFileName("clock$", ".{1,32}|${@}", false);
+		testFileName("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", null, true);
+	}
+
+	private void testFileName(String segment, String pattern, boolean answer) throws Exception {
+		testFilePath(segment, pattern, answer);
+		testFilePath("abc/" + segment, pattern, answer);
+		testFilePath("abc/" + segment + "/def", pattern, answer);
+		testFilePath(segment + "/def", pattern, answer);
+	}
+
+	private void testFilePath(String path, String pattern, boolean good) throws Exception {
+		Builder b = new Builder();
+		try {
+			b.setProperty("-includeresource", path + ";literal='x'");
+			if (pattern != null)
+				b.setProperty(Constants.INVALIDFILENAMES, pattern);
+
+			b.build();
+			if ( good )
+				assertTrue(b.check());
+			else
+				assertTrue(b.check("Invalid file/directory"));
+		}
+		finally {
+			b.close();
+		}
+	}
+
 	/**
 	 * Create a require capality verification test
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
-	
+
 	public void testInvalidFilterOnRequirement() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setExportPackage("org.osgi.framework");
-		b.setProperty("Require-Capability","test; filter:=\"(&(test=aName)(version>=1.1.0))\", "
-				+ " test; filter:=\"(&(version>=1.1)(string~=astring))\", "
-				+ " test; filter:=\"(&(version>=1.1)(long>=99))\", "
-				+ " test; filter:=\"(&(version>=1.1)(double>=1.0))\",  "
-				+ " test; filter:=\"(&(version>=1.1)(version.list=1.0)(version.list=1.1)(version.list=1.2))\", "
-				+ " test; filter:=\"(&(version>=1.1)(long.list=1)(long.list=2)(long.list=3)(long.list=4))\", "
-				+ " test; filter:=\"(&(version>=1.1)(double.list=1.001)(double.list=1.002)(double.list=1.003)(double.list<=1.3))\", "
-				+ " test; filter:=\"(&(version>=1.1)(string.list~=astring)(string.list~=bstring)(string.list=cString))\", "
-				+ " test; filter:=\"(&(version>=1.1)(string.list2=a\\\"quote)(string.list2=a\\,comma)(string.list2= aSpace )(string.list2=\\\"start)(string.list2=\\,start)(string.list2=end\\\")(string.list2=end\\,))\", "
-				+ " test; filter:=\"(&(version>=1.1)(string.list3= aString )(string.list3= bString )(string.list3= cString ))\", "
-				+ " test.effective; effective:=\"active\"; filter:=\"(willResolve=false)\", test.no.attrs");
-		
+		b.setProperty(
+				"Require-Capability",
+				"test; filter:=\"(&(test=aName)(version>=1.1.0))\", "
+						+ " test; filter:=\"(&(version>=1.1)(string~=astring))\", "
+						+ " test; filter:=\"(&(version>=1.1)(long>=99))\", "
+						+ " test; filter:=\"(&(version>=1.1)(double>=1.0))\",  "
+						+ " test; filter:=\"(&(version>=1.1)(version.list=1.0)(version.list=1.1)(version.list=1.2))\", "
+						+ " test; filter:=\"(&(version>=1.1)(long.list=1)(long.list=2)(long.list=3)(long.list=4))\", "
+						+ " test; filter:=\"(&(version>=1.1)(double.list=1.001)(double.list=1.002)(double.list=1.003)(double.list<=1.3))\", "
+						+ " test; filter:=\"(&(version>=1.1)(string.list~=astring)(string.list~=bstring)(string.list=cString))\", "
+						+ " test; filter:=\"(&(version>=1.1)(string.list2=a\\\"quote)(string.list2=a\\,comma)(string.list2= aSpace )(string.list2=\\\"start)(string.list2=\\,start)(string.list2=end\\\")(string.list2=end\\,))\", "
+						+ " test; filter:=\"(&(version>=1.1)(string.list3= aString )(string.list3= bString )(string.list3= cString ))\", "
+						+ " test.effective; effective:=\"active\"; filter:=\"(willResolve=false)\", test.no.attrs");
+
 		b.build();
 		assertTrue(b.check());
 	}
-	
+
 	/**
 	 * Test the strict flag
 	 */
@@ -43,17 +91,21 @@ public class VerifierTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.addClasspath(new File("jar/osgi.jar"));
 		bmaker.addClasspath(new File("bin"));
-		bmaker.setProperty("Export-Package", "org.osgi.service.eventadmin;version='[1,2)',org.osgi.framework;version=x13,test;-remove-attribute:=version,test.lib;specification-version=12,test.split");
-		bmaker.setProperty("Import-Package", "foo;version=1,bar;version='[1,x2)',baz;version='[2,1)',baz2;version='(1,1)'");
+		bmaker.setProperty(
+				"Export-Package",
+				"org.osgi.service.eventadmin;version='[1,2)',org.osgi.framework;version=x13,test;-remove-attribute:=version,test.lib;specification-version=12,test.split");
+		bmaker.setProperty("Import-Package",
+				"foo;version=1,bar;version='[1,x2)',baz;version='[2,1)',baz2;version='(1,1)'");
 		bmaker.setProperty("-strict", "true");
 		Jar jar = bmaker.build();
-		assertTrue(bmaker.check("Import Package bar has an invalid version range syntax \\[1,x2\\)",
-				"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",
-				"Import Package baz has an invalid version range syntax \\[2,1\\):Low Range is higher than High Range: 2.0.0-1.0.0",
-				"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: \\[foo\\]",
-				"Export Package org.osgi.framework version has invalid syntax: x13",
-				"Export Package test.lib uses deprecated specification-version instead of version",
-				"Export Package org.osgi.service.eventadmin version is a range: \\[1,2\\); Exports do not allow for ranges."));
+		assertTrue(bmaker
+				.check("Import Package bar has an invalid version range syntax \\[1,x2\\)",
+						"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",
+						"Import Package baz has an invalid version range syntax \\[2,1\\):Low Range is higher than High Range: 2.0.0-1.0.0",
+						"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: \\[foo\\]",
+						"Export Package org.osgi.framework version has invalid syntax: x13",
+						"Export Package test.lib uses deprecated specification-version instead of version",
+						"Export Package org.osgi.service.eventadmin version is a range: \\[1,2\\); Exports do not allow for ranges."));
 	}
 
 	public static void testCapability() throws Exception {

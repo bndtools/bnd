@@ -35,13 +35,25 @@
         </tstamp>
         <dirname property="projectdir" file="${ant.file}" />
         <dirname property="workspacedir" file="${projectdir}" />
-
-        <!-- Define the classpath of bnd (location is defined in build.properties) -->
         <property file="${workspacedir}/cnf/build.properties"/>
-        <path id="bnd-classpath" location="${workspacedir}/cnf/${bnd.location}" />
+    	<mkdir dir="${workspacedir}/cnf/cache"/>
 
-        <!-- Load bnd and prepare the workspace -->
-        <taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />
+    	<!-- We download bnd and the repoindex -->
+    	
+		<property name="bnd.location" value="${workspacedir}/cnf/cache/biz.aQute.bnd-${bnd.version}.jar" />
+		<property name="repoindex.location" value="${workspacedir}/cnf/cache/org.osgi.impl.bundle.repoindex.ant-${repoindex.version}.jar" />
+
+		<get src="${bnd.url}" dest="${bnd.location}" verbose="false" skipexisting="true" />
+		<get src="${repoindex.url}" dest="${repoindex.location}" verbose="false" skipexisting="true" />
+
+		<path id="bnd-classpath" 		location="${bnd.location}" />
+        <path id="repoindex-classpath" 	location="${repoindex.location}" />
+		
+        <taskdef resource="taskdef.properties" classpathref="repoindex-classpath"/>
+		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />
+    	
+
+    	<!-- prepare, get bnds context -->
         <bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 
         <condition property="testDirExists">
@@ -139,7 +151,7 @@
     <!--
          TEST
     -->
-    <target name="test" depends="compile">
+    <target name="test" depends="compile" if="Test-Cases">
         <bndtest/>
     </target>
 

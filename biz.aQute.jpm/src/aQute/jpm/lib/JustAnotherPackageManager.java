@@ -738,7 +738,6 @@ public class JustAnotherPackageManager {
 
 			public void run() {
 				try {
-					reporter.trace("downloading %s" , uri);
 					put(uri, data);
 				}
 				catch (Throwable e) {
@@ -746,7 +745,7 @@ public class JustAnotherPackageManager {
 					data.error = e.toString();
 				}
 				finally {
-					reporter.trace("done downloading %s" , uri);
+					reporter.trace("done downloading %s", uri);
 					data.done();
 				}
 			}
@@ -800,6 +799,7 @@ public class JustAnotherPackageManager {
 	public ArtifactData get(byte[] sha) throws Exception {
 		String name = Hex.toHexString(sha);
 		File data = IO.getFile(repoDir, name + ".json");
+		reporter.trace("artifact data file %s", data);
 		if (data.isFile()) { // Bin + metadata
 			ArtifactData artifact = codec.dec().from(data).get(ArtifactData.class);
 			artifact.file = IO.getFile(repoDir, name).getAbsolutePath();
@@ -901,7 +901,7 @@ public class JustAnotherPackageManager {
 	}
 
 	public ArtifactData getCandidateAsync(String arg) throws Exception {
-		reporter.trace("coordinate %s",arg);
+		reporter.trace("coordinate %s", arg);
 		if (isUrl(arg))
 			try {
 				ArtifactData data = putAsync(new URI(arg));
@@ -923,9 +923,19 @@ public class JustAnotherPackageManager {
 		Revision revision = library.getRevisionByCoordinate(c);
 		if (revision == null)
 			return null;
-
+		
+		reporter.trace("revision %s", Hex.toHexString(revision._id));
+		
+		ArtifactData ad = get(revision._id);
+		if ( ad != null) {
+			reporter.trace("found in cache");
+			return ad;
+		}
+		
 		URI url = revision.urls.iterator().next();
-		return putAsync(url);
+		ArtifactData artifactData = putAsync(url);
+		artifactData.coordinate = c;
+		return artifactData;
 	}
 
 	public static Executor getExecutor() {
@@ -943,6 +953,7 @@ public class JustAnotherPackageManager {
 			url = new URI("http://repo.jpm4j.org/");
 
 		this.host = new URLClient(url.toString());
+		host.setReporter(reporter);
 		library = JSONRPCProxy.createRPC(JpmRepo.class, host, "jpm");
 	}
 
@@ -1187,18 +1198,6 @@ public class JustAnotherPackageManager {
 
 	}
 
-	public ArtifactData getRevision(String coordinate) throws Exception {
-		if (isUrl(coordinate)) {
-			return put(new URI(coordinate));
-		}
-		Coordinate c = new Coordinate(coordinate);
-
-		Revision revision = library.getRevisionByCoordinate(c);
-		if (revision == null)
-			return null;
-
-		return put(revision.urls.iterator().next());
-	}
 
 	private boolean isUrl(String coordinate) {
 		return URL_P.matcher(coordinate).matches();
@@ -1238,9 +1237,6 @@ public class JustAnotherPackageManager {
 			else
 				data.version = new Version(version);
 
-			if (main.getValue("Bundle-Name") != null)
-				data.name = main.getValue("Bundle-Name");
-
 			data.main = main.getValue("Main-Class");
 			data.description = main.getValue("Bundle-Description");
 			data.title = main.getValue("JPM-Name");
@@ -1253,29 +1249,34 @@ public class JustAnotherPackageManager {
 				Parameters requires = OSGiHeader.parseHeader(main.getValue("JPM-Classpath"));
 
 				for (Map.Entry<String,Attrs> e : requires.entrySet()) {
-					path.add(e.getKey()); // coordinate
+					path.add(e.getKey(), e.getValue().get("name")); // coordinate
 				}
 			} else if (!artifact.local) { // No JPM-Classpath, falling back to
 											// server's revision
-//				Iterable<RevisionRef> closure = library.getClosure(artifact.sha, false);
-//				System.out.println("getting closure " + artifact.url + " " + Strings.join("\n",closure));
-				
-//				if (closure != null) {
-//					for (RevisionRef ref : closure) {
-//						path.add(Hex.toHexString(ref.revision));
-//					}
-//				}
+											// Iterable<RevisionRef> closure =
+											// library.getClosure(artifact.sha,
+											// false);
+				// System.out.println("getting closure " + artifact.url + " " +
+				// Strings.join("\n",closure));
+
+				// if (closure != null) {
+				// for (RevisionRef ref : closure) {
+				// path.add(Hex.toHexString(ref.revision));
+				// }
+				// }
 			}
 
 			if (main.getValue("JPM-Runbundles") != null) {
 				Parameters jpmrunbundles = OSGiHeader.parseHeader(main.getValue("JPM-Runbundles"));
 
 				for (Map.Entry<String,Attrs> e : jpmrunbundles.entrySet()) {
-					bundles.add(e.getKey());
+					bundles.add(e.getKey(), e.getValue().get("name"));
 				}
 			}
 
+			reporter.trace("collect digests runpath");
 			data.dependencies.addAll(path.getDigests());
+			reporter.trace("collect digests bundles");
 			data.runbundles.addAll(bundles.getDigests());
 
 			Parameters command = OSGiHeader.parseHeader(main.getValue("JPM-Command"));
@@ -1327,5 +1328,15 @@ public class JustAnotherPackageManager {
 			}
 		}
 		return out;
+	}
+
+	/**
+	 * Get a list of candidates from a coordinate
+	 * 
+	 * @param c
+	 * @throws Exception
+	 */
+	public Iterable<Revision> getCandidates(Coordinate c) throws Exception {
+		return library.getRevisionsByCoordinate(c);
 	}
 }

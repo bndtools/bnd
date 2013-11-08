@@ -7,7 +7,25 @@ import java.util.jar.*;
 import junit.framework.*;
 import aQute.bnd.osgi.*;
 
+@SuppressWarnings("resource")
 public class MacroTest extends TestCase {
+	/**
+	 * Test the custom macros
+	 */
+	
+	public void testCustomMacros() {
+		assertTemplate("this is 1 abc, and this is def", "this is 1 ${1}, and this is ${2}", "abc;def");
+		assertTemplate("abc,def", "${#}", "abc;def");
+		assertTemplate("osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.6))'", "osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.${1}))'", "6");
+	}
+	
+	void assertTemplate(String result, String template, String params) {
+		Processor top = new Processor();
+		top.setProperty("template", template);
+		top.setProperty("macro", "${template;"+params+"}");
+		String expanded = top.getProperty("macro");
+		assertEquals( result, expanded);
+	}
 
 	/**
 	 * Test replacement of ./ with cwd
@@ -644,15 +662,16 @@ public class MacroTest extends TestCase {
 		m.process("    ${warning;xw;1;2;3 ${three}}");
 		m.process("    ${error;xe;1;2;3 ${three}}");
 		m.process("    ${if;1;$<a>}");
-		assertEquals("xw", p.getWarnings().get(0));
-		assertEquals("1", p.getWarnings().get(1));
-		assertEquals("2", p.getWarnings().get(2));
-		assertEquals("3 333", p.getWarnings().get(3));
+		
+		assertTrue("xw", p.getWarnings().get(0).endsWith("xw"));
+		assertTrue("1", p.getWarnings().get(1).endsWith("1"));
+		assertTrue("2", p.getWarnings().get(2).endsWith("2"));
+		assertTrue("3 333", p.getWarnings().get(3).endsWith("3 333"));
 
-		assertEquals("xe", p.getErrors().get(0));
-		assertEquals("1", p.getErrors().get(1));
-		assertEquals("2", p.getErrors().get(2));
-		assertEquals("3 333", p.getErrors().get(3));
+		assertTrue("xw", p.getErrors().get(0).endsWith("xe"));
+		assertTrue("1", p.getErrors().get(1).endsWith("1"));
+		assertTrue("2", p.getErrors().get(2).endsWith("2"));
+		assertTrue("3 333", p.getErrors().get(3).endsWith("3 333"));
 	}
 
 	public static void testNestedReplace() {

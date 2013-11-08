@@ -10,6 +10,8 @@ import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.repository.*;
+import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
@@ -118,6 +120,22 @@ public class ProjectBuilder extends Builder {
 			error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(),
 					fromRepo.getBsn());
 			return;
+		}
+
+		//
+		// Check if we want to overwrite an equal version that is not staging
+		//
+
+		if (newer.getWithoutQualifier().equals(older.getWithoutQualifier())) {
+			RepositoryPlugin rr = getReleaseRepo();
+			if (rr instanceof InfoRepository) {
+				ResourceDescriptor descriptor = ((InfoRepository) rr).getDescriptor(getBsn(), older);
+				if (descriptor != null && descriptor.phase != Phase.STAGING) {
+					error("Baselining %s against same version %s but the repository says the older repository version is not the required %s but is instead %s",
+							getBsn(), getVersion(), Phase.STAGING, descriptor.phase);
+					return;
+				}
+			}
 		}
 
 		trace("baseline %s-%s against: %s", getBsn(), getVersion(), fromRepo.getName());
@@ -268,13 +286,13 @@ public class ProjectBuilder extends Builder {
 
 		String bsn = getBsn();
 		Version version = new Version(getVersion());
-		SortedSet<Version> versions = removeStagedAndFilter(repo.versions(bsn));
+		SortedSet<Version> versions = removeStagedAndFilter(repo.versions(bsn), repo, bsn);
 
 		if (versions.isEmpty()) {
 			// We have a repo
 			Version v = new Version(getVersion());
 			if (v.getWithoutQualifier().compareTo(Version.ONE) > 0) {
-				error("There is no baseline for %s in the baseline repo %s. The build is for version %s, which is <= 1.0.0 which suggests that there should be a prior version.",
+				warning("There is no baseline for %s in the baseline repo %s. The build is for version %s, which is <= 1.0.0 which suggests that there should be a prior version.",
 						getBsn(), repo, v);
 			}
 			return null;
@@ -334,11 +352,11 @@ public class ProjectBuilder extends Builder {
 				// Fetch the revision
 
 				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) > 0) {
-					error("The baseline version %s is higher or equal than the current version %s for %s in %s",
-							target, version, bsn, repo);
+					error("The baseline version %s is higher than the current version %s for %s in %s", target,
+							version, bsn, repo);
 					return null;
 				}
-				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) > 0) {
+				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) == 0) {
 					if (isPedantic()) {
 						warning("Baselining against jar");
 					}
@@ -362,23 +380,62 @@ public class ProjectBuilder extends Builder {
 	 * Remove any staging versions that have a variant with a higher qualifier.
 	 * 
 	 * @param versions
+	 * @param repo
 	 * @return
+	 * @throws Exception
 	 */
-	private SortedSet<Version> removeStagedAndFilter(SortedSet<Version> versions) {
+	private SortedSet<Version> removeStagedAndFilter(SortedSet<Version> versions, RepositoryPlugin repo, String bsn)
+			throws Exception {
 		List<Version> filtered = new ArrayList<Version>(versions);
 		Collections.reverse(filtered);
 
+		InfoRepository ir = (repo instanceof InfoRepository) ? (InfoRepository) repo : null;
+
+		//
+		// Filter any versions that only differ in qualifier
+		// The last variable is the last one added. Since we are
+		// sorted from high to low, we skip any earlier base versions
+		//
 		Version last = null;
 		for (Iterator<Version> i = filtered.iterator(); i.hasNext();) {
-			Version current = i.next().getWithoutQualifier();
-			if (last != null && current.equals(last))
+			Version v = i.next();
+
+			// Check if same base version as last
+			Version current = v.getWithoutQualifier();
+			if (last != null && current.equals(last)) {
 				i.remove();
-			else
-				last = current;
+				continue;
+			}
+
+			//
+			// Check if this is not a master if the repo
+			// has a state for each resource
+			// /
+			if (ir != null && !isMaster(ir, bsn, v))
+				i.remove();
+
+			last = current;
 		}
 		SortedList<Version> set = new SortedList<Version>(filtered);
 		trace("filtered for only latest staged: %s from %s in range ", set, versions);
 		return set;
+	}
+
+	/**
+	 * Check if we have a master phase.
+	 * 
+	 * @param repo
+	 * @param bsn
+	 * @param v
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean isMaster(InfoRepository repo, String bsn, Version v) throws Exception {
+		ResourceDescriptor descriptor = repo.getDescriptor(bsn, v);
+		if (descriptor == null)
+			return false;
+
+		return descriptor.phase == Phase.MASTER;
 	}
 
 	private RepositoryPlugin getReleaseRepo() {

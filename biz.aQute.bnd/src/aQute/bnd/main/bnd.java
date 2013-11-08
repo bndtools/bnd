@@ -25,7 +25,7 @@ import aQute.bnd.help.*;
 import aQute.bnd.main.BaselineCommands.baseLineOptions;
 import aQute.bnd.main.BaselineCommands.schemaOptions;
 import aQute.bnd.main.DiffCommand.diffOptions;
-import aQute.bnd.main.RepoCommand.repoOptions;
+import aQute.bnd.main.RepoCommand.*;
 import aQute.bnd.maven.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.Def;
@@ -34,6 +34,7 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.*;
+import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.version.*;
 import aQute.configurable.*;
@@ -61,12 +62,13 @@ import aQute.service.reporter.*;
  * @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
-	static Pattern				ASSIGNMENT	= Pattern.compile("\\s*([-\\w\\d_.]+)\\s*(?:=\\s*([^\\s]+)\\s*)?");
+	static Pattern				ASSIGNMENT	= Pattern.compile("\\s*([-\\w\\d_.]+)\\s*(?:(=)\\s*([^\\s]+)?\\s*)?");
 	Settings					settings	= new Settings();
 	final PrintStream			err			= System.err;
 	final public PrintStream	out			= System.out;
 	Justif						justif		= new Justif(80, 40, 42, 70);
 	BndMessages					messages	= ReporterMessages.base(this, BndMessages.class);
+	private Workspace			ws;
 
 	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
@@ -139,13 +141,13 @@ public class bnd extends Processor {
 			return;
 		}
 
-		Project project = getProject();
-		if (project != null) {
-			Action a = project.getActions().get(arg);
-			if (a != null) {
-				args.add(0, "project");
-			}
-		}
+		// Project project = getProject();
+		// if (project != null) {
+		// Action a = project.getActions().get(arg);
+		// if (a != null) {
+		// args.add(0, "project");
+		// }
+		// }
 
 		m = COMMAND.matcher(args.get(0));
 		if (!m.matches()) {
@@ -258,6 +260,9 @@ public class bnd extends Processor {
 		}
 		out.flush();
 		err.flush();
+		if (ws != null)
+			getInfo(ws);
+
 		if (!check(options.ignore())) {
 			System.err.flush();
 			System.err.flush();
@@ -693,6 +698,12 @@ public class bnd extends Processor {
 	interface testOptions extends Options {
 		@Description("Path to another project than the current project")
 		String project();
+
+		@Description("Verify all the dependencies before launching (runpath, runbundles, testpath)")
+		boolean verify();
+
+		@Description("Launch the test even if this bundle does not contain Test-Cases")
+		boolean force();
 	}
 
 	@Description("Test a project according to an OSGi test")
@@ -702,13 +713,43 @@ public class bnd extends Processor {
 			messages.NoProject();
 			return;
 		}
+
+		if (!verifyDependencies(project, opts.verify(), true))
+			return;
+
+		if (project.getProperty(TESTCASES) == null)
+			if (opts.force())
+				project.setProperty(TESTCASES, "");
+			else {
+				warning("No %s set on this bundle. Use -f/--force to try this test anyway (this works if another bundle provides the testcases)",
+						TESTCASES);
+				return;
+			}
+
 		project.test();
+		getInfo(project);
+	}
+
+	private boolean verifyDependencies(Project project, boolean implies, boolean test) throws Exception {
+		if (!implies) {
+			return true;
+		}
+
+		project.verifyDependencies(test);
+		getInfo(project);
+		if (isOk())
+			return true;
+
+		return false;
 	}
 
 	@Description("Run a project in the OSGi launcher")
 	interface runOptions extends Options {
 		@Description("Path to another project than the current project")
 		String project();
+
+		@Description("Verify all the dependencies before launching (runpath, runbundles)")
+		boolean verify();
 	}
 
 	@Description("Run a project in the OSGi launcher")
@@ -718,7 +759,11 @@ public class bnd extends Processor {
 			messages.NoProject();
 			return;
 		}
+		if (!verifyDependencies(project, opts.verify(), true))
+			return;
+
 		project.run();
+		getInfo(project);
 	}
 
 	@Description("Clean a project")
@@ -735,6 +780,7 @@ public class bnd extends Processor {
 			return;
 		}
 		project.clean();
+		getInfo(project);
 	}
 
 	@Description("Access the internal bnd database of keywords and options")
@@ -799,6 +845,9 @@ public class bnd extends Processor {
 			workspaceDir = new File(System.getProperty("user.home") + File.separator + ".bnd");
 		}
 		Workspace ws = Workspace.getWorkspace(workspaceDir);
+		ws.setTrace(isTrace());
+		ws.setPedantic(isPedantic());
+		ws.setExceptions(isExceptions());
 
 		Project project = new Project(ws, projectDir, file);
 
@@ -812,6 +861,7 @@ public class bnd extends Processor {
 			messages.Project_RunFailed_(project, e);
 		}
 		getInfo(project);
+		getInfo(ws);
 	}
 
 	/**
@@ -891,10 +941,10 @@ public class bnd extends Processor {
 				project = new Project(ws, getBase(), file);
 				project.setProperty(PROFILE, profile);
 				project.use(this);
-				if ( opts.jpm()) {
+				if (opts.jpm()) {
 					project.setProperty(Constants.PACKAGE, Constants.PACKAGE_JPM);
 				}
-				
+
 				try {
 					Jar jar = project.pack(profile);
 					path = path.replaceAll(".bnd(run)?$", "") + ".jar";
@@ -1130,7 +1180,7 @@ public class bnd extends Processor {
 			if (e == null) {
 				// ignore
 			} else {
-				Set<Object> set = new HashSet<Object>(e);
+				Set<Object> set = new LinkedHashSet<Object>(e);
 				set.remove(element);
 				Iterator< ? > row = set.iterator();
 				String first = "";
@@ -1514,13 +1564,42 @@ public class bnd extends Processor {
 			table.add("Workspace", project.getWorkspace().toString());
 			table.addAll("Plugins", project.getPlugins(Object.class));
 			table.addAll("Repos", project.getWorkspace().getRepositories());
+			table.add("Base", project.getBase());
 			printxref(table, "|");
+
+			table.clear();
+
+			table.addAll("All Source Path", project.getAllsourcepath());
+			table.addAll("Boot Class Path", project.getBootclasspath());
+			table.addAll("Build Path", project.getBuildpath());
+			table.addAll("Deliverables", project.getDeliverables());
+			table.addAll("Depends On", project.getDependson());
+			table.addAll("Run Path", project.getRunpath());
+			table.addAll("Test Path", project.getTestpath());
+			table.addAll("Source Path", project.getSourcePath());
+			table.addAll("Run Program Args", project.getRunProgramArgs());
+			table.addAll("Run VM", project.getRunVM());
+			table.addAll("Run Fw", project.getRunFw());
+			if (project.getIncluded() != null)
+				table.addAll("Included Files", project.getIncluded());
+			table.addAll("Run Bundles", project.getRunbundles());
+			printxref(table, "|");
+
+			if (project.getSubBuilders() != null)
+				for (Builder sub : project.getSubBuilders()) {
+					table.clear();
+					out.printf("Sub: %s-%s\n", sub.getBsn(), sub.getVersion());
+					if (sub.getIncluded() != null)
+						table.addAll("Included Files", sub.getIncluded());
+					printxref(table, "|");
+				}
+			getInfo(project);
 		} else
 			err.println("No project");
 
 		target = this;
 
-		MultiMap<String,String> table = new MultiMap<String,String>();
+		MultiMap<String,Object> table = new MultiMap<String,Object>();
 
 		for (Iterator<String> i = target.iterator(); i.hasNext();) {
 			String key = i.next();
@@ -1528,7 +1607,6 @@ public class bnd extends Processor {
 			Collection<String> set = split(s);
 			table.addAll(key, set);
 		}
-		printxref(table, "|");
 
 	}
 
@@ -2378,6 +2456,14 @@ public class bnd extends Processor {
 		return getProject(null);
 	}
 
+	public Workspace getWorkspace(File workspaceDir) throws Exception {
+		ws = Workspace.getWorkspace(workspaceDir);
+		ws.setTrace(isTrace());
+		ws.setPedantic(isPedantic());
+		ws.setExceptions(isExceptions());
+		return ws;
+	}
+
 	public Project getProject(String where) throws Exception {
 		if (where == null || where.equals("."))
 			where = Project.BNDFILE;
@@ -2390,7 +2476,7 @@ public class bnd extends Processor {
 		if (f.isFile()) {
 			File projectDir = f.getParentFile();
 			File workspaceDir = projectDir.getParentFile();
-			Workspace ws = Workspace.getWorkspace(workspaceDir);
+			ws = getWorkspace(workspaceDir);
 			Project project = ws.getProject(projectDir.getName());
 			if (project.isValid()) {
 				project.setTrace(isTrace());
@@ -2845,17 +2931,23 @@ public class bnd extends Processor {
 					Matcher m = ASSIGNMENT.matcher(s);
 					trace("try %s", s);
 					if (m.matches()) {
-						trace("matches %s %s %s", s, m.group(1), m.group(2));
 						String key = m.group(1);
 						Instructions instr = new Instructions(key);
 						Collection<String> select = instr.select(settings.keySet(), true);
 
-						String value = m.group(2);
+						String value = m.group(3);
 						if (value == null) {
-							trace("list wildcard " + instr + " " + select + " " + settings.keySet());
-							list(select, settings);
+							if (m.group(2) == null) {
+								list(select, settings);
+							} else {
+								for (String k : select) {
+									trace("remove %s=%s", k, settings.get(k));
+									settings.remove(k);
+									set = true;
+								}
+							}
 						} else {
-							trace("assignment 	");
+							trace("assignment %s=%s", key,value);
 							settings.put(key, value);
 							set = true;
 						}
@@ -2914,7 +3006,7 @@ public class bnd extends Processor {
 
 		@Description("Specify the algorithms")
 		List<Alg> algorithm();
-		
+
 	}
 
 	@Description("Digests a number of files")
@@ -2944,8 +3036,8 @@ public class bnd extends Processor {
 						case MD5 :
 							digest = MD5.digest(f).digest();
 							break;
-							
-						case TIMELESS:
+
+						case TIMELESS :
 							Jar j = new Jar(f);
 							digest = j.getTimelessDigest();
 							break;
@@ -2998,33 +3090,89 @@ public class bnd extends Processor {
 		mc.run(options._().toArray(new String[0]), 1);
 		getInfo(mc);
 	}
-	
+
 	@Description("Generate autocompletion file for bash")
 	public void _generate(Options options) throws Exception {
 		File tmp = File.createTempFile("bnd-completion", ".tmp");
 		tmp.deleteOnExit();
-		
+
 		try {
 			IO.copy(getClass().getResource("bnd-completion.bash"), tmp);
-			
+
 			Sed sed = new Sed(tmp);
 			sed.setBackup(false);
-			
+
 			Reporter r = new ReporterAdapter();
 			CommandLine c = new CommandLine(r);
 			Map<String,Method> commands = c.getCommands(this);
 			StringBuilder sb = new StringBuilder();
-			for(String commandName : commands.keySet()) {
-				sb.append(" "+commandName);
+			for (String commandName : commands.keySet()) {
+				sb.append(" " + commandName);
 			}
 			sb.append(" help");
-			
+
 			sed.replace("%listCommands%", sb.toString().substring(1));
 			sed.doIt();
 			IO.copy(tmp, out);
-		} finally {
+		}
+		finally {
 			tmp.delete();
 		}
 	}
-	
+
+	/**
+	 * List actions of the repositories if they implement Actionable and allow
+	 * them to be executed
+	 */
+
+	@Description("Execute an action on a repo, or if no name is give, list the actions")
+	interface ActionOptions extends projectOptions {
+		Glob filter();
+
+		boolean tooltip();
+	}
+
+	@Description("Execute an action on a repo, or if no name is give, list the actions")
+	public void _action(ActionOptions opts) throws Exception {
+		Project project = getProject(opts.project());
+		if (project == null) {
+			error("Not in a project directory");
+			return;
+		}
+
+		Glob filter = opts.filter();
+		if (filter == null)
+			filter = new Glob("*");
+		List<Actionable> actionables = project.getPlugins(Actionable.class);
+		if (actionables.isEmpty()) {
+			error("No actionables in [%s]", project.getPlugins());
+			return;
+		}
+		for (Actionable o : actionables) {
+			if (filter.matcher(o.title()).matches()) {
+				trace("actionable %s - %s", o, o.title());
+				Map<String,Runnable> map = o.actions();
+				if (map != null) {
+					if (opts._().isEmpty()) {
+						out.printf("# %s%n", o.title());
+						if (opts.tooltip() && o.tooltip() != null) {
+							out.printf("%s%n", o.tooltip());
+						}
+						out.printf("## actions%n");
+						for (String entry : map.keySet()) {
+							out.printf("  %s%n", entry);
+						}
+					} else {
+						for (String entry : opts._()) {
+							Runnable r = map.get(entry);
+							if (r != null) {
+								r.run();
+							}
+						}
+					}
+				}
+			}
+		}
+		getInfo(project);
+	}
 }

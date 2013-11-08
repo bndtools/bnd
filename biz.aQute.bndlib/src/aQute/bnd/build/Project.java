@@ -20,6 +20,7 @@ import aQute.bnd.service.action.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
+import aQute.lib.strings.*;
 import aQute.libg.generics.*;
 import aQute.libg.reporter.*;
 import aQute.libg.sed.*;
@@ -43,6 +44,7 @@ public class Project extends Processor {
 	final Collection<Container>	testpath				= new LinkedHashSet<Container>();
 	final Collection<Container>	runpath					= new LinkedHashSet<Container>();
 	final Collection<Container>	runbundles				= new LinkedHashSet<Container>();
+	final Collection<Container>	runfw			= new LinkedHashSet<Container>();
 	File						runstorage;
 	final Collection<File>		sourcepath				= new LinkedHashSet<File>();
 	final Collection<File>		allsourcepath			= new LinkedHashSet<File>();
@@ -260,6 +262,7 @@ public class Project extends Processor {
 					doPath(buildpath, dependencies, parseBuildpath(), bootclasspath);
 					doPath(testpath, dependencies, parseTestpath(), bootclasspath);
 					if (!delayRunDependencies) {
+						doPath(runfw, dependencies, parseRunFw(), null);
 						doPath(runpath, dependencies, parseRunpath(), null);
 						doPath(runbundles, dependencies, parseRunbundles(), null);
 					}
@@ -391,6 +394,10 @@ public class Project extends Processor {
 		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNBUNDLES), Constants.RUNBUNDLES);
 	}
 
+	private List<Container> parseRunFw() throws Exception {
+		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNFW), Constants.RUNFW);
+	}
+	
 	private List<Container> parseTestpath() throws Exception {
 		return getBundles(Strategy.HIGHEST, getProperty(Constants.TESTPATH), Constants.TESTPATH);
 	}
@@ -425,12 +432,17 @@ public class Project extends Processor {
 				String versionRange = attrs.get("version");
 
 				if (versionRange != null) {
-					if (versionRange.equals("latest") || versionRange.equals("snapshot")) {
+					if (versionRange.equals(VERSION_ATTR_LATEST) || versionRange.equals(VERSION_ATTR_SNAPSHOT)) {
 						found = getBundle(bsn, versionRange, strategyx, attrs);
 					}
 				}
 				if (found == null) {
-					if (versionRange != null && (versionRange.equals("project") || versionRange.equals("latest"))) {
+					
+					//
+					// TODO This looks like a duplicate 
+					// of what is done in getBundle??
+					//
+					if (versionRange != null && (versionRange.equals("project") || versionRange.equals(VERSION_ATTR_LATEST))) {
 						Project project = getWorkspace().getProject(bsn);
 						if (project != null && project.exists()) {
 							File f = project.getOutput();
@@ -458,12 +470,16 @@ public class Project extends Processor {
 				if (found != null) {
 					List<Container> libs = found.getMembers();
 					for (Container cc : libs) {
-						if (result.contains(cc))
-							warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
-						else if (cc.getError() != null)
-							warning("Cannot find %s in %s from %s due to %s", cc, spec, source, cc.getError());
-						else
+						if (result.contains(cc)){
+							if ( isPedantic())
+								warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
+						}
+						else {
+							if (cc.getError() != null) {
+								warning("Cannot find %s", cc);
+							}
 							result.add(cc);
+						}
 					}
 				} else {
 					// Oops, not a bundle in sight :-(
@@ -592,6 +608,16 @@ public class Project extends Processor {
 		prepare();
 		justInTime(runbundles, parseRunbundles());
 		return runbundles;
+	}
+
+	/**
+	 * Return the run framework
+	 * @throws Exception 
+	 */
+	public Collection<Container> getRunFw() throws Exception {
+		prepare();
+		justInTime(runfw, parseRunFw());
+		return runfw;
 	}
 
 	public File getRunStorage() throws Exception {
@@ -828,13 +854,13 @@ public class Project extends Processor {
 		if (range == null)
 			range = "0";
 
-		if ("snapshot".equals(range)) {
+		if (VERSION_ATTR_SNAPSHOT.equals(range) || VERSION_ATTR_PROJECT.equals(range)) {
 			return getBundleFromProject(bsn, attrs);
 		}
 
 		Strategy useStrategy = strategy;
 
-		if ("latest".equals(range)) {
+		if (VERSION_ATTR_LATEST.equals(range)) {
 			Container c = getBundleFromProject(bsn, attrs);
 			if (c != null)
 				return c;
@@ -861,7 +887,7 @@ public class Project extends Processor {
 					return toContainer(bsn, range, attrs, result, blocker);
 			}
 		} else {
-			VersionRange versionRange = "latest".equals(range) ? new VersionRange("0") : new VersionRange(range);
+			VersionRange versionRange = VERSION_ATTR_LATEST.equals(range) ? new VersionRange("0") : new VersionRange(range);
 
 			// We have a range search. Gather all the versions in all the repos
 			// and make a decision on that choice. If the same version is found
@@ -929,7 +955,17 @@ public class Project extends Processor {
 
 		//
 		// If we get this far we ran into an error somewhere
+		//
+		// Check if we try to find a BSN that is in the workspace but marked latest
+		//
 
+		if ( !range.equals(VERSION_ATTR_LATEST)) {
+			Container c = getBundleFromProject(bsn, attrs);
+			return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range + " Not found because latest was not specified."
+					+ " It is, however, present in the workspace. Add '"+bsn+";version=(latest|snapshot)' to see the bundle in the workspace.", null, null);
+		}
+
+		
 		return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range + " Not found in "
 				+ plugins, null, null);
 
@@ -1116,7 +1152,11 @@ public class Project extends Processor {
 
 		for (String bsn : parts) {
 			Container container = getBundle(bsn, version, strategy, null);
-			add(paths, container);
+			if (container.getError() != null) {
+				error("${repo} macro refers to an artifact %s-%s (%s) that has an error: %s", bsn, version, strategy,
+						container.getError());
+			} else
+				add(paths, container);
 		}
 		return join(paths);
 	}
@@ -1950,6 +1990,7 @@ public class Project extends Processor {
 						if (!target.isAssignableFrom(clz)) {
 							msgs.IncompatibleHandler_For_(launcher, defaultHandler);
 						} else {
+							trace("found handler %s from %s", defaultHandler, c);
 							handlerClass = clz.asSubclass(target);
 							Constructor< ? extends T> constructor = handlerClass.getConstructor(Project.class);
 							return constructor.newInstance(this);
@@ -2218,6 +2259,38 @@ public class Project extends Processor {
 			getInfo(ppb);
 		}
 		getInfo(b);
+	}
+
+	/**
+	 * Method to verify that the paths are correct, ie no missing dependencies
+	 * 
+	 * @param test
+	 *            for test cases, also adds -testpath
+	 * @throws Exception
+	 */
+	public void verifyDependencies(boolean test) throws Exception {
+		verifyDependencies(RUNBUNDLES, getRunbundles());
+		verifyDependencies(RUNPATH, getRunpath());
+		if (test)
+			verifyDependencies(TESTPATH, getTestpath());
+		verifyDependencies(BUILDPATH, getBuildpath());
+	}
+
+	private void verifyDependencies(String title, Collection<Container> path) throws Exception {
+		List<String> msgs = new ArrayList<String>();
+		for (Container c : new ArrayList<Container>(path)) {
+			for (Container cc : c.getMembers()) {
+				if (cc.getError() != null)
+					msgs.add(cc + " - " + cc.getError());
+				else if (!cc.getFile().isFile() && !cc.getFile().equals(cc.getProject().getOutput())
+						&& !cc.getFile().equals(cc.getProject().getTestOutput()))
+					msgs.add(cc + " file does not exists: " + cc.getFile());
+			}
+		}
+		if (msgs.isEmpty())
+			return;
+
+		error("%s: has errors: %s", title, Strings.join(msgs));
 	}
 
 }

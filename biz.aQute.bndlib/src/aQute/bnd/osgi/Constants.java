@@ -39,6 +39,7 @@ public interface Constants {
 	String							FRAGMENT_HOST								= "Fragment-Host";
 	String							IMPORT_PACKAGE								= "Import-Package";
 	String							IMPORT_SERVICE								= "Import-Service";
+	String							META_PERSISTENCE							= "Meta-Persistence";
 	String							PROVIDE_CAPABILITY							= "Provide-Capability";
 	String							REQUIRE_BUNDLE								= "Require-Bundle";
 	String							REQUIRE_CAPABILITY							= "Require-Capability";
@@ -67,7 +68,7 @@ public interface Constants {
 			BUNDLE_NAME, BUNDLE_NATIVECODE, BUNDLE_REQUIREDEXECUTIONENVIRONMENT, BUNDLE_SYMBOLICNAME, BUNDLE_VERSION,
 			FRAGMENT_HOST, PRIVATE_PACKAGE, IGNORE_PACKAGE, INCLUDE_RESOURCE, REQUIRE_BUNDLE, IMPORT_SERVICE,
 			EXPORT_SERVICE, CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES, SIGNATURE_TEST, REQUIRE_CAPABILITY,
-			PROVIDE_CAPABILITY, BUNDLE_ICON, REPOSITORIES
+			PROVIDE_CAPABILITY, BUNDLE_ICON, REPOSITORIES, META_PERSISTENCE
 																				};
 
 	String							BASELINE									= "-baseline";
@@ -77,6 +78,7 @@ public interface Constants {
 	String							BUMPPOLICY									= "-bumppolicy";
 	String							CONDUIT										= "-conduit";
 	String							CONTRACT									= "-contract";
+	String							CACHEDIR									= "-cachedir";
 	String							DIFFIGNORE									= "-diffignore";
 	String							COMPILER_SOURCE								= "-source";
 	String							COMPILER_TARGET								= "-target";
@@ -89,9 +91,11 @@ public interface Constants {
 	String							DEBUG										= "-debug";
 	String							EXPERIMENTS									= "-experiments";
 	String							EXPORT_CONTENTS								= "-exportcontents";
+	String							EXTENSION									= "-extension";
 	String							FAIL_OK										= "-failok";
 	String							INCLUDE										= "-include";
 	String							INCLUDERESOURCE								= "-includeresource";
+	String							INVALIDFILENAMES							= "-invalidfilenames";
 	String							JAVAAGENT									= "-javaagent";
 
 	String							MAKE										= "-make";
@@ -100,9 +104,14 @@ public interface Constants {
 	String							PROFILE										= "-profile";
 	String							SAVEMANIFEST								= "-savemanifest";
 	String							NAMESECTION									= "-namesection";
+	String							NOBUILDINCACHE								= "-nobuildincache";
 	String							NODEFAULTVERSION							= "-nodefaultversion";
 	String							NOEXTRAHEADERS								= "-noextraheaders";
+	String							NOJUNIT										= "-nojunit";
+	String							NOJUNITOSGI									= "-nojunitosgi";
+
 	String							NOMANIFEST									= "-nomanifest";
+	String							MANIFEST_NAME								= "-manifest-name";
 	String							NOUSES										= "-nouses";
 	String							NOBUNDLES									= "-nobundles";
 	String							PACKAGE										= "-package";
@@ -110,7 +119,10 @@ public interface Constants {
 	String							PEDANTIC									= "-pedantic";
 	String							PLUGIN										= "-plugin";
 	String							PLUGINPATH									= "-pluginpath";
+	String							PLUGINPATH_URL_ATTR							= "url";
+	String							PLUGINPATH_SHA1_ATTR						= "sha1";
 	String							POM											= "-pom";
+	String							PREPROCESSMATCHERS							= "-preprocessmatchers";
 	String							RELEASEREPO									= "-releaserepo";
 	String							REMOVEHEADERS								= "-removeheaders";
 	String							RESOURCEONLY								= "-resourceonly";
@@ -156,6 +168,7 @@ public interface Constants {
 	String							TESTPATH									= "-testpath";
 	String							TESTCONTINUOUS								= "-testcontinuous";
 	String							UNDERTEST									= "-undertest";
+	String							UPTO										= "-upto";
 	String							VERBOSE										= "-verbose";
 	String							PROVIDER_POLICY								= "-provider-policy";
 	String							CONSUMER_POLICY								= "-consumer-policy";
@@ -175,7 +188,7 @@ public interface Constants {
 			UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST,
 			RUNVM, RUNPROGRAMARGS, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION,
 			DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT,
-			STRICT, DIFFIGNORE, CONTRACT
+			STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS, UPTO, INVALIDFILENAMES
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make
@@ -202,7 +215,7 @@ public interface Constants {
 	String							INCLUDE_DIRECTIVE							= "include:";
 	String							PROVIDE_DIRECTIVE							= "provide:";
 	String							EXCLUDE_DIRECTIVE							= "exclude:";
-	String							FILTER_DIRECTIVE							= "filter";
+	String							FILTER_DIRECTIVE							= "filter:";
 	String							PRESENCE_DIRECTIVE							= "presence:";
 	String							PRIVATE_DIRECTIVE							= "private:";
 	String							SINGLETON_DIRECTIVE							= "singleton:";
@@ -286,36 +299,36 @@ public interface Constants {
 	/**
 	 * Component constants
 	 */
-	public final static String		NAMESPACE_STEM								= "http://www.osgi.org/xmlns/scr";
-	public final static String		JIDENTIFIER									= "<<identifier>>";
-	public final static String		COMPONENT_NAME								= "name:";
-	public final static String		COMPONENT_FACTORY							= "factory:";
-	public final static String		COMPONENT_SERVICEFACTORY					= "servicefactory:";
-	public final static String		COMPONENT_IMMEDIATE							= "immediate:";
-	public final static String		COMPONENT_ENABLED							= "enabled:";
-	public final static String		COMPONENT_DYNAMIC							= "dynamic:";
-	public final static String		COMPONENT_MULTIPLE							= "multiple:";
-	public final static String		COMPONENT_GREEDY							= "greedy:";
-	public final static String		COMPONENT_PROVIDE							= "provide:";
-	public final static String		COMPONENT_OPTIONAL							= "optional:";
-	public final static String		COMPONENT_PROPERTIES						= "properties:";
-	public final static String		COMPONENT_IMPLEMENTATION					= "implementation:";
-	public final static String		COMPONENT_DESIGNATE							= "designate:";
-	public final static String		COMPONENT_DESIGNATEFACTORY					= "designateFactory:";
-	public final static String		COMPONENT_DESCRIPTORS						= ".descriptors:";
+	String							NAMESPACE_STEM								= "http://www.osgi.org/xmlns/scr";
+	String							JIDENTIFIER									= "<<identifier>>";
+	String							COMPONENT_NAME								= "name:";
+	String							COMPONENT_FACTORY							= "factory:";
+	String							COMPONENT_SERVICEFACTORY					= "servicefactory:";
+	String							COMPONENT_IMMEDIATE							= "immediate:";
+	String							COMPONENT_ENABLED							= "enabled:";
+	String							COMPONENT_DYNAMIC							= "dynamic:";
+	String							COMPONENT_MULTIPLE							= "multiple:";
+	String							COMPONENT_GREEDY							= "greedy:";
+	String							COMPONENT_PROVIDE							= "provide:";
+	String							COMPONENT_OPTIONAL							= "optional:";
+	String							COMPONENT_PROPERTIES						= "properties:";
+	String							COMPONENT_IMPLEMENTATION					= "implementation:";
+	String							COMPONENT_DESIGNATE							= "designate:";
+	String							COMPONENT_DESIGNATEFACTORY					= "designateFactory:";
+	String							COMPONENT_DESCRIPTORS						= ".descriptors:";
 
 	// v1.1.0
-	public final static String		COMPONENT_VERSION							= "version:";
-	public final static String		COMPONENT_CONFIGURATION_POLICY				= "configuration-policy:";
-	public final static String		COMPONENT_MODIFIED							= "modified:";
-	public final static String		COMPONENT_ACTIVATE							= "activate:";
-	public final static String		COMPONENT_DEACTIVATE						= "deactivate:";
+	String							COMPONENT_VERSION							= "version:";
+	String							COMPONENT_CONFIGURATION_POLICY				= "configuration-policy:";
+	String							COMPONENT_MODIFIED							= "modified:";
+	String							COMPONENT_ACTIVATE							= "activate:";
+	String							COMPONENT_DEACTIVATE						= "deactivate:";
 
-	public final static String		COMPONENT_NAMESPACE							= "xmlns:";
+	String							COMPONENT_NAMESPACE							= "xmlns:";
 
 	final static Map<String,String>	EMPTY										= Collections.emptyMap();
 
-	public final static String[]	componentDirectives							= new String[] {
+	String[]						componentDirectives							= new String[] {
 			COMPONENT_FACTORY, COMPONENT_IMMEDIATE, COMPONENT_ENABLED, COMPONENT_DYNAMIC, COMPONENT_MULTIPLE,
 			COMPONENT_PROVIDE, COMPONENT_OPTIONAL, COMPONENT_PROPERTIES, COMPONENT_IMPLEMENTATION,
 			COMPONENT_SERVICEFACTORY, COMPONENT_VERSION, COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED,
@@ -323,10 +336,10 @@ public interface Constants {
 			COMPONENT_DESIGNATEFACTORY, COMPONENT_GREEDY, COMPONENT_NAMESPACE
 																				};
 
-	public final static Set<String>	SET_COMPONENT_DIRECTIVES					= new HashSet<String>(
+	Set<String>						SET_COMPONENT_DIRECTIVES					= new HashSet<String>(
 																						Arrays.asList(componentDirectives));
 
-	public final static Set<String>	SET_COMPONENT_DIRECTIVES_1_1				= //
+	Set<String>						SET_COMPONENT_DIRECTIVES_1_1				= //
 																				new HashSet<String>(Arrays.asList(
 																						COMPONENT_VERSION,
 																						COMPONENT_CONFIGURATION_POLICY,
@@ -334,6 +347,15 @@ public interface Constants {
 																						COMPONENT_ACTIVATE,
 																						COMPONENT_DEACTIVATE));
 
-	public final static Set<String>	SET_COMPONENT_DIRECTIVES_1_2				= new HashSet<String>(
+	Set<String>						SET_COMPONENT_DIRECTIVES_1_2				= new HashSet<String>(
 																						Arrays.asList(COMPONENT_GREEDY));
+
+	String							VERSION_ATTR_LATEST							= "latest";
+	String							VERSION_ATTR_SNAPSHOT						= "snapshot";
+	String							VERSION_ATTR_PROJECT						= "project";
+
+	/**
+	 * List of standard matchers for preprocessing
+	 */
+	String							DEFAULT_PREPROCESSS_MATCHERS				= "!*.(jpg|jpeg|jif|jfif|jp2|jpx|j2k|j2c|fpx|png|gif|swf|doc|pdf|tiff|tif|raw|bmp|ppm|pgm|pbm|pnm|pfm|webp|zip|jar|gz|tar|tgz|exe|com|bin|mp[0-9]|mpeg|mov|):i";
 }

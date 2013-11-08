@@ -20,7 +20,7 @@ public interface SearchableRepository {
 	 */
 	class ResourceDescriptor {
 		/**
-		 * Unique id for the resource, for example the sha.
+		 * SHA-1 for the resource.
 		 */
 		public byte[]	id;
 
@@ -53,11 +53,16 @@ public interface SearchableRepository {
 		 * True if this resource was added as a dependency
 		 */
 		public boolean	dependency;
-		
+
 		/**
 		 * Location of the resource
 		 */
-		public URI url;
+		public URI		url;
+
+		/**
+		 * An ID of the resource owner.
+		 */
+		public String	owner;
 	}
 
 	/**
@@ -66,8 +71,9 @@ public interface SearchableRepository {
 	 * and you need to know the resources identified by this url. The returned
 	 * set is owned by the caller and may be modified.
 	 * <p/>
-	 * The @{code includeDependencies} parameter indicates that if possible
-	 * any mandatory compile and runtime dependencies should be added to the result set.
+	 * The @{code includeDependencies} parameter indicates that if possible any
+	 * mandatory compile and runtime dependencies should be added to the result
+	 * set.
 	 * 
 	 * @param url
 	 *            the dropped url
@@ -92,9 +98,9 @@ public interface SearchableRepository {
 	Set<ResourceDescriptor> query(String query) throws Exception;
 
 	/**
-	 * Add a resource descriptors to the underlying repository. Only
-	 * descriptors recognized to be from the designated repository are added, others must
-	 * be ignored. True must be returned if this descriptor was accepted.
+	 * Add a resource descriptors to the underlying repository. Only descriptors
+	 * recognized to be from the designated repository are added, others must be
+	 * ignored. True must be returned if this descriptor was accepted.
 	 * 
 	 * @param resource
 	 *            the descriptor to add
@@ -108,8 +114,9 @@ public interface SearchableRepository {
 	 * to be used to provide extra resources when a resolve fails. Returned are
 	 * all revisions that have a matching capability.
 	 * <p/>
-	 * The @{code includeDependencies} parameter indicates that if possible
-	 * any mandatory compile and runtime dependencies should be added to the result set.
+	 * The @{code includeDependencies} parameter indicates that if possible any
+	 * mandatory compile and runtime dependencies should be added to the result
+	 * set.
 	 * 
 	 * @param requirement
 	 *            The requirement to match

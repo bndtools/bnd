@@ -82,7 +82,7 @@ public abstract class ProjectLauncher {
 			if (file != null && (file.isFile() || file.isDirectory())) {
 				runbundles.add(file.getAbsolutePath());
 			} else {
-				warning("Bundle file \"%s\" does not exist", file);
+				error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
 			}
 		}
 
@@ -102,9 +102,7 @@ public abstract class ProjectLauncher {
 		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
-		List<Container> fws = project.getBundles(Strategy.HIGHEST, project.getProperty(Constants.RUNFW),
-				Constants.RUNFW);
-		runpath.addAll(fws);
+		runpath.addAll(project.getRunFw());
 
 		for (Container c : runpath) {
 			addClasspath(c);

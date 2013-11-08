@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 
 public class Syntax implements Constants {
 	final String							header;
@@ -305,8 +306,7 @@ public class Syntax implements Constants {
 					new Syntax(
 							FILTER_DIRECTIVE,
 							" (Filter) A filter expression that is asserted on the Capabilities belonging to the given namespace. The matching of the filter against the Capability is done on one Capability at a time. A filter like (&(a=1)(b=2)) matches only a Capability that specifies both attributes at the required value, not two capabilties that each specify one of the attributes correctly. A filter is optional, if no filter directive is specified the Requirement always matches.",
-							FILTER_DIRECTIVE + "= (&(a=1)(b=2))", null, null)
-			),
+							FILTER_DIRECTIVE + "= (&(a=1)(b=2))", null, null)),
 			new Syntax(BUILDPATH,
 					"Provides the class path for building the jar. The entries are references to the repository.",
 					BUILDPATH + "=osgi;version=4.1", "${repo;bsns}", Verifier.SYMBOLICNAME, path_version),
@@ -340,7 +340,12 @@ public class Syntax implements Constants {
 					INCLUDE,
 					"Include files. If an entry starts with '-', it does not have to exist. If it starts with '~', it must not overwrite any existing properties.",
 					INCLUDE + ": -${java.user}/.bnd", null, null),
-
+			new Syntax(
+					INVALIDFILENAMES,
+					"Specify a regular expressions to match against file or directory names. This is the segment, not the whole path."
+							+ " The intention is to provide a check for files and directories that cannot be used on Windows. However, it can also be used "
+							+ "on other platforms. You can specify the ${@} macro to refer to the default regular expressions used for this.",
+					INVALIDFILENAMES + ":" + Verifier.ReservedFileNames, null, null),
 			new Syntax(
 					INCLUDERESOURCE,
 					"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
@@ -367,6 +372,10 @@ public class Syntax implements Constants {
 
 			new Syntax(PLUGIN, "Define the plugins.", PLUGIN
 					+ "=aQute.lib.spring.SpringComponent,aQute.lib.deployer.FileRepo;location=${repo}", null, null),
+			new Syntax(PLUGINPATH, "Define the plugins load path.", PLUGINPATH
+					+ "=${workspace}/cnf/cache/plugins-2.2.0.jar", null, null, new Syntax(PLUGINPATH_URL_ATTR,
+					"Specify a URL to download this file from if it does not exist",
+					"url=url=http://example.com/download/plugins-2.2.0.jar", null, null)),
 
 			new Syntax(SERVICE_COMPONENT, "The header for Declarative Services.", SERVICE_COMPONENT
 					+ "=com.acme.Foo?;activate='start'", null, null),
@@ -402,11 +411,13 @@ public class Syntax implements Constants {
 					+ "=org.eclipse.osgi;version=3.5", null, null, path_version),
 			new Syntax(
 					RUNVM,
-					"Additional arguments for the VM invokation. Keys that start with a - are added as options, otherwise they are treated as -D properties for the VM.",
-					RUNVM + "=-Xmax=30", null, null),
+					"Additional arguments for the VM invocation. Keys that start with a - are added as options, otherwise they are treated as -D properties for the VM.",
+					RUNVM + "=-Xmax=30, secondOption=secondValue", null, null),
 			new Syntax(RUNPROGRAMARGS, "Additional arguments for the program invokation.", RUNPROGRAMARGS
 					+ "=/some/file /another/file some_argument", null, null),
-			new Syntax(PACKAGE, "Defines the options for packaging", PACKAGE + "=" + PACKAGE_JPM, null, null)
+			new Syntax(PACKAGE, "Defines the options for packaging", PACKAGE + "=" + PACKAGE_JPM, null, null),
+			new Syntax(UPTO, "Limit bnd's behavior like it was up to the given version", "-upto: 2.3.1", null,
+					Version.VERSION)
 																	};
 
 	public final static Map<String,Syntax>	HELP					= new HashMap<String,Syntax>();
@@ -439,9 +450,9 @@ public class Syntax implements Constants {
 	}
 
 	public String getPattern() {
-		if ( pattern == null)
+		if (pattern == null)
 			return ".*";
-		
+
 		return pattern.pattern();
 	}
 

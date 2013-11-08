@@ -44,4 +44,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 		analyzer.setProperty(Constants.SERVICE_COMPONENT, sc);
 		return false;
 	}
+
+	@Override
+	public String toString() {
+		return "DSAnnotations";
+	}
 }

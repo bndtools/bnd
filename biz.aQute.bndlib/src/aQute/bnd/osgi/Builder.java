@@ -30,16 +30,17 @@ import aQute.libg.generics.*;
  * @version $Revision: 1.27 $
  */
 public class Builder extends Analyzer {
-	static Pattern					IR_PATTERN			= Pattern.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
-	private final DiffPluginImpl	differ				= new DiffPluginImpl();
-	private Pattern					xdoNotCopy			= null;
-	private static final int		SPLIT_MERGE_LAST	= 1;
-	private static final int		SPLIT_MERGE_FIRST	= 2;
-	private static final int		SPLIT_ERROR			= 3;
-	private static final int		SPLIT_FIRST			= 4;
-	private static final int		SPLIT_DEFAULT		= 0;
-	private final List<File>		sourcePath			= new ArrayList<File>();
-	private final Make				make				= new Make(this);
+	static Pattern					IR_PATTERN					= Pattern.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
+	private final DiffPluginImpl	differ						= new DiffPluginImpl();
+	private Pattern					xdoNotCopy					= null;
+	private static final int		SPLIT_MERGE_LAST			= 1;
+	private static final int		SPLIT_MERGE_FIRST			= 2;
+	private static final int		SPLIT_ERROR					= 3;
+	private static final int		SPLIT_FIRST					= 4;
+	private static final int		SPLIT_DEFAULT				= 0;
+	private final List<File>		sourcePath					= new ArrayList<File>();
+	private final Make				make						= new Make(this);
+	private Instructions			defaultPreProcessMatcher	= null;
 
 	public Builder(Processor parent) {
 		super(parent);
@@ -93,10 +94,14 @@ public class Builder extends Analyzer {
 			}
 		}
 
-		if (getProperty(NOMANIFEST) == null)
+		if (getProperty(NOMANIFEST) == null) {
 			dot.setManifest(manifest);
-		else
+			String manifestName = getProperty(MANIFEST_NAME);
+			if (manifestName != null)
+				dot.setManifestName(manifestName);
+		} else {
 			dot.setDoNotTouchManifest();
+		}
 
 		// This must happen after we analyzed so
 		// we know what it is on the classpath
@@ -756,11 +761,11 @@ public class Builder extends Analyzer {
 	private void doIncludeResource(Jar jar, String name, Map<String,String> extra) throws ZipException, IOException,
 			Exception {
 
-		boolean preprocess = false;
+		Instructions preprocess = null;
 		boolean absentIsOk = false;
 
 		if (name.startsWith("{") && name.endsWith("}")) {
-			preprocess = true;
+			preprocess = getPreProcessMatcher(extra);
 			name = name.substring(1, name.length() - 1).trim();
 		}
 
@@ -819,6 +824,23 @@ public class Builder extends Analyzer {
 		}
 	}
 
+	private Instructions getPreProcessMatcher(Map<String,String> extra) {
+		if (defaultPreProcessMatcher == null) {
+			defaultPreProcessMatcher = new Instructions(getProperty(PREPROCESSMATCHERS,
+					Constants.DEFAULT_PREPROCESSS_MATCHERS));
+		}
+		if (extra == null)
+			return defaultPreProcessMatcher;
+
+		String additionalMatchers = extra.get(PREPROCESSMATCHERS);
+		if (additionalMatchers == null)
+			return defaultPreProcessMatcher;
+
+		Instructions specialMatcher = new Instructions(additionalMatchers);
+		specialMatcher.putAll(defaultPreProcessMatcher);
+		return specialMatcher;
+	}
+
 	/**
 	 * It is possible in Include-Resource to use a system command that generates
 	 * the contents, this is indicated with {@code cmd} attribute. The command
@@ -839,8 +861,8 @@ public class Builder extends Analyzer {
 	 * @param absentIsOk
 	 * @throws Exception
 	 */
-	private void doCommand(Jar jar, String source, String destination, Map<String,String> extra, boolean preprocess,
-			boolean absentIsOk) throws Exception {
+	private void doCommand(Jar jar, String source, String destination, Map<String,String> extra,
+			Instructions preprocess, boolean absentIsOk) throws Exception {
 		String repeat = extra.get("for"); // TODO constant
 		if (repeat == null)
 			repeat = source;
@@ -862,7 +884,7 @@ public class Builder extends Analyzer {
 
 		for (String item : Processor.split(repeat)) {
 			File f = IO.getFile(item);
-			traverse(paths,f);
+			traverse(paths, f);
 		}
 
 		CombinedResource cr = null;
@@ -895,7 +917,7 @@ public class Builder extends Analyzer {
 					addClose(fr);
 					r = fr;
 
-					if (preprocess)
+					if (preprocess != null && preprocess.matches(path))
 						r = new PreprocessResource(this, r);
 
 					if (cr == null)
@@ -921,12 +943,12 @@ public class Builder extends Analyzer {
 	}
 
 	private void traverse(List<String> paths, File item) {
-		
+
 		if (item.isDirectory()) {
-			for ( File sub : item.listFiles()) {
+			for (File sub : item.listFiles()) {
 				traverse(paths, sub);
 			}
-		} else if ( item.isFile())
+		} else if (item.isFile())
 			paths.add(item.getAbsolutePath());
 		else
 			paths.add(item.getName());
@@ -954,7 +976,7 @@ public class Builder extends Analyzer {
 		return file.lastModified();
 	}
 
-	private String doResourceDirectory(Jar jar, Map<String,String> extra, boolean preprocess, File sourceFile,
+	private String doResourceDirectory(Jar jar, Map<String,String> extra, Instructions preprocess, File sourceFile,
 			String destinationPath) throws Exception {
 		String filter = extra.get("filter:");
 		boolean flatten = isTrue(extra.get("flatten:"));
@@ -1105,7 +1127,8 @@ public class Builder extends Analyzer {
 		return dupl;
 	}
 
-	private void copy(Jar jar, String path, File from, boolean preprocess, Map<String,String> extra) throws Exception {
+	private void copy(Jar jar, String path, File from, Instructions preprocess, Map<String,String> extra)
+			throws Exception {
 		if (doNotCopy(from.getName()))
 			return;
 
@@ -1118,7 +1141,7 @@ public class Builder extends Analyzer {
 		} else {
 			if (from.exists()) {
 				Resource resource = new FileResource(from);
-				if (preprocess) {
+				if (preprocess != null && preprocess.matches(path)) {
 					resource = new PreprocessResource(this, resource);
 				}
 				String x = extra.get("extra");
@@ -1242,6 +1265,7 @@ public class Builder extends Analyzer {
 			File file = members.remove(0);
 
 			// Check if the file is one of our parents
+			@SuppressWarnings("resource")
 			Processor p = this;
 			while (p != null) {
 				if (file.equals(p.getPropertiesFile()))

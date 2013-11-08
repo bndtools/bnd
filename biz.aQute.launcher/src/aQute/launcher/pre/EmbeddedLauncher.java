@@ -1,4 +1,4 @@
-package aQute.launcher.embedded;
+package aQute.launcher.pre;
 
 import java.io.*;
 import java.lang.reflect.*;

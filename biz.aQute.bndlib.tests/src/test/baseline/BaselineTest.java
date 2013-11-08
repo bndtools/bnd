@@ -20,6 +20,7 @@ import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.reporter.*;
 
+@SuppressWarnings("resource")
 public class BaselineTest extends TestCase {
 
 	public static void testBaslineJar() throws Exception {
@@ -179,7 +180,7 @@ public class BaselineTest extends TestCase {
 			jar = builder.getBaselineJar();
 			assertNull(jar);
 
-			if (!builder.check("The baseline version 1.2.0.b is higher or equal than the current version 1.1.3 for p3"))
+			if (!builder.check("The baseline version 1.2.0.b is higher than the current version 1.1.3 for p3"))
 				fail();
 		}
 		{

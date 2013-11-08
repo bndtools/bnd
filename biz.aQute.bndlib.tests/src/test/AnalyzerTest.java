@@ -20,6 +20,7 @@ class T2 extends T1 {}
 
 class T3 extends T2 {}
 
+@SuppressWarnings("resource")
 public class AnalyzerTest extends BndTestCase {
 	static File	cwd	= new File(System.getProperty("user.dir"));
 

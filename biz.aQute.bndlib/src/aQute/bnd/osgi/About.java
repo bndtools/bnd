@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
 import aQute.bnd.header.*;
+import aQute.bnd.version.*;
 
 /**
  * This package contains a number of classes that assists by analyzing JARs and
@@ -35,5 +36,20 @@ import aQute.bnd.header.*;
  * @version $Revision: 1.2 $
  */
 public class About {
-	// Empty
+	/**
+	 * <ul>
+	 * <li>Removed synthetic methods from the binary compatibility check since the compilers generate different methods.
+	 * <li>Added check for filenames that do not work on windows
+	 * <li>Implemented the {@see Processor#since} functionality with the
+	 * {@link Constants#UPTO} instruction.
+	 * <li>Automatically adding the EE to the Require Capability header based on
+	 * the compiled class file version.
+	 * <li>Added 1.7 and 1.8 compiler files and EEs
+	 * <li>The package command not faithfully provides the classpath. In the
+	 * previous version it flattened all jars
+	 * <li>Supports parameters in macros: ${x;a;b} -> x = ${1}/${2} -> a/b. ${#}
+	 * is an array with arguments. $ @} is the name of the function.
+	 * </ul>
+	 */
+	static Version	_2_3	= new Version(2, 3, 0);
 }

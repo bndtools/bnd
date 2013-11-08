@@ -28,6 +28,7 @@ import aQute.libg.glob.*;
 import aQute.libg.reporter.*;
 import aQute.service.library.*;
 import aQute.service.library.Library.Program;
+import aQute.service.library.Library.Revision;
 import aQute.struct.struct.Error;
 
 /**
@@ -438,14 +439,13 @@ public class Main extends ReporterAdapter {
 		}
 
 		for (String coordinate : opts._()) {
-			Coordinate crd = new Coordinate(coordinate);
 			trace("install %s", coordinate);
 			File file = IO.getFile(base, coordinate);
-			if (file.isFile())
+			if (file.isFile()) {
 				coordinate = file.toURI().toString();
+				trace("is existing file: %s", coordinate);
+			}
 
-			trace("install %s", coordinate);
-			
 			ArtifactData artifact = jpm.getCandidate(coordinate);
 			trace("candidate %s", artifact);
 			if (artifact == null) {
@@ -460,8 +460,8 @@ public class Main extends ReporterAdapter {
 					CommandData cmd = jpm.parseCommandData(artifact);
 					updateCommandData(cmd, opts);
 					if (cmd.main != null) {
-						if ( cmd.name == null) {
-							cmd.name = crd.getArtifactId();
+						if ( cmd.name == null && !artifact.local) {
+							cmd.name = artifact.coordinate.getArtifactId();
 						}
 						List<Error> errors = cmd.validate();
 						if (!errors.isEmpty()) {
@@ -1400,6 +1400,42 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
+	interface RevisionPrintOptions {
+		@Description("Just show the coordinate only")
+		boolean coordinate();
+		@Description("Include the description field")
+		boolean description();
+	}
+	void printRevisions(Iterable<? extends Revision> revisions, RevisionPrintOptions po) {
+		if ( po.coordinate()) {
+			for (Revision r : revisions) {
+				out.println( new Coordinate(r));
+			}			
+			return;
+		}
+		Justif j = new Justif(140, 40, 70, 82, 100, 120);
+		Formatter f = j.formatter();
+		try {
+			for (Revision r : revisions) {
+				f.format("[%s] ", r.phase.getIdentifier());
+				if (r.groupId.equals(Library.OSGI_GROUP) || r.groupId.equals(Library.SHA_GROUP))
+					f.format("%s ", r.artifactId);
+				else
+					f.format("%s:%s ", r.groupId, r.artifactId);
+
+				f.format("\t0%s\t1%tF\t2%s",r.version, new Date(r.modified),Hex.toHexString(r._id));
+				if ( po.description() && r.description != null) {
+					f.format("\n \t1%s", r.description);
+				}
+
+				f.format("\n");
+			}
+			out.println(j.wrap());
+		}
+		finally {
+			f.close();
+		}
+	}
 	@Description("Find programs and libraries corresponding to the given query")
 	interface findOptions extends Options {
 
@@ -1813,4 +1849,31 @@ public class Main extends ReporterAdapter {
 			f.close();
 		}
 	}
+	
+	/**
+	 * Show a list of candidates from a coordinate
+	 * 
+	 */
+	@Arguments(arg="coordinate")
+	@Description("Print out the candidates from a coordinate specification. A coordinate is:\n\n"
+			+ "    coordinate \t0:\t1[groupId ':'] artifactId \n\t1[ '@' [ version ] ( '*' | '=' | '~' | '!')]\n"
+			+ "    '*'        \t0:\t1Version, if specified, is treated as required prefix of the actual version. Sees MASTER | STAGING | LOCKED\n"
+			+ "    '='        \t0:\t1Version, if specified, must match exactly. Sees MASTER\n"
+			+ "    '~'        \t0:\t1Version, if specified, is treated as required prefix of the actual version. Sees all phases\n"
+			+ "    '!'        \t0:\t1Version, if specified, is treated as required prefix of the actual version. Sees normally invisible phases")
+	interface CandidateOptions extends Options, RevisionPrintOptions {
+		
+	}
+	@Description("List the candidates for a coordinate")
+	public void _candidates(CandidateOptions options) throws Exception {
+		String c = options._().get(0);
+
+		if ( !Coordinate.COORDINATE_P.matcher(c).matches())  {
+			error("Not a proper coordinate %s", c);
+			return;
+		}
+
+		printRevisions(jpm.getCandidates(new Coordinate(c)), options);
+	}
+
 }

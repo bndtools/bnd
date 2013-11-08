@@ -7,6 +7,8 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 	private final String						separator;
 	private final Converter<String, ? super T>	itemFormatter;
 	private final String						emptyOutput;
+	private final String						initial;
+	private final String						suffix;
 
 	public CollectionFormatter(String separator) {
 		this(separator, (String) null);
@@ -21,9 +23,16 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 	}
 
 	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput) {
+		this(separator, itemFormatter, emptyOutput, " \\\n\t", "");
+	}
+
+	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput,
+			String prefix, String suffix) {
 		this.separator = separator;
 		this.itemFormatter = itemFormatter;
 		this.emptyOutput = emptyOutput;
+		this.initial = prefix;
+		this.suffix = suffix;
 	}
 
 	public String convert(Collection< ? extends T> input) throws IllegalArgumentException {
@@ -33,12 +42,14 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 				result = emptyOutput;
 			} else {
 				StringBuilder buffer = new StringBuilder();
-				for (Iterator< ? extends T> iter = input.iterator(); iter.hasNext();) {
-					T item = iter.next();
+				String del  = initial == null ? "" : initial;
+				for (T item : input) {
+					buffer.append(del);
 					buffer.append(itemFormatter.convert(item));
-					if (iter.hasNext())
-						buffer.append(separator);
+					del = separator;
 				}
+				if ( suffix != null)
+					buffer.append(suffix);
 				result = buffer.toString();
 			}
 		}

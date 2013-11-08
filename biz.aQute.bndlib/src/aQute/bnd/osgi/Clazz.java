@@ -7,6 +7,7 @@ import java.nio.*;
 import java.util.*;
 import java.util.regex.*;
 
+
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -29,21 +30,25 @@ public class Clazz {
 	}
 
 	public static enum JAVA {
-		JDK1_1(45, "JRE-1.1"), JDK1_2(46, "J2SE-1.2"), //
-		JDK1_3(47, "J2SE-1.3"), //
-		JDK1_4(48, "J2SE-1.4"), //
-		J2SE5(49, "J2SE-1.5"), //
-		J2SE6(50, "JavaSE-1.6"), //
-		OpenJDK7(51, "JavaSE-1.7"), //
-		UNKNOWN(Integer.MAX_VALUE, "<>")//
+		JDK1_1(45, "JRE-1.1", "(&(osgi.ee=JavaSE)(version=1.1))"), //
+		JDK1_2(46, "J2SE-1.2", "(&(osgi.ee=JavaSE)(version=1.2))"), //
+		JDK1_3(47, "J2SE-1.3", "(&(osgi.ee=JavaSE)(version=1.3))"), //
+		JDK1_4(48, "J2SE-1.4", "(&(osgi.ee=JavaSE)(version=1.4))"), //
+		J2SE5(49, "J2SE-1.5", "(&(osgi.ee=JavaSE)(version=1.5))"), //
+		J2SE6(50, "JavaSE-1.6", "(&(osgi.ee=JavaSE)(version=1.6))"), //
+		OpenJDK7(51, "JavaSE-1.7", "(&(osgi.ee=JavaSE)(version=1.7))"), //
+		OpenJDK8(52, "JavaSE-1.8", "(&(osgi.ee=JavaSE)(version=1.8))"), //
+		UNKNOWN(Integer.MAX_VALUE, "<>", null)//
 		;
 
 		final int		major;
 		final String	ee;
+		final String	filter;
 
-		JAVA(int major, String ee) {
+		JAVA(int major, String ee, String filter) {
 			this.major = major;
 			this.ee = ee;
+			this.filter = filter;
 		}
 
 		static JAVA format(int n) {
@@ -80,6 +85,10 @@ public class Clazz {
 
 		public String getEE() {
 			return ee;
+		}
+
+		public String getFilter() {
+			return filter;
 		}
 	}
 
@@ -659,7 +668,7 @@ public class Clazz {
 			if (cd != null)
 				cd.memberEnd();
 			last = null;
-			
+
 			doAttributes(in, ElementType.TYPE, false, accessx);
 
 			//
@@ -1424,17 +1433,17 @@ public class Clazz {
 
 			char c = descriptor.charAt(index);
 
-			if ( c == '[') {
+			if (c == '[') {
 				c = descriptor.charAt(++index);
 			}
-			
+
 			// Class Bound?
 			if (c == 'L' || c == 'T') {
 				index = parseReference(descriptor, index, modifiers); // class
 																		// reference
 				c = descriptor.charAt(index);
 			} else {
-				index ++;
+				index++;
 			}
 
 			// Interface Bounds

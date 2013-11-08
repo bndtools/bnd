@@ -15,6 +15,7 @@ import aQute.service.reporter.*;
  * failure is called.
  */
 public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
+
 	public enum Stage {
 		INIT, SUCCESS, FAILURE
 	};
@@ -101,11 +102,15 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 		return stage;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
+	public File getFile() {
+		if (getReason() == null)
+			return file;
+		else
+			return null;
+	}
+
+	@Override
 	public String toString() {
-		return "DownloadBlocker(" + stage + "," + file + ", " + failure + ")";
+		return "DownloadBlocker [stage=" + stage + ", failure=" + failure + ", file=" + file + "]";
 	}
 }

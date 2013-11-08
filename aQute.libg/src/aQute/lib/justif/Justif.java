@@ -3,13 +3,15 @@ package aQute.lib.justif;
 import java.util.*;
 
 public class Justif {
-	final int[]			tabs;
-	final int				width;
+	final int[]		tabs;
+	final int		width;
 	StringBuilder	sb	= new StringBuilder();
 	Formatter		f	= new Formatter(sb);
 
 	public Justif(int width, int... tabs) {
-		this.tabs = tabs == null || tabs.length == 0 ? new int[] {30,40, 50, 60, 70} : tabs;
+		this.tabs = tabs == null || tabs.length == 0 ? new int[] {
+				30, 40, 50, 60, 70
+		} : tabs;
 		this.width = width == 0 ? 73 : width;
 	}
 
@@ -99,6 +101,21 @@ public class Justif {
 					lastSpace = 0;
 					break;
 
+				case '$' :
+					if (sb.length() > r) {
+						char c = sb.charAt(r);
+						if (c == '-' || c == '_' || c == '—') {
+							sb.delete(r-1,r); // remove $
+							begin = false;
+							linelength++;
+							while ( linelength < width-1) {
+								sb.insert(r++, c);
+								linelength++;
+							}
+							break;
+						}
+					}
+
 				default :
 					linelength++;
 					begin = false;
@@ -121,8 +138,13 @@ public class Justif {
 		wrap(sb);
 		return sb.toString();
 	}
-	
+
 	public Formatter formatter() {
 		return f;
+	}
+
+	public String toString() {
+		wrap(sb);
+		return sb.toString();
 	}
 }

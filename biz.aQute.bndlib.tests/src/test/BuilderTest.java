@@ -3,6 +3,7 @@ package test;
 import java.io.*;
 import java.util.*;
 import java.util.jar.*;
+import java.util.regex.*;
 
 import test.CompareTest.B;
 import test.CompareTest.B.C;
@@ -10,10 +11,12 @@ import test.genericinterf.a.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.service.reporter.Report.Location;
 
+@SuppressWarnings("resource")
 public class BuilderTest extends BndTestCase {
 
 	/**
@@ -51,7 +54,7 @@ public class BuilderTest extends BndTestCase {
 		b.getJar().getManifest().write(System.out);
 		String message = b.getErrors().get(0);
 		assertTrue("The lacking version error first",
-				message.startsWith("package info for test.package_info_versioniskey attribute [1.0.0=''],"));
+				message.contains("package info for test.package_info_versioniskey attribute [1.0.0=''],"));
 		Location location = b.getLocation(message);
 		assertNotNull("Supposed to have a location", location);
 		assertNotNull("And that must have a file", location.file);
@@ -252,13 +255,15 @@ public class BuilderTest extends BndTestCase {
 
 	public static void testEEMacro2() throws Exception {
 		String[] packages = {
-				"eclipse_1_1", "eclipse_1_2", "eclipse_1_3", "eclipse_1_4", "eclipse_1_5", "eclipse_1_6",
-				"eclipse_jsr14"
+				"eclipse_1_1", "eclipse_1_2", "eclipse_1_3", "eclipse_1_4", "eclipse_1_5", "eclipse_1_6","eclipse_1_7",
+				"eclipse_jsr14", "sun_1_8"
 		};
 
 		String[] ees = {
-				"JRE-1.1", "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6", "J2SE-1.4"
+				"JRE-1.1", "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6", "JavaSE-1.7","J2SE-1.4", "JavaSE-1.8"
 		};
+		String[] versions = {"1.1","1.2","1.3","1.4","1.5","1.6","1.7","1.4", "1.8"};
+		Pattern p = Pattern.compile("\\(&\\(osgi.ee=JavaSE\\)\\(version=("+Version.VERSION_STRING+")\\)\\)");
 		for (int i = 0; i < packages.length; i++) {
 			Builder b = new Builder();
 			b.addClasspath(new File("compilerversions/compilerversions.jar"));
@@ -270,6 +275,17 @@ public class BuilderTest extends BndTestCase {
 			Parameters ee = domain.getBundleRequiredExecutionEnvironment();
 			System.err.println(ee);
 			assertEquals(ees[i], ee.toString());
+			
+			//
+			// Check the requirements
+			//
+			Parameters een = domain.getRequireCapability();
+			assertFalse( een.isEmpty());
+			Attrs attrs = een.get("osgi.ee");
+			String filter = attrs.get("filter:");
+			Matcher m = p.matcher(filter);
+			assertTrue ( m.matches());
+			assertEquals(versions[i], m.group(1));
 		}
 	}
 
@@ -1478,22 +1494,6 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	/**
-	 * Spaces at the end of a clause cause the preprocess to fail.
-	 * 
-	 * @throws Exception
-	 */
-	public static void testPreProcess() throws Exception {
-		Properties base = new Properties();
-		base.put(Analyzer.INCLUDE_RESOURCE, "{src/test/top.mf}     ");
-		Builder analyzer = new Builder();
-		analyzer.setProperties(base);
-		analyzer.build();
-		assertTrue(analyzer.check());
-
-		Jar jar = analyzer.getJar();
-		assertTrue(jar.getResource("top.mf") != null);
-	}
 
 	/**
 	 * Check if we can use findpath to build the Bundle-Classpath.

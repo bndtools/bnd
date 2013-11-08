@@ -9,6 +9,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.signing.*;
 import aQute.libg.generics.*;
 
+@SuppressWarnings("resource")
 public class JarSignerTest extends TestCase {
 
 	public static void testNoManifest() throws Exception {

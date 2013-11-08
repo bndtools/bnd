@@ -18,8 +18,14 @@ class DependencyCollector {
 	 * @param key
 	 * @throws Exception
 	 */
-	public void add(String coordinate) throws Exception {
-		list.add(jpm.getCandidateAsync(coordinate));
+	public void add(String coordinate, String name) throws Exception {
+		jpm.reporter.trace("add %s = %s", coordinate,name);
+		ArtifactData candidate = jpm.getCandidateAsync(coordinate);
+		if ( candidate == null) {
+			jpm.reporter.error("Cannot find %s", coordinate);
+			return;
+		}
+		list.add(candidate);
 	}
 
 	void sync() throws InterruptedException {

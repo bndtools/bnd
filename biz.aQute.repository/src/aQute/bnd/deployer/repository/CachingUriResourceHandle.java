@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.*;
 import java.security.*;
 
-import aQute.bnd.deployer.http.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.url.*;
 import aQute.lib.hex.*;

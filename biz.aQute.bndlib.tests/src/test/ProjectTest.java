@@ -13,8 +13,29 @@ import aQute.bnd.version.*;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
 
+@SuppressWarnings("resource")
 public class ProjectTest extends TestCase {
 
+	/**
+	 * https://github.com/bndtools/bnd/issues/395
+	 * 
+	 * Repo macro does not refer to anything
+	 */
+
+	public static void testRepoMacro2() throws Exception {
+		Workspace ws = new Workspace(new File("testresources/ws"));
+		Project top = ws.getProject("p2");
+		top.addClasspath(top.getOutput());
+		
+		top.setProperty("a", "${repo;org.apache.felix.configadmin;latest}");
+		assertTrue(top.getProperty("a").endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.2.0.jar"));
+		
+		top.setProperty("a", "${repo;IdoNotExist;latest}");
+		top.getProperty("a");
+		assertTrue(top.check("macro refers to an artifact IdoNotExist-latest.*that has an error"));
+		assertEquals("", top.getProperty("a"));
+	}
+	
 	/**
 	 * Two subsequent builds should not change the last modified if none of the
 	 * source inputs have been modified.
@@ -136,6 +157,7 @@ public class ProjectTest extends TestCase {
 	public static void testRunbundleDuplicates() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project top = ws.getProject("p1");
+		top.setPedantic(true);
 		top.clear();
 		top.setProperty("-runbundles", "org.apache.felix.configadmin,org.apache.felix.configadmin");
 		Collection<Container> runbundles = top.getRunbundles();
@@ -199,7 +221,7 @@ public class ProjectTest extends TestCase {
 	public static void testMultipleRepos() throws Exception {
 		Workspace ws = Workspace.getWorkspace(new File("testresources/ws"));
 		Project project = ws.getProject("p1");
-
+		project.setPedantic(true);
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.EXACT, null));
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.HIGHEST, null));
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.LOWEST, null));
@@ -332,7 +354,7 @@ public class ProjectTest extends TestCase {
 		assertTrue(s.contains("org.apache.felix.ipojo" + File.separator + "org.apache.felix.ipojo-1.0.0.jar"));
 
 		s = project.getReplacer().process(("${repo;libtestxyz}"));
-		assertTrue(s.matches("<<[^>]+>>"));
+		assertTrue(s.matches(""));
 
 		s = project.getReplacer().process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
 		assertTrue(s.endsWith("org.apache.felix.configadmin-1.2.0.jar"));

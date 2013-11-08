@@ -6,6 +6,7 @@ import java.util.*;
 import junit.framework.*;
 import aQute.bnd.osgi.*;
 
+@SuppressWarnings("resource")
 public class MergeTest extends TestCase {
 
 	public static void testFirst() throws Exception {

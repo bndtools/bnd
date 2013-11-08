@@ -16,6 +16,7 @@ import aQute.bnd.service.*;
 import aQute.lib.io.*;
 import aQute.libg.map.*;
 
+@SuppressWarnings("resource")
 public class MavenTest extends TestCase {
 	Processor				processor	= new Processor();
 	final static File		cwd			= new File("").getAbsoluteFile();

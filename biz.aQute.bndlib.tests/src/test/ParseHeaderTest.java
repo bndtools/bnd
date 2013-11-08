@@ -10,40 +10,45 @@ import aQute.bnd.version.*;
 
 public class ParseHeaderTest extends TestCase {
 
-	
 	public void testTyped() {
-		Parameters p = new Parameters("a;a:Long=1;b:Double=3.2;c:String=abc;d:Version=1"
-				+ ";e:List<Long>='1,2,3';f:List<Double>='1.0,1.1,1.2';g:List<String>='abc,def,ghi';h:List<Version>='1.0.1,1.0.2'");
+		Parameters p = new Parameters(
+				"a;a:Long=1;b:Double=3.2;c:String=abc;d:Version=1"
+						+ ";e:List<Long>='1,2,3';f:List<Double>='1.0,1.1,1.2';g:List<String>='abc,def,ghi';h:List<Version>='1.0.1,1.0.2'");
 
 		String s = p.toString();
 		System.out.println(s);
-		assertEquals("a;a:Long=1;b:Double=\"3.2\";c:String=abc;d:Version=1;"
-				+ "e:List<Long>=\"1,2,3\";f:List<Double>=\"1.0,1.1,1.2\";g:List<String>=\"abc,def,ghi\";h:List<Version>=\"1.0.1,1.0.2\"", s);
-		
+		assertEquals(
+				"a;a:Long=1;b:Double=\"3.2\";c:String=abc;d:Version=1;"
+						+ "e:List<Long>=\"1,2,3\";f:List<Double>=\"1.0,1.1,1.2\";g:List<String>=\"abc,def,ghi\";h:List<Version>=\"1.0.1,1.0.2\"",
+				s);
+
 		Attrs attrs = p.get("a");
 		assertNotNull(attrs);
-		
-		assertEquals( 1L, attrs.getTyped("a"));
-		assertEquals( 3.2d, attrs.getTyped("b"));
-		assertEquals( "abc", attrs.getTyped("c"));
-		assertEquals( new Version("1"), attrs.getTyped("d"));
-		assertEquals( Arrays.asList(1L,2L,3L), attrs.getTyped("e"));
-		assertEquals( Arrays.asList(1.0D,1.1D,1.2D), attrs.getTyped("f"));
-		assertEquals( Arrays.asList("abc","def","ghi"), attrs.getTyped("g"));
-		assertEquals( Arrays.asList(new Version("1.0.1"), new Version("1.0.2")), attrs.getTyped("h"));
+
+		assertEquals(1L, attrs.getTyped("a"));
+		assertEquals(3.2d, attrs.getTyped("b"));
+		assertEquals("abc", attrs.getTyped("c"));
+		assertEquals(new Version("1"), attrs.getTyped("d"));
+		assertEquals(Arrays.asList(1L, 2L, 3L), attrs.getTyped("e"));
+		assertEquals(Arrays.asList(1.0D, 1.1D, 1.2D), attrs.getTyped("f"));
+		assertEquals(Arrays.asList("abc", "def", "ghi"), attrs.getTyped("g"));
+		assertEquals(Arrays.asList(new Version("1.0.1"), new Version("1.0.2")), attrs.getTyped("h"));
 	}
-	
+
 	public void testEscaping() {
-		
+
 		{
-			// Spaces at end of quoted string 
+			// Spaces at end of quoted string
 			Parameters pp = new Parameters("a;string.list3:List<String>=\" aString , bString , cString \"");
 			assertEquals("a;string.list3:List<String>=\" aString , bString , cString \"", pp.toString());
 		}
 		{
-			// It should be string.list2:List="a\"quote,a\,comma, aSpace ,\"start,\,start,end\",end\," (not handling escape of comma) 
-			Parameters pp = new Parameters("a;b:List=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"");
-			assertEquals("a;b:List=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"", pp.toString());
+			// It should be string.list2:List="a\"quote,a\,comma, aSpace
+			// ,\"start,\,start,end\",end\," (not handling escape of comma)
+			Parameters pp = new Parameters(
+					"a;b:List=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"");
+			assertEquals("a;b:List=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"",
+					pp.toString());
 		}
 
 		{
@@ -58,6 +63,32 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals("c", p.get("c"));
 		assertEquals("1", p.get("a"));
 		assertEquals("3   3", p.get("b"));
+	}
+
+	/**
+	 * #385 If you set a single Runtime Property in a bndrun with no value, it
+	 * will be ignored. For example: osgi.console If you add an additional
+	 * Runtime Property, then the first property with no value will be set
+	 * properly. For example:: osgi.console osgi.service.http.port 8080 It also
+	 * appears that order matters. The following does not work: -runproperties:
+	 * osgi.service.http.port=8180,\ osgi.console= while the following does
+	 * work: -runproperties: osgi.console=,\ osgi.service.http.port=8180
+	 */
+	public static void testUnfinishedProperties() {
+		Map<String,String> p = OSGiHeader.parseProperties("osgi.console");
+		assertEquals("", p.get("osgi.console"));
+		p = OSGiHeader.parseProperties("osgi.console=");
+		assertEquals("", p.get("osgi.console"));
+		p = OSGiHeader.parseProperties("osgi.console=,x=1");
+		assertEquals("", p.get("osgi.console"));
+		p = OSGiHeader.parseProperties("osgi.console,x=1");
+		assertEquals("", p.get("osgi.console"));
+		p = OSGiHeader.parseProperties("a=1,osgi.console=,x=1");
+		assertEquals("", p.get("osgi.console"));
+		p = OSGiHeader.parseProperties("a=1,osgi.console=");
+		assertEquals("", p.get("osgi.console"));
+		p = OSGiHeader.parseProperties("a=1,osgi.console");
+		assertEquals("", p.get("osgi.console"));
 	}
 
 	public static void testClauseName() {
@@ -125,7 +156,7 @@ public class ParseHeaderTest extends TestCase {
 			System.err.println(p.getWarnings());
 			assertTrue(p.getWarnings().size() > 0);
 			String w = p.getWarnings().get(0);
-			assertTrue(w.startsWith(expectedWarning));
+			assertTrue(w.contains(expectedWarning));
 		} else
 			assertEquals(0, p.getWarnings().size());
 	}

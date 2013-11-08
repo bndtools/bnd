@@ -22,10 +22,11 @@ import aQute.lib.io.*;
  * pattern. ${parameter##word} Remove largest prefix pattern.
  */
 public class Macro {
-	Processor	domain;
-	Object		targets[];
-	boolean		flattening;
-	String		profile;
+	final static String	NULLVALUE	= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
+	Processor			domain;
+	Object				targets[];
+	boolean				flattening;
+	String				profile;
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
@@ -52,6 +53,7 @@ public class Macro {
 		int nesting = 1;
 
 		StringBuilder variable = new StringBuilder();
+
 		outer: while (index < line.length()) {
 			char c1 = line.charAt(index++);
 			if (c1 == end) {
@@ -147,13 +149,44 @@ public class Macro {
 					return process(value, new Link(source, link, key));
 
 				value = doCommands(key, link);
-				if (value != null)
+				if (value != null) {
+					if (value == NULLVALUE)
+						return null;
 					return process(value, new Link(source, link, key));
+				}
 
 				if (key != null && key.trim().length() > 0) {
 					value = System.getProperty(key);
 					if (value != null)
 						return value;
+				}
+
+				if (key.indexOf(';') >= 0) {
+					String parts[] = key.split(";");
+					if (parts.length > 1) {
+						if (parts.length >= 16) {
+							domain.error("too many arguments for template: %s, max is 16", key);
+						}
+
+						String template = domain.getProperties().getProperty(parts[0]);
+						if (template != null) {
+							domain = new Processor(domain);
+							for (int i = 0; i < 16; i++) {
+								domain.setProperty("" + i, i < parts.length ? parts[i] : "null");
+							}
+							ExtList<String> args = new ExtList<String>(parts);
+							domain.setProperty("@", args.remove(0));
+							domain.setProperty("#", args.join());
+							try {
+								value = process(template, new Link(domain, link, key));
+								if (value != null)
+									return value;
+							}
+							finally {
+								domain = domain.getParent();
+							}
+						}
+					}
 				}
 			} else {
 				domain.warning("Found empty macro key");
@@ -242,10 +275,10 @@ public class Macro {
 				Object result = m.invoke(target, new Object[] {
 					args
 				});
-				return result == null ? null : result.toString();
+				return result == null ? NULLVALUE : result.toString();
 			}
 			catch (NoSuchMethodException e) {
-				// Ignore
+				return null;
 			}
 			catch (InvocationTargetException e) {
 				if (e.getCause() instanceof IllegalArgumentException) {
@@ -255,10 +288,12 @@ public class Macro {
 					domain.warning("Exception in replace: %s", e.getCause());
 					e.getCause().printStackTrace();
 				}
+				return NULLVALUE;
 			}
 			catch (Exception e) {
 				domain.warning("Exception in replace: " + e + " method=" + method);
 				e.printStackTrace();
+				return NULLVALUE;
 			}
 		}
 		return null;
@@ -989,6 +1024,17 @@ public class Macro {
 		return Processor.join(list, File.pathSeparator);
 	}
 
+	
+	public final static String	_sizeHelp	= "${size;<collection>;...}, count the number of elements (of all collections combined)";
+	public int _size(String args[]) {
+		verifyCommand(args, _sizeHelp, null, 2, 16);
+		int size = 0; 
+		for ( int i=1; i<args.length; i++) {
+			ExtList<String > l = ExtList.from(args[i]);
+			size += l.size();
+		}
+		return size;
+	}
 	public static Properties getParent(Properties p) {
 		try {
 			Field f = Properties.class.getDeclaredField("defaults");
@@ -1005,5 +1051,6 @@ public class Macro {
 	public String process(String line) {
 		return process(line, domain);
 	}
+
 
 }

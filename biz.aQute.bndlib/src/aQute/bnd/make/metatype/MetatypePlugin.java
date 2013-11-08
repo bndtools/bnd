@@ -30,4 +30,9 @@ public class MetatypePlugin implements AnalyzerPlugin {
 		}
 		return false;
 	}
+	@Override
+	public String toString() {
+		return "MetatypePlugin";
+	}
+
 }
