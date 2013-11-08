@@ -94,7 +94,7 @@ public class Baseline {
 				newerVersion = Version.ONE;
 			}
 		}
-		Delta highestDelta = Delta.MICRO;
+		Delta highestDelta = Delta.UNCHANGED;
 		for (Diff pdiff : apiDiff.getChildren()) {
 			if (pdiff.getType() != Type.PACKAGE) // Just packages
 				continue;
@@ -169,7 +169,30 @@ public class Baseline {
 					}
 				}
 			}
-			if (pdiff.getDelta().compareTo(highestDelta) > 0) {
+			Delta content;
+			switch (pdiff.getDelta()) {
+				case IGNORED :
+				case UNCHANGED :
+					content = Delta.UNCHANGED;
+					break;
+
+				case ADDED :
+				case CHANGED : // cannot happen
+					content = Delta.MICRO;
+					break;
+
+				case MINOR :
+				case MICRO :
+				case MAJOR :
+					content = pdiff.getDelta();
+					break;
+
+				case REMOVED :
+				default :
+					content = Delta.MAJOR;
+					break;
+			}
+			if (content.compareTo(highestDelta) > 0) {
 				highestDelta = pdiff.getDelta();
 			}
 		}
@@ -177,23 +200,25 @@ public class Baseline {
 			suggestedVersion = newerVersion;
 		} else {
 			suggestedVersion = bumpBundle(highestDelta, olderVersion, 1, 0);
+			if (suggestedVersion.compareTo(newerVersion) < 0)
+				suggestedVersion = newerVersion;
 		}
-		
+
 		binfo.bsn = bsn;
 		binfo.suggestedVersion = suggestedVersion;
 		binfo.version = olderVersion;
 
-		if ( newerVersion.getWithoutQualifier().equals(olderVersion.getWithoutQualifier())) {
+		if (newerVersion.getWithoutQualifier().equals(olderVersion.getWithoutQualifier())) {
 			// We have a special case, the current and repository revisions
 			// have the same version, this happens after a release, only want
 			// to generate an error when they really differ.
-			
-			if ( getDiff().getDelta() == Delta.UNCHANGED ) 
+
+			if (getDiff().getDelta() == Delta.UNCHANGED)
 				return infos;
 		}
-		
+
 		// Ok, now our bundle version must be >= the suggestedVersion
-		if ( newerVersion.getWithoutQualifier().compareTo(getSuggestedVersion())< 0) {
+		if (newerVersion.getWithoutQualifier().compareTo(getSuggestedVersion()) < 0) {
 			binfo.mismatch = true;
 		}
 

@@ -11,6 +11,7 @@ import javax.xml.transform.stream.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.differ.*;
+import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
@@ -70,20 +71,27 @@ public class BaselineCommands {
 			if (project != null) {
 				for (Builder b : project.getSubBuilders()) {
 					ProjectBuilder pb = (ProjectBuilder) b;
-					Jar newer = pb.build();
+					Jar older = pb.getBaselineJar();
+					if ( older == null) {
+						bnd.error("No baseline JAR available. Did you set " + Constants.BASELINE);
+						return;
+					}
 					try {
-						Jar older = pb.getBaselineJar();
+						pb.setProperty(Constants.BASELINE, ""); // do not do baselining in build
+						// make sure disabling is after getting the baseline jar
+						
+						Jar newer = pb.build();
 						try {
 							differ.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
 							baseline(opts, newer, older);
 							bnd.getInfo(b);
 						}
 						finally {
-							older.close();
+							newer.close();
 						}
 					}
 					finally {
-						newer.close();
+						older.close();
 					}
 				}
 				bnd.getInfo(project);
@@ -116,6 +124,8 @@ public class BaselineCommands {
 		}
 
 		Set<Info> infos = baseline.baseline(newer, older, null);
+		BundleInfo bundleInfo = baseline.getBundleInfo();
+
 		Info[] sorted = infos.toArray(new Info[infos.size()]);
 		Arrays.sort(sorted, new Comparator<Info>() {
 			public int compare(Info o1, Info o2) {
@@ -124,6 +134,12 @@ public class BaselineCommands {
 		});
 
 		if (!opts.quiet()) {
+			bnd.out.printf("===============================================================%n%s %s %s-%s", bundleInfo.mismatch ? '*' : ' ', bundleInfo.bsn, newer.getVersion(), older.getVersion());
+			if (bundleInfo.mismatch && bundleInfo.suggestedVersion != null)
+				bnd.out.printf(" suggests %s", bundleInfo.suggestedVersion);
+
+			bnd.out.printf("%n===============================================================%n");
+
 			boolean hadHeader = false;
 			for (Info info : sorted) {
 				if (info.packageDiff.getDelta() != Delta.UNCHANGED || opts.all()) {
@@ -133,8 +149,12 @@ public class BaselineCommands {
 						hadHeader = true;
 					}
 					bnd.out.printf("%s %-50s %-10s %-10s %-10s %-10s %-10s%n", info.mismatch ? '*' : ' ',
-							info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
-							info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
+							info.packageName, //
+							info.packageDiff.getDelta(), //
+							info.newerVersion, //
+							info.olderVersion.equals(Version.LOWEST) ? "-": info.olderVersion,//
+							info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? "ok" : info.suggestedVersion, //
+							info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 				}
 			}
 		}
