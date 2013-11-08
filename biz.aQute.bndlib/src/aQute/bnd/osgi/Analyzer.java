@@ -421,7 +421,7 @@ public class Analyzer extends Processor {
 				}
 
 				if (ees.size() > 1)
-					sb.insert(0, "(|").append(")");
+					sb.insert(0, "(&").append(")");
 
 				Attrs attrs = new Attrs();
 				attrs.put(Constants.FILTER_DIRECTIVE, sb.toString());
