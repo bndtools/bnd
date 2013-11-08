@@ -105,7 +105,7 @@ public class Justif {
 				case '$' :
 					if (sb.length() > r) {
 						char c = sb.charAt(r);
-						if (c == '-' || c == '_' || c == '—') {
+						if (c == '-' || c == '_' || c == '\u2014') {
 							sb.delete(r-1,r); // remove $
 							begin = false;
 							linelength++;
