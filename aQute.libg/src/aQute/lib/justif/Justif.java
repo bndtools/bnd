@@ -89,6 +89,7 @@ public class Justif {
 					}
 					break;
 
+					
 				case '\f' :
 					sb.setCharAt(r - 1, '\n');
 					for (int i = 0; i < indent; i++) {
@@ -116,6 +117,11 @@ public class Justif {
 						}
 					}
 
+				case '\u00A0' : //non breaking space
+					sb.setCharAt(r-1,' '); // Turn it into a space
+					
+					// fall through
+					
 				default :
 					linelength++;
 					begin = false;
