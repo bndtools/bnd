@@ -13,12 +13,24 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
+import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.service.reporter.Report.Location;
 
 @SuppressWarnings("resource")
 public class BuilderTest extends BndTestCase {
 
+	/**
+	 * #388 Manifest header to get GIT head
+	 */
+	public void testGitHead() {
+		Builder b = new Builder();
+		String s = b.getReplacer().process("${githead}");
+		assertTrue( Hex.isHex(s));
+	}
+	
+	
+	
 	/**
 	 * An old osgi 3.0.0 jar had an old packageinfo in it. This included some
 	 * never well developed syntax which now clashes with the proprty syntax.
