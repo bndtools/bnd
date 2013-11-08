@@ -56,7 +56,7 @@ public class About {
 			"#413 Automatically adding the EE to the Require Capability header based on the compiled class file version.",
 			"Added 1.7 and 1.8 compiler files and EEs",
 			"The package command not faithfully provides the classpath. In the previous version it flattened all jars",
-			"#41 Supports parameters in macros: ${x;a;b} -> x = ${1}/${2} -> a/b. ${#} an array with arguments. $ @} is the name of the function.",
+			"#41 Supports parameters in macros: \n\u00A0   ${x;a;b} -> x = ${1}/${2} -> a/b\n${#} an array with arguments. ${0} is the name of the macro.",
 			"Automatically excludes files from preprocessing for given extensions. The default list can be overridden with -preprocessmatchers",
 			"Uses XML v1.0 instead of v1.1 in some places.",
 			"Can now delete variables in ~/.bnd/settings.json with the command line",

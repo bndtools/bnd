@@ -3195,9 +3195,9 @@ public class bnd extends Processor {
 		
 		for (Map.Entry<Version,String[]> e : About.CHANGES.entrySet()) {
 			if ( options.all() || first) {
-				f.format("==============================================\nRelease %s\n", e.getKey());
+				f.format("$-\nRelease %s\n$-\n", e.getKey());
 				for ( String s : e.getValue()) {
-					f.format("- \t1%s", s);
+					f.format("- \t1%s", s.replace('\n', '\f'));
 					Matcher m = BND_COMMAND_P.matcher(s);
 					while ( m.find() ) {
 						Formatter ff = new Formatter();
@@ -3210,7 +3210,7 @@ public class bnd extends Processor {
 					while ( m.find() ) {
 						f.format("\f-> https://github.com/bndtools/bnd/issues/%s", m.group(1));
 					}
-					f.format("\n");
+					f.format("\n\n");
 				}
 			}
 			first = false;
