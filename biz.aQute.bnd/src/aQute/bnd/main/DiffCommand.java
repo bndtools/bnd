@@ -61,8 +61,9 @@ public class DiffCommand {
 			if (project != null) {
 				for (Builder b : project.getSubBuilders()) {
 					ProjectBuilder pb = (ProjectBuilder) b;
+					Jar older = pb.getBaselineJar(); // make sure remains before disabling baselining
+					pb.setProperty(Constants.BASELINE, ""); // do not do baselining in build
 					Jar newer = pb.build();
-					Jar older = pb.getBaselineJar();
 					di.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
 					diff(options, di, newer, older);
 					bnd.getInfo(b);
@@ -70,6 +71,7 @@ public class DiffCommand {
 				bnd.getInfo(project);
 				return;
 			}
+			
 		} else if (options._().size() == 1) {
 			bnd.trace("Show tree");
 			showTree(bnd, options);
