@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import java.util.*;
+
 import aQute.bnd.header.*;
 import aQute.bnd.version.*;
 
@@ -36,36 +38,38 @@ import aQute.bnd.version.*;
  * @version $Revision: 1.2 $
  */
 public class About {
-	/**
-	 * <ul>
-	 * <li>Error when version=project is used in -runbundles
-	 * <li>The classes macro and other places that crawl for classes now get a sorted list by the class name.
-	 * <li>The bnd diff and baseline command now can take the current project as source for the 2 JARs
-	 * <li>The -diffignore parameter (and the -i option in the bnd commands) can now take wildcards
-	 * <li>Ant fetches bnd.jar remotely and stores it in the ~/.bnd directory so it is shared
-	 * <li>Added an optional :i suffix to instructions for case insensitive matching
-	 * <li>Packaged/embedded launch configurations now also update bundles, previously they were only installed.
-	 * <li>Removed synthetic methods from the binary compatibility check since the compilers generate different methods.
-	 * <li>Added check for filenames that do not work on windows
-	 * <li>Implemented the {@see Processor#since} functionality with the
-	 * {@link Constants#UPTO} instruction.
-	 * <li>Automatically adding the EE to the Require Capability header based on
-	 * the compiled class file version.
-	 * <li>Added 1.7 and 1.8 compiler files and EEs
-	 * <li>The package command not faithfully provides the classpath. In the
-	 * previous version it flattened all jars
-	 * <li>Supports parameters in macros: ${x;a;b} -> x = ${1}/${2} -> a/b. ${#}
-	 * is an array with arguments. $ @} is the name of the function.
-	 * <li>Automatically excludes files from preprocessing for given extensions. The default list can be
-	 * overridden with -preprocessmatchers
-	 * <li>Uses XML v1.0 instead of v1.1 in some places.
-	 * <li>Can now delete variables in ~/.bnd/settings.json with the command line
-	 * <li>Better checking for errors on -runbundles and -runpath.
-	 * <li>Can now execute actions from the command line
-	 * <li>Set two properties (project.junit and project.junit.osgi) that indicate the availability of tests.
-	 * <li>Support URLs in the bnd repo put command
-	 * <li>It is now possible to specify a URL on a plugin path so that if the resource is not on the file system it will get downloaded.
-	 * </ul>
-	 */
-	public static Version	_2_3	= new Version(2, 3, 0);
+	public static Version				_2_3		= new Version(2, 3, 0);
+	public static String[]				CHANGES_2_3	= {
+			"Added a [bnd changes] command",
+			"#388 ${githead} macro, provides the SHA for the current workspace",
+			"Improved bnd diff and bnd baseline commands. Better output and work better when no files are specied, defaults to project",
+			"#414 Error reported when version=project is used in -runbundles",
+			"#427 The classes macro and other places that crawl for classes now get a sorted list by the class name.",
+			"The bnd diff and baseline command now can take the current project as source for the 2 JARs",
+			"The -diffignore parameter (and the -i option in the bnd commands) can now take wildcards",
+			"Ant fetches bnd.jar remotely and stores it in the ~/.bnd directory so it is shared",
+			"Added an optional :i suffix to instructions for case insensitive matching",
+			"Packaged/embedded launch configurations now also update bundles, previously they were only installed.",
+			"Removed synthetic methods from the binary compatibility check since the compilers generate different methods.",
+			"Added check for filenames that do not work on windows",
+			"Implemented the {Processor.since() functionality with the " + Constants.UPTO + " instruction.",
+			"#413 Automatically adding the EE to the Require Capability header based on the compiled class file version.",
+			"Added 1.7 and 1.8 compiler files and EEs",
+			"The package command not faithfully provides the classpath. In the previous version it flattened all jars",
+			"#41 Supports parameters in macros: ${x;a;b} -> x = ${1}/${2} -> a/b. ${#} an array with arguments. $ @} is the name of the function.",
+			"Automatically excludes files from preprocessing for given extensions. The default list can be overridden with -preprocessmatchers",
+			"Uses XML v1.0 instead of v1.1 in some places.",
+			"Can now delete variables in ~/.bnd/settings.json with the command line",
+			"Better checking for errors on -runbundles and -runpath.",
+			"Can now execute actions from the command line with the [bnd action] command",
+			"Set two properties (project.junit and project.junit.osgi) that indicate the availability of tests.",
+			"Support URLs in the [bnd repo] put command",
+			"It is now possible to specify a URL on a plugin path so that if the resource is not on the file system it will get downloaded."
+													};
+
+	public static Map<Version,String[]>	CHANGES		= new TreeMap<Version,String[]>(Collections.reverseOrder());
+	static {
+		CHANGES.put(_2_3, CHANGES_2_3);
+	}
+
 }

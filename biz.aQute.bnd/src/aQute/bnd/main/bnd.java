@@ -2947,7 +2947,7 @@ public class bnd extends Processor {
 								}
 							}
 						} else {
-							trace("assignment %s=%s", key,value);
+							trace("assignment %s=%s", key, value);
 							settings.put(key, value);
 							set = true;
 						}
@@ -3174,5 +3174,48 @@ public class bnd extends Processor {
 			}
 		}
 		getInfo(project);
+	}
+
+	/**
+	 * Show the changes in the releases
+	 */
+	@Arguments(arg = {})
+	@Description("Show the changes in this release of bnd")
+	interface ChangesOptions extends Options {
+		@Description("Print all releases")
+		boolean all();
+	}
+
+	static Pattern BUG_P = Pattern.compile("#([0-9]+)");
+	static Pattern BND_COMMAND_P = Pattern.compile("\\[bnd\\s+([\\w\\d]+)\\s*\\]");
+	public void _changes(ChangesOptions options) {
+		boolean first = true;
+		Justif j = new Justif(80,10);
+		Formatter f = j.formatter();
+		
+		for (Map.Entry<Version,String[]> e : About.CHANGES.entrySet()) {
+			if ( options.all() || first) {
+				f.format("==============================================\nRelease %s\n", e.getKey());
+				for ( String s : e.getValue()) {
+					f.format("- \t1%s", s);
+					Matcher m = BND_COMMAND_P.matcher(s);
+					while ( m.find() ) {
+						Formatter ff = new Formatter();
+						ff.format("\n\n");
+						CommandLine cli = options._command();
+						cli.help(ff, this, m.group(1));
+						j.indent(10, ff.out().toString());
+					}
+					m = BUG_P.matcher(s);
+					while ( m.find() ) {
+						f.format("\f-> https://github.com/bndtools/bnd/issues/%s", m.group(1));
+					}
+					f.format("\n");
+				}
+			}
+			first = false;
+		}
+		j.wrap();
+		out.println(f.out());
 	}
 }
