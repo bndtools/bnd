@@ -1618,7 +1618,7 @@ public class Builder extends Analyzer {
 	 */
 	static Pattern	GITREF	= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
 
-	static String	_githeadHelp	= "${githead}";
+	static String	_githeadHelp	= "${githead}, provide the SHA for the current git head";
 
 	public String _githead(String[] args) throws IOException {
 		Macro.verifyCommand(args, String.format(_githeadHelp, args[0]), null, 1, 1);
