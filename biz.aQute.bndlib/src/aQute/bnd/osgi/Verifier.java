@@ -80,7 +80,7 @@ public class Verifier extends Processor {
 																		.compile(
 																				"CON(\\..+)?|PRN(\\..+)?|AUX(\\..+)?|CLOCK$|NUL(\\..+)?|COM[1-9](\\..+)?|LPT[1-9](\\..+)?|"
 																						+ "\\$Mft|\\$MftMirr|\\$LogFile|\\$Volume|\\$AttrDef|\\$Bitmap|\\$Boot|\\$BadClus|\\$Secure|"
-																						+ "\\$Upcase|\\$Extend|\\$Quota|\\$ObjId|\\$Reparse|app",
+																						+ "\\$Upcase|\\$Extend|\\$Quota|\\$ObjId|\\$Reparse",
 																				Pattern.CASE_INSENSITIVE);
 
 	final static Pattern		CARDINALITY_PATTERN				= Pattern.compile("single|multiple");
