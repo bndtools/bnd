@@ -192,4 +192,8 @@ public class Instruction {
 		return any;
 	}
 
+	public boolean finds(String value) {
+		return getMatcher(value).find();
+	}
+
 }

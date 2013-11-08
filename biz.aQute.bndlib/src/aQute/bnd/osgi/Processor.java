@@ -56,6 +56,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	Collection<String>				filter;
 	HashSet<String>					missingCommand;
 	Boolean							strict;
+	boolean							fixupMessages;
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
@@ -108,6 +109,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void getInfo(Reporter processor, String prefix) {
+		if ( prefix == null)
+			prefix = getBase() + " :";
 		if (isFailOk())
 			addAll(warnings, processor.getErrors(), prefix, processor);
 		else
@@ -158,8 +161,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public SetLocation warning(String string, Object... args) {
+		fixupMessages = false;
 		Processor p = current();
-		String s = base.toString() + ": " + formatArrays(string, args);
+		String s = formatArrays(string, args);
 		if (!p.warnings.contains(s))
 			p.warnings.add(s);
 		p.signal();
@@ -167,11 +171,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public SetLocation error(String string, Object... args) {
+		fixupMessages = false;
 		Processor p = current();
 		try {
 			if (p.isFailOk())
 				return p.warning(string, args);
-			String s = base.toString() + ": " + formatArrays(string, args == null ? new Object[0] : args);
+			String s = formatArrays(string, args == null ? new Object[0] : args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 			return location(s);
@@ -203,7 +208,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return p.warning(string + ": " + t, args);
 			}
 			p.errors.add("Exception: " + t.getMessage());
-			String s = base.toString() + ": " + formatArrays(string, args == null ? new Object[0] : args);
+			String s = formatArrays(string, args == null ? new Object[0] : args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 			return location(s);
@@ -216,10 +221,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void signal() {}
 
 	public List<String> getWarnings() {
+		fixupMessages();
 		return warnings;
 	}
 
 	public List<String> getErrors() {
+		fixupMessages();
 		return errors;
 	}
 
@@ -440,7 +447,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			// command. The reason this feature was added was
 			// to compile plugin classes with the same build.
 			String commands = attrs.get(COMMAND_DIRECTIVE);
-			
+
 			Object plugin = loadPlugin(loader, attrs, className, commands != null);
 			if (plugin != null)
 				instances.add(plugin);
@@ -629,6 +636,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		errors.clear();
 		warnings.clear();
 		locations.clear();
+		fixupMessages=false;
 	}
 
 	public void trace(String msg, Object... parms) {
@@ -697,7 +705,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			fixup = false;
 			begin();
 		}
-
+		fixupMessages=false;
 		return properties;
 	}
 
@@ -1467,6 +1475,108 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return isFailOk() || (getErrors().size() == 0);
 	}
 
+	/**
+	 * Move errors and warnings to their proper place by scanning the fixup
+	 * messages property.
+	 */
+	private void fixupMessages() {
+		if (fixupMessages)
+			return;
+		fixupMessages = true;
+		Parameters fixup = new Parameters(getProperty(Constants.FIXUPMESSAGES));
+		if (fixup.isEmpty())
+			return;
+
+		Instructions instrs = new Instructions(fixup);
+		for (int i = 0; i < errors.size(); i++) {
+			String error = errors.get(i);
+			Instruction matcher = instrs.finder(error);
+			if (matcher == null || matcher.isNegated())
+				continue;
+
+			Attrs attrs = instrs.get(matcher);
+
+			//
+			// Default the pattern applies to the errors and warnings
+			// but we can restrict it: e.g. restrict:=error
+			//
+
+			String restrict = attrs.get(FIXUPMESSAGES_RESTRICT_DIRECTIVE);
+			if (restrict != null && !FIXUPMESSAGES_ERROR_ATTRIBUTE.equals(restrict))
+				continue;
+
+			//
+			// We can optionally replace the message with another text. E.g.
+			// replace:"hello world". This can use macro expansion, the ${@}
+			// macro is set to the old message.
+			//
+			String replace = attrs.get(FIXUPMESSAGES_REPLACE_DIRECTIVE);
+			if (replace != null) {
+				trace("replacing %s with %s", error, replace );
+				setProperty("@", error);
+				error = getReplacer().process(replace);
+				errors.set(i, error);
+				unsetProperty("@");
+			}
+
+			//
+			//
+			if (attrs.isEmpty() || attrs.containsKey(FIXUPMESSAGES_IGNORE_ATTRIBUTE)) {
+				errors.remove(i--);
+			} else {
+				if (attrs.containsKey(FIXUPMESSAGES_WARNING_ATTRIBUTE)) {
+					//
+					// Switch to make it a warning
+					//
+					errors.remove(i--);
+					warnings.add(error);
+				}
+			}
+		}
+		for (int i = 0; i < warnings.size(); i++) {
+			String warning = warnings.get(i);
+			Instruction matcher = instrs.matcher(warning);
+			if (matcher == null || matcher.isNegated())
+				continue;
+
+			Attrs attrs = instrs.get(matcher);
+			//
+			// Default the pattern applies to the errors and warnings
+			// but we can restrict it: e.g. restrict:=error
+			//
+
+			String restrict = attrs.get(FIXUPMESSAGES_RESTRICT_DIRECTIVE);
+			if (restrict != null && !FIXUPMESSAGES_WARNING_ATTRIBUTE.equals(restrict))
+				continue;
+
+			//
+			// We can optionally replace the message with another text. E.g.
+			// replace:"hello world". This can use macro expansion, the ${@}
+			// macro is set to the old message.
+			//
+			if (attrs.containsKey(FIXUPMESSAGES_REPLACE_DIRECTIVE)) {
+				setProperty("@", warning);
+				warning = getReplacer().process(attrs.get(FIXUPMESSAGES_REPLACE_DIRECTIVE));
+				warnings.set(i, warning);
+				unsetProperty("@");
+			}
+
+			//
+			//
+			if (attrs.isEmpty() || attrs.containsKey(FIXUPMESSAGES_IGNORE_ATTRIBUTE)) {
+				warnings.remove(i--);
+			} else {
+				if (attrs.containsKey(FIXUPMESSAGES_WARNING_ATTRIBUTE)) {
+					//
+					// Switch to make it an error
+					//
+					warnings.remove(i--);
+					errors.add(warning);
+				}
+			}
+		}
+	}
+
 	public boolean check(String... pattern) throws IOException {
 		Set<String> missed = Create.set();
 
@@ -2149,28 +2259,30 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 		return n;
 	}
-	
+
 	/**
-	 * This method is about compatibility. New behavior can be conditionally introduced
-	 * by calling this method and passing what version this behavior was introduced. This
-	 * allows users of bnd to set the -upto instructions to the version that they want to be
-	 * compatible with. If this instruction is not set, we assume the latest version.
+	 * This method is about compatibility. New behavior can be conditionally
+	 * introduced by calling this method and passing what version this behavior
+	 * was introduced. This allows users of bnd to set the -upto instructions to
+	 * the version that they want to be compatible with. If this instruction is
+	 * not set, we assume the latest version.
 	 */
-	
-	Version upto = null;
+
+	Version	upto	= null;
+
 	public boolean since(Version introduced) {
-		if ( upto == null) {
+		if (upto == null) {
 			String uptov = getProperty(UPTO);
-			if ( uptov == null) {
+			if (uptov == null) {
 				upto = Version.HIGHEST;
 				return true;
 			}
-			if ( !Version.VERSION.matcher(uptov).matches()) {
+			if (!Version.VERSION.matcher(uptov).matches()) {
 				error("The %s given version is not a version: %s", UPTO, uptov);
 				upto = Version.HIGHEST;
 				return true;
 			}
-			
+
 			upto = new Version(uptov);
 		}
 		return upto.compareTo(introduced) >= 0;
