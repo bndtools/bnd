@@ -240,9 +240,8 @@ public class BuilderTest extends BndTestCase {
 
 	public static void testEEMacro() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("bin"));
 		b.addClasspath(new File("jar/ifc112.jar"));
-		b.setPrivatePackage("test.activator, netscape.util.*");
+		b.setPrivatePackage("netscape.util.*");
 		b.setBundleRequiredExecutionEnvironment("${ee}");
 		Jar jar = b.build();
 		assertTrue(b.check());
