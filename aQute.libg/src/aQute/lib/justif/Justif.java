@@ -147,4 +147,19 @@ public class Justif {
 		wrap(sb);
 		return sb.toString();
 	}
+
+	public void indent(int indent, String string) {
+		for (int i=0; i<string.length(); i++) {
+			char c = string.charAt(i);
+			if ( i==0 ) {
+				for ( int j=0; j<indent; j++)
+					sb.append(' ');
+			} else {
+				sb.append(c);
+				if ( c == '\n')
+					for ( int j=0; j<indent; j++)
+						sb.append(' ');
+			}
+		}
+	}
 }
