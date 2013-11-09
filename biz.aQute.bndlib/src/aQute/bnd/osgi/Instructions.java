@@ -231,7 +231,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 		Instruction instr = matcher(value);
 		if (instr==null || instr.isNegated())
 			return false; // we deny this one explicitly
-		return false;
+		return true;
 	}
 
 }
