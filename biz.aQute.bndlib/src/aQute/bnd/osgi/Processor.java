@@ -109,7 +109,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void getInfo(Reporter processor, String prefix) {
-		if ( prefix == null)
+		if (prefix == null)
 			prefix = getBase() + " :";
 		if (isFailOk())
 			addAll(warnings, processor.getErrors(), prefix, processor);
@@ -636,7 +636,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		errors.clear();
 		warnings.clear();
 		locations.clear();
-		fixupMessages=false;
+		fixupMessages = false;
 	}
 
 	public void trace(String msg, Object... parms) {
@@ -705,7 +705,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			fixup = false;
 			begin();
 		}
-		fixupMessages=false;
+		fixupMessages = false;
 		return properties;
 	}
 
@@ -1488,9 +1488,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return;
 
 		Instructions instrs = new Instructions(fixup);
-		for (int i = 0; i < errors.size(); i++) {
-			String error = errors.get(i);
-			Instruction matcher = instrs.finder(error);
+
+		doFixup(instrs, errors, warnings, FIXUPMESSAGES_IS_ERROR);
+		doFixup(instrs, warnings, errors, FIXUPMESSAGES_IS_WARNING);
+	}
+
+	private void doFixup(Instructions instrs, List<String> messages, List<String> other, String type) {
+		for (int i = 0; i < messages.size(); i++) {
+			String message = messages.get(i);
+			Instruction matcher = instrs.finder(message);
 			if (matcher == null || matcher.isNegated())
 				continue;
 
@@ -1502,7 +1508,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			//
 
 			String restrict = attrs.get(FIXUPMESSAGES_RESTRICT_DIRECTIVE);
-			if (restrict != null && !FIXUPMESSAGES_ERROR_ATTRIBUTE.equals(restrict))
+			if (restrict != null && !FIXUPMESSAGES_IS_ERROR.equals(restrict))
 				continue;
 
 			//
@@ -1512,66 +1518,23 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			//
 			String replace = attrs.get(FIXUPMESSAGES_REPLACE_DIRECTIVE);
 			if (replace != null) {
-				trace("replacing %s with %s", error, replace );
-				setProperty("@", error);
-				error = getReplacer().process(replace);
-				errors.set(i, error);
+				trace("replacing %s with %s", message, replace);
+				setProperty("@", message);
+				message = getReplacer().process(replace);
+				messages.set(i, message);
 				unsetProperty("@");
 			}
 
 			//
 			//
-			if (attrs.isEmpty() || attrs.containsKey(FIXUPMESSAGES_IGNORE_ATTRIBUTE)) {
-				errors.remove(i--);
+			String is = attrs.get(FIXUPMESSAGES_IS_DIRECTIVE);
+
+			if (attrs.isEmpty() || FIXUPMESSAGES_IS_IGNORE.equals(is)) {
+				messages.remove(i--);
 			} else {
-				if (attrs.containsKey(FIXUPMESSAGES_WARNING_ATTRIBUTE)) {
-					//
-					// Switch to make it a warning
-					//
-					errors.remove(i--);
-					warnings.add(error);
-				}
-			}
-		}
-		for (int i = 0; i < warnings.size(); i++) {
-			String warning = warnings.get(i);
-			Instruction matcher = instrs.matcher(warning);
-			if (matcher == null || matcher.isNegated())
-				continue;
-
-			Attrs attrs = instrs.get(matcher);
-			//
-			// Default the pattern applies to the errors and warnings
-			// but we can restrict it: e.g. restrict:=error
-			//
-
-			String restrict = attrs.get(FIXUPMESSAGES_RESTRICT_DIRECTIVE);
-			if (restrict != null && !FIXUPMESSAGES_WARNING_ATTRIBUTE.equals(restrict))
-				continue;
-
-			//
-			// We can optionally replace the message with another text. E.g.
-			// replace:"hello world". This can use macro expansion, the ${@}
-			// macro is set to the old message.
-			//
-			if (attrs.containsKey(FIXUPMESSAGES_REPLACE_DIRECTIVE)) {
-				setProperty("@", warning);
-				warning = getReplacer().process(attrs.get(FIXUPMESSAGES_REPLACE_DIRECTIVE));
-				warnings.set(i, warning);
-				unsetProperty("@");
-			}
-
-			//
-			//
-			if (attrs.isEmpty() || attrs.containsKey(FIXUPMESSAGES_IGNORE_ATTRIBUTE)) {
-				warnings.remove(i--);
-			} else {
-				if (attrs.containsKey(FIXUPMESSAGES_WARNING_ATTRIBUTE)) {
-					//
-					// Switch to make it an error
-					//
-					warnings.remove(i--);
-					errors.add(warning);
+				if (is != null && !type.equals(is)) {
+					messages.remove(i--);
+					other.add(message);
 				}
 			}
 		}
