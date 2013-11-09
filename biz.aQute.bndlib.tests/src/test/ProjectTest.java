@@ -27,7 +27,7 @@ public class ProjectTest extends TestCase {
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles", "p2;version=project;p3;version=latest");
 		top.getRunbundles();
-		assertTrue(top.check("p1: Adding a version=project "));
+		assertTrue(top.check("Adding a version=project "));
 	}
 	
 	
