@@ -48,6 +48,7 @@ import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.version.Version;
 import bndtools.release.Activator;
+import bndtools.release.api.ReleaseOption;
 import bndtools.release.nl.Messages;
 
 public class BundleTree extends Composite {

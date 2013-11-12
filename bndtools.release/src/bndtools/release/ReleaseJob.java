@@ -22,11 +22,12 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import aQute.bnd.osgi.Jar;
 import bndtools.release.api.ReleaseContext;
+import bndtools.release.api.ReleaseOption;
 import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
 
 public class ReleaseJob  extends Job {
-	
+
 	private ReleaseContext context;
 	private boolean showMessage;
 
@@ -62,7 +63,7 @@ public class ReleaseJob  extends Job {
 				sb.append(" : "); //$NON-NLS-1$
 				sb.append(context.getProject().getName());
 				sb.append("\n\n"); //$NON-NLS-1$
-				if (context.isUpdateOnly()) {
+				if (context.getReleaseOption() == ReleaseOption.UPDATE) {
 					sb.append(Messages.updatedVersionInfo);
 				} else {
 					sb.append(Messages.released);
@@ -73,7 +74,7 @@ public class ReleaseJob  extends Job {
 					sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar) + "\n"); //$NON-NLS-1$//$NON-NLS-2$
 				}
 
-				if (!context.isUpdateOnly()) {
+				if (context.getReleaseOption() != ReleaseOption.UPDATE) {
 					sb.append("\n\n"); //$NON-NLS-1$
 					sb.append(Messages.releasedTo);
 					sb.append(" : "); //$NON-NLS-1$

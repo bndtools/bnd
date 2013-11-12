@@ -28,6 +28,7 @@ import bndtools.release.Activator;
 import bndtools.release.ProjectDiff;
 import bndtools.release.ProjectListControl;
 import bndtools.release.ReleaseHelper;
+import bndtools.release.api.ReleaseOption;
 
 public class WorkspaceReleaseDialog extends Dialog implements SelectionListener {
 
@@ -37,6 +38,7 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 	protected SashForm sashForm;
 
 	private final boolean showMessage;
+    private ReleaseOption releaseOption;
 
 	public WorkspaceReleaseDialog(Shell parentShell, List<ProjectDiff> projectDiffs, boolean showMessage) {
 		super(parentShell);
@@ -140,7 +142,7 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 	}
 
     public ReleaseOption getReleaseOption() {
-        return bundleRelease.getReleaseOption();
+        return releaseOption;
     }
 
     public boolean isShowMessage() {
@@ -167,6 +169,7 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
             Activator.message("You must specify Release option.");
             return;
         }
+        this.releaseOption = bundleRelease.getReleaseOption();
         super.okPressed();
     }
 }

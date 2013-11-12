@@ -47,12 +47,12 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.service.reporter.Reporter;
 import bndtools.release.api.IReleaseParticipant;
+import bndtools.release.api.ReleaseOption;
 import bndtools.release.api.IReleaseParticipant.Scope;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseContext.Error;
 import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
-import bndtools.release.ui.ReleaseOption;
 
 public class ReleaseHelper {
 

@@ -23,7 +23,6 @@ import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.release.api.IReleaseParticipant.Scope;
-import bndtools.release.ui.ReleaseOption;
 
 public class ReleaseContext {
 

@@ -1,4 +1,4 @@
-package bndtools.release.ui;
+package bndtools.release.api;
 
 import java.util.EnumSet;
 

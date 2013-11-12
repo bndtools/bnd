@@ -21,8 +21,8 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.release.api.ReleaseContext;
+import bndtools.release.api.ReleaseOption;
 import bndtools.release.nl.Messages;
-import bndtools.release.ui.ReleaseOption;
 
 public class WorkspaceReleaseJob extends Job {
 
