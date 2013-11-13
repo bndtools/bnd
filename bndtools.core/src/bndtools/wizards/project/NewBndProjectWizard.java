@@ -54,6 +54,9 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
         IProjectTemplate template = templatePage.getTemplate();
         if (template != null) {
+            // Bundle-Version: 0.0.0.${tstamp}
+            model.setBundleVersion(bndtools.repository.base.Constants.DEFAULT_BUNDLE_VERSION);
+
             template.modifyInitialBndModel(model);
         }
 
