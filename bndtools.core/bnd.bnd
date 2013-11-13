@@ -81,7 +81,8 @@ eclipse.deps: \
 	org.eclipse.core.filesystem,\
 	org.eclipse.core.contenttype
 
--buildpath: ee.j2se;version="[1.6,1.7)",\
+-buildpath: \
+	ee.j2se;version='[1.6,1.7)',\
 	${bndlib},\
 	${aQute-repository},\
 	${aQute-resolve},\
@@ -91,6 +92,7 @@ eclipse.deps: \
 	javax.xml.stream,\
 	osgi.r5;version=1.0.1,\
 	libs/org.osgi.service.obr-1.0.2.jar;version=file,\
-	libs/jcip-annotations.jar;version=file, \
-	bndtools.api; version=latest, \
-	bndtools.utils; version=project
+	libs/jcip-annotations.jar;version=file,\
+	bndtools.api;version=latest,\
+	bndtools.utils;version=project,\
+	bndtools.repository.base;version=latest

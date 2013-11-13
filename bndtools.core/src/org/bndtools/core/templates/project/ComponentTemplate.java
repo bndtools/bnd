@@ -37,8 +37,8 @@ public class ComponentTemplate implements IProjectTemplate {
         buildPath.add(new VersionedClause("biz.aQute.bnd.annotation", new Attrs()));
         Attrs attrs = new Attrs();
         attrs.put(Constants.VERSION_ATTRIBUTE, "file");
-        buildPath.add(new VersionedClause("${workspace}/cnf/buildrepo/org.junit/junit-latest.jar", attrs));
-        buildPath.add(new VersionedClause("${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar", attrs));
+        buildPath.add(new VersionedClause("${workspace}/cnf/buildrepo/org.junit/junit-" + bndtools.repository.base.Constants.JUNIT_VERSION + ".jar", attrs));
+        buildPath.add(new VersionedClause("${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-" + bndtools.repository.base.Constants.HAMCREST_CORE_VERSION + ".jar", attrs));
 
         model.setBuildPath(buildPath);
     }

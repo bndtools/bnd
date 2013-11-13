@@ -1,4 +1,11 @@
-bin:
+-buildpath: \
+	ee.j2se; version=1.5,\
+	${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file, \
+	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file
+
+Export-Package: \
+	bndtools.repository.base
+
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
 Bundle-Vendor: Bndtools
 Bundle-Version: ${master-version}
