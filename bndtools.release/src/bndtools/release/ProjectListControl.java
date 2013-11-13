@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -29,9 +30,11 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -42,6 +45,9 @@ import bndtools.release.ui.TableSortingEnabler;
 import bndtools.release.ui.TableSortingEnabler.IColumnContentProvider;
 
 public class ProjectListControl {
+
+    private Color COLOR_RELEASE_REQUIRED;
+    private Color COLOR_VERSION_UPDATE_REQUIRED;
 
 	private Table projects;
 	private String[] releaseRepos;
@@ -63,6 +69,9 @@ public class ProjectListControl {
 	public ProjectListControl(SelectionListener selectionListener, String[] releaseRepos) {
 		this.selectionListener = selectionListener;
 		this.releaseRepos = releaseRepos;
+
+		COLOR_VERSION_UPDATE_REQUIRED = new Color(Display.getCurrent(), 250, 85, 125);
+        COLOR_RELEASE_REQUIRED = new Color(Display.getCurrent(), 100, 250, 100);
 	}
 
     public void createControl(final Composite parent) {
@@ -140,7 +149,8 @@ public class ProjectListControl {
         this.projectDiffs = projectDiffs;
         tableViewer.setInput(projectDiffs);
         for (TableItem tableItem : tableViewer.getTable().getItems()) {
-            tableItem.setChecked(true);
+            ProjectDiff diff = (ProjectDiff) tableItem.getData();
+            tableItem.setChecked(diff.isRelease());
         }
     }
 
@@ -185,7 +195,7 @@ public class ProjectListControl {
         }
 	}
 
-	private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
+	private class TableLabelProvider extends LabelProvider implements ITableColorProvider, ITableLabelProvider {
 
         public Image getColumnImage(Object element, int columnIndex) {
             return null;
@@ -217,6 +227,21 @@ public class ProjectListControl {
                 break;
             }
             return text;
+        }
+
+        public Color getBackground(Object element, int columnIndex) {
+            ProjectDiff diff = (ProjectDiff) element;
+            if (diff.isVersionUpdateRequired()) {
+                return COLOR_VERSION_UPDATE_REQUIRED;
+            }
+            if (diff.isReleaseRequired()) {
+                return COLOR_RELEASE_REQUIRED;
+            }
+            return Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+        }
+
+        public Color getForeground(Object element, int columnIndex) {
+            return Display.getCurrent().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
         }
 	}
 
@@ -285,5 +310,10 @@ public class ProjectListControl {
                 default :
                 }
         }
+	}
+
+	public void dispose() {
+	    COLOR_RELEASE_REQUIRED.dispose();
+	    COLOR_VERSION_UPDATE_REQUIRED.dispose();
 	}
 }

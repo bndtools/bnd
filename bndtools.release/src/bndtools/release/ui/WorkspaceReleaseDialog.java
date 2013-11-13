@@ -166,10 +166,22 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
     @Override
     protected void okPressed() {
         if (bundleRelease.getReleaseOption() == null) {
-            Activator.message("You must specify Release option.");
-            return;
+            for (ProjectDiff diff : projectDiffs) {
+                if (diff.isRelease()) {
+                    Activator.message("You must specify Release option.");
+                    return;
+                }
+            }
         }
         this.releaseOption = bundleRelease.getReleaseOption();
         super.okPressed();
+    }
+
+    @Override
+    public boolean close() {
+        if (projectListControl != null) {
+            projectListControl.dispose();
+        }
+        return super.close();
     }
 }

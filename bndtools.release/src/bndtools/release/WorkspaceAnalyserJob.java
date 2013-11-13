@@ -95,20 +95,7 @@ public class WorkspaceAnalyserJob extends Job {
 						if (jarDiffs == null) {
 							jarDiffs = new ArrayList<Baseline>();
 						}
-
-						Delta delta = jarDiff.getDiff().getDelta(new Ignore() {
-                            public boolean contains(Diff diff) {
-                               if ("META-INF/MANIFEST.MF".equals(diff.getName())) { //$NON-NLS-1$
-                                   return true;
-                               }
-                               if (diff.getType() == Type.HEADER && diff.getName().startsWith(Constants.BUNDLE_VERSION)) {
-                                   return true;
-                               }
-                               return false;
-                            }});
-						if (delta != Delta.UNCHANGED && delta != Delta.IGNORED) {
-							jarDiffs.add(jarDiff);
-						}
+						jarDiffs.add(jarDiff);
 					}
 				}
 				if (jarDiffs != null && jarDiffs.size() > 0) {
@@ -142,6 +129,16 @@ public class WorkspaceAnalyserJob extends Job {
 							shell, projectDiffs, false);
 					int ret = dialog.open();
 					if (ret == WorkspaceReleaseDialog.OK) {
+                       boolean runJob = false;
+					   for (ProjectDiff diff : projectDiffs) {
+					       if (diff.isRelease()) {
+                                runJob = true;
+                                break;
+                            }
+                        }
+					    if (!runJob) {
+					        return;
+					    }
 						WorkspaceReleaseJob releaseJob = new WorkspaceReleaseJob(
 								projectDiffs, dialog.getReleaseOption(), dialog.isShowMessage());
 						releaseJob.setRule(ResourcesPlugin.getWorkspace().getRoot());

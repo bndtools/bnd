@@ -34,9 +34,15 @@ import org.eclipse.team.core.subscribers.Subscriber;
 import org.eclipse.team.core.synchronize.SyncInfoSet;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.differ.Baseline;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Diff.Ignore;
+import aQute.bnd.service.diff.Type;
 import aQute.bnd.version.Version;
 
 public class ReleaseUtils {
@@ -229,5 +235,22 @@ public class ReleaseUtils {
 			return header.substring(0, idx);
 		}
 		return header;
+	}
+
+	public static boolean needsRelease(Baseline baseline) {
+        Delta delta = baseline.getDiff().getDelta(new Ignore() {
+            public boolean contains(Diff diff) {
+               if ("META-INF/MANIFEST.MF".equals(diff.getName())) { //$NON-NLS-1$
+                   return true;
+               }
+               if (diff.getType() == Type.HEADER && diff.getName().startsWith(Constants.BUNDLE_VERSION)) {
+                   return true;
+               }
+               return false;
+            }});
+        if (delta != Delta.UNCHANGED && delta != Delta.IGNORED) {
+            return true;
+        }
+        return false;
 	}
 }

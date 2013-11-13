@@ -403,6 +403,25 @@ public class ReleaseHelper {
 			}
 			projectDiff.setReleaseRepository(repo);
 			projectDiff.setDefaultReleaseRepository(repo);
+
+            for (Baseline baseline : projectDiff.getBaselines()) {
+                if (ReleaseUtils.needsRelease(baseline)) {
+                    projectDiff.setRelease(true);
+                    projectDiff.setReleaseRequired(true);
+                    if (!baseline.getNewerVersion().equals(baseline.getSuggestedVersion())) {
+                        projectDiff.setVersionUpdateRequired(true);
+                        continue;
+                    }
+                    for (Info info : baseline.getPackageInfos()) {
+                        if (!info.newerVersion.equals(info.suggestedVersion)) {
+                            projectDiff.setVersionUpdateRequired(true);
+                            break;
+                        }
+                    }
+                } else {
+                    baseline.setSuggestedVersion(baseline.getOlderVersion());
+                }
+           }
 		}
 	}
 

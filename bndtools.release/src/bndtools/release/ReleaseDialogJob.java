@@ -81,6 +81,16 @@ public class ReleaseDialogJob extends Job {
 		            ReleaseHelper.initializeProjectDiffs(projectDiffs);
 				    WorkspaceReleaseDialog dialog = new WorkspaceReleaseDialog(shell, projectDiffs, true);
 					if (dialog.open() == WorkspaceReleaseDialog.OK) {
+					    boolean runJob = false;
+			            for (ProjectDiff diff : projectDiffs) {
+			                if (diff.isRelease()) {
+			                    runJob = true;
+			                    break;
+			                }
+			            }
+					    if (!runJob) {
+					        return;
+					    }
                         WorkspaceReleaseJob releaseJob = new WorkspaceReleaseJob(
                                 projectDiffs, dialog.getReleaseOption(), dialog.isShowMessage());
                         releaseJob.setRule(ResourcesPlugin.getWorkspace().getRoot());

@@ -235,8 +235,7 @@ public class BundleTree extends Composite {
 	    label.setText(Messages.releaseOption);
 
 		options = new Combo(dropdown, SWT.DROP_DOWN | SWT.READ_ONLY);
-//		String items[] = { Messages.updateVersionsAndRelease, Messages.updateVersions, Messages.release };
-	    String items[] = { Messages.updateVersionsAndRelease, Messages.updateVersions};
+		String items[] = { Messages.updateVersionsAndRelease, Messages.updateVersions, Messages.release };
 		options.setItems(items);
 		options.add(Messages.comboSelectText, 0);
 		options.select(0);
