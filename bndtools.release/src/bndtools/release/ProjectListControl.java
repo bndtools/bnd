@@ -33,8 +33,10 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -75,13 +77,19 @@ public class ProjectListControl {
 	}
 
     public void createControl(final Composite parent) {
-        createTableLayout(parent);
+        // Create the composite
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(new GridLayout(1, false));
+        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        createTableLayout(composite);
+        createLegend(composite);
     }
 
     private void createTableLayout(Composite parent) {
-        // Create the composite
+
         Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         // Add TableColumnLayout
         TableColumnLayout layout = new TableColumnLayout();
@@ -143,6 +151,39 @@ public class ProjectListControl {
         tableViewer.setLabelProvider(new TableLabelProvider());
         tableViewer.setColumnProperties(columnNames);
         TableSortingEnabler.applyTableColumnSorting(tableViewer);
+    }
+
+    private void createLegend(Composite parent) {
+
+        Composite composite = new Composite(parent, SWT.NONE);
+        GridLayout gridLayout = new GridLayout(2, false);
+        gridLayout.verticalSpacing = 2;
+        gridLayout.marginHeight = 2;
+        gridLayout.marginWidth = 0;
+        gridLayout.horizontalSpacing = 2;
+        composite.setLayout(gridLayout);
+
+        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+        gridData.grabExcessHorizontalSpace = true;
+        composite.setLayoutData(gridData);
+
+        Text t = new Text(composite, SWT.BORDER | SWT.MULTI);
+        t.setSize(5, 5);
+        t.setBackground(COLOR_VERSION_UPDATE_REQUIRED);
+        t.setEditable(false);
+        t.setText(" ");
+
+        Label l = new Label(composite, SWT.NONE);
+        l.setText(Messages.versionUpdateRequired);
+
+        t = new Text(composite, SWT.BORDER | SWT.MULTI);
+        t.setSize(5, 5);
+        t.setBackground(COLOR_RELEASE_REQUIRED);
+        t.setEditable(false);
+        t.setText(" ");
+
+        l = new Label(composite, SWT.NONE);
+        l.setText(Messages.releaseRequired);
     }
 
     public void setInput(List<ProjectDiff> projectDiffs) {

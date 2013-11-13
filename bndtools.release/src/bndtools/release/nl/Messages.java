@@ -74,6 +74,9 @@ public class Messages extends NLS {
 
     public static String versionInvalid; /* bndtools.release.ui.BundleTree::saveCellEditorValue */
 
+    public static String versionUpdateRequired; /* bndtools.release.ProjectListControl::createLegend */
+    public static String releaseRequired; /* bndtools.release.ProjectListControl::createLegend */
+
     static {
         NLS.initializeMessages(RESOURCE_BUNDLE, Messages.class);
     }
