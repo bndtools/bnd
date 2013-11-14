@@ -54,7 +54,6 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	org.eclipse.equinox.preferences, \
 	osgi.core,\
 	${bndlib},\
-	${workspace}/cnf/buildrepo/org.junit/junit-4.11.jar;version=file,\
-	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-1.3.jar;version=file
+	${junit}
 
 Export-Package: bndtools.release.api

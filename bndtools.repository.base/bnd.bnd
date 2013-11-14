@@ -1,7 +1,6 @@
 -buildpath: \
 	ee.j2se; version=1.5,\
-	${workspace}/cnf/buildrepo/org.junit/junit-4.11.jar;version=file, \
-	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-1.3.jar;version=file
+	${junit}
 
 Export-Package: \
 	bndtools.repository.base
