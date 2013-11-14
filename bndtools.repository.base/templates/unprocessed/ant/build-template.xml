@@ -104,7 +104,7 @@
 
         Run the junit test if present and no disabled by the no.junit property.
     -->
-    <target name="compileTests" depends="init,build" if="testDirExists">
+    <target name="compileTests" depends="init,build" if="testDirExists" unless="no.junit">
         <mkdir dir="bin_test"/>
         <javac fork="yes" executable="${javac}" srcdir="test" destdir="bin_test" classpath="${project.buildpath}:${project.testpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
         <!--
