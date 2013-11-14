@@ -271,10 +271,11 @@ public class JpmDependencyWizardPage extends WizardPage {
 
     @Override
     public String getMessage() {
-        if (selection != null)
+        if (selection != null) {
             return selection.description;
-        else
-            return DEFAULT_MESSAGE;
+        }
+
+        return DEFAULT_MESSAGE;
     }
 
     public Set<ResourceDescriptor> getDirectResources() {

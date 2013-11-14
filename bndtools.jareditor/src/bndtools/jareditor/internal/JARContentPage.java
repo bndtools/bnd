@@ -83,14 +83,16 @@ public class JARContentPage extends FormPage {
 
     void setSelectedPath(String[] path) {
         this.selectedPath = path;
-        if (contentTreePart != null)
+        if (contentTreePart != null) {
             contentTreePart.setSelectedPath(path);
+        }
     }
 
     String[] getSelectedPath() {
-        if (contentTreePart != null)
+        if (contentTreePart != null) {
             return contentTreePart.getSelectedPath();
-        else
-            return null;
+        }
+
+        return null;
     }
 }

@@ -1045,10 +1045,10 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     public IPackageFragment getPackageFragment() {
         if (!isEnclosingTypeSelected()) {
             return fCurrPackage;
-        } else {
-            if (fCurrEnclosingType != null) {
-                return fCurrEnclosingType.getPackageFragment();
-            }
+        }
+
+        if (fCurrEnclosingType != null) {
+            return fCurrEnclosingType.getPackageFragment();
         }
         return null;
     }
@@ -1526,9 +1526,9 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         int angleBracketOffset = typeNameWithParameters.indexOf('<');
         if (angleBracketOffset == -1) {
             return typeNameWithParameters;
-        } else {
-            return typeNameWithParameters.substring(0, angleBracketOffset);
         }
+
+        return typeNameWithParameters.substring(0, angleBracketOffset);
     }
 
     /**
