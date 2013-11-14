@@ -6,22 +6,22 @@ Bundle-Version: ${master-version}
 
 amdatu-template: templates/cnfs/amdatu
 amdatu-template-resources: \
-	{${amdatu-template}=templates/processed/amdatu},\
-	{${amdatu-template}=templates/processed/common},\
+	{${amdatu-template}=../bndtools.repository.base/templates/processed/bundlehub},\
+	{${amdatu-template}=../bndtools.repository.base/templates/processed/common},\
 	${amdatu-template}=templates/unprocessed/amdatu,\
-	${amdatu-template}=templates/unprocessed/ant,\
-	${amdatu-template}=templates/unprocessed/common,\
-	${amdatu-template}/buildrepo/=templates/repos/buildrepo,\
+	${amdatu-template}=../bndtools.repository.base/templates/unprocessed/ant,\
+	${amdatu-template}=../bndtools.repository.base/templates/unprocessed/common,\
+	${amdatu-template}/buildrepo/=../bndtools.repository.base/templates/repos/buildrepo,\
 	${amdatu-template}/buildrepo/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\
 	${amdatu-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest},\
-	${amdatu-template}/localrepo/=templates/repos/localrepo,\
-	${amdatu-template}/releaserepo/=templates/repos/releaserepo,\
+	${amdatu-template}/localrepo/=../bndtools.repository.base/templates/repos/localrepo,\
+	${amdatu-template}/releaserepo/=../bndtools.repository.base/templates/repos/releaserepo,\
 	${amdatu-template}/plugins/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
 	${amdatu-template}/plugins/biz.aQute.repository/=${repo;biz.aQute.repository;${aQute-repository-base}}
 
 Include-Resource:\
 	plugin.xml=_plugin.xml,\
-	icons/=icons,\
+	icons/=../bndtools.repository.base/icons,\
 	templateDocs/=templateDocs,\
 	${amdatu-template-resources}
 
