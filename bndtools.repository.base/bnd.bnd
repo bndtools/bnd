@@ -1,9 +1,4 @@
--buildpath: \
-	ee.j2se; version=1.5
-
-Export-Package: \
-	bndtools.repository.base
-
+bin:
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
 Bundle-Vendor: Bndtools
 Bundle-Version: ${master-version}
