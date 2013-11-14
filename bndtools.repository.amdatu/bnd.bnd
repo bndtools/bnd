@@ -13,7 +13,7 @@ amdatu-template-resources: \
 	${amdatu-template}=templates/unprocessed/common,\
 	${amdatu-template}/buildrepo/=templates/repos/buildrepo,\
 	${amdatu-template}/buildrepo/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\
-	${amdatu-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest}
+	${amdatu-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest},\
 	${amdatu-template}/localrepo/=templates/repos/localrepo,\
 	${amdatu-template}/releaserepo/=templates/repos/releaserepo,\
 	${amdatu-template}/plugins/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
