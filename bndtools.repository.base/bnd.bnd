@@ -1,6 +1,5 @@
 -buildpath: \
-	ee.j2se; version=1.5,\
-	${junit}
+	ee.j2se; version=1.5
 
 Export-Package: \
 	bndtools.repository.base
