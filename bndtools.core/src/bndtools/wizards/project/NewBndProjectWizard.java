@@ -23,6 +23,8 @@ import bndtools.editor.model.BndProject;
 
 class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
+    public static final String DEFAULT_BUNDLE_VERSION = "0.0.0.${tstamp}";
+
     private final TemplateSelectionWizardPage templatePage = new TemplateSelectionWizardPage();
 
     NewBndProjectWizard(final NewBndProjectWizardPageOne pageOne, final NewJavaProjectWizardPageTwo pageTwo) {
@@ -54,6 +56,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
         IProjectTemplate template = templatePage.getTemplate();
         if (template != null) {
+            model.setBundleVersion(DEFAULT_BUNDLE_VERSION);
             template.modifyInitialBndModel(model);
         }
 
