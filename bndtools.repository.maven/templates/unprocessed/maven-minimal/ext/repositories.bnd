@@ -1,0 +1,3 @@
+-plugin:\
+	aQute.bnd.deployer.repository.FixedIndexedRepo; name=Maven Local;  locations=file:///${user.home}/.m2/repository/repository.xml,\
+	aQute.bnd.deployer.repository.FixedIndexedRepo; name=Bndtools Hub; locations=https://github.com/bndtools/bundle-hub/raw/master/index.xml.gz
