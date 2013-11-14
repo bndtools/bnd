@@ -8,24 +8,24 @@
 ## they will be overridden by anything you specify in this file.
 
 ## General Options
-#project.dependson:     \${p-dependson;:}
-#project.bootclasspath: \${p-bootclasspath;:}
-#project.buildpath:     \${p-buildpath;:}
-#project.sourcepath:    \${p-sourcepath;:}
-#project.allsourcepath: \${p-allsourcepath;:}
-#project.output:        \${p-output}
-#project.testpath:      \${p-testpath;:}
+#project.dependson:     ${p-dependson;:}
+#project.bootclasspath: ${p-bootclasspath;:}
+#project.buildpath:     ${p-buildpath;:}
+#project.sourcepath:    ${p-sourcepath;:}
+#project.allsourcepath: ${p-allsourcepath;:}
+#project.output:        ${p-output}
+#project.testpath:      ${p-testpath;:}
 
 #-verbose:              true
-#project:               \${basedir}
+#project:               ${basedir}
 #src:                   src
 #bin:                   bin
 #target-dir:            generated
-#target:                \${project}/\${target-dir}
-#build:                 \${workspace}/cnf
-#p:                     \${basename;\${project}}
-#project.name:          \${p}
-#plugin-dir:            \${build}/plugins
+#target:                ${project}/${target-dir}
+#build:                 ${workspace}/cnf
+#p:                     ${basename;${project}}
+#project.name:          ${p}
+#plugin-dir:            ${build}/plugins
 
 ## Java Compiler Options
 #java:                  java
@@ -36,15 +36,15 @@
 
 ## Bnd Options
 #-sources:              true
-#-sourcepath:           \${project}/src
+#-sourcepath:           ${project}/src
 
 
 ## Properties from ext/*.bnd can be referenced in order to extend them. For
 ## example, to add one additional plugin to the list defined in
 ## ext/repositories.bnd:
-# -plugin: \${ext.repositories.-plugin}, org.example.MyPlugin
+# -plugin: ${ext.repositories.-plugin}, org.example.MyPlugin
 
 
 ## If you use git, you might want to uncomment the following lines:
-# Git-Descriptor:       \${system-allow-fail;git describe --dirty --always}
-# Git-SHA:              \${system-allow-fail;git rev-list -1 HEAD}
+# Git-Descriptor:       ${system-allow-fail;git describe --dirty --always}
+# Git-SHA:              ${system-allow-fail;git rev-list -1 HEAD}

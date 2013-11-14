@@ -3,7 +3,6 @@
 <plugin>
 
    <extension point="bndtools.core.cnfTemplates">
-
       <template
          id="bundle-hub"
          name="Bundle-Hub Configuration"
