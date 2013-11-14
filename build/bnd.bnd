@@ -16,7 +16,6 @@
 	org.bndtools.embeddedrepo
 
 # Missing here:
-# bndtools.repository.maven
 # bndtools.utils                            Always used as Conditional-Package
 
 Include-Resource:\
@@ -43,5 +42,4 @@ Include-Resource:\
 
 # Missing here:
 # ${repo;bndtools.bndplugins;latest}
-# ${repo;bndtools.repository.maven;latest}
 # ${repo;bndtools.utils;latest}             Always used as Conditional-Package
