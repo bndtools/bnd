@@ -6,14 +6,14 @@ Bundle-Version: ${master-version}
 
 maven-minimal-template: templates/maven-minimal
 maven-minimal-template-resources: \
-	{${maven-minimal-template}=templates/processed/maven-minimal},\
-	${maven-minimal-template}=templates/unprocessed/common,\
+	{${maven-minimal-template}=../bndtools.repository.base/templates/processed/bundlehub},\
+	${maven-minimal-template}=../bndtools.repository.base/templates/unprocessed/common,\
 	${maven-minimal-template}=templates/unprocessed/maven-minimal,\
 	${maven-minimal-template}/plugins/biz.aQute.repository/=${repo;biz.aQute.repository;${aQute-repository-base}}
 
 Include-Resource:\
 	plugin.xml=_plugin.xml,\
-	icons/=icons,\
+	icons/=../bndtools.repository.base/icons,\
 	templateDocs/=templateDocs,\
 	${maven-minimal-template-resources}
 
