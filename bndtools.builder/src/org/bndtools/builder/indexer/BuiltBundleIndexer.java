@@ -32,7 +32,6 @@ import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.indexer.impl.RepoIndex;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.central.WorkspaceR5Repository;

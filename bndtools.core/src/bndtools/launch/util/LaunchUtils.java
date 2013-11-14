@@ -13,7 +13,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.launch.LaunchConstants;

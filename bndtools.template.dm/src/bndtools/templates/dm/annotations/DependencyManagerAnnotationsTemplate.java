@@ -12,7 +12,6 @@ import aQute.bnd.build.model.BndEditModel;
 
 import org.bndtools.api.IBndProject;
 import org.bndtools.api.IProjectTemplate;
-import org.osgi.framework.Constants;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 

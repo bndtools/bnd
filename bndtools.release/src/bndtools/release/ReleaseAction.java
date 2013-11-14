@@ -30,7 +30,6 @@ import bndtools.central.Central;
 import bndtools.release.nl.Messages;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 
 public class ReleaseAction implements IObjectActionDelegate {
 //	@SuppressWarnings("unused")

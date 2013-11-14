@@ -33,7 +33,6 @@ import bndtools.BndConstants;
 import bndtools.central.Central;
 import bndtools.utils.ModificationLock;
 import bndtools.editor.common.BndEditorPart;
-import bndtools.utils.ModificationLock;
 
 public class RunFrameworkPart extends BndEditorPart implements PropertyChangeListener {
     private static final ILogger logger = Logger.getLogger(RunFrameworkPart.class);

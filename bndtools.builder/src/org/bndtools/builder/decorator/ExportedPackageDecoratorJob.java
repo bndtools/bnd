@@ -29,7 +29,6 @@ import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;

@@ -66,7 +66,6 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.Constants;
