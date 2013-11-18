@@ -74,6 +74,27 @@ public class ClassParserTest extends TestCase {
 	static Analyzer	a	= new Analyzer();
 
 	/**
+	 * https://jira.codehaus.org/browse/GROOVY-6169 There are several components
+	 * involved here, but the symptoms point to the Groovy compiler. Gradle uses
+	 * BND to populate the OSGi 'Import-Package' manifest header. The import
+	 * from Groovy source is lost and does not appear in the OSGi manifest. This
+	 * causes problems when deploying the bundle to OSGi. There's a repro
+	 * package attached. It includes two Gradle projects, one using Java, one
+	 * using Groovy. They use the same source file contents, but with different
+	 * file types. They produce different manifest files, one that imports slf4j
+	 * and one that doesn't. You can tweak the build.gradle to use different
+	 * Groovy releases. I first discovered this problem using v1.8.7, but saw
+	 * the same results with v1.8.9. The problem was apparently fixed in v2.1,
+	 * using a groovy-all-2.1.0 a correct manifest file is created.
+	 * 
+	 */
+	public static void testCodehauseGROOVY_6169() throws Exception {
+		Clazz c = new Clazz(a, "foo", new FileResource(new File("jar/BugReproLoggerGroovy189.jclass")));
+		c.parseClassFile();
+		assertTrue(c.getReferred().contains(a.getPackageRef("org.slf4j")));
+	}
+
+	/**
 	 * Test the constant values
 	 * 
 	 * @throws Exception
@@ -267,7 +288,9 @@ public class ClassParserTest extends TestCase {
 		clazz.parseClassFile(in);
 
 		System.err.println(clazz.getReferred());
-		clazz.parseDescriptor("(IILcom/linkedin/member2/pub/profile/core/view/I18nPositionViews;)Lcom/linkedin/leo/cloud/overlap/api/OverlapQuery;", 0);
+		clazz.parseDescriptor(
+				"(IILcom/linkedin/member2/pub/profile/core/view/I18nPositionViews;)Lcom/linkedin/leo/cloud/overlap/api/OverlapQuery;",
+				0);
 		assertTrue(clazz.getReferred().contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
 	}
 
