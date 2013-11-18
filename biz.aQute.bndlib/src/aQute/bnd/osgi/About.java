@@ -40,6 +40,9 @@ import aQute.bnd.version.*;
 public class About {
 	public static Version				_2_3		= new Version(2, 3, 0);
 	public static String[]				CHANGES_2_3	= {
+			"Verify that the Meta-Persistence header's locations actually exist",
+			"Added a find command to bnd that can find imported or exported packages from a set of bundles",
+			"Support X.class instruction in older Groovy (189)",
 			"[-fixupmessages] Patterns to fixup errors and warnings, you can remove, move, or replace messages.",
 			"Added a [bnd changes] command",
 			"#388 ${githead} macro, provides the SHA for the current workspace",
