@@ -21,6 +21,19 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/**
+	 * Bundle ActivationPolicy
+	 * @throws Exception 
+	 */
+	public void testBundleActivationPolicy() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( IO.getFile("bin"));;
+		b.setProperty("Bundle-ActivationPolicy", "lazy");
+		b.setProperty("Export-Package", "test.activator");
+		b.build();
+		assertTrue(b.check());
+	}
+	
+	/**
 	 * #388 Manifest header to get GIT head
 	 */
 	public void testGitHead() {
