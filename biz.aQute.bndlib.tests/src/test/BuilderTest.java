@@ -471,7 +471,7 @@ public class BuilderTest extends BndTestCase {
 		assertTrue(b.check());
 
 		Set<String> names = b.getJar().getResources().keySet();
-		assertEquals(8, names.size());
+		assertEquals(10, names.size());
 		assertTrue(names.contains("AnnotationWithJSR14.jclass"));
 		assertTrue(names.contains("mandatorynoversion.bnd"));
 		assertTrue(names.contains("mina.bar"));
