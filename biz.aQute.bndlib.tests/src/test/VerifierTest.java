@@ -11,6 +11,29 @@ import aQute.bnd.osgi.*;
 @SuppressWarnings("resource")
 public class VerifierTest extends TestCase {
 
+	
+	/**
+	 * Verify that the Meta-Persistence header is correctly verified
+	 * @throws Exception 
+	 */
+	
+	public void verifyMetaPersistence() throws Exception {
+		Builder b = new Builder();
+		b.setIncludeResource("foo.xml;literal='I exist'");
+		Jar inner = b.build();
+		assertTrue( b.check());
+		
+		Jar outer = new Jar("x");
+		outer.putResource("foo.jar", new JarResource(inner));
+		Manifest m = new Manifest();
+		m.getMainAttributes().putValue(Constants.META_PERSISTENCE, "foo.jar, foo.jar!/foo.xml, absent.xml");
+		outer.setManifest(m);
+		Verifier v = new Verifier(outer);
+		v.verifyMetaPersistence();
+		assertTrue(v.check("Meta-Persistence refers to resources not in the bundle: \\[absent.xml\\]"));
+	}
+	
+	
 	/**
 	 * Check for reserved file names (INVALIDFILENAMES)
 	 * 
