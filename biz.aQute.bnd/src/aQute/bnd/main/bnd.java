@@ -3186,20 +3186,21 @@ public class bnd extends Processor {
 		boolean all();
 	}
 
-	static Pattern BUG_P = Pattern.compile("#([0-9]+)");
-	static Pattern BND_COMMAND_P = Pattern.compile("\\[bnd\\s+([\\w\\d]+)\\s*\\]");
+	static Pattern	BUG_P			= Pattern.compile("#([0-9]+)");
+	static Pattern	BND_COMMAND_P	= Pattern.compile("\\[bnd\\s+([\\w\\d]+)\\s*\\]");
+
 	public void _changes(ChangesOptions options) {
 		boolean first = true;
-		Justif j = new Justif(80,10);
+		Justif j = new Justif(80, 10);
 		Formatter f = j.formatter();
-		
+
 		for (Map.Entry<Version,String[]> e : About.CHANGES.entrySet()) {
-			if ( options.all() || first) {
+			if (options.all() || first) {
 				f.format("$-\nRelease %s\n$-\n", e.getKey());
-				for ( String s : e.getValue()) {
+				for (String s : e.getValue()) {
 					f.format("- \t1%s", s.replace('\n', '\f'));
 					Matcher m = BND_COMMAND_P.matcher(s);
-					while ( m.find() ) {
+					while (m.find()) {
 						Formatter ff = new Formatter();
 						ff.format("\n\n");
 						CommandLine cli = options._command();
@@ -3207,7 +3208,7 @@ public class bnd extends Processor {
 						j.indent(10, ff.out().toString());
 					}
 					m = BUG_P.matcher(s);
-					while ( m.find() ) {
+					while (m.find()) {
 						f.format("\f-> https://github.com/bndtools/bnd/issues/%s", m.group(1));
 					}
 					f.format("\n\n");
@@ -3217,5 +3218,82 @@ public class bnd extends Processor {
 		}
 		j.wrap();
 		out.println(f.out());
+	}
+
+	/**
+	 * Find a package in the current project or a set of jars
+	 */
+
+	@Arguments(arg="[file]...")
+	@Description("Go through the exports and/or imports and match the given "
+			+ "exports/imports globs. If thet match print the file, package and version.")
+	interface FindOptions extends Options {
+		@Description("Glob expression on the imports.")
+		Glob[] imports();
+
+		@Description("Glob expression on the exports.")
+		Glob[] exports();
+	}
+
+	public void _find(FindOptions options) throws Exception {
+		List<File> files = new ArrayList<File>();
+
+		List<String> args = options._();
+		if (args.size() == 0) {
+			Project p = getProject();
+			if (p == null) {
+				error("This is not a project directory and you have specified no jar files ...");
+				return;
+			}
+			for (Container c : p.getBuildpath()) {
+				files.add(c.getFile());
+			}
+		} else {
+			for (String f : args) {
+				File file = getFile(f);
+				files.add(file);
+			}
+		}
+		for (File f : files) {
+			trace("find %s", f);
+			Jar jar = new Jar(f);
+			try {
+				Manifest m = jar.getManifest();
+				if (m != null) {
+					Domain domain = Domain.domain(m);
+
+					if (options.exports() != null) {
+						Parameters ep = domain.getExportPackage();
+						for (Glob g : options.exports()) {
+							for (Entry<String,Attrs> exp : ep.entrySet()) {
+								if (g.matcher(exp.getKey()).matches()) {
+									String v = exp.getValue().get(VERSION_ATTRIBUTE);
+									if (v == null)
+										v = "0";
+									out.printf(">%s: %s-%s%n", f.getPath(), exp.getKey(), v);
+								}
+							}
+						}
+					}
+					if (options.imports() != null) {
+						Parameters ip = domain.getImportPackage();
+						for (Glob g : options.imports()) {
+							for (Entry<String,Attrs> imp : ip.entrySet()) {
+								if (g.matcher(imp.getKey()).matches()) {
+									String v = imp.getValue().get(VERSION_ATTRIBUTE);
+									if (v == null)
+										v = "0";
+									out.printf("<%s: %s-%s%n", f.getPath(), imp.getKey(), v);
+								}
+							}
+						}
+					}
+				}
+			}
+			finally {
+				jar.close();
+			}
+		}
+
 	}
 }
