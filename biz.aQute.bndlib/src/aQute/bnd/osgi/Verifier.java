@@ -1012,12 +1012,12 @@ public class Verifier extends Processor {
 		return true;
 	}
 
-//	@Override
-//	public String getProperty(String key, String deflt) {
-//		if (properties == null)
-//			return deflt;
-//		return properties.getProperty(key, deflt);
-//	}
+	// @Override
+	// public String getProperty(String key, String deflt) {
+	// if (properties == null)
+	// return deflt;
+	// return properties.getProperty(key, deflt);
+	// }
 
 	public static boolean isVersion(String version) {
 		return VERSION.matcher(version).matches();
@@ -1155,11 +1155,29 @@ public class Verifier extends Processor {
 
 	public void verifyMetaPersistence() throws Exception {
 		List<String> list = new ArrayList<String>();
-		for (String location : OSGiHeader.parseHeader(
-				dot.getManifest().getMainAttributes().getValue("Meta-Persistence")).keySet()) {
-			Resource resource = dot.getResource(location);
+		String mp = dot.getManifest().getMainAttributes().getValue(META_PERSISTENCE);
+		for (String location : OSGiHeader.parseHeader(mp).keySet()) {
+			String[] parts = location.split("!/");
+
+			Resource resource = dot.getResource(parts[0]);
 			if (resource == null)
 				list.add(location);
+			else {
+				if (parts.length > 1) {
+					Jar jar = new Jar("", resource.openInputStream());
+					try {
+						resource = jar.getResource(parts[1]);
+						if (resource == null)
+							list.add(location);
+					}
+					catch (Exception e) {
+						list.add(location);
+					}
+					finally {
+						jar.close();
+					}
+				}
+			}
 		}
 		if (list.isEmpty())
 			return;
