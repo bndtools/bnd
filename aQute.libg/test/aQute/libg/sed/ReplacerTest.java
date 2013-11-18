@@ -49,6 +49,17 @@ public class ReplacerTest extends TestCase {
 			return map.toString();
 		}
 	}
+	
+	/**
+	 * Test non-string returns
+	 */
+	
+	public void testNonStrings() {
+		Processor top = new Processor();
+		top.getMap().put("p", "${processors}");
+		Integer n = Integer.parseInt(top.getProcessed("p"));
+		assertTrue( n >= 1);
+	}
 
 	/**
 	 * Test replacement of ./ with cwd
