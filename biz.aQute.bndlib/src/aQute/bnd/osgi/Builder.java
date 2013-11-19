@@ -292,6 +292,7 @@ public class Builder extends Analyzer {
 	@Override
 	protected Jar getExtra() throws Exception {
 		Parameters conditionals = getParameters(CONDITIONAL_PACKAGE);
+		conditionals.putAll(getParameters(CONDITIONALPACKAGE));
 		if (conditionals.isEmpty())
 			return null;
 		trace("do Conditional Package %s", conditionals);

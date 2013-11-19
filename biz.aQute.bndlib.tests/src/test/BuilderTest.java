@@ -1402,7 +1402,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public static void testConditionalBaseSuper() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Constants.CONDITIONAL_PACKAGE, "test.top.*");
+		b.setProperty(Constants.CONDITIONALPACKAGE, "test.top.*");
 		b.setProperty(Constants.PRIVATEPACKAGE, "test.top.middle.bottom");
 		b.addClasspath(new File("bin"));
 		Jar dot = b.build();
