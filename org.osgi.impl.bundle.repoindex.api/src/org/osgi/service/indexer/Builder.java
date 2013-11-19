@@ -7,7 +7,7 @@ import java.util.Map;
  * A container for attributes and directives under a certain namespace. Can
  * generate a capability and/or a requirement from the contained information.
  */
-public class Builder {
+public final class Builder {
 	/** the namespace */
 	private String namespace = null;
 

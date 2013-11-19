@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * A requirement
  */
-public class Requirement {
+public final class Requirement {
 	/** the namespace */
 	private final String namespace;
 

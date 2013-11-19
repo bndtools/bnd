@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * A capability
  */
-public class Capability {
+public final class Capability {
 	/** the namespace */
 	private final String namespace;
 
