@@ -352,7 +352,7 @@ public class BuilderTest extends BndTestCase {
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty(Constants.NAMESECTION,
 				"org/osgi/service/event/*;MD5='${md5;${@}}';SHA1='${sha1;${@}}';MD5H='${md5;${@};hex}'");
-		b.setProperty(Constants.PRIVATE_PACKAGE, "org.osgi.service.event");
+		b.setProperty(Constants.PRIVATEPACKAGE, "org.osgi.service.event");
 		Jar build = b.build();
 		assertOk(b);
 		build.calcChecksums(new String[] {
@@ -520,7 +520,7 @@ public class BuilderTest extends BndTestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.addClasspath(new File("jar/osgi.core.jar"));
-		b.setProperty(Constants.PRIVATE_PACKAGE, "org.osgi.service.packageadmin;-split-package:=first");
+		b.setProperty(Constants.PRIVATEPACKAGE, "org.osgi.service.packageadmin;-split-package:=first");
 		b.build();
 		assertTrue(b.check());
 		String version = b.getImports().getByFQN("org.osgi.framework").get(Constants.VERSION_ATTRIBUTE);
@@ -1403,7 +1403,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testConditionalBaseSuper() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.CONDITIONAL_PACKAGE, "test.top.*");
-		b.setProperty(Constants.PRIVATE_PACKAGE, "test.top.middle.bottom");
+		b.setProperty(Constants.PRIVATEPACKAGE, "test.top.middle.bottom");
 		b.addClasspath(new File("bin"));
 		Jar dot = b.build();
 		assertTrue(b.check());
