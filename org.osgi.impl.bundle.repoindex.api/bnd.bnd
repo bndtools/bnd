@@ -1,7 +1,7 @@
 Bundle-Version: 2.0.0.${tstamp}
 Export-Package: org.osgi.service.indexer
 -buildpath: \
-	ee.j2se;version='[1.5,1.6)',\
+	ee.j2se;version=${javac.ee},\
 	biz.aQute.bnd.annotation,\
 	${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file,\
 	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file

@@ -2,9 +2,9 @@
 -buildpath:\
 	org.osgi.impl.bundle.repoindex.api;version=project,\
 	org.osgi.impl.bundle.repoindex.lib;version=project,\
-	de.kalpatec.pojosr.framework;version=0.1.8,\
-	osgi.cmpn;version=4.2,\
-	ee.j2se;version='[1.5,1.6)',\
+	ee.j2se;version=${javac.ee},\
+	osgi.cmpn;version=${osgi.cmpn.ver},\
+	de.kalpatec.pojosr.framework;version=${pojosr.ver},\
 	${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file,\
 	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file
 

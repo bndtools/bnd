@@ -1,10 +1,10 @@
 -buildpath:\
-  osgi.core;version=4.2,\
-  osgi.cmpn;version=4.2,\
-  org.mockito.mockito-all;version='[1.8,1.9)',\
-  org.osgi.impl.bundle.repoindex.lib;version=snapshot,\
   org.osgi.impl.bundle.repoindex.lib;version=project,\
-  ee.j2se;version='[1.5,1.6)',\
+  org.osgi.impl.bundle.repoindex.lib;version=snapshot,\
+  ee.j2se;version=${javac.ee},\
+  osgi.core;version=${osgi.core.ver},\
+  osgi.cmpn;version=${osgi.cmpn.ver},\
+  org.mockito.mockito-all;version=${mockito.ver},\
   ${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file,\
   ${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file
 
@@ -16,7 +16,7 @@ Conditional-Package: org.example.tests.utils
 
 -runbundles: org.mockito.mockito-all;version='[1.8,1.9)',\
   org.osgi.impl.bundle.repoindex.lib;version=latest,\
-  osgi.cmpn;version=4.2
+  osgi.cmpn;version=${osgi.cmpn.ver}
   
 -runvm: -ea
 -runfw: org.apache.felix.framework;version=4.0
