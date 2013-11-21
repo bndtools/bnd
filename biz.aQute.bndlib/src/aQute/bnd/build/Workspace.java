@@ -231,14 +231,6 @@ public class Workspace extends Processor {
 			while((index = curbsn.lastIndexOf('.')) != -1) {
 				curbsn = curbsn.substring(0, index);
 				bsns.add(curbsn);
-				
-				// if we find a project we know about here, let's remember it.
-				// Otherwise we could end up with duplicate project instances
-				if (models.containsKey(curbsn)) {
-					Project project = models.get(curbsn);
-					models.put(bsn, project);
-					return project;
-				}
 			}
 			
 			String bsnfound=bsn;
@@ -252,8 +244,18 @@ public class Workspace extends Processor {
 						break;
 					}
 				}
-				if (projectDir != null) break;
+				if (projectDir != null) {
+					// if we find a project we know about here, let's remember it.
+					// Otherwise we could end up with duplicate project instances
+					if (models.containsKey(b)) {
+						Project project = models.get(b);
+						models.put(bsn, project);
+						return project;
+					}
+					break;
+				}
 			}
+			
 			//[cs] If no project directory was found, return null
 			if (projectDir == null) {
 				models.put(bsn, null);
