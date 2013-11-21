@@ -35,37 +35,11 @@ jpm-template-resources: \
 	${jpm-template}/plugins/biz.aQute.repository/=${repo;biz.aQute.repository;${aQute-repository-base}},\
 	${jpm-template}/plugins/aQute.library.bndrepo/=${repo;aQute.library.bndrepo;${jpm-plugin-version}}
 
-corp-template: templates/cnfs/corporate
-corp-template-resources: \
-	${corp-template}=templates/ant,\
-	{${corp-template}=templates/common},\
-	{${corp-template}=templates/bundlehub},\
-	{${corp-template}=templates/corporate},\
-	${corp-template}=templates/repos,\
-	${corp-template}/plugins/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
-	${corp-template}/plugins/biz.aQute.repository/=${repo;biz.aQute.repository;${aQute-repository-base}},\
-	${corp-template}/buildrepo/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\
-	${corp-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest}
-
-test-template: templates/cnfs/test
-test-template-resources: \
-	${test-template}=templates/ant,\
-	{${test-template}=templates/common},\
-	{${test-template}=templates/bundlehub},\
-	{${test-template}=templates/test},\
-	${test-template}=templates/repos,\
-	${test-template}/plugins/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
-	${test-template}/plugins/biz.aQute.repository/=${repo;biz.aQute.repository;${aQute-repository-base}},\
-	${test-template}/buildrepo/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\
-	${test-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest}
-
 Include-Resource:\
 	plugin.xml=_plugin.xml,\
 	icons/=icons,\
 	templateDocs/=templateDocs,\
 	${bundlehub-template-resources},\
-	${jpm-template-resources},\
-	${corp-template-resources},\
-	${test-template-resources}
+	${jpm-template-resources}
 
 -removeheaders: Include-Resource, Private-Package

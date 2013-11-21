@@ -1,1 +1,0 @@
-<form><p>The testing bndtools configuration creates a local repository in the workspace. This configuration is set up to not pull from online repositories. Additionally it points at the bnd/dist/bundles repository sitting close to this workspace.</p></form>
