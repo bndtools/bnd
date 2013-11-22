@@ -361,13 +361,19 @@ public class Project extends Processor {
 				error(cpe.getError());
 			else {
 				if (cpe.getType() == Container.TYPE.PROJECT) {
-					if (noproject && since(About._2_3))
-						error("Adding a version=project bundle to %s. This set requires actual "
-								+ "bundles, not a project's bin directory. Use version=latest to get "
-								+ "the latest bundle. Frameworks cannot always install directories.",
-								name);
-
 					projects.add(cpe.getProject());
+
+					if (noproject //
+							&& since(About._2_3) //
+							&& cpe.getAttributes() != null
+							&& VERSION_ATTR_PROJECT.equals(cpe.getAttributes().get(VERSION_ATTRIBUTE))) {
+						//
+						// we're trying to put a project's output directory on
+						// -runbundles list
+						//
+						error("%s is specified with version=project on %s. This version uses the project's output directory, which is not allowed since it must be an actual JAR file for this list.",
+								cpe.getBundleSymbolicName(), name);
+					}
 				}
 				if (bootclasspath != null
 						&& (cpe.getBundleSymbolicName().startsWith("ee.") || cpe.getAttributes().containsKey("boot")))
@@ -449,7 +455,11 @@ public class Project extends Processor {
 					// of what is done in getBundle??
 					//
 					if (versionRange != null
-							&& (versionRange.equals("project") || versionRange.equals(VERSION_ATTR_LATEST))) {
+							&& (versionRange.equals(VERSION_ATTR_PROJECT) || versionRange.equals(VERSION_ATTR_LATEST))) {
+
+						//
+						// Use the bin directory ...
+						//
 						Project project = getWorkspace().getProject(bsn);
 						if (project != null && project.exists()) {
 							File f = project.getOutput();

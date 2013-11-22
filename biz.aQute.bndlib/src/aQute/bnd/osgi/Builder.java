@@ -156,8 +156,8 @@ public class Builder extends Analyzer {
 		// Check if we have sensible setup
 
 		if (getClasspath().size() == 0
-				&& (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null || getProperty(PRIVATE_PACKAGE) != null))
-			warning("Classpath is empty. Private-Package and Export-Package can only expand from the classpath when there is one");
+				&& (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null || getProperty(PRIVATE_PACKAGE) != null || getProperty(PRIVATEPACKAGE) != null))
+			warning("Classpath is empty. Private-Package (-privatepackage) and Export-Package can only expand from the classpath when there is one");
 
 	}
 
@@ -292,6 +292,7 @@ public class Builder extends Analyzer {
 	@Override
 	protected Jar getExtra() throws Exception {
 		Parameters conditionals = getParameters(CONDITIONAL_PACKAGE);
+		conditionals.putAll(getParameters(CONDITIONALPACKAGE));
 		if (conditionals.isEmpty())
 			return null;
 		trace("do Conditional Package %s", conditionals);
@@ -1374,6 +1375,7 @@ public class Builder extends Analyzer {
 	public boolean isInScope(Collection<File> resources) throws Exception {
 		Parameters clauses = parseHeader(getProperty(Constants.EXPORT_PACKAGE));
 		clauses.putAll(parseHeader(getProperty(Constants.PRIVATE_PACKAGE)));
+		clauses.putAll(parseHeader(getProperty(Constants.PRIVATEPACKAGE)));
 		if (isTrue(getProperty(Constants.UNDERTEST))) {
 			clauses.putAll(parseHeader(getProperty(Constants.TESTPACKAGES, "test;presence:=optional")));
 		}

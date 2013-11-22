@@ -25,9 +25,9 @@ public class ProjectTest extends TestCase {
 	public void testErrorOnVersionIsProjectInRunbundles() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project top = ws.getProject("p1");
-		top.setProperty("-runbundles", "p2;version=project;p3;version=latest");
+		top.setProperty("-runbundles", "p2;version=project,p3;version=latest");
 		top.getRunbundles();
-		assertTrue(top.check("Adding a version=project "));
+		assertTrue(top.check("p2 is specified with version=project on -runbundles"));
 	}
 	
 	

@@ -126,7 +126,7 @@ public class ProjectBuilder extends Builder {
 		//
 
 		if (newer.getWithoutQualifier().equals(older.getWithoutQualifier())) {
-			RepositoryPlugin rr = getReleaseRepo();
+			RepositoryPlugin rr = getBaselineRepo();
 			if (rr instanceof InfoRepository) {
 				ResourceDescriptor descriptor = ((InfoRepository) rr).getDescriptor(getBsn(), older);
 				if (descriptor != null && descriptor.phase != Phase.STAGING) {
@@ -279,7 +279,7 @@ public class ProjectBuilder extends Builder {
 		if (baselines.isEmpty())
 			return null; // no baselining
 
-		RepositoryPlugin repo = getReleaseRepo();
+		RepositoryPlugin repo = getBaselineRepo();
 		if (repo == null)
 			return null; // errors reported already
 
@@ -438,39 +438,35 @@ public class ProjectBuilder extends Builder {
 	}
 
 	private RepositoryPlugin getReleaseRepo() {
-		RepositoryPlugin repo = null;
-		String repoName = getReleaseRepoName();
+		String repoName = getProperty(Constants.RELEASEREPO);
 
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
 		for (RepositoryPlugin r : repos) {
 			if (r.canWrite()) {
 				if (repoName == null || r.getName().equals(repoName)) {
-					repo = r;
-					break;
+					return r;
 				}
 			}
 		}
+		if (repoName == null)
+			error("Could not find a writable repo for the release repo (-releaserepo is not set)");
+		else
+			error("No such -releaserepo %s found", repoName);
 
-		if (repo == null) {
-			if (repoName != null)
-				error("No writeable repo with name %s found", repoName);
-			else
-				error("No writeable repo found");
-		}
-
-		return repo;
-
+		return null;
 	}
 
-	private String getReleaseRepoName() {
+	private RepositoryPlugin getBaselineRepo() {
 		String repoName = getProperty(Constants.BASELINEREPO);
 		if (repoName == null)
-			repoName = getProperty(Constants.RELEASEREPO);
+			return getReleaseRepo();
 
-		if (repoName != null && Constants.NONE.equals(repoName))
-			return null;
-
-		return repoName;
+		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
+		for (RepositoryPlugin r : repos) {
+			if (r.getName().equals(repoName))
+				return r;
+		}
+		error("Could not find -baselinerepo %s", repoName);
+		return null;
 	}
-
 }

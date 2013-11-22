@@ -187,7 +187,9 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public Parameters getPrivatePackage() {
-		return getParameters(PRIVATE_PACKAGE);
+		Parameters p = getParameters(PRIVATE_PACKAGE);
+		p.putAll(getParameters(PRIVATEPACKAGE));
+		return p;
 	}
 
 	public Parameters getIncludeResource() {
@@ -211,7 +213,7 @@ public abstract class Domain implements Iterable<String> {
 
 	public void setPrivatePackage(String s) {
 		if (s != null)
-			set(PRIVATE_PACKAGE, s);
+			set(PRIVATEPACKAGE, s);
 	}
 
 	public void setIncludeResource(String s) {

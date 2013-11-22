@@ -259,7 +259,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 				Method m = target.getClass().getMethod(cname, new Class[] {
 					String[].class
 				});
-				return (String) m.invoke(target, new Object[] {
+				return ""+ m.invoke(target, new Object[] {
 					args
 				});
 			}

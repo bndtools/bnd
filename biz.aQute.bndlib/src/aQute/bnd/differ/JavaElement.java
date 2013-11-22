@@ -414,6 +414,10 @@ class JavaElement {
 			}
 		} else {
 			// Adding a method to a class can never do any harm
+			// except when the class is extended and the new
+			// method clashes with the new method. That is
+			// why API classes in general should be final, at
+			// least not extended by consumers.
 			add = MINOR;
 
 			// Removing it will likely hurt consumers

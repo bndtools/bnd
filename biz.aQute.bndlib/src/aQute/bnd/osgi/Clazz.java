@@ -615,7 +615,7 @@ public class Clazz {
 				// would not see a reference. We detect
 				// this case and add an artificial descriptor
 				String name = pool[name_index].toString(); // name_index
-				if (name.startsWith("class$")) {
+				if (name.startsWith("class$") || name.startsWith("$class$")) {
 					crawl = true;
 				}
 				if (cd != null)

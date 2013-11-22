@@ -592,7 +592,7 @@ public class MavenCommand extends Processor {
 				CachedPom pom = maven.getPom(group, artifact, version, urls2);
 
 				Builder a = new Builder();
-				a.setProperty("Private-Package", "*");
+				a.setProperty(Constants.PRIVATEPACKAGE, "*");
 				Set<Pom> dependencies = pom.getDependencies(Scope.compile, urls2);
 				for (Pom dep : dependencies) {
 					System.err.printf("%20s %-20s %10s%n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
