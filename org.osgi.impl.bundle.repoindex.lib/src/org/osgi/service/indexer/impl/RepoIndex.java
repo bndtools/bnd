@@ -39,7 +39,7 @@ public class RepoIndex implements ResourceIndexer {
 	 * Name of the configuration variable for the increment (if not set then
 	 * System.currentTimeMillis() is used)
 	 */
-	static final String REPOSITORY_INCREMENT_OVERRIDE = "-repository.increment.override";
+	public static final String REPOSITORY_INCREMENT_OVERRIDE = "-repository.increment.override";
 
 	/** the generic bundle analyzer */
 	private final BundleAnalyzer bundleAnalyzer;

@@ -33,6 +33,7 @@ import org.osgi.framework.launch.Framework;
 import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
+import org.osgi.service.indexer.impl.RepoIndex;
 import org.osgi.util.tracker.ServiceTracker;
 
 import de.kalpatec.pojosr.framework.PojoServiceRegistryFactoryImpl;
@@ -128,7 +129,7 @@ public class Index {
 				} else if (args[i].equals("-k")) {
 					knownBundlesExtraFile = new File(args[++i]);
 				} else if (args[i].equalsIgnoreCase("--noincrement")) {
-					config.put("-repository.increment.override", "");
+					config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "");
 				} else if (args[i].startsWith("-h")) {
 					printUsage();
 				} else if (args[i].startsWith("-")) {
