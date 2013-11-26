@@ -42,7 +42,7 @@ import de.kalpatec.pojosr.framework.launch.PojoServiceRegistryFactory;
 public class Index {
 
 	public static final String DEFAULT_FILENAME_UNCOMPRESSED = "index.xml";
-	public static final String DEFAULT_FILENAME_COMPRESSED = "index.xml" + ".gz";
+	public static final String DEFAULT_FILENAME_COMPRESSED = DEFAULT_FILENAME_UNCOMPRESSED + ".gz";
 
 	/**
 	 * Main entry point. See -help for options.
