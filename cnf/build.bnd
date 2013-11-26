@@ -90,10 +90,10 @@ Git-SHA:                  ${system-allow-fail;git rev-list -1 HEAD}
 -make:                    (*).(jar);type=bnd;recipe="bnd/$1.bnd"
 
 # Runtime Options and Variables
-junit:                    junit.osgi;version=3.8.2;export="junit.framework;version=3.8.2"
+junit3:                   junit.osgi;version=3.8.2;export="junit.framework;version=3.8.2"
 
 -runpath: org.eclipse.osgi;version=3.7.2,\
-          ${junit}
+          ${junit3}
 
 # Extra Headers
 Bundle-License:           http://www.eclipse.org/legal/epl-v10.html
