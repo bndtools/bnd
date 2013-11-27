@@ -114,9 +114,7 @@ public abstract class Platform {
 	public abstract String createService(ServiceData data, Map<String,String> map, boolean force, String... deps)
 			throws Exception;
 
-	public abstract String remove(CommandData data) throws Exception;
-
-	public abstract String remove(ServiceData data) throws Exception;
+	public abstract String deleteService(ServiceData data) throws Exception;
 
 	public abstract int launchService(ServiceData data) throws Exception;
 

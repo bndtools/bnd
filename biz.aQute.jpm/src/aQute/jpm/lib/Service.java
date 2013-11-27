@@ -161,7 +161,7 @@ public class Service {
 		catch (Exception e) {}
 
 		IO.deleteWithException(new File(data.sdir));
-		jpm.platform.remove(data);
+		jpm.platform.deleteService(data);
 	}
 
 	public void clear() {
