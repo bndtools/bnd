@@ -5,14 +5,17 @@ import java.util.*;
 import java.util.regex.*;
 
 import aQute.jpm.lib.*;
+import aQute.lib.getopt.*;
 import aQute.lib.io.*;
+import aQute.lib.strings.*;
 import aQute.libg.command.*;
+import aQute.libg.glob.*;
+import aQute.libg.sed.*;
 
 public abstract class Unix extends Platform {
 
 	public static String	JPM_GLOBAL	= "/var/jpm";
 
-	
 	@Override
 	public File getGlobal() {
 		return new File("/var/jpm");
@@ -22,7 +25,7 @@ public abstract class Unix extends Platform {
 	public File getGlobalBinDir() {
 		return new File("/usr/local/bin");
 	}
-	
+
 	@Override
 	public File getLocal() {
 		File home = new File(System.getenv("HOME"));
@@ -30,7 +33,8 @@ public abstract class Unix extends Platform {
 	}
 
 	@Override
-	public String createCommand(CommandData data, Map<String, String> map, boolean force, String... extra) throws Exception {
+	public String createCommand(CommandData data, Map<String,String> map, boolean force, String... extra)
+			throws Exception {
 		data.bin = getExecutable(data);
 
 		File f = new File(data.bin);
@@ -53,7 +57,8 @@ public abstract class Unix extends Platform {
 	}
 
 	@Override
-	public String createService(ServiceData data,  Map<String,String> map, boolean force, String ... extra) throws Exception {
+	public String createService(ServiceData data, Map<String,String> map, boolean force, String... extra)
+			throws Exception {
 		File initd = getInitd(data);
 		File launch = getLaunch(data);
 
@@ -78,8 +83,8 @@ public abstract class Unix extends Platform {
 		return new File(data.sdir, "launch.sh");
 	}
 
-	protected String getExecutable(CommandData data) { 
-		return new File(jpm.getBinDir() , data.name).getAbsolutePath();
+	protected String getExecutable(CommandData data) {
+		return new File(jpm.getBinDir(), data.name).getAbsolutePath();
 	}
 
 	@Override
@@ -87,7 +92,7 @@ public abstract class Unix extends Platform {
 		if (!getInitd(data).delete())
 			return "Cannot delete " + getInitd(data);
 
-		File f = new File(getExecutable(data)); 
+		File f = new File(getExecutable(data));
 		if (!f.delete())
 			return "Cannot delete " + getExecutable(data);
 
@@ -103,8 +108,8 @@ public abstract class Unix extends Platform {
 		return p.waitFor();
 	}
 
-	String	DAEMON			= "\n### JPM BEGIN ###\n" +"jpm daemon >" + JPM_GLOBAL
-											+ "/daemon.log 2>>" + JPM_GLOBAL + "/daemon.log &\n### JPM END ###\n";
+	String			DAEMON			= "\n### JPM BEGIN ###\n" + "jpm daemon >" + JPM_GLOBAL + "/daemon.log 2>>"
+											+ JPM_GLOBAL + "/daemon.log &\n### JPM END ###\n";
 	static Pattern	DAEMON_PATTERN	= Pattern.compile("\n### JPM BEGIN ###\n.*\n### JPM END ###\n", Pattern.MULTILINE);
 
 	@Override
@@ -182,7 +187,8 @@ public abstract class Unix extends Platform {
 		// return sb.toString().trim();
 	}
 
-	protected void process(String resource, CommandData data, String file, Map<String,String> map, String... extra) throws Exception {
+	protected void process(String resource, CommandData data, String file, Map<String,String> map, String... extra)
+			throws Exception {
 		super.process(resource, data, file, map, extra);
 		run("chmod a+x " + file);
 	}
@@ -193,6 +199,101 @@ public abstract class Unix extends Platform {
 		out.format("Global   \t%s\n", getGlobal());
 		out.format("Local    \t%s\n", getLocal());
 	}
-	
-	
+
+	/**
+	 * Add the bindir to PATH env. variable in .profile
+	 */
+
+	@Arguments(arg = {})
+	@Description("Add the bin directory for this jpm to your PATH in the user's environment variables in the ~/.profile file.")
+	interface PathOptions extends Options {
+		@Description("Remove the bindir from the user's environment variables.")
+		boolean remove();
+
+		@Description("Delete a path from the PATH environment variable")
+		List<String> delete();
+
+		@Description("Add the current binary dir to the PATH environment variable")
+		boolean add();
+
+		@Description("Add additional paths to the PATH environment variable")
+		List<String> extra();
+
+		@Description("Override the default .profile and use this file. This file is relative to the home directory if not absolute.")
+		String profile();
+
+		@Description("If the profile file does not exist, create")
+		boolean force();
+
+	}
+
+	static Pattern	PATH_P	= Pattern.compile("(export|set)\\s+PATH\\s*=(.*):\\$PATH\\s*$");
+
+	@Description("Add the bin directory for this jpm to your PATH in the user's environment variables")
+	public void _path(PathOptions options) throws IOException {
+		File file = options.profile() == null ? IO.getFile("~/.profile") : IO.getFile(IO.home, options.profile());
+
+		if (!file.isFile()) {
+			if (!options.force()) {
+				reporter.error("No such file %s", file);
+				return;
+			}
+			IO.store("# created by jpm\n", file);
+		}
+
+		String parts[] = System.getenv("PATH").split(":");
+		List<String> paths = new ArrayList<String>(Arrays.asList(parts));
+
+		for (int i = 0; i < parts.length; i++) {
+			System.out.printf("%2d:%s %s %s%n", i, parts[i].toLowerCase().contains("jpm") ? "*" : " ", new File(
+					parts[i]).isDirectory() ? " " : "!", parts[i]);
+		}
+
+		String bd = jpm.getBinDir().getAbsolutePath();
+		String s = IO.collect(file);
+		
+		//
+		// Remove the current binary path. If it is add, we add it later
+		//
+		if (options.remove() || options.add()) {
+			if (!bd.equals(getGlobalBinDir())) {
+				s = s.replaceAll("(PATH\\s*=)"+bd+ ":(.*\\$PATH)", "$1$2");
+				reporter.trace("removed %s", bd );
+			}
+		}
+
+		if (options.delete() != null) {
+			for (String delete : options.delete()) {
+				s = s.replaceAll("(PATH\\s*=)"+Glob.toPattern(delete) + ":(.*\\$PATH)", "$1$2");
+			}
+		}
+
+		//
+		// Remove any orphans
+		//
+		s = s.replaceAll("\\s*(set|export)\\s+PATH\\s*=\\$PATH\\s*", "");
+
+		List<String> additions = new ArrayList<String>();
+		if (options.add() ) {
+			if ( !bd.equals( getGlobalBinDir())) {
+				additions.add(bd);
+			}
+		}
+		if (options.extra() != null)
+			for (String add : options.extra()) {
+				File f = IO.getFile(add);
+				if (!f.isDirectory()) {
+					reporter.error("%s is not a directory, not added", f.getAbsolutePath());
+				} else {
+					if (!paths.contains(f.getAbsolutePath()))
+						additions.add(f.getAbsolutePath());
+				}
+			}
+
+		if (!additions.isEmpty()) {
+			s += "\nexport PATH=" + Strings.join(":", additions) + ":$PATH\n";
+			reporter.trace("s %s", s );
+		}
+		IO.store(s,file);
+	}
 }
