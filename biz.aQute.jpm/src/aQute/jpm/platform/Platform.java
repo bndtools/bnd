@@ -15,11 +15,15 @@ import aQute.libg.sed.*;
 import aQute.service.reporter.*;
 
 public abstract class Platform {
-	static Platform	platform;
-	static Runtime	runtime	= Runtime.getRuntime();
-	Reporter		reporter;
-	JustAnotherPackageManager jpm;
-	
+	public enum Type {
+		UNKNOWN, WINDOWS, LINUX, MACOS
+	};
+
+	static Platform				platform;
+	static Runtime				runtime	= Runtime.getRuntime();
+	Reporter					reporter;
+	JustAnotherPackageManager	jpm;
+
 	/**
 	 * Get the current platform manager.
 	 * 
@@ -27,42 +31,58 @@ public abstract class Platform {
 	 * @param jpmx
 	 * @return
 	 */
-	public static Platform getPlatform(Reporter reporter, JustAnotherPackageManager jpm) {
+	public static Platform getPlatform(Reporter reporter, Type type) {
 		if (platform == null) {
+			if (type == null)
+				type = getPlatformType();
 
-			String osName = System.getProperty("os.name").toLowerCase();
-			reporter.trace("os.name=%s", osName);
-			if (osName.startsWith("windows"))
-				platform = new Windows();
-			else if (osName.startsWith("mac") || osName.startsWith("darwin"))
-				platform = new MacOS();
-			else
-				platform = new Linux();
-			platform.reporter = reporter;
-			platform.jpm = jpm;
-			reporter.trace("platform=%s", platform.reporter);
+			switch (type) {
+				case LINUX :
+					platform = new Linux();
+					break;
+				case MACOS :
+					platform = new MacOS();
+					break;
+				case WINDOWS :
+					platform = new Windows();
+					break;
+				default :
+					return null;
+			}
 		}
+		platform.reporter = reporter;
 		return platform;
 	}
 
+	public static Type getPlatformType() {
+		String osName = System.getProperty("os.name").toLowerCase();
+		if (osName.startsWith("windows"))
+			return Type.WINDOWS;
+		else if (osName.startsWith("mac") || osName.startsWith("darwin")) {
+			return Type.MACOS;
+		} else if (osName.contains("linux"))
+			return Type.LINUX;
+
+		return null;
+	}
+
 	/**
-	 * Global cache
+	 * Return the place where we place the jpm home directory for global access.
+	 * E.g. /var/jpm
+	 * 
 	 * @return
+	 * @throws Exception
 	 */
 	public abstract File getGlobal();
 
 	/**
-	 * Local cache
+	 * Return the place where we place the jpm home directory for user/local
+	 * access. E.g. ~/.jpm
+	 * 
 	 * @return
 	 */
 	public abstract File getLocal();
 
-	/**
-	 * Bin directory (for command handles)
-	 * @return
-	 */
-	public abstract File getBinDir();
-	
 	abstract public void shell(String initial) throws Exception;
 
 	@Override
@@ -88,9 +108,11 @@ public abstract class Platform {
 		return runtime.exec(args).waitFor();
 	}
 
-	public abstract String createCommand(CommandData data, Map<String,String> map, boolean force, String... deps) throws Exception;
+	public abstract String createCommand(CommandData data, Map<String,String> map, boolean force, String... deps)
+			throws Exception;
 
-	public abstract String createService(ServiceData data, Map<String,String> map, boolean force, String... deps) throws Exception;
+	public abstract String createService(ServiceData data, Map<String,String> map, boolean force, String... deps)
+			throws Exception;
 
 	public abstract String remove(CommandData data) throws Exception;
 
@@ -107,7 +129,13 @@ public abstract class Platform {
 	public abstract String user() throws Exception;
 
 	public abstract void deleteCommand(CommandData cmd) throws Exception;
-	
+
+	/**
+	 * Return the directory on this platform were normally executables are
+	 * installed.
+	 */
+	public abstract File getGlobalBinDir();
+
 	public File getInitd(ServiceData data) {
 		return null;
 	}
@@ -125,12 +153,17 @@ public abstract class Platform {
 		if (data.title == null || data.title.trim().length() == 0)
 			data.title = data.name;
 
+		//
+		// Allow commands to be done in java or javaw
+		//
+		sed.replace("%java%", data.windows ? "javaw" : "java");
+
 		for (Field key : data.getClass().getFields()) {
 			Object value = key.get(data);
 			if (value == null) {
 				value = "";
 			}
-			
+
 			// We want to enclose the prolog and epilog so they are
 			// executed as one command and thus logged as one command
 			if ("epilog".equals(key.getName()) || "prolog".equals(key.getName())) {
@@ -143,12 +176,11 @@ public abstract class Platform {
 			v = v.replace("\\", "\\\\");
 			sed.replace("%" + key.getName() + "%", v);
 		}
-		
-		
+
 		ExtList<String> deps = new ExtList<String>();
-		for ( byte[] dependency : data.dependencies) {
+		for (byte[] dependency : data.dependencies) {
 			ArtifactData d = jpm.get(dependency);
-			deps.add( d.file);
+			deps.add(d.file);
 		}
 		for (String x : extra) {
 			deps.add(x);
@@ -160,7 +192,6 @@ public abstract class Platform {
 			StringBuilder sb = new StringBuilder();
 			String del = "-D";
 			for (Map.Entry<String,String> e : map.entrySet()) {
-				reporter.trace("define %s=%s", e.getKey(), e.getValue());
 				sed.replace("%" + e.getKey() + "%", e.getValue());
 				sb.append(del).append(e.getKey()).append("=\"").append(e.getValue()).append("\"");
 				del = " -D";
@@ -197,19 +228,19 @@ public abstract class Platform {
 
 	public void parseCompletion(Object target, File f) throws Exception {
 		IO.copy(getClass().getResource("unix/jpm-completion.bash"), f);
-		
+
 		Sed sed = new Sed(f);
 		sed.setBackup(false);
-		
+
 		Reporter r = new ReporterAdapter();
 		CommandLine c = new CommandLine(r);
 		Map<String,Method> commands = c.getCommands(target);
 		StringBuilder sb = new StringBuilder();
-		for(String commandName : commands.keySet()) {
-			sb.append(" "+commandName);
+		for (String commandName : commands.keySet()) {
+			sb.append(" " + commandName);
 		}
 		sb.append(" help");
-		
+
 		sed.replace("%listJpmCommands%", sb.toString().substring(1));
 		sed.doIt();
 	}
@@ -217,14 +248,36 @@ public abstract class Platform {
 	public void parseCompletion(Object target, PrintStream out) throws Exception {
 		File tmp = File.createTempFile("jpm-completion", ".tmp");
 		tmp.deleteOnExit();
-		
+
 		try {
 			parseCompletion(target, tmp);
 			IO.copy(tmp, out);
-		} finally {
+		}
+		finally {
 			tmp.delete();
 		}
 	}
-	
-	
+
+	/**
+	 * Is called to initialize the platform if necessary.
+	 * 
+	 * @throws IOException
+	 * @throws Exception
+	 */
+	public void init() throws Exception {
+		// can be overridden by the subclasses
+	}
+
+	public void setJpm(JustAnotherPackageManager jpm) {
+		this.jpm = jpm;
+	}
+
+	public boolean hasPost() {
+		return false;
+	}
+
+	public void doPostInstall() {
+		// do nothing
+	}
+
 }

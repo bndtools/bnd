@@ -7,68 +7,41 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
+import org.boris.winrun4j.*;
+
 import aQute.jpm.lib.*;
-import aQute.jpm.platform.windows.*;
+import aQute.lib.getopt.*;
 import aQute.lib.io.*;
+import aQute.lib.strings.*;
 
 public class Windows extends Platform {
+	static boolean	IS64	= System.getProperty("os.arch").contains("64");
 
-	final static File	home;
-	final static File	bin;
-	final static File	misc;
-
-	static File			javahome;
-
-	static {
-		try {
-			File homex = readkey("Home");
-			if (homex == null) {
-				homex = IO.getFile("~/.jpm");
-			}
-			home = homex;
-
-			misc = new File(home, "misc");
-			misc.mkdirs();
-			bin = new File(home, "Bin");
-			bin.mkdirs();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
-
-	}
-
-	
-	@Override
-	public File getBinDir() {
-		return bin;
-	}
+	static File		javahome;
+	private File	misc;
 
 	@Override
 	public File getGlobal() {
-		return home;
-	}
+		String sysdrive = System.getenv("SYSTEMDRIVE");
+		if (sysdrive == null)
+			sysdrive = "c:";
 
-	private static File readkey(String key) throws Exception {
-		String h = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\JPM4j", key);
-		if (h == null)
-			throw new IllegalArgumentException("jpm4j is not installed. Missing registry key HKLM/Software/JPM4j/"
-					+ key);
-		File file = new File(h);
-		file.mkdirs();
-		return file.getAbsoluteFile();
+		return IO.getFile(sysdrive + "\\JPM4J");
 	}
 
 	@Override
 	public File getLocal() {
-		return IO.getFile("~/.jpm");
+		return IO.getFile("~/.jpm/windows");
+	}
+
+	@Override
+	public File getGlobalBinDir() {
+		return new File(getGlobal() + "\\bin");
 	}
 
 	@Override
 	public void shell(String initial) throws Exception {
-		// TODO Auto-generated method stub
-
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -83,38 +56,58 @@ public class Windows extends Platform {
 	public void uninstall() throws IOException {}
 
 	@Override
-	public String createCommand(CommandData data, Map<String,String> map, boolean force, String... extra) throws Exception {
-		if (data.bin == null)
-			data.bin = getExecutable(data);
-
+	public String createCommand(CommandData data, Map<String,String> map, boolean force, String... extra)
+			throws Exception {
+		data.bin = getExecutable(data);
 		File f = new File(data.bin);
-		if (f.isDirectory()) {
-			f = new File(data.bin, data.name + ".exe");
-			data.bin = f.getAbsolutePath();
-		}
 
 		if (!force && f.exists())
 			return "Command already exists " + data.bin + ", try to use --force";
 
-		if (data.name.equals("jpm")) {
-			File exe = new File(misc, "sjpm.exe");
-			File fs = new File(f.getParentFile(), "sjpm.exe");
-			reporter.trace("jpm! %s -> %s", exe, fs);
-			IO.copy(exe, fs);
-		}
-		IO.copy(new File(misc, "runner.exe"), f);
+		if (data.windows)
+			IO.copy(new File(getMisc(), "winrun4j.exe"), f);
+		else
+			IO.copy(new File(getMisc(), "winrun4jc.exe"), f);
 
-		data.java = getJavaExe();
-		process("windows/command.sh", data, f.getAbsolutePath() + ".jpm", map, extra);
+		File ini = new File(f.getAbsolutePath().replaceAll("\\.exe$", ".ini"));
+		PrintWriter pw = new PrintWriter(ini);
+		try {
+			pw.printf("main.class=%s%n", data.main);
+			pw.printf("log.level=error%n");
+			String del = "classpath.1=";
+
+			for (byte[] dependency : data.dependencies) {
+				ArtifactData d = jpm.get(dependency);
+				pw.printf("%s%s", del, d.file);
+				del = ",";
+			}
+			if (data.jvmArgs != null && data.jvmArgs.length() != 0) {
+				String parts[] = data.jvmArgs.split("\\s+");
+				for (int i = 0; i < parts.length; i++)
+					pw.printf("vmarg.%d=%s%n", i, data.jvmArgs);
+			}
+		}
+		finally {
+			pw.close();
+		}
+		reporter.trace("Ini content %s", IO.collect(ini));
 		return null;
 	}
 
+	private File getMisc() {
+		if (misc == null) {
+			misc = new File(jpm.getHomeDir(), "misc");
+		}
+		return misc;
+	}
+
 	protected String getExecutable(CommandData data) {
-		return new File(bin, data.name + ".exe").getAbsolutePath();
+		return new File(jpm.getBinDir(), data.name + ".exe").getAbsolutePath();
 	}
 
 	@Override
-	public String createService(ServiceData data, Map<String,String> map, boolean force, String... extra) throws Exception {
+	public String createService(ServiceData data, Map<String,String> map, boolean force, String... extra)
+			throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -167,7 +160,7 @@ public class Windows extends Platform {
 	public void deleteCommand(CommandData cmd) throws Exception {
 		String executable = getExecutable(cmd);
 		File f = new File(executable);
-		File fj = new File(executable + ".jpm");
+		File fj = new File(executable + ".ini");
 		if (cmd.name.equals("jpm")) {
 			reporter.trace("leaving jpm behind");
 			return;
@@ -180,36 +173,11 @@ public class Windows extends Platform {
 	@Override
 	public String toString() {
 		try {
-			return "Window\nJava Home " + getJavaHome() + "\nJava Exe  " + getJavaExe() + "\nJPM Home  "
-					+ home.getAbsolutePath();
+			return "Windows";
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	public String getJavaExe() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return getJavaHome() + "\\bin\\java.exe";
-	}
-
-	public String getJavaHome() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		if (javahome == null) {
-			String version = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE,
-					"Software\\Javasoft\\Java Runtime Environment", "CurrentVersion");
-			if (version == null)
-				throw new IllegalStateException("No Java installed? Coulnd find version of installed Java");
-
-			String home = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE,
-					"Software\\Javasoft\\Java Runtime Environment\\" + version, "JavaHome");
-
-			if (home == null)
-				throw new IllegalStateException("No Java installed? Could not find JavaHome for version " + version);
-
-			javahome = new File(home);
-			if (!javahome.isDirectory())
-				throw new IllegalStateException("No Java installed? Java Home could not be found: " + javahome);
-		}
-		return javahome.getAbsolutePath();
 	}
 
 	/**
@@ -221,9 +189,97 @@ public class Windows extends Platform {
 	 * @throws IllegalArgumentException
 	 */
 
-	public void report(Formatter f) throws Exception {
-		f.format("Home \t0:%s\n", home);
-		f.format("Java Home \t0:%s\n", getJavaHome());
-		f.format("Java Exe  \t0:%s\n", getJavaExe());
+	public void report(Formatter f) throws Exception {}
+
+	/**
+	 * Initialize the directories for windows.
+	 * 
+	 * @throws IOException
+	 * @throws InvocationTargetException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 */
+
+	public void init() throws Exception {
+		if (!getMisc().isDirectory() && !getMisc().mkdirs())
+			throw new IOException("Cannot create directory " + getMisc());
+		if (IS64) {
+			IO.copy(getClass().getResourceAsStream("windows/winrun4jc64.exe"), new File(getMisc(), "winrun4jc.exe"));
+			IO.copy(getClass().getResourceAsStream("windows/winrun4j64.exe"), new File(getMisc(), "winrun4j.exe"));
+			// IO.copy(getClass().getResourceAsStream("windows/sjpm64.exe"), new
+			// File(getMisc(), "sjpm.exe"));
+		} else {
+			IO.copy(getClass().getResourceAsStream("windows/winrun4j.exe"), new File(getMisc(), "winrun4j.exe"));
+			IO.copy(getClass().getResourceAsStream("windows/winrun4jc.exe"), new File(getMisc(), "winrun4jc.exe"));
+			// IO.copy(getClass().getResourceAsStream("windows/winrun4j.exe"),
+			// new File(getMisc(), "sjpm.exe"));
+		}
 	}
+
+	@Override
+	public boolean hasPost() {
+		return true;
+	}
+
+	@Override
+	public void doPostInstall() {
+		System.out.println("In post install");
+	}
+
+	/**
+	 * Add the current bindir to the environment
+	 */
+
+	@Arguments(arg = {})
+	interface PathOptions extends Options {
+		boolean remove();
+
+		List<String> delete();
+
+		boolean add();
+
+		List<String> extra();
+	}
+
+	public void _path(PathOptions options) {
+		RegistryKey env = RegistryKey.HKEY_CURRENT_USER.getSubKey("Environment");
+		if (env == null) {
+			reporter.error("Cannot find key for environment HKEY_CURRENT_USER/Environment");
+			return;
+		}
+
+		String path = env.getString("Path");
+		String parts[] = path == null ? new String[0] : path.split(File.pathSeparator);
+		List<String> paths = new ArrayList<String>(Arrays.asList(parts));
+		boolean save = false;
+		if (options.extra() != null) {
+			paths.addAll(options.extra());
+			save = true;
+		}
+
+		for (int i = 0; i < parts.length; i++) {
+			System.out.printf("%2d:%s %s %s%n", i, parts[i].toLowerCase().contains("jpm") ? "*" : " ", new File(
+					parts[i]).isDirectory() ? " " : "!", parts[i]);
+		}
+
+		if (options.remove()) {
+			if (!paths.remove(jpm.getBinDir().getAbsolutePath())) {
+				reporter.error("Could not find %s", jpm.getBinDir());
+			}
+			save = true;
+		}
+		if (options.delete() != null) {
+			save |= paths.removeAll(options.delete());
+		}
+		if (options.add()) {
+			paths.remove(jpm.getBinDir().getAbsolutePath());
+			paths.add(jpm.getBinDir().getAbsolutePath());
+			save = true;
+		}
+		if (save) {
+			String p = Strings.join(File.pathSeparator, paths);
+			env.setString("Path", p);
+		}
+	}
+
 }

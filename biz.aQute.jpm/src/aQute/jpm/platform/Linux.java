@@ -38,5 +38,5 @@ class Linux extends Unix {
 		
 		return "Bash completion file installed in "+COMPLETION_DIRECTORY;
 	}
-	
+
 }
