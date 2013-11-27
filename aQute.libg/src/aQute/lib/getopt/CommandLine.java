@@ -487,6 +487,9 @@ public class CommandLine {
 		f.format("Available commands: %n%n");
 
 		for (Entry<String,Method> e : getCommands(target).entrySet()) {
+			if ( e.getValue().getName().startsWith("__"))
+				continue;
+			
 			Description d = e.getValue().getAnnotation(Description.class);
 			String desc = " ";
 			if ( d != null)
