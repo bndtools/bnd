@@ -47,28 +47,34 @@ public class Sed {
 			String line;
 			while ((line = brdr.readLine()) != null) {
 				for (Pattern p : replacements.keySet()) {
-					String replace = replacements.get(p);
-					Matcher m = p.matcher(line);
+					try {
+						String replace = replacements.get(p);
+						Matcher m = p.matcher(line);
 
-					StringBuffer sb = new StringBuffer();
-					while (m.find()) {
-						String tmp = setReferences(m, replace);
-						if (macro != null)
-							tmp = Matcher.quoteReplacement(macro.process(tmp));
-						m.appendReplacement(sb, tmp);
-						actions++;
+						StringBuffer sb = new StringBuffer();
+						while (m.find()) {
+							String tmp = setReferences(m, replace);
+							if (macro != null)
+								tmp = Matcher.quoteReplacement(macro.process(tmp));
+							m.appendReplacement(sb, tmp);
+							actions++;
+						}
+						m.appendTail(sb);
+
+						line = sb.toString();
 					}
-					m.appendTail(sb);
-
-					line = sb.toString();
+					catch (Exception e) {
+						throw new IOException("where: " + line + ", pattern: " + p.pattern() + ": " + e.getMessage());
+					}
 				}
 				pw.println(line);
 			}
-        } finally {
-        	brdr.close();
+		}
+		finally {
+			brdr.close();
 			pw.close();
-        }
-        
+		}
+
 		if (output == null) {
 			if (backup) {
 				File bak = new File(file.getAbsolutePath() + ".bak");
@@ -76,10 +82,10 @@ public class Sed {
 			}
 			IO.rename(out, file);
 		}
-        
+
 		return actions;
 	}
-    
+
 	private String setReferences(Matcher m, String replace) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < replace.length(); i++) {
