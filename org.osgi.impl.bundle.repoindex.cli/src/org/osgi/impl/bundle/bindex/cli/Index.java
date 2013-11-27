@@ -79,12 +79,24 @@ public class Index {
 			// Run
 			if (fileList.isEmpty())
 				printUsage();
-			else
+			else {
+				FileOutputStream fos = null;
 				try {
-					index.index(fileList, new FileOutputStream(outputFile), config);
+					fos = new FileOutputStream(outputFile);
+					index.index(fileList, fos, config);
 				} catch (Exception e) {
 					e.printStackTrace();
+				} finally {
+					if (fos != null) {
+						try {
+							fos.close();
+						} catch (IOException e) {
+							/* swallow */
+						}
+						fos = null;
+					}
 				}
+			}
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
