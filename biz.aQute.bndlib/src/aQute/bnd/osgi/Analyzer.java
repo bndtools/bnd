@@ -2803,4 +2803,20 @@ public class Analyzer extends Processor {
 		Instructions instrs = new Instructions(args[1]);
 		return instrs.select(list, false);
 	}
+
+	/**
+	 * Report the details of this analyzer
+	 */
+
+	public void report(Map<String,Object> table) throws Exception {
+		super.report(table);
+		analyze();
+		table.put("Contained", getContained().entrySet());
+		table.put("Imported", getImports().entrySet());
+		table.put("Exported", getExports().entrySet());
+		table.put("Referred", getReferred().entrySet());
+		table.put("Referred", getReferred().entrySet());
+		table.put("Bundle Symbolic Name",getBsn());
+		table.put("Execution Environments", ees );
+	}
 }
