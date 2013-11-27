@@ -68,7 +68,7 @@ public class Glob {
 					if (escaping) {
 						sb.append("\\{");
 					} else {
-						sb.append('(');
+						sb.append("(?:");
 						inCurlies++;
 					}
 					escaping = false;
