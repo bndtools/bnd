@@ -2,6 +2,7 @@ package org.osgi.impl.bundle.repoindex.ant;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -64,6 +65,7 @@ public class RepoIndexTask extends Task {
 		if (repositoryFile == null)
 			throw new BuildException("Output file not specified");
 
+		FileOutputStream fos = null;
 		try {
 			// Configure PojoSR
 			Map<String, Object> pojoSrConfig = new HashMap<String, Object>();
@@ -92,9 +94,19 @@ public class RepoIndexTask extends Task {
 			}
 
 			// Run
-			index.index(fileList, new FileOutputStream(repositoryFile), config);
+			fos = new FileOutputStream(repositoryFile);
+			index.index(fileList, fos, config);
 		} catch (Exception e) {
 			throw new BuildException(e);
+		} finally {
+			if (fos != null) {
+				try {
+					fos.close();
+				} catch (IOException e) {
+					/* swallow */
+				}
+				fos = null;
+			}
 		}
 	}
 
