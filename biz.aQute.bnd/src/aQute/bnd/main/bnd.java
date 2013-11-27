@@ -25,7 +25,7 @@ import aQute.bnd.help.*;
 import aQute.bnd.main.BaselineCommands.baseLineOptions;
 import aQute.bnd.main.BaselineCommands.schemaOptions;
 import aQute.bnd.main.DiffCommand.diffOptions;
-import aQute.bnd.main.RepoCommand.*;
+import aQute.bnd.main.RepoCommand.repoOptions;
 import aQute.bnd.maven.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.Def;
@@ -563,9 +563,9 @@ public class bnd extends Processor {
 			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION) || path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
 				Jar jar = getJar(path);
 				doPrint(jar, MANIFEST, null);
-			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION))
-				doRun(path);
-			else
+			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
+				doRun(Arrays.asList(path), false, null);
+			} else
 				messages.UnrecognizedFileType_(path);
 		}
 	}
@@ -743,9 +743,10 @@ public class bnd extends Processor {
 		return false;
 	}
 
-	@Description("Run a project in the OSGi launcher")
+	@Description("Run a project in the OSGi launcher. If not bndrun is specified, the current project is used for the run specification")
+	@Arguments(arg = "[bndrun]")
 	interface runOptions extends Options {
-		@Description("Path to another project than the current project")
+		@Description("Path to another project than the current project. Only valid if no bndrun is specified")
 		String project();
 
 		@Description("Verify all the dependencies before launching (runpath, runbundles)")
@@ -754,16 +755,35 @@ public class bnd extends Processor {
 
 	@Description("Run a project in the OSGi launcher")
 	public void _run(runOptions opts) throws Exception {
-		Project project = getProject(opts.project());
-		if (project == null) {
-			messages.NoProject();
-			return;
-		}
-		if (!verifyDependencies(project, opts.verify(), true))
-			return;
+		doRun(opts._(), opts.verify(), opts.project());
+	}
 
-		project.run();
-		getInfo(project);
+	private void doRun(List<String> args, boolean verify, String project) throws Exception {
+		Project run = null;
+
+		if (args.isEmpty()) {
+			run = getProject(project);
+			if (run == null) {
+				messages.NoProject();
+				return;
+			}
+		} else {
+			File f = getFile(args.get(0));
+			run = Workspace.getRun(f);
+			if (run == null) {
+				messages.NoRunFile(f);
+				return;
+			}
+		}
+		verifyDependencies(run, verify, false);
+		try {
+			run.run();
+		}
+		catch (Exception e) {
+			messages.Failed__(e, "Running " + run);
+		}
+		getInfo(run);
+		getInfo(run.getWorkspace());
 	}
 
 	@Description("Clean a project")
@@ -832,36 +852,6 @@ public class bnd extends Processor {
 				print(f, child, indent + "  ");
 			}
 		}
-	}
-
-	private void doRun(String path) throws Exception {
-		File file = getFile(path);
-		if (!file.isFile())
-			throw new FileNotFoundException(path);
-
-		File projectDir = file.getParentFile();
-		File workspaceDir = projectDir.getParentFile();
-		if (workspaceDir == null) {
-			workspaceDir = new File(System.getProperty("user.home") + File.separator + ".bnd");
-		}
-		Workspace ws = Workspace.getWorkspace(workspaceDir);
-		ws.setTrace(isTrace());
-		ws.setPedantic(isPedantic());
-		ws.setExceptions(isExceptions());
-
-		Project project = new Project(ws, projectDir, file);
-
-		project.setTrace(isTrace());
-		project.setPedantic(isPedantic());
-		try {
-			project.run();
-
-		}
-		catch (Exception e) {
-			messages.Project_RunFailed_(project, e);
-		}
-		getInfo(project);
-		getInfo(ws);
 	}
 
 	/**
@@ -1186,9 +1176,9 @@ public class bnd extends Processor {
 				String first = "";
 				if (row.hasNext())
 					first = row.next().toString();
-				err.printf("%50s %s %s\n", element, direction, first);
+				out.printf("%50s %s %s\n", element, direction, first);
 				while (row.hasNext()) {
-					err.printf("%50s   %s\n", "", row.next());
+					out.printf("%50s   %s\n", "", row.next());
 				}
 			}
 		}
@@ -1399,10 +1389,10 @@ public class bnd extends Processor {
 					printManifest(m);
 				} else if (selection.endsWith(".class")) {
 					ClassDumper clsd = new ClassDumper(selection, r.openInputStream());
-					clsd.dump(err);
+					clsd.dump(out);
 				} else {
 					InputStreamReader isr = new InputStreamReader(r.openInputStream(), charset);
-					IO.copy(isr, err);
+					IO.copy(isr, out);
 				}
 			}
 		}
@@ -1556,58 +1546,48 @@ public class bnd extends Processor {
 	@Description("Show a lot of info about the project you're in")
 	public void _debug(debugOptions options) throws Exception {
 		Project project = getProject(options.project());
+		Justif justif = new Justif(120, 40, 50, 52, 80);
+		
+		trace("using %s", project);
 		Processor target = project;
 		if (project != null) {
 			getInfo(project.getWorkspace());
 
-			MultiMap<String,Object> table = new MultiMap<String,Object>();
-			table.add("Workspace", project.getWorkspace().toString());
-			table.addAll("Plugins", project.getPlugins(Object.class));
-			table.addAll("Repos", project.getWorkspace().getRepositories());
-			table.add("Base", project.getBase());
-			printxref(table, "|");
-
-			table.clear();
-
-			table.addAll("All Source Path", project.getAllsourcepath());
-			table.addAll("Boot Class Path", project.getBootclasspath());
-			table.addAll("Build Path", project.getBuildpath());
-			table.addAll("Deliverables", project.getDeliverables());
-			table.addAll("Depends On", project.getDependson());
-			table.addAll("Run Path", project.getRunpath());
-			table.addAll("Test Path", project.getTestpath());
-			table.addAll("Source Path", project.getSourcePath());
-			table.addAll("Run Program Args", project.getRunProgramArgs());
-			table.addAll("Run VM", project.getRunVM());
-			table.addAll("Run Fw", project.getRunFw());
-			if (project.getIncluded() != null)
-				table.addAll("Included Files", project.getIncluded());
-			table.addAll("Run Bundles", project.getRunbundles());
-			printxref(table, "|");
+			report(justif, "Workspace", project.getWorkspace());
+			report(justif, "Project", project);
 
 			if (project.getSubBuilders() != null)
 				for (Builder sub : project.getSubBuilders()) {
-					table.clear();
-					out.printf("Sub: %s-%s\n", sub.getBsn(), sub.getVersion());
-					if (sub.getIncluded() != null)
-						table.addAll("Included Files", sub.getIncluded());
-					printxref(table, "|");
+					report(justif, "Sub-Builder", sub);
+					getInfo(sub);
 				}
+
+			for (File file : project.getBase().listFiles()) {
+				if (file.getName().endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
+					Run run = Workspace.getRun(file);
+					if (run == null) {
+						error("No such run file", file);
+					} else {
+						report(justif, "bndrun", run);
+						getInfo(run);
+					}
+				}
+			}
+			getInfo(project.getWorkspace());
 			getInfo(project);
+			
 		} else
 			err.println("No project");
 
-		target = this;
+	}
 
-		MultiMap<String,Object> table = new MultiMap<String,Object>();
-
-		for (Iterator<String> i = target.iterator(); i.hasNext();) {
-			String key = i.next();
-			String s = target.get(key);
-			Collection<String> set = split(s);
-			table.addAll(key, set);
-		}
-
+	private void report(Justif justif, String string, Processor processor) throws Exception {
+		Map<String,Object> table = new LinkedHashMap<String,Object>();
+		processor.report(table);
+		Justif j = new Justif();
+		j.formatter().format("$-\n%s %s\n$-\n", string, processor );
+		out.println(j.wrap());
+		out.println();
 	}
 
 	/**
@@ -2479,8 +2459,7 @@ public class bnd extends Processor {
 			ws = getWorkspace(workspaceDir);
 			Project project = ws.getProject(projectDir.getName());
 			if (project.isValid()) {
-				project.setTrace(isTrace());
-				project.setPedantic(isPedantic());
+				project.use(this);
 				return project;
 			}
 		}
@@ -3224,7 +3203,7 @@ public class bnd extends Processor {
 	 * Find a package in the current project or a set of jars
 	 */
 
-	@Arguments(arg="[file]...")
+	@Arguments(arg = "[file]...")
 	@Description("Go through the exports and/or imports and match the given "
 			+ "exports/imports globs. If thet match print the file, package and version.")
 	interface FindOptions extends Options {
@@ -3296,4 +3275,6 @@ public class bnd extends Processor {
 		}
 
 	}
+	
+	
 }

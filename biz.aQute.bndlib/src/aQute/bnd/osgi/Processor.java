@@ -2250,4 +2250,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 		return upto.compareTo(introduced) >= 0;
 	}
+	
+	/**
+	 * Report the details of this processor. Should in general be overridden
+	 * @param table
+	 * @throws Exception 
+	 */
+
+	public void report(Map<String,Object> table) throws Exception {
+		table.put("Included Files", getIncluded());
+		table.put("Base", getBase());
+		table.put("Properties", properties.entrySet());
+	}
 }

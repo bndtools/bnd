@@ -2313,4 +2313,37 @@ public class Project extends Processor {
 		error("%s: has errors: %s", title, Strings.join(msgs));
 	}
 
+	/**
+	 * Report detailed info from this project
+	 * 
+	 * @throws Exception
+	 */
+
+	public void report(Map<String,Object> table) throws Exception {
+		super.report(table);
+		report(table, true);
+	}
+
+	protected void report(Map<String,Object> table, boolean isProject) throws Exception {
+		if (isProject) {
+			table.put("Target", getTarget());
+			table.put("Source", getSrc());
+			table.put("Output", getOutput());
+			table.put("BuildFiles", Arrays.asList(getBuildFiles()));
+			table.put("Classpath", getClasspath());
+			table.put("Actions", getActions());
+			table.put("AllSourcePath", getAllsourcepath());
+			table.put("BootClassPath", getBootclasspath());
+			table.put("BuildPath", getBuildpath());
+			table.put("Deliverables", getDeliverables());
+			table.put("DependsOn", getDependson());
+			table.put("SourcePath", getSourcePath());
+		}
+		table.put("RunPath", getRunpath());
+		table.put("TestPath", getTestpath());
+		table.put("RunProgramArgs", getRunProgramArgs());
+		table.put("RunVM", getRunVM());
+		table.put("Runfw", getRunFw());
+		table.put("Runbundles", getRunbundles());
+	}
 }

@@ -1660,4 +1660,19 @@ public class Builder extends Analyzer {
 		// Cannot find git directory
 		return "";
 	}
+
+
+	/**
+	 * Create a report of the settings
+	 * @throws Exception 
+	 */
+	
+	public void report(Map<String,Object> table) throws Exception {
+		build();
+		super.report(table);
+		table.put("Do Not Copy", getDoNotCopy());
+		table.put("Git head", _githead( new String[]{"githead"}));
+	}
+
+
 }

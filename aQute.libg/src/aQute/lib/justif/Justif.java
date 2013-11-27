@@ -1,7 +1,17 @@
 package aQute.lib.justif;
 
 import java.util.*;
+import java.util.Map.Entry;
 
+/**
+ * Formatter. This formatter allows you to build up an input string and then
+ * wraps the text. The following markup is available
+ * <ul>
+ * <li>$- - Line over the remaining width
+ * <li>\\t[0-9] - Go to tab position, and set indent to that position
+ * <li>\\f - Newlin
+ * </ul>
+ */
 public class Justif {
 	final int[]		tabs;
 	final int		width;
@@ -42,10 +52,14 @@ public class Justif {
 
 		while (r < sb.length()) {
 			switch (sb.charAt(r++)) {
-				case '\n' :
-					linelength = 0;
+				case '\r' :
+					indents.clear();
+					sb.setCharAt(r - 1, '\n');
+					// FALL THROUGH
 
+				case '\n' :
 					indent = indents.isEmpty() ? 0 : indents.remove(0);
+					linelength = 0;
 					begin = true;
 					lastSpace = 0;
 					break;
@@ -62,10 +76,8 @@ public class Justif {
 					break;
 
 				case '\t' :
-					indents.add(indent);
-					indent = linelength;
 					sb.deleteCharAt(--r);
-
+					indents.add(indent);
 					if (r < sb.length()) {
 						char digit = sb.charAt(r);
 						if (Character.isDigit(digit)) {
@@ -85,11 +97,11 @@ public class Justif {
 								r += diff;
 								linelength += diff;
 							}
-						}
+						} else
+							System.err.println("missing digit after \t");
 					}
 					break;
 
-					
 				case '\f' :
 					sb.setCharAt(r - 1, '\n');
 					for (int i = 0; i < indent; i++) {
@@ -106,10 +118,10 @@ public class Justif {
 					if (sb.length() > r) {
 						char c = sb.charAt(r);
 						if (c == '-' || c == '_' || c == '\u2014') {
-							sb.delete(r-1,r); // remove $
+							sb.delete(r - 1, r); // remove $
 							begin = false;
 							linelength++;
-							while ( linelength < width-1) {
+							while (linelength < width - 1) {
 								sb.insert(r++, c);
 								linelength++;
 							}
@@ -117,17 +129,22 @@ public class Justif {
 						}
 					}
 
-				case '\u00A0' : //non breaking space
-					sb.setCharAt(r-1,' '); // Turn it into a space
-					
+				case '\u00A0' : // non breaking space
+					sb.setCharAt(r - 1, ' '); // Turn it into a space
+
 					// fall through
-					
+
 				default :
 					linelength++;
 					begin = false;
-					if (lastSpace != 0 && linelength > width) {
+					if (linelength > width) {
+						if (lastSpace == 0) {
+							lastSpace = r-1;
+							sb.insert(lastSpace, ' ');
+							r++;
+						}
 						sb.setCharAt(lastSpace, '\n');
-						linelength = 0;
+						linelength = r-lastSpace -1;
 
 						for (int i = 0; i < indent; i++) {
 							sb.insert(lastSpace + 1, ' ');
@@ -155,17 +172,40 @@ public class Justif {
 	}
 
 	public void indent(int indent, String string) {
-		for (int i=0; i<string.length(); i++) {
+		for (int i = 0; i < string.length(); i++) {
 			char c = string.charAt(i);
-			if ( i==0 ) {
-				for ( int j=0; j<indent; j++)
+			if (i == 0) {
+				for (int j = 0; j < indent; j++)
 					sb.append(' ');
 			} else {
 				sb.append(c);
-				if ( c == '\n')
-					for ( int j=0; j<indent; j++)
+				if (c == '\n')
+					for (int j = 0; j < indent; j++)
 						sb.append(' ');
 			}
 		}
+	}
+
+	// TODO not working yet
+
+	public void entry(String key, String separator, Object value) {
+		sb.append(key);
+		sb.append("\t1");
+		sb.append(separator);
+		sb.append("\t2");
+	}
+
+	public void table(Map<String,Object> table, String separator) {
+		for (Entry<String,Object> e : table.entrySet()) {
+			entry(e.getKey(), separator, e.getValue());
+			formatter().format("\r");
+		}
+	}
+
+	public String toString(Object o) {
+		String s = "" + o;
+		if (s.length() > 50)
+			return s.replaceAll(",", ", \\\f");
+		return s;
 	}
 }

@@ -469,4 +469,19 @@ public class ProjectBuilder extends Builder {
 		error("Could not find -baselinerepo %s", repoName);
 		return null;
 	}
+	
+	/**
+	 * Create a report of the settings
+	 * @throws Exception 
+	 */
+	
+	public void report(Map<String,Object> table) throws Exception {
+		super.report(table);
+		table.put("Baseline repo", getBaselineRepo());
+		table.put("Release repo", getReleaseRepo());
+	}
+	
+	public String toString() {
+		return getBsn();
+	}
 }
