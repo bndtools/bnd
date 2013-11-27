@@ -1,5 +1,7 @@
 package aQute.bnd.main;
 
+import java.io.*;
+
 import aQute.bnd.build.*;
 import aQute.service.reporter.*;
 
@@ -24,5 +26,7 @@ public interface BndMessages extends Messages {
 	ERROR NoSuchRepository_(String newer);
 
 	ERROR InvalidGlobPattern_(String pattern);
+
+	ERROR NoRunFile(File f);
 
 }

@@ -84,6 +84,15 @@ public class Workspace extends Processor {
 		return getWorkspace(parent, BNDDIR);
 	}
 
+	public static Workspace getWorkspaceWithoutException(File parent) throws Exception {
+		try {
+			return getWorkspace(parent);
+		}
+		catch (IllegalArgumentException e) {
+			return null;
+		}
+	}
+
 	public static Workspace getWorkspace(File parent, String bndDir) throws Exception {
 		File workspaceDir = parent.getAbsoluteFile();
 
@@ -262,7 +271,7 @@ public class Workspace extends Processor {
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>	signalBusy	= new ThreadLocal<Reporter>();
+	final ThreadLocal<Reporter>		signalBusy	= new ThreadLocal<Reporter>();
 	private ResourceRepositoryImpl	resourceRepositoryImpl;
 
 	public void signal(Reporter reporter) {
@@ -490,7 +499,7 @@ public class Workspace extends Processor {
 					error("Extension load failed: %s", reason);
 					continue;
 				}
-				
+
 				URLClassLoader cl = new URLClassLoader(new URL[] {
 					blocker.getKey().getFile().toURL()
 				});
@@ -512,7 +521,8 @@ public class Workspace extends Processor {
 								}
 						}
 						catch (ClassNotFoundException cnfe) {
-							error("Loading extension %s, extension activator missing: %s (ignored)", blocker, e.getKey());
+							error("Loading extension %s, extension activator missing: %s (ignored)", blocker,
+									e.getKey());
 						}
 					}
 				}
@@ -603,4 +613,37 @@ public class Workspace extends Processor {
 		}
 		return join(digests, ",");
 	}
+
+	public static Run getRun(File file) throws Exception {
+		if (!file.isFile()) {
+			return null;
+		}
+
+		File projectDir = file.getParentFile();
+		File workspaceDir = projectDir.getParentFile();
+		if (!workspaceDir.isDirectory()) {
+			return null;
+		}
+
+		Workspace ws = getWorkspaceWithoutException(workspaceDir);
+		if (ws == null) {
+			return null;
+		}
+
+		return new Run(ws, projectDir, file);
+	}
+
+	/**
+	 * Report details of this workspace
+	 */
+	
+	public void report(Map<String,Object> table) throws Exception {
+		super.report(table);
+		table.put("Workspace", toString());
+		table.put("Plugins", getPlugins(Object.class));
+		table.put("Repos",getRepositories());
+		table.put("Projects in build order", getBuildOrder());
+	}
+	
+
 }
