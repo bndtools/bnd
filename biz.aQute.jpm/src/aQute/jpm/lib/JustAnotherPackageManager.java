@@ -90,15 +90,16 @@ public class JustAnotherPackageManager {
 															Pattern.CASE_INSENSITIVE);
 	static Executor				executor;
 
-	File						homeDir;
-	File						binDir;
-	File						repoDir;
-	File						commandDir;
-	File						serviceDir;
-	File						service;
-	Platform					platform;
+	final File					homeDir;
+	final File					binDir;
+	final File					repoDir;
+	final File					commandDir;
+	final File					serviceDir;
+	final File					service;
+	final Platform				platform;
+	final Reporter					reporter;
+
 	JpmRepo						library;
-	Reporter					reporter;
 	final List<Service>			startedByDaemon		= new ArrayList<Service>();
 	boolean						localInstall		= false;
 	private URLClient			host;
@@ -109,9 +110,29 @@ public class JustAnotherPackageManager {
 	 * 
 	 * @throws IOException
 	 */
-	public JustAnotherPackageManager(Reporter reporter) throws IOException {
+	public JustAnotherPackageManager(Reporter reporter, Platform platform, File homeDir, File binDir)
+			throws IOException {
+		this.platform = platform;
 		this.reporter = reporter;
-		setPlatform(Platform.getPlatform(reporter, this));
+		this.homeDir = homeDir;
+		if (!homeDir.exists() && !homeDir.mkdirs())
+			throw new IllegalArgumentException("Could not create directory " + homeDir);
+
+		repoDir = IO.getFile(homeDir, "repo");
+		if (!repoDir.exists() && !repoDir.mkdirs())
+			throw new IllegalArgumentException("Could not create directory " + repoDir);
+
+		commandDir = new File(homeDir, COMMANDS);
+		serviceDir = new File(homeDir, SERVICE);
+		commandDir.mkdir();
+		serviceDir.mkdir();
+		service = new File(repoDir, SERVICE_JAR_FILE);
+		if (!service.isFile())
+			init();
+		
+		this.binDir = binDir; 
+		if (!binDir.exists() && !binDir.mkdirs())
+			throw new IllegalArgumentException("Could not create bin directory " + binDir);
 	}
 
 	public String getArtifactIdFromCoord(String coord) {
@@ -482,9 +503,6 @@ public class JustAnotherPackageManager {
 		// if (Data.validate(data) != null)
 		// return "Invalid command data: " + Data.validate(data);
 
-		if (binDir != null)
-			data.bin = new File(binDir, data.name).getAbsolutePath();
-
 		Map<String,String> map = null;
 		if (data.trace) {
 			map = new HashMap<String,String>();
@@ -601,34 +619,6 @@ public class JustAnotherPackageManager {
 
 	private void storeData(File dataFile, Object o) throws Exception {
 		codec.enc().to(dataFile).put(o);
-	}
-
-	public void setPlatform(Platform plf) throws IOException {
-		this.platform = plf;
-		// pl: homeDir should always be provided by Main:_jpm
-		/*
-		 * if (homeDir == null) homeDir = platform.getGlobal(); initDirs();
-		 */
-	}
-
-	void initDirs() throws IOException {
-		if (!homeDir.exists() && !homeDir.mkdirs()) {
-			throw new ExceptionInInitializerError("Could not create directory " + homeDir);
-		}
-
-		repoDir = IO.getFile(homeDir, "repo");
-		if (!repoDir.exists() && !repoDir.mkdirs()) {
-			throw new ExceptionInInitializerError("Could not create directory " + repoDir);
-		}
-
-		commandDir = new File(homeDir, COMMANDS);
-		serviceDir = new File(homeDir, SERVICE);
-		commandDir.mkdir();
-		serviceDir.mkdir();
-		service = new File(repoDir, SERVICE_JAR_FILE);
-		if (!service.isFile()) {
-			init();
-		}
 	}
 
 	/**
@@ -923,15 +913,15 @@ public class JustAnotherPackageManager {
 		Revision revision = library.getRevisionByCoordinate(c);
 		if (revision == null)
 			return null;
-		
+
 		reporter.trace("revision %s", Hex.toHexString(revision._id));
-		
+
 		ArtifactData ad = get(revision._id);
-		if ( ad != null) {
+		if (ad != null) {
 			reporter.trace("found in cache");
 			return ad;
 		}
-		
+
 		URI url = revision.urls.iterator().next();
 		ArtifactData artifactData = putAsync(url);
 		artifactData.coordinate = c;
@@ -969,23 +959,8 @@ public class JustAnotherPackageManager {
 				return;
 			else
 				throw new Error("No " + SERVICE_JAR_FILE + " resource in jar");
+		service.getParentFile().mkdirs();
 		IO.copy(s, service);
-	}
-
-	public void setHomeDir(File homeDir) throws IOException {
-		if (homeDir == null) {
-			this.homeDir = platform.getGlobal();
-		} else {
-			this.homeDir = homeDir;
-		}
-
-		initDirs();
-	}
-
-	public void setBinDir(File binDir) throws IOException {
-		this.binDir = binDir;
-		if (binDir != null && !binDir.exists())
-			this.binDir.mkdirs();
 	}
 
 	public Platform getPlatform() {
@@ -1198,7 +1173,6 @@ public class JustAnotherPackageManager {
 
 	}
 
-
 	private boolean isUrl(String coordinate) {
 		return URL_P.matcher(coordinate).matches();
 	}
@@ -1338,5 +1312,13 @@ public class JustAnotherPackageManager {
 	 */
 	public Iterable<Revision> getCandidates(Coordinate c) throws Exception {
 		return library.getRevisionsByCoordinate(c);
+	}
+
+	
+	/**
+	 * Post install 
+	 */
+	public void doPostInstall() {
+		getPlatform().doPostInstall();
 	}
 }

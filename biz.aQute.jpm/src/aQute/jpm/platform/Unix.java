@@ -10,20 +10,19 @@ import aQute.libg.command.*;
 
 public abstract class Unix extends Platform {
 
-	public static String	BINARIES	= "/usr/bin";
 	public static String	JPM_GLOBAL	= "/var/jpm";
 
 	
-	@Override
-	public File getBinDir() {
-		return new File(BINARIES);
-	}
-
 	@Override
 	public File getGlobal() {
 		return new File("/var/jpm");
 	}
 
+	@Override
+	public File getGlobalBinDir() {
+		return new File("/usr/local/bin");
+	}
+	
 	@Override
 	public File getLocal() {
 		File home = new File(System.getenv("HOME"));
@@ -32,8 +31,7 @@ public abstract class Unix extends Platform {
 
 	@Override
 	public String createCommand(CommandData data, Map<String, String> map, boolean force, String... extra) throws Exception {
-		if (data.bin == null)
-			data.bin = getExecutable(data);
+		data.bin = getExecutable(data);
 
 		File f = new File(data.bin);
 		if (f.isDirectory()) {
@@ -80,12 +78,8 @@ public abstract class Unix extends Platform {
 		return new File(data.sdir, "launch.sh");
 	}
 
-	protected String getExecutable(CommandData data) { // TODO pl: has made changes there
-		if (data.bin == null) {
-			return new File(BINARIES + "/" + data.name).getAbsolutePath();
-		} else {
-			return data.bin;
-		}	
+	protected String getExecutable(CommandData data) { 
+		return new File(jpm.getBinDir() , data.name).getAbsolutePath();
 	}
 
 	@Override
@@ -118,7 +112,7 @@ public abstract class Unix extends Platform {
 		return p.waitFor();
 	}
 
-	static String	DAEMON			= "\n### JPM BEGIN ###\n" + BINARIES + "/jpm daemon >" + JPM_GLOBAL
+	String	DAEMON			= "\n### JPM BEGIN ###\n" +"jpm daemon >" + JPM_GLOBAL
 											+ "/daemon.log 2>>" + JPM_GLOBAL + "/daemon.log &\n### JPM END ###\n";
 	static Pattern	DAEMON_PATTERN	= Pattern.compile("\n### JPM BEGIN ###\n.*\n### JPM END ###\n", Pattern.MULTILINE);
 
@@ -208,4 +202,6 @@ public abstract class Unix extends Platform {
 		out.format("Global   \t%s\n", getGlobal());
 		out.format("Local    \t%s\n", getLocal());
 	}
+	
+	
 }

@@ -7,7 +7,6 @@ import aQute.jpm.lib.*;
 import aQute.lib.io.*;
 
 class MacOS extends Unix {
-	File	home	= new File(System.getProperty("user.home"));
 
 	@Override
 	public File getGlobal() {
@@ -15,8 +14,13 @@ class MacOS extends Unix {
 	}
 
 	@Override
+	public File getGlobalBinDir() {
+		return new File("/usr/local/bin").getAbsoluteFile();
+	}
+
+	@Override
 	public File getLocal() {
-		return new File(home, "Library/PackageManager").getAbsoluteFile();
+		return IO.getFile("~/Library/PackageManager").getAbsoluteFile();
 	}
 
 	@Override

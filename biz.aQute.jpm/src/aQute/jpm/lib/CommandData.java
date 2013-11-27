@@ -31,4 +31,8 @@ public class CommandData extends struct {
 	@Define(optional=true)
 	public String		bsn;
 	public String		main;
+	/**
+	 * Use javaw instead of java
+	 */
+	public boolean	windows;
 }
