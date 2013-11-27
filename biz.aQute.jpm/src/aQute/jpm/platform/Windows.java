@@ -9,6 +9,7 @@ import java.util.*;
 
 import org.boris.winrun4j.*;
 
+import aQute.bnd.osgi.*;
 import aQute.jpm.lib.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
@@ -121,7 +122,7 @@ public class Windows extends Platform {
 				pw.printf("%s%s", del, d.file);
 				del = ",";
 			}
-			
+
 			//
 			// And the vm arguments.
 			//
@@ -151,9 +152,10 @@ public class Windows extends Platform {
 			IO.deleteWithException(fj);
 		}
 	}
-	
+
 	/**
 	 * Where we store our miscellaneous stuff.
+	 * 
 	 * @return
 	 */
 	private File getMisc() {
@@ -165,6 +167,7 @@ public class Windows extends Platform {
 
 	/**
 	 * Return the File to the exe file.
+	 * 
 	 * @param data
 	 * @return
 	 */
@@ -181,7 +184,6 @@ public class Windows extends Platform {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 
 	@Override
 	public String deleteService(ServiceData data) throws Exception {
@@ -280,16 +282,22 @@ public class Windows extends Platform {
 	 */
 
 	@Arguments(arg = {})
+	@Description("Add the bin directory for this jpm to your PATH in the user's environment variables")
 	interface PathOptions extends Options {
+		@Description("Remove the bindir from the user's environment variables.")
 		boolean remove();
 
+		@Description("Delete a path from the PATH environment variable")
 		List<String> delete();
 
+		@Description("Add the current binary dir to the PATH environment variable")
 		boolean add();
 
+		@Description("Add additional paths to the PATH environment variable")
 		List<String> extra();
 	}
 
+	@Description("Add the bin directory for this jpm to your PATH in the user's environment variables")
 	public void _path(PathOptions options) {
 		RegistryKey env = RegistryKey.HKEY_CURRENT_USER.getSubKey("Environment");
 		if (env == null) {
@@ -318,7 +326,8 @@ public class Windows extends Platform {
 			save = true;
 		}
 		if (options.delete() != null) {
-			save |= paths.removeAll(options.delete());
+			Instructions instr = new Instructions(options.delete());
+			paths = new ArrayList<String>(instr.select(paths, true));
 		}
 		if (options.add()) {
 			paths.remove(jpm.getBinDir().getAbsolutePath());
