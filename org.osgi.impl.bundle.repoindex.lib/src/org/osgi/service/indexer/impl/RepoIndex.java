@@ -9,12 +9,15 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.Deflater;
 import java.util.zip.GZIPOutputStream;
 
@@ -126,6 +129,9 @@ public class RepoIndex implements ResourceIndexer {
 		if (config == null)
 			config = new HashMap<String, String>(0);
 
+		Set<File> filesToIndex = new TreeSet<File>();
+		resolveDirectories(files, filesToIndex);
+
 		Indent indent;
 		PrintWriter pw = null;
 		try {
@@ -171,7 +177,7 @@ public class RepoIndex implements ResourceIndexer {
 			repoTag.addAttribute(Schema.ATTR_XML_NAMESPACE, Schema.NAMESPACE);
 
 			repoTag.printOpen(indent, pw, false);
-			for (File file : files) {
+			for (File file : filesToIndex) {
 				try {
 					Tag resourceTag = generateResource(file, config);
 					resourceTag.print(indent.next(), pw);
@@ -184,6 +190,20 @@ public class RepoIndex implements ResourceIndexer {
 			if (pw != null) {
 				pw.flush();
 				pw.close();
+			}
+		}
+	}
+
+	private void resolveDirectories(Set<File> files, Set<File> filesToIndex) {
+		for (File file : files) {
+			if (!file.isDirectory()) {
+				filesToIndex.add(file);
+			} else {
+				File[] dirFiles = file.listFiles();
+				if (dirFiles.length > 0) {
+					Set<File> dirFilesSet = new LinkedHashSet<File>(Arrays.asList(dirFiles));
+					resolveDirectories(dirFilesSet, filesToIndex);
+				}
 			}
 		}
 	}
