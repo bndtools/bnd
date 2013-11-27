@@ -458,6 +458,7 @@ public class Main extends ReporterAdapter {
 				if (!opts.ignore()) {
 					CommandData cmd = jpm.parseCommandData(artifact);
 					updateCommandData(cmd, opts);
+					trace("main=%s, name=%s", cmd.main, cmd.name);
 					if (cmd.main != null) {
 						if (cmd.name == null && !artifact.local) {
 							cmd.name = artifact.coordinate.getArtifactId();
@@ -475,7 +476,8 @@ public class Main extends ReporterAdapter {
 								error("[%s] %s", coordinate, result);
 							}
 						}
-					}
+					} else 
+						error("No main class found. Please specify");
 				}
 			}
 		}
@@ -822,7 +824,10 @@ public class Main extends ReporterAdapter {
 							error("Failed to run platform init, exit code %s.%n%s", result, j.wrap());
 						} else
 							out.append(stdout);
+						
 					}
+					out.println("Home dir      " + jpm.getHomeDir());
+					out.println("Bin  dir      " + jpm.getBinDir());
 				} else
 					error("Cannot find the jpm jar from %s", f);
 			}
