@@ -10,10 +10,12 @@ Bundle-Vendor: Bndtools
 Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
-Private-Package: bndtools.release,\
+Private-Package: \
+	bndtools.release,\
 	bndtools.release.nl,\
 	org.osgi.service.component.annotations,\
-	bndtools.release.ui
+	bndtools.release.ui,\
+	org.bndtools.utils.swt
 
 Conditional-Package: aQute.lib.*,aQute.libg.*
 

@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -59,6 +61,9 @@ public class Activator extends AbstractUIPlugin {
 	private static Activator plugin;
 
 	private static ServiceTracker workspaceTracker;
+
+	private volatile ScheduledExecutorService scheduler;
+
 	/**
 	 * The constructor
 	 */
@@ -71,14 +76,21 @@ public class Activator extends AbstractUIPlugin {
 		plugin = this;
 		workspaceTracker = new ServiceTracker(context, Workspace.class.getName(), null);
 		workspaceTracker.open();
+
+		scheduler = Executors.newScheduledThreadPool(1);
 	}
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		workspaceTracker.close();
+		scheduler.shutdown();
 		super.stop(context);
 	}
+
+    public ScheduledExecutorService getScheduler() {
+        return scheduler;
+    }
 
 	/**
 	 * Returns the shared instance

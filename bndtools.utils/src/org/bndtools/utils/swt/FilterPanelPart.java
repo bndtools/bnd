@@ -62,6 +62,7 @@ public class FilterPanelPart {
     public Control createControl(Composite parent, int marginWidth, int marginHeight) {
         // CREATE CONTROLS
         panel = new Composite(parent, SWT.NONE);
+        panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         txtFilter = new Text(panel, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
         txtFilter.setMessage("Enter search string");
 

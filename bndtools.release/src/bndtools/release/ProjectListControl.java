@@ -10,9 +10,14 @@
  *******************************************************************************/
 package bndtools.release;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.bndtools.utils.swt.FilterPanelPart;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -20,6 +25,7 @@ import org.eclipse.jface.viewers.ColumnPixelData;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
+import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -28,6 +34,7 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -41,7 +48,10 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 
+import aQute.libg.glob.Glob;
 import bndtools.release.nl.Messages;
 import bndtools.release.ui.TableSortingEnabler;
 import bndtools.release.ui.TableSortingEnabler.IColumnContentProvider;
@@ -56,6 +66,7 @@ public class ProjectListControl {
 	private CheckboxTableViewer tableViewer;
 	private final SelectionListener selectionListener;
 	private List<ProjectDiff> projectDiffs;
+	private ContentProvider contentProvider;
 
     private static final String PROJECT_COLUMN = "project";
     private static final String REPOSITORY_COLUMN = "repository";
@@ -77,6 +88,9 @@ public class ProjectListControl {
 	}
 
     public void createControl(final Composite parent) {
+
+        createFilter(parent);
+
         // Create the composite
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, false));
@@ -84,6 +98,72 @@ public class ProjectListControl {
 
         createTableLayout(composite);
         createLegend(composite);
+    }
+
+    private void createFilter(Composite parent) {
+
+        Composite composite = new Composite(parent, SWT.NONE);
+        GridLayout gridLayout = new GridLayout(2, false);
+        gridLayout.marginHeight = 0;
+        gridLayout.horizontalSpacing = 0;
+        gridLayout.verticalSpacing = 0;
+
+        composite.setLayout(gridLayout);
+        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+        gridData.grabExcessHorizontalSpace = true;
+        composite.setLayoutData(gridData);
+
+        FilterPanelPart filterPart = new FilterPanelPart(Activator.getDefault().getScheduler());
+        filterPart.createControl(composite, 0, 0);
+        filterPart.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                String filter = (String) event.getNewValue();
+                updatedFilter(filter);
+            }
+        });
+
+        ToolBar toolbar = new ToolBar(composite, SWT.FLAT);
+        ToolItem tiCheckAll = new ToolItem(toolbar, SWT.FLAT);
+        tiCheckAll.setImage(Activator.getImageDescriptor("icons/check_all.gif").createImage());
+        tiCheckAll.setToolTipText(Messages.checkAll);
+        tiCheckAll.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object[] objs = contentProvider.getElements(null);
+                for (Object obj : objs) {
+                    ProjectDiff diff = (ProjectDiff) obj;
+                    diff.setRelease(true);
+                }
+                tableViewer.refresh();
+            }
+        });
+
+        ToolItem tiUncheckAll = new ToolItem(toolbar, SWT.FLAT);
+        tiUncheckAll.setImage(Activator.getImageDescriptor("icons/uncheck_all.gif").createImage());
+        tiUncheckAll.setToolTipText(Messages.uncheckAll);
+        tiUncheckAll.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object[] objs = contentProvider.getElements(null);
+                for (Object obj : objs) {
+                    ProjectDiff diff = (ProjectDiff) obj;
+                    diff.setRelease(false);
+                }
+                tableViewer.refresh();
+            }
+        });
+    }
+
+    private void updatedFilter(String filterString) {
+        String newFilter;
+        if (filterString == null || filterString.length() == 0 || filterString.trim().equals("*"))
+            newFilter = null;
+        else
+            newFilter = "*" + filterString.trim() + "*";
+        contentProvider.setFilter(newFilter);
+        tableViewer.refresh();
     }
 
     private void createTableLayout(Composite parent) {
@@ -146,10 +226,24 @@ public class ProjectListControl {
 
         // Assign the cell editors to the viewer
         tableViewer.setCellEditors(editors);
+
+        contentProvider = new ContentProvider();
         tableViewer.setCellModifier(new TableCellModifier());
-        tableViewer.setContentProvider(new ContentProvider());
+        tableViewer.setContentProvider(contentProvider);
         tableViewer.setLabelProvider(new TableLabelProvider());
         tableViewer.setColumnProperties(columnNames);
+        tableViewer.setCheckStateProvider(new ICheckStateProvider() {
+
+            public boolean isGrayed(Object element) {
+                return false;
+            }
+
+            public boolean isChecked(Object element) {
+                ProjectDiff diff = (ProjectDiff) element;
+                return diff.isRelease();
+            }
+        });
+
         TableSortingEnabler.applyTableColumnSorting(tableViewer);
     }
 
@@ -189,10 +283,6 @@ public class ProjectListControl {
     public void setInput(List<ProjectDiff> projectDiffs) {
         this.projectDiffs = projectDiffs;
         tableViewer.setInput(projectDiffs);
-        for (TableItem tableItem : tableViewer.getTable().getItems()) {
-            ProjectDiff diff = (ProjectDiff) tableItem.getData();
-            tableItem.setChecked(diff.isRelease());
-        }
     }
 
 	public Table getTable() {
@@ -205,15 +295,31 @@ public class ProjectListControl {
 
 	private class ContentProvider implements IStructuredContentProvider, IColumnContentProvider {
 
+	    private AtomicReference<String> filterRef = new AtomicReference<String>();
+
+	    public void setFilter(String filter) {
+	        this.filterRef.set(filter);
+	    }
+
         public void dispose() {
         }
 
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-
         }
 
         public Object[] getElements(Object parent) {
-            return projectDiffs.toArray();
+            final String filter = filterRef.get();
+            if (filter == null || "".equals(filter))
+                return projectDiffs.toArray();
+
+            Glob glob = new Glob(filter);
+            List<ProjectDiff> filtered = new ArrayList<ProjectDiff>();
+            for (ProjectDiff diff : projectDiffs) {
+                if (glob.matcher(diff.getProject().getName()).matches()) {
+                    filtered.add(diff);
+                }
+            }
+            return filtered.toArray();
         }
 
         public Comparable<?> getValue(Object element, int columnIndex) {
