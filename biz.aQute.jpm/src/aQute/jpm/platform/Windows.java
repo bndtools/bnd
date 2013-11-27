@@ -14,12 +14,26 @@ import aQute.lib.getopt.*;
 import aQute.lib.io.*;
 import aQute.lib.strings.*;
 
+/**
+ * The Windows platform uses an open source library <a
+ * href="http://winrun4j.sourceforge.net/">WinRun4j</a>. An executable is copied
+ * to the path of the desired command. When this command is executed, it looks
+ * up the same path, but then with the .exe replaced with .ini. This ini file
+ * then describes what Java code to start. For JPM, we copy the base exe (either
+ * console and/or 64 bit arch) and then create the ini file from the jpm command
+ * data.
+ * <p>
+ * TODO services (fortunately, winrun4j has extensive support)
+ */
 public class Windows extends Platform {
 	static boolean	IS64	= System.getProperty("os.arch").contains("64");
 
 	static File		javahome;
 	private File	misc;
 
+	/**
+	 * The default global directory.
+	 */
 	@Override
 	public File getGlobal() {
 		String sysdrive = System.getenv("SYSTEMDRIVE");
@@ -29,11 +43,19 @@ public class Windows extends Platform {
 		return IO.getFile(sysdrive + "\\JPM4J");
 	}
 
+	/**
+	 * The default local directory.
+	 */
 	@Override
 	public File getLocal() {
 		return IO.getFile("~/.jpm/windows");
 	}
 
+	/**
+	 * The default global binary dir. Though this role is played by the
+	 * c:\Windows\system directory, this is seen as a bit too ambitious. We
+	 * therefore create it a subdirectory of the global directory.
+	 */
 	@Override
 	public File getGlobalBinDir() {
 		return new File(getGlobal() + "\\bin");
@@ -55,20 +77,35 @@ public class Windows extends Platform {
 	@Override
 	public void uninstall() throws IOException {}
 
+	/**
+	 * Create a new command. Firgure out if we need the console or the window
+	 * version and the 64 or 32 bit version of the exe. Copy it, and create the
+	 * ini file.
+	 */
 	@Override
 	public String createCommand(CommandData data, Map<String,String> map, boolean force, String... extra)
 			throws Exception {
+
+		//
+		// The path to the executable
+		//
 		data.bin = getExecutable(data);
 		File f = new File(data.bin);
 
 		if (!force && f.exists())
 			return "Command already exists " + data.bin + ", try to use --force";
 
+		//
+		// Pick console or windows (java/javaw)
+		//
 		if (data.windows)
 			IO.copy(new File(getMisc(), "winrun4j.exe"), f);
 		else
 			IO.copy(new File(getMisc(), "winrun4jc.exe"), f);
 
+		//
+		// Make the ini file
+		//
 		File ini = new File(f.getAbsolutePath().replaceAll("\\.exe$", ".ini"));
 		PrintWriter pw = new PrintWriter(ini);
 		try {
@@ -76,11 +113,18 @@ public class Windows extends Platform {
 			pw.printf("log.level=error%n");
 			String del = "classpath.1=";
 
+			//
+			// Add all the calculated dependencies
+			//
 			for (byte[] dependency : data.dependencies) {
 				ArtifactData d = jpm.get(dependency);
 				pw.printf("%s%s", del, d.file);
 				del = ",";
 			}
+			
+			//
+			// And the vm arguments.
+			//
 			if (data.jvmArgs != null && data.jvmArgs.length() != 0) {
 				String parts[] = data.jvmArgs.split("\\s+");
 				for (int i = 0; i < parts.length; i++)
@@ -94,6 +138,24 @@ public class Windows extends Platform {
 		return null;
 	}
 
+	@Override
+	public void deleteCommand(CommandData cmd) throws Exception {
+		String executable = getExecutable(cmd);
+		File f = new File(executable);
+		File fj = new File(executable + ".ini");
+		if (cmd.name.equals("jpm")) {
+			reporter.trace("leaving jpm behind");
+			return;
+		} else {
+			IO.deleteWithException(f);
+			IO.deleteWithException(fj);
+		}
+	}
+	
+	/**
+	 * Where we store our miscellaneous stuff.
+	 * @return
+	 */
 	private File getMisc() {
 		if (misc == null) {
 			misc = new File(jpm.getHomeDir(), "misc");
@@ -101,10 +163,18 @@ public class Windows extends Platform {
 		return misc;
 	}
 
+	/**
+	 * Return the File to the exe file.
+	 * @param data
+	 * @return
+	 */
 	protected String getExecutable(CommandData data) {
 		return new File(jpm.getBinDir(), data.name + ".exe").getAbsolutePath();
 	}
 
+	/**
+	 * Create a new service
+	 */
 	@Override
 	public String createService(ServiceData data, Map<String,String> map, boolean force, String... extra)
 			throws Exception {
@@ -112,16 +182,9 @@ public class Windows extends Platform {
 		return null;
 	}
 
-	@Override
-	public String remove(CommandData data) throws Exception {
-		File f = new File(data.bin);
-		if (f.isFile() && !f.delete())
-			return "Could not delete " + data.bin;
-		return null;
-	}
 
 	@Override
-	public String remove(ServiceData data) throws Exception {
+	public String deleteService(ServiceData data) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -154,20 +217,6 @@ public class Windows extends Platform {
 	public String user() throws Exception {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	public void deleteCommand(CommandData cmd) throws Exception {
-		String executable = getExecutable(cmd);
-		File f = new File(executable);
-		File fj = new File(executable + ".ini");
-		if (cmd.name.equals("jpm")) {
-			reporter.trace("leaving jpm behind");
-			return;
-		} else {
-			IO.deleteWithException(f);
-			IO.deleteWithException(fj);
-		}
 	}
 
 	@Override

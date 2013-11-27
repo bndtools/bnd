@@ -83,7 +83,7 @@ public abstract class Unix extends Platform {
 	}
 
 	@Override
-	public String remove(ServiceData data) {
+	public String deleteService(ServiceData data) {
 		if (!getInitd(data).delete())
 			return "Cannot delete " + getInitd(data);
 
@@ -92,15 +92,6 @@ public abstract class Unix extends Platform {
 			return "Cannot delete " + getExecutable(data);
 
 		System.out.println("Removed service data ");
-
-		return null;
-	}
-
-	@Override
-	public String remove(CommandData data) throws Exception {
-		File f = new File(getExecutable(data)); 
-		if (!f.delete())
-			return "Cannot delete " + getExecutable(data);
 
 		return null;
 	}

@@ -63,7 +63,7 @@ class MacOS extends Unix {
 	}
 
 	@Override
-	public String remove(ServiceData data) {
+	public String deleteService(ServiceData data) {
 		// File initd = getInitd(data);
 		File launch = getLaunch(data);
 
