@@ -308,7 +308,7 @@ public class Main extends ReporterAdapter {
 				if (!binDir.isAbsolute())
 					binDir = new File(base, opts.bindir());
 				binDir = binDir.getAbsoluteFile();
-			} else if (bin != null && opts.user() && !opts.global()) {
+			} else if (bin != null && !opts.user() && !opts.global()) {
 				binDir = new File(bin);
 			}
 
