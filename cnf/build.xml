@@ -125,7 +125,7 @@
 	<!--
 	     FINDBUGS
 	-->
-	<target name="findbugs" depends="init,build">
+	<target name="findbugs" depends="init,build" unless="no.findbugs">
 		<property name="project.bootclasspath.adjusted" value="${project.bootclasspath}"/>
 		<property name="project.buildpath.adjusted" value="${project.buildpath}"/>
 		<property name="project.testpath.adjusted" value="${project.testpath}"/>
