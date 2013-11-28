@@ -106,6 +106,7 @@
 			source="${javac.source}"
 			sourcepath="${src}"
 			classpath="${project.buildpath}"
+			bootclasspath="${project.bootclasspath}"
 			access="private"
 			author="true"
 			nodeprecated="false"
