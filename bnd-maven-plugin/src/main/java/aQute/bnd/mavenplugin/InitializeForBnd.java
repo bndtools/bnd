@@ -53,6 +53,8 @@ public class InitializeForBnd extends AbstractMavenLifecycleParticipant {
 						logger.warn("[bnd] cannot find a bnd project for " + mp
 								+ " " + mp.isExecutionRoot());
 				} else {
+					Util.setMavenDefaultsInBndProject(mp, bp);
+
 					index.put(mp, bp.toString());
 					inverted.put(bp.toString(), mp);
 				}
