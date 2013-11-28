@@ -1214,6 +1214,19 @@ public class JustAnotherPackageManager {
 			data.main = main.getValue("Main-Class");
 			data.description = main.getValue("Bundle-Description");
 			data.title = main.getValue("JPM-Name");
+			
+			if ( main.getValue("Class-Path")!= null) {
+				File parent = source.getParentFile();
+				for ( String entry : main.getValue("Class-Path").split("\\s+")) {
+					File child = new File(parent,entry);
+					if ( !child.isFile()) {
+						reporter.error("Target specifies Class-Path in JAR but the indicated file %s is not found", child);
+					} else {
+						ArtifactData x = put(child.toURI());
+						data.dependencies.add(x.sha);
+					}
+				}
+			}
 
 			reporter.trace("name " + data.name + " " + data.main + " " + data.title);
 			DependencyCollector path = new DependencyCollector(this);
