@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.TableItem;
 
 import bndtools.release.Activator;
 import bndtools.release.ProjectDiff;
-import bndtools.release.ProjectListControl;
 import bndtools.release.ReleaseHelper;
 import bndtools.release.api.ReleaseOption;
 

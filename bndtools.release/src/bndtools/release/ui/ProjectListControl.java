@@ -8,7 +8,7 @@
  * Contributors:
  *     Per Kr. Soreide - initial API and implementation
  *******************************************************************************/
-package bndtools.release;
+package bndtools.release.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -52,8 +52,9 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import aQute.libg.glob.Glob;
+import bndtools.release.Activator;
+import bndtools.release.ProjectDiff;
 import bndtools.release.nl.Messages;
-import bndtools.release.ui.TableSortingEnabler;
 import bndtools.release.ui.TableSortingEnabler.IColumnContentProvider;
 
 public class ProjectListControl {
