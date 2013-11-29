@@ -43,6 +43,3 @@ Include-Resource:\
 # Missing here:
 # ${repo;bndtools.bndplugins;latest}
 # ${repo;bndtools.utils;latest}             Always used as Conditional-Package
-
-no.junit: true
-no.findbugs: true
