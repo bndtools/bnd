@@ -1,10 +1,11 @@
 # Build settings
--buildpath:\
+-buildpath: \
 	org.osgi.impl.bundle.repoindex.api;version=project,\
 	org.osgi.impl.bundle.repoindex.lib;version=project,\
 	ee.j2se;version=${javac.ee},\
 	osgi.cmpn;version=${osgi.cmpn.ver},\
 	de.kalpatec.pojosr.framework;version=${pojosr.ver},\
+	org.kohsuke.args4j,\
 	${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file,\
 	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file
 
@@ -31,16 +32,18 @@ osgi-pkgs:\
 	org.osgi.service.url,\
 	org.osgi.util.tracker;-split-package:=first
 
-Private-Package:\
+Private-Package: \
 	org.osgi.impl.bundle.bindex.cli,\
 	org.osgi.service.indexer,\
 	org.osgi.service.log,\
+	org.kohsuke.args4j,\
+	org.kohsuke.args4j.spi,\
 	${bindex-pkgs},\
 	${pojosr-pkgs},\
 	${osgi-pkgs}
 
 # Main headers
-Bundle-Version: 0.0.5.${tstamp}
+Bundle-Version: 0.0.6.${tstamp}
 Bundle-Name: BIndex2: Repository Index Generator (Standalone)
 Main-Class: org.osgi.impl.bundle.bindex.cli.Index
 Bundle-Activator: org.osgi.service.indexer.osgi.Activator
