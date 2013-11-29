@@ -184,6 +184,36 @@
 
 
     <!--
+         JAVADOC
+
+         Generate javadoc
+    -->
+    <target name="javadoc" depends="init,build" if="srcjavafiles.present">
+        <javadoc
+            sourcepath="${src}"
+            destdir="${target}/javadoc"
+            maxmemory="256M"
+            classpath="${project.buildpath}"
+            bootclasspath="${project.bootclasspath}"
+            access="private"
+            version="true"
+            use="true"
+            author="true"
+            splitindex="true"
+            windowtitle="${project.name}"
+            doctitle="${project.name}"
+            nodeprecated="false"
+            nodeprecatedlist="false"
+            notree="false"
+            noindex="false"
+            nohelp="false"
+            nonavbar="false"
+            source="${javac.source}"
+        />
+    </target>
+
+
+	<!--
          ECHO
 
          Print some settings
