@@ -34,8 +34,6 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
 
     /**
      * Create the wizard.
-     * 
-     * @param cnfPath
      */
     public CnfImportOrOpenWizardPage() {
         super("wizardPage");

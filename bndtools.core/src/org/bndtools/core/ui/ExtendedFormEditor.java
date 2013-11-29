@@ -13,7 +13,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 /**
- * A {@link FormPage} that allows updating of tab titles, images and overlay images.
+ * A {@link FormEditor} that allows updating of tab titles, images and overlay images.
  * 
  * @author Neil Bartlett
  */

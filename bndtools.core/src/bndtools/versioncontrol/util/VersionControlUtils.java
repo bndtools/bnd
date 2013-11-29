@@ -14,7 +14,6 @@ import org.bndtools.api.Logger;
 import org.bndtools.api.ProjectPaths;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -244,7 +243,7 @@ public class VersionControlUtils {
      * Add ignore entries to an ignore file in a project.
      * </p>
      * <p>
-     * This is a convenience method for {@link #addToIgnoreFile(IProject, String, List)}:
+     * This is a convenience method for {@link #addToIgnoreFile(IJavaProject, IFolder, List)}:
      * </p>
      * 
      * @param javaProject

@@ -143,7 +143,7 @@ public class ReleaseContext {
 
 	/**
 	 * @deprecated Use getReleaseOption instead
-	 * @return
+	 * @return true if the release option is UPDATE
 	 */
 	@Deprecated
 	public boolean isUpdateOnly() {
@@ -152,7 +152,7 @@ public class ReleaseContext {
 
     /**
      * @deprecated Use setReleaseOption instead
-     * @return
+     * @param updateOnly true to indicate 'update only mode'
      */
     @Deprecated
 	public void setUpdateOnly(boolean updateOnly) {

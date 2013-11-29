@@ -38,7 +38,7 @@ public interface IReleaseParticipant {
 	void setRanking(int ranking);
 	
 	/**
-	 * @return 
+	 * @return the ranking
 	 */
 	int getRanking();
 

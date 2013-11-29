@@ -7,7 +7,7 @@ import org.eclipse.jdt.launching.JavaRuntime;
 
 
 /**
- * Filter for {@linkIClasspathContainer} instances that removes the Bnd and JRE containers
+ * Filter for {@link IClasspathContainer} instances that removes the Bnd and JRE containers
  * 
  * @author Neil Bartlett
  */

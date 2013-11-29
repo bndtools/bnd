@@ -48,9 +48,8 @@ import aQute.bnd.version.Version;
 public class ReleaseUtils {
 
 	/**
-	 * Get the Jar name as it appears in the Repository e.g. bndtools.release-1.0.0.jar
-	 * @param jar
-	 * @return
+	 * @param jar the jar
+	 * @return the Jar name as it appears in the Repository e.g. bndtools.release-1.0.0.jar
 	 */
 	public static String getJarFileName(Jar jar) {
 		try {
@@ -167,17 +166,17 @@ public class ReleaseUtils {
 
 	}
 
-	/**
-	 * Returns the file revisions for the given resource.
-	 * If the flags contains IFileHistoryProvider.SINGLE_REVISION then only the revision corresponding
-	 * to the base corresponding to the local resource is fetched. If the flags contains
-	 * IFileHistoryProvider.SINGLE_LINE_OF_DESCENT the resulting history will be restricted to a single
-	 * line-of-descent (e.g. a single branch).
-	 * @param resource
-	 * @param flags
-	 * @param monitor
-	 * @return
-	 */
+    /**
+     * Returns the file revisions for the given resource. If the flags contains IFileHistoryProvider.SINGLE_REVISION
+     * then only the revision corresponding to the base corresponding to the local resource is fetched. If the flags
+     * contains IFileHistoryProvider.SINGLE_LINE_OF_DESCENT the resulting history will be restricted to a single
+     * line-of-descent (e.g. a single branch).
+     * 
+     * @param resource
+     * @param flags
+     * @param monitor
+     * @return the file revisions for the given resource
+     */
 	public static IFileRevision[] getTeamRevisions(IResource resource, int flags, IProgressMonitor monitor) {
 
 		RepositoryProvider provider = RepositoryProvider.getProvider(resource.getProject());
@@ -192,13 +191,14 @@ public class ReleaseUtils {
 		return history.getFileRevisions();
 	}
 
-	/**
-	 * Checks if everything is in sync except *.bnd & packageinfo files (which could be updated during the release)
-	 * @param project
-	 * @param monitor
-	 * @return
-	 * @throws CoreException
-	 */
+    /**
+     * Checks if everything is in sync except *.bnd & packageinfo files (which could be updated during the release)
+     * 
+     * @param project
+     * @param monitor
+     * @return true when everything is in sync
+     * @throws CoreException
+     */
 	public static boolean isTeamProjectUpToDate(IProject project, IProgressMonitor monitor) throws CoreException {
 		return getTeamOutOfSyncResources(project, monitor).length == 0;
 	}

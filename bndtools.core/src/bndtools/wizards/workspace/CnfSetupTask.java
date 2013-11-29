@@ -67,7 +67,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
     /**
      * Returns whether the workspace is configured for bnd (i.e. the cnf project exists).
      * 
-     * @return
+     * @return the cnf info
      */
     static CnfInfo getWorkspaceCnfInfo() {
         CnfInfo result;

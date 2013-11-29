@@ -599,7 +599,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     }
 
     /**
-     * Return a native data object that represents the dropped object
+     * Return the class of the dropped object
      * 
      * <pre>
      *    URLTransfer             URI
@@ -609,8 +609,10 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
      * </pre>
      * 
      * @param data
-     * @return
+     *            the dropped object
+     * @return the class of the dropped object, or null when it's unknown
      * @throws Exception
+     *             upon error
      */
     Class< ? > toJavaType(TransferData data) throws Exception {
         if (URLTransfer.getInstance().isSupportedType(data))
@@ -635,8 +637,10 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
      * </pre>
      * 
      * @param data
-     * @return
+     *            the dropped object
+     * @return a native data type that represents the dropped object, or null when the data type is unknown
      * @throws Exception
+     *             upon error
      */
     Object toJava(TransferData data) throws Exception {
         if (URLTransfer.getInstance().isSupportedType(data))

@@ -24,7 +24,7 @@ public class SashFormPanelMaximiser {
      * Styles: SWT.HORIZONTAL, SWT.VERTICAL
      * 
      * @param sashForm
-     * @param style
+     *            the sash form
      */
     public SashFormPanelMaximiser(SashForm sashForm) {
         this.sashForm = sashForm;
