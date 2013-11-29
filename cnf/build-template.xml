@@ -44,9 +44,15 @@
         <taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />
         <bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
 
-        <condition property="testDirExists">
-            <available file="${basedir}/test" type="dir"/>
-        </condition>
+        <fileset dir="${project}" id="srcjavafiles">
+            <include name="${src}/**/*.java"/>
+        </fileset>
+        <pathconvert refid="srcjavafiles" property="srcjavafiles.present" setonempty="false"/>
+
+        <fileset dir="${project}" id="testjavafiles">
+            <include name="${basedir}/test/**/*.java"/>
+        </fileset>
+        <pathconvert refid="testjavafiles" property="testjavafiles.present" setonempty="false"/>
 
         <!-- Create a marker property to indicate that initialisation has been completed -->
         <property name="initialized" value="set" />
@@ -71,7 +77,7 @@
 
          Compile the sources.
     -->
-    <target name="compile" depends="dependencies" if="project.sourcepath">
+    <target name="compile" depends="dependencies" if="srcjavafiles.present">
         <mkdir dir="${project.output}"/>
         <javac fork="yes" executable="${javac}" srcdir="${project.sourcepath}" destdir="${project.output}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
         <!--
@@ -104,7 +110,7 @@
 
         Run the junit test if present and no disabled by the no.junit property.
     -->
-    <target name="compileTests" depends="init,build" if="testDirExists" unless="no.junit">
+    <target name="compileTests" depends="init,build" if="testjavafiles.present" unless="no.junit">
         <mkdir dir="bin_test"/>
         <javac fork="yes" executable="${javac}" srcdir="test" destdir="bin_test" classpath="${project.buildpath}:${project.testpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
         <!--
@@ -120,7 +126,7 @@
         </copy>
     </target>
 
-    <target name="junit" depends="init,compileTests" if="testDirExists" unless="no.junit">
+    <target name="junit" depends="init,compileTests" if="testjavafiles.present" unless="no.junit">
         <junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
             <assertions>
                 <enable />
@@ -165,10 +171,6 @@
 
          Clean up the project.
     -->
-    <target name="deepclean" depends="init,clean" if="project.dependson">
-        <subant target="clean" inheritAll="false" buildpath="${project.dependson}" />
-    </target>
-
     <target name="clean" depends="init">
         <bnd command="clean" exceptions="true" basedir="${project}" />
         <delete dir="bin"/>
@@ -176,8 +178,42 @@
         <delete dir="${target}"/>
     </target>
 
+    <target name="deepclean" depends="init,clean" if="project.dependson">
+        <subant target="clean" inheritAll="false" buildpath="${project.dependson}" />
+    </target>
+
 
     <!--
+         JAVADOC
+
+         Generate javadoc
+    -->
+    <target name="javadoc" depends="init,build" if="srcjavafiles.present">
+        <javadoc
+            sourcepath="${src}"
+            destdir="${target}/javadoc"
+            maxmemory="256M"
+            classpath="${project.buildpath}"
+            bootclasspath="${project.bootclasspath}"
+            access="private"
+            version="true"
+            use="true"
+            author="true"
+            splitindex="true"
+            windowtitle="${project.name}"
+            doctitle="${project.name}"
+            nodeprecated="false"
+            nodeprecatedlist="false"
+            notree="false"
+            noindex="false"
+            nohelp="false"
+            nonavbar="false"
+            source="${javac.source}"
+        />
+    </target>
+
+
+	<!--
          ECHO
 
          Print some settings
@@ -207,8 +243,10 @@
         <echo>jars.compile.order:     ${jars.compile.order}</echo>
         <echo>bin.includes:           ${bin.includes}</echo>
         <echo>base.modfied:           ${base.modified} (${base.modified.readable})</echo>
+        <echo>build:                  ${build}</echo>
         <echo>target:                 ${target}</echo>
         <echo>release.target:         ${release.target}</echo>
+        <echo>releaserepo:            ${releaserepo}</echo>
         <echo>licensed repo:          ${licensed-repo}</echo>
         <echo>repo:                   ${repo}</echo>
         <echo>use.bnd:                ${use.bnd}</echo>
