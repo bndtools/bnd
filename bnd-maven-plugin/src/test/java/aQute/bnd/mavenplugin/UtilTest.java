@@ -25,6 +25,9 @@ public class UtilTest {
         try {
             File bndFile = new File(baseDir, "bnd.bnd");
             Properties p = new Properties();
+            p.put("src", "s1/s2/s3");
+            p.put("bin", "b1");
+            p.put("target", "t");
             p.store(new FileOutputStream(bndFile), "");
 
             Project bndProject = new Project(mockWS, null, bndFile);
@@ -34,9 +37,10 @@ public class UtilTest {
             MavenProject mvnProject = new MavenProject();
             mvnProject.setFile(imaginaryPom);
 
-            Util.setMavenDefaultsInBndProject(mvnProject, bndProject);
-            Assert.assertEquals(mvnProject.getBasedir() + "/target/classes", bndProject.getOutput().getAbsolutePath());
-            Assert.assertEquals(mvnProject.getBasedir() + "/target", bndProject.getTarget().getAbsolutePath());
+            Util.setBndDirsInMvnProject(mvnProject, bndProject);
+            Assert.assertEquals(mvnProject.getBasedir() + "/s1/s2/s3", mvnProject.getBuild().getSourceDirectory());
+            Assert.assertEquals(mvnProject.getBasedir() + "/b1", mvnProject.getBuild().getOutputDirectory());
+            Assert.assertEquals(mvnProject.getBasedir() + "/t", mvnProject.getBuild().getDirectory());
         } finally {
             deleteDir(baseDir);
         }
