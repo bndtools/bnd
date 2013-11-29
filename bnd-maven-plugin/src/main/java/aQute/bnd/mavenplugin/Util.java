@@ -7,8 +7,11 @@ import org.apache.maven.project.MavenProject;
 public class Util {
     private Util() {}
 
-    static void setMavenDefaultsInBndProject(MavenProject mavenProject, Project bndProject) {
-        bndProject.setProperty("bin", mavenProject.getBasedir() + "/target/classes");
-        bndProject.setProperty("target", mavenProject.getBasedir() + "/target");
+    static void setBndDirsInMvnProject(MavenProject mavenProject, Project bndProject) throws Exception {
+        mavenProject.getBuild().setDirectory(bndProject.getTarget().getAbsolutePath());
+        mavenProject.getBuild().setSourceDirectory(bndProject.getSrc().getAbsolutePath());
+        mavenProject.getBuild().setOutputDirectory(bndProject.getOutput().getAbsolutePath());
+
+        return;
     }
 }
