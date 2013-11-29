@@ -176,7 +176,7 @@ public class ProjectListControl {
         composite.setLayout(layout);
 
         // Instantiate TableViewer
-        projects = new Table(composite, SWT.CHECK | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
+        projects = new Table(composite, SWT.CHECK | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
         projects.setHeaderVisible(true);
         projects.setLinesVisible(true);
         projects.addSelectionListener(new SelectionListener() {
@@ -384,11 +384,11 @@ public class ProjectListControl {
             if (diff.isReleaseRequired()) {
                 return COLOR_RELEASE_REQUIRED;
             }
-            return Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+            return null;
         }
 
         public Color getForeground(Object element, int columnIndex) {
-            return Display.getCurrent().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
+            return null;
         }
 	}
 
