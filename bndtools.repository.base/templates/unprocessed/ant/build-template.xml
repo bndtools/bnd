@@ -165,15 +165,15 @@
 
          Clean up the project.
     -->
-    <target name="deepclean" depends="init,clean" if="project.dependson">
-        <subant target="clean" inheritAll="false" buildpath="${project.dependson}" />
-    </target>
-
     <target name="clean" depends="init">
         <bnd command="clean" exceptions="true" basedir="${project}" />
         <delete dir="bin"/>
         <delete dir="bin_test"/>
         <delete dir="${target}"/>
+    </target>
+
+    <target name="deepclean" depends="init,clean" if="project.dependson">
+        <subant target="clean" inheritAll="false" buildpath="${project.dependson}" />
     </target>
 
 
