@@ -50,7 +50,7 @@
         <pathconvert refid="srcjavafiles" property="srcjavafiles.present" setonempty="false"/>
 
         <fileset dir="${project}" id="testjavafiles">
-            <include name="${basedir}/test/**/*.java"/>
+            <include name="${projectdir}/test/**/*.java"/>
         </fileset>
         <pathconvert refid="testjavafiles" property="testjavafiles.present" setonempty="false"/>
 
