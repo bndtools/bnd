@@ -79,7 +79,6 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 		bundleRelease = new BundleTree(right);
 
 		projectListControl.setInput(projectDiffs);
-		setSelected(0);
 
         sashForm.setWeights(new int[] { 40, 60 });
 
