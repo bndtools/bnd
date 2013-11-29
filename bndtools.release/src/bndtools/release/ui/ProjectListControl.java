@@ -13,7 +13,6 @@ package bndtools.release.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -22,18 +21,20 @@ import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnPixelData;
+import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
-import org.eclipse.jface.viewers.ICellModifier;
+import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -42,11 +43,11 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -202,6 +203,7 @@ public class ProjectListControl {
         tableCol = tableViewerColumn.getColumn();
         layout.setColumnData(tableCol, new ColumnWeightData(15, 80, true));
         tableCol.setText(Messages.repository);
+        tableViewerColumn.setEditingSupport(new InlineComboEditingSupport(tableViewer));
 
         // Bundles
         tableViewerColumn = new TableViewerColumn(tableViewer, SWT.CENTER);
@@ -209,27 +211,7 @@ public class ProjectListControl {
         layout.setColumnData(tableCol, new ColumnPixelData(35, true, true));
         tableCol.setText(Messages.bundles);
 
-        // Create the cell editors
-        CellEditor[] editors = new CellEditor[columnNames.length];
-
-        // Column 1 : Project
-        TextCellEditor textEditor = new TextCellEditor(projects);
-        ((Text) textEditor.getControl()).setEditable(false);
-        editors[0] = textEditor;
-
-        // Column 2 : Repository (Combo Box)
-        editors[1] = new ComboBoxCellEditor(projects, releaseRepos, SWT.READ_ONLY);
-
-        // Column 3 : Number of bundles
-        textEditor = new TextCellEditor(projects);
-        ((Text) textEditor.getControl()).setEditable(false);
-        editors[2] = textEditor;
-
-        // Assign the cell editors to the viewer
-        tableViewer.setCellEditors(editors);
-
         contentProvider = new ContentProvider();
-        tableViewer.setCellModifier(new TableCellModifier());
         tableViewer.setContentProvider(contentProvider);
         tableViewer.setLabelProvider(new TableLabelProvider());
         tableViewer.setColumnProperties(columnNames);
@@ -393,72 +375,83 @@ public class ProjectListControl {
         }
 	}
 
-	private class TableCellModifier implements ICellModifier {
+    class InlineComboEditingSupport extends EditingSupport {
 
-	    private List<String> names = Arrays.asList(columnNames);
+        protected ComboBoxCellEditor editor;
 
-        public boolean canModify(Object element, String property) {
-            // Find the index of the column
-            int columnIndex = names.indexOf(property);
-            if (columnIndex == 1)
-                return true;
-            return false;
-        }
+        public InlineComboEditingSupport(ColumnViewer viewer) {
+            super(viewer);
+            this.editor = new ComboBoxCellEditor((Composite) viewer.getControl(), new String[] {});
 
-        public Object getValue(Object element, String property) {
-            int columnIndex = names.indexOf(property);
-            Object result = null;
-            ProjectDiff diff = (ProjectDiff) element;
-            switch (columnIndex) {
-            case 0:
-                result = diff.getProject().getName();
-                break;
-            case 1:
-                String stringValue = diff.getReleaseRepository();
-                if (stringValue == null)
-                    stringValue = diff.getDefaultReleaseRepository();
-                int i = releaseRepos.length - 1;
-                while (!stringValue.equals(releaseRepos[i]) && i > 0)
-                    --i;
-                result = new Integer(i);
-                break;
-            case 2:
-              int bundles = -1;
-              try {
-                  bundles = diff.getProject().getSubBuilders().size();
-              } catch (Exception e) {
-                  /* ignore */
-              }
-              result = String.valueOf(bundles);
-              break;
-            default:
-                break;
-            }
-            return result;
-        }
-
-        public void modify(Object element, String property, Object value) {
-            // Find the index of the column
-            int columnIndex = names.indexOf(property);
-
-            TableItem item = (TableItem) element;
-            ProjectDiff diff = (ProjectDiff) item.getData();
-            String valueString;
-
-            switch (columnIndex) {
-                case 1 : // Repository
-                    if (((Integer) value).intValue() < 0)
-                        break;
-                    valueString = releaseRepos[((Integer) value).intValue()];
-                    if (diff.getReleaseRepository() == null || !diff.getReleaseRepository().equals(valueString)) {
-                        diff.setReleaseRepository(valueString);
-                    }
-                    item.setText(1, valueString);
-                    break;
-                default :
+            Control control = editor.getControl();
+            ((CCombo) control).addSelectionListener(new SelectionListener() {
+                public void widgetSelected(SelectionEvent e) {
+                    editor.deactivate();
                 }
+
+                public void widgetDefaultSelected(SelectionEvent e) {}
+            });
         }
-	}
+
+        @Override
+        protected boolean canEdit(Object element) {
+            return true;
+        }
+
+        @Override
+        protected CellEditor getCellEditor(Object element) {
+            editor.setItems(releaseRepos);
+            return editor;
+        }
+
+        @Override
+        protected Object getValue(Object element) {
+            return null;
+            // Not needed
+        }
+
+        @Override
+        protected void setValue(Object element, Object value) {
+            // Not needed
+        }
+
+        @Override
+        protected void initializeCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
+
+            String repository = ""; //$NON-NLS-1$
+            repository = ((ProjectDiff) cell.getElement()).getReleaseRepository();
+            if (repository == null) {
+                repository = ((ProjectDiff) cell.getElement()).getDefaultReleaseRepository();
+            }
+            String[] items = ((ComboBoxCellEditor) cellEditor).getItems();
+            int idx = -1;
+            for (int i = 0; i < items.length; i++) {
+                if (items[i].equals(repository)) {
+                    idx = i;
+                    break;
+                }
+            }
+            if (idx > -1)
+                cellEditor.setValue(idx);
+            cell.setText(repository);
+        }
+
+        @Override
+        protected void saveCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
+            int idx = ((Integer) cellEditor.getValue()).intValue();
+            String[] items = ((ComboBoxCellEditor) cellEditor).getItems();
+
+            String repository;
+            if (idx > -1) {
+                repository = items[idx];
+            } else {
+                repository = ((CCombo) cellEditor.getControl()).getText();
+            }
+
+            cell.setText(repository);
+            ((ProjectDiff) cell.getElement()).setReleaseRepository(repository);
+        }
+    }
 
 	public void dispose() {
 	    COLOR_RELEASE_REQUIRED.dispose();
