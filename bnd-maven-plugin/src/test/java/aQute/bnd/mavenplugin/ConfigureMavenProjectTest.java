@@ -13,11 +13,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public class UtilTest {
+public class ConfigureMavenProjectTest {
     private static int counter = 1;
 
     @Test
-    public void testSetMavenDefaultsInBndProject() throws Exception {
+    public void testSetBndDirsInMvnProject() throws Exception {
         Workspace mockWS = Mockito.mock(Workspace.class);
         Mockito.when(mockWS.getProperties()).thenReturn(new Properties());
 
@@ -37,9 +37,10 @@ public class UtilTest {
             MavenProject mvnProject = new MavenProject();
             mvnProject.setFile(imaginaryPom);
 
-            Util.setBndDirsInMvnProject(mvnProject, bndProject);
+            ConfigureMavenProject.setBndDirsInMvnProject(bndProject, mvnProject);
             Assert.assertEquals(mvnProject.getBasedir() + "/s1/s2/s3", mvnProject.getBuild().getSourceDirectory());
             Assert.assertEquals(mvnProject.getBasedir() + "/b1", mvnProject.getBuild().getOutputDirectory());
+            Assert.assertEquals(mvnProject.getBasedir() + "/b1", mvnProject.getBuild().getTestOutputDirectory());
             Assert.assertEquals(mvnProject.getBasedir() + "/t", mvnProject.getBuild().getDirectory());
         } finally {
             deleteDir(baseDir);
@@ -47,7 +48,7 @@ public class UtilTest {
     }
 
     private static synchronized File getTestDir() {
-        File f = new File(System.getProperty("java.io.tmpdir") + "/" + UtilTest.class.getName() + "_" + (counter++));
+        File f = new File(System.getProperty("java.io.tmpdir") + "/" + ConfigureMavenProjectTest.class.getName() + "_" + (counter++));
         f.mkdirs();
         return f;
     }

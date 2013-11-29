@@ -1,26 +1,36 @@
 package aQute.bnd.mavenplugin;
 
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-import org.apache.maven.artifact.*;
-import org.apache.maven.execution.*;
-import org.apache.maven.model.*;
-import org.apache.maven.plugin.*;
-import org.apache.maven.plugins.annotations.*;
+import aQute.bnd.build.Container;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.io.IO;
+
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Build;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.project.*;
-import org.codehaus.plexus.util.xml.*;
-
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 /**
  * This class is instantiated to setup the build path based on the bnd project
  * information that resides in the same directory.
- * 
+ *
  */
 @Mojo(name = "prepare")
 public class ConfigureMavenProject extends AbstractMojo {
@@ -31,7 +41,7 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 	@Component
 	protected MavenProject project;
-	
+
 	@Component
 	private BndWorkspace bndWorkspace;
 
@@ -45,7 +55,7 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 		try {
 			Workspace workspace = bndWorkspace.getWorkspace(session);
-			
+
 			Project bndProject = workspace.getProject(project.getArtifactId());
 			if ( bndProject == null) {
 				bndProject = Workspace.getProject(project.getBasedir());
@@ -57,25 +67,17 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 			// The bnd project might have some different ideas about
 			// source and bin folders. So get them and set them.
-			Util.setBndDirsInMvnProject(project, bndProject);
+			setBndDirsInMvnProject(bndProject, project);
 
+            // We might want to change this to methods in bnd's Project.
 			if ( project.getVersion() != null && !project.getVersion().isEmpty())
 				project.setVersion( bndProject.getProperty(Constants.BUNDLE_VERSION, "0"));
-			
-			Build build = project.getBuild();
-			build.setOutputDirectory(bndProject.getOutput().getAbsolutePath());
-			build.setTestOutputDirectory(bndProject.getOutput()
-					.getAbsolutePath());
 
-			// We might want to change this to methods in bnd's Project.
-
+            Build build = project.getBuild();
 			build.setTestSourceDirectory(bndProject.getProperty("src.test",
 					bndProject.getSrc().getAbsolutePath()));
 			build.setTestOutputDirectory(bndProject.getProperty("bin.test",
 					bndProject.getOutput().getAbsolutePath()));
-
-			build.setDirectory(bndProject.getTarget().getAbsolutePath());
-			build.setSourceDirectory(bndProject.getSrc().getAbsolutePath());
 
 			// Now we have to configure the compiler so that we have the same
 			// options in Eclipse and maven
@@ -164,14 +166,14 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 	/**
 	 * Utility to handle this XML tag thingy
-	 * 
+	 *
 	 * @param config
 	 *            the xml object
 	 * @param key
 	 *            tkey we want to change
 	 * @param value
 	 *            the value
-	 * 
+	 *
 	 *            TODO handle nested keys?
 	 */
 	private void set(Xpp3Dom config, String key, String value) {
@@ -190,7 +192,7 @@ public class ConfigureMavenProject extends AbstractMojo {
 	 * The ecj compiler copies resources from source directories but the
 	 * standard Java compiler does not. So this method will copy the non-Java
 	 * files.
-	 * 
+	 *
 	 * @param p the bnd project
 	 * @throws Exception
 	 */
@@ -201,7 +203,7 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 	/**
 	 * Recursive routine to traverse the directory
-	 * 
+	 *
 	 * @param src the src directory
 	 * @param output the output directory
 	 * @throws IOException
@@ -217,4 +219,16 @@ public class ConfigureMavenProject extends AbstractMojo {
 			}
 		}
 	}
+
+	/**
+	 * Transfer directory settings from the Bnd project to the Maven project.
+	 * @param bndProject The bnd project that is the source of information.
+	 * @param mavenProject The maven project that needs to be configured.
+	 */
+    static void setBndDirsInMvnProject(Project bndProject, MavenProject mavenProject) throws Exception {
+        mavenProject.getBuild().setDirectory(bndProject.getTarget().getAbsolutePath());
+        mavenProject.getBuild().setSourceDirectory(bndProject.getSrc().getAbsolutePath());
+        mavenProject.getBuild().setOutputDirectory(bndProject.getOutput().getAbsolutePath());
+        mavenProject.getBuild().setTestOutputDirectory(bndProject.getOutput().getAbsolutePath());
+    }
 }
