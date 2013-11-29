@@ -213,8 +213,10 @@
         <echo>jars.compile.order:     ${jars.compile.order}</echo>
         <echo>bin.includes:           ${bin.includes}</echo>
         <echo>base.modfied:           ${base.modified} (${base.modified.readable})</echo>
+        <echo>build:                  ${build}</echo>
         <echo>target:                 ${target}</echo>
         <echo>release.target:         ${release.target}</echo>
+        <echo>releaserepo:            ${releaserepo}</echo>
         <echo>licensed repo:          ${licensed-repo}</echo>
         <echo>repo:                   ${repo}</echo>
         <echo>use.bnd:                ${use.bnd}</echo>
