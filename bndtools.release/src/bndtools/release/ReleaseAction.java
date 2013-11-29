@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -26,10 +27,9 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 
+import aQute.bnd.build.Project;
 import bndtools.central.Central;
 import bndtools.release.nl.Messages;
-
-import aQute.bnd.build.Project;
 
 public class ReleaseAction implements IObjectActionDelegate {
 //	@SuppressWarnings("unused")
@@ -87,7 +87,12 @@ public class ReleaseAction implements IObjectActionDelegate {
 			File file = iFile.getLocation().toFile();
 			Project project;
 			try {
-				project = Central.getProject(file.getParentFile());
+			    IProject iProject = iFile.getProject();
+				project = Central.getWorkspace().getProject(iProject.getName());
+				// .bnd files exists in cnf that are unreleasable
+				if (project == null || project.isCnf()) {
+				    continue;
+				}
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
