@@ -69,7 +69,7 @@ import bndtools.preferences.EclipseClasspathPreference;
 
 public class NewBuilder extends IncrementalProjectBuilder {
 
-	public static final String PLUGIN_ID = "bndtools.builder"; 
+	public static final String PLUGIN_ID = "bndtools.builder";
 	public static final String BUILDER_ID = BndtoolsConstants.BUILDER_ID;
 
     private static final ILogger logger = Logger.getLogger(NewBuilder.class);
@@ -311,6 +311,21 @@ public class NewBuilder extends IncrementalProjectBuilder {
                     log(LOG_FULL, "detected change due to resource %s, kind=0x%x, flags=0x%x", resource.getFullPath(), delta.getKind(), delta.getFlags());
                     result.set(true);
                     return false;
+                }
+
+                if (resource.getType() == IResource.FILE) {
+                    // Check files included by the -include directive in bnd.bnd
+                    List<File> includedFiles = model.getIncluded();
+                    if (includedFiles == null) {
+                        return false;
+                    }
+                    for (File includedFile : includedFiles) {
+                        IPath location = resource.getLocation();
+                        if (location != null && includedFile.equals(location.toFile())) {
+                            result.set(true);
+                            return false;
+                        }
+                    }
                 }
 
                 return false;
