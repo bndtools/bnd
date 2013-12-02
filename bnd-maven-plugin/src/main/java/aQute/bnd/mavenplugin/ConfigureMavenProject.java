@@ -1,31 +1,21 @@
 package aQute.bnd.mavenplugin;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
-import aQute.bnd.build.Container;
-import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Processor;
-import aQute.lib.io.IO;
-
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.artifact.*;
+import org.apache.maven.execution.*;
+import org.apache.maven.model.*;
+import org.apache.maven.plugin.*;
+import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.apache.maven.project.*;
+import org.codehaus.plexus.util.xml.*;
+
+import aQute.bnd.build.*;
+import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 /**
  * This class is instantiated to setup the build path based on the bnd project
@@ -36,14 +26,15 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 public class ConfigureMavenProject extends AbstractMojo {
 	private static final String ORG_APACHE_MAVEN_PLUGINS_MAVEN_COMPILER_PLUGIN = "org.apache.maven.plugins:maven-compiler-plugin";
 	Set<Project> built = new HashSet<Project>();
-	@Component
-	private MavenSession session;
 
 	@Component
-	protected MavenProject project;
+	MavenSession session;
 
 	@Component
-	private BndWorkspace bndWorkspace;
+	MavenProject project;
+
+	@Component
+    BndWorkspace bndWorkspace;
 
 	/**
 	 * Called to setup this project.
@@ -73,29 +64,20 @@ public class ConfigureMavenProject extends AbstractMojo {
 			if ( project.getVersion() != null && !project.getVersion().isEmpty())
 				project.setVersion( bndProject.getProperty(Constants.BUNDLE_VERSION, "0"));
 
-            Build build = project.getBuild();
-			build.setTestSourceDirectory(bndProject.getProperty("src.test",
-					bndProject.getSrc().getAbsolutePath()));
-			build.setTestOutputDirectory(bndProject.getProperty("bin.test",
-					bndProject.getOutput().getAbsolutePath()));
-
 			// Now we have to configure the compiler so that we have the same
 			// options in Eclipse and maven
 
 			Plugin plugin = project
 					.getPlugin(ORG_APACHE_MAVEN_PLUGINS_MAVEN_COMPILER_PLUGIN);
 			if (plugin == null) {
-				// TODO understand why we must list the compiler plugin
-				// in the project pom?
+				// TODO understand why we must list the compiler plugin in the project pom?
 				getLog().error(
 						"Cannot find compiler plugin "
 								+ ORG_APACHE_MAVEN_PLUGINS_MAVEN_COMPILER_PLUGIN);
 			} else {
 
-				// Configuration is per PluginExecution, so configure all the
-				// executions
-				// TODO understand the life cycle ... have no clue how the
-				// configuration
+				// Configuration is per PluginExecution, so configure all the executions
+				// TODO understand the life cycle ... have no clue how the configuration
 				// works. Seems impossible to override the pom configuration :-(
 
 				for (PluginExecution pe : plugin.getExecutions()) {
@@ -115,8 +97,7 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 					set(config,
 							"debug",
-							""
-									+ Processor.isTrue(bndProject.getProperty(
+							"" + Processor.isTrue(bndProject.getProperty(
 											"javac.debug", "" + true)));
 					set(config, "compilerVersion",
 							bndProject.getProperty("javac.compilerVersion"));
@@ -135,10 +116,10 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 			// Handle any source resources since the standard
 			// java compiler does not copy them
-			// TODO shoul do this in bnd some way since the ant
+			// TODO should do this in bnd some way since the ant
 			// and gradle build also suffer from this
 
-			copyResourcesFromSourcePath(bndProject);
+			copyResourcesFromSourceLocations(bndProject);
 
 			// Setup the classpath
 
@@ -196,9 +177,9 @@ public class ConfigureMavenProject extends AbstractMojo {
 	 * @param p the bnd project
 	 * @throws Exception
 	 */
-	private void copyResourcesFromSourcePath(Project p) throws Exception {
-		for (File src : p.getSourcePath())
-			copyResources(src, p.getOutput());
+	private void copyResourcesFromSourceLocations(Project p) throws Exception {
+		copyResources(p.getSrc(), p.getOutput());
+		copyResources(getTestSrc(p), getTestOutput(p));
 	}
 
 	/**
@@ -229,6 +210,17 @@ public class ConfigureMavenProject extends AbstractMojo {
         mavenProject.getBuild().setDirectory(bndProject.getTarget().getAbsolutePath());
         mavenProject.getBuild().setSourceDirectory(bndProject.getSrc().getAbsolutePath());
         mavenProject.getBuild().setOutputDirectory(bndProject.getOutput().getAbsolutePath());
-        mavenProject.getBuild().setTestOutputDirectory(bndProject.getOutput().getAbsolutePath());
+
+        mavenProject.getBuild().setTestSourceDirectory(getTestSrc(bndProject).getAbsolutePath());
+        mavenProject.getBuild().setTestOutputDirectory(getTestOutput(bndProject).getAbsolutePath());
+    }
+
+    // TODO it would be nice if the BND Project had APIs for these...
+    private static File getTestSrc(Project p) {
+    	return new File(p.getBase(), p.getProperty("src.test", "src/test/java"));
+    }
+
+    private static File getTestOutput(Project p) throws Exception {
+    	return new File(p.getBase(), p.getProperty("bin.test", "target/test-classes"));
     }
 }
