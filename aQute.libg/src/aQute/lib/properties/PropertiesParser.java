@@ -33,6 +33,7 @@ public class PropertiesParser {
 
 			if (c == '[') {
 				// Handle sections.
+				c = reader.read();
 				c = ws(c, reader);
 				if (c == -1) {
 					//
