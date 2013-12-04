@@ -1,0 +1,33 @@
+Bundle-Version:0.0.0.${tstamp}
+
+-include: .settings/org.eclipse.jdt.core.prefs
+
+javac.source 			= ${org.eclipse.jdt.core.compiler.compliance}
+javac.target 			= ${org.eclipse.jdt.core.compiler.codegen.targetPlatform}
+
+Bundle-Description: bndoc is a command line utility to turn a number of markdown \
+documents into a book and/or website. It provides property expansion, table of content,
+paragraph numbering, etc.
+ 
+Conditional-Package: 			aQute.libg.*, aQute.lib.*
+
+-buildpath: \
+	ee.j2se;version=${javac.ee},\
+	com.springsource.junit,\
+	org.mockito.mockito-all;version=1.9.0,\
+	biz.aQute.bndlib;version=latest, \
+	jar/txtmark-0.10.jar;version=file
+	
+-digests: MD5, SHA1
+
+Bundle-Developers: \
+	pkriens; \
+		email=Peter.Kriens@aQute.biz;
+		name="Peter Kriens"; \
+		organization=aQute; \
+		organizationUrl=http://www.jpm4j.org; \
+		roles="architect,developer"; \
+      	timezone=1
+
+no.junit: true
+-includeresource: {readme.md}
