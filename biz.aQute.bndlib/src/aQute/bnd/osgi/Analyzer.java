@@ -6,17 +6,17 @@ package aQute.bnd.osgi;
  * referred to by the bytecodes. The user can the use regular expressions to
  * define the attributes and directives. The matching is not fully regex for
  * convenience. A * and ? get a . prefixed and dots are escaped.
- * 
+ *
  * <pre>
- *                                                             			*;auto=true				any		
+ *                                                             			*;auto=true				any
  *                                                             			org.acme.*;auto=true    org.acme.xyz
  *                                                             			org.[abc]*;auto=true    org.acme.xyz
  * </pre>
- * 
+ *
  * Additional, the package instruction can start with a '=' or a '!'. The '!'
  * indicates negation. Any matching package is removed. The '=' is literal, the
  * expression will be copied verbatim and no matching will take place.
- * 
+ *
  * Any headers in the given properties are used in the output properties.
  */
 import static aQute.libg.generics.Create.*;
@@ -89,7 +89,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Specifically for Maven
-	 * 
+	 *
 	 * @param properties
 	 *            the properties
 	 */
@@ -117,7 +117,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Calculates the data structures for generating a manifest.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public void analyze() throws Exception {
@@ -291,7 +291,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Discussed with BJ and decided to kill the .
-	 * 
+	 *
 	 * @param referredAndExported
 	 */
 	void removeDynamicImports(Packages referredAndExported) {
@@ -309,7 +309,7 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	void doPlugins() {
 		for (AnalyzerPlugin plugin : getPlugins(AnalyzerPlugin.class)) {
@@ -338,7 +338,7 @@ public class Analyzer extends Processor {
 	/**
 	 * One of the main workhorses of this class. This will analyze the current
 	 * setup and calculate a new manifest according to this setup.
-	 * 
+	 *
 	 * @return
 	 * @throws IOException
 	 */
@@ -414,18 +414,11 @@ public class Analyzer extends Processor {
 																												// there
 																												// already
 			) {
-				StringBuilder sb = new StringBuilder();
-
 				for (JAVA ee : ees) {
-					sb.append(ee.getFilter());
+					Attrs attrs = new Attrs();
+					attrs.put(Constants.FILTER_DIRECTIVE, ee.getFilter());
+					requirements.add(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, attrs);
 				}
-
-				if (ees.size() > 1)
-					sb.insert(0, "(&").append(")");
-
-				Attrs attrs = new Attrs();
-				attrs.put(Constants.FILTER_DIRECTIVE, sb.toString());
-				requirements.add(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, attrs);
 			}
 
 			if (!requirements.isEmpty())
@@ -526,11 +519,11 @@ public class Analyzer extends Processor {
 	/**
 	 * Parse the namesection as instructions and then match them against the
 	 * current set of resources For example:
-	 * 
+	 *
 	 * <pre>
 	 * 	-namesection: *;baz=true, abc/def/bar/X.class=3
 	 * </pre>
-	 * 
+	 *
 	 * The raw value of {@link Constants#NAMESECTION} is used but the values of
 	 * the attributes are replaced where @ is set to the resource name. This
 	 * allows macro to operate on the resource
@@ -604,14 +597,14 @@ public class Analyzer extends Processor {
 	 * section header. The name part is defined by replacing all the @ signs to
 	 * a /, removing the first and the last, and using the last part as header
 	 * name:
-	 * 
+	 *
 	 * <pre>
 	 * &#064;org@osgi@service@event@Implementation-Title
 	 * </pre>
-	 * 
+	 *
 	 * This will be the header Implementation-Title in the
 	 * org/osgi/service/event named section.
-	 * 
+	 *
 	 * @param manifest
 	 * @param header
 	 */
@@ -636,7 +629,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Clear the key part of a header. I.e. remove everything from the first ';'
-	 * 
+	 *
 	 * @param value
 	 * @return
 	 */
@@ -672,7 +665,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Calculate an export header solely based on the contents of a JAR file
-	 * 
+	 *
 	 * @param bundle
 	 *            The jar file to analyze
 	 * @return
@@ -731,7 +724,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Return the set of unreachable code depending on exports and the bundle
 	 * activator.
-	 * 
+	 *
 	 * @return
 	 */
 	public Set<PackageRef> getUnreachable() {
@@ -760,7 +753,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Get the version for this bnd
-	 * 
+	 *
 	 * @return version or unknown.
 	 */
 	public String getBndVersion() {
@@ -815,7 +808,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Merge the existing manifest with the instructions but do not override
 	 * existing properties.
-	 * 
+	 *
 	 * @param manifest
 	 *            The manifest to merge with
 	 * @throws IOException
@@ -844,7 +837,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Set the classpath for this analyzer by file.
-	 * 
+	 *
 	 * @param classpath
 	 * @throws IOException
 	 */
@@ -880,7 +873,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Set the JAR file we are going to work in. This will read the JAR in
 	 * memory.
-	 * 
+	 *
 	 * @param jar
 	 * @return
 	 * @throws IOException
@@ -893,7 +886,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Set the JAR directly we are going to work on.
-	 * 
+	 *
 	 * @param jar
 	 * @return
 	 */
@@ -923,7 +916,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Try to get a Jar from a file name/path or a url, or in last resort from
 	 * the classpath name part of their files.
-	 * 
+	 *
 	 * @param name
 	 *            URL or filename relative to the base
 	 * @param from
@@ -1014,7 +1007,7 @@ public class Analyzer extends Processor {
 	 * Bnd is case sensitive for the instructions so we better check people are
 	 * not using an invalid case. We do allow this to set headers that should
 	 * not be processed by us but should be used by the framework.
-	 * 
+	 *
 	 * @param properties
 	 *            Properties to verify.
 	 */
@@ -1177,7 +1170,7 @@ public class Analyzer extends Processor {
 	 * Find some more information about imports in manifest and other places. It
 	 * is assumed that the augmentsExports has already copied external attrs
 	 * from the classpathExports.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	void augmentImports(Packages imports, Packages exports) throws Exception {
@@ -1282,7 +1275,7 @@ public class Analyzer extends Processor {
 	 * Find the packages we depend on, where we implement an interface that is a
 	 * Provider Type. These packages, when we import them, must use the provider
 	 * policy.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	Set<PackageRef> findProvidedPackages() throws Exception {
@@ -1316,7 +1309,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Provide any macro substitutions and versions for exported packages.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 
@@ -1392,7 +1385,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Calculate a version from a version policy.
-	 * 
+	 *
 	 * @param version
 	 *            The actual exported version
 	 * @param impl
@@ -1411,7 +1404,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Add the uses clauses. This method iterates over the exports and cal
-	 * 
+	 *
 	 * @param exports
 	 * @param uses
 	 * @throws MojoExecutionException
@@ -1494,7 +1487,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Transitively remove all elemens from unreachable through the uses link.
-	 * 
+	 *
 	 * @param name
 	 * @param unreachable
 	 */
@@ -1515,7 +1508,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Helper method to set the package info resource
-	 * 
+	 *
 	 * @param dir
 	 * @param key
 	 * @param value
@@ -1585,7 +1578,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Verify an attribute
-	 * 
+	 *
 	 * @param f
 	 * @param where
 	 * @param key
@@ -1654,7 +1647,7 @@ public class Analyzer extends Processor {
 	 * Findpath looks through the contents of the JAR and finds paths that end
 	 * with the given regular expression ${findpath (; reg-expr (; replacement)?
 	 * )? }
-	 * 
+	 *
 	 * @param args
 	 * @return
 	 */
@@ -1835,7 +1828,7 @@ public class Analyzer extends Processor {
 	 * We traverse through all the classes that we can find and calculate the
 	 * contained and referred set and uses. This method ignores the Bundle
 	 * classpath.
-	 * 
+	 *
 	 * @param jar
 	 * @param contained
 	 * @param referred
@@ -2052,7 +2045,7 @@ public class Analyzer extends Processor {
 	 * Clean up version parameters. Other builders use more fuzzy definitions of
 	 * the version syntax. This method cleans up such a version to match an OSGi
 	 * version.
-	 * 
+	 *
 	 * @param VERSION_STRING
 	 * @return
 	 */
@@ -2134,11 +2127,11 @@ public class Analyzer extends Processor {
 	 * TRhe cleanup version got confused when people used numeric dates like
 	 * 201209091230120 as qualifiers. These are too large for Integers. This
 	 * method checks if the all digit string fits in an integer.
-	 * 
+	 *
 	 * <pre>
 	 * maxint = 2,147,483,647 = 10 digits
 	 * </pre>
-	 * 
+	 *
 	 * @param integer
 	 * @return if this fits in an integer
 	 */
@@ -2264,7 +2257,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Locate a resource on the class path.
-	 * 
+	 *
 	 * @param path
 	 *            Path of the reosurce
 	 * @return A resource or <code>null</code>
@@ -2280,7 +2273,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Find a clazz on the class path. This class has been parsed.
-	 * 
+	 *
 	 * @param path
 	 * @return
 	 */
@@ -2310,7 +2303,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Answer the bundle version.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getVersion() {
@@ -2448,7 +2441,7 @@ public class Analyzer extends Processor {
 	 * <li>!com.foo.* (throws away any match for com.foo.*)</li>
 	 * </ul>
 	 * Enough rope to hang the average developer I would say.
-	 * 
+	 *
 	 * @param instructions
 	 *            the instructions with patterns.
 	 * @param source
@@ -2566,7 +2559,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Calculate the output file for the given target. The strategy is:
-	 * 
+	 *
 	 * <pre>
 	 * parameter given if not null and not directory
 	 * if directory, this will be the output directory
@@ -2574,7 +2567,7 @@ public class Analyzer extends Processor {
 	 * name of the source file if exists
 	 * Untitled-[n]
 	 * </pre>
-	 * 
+	 *
 	 * @param output
 	 *            may be null, otherwise a file path relative to base
 	 */
@@ -2622,7 +2615,7 @@ public class Analyzer extends Processor {
 	 * Utility function to carefully save the file. Will create a backup if the
 	 * source file has the same path as the output. It will also only save if
 	 * the file was modified or the force flag is true
-	 * 
+	 *
 	 * @param output
 	 *            the output file, if null {@link #getOutputFile(String)} is
 	 *            used.
@@ -2684,7 +2677,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Remove the own references and optional java references from the uses lib
-	 * 
+	 *
 	 * @param apiUses
 	 * @param removeJava
 	 * @return
@@ -2706,7 +2699,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Return the classes for a given source package.
-	 * 
+	 *
 	 * @param source
 	 *            the source package
 	 * @return a set of classes for the requested package.
@@ -2722,7 +2715,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Create a cross reference from package source, to packages in dest
-	 * 
+	 *
 	 * @param source
 	 * @param dest
 	 * @param sourceModifiers
