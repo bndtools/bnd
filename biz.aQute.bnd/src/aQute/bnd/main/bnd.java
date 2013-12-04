@@ -3275,52 +3275,50 @@ public class bnd extends Processor {
 		}
 
 	}
-	
+
 	/**
 	 * Merge n JARs into a new JAR
 	 */
-	
-	@Arguments(arg="jarfile...")
+
+	@Arguments(arg = "jarfile...")
 	interface MergeOptions extends Options {
 		@Description("Specify the output file path. The default is output.jar in the current directory")
 		String output();
 	}
-	
+
 	@Description("Merge a number of jar files into a new jar file. The used manifest is that of the first"
 			+ "given JAR file. The order of the JAR file is the class path order. I.e. earlier resources"
 			+ "are preferred over later resources with the same name.")
 	public void __merge(MergeOptions options) throws Exception {
 		String name = options.output() == null ? "output.jar" : options.output();
 		File out = getFile(name);
-		if ( !out.getParentFile().isDirectory()) {
+		if (!out.getParentFile().isDirectory()) {
 			error("Output file is not in a valid directory: %s", out.getParentFile());
 		}
 		Jar jar = new Jar(name);
 		addClose(jar);
 		List<String> list = options._();
 		Collections.reverse(list);
-		
+
 		try {
 			Jar last = null;
-			for ( String member : list ) {
+			for (String member : list) {
 				File m = getFile(member);
-				if ( !m.isFile()) {
+				if (!m.isFile()) {
 					error("%s is not a file", m.getAbsolutePath());
 				} else {
-					Jar jm =new Jar( m);
+					Jar jm = new Jar(m);
 					last = jm;
 					addClose(jm);
 					jar.addAll(jm);
 				}
 			}
-			System.out.println(last);
-			System.out.println(last.getManifest());
-			
-			if ( last != null)
-				jar.setManifest( last.getManifest());
-			
+			if (last != null) {
+				jar.setManifest(last.getManifest());
+			}
 			jar.write(out);
-		} finally {
+		}
+		finally {
 			jar.close();
 		}
 	}
