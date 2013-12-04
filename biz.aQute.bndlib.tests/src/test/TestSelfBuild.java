@@ -13,7 +13,7 @@ public class TestSelfBuild extends TestCase {
 		project.setPedantic(true);
 
 		File files[] = project.build();
-		assertTrue(project.check("Imports that lack version ranges", "for exported package aQute.bnd.service.resolve.hook"));
+		assertTrue( project.check("Imports that lack version ranges: \\[javax"));
 		assertNotNull(files);
 		assertEquals(1, files.length);
 	}

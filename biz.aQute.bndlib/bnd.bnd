@@ -38,7 +38,7 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.bnd.url
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
-Include-Resource: 				LICENSE, img/=img/
+Include-Resource: 				LICENSE, img/=img/, {readme.md}
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 
 -buildpath: com.springsource.junit,\

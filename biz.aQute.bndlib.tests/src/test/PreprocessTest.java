@@ -66,7 +66,7 @@ public class PreprocessTest extends TestCase {
 	 */
 	public static void testPreProcessExcludeExtensionLocal() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Analyzer.INCLUDE_RESOURCE, "{src/test/builder-preprocess.txt};-preprocessmatchers=!*.TXT");
+		b.setProperty(Analyzer.INCLUDE_RESOURCE, "{src/test/builder-preprocess.txt};-preprocessmatchers='!*.TXT:i,*'");
 		b.setProperty("var", "Yes!");;
 		b.build();
 		assertTrue(b.check());
