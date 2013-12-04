@@ -1,4 +1,4 @@
--buildpath: osgi.core;version=4.2,\
+-buildpath: osgi.core;version=4.3.1,\
 	osgi.r5;version=1.0.1,\
 	junit.osgi,\
 	biz.aQute.bndlib;version=snapshot,\
@@ -6,7 +6,7 @@
 	ee.j2se;version=${javac.ee},\
 	org.mockito.mockito-all,\
 	org.apache.felix.resolver,\
-	osgi.cmpn
+	osgi.cmpn;version=4.3.1
 
 Bundle-Version: 0.1.0.${tstamp}_${Git-Descriptor}
 

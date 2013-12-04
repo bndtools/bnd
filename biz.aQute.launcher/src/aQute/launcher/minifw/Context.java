@@ -2,6 +2,7 @@ package aQute.launcher.minifw;
 
 import java.io.*;
 import java.net.*;
+import java.security.cert.*;
 import java.util.*;
 import java.util.jar.*;
 import java.util.zip.*;
@@ -18,16 +19,17 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 	private TreeSet<String>	paths;
 	private File			jarFile;
 
-	class Dict extends Dictionary<String,Object> {
+	class Dict extends Dictionary<String,String> {
 
 		@Override
-		public Enumeration<Object> elements() {
-			return Collections.enumeration(manifest.getMainAttributes().values());
+		public Enumeration<String> elements() {
+			Enumeration<?> enumeration = Collections.enumeration(manifest.getMainAttributes().values());
+			return (Enumeration<String>) enumeration;
 		}
 
 		@Override
-		public Object get(Object key) {
-			Object o = manifest.getMainAttributes().getValue((String) key);
+		public String get(Object key) {
+			String o = manifest.getMainAttributes().getValue((String) key);
 			return o;
 		}
 
@@ -47,12 +49,12 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		}
 
 		@Override
-		public Object put(String key, Object value) {
+		public String put(String key, String value) {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public Object remove(Object key) {
+		public String remove(Object key) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -94,15 +96,15 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return getResource(path);
 	}
 
-	public Enumeration< ? > getEntryPaths(String path) {
+	public Enumeration<String> getEntryPaths(String path) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Dictionary<String,Object> getHeaders() {
+	public Dictionary<String,String> getHeaders() {
 		return new Dict();
 	}
 
-	public Dictionary<String,Object> getHeaders(String locale) {
+	public Dictionary<String,String> getHeaders(String locale) {
 		return new Dict();
 	}
 
@@ -186,7 +188,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return null;
 	}
 
-	public Map< ? , ? > getSignerCertificates(int signersType) {
+	public Map<X509Certificate,List<X509Certificate>> getSignerCertificates(int signersType) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -281,15 +283,12 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return fw.getProperty(key);
 	}
 
-	public Object getService(ServiceReference reference) {
-		throw new UnsupportedOperationException();
-	}
 
-	public ServiceReference getServiceReference(String clazz) {
+	public ServiceReference<?> getServiceReference(String clazz) {
 		return null;
 	}
 
-	public ServiceReference[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+	public ServiceReference<?>[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		return null;
 	}
 
@@ -301,13 +300,6 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return fw.installBundle(location, input);
 	}
 
-	public ServiceRegistration registerService(String[] clazzes, Object service, Dictionary properties) {
-		throw new UnsupportedOperationException();
-	}
-
-	public ServiceRegistration registerService(String clazz, Object service, Dictionary properties) {
-		throw new UnsupportedOperationException();
-	}
 
 	public void removeBundleListener(BundleListener listener) {
 		throw new UnsupportedOperationException();
@@ -321,12 +313,59 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean ungetService(ServiceReference reference) {
-		throw new UnsupportedOperationException();
-	}
-
 	@Override
 	public String toString() {
 		return id + " " + location;
+	}
+
+	public int compareTo(Bundle var0) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public ServiceRegistration< ? > registerService(String[] clazzes, Object service, Dictionary<String, ? > properties) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ServiceRegistration< ? > registerService(String clazz, Object service, Dictionary<String, ? > properties) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public <S> ServiceRegistration<S> registerService(Class<S> clazz, S service, Dictionary<String, ? > properties) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public <S> ServiceReference<S> getServiceReference(Class<S> clazz) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> clazz, String filter)
+			throws InvalidSyntaxException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public <S> S getService(ServiceReference<S> reference) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public boolean ungetService(ServiceReference< ? > reference) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public Bundle getBundle(String location) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public <A> A adapt(Class<A> type) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

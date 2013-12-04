@@ -9,8 +9,8 @@ Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
 	biz.aQute.junit;version=project,\
 	biz.aQute.launcher;version=project,\
 	org.apache.tools.ant,\
-	osgi.cmpn;version=4.3,\
-	osgi.core;version=4.1,\
+	osgi.cmpn;version=4.3.1,\
+	osgi.core;version=4.3.1,\
 	junit.osgi,\
 	org.osgi.impl.bundle.bindex,\
 	osgi.r5;version=1.0.1

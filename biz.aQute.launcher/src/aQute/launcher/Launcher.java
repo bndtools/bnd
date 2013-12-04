@@ -40,6 +40,7 @@ public class Launcher implements ServiceListener {
 	private boolean						security;
 	private SimplePermissionPolicy		policy;
 	private Callable<Integer>			mainThread;
+	@SuppressWarnings("deprecation")
 	private PackageAdmin				padmin;
 	private final List<BundleActivator>	embedded							= new ArrayList<BundleActivator>();
 	private final Map<Bundle,Throwable>	errors								= new HashMap<Bundle,Throwable>();
@@ -257,6 +258,7 @@ public class Launcher implements ServiceListener {
 		return list;
 	}
 
+	@SuppressWarnings("deprecation")
 	public int activate() throws Exception {
 		active.set(true);
 		Policy.setPolicy(new AllPolicy());
@@ -327,6 +329,7 @@ public class Launcher implements ServiceListener {
 	 * 
 	 * @param begin
 	 */
+	@SuppressWarnings("deprecation")
 	void update(long before) throws Exception {
 
 		trace("Updating framework with %s", parms.runbundles);
@@ -647,6 +650,7 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	private boolean isFragment(Bundle b) {
 		return padmin != null && padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
 	}
@@ -743,7 +747,7 @@ public class Launcher implements ServiceListener {
 			Class< ? > clazz = loader.loadClass(implementation);
 			FrameworkFactory factory = (FrameworkFactory) clazz.newInstance();
 			trace("Framework factory %s", factory);
-			systemBundle = factory.newFramework(p);
+			systemBundle = factory.newFramework( (Map) p);
 			trace("framework instance %s", systemBundle);
 		} else {
 			trace("using embedded mini framework because we were told not to use META-INF/services");

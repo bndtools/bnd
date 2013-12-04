@@ -2,6 +2,7 @@ package aQute.launcher.minifw;
 
 import java.io.*;
 import java.net.*;
+import java.security.cert.*;
 import java.util.*;
 
 import org.osgi.framework.*;
@@ -55,7 +56,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return loader.getResource(path);
 	}
 
-	public Enumeration< ? > getEntryPaths(String path) {
+	public Enumeration< String > getEntryPaths(String path) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -63,7 +64,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return new Hashtable<String,String>();
 	}
 
-	public Dictionary< ? , ? > getHeaders(String locale) {
+	public Dictionary< String , String > getHeaders(String locale) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -180,7 +181,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		}
 	}
 
-	public Enumeration< ? > findEntries(String path, String filePattern, boolean recurse) {
+	public Enumeration<URL> findEntries(String path, String filePattern, boolean recurse) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -192,7 +193,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		throw new UnsupportedOperationException();
 	}
 
-	public Map< ? , ? > getSignerCertificates(int signersType) {
+	public Map<X509Certificate,List<X509Certificate>> getSignerCertificates(int signersType) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -232,9 +233,6 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		throw new UnsupportedOperationException();
 	}
 
-	public Object getService(ServiceReference reference) {
-		return null;
-	}
 
 	public ServiceReference getServiceReference(String clazz) {
 		return null;
@@ -244,13 +242,6 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return null;
 	}
 
-	public ServiceRegistration registerService(String[] clazzes, Object service, Dictionary properties) {
-		throw new UnsupportedOperationException();
-	}
-
-	public ServiceRegistration registerService(String clazz, Object service, Dictionary properties) {
-		throw new UnsupportedOperationException();
-	}
 
 	public void removeBundleListener(BundleListener listener) {
 		// ok
@@ -262,10 +253,6 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	public void removeServiceListener(ServiceListener listener) {
 		// ok
-	}
-
-	public boolean ungetService(ServiceReference reference) {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -286,5 +273,56 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			}
 			throw new ClassNotFoundException(name);
 		}
+	}
+
+	public int compareTo(Bundle var0) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public ServiceRegistration< ? > registerService(String[] clazzes, Object service, Dictionary<String, ? > properties) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ServiceRegistration< ? > registerService(String clazz, Object service, Dictionary<String, ? > properties) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public <S> ServiceRegistration<S> registerService(Class<S> clazz, S service, Dictionary<String, ? > properties) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public <S> ServiceReference<S> getServiceReference(Class<S> clazz) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> clazz, String filter)
+			throws InvalidSyntaxException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public <S> S getService(ServiceReference<S> reference) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public boolean ungetService(ServiceReference< ? > reference) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public Bundle getBundle(String location) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public <A> A adapt(Class<A> type) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
