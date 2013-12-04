@@ -923,7 +923,7 @@ public class DSAnnotationTest extends BndTestCase {
 		@Reference
 		void setLogService(@SuppressWarnings("unused") LogService l) {}
 
-		void updatedLogService(@SuppressWarnings("unused") ServiceReference ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
 
 		}
 
@@ -933,7 +933,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 
 		@SuppressWarnings("unused")
-		private void updatedPrivateLogService(ServiceReference ref) {
+		private void updatedPrivateLogService(ServiceReference<?> ref) {
 
 		}
 	}
@@ -944,7 +944,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		void unsetPrivateLogService(@SuppressWarnings("unused") ServiceReference ref) {
+		void unsetPrivateLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
 
 		}
 	}
@@ -1010,7 +1010,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		void updatedLogService(@SuppressWarnings("unused") ServiceReference ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
 
 		}
 
@@ -1067,7 +1067,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		void updatedLogService(@SuppressWarnings("unused") ServiceReference ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
 
 		}
 

@@ -18,7 +18,8 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.io.*;
 
-@SuppressWarnings("resource")
+@SuppressWarnings({"resource", "rawtypes"}
+)
 public class ComponentTest extends TestCase {
 	static final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
 	static final XPathFactory				xpathf	= XPathFactory.newInstance();

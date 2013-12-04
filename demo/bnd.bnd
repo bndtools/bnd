@@ -2,16 +2,11 @@ Private-Package: com.example.demo, test
 Bundle-Activator: com.example.demo.Activator
 Bundle-SymbolicName: demo
 
--buildpath: osgi.core,\
-	ee.minimum;version=1.2.1,\
-	ee.j2se;version=${javac.ee}
-	
-	
 -testpath: \
 	biz.aQute.junit; version=snapshot
 
 -runpath: \
-	org.apache.felix.framework;version='[2.0.5,2.0.5]', \
+	org.apache.felix.framework;version='[4.2.1,5]', \
 	biz.aQute.launcher; version=snapshot
  	
 -runbundles: org.apache.felix.scr,\
@@ -24,7 +19,7 @@ Import-Package: \
 	junit.framework;resolution:=optional,\
 	*
 
--buildpath: osgi.core,\
+-buildpath: osgi.core;version=4.3.1,\
 	ee.j2se;version=1.5.0,\
 	junit.osgi
 	

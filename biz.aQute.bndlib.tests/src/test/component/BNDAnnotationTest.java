@@ -23,7 +23,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.*;
 import aQute.bnd.service.repository.*;
 
-@SuppressWarnings("resource")
+@SuppressWarnings({"resource", "unused", "rawtypes"})
 public class BNDAnnotationTest extends TestCase {
 	static final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
 	static final XPathFactory			xpathf	= XPathFactory.newInstance();
@@ -80,7 +80,7 @@ public class BNDAnnotationTest extends TestCase {
 
 		@Reference(service = LogService.class)
 		void setA(@SuppressWarnings("unused")
-		ServiceReference ref) {}
+		ServiceReference<?> ref) {}
 
 		@Reference
 		void setC(@SuppressWarnings("unused")
@@ -473,9 +473,10 @@ public class BNDAnnotationTest extends TestCase {
 	@Component(name = "nbcomp", provide = {})
 	static class NewBindVersion {
 
+		@SuppressWarnings("rawtypes")
 		@Reference
-		protected void bind(@SuppressWarnings("unused")
-		ServiceReference ref, @SuppressWarnings("unused")
+		protected void bind(
+		ServiceReference ref,
 		Map<String,Object> map) {}
 
 	}

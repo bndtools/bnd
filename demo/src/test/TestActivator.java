@@ -8,6 +8,9 @@ import org.osgi.framework.*;
 
 public class TestActivator implements BundleActivator {
 
+	@SuppressWarnings({
+			"rawtypes", "unchecked"
+	})
 	public void start(final BundleContext context) throws Exception {
 		System.err.println("Hello world");
 		context.registerService(TestActivator.class.getName(), this, null);
@@ -52,7 +55,7 @@ public class TestActivator implements BundleActivator {
 			};
 			Properties props = new Properties();
 			props.setProperty("main.thread", "true");
-			context.registerService(Runnable.class.getName(), r, props);
+			context.registerService(Runnable.class.getName(), r, (Dictionary)props);
 		} else if ("main.thread.callable".equals(p)) {
 			Callable<Integer> r = new Callable<Integer>() {
 
@@ -64,7 +67,7 @@ public class TestActivator implements BundleActivator {
 			};
 			Properties props = new Properties();
 			props.setProperty("main.thread", "true");
-			context.registerService(Callable.class.getName(), r, props);
+			context.registerService(Callable.class.getName(), r, (Dictionary) props);
 		} else if ("main.thread.both".equals(p)) {
 			class Both implements Callable<Integer>, Runnable {
 
@@ -82,7 +85,7 @@ public class TestActivator implements BundleActivator {
 			props.setProperty("main.thread", "true");
 			context.registerService(new String[] {
 					Runnable.class.getName(), Callable.class.getName()
-			}, r, props);
+			}, r, (Dictionary)props);
 		} else if ("main.thread.callableinvalidtype".equals(p)) {
 			Callable<Double> r = new Callable<Double>() {
 
@@ -94,7 +97,7 @@ public class TestActivator implements BundleActivator {
 			};
 			Properties props = new Properties();
 			props.setProperty("main.thread", "true");
-			context.registerService(Callable.class.getName(), r, props);
+			context.registerService(Callable.class.getName(), r, (Dictionary) props);
 			
 			// Give the launcher some time to finish
 			// printing the report. etc.
@@ -111,7 +114,7 @@ public class TestActivator implements BundleActivator {
 			};
 			Properties props = new Properties();
 			props.setProperty("main.thread", "true");
-			context.registerService(Callable.class.getName(), r, props);
+			context.registerService(Callable.class.getName(), r, (Dictionary) props);
 			// throws exception ...
 		}
 

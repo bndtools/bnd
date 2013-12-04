@@ -8,13 +8,13 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	lib/jetty-server-7.6.3.v20120416.jar;version=file,\
 	lib/jetty-util-7.6.3.v20120416.jar;version=file
 
--buildpath: osgi.core;version=4.2,\
+-buildpath: osgi.core;version=4.3.1,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	org.osgi.impl.bundle.bindex,\
 	org.osgi.impl.bundle.repoindex.lib;version=0.0.4,\
 	junit.osgi,\
-	osgi.cmpn;version=4.3.0,\
+	osgi.cmpn;version=4.3.1,\
 	osgi.r5;version=1.0.1,\
 	javax.xml.stream-1.0.1.jar;version=file,\
 	org.mockito.mockito-all,\
