@@ -46,7 +46,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			public Domain getParent() {
 				return null;
 			}
-			
+
 		});
 	}
 
@@ -181,6 +181,46 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 					if (value != null)
 						return value;
 				}
+				if (key.indexOf(';') >= 0) {
+					String parts[] = key.split(";");
+					if (parts.length > 1) {
+						if (parts.length >= 16) {
+							error("too many arguments for template: %s, max is 16", key);
+						}
+
+						String template = domain.getMap().get(parts[0]);
+						if (template != null) {
+							final Domain old = domain;
+							try {
+								final Map<String,String> args = new HashMap<String,String>();
+								for (int i = 0; i < 16; i++) {
+									args.put("" + i, i < parts.length ? parts[i] : "null");
+								}
+								domain = new Domain() {
+
+									public Map<String,String> getMap() {
+										return args;
+									}
+
+									public Domain getParent() {
+										return old;
+									}
+
+								};
+								ExtList<String> args0 = new ExtList<String>(parts);
+								args0.remove(0);
+								args.put("#", args0.join());
+
+								value = process(template, new Link(domain, link, key));
+								if (value != null)
+									return value;
+							}
+							finally {
+								domain = old;
+							}
+						}
+					}
+				}
 				if (!flattening && !key.equals("@"))
 					reporter.warning("No translation found for macro: " + key);
 			} else {
@@ -259,7 +299,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 				Method m = target.getClass().getMethod(cname, new Class[] {
 					String[].class
 				});
-				return ""+ m.invoke(target, new Object[] {
+				return "" + m.invoke(target, new Object[] {
 					args
 				});
 			}
@@ -268,7 +308,8 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			}
 			catch (InvocationTargetException e) {
 				if (e.getCause() instanceof IllegalArgumentException) {
-					reporter.error("%s, for cmd: %s, arguments; %s", e.getCause().getMessage(), method, Arrays.toString(args));
+					reporter.error("%s, for cmd: %s, arguments; %s", e.getCause().getMessage(), method,
+							Arrays.toString(args));
 				} else {
 					reporter.warning("Exception in replace: " + e.getCause());
 					e.getCause().printStackTrace();
@@ -912,18 +953,18 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		this.reporter = reporter;
 	}
 
-	
 	public int _processors(String args[]) {
 		float multiplier = 1F;
-		if ( args.length > 1 )
+		if (args.length > 1)
 			multiplier = Float.parseFloat(args[1]);
-		
+
 		return (int) (Runtime.getRuntime().availableProcessors() * multiplier);
 	}
-	
+
 	public long _maxMemory(String args[]) {
 		return Runtime.getRuntime().maxMemory();
 	}
+
 	public long _freeMemory(String args[]) {
 		return Runtime.getRuntime().freeMemory();
 	}
@@ -931,5 +972,5 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	public long _nanoTime(String args[]) {
 		return System.nanoTime();
 	}
-	
+
 }
