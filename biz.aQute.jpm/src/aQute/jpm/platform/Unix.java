@@ -10,7 +10,6 @@ import aQute.lib.io.*;
 import aQute.lib.strings.*;
 import aQute.libg.command.*;
 import aQute.libg.glob.*;
-import aQute.libg.sed.*;
 
 public abstract class Unix extends Platform {
 
