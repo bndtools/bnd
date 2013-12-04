@@ -59,7 +59,7 @@ public class Hex {
 		}
 	}
 
-	private final static char nibble(int i) {
+	public final static char nibble(int i) {
 		return HEX[i & 0xF];
 	}
 
