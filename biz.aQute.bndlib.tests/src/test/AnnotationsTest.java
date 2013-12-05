@@ -36,7 +36,9 @@ public class AnnotationsTest extends TestCase {
 		}
 
 		@Reference(type = '1')
-		protected void setPackageAdmin(@SuppressWarnings("unused") PackageAdmin pa) {}
+		protected void setPackageAdmin(@SuppressWarnings({
+				"unused", "deprecation"
+		}) PackageAdmin pa) {}
 
 		protected void unsetLog(@SuppressWarnings("unused") LogService log) {
 			this.log = null;
