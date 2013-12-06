@@ -37,7 +37,7 @@ public class BaseTask extends Task implements Reporter {
 			}
 			return true;
 		}
-		int warnCount = reporter.getErrors().size();
+		int warnCount = reporter.getWarnings().size();
 		if (warnCount > 0) {
 			System.err.printf("%d WARNINGS%n", warnCount);
 			for (String w : reporter.getWarnings()) {
