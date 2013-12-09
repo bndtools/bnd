@@ -4,7 +4,9 @@ Bundle-Version: ${master-version}
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Include-Resource: resources
 
--buildpath: ee.j2se;version=${javac.ee},\
+-buildpath: \
+	ee.j2se;version=${javac.ee},\
+	osgi.core;version=${osgi.core.version},\
 	${bndlib},\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
@@ -21,7 +23,6 @@ Include-Resource: resources
 	org.eclipse.equinox.registry,\
 	org.eclipse.core.commands,\
 	org.eclipse.core.runtime,\
-	osgi.core;version=${osgi.core.version},\
 	org.eclipse.core.jobs,\
 	org.eclipse.text
 

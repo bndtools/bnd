@@ -35,11 +35,12 @@ eclipse.deps: \
 	org.eclipse.core.filebuffers,\
 	org.eclipse.core.expressions
 	
--buildpath: ee.j2se;version=${javac.ee},\
+-buildpath: \
+	ee.j2se;version=${javac.ee},\
+	osgi.core;version=${osgi.core.version},\
 	${bndlib},\
 	${eclipse.deps},\
-	bndtools.core;version=latest,\
-	osgi.core;version=${osgi.core.version}
+	bndtools.core;version=latest
 Private-Package: bndtools.ace.launch,\
 	bndtools.ace.launch.ui,\
 	bndtools.ace.launcher

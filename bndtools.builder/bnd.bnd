@@ -1,8 +1,8 @@
 -buildpath: \
     ee.j2se;version=${javac.ee},\
+    osgi.core;version=${osgi.core.version}, \
     ${bndlib}, \
     ${aQute-repository}, \
-    osgi.core;version=${osgi.core.version}, \
     org.eclipse.osgi, \
     org.eclipse.equinox.common, \
     org.eclipse.equinox.registry, \
