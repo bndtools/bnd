@@ -1,0 +1,30 @@
+#
+# Create the bnd documentation
+#
+
+languages = en
+
+[main]
+sources = doc/front.htm, doc/${language}, 'The End';literal=true
+
+[]
+
+-do :	\
+	${language}_bnd.pdf; \
+		type=PDF; \
+		css=css/pdf.css; \
+		template=pdf-template.htm; \
+		source=main.sources, \
+	${language}_bnd.html; \
+		type=SINGLE; 
+		css=css/html.css; \
+		outer-template=templates/html-outer-template.htm; \
+		inner-template=templates/html-inner-template.htm; \
+		source=doc/${language}, \
+		images=${language}_images, \
+	${language}_bnd; \
+		type=MULTI; 
+		template=html-template.htm; \
+		source=doc/${language}
+	
+	

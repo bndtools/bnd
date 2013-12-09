@@ -17,8 +17,8 @@ public class PropertiesParserTest extends TestCase {
 			+ "[section]\n"
 			+ "stv =6";
 	
-	public void testSimple() throws IOException, URISyntaxException {
-		Properties p = PropertiesParser.parse(new StringReader(t1), "", null);
+	public void testSimple() throws Exception {
+		Properties p = PropertiesParser.parse(new StringReader(t1), new URI(""));
 		assertEquals("1", p.getProperty("abc"));
 		assertEquals("2", p.getProperty("def"));
 		assertEquals("3", p.getProperty("ghi"));

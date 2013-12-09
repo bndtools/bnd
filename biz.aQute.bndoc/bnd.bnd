@@ -17,7 +17,7 @@ Conditional-Package: 			aQute.libg.*, aQute.lib.*
 	org.mockito.mockito-all;version=1.9.0,\
 	biz.aQute.bndlib;version=latest, \
 	jar/txtmark-0.10.jar;version=file
-	
+
 -digests: MD5, SHA1
 
 Bundle-Developers: \

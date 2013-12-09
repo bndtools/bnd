@@ -973,4 +973,12 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		return System.nanoTime();
 	}
 
+	public void addTarget(Object target) {
+		targets.remove(target);
+		targets.add(target);
+	}
+	public void removeTarget(Object target) {
+		targets.remove(target);
+	}
+
 }

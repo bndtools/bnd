@@ -12,11 +12,16 @@ import aQute.lib.io.*;
  */
 public class PropertiesParser {
 
-	private static final String	$$$ERRORS	= "$$$ERRORS";
+	public static final String	$$$ERRORS	= "$$$ERRORS";
 
-	static Properties parse(Reader reader, String file, URI base) throws IOException, URISyntaxException {
-		if (base == null)
-			base = IO.work.toURI();
+	static public Properties parse(URI input) throws Exception {
+
+		Reader reader = IO.reader(input.toURL().openStream());
+		return parse(reader, input);
+	}
+
+	static public Properties parse(Reader reader, URI input) throws Exception {
+		String file = input.getPath();
 
 		Properties properties = new Properties();
 		int c;
@@ -193,14 +198,11 @@ public class PropertiesParser {
 							} else
 								break prefixes;
 						}
-						URI u = URI.create(uri);
-						if (!u.isAbsolute()) {
-							URL url = base.toURL();
-							u = new URL(url, uri).toURI();
-						}
+
+						URI u = input.resolve(uri);
 						Reader inc = IO.reader(u.toURL().openStream());
 						try {
-							Properties p = parse(inc, u.toString(), u);
+							Properties p = parse(u);
 							for (Enumeration< ? > e = p.propertyNames(); e.hasMoreElements();) {
 								String k = (String) e.nextElement();
 								String v = p.getProperty(k);

@@ -1,0 +1,20 @@
+
+languages = en
+
+-do :	\
+	${language}_bnd.pdf; \
+		type=pdf; \
+		css=css/pdf.css; \
+		template=pdf-template.htm; \
+		source=doc/${language}, \
+	${language}_bnd.html; \
+		type=single; 
+		css=css/html.css; \
+		template=html-template.htm; \
+		source=doc/${language}, \
+	${language}_bnd; \
+		type=multi; 
+		template=html-template.htm; \
+		source=doc/${language}
+	
+	
