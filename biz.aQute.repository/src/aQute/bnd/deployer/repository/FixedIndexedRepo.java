@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import static aQute.bnd.deployer.repository.RepoConstants.*;
+
 /**
  * A simple read-only OBR-based repository that uses a list of index locations
  * and a basic local cache.
@@ -29,7 +31,6 @@ import java.util.*;
 public class FixedIndexedRepo extends AbstractIndexedRepo {
 
 	private static final String	EMPTY_LOCATION	= "";
-	private static final String DEFAULT_CACHE_DIR = ".bnd" + File.separator + "cache";
 
 	public static final String	PROP_LOCATIONS	= "locations";
 	public static final String	PROP_CACHE		= "cache";
