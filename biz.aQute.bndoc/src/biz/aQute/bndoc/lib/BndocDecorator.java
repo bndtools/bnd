@@ -3,14 +3,17 @@ package biz.aQute.bndoc.lib;
 import com.github.rjeschke.txtmark.*;
 
 public class BndocDecorator extends DefaultDecorator {
-	int		toclevel	= 2;
-	int[]	counters	= new int[] {
+	int			toclevel	= 2;
+	int[]		counters	= new int[] {
 			0, 0, 0, 0, 0, 0, 0
-						};
-	Bndoc	bndoc;
+							};
 
-	public BndocDecorator(Bndoc bndoc) {
-		this.bndoc = bndoc;
+	int			codeStart	= -1;
+	int			imageCounter;
+	Generator	generator;
+
+	BndocDecorator(Generator generator) {
+		this.generator = generator;
 	}
 
 	@Override
@@ -28,5 +31,36 @@ public class BndocDecorator extends DefaultDecorator {
 			}
 			out.append("</span");
 		}
+	}
+
+	@Override
+	public void openCodeBlock(StringBuilder out) {
+		codeStart = out.length();
+	}
+
+	@Override
+	public void closeCodeBlock(StringBuilder out) {
+		int lstart = codeStart;
+		int row = 0;
+		int artCharacters = 0;
+		int otherCharacters = 0;
+
+		for (int i = lstart; i < out.length(); i++) {
+			char c = out.charAt(i);
+
+			if (c == '\n') {
+				lstart = i + 1;
+			} else if ("-|+/\\><:".indexOf(c) >= 0)
+				artCharacters++;
+			else
+				otherCharacters++;
+		}
+
+		if (artCharacters > otherCharacters) {
+			out.insert(codeStart, "<pre class=textdiagram>");
+		} else {
+			out.insert(codeStart, "<pre>");
+		}
+		out.append("</pre>\n");
 	}
 }

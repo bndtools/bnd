@@ -1,0 +1,22 @@
+sources = *.md
+
+[single]
+sources			=   ${sources}
+output 			= 	${target}/s/${lang}-${name}.html
+images			=   ${target}/s/${lang}-${name}-imgs
+outer-template	=	${templates}/outer-single.htm
+inner-template  =   ${templates}/inner-single.htm
+
+[pdf]
+sources			=   ${sources}
+output 			= 	${target}/s/${lang}-${name}.pdf
+images			=   ${target}/s/${lang}-${name}-imgs
+outer-template	=	${templates}/outer-pdf.htm
+inner-template  =   ${templates}/inner-pdf.htm
+
+[multi]
+sources			=   ${sources}
+output  	 	= 	${target}/${lang}/m
+images  	 	= 	${target}/${lang}/m/images
+template  		= 	${templates}/html.htm
+
