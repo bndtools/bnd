@@ -1,11 +1,12 @@
 package aQute.bnd.deployer.repository;
 
+import static aQute.bnd.deployer.repository.RepoResourceUtils.*;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
 
-import org.osgi.framework.namespace.*;
 import org.osgi.impl.bundle.bindex.*;
 import org.osgi.resource.*;
 import org.osgi.resource.Resource;
@@ -21,10 +22,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.service.url.*;
 import aQute.bnd.version.*;
-import aQute.lib.collections.*;
 import aQute.lib.filter.*;
-import aQute.lib.io.*;
-import aQute.libg.generics.*;
 import aQute.libg.glob.*;
 import aQute.libg.gzip.*;
 import aQute.service.reporter.*;
@@ -54,8 +52,6 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	private final static int DEFAULT_CACHE_TIMEOUT = 5;
 
 	
-	private static final int									READ_AHEAD_MAX					= 5 * 1024 * 1024;
-
 	private final BundleIndexer								obrIndexer						= new BundleIndexerImpl();
 	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new HashMap<String,IRepositoryContentProvider>(5);
 	protected final List<IRepositoryContentProvider>		generatingProviders				= new LinkedList<IRepositoryContentProvider>();
@@ -73,7 +69,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	private boolean												initialised						= false;
 
 	private final CapabilityIndex							capabilityIndex					= new CapabilityIndex();
-	private final Map<String,SortedMap<Version,Resource>>	bsnMap							= new HashMap<String,SortedMap<Version,Resource>>();
+	private final VersionedResourceIndex					identityMap						= new VersionedResourceIndex();
 	private int cacheTimeoutSeconds = DEFAULT_CACHE_TIMEOUT;
 
 	protected AbstractIndexedRepo() {
@@ -88,7 +84,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	}
 
 	private synchronized void clear() {
-		bsnMap.clear();
+		identityMap.clear();
 		capabilityIndex.clear();
 	}
 
@@ -152,7 +148,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			IRepositoryIndexProcessor processor = new IRepositoryIndexProcessor() {
 
 				public void processResource(Resource resource) {
-					addResourceToIndex(resource);
+					identityMap.put(resource);
+					capabilityIndex.addResource(resource);
 				}
 
 				public void processReferral(URI parentUri, Referral referral, int maxDepth, int currentDepth) {
@@ -161,7 +158,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 						try {
 							CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null);
 							indexHandle.setReporter(reporter);
-							readIndex(indexLocation.getPath(), indexLocation, new FileInputStream(indexHandle.request()), this);
+							readIndex(indexLocation.getPath(), indexLocation, new FileInputStream(indexHandle.request()), allContentProviders.values(), this, logService);
 						}
 						catch (Exception e) {
 							warning("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, parentUri, e);
@@ -186,7 +183,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
 					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
-					readIndex(indexFile.getName(), indexLocation, indexStream, processor);
+					readIndex(indexFile.getName(), indexLocation, indexStream, allContentProviders.values(), processor, logService);
 				}
 				catch (Exception e) {
 					error("Unable to read index at URL '%s': %s", indexLocation, e);
@@ -284,10 +281,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		if ("project".equals(rangeStr))
 			return null;
 
-		SortedMap<Version,Resource> versionMap = bsnMap.get(bsn);
-		if (versionMap == null || versionMap.isEmpty())
-			return null;
-		List<Resource> resources = narrowVersionsByVersionRange(versionMap, rangeStr);
+		List<Resource> resources = identityMap.getRange(bsn, rangeStr);
 		List<ResourceHandle> handles = mapResourcesToHandles(resources);
 
 		return (ResourceHandle[]) handles.toArray(new ResourceHandle[handles.size()]);
@@ -328,7 +322,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		Glob glob = pattern != null ? new Glob(pattern) : null;
 		List<String> result = new LinkedList<String>();
 
-		for (String bsn : bsnMap.keySet()) {
+		for (String bsn : identityMap.getIdentities()) {
 			if (glob == null || glob.matcher(bsn).matches())
 				result.add(bsn);
 		}
@@ -338,11 +332,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
-		SortedMap<Version,Resource> versionMap = bsnMap.get(bsn);
-		if (versionMap == null || versionMap.isEmpty())
-			return SortedList.empty();
-		
-		return new SortedList<Version>(versionMap.keySet());
+		return identityMap.getVersions(bsn);
 	}
 
 	public synchronized String getName() {
@@ -367,145 +357,6 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return result;
 	}
 
-	void addResourceToIndex(Resource resource) {
-		// Add to the bundle identity map
-		String id = getResourceIdentity(resource);
-		if (id == null)
-			return;
-		
-		Version version = getResourceVersion(resource);
-		SortedMap<Version,Resource> versionMap = bsnMap.get(id);
-		if (versionMap == null) {
-			versionMap = new TreeMap<Version,Resource>();
-			bsnMap.put(id, versionMap);
-		}
-		versionMap.put(version, resource);
-		
-		// Add capabilities to the capability index
-		capabilityIndex.addResource(resource);
-	}
-	
-	static Capability getIdentityCapability(Resource resource) {
-		List<Capability> identityCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
-		if (identityCaps == null || identityCaps.isEmpty())
-			throw new IllegalArgumentException("Resource has no identity capability.");
-		return identityCaps.iterator().next();
-	}
-	
-	static String getResourceIdentity(Resource resource) {
-		return (String) getIdentityCapability(resource).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
-	}
-
-	static Version getResourceVersion(Resource resource) {
-		Version result;
-		
-		Object versionObj = getIdentityCapability(resource).getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-		if (versionObj == null) {
-			result = Version.emptyVersion;
-		} else if (versionObj instanceof org.osgi.framework.Version) {
-			org.osgi.framework.Version v = (org.osgi.framework.Version) versionObj;
-			result = new Version(v.toString());
-		} else {
-			throw new IllegalArgumentException("Cannot convert to Version from type: " + versionObj.getClass());
-		}
-		
-		return result;
-	}
-	
-	static URI getContentUrl(Resource resource) {
-		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
-		if (caps == null || caps.isEmpty())
-			throw new IllegalArgumentException("Resource has no content capability");
-
-		Object uri = caps.iterator().next().getAttributes().get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
-		if (uri == null)
-			throw new IllegalArgumentException("Resource content has no 'uri' attribute.");
-		if (uri instanceof URI)
-			return (URI) uri;
-		
-		try {
-			if (uri instanceof URL)
-				return ((URL) uri).toURI();
-			if (uri instanceof String)
-				return new URI((String) uri);
-		}
-		catch (URISyntaxException e) {
-			throw new IllegalArgumentException("Failed to convert resource content location to a valid URI.", e);
-		}
-		
-		throw new IllegalArgumentException("Failed to convert resource content location to a valid URI.");
-	}
-	
-	static String getContentSha(Resource resource) {
-		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
-		if (caps == null || caps.isEmpty())
-			return null;
-		
-		Object contentObj = caps.iterator().next().getAttributes().get(ContentNamespace.CONTENT_NAMESPACE);
-		if (contentObj == null)
-			return null;
-		if (contentObj instanceof String)
-			return (String) contentObj;
-		
-		throw new IllegalArgumentException("Content attribute is wrong type: " + contentObj.getClass().toString() + " (expected String).");
-	}
-
-	private void readIndex(String name, URI baseUri, InputStream stream, IRepositoryIndexProcessor listener)
-			throws Exception {
-		// Make sure we have a buffering stream
-		InputStream bufferedStream;
-		if (stream.markSupported())
-			bufferedStream = stream;
-		else
-			bufferedStream = new BufferedInputStream(stream);
-
-		// Find a compatible content provider for the input
-		IRepositoryContentProvider selectedProvider = null;
-		IRepositoryContentProvider maybeSelectedProvider = null;
-		for (Entry<String,IRepositoryContentProvider> entry : allContentProviders.entrySet()) {
-			IRepositoryContentProvider provider = entry.getValue();
-
-			CheckResult checkResult;
-			try {
-				bufferedStream.mark(READ_AHEAD_MAX);
-				checkResult = provider.checkStream(name, new ProtectedStream(bufferedStream));
-			}
-			finally {
-				bufferedStream.reset();
-			}
-
-			if (checkResult.getDecision() == Decision.accept) {
-				selectedProvider = provider;
-				break;
-			} else if (checkResult.getDecision() == Decision.undecided) {
-				warning("Content provider '%s' was unable to determine compatibility with index at URL '%s': %s",
-						provider.getName(), baseUri, checkResult.getMessage());
-				if (maybeSelectedProvider == null)
-					maybeSelectedProvider = provider;
-			}
-		}
-
-		// If no provider answered definitively, fall back to the first
-		// undecided provider, with an appropriate warning.
-		if (selectedProvider == null) {
-			if (maybeSelectedProvider != null) {
-				selectedProvider = maybeSelectedProvider;
-				warning("No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.",
-						selectedProvider.getName());
-			} else {
-				throw new IOException("Invalid repository index: no configured content provider understands the specified index.");
-			}
-		}
-
-		// Finally, parse the damn file.
-		try {
-			selectedProvider.parseIndex(bufferedStream, baseUri, listener, logService);
-		}
-		finally {
-			IO.close(bufferedStream);
-		}
-	}
-
 	static List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version,Resource> versionMap, Filter filter) {
 		List<Resource> result = new ArrayList<Resource>(versionMap.size());
 
@@ -518,34 +369,6 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 				result.add(entry.getValue());
 		}
 
-		return result;
-	}
-
-	static List<Resource> narrowVersionsByVersionRange(SortedMap<Version,Resource> versionMap, String rangeStr) {
-		List<Resource> result;
-		if ("latest".equals(rangeStr)) {
-			Version highest = versionMap.lastKey();
-			result = Create.list(new Resource[] {
-				versionMap.get(highest)
-			});
-		} else {
-			VersionRange range = rangeStr != null ? new VersionRange(rangeStr) : null;
-
-			// optimisation: skip versions definitely less than the range
-			if (range != null && range.getLow() != null)
-				versionMap = versionMap.tailMap(range.getLow());
-
-			result = new ArrayList<Resource>(versionMap.size());
-			for (Entry<Version,Resource> entry : versionMap.entrySet()) {
-				Version version = entry.getKey();
-				if (range == null || range.includes(version))
-					result.add(entry.getValue());
-
-				// optimisation: skip versions definitely higher than the range
-				if (range != null && range.isRange() && version.compareTo(range.getHigh()) >= 0)
-					break;
-			}
-		}
 		return result;
 	}
 
@@ -586,7 +409,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			rangeStr = "0.0.0";
 
 		if (strategy == Strategy.EXACT) {
-			return findExactMatch(bsn, rangeStr, bsnMap);
+			return findExactMatch(bsn, rangeStr);
 		}
 
 		ResourceHandle[] handles = getHandles(bsn, rangeStr);
@@ -618,54 +441,14 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return builder.toString();
 	}
 
-	ResourceHandle findExactMatch(String identity, String version, Map<String,SortedMap<Version,Resource>> resourceMap) throws Exception {
-		Resource resource;
+	ResourceHandle findExactMatch(String identity, String version) throws Exception {
 		VersionRange range = new VersionRange(version);
 		if (range.isRange())
 			return null;
-
-		SortedMap<Version,Resource> versions = resourceMap.get(identity);
-		if (versions == null)
-			return null;
-
-		resource = findVersion(range.getLow(), versions);
+		Resource resource = identityMap.getExact(identity, range.getLow());
 		if (resource == null)
 			return null;
-
 		return mapResourceToHandle(resource);
-	}
-
-	static Resource findVersion(Version version, SortedMap<Version,Resource> versions) {
-		if (version.getQualifier() != null && version.getQualifier().length() > 0) {
-			return versions.get(version);
-		}
-
-		Resource latest = null;
-		for (Map.Entry<Version,Resource> entry : versions.entrySet()) {
-			if (version.getMicro() == entry.getKey().getMicro() && version.getMinor() == entry.getKey().getMinor()
-					&& version.getMajor() == entry.getKey().getMajor()) {
-				latest = entry.getValue();
-				continue;
-			}
-			if (compare(version, entry.getKey()) < 0) {
-				break;
-			}
-		}
-		return latest;
-	}
-
-	private static int compare(Version v1, Version v2) {
-
-		if (v1.getMajor() != v2.getMajor())
-			return v1.getMajor() - v2.getMajor();
-
-		if (v1.getMinor() != v2.getMinor())
-			return v1.getMinor() - v2.getMinor();
-
-		if (v1.getMicro() != v2.getMicro())
-			return v1.getMicro() - v2.getMicro();
-
-		return 0;
 	}
 
 	/**
