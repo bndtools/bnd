@@ -82,7 +82,7 @@ eclipse.deps: \
 
 -buildpath: \
 	ee.j2se;version='[1.6,1.7)',\
-	osgi.core;version=4.2.0,\
+	osgi.core;version=${osgi.core.version},\
 	${bndlib},\
 	${aQute-repository},\
 	${aQute-resolve},\

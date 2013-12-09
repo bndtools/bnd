@@ -54,7 +54,7 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	org.eclipse.team.core,\
 	org.eclipse.core.filesystem, \
 	org.eclipse.equinox.preferences, \
-	osgi.core,\
+	osgi.core;version=${osgi.core.version},\
 	${bndlib},\
 	${junit}
 

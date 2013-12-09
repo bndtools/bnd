@@ -82,6 +82,8 @@ aQute-resolve-base :      0.1.0
 aQute-resolve-ceiling:    0.1.1
 aQute-resolve:            biz.aQute.resolve;version='[${aQute-resolve-base},${aQute-resolve-ceiling})'
 
+osgi.core.version:        4.3.1
+
 # We use git
 Git-Descriptor:           ${system-allow-fail;git describe --dirty --always}
 Git-SHA:                  ${system-allow-fail;git rev-list -1 HEAD}

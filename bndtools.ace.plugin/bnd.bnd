@@ -39,7 +39,7 @@ eclipse.deps: \
 	${bndlib},\
 	${eclipse.deps},\
 	bndtools.core;version=latest,\
-	osgi.core
+	osgi.core;version=${osgi.core.version}
 Private-Package: bndtools.ace.launch,\
 	bndtools.ace.launch.ui,\
 	bndtools.ace.launcher

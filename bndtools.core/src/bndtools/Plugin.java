@@ -10,9 +10,10 @@
  *******************************************************************************/
 package bndtools;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -92,7 +93,7 @@ public class Plugin extends AbstractUIPlugin {
     }
 
     private static void registerWorkspaceServiceFactory(BundleContext context) {
-        Properties props = new Properties();
+        Dictionary<String,Object> props = new Hashtable<String,Object>();
         props.put("name", "bndtools");
 
         context.registerService(Workspace.class.getName(), new WorkspaceServiceFactory(), props);
@@ -102,7 +103,7 @@ public class Plugin extends AbstractUIPlugin {
         workspaceTracker = new ServiceTracker(context, IWorkspace.class.getName(), null);
         workspaceTracker.open();
 
-        Properties props = new Properties();
+        Dictionary<String,Object> props = new Hashtable<String,Object>();
         props.put(URLConstants.URL_HANDLER_PROTOCOL, new String[] {
             WorkspaceURLStreamHandlerService.PROTOCOL
         });

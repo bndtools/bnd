@@ -5,7 +5,7 @@
 	bndtools.core;version=snapshot,\
 	bndtools.api;version=snapshot,\
 	bndtools.repository.base;version=snapshot,\
-	osgi.core,\
+	osgi.core;version=${osgi.core.version},\
 	${bndlib}
 
 Bundle-SymbolicName: bndtools.template.amdatu;singleton:=true

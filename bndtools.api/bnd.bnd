@@ -1,6 +1,6 @@
 -buildpath: \
 	ee.j2se;version=${javac.ee},\
-	osgi.core; version=4.1, \
+	osgi.core;version=${osgi.core.version}, \
 	${bndlib}, \
 	org.eclipse.equinox.common, \
 	org.eclipse.core.runtime

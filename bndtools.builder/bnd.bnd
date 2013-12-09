@@ -2,7 +2,7 @@
     ee.j2se;version=${javac.ee},\
     ${bndlib}, \
     ${aQute-repository}, \
-    osgi.core, \
+    osgi.core;version=${osgi.core.version}, \
     org.eclipse.osgi, \
     org.eclipse.equinox.common, \
     org.eclipse.equinox.registry, \

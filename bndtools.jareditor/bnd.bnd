@@ -21,7 +21,7 @@ Include-Resource: resources
 	org.eclipse.equinox.registry,\
 	org.eclipse.core.commands,\
 	org.eclipse.core.runtime,\
-	osgi.core,\
+	osgi.core;version=${osgi.core.version},\
 	org.eclipse.core.jobs,\
 	org.eclipse.text
 
