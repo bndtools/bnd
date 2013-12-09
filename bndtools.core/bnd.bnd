@@ -45,7 +45,6 @@ Include-Resource: plugin.xml=_plugin.xml,\
 	
 # Build and Run
 eclipse.deps: \
-	osgi.core,\
 	org.eclipse.core.runtime,\
 	org.eclipse.jface,\
 	org.eclipse.jface.text,\
@@ -83,6 +82,7 @@ eclipse.deps: \
 
 -buildpath: \
 	ee.j2se;version='[1.6,1.7)',\
+	osgi.core;version=4.2.0,\
 	${bndlib},\
 	${aQute-repository},\
 	${aQute-resolve},\
