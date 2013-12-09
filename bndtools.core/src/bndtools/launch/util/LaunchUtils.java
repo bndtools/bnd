@@ -56,7 +56,6 @@ public final class LaunchUtils {
         return getBndProject(targetResource);
     }
 
-    @SuppressWarnings("resource")
     public static Project getBndProject(IResource targetResource) throws CoreException {
         Project result;
 

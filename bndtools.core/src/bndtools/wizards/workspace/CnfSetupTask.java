@@ -239,7 +239,6 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
 
     private static void copyBundleEntries(Bundle sourceBundle, String sourcePath, IPath sourcePrefix, IContainer destination, IProgressMonitor monitor) throws CoreException {
         List<String> subPaths = new LinkedList<String>();
-        @SuppressWarnings("unchecked")
         Enumeration<String> entries = sourceBundle.getEntryPaths(sourcePath);
         if (entries != null)
             while (entries.hasMoreElements()) {

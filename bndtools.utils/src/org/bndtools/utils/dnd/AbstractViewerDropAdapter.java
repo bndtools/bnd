@@ -68,28 +68,28 @@ public class AbstractViewerDropAdapter extends ViewerDropAdapter {
     }
 
     @SuppressWarnings({
-            "static-method", "unused"
+            "static-method"
     })
     protected boolean performTextDrop(String data, Object target, int location) {
         return false;
     }
 
     @SuppressWarnings({
-            "static-method", "unused"
+            "static-method"
     })
     protected boolean performFileDrop(String[] data, Object target, int location) {
         return false;
     }
 
     @SuppressWarnings({
-            "static-method", "unused"
+            "static-method"
     })
     protected boolean performResourceDrop(IResource[] data, Object target, int location) {
         return false;
     }
 
     @SuppressWarnings({
-            "static-method", "unused"
+            "static-method"
     })
     protected boolean performSelectionDrop(ISelection data, Object target, int location) {
         return false;
@@ -111,28 +111,28 @@ public class AbstractViewerDropAdapter extends ViewerDropAdapter {
     }
 
     @SuppressWarnings({
-            "static-method", "unused"
+            "static-method"
     })
     protected boolean validateFileDrop(Object target) {
         return true;
     }
 
     @SuppressWarnings({
-            "static-method", "unused"
+            "static-method"
     })
     protected boolean validateResourceDrop(Object target) {
         return true;
     }
 
     @SuppressWarnings({
-            "static-method", "unused"
+            "static-method"
     })
     protected boolean validateTextDrop(Object target) {
         return true;
     }
 
     @SuppressWarnings({
-            "static-method", "unused"
+            "static-method"
     })
     protected boolean validateLocalSelectionDrop(Object target) {
         return true;

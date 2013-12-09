@@ -143,7 +143,6 @@ public class Activator extends AbstractUIPlugin {
 	}
 
 	private static void loadBundleImages(ImageRegistry reg, String rootPath, String parent, String filePattern) {
-        @SuppressWarnings("unchecked")
         Enumeration<URL> en = plugin.getBundle().findEntries(rootPath + "/" + parent, filePattern, false);
         if (en == null) {
             return;
