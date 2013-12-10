@@ -10,6 +10,7 @@ import org.junit.*;
 import org.mockito.*;
 
 import aQute.bnd.build.*;
+import aQute.lib.io.*;
 
 public class ConfigureMavenProjectTest {
     private static int counter = 1;
@@ -77,8 +78,7 @@ public class ConfigureMavenProjectTest {
     }
 
 	private void assertFileContent(String expectedContent, File file) throws IOException {
-		byte[] bytes = Streams.suck(new FileInputStream(file));
-		Assert.assertEquals(expectedContent, new String(bytes));
+		Assert.assertEquals(expectedContent, IO.collect(file));
 	}
 
 	private void createTestFile(File file, String content) throws IOException {
