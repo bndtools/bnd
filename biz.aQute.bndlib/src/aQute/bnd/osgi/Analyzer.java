@@ -403,7 +403,8 @@ public class Analyzer extends Processor {
 			// based on the class version
 			//
 
-			if (!ees.isEmpty() // no use otherwise
+			if (!isTrue(NOEE) //
+					&& !ees.isEmpty() // no use otherwise
 					&& since(About._2_3) // we want people to not have to
 											// automatically add it
 					&& !requirements.containsKey(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE) // and

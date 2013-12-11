@@ -395,6 +395,9 @@ new Syntax(FIXUPMESSAGES, "Rearrange and/or replace errors and warnings. Errors 
 			new Syntax(NOUSES, "Do not calculate the " + USES_DIRECTIVE + " directive on exports.", NOUSES + "=true",
 					"true,false", Verifier.TRUEORFALSEPATTERN),
 
+			new Syntax(NOEE,
+					"Do not calculate the osgi.ee name space Execution Environment from the class file version", NOEE
+							+ "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 			new Syntax(PEDANTIC, "Warn about things that are not really wrong but still not right.",
 					PEDANTIC + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 
