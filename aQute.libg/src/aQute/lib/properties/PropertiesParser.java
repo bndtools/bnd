@@ -91,7 +91,7 @@ public class PropertiesParser {
 				if (section != null)
 					name.append(section).append(".");
 
-				while (Character.isJavaIdentifierPart(c)) {
+				while (Character.isJavaIdentifierPart(c) || c == '-') {
 					name.append((char) c);
 					c = reader.read();
 				}
