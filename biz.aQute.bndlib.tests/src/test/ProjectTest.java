@@ -15,12 +15,10 @@ import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class ProjectTest extends TestCase {
-
-	
 	/**
-	 * Check if a project=version, which is illegal on -runbundles, 
+	 * Check if a project=version, which is illegal on -runbundles,
 	 * is actually reported as an error.
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public void testErrorOnVersionIsProjectInRunbundles() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
@@ -29,11 +27,11 @@ public class ProjectTest extends TestCase {
 		top.getRunbundles();
 		assertTrue(top.check("p2 is specified with version=project on -runbundles"));
 	}
-	
-	
+
+
 	/**
 	 * https://github.com/bndtools/bnd/issues/395
-	 * 
+	 *
 	 * Repo macro does not refer to anything
 	 */
 
@@ -41,20 +39,20 @@ public class ProjectTest extends TestCase {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project top = ws.getProject("p2");
 		top.addClasspath(top.getOutput());
-		
+
 		top.setProperty("a", "${repo;org.apache.felix.configadmin;latest}");
 		assertTrue(top.getProperty("a").endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.2.0.jar"));
-		
+
 		top.setProperty("a", "${repo;IdoNotExist;latest}");
 		top.getProperty("a");
 		assertTrue(top.check("macro refers to an artifact IdoNotExist-latest.*that has an error"));
 		assertEquals("", top.getProperty("a"));
 	}
-	
+
 	/**
 	 * Two subsequent builds should not change the last modified if none of the
 	 * source inputs have been modified.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testLastModified() throws Exception {
@@ -230,7 +228,7 @@ public class ProjectTest extends TestCase {
 
 	/**
 	 * Check multiple repos
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static void testMultipleRepos() throws Exception {
@@ -292,7 +290,7 @@ public class ProjectTest extends TestCase {
 
 	/**
 	 * Tests the handling of the -sub facility
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -601,7 +599,22 @@ public class ProjectTest extends TestCase {
 																// selected.
 	}
 
-	private static Project testBuildAll(String dependsOn, int count) throws Exception {
+	/**
+	 * Check that the output property can be used to name the output binary.
+	 */
+    public static void testGetOutputFile() throws Exception {
+		Workspace ws = new Workspace(new File("testresources/ws"));
+		Project top = ws.getProject("p1");
+
+        assertEquals(new File(top.getTarget(), "foo.jar"), top.getOutputFile("foo"));
+
+        top.setProperty("Bundle-SymbolicName", "bar");
+        top.setProperty("Bundle-Version", "1.2.3");
+        top.setProperty("output", "${Bundle-SymbolicName}-${Bundle-Version}.jar");
+        assertEquals(new File(top.getTarget(), "bar-1.2.3.jar"), top.getOutputFile("foo"));
+    }
+
+    private static Project testBuildAll(String dependsOn, int count) throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project all = ws.getProject("build-all");
 		all.setProperty("-dependson", dependsOn);
