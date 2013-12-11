@@ -2,29 +2,23 @@
 # Create the bnd documentation
 #
 
-languages = en
+languages 	= en
+sources 	= src/${language}/*.md
+images		= www/${language}/img
 
-[main]
-sources = doc/front.htm, doc/${language}, 'The End';literal=true
-
+[pdf]
+author		= Peter Kriens
 []
 
 -do :	\
-	${language}_bnd.pdf; \
-		type=PDF; \
-		css=css/pdf.css; \
-		template=pdf-template.htm; \
-		source=main.sources, \
-	${language}_bnd.html; \
-		type=SINGLE; 
-		css=css/html.css; \
-		outer-template=templates/html-outer-template.htm; \
-		inner-template=templates/html-inner-template.htm; \
-		source=doc/${language}, \
+	www/${language}/bnd.pdf; \
+		type=PDF;
+		template=templates/pdf-template.htm; \
+	www/${language}/bnd.html; \
+		type=HTML;
+		template=templates/single-html-template.htm; \
+		inner-template=templates/single-html-inner-template.htm; \
 		images=${language}_images, \
-	${language}_bnd; \
+	www/${language}; \
 		type=MULTI; 
-		template=html-template.htm; \
-		source=doc/${language}
-	
-	
+		template=templates/html-template.htm	

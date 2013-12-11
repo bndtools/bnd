@@ -5,35 +5,35 @@ The Service-Component header is compatible with the standard OSGi header syntax.
 
 The syntax for these component definitions is:
 
-    component ::= <name> ( ';' parameter ) * 
-    parameter ::= provide | reference | multiple | optional
+  component ::= <name> ( ';' parameter ) * 
+  parameter ::= provide | reference | multiple | optional
               | reference | properties | factory | servicefactory
               | immediate | enabled | implementation 
               | activate | deactivate | modified | configuration-policy
               | version | designate
 
-    reference ::= <name> '=' <interface-class> 
+  reference ::= <name> '=' <interface-class> 
                  ( '(' <target-filter> ')')? cardinality?
-    cardinality ::= '?' | '*' | '+' | '~'
-    provide  ::= 'provide:=' LIST 
-    multiple  ::= 'multiple:=' LIST 
-    optional  ::= 'optional:=' LIST 
-    dynamic   ::= 'dynamic:=' LIST
-    designate  ::= ( 'designate' | 'designateFactory' ) CLASS
-    factory   ::= 'factory:=' true | false
-    servicefactory := 'servicefactory:=' true | false
-    immediate ::= 'immediate:=' true | false
-    enabled   ::= 'enabled:=' true | false
-    configuration-policy ::= "configuration-policy:=' 
+  cardinality ::= '?' | '*' | '+' | '~'
+  provide  ::= 'provide:=' LIST 
+  multiple  ::= 'multiple:=' LIST 
+  optional  ::= 'optional:=' LIST 
+  dynamic   ::= 'dynamic:=' LIST
+  designate  ::= ( 'designate' | 'designateFactory' ) CLASS
+  factory   ::= 'factory:=' true | false
+  servicefactory := 'servicefactory:=' true | false
+  immediate ::= 'immediate:=' true | false
+  enabled   ::= 'enabled:=' true | false
+  configuration-policy ::= "configuration-policy:=' 
        ( 'optional' | 'require' | 'ignore' )
-    activate  ::= 'activate:=' METHOD
-    modified  ::= 'modified:=' METHOD
-    deactivate::= 'deactivate:=' METHOD
-    implementation::= 'implementation:=' <implementation-class>
-    properties::= 'properties:=' key '=' value  [=\=]
+  activate  ::= 'activate:=' METHOD
+  modified  ::= 'modified:=' METHOD
+  deactivate::= 'deactivate:=' METHOD
+  implementation::= 'implementation:=' <implementation-class>
+  properties::= 'properties:=' key '=' value  [=\=]
                 ( ',' key '=' value ) *
-    key       ::= NAME (( '@' | ':' ) type )?
-    value     ::= value ( '|' value )*
+  key       ::= NAME (( '@' | ':' ) type )?
+  value     ::= value ( '|' value )*
 
 If the name of the component maps to a resource, or ends in XML, or there are attributes set, then that clause is copied to the output Service-Component header.
 

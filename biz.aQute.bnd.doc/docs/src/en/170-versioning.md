@@ -20,10 +20,10 @@ In contrast, versioning the packages and using Import-Package, bundles can be re
 ## Versions in OSGi
 A version in OSGi has 4 parts:
 
-    major        1
-    minor        1.1
-    micro        1.1.1
-    qualifier    1.1.1.qualifier
+  major        1
+  minor        1.1
+  micro        1.1.1
+  qualifier    1.1.1.qualifier
 
 To survive versioning, one must have a ''version policy''. A version policy puts semantics on the version numbers. The ''recommended'' policy in OSGi is changing the part when there is:
 
