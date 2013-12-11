@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.regex.*;
 
 import aQute.lib.io.*;
 import aQute.lib.properties.*;
@@ -25,6 +26,11 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		this.properties = properties;
 		this.parent = parent;
 		this.base = base;
+		if (parent != null) {
+			setTrace(parent.isTrace());
+			setExceptions(parent.isExceptions());
+			setPedantic(parent.isPedantic());
+		}
 	}
 
 	public Env(Env env) {
@@ -101,13 +107,28 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		addAll((Map) map);
 	}
 
-	public void setProperties(File file) {
+	public void setProperties(File file) throws Exception {
 
 		if (!file.isFile())
 			error("No such file %s", file);
 		else {
-			// setProperties(file.toURI(), file.getName(),
-			// file.getParentFile().toURI());
+			setProperties(file.toURI());
+		}
+	}
+	public void addProperties(File file, Pattern matching) throws Exception {
+
+		if (!file.isFile())
+			error("No such file %s", file);
+		else {
+			if ( file.isFile())
+				setProperties(file.toURI());
+			else {
+				for ( File sub : file.listFiles()) {
+					if ( matching.matcher(sub.getName()).matches()) {
+						addProperties(file, matching);
+					}
+				}
+			}
 		}
 	}
 
@@ -145,7 +166,7 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 	}
 
 	public File getFile(String file) {
-		return IO.getFile(base, file);
+		return IO.getFile(getBase(), file);
 	}
 
 	public void addTarget(Object domain) {
@@ -156,17 +177,44 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		replacer.removeTarget(domain);
 	}
 
-	protected void prepare() throws Exception {
+	protected boolean prepare() throws Exception {
+		boolean old = prepared;
 		prepared = true;
+		return old;
 	}
-	
+
 	protected boolean isPrepared() {
 		return prepared;
 	}
-	
+
 	protected boolean clear() {
 		boolean old = prepared;
 		prepared = false;
 		return old;
+	}
+
+	protected Properties getProperties() {
+		return properties;
+	}
+	/**
+	 * Return a file relative to the base.
+	 */
+
+
+	public File getFile(String file, String notfound) {
+		File f = IO.getFile(getBase(), file);
+		if (!f.isFile() && notfound != null) {
+			error(notfound, f.getAbsolutePath());
+			f = null;
+		}
+		return f;
+	}
+	public File getDir(String file, String notfound) {
+		File f = IO.getFile(base, file);
+		if (!f.isDirectory() && notfound != null) {
+			error(notfound, f.getAbsolutePath());
+			f = null;
+		}
+		return f;
 	}
 }

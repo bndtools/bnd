@@ -6,14 +6,13 @@ import java.nio.charset.*;
 import java.util.*;
 
 import aQute.lib.collections.*;
+import aQute.lib.env.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
 import aQute.lib.justif.*;
 import aQute.lib.settings.*;
-import aQute.libg.reporter.*;
 
-public abstract class AbstractConsoleApp extends ReporterAdapter {
-	File						base		= IO.work;
+public abstract class AbstractConsoleApp extends Env {
 	Settings					settings;
 
 	protected final PrintStream	err;
@@ -38,7 +37,6 @@ public abstract class AbstractConsoleApp extends ReporterAdapter {
 	 */
 
 	public AbstractConsoleApp(Object target) throws UnsupportedEncodingException {
-		super(new PrintStream(System.err, true, encoding));
 		this.target = target == null ? this : target;
 		err = new PrintStream(System.err, true, encoding);
 		out = new PrintStream(System.out, true, encoding);
@@ -105,17 +103,20 @@ public abstract class AbstractConsoleApp extends ReporterAdapter {
 	 * @throws InterruptedException
 	 * @throws IOException
 	 */
-	@Description("Just Another Package Manager for Java (\"jpm help jpm\" to see a list of global options)")
-	public void _main(MainOptions opts) throws IOException {
-
+	@Description("")
+	public void __main(MainOptions opts) throws IOException {
+		System.out.println("in base main " + opts.base());
 		try {
 			setExceptions(opts.exceptions());
 			setTrace(opts.trace());
 			setPedantic(opts.pedantic());
 
 			if (opts.base() != null)
-				base = IO.getFile(base, opts.base());
-
+				setBase(IO.getFile(getBase(), opts.base()));
+			else
+				setBase(IO.work);
+			System.out.println("in base main " + getBase());
+			
 			if (opts.width() > 0)
 				this.width = opts.width();
 
@@ -159,28 +160,4 @@ public abstract class AbstractConsoleApp extends ReporterAdapter {
 		}
 	}
 
-	/**
-	 * Return a file relative to the base.
-	 */
-
-	public File getFile(String file) {
-		return getFile(file, null);
-	}
-
-	public File getFile(String file, String notfound) {
-		File f = IO.getFile(base, file);
-		if (!f.isFile() && notfound != null) {
-			error(notfound, f.getAbsolutePath());
-			f = null;
-		}
-		return f;
-	}
-	public File getDir(String file, String notfound) {
-		File f = IO.getFile(base, file);
-		if (!f.isDirectory() && notfound != null) {
-			error(notfound, f.getAbsolutePath());
-			f = null;
-		}
-		return f;
-	}
 }
