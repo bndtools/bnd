@@ -403,7 +403,7 @@ public class Analyzer extends Processor {
 			// based on the class version
 			//
 
-			if (!isTrue(NOEE) //
+			if (!isTrue(getProperty(NOEE)) //
 					&& !ees.isEmpty() // no use otherwise
 					&& since(About._2_3) // we want people to not have to
 											// automatically add it
