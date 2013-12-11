@@ -1446,7 +1446,7 @@ public class Project extends Processor {
 	}
 
 	public File getOutputFile(String bsn) throws Exception {
-		return new File(getTarget(), bsn + ".jar");
+		return new File(getTarget(), getProperty("output", bsn + ".jar"));
 	}
 
 	private void reportNewer(long lastModified, Jar jar) {
