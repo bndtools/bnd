@@ -1571,7 +1571,7 @@ public class Project extends Processor {
 
 	public void test() throws Exception {
 
-		String testcases = get(Constants.TESTCASES);
+		String testcases = getProperties().getProperty(Constants.TESTCASES);
 		if (testcases == null) {
 			warning("No %s set", Constants.TESTCASES);
 			return;
