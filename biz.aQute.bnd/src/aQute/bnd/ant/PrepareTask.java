@@ -61,12 +61,11 @@ public class PrepareTask extends BaseTask {
 	private void checkForTesting(Project project, Properties properties) throws Exception {
 
 		//
-		// Only run junit when we have a junit dependency on the cp
-		// with "junit" in it.
+		// Only run junit when we have a test src directory
 		//
 
 		boolean junit = project.getTestSrc().isDirectory() && !Processor.isTrue(project.getProperty(Constants.NOJUNIT));
-		boolean junitOsgi = project.getProperty("Test-Cases") != null
+		boolean junitOsgi = project.getProperties().getProperty(Constants.TESTCASES) != null
 				&& !Processor.isTrue(project.getProperty(Constants.NOJUNITOSGI));
 
 		if (junit)

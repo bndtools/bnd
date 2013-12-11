@@ -21,29 +21,55 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/**
+	 * <pre>
+	 * [2013-12-11 15:55:14] BJ Hargrave: init:
+	 *      [echo] Enter project org.osgi.test.cases.prefs (${top})
+	 * [bndprepare] 2 WARNINGS
+	 * [bndprepare]  No translation found for macro: classes;extending;junit.framework.TestCase;concrete
+	 * [bndprepare]  No translation found for macro: classes,concrete
+	 * [2013-12-11 15:55:31] BJ Hargrave: I am getting this on the latest bnd.master in the OSGi test projects
+	 * </pre>
+	 * 
+	 * @throws Exception
+	 */
+
+	public static void testClassQuery() throws Exception {
+		Builder a = new Builder();
+		a.addClasspath(new File("bin"));
+		a.setExportPackage("test.component");
+		a.setProperty("testcases","${sort;${classes;extending;junit.framework.TestCase;concrete}}");
+		a.setProperty("Test-Cases", "${testcases}");
+		Jar jar = a.build();
+		assertTrue(a.check());
+		Manifest m = jar.getManifest();
+		Parameters p = new Parameters( m.getMainAttributes().getValue("Test-Cases"));
+		assertTrue( p.size()>= 4);
+	}
+
+	/**
 	 * Bundle ActivationPolicy
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	public void testBundleActivationPolicy() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath( IO.getFile("bin"));;
+		b.addClasspath(IO.getFile("bin"));
+		;
 		b.setProperty("Bundle-ActivationPolicy", "lazy");
 		b.setProperty("Export-Package", "test.activator");
 		b.build();
 		assertTrue(b.check());
 	}
-	
+
 	/**
 	 * #388 Manifest header to get GIT head
 	 */
 	public void testGitHead() {
 		Builder b = new Builder();
 		String s = b.getReplacer().process("${githead}");
-		assertTrue( Hex.isHex(s));
+		assertTrue(Hex.isHex(s));
 	}
-	
-	
-	
+
 	/**
 	 * An old osgi 3.0.0 jar had an old packageinfo in it. This included some
 	 * never well developed syntax which now clashes with the proprty syntax.
@@ -75,7 +101,7 @@ public class BuilderTest extends BndTestCase {
 		b.setExportPackage("test.package_info_versioniskey");
 		b.build();
 		b.check();
-		
+
 		b.getJar().getManifest().write(System.out);
 		String message = b.getErrors().get(0);
 		assertTrue("The lacking version error first",
@@ -279,15 +305,18 @@ public class BuilderTest extends BndTestCase {
 
 	public static void testEEMacro2() throws Exception {
 		String[] packages = {
-				"eclipse_1_1", "eclipse_1_2", "eclipse_1_3", "eclipse_1_4", "eclipse_1_5", "eclipse_1_6","eclipse_1_7",
-				"eclipse_jsr14", "sun_1_8"
+				"eclipse_1_1", "eclipse_1_2", "eclipse_1_3", "eclipse_1_4", "eclipse_1_5", "eclipse_1_6",
+				"eclipse_1_7", "eclipse_jsr14", "sun_1_8"
 		};
 
 		String[] ees = {
-				"JRE-1.1", "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6", "JavaSE-1.7","J2SE-1.4", "JavaSE-1.8"
+				"JRE-1.1", "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6", "JavaSE-1.7", "J2SE-1.4",
+				"JavaSE-1.8"
 		};
-		String[] versions = {"1.1","1.2","1.3","1.4","1.5","1.6","1.7","1.4", "1.8"};
-		Pattern p = Pattern.compile("\\(&\\(osgi.ee=JavaSE\\)\\(version=("+Version.VERSION_STRING+")\\)\\)");
+		String[] versions = {
+				"1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.4", "1.8"
+		};
+		Pattern p = Pattern.compile("\\(&\\(osgi.ee=JavaSE\\)\\(version=(" + Version.VERSION_STRING + ")\\)\\)");
 		for (int i = 0; i < packages.length; i++) {
 			Builder b = new Builder();
 			b.addClasspath(new File("compilerversions/compilerversions.jar"));
@@ -299,16 +328,16 @@ public class BuilderTest extends BndTestCase {
 			Parameters ee = domain.getBundleRequiredExecutionEnvironment();
 			System.err.println(ee);
 			assertEquals(ees[i], ee.toString());
-			
+
 			//
 			// Check the requirements
 			//
 			Parameters een = domain.getRequireCapability();
-			assertFalse( een.isEmpty());
+			assertFalse(een.isEmpty());
 			Attrs attrs = een.get("osgi.ee");
 			String filter = attrs.get("filter:");
 			Matcher m = p.matcher(filter);
-			assertTrue ( m.matches());
+			assertTrue(m.matches());
 			assertEquals(versions[i], m.group(1));
 		}
 	}
@@ -1517,7 +1546,6 @@ public class BuilderTest extends BndTestCase {
 		assertTrue(analyzer.check("file does not exist: does_not_exist"));
 
 	}
-
 
 	/**
 	 * Check if we can use findpath to build the Bundle-Classpath.

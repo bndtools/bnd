@@ -213,9 +213,10 @@ public class Macro {
 		if (value != null)
 			return value;
 		if (!flattening && !key.startsWith("@"))
-			domain.warning("No translation found for macro: " + key);
+			domain.warning("No translation found for macro: %s, in %s", key, domain );
 		return "${" + key + "}";
 	}
+
 
 	/**
 	 * Parse the key as a command. A command consist of parameters separated by
