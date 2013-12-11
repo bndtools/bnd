@@ -57,7 +57,7 @@ public class About {
 			"Removed synthetic methods from the binary compatibility check since the compilers generate different methods.",
 			"Added check for filenames that do not work on windows",
 			"Implemented the {Processor.since() functionality with the " + Constants.UPTO + " instruction.",
-			"#413 Automatically adding the EE to the Require Capability header based on the compiled class file version.",
+			"#413 Automatically adding the EE to the Require Capability header based on the compiled class file version. Can be disabled with -noee=true",
 			"Added 1.7 and 1.8 compiler files and EEs",
 			"The package command not faithfully provides the classpath. In the previous version it flattened all jars",
 			"#41 Supports parameters in macros: \n\u00A0   ${x;a;b} -> x = ${1}/${2} -> a/b\n${#} an array with arguments. ${0} is the name of the macro.",
