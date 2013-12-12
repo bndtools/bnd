@@ -12,9 +12,11 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -36,8 +38,6 @@ import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResult;
-import org.eclipse.aether.resolution.VersionRequest;
-import org.eclipse.aether.resolution.VersionResult;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.transfer.AbstractTransferListener;
@@ -52,15 +52,17 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
 
-public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugin {
+public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugin, IndexProvider {
 
 	public static final String PROP_NAME = "name";
 	public static final String PROP_MAIN_URL = "url";
@@ -427,6 +429,17 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			repoName = path.substring(slashPosition + 1);
 		
 		return hostedUri.resolve("../shadows/" + repoName + "-obr/" + META_OBR);
+	}
+	
+	@Override
+	public List<URI> getIndexLocations() throws Exception {
+		init();
+		return indexedRepo != null ? indexedRepo.getIndexLocations() : Collections.<URI>emptyList();
+	}
+	
+	@Override
+	public Set<ResolutionPhase> getSupportedPhases() {
+		return EnumSet.allOf(ResolutionPhase.class);
 	}
 	
 	static class ResultHolder {
