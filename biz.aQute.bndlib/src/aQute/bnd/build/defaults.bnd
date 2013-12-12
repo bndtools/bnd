@@ -11,6 +11,8 @@ project.testpath        = ${p-testpath;:}
 project:      ${basedir}
 src:          src
 bin:          bin
+testsrc:      test
+testbin:      bin_test
 target-dir:   generated
 target:       ${project}/${target-dir}
 build:        ${workspace}/cnf
