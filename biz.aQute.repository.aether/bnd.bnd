@@ -1,0 +1,57 @@
+Bundle-Version: 1.0.0.${tstamp}
+
+aether-version: 0.9.0.M3
+
+-buildpath:\
+	aQute.libg; version=project,\
+	biz.aQute.bndlib; version=project,\
+	biz.aQute.repository; version=project,\
+	junit.osgi,\
+	lib/aether-api-${aether-version}.jar; version=file,\
+	lib/aether-spi-${aether-version}.jar; version=file,\
+	lib/aether-impl-${aether-version}.jar; version=file,\
+	lib/aether-util-${aether-version}.jar; version=file,\
+	lib/aether-connector-basic-${aether-version}.jar; version=file,\
+	lib/aether-transport-http-${aether-version}.jar; version=file,\
+	lib/aether-transport-file-${aether-version}.jar; version=file,\
+	lib/maven-aether-provider-3.1.1.jar; version=file,\
+	lib/maven-model-builder-3.1.0.jar; version=file,\
+	lib/maven-model-3.1.0.jar; version=file,\
+	lib/maven-repository-metadata-3.1.0.jar; version=file,\
+	lib/plexus-utils-3.0.10.jar; version=file,\
+	lib/plexus-interpolation-1.16.jar; version=file,\
+	lib/httpcore-4.2.4.jar; version=file,\
+	lib/httpclient-4.2.5.jar; version=file,\
+	lib/jcl-over-slf4j-1.6.2.jar; version=file,\
+	lib/slf4j-api-1.6.2.jar; version=file,\
+	lib/slf4j-jdk14-1.6.2.jar; version=file,\
+	lib/commons-codec-1.8.jar; version=file
+
+aether-packages: org.eclipse.aether.*
+
+maven-packages:\
+	org.apache.maven.repository.internal,\
+	org.apache.maven.artifact.repository.metadata,\
+	org.apache.maven.artifact.repository.metadata.io.xpp3,\
+	org.apache.maven.model.*,\
+	org.codehaus.plexus.util.xml,\
+	org.codehaus.plexus.util.xml.pull,\
+	org.codehaus.plexus.interpolation,\
+	org.codehaus.plexus.util
+
+http-packages:\
+	org.apache.http.*,\
+	org.apache.commons.codec.binary,\
+	org.apache.commons.codec
+
+logging-packages:\
+	org.apache.commons.logging,\
+	org.apache.commons.logging.impl,\
+	org.slf4j.*
+
+Private-Package: \
+	aQute.bnd.deployer.repository.aether,\
+	${aether-packages},\
+	${maven-packages},\
+	${http-packages},\
+	${logging-packages}
