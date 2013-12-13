@@ -1,6 +1,7 @@
 # Release Cycle
 
 The following release cycle is used:
+
 ```
 ----> DEV ---> RCx ---> REL --+
  ^ ^       ^        |         |
@@ -40,29 +41,39 @@ We assume that changes to the source code will be pushed to the git remote repos
 
 
 * Make sure that the `Changes-in-a-b-c` page is added to / present on the [changelogs page](https://github.com/bndtools/bndtools/wiki/Changelogs). If it is not present, then edit the page, add the snippet below, and save the page.
+
 ```
 [Changes in a.b.c](https://github.com/bndtools/bndtools/wiki/Changes-in-a.b.c)
 ```
+
 * Click on the `Changes in a.b.c` page link to go to it. Usually the `Changes-in-a-b-c` page will be build up during development as the `Changes-on-master` page. If that page is present, then copy its contents into the `Changes-in-a-b-c` page and adjust it. Otherwise, just make sure it is up-to-date.
 * Open a bash shell and enter the directory in which you have checked out the source code.
 * Clean the source code checkout (this will destroy any changes)
+
 ```
 git clean -fdx
 git reset --hard
 ```
+
 * Switch to the `master` branch
+
 ```
 git checkout master
 ```
+
 * Update the versions in the source code. From the root of the checkout, run the script
+
 ```
 ./cnf/scripts/setVersion.bash a.b.c.REL
 ```
+
 * Create a git tag and push it (and the `master` branch as well)
+
 ```
 git tag -a a.b.c.REL
 git push github master a.b.c.REL
 ```
+
 * Let Jenkins on [Cloudbees](https://bndtools.ci.cloudbees.com/) build the release, wait for the build to finish and be successful.
 * Lock the Cloudbees build so that it is kept forever, and set the build information to `Bndtools a.b.c.REL`
 * Download a ZIP file with the relevant archived artifacts from https://bndtools.ci.cloudbees.com/job/bndtools.master/lastSuccessfulBuild/artifact/build/generated/*zip*/generated.zip
@@ -73,10 +84,14 @@ git push github master a.b.c.REL
   * generated/bndtools-latest.zip
 * Push the changes in the `release` repository.
 * Update the versions for the next development build, run the script
+
 ```
 ./cnf/scripts/setVersion.bash a.d.0.DEV
 ```
+
 * Push the version change.
+
 ```
 git push github master
 ```
+
