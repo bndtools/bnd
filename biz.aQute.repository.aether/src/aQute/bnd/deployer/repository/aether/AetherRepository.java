@@ -296,6 +296,11 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			
 			// Do the deploy and report results
 			repoSystem.deploy(session, request);
+			
+			// Reload the index
+			if (indexedRepo != null)
+				indexedRepo.reset();
+			
 			if (resultHolder.result != null)
 				return resultHolder.result;
 			else if (resultHolder.error != null)
@@ -366,6 +371,22 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			ArtifactRequest request = new ArtifactRequest();
 			request.setArtifact(artifact);
 			request.setRepositories(Collections.singletonList(remoteRepo));
+			
+			// Log the transfer
+			session.setTransferListener(new AbstractTransferListener() {
+				@Override
+				public void transferStarted(TransferEvent event) throws TransferCancelledException {
+					System.err.println(event);
+				}
+				@Override
+				public void transferSucceeded(TransferEvent event) {
+					System.err.println(event);
+				}
+				@Override
+				public void transferFailed(TransferEvent event) {
+					System.err.println(event);
+				}
+			});
 			
 			// Resolve the version
 			ArtifactResult artifactResult = repoSystem.resolveArtifact(session, request);
