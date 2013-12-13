@@ -691,6 +691,7 @@ public class bnd extends Processor {
 			return;
 		}
 		project.build(opts.test());
+		getInfo(project);
 	}
 
 	@Description("Test a project according to an OSGi test")
