@@ -431,25 +431,20 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 	 * "releases"; it will have the URI
 	 * {@code http://hostname/nexus/content/repositories/releases}. We assume
 	 * there is a Virtual OBR repository with ID "releases-obr". It will have
-	 * the URL {@code http://hostname/nexus/content/shadows/releases-obr}, and
+	 * the URL {@code http://hostname/nexus/content/repositories/releases-obr}, and
 	 * the OBR index will be at
-	 * {@code http://hostname/nexus/content/shadows/releases-obr/.meta/obr.xml}.
+	 * {@code http://hostname/nexus/content/repositories/releases-obr/.meta/obr.xml}.
 	 * 
 	 * @param hostedUri
 	 *            The URI of the source Hosted repository.
 	 * @return
 	 */
 	private static URI findDefaultVirtualIndexUri(URI hostedUri) {
-		String repoName;
+		String uriStr = hostedUri.toString();
+		if (uriStr.endsWith("/"))
+			uriStr = uriStr.substring(0, uriStr.length() - 1);
 		
-		String path = hostedUri.getPath();
-		int slashPosition = path.lastIndexOf('/');
-		if (slashPosition < 0)
-			repoName = path;
-		else
-			repoName = path.substring(slashPosition + 1);
-		
-		return hostedUri.resolve("../shadows/" + repoName + "-obr/" + META_OBR);
+		return URI.create(uriStr + "-obr/" + META_OBR);
 	}
 	
 	@Override
