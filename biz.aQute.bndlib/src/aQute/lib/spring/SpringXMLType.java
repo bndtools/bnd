@@ -18,7 +18,7 @@ public class SpringXMLType extends XMLTypeProcessor {
 	protected List<XMLType> getTypes(Analyzer analyzer) throws Exception {
 		List<XMLType> types = new ArrayList<XMLType>();
 
-		String header = analyzer.getProperty("Bundle-Blueprint", "OSGI-INF/blueprint");
+		String header = analyzer.getProperty(Constants.BUNDLE_BLUEPRINT, "OSGI-INF/blueprint");
 		process(types, "extract.xsl", header, ".*\\.xml");
 		header = analyzer.getProperty("Spring-Context", "META-INF/spring");
 		process(types, "extract.xsl", header, ".*\\.xml");
