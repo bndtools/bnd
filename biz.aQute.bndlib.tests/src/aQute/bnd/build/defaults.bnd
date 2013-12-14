@@ -1,3 +1,10 @@
+# these really need to always be in defaults.bnd
+src:          src
+bin:          bin
+testsrc:      test
+testbin:      bin_test
+target-dir:   generated
+
 # Replaces the "real" defaults.bnd
 # Used by WorkspaceTest.testPropertyDefaulting()
 myprop1: defaults

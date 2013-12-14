@@ -302,7 +302,8 @@ public class Project extends Processor {
 	 * 
 	 */
 	private File getTarget0() throws IOException {
-		File target = getFile(getProperty("target-dir", "generated")); // FIXME get default from defaults.bnd
+		String deflt = Workspace.getDefaults().getProperty("target-dir");
+		File target = getFile(getProperty("target-dir", deflt));
 		if (!target.exists()) {
 			if (!target.mkdirs()) {
 				throw new IOException("Could not create directory " + target);
@@ -313,19 +314,23 @@ public class Project extends Processor {
 	}
 
 	public File getSrc() {
-		return new File(getBase(), getProperty("src", "src")); // FIXME get default from defaults.bnd
+		String deflt = Workspace.getDefaults().getProperty("src");
+		return new File(getBase(), getProperty("src", deflt));
 	}
 
 	private File getOutput0() {
-		return getFile(getProperty("bin", "bin")).getAbsoluteFile(); // FIXME get default from defaults.bnd
+		String deflt = Workspace.getDefaults().getProperty("bin");
+		return getFile(getProperty("bin", deflt)).getAbsoluteFile();
 	}
 
 	public File getTestSrc() {
-		return new File(getBase(), getProperty("testsrc", "test")); // FIXME get default from defaults.bnd
+		String deflt = Workspace.getDefaults().getProperty("testsrc");
+		return new File(getBase(), getProperty("testsrc", deflt));
 	}
 
 	public File getTestOutput() throws Exception {
-		return new File(getBase(), getProperty("testbin", "bin_test")); // FIXME get default from defaults.bnd
+		String deflt = Workspace.getDefaults().getProperty("testbin");
+		return new File(getBase(), getProperty("testbin", deflt));
 	}
 
 	private void traverse(Collection<Project> dependencies, Set<Project> visited) throws Exception {
