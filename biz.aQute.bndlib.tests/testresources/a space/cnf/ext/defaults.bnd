@@ -1,3 +1,10 @@
+# these really need to always be in defaults.bnd
+src:          src
+bin:          bin
+testsrc:      test
+testbin:      bin_test
+target-dir:   generated
+
 # General Options
 project.dependson       = ${p-dependson;:}
 project.bootclasspath   = ${p-bootclasspath;:}
@@ -9,9 +16,6 @@ project.testpath        = ${p-testpath;:}
 
 -verbose:     true
 project:      ${basedir}
-src:          src
-bin:          bin
-target-dir:   generated
 target:       ${project}/${target-dir}
 build:        ${workspace}/cnf
 p:            ${basename;${project}}
