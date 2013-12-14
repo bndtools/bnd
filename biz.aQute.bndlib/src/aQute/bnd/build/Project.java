@@ -299,17 +299,10 @@ public class Project extends Processor {
 	}
 
 	/**
-	 * @return
-	 */
-	private File getOutput0() {
-		return getFile(getProperty("bin", "bin")).getAbsoluteFile();
-	}
-
-	/**
 	 * 
 	 */
 	private File getTarget0() throws IOException {
-		File target = getFile(getProperty("target", "generated"));
+		File target = getFile(getProperty("target-dir", "generated")); // FIXME get default from defaults.bnd
 		if (!target.exists()) {
 			if (!target.mkdirs()) {
 				throw new IOException("Could not create directory " + target);
@@ -320,15 +313,19 @@ public class Project extends Processor {
 	}
 
 	public File getSrc() {
-		return new File(getBase(), getProperty("src", "src"));
+		return new File(getBase(), getProperty("src", "src")); // FIXME get default from defaults.bnd
+	}
+
+	private File getOutput0() {
+		return getFile(getProperty("bin", "bin")).getAbsoluteFile(); // FIXME get default from defaults.bnd
 	}
 
 	public File getTestSrc() {
-		return new File(getBase(), getProperty("test", "test"));
+		return new File(getBase(), getProperty("testsrc", "test")); // FIXME get default from defaults.bnd
 	}
 
 	public File getTestOutput() throws Exception {
-		return new File(getBase(), getProperty("bin_test", "bin_test"));
+		return new File(getBase(), getProperty("testbin", "bin_test")); // FIXME get default from defaults.bnd
 	}
 
 	private void traverse(Collection<Project> dependencies, Set<Project> visited) throws Exception {
