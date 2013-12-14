@@ -302,8 +302,8 @@ public class Project extends Processor {
 	 * 
 	 */
 	private File getTarget0() throws IOException {
-		String deflt = Workspace.getDefaults().getProperty("target-dir");
-		File target = getFile(getProperty("target-dir", deflt));
+		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TARGET_DIR);
+		File target = getFile(getProperty(Constants.DEFAULT_PROP_TARGET_DIR, deflt));
 		if (!target.exists()) {
 			if (!target.mkdirs()) {
 				throw new IOException("Could not create directory " + target);
@@ -314,23 +314,23 @@ public class Project extends Processor {
 	}
 
 	public File getSrc() {
-		String deflt = Workspace.getDefaults().getProperty("src");
-		return new File(getBase(), getProperty("src", deflt));
+		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_SRC_DIR);
+		return new File(getBase(), getProperty(Constants.DEFAULT_PROP_SRC_DIR, deflt));
 	}
 
 	private File getOutput0() {
-		String deflt = Workspace.getDefaults().getProperty("bin");
-		return getFile(getProperty("bin", deflt)).getAbsoluteFile();
+		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_BIN_DIR);
+		return getFile(getProperty(Constants.DEFAULT_PROP_BIN_DIR, deflt)).getAbsoluteFile();
 	}
 
 	public File getTestSrc() {
-		String deflt = Workspace.getDefaults().getProperty("testsrc");
-		return new File(getBase(), getProperty("testsrc", deflt));
+		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR);
+		return new File(getBase(), getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR, deflt));
 	}
 
 	public File getTestOutput() throws Exception {
-		String deflt = Workspace.getDefaults().getProperty("testbin");
-		return new File(getBase(), getProperty("testbin", deflt));
+		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR);
+		return new File(getBase(), getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR, deflt));
 	}
 
 	private void traverse(Collection<Project> dependencies, Set<Project> visited) throws Exception {
