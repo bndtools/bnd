@@ -50,7 +50,7 @@
         <pathconvert refid="srcjavafiles" property="srcjavafiles.present" setonempty="false"/>
 
         <fileset dir="${project}" id="testjavafiles">
-            <include name="test/**/*.java"/>
+            <include name="${testsrc}/**/*.java"/>
         </fileset>
         <pathconvert refid="testjavafiles" property="testjavafiles.present" setonempty="false"/>
 
@@ -78,15 +78,15 @@
          Compile the sources.
     -->
     <target name="compile" depends="dependencies" if="srcjavafiles.present">
-        <mkdir dir="${project.output}"/>
-        <javac fork="yes" executable="${javac}" srcdir="${project.sourcepath}" destdir="${project.output}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
+        <mkdir dir="${bin}"/>
+        <javac fork="yes" executable="${javac}" srcdir="${src}" destdir="${bin}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
         <!--
           The eclipse compiler copies resources but the Javac compiler does not
           If ${src} == ${bin} then this is not necessary, but unfortunately, now
           it is.
         -->
-        <copy todir="${project.output}" verbose="${verbose}" preservelastmodified="true">
-            <fileset dir="${project.sourcepath}">
+        <copy todir="${bin}" verbose="${verbose}" preservelastmodified="true">
+            <fileset dir="${src}">
                 <exclude name="**/*.java" />
                 <exclude name="**/*.class" />
             </fileset>
@@ -111,15 +111,15 @@
         Run the junit test if present and no disabled by the no.junit property.
     -->
     <target name="compileTests" depends="init,build" if="testjavafiles.present" unless="no.junit">
-        <mkdir dir="bin_test"/>
-        <javac fork="yes" executable="${javac}" srcdir="test" destdir="bin_test" classpath="${project.buildpath}:${project.testpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
+        <mkdir dir="${testbin}"/>
+        <javac fork="yes" executable="${javac}" srcdir="${testsrc}" destdir="${testbin}" classpath="${project.buildpath}:${project.testpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
         <!--
           The eclipse compiler copies resources but the Javac compiler does not
           If ${src} == ${bin} then this is not necessary, but unfortunately, now
           it is.
         -->
-        <copy todir="bin_test" verbose="${verbose}" preservelastmodified="true">
-            <fileset dir="test">
+        <copy todir="${testbin}" verbose="${verbose}" preservelastmodified="true">
+            <fileset dir="${testsrc}">
                 <exclude name="**/*.java" />
                 <exclude name="**/*.class" />
             </fileset>
@@ -131,10 +131,10 @@
             <assertions>
                 <enable />
             </assertions>
-            <classpath path="${project.buildpath}:bin_test/" />
+            <classpath path="${project.buildpath}:${testbin}/" />
             <formatter type="xml"/>
             <batchtest todir="${target}">
-                <fileset dir="test">
+                <fileset dir="${testsrc}">
                     <include name="**/*.java"/>
                 </fileset>
             </batchtest>
@@ -173,8 +173,8 @@
     -->
     <target name="clean" depends="init">
         <bnd command="clean" exceptions="true" basedir="${project}" />
-        <delete dir="bin"/>
-        <delete dir="bin_test"/>
+        <delete dir="${bin}"/>
+        <delete dir="${testbin}"/>
         <delete dir="${target}"/>
     </target>
 
@@ -213,7 +213,7 @@
     </target>
 
 
-	<!--
+    <!--
          ECHO
 
          Print some settings
@@ -222,6 +222,10 @@
         <echo>verbose:                ${verbose}</echo>
         <echo>project.name:           ${project.name}</echo>
         <echo>Bundle-Version:         ${Bundle-Version}</echo>
+        <echo>src:                    ${src}</echo>
+        <echo>bin:                    ${bin}</echo>
+        <echo>testsrc:                ${testsrc}</echo>
+        <echo>testbin:                ${testbin}</echo>
         <echo>project.output:         ${project.output}</echo>
         <echo>project.sourcepath:     ${project.sourcepath}</echo>
         <echo>project.allsourcepath:  ${project.allsourcepath}</echo>
