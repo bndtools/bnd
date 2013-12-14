@@ -207,7 +207,7 @@ public class Project extends Processor {
 						sourcepath.add(getBase());
 
 					// Set default bin directory
-					output = getOutput0();
+					output = getSrcOutput().getAbsoluteFile();
 					if (!output.exists()) {
 						if (!output.mkdirs()) {
 							throw new IOException("Could not create directory " + output);
@@ -298,12 +298,12 @@ public class Project extends Processor {
 		}
 	}
 
-	/**
+	/*
 	 * 
 	 */
+
 	private File getTarget0() throws IOException {
-		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TARGET_DIR);
-		File target = getFile(getProperty(Constants.DEFAULT_PROP_TARGET_DIR, deflt));
+		File target = getTargetDir();
 		if (!target.exists()) {
 			if (!target.mkdirs()) {
 				throw new IOException("Could not create directory " + target);
@@ -315,22 +315,27 @@ public class Project extends Processor {
 
 	public File getSrc() {
 		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_SRC_DIR);
-		return new File(getBase(), getProperty(Constants.DEFAULT_PROP_SRC_DIR, deflt));
+		return getFile(getProperty(Constants.DEFAULT_PROP_SRC_DIR, deflt));
 	}
 
-	private File getOutput0() {
+	public File getSrcOutput() {
 		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_BIN_DIR);
-		return getFile(getProperty(Constants.DEFAULT_PROP_BIN_DIR, deflt)).getAbsoluteFile();
+		return getFile(getProperty(Constants.DEFAULT_PROP_BIN_DIR, deflt));
 	}
 
 	public File getTestSrc() {
 		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR);
-		return new File(getBase(), getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR, deflt));
+		return getFile(getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR, deflt));
 	}
 
-	public File getTestOutput() throws Exception {
+	public File getTestOutput() {
 		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR);
-		return new File(getBase(), getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR, deflt));
+		return getFile(getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR, deflt));
+	}
+
+	public File getTargetDir() {
+		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TARGET_DIR);
+		return getFile(getProperty(Constants.DEFAULT_PROP_TARGET_DIR, deflt));
 	}
 
 	private void traverse(Collection<Project> dependencies, Set<Project> visited) throws Exception {
@@ -1553,7 +1558,7 @@ public class Project extends Processor {
 				throw new IOException("Could not create directory " + target);
 			}
 		}
-		File output = getOutput0();
+		File output = getSrcOutput().getAbsoluteFile();
 		if (getOutput().isDirectory())
 			IO.delete(output);
 		if (!output.exists() && !output.mkdirs()) {
