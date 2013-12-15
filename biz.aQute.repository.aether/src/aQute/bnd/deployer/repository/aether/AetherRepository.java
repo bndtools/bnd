@@ -51,7 +51,6 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder;
 
 import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Registry;
@@ -239,32 +238,12 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			
 			// Get basic info about the bundle we're deploying
 			Jar jar = new Jar(tmpFile);
-			String bsn;
-			String groupId;
-			String artifactId;
-			Version version;
-			try {
-				bsn = jar.getBsn();
-				if (bsn == null || !Verifier.isBsn(bsn))
-					throw new IllegalArgumentException("Jar does not have a valid Bundle-SymbolicName manifest header");
-				String versionString = jar.getVersion();
-				if (versionString == null)
-					versionString = "0";
-				else if (!Verifier.isVersion(versionString))
-					throw new IllegalArgumentException("Invalid version " + versionString + " in file " + tmpFile);
-				version = Version.parseVersion(versionString);
-				String[] coords = getGroupAndArtifactForBsn(bsn);
-				groupId = coords[0];
-				artifactId = coords[1];
-			} finally {
-				jar.close();
-			}
-			MavenProjectVersion projectVersion = new MavenProjectVersion(version);
+			Artifact artifact = ConversionUtils.fromBundleJar(jar);
+			artifact.setFile(tmpFile);
 	
 			// Setup the Aether repo session and create the deployment request
 			DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 			session.setLocalRepositoryManager(repoSystem.newLocalRepositoryManager(session, localRepo));
-			Artifact artifact = new DefaultArtifact(groupId, artifactId, "jar", projectVersion.toString()).setFile(tmpFile);
 			final DeployRequest request = new DeployRequest();
 			request.addArtifact(artifact);
 			request.setRepository(remoteRepo);
@@ -296,18 +275,17 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			
 			// Do the deploy and report results
 			repoSystem.deploy(session, request);
-			
-			// Reload the index
-			if (indexedRepo != null)
-				indexedRepo.reset();
-			
-			if (resultHolder.result != null)
-				return resultHolder.result;
-			else if (resultHolder.error != null)
-				throw new Exception("Error during artifact upload", resultHolder.error);
-			else
-				throw new Exception("Artifact was not uploaded");
 
+			if (resultHolder.result != null) {
+				if (indexedRepo != null)
+					indexedRepo.reset();
+
+				return resultHolder.result;
+			} else if (resultHolder.error != null) {
+				throw new Exception("Error during artifact upload", resultHolder.error);
+			} else {
+				throw new Exception("Artifact was not uploaded");
+			}
 		} finally {
 			if (tmpFile != null && tmpFile.isFile())
 				IO.delete(tmpFile);
@@ -328,13 +306,13 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 
 		// Use the index by preference
 		if (indexedRepo != null)
-			return indexedRepo.versions(bsn);
+			return indexedRepo.versions(ConversionUtils.maybeMavenCoordsToBsn(bsn));
 
 		// Setup the Aether repo session and create the range request
 		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 		session.setLocalRepositoryManager(repoSystem.newLocalRepositoryManager(session, localRepo));
-		String[] coords = getGroupAndArtifactForBsn(bsn);
-		Artifact artifact = new DefaultArtifact(coords[0], coords[1], "jar", "[0,)");
+		Artifact artifact = new DefaultArtifact(bsn + ":[0,)");
+
 		VersionRangeRequest rangeRequest = new VersionRangeRequest();
 		rangeRequest.setArtifact(artifact);
 		rangeRequest.setRepositories(Collections.singletonList(remoteRepo));
@@ -345,7 +323,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 		// Add to the result
 		SortedSet<Version> versions = new TreeSet<Version>();
 		for (org.eclipse.aether.version.Version version : rangeResult.getVersions()) {
-			MavenProjectVersion parsed = MavenProjectVersion.parseString(version.toString());
+			MvnVersion parsed = MvnVersion.parseString(version.toString());
 			versions.add(parsed.getOSGiVersion());
 		}
 		return versions;
@@ -357,7 +335,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 		
 		// Use the index by preference
 		if (indexedRepo != null)
-			return indexedRepo.get(bsn, version, properties, listeners);
+			return indexedRepo.get(ConversionUtils.maybeMavenCoordsToBsn(bsn), version, properties, listeners);
 		
 		File file = null;
 		try {
@@ -366,7 +344,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			session.setLocalRepositoryManager(repoSystem.newLocalRepositoryManager(session, localRepo));
 			String[] coords = getGroupAndArtifactForBsn(bsn);
 			
-			MavenProjectVersion mvnVersion = new MavenProjectVersion(version);
+			MvnVersion mvnVersion = new MvnVersion(version);
 			Artifact artifact = new DefaultArtifact(coords[0], coords[1], "jar", mvnVersion.toString());
 			ArtifactRequest request = new ArtifactRequest();
 			request.setArtifact(artifact);

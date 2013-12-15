@@ -2,28 +2,28 @@ package aQute.bnd.deployer.repository.aether;
 
 import aQute.bnd.version.*;
 
-public class MavenProjectVersion implements Comparable<MavenProjectVersion> {
+public class MvnVersion implements Comparable<MvnVersion> {
 	
 	private static final String	QUALIFIER_SNAPSHOT	= "SNAPSHOT";
 
 	private final Version osgiVersion;
 
-	public MavenProjectVersion(Version osgiVersion) {
+	public MvnVersion(Version osgiVersion) {
 		this.osgiVersion = osgiVersion;
 	}
 	
-	public static final MavenProjectVersion parseString(String versionStr) {
-		MavenProjectVersion result;
+	public static final MvnVersion parseString(String versionStr) {
+		MvnVersion result;
 		
 		int dashIndex = versionStr.indexOf('-');
 		if (dashIndex < 0) {
-			result = new MavenProjectVersion(Version.parseVersion(versionStr));
+			result = new MvnVersion(Version.parseVersion(versionStr));
 		} else {
 			String qualifier = versionStr.substring(dashIndex + 1);
 
 			Version v = Version.parseVersion(versionStr.substring(0, dashIndex));
 			Version osgiVersion = new Version(v.getMajor(), v.getMinor(), v.getMicro(), qualifier);
-			result = new MavenProjectVersion(osgiVersion);
+			result = new MvnVersion(osgiVersion);
 		}
 		return result;
 	}
@@ -36,7 +36,7 @@ public class MavenProjectVersion implements Comparable<MavenProjectVersion> {
 		return QUALIFIER_SNAPSHOT.equals(osgiVersion.getQualifier());
 	}
 	
-	public int compareTo(MavenProjectVersion other) {
+	public int compareTo(MvnVersion other) {
 		return this.osgiVersion.compareTo(other.osgiVersion);
 	}
 
@@ -67,7 +67,7 @@ public class MavenProjectVersion implements Comparable<MavenProjectVersion> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MavenProjectVersion other = (MavenProjectVersion) obj;
+		MvnVersion other = (MvnVersion) obj;
 		if (osgiVersion == null) {
 			if (other.osgiVersion != null)
 				return false;

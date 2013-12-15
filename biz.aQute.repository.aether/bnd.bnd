@@ -1,4 +1,4 @@
-Bundle-Version: 1.0.0.${tstamp}
+Bundle-Version: 0.0.1.${tstamp}
 
 aether-version: 0.9.0.M3
 
@@ -16,8 +16,8 @@ aether-version: 0.9.0.M3
 	lib/aether-transport-http-${aether-version}.jar; version=file,\
 	lib/aether-transport-file-${aether-version}.jar; version=file,\
 	lib/maven-aether-provider-3.1.1.jar; version=file,\
-	lib/maven-model-builder-3.1.0.jar; version=file,\
 	lib/maven-model-3.1.0.jar; version=file,\
+	lib/maven-model-builder-3.1.0.jar; version=file,\
 	lib/maven-repository-metadata-3.1.0.jar; version=file,\
 	lib/plexus-utils-3.0.10.jar; version=file,\
 	lib/plexus-interpolation-1.16.jar; version=file,\
@@ -34,7 +34,7 @@ maven-packages:\
 	org.apache.maven.repository.internal,\
 	org.apache.maven.artifact.repository.metadata,\
 	org.apache.maven.artifact.repository.metadata.io.xpp3,\
-	org.apache.maven.model.*,\
+	org.apache.maven.model.*;-split-package:=merge-first,\
 	org.codehaus.plexus.util.xml,\
 	org.codehaus.plexus.util.xml.pull,\
 	org.codehaus.plexus.interpolation,\
@@ -56,3 +56,8 @@ Private-Package: \
 	${maven-packages},\
 	${http-packages},\
 	${logging-packages}
+
+Import-Package: \
+	!com.google.inject.*,\
+	!org.codehaus.plexus.*,\
+	*
