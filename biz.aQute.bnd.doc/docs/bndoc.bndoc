@@ -1,0 +1,17 @@
+#
+# Create the bnd documentation
+#
+
+languages 	= en
+sources 	= src/${language}/110-introduction.md
+out         = ../generated/www
+images		= ${out}/img
+copy   	    = ${out}=resources
+
+
+-do :	\
+	${out}/${language}/bnd.html; \
+		type=HTML; \
+		template=templates/single.htm; \
+		inner-template=templates/single-inner.htm; \
+		images=${language}_images, \

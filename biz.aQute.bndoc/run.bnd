@@ -1,0 +1,14 @@
+Bundle-Version:			0.0.0.${tstamp}
+Bundle-Description:		bndoc is a command line utility to turn a number of markdown documents into a book \
+ and/or website. It provides property expansion, table of content,paragraph numbering, etc.
+
+Conditional-Package:	aQute.libg.*, aQute.lib.*, aQute.service.*, aQute.configurable
+Private-Package: \
+	biz.aQute.bndoc.*,\
+	org.stathissideris.ascii2image.*,\
+	com.github.rjeschke.txtmark.*
+
+Main-Class:biz.aQute.bndoc.main.Main
+
+JPM-Command:bndoc
+-includeresource:{readme.md}, resources 

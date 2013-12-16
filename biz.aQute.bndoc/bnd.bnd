@@ -1,7 +1,3 @@
-Bundle-Version:0.0.0.${tstamp}
-Bundle-Description: bndoc is a command line utility to turn a number of markdown \
-documents into a book and/or website. It provides property expansion, table of content,
-paragraph numbering, etc.
 Bundle-Developers: \
 	pkriens; \
 		email=Peter.Kriens@aQute.biz;
@@ -10,21 +6,14 @@ Bundle-Developers: \
 		organizationUrl=http://www.jpm4j.org; \
 		roles="architect,developer"; \
       	timezone=1
-Main-Class: biz.aQute.bndoc.main.Main
 
-Private-Package: \
-	biz.aQute.bndoc.*, \
-	org.stathissideris.ascii2image.*, \
-	com.github.rjeschke.txtmark.*
 
-Conditional-Package: 			aQute.libg.*, aQute.lib.*, aQute.service.*, aQute.configurable
 
 -include: .settings/org.eclipse.jdt.core.prefs
 
 javac.source 			= ${org.eclipse.jdt.core.compiler.compliance}
 javac.target 			= ${org.eclipse.jdt.core.compiler.codegen.targetPlatform}
 
-JPM-Command: bndoc
 
 -buildpath: \
 	com.springsource.junit,\
@@ -33,8 +22,8 @@ JPM-Command: bndoc
 	jar/txtmark-0.10.jar;version=file, \
 	jar/ditaa.jar;version=file
 
--digests: MD5, SHA1
 
 no.junit: true
--includeresource: {readme.md}
 
+-sub: \
+	*.bnd
