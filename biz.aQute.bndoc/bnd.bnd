@@ -27,7 +27,6 @@ javac.target 			= ${org.eclipse.jdt.core.compiler.codegen.targetPlatform}
 JPM-Command: bndoc
 
 -buildpath: \
-	ee.j2se;version=${javac.ee},\
 	com.springsource.junit,\
 	org.mockito.mockito-all;version=1.9.0,\
 	biz.aQute.bndlib;version=latest, \
