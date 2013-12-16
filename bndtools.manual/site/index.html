@@ -1,66 +1,91 @@
-<!-- Main hero unit for a primary marketing message or call to action -->
-<div class="hero-unit">
-  <h1>Bndtools</h1>
-  <p>The easy, powerful and productive way to develop with OSGi. Based on <a href="http://www.aqute.biz/Bnd/Bnd">bnd</a> and Eclipse.</p>
-  <p><a class="btn btn-primary btn-large" href="/installation.html">Install now &raquo;</a></p>
-</div>
-
-<div class="row-fluid">
-	<div class="span4">
-		<h2>Import Analysis</h2>
-		<p>Unlike tools that require package dependency information to be maintained manually, Bndtools uses bytecode analysis to accurately calculate the dependencies of your OSGi bundles.
-		<p><img class="thumbnail" src="/images/about01.png"/></p>
-		<!--<p><a class="btn" href="#">View details &raquo;</a></p>-->
-	</div>
-	<div class="span3">
-		<h2>Repositories</h2>
-		<p>Bndtools features a pluggable repository model for bundles, that may be referenced at build-time and also used to satisfy runtime dependencies. Repository plug-ins exist for OBR and Maven/Nexus.</p>
-		<p><img class="thumbnail" src="/images/about02.png"/></p>
-		<!--<p><a class="btn" href="#">View details &raquo;</a></p>-->
-	</div>
-	<div class="span3">
-		<h2>OBR Resolving</h2>
-		<p>Bndtools uses the OBR (OSGi Bundle Repository) standard to resolve runtime depedencies, allowing us to concentrate on just the "top-level" bundles that comprise our application.</p>
-		<p><img class="thumbnail" src="/images/about03.png"/></p>
-		<!--<p><a class="btn" href="#">View details &raquo;</a></p>-->
-	</div>
-</div>
-
-<p>&nbsp;</p>
-
-<div class="row-fluid">
-	<div class="span4">
-		<h2>Semantic Versioning</h2>
-		<p>The &ldquo;Release&rdquo; feature enables releasing bundles into repositories. During release, the bundles are compared against the previous baseline for changes, and the package/bundle versions are calculated automatically. This frees developers from having to reason about complex versioning issues.</p>
-		<p><img class="thumbnail" src="/images/about05.png"/></p>
-	</div>
-	<div class="span3">
-		<h2>Instant Builder</h2>
-		<p>Eclipse automatically compiles your Java source code whenever you save &mdash; this is &ldquo;The Eclipse Way&rdquo;. Bndtools goes one step further and automatically assembles your bundles whenever the inputs to it are changed. As a result, your bundles are always up to date with the latest code, and ready to run!</p>
-		<p><img class="thumbnail" src="/images/about04.png"/></p>
-	</div>
-	<div class="span3">
-		<h2>Integrated Testing</h2>
-		<p>Bndtools incorporates an integrated test runner for OSGi that launches an OSGi framework containing a selection of bundles, executes the test cases declared in those bundles, and shuts down OSGi. The whole process takes mere milliseconds and results are reported in the standard Eclipse JUnit view.</p>
-		<p><img class="thumbnail" src="/images/about06.png"/></p>
-	</div>
+<div class="hero panel radius">
+    <h1><img src="images/swirl-128.png" alt="Logo" class="logo"> Bndtools</h1>
+    <p>The easy, powerful and productive way to develop with OSGi. Based on <a href="http://www.aqute.biz/Bnd/Bnd">bnd</a> and Eclipse.</p>
+    <p><a class="button small" href="installation.html">Install now &raquo;</a></p>
 </div>
 
 
+<div class="row">
+    <div class="large-7 medium-6 small-6 columns">
+        <h2>Import Analysis</h2>
+        <p>Unlike tools that require package dependency information to be maintained manually, Bndtools uses bytecode analysis to accurately calculate the dependencies of your OSGi bundles.</p>
+    </div>
+    <div class="large-5 medium-6 small-6 columns">
+        <img src="/images/about01.png"/>
+    </div>
+</div>
 <hr/>
 
-<div id="donate" class="page-header">
-	<h1>Donate</h1>
+<div class="row">
+    <div class="large-7 medium-6 small-6 columns">
+        <h2>Repositories</h2>
+        <p>Bndtools features a pluggable repository model for bundles, that may be referenced at build-time and also used to satisfy runtime dependencies. Repository plug-ins exist for OBR and Maven/Nexus.</p>
+    </div>
+    <div class="large-5 medium-6 small-6 columns">
+        <img src="/images/about02.png" align="right"/>
+    </div>
+</div>
+<hr/>
+
+<div class="row">
+    <div class="large-7 medium-6 small-6 columns">
+        <h2>Requirement Resolving</h2>
+        <p>Bndtools uses the OSGi Resolver standard to resolve runtime depedencies, allowing us to concentrate on just the "top-level" bundles that comprise our application.</p>
+    </div>
+    <div class="large-5 medium-6 small-6 columns">
+        <img src="/images/about03.png" align="right"/>
+    </div>
+</div>
+<hr/>
+
+<div class="row">
+    <div class="large-7 medium-6 small-6 columns">
+        <h2>Semantic Versioning</h2>
+        <p>The &ldquo;Release&rdquo; feature enables releasing bundles into repositories. During release, the bundles are compared against the previous baseline for changes, and the package/bundle versions are calculated automatically. This frees developers from having to reason about complex versioning issues.</p>
+    </div>
+    <div class="large-5 medium-6 small-6 columns">
+        <img src="/images/about05.png" align="right"/>
+    </div>
+</div>
+<hr/>
+
+<div class="row">
+    <div class="large-7 medium-6 small-6 columns">
+        <h2>Instant Builder</h2>
+        <p>Eclipse automatically compiles your Java source code whenever you save &mdash; this is &ldquo;The Eclipse Way&rdquo;. Bndtools goes one step further and automatically assembles your bundles whenever the inputs to it are changed. As a result, your bundles are always up to date with the latest code, and ready to run!</p>
+    </div>
+    <div class="large-5 medium-6 small-6 columns">
+        <img src="/images/about04.png" align="right"/>
+    </div>
+</div>
+<hr/>
+
+<div class="row">
+    <div class="large-7 medium-6 small-6 columns">
+        <h2>Integrated Testing</h2>
+        <p>Bndtools incorporates an integrated test runner for OSGi that launches an OSGi framework containing a selection of bundles, executes the test cases declared in those bundles, and shuts down OSGi. The whole process takes mere milliseconds and results are reported in the standard Eclipse JUnit view.</p>
+    </div>
+    <div class="large-5 medium-6 small-6 columns">
+        <img src="/images/about06.png" align="right"/>
+    </div>
 </div>
 
-<div class="row-fluid">
-  <div class="span8">
-    <p>The Bndtools developers are experimenting with accepting donations in <a href="http://bitcoin.org/">Bitcoins</a>. Donations will be used to fund
+<div class="row panel">
+    <a name="donate"/>
+    <div class="large-9 medium-9 small-9 columns">
+        <h1>Donate</h1>
+        <p>The Bndtools developers are experimenting with accepting donations in <a href="http://bitcoin.org/">Bitcoins</a>. Donations will be used to fund
 development activities such as the Bndtools Hackathon.</p>
-    <p>Please send your donation to the following address: <code>1J3gB6s9yTfRrtT8VSZnDxQdeLfycUkT2s</code></p>
-  </div>
+        <p>Please send your donation to the following address: <code>1J3gB6s9yTfRrtT8VSZnDxQdeLfycUkT2s</code></p>
+    </div>
+    <div class="large-3 medium-3 small-3 columns">
+        <img src="images/bitcoin-qr.png" width="150px" padding="5px"/>
+    </div>
+</div>
 
-  <div class="span2">
-    <img src="images/bitcoin-qr.png" align="left" width="150px" padding="5px"/>
-  </div>
+<div class="row">
+    <div class="large-12 medium-12 small-12 columns">
+        <h3>Licence</h3>
+        <p>Bndtools is Open Source Software, distributed under the terms of the <a class="external" href="http://www.eclipse.org/legal/epl-v10.html">Eclipse Public Licence</a>.</p>
+    </div>
 </div>

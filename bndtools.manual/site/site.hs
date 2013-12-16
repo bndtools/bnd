@@ -10,8 +10,6 @@ import Text.Pandoc
 
 htmlPages = ["index.html"
             , "installation.html"
-            , "training.html"
-            , "licence.html"
             , "acknowledge.html"
             , "community.html"
             ] 
@@ -20,15 +18,12 @@ articles = ["concepts.md"
            , "development.md"
            , "faq.md"
            , "tutorial.md"
+           , "repositories.md"
            ]
-
-staticPatterns = ["images/**"
-                 , "js/*"
-                 , "CNAME"
-                 ]
 
 -- Pandoc processing options
 readerOpts = def :: ReaderOptions
+
 writerOpts = def
     { writerTableOfContents = True
     , writerTemplate = "<h1 id='TOC'>Table of Contents</h1>$toc$\n$body$"
@@ -39,7 +34,7 @@ writerOpts = def
 
 main = hakyll $ do
     -- Copy static resources
-    match (fromList staticPatterns) $ do
+    match ("images/**" .||. "js/**" .||. "CNAME") $ do
         route idRoute
         compile copyFileCompiler
 
@@ -54,19 +49,18 @@ main = hakyll $ do
     -- Articles in Markdown
     match (fromList articles) $ do
         route   $ setExtension ".html"
-        compile $ pandocCompiler
+        compile $ pandocCompilerWith readerOpts writerOpts
             >>= loadAndApplyTemplate "templates/article.html" defaultContext
 
     -- Html-sourced pages
     match (fromList htmlPages) $ do
         route idRoute
         compile $ getResourceString
-            >>= loadAndApplyTemplate "templates/default.html" defaultContext
-            >>= relativizeUrls
+            >>= loadAndApplyTemplate "templates/page.html" defaultContext
 
     -- 404.html must not relativize URLs
     match "404.html" $ do
         route idRoute
         compile $ getResourceString
-            >>= loadAndApplyTemplate "templates/default.html" defaultContext
+            >>= loadAndApplyTemplate "templates/page.html" defaultContext
 
