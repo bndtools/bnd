@@ -3,7 +3,6 @@ package biz.aQute.bndoc.lib;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.atomic.*;
 import java.util.regex.*;
 
@@ -18,23 +17,29 @@ import aQute.lib.io.*;
 
 import com.github.rjeschke.txtmark.*;
 
-class DocumentBuilder extends Base {
-	public static final float	QUALITY_SCALE	= 2;
-	static Pattern	CONTENT_P	= Pattern.compile("\\$\\{content\\}");
+public class DocumentBuilder extends Base {
+	public static final float				QUALITY_SCALE	= 2;
+	static Pattern							CONTENT_P		= Pattern.compile("\\$\\{(content|css)\\}");
+	static String							ATTRIBUTE_S		= "((.+)\\s*:\\s*(.*)\n)+";
+	static Pattern							ATTRIBUTE_P		= Pattern.compile(ATTRIBUTE_S, Pattern.UNIX_LINES);
+	static Pattern							ATTRIBUTES_P	= Pattern.compile("(" + ATTRIBUTE_S + ")+",
+																	Pattern.UNIX_LINES);
 
-	enum Format {
-		PDF, SINGLE, MULTI
-	};
+	List<File>								sources			= new ArrayList<>();
+	List<File>								css				= new ArrayList<>();
+	File									output;
+	File									resources;
+	String									template;
+	String									inner;
 
-	Map<URI,Props>		sources;
-	File				images;
-	File				output;
-	private File				current;
-	String				template;
-	String				innerTemplate;
-	Decorator			decorator;
-	ConversionOptions	options;
-	List<File>			shapes;
+	Decorator								decorator;
+	ConversionOptions						options;
+	File									current;
+	HashMap<String,CustomShapeDefinition>	customShapes	= new HashMap<>();
+
+	{
+		customShapes.putAll(CustomShapes.shapes);
+	}
 
 	class TOC {
 		final int		level;
@@ -52,14 +57,14 @@ class DocumentBuilder extends Base {
 
 	List<TOC>	toc	= new ArrayList<>();
 
-	DocumentBuilder(Base g) {
+	public DocumentBuilder(Env g) {
 		super(g);
 	}
 
-	protected boolean prepare() throws Exception {
+	public boolean prepare() throws Exception {
 		if (!super.prepare()) {
 			decorator = new BndocDecorator(this);
-			
+
 			toc();
 			return false;
 		} else
@@ -87,9 +92,9 @@ class DocumentBuilder extends Base {
 			}
 		};
 
-		for (final Map.Entry<URI,Props> entry : getSources().entrySet()) {
+		for (final File source : sources) {
 			try {
-				String content = getContent(entry.getKey());
+				String content = IO.collect(source);
 				content = process(content);
 				content = Processor.process(content, counter);
 			}
@@ -119,7 +124,7 @@ class DocumentBuilder extends Base {
 		}
 	}
 
-	void doTemplate(String template, PrintWriter pw, Runnable r) {
+	void doTemplate(String template, PrintWriter pw, Runnable r) throws IOException {
 		Matcher m = CONTENT_P.matcher(template);
 		int start = 0;
 		while (m.find()) {
@@ -127,7 +132,23 @@ class DocumentBuilder extends Base {
 			prefix = process(prefix);
 			pw.write(prefix);
 			start = m.end();
-			r.run();
+
+			switch (m.group(1)) {
+				case "content" :
+					r.run();
+					break;
+				case "css" :
+					pw.println("<style>");
+					if (css.isEmpty()) {
+						IO.copy(getClass().getResourceAsStream("resources/style.css"), pw);
+					} else {
+						for (File f : css) {
+							IO.copy(new FileReader(f), pw);
+						}
+					}
+					pw.println("</style>");
+					break;
+			}
 		}
 		String suffix = template.substring(start);
 		suffix = process(suffix);
@@ -136,15 +157,20 @@ class DocumentBuilder extends Base {
 
 	public void single() throws Exception {
 		prepare();
-		final PrintWriter pw = IO.writer(setCurrent(getOutput(false, "single.html")));
+		if (output == null)
+			output = getFile("single.html");
 
+		output.getParentFile().mkdirs();
+
+		final PrintWriter pw = IO.writer(output);
+		setCurrent(output);
 		doTemplate(getTemplate(), pw, new Runnable() {
 
 			@Override
 			public void run() {
 				try {
-					for (final Map.Entry<URI,Props> entry : getSources().entrySet()) {
-						body(pw, getInnerTemplate(), entry.getKey(), entry.getValue());
+					for (final File source : sources) {
+						body(pw, getInnerTemplate(), source);
 					}
 				}
 				catch (Exception e) {
@@ -156,18 +182,18 @@ class DocumentBuilder extends Base {
 		pw.close();
 	}
 
-	public void multi() throws Exception {
-		prepare();
-		File multi = getOutput(true, "multi");
-		int n = 1000;
-		for (final Map.Entry<URI,Props> entry : getSources().entrySet()) {
-			File section = IO.getFile(multi, n++ + ".html");
-			setCurrent(section);
-			try (PrintWriter pw = IO.writer(section)) {
-				body(pw, getTemplate(), entry.getKey(), entry.getValue());
-			}
-		}
-	}
+	// public void multi() throws Exception {
+	// prepare();
+	// File multi = getOutput(true, "multi");
+	// int n = 1000;
+	// for (final File source : sources) {
+	// File section = IO.getFile(multi, n++ + ".html");
+	// setCurrent(section);
+	// try (PrintWriter pw = IO.writer(section)) {
+	// body(pw, getTemplate(), source);
+	// }
+	// }
+	// }
 
 	public void pdf() throws Exception {
 		prepare();
@@ -188,8 +214,8 @@ class DocumentBuilder extends Base {
 		}
 	}
 
-	void body(final PrintWriter pw, String template, final URI uri, Props props) throws MalformedURLException,
-			IOException, Exception {
+	void body(final PrintWriter pw, String template, final File source) throws MalformedURLException, IOException,
+			Exception {
 
 		doTemplate(template, pw, new Runnable() {
 
@@ -197,7 +223,22 @@ class DocumentBuilder extends Base {
 			public void run() {
 				String content;
 				try {
-					content = getContent(uri);
+					content = IO.collect(source);
+					Matcher matcher = ATTRIBUTES_P.matcher(content);
+					if (matcher.find()) {
+						if (matcher.start() == 0) {
+							String header = content.substring(0, matcher.end(0));
+							content = content.substring(matcher.end(0));
+
+							matcher = ATTRIBUTE_P.matcher(header);
+							while (matcher.find()) {
+								String key = matcher.group(1);
+								String value = matcher.group(2);
+								setProperty(key, value);
+							}
+						}
+					}
+
 					content = process(content);
 					content = Processor.process(content, decorator);
 					pw.write(content);
@@ -210,39 +251,18 @@ class DocumentBuilder extends Base {
 	}
 
 	public String getTemplate() throws IOException {
-		if (template == null)
-			template = getTemplate(TEMPLATE, DEFAULT_TEMPLATE);
+		if (template == null) {
+			template = IO.collect(getClass().getResourceAsStream("resources/outer.htm"));			
+		}
 
 		return template;
 	}
 
 	public String getInnerTemplate() throws IOException {
-		if (innerTemplate == null)
-			innerTemplate = getTemplate(INNER_TEMPLATE, DEFAULT_INNER_TEMPLATE);
+		if (inner == null)
+			inner = IO.collect(getClass().getResourceAsStream("resources/inner.htm"));			
 
-		return innerTemplate;
-	}
-
-	private String getTemplate(String name, String defaultContent) throws IOException {
-		String path = getProperty(name);
-		if (path == null)
-			return defaultContent;
-		else {
-			File f = IO.getFile(path);
-			if (!f.isFile()) {
-				error("Template %s not found at %s. Using default.", name, path);
-				return defaultContent;
-			} else {
-				return IO.collect(f);
-			}
-		}
-	}
-
-	public Map<URI,Props> getSources() throws Exception {
-		if (sources == null)
-			sources = toURis(SOURCES);
-
-		return sources;
+		return inner;
 	}
 
 	@Override
@@ -257,76 +277,15 @@ class DocumentBuilder extends Base {
 			options.renderingOptions.setAntialias(true);
 			ConfigurationParser cp = new ConfigurationParser();
 
-			for (File entry : getShapeFiles()) {
-				cp.parseFile(entry);
-			}
-			HashMap<String,CustomShapeDefinition> defs = cp.getShapeDefinitionsHash();
-			
-			for ( Entry<String,Props> entry : getHeader(SYMBOLS).entrySet()) {
-				defs.put(entry.getKey(), new CustomShapes(entry.getKey(), entry.getValue()));
-			}
-
-			defs.putAll(CustomShapes.shapes);
-			options.processingOptions.setCustomShapes(cp.getShapeDefinitionsHash());
+			HashMap<String,CustomShapeDefinition> shapes = cp.getShapeDefinitionsHash();
+			shapes.putAll(customShapes);
+			options.processingOptions.setCustomShapes(shapes);
 		}
 		return options;
 	}
 
-	public List<File> getShapeFiles() {
-		if (shapes == null) {
-			shapes = new ArrayList<>();
-			for (String entry : getHeader(SHAPES).keySet()) {
-				File f = getFile(entry);
-				if (!f.isFile()) {
-					error("No such shape file %s", f);
-				} else
-					shapes.add(f);
-
-			}
-		}
-		return shapes;
-	}
-
-	protected File getOutput(boolean dir, String defaultName) {
-		if (output == null)
-			output = getFile(OUTPUT, dir, defaultName);
-		return output;
-	}
-
-	public void generate() throws Exception {
-		Format type = getType();
-		if (type == null)
-			return;
-
-		switch (type) {
-			case MULTI :
-				multi();
-				break;
-			case PDF :
-				pdf();
-				break;
-			case SINGLE :
-				single();
-				break;
-		}
-	}
-
-	protected Format getType() {
-		String type = getProperty(TYPE, "SINGLE");
-		try {
-			return Format.valueOf(type);
-		}
-		catch (Exception e) {
-			error("Invalid format specification %s, must be one of %s", type, Format.values());
-			return null;
-		}
-	}
-
-	public File getImages() {
-		if (images == null) {
-			images = getFile(getProperty(IMAGES, "img"));
-		}
-		return images;
+	public File getResources() {
+		return resources;
 	}
 
 	public File getCurrent() {
@@ -336,5 +295,45 @@ class DocumentBuilder extends Base {
 	public File setCurrent(File current) {
 		this.current = current;
 		return current;
+	}
+
+	public void setResources(File resources) {
+		this.resources = resources;
+	}
+
+	public void setTemplate(String template) {
+		this.template = template;
+	}
+
+	public void setInner(String inner) {
+		this.inner = inner;
+	}
+
+	public void addSource(File f) {
+		sources.add(f);
+	}
+
+	public void setOutput(File file) {
+		output = file;
+	}
+
+	public File getOutput() {
+		return output;
+	}
+
+	public void addSources(List<File> sources) {
+		this.sources.addAll(sources);
+	}
+
+	public void addCustomShape(String name, Map<String,String> properties) {
+		CustomShapes shape = new CustomShapes(name, properties);
+		if (shape.getError() != null)
+			error("Invalid shape def %s : %s", name, shape.getError());
+		customShapes.put(name, shape);
+
+	}
+
+	public void addCSS(File f) {
+		css.add(f);
 	}
 }

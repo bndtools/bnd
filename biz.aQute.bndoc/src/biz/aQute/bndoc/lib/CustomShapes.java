@@ -7,12 +7,13 @@ import java.util.regex.*;
 
 import org.stathissideris.ascii2image.graphics.*;
 
-public class CustomShapes extends CustomShapeDefinition {
+class CustomShapes extends CustomShapeDefinition {
 	final static Map<String,CustomShapeDefinition>	shapes	= new HashMap<>();
 	final static Map<String,Color>					colors	= new HashMap<String,Color>();
 	Color											fill;
 	GeneralPath										template;
-	private Color	stroke;
+	Color											stroke;
+	String											error;
 
 	CustomShapes(String name, boolean border, boolean drop, boolean stretches, Color color) {
 		this.fill = color;
@@ -35,8 +36,30 @@ public class CustomShapes extends CustomShapeDefinition {
 		setStretches(isTrue(props.get("stretches")));
 		setTag(name);
 		String path = props.get("path");
-		if (path != null)
+		if (path != null) {
 			template = parsePath(path);
+
+			Rectangle bounds = template.getBounds();
+			int x = (int) bounds.getMinX();
+			int y = (int) bounds.getMinY();
+			int w = (int) bounds.getWidth();
+			int h = (int) bounds.getHeight();
+			if (!(x == 0 && y == 0 && w == 1 && h == 1)) {
+				double sx = 1 / bounds.getWidth();
+				double sy = 1 / bounds.getHeight();
+				double tx = -1 * bounds.getMinX();
+				double ty = -1 * bounds.getMinY();
+
+				AffineTransform at = new AffineTransform(sx, 0.0D, 0.0D, sy, tx, ty);
+				String rotate = props.get("rotate");
+				if (rotate != null) {
+					double degrees = Double.parseDouble(rotate);
+					at.rotate(Math.PI * degrees / 180, bounds.getCenterX(), bounds.getCenterY());
+				}
+
+				template.transform(at);
+			}
+		}
 	}
 
 	public GeneralPath getPath(DiagramShape shape) {
@@ -44,9 +67,9 @@ public class CustomShapes extends CustomShapeDefinition {
 			shape.setFillColor(fill);
 		if (stroke != null)
 			shape.setStrokeColor(stroke);
-		
+
 		Rectangle b = shape.getBounds();
-	    // "scaleX", "shearY", "shearX", "scaleY", "translateX", "translateY" 
+		// "scaleX", "shearY", "shearX", "scaleY", "translateX", "translateY"
 		AffineTransform at = new AffineTransform(b.width, 0, 0, b.height, b.x, b.y);
 		GeneralPath p = new GeneralPath(template);
 		p.transform(at);
@@ -54,7 +77,7 @@ public class CustomShapes extends CustomShapeDefinition {
 	}
 
 	private GeneralPath parsePath(String path) {
-		String parts[] = path.split("\\s+");
+		String parts[] = path.replace(',', ' ').split("\\s+");
 		GeneralPath p = new GeneralPath();
 		double cx = 0, cy = 0;
 
@@ -62,10 +85,10 @@ public class CustomShapes extends CustomShapeDefinition {
 		for (int i = 0; i < parts.length;) {
 			double dx = 0, dy = 0;
 			char c = parts[i].charAt(0);
-			
-			if ( Character.isLetter(c))
+
+			if (Character.isLetter(c))
 				cmd = parts[i++];
-			
+
 			switch (cmd) {
 				case "m" :
 					dx = cx;
@@ -79,7 +102,7 @@ public class CustomShapes extends CustomShapeDefinition {
 					dx = cx;
 					dy = cy;
 				case "L" :
-					p.lineTo(cx = dx + f(parts[i]), cy = dy + f(parts[i+1]));
+					p.lineTo(cx = dx + f(parts[i]), cy = dy + f(parts[i + 1]));
 					i += 2;
 					break;
 
@@ -101,20 +124,21 @@ public class CustomShapes extends CustomShapeDefinition {
 					dx = cx;
 					dy = cy;
 				case "C" :
-					p.curveTo(dx+f(parts[i]), dy+f(parts[i+1]), dx+f(parts[i+2]), dy+f(parts[i+3]), cx=dx+f(parts[4]), cy=dy+f(parts[i+5]));
+					p.curveTo(dx + f(parts[i]), dy + f(parts[i + 1]), dx + f(parts[i + 2]), dy + f(parts[i + 3]),
+							cx = dx + f(parts[4]), cy = dy + f(parts[i + 5]));
 					i += 6;
 					break;
 
-					
-					// TODO Need a further look at S, treat them as q now but that 
-					// sounds wrong
-				case "q" : 
+				// TODO Need a further look at S, treat them as q now but that
+				// sounds wrong
+				case "q" :
 				case "s" :
 					dx = cx;
 					dy = cy;
 				case "Q" :
 				case "S" :
-					p.quadTo(dx+f(parts[i]), dy+f(parts[i+1]), cx=dx+f(parts[2]), cy=dy+f(parts[i+3]));
+					p.quadTo(dx + f(parts[i]), dy + f(parts[i + 1]), cx = dx + f(parts[i + 2]), cy = dy
+							+ f(parts[i + 3]));
 					i += 4;
 					break;
 
@@ -124,6 +148,7 @@ public class CustomShapes extends CustomShapeDefinition {
 					break;
 			}
 		}
+
 		return p;
 	}
 
@@ -136,7 +161,9 @@ public class CustomShapes extends CustomShapeDefinition {
 	}
 
 	static Pattern	COLOR_P	= Pattern
-									.compile("(?:#([A-F\\d]{3,3}))|(?:#([A-F\\d]{6,6}))|(?:rgb\\(\\s*(\\d*%?)\\s*,\\s*(\\d*%?)\\s*,\\s*(\\d*%?)\\s*\\))", Pattern.CASE_INSENSITIVE);
+									.compile(
+											"(?:#([A-F\\d]{3,3}))|(?:#([A-F\\d]{6,6}))|(?:rgb\\(\\s*(\\d*%?)\\s*,\\s*(\\d*%?)\\s*,\\s*(\\d*%?)\\s*\\))",
+											Pattern.CASE_INSENSITIVE);
 
 	private Color getColor(String name) {
 		if (name == null)
@@ -163,15 +190,15 @@ public class CustomShapes extends CustomShapeDefinition {
 				g = Integer.parseInt(m.group(2).substring(2, 4), 16);
 				b = Integer.parseInt(m.group(2).substring(4, 6), 16);
 			} else if (m.group(1) != null) {
-				r = Integer.parseInt(m.group(1).substring(0, 1), 16)*16;
-				g = Integer.parseInt(m.group(1).substring(1, 2), 16)*16;
-				b = Integer.parseInt(m.group(1).substring(2, 3), 16)*16;
+				r = Integer.parseInt(m.group(1).substring(0, 1), 16) * 16;
+				g = Integer.parseInt(m.group(1).substring(1, 2), 16) * 16;
+				b = Integer.parseInt(m.group(1).substring(2, 3), 16) * 16;
 			} else {
 				r = percent(m.group(3));
 				g = percent(m.group(4));
 				b = percent(m.group(5));
 			}
-			return new Color(r,g,b);
+			return new Color(r, g, b);
 		}
 
 		return null;
@@ -186,17 +213,6 @@ public class CustomShapes extends CustomShapeDefinition {
 			return (int) (v * 256 / 100);
 		else
 			return (int) v;
-	}
-
-	GeneralPath triangle(int ax, int ay, int bx, int by, int cx, int cy) {
-
-		GeneralPath p = new GeneralPath();
-		p.moveTo(ax, ay);
-		p.lineTo(bx, by);
-		p.lineTo(cx, cy);
-		p.closePath();
-
-		return p;
 	}
 
 	@Override
@@ -353,5 +369,9 @@ public class CustomShapes extends CustomShapeDefinition {
 		add("yellow", 255, 255, 0);
 		add("yellowgreen", 154, 205, 50);
 
+	}
+
+	public String getError() {
+		return error;
 	}
 }

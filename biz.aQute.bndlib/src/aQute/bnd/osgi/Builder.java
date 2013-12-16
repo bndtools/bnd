@@ -128,6 +128,13 @@ public class Builder extends Analyzer {
 
 		doDiff(dot); // check if need to diff this bundle
 		doBaseline(dot); // check for a baseline
+		
+		String expand = getProperty("-expand");
+		if ( expand != null) {
+			File out = getFile(expand);
+			out.mkdirs();
+			dot.expand(out);
+		}
 		return dot;
 	}
 

@@ -17,7 +17,7 @@ public interface Constants {
 	String	LEVELS					= "levels";
 	String	FILTER					= "filter";
 	String	OUTPUT					= "output";
-	String	IMAGES					= "images";
+	String	IMAGES					= "resources";
 	String	SHAPES					= "shapes";
 	String	CLEAN					= "clean";
 	String	SYMBOLS					= "symbols";
