@@ -18,9 +18,12 @@ javac.target 			= ${org.eclipse.jdt.core.compiler.codegen.targetPlatform}
 -buildpath: \
 	com.springsource.junit,\
 	org.mockito.mockito-all;version=1.9.0,\
-	biz.aQute.bndlib;version=latest, \
-	jar/txtmark-0.10.jar;version=file, \
-	jar/ditaa.jar;version=file
+	biz.aQute.bndlib;version=latest,\
+	jar/ditaa.jar;version=file,\
+	com.github.rjeschke__txtmark;version=0.10,\
+	org.xhtmlrenderer__flying-saucer-core;version=9.0.4,\
+	org.xhtmlrenderer__flying-saucer-pdf;version=9.0.4,\
+	com.lowagie__itext;version=2.1.7
 
 
 no.junit: true

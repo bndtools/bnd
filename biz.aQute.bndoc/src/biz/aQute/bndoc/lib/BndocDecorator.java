@@ -2,8 +2,8 @@ package biz.aQute.bndoc.lib;
 
 import java.awt.image.*;
 import java.io.*;
+import java.net.*;
 import java.security.*;
-import java.util.regex.*;
 
 import javax.imageio.*;
 
@@ -27,6 +27,7 @@ class BndocDecorator extends DefaultDecorator {
 
 	int					codeStart	= -1;
 	int					paraStart	= -1;
+	int					headStart	= -1;
 	int					imageCounter;
 	DocumentBuilder		generator;
 
@@ -41,6 +42,22 @@ class BndocDecorator extends DefaultDecorator {
 		out.append(">");
 		if (level <= toclevel)
 			out.append(pgc.toHtml(level, "."));
+		headStart = out.length();
+	}
+
+	@Override
+	public void closeHeadline(StringBuilder out, int level) {
+		String text = out.substring(headStart);
+		super.closeHeadline(out, level);
+		out.append("<div class='running-").append(level).append("'>").append(pgc.toString(level, ".")).append(" ")
+				.append(text.substring(1)).append("</div>");
+		out.append("<div class='");
+		String del = "";
+		for (int i = level + 1; i < 6; i++) {
+			out.append(del).append("running-").append(i);
+			del = " ";
+		}
+		out.append("' ></div>");
 	}
 
 	/**
@@ -129,7 +146,6 @@ class BndocDecorator extends DefaultDecorator {
 					String key = Hex.toHexString(digest);
 					String name = "img/" + key + ".png";
 					File file = IO.getFile(generator.getResources(), name);
-					System.out.println("img file " + file);
 					if (!file.isFile()) {
 						file.getParentFile().mkdirs();
 						String text = out.substring(codeStart, out.length());
@@ -137,8 +153,9 @@ class BndocDecorator extends DefaultDecorator {
 						ImageIO.write(image, "png", file);
 					}
 					out.delete(codeStart, out.length());
+					URI relative = generator.current.toURI().relativize(file.toURI());
 					out.append("<img style='width:").append(100 / DocumentBuilder.QUALITY_SCALE).append("%;' src='")
-							.append(name).append("'>");
+							.append(relative).append("' />");
 				} else {
 					out.insert(codeStart, "<pre>");
 					out.append("</pre>\n");

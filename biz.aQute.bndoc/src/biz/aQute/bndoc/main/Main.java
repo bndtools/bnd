@@ -53,7 +53,7 @@ public class Main extends AbstractConsoleApp {
 		String inner();
 
 		String resources();
-		
+
 		List<String> css();
 	}
 
@@ -61,18 +61,54 @@ public class Main extends AbstractConsoleApp {
 
 	@Description("Generate a single html file")
 	public void _html(HtmlOptions options) throws Exception {
+		DocumentBuilder db = getDocumentBuilder(options);
+
+		db.prepare();
+
+		if (isOk() && db.isOk()) {
+			db.single();
+
+			if (options.output() == null)
+				IO.copy(db.getOutput(), System.out);
+		}
+		getInfo(db);
+	}
+
+	interface PDFOptions extends HtmlOptions {
+		PageSize page();
+	}
+
+	@Description("Generate a pdf file")
+	public void _pdf(PDFOptions options) throws Exception {
+		DocumentBuilder db = getDocumentBuilder(options);
+
+		if ( options.page()!= null)
+			db.setProperty( "page-size", options.page().toString() );
+		
+		db.prepare();
+
+		if (isOk() && db.isOk()) {
+			db.pdf();
+
+			if (options.output() == null)
+				IO.copy(db.getOutput(), System.out);
+		}
+		getInfo(db);
+	}
+
+	private DocumentBuilder getDocumentBuilder(HtmlOptions options) throws Exception {
 		DocumentBuilder db = new DocumentBuilder(this);
 
 		File resources = getFile(options.resources() == null ? "www" : options.resources());
 		resources.mkdirs();
-		if ( !resources.isDirectory())
+		if (!resources.isDirectory())
 			error("No such directory (nor can it be made) %s", resources);
-		
+
 		File template = options.template() != null ? getFile(options.template(), "Template") : null;
 		File inner = options.inner() != null ? getFile(options.inner(), "Inner template") : null;
 
 		db.setResources(resources);
-		
+
 		System.out.println("Resources dir " + resources);
 
 		if (template != null)
@@ -93,13 +129,13 @@ public class Main extends AbstractConsoleApp {
 			db.setOutput(tmp);
 		}
 
-		if ( options.css() != null)  {
+		if (options.css() != null) {
 			List<File> expand = expand(options.css());
-			for ( File f : expand) {
+			for (File f : expand) {
 				db.addCSS(f);
 			}
-		} 
-		
+		}
+
 		List<File> propertyFiles = expand(options.properties());
 		for (File f : propertyFiles) {
 			setProperties(f);
@@ -112,21 +148,12 @@ public class Main extends AbstractConsoleApp {
 
 		db.addSources(expand(options._()));
 
-		db.prepare();
-
-		if (isOk() && db.isOk()) {
-			if (options.clean()) {
-				IO.delete(resources);
-				IO.delete(db.getOutput());
-			}
-			resources.mkdirs();
-			
-			db.single();
-
-			if (options.output() == null)
-				IO.copy(db.getOutput(), System.out);
+		if (options.clean()) {
+			IO.delete(db.getResources());
+			IO.delete(db.getOutput());
 		}
-		getInfo(db);
+
+		return db;
 	}
 
 	private List<File> expand(List<String> list) {
@@ -169,6 +196,17 @@ public class Main extends AbstractConsoleApp {
 			}
 		}
 
+	}
+
+	/**
+	 * Show the credits
+	 */
+	public void _credits(Options opts) {
+		out.printf("Name           Description              Primary Author    License   URL%n");
+		out.printf("DITAA          Ascii Arto to png        Stathis Sideris   LGPL-3    http://ditaa.sourceforge.net/%n");
+		out.printf("Txtmark        Java markdown processor  René Jeschke      ASL-2     https://github.com/rjeschke/txtmark%n");
+		out.printf("Flying Saucer  HTML/CSS 2.1 renderer                      LGPL-3    https://code.google.com/p/flying-saucer/%n");
+		out.printf("iText 2.1.7    PDF Generator                              MPL       http://itextpdf.com//%n");
 	}
 
 	public static void main(String args[]) throws Exception {

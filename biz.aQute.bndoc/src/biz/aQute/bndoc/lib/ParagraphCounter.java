@@ -17,7 +17,7 @@ public class ParagraphCounter {
 	}
 
 	public static String toHtml(int levels, String sep, int[] counters) {
-		return "<span class=bndoc-counter>" + toString(levels, sep, counters) + "</span";
+		return "<span class='bndoc-counter'>" + toString(levels, sep, counters) + " </span";
 	}
 
 	public String toString(int levels, String seperator) {
