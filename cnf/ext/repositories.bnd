@@ -1,6 +1,14 @@
 -plugin:\
 	aQute.lib.deployer.FileRepo;name='Main'   ;location=${repo},\
 	aQute.lib.deployer.FileRepo;name='Release';location=${releaserepo},\
-	aQute.bnd.signing.JartoolSigner
+	aQute.bnd.signing.JartoolSigner, \
+    aQute.library.bnd.JpmRepository; \
+        includeStaged=true; \
+        name=JPM; \
+        location=~/.bnd/shacache; \
+        index=${workspace}/cnf/jpm4j.json; \
+        depository.group=bndtools; \
+        depository.name=dist, \
+	
 
 -releaserepo: Release
