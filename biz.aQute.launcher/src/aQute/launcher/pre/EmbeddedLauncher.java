@@ -61,7 +61,7 @@ public class EmbeddedLauncher {
 			in.close();
 		}
 		f.deleteOnExit();
-		return f.toURL();
+		return f.toURI().toURL();
 	}
 
 }
