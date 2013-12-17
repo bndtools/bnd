@@ -1185,4 +1185,51 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 	}
+	
+	@Component(reference={@LookupReference(name="log", service=LogService.class, cardinality=ReferenceCardinality.AT_LEAST_ONE,
+			policy=ReferencePolicy.DYNAMIC,
+			policyOption=ReferencePolicyOption.GREEDY,
+			target="(service.id=1)")})
+	public static class ref_on_comp implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+	    void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Deactivate
+	    void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+	
+	public static void testReferenceInComponent() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.*ref_on_comp");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		{
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ref_on_comp.xml");
+			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.2.0");
+			// Test the defaults
+			xt.assertAttribute("test.component.DSAnnotationTest$ref_on_comp", "scr:component/implementation/@class");
+
+			xt.assertAttribute("log", "scr:component/reference[1]/@name");
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
+			xt.assertAttribute("1..n", "scr:component/reference[1]/@cardinality");
+
+		}
+	}
+		
+
 }

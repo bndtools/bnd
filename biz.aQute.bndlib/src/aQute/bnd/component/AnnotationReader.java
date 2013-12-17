@@ -32,7 +32,7 @@ public class AnnotationReader extends ClassDataCollector {
 	public static final Version	V1_0					= new Version("1.0.0");																												// "1.0.0"
 	public static final Version	V1_1					= new Version("1.1.0");																												// "1.1.0"
 	public static final Version	V1_2					= new Version("1.2.0");																												// "1.2.0"
-//	public static final Version	V1_3					= new Version("1.3.0");																												// "1.3.0"
+	public static final Version	V1_3					= new Version("1.3.0");																												// "1.3.0"
 
 	public static final String FELIX_1_2				= "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
 	
@@ -107,12 +107,14 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 		}
 		for (ReferenceDef rdef : component.references.values()) {
-			rdef.unbind = referredMethod(analyzer, rdef, rdef.unbind, "add(.*)", "remove$1", "(.*)", "un$1");
-			rdef.updated = referredMethod(analyzer, rdef, rdef.updated, "(add|set|bind)(.*)", "updated$2", "(.*)",
-					"updated$1");
-			
-			if (rdef.policy == ReferencePolicy.DYNAMIC && rdef.unbind == null)
-				analyzer.error("In component %s, reference %s is dynamic but has no unbind method.", component.name, rdef.name);
+			if (rdef.bind != null) {
+				rdef.unbind = referredMethod(analyzer, rdef, rdef.unbind, "add(.*)", "remove$1", "(.*)", "un$1");
+				rdef.updated = referredMethod(analyzer, rdef, rdef.updated, "(add|set|bind)(.*)", "updated$2", "(.*)",
+						"updated$1");
+				if (rdef.policy == ReferencePolicy.DYNAMIC && rdef.unbind == null)
+					analyzer.error("In component %s, reference %s is dynamic but has no unbind method.",
+							component.name, rdef.name);
+			}
 		}
 		return component;
 	}
@@ -395,6 +397,22 @@ public class AnnotationReader extends ClassDataCollector {
 				String s = (String) x[i];
 				TypeRef ref = analyzer.getTypeRefFromFQN(s);
 				component.service[i] = ref;
+			}
+		}
+		Object[] refAnnotations = annotation.get("reference");
+		if (refAnnotations != null) {
+			for (Object o: refAnnotations) {
+				Annotation refAnnotation = (Annotation)o;
+				LookupReference ref = refAnnotation.getAnnotation();
+				ReferenceDef refdef = new ReferenceDef();
+				refdef.name = ref.name();
+				refdef.service = analyzer.getTypeRef((String) refAnnotation.get("service")).getFQN();
+				refdef.cardinality = ref.cardinality();
+				refdef.policy = ref.policy();
+				refdef.policyOption = ref.policyOption();
+				refdef.target = ref.target();
+//				refdef.version = ref.
+				component.references.put(refdef.name, refdef);
 			}
 		}
 

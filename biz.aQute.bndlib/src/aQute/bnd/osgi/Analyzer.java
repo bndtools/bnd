@@ -592,6 +592,7 @@ public class Analyzer extends Processor {
 				}
 			}
 			catch (Exception e) {
+				e.printStackTrace(System.err);
 				error("Analyzer Plugin %s failed %s", plugin, e);
 			}
 		}

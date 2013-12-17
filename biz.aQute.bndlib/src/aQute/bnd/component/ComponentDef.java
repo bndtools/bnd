@@ -38,7 +38,7 @@ class ComponentDef {
 	String							modified;
 	Boolean							enabled;
 	String							xmlns;
-	String							configurationPid;
+	String[]						configurationPid;
 	List<Tag>						propertyTags	= new ArrayList<Tag>();
 
 	/**
@@ -167,9 +167,15 @@ class ComponentDef {
 		if (modified != null)
 			component.addAttribute("modified", modified);
 
-		if (configurationPid != null)
-			component.addAttribute("configuration-pid", configurationPid);
-
+		if (configurationPid != null) {
+			StringBuilder b = new StringBuilder();
+			String space = "";
+			for (String pid: configurationPid) {
+				b.append(space).append(pid);
+				space = " ";
+			}
+			component.addAttribute("configuration-pid", b.toString());
+		}
 		Tag impl = new Tag(component, "implementation");
 		impl.addAttribute("class", implementation.getFQN());
 
