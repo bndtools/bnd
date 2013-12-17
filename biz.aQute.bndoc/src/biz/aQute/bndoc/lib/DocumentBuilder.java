@@ -10,6 +10,7 @@ import javax.xml.parsers.*;
 
 import org.stathissideris.ascii2image.core.*;
 import org.stathissideris.ascii2image.graphics.*;
+import org.xhtmlrenderer.pdf.*;
 import org.xml.sax.*;
 
 import aQute.lib.env.*;
@@ -17,10 +18,10 @@ import aQute.lib.io.*;
 
 import com.github.rjeschke.txtmark.*;
 
-public class DocumentBuilder extends Base {
+public class DocumentBuilder extends Base implements Cloneable {
 	public static final float				QUALITY_SCALE	= 2;
 	static Pattern							CONTENT_P		= Pattern.compile("\\$\\{(content|css)\\}");
-	static String							ATTRIBUTE_S		= "((.+)\\s*:\\s*(.*)\n)+";
+	static String							ATTRIBUTE_S		= "(?:(.+)\\s*:\\s*(.*)\n)+";
 	static Pattern							ATTRIBUTE_P		= Pattern.compile(ATTRIBUTE_S, Pattern.UNIX_LINES);
 	static Pattern							ATTRIBUTES_P	= Pattern.compile("(" + ATTRIBUTE_S + ")+",
 																	Pattern.UNIX_LINES);
@@ -64,6 +65,8 @@ public class DocumentBuilder extends Base {
 	public boolean prepare() throws Exception {
 		if (!super.prepare()) {
 			decorator = new BndocDecorator(this);
+
+			getResources().mkdirs();
 
 			toc();
 			return false;
@@ -112,11 +115,11 @@ public class DocumentBuilder extends Base {
 			level = Integer.parseInt(args[1]);
 
 		try (Formatter f = new Formatter()) {
-			f.format("<div class=bndoc-toc>\n");
+			f.format("<div class='bndoc-toc'>\n");
 			for (TOC entry : toc) {
 				if (entry.level >= level)
 					continue;
-				f.format("<div class=bndoc-toc-h%s>%s%s</div>\n", entry.level + 1,
+				f.format("<div class='bndoc-toc-h%s'>%s%s</div>\n", entry.level + 1,
 						ParagraphCounter.toHtml(entry.level, ".", entry.counters), entry.title);
 			}
 			f.format("</div>\n");
@@ -161,7 +164,6 @@ public class DocumentBuilder extends Base {
 			output = getFile("single.html");
 
 		output.getParentFile().mkdirs();
-
 		final PrintWriter pw = IO.writer(output);
 		setCurrent(output);
 		doTemplate(getTemplate(), pw, new Runnable() {
@@ -197,21 +199,25 @@ public class DocumentBuilder extends Base {
 
 	public void pdf() throws Exception {
 		prepare();
-		try (DocumentBuilder tmp = new DocumentBuilder(this)) {
-			File out = IO.createTempFile(null, "bndoc", ".html");
-			File img = new File(out.getAbsolutePath() + "-imgs");
-			img.mkdirs();
-			tmp.setProperty(OUTPUT, out.getAbsolutePath());
-			tmp.setProperty(IMAGES, img.getAbsolutePath());
-			tmp.single();
-			getInfo(tmp);
-			if (isOk()) {
-				PD4MLBuilder p = new PD4MLBuilder(this, out.toURI());
-				p.convert();
-				getInfo(p);
-				p.close();
+		File out = IO.createTempFile(null, "bndoc", ".html");
+		resources.mkdirs();
+		File original = getOutput();
+		setOutput(out);
+		single();
+	
+		if (isOk()) {
+			setOutput(original);
+			ITextRenderer renderer = new ITextRenderer();
+			renderer.setDocument(out);
+			renderer.layout();
+			try (FileOutputStream fout = new FileOutputStream(getOutput())) {
+				renderer.createPDF(fout);
+			}
+			catch (Exception e) {
+				error("failed to created PDF %s", e);
 			}
 		}
+		IO.delete(out);
 	}
 
 	void body(final PrintWriter pw, String template, final File source) throws MalformedURLException, IOException,
@@ -252,7 +258,7 @@ public class DocumentBuilder extends Base {
 
 	public String getTemplate() throws IOException {
 		if (template == null) {
-			template = IO.collect(getClass().getResourceAsStream("resources/outer.htm"));			
+			template = IO.collect(getClass().getResourceAsStream("resources/outer.htm"));
 		}
 
 		return template;
@@ -260,7 +266,7 @@ public class DocumentBuilder extends Base {
 
 	public String getInnerTemplate() throws IOException {
 		if (inner == null)
-			inner = IO.collect(getClass().getResourceAsStream("resources/inner.htm"));			
+			inner = IO.collect(getClass().getResourceAsStream("resources/inner.htm"));
 
 		return inner;
 	}
@@ -336,4 +342,5 @@ public class DocumentBuilder extends Base {
 	public void addCSS(File f) {
 		css.add(f);
 	}
+
 }

@@ -11,4 +11,14 @@ Private-Package: \
 Main-Class:biz.aQute.bndoc.main.Main
 
 JPM-Command:bndoc
--includeresource:{readme.md}, resources 
+
+-includeresource: \
+	{readme.md}, \
+	biz/aQute/bndoc/lib/resources/styles.css; \
+		requires='${project}/less'; \
+		cmd='lessc less/style.less'
+		
+
+# For macos, need access to lessc
+-PATH=/usr/bin:/usr/local/bin
+

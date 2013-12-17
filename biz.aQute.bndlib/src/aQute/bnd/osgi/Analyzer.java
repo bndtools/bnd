@@ -2813,4 +2813,12 @@ public class Analyzer extends Processor {
 		table.put("Bundle Symbolic Name",getBsn());
 		table.put("Execution Environments", ees );
 	}
+
+	/**
+	 * Return the EEs
+	 */
+	
+	public SortedSet<Clazz.JAVA> getEEs() {
+		return ees;
+	}
 }
