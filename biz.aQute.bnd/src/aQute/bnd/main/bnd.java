@@ -62,7 +62,8 @@ import aQute.service.reporter.*;
  * @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
-	static Pattern				ASSIGNMENT	= Pattern.compile("\\s*([-\\w\\d_.]+)\\s*(?:(=)\\s*([^\\s]+)?\\s*)?");
+	static Pattern				ASSIGNMENT	= Pattern.compile( //
+			"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
 	Settings					settings	= new Settings();
 	final PrintStream			err			= System.err;
 	final public PrintStream	out			= System.out;
@@ -1548,7 +1549,7 @@ public class bnd extends Processor {
 	public void _debug(debugOptions options) throws Exception {
 		Project project = getProject(options.project());
 		Justif justif = new Justif(120, 40, 50, 52, 80);
-		
+
 		trace("using %s", project);
 		Processor target = project;
 		if (project != null) {
@@ -1576,7 +1577,7 @@ public class bnd extends Processor {
 			}
 			getInfo(project.getWorkspace());
 			getInfo(project);
-			
+
 		} else
 			err.println("No project");
 
@@ -1586,7 +1587,7 @@ public class bnd extends Processor {
 		Map<String,Object> table = new LinkedHashMap<String,Object>();
 		processor.report(table);
 		Justif j = new Justif();
-		j.formatter().format("$-\n%s %s\n$-\n", string, processor );
+		j.formatter().format("$-\n%s %s\n$-\n", string, processor);
 		out.println(j.wrap());
 		out.println();
 	}
@@ -2908,6 +2909,7 @@ public class bnd extends Processor {
 			} else {
 				boolean set = false;
 				for (String s : rest) {
+					s = s.trim();
 					Matcher m = ASSIGNMENT.matcher(s);
 					trace("try %s", s);
 					if (m.matches()) {
@@ -2915,11 +2917,16 @@ public class bnd extends Processor {
 						Instructions instr = new Instructions(key);
 						Collection<String> select = instr.select(settings.keySet(), true);
 
-						String value = m.group(3);
-						if (value == null) {
+						// check if there is a value a='b'
+						
+						String value = m.group(4);
+						if (value == null || value.trim().length()==0) {
+							// no value
+							// check '=' presence
 							if (m.group(2) == null) {
 								list(select, settings);
 							} else {
+								// we have 'a=', remove
 								for (String k : select) {
 									trace("remove %s=%s", k, settings.get(k));
 									settings.remove(k);
@@ -3323,4 +3330,36 @@ public class bnd extends Processor {
 			jar.close();
 		}
 	}
+
+	/**
+	 * Show the class versions used in a JAR
+	 * 
+	 * @throws Exception
+	 */
+
+	@Arguments(arg="<jar-file>...")
+	@Description("Show the Execution Environments of a JAR")
+	interface EEOptions extends Options {
+		
+	}
+	public void _ees(Options options) throws Exception {
+		for (String path : options._()) {
+			File f = getFile(path);
+			if (!f.isFile()) {
+				error("Not a file");
+			} else {
+				Jar jar = new Jar(f);
+				Analyzer a = new Analyzer(this);
+				try {
+					a.setJar(jar);
+					a.analyze();
+					out.printf("%s %s%n", jar.getName(), a.getEEs());
+				}
+				finally {
+					a.close();
+				}
+			}
+		}
+	}
+
 }
