@@ -1,0 +1,11 @@
+{
+ "revisionRefs":[{
+  "artifactId":"txtmark","baseline":"0.10.0","bsn":"com.github.rjeschke__txtmark","created":1371749059000,"description":"Markdown parser for the JVM","groupId":"com.github.rjeschke","md5":"CDAF5254B1B082FB20CB06AF84EBAED0","name":"txtmark","phase":"MASTER","revision":"7AC68765E118048F3DEB6745CD552FA9F0B0D687","size":47732,"urls":["http://repo1.maven.org/maven2/com/github/rjeschke/txtmark/0.10/txtmark-0.10.jar"],"version":"0.10"
+ },{
+  "artifactId":"itext","baseline":"2.1.7","bsn":"com.lowagie__itext","created":1247092750000,"description":"iText, a free Java-PDF library","groupId":"com.lowagie","md5":"7587A618197A065EAC4A453D173D4ED6","name":"iText, a Free Java-PDF library","phase":"MASTER","revision":"892BFB3E97074A61123B3B2D7CAA2DB112750864","size":1130070,"urls":["http://repo1.maven.org/maven2/com/lowagie/itext/2.1.7/itext-2.1.7.jar"],"version":"2.1.7"
+ },{
+  "artifactId":"flying-saucer-core","baseline":"9.0.4","bsn":"org.xhtmlrenderer__flying-saucer-core","created":1381155295000,"description":"Flying Saucer is a CSS 2.1 renderer written in Java.  This artifact contains the core rendering and layout code as well as Java2D output.","groupId":"org.xhtmlrenderer","md5":"5AED6B45EE750DE83CFED19E6F1AFBC2","name":"Flying Saucer Core Renderer","phase":"MASTER","revision":"5C8C9A6871235181B428EA461BD540A53B165F51","size":1109834,"urls":["http://repo1.maven.org/maven2/org/xhtmlrenderer/flying-saucer-core/9.0.4/flying-saucer-core-9.0.4.jar"],"version":"9.0.4"
+ },{
+  "artifactId":"flying-saucer-pdf","baseline":"9.0.4","bsn":"org.xhtmlrenderer__flying-saucer-pdf","created":1381155348000,"description":"Flying Saucer is a CSS 2.1 renderer written in Java.  This artifact supports PDF output.","groupId":"org.xhtmlrenderer","md5":"F522D45BD0BB94D1D641C87D34CE88CB","name":"Flying Saucer PDF Rendering","phase":"MASTER","revision":"5D59F84C355337C605FAB8162A0B947E91EB978E","size":105754,"urls":["http://repo1.maven.org/maven2/org/xhtmlrenderer/flying-saucer-pdf/9.0.4/flying-saucer-pdf-9.0.4.jar"],"version":"9.0.4"
+ }]
+}
