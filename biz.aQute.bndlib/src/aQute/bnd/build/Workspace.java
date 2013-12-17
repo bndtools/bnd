@@ -501,7 +501,7 @@ public class Workspace extends Processor {
 				}
 
 				URLClassLoader cl = new URLClassLoader(new URL[] {
-					blocker.getKey().getFile().toURL()
+					blocker.getKey().getFile().toURI().toURL()
 				});
 				Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 				while (manifests.hasMoreElements()) {
