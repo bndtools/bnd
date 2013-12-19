@@ -287,7 +287,7 @@ public class Tag {
 	/**
 	 * Escape a string, do entity conversion.
 	 */
-	String escape(String s) {
+	public static String escape(String s) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
