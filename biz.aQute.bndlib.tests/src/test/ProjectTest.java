@@ -602,19 +602,46 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Check that the output property can be used to name the output binary.
 	 */
-    public static void testGetOutputFile() throws Exception {
+	public static void testGetOutputFile() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project top = ws.getProject("p1");
 
-        assertEquals(new File(top.getTarget(), "foo.jar"), top.getOutputFile("foo"));
+		//
+		// We expect p1 to be a single project (no sub builders)
+		//
+		assertEquals("p1 must be singleton", 1, top.getSubBuilders().size());
+		Builder builder = top.getSubBuilders().iterator().next();
+		assertEquals("p1 must be singleton","p1", builder.getBsn());
 
-        top.setProperty("Bundle-SymbolicName", "bar");
-        top.setProperty("Bundle-Version", "1.2.3");
-        top.setProperty("output", "${Bundle-SymbolicName}-${Bundle-Version}.jar");
-        assertEquals(new File(top.getTarget(), "bar-1.2.3.jar"), top.getOutputFile("foo"));
-    }
+		// Check the default bsn.jar form
 
-    private static Project testBuildAll(String dependsOn, int count) throws Exception {
+		assertEquals(new File(top.getTarget(), "p1.jar"), top.getOutputFile("p1"));
+		assertEquals(new File(top.getTarget(), "p1.jar"), top.getOutputFile("p1", "0"));
+
+		// Add the version to the filename
+		top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
+		assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+
+		top.setProperty("Bundle-Version", "1.260.0.SNAPSHOT");
+		assertEquals(new File(top.getTarget(), "p1-1.260.0-SNAPSHOT.jar"),
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+
+		top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
+		assertEquals(new File(top.getTarget(), "p1-1.260.0-SNAPSHOT.jar"),
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+
+		top.setProperty("Bundle-Version", "1.260.0.NOTSNAPSHOT");
+		top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
+		assertEquals(new File(top.getTarget(), "p1-1.260.0.NOTSNAPSHOT.jar"),
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+
+		top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
+		assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+	}
+
+	private static Project testBuildAll(String dependsOn, int count) throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project all = ws.getProject("build-all");
 		all.setProperty("-dependson", dependsOn);

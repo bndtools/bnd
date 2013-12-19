@@ -437,6 +437,15 @@ public class MacroTest extends TestCase {
 		assertEquals(0, proc.getErrors().size());
 		assertEquals(0, proc.getWarnings().size());
 
+		//
+		// Add the S modifier. If qualifier is SNAPSHOT, it will return a
+		// maven version
+		//
+		
+		assertEquals("1.2.3-SNAPSHOT", macro.process("${version;===S;1.2.3.SNAPSHOT}"));
+		assertEquals("1.2.3.SNAPSHOT", macro.process("${version;====;1.2.3.SNAPSHOT}"));
+		assertEquals("1.2.3.X", macro.process("${version;===S;1.2.3.X}"));
+		assertEquals("1.2.3.X", macro.process("${version;====;1.2.3.X}"));
 	}
 
 	public static void testRange() throws Exception {

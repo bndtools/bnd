@@ -678,13 +678,15 @@ public class Macro {
 	}
 
 	/**
-	 * Modify a version to set a version policy. Thed policy is a mask that is
+	 * Modify a version to set a version policy. The policy is a mask that is
 	 * mapped to a version.
 	 * 
 	 * <pre>
 	 * +           increment
 	 * -           decrement
 	 * =           maintain
+	 * s			only pos=3 (qualifier). If qualifer == SNAPSHOT, return m.m.m-SNAPSHOT else m.m.m.q
+	 * s			only pos=3 (qualifier). If qualifer == SNAPSHOT, return m.m.m-SNAPSHOT else m.m.m
 	 * &tilde;           discard
 	 * 
 	 * ==+      = maintain major, minor, increment micro, discard qualifier
@@ -737,6 +739,17 @@ public class Macro {
 			if (c != '~') {
 				if (i == 3) {
 					result = version.getQualifier();
+					if (c == 'S') {
+						// we have a request for a Maven snapshot
+						if (result.equals("SNAPSHOT"))
+							return sb.toString() + "-SNAPSHOT";
+					} else if (c == 's') {
+						// we have a request for a Maven snapshot
+						if (result.equals("SNAPSHOT"))
+							return sb.toString() + "-SNAPSHOT";
+						else
+							return sb.toString();
+					}
 				} else if (Character.isDigit(c)) {
 					// Handle masks like +00, =+0
 					result = String.valueOf(c);
