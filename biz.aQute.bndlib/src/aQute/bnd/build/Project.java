@@ -1539,6 +1539,36 @@ public class Project extends Processor {
 		release(false);
 	}
 
+	public void export(String runFilePath, boolean keep, File output) throws Exception {
+		prepare();
+
+		OutputStream outStream = null;
+		try {
+			Project packageProject;
+			if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
+				packageProject = this;
+			} else {
+				File runFile = new File(getBase(), runFilePath);
+				if (!runFile.isFile())
+					throw new IOException(String.format("Run file %s does not exist (or is not a file).",
+							runFile.getAbsolutePath()));
+				packageProject = new Project(getWorkspace(), getBase(), runFile);
+				packageProject.setParent(this);
+			}
+
+			packageProject.clear();
+			ProjectLauncher launcher = packageProject.getProjectLauncher();
+			launcher.setKeep(keep);
+			Jar jar = launcher.executable();
+
+			outStream = new FileOutputStream(output);
+			jar.write(outStream);
+		}
+		finally {
+			IO.close(outStream);
+		}
+	}
+
 	/**
 	 * Release.
 	 * 

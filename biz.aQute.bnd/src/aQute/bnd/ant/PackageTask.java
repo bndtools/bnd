@@ -1,17 +1,12 @@
 package aQute.bnd.ant;
 
 import java.io.*;
-import java.util.*;
 
 import org.apache.tools.ant.*;
 
 import aQute.bnd.build.*;
-import aQute.bnd.build.Project;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
 
 public class PackageTask extends BaseTask {
-
 	String	runFilePath	= null;
 	File	output		= null;
 	boolean keep        = false;
@@ -21,39 +16,11 @@ public class PackageTask extends BaseTask {
 		if (output == null)
 			throw new BuildException("Output file must be specified");
 
-		OutputStream outStream = null;
 		try {
-			// Prepare the project to be packaged
-			List<Project> projects;
-			File baseDir = getProject().getBaseDir();
-			Project baseProject = Workspace.getProject(baseDir);
-
-			Project packageProject;
-			if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
-				packageProject = baseProject;
-			} else {
-				File runFile = new File(baseDir, runFilePath);
-				if (!runFile.isFile())
-					throw new BuildException(String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
-				packageProject = new Project(baseProject.getWorkspace(), baseDir, runFile);
-				packageProject.setParent(baseProject);
-			}
-
-			// Package it
-			packageProject.clear();
-			ProjectLauncher launcher = packageProject.getProjectLauncher();
-			launcher.setKeep(keep);
-			Jar jar = launcher.executable();
-
-			outStream = new FileOutputStream(output);
-			jar.write(outStream);
+			Workspace.getProject(getProject().getBaseDir()).export(runFilePath, keep, output);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
 			throw new BuildException(e);
-		}
-		finally {
-			IO.close(outStream);
 		}
 	}
 
@@ -64,6 +31,4 @@ public class PackageTask extends BaseTask {
 	public void setOutput(File output) {
 		this.output = output;
 	}
-
-
 }
