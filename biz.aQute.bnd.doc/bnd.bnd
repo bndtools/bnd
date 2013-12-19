@@ -6,15 +6,3 @@ doc.sources 	= ${doc}/src/en
 doc.tmpl    	= ${doc}/templates
 doc.resources   = ${project}/generated/resources
 
--includeresource: \
-	www/en_bnd.html; \
-		requires='${doc}'; \
-		cmd='bndoc html \
-			--clean			\
-			--resources		${doc.resources} \
-			--template 		${doc.tmpl}/outer.htm \
-			--inner 		${doc.tmpl}/inner.htm \
-			--properties  	${workspace}/cnf/build.bnd \
-			--properties  	bnd.bnd \
-			${doc.sources} ',\
-	-www=${doc.resources} 
