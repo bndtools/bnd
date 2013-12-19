@@ -126,7 +126,7 @@ public class ConfigureMavenProjectTest {
             p.put("bin", "b1");
             p.put("src.test", "s1/s4");
             p.put("bin.test", "b/t1");
-            p.put("target", "t");
+            p.put("target-dir", "t");
             p.store(new FileOutputStream(bndFile), "");
 
             Project bndProject = new Project(mockWS, null, bndFile);
