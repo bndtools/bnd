@@ -17,14 +17,4 @@ public class TestSelfBuild extends TestCase {
 		assertNotNull(files);
 		assertEquals(1, files.length);
 	}
-	public static void testOtherBuild() throws Throwable {
-		Project project = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile()).getProject(
-				"biz.aQute.bnd.doc");
-		project.setPedantic(true);
-
-		File files[] = project.build();
-		assertTrue( project.check("Imports that lack version ranges: \\[javax"));
-		assertNotNull(files);
-		assertEquals(1, files.length);
-	}
 }
