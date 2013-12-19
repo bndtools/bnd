@@ -217,4 +217,8 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		}
 		return f;
 	}
+	
+	public boolean isTrue( String v ) {
+		return v != null && v.length()>0 && !v.equalsIgnoreCase("false");
+	}
 }

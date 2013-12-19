@@ -92,6 +92,7 @@ public abstract class AbstractConsoleApp extends Env {
 		@Description("Wait for a key press, might be useful when you want to see the result before it is overwritten by a next command")
 		boolean key();
 
+		@Description("The output width, used for wrapping diagnostic output")
 		int width();
 	}
 
