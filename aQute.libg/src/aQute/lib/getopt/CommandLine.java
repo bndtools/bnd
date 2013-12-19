@@ -160,7 +160,7 @@ public class CommandLine {
 			}
 			
 			f.h3("Synopsis:");
-			f.code(getSynopsys(command, options, patterns));
+			f.code(getSynopsis(command, options, patterns));
 
 			if (!options.isEmpty()) {
 				f.h3("Options:");
@@ -401,17 +401,22 @@ public class CommandLine {
 	Object target, String cmd, Class< ? extends Options> specification) {
 		Description descr = specification.getAnnotation(Description.class);
 		Arguments patterns = specification.getAnnotation(Arguments.class);
-		Map<String,Method> options = getOptions(specification);
 
 		String description = descr == null ? "" : descr.value();
 
 		f.format("%nNAME%n  %s \t0- \t1%s%n%n", cmd, description);
 		
+		Map<String,Method> options = getOptions(specification);
 		f.format("SYNOPSIS%n");
-		f.format(getSynopsys(cmd, options, patterns));
+		f.format(getSynopsis(cmd, options, patterns));
 
+		help(f, specification, "OPTIONS");
+	}
+
+	private void help(Formatter f, Class< ? extends Options> specification, String title) {
+		Map<String,Method> options = getOptions(specification);
 		if (!options.isEmpty()) {
-			f.format("%nOPTIONS%n%n");
+			f.format("%n%s%n%n", title);
 			for (Entry<String,Method> entry : options.entrySet()) {
 				Option option = getOption(entry.getKey(), entry.getValue());
 
@@ -443,7 +448,7 @@ public class CommandLine {
 		return option;
 	}
 
-	private String getSynopsys(String cmd, Map<String,Method> options, Arguments patterns) {
+	private String getSynopsis(String cmd, Map<String,Method> options, Arguments patterns) {
 		StringBuilder sb = new StringBuilder();
 		if (options.isEmpty())
 			sb.append(String.format("   %s ", cmd));
@@ -484,7 +489,14 @@ public class CommandLine {
 		if (descr != null) {
 			f.format("%s%n%n", descr.value());
 		}
-		f.format("Available commands: %n%n");
+		for (Entry<String,Method> e : getCommands(target).entrySet()) {
+			Method m = e.getValue();
+			if ( m.getName().startsWith("__")) {
+				Class< ? extends Options> options = (Class< ? extends Options>) m.getParameterTypes()[0];
+				help(f,options, "MAIN OPTIONS");
+			}
+		}
+		f.format("Available sub-commands: %n%n");
 
 		for (Entry<String,Method> e : getCommands(target).entrySet()) {
 			if ( e.getValue().getName().startsWith("__"))
