@@ -1,0 +1,28 @@
+
+//
+// Format the Table of Contents
+//
+table#_toc {
+    overflow-x: hidden;
+    width: 40em;
+
+	td.title:before {
+	}
+	
+	td.title + a {
+		background: white;
+	}
+	
+	tr.h1 td a {
+		font-weight: bolder;
+	}	
+	tr.h2 {
+		td.title {
+			padding-left: 1em;
+		}
+	}
+	td.page {
+		background: white;
+		text-align: right;
+	}
+}

@@ -9,6 +9,6 @@ public class CommandLineTest extends TestCase {
 		Main.main(new String[] {"-etb", "doc", "html","--clean","--resources","../www","-p", "bndoc.bndoc","-o","../www/en-bndoc.html","en"});
 	}
 	public void testBasePdf() throws Exception {
-		Main.main(new String[] {"-etb", "doc", "pdf","--clean","--resources","../www","-p", "bndoc.bndoc","-o","../www/en-bndoc.pdf","en"});
+		Main.main(new String[] {"-etb", "doc", "pdf","--resources","../www","-p", "bndoc.bndoc","-o","../www/en-bndoc.pdf","en"});
 	}
 }

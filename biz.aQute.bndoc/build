@@ -1,0 +1,5 @@
+#!/bin/sh
+bndoc -et html --clean --properties run.bnd --properties doc/bndoc.bndoc --inner doc/templates/inner.htm --template doc/templates/outer.htm -r www -o www/en-bndoc.html doc/en
+lessc less/style.less >www/style.css
+bndoc -et render -o t.pdf www/en-bndoc.html
+ 

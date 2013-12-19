@@ -7,14 +7,20 @@ import java.util.concurrent.atomic.*;
 import java.util.regex.*;
 
 import javax.xml.parsers.*;
+import javax.xml.xpath.*;
 
 import org.stathissideris.ascii2image.core.*;
 import org.stathissideris.ascii2image.graphics.*;
+import org.w3c.dom.*;
+import org.xhtmlrenderer.layout.*;
 import org.xhtmlrenderer.pdf.*;
+import org.xhtmlrenderer.render.*;
+import org.xhtmlrenderer.resource.*;
 import org.xml.sax.*;
 
 import aQute.lib.env.*;
 import aQute.lib.io.*;
+import aQute.lib.tag.*;
 
 import com.github.rjeschke.txtmark.*;
 
@@ -32,7 +38,7 @@ public class DocumentBuilder extends Base implements Cloneable {
 	File									resources;
 	String									template;
 	String									inner;
-
+	float									zoom			= 1.4f;
 	Decorator								decorator;
 	ConversionOptions						options;
 	File									current;
@@ -90,7 +96,7 @@ public class DocumentBuilder extends Base implements Cloneable {
 
 			@Override
 			public void closeHeadline(StringBuilder out, int level) {
-				toc.add(new TOC(level, file.get(), pgc.counters.clone(), out.substring(start)));
+				toc.add(new TOC(level, file.get(), pgc.counters.clone(), out.substring(start + 1)));
 				super.closeHeadline(out, level);
 			}
 		};
@@ -114,17 +120,31 @@ public class DocumentBuilder extends Base implements Cloneable {
 		if (args.length > 1)
 			level = Integer.parseInt(args[1]);
 
-		try (Formatter f = new Formatter()) {
-			f.format("<div class='bndoc-toc'>\n");
-			for (TOC entry : toc) {
-				if (entry.level >= level)
-					continue;
-				f.format("<div class='bndoc-toc-h%s'>%s%s</div>\n", entry.level + 1,
-						ParagraphCounter.toHtml(entry.level, ".", entry.counters), entry.title);
-			}
-			f.format("</div>\n");
-			return f.toString();
+		Tag table = new Tag("table").addAttribute("class", "toc").addAttribute("id", "_toc");
+		Tag colgroup = new Tag(table, "colgroup");
+		new Tag(colgroup, "col").addAttribute("class", "number");
+		new Tag(colgroup, "col").addAttribute("class", "title");
+		new Tag(colgroup, "col").addAttribute("class", "page");
+		Tag thead = new Tag(table, "thead");
+		Tag theadrow = new Tag(thead, "tr");
+		new Tag(theadrow, "th").addAttribute("class", "number");
+		new Tag(theadrow, "th").addAttribute("class", "title");
+		new Tag(theadrow, "th").addAttribute("class", "page");
+		Tag tbody = new Tag(table, "tbody");
+		for (TOC entry : toc) {
+			if (entry.level > level)
+				continue;
+			String number = ParagraphCounter.toString(entry.level, ".", entry.counters);
+			String pageref = "_h-" + number;
+
+			Tag tbodyrow = new Tag(tbody, "tr").addAttribute("class", "h" + entry.level);
+			new Tag(tbodyrow, "td").addAttribute("class", "number").addContent(number);
+			Tag title = new Tag(tbodyrow, "td").addAttribute("class", "title");
+			new Tag(title, "a").addAttribute("href", "#" + pageref).addContent(entry.title);
+			new Tag(tbodyrow, "td").addAttribute("class", "page").addAttribute("pageref", pageref);
 		}
+
+		return table.toString();
 	}
 
 	void doTemplate(String template, PrintWriter pw, Runnable r) throws IOException {
@@ -143,10 +163,10 @@ public class DocumentBuilder extends Base implements Cloneable {
 				case "css" :
 					pw.println("<style>");
 					if (css.isEmpty()) {
-						IO.copy(getClass().getResourceAsStream("resources/style.css"), pw);
+						preprocess(IO.reader(getClass().getResourceAsStream("resources/style.css")), pw);
 					} else {
 						for (File f : css) {
-							IO.copy(new FileReader(f), pw);
+							preprocess(IO.reader(f),pw);
 						}
 					}
 					pw.println("</style>");
@@ -156,6 +176,14 @@ public class DocumentBuilder extends Base implements Cloneable {
 		String suffix = template.substring(start);
 		suffix = process(suffix);
 		pw.write(suffix);
+	}
+
+	private void preprocess(BufferedReader reader, PrintWriter pw) throws IOException {
+		String line;
+		while ( (line=reader.readLine())!=null) {
+			line = process(line);
+			pw.write(line);
+		}
 	}
 
 	public void single() throws Exception {
@@ -184,40 +212,78 @@ public class DocumentBuilder extends Base implements Cloneable {
 		pw.close();
 	}
 
-	// public void multi() throws Exception {
-	// prepare();
-	// File multi = getOutput(true, "multi");
-	// int n = 1000;
-	// for (final File source : sources) {
-	// File section = IO.getFile(multi, n++ + ".html");
-	// setCurrent(section);
-	// try (PrintWriter pw = IO.writer(section)) {
-	// body(pw, getTemplate(), source);
-	// }
-	// }
-	// }
-
 	public void pdf() throws Exception {
 		prepare();
-		File out = IO.createTempFile(null, "bndoc", ".html");
+		File tmpHtml = IO.createTempFile(null, "bndoc", ".html");
 		resources.mkdirs();
 		File original = getOutput();
-		setOutput(out);
+		setOutput(tmpHtml);
 		single();
-	
 		if (isOk()) {
-			setOutput(original);
-			ITextRenderer renderer = new ITextRenderer();
-			renderer.setDocument(out);
-			renderer.layout();
-			try (FileOutputStream fout = new FileOutputStream(getOutput())) {
-				renderer.createPDF(fout);
-			}
-			catch (Exception e) {
-				error("failed to created PDF %s", e);
+			pdf(tmpHtml, original);
+		}
+		IO.delete(tmpHtml);
+	}
+
+	public void pdf(File from, File to) throws Exception {
+		String url = from.toURI().toString();
+		ITextRenderer renderer = new ITextRenderer(getZoom()*1.0f * 20f * 4f / 3f, 20);
+		ResourceLoaderUserAgent callback = new ResourceLoaderUserAgent(renderer.getOutputDevice());
+		callback.setSharedContext(renderer.getSharedContext());
+		renderer.getSharedContext().setUserAgentCallback(callback);
+		Document doc = XMLResource.load(new InputSource(url)).getDocument();
+
+		renderer.setDocument(doc, url);
+		renderer.layout();
+
+		//
+		// We now must fill in page numbers for our Table of Content
+		//
+
+		LayoutContext layoutContext = renderer.getSharedContext().newLayoutContextInstance();
+		BlockBox root = renderer.getRootBox();
+		Map<String,BlockBox> idMap = renderer.getSharedContext().getIdMap();
+
+		Document document = renderer.getDocument();
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		NodeList list = (NodeList) xpath.evaluate("//*[@pageref]", document, XPathConstants.NODESET);
+		if (list != null) {
+			for (int i = 0; i < list.getLength(); i++) {
+				Node node = list.item(i);
+				Node item = node.getAttributes().getNamedItem("pageref");
+				String ref = item.getNodeValue();
+				BlockBox box = idMap.get(ref);
+				if (box != null) {
+					PageBox pp = root.getLayer().getLastPage(layoutContext, box);
+					int pageno = pp.getPageNo();
+					Text text = document.createTextNode(Integer.toString(pageno));
+					node.appendChild(text);
+				} else
+					warning("page reference to %s not found", item.getNodeValue());
 			}
 		}
-		IO.delete(out);
+		//
+		// Re-relayout to see the content
+		//
+		renderer.layout();
+
+		try (FileOutputStream fout = new FileOutputStream(to)) {
+			renderer.createPDF(fout);
+		}
+		catch (Exception e) {
+			error("failed to created PDF %s", e);
+		}
+	}
+
+	private static class ResourceLoaderUserAgent extends ITextUserAgent {
+		public ResourceLoaderUserAgent(ITextOutputDevice outputDevice) {
+			super(outputDevice);
+		}
+
+		protected InputStream resolveAndOpenStream(String uri) {
+			InputStream is = super.resolveAndOpenStream(uri);
+			return is;
+		}
 	}
 
 	void body(final PrintWriter pw, String template, final File source) throws MalformedURLException, IOException,
@@ -343,4 +409,18 @@ public class DocumentBuilder extends Base implements Cloneable {
 		css.add(f);
 	}
 
+	public void setZoom(float zoom) {
+		this.zoom = zoom;
+	}
+
+	public float getZoom() {
+		if ( zoom == 0) {
+			String z = getProperty("zoom");
+			if ( z == null) {
+				zoom = 1.0f;
+			} else
+				zoom = Float.parseFloat(z);
+		}
+		return zoom;
+	}
 }

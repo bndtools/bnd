@@ -44,7 +44,7 @@ public class Main extends AbstractConsoleApp {
 
 		String output();
 
-		List<String> shapes();
+		List<String> diagrams();
 	}
 
 	interface HtmlOptions extends GenerateOptions {
@@ -61,7 +61,7 @@ public class Main extends AbstractConsoleApp {
 
 	@Description("Generate a single html file")
 	public void _html(HtmlOptions options) throws Exception {
-		DocumentBuilder db = getDocumentBuilder(options);
+		DocumentBuilder db = getHtmlDocumentBuilder(options);
 
 		db.prepare();
 
@@ -75,16 +75,14 @@ public class Main extends AbstractConsoleApp {
 	}
 
 	interface PDFOptions extends HtmlOptions {
-		PageSize page();
+		PageSize size();
+		float zoom();
 	}
 
 	@Description("Generate a pdf file")
 	public void _pdf(PDFOptions options) throws Exception {
-		DocumentBuilder db = getDocumentBuilder(options);
+		DocumentBuilder db = getPdfDocumentBuilder(options);
 
-		if ( options.page()!= null)
-			db.setProperty( "page-size", options.page().toString() );
-		
 		db.prepare();
 
 		if (isOk() && db.isOk()) {
@@ -96,7 +94,48 @@ public class Main extends AbstractConsoleApp {
 		getInfo(db);
 	}
 
-	private DocumentBuilder getDocumentBuilder(HtmlOptions options) throws Exception {
+	@Arguments(arg = "file")
+	interface RenderOptions extends PDFOptions {
+	}
+
+	@Description("Convert HTML to PDF")
+	public void _render(RenderOptions options) throws Exception {
+
+		File from = getFile(options._().get(0), "Should exist %s");
+		if (from != null && from.isFile()) {
+			
+			DocumentBuilder db = getPdfDocumentBuilder(options);
+			
+			File to;
+			if (options.output() == null) {
+				to = getFile(from.getAbsolutePath().replace("\\.html?$", ".pdf"));
+			} else {
+				to = getFile(options.output());
+			}
+			to.getParentFile().mkdirs();
+			db.setOutput(to);
+			
+			db.pdf(from, to);
+			getInfo(db);
+		} else
+			error("No such file %s", from);
+	}
+
+	private DocumentBuilder getPdfDocumentBuilder(PDFOptions options) throws Exception {
+		
+		DocumentBuilder db = getHtmlDocumentBuilder(options);
+		if (options.size() != null)
+			db.setProperty("page-size", options.size().toString());
+
+
+		if ( options.zoom() != 0 ) {
+			db.setZoom(options.zoom());
+		}
+
+		
+		return db;
+	}
+	private DocumentBuilder getHtmlDocumentBuilder(HtmlOptions options) throws Exception {
 		DocumentBuilder db = new DocumentBuilder(this);
 
 		File resources = getFile(options.resources() == null ? "www" : options.resources());
@@ -108,8 +147,6 @@ public class Main extends AbstractConsoleApp {
 		File inner = options.inner() != null ? getFile(options.inner(), "Inner template") : null;
 
 		db.setResources(resources);
-
-		System.out.println("Resources dir " + resources);
 
 		if (template != null)
 			db.setTemplate(IO.collect(template));
@@ -201,6 +238,7 @@ public class Main extends AbstractConsoleApp {
 	/**
 	 * Show the credits
 	 */
+	@Description("Show the credits for use open source programs")
 	public void _credits(Options opts) {
 		out.printf("Name           Description              Primary Author    License   URL%n");
 		out.printf("DITAA          Ascii Arto to png        Stathis Sideris   LGPL-3    http://ditaa.sourceforge.net/%n");
