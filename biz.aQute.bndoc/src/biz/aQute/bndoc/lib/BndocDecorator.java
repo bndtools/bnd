@@ -39,6 +39,7 @@ class BndocDecorator extends DefaultDecorator {
 	public void openHeadline(StringBuilder out, int level) {
 		super.openHeadline(out, level);
 		pgc.level(level);
+		out.append(" id='_h-").append(pgc.toString(level, ".")).append("'");
 		out.append(">");
 		if (level <= toclevel)
 			out.append(pgc.toHtml(level, "."));
@@ -89,18 +90,36 @@ class BndocDecorator extends DefaultDecorator {
 		dl.addAttribute("class", "dl-horizontal");
 		for (String term : parts[0].trim().split("<br\\s*/>\\s*\n?\\s*")) {
 			Tag dt = new Tag(dl, "dt");
-			dt.addContent(term);
+			dt.addContent(trim(term));
 		}
 		for (int i = 1; i < parts.length; i++) {
 			Tag dd = new Tag(dl, "dd");
-			dd.addContent(parts[i]);
+			dd.addContent(trim(parts[i]));
 		}
-		out.append(dl.toString());
+		out.append(dl.compact());
 		if (paraStart > 6) {
 			String s = out.substring(paraStart - 5, paraStart + 5);
 			if (s.equals("</dl>\n<dl>"))
 				out.delete(paraStart - 5, paraStart + 5);
 		}
+	}
+
+	private String trim(String string) {
+		int n = -1;
+		for (int i = 0; i < string.length(); i++) {
+			char c = string.charAt(i);
+			switch (c) {
+				case '\t' :
+				case '\r' :
+				case '\n' :
+				case ' ' :
+					break;
+
+				default :
+					return string.substring(i);
+			}
+		}
+		return string;
 	}
 
 	@Override
@@ -146,16 +165,27 @@ class BndocDecorator extends DefaultDecorator {
 					String key = Hex.toHexString(digest);
 					String name = "img/" + key + ".png";
 					File file = IO.getFile(generator.getResources(), name);
+					int width;
+					int height;
+
 					if (!file.isFile()) {
 						file.getParentFile().mkdirs();
 						String text = out.substring(codeStart, out.length());
 						RenderedImage image = render(text);
+						width = image.getWidth();
+						height = image.getHeight();
 						ImageIO.write(image, "png", file);
+					} else {
+						BufferedImage read = ImageIO.read(file);
+						width = read.getWidth();
+						height = read.getHeight();
 					}
 					out.delete(codeStart, out.length());
 					URI relative = generator.current.toURI().relativize(file.toURI());
-					out.append("<img style='width:").append(100 / DocumentBuilder.QUALITY_SCALE).append("%;' src='")
-							.append(relative).append("' />");
+					out.append("<img src='").append(relative)//
+							.append("' style='width:").append((int) (width / DocumentBuilder.QUALITY_SCALE)) //
+							.append("px;height:").append((int) (height / DocumentBuilder.QUALITY_SCALE))//
+							.append("px'").append("/>");
 				} else {
 					out.insert(codeStart, "<pre>");
 					out.append("</pre>\n");
@@ -169,6 +199,7 @@ class BndocDecorator extends DefaultDecorator {
 
 	private RenderedImage render(String text) throws Exception {
 		TextGrid grid = new TextGrid();
+
 		grid.addToMarkupTags(generator.getConversionOptions().processingOptions.getCustomShapes().keySet());
 		grid.initialiseWithText(text, generator.getConversionOptions().processingOptions);
 		Diagram diagram = new Diagram(grid, generator.getConversionOptions());

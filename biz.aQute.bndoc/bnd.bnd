@@ -30,3 +30,4 @@ no.junit: true
 
 -sub: \
 	*.bnd
+

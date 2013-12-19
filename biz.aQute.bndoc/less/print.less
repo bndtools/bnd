@@ -1,18 +1,89 @@
 @page {
-	@bottom-right { content: "Page " counter(page); }
-	@bottom-left { content: "${title}"; }
+	size: 21cm 29cm;
+	@top-left { 
+		content: element(running-1, first);
+		vertical-align: bottom;
+		padding-bottom: 0.2cm;
+	}
+	@top-right { 
+		content: element(running-2, last); 
+		vertical-align: bottom;
+		padding-bottom: 0.2cm;
+	}
+	@bottom-right { 
+		content: "Page " counter(page) "-" counter(pages); 
+		text-align: right;
+		.plain();
+		padding-top: 0.25cm;
+		vertical-align: top;
+	}
+	@bottom-left { 
+		content: element(doctitle); 
+		text-align: left;
+		.plain();
+		padding-top: 0.25cm;
+		vertical-align: top;
+	}
 	border-bottom: 0.5pt solid black;
 	border-top: 0.5pt solid black;
+	padding-bottom: 0.5cm;
+	padding-top: 0.5cm;
+	margin: 2.0cm 3cm 1.5cm 2cm;
+//	counter-increment: page 2; does not work
 }
-h1 {
-	page-break-before: always; 
+@page :left {
+	margin-left: 2cm;
+	margin-right: 1cm;
+}
+
+@page :right {
+	margin-left: 1cm;
+	margin-right: 2cm;
+}
+
+@page :blank {
+  @top-center { content: "This page is intentionally left blank" }
+}
+
+@page :first {
+	@bottom-left{ 
+		content: "";
+	}
+	@bottom-right{ 
+		content: "";
+	}
+	@top-left{ 
+		content: "";
+	}
+	@top-right{ 
+		content: "";
+	}
+	border-bottom: none;
+	border-top: none;
+}
+
+
+@media print {
+	h1 {
+		page-break-before: right; 
+		margin-top: 0;
+		padding-top: 0;
+		border-top: none;
+	}
+}
+
+
+.doctitle {
+	position: running(doctitle);
 }
 
 .running-1 {
 	position: running(running-1);
+	text-align: left;
 }
 .running-2 {
 	position: running(running-2);
+	text-align: right;
 }
 .running-3 {
 	position: running(running-3);
@@ -25,4 +96,15 @@ h1 {
 }
 .running-6 {
 	position: running(running-6);
+}
+
+@media screen {
+	.running-1,
+	.running-2,
+	.running-3,
+	.running-4,
+	.running-5,
+	.running-6,
+	.doctitle { display: none; }
+	
 }

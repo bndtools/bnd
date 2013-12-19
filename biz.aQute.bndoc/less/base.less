@@ -1,4 +1,9 @@
 
+.plain {
+	font-family: @text-body;
+	font-size: @font-size;
+}
+
 div {
 	xoutline: 1px solid lightgrey; /* debug */
 	vertical-align: top;
@@ -7,13 +12,8 @@ div {
 html {
   height: 100%;
   overflow-y: scroll;
-}
-
-body {
-  background: 		@background;
-  color: 			@color;
-  font-family: 		@text-body;
-  font-size: 		@font-size;
+  font-size: 	@font-size;
+  font-family:  @text-body;
 }
 
 
@@ -21,7 +21,17 @@ body,p,dl,dt,dd,pre,form,th,td,aside,nav,article,section,caption,table  {
   padding: 		0;
   border: 		0;
   margin: 		0;
-  font-size: 	@font-size;
+}
+
+body {
+  background: 		@background;
+  color: 			@color;
+  margin: 			auto;
+}
+
+section {
+	margin-top: 1em;
+	margin-bottom: 1em;
 }
 
 
@@ -38,6 +48,32 @@ ul {
 	list-style-type: disc;
 }
 
+dl {
+	dt {
+    	float: left;
+    	width: 160px;
+    	overflow: hidden;
+    	clear: left;
+    	text-align: left;
+    	text-overflow: ellipsis;
+    	white-space: nowrap;
+  	}
+  	dd {
+    	margin-left: 170px;
+    	margin-top: @text-separation;
+    	text-indent: -1em;
+    	&:before {
+    		content: "—";
+    		display: inline-block;
+    		width: 1em;
+    		.box-sizing();
+    	}
+  	}
+ 	dd:after {
+    	clear: both;
+  	}
+}
+
 table {
   	border-collapse: 	collapse;
   	border-spacing: 	0;
@@ -52,9 +88,10 @@ table {
 		&:last-child {
 			padding-right:	0;
 		}
+		height: @line-height;
 	}
 	
-	&.bordered {
+	&.table-bordered {
 	  	border: 2px solid lightgrey;
 		td, th { 
 			border-top: 1px solid lightgrey;
@@ -65,6 +102,12 @@ table {
 		th {
 		  	border-top: 2px solid lightgrey;
 		}
+	}
+	&.table-striped {
+			tbody > tr:nth-child(odd) > td,
+			tbody > tr:nth-child(odd) > th {
+  				background-color: #f9f9f9;
+			}
 	}
 }
 
@@ -82,6 +125,13 @@ h1, h2, h3, h4, h5, h6 {
 	margin-bottom: @text-separation;
 	
 }
+
+h1 {
+	margin-top: 2em;
+	padding-top: 2em;
+	border-top: 0.5px solid black;
+}
+
 
 p, li, blockquote, ol, ul {
 	margin-bottom: @text-separation;
@@ -101,14 +151,21 @@ p {
 
 
 pre, tt, code, kbd, samp, var {
-  font-family: 		"Courier New";
+  font-family: 		@text-mono;
   line-height: 		100%;
   word-wrap: 		break-word;
   word-break:		break-word;
 }
 
 pre {
+	.box-sizing(border-box);
 	margin-bottom: @block-separation;
+	padding: @text-separation;
+	border: 0.5pt solid darken(@color-code,5%);
+	width: 95%;
+	background-color: @color-code;
+	.rounded(4px);
+	
 }
 
 blockquote, q, em, cite, dfn, i, cite, var, address {
@@ -134,3 +191,8 @@ abbr, acronym {
   font-variant: normal;
 }
 
+@media screen {
+	body {
+		width: 800px;
+	}
+}
