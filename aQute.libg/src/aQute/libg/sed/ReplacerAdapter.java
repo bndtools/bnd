@@ -720,6 +720,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		process.getOutputStream().close();
 
 		String s = IO.collect(process.getInputStream(), "UTF-8");
+		s += IO.collect(process.getErrorStream(), "UTF-8");
 		int exitValue = process.waitFor();
 		if (exitValue != 0)
 			return exitValue + "";
