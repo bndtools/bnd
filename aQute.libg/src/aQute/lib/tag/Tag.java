@@ -199,8 +199,10 @@ public class Tag {
 	 * Print the tag formatted to a PrintWriter.
 	 */
 	public Tag print(int indent, PrintWriter pw) {
-		pw.print("\n");
-		spaces(pw, indent);
+		if (indent >= 0) {
+			pw.print("\n");
+			spaces(pw, indent);
+		}
 		pw.print('<');
 		pw.print(name);
 
@@ -232,8 +234,10 @@ public class Tag {
 					tag.print(indent + 2, pw);
 				}
 			}
-			pw.print("\n");
-			spaces(pw, indent);
+			if (indent >= 0) {
+				pw.print("\n");
+				spaces(pw, indent);
+			}
 			pw.print("</");
 			pw.print(name);
 		}
@@ -252,8 +256,10 @@ public class Tag {
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			if (i == 0 || (Character.isWhitespace(c) && pos > width - 3)) {
-				pw.print("\n");
-				spaces(pw, left);
+				if (left >= 0 && width > 0) {
+					pw.print("\n");
+					spaces(pw, left);
+				}
 				pos = 0;
 			}
 			switch (c) {
@@ -465,6 +471,12 @@ public class Tag {
 
 	public void setCDATA() {
 		cdata = true;
+	}
+
+	public String compact() {
+		StringWriter sw = new StringWriter();
+		print(Integer.MIN_VALUE, new PrintWriter(sw));
+		return sw.toString();
 	}
 
 }
