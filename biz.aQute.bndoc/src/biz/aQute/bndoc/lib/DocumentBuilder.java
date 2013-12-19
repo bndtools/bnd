@@ -2,7 +2,9 @@ package biz.aQute.bndoc.lib;
 
 import java.io.*;
 import java.net.*;
+import java.security.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.*;
 import java.util.regex.*;
 
@@ -18,19 +20,23 @@ import org.xhtmlrenderer.render.*;
 import org.xhtmlrenderer.resource.*;
 import org.xml.sax.*;
 
+import aQute.bnd.version.*;
 import aQute.lib.env.*;
+import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.tag.*;
 
 import com.github.rjeschke.txtmark.*;
+import com.github.rjeschke.txtmark.Configuration.Builder;
 
 public class DocumentBuilder extends Base implements Cloneable {
+	static Pattern							DEFINITION_P	= Pattern.compile("(\\[([^]]{2,20})\\])");
 	public static final float				QUALITY_SCALE	= 2;
 	static Pattern							CONTENT_P		= Pattern.compile("\\$\\{(content|css)\\}");
-	static String							ATTRIBUTE_S		= "(?:(.+)\\s*:\\s*(.*)\n)+";
-	static Pattern							ATTRIBUTE_P		= Pattern.compile(ATTRIBUTE_S, Pattern.UNIX_LINES);
-	static Pattern							ATTRIBUTES_P	= Pattern.compile("(" + ATTRIBUTE_S + ")+",
-																	Pattern.UNIX_LINES);
+	static String							ATTRIBUTE_S		= "(?:(.+)\\s*[:=]\\s*([^\n]*)\n)+";
+	static Pattern							ATTRIBUTE_P		= Pattern.compile(ATTRIBUTE_S, Pattern.MULTILINE);
+	static Pattern							ATTRIBUTES_P	= Pattern.compile("---\\s*\n(" + ATTRIBUTE_S
+																	+ ")+---\\s*\n", Pattern.MULTILINE);
 
 	List<File>								sources			= new ArrayList<>();
 	List<File>								css				= new ArrayList<>();
@@ -41,8 +47,11 @@ public class DocumentBuilder extends Base implements Cloneable {
 	float									zoom			= 1.4f;
 	Decorator								decorator;
 	ConversionOptions						options;
-	File									current;
+	File									currentOutput;
+	File									currentInput;
 	HashMap<String,CustomShapeDefinition>	customShapes	= new HashMap<>();
+	String									name;
+	boolean									clean			= false;
 
 	{
 		customShapes.putAll(CustomShapes.shapes);
@@ -62,7 +71,8 @@ public class DocumentBuilder extends Base implements Cloneable {
 		}
 	}
 
-	List<TOC>	toc	= new ArrayList<>();
+	List<TOC>		toc	= new ArrayList<>();
+	private boolean	keep;
 
 	public DocumentBuilder(Env g) {
 		super(g);
@@ -72,7 +82,17 @@ public class DocumentBuilder extends Base implements Cloneable {
 		if (!super.prepare()) {
 			decorator = new BndocDecorator(this);
 
-			getResources().mkdirs();
+			if (getClean()) {
+				IO.delete(getOutput());
+				if (!getOutput().mkdir())
+					error("Could not create output directory %s", getOutput());
+			}
+			File resources = getResources();
+			if (resources != null) {
+				for (File sub : resources.listFiles()) {
+					IO.copy(sub, new File(getOutput(), sub.getName()));
+				}
+			}
 
 			toc();
 			return false;
@@ -82,10 +102,12 @@ public class DocumentBuilder extends Base implements Cloneable {
 
 	private void toc() throws Exception {
 		final AtomicInteger file = new AtomicInteger(1000);
+		final AtomicInteger term = new AtomicInteger(1000);
 		final ParagraphCounter pgc = new ParagraphCounter();
 
 		DefaultDecorator counter = new DefaultDecorator() {
-			int	start	= -1;
+			int			start	= -1;
+			private int	paraStart;
 
 			@Override
 			public void openHeadline(StringBuilder out, int level) {
@@ -99,13 +121,33 @@ public class DocumentBuilder extends Base implements Cloneable {
 				toc.add(new TOC(level, file.get(), pgc.counters.clone(), out.substring(start + 1)));
 				super.closeHeadline(out, level);
 			}
+
+			@Override
+			public void openParagraph(StringBuilder out) {
+				out.append("<p>");
+				paraStart = out.length();
+			}
+
+			@Override
+			public void closeParagraph(StringBuilder out) {
+				Matcher m = DocumentBuilder.DEFINITION_P.matcher(out);
+				boolean found = m.find(paraStart);
+				while (found) {
+					String term = m.group(2);
+					// TODO handle terms
+					found = m.find();
+				}
+				out.append("</p>\n");
+			}
 		};
 
+		Configuration conf = getMarkdownConfiguration(counter, null, null);
 		for (final File source : sources) {
 			try {
 				String content = IO.collect(source);
+				content = processHeaders(content);
 				content = process(content);
-				content = Processor.process(content, counter);
+				content = Processor.process(content, conf);
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -113,6 +155,20 @@ public class DocumentBuilder extends Base implements Cloneable {
 			file.incrementAndGet();
 		}
 
+	}
+
+	Configuration getMarkdownConfiguration(Decorator decorator, BlockEmitter block, SpanEmitter span) {
+		Builder builder = Configuration.builder();
+		builder.enableSafeMode();
+		builder.forceExtentedProfile();
+		if (decorator != null)
+			builder.setDecorator(decorator);
+		if (block != null)
+			builder.setCodeBlockEmitter(block);
+		if (span != null)
+			builder.setSpecialLinkEmitter(span);
+
+		return builder.build();
 	}
 
 	public String _toc(String[] args) {
@@ -166,7 +222,7 @@ public class DocumentBuilder extends Base implements Cloneable {
 						preprocess(IO.reader(getClass().getResourceAsStream("resources/style.css")), pw);
 					} else {
 						for (File f : css) {
-							preprocess(IO.reader(f),pw);
+							preprocess(IO.reader(f), pw);
 						}
 					}
 					pw.println("</style>");
@@ -180,7 +236,7 @@ public class DocumentBuilder extends Base implements Cloneable {
 
 	private void preprocess(BufferedReader reader, PrintWriter pw) throws IOException {
 		String line;
-		while ( (line=reader.readLine())!=null) {
+		while ((line = reader.readLine()) != null) {
 			line = process(line);
 			pw.write(line);
 		}
@@ -188,12 +244,14 @@ public class DocumentBuilder extends Base implements Cloneable {
 
 	public void single() throws Exception {
 		prepare();
-		if (output == null)
-			output = getFile("single.html");
+		File out = new File(getOutput(), getName("html"));
+		single(out);
+	}
 
-		output.getParentFile().mkdirs();
-		final PrintWriter pw = IO.writer(output);
-		setCurrent(output);
+	private void single(File out) throws IOException {
+		final PrintWriter pw = IO.writer(out);
+		setCurrentOutput(out);
+
 		doTemplate(getTemplate(), pw, new Runnable() {
 
 			@Override
@@ -214,20 +272,25 @@ public class DocumentBuilder extends Base implements Cloneable {
 
 	public void pdf() throws Exception {
 		prepare();
-		File tmpHtml = IO.createTempFile(null, "bndoc", ".html");
-		resources.mkdirs();
-		File original = getOutput();
-		setOutput(tmpHtml);
-		single();
-		if (isOk()) {
-			pdf(tmpHtml, original);
+
+		File tmp = IO.createTempFile(getOutput(), "bndoc", ".html");
+		try {
+			single(tmp);
+
+			if (isOk()) {
+				File pdf = new File(getOutput(), getName("pdf"));
+				pdf(tmp, pdf);
+			}
 		}
-		IO.delete(tmpHtml);
+		finally {
+			if (!keep)
+				IO.delete(tmp);
+		}
 	}
 
 	public void pdf(File from, File to) throws Exception {
 		String url = from.toURI().toString();
-		ITextRenderer renderer = new ITextRenderer(getZoom()*1.0f * 20f * 4f / 3f, 20);
+		ITextRenderer renderer = new ITextRenderer(getZoom() * 1.0f * 20f * 4f / 3f, 20);
 		ResourceLoaderUserAgent callback = new ResourceLoaderUserAgent(renderer.getOutputDevice());
 		callback.setSharedContext(renderer.getSharedContext());
 		renderer.getSharedContext().setUserAgentCallback(callback);
@@ -293,23 +356,15 @@ public class DocumentBuilder extends Base implements Cloneable {
 
 			@Override
 			public void run() {
+				Configuration cnf = getMarkdownConfiguration(decorator, null, null);
 				String content;
 				try {
+					setCurrentInput(source);
 					content = IO.collect(source);
-					Matcher matcher = ATTRIBUTES_P.matcher(content);
-					if (matcher.find()) {
-						if (matcher.start() == 0) {
-							String header = content.substring(0, matcher.end(0));
-							content = content.substring(matcher.end(0));
-
-							matcher = ATTRIBUTE_P.matcher(header);
-							while (matcher.find()) {
-								String key = matcher.group(1);
-								String value = matcher.group(2);
-								setProperty(key, value);
-							}
-						}
-					}
+					content = processHeaders(content);
+					String doctitle = getProperty("doctitle");
+					if (doctitle != null)
+						pw.printf("<div class='print doctitle'>%s</div>", doctitle);
 
 					content = process(content);
 					content = Processor.process(content, decorator);
@@ -319,7 +374,24 @@ public class DocumentBuilder extends Base implements Cloneable {
 					e.printStackTrace();
 				}
 			}
+
 		});
+	}
+
+	String processHeaders(String content) {
+		Matcher matcher = ATTRIBUTES_P.matcher(content);
+		if (matcher.find()) {
+			if (matcher.start() == 0) {
+				String headers[] = content.substring(matcher.start(1), matcher.end(1)).split("\n");
+				content = content.substring(matcher.end(0));
+
+				for (String header : headers) {
+					String[] kv = header.split("\\s*[:=]\\s*", 2);
+					setProperty(kv[0], kv[1]);
+				}
+			}
+		}
+		return content;
 	}
 
 	public String getTemplate() throws IOException {
@@ -360,12 +432,21 @@ public class DocumentBuilder extends Base implements Cloneable {
 		return resources;
 	}
 
-	public File getCurrent() {
+	public File getCurrentOutput() {
+		return currentOutput;
+	}
+
+	public File setCurrentOutput(File current) {
+		this.currentOutput = current;
 		return current;
 	}
 
-	public File setCurrent(File current) {
-		this.current = current;
+	public File getCurrentInput() {
+		return currentInput;
+	}
+
+	public File setCurrentInput(File current) {
+		this.currentInput = current;
 		return current;
 	}
 
@@ -390,6 +471,13 @@ public class DocumentBuilder extends Base implements Cloneable {
 	}
 
 	public File getOutput() {
+		if (output == null) {
+			output = getFile(getProperty("output", "www"));
+			output.mkdirs();
+			if (!output.isDirectory()) {
+				error("Cannot create the output directory %s", output);
+			}
+		}
 		return output;
 	}
 
@@ -414,13 +502,218 @@ public class DocumentBuilder extends Base implements Cloneable {
 	}
 
 	public float getZoom() {
-		if ( zoom == 0) {
+		if (zoom == 0) {
 			String z = getProperty("zoom");
-			if ( z == null) {
+			if (z == null) {
 				zoom = 1.0f;
 			} else
 				zoom = Float.parseFloat(z);
 		}
 		return zoom;
+	}
+
+	public String getName(String extension) {
+		if (name == null) {
+			name = "index" + "." + extension;
+		}
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public boolean getClean() {
+		return clean || isTrue(getProperty("clean"));
+	}
+
+	public void setClean(boolean b) {
+		this.clean = b;
+	}
+
+	/**
+	 * Create a resource in the output directory of a given type from path. The
+	 * path can be relative from the currentOutput output file (
+	 * {@link #getCurrentOutput()} or absolute. This resource is then copied to
+	 * the output {@code type} directory. It then returns the path from the
+	 * output directory.
+	 * 
+	 * @param type
+	 *            the type of resource
+	 * @param path
+	 *            the path/uri to the resource
+	 * @return the relative name from the output directory
+	 */
+	String toResource(String type, String path) {
+		try {
+			long lastModified = 0;
+
+			URI uri = new URI(path);
+			if (!uri.isAbsolute()) {
+				uri = getCurrentInput().toURI().resolve(path);
+				File source = IO.getFile(getCurrentInput().getParentFile(), path);
+				if (!source.isFile()) {
+					error("Missing %s reference, file %s does not exist ", type, source);
+					return path;
+				}
+				lastModified = source.lastModified();
+			}
+			String extension = "";
+			int n = path.lastIndexOf('.');
+			if (n >= 0) {
+				extension = path.substring(n);
+			}
+			String name = type + "/" + identity(uri.toString()) + extension;
+
+			File f = IO.getFile(getOutput(), name);
+			f.getParentFile().mkdirs();
+			if (!f.isFile() || f.lastModified() < lastModified) {
+				IO.copy(uri.toURL(), f);
+			}
+			return name;
+		}
+		catch (Exception e) {
+			error("Failed to create resource of type %s, %s: %s", type, path, e);
+			return null;
+		}
+	}
+
+	String identity(String string) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-1");
+			for (int i = 0; i < string.length(); i++) {
+				char c = string.charAt(i);
+				md.update((byte) c);
+				md.update((byte) (c >> 8));
+			}
+			return Hex.toHexString(md.digest());
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void setKeep(boolean b) {
+		keep = b;
+	}
+
+	/**
+	 * Modify a version to set a version policy. Thed policy is a mask that is
+	 * mapped to a version.
+	 * 
+	 * <pre>
+	 * +           increment
+	 * -           decrement
+	 * =           maintain
+	 * &tilde;           discard
+	 * 
+	 * ==+      = maintain major, minor, increment micro, discard qualifier
+	 * &tilde;&tilde;&tilde;=     = just get the qualifier
+	 * version=&quot;[${version;==;${@}},${version;=+;${@}})&quot;
+	 * </pre>
+	 * 
+	 * @param args
+	 * @return
+	 */
+	final static String		MASK_STRING		= "[\\-+=~0123456789]{0,3}[=~]?";
+	final static Pattern	MASK			= Pattern.compile(MASK_STRING);
+	final static String		_versionHelp	= "${version;<mask>;<version>}, modify a version\n"
+													+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n"
+													+ "MQ ::= '~' | '='";
+
+	public String _version(String args[]) {
+		String mask = args[1];
+
+		Version version = null;
+		if (args.length >= 3)
+			version = new Version(args[2]);
+
+		return version(version, mask);
+	}
+
+	String version(Version version, String mask) {
+		StringBuilder sb = new StringBuilder();
+		String del = "";
+
+		for (int i = 0; i < mask.length(); i++) {
+			char c = mask.charAt(i);
+			String result = null;
+			if (c != '~') {
+				if (i == 3) {
+					result = version.getQualifier();
+				} else if (Character.isDigit(c)) {
+					// Handle masks like +00, =+0
+					result = String.valueOf(c);
+				} else {
+					int x = version.get(i);
+					switch (c) {
+						case '+' :
+							x++;
+							break;
+						case '-' :
+							x--;
+							break;
+						case '=' :
+							break;
+					}
+					result = Integer.toString(x);
+				}
+				if (result != null) {
+					sb.append(del);
+					del = ".";
+					sb.append(result);
+				}
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * A macro to add spaces in front of an output.
+	 */
+	public String _shift(String[] args) {
+		if (args.length == 1)
+			return "";
+
+		String code = args[1];
+		return code.replaceAll("\r?\n", "\n    ");
+	}
+
+	/**
+	 * Helper method to output a tag without escaping its contents, since in our
+	 * case we already have HTML in the contents.
+	 * 
+	 * @param out
+	 * @param tag
+	 * @throws IOException
+	 */
+	public static void append(Appendable out, Tag tag) throws IOException {
+		out.append('<');
+		out.append(tag.getName());
+
+		for (Entry<String,String> entry : tag.getAttributes().entrySet()) {
+			String value = Tag.escape(entry.getValue());
+			out.append(' ');
+			out.append(entry.getKey());
+			out.append("=");
+			String quote = "'";
+			if (value.indexOf(quote) >= 0)
+				quote = "\"";
+			out.append(quote);
+			out.append(value);
+			out.append(quote);
+		}
+		out.append('>');
+
+		for (Object content : tag.getContents()) {
+			if (content instanceof Tag) {
+				append(out, (Tag) content);
+			} else {
+				out.append(content.toString());
+			}
+		}
+		out.append("</");
+		out.append(tag.getName());
+		out.append(">\n");
 	}
 }

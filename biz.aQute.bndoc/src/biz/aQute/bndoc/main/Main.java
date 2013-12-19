@@ -13,8 +13,9 @@ import aQute.libg.glob.*;
 import biz.aQute.bndoc.lib.*;
 
 /**
- * This is the command line interface for bndoc.
+ * This is the command line interface for a {@link DocumentBuilder}.
  */
+@Description("A simple single and multi HTML generator as well as PDF.")
 public class Main extends AbstractConsoleApp {
 
 	public Main() throws Exception {
@@ -32,28 +33,40 @@ public class Main extends AbstractConsoleApp {
 		super.__main(opts);
 	}
 
-	@Arguments(arg = {})
-	@Description("Generate the output documents as specified in the local bndoc.bndoc properties file")
 	interface GenerateOptions extends Options {
 
 		@Description("Clean the output directories")
 		boolean clean();
 
-		@Description("Add additional properties.")
+		@Description("Add additional properties from files.")
 		List<String> properties();
 
+		@Description("The directory where to output the resources")
 		String output();
 
+		@Description("The file name of the primary file generated")
+		String name();
+
+		@Description("Load SVG diagrams for DITAA")
 		List<String> diagrams();
+
+		@Description("Specify a directory with images, css, etc. All files and directories from the given directory are copied to the output directory.")
+		String resources();
 	}
 
+	@Arguments(arg="sources...")
+	@Description("Provide the options to generate a single HTML file.")
 	interface HtmlOptions extends GenerateOptions {
+		@Description("The main outer template. This normally contains the <html> tag. The template "
+				+ "should have a ${content} macro for the contents. If not provided, a default will "
+				+ "be used.")
 		String template();
 
+		@Description("The inner template applied around each markdown file. This is normally "
+				+ "<section>${contents}</section>, which will be provided as a default.")
 		String inner();
 
-		String resources();
-
+		@Description("Specify css files. These CSS files are copied into the template when the ${css} macro is used")
 		List<String> css();
 	}
 
@@ -62,8 +75,6 @@ public class Main extends AbstractConsoleApp {
 	@Description("Generate a single html file")
 	public void _html(HtmlOptions options) throws Exception {
 		DocumentBuilder db = getHtmlDocumentBuilder(options);
-
-		db.prepare();
 
 		if (isOk() && db.isOk()) {
 			db.single();
@@ -74,9 +85,16 @@ public class Main extends AbstractConsoleApp {
 		getInfo(db);
 	}
 
+	@Arguments(arg="sources...")
 	interface PDFOptions extends HtmlOptions {
+		@Description("Specify the page size, default is A4")
 		PageSize size();
+
+		@Description("Specify an overall zoom factor. Default is 1.0")
 		float zoom();
+
+		@Description("Keep the intermediate HTML file")
+		boolean keep();
 	}
 
 	@Description("Generate a pdf file")
@@ -95,17 +113,16 @@ public class Main extends AbstractConsoleApp {
 	}
 
 	@Arguments(arg = "file")
-	interface RenderOptions extends PDFOptions {
-	}
+	interface RenderOptions extends PDFOptions {}
 
-	@Description("Convert HTML to PDF")
+	@Description("Convert an HTML file to a PDF")
 	public void _render(RenderOptions options) throws Exception {
 
 		File from = getFile(options._().get(0), "Should exist %s");
 		if (from != null && from.isFile()) {
-			
+
 			DocumentBuilder db = getPdfDocumentBuilder(options);
-			
+
 			File to;
 			if (options.output() == null) {
 				to = getFile(from.getAbsolutePath().replace("\\.html?$", ".pdf"));
@@ -114,27 +131,39 @@ public class Main extends AbstractConsoleApp {
 			}
 			to.getParentFile().mkdirs();
 			db.setOutput(to);
-			
+
 			db.pdf(from, to);
 			getInfo(db);
 		} else
 			error("No such file %s", from);
 	}
 
+	/**
+	 * Parse the PDF (and thus HTML options).
+	 * @param options
+	 * @return
+	 */
 	private DocumentBuilder getPdfDocumentBuilder(PDFOptions options) throws Exception {
-		
+
 		DocumentBuilder db = getHtmlDocumentBuilder(options);
 		if (options.size() != null)
 			db.setProperty("page-size", options.size().toString());
 
-
-		if ( options.zoom() != 0 ) {
+		if (options.zoom() != 0) {
 			db.setZoom(options.zoom());
 		}
 
-		
+		if (options.keep())
+			db.setKeep(true);
+
 		return db;
 	}
+
+	/**
+	 * Parse the HTML options
+	 * @param options
+	 * @return
+	 */
 	private DocumentBuilder getHtmlDocumentBuilder(HtmlOptions options) throws Exception {
 		DocumentBuilder db = new DocumentBuilder(this);
 
@@ -173,6 +202,9 @@ public class Main extends AbstractConsoleApp {
 			}
 		}
 
+		if (options.name() != null) {
+			db.setName(options.name());
+		}
 		List<File> propertyFiles = expand(options.properties());
 		for (File f : propertyFiles) {
 			setProperties(f);
@@ -186,8 +218,7 @@ public class Main extends AbstractConsoleApp {
 		db.addSources(expand(options._()));
 
 		if (options.clean()) {
-			IO.delete(db.getResources());
-			IO.delete(db.getOutput());
+			db.setClean(true);
 		}
 
 		return db;
@@ -235,6 +266,11 @@ public class Main extends AbstractConsoleApp {
 
 	}
 
+	@Description("Show the version of this bndoc")
+	public void _version(Options opts) throws IOException {
+		System.out.println( IO.collect(getClass().getResourceAsStream("/version.txt")));
+	}
+	
 	/**
 	 * Show the credits
 	 */

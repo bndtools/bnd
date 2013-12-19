@@ -1,44 +1,20 @@
+---
 author:         Peter Kriens
-title:          bndoc - Documentation
-abstract:		User documentation for the bndoc program
+abstract:		User documentation forthe bndoc program
+doctitle:		bndoc Handbook ${version;===;${Bundle-Version}}
+---
 
-<div class='doctitle'>bndoc Documentation ${Bundle-Version}</div>
-
-<span style="font-size:6em">bndoc<small>Documentation</small></span>
-
-
-                +-------------+              +-------+
-                |             |              |       |                 +-------+
-                |             |              |       |                 |       |
-                |   {Cloud}   |              | {io}  |                 |       |
-                |             |              |       |                 |  {s}  |
-                |             |              |       |                 |       |
-                |             |              |       |                 |       |
-                |             |              |       |                 |       |
-                |             |              +-------+                 +-------+
-                |             |
-                |             |
-                +-------------+
-
-	+---\
-    |{E}+                          +-------+           +------------+
-    +---/                          |       |           |    {d}     |
-              +-------+            |       |           |            |
-              |       |            |       |           |            |
-              |   {s} |            |  {d}  |           +------------+
-              |       |            |       |
-              |       |            |       |
-              |       |            |       |
-              +-------+            |       |
-                                   +-------+
-
-
-
-<div class='abstract'>
-	<h1>Abstract</h1>
-	<p>${abstract}</p>
+<div style="width:100%;box-sizing:content-box;border-left: 3px solid #720f10;padding-left:2em;overflow:visible;">
+<div style='font-size:6em;color:#720F10'>bndoc</div>
+<div style='font-size:4em'>Handbook</div>
+<div style='font-size:2em'>Version ${version;==;${Bundle-Version}}</div>
+<img style="padding-top:10em" width='90%' src="img/front.jpg"></img>
 </div>
 
+
+<h1>Table of Contents</h1>
+
+${toc}
 
 <h2>Change List</h2>
 

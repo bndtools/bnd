@@ -1,5 +1,7 @@
 {
  "revisionRefs":[{
+  "artifactId":"biz.aQute.bndoc.run","baseline":"0.0.0","bsn":"biz.aQute.bndoc.run","created":1387459404194,"description":"bndoc is a command line utility to turn a number of markdown documents into a book and/or website. It provides property expansion, table of content,paragraph numbering, etc.","groupId":"osgi","md5":"3B2BFF83EBAB20A5394870344B36B3C7","name":"biz.aQute.bndoc.run","phase":"STAGING","qualifier":"201312191323","revision":"F6128F05265AB1F9D0BED4B7CCB3A27E51B443CF","size":3820107,"urls":["http://repo.jpm4j.org/rest/bundle/52B2F4D8E4B0B439BC77240F/f6128f05265ab1f9d0bed4b7ccb3a27e51b443cf"],"version":"0.0.0.201312191323"
+ },{
   "artifactId":"txtmark","baseline":"0.10.0","bsn":"com.github.rjeschke__txtmark","created":1371749059000,"description":"Markdown parser for the JVM","groupId":"com.github.rjeschke","md5":"CDAF5254B1B082FB20CB06AF84EBAED0","name":"txtmark","phase":"MASTER","revision":"7AC68765E118048F3DEB6745CD552FA9F0B0D687","size":47732,"urls":["http://repo1.maven.org/maven2/com/github/rjeschke/txtmark/0.10/txtmark-0.10.jar"],"version":"0.10"
  },{
   "artifactId":"itext","baseline":"2.1.7","bsn":"com.lowagie__itext","created":1247092750000,"description":"iText, a free Java-PDF library","groupId":"com.lowagie","md5":"7587A618197A065EAC4A453D173D4ED6","name":"iText, a Free Java-PDF library","phase":"MASTER","revision":"892BFB3E97074A61123B3B2D7CAA2DB112750864","size":1130070,"urls":["http://repo1.maven.org/maven2/com/lowagie/itext/2.1.7/itext-2.1.7.jar"],"version":"2.1.7"

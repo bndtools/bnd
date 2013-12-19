@@ -268,7 +268,7 @@ public class Table {
 				row = null;
 		}
 
-		out.append(table.compact());
+		DocumentBuilder.append(out, table);
 	}
 
 	public static Table parse(CharSequence out, int start) {
