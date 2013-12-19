@@ -105,7 +105,7 @@ public abstract class AbstractConsoleApp extends Env {
 	 */
 	@Description("")
 	public void __main(MainOptions opts) throws IOException {
-		System.out.println("in base main " + opts.base());
+
 		try {
 			setExceptions(opts.exceptions());
 			setTrace(opts.trace());
@@ -115,7 +115,6 @@ public abstract class AbstractConsoleApp extends Env {
 				setBase(IO.getFile(getBase(), opts.base()));
 			else
 				setBase(IO.work);
-			System.out.println("in base main " + getBase());
 			
 			if (opts.width() > 0)
 				this.width = opts.width();
