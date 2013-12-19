@@ -4,6 +4,7 @@ import java.awt.image.*;
 import java.io.*;
 import java.net.*;
 import java.security.*;
+import java.util.regex.*;
 
 import javax.imageio.*;
 
@@ -22,14 +23,16 @@ import com.github.rjeschke.txtmark.*;
  * numbering and creates resources for ascii art in markdown.
  */
 class BndocDecorator extends DefaultDecorator {
-	int					toclevel	= 2;
+	int					toclevel	= 3;
 	ParagraphCounter	pgc			= new ParagraphCounter();
 
 	int					codeStart	= -1;
 	int					paraStart	= -1;
 	int					headStart	= -1;
+	int					imgStart	= -1;
 	int					imageCounter;
 	DocumentBuilder		generator;
+	int					termid		= 1000;
 
 	BndocDecorator(DocumentBuilder generator) {
 		this.generator = generator;
@@ -41,8 +44,10 @@ class BndocDecorator extends DefaultDecorator {
 		pgc.level(level);
 		out.append(" id='_h-").append(pgc.toString(level, ".")).append("'");
 		out.append(">");
-		if (level <= toclevel)
+		if (level <= toclevel) {
 			out.append(pgc.toHtml(level, "."));
+		}
+		out.delete(out.length() - 1, out.length());
 		headStart = out.length();
 	}
 
@@ -52,13 +57,11 @@ class BndocDecorator extends DefaultDecorator {
 		super.closeHeadline(out, level);
 		out.append("<div class='running-").append(level).append("'>").append(pgc.toString(level, ".")).append(" ")
 				.append(text.substring(1)).append("</div>");
-		out.append("<div class='");
 		String del = "";
 		for (int i = level + 1; i < 6; i++) {
-			out.append(del).append("running-").append(i);
-			del = " ";
+			out.append("<div class='");
+			out.append(del).append("running-").append(i).append("'> </div>");
 		}
-		out.append("' ></div>");
 	}
 
 	/**
@@ -77,30 +80,43 @@ class BndocDecorator extends DefaultDecorator {
 		if (parts.length > 1) {
 			definitionList(out, parts);
 		} else {
+			//
+			// Match definition terms
+			Matcher m = DocumentBuilder.DEFINITION_P.matcher(out);
+			boolean found = m.find(paraStart);
+			while (found) {
+				out.replace(m.start(1), m.end(1), "<dfn id='_term" + termid++ + "'>" + m.group(2) + "</dfn>");
+				found = m.find();
+			}
 			out.insert(paraStart, "<p>");
 			out.append("</p>\n");
 		}
 	}
 
 	private void definitionList(StringBuilder out, String[] parts) {
-		// first part are the terms
-		// subsequent parts are the definitions
-		out.delete(paraStart, out.length());
-		Tag dl = new Tag("dl");
-		dl.addAttribute("class", "dl-horizontal");
-		for (String term : parts[0].trim().split("<br\\s*/>\\s*\n?\\s*")) {
-			Tag dt = new Tag(dl, "dt");
-			dt.addContent(trim(term));
+		try {
+			// first part are the terms
+			// subsequent parts are the definitions
+			out.delete(paraStart, out.length());
+			Tag dl = new Tag("dl");
+			dl.addAttribute("class", "dl-horizontal");
+			for (String term : parts[0].trim().split("<br\\s*/>\\s*\n?\\s*")) {
+				Tag dt = new Tag(dl, "dt");
+				dt.addContent(trim(term));
+			}
+			for (int i = 1; i < parts.length; i++) {
+				Tag dd = new Tag(dl, "dd");
+				dd.addContent(trim(parts[i]));
+			}
+			DocumentBuilder.append(out, dl);
+			if (paraStart > 6) {
+				String s = out.substring(paraStart - 5, paraStart + 5);
+				if (s.equals("</dl>\n<dl>"))
+					out.delete(paraStart - 5, paraStart + 5);
+			}
 		}
-		for (int i = 1; i < parts.length; i++) {
-			Tag dd = new Tag(dl, "dd");
-			dd.addContent(trim(parts[i]));
-		}
-		out.append(dl.compact());
-		if (paraStart > 6) {
-			String s = out.substring(paraStart - 5, paraStart + 5);
-			if (s.equals("</dl>\n<dl>"))
-				out.delete(paraStart - 5, paraStart + 5);
+		catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -153,9 +169,9 @@ class BndocDecorator extends DefaultDecorator {
 					if (c == '\n') {
 						lstart = i + 1;
 					} else {
-						if (" -|+/\\><:".indexOf(c) >= 0)
+						if ("-|+/\\><:".indexOf(c) >= 0)
 							artCharacters++;
-						else
+						else if (!Character.isWhitespace(c))
 							otherCharacters++;
 					}
 				}
@@ -164,7 +180,7 @@ class BndocDecorator extends DefaultDecorator {
 					byte[] digest = md.digest();
 					String key = Hex.toHexString(digest);
 					String name = "img/" + key + ".png";
-					File file = IO.getFile(generator.getResources(), name);
+					File file = IO.getFile(generator.getOutput(), name);
 					int width;
 					int height;
 
@@ -181,7 +197,7 @@ class BndocDecorator extends DefaultDecorator {
 						height = read.getHeight();
 					}
 					out.delete(codeStart, out.length());
-					URI relative = generator.current.toURI().relativize(file.toURI());
+					URI relative = generator.currentOutput.toURI().relativize(file.toURI());
 					out.append("<img src='").append(relative)//
 							.append("' style='width:").append((int) (width / DocumentBuilder.QUALITY_SCALE)) //
 							.append("px;height:").append((int) (height / DocumentBuilder.QUALITY_SCALE))//
@@ -204,5 +220,25 @@ class BndocDecorator extends DefaultDecorator {
 		grid.initialiseWithText(text, generator.getConversionOptions().processingOptions);
 		Diagram diagram = new Diagram(grid, generator.getConversionOptions());
 		return new BitmapRenderer().renderToImage(diagram, generator.getConversionOptions().renderingOptions);
+	}
+
+	@Override
+	public void openImage(StringBuilder out) {
+		out.append("<img");
+		imgStart = out.length();
+	}
+
+	static Pattern	IMG_SRC_P	= Pattern.compile("src\\s*=\\s*['\"]([^'\"]*)['\"]");
+
+	@Override
+	public void closeImage(StringBuilder out) {
+		Matcher matcher = IMG_SRC_P.matcher(out);
+		if (matcher.find(imgStart)) {
+			String replacement = generator.toResource("img", matcher.group(1));
+			if (replacement != null) {
+				out.replace(matcher.start(1), matcher.end(1), replacement);
+			}
+		}
+		out.append(" />");
 	}
 }

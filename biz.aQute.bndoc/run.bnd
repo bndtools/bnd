@@ -17,7 +17,8 @@ JPM-Command:bndoc
 	{readme.md}, \
 	biz/aQute/bndoc/lib/resources/styles.css; \
 		requires='${project}/less'; \
-		cmd='lessc less/style.less'
+		cmd='lessc less/style.less', \
+	version.txt;literal='${Bundle-Version}'
 		
 
 # For macos, need access to lessc

@@ -255,7 +255,7 @@ acronym {
     padding-bottom: 0.2cm;
   }
   @top-right {
-    content: element(running-2, first);
+    content: element(running-2, last);
     vertical-align: bottom;
     padding-bottom: 0.2cm;
   }
@@ -268,7 +268,7 @@ acronym {
     vertical-align: top;
   }
   @bottom-left {
-    content: element(title);
+    content: element(doctitle);
     text-align: left;
     font-family: Verdana, sans-serif;
     font-size: 1em;
@@ -276,8 +276,46 @@ acronym {
     vertical-align: top;
   }
 }
-h1 {
-  page-break-before: always;
+@page :left {
+  margin-left: 2cm;
+  margin-right: 1cm;
+}
+@page :right {
+  margin-left: 1cm;
+  margin-right: 2cm;
+}
+@page :blank {
+  @top-center {
+    content: "This page is intentionally left blank";
+  }
+}
+@page :first {
+  border: none;
+  border: none;
+  
+  @bottom-left {
+    content: "";
+  }
+  @bottom-right {
+    content: "";
+  }
+  @top-left {
+    content: "";
+  }
+  @top-right {
+    content: "";
+  }
+}
+@media print {
+  h1 {
+    page-break-before: right;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+}
+.doctitle {
+  position: running(doctitle);
 }
 .running-1 {
   position: running(running-1);
@@ -305,7 +343,8 @@ h1 {
   .running-3,
   .running-4,
   .running-5,
-  .running-6 {
+  .running-6,
+  .doctitle {
     display: none;
   }
 }
