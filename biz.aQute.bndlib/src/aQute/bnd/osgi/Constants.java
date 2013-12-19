@@ -117,6 +117,8 @@ public interface Constants {
 	String							MANIFEST_NAME								= "-manifest-name";
 	String							NOUSES										= "-nouses";
 	String							NOBUNDLES									= "-nobundles";
+	String							OUTPUTMASK									= "-outputmask";																																					// default
+																																																													// ${@bsn}.jar
 	String							PACKAGE										= "-package";
 	String							PACKAGE_JPM									= "jpm";
 	String							PEDANTIC									= "-pedantic";
@@ -193,7 +195,7 @@ public interface Constants {
 			RUNVM, RUNPROGRAMARGS, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION,
 			DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT,
 			STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS, UPTO,
-			INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE
+			INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make

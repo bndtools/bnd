@@ -34,3 +34,4 @@ javac.debug:  on
 # Bnd Options
 -sources:       true
 -sourcepath:    ${project}/src
+-outputmask:	${bsn}.jar

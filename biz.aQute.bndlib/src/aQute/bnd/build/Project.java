@@ -1426,8 +1426,7 @@ public class Project extends Processor {
 
 	public File saveBuild(Jar jar) throws Exception {
 		try {
-			String bsn = jar.getName();
-			File f = getOutputFile(bsn);
+			File f = getOutputFile(jar.getBsn(), jar.getVersion());
 			String msg = "";
 			if (!f.exists() || f.lastModified() < jar.lastModified()) {
 				reportNewer(f.lastModified(), jar);
@@ -1452,8 +1451,31 @@ public class Project extends Processor {
 		}
 	}
 
+	
+	/**
+	 * Calculate the file for a JAR. The default name is bsn.jar, but this can be
+	 * overridden with an 
+	 * @param jar
+	 * @return
+	 * @throws Exception
+	 */
+	public File getOutputFile(String bsn, String version) throws Exception {
+		if ( version == null)
+			version = "0";
+		Processor scoped = new Processor(this);
+		try {
+			scoped.setProperty("@bsn", bsn);
+			scoped.setProperty("@version", version.toString());
+			String path = scoped.getProperty(OUTPUTMASK, bsn + ".jar");
+			return IO.getFile(getTarget(), path);
+		}
+		finally {
+			scoped.close();
+		}
+	}
+
 	public File getOutputFile(String bsn) throws Exception {
-		return new File(getTarget(), getProperty("output", bsn + ".jar"));
+		return getOutputFile(bsn, "0.0.0");
 	}
 
 	private void reportNewer(long lastModified, Jar jar) {
@@ -1539,6 +1561,7 @@ public class Project extends Processor {
 		release(false);
 	}
 
+	@SuppressWarnings("resource")
 	public void export(String runFilePath, boolean keep, File output) throws Exception {
 		prepare();
 
@@ -1964,7 +1987,7 @@ public class Project extends Processor {
 		Collection< ? extends Builder> builders = getSubBuilders();
 		for (Builder sub : builders) {
 			if (sub.getBsn().equals(bsn))
-				return new Container(this, getOutputFile(bsn));
+				return new Container(this, getOutputFile(bsn, sub.getVersion()));
 		}
 		return null;
 	}

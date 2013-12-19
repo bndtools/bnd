@@ -28,7 +28,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 				Version version = new Version(builder.getVersion());
 				boolean exact = range.matches("[0-9]+\\.[0-9]+\\.[0-9]+\\..*");
 				if ("latest".equals(range) || matchVersion(range, version, exact)) {
-					File file = project.getOutputFile(bsn);
+					File file = project.getOutputFile(bsn, version.toString());
 					if (!file.exists()) {
 						Jar jar = builder.build();
 						if (jar == null) {
