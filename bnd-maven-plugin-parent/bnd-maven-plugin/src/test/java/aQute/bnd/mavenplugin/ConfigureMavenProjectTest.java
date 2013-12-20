@@ -26,8 +26,8 @@ public class ConfigureMavenProjectTest {
 	    	Mockito.when(mockBndProject.getTarget()).thenReturn(new File(testProjDir, "bndtarget"));
 	    	Mockito.when(mockBndProject.getSrc()).thenReturn(new File(testProjDir, "bnd/src"));
 	    	Mockito.when(mockBndProject.getOutput()).thenReturn(new File(testProjDir, "bndoutput"));
-	    	Mockito.when(mockBndProject.getProperty("src.test", "src/test/java")).thenReturn("bnd/test");
-	    	Mockito.when(mockBndProject.getProperty("bin.test", "target/test-classes")).thenReturn("testoutput");
+	    	Mockito.when(mockBndProject.getTestSrc()).thenReturn(new File(testProjDir, "bnd/test"));
+	    	Mockito.when(mockBndProject.getTestOutput()).thenReturn(new File(testProjDir, "testoutput"));
 
 	    	ConfigureMavenProject cmp = createCMP(mockBndProject);
 
@@ -61,8 +61,8 @@ public class ConfigureMavenProjectTest {
 	    	Mockito.when(mockBndProject.getTarget()).thenReturn(new File(testProjDir, "target"));
 			Mockito.when(mockBndProject.getSrc()).thenReturn(srcRoot);
 	    	Mockito.when(mockBndProject.getOutput()).thenReturn(new File(testProjDir, "target/classes"));
-	    	Mockito.when(mockBndProject.getProperty("src.test", "src/test/java")).thenReturn("src/test/java");
-	    	Mockito.when(mockBndProject.getProperty("bin.test", "target/test-classes")).thenReturn("target/test-classes");
+	    	Mockito.when(mockBndProject.getTestSrc()).thenReturn(new File(testProjDir, "src/test/java"));
+	    	Mockito.when(mockBndProject.getTestOutput()).thenReturn(new File(testProjDir, "target/test-classes"));
 
 	    	ConfigureMavenProject cmp = createCMP(mockBndProject);
 
@@ -124,8 +124,8 @@ public class ConfigureMavenProjectTest {
             Properties p = new Properties();
             p.put("src", "s1/s2/s3");
             p.put("bin", "b1");
-            p.put("src.test", "s1/s4");
-            p.put("bin.test", "b/t1");
+            p.put("testsrc", "s1/s4");
+            p.put("testbin", "b/t1");
             p.put("target-dir", "t");
             p.store(new FileOutputStream(bndFile), "");
 

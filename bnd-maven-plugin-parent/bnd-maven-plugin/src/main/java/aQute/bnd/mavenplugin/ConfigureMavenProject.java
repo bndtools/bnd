@@ -179,7 +179,7 @@ public class ConfigureMavenProject extends AbstractMojo {
 	 */
 	private void copyResourcesFromSourceLocations(Project p) throws Exception {
 		copyResources(p.getSrc(), p.getOutput());
-		copyResources(getTestSrc(p), getTestOutput(p));
+		copyResources(p.getTestSrc(), p.getTestOutput());
 	}
 
 	/**
@@ -211,16 +211,7 @@ public class ConfigureMavenProject extends AbstractMojo {
         mavenProject.getBuild().setSourceDirectory(bndProject.getSrc().getAbsolutePath());
         mavenProject.getBuild().setOutputDirectory(bndProject.getOutput().getAbsolutePath());
 
-        mavenProject.getBuild().setTestSourceDirectory(getTestSrc(bndProject).getAbsolutePath());
-        mavenProject.getBuild().setTestOutputDirectory(getTestOutput(bndProject).getAbsolutePath());
-    }
-
-    // TODO it would be nice if the BND Project had APIs for these...
-    private static File getTestSrc(Project p) {
-    	return new File(p.getBase(), p.getProperty("src.test", "src/test/java"));
-    }
-
-    private static File getTestOutput(Project p) throws Exception {
-    	return new File(p.getBase(), p.getProperty("bin.test", "target/test-classes"));
+        mavenProject.getBuild().setTestSourceDirectory(bndProject.getTestSrc().getAbsolutePath());
+        mavenProject.getBuild().setTestOutputDirectory(bndProject.getTestOutput().getAbsolutePath());
     }
 }
