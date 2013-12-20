@@ -725,9 +725,15 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		if (exitValue != 0)
 			return exitValue + "";
 
-		if (!allowFail && (exitValue != 0)) {
-			reporter.error("System command " + command + " failed with " + exitValue);
+		if (exitValue != 0) {
+			if (!allowFail) {
+				reporter.error("System command " + command + " failed with exit code " + exitValue);
+			} else {
+				reporter.warning("System command " + command + " failed with exit code " + exitValue + " (allowed)");
+
+			}
 		}
+
 		return s.trim();
 	}
 

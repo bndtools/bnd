@@ -865,9 +865,15 @@ public class Macro {
 		if (exitValue != 0)
 			return exitValue + "";
 
-		if (!allowFail && (exitValue != 0)) {
-			domain.error("System command " + command + " failed with " + exitValue);
+		if (exitValue != 0) {
+			if (!allowFail) {
+				domain.error("System command " + command + " failed with exit code " + exitValue);
+			} else {
+				domain.warning("System command " + command + " failed with exit code " + exitValue + " (allowed)");
+
+			}
 		}
+
 		return s.trim();
 	}
 
