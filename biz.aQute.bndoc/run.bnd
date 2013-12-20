@@ -15,7 +15,7 @@ JPM-Command:bndoc
 
 -includeresource: \
 	{readme.md}, \
-	biz/aQute/bndoc/lib/resources/styles.css; \
+	biz/aQute/bndoc/lib/resources/style.css; \
 		requires='${project}/less'; \
 		cmd='lessc less/style.less', \
 	version.txt;literal='${Bundle-Version}'
