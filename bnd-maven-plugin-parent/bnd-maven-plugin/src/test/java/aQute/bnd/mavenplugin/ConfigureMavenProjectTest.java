@@ -5,11 +5,13 @@ import java.util.*;
 
 import org.apache.maven.execution.*;
 import org.apache.maven.model.*;
+import org.apache.maven.plugin.*;
 import org.apache.maven.project.*;
 import org.junit.*;
 import org.mockito.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
 
 public class ConfigureMavenProjectTest {
@@ -28,8 +30,9 @@ public class ConfigureMavenProjectTest {
 	    	Mockito.when(mockBndProject.getOutput()).thenReturn(new File(testProjDir, "bndoutput"));
 	    	Mockito.when(mockBndProject.getTestSrc()).thenReturn(new File(testProjDir, "bnd/test"));
 	    	Mockito.when(mockBndProject.getTestOutput()).thenReturn(new File(testProjDir, "testoutput"));
+	    	Mockito.when(mockBndProject.getProperty(Constants.BUNDLE_VERSION, "0.0.0")).thenReturn("0.0.0");
 
-	    	ConfigureMavenProject cmp = createCMP(mockBndProject);
+	    	ConfigureMavenProject cmp = createCMP(mockBndProject, "0.0.0");
 
 	    	cmp.execute();
 
@@ -63,8 +66,9 @@ public class ConfigureMavenProjectTest {
 	    	Mockito.when(mockBndProject.getOutput()).thenReturn(new File(testProjDir, "target/classes"));
 	    	Mockito.when(mockBndProject.getTestSrc()).thenReturn(new File(testProjDir, "src/test/java"));
 	    	Mockito.when(mockBndProject.getTestOutput()).thenReturn(new File(testProjDir, "target/test-classes"));
+	    	Mockito.when(mockBndProject.getProperty(Constants.BUNDLE_VERSION, "0.0.0")).thenReturn("1.2.3.SNAPSHOT");
 
-	    	ConfigureMavenProject cmp = createCMP(mockBndProject);
+	    	ConfigureMavenProject cmp = createCMP(mockBndProject, "1.2.3-SNAPSHOT");
 
 	    	cmp.execute();
 
@@ -95,7 +99,7 @@ public class ConfigureMavenProjectTest {
 		}
 	}
 
-	private ConfigureMavenProject createCMP(Project mockBndProject) throws Exception {
+	private ConfigureMavenProject createCMP(Project mockBndProject, String version) throws Exception {
     	String artifactId = "my-artifact";
 
     	ConfigureMavenProject cmp = new ConfigureMavenProject();
@@ -108,7 +112,7 @@ public class ConfigureMavenProjectTest {
 		Model model = new Model();
 		model.setGroupId("my-group");
 		model.setArtifactId(artifactId);
-		model.setVersion("1");
+		model.setVersion(version);
 		cmp.project = new MavenProject(model);
 		return cmp;
 	}
@@ -131,12 +135,14 @@ public class ConfigureMavenProjectTest {
 
             Project bndProject = new Project(mockWS, null, bndFile);
             bndProject.setBase(baseDir);
+            bndProject.setProperty(Constants.BUNDLE_VERSION, "999");
 
             File imaginaryPom = new File(baseDir, "pom.xml");
             MavenProject mvnProject = new MavenProject();
             mvnProject.setFile(imaginaryPom);
+            mvnProject.setVersion("999");
 
-            ConfigureMavenProject.setBndDirsInMvnProject(bndProject, mvnProject);
+            ConfigureMavenProject.transferBndProjectSettingsToMaven(bndProject, mvnProject);
             Assert.assertEquals(mvnProject.getBasedir() + "/s1/s2/s3", mvnProject.getBuild().getSourceDirectory());
             Assert.assertEquals(mvnProject.getBasedir() + "/b1", mvnProject.getBuild().getOutputDirectory());
             Assert.assertEquals(mvnProject.getBasedir() + "/t", mvnProject.getBuild().getDirectory());
@@ -146,6 +152,45 @@ public class ConfigureMavenProjectTest {
             deleteDir(baseDir);
         }
     }
+
+    @Test
+    public void testBndProjectMvnProjectVersionMismatch() throws Exception {
+        testBndProjectMvnProjectVersionMismatch("1.2.3.abc", "1.2.3.def", true);
+        testBndProjectMvnProjectVersionMismatch("1.2.3.abc", "1.2.3-SNAPSHOT", true);
+        testBndProjectMvnProjectVersionMismatch("1.2.3.SNAPSHOT", "1.2.3-SNAPSHOT", false);
+        testBndProjectMvnProjectVersionMismatch("0.0.0", "0.0.0", false);
+    }
+
+	private void testBndProjectMvnProjectVersionMismatch(String bndVersion, String mvnVersion, boolean shouldFail) throws Exception {
+		Workspace mockWS = Mockito.mock(Workspace.class);
+        Mockito.when(mockWS.getProperties()).thenReturn(new Properties());
+
+        File baseDir = getTestDir();
+
+        try {
+            File bndFile = new File(baseDir, "bnd.bnd");
+            Properties p = new Properties();
+            p.put(Constants.BUNDLE_VERSION, bndVersion);
+            p.store(new FileOutputStream(bndFile), "");
+	        Project bndProject = new Project(mockWS, null, bndFile);
+
+	        MavenProject mvnProject = new MavenProject();
+	        mvnProject.setVersion(mvnVersion);
+
+	        try {
+	            ConfigureMavenProject.transferBndProjectSettingsToMaven(bndProject, mvnProject);
+	            if (shouldFail) {
+	            	Assert.fail("Should fail on version mismatch");
+	            }
+	    	} catch (MojoExecutionException mjee) {
+	    		if (!shouldFail) {
+	    			throw new Exception("Should not report as failed", mjee);
+	    		}
+	    	}
+        } finally {
+            deleteDir(baseDir);
+        }
+	}
 
     private static synchronized File getTestDir() {
         File f = new File(System.getProperty("java.io.tmpdir") + "/" + ConfigureMavenProjectTest.class.getName() + "_" + (counter++));
