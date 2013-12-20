@@ -58,7 +58,7 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 			// The bnd project might have some different ideas about
 			// source and bin folders. So get them and set them.
-			setBndDirsInMvnProject(bndProject, project);
+			transferBndProjectSettingsToMaven(bndProject, project);
 
             // We might want to change this to methods in bnd's Project.
 			if ( project.getVersion() != null && !project.getVersion().isEmpty())
@@ -138,7 +138,10 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 			getLog().info("[bnd] classpath " + classpath);
 			project.setResolvedArtifacts(classpath);
-
+		} catch (MojoExecutionException mjee) {
+			throw mjee;
+		} catch (MojoFailureException mfe) {
+			throw mfe;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -206,7 +209,17 @@ public class ConfigureMavenProject extends AbstractMojo {
 	 * @param bndProject The bnd project that is the source of information.
 	 * @param mavenProject The maven project that needs to be configured.
 	 */
-    static void setBndDirsInMvnProject(Project bndProject, MavenProject mavenProject) throws Exception {
+    static void transferBndProjectSettingsToMaven(Project bndProject, MavenProject mavenProject) throws Exception {
+    	String bndVersion = bndProject.getProperty(Constants.BUNDLE_VERSION, "0.0.0").trim();
+    	if (bndVersion.endsWith(".SNAPSHOT")) {
+    		bndVersion = bndVersion.substring(0, bndVersion.length() - 9) + "-SNAPSHOT";
+    	}
+    	String mvnVersion = mavenProject.getVersion().trim();
+    	if (!bndVersion.equals(mvnVersion)) {
+    		throw new MojoExecutionException("Bnd and Maven versions differ. Bnd reports version: " +
+    				bndVersion + " Maven reports version: " + mvnVersion);
+    	}
+
         mavenProject.getBuild().setDirectory(bndProject.getTarget().getAbsolutePath());
         mavenProject.getBuild().setSourceDirectory(bndProject.getSrc().getAbsolutePath());
         mavenProject.getBuild().setOutputDirectory(bndProject.getOutput().getAbsolutePath());
