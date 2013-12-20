@@ -741,11 +741,11 @@ public class Macro {
 					result = version.getQualifier();
 					if (c == 'S') {
 						// we have a request for a Maven snapshot
-						if (result.equals("SNAPSHOT"))
+						if ("SNAPSHOT".equals(result))
 							return sb.toString() + "-SNAPSHOT";
 					} else if (c == 's') {
 						// we have a request for a Maven snapshot
-						if (result.equals("SNAPSHOT"))
+						if ("SNAPSHOT".equals(result))
 							return sb.toString() + "-SNAPSHOT";
 						else
 							return sb.toString();
