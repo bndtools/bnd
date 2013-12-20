@@ -639,7 +639,16 @@ public class ProjectTest extends TestCase {
 		top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
 		assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
 				top.getOutputFile(builder.getBsn(), builder.getVersion()));
-	}
+
+		top.setProperty("Bundle-Version", "42");
+		top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
+		assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+
+		top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
+		assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+        }
 
 	private static Project testBuildAll(String dependsOn, int count) throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
