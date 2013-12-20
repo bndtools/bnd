@@ -21,7 +21,7 @@ You can install bndoc from [jpm4j][2].
 
     $ sudo jpm install bndoc
     $ bndoc version
-    ${shift;${system;bndoc version}}
+    ${block;80;2;4;${system;bndoc version}}
 
 Despite the `$`, this is not restricted to *nix'es, there is also support for Windows on [jpm4j][3].
 Alternatively, you can download `bndoc` from the the jpm4j website at:
@@ -39,46 +39,40 @@ When you run `bndoc` from the command line without given it any arguments then i
 will show the help text.
 
     $ bndoc
-    ${shift;${system;bndoc}}
+    ${block;80;4;4;${system;bndoc}}
 
 ### Main Options
 There are a number of options that can be specified directly after the command but before the sub
 command. These options are valid for all sub-commands.
 
-    -b, --base <string>
+`-b, --base <string>`
+:	Specify a base directory, this directory will be treated as the 'default' working directory
 
-Specify a base directory, this directory will be treated as the 'default' working directory
-    
-    -e, --exceptions
+`-e, --exceptions`
+:	Print exception stack traces when they occur.
 
-Print exception stack traces when they occur.
+`-f, --failok <string>`
+: Do not return error status for error that match this given regular expression.
 
-    -f, --failok <string>
+`-k, --key`
+:	Wait for a key press, might be useful when you want to see the result before it is 
+	overwritten by a next command.
 
-Do not return error status for error that match this given regular expression.
+`-p, --pedantic`
+:	Be pedantic about all diagnostic details.
 
-    -k, --key
-Wait for a key press, might be useful when you want to see the result before it is 
-overwritten by a next command.
+`-t, --trace`
+:	Trace on.
 
-    -p, --pedantic
-
-Be pedantic about all diagnostic details.
-
-	-t, --trace
-
-Trace on.
-
-	-w, --width <int>
-
-The output width, used for wrapping diagnostic output
+`-w, --width <int>`
+:	The output width, used for wrapping diagnostic output
 
 ### `credits`
 Some of the open source licenses require that a program gives credits. The `credits` command
 tells in detail what open source packages have been used.
 
     $ bndoc credits
-    ${shift;${system;bndoc credits}}
+    ${block;80;3;4;${system;bndoc credits}}
  
 ###`html`
 The `html` command is used to create a directory with a single HTML file and its resources. The

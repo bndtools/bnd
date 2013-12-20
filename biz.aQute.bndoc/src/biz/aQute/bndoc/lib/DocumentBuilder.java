@@ -171,8 +171,8 @@ public class DocumentBuilder extends Base implements Cloneable {
 		return builder.build();
 	}
 
-	public String _toc(String[] args) {
-		int level = 2;
+	public String _toc(String[] args) throws IOException {
+		int level = 3;
 		if (args.length > 1)
 			level = Integer.parseInt(args[1]);
 
@@ -200,7 +200,9 @@ public class DocumentBuilder extends Base implements Cloneable {
 			new Tag(tbodyrow, "td").addAttribute("class", "page").addAttribute("pageref", pageref);
 		}
 
-		return table.toString();
+		StringBuilder sb = new StringBuilder();
+		append(sb,table);
+		return sb.toString();
 	}
 
 	void doTemplate(String template, PrintWriter pw, Runnable r) throws IOException {
@@ -669,14 +671,60 @@ public class DocumentBuilder extends Base implements Cloneable {
 	}
 
 	/**
-	 * A macro to add spaces in front of an output.
+	 * A macro to cut out a block from an output stream. It allows you to specify
+	 * the number of rows, the number of columns, and the shift it should do on the left
+	 * with spaces.
 	 */
-	public String _shift(String[] args) {
-		if (args.length == 1)
+	public String _block(String[] args) {
+		if (args.length < 4)
 			return "";
 
-		String code = args[1];
-		return code.replaceAll("\r?\n", "\n    ");
+		int width = Integer.parseInt(args[1]);
+		int height = Integer.parseInt(args[2]);
+		int shift = Integer.parseInt(args[3]);
+
+		StringBuilder sb = new StringBuilder();
+		
+		// 
+		// If an output has a ;, we concatenate it
+		//
+		String del = "";
+		for (int i = 4; i < args.length; i++) {
+			sb.append(del).append(args[i]);
+			del = ";";
+		}
+		String indent = "                                                                      ";
+		if ( shift < indent.length())
+			indent = indent.substring(0, shift);
+
+		int rover = 0;
+		for (int row = 0; row < height; row++) {
+			if (row != 0) {
+				sb.insert(rover, indent);
+				rover += indent.length();
+			}
+			int col = 0;
+			row: while (rover < sb.length()) {
+				char c = sb.charAt(rover);
+				switch (c) {
+					case '\n' :
+						rover++;
+						break row;
+					default :
+						col++;
+						if (col > width) {
+							sb.delete(rover, rover+1);
+						} else
+							rover++;
+						break;
+				}
+			}
+		}
+		if ( rover != sb.length()) {
+			sb.delete(rover, sb.length());
+			sb.append(indent).append("...\n");
+		}
+		return sb.toString();
 	}
 
 	/**
