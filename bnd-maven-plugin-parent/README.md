@@ -1,17 +1,59 @@
 bnd maven plugin
 ================
-Toni Menzel created a proof of concept plugin to demonstrate that you can build bnd(tools) projects
-with maven. This project has been adapted then to be closer to bnd and handle some more details. The
-result is a plugin that fully builds any bnd project. It even supports multiple bundle projects, the
+This plugin is based on work started by Toni Menzel and others to enable Maven-based builds on bnd/bndtools projects where the idea is that you use Bndtools in Eclipse as a development environment and have the option to use Maven to build your projects en a headless environment.
+The result is a plugin that fully builds any bnd project. It even supports multiple bundle projects, the
 multiple jars are then created with classifiers.
 
-This branch shows that this can be used to build bnd itself. To test this out, do the following:
 
-* In bnd-maven-plugin: mvn clean install
-* cd ../cnf
-* mvn clean install
+The simplest way of using it is as follows
 
-The intention of this is to become a full blown plugin that is supported by bndtools
+1. Generate a bndtools project.
+2. Add a pom.xml, with the following content:
+```
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.foo.bar</groupId>
+    <artifactId>myBundle</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>bnd</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>0.2.0-SNAPSHOT</version>
+                <extensions>true</extensions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+This basically builds the project using Bnd. Setting are taken from the bnd.bnd file. To get a Maven-style layout, this file could have content, similar to this:
+```
+  # These things are edited via bndtools
+  -buildpath: osgi.core;version=4.0
+  Private-Package: org.foo.bar
+  Bundle-Activator: org.foo.bar.TestActivator
+  Bundle-Version: 1.0.0.SNAPSHOT
+
+  # Add these to get a maven-like structure on disk and file names in target
+  -outputmask = ${@bsn}-${version;===S;${@version}}.jar
+  target-dir = target
+  bin = target/classes
+  src = src/main/java
+  testsrc = src/test/java
+  testbin = target/test-classes
+```
+It would be nice if the above files could be generated automatically via bndtools. I created [issue 800](https://github.com/bndtools/bndtools/issues/800) for that.
+You can also include tests that are run via bnd. These tests are run as part of the integration-test phase in Maven. For example the ExampleTest that is created via the bndtoold 'Integration Testing' template just works with this.
+
+In the pom.xml above, the packaging type is 'bnd'. I changed this from the previous value 'bundle' to not interfere with the maven-bundle-plugin which uses that value. However, it was suggested to simply use 'jar' as the packaging type. This is possible, but requires quite a lot of configuration in the pom.xml. If we can have the bnd-maven-plugin automatically configure this, I think we should use is, but it needs to be investigated a bit more [(issue 449)](https://github.com/bndtools/bnd/issues/449).
+
+Finally, regarding doing releases in Maven... Typically in Maven you'd develop using -SNAPSHOT versions (note that the bnd-maven-plugin transforms x.y.z.SNAPSHOT into x.y.z-SNAPSHOT for Maven). Then when you're done developing you use the [maven-release-plugin](http://maven.apache.org/maven-release/maven-release-plugin/index.html) to create the non-snapshot poms, tag/release them etc. For people using this process, you'd really want the Bundle-Version in the bnd.bnd file to be updated as part of this as well. Note that the bnd-maven-plugin fails if there is a mismatch between the versions in the pom.xml and bnd.bnd. We need to investigate a little bit more how this can be done, for example by looking at how Tycho does this.
 
 Issues
 ======
@@ -23,32 +65,3 @@ I do not understand why the plugin creates a life cycle? How are multiple plugin
 defines its own life cycle.
 
 There are several TODOs in the java source
-
-
-
-
-Previous
-===
-
-pax-bnd-mavenplugin
-===================
-
-THIS IS A PROOF OF CONCEPT, NOT A FULL BLOWN PROJECT YET.
-
-An alternative BND-first maven plugin for OSGi
-
-It fully builds on BNDLib for collecting classpath resources (instead of maven dependencies).
-This enables full transparent maven builds using resolvers provided by the BNDTOols project (OBR etc.).
-The plugin completely bypasses maven dependencies to give all control to BND.
-
-The following phases are overwritten by this plugin:
-- generate_sources: builds the classpath from BND Resolvers.
-- package: generates Bundle using BNDLib (just like maven bundle plugin, but natively using the resources provided by BND instead of Maven).
-
-Example: 
-- check this project: https://github.com/tonit/workspaceBNDBridgeExample
-
-How to build:
-run mvn clean install
-
-Toni Menzel / Rebaze.com
