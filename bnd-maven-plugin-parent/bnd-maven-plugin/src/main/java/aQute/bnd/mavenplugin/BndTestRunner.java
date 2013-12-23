@@ -11,15 +11,15 @@ import org.apache.maven.project.*;
 import aQute.bnd.build.*;
 
 @Mojo(name = "integration-test")
-public class BndTestMojo extends AbstractMojo {
+public class BndTestRunner extends AbstractMojo {
 	@Component
-	protected MavenSession session;
+	MavenSession session;
 
 	@Component
-	protected MavenProject mavenProject;
+	MavenProject mavenProject;
 
 	@Component
-	private BndWorkspace bndWorkspace;
+	BndWorkspace bndWorkspace;
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
