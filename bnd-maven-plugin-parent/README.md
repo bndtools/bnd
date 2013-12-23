@@ -48,10 +48,11 @@ This basically builds the project using Bnd. Setting are taken from the bnd.bnd 
   testsrc = src/test/java
   testbin = target/test-classes
 ```
-It would be nice if the above files could be generated automatically via bndtools. I created [issue 800](https://github.com/bndtools/bndtools/issues/800) for that.
+It would be nice if the above files could be generated automatically via bndtools. [Issue 800](https://github.com/bndtools/bndtools/issues/800) is about that.
+
 You can also include tests that are run via bnd. These tests are run as part of the integration-test phase in Maven. For example the ExampleTest that is created via the bndtoold 'Integration Testing' template just works with this.
 
-In the pom.xml above, the packaging type is 'bnd'. I changed this from the previous value 'bundle' to not interfere with the maven-bundle-plugin which uses that value. However, it was suggested to simply use 'jar' as the packaging type. This is possible, but requires quite a lot of configuration in the pom.xml. If we can have the bnd-maven-plugin automatically configure this, I think we should use is, but it needs to be investigated a bit more [(issue 449)](https://github.com/bndtools/bnd/issues/449).
+In the pom.xml above, the packaging type is 'bnd'. This was changed from the previous value 'bundle' to not interfere with the maven-bundle-plugin which uses that value. However, it was suggested to simply use 'jar' as the packaging type. This is possible, but requires quite a lot of configuration in the pom.xml. If we can have the bnd-maven-plugin automatically configure this, it would be a good option, but it needs to be investigated a bit more [(issue 449)](https://github.com/bndtools/bnd/issues/449).
 
 Finally, regarding doing releases in Maven... Typically in Maven you'd develop using -SNAPSHOT versions (note that the bnd-maven-plugin transforms x.y.z.SNAPSHOT into x.y.z-SNAPSHOT for Maven). Then when you're done developing you use the [maven-release-plugin](http://maven.apache.org/maven-release/maven-release-plugin/index.html) to create the non-snapshot poms, tag/release them etc. For people using this process, you'd really want the Bundle-Version in the bnd.bnd file to be updated as part of this as well. Note that the bnd-maven-plugin fails if there is a mismatch between the versions in the pom.xml and bnd.bnd. We need to investigate a little bit more how this can be done, for example by looking at how Tycho does this.
 
