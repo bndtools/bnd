@@ -27,14 +27,14 @@ public class BundlePackager extends AbstractMojo {
 
 	@Parameter(property = "supportedProjectTypes")
 	protected List<String> supportedProjectTypes = Arrays.asList(new String[] {
-			"jar", "bundle" });
+			"jar", "bnd" });
 
 	@Component
 	protected MavenProject mavenProject;
 
 	@Component
 	private ArtifactHandlerManager m_artifactHandlerManager;
-	
+
 	@Component
 	private BndWorkspace bndWorkspace;
 
@@ -49,16 +49,16 @@ public class BundlePackager extends AbstractMojo {
 			Project bndProject = workspace.getProject(mavenProject.getArtifactId());
 			if ( bndProject == null)
 				throw new MojoExecutionException("Cannot find the bnd project " + mavenProject.getArtifactId() + " in workspace " + workspace );
-				
+
 			files = bndProject.build();
-			
+
 			// Report any errors and warnings
-			
+
 			report("Workspace", workspace);
 			report("Project", bndProject);
-			
+
 			// We stop if we ran into an error
-			
+
 			if ( !workspace.isOk() || !bndProject.isOk()) {
 				throw new MojoExecutionException("Project " + bndProject + " has failed" );
 			}
@@ -68,7 +68,7 @@ public class BundlePackager extends AbstractMojo {
 			// maven project. Otherwise, we treat the multiple output files
 			// as classifiers
 			//
-			
+
 			if (files.length == 1) {
 				Artifact extra = new DefaultArtifact(mavenProject.getGroupId(),
 						mavenProject.getArtifactId(), mavenProject.getVersion(),
@@ -105,7 +105,7 @@ public class BundlePackager extends AbstractMojo {
 
 	/**
 	 * Just report the errors and warnings
-	 * 
+	 *
 	 * @param title
 	 * @param report
 	 */
