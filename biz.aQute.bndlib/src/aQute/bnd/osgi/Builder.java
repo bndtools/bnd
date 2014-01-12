@@ -215,16 +215,18 @@ public class Builder extends Analyzer {
 			setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH), path));
 
 			Manifest m = jar.getManifest();
-			String cp = m.getMainAttributes().getValue("Class-Path");
-			if (cp != null) {
-				Collection<String> parts = split(cp, ",");
-				for (String part : parts) {
-					File sub = getFile(f.getParentFile(), part);
-					if (!sub.exists() || !sub.getParentFile().equals(f.getParentFile())) {
-						warning("Invalid Class-Path entry %s in %s, must exist and must reside in same directory", sub,
-								f);
-					} else {
-						addWabLib(dot, sub);
+			if (m != null) {
+				String cp = m.getMainAttributes().getValue("Class-Path");
+				if (cp != null) {
+					Collection<String> parts = split(cp, ",");
+					for (String part : parts) {
+						File sub = getFile(f.getParentFile(), part);
+						if (!sub.exists() || !sub.getParentFile().equals(f.getParentFile())) {
+							warning("Invalid Class-Path entry %s in %s, must exist and must reside in same directory", sub,
+									f);
+						} else {
+							addWabLib(dot, sub);
+						}
 					}
 				}
 			}
