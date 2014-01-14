@@ -1,0 +1,53 @@
+## Simple definition
+
+abc
+:	This is a abc or def
+....................................................................................................
+<h2>Simple definition</h2>
+<dl>
+<dt>abc</dt>
+<dd>This is a abc or def</dd>
+</dl>
+....................................................................................................
+## Multiple definitions
+
+abc
+def ghi
+:	This is a abc or def
+    and this continues the xplanation
+....................................................................................................
+<h2 >Multiple definitions</h2>
+<dl>
+<dt>abc</dt>
+<dt>def ghi</dt>
+<dd>This is a abc or def
+and this continues the xplanation</dd>
+</dl>
+
+....................................................................................................
+## Complex body
+
+abc
+:	This is a abc or def
+    and this continues the xplanation
+    
+    > this is a quote
+    
+    1. l1
+    2. l3
+....................................................................................................
+<h2>Complex body</h2>
+<dl>
+<dt>abc</dt>
+<dd>This is a abc or def
+and this continues the xplanation
+<blockquote><p>
+this is a quote</p>
+</blockquote>
+<ol>
+<li>l1</li>
+<li>l3</li>
+</ol>
+</dd>
+</dl>
+

@@ -1,4 +1,5 @@
 # Getting Started
+## Introduction
 bndoc is a utility to convert one or more [markdown][1] documents into:
 
 * A single HTML file
@@ -15,6 +16,9 @@ It supports basic markdown with a number of extensions:
 * Templating
 * Macros
 
+## Naming
+The is bndoc (should be written with lower case), pronounced as bee-an-doc, similar to bnd
+and jpm. 
 
 ## Installing
 You can install bndoc from [jpm4j][2]. 
@@ -45,27 +49,28 @@ will show the help text.
 There are a number of options that can be specified directly after the command but before the sub
 command. These options are valid for all sub-commands.
 
-`-b, --base <string>`
-:	Specify a base directory, this directory will be treated as the 'default' working directory
++========+===============+===================+================================================+
+| Letter | Name          | Argument          | Description                                    |
++--------+---------------+-------------------+------------------------------------------------+
+| `-b`   | `--base`      | `<string>`        | Specify a base directory, this directory will  |
+|        |               |                   | be treated as the 'default' working directory  |
++--------+---------------+-------------------+------------------------------------------------+
+| `-e`   |`--exceptions` |                   | Print exception stack traces when they occur.  |
++--------+---------------+-------------------+------------------------------------------------+
+| `-f`   |`--failok`     | `<string>`        | Do not return error status for error that match|
+|        |               |                   | this given regular expression.                 |
++--------+---------------+-------------------+------------------------------------------------+
+| `-k`   |`--key`        |                   | Wait for a key press, might be useful when you |
+|        |               |                   | want to see the result before it is overwritten|
+|        |               |                   | by a next command.                             |
++--------+---------------+-------------------+------------------------------------------------+
+| `-p`   |`--pedantic`   |                   | Be pedantic about all diagnostic details.      |
++--------+---------------+-------------------+------------------------------------------------+
+| `-t`   |`--trace`      |                   | Trace on                                       |
++--------+---------------+-------------------+------------------------------------------------+
+| `-w`   |`--width`      |                   | Output width (used for printouts, no guarantee)|
++--------+---------------+-------------------+------------------------------------------------+
 
-`-e, --exceptions`
-:	Print exception stack traces when they occur.
-
-`-f, --failok <string>`
-: Do not return error status for error that match this given regular expression.
-
-`-k, --key`
-:	Wait for a key press, might be useful when you want to see the result before it is 
-	overwritten by a next command.
-
-`-p, --pedantic`
-:	Be pedantic about all diagnostic details.
-
-`-t, --trace`
-:	Trace on.
-
-`-w, --width <int>`
-:	The output width, used for wrapping diagnostic output
 
 ### `credits`
 Some of the open source licenses require that a program gives credits. The `credits` command
@@ -77,28 +82,30 @@ tells in detail what open source packages have been used.
 ###`html`
 The `html` command is used to create a directory with a single HTML file and its resources. The
 processor creates this single HTML file by processing the _sources_. The sources are given
-on the command line. They can be single files or directories. For directories, the contents are
-selected for markdown files (.md extensions) and are sorted by their filename. You can therefore
+on the command line, yuo can specify one or more sources. 
 
+	bndoc html doc/frond.md doc/en/**.md
 
-## Glossary
+A source can be one of the following:
 
-`-k --jjjj`
-:	An image drawn with a `limited number` of ascii characters. The
-	image is recognized and translated. An _image drawn_ with a limited 
-	number of ascii characters. The image is recognized and translated.
-	An image drawn with a limited number of ascii characters. The
-	image is recognized and translated.
-:	adas dasd asdjbasd ad asd asd asd as da das da sd adas dasd asdjbasd ad asd asd 
-	asd as da das da sdadas dasd asdjbasd ad asd asd asd as da das da sdadas dasd asdjbasd 
-	ad asd asd asd as da das da sd
+file_path
+:	A file path.  
+
+dir_path
+:	A directory specification. The directory is expanded. Members are sorted and only one level
+	is used. 
+
+dir_path/[*]*[.ext]
+:	A directory specification. If 2 wildcards are use (dir/**) all sub directories are recursively
+	traversed in sorted order. You can match the file name with a globbing expression. For example
+	`bndoc dir/*.md`.
+
+The paths can be relative to the current directory (you can override the current directory 
+with `-b` on the command line) or absolute. Supports special characters like `..` and `~`  
+in file and dir paths. 
 	
-table
-:	An image drawn with a limited number of ascii characters. The
-	image is recognized and translated. An image drawn with a limited 
-	number of ascii characters. The image is recognized and translated.
-	An image drawn with a limited number of ascii characters. The
-	image is recognized and translated.
+
+
 	
 
 

@@ -1,16 +1,17 @@
 package biz.aQute.bndoc.main;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.regex.*;
 
 import aQute.lib.consoleapp.*;
-import aQute.lib.env.*;
 import aQute.lib.getopt.*;
 import aQute.lib.io.*;
 import aQute.libg.glob.*;
 import biz.aQute.bndoc.lib.*;
+import biz.aQute.markdown.*;
+import biz.aQute.markdown.ditaa.*;
 
 /**
  * This is the command line interface for a {@link DocumentBuilder}.
@@ -51,15 +52,14 @@ public class Main extends AbstractConsoleApp {
 		List<String> diagrams();
 
 		@Description("Specify a directory with images, css, etc. All files and directories from the given directory are copied to the output directory.")
-		String resources();
+		List<String> resources();
 	}
 
-	@Arguments(arg="sources...")
+	@Arguments(arg = "sources...")
 	@Description("Provide the options to generate a single HTML file.")
 	interface HtmlOptions extends GenerateOptions {
 		@Description("The main outer template. This normally contains the <html> tag. The template "
-				+ "should have a ${content} macro for the contents. If not provided, a default will "
-				+ "be used.")
+				+ "should have a ${content} macro for the contents. If not provided, a default will " + "be used.")
 		String template();
 
 		@Description("The inner template applied around each markdown file. This is normally "
@@ -74,18 +74,92 @@ public class Main extends AbstractConsoleApp {
 
 	@Description("Generate a single html file")
 	public void _html(HtmlOptions options) throws Exception {
-		DocumentBuilder db = getHtmlDocumentBuilder(options);
+		File output = getFile(options.output());
 
-		if (isOk() && db.isOk()) {
-			db.single();
+		if ( options.clean())
+			IO.delete(output);
+		
+		output.mkdirs();
+		
+		Markdown md = new Markdown(this);
+		md.addHandler(new AsciiArtHandler());
 
-			if (options.output() == null)
-				IO.copy(db.getOutput(), System.out);
+		if ( options.properties() != null) {
+			List<File> files = expand(options.properties());
+			for ( File file: files) {
+				md.addProperties(file, null);
+			}
 		}
-		getInfo(db);
+		
+		Configuration configuration = md.getConfiguration();
+		configuration.resources_dir(new File(output, "www"));
+		configuration.resources_relative("www/");
+
+		if (options.css() != null) {
+			for (String css : options.css()) {
+				String style = collect(css, null);
+				if (style != null)
+					md.addStyle(style);
+				else
+					error("Indicated style not found %s", css);
+			}
+		} else {
+			String style = collect(null, "style.css");
+			md.addStyle(style);
+		}
+
+		String outer = collect(options.template(), "outer.htm");
+		String inner = collect(options.template(), "inner.htm");
+
+		List<File> files = expand(options._());
+		for (File f : files)
+			md.parse(f);
+
+		if ( options.resources() != null) {
+			for ( String resourceDir : options.resources()) {
+				File f = getFile(resourceDir);
+				if ( f.isFile()) {
+					IO.copy(f, IO.getFile(output, f.getName()));
+				} if ( f.isDirectory()) {
+					IO.copy(f, output);
+				} else {
+					error("No such resource %s", f);
+				}
+			}
+		}
+		
+
+		if (md.isOk()) {
+			File out = new File(output, options.name() == null ? "index.html" : options.name());
+			Writer w = IO.writer(out);
+			md.single(w, outer, inner);
+			w.close();
+		}
+		getInfo(md);
 	}
 
-	@Arguments(arg="sources...")
+	private String collect(String fileOrUrl, String backup) throws IOException {
+		if (fileOrUrl != null) {
+			File f = IO.getFile(fileOrUrl);
+			if (f.isFile())
+				return IO.collect(f);
+			
+			try {
+				URL url = new URL(fileOrUrl);
+				return IO.collect(url.openStream());
+			} catch( Exception e) {
+				// ignore
+			}
+		}
+		
+		InputStream rin = Main.class.getResourceAsStream("resources/"+backup);
+		if ( rin != null)
+			return IO.collect(rin);
+
+		return null;
+	}
+
+	@Arguments(arg = "sources...")
 	interface PDFOptions extends HtmlOptions {
 		@Description("Specify the page size, default is A4")
 		PageSize size();
@@ -140,6 +214,7 @@ public class Main extends AbstractConsoleApp {
 
 	/**
 	 * Parse the PDF (and thus HTML options).
+	 * 
 	 * @param options
 	 * @return
 	 */
@@ -161,65 +236,12 @@ public class Main extends AbstractConsoleApp {
 
 	/**
 	 * Parse the HTML options
+	 * 
 	 * @param options
 	 * @return
 	 */
 	private DocumentBuilder getHtmlDocumentBuilder(HtmlOptions options) throws Exception {
 		DocumentBuilder db = new DocumentBuilder(this);
-
-		File resources = getFile(options.resources() == null ? "www" : options.resources());
-		resources.mkdirs();
-		if (!resources.isDirectory())
-			error("No such directory (nor can it be made) %s", resources);
-
-		File template = options.template() != null ? getFile(options.template(), "Template") : null;
-		File inner = options.inner() != null ? getFile(options.inner(), "Inner template") : null;
-
-		db.setResources(resources);
-
-		if (template != null)
-			db.setTemplate(IO.collect(template));
-		else
-			db.setTemplate(null);
-
-		if (inner != null)
-			db.setInner(IO.collect(inner));
-		else
-			db.setInner(null);
-
-		if (options.output() != null) {
-			db.setOutput(getFile(options.output()));
-
-		} else {
-			File tmp = File.createTempFile("bndoc", ".html");
-			db.setOutput(tmp);
-		}
-
-		if (options.css() != null) {
-			List<File> expand = expand(options.css());
-			for (File f : expand) {
-				db.addCSS(f);
-			}
-		}
-
-		if (options.name() != null) {
-			db.setName(options.name());
-		}
-		List<File> propertyFiles = expand(options.properties());
-		for (File f : propertyFiles) {
-			setProperties(f);
-		}
-
-		Header h = new Header(getProperty("symbols"));
-		for (Entry<String,Props> entry : h.entrySet()) {
-			db.addCustomShape(entry.getKey(), entry.getValue());
-		}
-
-		db.addSources(expand(options._()));
-
-		if (options.clean()) {
-			db.setClean(true);
-		}
 
 		return db;
 	}
@@ -254,7 +276,10 @@ public class Main extends AbstractConsoleApp {
 	}
 
 	private void traverse(List<File> list, File f, Glob glob, boolean recursive) {
-		for (File sub : f.listFiles()) {
+		File[] listFiles = f.listFiles();
+		Arrays.sort(listFiles);
+
+		for (File sub : listFiles) {
 			if (sub.isFile()) {
 				if (glob == null || glob.matcher(sub.getName()).matches())
 					list.add(sub);
@@ -268,17 +293,17 @@ public class Main extends AbstractConsoleApp {
 
 	@Description("Show the version of this bndoc")
 	public void _version(Options opts) throws IOException {
-		System.out.println( IO.collect(getClass().getResourceAsStream("/version.txt")));
+		System.out.println(IO.collect(getClass().getResourceAsStream("/version.txt")));
 	}
-	
+
 	/**
 	 * Show the credits
 	 */
 	@Description("Show the credits for use open source programs")
 	public void _credits(Options opts) {
 		out.printf("Name           Description              Primary Author    License   URL%n");
+		out.printf("-----------------------------------------------------------------------%n");
 		out.printf("DITAA          Ascii Arto to png        Stathis Sideris   LGPL-3    http://ditaa.sourceforge.net/%n");
-		out.printf("Txtmark        Java markdown processor  René Jeschke      ASL-2     https://github.com/rjeschke/txtmark%n");
 		out.printf("Flying Saucer  HTML/CSS 2.1 renderer                      LGPL-3    https://code.google.com/p/flying-saucer/%n");
 		out.printf("iText 2.1.7    PDF Generator                              MPL       http://itextpdf.com//%n");
 	}
@@ -287,4 +312,5 @@ public class Main extends AbstractConsoleApp {
 		Main main = new Main();
 		main.run(args);
 	}
+
 }

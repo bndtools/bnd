@@ -1,0 +1,448 @@
+## Simple Table With Extension model
+
+[ Table : caption ]
+----- ----- -----
+abc     def  ghi
+----- ----- -----
+
+...................................................................................................
+<h2>Simple Table With Extension model</h2>
+ <table>
+ 	<caption>caption</caption>
+ 	<colgroup>
+ 		<col style="width:5em;" class="left"/>
+ 		<col style="width:5em;" class="right"/>
+ 		<col style="width:5em;" class="center"/>
+ 	</colgroup>
+ 	<tbody>
+	<tr>
+	 	<td>abc</td>		
+	 	<td>def</td>		
+	 	<td>ghi</td>
+	 </tr>
+ 	</tbody>
+ </table>
+
+...................................................................................................
+## Grid Table
+
++----+----+-----+
+|A   |   B|  C  |
++====+====+=====+
+|a   |b   | c   |
++----+----+-----+
+|a   |b   | c   |
++----+----+-----+
+...................................................................................................
+<h2>GridTable</h2>
+<table>
+	<colgroup>
+		<colstyle="width:4em;"class="left"/>
+		<colstyle="width:4em;"class="right"/>
+		<colstyle="width:5em;"class="center"/>
+	</colgroup>
+	<thead>
+		<tr>
+			<th>A</th>
+			<th>B</th>
+			<th>C</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>a</td>
+			<td>b</td>
+			<td>c</td>
+		</tr>
+		<tr>
+			<td>a</td>
+			<td>b</td>
+			<td>c</td>
+		</tr>
+	</tbody>
+</table>
+
+...................................................................................................
+## Multiline table with head
+---------------------------------
+abc      ghi         mno
+def      jkl         pqr
+-------  ----------  ------------
+a1       b1          c1
+
+a2       b2          c2
+a2       b2          c2
+
+a3       b3          c3
+a3       b3          c3
+a3       b3          c3
+----------------------------------
+
+done
+...................................................................................................
+<h2>Multiline table with head</h2>
+ <table>
+ 	<colgroup>
+ 		<col style="width:7em;" class="left"/>
+ 		<col style="width:10em;" class="left"/>
+ 		<col style="width:12em;" class="left"/>
+ 	</colgroup>
+ 	<thead>
+ 		<tr>
+ 			<th>abc def</th>
+ 			<th>ghi jkl</th>
+ 			<th>mno pqr</th>
+ 		</tr>
+ 	</thead>
+ 	<tbody>
+	<tr>
+	 	<td>a1</td>		
+	 	<td>b1</td>		
+	 	<td>c1</td>
+	 </tr>
+	<tr>
+	 	<td>a2 a2</td>		
+	 	<td>b2 b2</td>		
+	 	<td>c2 c2</td>
+	 </tr>
+	<tr>
+	 	<td>a3 a3 a3</td>		
+	 	<td>b3 b3 b3</td>		
+	 	<td>c3 c3 c3</td>
+	 </tr>
+ 	</tbody>
+ </table>
+
+<p>done</p>
+
+...................................................................................................
+## Pandoc Pipe table
+
+| Right | Left | Default | Center |
+|------:|:-----|---------|:------:|
+|   12  |  12  |    12   |    12  |
+|  123  |  123 |   123   |   123  |
+|    1  |    1 |     1   |     1  |
+...................................................................................................
+<h2>PandocPipetable</h2>
+<table>
+	<colgroup>
+	<colstyle="width:7em;" class="right"/>
+	<colstyle="width:6em;" class="left"/>
+	<colstyle="width:9em;" />
+	<colstyle="width:8em;" class="center"/>
+	</colgroup>
+	<thead>
+		<tr>
+			<th>Right</th>
+			<th>Left</th>
+			<th>Default</th>
+			<th>Center</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td>12</td>
+		<td>12</td>
+		<td>12</td>
+		<td>12</td>
+	</tr>
+	<tr>
+		<td>123</td>
+		<td>123</td>
+		<td>123</td>
+		<td>123</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td>1</td>
+		<td>1</td>
+		<td>1</td>
+	</tr>
+	</tbody>
+</table>
+
+...................................................................................................
+
+## Pandoc Pipe table (emacs orgtbl)
+
+| One | Two   |
+|-----+-------|
+| my  | table |
+| is  | nice  |
+...................................................................................................
+<h2>PandocPipetable(emacsorgtbl)</h2>
+<table>
+	<colgroup>
+		<colstyle="width:5em;"/>
+		<colstyle="width:7em;"/>
+	</colgroup>
+	<thead>
+		<tr>
+			<th>One</th>
+			<th>Two</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>my</td>
+			<td>table</td>
+		</tr>
+		<tr>
+			<td>is</td>
+			<td>nice</td>
+		</tr>
+	</tbody>
+</table>
+
+...................................................................................................
+## Pandoc Pipe table (incorrect widths)
+
+fruit| price
+-----|-----:
+apple|2.05
+pear|1.37
+orange|3.09
+...................................................................................................
+<h2>PandocPipetable(incorrectwidths)</h2>
+
+<table>
+	<colgroup>
+		<colstyle="width:5em;"/>
+		<colstyle="width:6em;" class="right"/>
+	</colgroup>
+	<thead>
+		<tr>
+			<th>fruit</th>
+			<th>price</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>apple</td>
+			<td>2.05</td>
+		</tr>
+		<tr>
+			<td>pear</td>
+			<td>1.37</td>
+		</tr>
+		<tr>
+			<td>orange</td>
+			<td>3.09</td>
+		</tr>
+	</tbody>
+</table>
+
+...................................................................................................
+
+
+
+## Pandoc Grid table example
+
++---------------+---------------+--------------------+
+| Fruit         | Price         | Advantages         |
++===============+===============+====================+
+| Bananas       | $1.34         | - built-in wrapper |
+|               |               | - bright color     |
++---------------+---------------+--------------------+
+| Oranges       | $2.10         | - cures scurvy     |
+|               |               | - tasty            |
++---------------+---------------+--------------------+
+...................................................................................................
+<h2>PandocGridtableexample</h2>
+
+<table>
+	<colgroup>
+		<colstyle="width:15em;"class="left"/>
+		<colstyle="width:15em;"class="left"/>
+		<colstyle="width:20em;"class="left"/>
+	</colgroup>
+<thead>
+<tr>
+<th>
+Fruit</th>
+<th>
+Price</th>
+<th>
+Advantages</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Bananas</td>
+<td>
+$1.34</td>
+<td>
+<ul>
+<li>
+built-inwrapper</li>
+<li>
+brightcolor</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+Oranges</td>
+<td>
+$2.10</td>
+<td>
+<ul>
+<li>
+curesscurvy</li>
+<li>
+tasty</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+
+...................................................................................................
+
+## Multiline with list and quote inside
+
+-------------------
+List              X
+--------------- ---
+> a
+> b
+> c
+
+* a              1
+* b
+* c
+
+--------------- --- 
+
+...................................................................................................
+
+<h2>Multilinewithlistandquoteinside</h2>
+<table>
+	<colgroup>
+		<colstyle="width:15em;"class="left"/>
+		<colstyle="width:3em;"class="right"/>
+	</colgroup>
+	<thead>
+		<tr>
+			<th>List</th>
+			<th>X</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<blockquote>
+				<p>a b c</p>
+				</blockquote>
+			</td>
+			<td>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<ul>
+					<li>a</li>
+					<li>b</li>
+					<li>c</li>
+				</ul>
+			</td>
+			<td>1</td>
+		</tr>
+	</tbody>
+</table>
+
+...................................................................................................
+## Simple Table With Caption After
+
+----- ----- -----
+abc     def  ghi
+----- ----- -----
+
+Table: simple^10^
+
+...................................................................................................
+<h2>Simple Table With Caption After</h2>
+ <table>
+ 	<caption>simple<sup>10</sup></caption>
+ 	<colgroup>
+ 		<col style="width:5em;" class="left"/>
+ 		<col style="width:5em;" class="right"/>
+ 		<col style="width:5em;" class="center"/>
+ 	</colgroup>
+ 	<tbody>
+	<tr>
+	 	<td>abc</td>		
+	 	<td>def</td>		
+	 	<td>ghi</td>
+	 </tr>
+ 	</tbody>
+ </table>
+
+...................................................................................................
+## Simple Table without Head
+
+----- ----- -----
+abc     def  ghi
+abc     def  ghi
+----- ----- -----
+
+...................................................................................................
+<h2>Simple Table without Head</h2>
+ <table>
+ 	<colgroup>
+ 		<col style="width:5em;" class="left"/>
+ 		<col style="width:5em;" class="right"/>
+ 		<col style="width:5em;" class="center"/>
+ 	</colgroup>
+ 	<tbody>
+	<tr>
+	 	<td>abc</td>		
+	 	<td>def</td>		
+	 	<td>ghi</td>		
+	</tr>
+	<tr>
+	 	<td>abc</td>		
+	 	<td>def</td>		
+	 	<td>ghi</td>
+	 </tr>
+ 	</tbody>
+ </table>
+...................................................................................................
+## Simple Table
+
+abc     def  ghi 
+----- ----- -----
+abc     def  ghi
+abc     def  ghi
+
+
+...................................................................................................
+<h2>Simple Table</h2>
+ <table>
+ 	<colgroup>
+ 		<col style="width:5em;" class="left"/>
+ 		<col style="width:5em;" class="right"/>
+ 		<col style="width:5em;" class="center"/>
+ 	</colgroup>
+ 	<thead>
+ 	<tr>
+ 		<th>abc</th>
+ 		<th>def</th>
+ 		<th>ghi</th>
+	</tr>
+ 	</thead>
+ 	<tbody>
+	<tr>
+	 	<td>abc</td>		
+	 	<td>def</td>		
+	 	<td>ghi</td>		
+	</tr>
+	<tr>
+	 	<td>abc</td>		
+	 	<td>def</td>		
+	 	<td>ghi</td>
+	 </tr>
+ 	</tbody>
+ </table>
