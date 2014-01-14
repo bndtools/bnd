@@ -1,11 +1,13 @@
 package aQute.lib.env;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.*;
 
+import aQute.lib.converter.*;
 import aQute.lib.io.*;
 import aQute.lib.properties.*;
 import aQute.libg.reporter.*;
@@ -115,16 +117,17 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 			setProperties(file.toURI());
 		}
 	}
+
 	public void addProperties(File file, Pattern matching) throws Exception {
 
 		if (!file.isFile())
 			error("No such file %s", file);
 		else {
-			if ( file.isFile())
+			if (file.isFile())
 				setProperties(file.toURI());
 			else {
-				for ( File sub : file.listFiles()) {
-					if ( matching.matcher(sub.getName()).matches()) {
+				for (File sub : file.listFiles()) {
+					if (matching == null || matching.matcher(sub.getName()).matches()) {
 						addProperties(file, matching);
 					}
 				}
@@ -217,8 +220,103 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		}
 		return f;
 	}
-	
-	public boolean isTrue( String v ) {
-		return v != null && v.length()>0 && !v.equalsIgnoreCase("false");
+
+	/**
+	 * This method returns an interface that can be used to get and set the
+	 * properties in a type safe way (as well as describing any semantics of
+	 * these properties).
+	 * <p/>
+	 * The interface must have get and/or set methods. The name is mangled to
+	 * change _ to . and to remove $ (which is used to mask keywords like new).
+	 * If _ and $ are in there twice, one remains. The set methods return the
+	 * proxy object itself so you can use it in a builder style.
+	 * <p/>
+	 * The values are always stored as strings (and can use macros). The result
+	 * is converted to the desired type. Arguments in the set methods are always
+	 * converted to strings using the toString methods. 
+	 * <p/>
+	 * Example:
+	 * 
+	 * <pre>
+	 * 	interface MyConfig {
+	 *    int level();
+	 *    MyConfig level(int level);
+	 *    Pattern pattern();
+	 *    MyConfig pattern(String p);
+	 *  }
+	 *  
+	 *  Env env = ...
+	 *  MyConfig c = env.config(MyConfig.class, "myconfig.");
+	 * </pre>
+	 * 
+	 * @param front
+	 *            the fronting interface
+	 * @param prefix
+	 *            the prefix in the properties
+	 * @return an interface that can be used to get and set properties
+	 */
+	public <T> T config(Class< ? > front, final String prefix) {
+		final Env THIS = this;
+		
+		return (T) java.lang.reflect.Proxy.newProxyInstance(front.getClassLoader(), new Class[] {
+			front
+		}, new InvocationHandler() {
+
+			public Object invoke(Object target, Method method, Object[] parameters) throws Throwable {
+				String name = mangleMethodName(prefix, method.getName());
+				if ( parameters == null || parameters.length == 0) {
+					String value = getProperty(name);
+					if ( value == null) {
+						if ( method.getReturnType().isPrimitive())
+							return Converter.cnv(method.getReturnType(), null);
+						else
+							return null;
+					}
+					if (method.getReturnType().isInstance(value))
+						return value;
+
+					return Converter.cnv(method.getGenericReturnType(), value);
+				} else if (parameters.length == 1) {
+					Object arg = parameters[0].toString();
+					if (arg == null)
+						removeProperty(name);
+					else
+						setProperty(name, arg.toString());
+					if( method.getReturnType().isInstance(THIS))
+						return THIS;
+					return Converter.cnv(method.getReturnType(), null);
+				}
+				throw new IllegalArgumentException("Too many arguments: " + Arrays.toString(parameters));
+			}
+		});
+	}
+
+	public <T> T config(Class< ? > front) {
+		return config(front, null);
+	}
+
+	String mangleMethodName(String prefix, String string) {
+		StringBuilder sb = new StringBuilder();
+		if (prefix != null) {
+			sb.append(prefix);
+		}
+		sb.append(string);
+		for (int i = 0; i < sb.length(); i++) {
+			char c = sb.charAt(i);
+			boolean twice = i < sb.length() - 1 && sb.charAt(i + 1) == c;
+			if (c == '$' || c == '_') {
+				if (twice)
+					sb.deleteCharAt(i + 1);
+				else if (c == '$')
+					sb.deleteCharAt(i--); // Remove dollars
+				else
+					sb.setCharAt(i, '.'); // Make _ into .
+			}
+		}
+		return sb.toString();
+	}
+
+	public boolean isTrue(String v) {
+		return v != null && v.length() > 0 && !v.equalsIgnoreCase("false");
 	}
 }
