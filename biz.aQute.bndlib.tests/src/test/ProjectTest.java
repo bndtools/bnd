@@ -575,8 +575,8 @@ public class ProjectTest extends TestCase {
 	}
 
 	public static void testBuildAll() throws Exception {
-		assertTrue(testBuildAll("*", 15).check()); // there are 14 projects
-		assertTrue(testBuildAll("p*", 9).check()); // 7 begin with p, plus
+		assertTrue(testBuildAll("*", 16).check()); // there are 14 projects
+		assertTrue(testBuildAll("p*", 10).check()); // 7 begin with p, plus
 													// build-all
 		assertTrue(testBuildAll("!p*, *", 6).check()); // negation: 6 don't
 														// begin with p,
@@ -591,7 +591,7 @@ public class ProjectTest extends TestCase {
 																					// is
 																					// an
 																					// error
-		assertTrue(testBuildAll("p*, !*-*, *", 12).check()); // check that
+		assertTrue(testBuildAll("p*, !*-*, *", 13).check()); // check that
 																// negation
 																// works after
 																// some projects
@@ -649,5 +649,12 @@ public class ProjectTest extends TestCase {
 		Collection<Project> dependson = all.getDependson();
 		assertEquals(count, dependson.size());
 		return all;
+	}
+	
+	public static void testBndPropertiesMacro() throws Exception {
+		Workspace ws = new Workspace(new File("testresources/ws"));
+		Project p = ws.getProject("p7");
+		String string = p.getProperty("var", "");
+		assertEquals("something;version=latest", string);
 	}
 }
