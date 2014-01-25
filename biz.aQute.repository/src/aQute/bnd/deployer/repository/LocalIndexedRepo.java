@@ -373,4 +373,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		return builder.toString();
 	}
 
+	@Override
+	public void refreshCacheMetadata() {
+		regenerateAllIndexes();
+	}
+	
 }
