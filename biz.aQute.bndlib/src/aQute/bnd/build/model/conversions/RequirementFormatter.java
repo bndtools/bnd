@@ -4,6 +4,8 @@ import java.util.Map.Entry;
 
 import org.osgi.resource.*;
 
+import aQute.bnd.osgi.resource.*;
+
 public class RequirementFormatter implements Converter<String,Requirement> {
 
 	public String convert(Requirement req) throws IllegalArgumentException {
@@ -11,6 +13,9 @@ public class RequirementFormatter implements Converter<String,Requirement> {
 		
 		builder.append(req.getNamespace());
 		
+		if (req instanceof RequirementVariable)
+			return builder.toString();
+
 		for (Entry<String,String> directive : req.getDirectives().entrySet()) {
 			builder.append(';').append(directive.getKey()).append(":='").append(directive.getValue()).append('\'');
 		}

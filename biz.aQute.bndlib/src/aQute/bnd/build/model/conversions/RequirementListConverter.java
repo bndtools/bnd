@@ -16,17 +16,24 @@ public class RequirementListConverter extends ClauseListConverter<Requirement> {
 				if (input == null)
 					return null;
 				String namespace = input.getFirst();
-				CapReqBuilder builder = new CapReqBuilder(namespace);
-				for (Entry<String,String> entry : input.getSecond().entrySet()) {
-					String key = entry.getKey();
-					if (key.endsWith(":")) {
-						key = key.substring(0, key.length() - 1);
-						builder.addDirective(key, entry.getValue());
-					} else {
-						builder.addAttribute(key, entry.getValue());
+				namespace = namespace.replaceAll("\\\\\n", "").trim();
+
+				if (namespace.contains("$")) {
+					RequirementVariable v = new RequirementVariable(namespace);
+					return v;
+				} else {
+					CapReqBuilder builder = new CapReqBuilder(namespace);
+					for (Entry<String,String> entry : input.getSecond().entrySet()) {
+						String key = entry.getKey();
+						if (key.endsWith(":")) {
+							key = key.substring(0, key.length() - 1);
+							builder.addDirective(key, entry.getValue());
+						} else {
+							builder.addAttribute(key, entry.getValue());
+						}
 					}
+					return builder.buildSyntheticRequirement();
 				}
-				return builder.buildSyntheticRequirement();
 			}
 		});
 	}
