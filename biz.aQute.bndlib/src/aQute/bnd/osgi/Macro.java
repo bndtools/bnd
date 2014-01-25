@@ -1102,5 +1102,11 @@ public class Macro {
 		return process(line, domain);
 	}
 
+	public final static String	_rawHelp = "${raw;<property>;<default>}, obtain raw value";
 
+
+	public String _raw(String args[]) {
+		verifyCommand(args, _rawHelp, null, 2, 3);
+		return domain.getUnprocessedProperty(args[1], args.length == 3 ? args[2] : "");
+	}
 }
