@@ -93,7 +93,7 @@ public class JSONCodec {
 			type = object.getClass();
 
 		// Dispatch to the handler who knows how to handle the given type.
-		Handler h = getHandler(type);
+		Handler h = getHandler(type, object.getClass());
 		h.encode(app, object, visited);
 	}
 
@@ -106,7 +106,7 @@ public class JSONCodec {
 	 * @return
 	 * @throws Exception
 	 */
-	Handler getHandler(Type type) throws Exception {
+	Handler getHandler(Type type, Class< ? > actual) throws Exception {
 
 		// First the static hard coded handlers for the common types.
 
@@ -202,14 +202,33 @@ public class JSONCodec {
 						h = new MapHandler(Hashtable.class, pt.getActualTypeArguments()[0],
 								pt.getActualTypeArguments()[1]);
 					else
-						throw new IllegalArgumentException("Found a parameterized type that is not a map or collection");
+						//
+						// We try to use the rawtype instead.
+						//
+						return getHandler(rawType, null);
 				}
 			} else if (type instanceof GenericArrayType) {
 				GenericArrayType gat = (GenericArrayType) type;
-				if ( gat.getGenericComponentType() == byte[].class)
+				if (gat.getGenericComponentType() == byte[].class)
 					h = byteh;
 				else
 					h = new ArrayHandler(getRawClass(type), gat.getGenericComponentType());
+			} else if (type instanceof TypeVariable) {
+				if (actual != null)
+					//
+					// We can save ourselves a lot of work if we have
+					// an actual type (the type of the object to encode)
+					//
+					h = getHandler(actual, null);
+				else {
+					TypeVariable< ? > tv = (TypeVariable< ? >) type;
+					Type[] bounds = tv.getBounds();
+					if (bounds == null || bounds.length == 0) {
+						h = new ObjectHandler(this, Object.class);
+					} else {
+						h = getHandler(bounds[bounds.length - 1], null);
+					}
+				}
 			} else
 				throw new IllegalArgumentException("Found a parameterized type that is not a map or collection");
 		}
@@ -272,7 +291,7 @@ public class JSONCodec {
 			}
 		}
 
-		h = getHandler(type);
+		h = getHandler(type, null);
 
 		switch (c) {
 			case '{' :
