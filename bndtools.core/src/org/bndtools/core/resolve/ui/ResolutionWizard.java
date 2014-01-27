@@ -94,6 +94,11 @@ public class ResolutionWizard extends Wizard {
             List<VersionedClause> runBundles = new ArrayList<VersionedClause>(resources.size());
             for (Resource resource : resources) {
                 VersionedClause runBundle = resourceToRunBundle(resource);
+
+                //[cs] Skip dups
+                if (runBundles.contains(runBundle)) {
+                    continue;
+                }
                 runBundles.add(runBundle);
 
                 if (pathsStream != null) {
@@ -120,7 +125,6 @@ public class ResolutionWizard extends Wizard {
                         r2 = "";
                     return r1.compareTo(r2);
                 }
-
             });
             model.setRunBundles(runBundles);
         } finally {
