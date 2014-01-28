@@ -230,6 +230,91 @@ public class BndrunResolveContextTest extends TestCase {
         // The capability from osgi.cmpn is NOT here
     }
 
+	public static void testResolverHookFiltersResultWithBlacklist() {
+		MockRegistry registry = new MockRegistry();
+		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml")));
+		registry.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml")));
+
+		// Add a hook that removes all capabilities from resource with id
+		// "osgi.cmpn"
+		HashMap<String,String> blacklistProp = new HashMap<String,String>();
+		blacklistProp.put(ResolutionBlacklistFilter.BLACKLIST_PROPERTYNAME, "osgi.cmpn;version=4.3.0");
+		ResolutionBlacklistFilter blacklist = new ResolutionBlacklistFilter();
+		blacklist.setProperties(blacklistProp);
+		registry.addPlugin(blacklist);
+
+		BndEditModel runModel = new BndEditModel();
+		runModel.setRunFw("org.apache.felix.framework");
+
+		Requirement requirement = new CapReqBuilder("osgi.wiring.package").addDirective("filter",
+				"(&(osgi.wiring.package=org.osgi.util.tracker)(version>=1.5)(!(version>=1.6)))")
+				.buildSyntheticRequirement();
+
+		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+		List<Capability> providers = context.findProviders(requirement);
+
+		assertEquals(1, providers.size());
+		assertEquals(new File("testdata/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0)
+				.getResource()));
+	}
+
+	public static void testResolverHookFiltersResultWithBlacklistAndVersionRange1() {
+		MockRegistry registry = new MockRegistry();
+		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml")));
+		registry.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml")));
+
+		// Add a hook that removes all capabilities from resource with id
+		// "osgi.cmpn"
+		HashMap<String,String> blacklistProp = new HashMap<String,String>();
+		blacklistProp.put(ResolutionBlacklistFilter.BLACKLIST_PROPERTYNAME, "osgi.cmpn;version='[4.0.0,4.3.0)'");
+		ResolutionBlacklistFilter blacklist = new ResolutionBlacklistFilter();
+		blacklist.setProperties(blacklistProp);
+		registry.addPlugin(blacklist);
+
+		BndEditModel runModel = new BndEditModel();
+		runModel.setRunFw("org.apache.felix.framework");
+
+		Requirement requirement = new CapReqBuilder("osgi.wiring.package").addDirective("filter",
+				"(&(osgi.wiring.package=org.osgi.util.tracker)(version>=1.5)(!(version>=1.6)))")
+				.buildSyntheticRequirement();
+
+		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+		List<Capability> providers = context.findProviders(requirement);
+
+		assertEquals(2, providers.size());
+		assertEquals(new File("testdata/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0)
+				.getResource()));
+		assertEquals(new File("testdata/osgi.cmpn-4.3.0.jar").toURI(), findContentURI(providers.get(1).getResource()));
+	}
+
+	public static void testResolverHookFiltersResultWithBlacklistAndVersionRange2() {
+		MockRegistry registry = new MockRegistry();
+		registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml")));
+		registry.addPlugin(createRepo(new File("testdata/org.apache.felix.framework-4.0.2.index.xml")));
+
+		// Add a hook that removes all capabilities from resource with id
+		// "osgi.cmpn"
+		HashMap<String,String> blacklistProp = new HashMap<String,String>();
+		blacklistProp.put(ResolutionBlacklistFilter.BLACKLIST_PROPERTYNAME, "osgi.cmpn;version='[4.0.0,4.4.0)'");
+		ResolutionBlacklistFilter blacklist = new ResolutionBlacklistFilter();
+		blacklist.setProperties(blacklistProp);
+		registry.addPlugin(blacklist);
+
+		BndEditModel runModel = new BndEditModel();
+		runModel.setRunFw("org.apache.felix.framework");
+
+		Requirement requirement = new CapReqBuilder("osgi.wiring.package").addDirective("filter",
+				"(&(osgi.wiring.package=org.osgi.util.tracker)(version>=1.5)(!(version>=1.6)))")
+				.buildSyntheticRequirement();
+
+		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+		List<Capability> providers = context.findProviders(requirement);
+
+		assertEquals(1, providers.size());
+		assertEquals(new File("testdata/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(providers.get(0)
+				.getResource()));
+	}
+	
     public static void testResolverHookCannotFilterFrameworkCapabilities() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(new File("testdata/osgi.cmpn-4.3.0.index.xml")));
