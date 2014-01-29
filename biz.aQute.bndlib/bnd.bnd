@@ -33,6 +33,7 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.bnd.properties,\
 	aQute.bnd.build.model,\
 	aQute.bnd.build.model.clauses,\
+	aQute.bnd.build.model.conversions,\
 	aQute.service.reporter,\
 	aQute.bnd.maven.support,\
 	aQute.bnd.url
