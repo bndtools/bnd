@@ -575,8 +575,8 @@ public class ProjectTest extends TestCase {
 	}
 
 	public static void testBuildAll() throws Exception {
-		assertTrue(testBuildAll("*", 15).check()); // there are 14 projects
-		assertTrue(testBuildAll("p*", 9).check()); // 7 begin with p, plus
+		assertTrue(testBuildAll("*", 16).check()); // there are 14 projects
+		assertTrue(testBuildAll("p*", 10).check()); // 7 begin with p, plus
 													// build-all
 		assertTrue(testBuildAll("!p*, *", 6).check()); // negation: 6 don't
 														// begin with p,
@@ -591,7 +591,7 @@ public class ProjectTest extends TestCase {
 																					// is
 																					// an
 																					// error
-		assertTrue(testBuildAll("p*, !*-*, *", 12).check()); // check that
+		assertTrue(testBuildAll("p*, !*-*, *", 13).check()); // check that
 																// negation
 																// works after
 																// some projects
@@ -639,7 +639,16 @@ public class ProjectTest extends TestCase {
 		top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
 		assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
 				top.getOutputFile(builder.getBsn(), builder.getVersion()));
-	}
+
+		top.setProperty("Bundle-Version", "42");
+		top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
+		assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+
+		top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
+		assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+        }
 
 	private static Project testBuildAll(String dependsOn, int count) throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
@@ -649,5 +658,36 @@ public class ProjectTest extends TestCase {
 		Collection<Project> dependson = all.getDependson();
 		assertEquals(count, dependson.size());
 		return all;
+	}
+
+	public static void testBndPropertiesMacro() throws Exception {
+		Workspace ws = new Workspace(new File("testresources/ws"));
+		Project p = ws.getProject("p7");
+		String string = p.getProperty("var", "");
+		assertEquals("something;version=latest", string);
+	}
+
+	public static void testBndRawMacro() throws Exception {
+		Workspace ws = new Workspace(new File("testresources/ws"));
+		Project p = new Project(ws, new File("testresources/ws/p7"), new File("testresources/ws/p7/reuse.bndrun"));
+
+		String string = p.getProperty("-runbundles", "");
+		assertEquals("This is somethingsomething foo somethingsomething", string);
+
+		string = p.getProperty("-runrequires", "");
+		assertEquals(
+				"osgi.identity;filter:='(osgi.identity=variable)',osgi.identity;filter:='(osgi.identity=variable2)',osgi.identity;filter:='(osgi.identity=b)',osgi.identity;filter:='(osgi.identity=c)'",
+				string);
+	}
+
+	public static void testVmArgs() throws Exception {
+		Workspace ws = new Workspace(new File("testresources/ws"));
+		Project p = ws.getProject("p7");
+		Collection<String> c = p.getRunVM();
+
+		String[] arr = c.toArray(new String[] {});
+		assertEquals("-XX:+UnlockCommercialFeatures", arr[0]);
+		assertEquals("-XX:+FlightRecorder", arr[1]);
+		assertEquals("-XX:FlightRecorderOptions=defaultrecording=true,dumponexit=true", arr[2]);
 	}
 }

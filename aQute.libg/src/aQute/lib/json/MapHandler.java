@@ -61,7 +61,7 @@ public class MapHandler extends Handler {
 		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {
 			Object key = r.codec.parseString(r);
 			if (!(keyType == null || keyType == Object.class)) {
-				Handler h = r.codec.getHandler(keyType);
+				Handler h = r.codec.getHandler(keyType, null);
 				key = h.decode(r,(String) key);
 			}
 

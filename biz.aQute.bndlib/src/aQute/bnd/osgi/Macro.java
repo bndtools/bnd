@@ -362,6 +362,36 @@ public class Macro {
 		return Processor.join(result);
 	}
 
+	static String	_nsortHelp	= "${nsort;<list>...}";
+
+	public String _nsort(String args[]) {
+		verifyCommand(args, _nsortHelp, null, 2, Integer.MAX_VALUE);
+
+		ExtList<String> result = new ExtList<String>();
+		for (int i = 1; i < args.length; i++) {
+			result.addAll(ExtList.from(args[i]));
+		}
+		Collections.sort(result, new Comparator<String>() {
+
+			public int compare(String a, String b) {
+				while (a.startsWith("0"))
+					a = a.substring(1);
+
+				while (b.startsWith("0"))
+					b = b.substring(1);
+
+				if (a.length() == b.length())
+					return a.compareTo(b);
+				else if (a.length() > b.length())
+					return 1;
+				else
+					return -1;
+
+			}
+		});
+		return result.join();
+	}
+
 	static String	_joinHelp	= "${join;<list>...}";
 
 	public String _join(String args[]) {
@@ -741,11 +771,11 @@ public class Macro {
 					result = version.getQualifier();
 					if (c == 'S') {
 						// we have a request for a Maven snapshot
-						if (result.equals("SNAPSHOT"))
+						if ("SNAPSHOT".equals(result))
 							return sb.toString() + "-SNAPSHOT";
 					} else if (c == 's') {
 						// we have a request for a Maven snapshot
-						if (result.equals("SNAPSHOT"))
+						if ("SNAPSHOT".equals(result))
 							return sb.toString() + "-SNAPSHOT";
 						else
 							return sb.toString();
@@ -1072,5 +1102,11 @@ public class Macro {
 		return process(line, domain);
 	}
 
+	public final static String	_rawHelp = "${raw;<property>;<default>}, obtain raw value";
 
+
+	public String _raw(String args[]) {
+		verifyCommand(args, _rawHelp, null, 2, 3);
+		return domain.getUnprocessedProperty(args[1], args.length == 3 ? args[2] : "");
+	}
 }

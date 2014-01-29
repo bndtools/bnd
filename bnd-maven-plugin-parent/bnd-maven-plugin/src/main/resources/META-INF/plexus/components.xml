@@ -2,13 +2,12 @@
   <components>
     <component>
       <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
-      <role-hint>bundle</role-hint>
+      <role-hint>bnd</role-hint>
       <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
       <configuration>
         <lifecycles>
           <lifecycle>
             <id>default</id>
-            <!-- START SNIPPET: bundle-lifecycle -->
             <phases>
               <validate>biz.aQute.bnd:bnd-maven-plugin:prepare</validate>
               <process-resources>
@@ -19,6 +18,7 @@
               <test-compile>org.apache.maven.plugins:maven-compiler-plugin:testCompile</test-compile>
               <test>org.apache.maven.plugins:maven-surefire-plugin:test</test>
               <package>biz.aQute.bnd:bnd-maven-plugin:bundle</package>
+              <integration-test>biz.aQute.bnd:bnd-maven-plugin:integration-test</integration-test>
               <install>
                 org.apache.maven.plugins:maven-install-plugin:install
               </install>
@@ -26,22 +26,21 @@
                 org.apache.maven.plugins:maven-deploy-plugin:deploy
               </deploy>
             </phases>
-            <!-- END SNIPPET: bundle-lifecycle -->
           </lifecycle>
         </lifecycles>
       </configuration>
     </component>
     <component>
       <role>org.apache.maven.artifact.handler.ArtifactHandler</role>
-      <role-hint>bundle</role-hint>
+      <role-hint>bnd</role-hint>
       <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
       <configuration>
-        <type>bundle</type>
+        <type>bnd</type>
         <includesDependencies>false</includesDependencies>
         <language>java</language>
         <extension>jar</extension>
         <addedToClasspath>true</addedToClasspath>
-        <packaging>bundle</packaging>
+        <packaging>bnd</packaging>
       </configuration>
     </component>
   </components>

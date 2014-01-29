@@ -27,7 +27,7 @@ public class Converter {
 
 	public <T> T convert(Class<T> type, Object o) throws Exception {
 		// Is it a compatible type?
-		if (type.isAssignableFrom(o.getClass()))
+		if (o != null && type.isAssignableFrom(o.getClass()))
 			return (T) o;
 		return (T) convert((Type) type, o);
 	}

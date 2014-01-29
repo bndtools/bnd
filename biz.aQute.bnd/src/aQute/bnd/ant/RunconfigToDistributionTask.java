@@ -8,6 +8,8 @@ import org.apache.tools.ant.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.model.*;
+import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
@@ -25,30 +27,41 @@ public class RunconfigToDistributionTask extends Task {
 	public void execute() throws BuildException {
 		try {
 			createReleaseDir();
+			BndEditModel model = new BndEditModel();
+			model.loadFrom(bndFile);
 			Project bndProject = new Project(new Workspace(rootDir), buildProject, bndFile);
 			List<RepositoryPlugin> repositories = bndProject.getPlugins(RepositoryPlugin.class);
 			if (allowSnapshots) {
 				snapshots = indexBundleSnapshots();
 			}
 
-			for (Container runBundle : bndProject.getRunbundles()) {
-				String bsn = runBundle.getBundleSymbolicName();
+			for (VersionedClause runBundle : model.getRunBundles()) {
+				
+				String bsn = runBundle.getName();
 				if (bsn.endsWith(".jar")) {
 					bsn = bsn.substring(0, bsn.indexOf(".jar"));
 				}
 				if (allowSnapshots && snapshots.containsKey(bsn)) {
 					Jar jar = snapshots.get(bsn);
-					jar.write(new File(outputDir, runBundle.getFile().getName()));
+					jar.write(new File(outputDir, jar.getName() + "-" + jar.getVersion() + ".jar"));
 				} else {
 					Version version = null;
 					File foundJar = null;
 
 					for (RepositoryPlugin repo : repositories) {
 						SortedSet<Version> versions = repo.versions(bsn);
-						if (!versions.isEmpty()) {
-							Version foundVersion = versions.last();
-							if (version == null || foundVersion.compareTo(version) == 1) {
-								version = foundVersion;
+						for (Version availableVersion : versions) {
+							VersionRange range = null;
+							
+							if(runBundle.getVersionRange() != null &&  !runBundle.getVersionRange().equals("latest")) {
+								range = new VersionRange(runBundle.getVersionRange());
+							}
+							
+							boolean rangeMatches = range == null || range.includes(availableVersion);
+							boolean availableMatches = version == null || availableVersion.compareTo(version) > 0;
+
+							if (rangeMatches && availableMatches) {
+								version = availableVersion;
 								foundJar = repo.get(bsn, version, null);
 							}
 						}

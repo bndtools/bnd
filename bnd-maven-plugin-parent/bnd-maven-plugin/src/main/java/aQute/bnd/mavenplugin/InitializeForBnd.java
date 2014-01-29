@@ -17,11 +17,11 @@ import aQute.bnd.build.*;
  * process. This is done through a AbstractMavenLifecycleParticipant. After the
  * projects are read we reorder the list according to the bnd deps. We provide
  * warnings for missing projects and of course cycles.
- * 
+ *
  * The example that helped me write this:
- * 
+ *
  * {@code http://brettporter.wordpress.com/2010/10/05/creating-a-custom-build-extension-for-maven-3-0/ }
- * 
+ *
  */
 
 @Component(role = AbstractMavenLifecycleParticipant.class)
@@ -53,7 +53,7 @@ public class InitializeForBnd extends AbstractMavenLifecycleParticipant {
 						logger.warn("[bnd] cannot find a bnd project for " + mp
 								+ " " + mp.isExecutionRoot());
 				} else {
-					ConfigureMavenProject.setBndDirsInMvnProject(bp, mp);
+					ConfigureMavenProject.transferBndProjectSettingsToMaven(bp, mp);
 
 					index.put(mp, bp.toString());
 					inverted.put(bp.toString(), mp);

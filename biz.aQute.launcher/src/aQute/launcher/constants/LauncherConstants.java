@@ -21,6 +21,8 @@ public class LauncherConstants {
 	public final static int		DUPLICATE_BUNDLE			= -6;
 	public final static int		RESOLVE_ERROR				= -7;
 	public final static int		ACTIVATOR_ERROR				= -8;
+	public static final int		STOPPED						= -9;
+	
 	// Start custom errors from here
 	public final static int		CUSTOM_LAUNCHER				= -128;
 

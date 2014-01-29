@@ -9,14 +9,14 @@
     <packaging>pom</packaging>
     
     <properties>
-        <bndlib.version>2.3.0-SNAPSHOT</bndlib.version>
+        <bnd.version>2.3.0-SNAPSHOT</bnd.version>
     </properties>
     
     <modules>
         <!-- The bnd-maven-plugin-dependencies module is only needed when depending on non-released versions
-         of bnd. It will take the built bndlib jar from the current clone and install it in the local maven
-         repo under the version as defined in the bndlib.version property. The bnd-maven-plugin-dependencies
-         module should be commented out/skipped if using a released bndlib.jar version that is available in 
+         of bnd. It will take the built bnd jar from the current clone and install it in the local maven
+         repo under the version as defined in the bnd.version property. The bnd-maven-plugin-dependencies
+         module should be commented out/skipped if using a released bnd.jar version that is available in 
          maven central. -->
         <module>bnd-maven-plugin-dependencies</module>
         <module>bnd-maven-plugin</module>

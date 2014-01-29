@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
+import com.github.rjeschke.txtmark.*;
+
 import aQute.lib.tag.*;
 
 public class Table {
@@ -35,7 +37,7 @@ public class Table {
 			col.addAttribute("style", "width:" + cwidth + "em;");
 			return col;
 		}
-		
+
 		@Override
 		public String toString() {
 			return "Column [cwidth=" + cwidth + ", cstart=" + cstart + ", column=" + column + ", head=" + head + "]";
@@ -54,23 +56,44 @@ public class Table {
 		public Tag getTag() {
 			Tag cell = new Tag(head ? "th" : "td");
 			cell.addAttribute("class", "bndoc-" + halign);
-			if ( colspan != 1) 
-				cell.addAttribute( "colspan", colspan);
+			if (colspan != 1)
+				cell.addAttribute("colspan", colspan);
 
-			cell.addContent(text.toString().trim());
+			String markdown = Processor.process(text.toString().trim());
+			cell.addContent(markdown.trim());
 			return cell;
 		}
+
 		@Override
 		public String toString() {
-			return "Cell [index=" + index + ", head=" + head + ", column=" + column + ", colspan=" + colspan + ", text="
-					+ text + ", halign=" + halign + "]";
+			return "Cell [index=" + index + ", head=" + head + ", column=" + column + ", colspan=" + colspan
+					+ ", text=" + text + ", halign=" + halign + "]";
 		}
 
 	}
 
-	static Pattern	DEF_P	= Pattern.compile("((\\+=+)+\\+)|((\\+-+)+\\+)");
-	static Pattern	ROW_P	= Pattern.compile("(\\|[^|]+)+\\|");
+	static String	W_S		= "\\s*";
+	static String	NL_S	= W_S + "\n" + W_S;
+	static String	HEAD_S	= "((?:\\+[-=]+)+\\+)" + W_S + "(\\{[^}]+\\})?";
+	static String	LINE_S	= "((?:\\|[^|]+)+\\|)";
+	static String	SEP_S	= "((?:\\+-+)+\\+)";
+	static String	ROW_S	= "((?:" + LINE_S + NL_S + ")+)" + SEP_S + NL_S;
+	static String   GRID_TABLE_S = W_S + HEAD_S + NL_S + "(" + ROW_S + ")+";
+	
+	static int		FLAGS	= Pattern.COMMENTS + Pattern.MULTILINE + Pattern.UNIX_LINES;
+	static Pattern	HEAD_P	= Pattern.compile(HEAD_S, FLAGS);
+	static Pattern	LINE_P	= Pattern.compile(LINE_S, FLAGS);
+	static Pattern	SEP_P	= Pattern.compile(SEP_S, FLAGS);
+	static Pattern	ROW_P	= Pattern.compile(ROW_S, FLAGS);
+	static Pattern	GRID_TABLE_P	= Pattern.compile( "("+GRID_TABLE_S +")", FLAGS);
+	
 
+	static String SIMPLE_LINE_S = "[^-\n<][^\n]+";
+	static String COLUMN_DEF_S = "(---+\\s+)*---+\\s+";
+	static Pattern SIMPLE_TABLE_P = Pattern.compile(SIMPLE_LINE_S + "\n" + COLUMN_DEF_S + "\n" + "(" + SIMPLE_LINE_S + "\n)+");
+	static Pattern SIMPLE_TABLE_2_P = Pattern.compile(COLUMN_DEF_S + "\n" + "(" + SIMPLE_LINE_S + "\n)+"+ COLUMN_DEF_S + "\n");
+	static String MULTI_LINE_TABLE_SEP_S = "-----+";
+	static Pattern MULTI_LINE_P = Pattern.compile(MULTI_LINE_TABLE_SEP_S + "\n" + "(" + SIMPLE_LINE_S + "\n)+"+ COLUMN_DEF_S + "\n"+  "((" + SIMPLE_LINE_S + "\n)+" + "\n)+" + MULTI_LINE_TABLE_SEP_S + "\n" + "(Table)?:");
 	/**
 	 * <pre>
 	 *       column
@@ -86,21 +109,21 @@ public class Table {
 	 * 
 	 * @param text
 	 */
-	public Table(CharSequence text, int where) {
-		this.text = text;
-		this.index = where;
+	public Table(CharSequence text, int start, int end) {
+		this.text = text.subSequence(start, end);
 	}
 
 	public Table(String string) {
-		this(string, 0);
+		this.text = string;
 	}
 
-	void parse() {
-		String head = getLine();
+	boolean parse() {
+		Matcher m = HEAD_P.matcher(text);
+		if (!m.find())
+			return false;
 
-		if (!DEF_P.matcher(head).matches()) {
-			error("First line is neither a head nor a def");
-		}
+		String head = m.group(1).trim();
+		index = m.end();
 
 		this.width = head.length();
 
@@ -118,12 +141,12 @@ public class Table {
 
 		int row = 1;
 		while (true) {
-
 			List<Cell> cells = new ArrayList<>();
 			int column = 0;
 			int nrcells = -1;
+
 			String line;
-			while ((line = getLine()) != null && ROW_P.matcher(line).matches()) {
+			while ((line = getLine()) != null && LINE_P.matcher(line).matches()) {
 
 				if (line.length() > width) {
 					error("Row is too wide");
@@ -133,7 +156,7 @@ public class Table {
 				}
 
 				String parts[] = line.substring(1).split("\\|");
-				
+
 				if (parts.length > this.columns.size())
 					error("Too many cells");
 
@@ -188,11 +211,8 @@ public class Table {
 				table.add(cells);
 
 			if (line == null)
-				break;
+				return true;
 
-			if (!DEF_P.matcher(line).matches()) {
-				error("Invalid row");
-			}
 			head = line;
 		}
 
@@ -230,6 +250,10 @@ public class Table {
 	}
 
 	public void appendTo(Appendable out) throws IOException {
+		DocumentBuilder.append(out, getTag());
+	}
+
+	public Tag getTag() {
 		Tag table = new Tag("table");
 		table.addAttribute("class", "table table-condensed table-bordered table-striped");
 
@@ -238,7 +262,7 @@ public class Table {
 		for (Column c : columns) {
 			colgroup.addContent(c.getTag());
 		}
-		
+
 		Iterator<List<Cell>> it = this.table.iterator();
 		List<Cell> row = it.next();
 
@@ -256,9 +280,9 @@ public class Table {
 					row = null;
 			}
 		}
-		Tag tbody = new Tag(table,"tbody");
+		Tag tbody = new Tag(table, "tbody");
 		while (row != null) {
-			Tag tr = new Tag(tbody,"tr");
+			Tag tr = new Tag(tbody, "tr");
 			for (Cell cell : row)
 				tr.addContent(cell.getTag());
 
@@ -267,28 +291,29 @@ public class Table {
 			else
 				row = null;
 		}
-
-		DocumentBuilder.append(out, table);
+		return table;
 	}
 
-	public static Table parse(CharSequence out, int start) {
-		Table table = new Table(out, start);
-		String first = table.getLine();
-		if (!DEF_P.matcher(first).matches())
-			return null;
-
-		table.index = start;
-		try {
-			table.parse();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			table.error = e.getMessage();
-		}
-		return table;
+	public String toHtml() throws IOException {
+		StringBuilder sb = new StringBuilder("\n");
+		appendTo(sb);
+		return sb.toString();
 	}
 
 	public String getError() {
 		return error;
+	}
+
+	public static void doTables(StringBuilder sb) throws IOException {
+		Matcher m = GRID_TABLE_P.matcher(sb);
+		int index = 0;
+		while (m.find(index)) {
+			Table table = new Table(m.group(1));
+			if( table.parse()) {
+				String html = table.toHtml();
+				sb.replace(m.start(0), m.end(0), html);
+				index = m.start(0) + html.length();
+			}
+		}
 	}
 }
