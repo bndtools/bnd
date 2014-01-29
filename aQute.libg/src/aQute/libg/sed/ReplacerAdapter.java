@@ -115,6 +115,57 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		return index;
 	}
 
+	/**
+	 * Traverses a string to find a macro. It can handle nested brackets.
+	 * 
+	 * @param line
+	 *            The line with the macro
+	 * @param index
+	 *            Points to the character after the '$'
+	 * @return the end position
+	 */
+	public int findMacro(CharSequence line, int index) {
+		if (index >= line.length() || line.charAt(index) != '$')
+			return -1;
+
+		index++;
+
+		int nesting = 1;
+		char begin = line.charAt(index++);
+		char end = getTerminator(begin);
+		if (end == 0)
+			return -1;
+
+		while (index < line.length()) {
+			char c1 = line.charAt(index++);
+			if (c1 == end) {
+				if (--nesting == 0) {
+					return index;
+				}
+			} else if (c1 == begin)
+				nesting++;
+			else if (c1 == '\\' && index < line.length() - 1) {
+				index++;
+			} else if (c1 == '\'' || c1 == '"') {
+				string: while (index < line.length()) {
+					char c2 = line.charAt(index++);
+					switch (c2) {
+						case '"' :
+						case '\'' :
+							if (c2 == c1)
+								break string;
+							break;
+
+						case '\\' :
+							index++;
+							break;
+					}
+				}
+			}
+		}
+		return index;
+	}
+
 	public static char getTerminator(char c) {
 		switch (c) {
 			case '(' :
@@ -384,6 +435,36 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			result.addAll(ExtList.from(args[i]));
 		}
 		Collections.sort(result);
+		return result.join();
+	}
+
+	static String	_nsortHelp	= "${nsort;<list>...}";
+
+	public String _nsort(String args[]) {
+		verifyCommand(args, _nsortHelp, null, 2, Integer.MAX_VALUE);
+
+		ExtList<String> result = new ExtList<String>();
+		for (int i = 1; i < args.length; i++) {
+			result.addAll(ExtList.from(args[i]));
+		}
+		Collections.sort(result, new Comparator<String>() {
+
+			public int compare(String a, String b) {
+				while (a.startsWith("0"))
+					a = a.substring(1);
+
+				while (b.startsWith("0"))
+					b = b.substring(1);
+
+				if (a.length() == b.length())
+					return a.compareTo(b);
+				else if (a.length() > b.length())
+					return 1;
+				else
+					return -1;
+
+			}
+		});
 		return result.join();
 	}
 

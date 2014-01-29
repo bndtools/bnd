@@ -58,7 +58,7 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 			// The bnd project might have some different ideas about
 			// source and bin folders. So get them and set them.
-			setBndDirsInMvnProject(bndProject, project);
+			transferBndProjectSettingsToMaven(bndProject, project);
 
             // We might want to change this to methods in bnd's Project.
 			if ( project.getVersion() != null && !project.getVersion().isEmpty())
@@ -138,7 +138,10 @@ public class ConfigureMavenProject extends AbstractMojo {
 
 			getLog().info("[bnd] classpath " + classpath);
 			project.setResolvedArtifacts(classpath);
-
+		} catch (MojoExecutionException mjee) {
+			throw mjee;
+		} catch (MojoFailureException mfe) {
+			throw mfe;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -179,7 +182,7 @@ public class ConfigureMavenProject extends AbstractMojo {
 	 */
 	private void copyResourcesFromSourceLocations(Project p) throws Exception {
 		copyResources(p.getSrc(), p.getOutput());
-		copyResources(getTestSrc(p), getTestOutput(p));
+		copyResources(p.getTestSrc(), p.getTestOutput());
 	}
 
 	/**
@@ -206,21 +209,22 @@ public class ConfigureMavenProject extends AbstractMojo {
 	 * @param bndProject The bnd project that is the source of information.
 	 * @param mavenProject The maven project that needs to be configured.
 	 */
-    static void setBndDirsInMvnProject(Project bndProject, MavenProject mavenProject) throws Exception {
+    static void transferBndProjectSettingsToMaven(Project bndProject, MavenProject mavenProject) throws Exception {
+    	String bndVersion = bndProject.getProperty(Constants.BUNDLE_VERSION, "0.0.0").trim();
+    	if (bndVersion.endsWith(".SNAPSHOT")) {
+    		bndVersion = bndVersion.substring(0, bndVersion.length() - 9) + "-SNAPSHOT";
+    	}
+    	String mvnVersion = mavenProject.getVersion().trim();
+    	if (!bndVersion.equals(mvnVersion)) {
+    		throw new MojoExecutionException("Bnd and Maven versions differ. Bnd reports version: " +
+    				bndVersion + " Maven reports version: " + mvnVersion);
+    	}
+
         mavenProject.getBuild().setDirectory(bndProject.getTarget().getAbsolutePath());
         mavenProject.getBuild().setSourceDirectory(bndProject.getSrc().getAbsolutePath());
         mavenProject.getBuild().setOutputDirectory(bndProject.getOutput().getAbsolutePath());
 
-        mavenProject.getBuild().setTestSourceDirectory(getTestSrc(bndProject).getAbsolutePath());
-        mavenProject.getBuild().setTestOutputDirectory(getTestOutput(bndProject).getAbsolutePath());
-    }
-
-    // TODO it would be nice if the BND Project had APIs for these...
-    private static File getTestSrc(Project p) {
-    	return new File(p.getBase(), p.getProperty("src.test", "src/test/java"));
-    }
-
-    private static File getTestOutput(Project p) throws Exception {
-    	return new File(p.getBase(), p.getProperty("bin.test", "target/test-classes"));
+        mavenProject.getBuild().setTestSourceDirectory(bndProject.getTestSrc().getAbsolutePath());
+        mavenProject.getBuild().setTestOutputDirectory(bndProject.getTestOutput().getAbsolutePath());
     }
 }

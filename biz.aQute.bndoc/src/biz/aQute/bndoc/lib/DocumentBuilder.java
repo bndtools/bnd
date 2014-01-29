@@ -35,7 +35,7 @@ public class DocumentBuilder extends Base implements Cloneable {
 	static Pattern							CONTENT_P		= Pattern.compile("\\$\\{(content|css)\\}");
 	static String							ATTRIBUTE_S		= "(?:(.+)\\s*[:=]\\s*([^\n]*)\n)+";
 	static Pattern							ATTRIBUTE_P		= Pattern.compile(ATTRIBUTE_S, Pattern.MULTILINE);
-	static Pattern							ATTRIBUTES_P	= Pattern.compile("---\\s*\n(" + ATTRIBUTE_S
+	static Pattern							ATTRIBUTES_P	= Pattern.compile("$---\\s*\n(" + ATTRIBUTE_S
 																	+ ")+---\\s*\n", Pattern.MULTILINE);
 
 	List<File>								sources			= new ArrayList<>();
@@ -145,7 +145,10 @@ public class DocumentBuilder extends Base implements Cloneable {
 		for (final File source : sources) {
 			try {
 				String content = IO.collect(source);
-				content = processHeaders(content);
+				Matcher m = ATTRIBUTES_P.matcher(content);
+				if ( m.find()) {
+					content = content.substring(m.end());
+				}
 				content = process(content);
 				content = Processor.process(content, conf);
 			}
@@ -201,7 +204,7 @@ public class DocumentBuilder extends Base implements Cloneable {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		append(sb,table);
+		append(sb, table);
 		return sb.toString();
 	}
 
@@ -358,12 +361,21 @@ public class DocumentBuilder extends Base implements Cloneable {
 
 			@Override
 			public void run() {
-				Configuration cnf = getMarkdownConfiguration(decorator, null, null);
+				Configuration cnf = getMarkdownConfiguration(decorator, new BlockEmitter() {
+
+					@Override
+					public void emitBlock(StringBuilder out, List<String> lines, String meta) {
+						System.out.println("lines");
+					}
+				}, null);
 				String content;
 				try {
 					setCurrentInput(source);
 					content = IO.collect(source);
-					content = processHeaders(content);
+					StringBuilder sb = new StringBuilder(content);
+					doHeaders(sb);
+					Table.doTables(sb);
+
 					String doctitle = getProperty("doctitle");
 					if (doctitle != null)
 						pw.printf("<div class='print doctitle'>%s</div>", doctitle);
@@ -380,20 +392,17 @@ public class DocumentBuilder extends Base implements Cloneable {
 		});
 	}
 
-	String processHeaders(String content) {
-		Matcher matcher = ATTRIBUTES_P.matcher(content);
+	void doHeaders(StringBuilder sb) {
+		Matcher matcher = ATTRIBUTES_P.matcher(sb);
 		if (matcher.find()) {
-			if (matcher.start() == 0) {
-				String headers[] = content.substring(matcher.start(1), matcher.end(1)).split("\n");
-				content = content.substring(matcher.end(0));
+			sb.delete(matcher.start(), matcher.end());
+			String headers[] = sb.substring(matcher.start(1), matcher.end(1)).split("\n");
 
-				for (String header : headers) {
-					String[] kv = header.split("\\s*[:=]\\s*", 2);
-					setProperty(kv[0], kv[1]);
-				}
+			for (String header : headers) {
+				String[] kv = header.split("\\s*[:=]\\s*", 2);
+				setProperty(kv[0], kv[1]);
 			}
 		}
-		return content;
 	}
 
 	public String getTemplate() throws IOException {
@@ -671,9 +680,9 @@ public class DocumentBuilder extends Base implements Cloneable {
 	}
 
 	/**
-	 * A macro to cut out a block from an output stream. It allows you to specify
-	 * the number of rows, the number of columns, and the shift it should do on the left
-	 * with spaces.
+	 * A macro to cut out a block from an output stream. It allows you to
+	 * specify the number of rows, the number of columns, and the shift it
+	 * should do on the left with spaces.
 	 */
 	public String _block(String[] args) {
 		if (args.length < 4)
@@ -684,8 +693,8 @@ public class DocumentBuilder extends Base implements Cloneable {
 		int shift = Integer.parseInt(args[3]);
 
 		StringBuilder sb = new StringBuilder();
-		
-		// 
+
+		//
 		// If an output has a ;, we concatenate it
 		//
 		String del = "";
@@ -694,7 +703,7 @@ public class DocumentBuilder extends Base implements Cloneable {
 			del = ";";
 		}
 		String indent = "                                                                      ";
-		if ( shift < indent.length())
+		if (shift < indent.length())
 			indent = indent.substring(0, shift);
 
 		int rover = 0;
@@ -713,14 +722,14 @@ public class DocumentBuilder extends Base implements Cloneable {
 					default :
 						col++;
 						if (col > width) {
-							sb.delete(rover, rover+1);
+							sb.delete(rover, rover + 1);
 						} else
 							rover++;
 						break;
 				}
 			}
 		}
-		if ( rover != sb.length()) {
+		if (rover != sb.length()) {
 			sb.delete(rover, sb.length());
 			sb.append(indent).append("...\n");
 		}

@@ -21,14 +21,14 @@ public class TestActivator implements BundleActivator {
 			System.exit(42);
 		else if ("timeout".equals(p)) {
 			Thread.sleep(10000);
-		}else if ("noreference".equals(p)) {
+		} else if ("noreference".equals(p)) {
 			String location = context.getBundle().getLocation();
-			
-			if ( location.startsWith("reference:"))
+
+			if (location.startsWith("reference:"))
 				System.exit(-1);
 			else
 				System.exit(15);
-				
+
 		} else if ("agent".equals(p)) {
 			Hashtable<String,Object> ht = new Hashtable<String,Object>();
 			ht.put("main.thread", true);
@@ -36,15 +36,16 @@ public class TestActivator implements BundleActivator {
 
 				public Integer call() throws Exception {
 					ServiceReference ref = context.getServiceReference(Instrumentation.class.getName());
-					if ( ref == null) 
+					if (ref == null)
 						return -1;
-					
+
 					Instrumentation i = (Instrumentation) context.getService(ref);
-					if ( i == null)
+					if (i == null)
 						return -2;
 
 					return 55;
-				}}, ht);
+				}
+			}, ht);
 		} else if ("main.thread".equals(p)) {
 			Runnable r = new Runnable() {
 
@@ -55,7 +56,45 @@ public class TestActivator implements BundleActivator {
 			};
 			Properties props = new Properties();
 			props.setProperty("main.thread", "true");
-			context.registerService(Runnable.class.getName(), r, (Dictionary)props);
+			context.registerService(Runnable.class.getName(), r, (Dictionary) props);
+		} else if ("framework.stop".equals(p)) {
+			//
+			// Stop the framework
+			//
+			
+			Runnable r = new Runnable() {
+
+				public void run() {
+					System.err.println("Running in main");
+					Thread t = new Thread() {
+						public void run() {
+							System.err.println("Stopping framework");
+							try {
+								context.getBundle(0).stop();
+								System.err.println("After stopping framework, sleeping");
+								Thread.sleep(10000);
+								System.err.println("After sleeping");
+							}
+							catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					};
+					t.start();
+					try {
+						System.err.println("before joining");
+						t.join();
+					}
+					catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					System.err.println("leaving main");
+				}
+			};
+			Properties props = new Properties();
+			props.setProperty("main.thread", "true");
+			context.registerService(Runnable.class.getName(), r, (Dictionary) props);
 		} else if ("main.thread.callable".equals(p)) {
 			Callable<Integer> r = new Callable<Integer>() {
 
@@ -85,7 +124,7 @@ public class TestActivator implements BundleActivator {
 			props.setProperty("main.thread", "true");
 			context.registerService(new String[] {
 					Runnable.class.getName(), Callable.class.getName()
-			}, r, (Dictionary)props);
+			}, r, (Dictionary) props);
 		} else if ("main.thread.callableinvalidtype".equals(p)) {
 			Callable<Double> r = new Callable<Double>() {
 
@@ -98,7 +137,7 @@ public class TestActivator implements BundleActivator {
 			Properties props = new Properties();
 			props.setProperty("main.thread", "true");
 			context.registerService(Callable.class.getName(), r, (Dictionary) props);
-			
+
 			// Give the launcher some time to finish
 			// printing the report. etc.
 			Thread.sleep(1000);

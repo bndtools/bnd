@@ -2389,7 +2389,9 @@ public class Project extends Processor {
 			table.put("Target", getTarget());
 			table.put("Source", getSrc());
 			table.put("Output", getOutput());
-			table.put("BuildFiles", Arrays.asList(getBuildFiles()));
+			File[] buildFiles = getBuildFiles();
+			if (buildFiles != null)
+				table.put("BuildFiles", Arrays.asList(buildFiles));
 			table.put("Classpath", getClasspath());
 			table.put("Actions", getActions());
 			table.put("AllSourcePath", getAllsourcepath());

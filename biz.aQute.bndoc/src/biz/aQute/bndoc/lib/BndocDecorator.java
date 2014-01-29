@@ -146,66 +146,56 @@ class BndocDecorator extends DefaultDecorator {
 	@Override
 	public void closeCodeBlock(StringBuilder out) {
 		try {
-			Table table = Table.parse(out, codeStart);
-			if (table != null) {
-				if (table.getError() != null) {
-					generator.error("table on has error %s", table.getError());
+			int lstart = codeStart;
+			int artCharacters = 0;
+			int otherCharacters = 0;
+
+			MessageDigest md = MessageDigest.getInstance("SHA-1");
+
+			for (int i = lstart; i < out.length(); i++) {
+				char c = out.charAt(i);
+				md.update((byte) c);
+				md.update((byte) (c >> 8));
+
+				if (c == '\n') {
+					lstart = i + 1;
 				} else {
-					out.delete(codeStart, out.length());
-					table.appendTo(out);
+					if ("-|+/\\><:".indexOf(c) >= 0)
+						artCharacters++;
+					else if (!Character.isWhitespace(c))
+						otherCharacters++;
 				}
+			}
+
+			if (artCharacters > otherCharacters) {
+				byte[] digest = md.digest();
+				String key = Hex.toHexString(digest);
+				String name = "img/" + key + ".png";
+				File file = IO.getFile(generator.getOutput(), name);
+				int width;
+				int height;
+
+				if (!file.isFile()) {
+					file.getParentFile().mkdirs();
+					String text = out.substring(codeStart, out.length());
+					RenderedImage image = render(text);
+					width = image.getWidth();
+					height = image.getHeight();
+					ImageIO.write(image, "png", file);
+				} else {
+					BufferedImage read = ImageIO.read(file);
+					width = read.getWidth();
+					height = read.getHeight();
+				}
+				out.delete(codeStart, out.length());
+				URI relative = generator.currentOutput.toURI().relativize(file.toURI());
+				out.append("<img src='").append(relative)//
+						.append("' style='width:").append((int) (width / DocumentBuilder.QUALITY_SCALE)) //
+						.append("px;height:").append((int) (height / DocumentBuilder.QUALITY_SCALE))//
+						.append("px'").append("/>");
 			} else {
-				int lstart = codeStart;
-				int artCharacters = 0;
-				int otherCharacters = 0;
-
-				MessageDigest md = MessageDigest.getInstance("SHA-1");
-
-				for (int i = lstart; i < out.length(); i++) {
-					char c = out.charAt(i);
-					md.update((byte) c);
-					md.update((byte) (c >> 8));
-
-					if (c == '\n') {
-						lstart = i + 1;
-					} else {
-						if ("-|+/\\><:".indexOf(c) >= 0)
-							artCharacters++;
-						else if (!Character.isWhitespace(c))
-							otherCharacters++;
-					}
-				}
-
-				if (artCharacters > otherCharacters) {
-					byte[] digest = md.digest();
-					String key = Hex.toHexString(digest);
-					String name = "img/" + key + ".png";
-					File file = IO.getFile(generator.getOutput(), name);
-					int width;
-					int height;
-
-					if (!file.isFile()) {
-						file.getParentFile().mkdirs();
-						String text = out.substring(codeStart, out.length());
-						RenderedImage image = render(text);
-						width = image.getWidth();
-						height = image.getHeight();
-						ImageIO.write(image, "png", file);
-					} else {
-						BufferedImage read = ImageIO.read(file);
-						width = read.getWidth();
-						height = read.getHeight();
-					}
-					out.delete(codeStart, out.length());
-					URI relative = generator.currentOutput.toURI().relativize(file.toURI());
-					out.append("<img src='").append(relative)//
-							.append("' style='width:").append((int) (width / DocumentBuilder.QUALITY_SCALE)) //
-							.append("px;height:").append((int) (height / DocumentBuilder.QUALITY_SCALE))//
-							.append("px'").append("/>");
-				} else {
-					out.insert(codeStart, "<pre>");
-					out.append("</pre>\n");
-				}
+				out.insert(codeStart, "<pre>");
+				out.append("</pre>\n");
 			}
 		}
 		catch (Exception e) {

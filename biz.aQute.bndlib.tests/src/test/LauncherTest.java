@@ -287,6 +287,10 @@ public class LauncherTest extends TestCase {
 		assertExitCode("main.thread.callable", 42);
 	}
 
+	public static void testFrameworkStop() throws Exception {
+		assertExitCode("framework.stop", -9);
+	}
+
 	private static void assertExitCode(String cmd, int rv) throws Exception {
 		Project project = getProject();
 		project.clear();

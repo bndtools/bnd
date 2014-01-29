@@ -1,0 +1,47 @@
+[meta]
+markdown.header.number:			4
+
+# nr 1
+
+Line
+
+## nr 2
+
+Line
+
+### nr 3
+
+Line
+
+#### nr 4
+
+#### nr 4
+
+#### nr 4
+
+##### nr 5
+
+###### nr 6
+
+nr 2
+======
+
+nr 1
+------
+
+....................................................................................................
+
+<h1 style="counter-reset:h1 1">nr1</h1>
+<p>Line</p>
+<h2 style="counter-reset:h2 1">nr2</h2>
+<p>Line</p>
+<h3 style="counter-reset:h3 1">nr3</h3>
+<p>Line</p>
+<h4 style="counter-reset:h4 1">nr4</h4>
+<h4 style="counter-reset:h4 2">nr4</h4>
+<h4 style="counter-reset:h4 3">nr4</h4>
+<h5>nr5</h5>
+<h6>nr6</h6>
+<h1 style="counter-reset:h1 2">nr2</h1>
+<h2 style="counter-reset:h2 1">nr1</h2>
+

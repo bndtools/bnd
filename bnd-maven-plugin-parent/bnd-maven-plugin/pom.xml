@@ -35,8 +35,8 @@
 
         <dependency>
             <groupId>biz.aQute.bnd</groupId>
-            <artifactId>bndlib</artifactId>
-            <version>${bndlib.version}</version>
+            <artifactId>bnd</artifactId>
+            <version>${bnd.version}</version>
         </dependency>
     
         <!-- Test dependencies -->
