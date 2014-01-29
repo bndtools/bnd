@@ -20,4 +20,9 @@ public interface RemoteRepositoryPlugin extends RepositoryPlugin {
 			throws Exception;
 
 	File getCacheDirectory();
+	
+	/**
+	 * Instructs repository to refresh its cached metadata (if any)
+	 */
+	void refreshCacheMetadata();
 }

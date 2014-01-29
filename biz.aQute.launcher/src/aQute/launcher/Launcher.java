@@ -601,6 +601,7 @@ public class Launcher implements ServiceListener {
 					switch (result.getType()) {
 						case FrameworkEvent.STOPPED :
 							trace("framework event stopped");
+							System.exit(LauncherConstants.STOPPED);
 							break;
 
 						case FrameworkEvent.WAIT_TIMEDOUT :

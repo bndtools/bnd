@@ -32,3 +32,13 @@ ${toc}
     |                    |                                                    |              |
     +--------------------+----------------------------------------------------+--------------+
  
+
+<table><tr><td>
+
+     hello world in code
+
+</td><td>
+
+Hello world as text with _em_ and *bold* and `code`
+
+</td></tr></table>

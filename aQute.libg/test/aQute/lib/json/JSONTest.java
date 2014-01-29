@@ -14,7 +14,25 @@ import aQute.libg.map.*;
 public class JSONTest extends TestCase {
 	JSONCodec	codec	= new JSONCodec();
 
+	/**
+	 * Test generics for non maps/lists
+	 */
 	
+	public static class Generics<T> {
+		public T field;
+	}
+	
+	public void testGenerics() throws Exception {
+		Generics<String> s = new Generics<String>();
+		s.field = "abc";
+		
+		String string = codec.enc().put(s).toString();
+		
+		Generics<String> b = codec.dec().from(string).get(new TypeReference<Generics<String>>(){});
+		
+		assertEquals(s.field, b.field);
+	}
+		
 	/**
 	 * An List<byte[]> was translated to a js array :-(
 	 */

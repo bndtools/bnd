@@ -2,6 +2,7 @@ package aQute.bnd.ant;
 
 import java.io.*;
 import java.util.*;
+import java.util.jar.*;
 
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
@@ -94,8 +95,9 @@ public class WrapTask extends BaseTask {
 					}
 				}
 
-				wrapper.calcManifest();
+				Manifest manifest = wrapper.calcManifest();
 				if (wrapper.isOk()) {
+				    wrapper.getJar().setManifest(manifest);
 					boolean saved = wrapper.save(outputFile, force);
 					log(String.format("%30s %6d %s%n", wrapper.getJar().getBsn() + "-" + wrapper.getJar().getVersion(),
 							outputFile.length(), saved ? "" : "(not modified)"));
