@@ -660,24 +660,39 @@ public class ProjectTest extends TestCase {
 		return all;
 	}
 
-	public static void testBndPropertiesMacro() throws Exception {
+	public static void testBndRawMacro() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project p = ws.getProject("p7");
 		String string = p.getProperty("var", "");
-		assertEquals("something;version=latest", string);
+		assertEquals("something;version=latest;anothervar", string);
+
+		String f = p.getReplacer()._raw(new String[] {
+				"raw", "-runbundles"
+		});
+		assertEquals("something;version=latest;${avar}", f);
 	}
 
-	public static void testBndRawMacro() throws Exception {
+	public static void testBndRawMacro2() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project p = new Project(ws, new File("testresources/ws/p7"), new File("testresources/ws/p7/reuse.bndrun"));
 
 		String string = p.getProperty("-runbundles", "");
 		assertEquals("This is somethingsomething foo somethingsomething", string);
 
+		String f = p.getReplacer()._raw(new String[] {
+				"raw", "-runbundles"
+		});
+		assertEquals("This is ${variable2}", f);
+
 		string = p.getProperty("-runrequires", "");
 		assertEquals(
 				"osgi.identity;filter:='(osgi.identity=variable)',osgi.identity;filter:='(osgi.identity=variable2)',osgi.identity;filter:='(osgi.identity=b)',osgi.identity;filter:='(osgi.identity=c)'",
 				string);
+
+		f = p.getReplacer()._raw(new String[] {
+				"raw", "-runrequires"
+		});
+		assertEquals("${var},osgi.identity;filter:='(osgi.identity=b)',osgi.identity;filter:='(osgi.identity=c)'", f);
 	}
 
 	public static void testVmArgs() throws Exception {

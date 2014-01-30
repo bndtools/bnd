@@ -1,4 +1,5 @@
--runbundles: something;version=latest
+avar: anothervar
+-runbundles: something;version=latest;${avar}
 
 var: ${raw;-runbundles;"unset"}
 
