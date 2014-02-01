@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.security.*;
 import java.util.*;
+import java.util.regex.*;
 
 import org.osgi.service.coordinator.*;
 import org.osgi.service.log.*;
@@ -23,21 +24,20 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 	private final String							UPWARDS_ARROW					= " \u2191";
 	private final String							DOWNWARDS_ARROW					= " \u2193";
-	
+	Pattern	REPO_FILE	= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)");
 	private static final String			CACHE_PATH				= ".cache";
 	public static final String			PROP_LOCAL_DIR			= "local";
 	public static final String			PROP_READONLY			= "readonly";
 	public static final String			PROP_PRETTY				= "pretty";
 	public static final String			PROP_OVERWRITE			= "overwrite";
-
-	private static final VersionRange	RANGE_ANY				= new VersionRange(Version.LOWEST.toString());
-
+	public static final String			PROP_ONLYDIRS			= "onlydirs";
+	
 	@SuppressWarnings("deprecation")
-	private FileRepo					storageRepo;
 	private boolean						readOnly;
 	private boolean						pretty					= false;
 	private boolean						overwrite				= true;
 	private File						storageDir;
+	private String				onlydirs				= null;
 
 	// @GuardedBy("newFilesInCoordination")
 	private final List<URI>				newFilesInCoordination	= new LinkedList<URI>();
@@ -61,9 +61,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		readOnly = Boolean.parseBoolean(map.get(PROP_READONLY));
 		pretty = Boolean.parseBoolean(map.get(PROP_PRETTY));
 		overwrite = map.get(PROP_OVERWRITE) == null ? true : Boolean.parseBoolean(map.get(PROP_OVERWRITE));
-
-		// Configure the storage repository
-		storageRepo = new FileRepo(storageDir);
+		onlydirs = map.get(PROP_ONLYDIRS);
 
 		// Set the local index and cache directory locations
 		cacheDir = new File(storageDir, CACHE_PATH);
@@ -173,16 +171,57 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	private void gatherFiles(Set<File> allFiles) throws Exception {
 		if (!storageDir.isDirectory())
 			return;
-		
-		List<String> bsns = storageRepo.list(null);
-		if (bsns != null)
-			for (String bsn : bsns) {
-				File[] files = storageRepo.get(bsn, RANGE_ANY);
-				if (files != null)
-					for (File file : files) {
-						allFiles.add(file.getCanonicalFile());
-					}
+
+		LinkedList<File> files = new LinkedList<File>();
+		String[] onlydirsFiles = null;
+		if (onlydirs != null) {
+			String[] onlydirs2 = onlydirs.split(",");
+			onlydirsFiles = new String[onlydirs2.length];
+			for (int i = 0; i < onlydirs2.length; i++) {
+				onlydirsFiles[i] = new File(storageDir.getAbsolutePath(), onlydirs2[i]).getAbsolutePath();
 			}
+		}
+
+		listRecurse(REPO_FILE, onlydirsFiles, storageDir, storageDir, files);
+
+		allFiles.addAll(files);
+	}
+
+	private void listRecurse(final Pattern pattern, final String[] onlydirsFiles, File root, File dir,
+			LinkedList<File> files) {
+		final LinkedList<File> dirs = new LinkedList<File>();
+		File[] moreFiles = dir.listFiles(new FileFilter() {
+
+			public boolean accept(File f) {
+				if (f.isDirectory()) {
+					boolean addit = true;
+					if (onlydirsFiles != null) {
+						String fabs = f.getAbsolutePath();
+						addit = false;
+						for (String dirtest : onlydirsFiles) {
+							if (dirtest.startsWith(fabs) || fabs.startsWith(dirtest)) {
+								addit = true;
+								break;
+							}
+						}
+					}
+					if (addit) {
+						dirs.add(f);
+					}
+				} else if (f.isFile()) {
+					Matcher matcher = pattern.matcher(f.getName());
+					return matcher.matches();
+				}
+				return false;
+			}
+		});
+		// Add the files that we found.
+		files.addAll(Arrays.asList(moreFiles));
+
+		// keep recursing
+		for (File d : dirs) {
+			listRecurse(pattern, onlydirsFiles, root, d, files);
+		}
 	}
 
 	@Override
@@ -394,6 +433,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			String bsn = (String) target[1];
 			String version = (String) target[2];
 			
+			@SuppressWarnings("deprecation")
+			FileRepo storageRepo = new FileRepo(storageDir);
 			@SuppressWarnings("deprecation")
 			final File f = storageRepo.get(bsn, new VersionRange(version, version),0);
 			if ( f != null) {
