@@ -115,12 +115,12 @@
 
 		<!-- Generate R5 index for core -->
 		<taskdef classpath="${basedir}/org.osgi.impl.bundle.repoindex.ant-0.0.1.jar" resource="taskdef.properties"/>
-		<repoindex name="Bndtools" out="${target}/p2/index.xml.gz" rooturl="${target}/p2">
+		<repoindex name="Bndtools" pretty="false" out="${target}/p2/index.xml.gz" rooturl="${target}/p2">
 			<fileset dir="${target}/p2/plugins" includes="*.jar"/>
 		</repoindex>
 
 		<!-- Generate R5 index for extras -->
-		<taskdef classpath="${basedir}/repoindex-ant-0.0.1.jar" resource="taskdef.properties"/>
+		<taskdef classpath="${basedir}/org.osgi.impl.bundle.repoindex.ant-0.0.1.jar" resource="taskdef.properties"/>
 		<repoindex name="Bndtools Extras" pretty="false" out="${target}/extras/p2/child/index.xml.gz" rooturl="${target}/extras/p2/child">
 			<fileset dir="${target}/extras/p2/child/plugins" includes="*.jar"/>
 		</repoindex>
