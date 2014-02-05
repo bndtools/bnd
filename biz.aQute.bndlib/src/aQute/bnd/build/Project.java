@@ -514,7 +514,7 @@ public class Project extends Processor {
 								warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
 						} else {
 							if (cc.getError() != null) {
-								warning("Cannot find %s", cc);
+								error("Cannot find %s", cc);
 							}
 							result.add(cc);
 						}
@@ -524,7 +524,7 @@ public class Project extends Processor {
 					Container x = new Container(this, bsn, versionRange, Container.TYPE.ERROR, null, bsn + ";version="
 							+ versionRange + " not found", attrs, null);
 					result.add(x);
-					warning("Can not find URL for bsn " + bsn);
+					error("Can not find URL for bsn " + bsn);
 				}
 			}
 		}
