@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="junittest" default="build"> 
+	<property name="workspacedir" value=".."/>
+	<import file="${workspacedir}/cnf/build.xml"/>
+
+	<target name="ant-test-windows" if="${windows}">
+		<macro.runant.windows result="junittest.result"/>
+	</target>
+	<target name="ant-test-linux" if="${linux}">
+		<macro.runant.linux result="junittest.result"/>
+	</target>
+	<target name="dotest" depends="ant-test-windows, ant-test-linux">
+	
+    <echo message="junittest.result=${junittest.result} (1=fail, which is what we're expecting)"/>
+    <condition property="junittest.failed">
+	    <equals arg1="${junittest.result}"
+		    arg2="1"/>
+    </condition>
+    <fail unless="junittest.failed"/>
+  </target>
+
+</project>

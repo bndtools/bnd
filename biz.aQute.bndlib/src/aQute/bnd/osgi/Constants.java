@@ -182,6 +182,10 @@ public interface Constants {
 	String							WABLIB										= "-wablib";
 	String							REQUIRE_BND									= "-require-bnd";
 
+	//[cs]
+	String								PROJECT_SEARCH								= "-projectsearch";
+	String								PROJECT_SEARCH_DEPTH						= "depth";
+	
 	// Deprecated
 	String							CLASSPATH									= "-classpath";
 	String							OUTPUT										= "-output";

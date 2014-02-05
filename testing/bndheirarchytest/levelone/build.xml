@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="build"> 
+    <property name="workspacedir" value=".."/>
+    <import file="../cnf/build.xml"/>
+
+  <target name="dotest">
+    <delete file="run.jar" />
+    <ant target="package" />
+
+    <java jar="./run.jar" fork="true" outputproperty="levelone.output" />
+
+    <echo message="levelone.output=${levelone.output}"/>
+    <condition property="levelone.output.good">
+	    <equals arg1="${levelone.output}"
+		    arg2="TestLevelOne started!"/>
+    </condition>
+    <echo message="levelone.output.good=${levelone.output.good}"/>
+    <fail unless="levelone.output.good"/>
+  </target>
+
+</project>
