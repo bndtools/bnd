@@ -58,12 +58,16 @@ public class InstallCert {
 			throws Exception {
 		if (file == null) {
 			File java = new File(System.getProperty("java.home"));
+			reporter.trace("java.home=%s",java);
 			file = IO.getFile(java, "lib/security/jssecacerts");
 			if (!file.isFile())
 				file = IO.getFile(java, "lib/security/cacerts");
 			if (!file.isFile())
+				file = IO.getFile(java, "jre/lib/security/cacerts");
+			if (!file.isFile())
 				throw new IllegalArgumentException(
 						"Cannot find certifcate file in $JAVA_HOME/lib/security/(jsse)?cacerts");
+			reporter.trace("using cacerts %s",file);
 		}
 		KeyStore ks;
 		InputStream in = new FileInputStream(file);

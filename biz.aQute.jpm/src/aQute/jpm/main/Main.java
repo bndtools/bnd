@@ -1675,6 +1675,28 @@ public class Main extends ReporterAdapter {
 		this.jpm = jpm;
 	}
 
+	/**
+	 * Get an artifact
+	 */
+	@Arguments(arg = {
+		"coordinate"
+	})
+	@Description("Get an artifact")
+	interface GetOptions extends Options {
+		@Description("Specify an output file")
+		String output();
+	}
+
+	public void _get(GetOptions options) throws Exception {
+		String coord = options._().get(0);
+		String f = options.output();
+		if (f == null)
+			IO.copy( new URL(coord).openStream(), System.out);
+		else {
+			IO.copy(new URL(coord).openStream(), IO.getFile(f));
+		}
+	}
+
 	@Arguments(arg = {
 			"jar file | url", "..."
 	})
