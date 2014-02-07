@@ -1453,16 +1453,16 @@ public class Project extends Processor {
 		}
 	}
 
-	
 	/**
-	 * Calculate the file for a JAR. The default name is bsn.jar, but this can be
-	 * overridden with an 
+	 * Calculate the file for a JAR. The default name is bsn.jar, but this can
+	 * be overridden with an
+	 * 
 	 * @param jar
 	 * @return
 	 * @throws Exception
 	 */
 	public File getOutputFile(String bsn, String version) throws Exception {
-		if ( version == null)
+		if (version == null)
 			version = "0";
 		Processor scoped = new Processor(this);
 		try {
@@ -1792,7 +1792,7 @@ public class Project extends Processor {
 		bump(getProperty(BUMPPOLICY, "=+0"));
 	}
 
-	public void action(String command) throws Throwable {
+	public void action(String command) throws Exception {
 		Map<String,Action> actions = getActions();
 
 		Action a = actions.get(command);
