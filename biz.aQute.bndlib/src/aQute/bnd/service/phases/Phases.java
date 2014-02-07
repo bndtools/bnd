@@ -23,5 +23,7 @@ public interface Phases {
 
 	void valid(Project p) throws Exception;
 
-	void action(Project p, String action) throws Exception;	
+	void pack(Run r) throws Exception;
+
+	void action(Project p, String action) throws Exception;
 }
