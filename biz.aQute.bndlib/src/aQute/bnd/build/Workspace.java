@@ -739,7 +739,7 @@ public class Workspace extends Processor {
 				reporter.trace("before junit %s", p);
 				first.before(p, "junit");
 				try {
-					first.test(p);
+					first.junit(p);
 					first.after(p, "junit", null);
 					reporter.trace("after junit %s", p);
 				}
@@ -754,7 +754,7 @@ public class Workspace extends Processor {
 				reporter.trace("before release %s", p);
 				first.before(p, "release");
 				try {
-					first.test(p);
+					first.release(p);
 					first.after(p, "release", null);
 					reporter.trace("after release %s", p);
 				}
@@ -769,7 +769,7 @@ public class Workspace extends Processor {
 				reporter.trace("before valid %s", p);
 				first.before(p, "valid");
 				try {
-					first.test(p);
+					first.valid(p);
 					first.after(p, "valid", null);
 					reporter.trace("after valid %s", p);
 				}
@@ -785,13 +785,29 @@ public class Workspace extends Processor {
 				reporter.trace("before action %s", p);
 				first.before(p, "action");
 				try {
-					first.test(p);
+					first.action(p, action);
 					first.after(p, "action", null);
 					reporter.trace("after action %s", p);
 				}
 				catch (Exception e) {
 					reporter.trace("after action %s with error %s", p, e);
 				}
+			}
+
+			public void pack(Run r) throws Exception {
+				reporter.progress("pack " + r);
+
+				Phases first = phases.get(0);
+				reporter.trace("before pack %s", r);
+				first.before(r, "pack");
+				try {
+					first.pack(r);
+					first.after(r, "pack", null);
+					reporter.trace("after pack %s", r);
+				}
+				catch (Exception e) {
+					reporter.trace("after pack %s with error %s", r, e);
+				}				
 			}
 		};
 
