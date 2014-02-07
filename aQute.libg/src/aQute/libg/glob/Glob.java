@@ -1,5 +1,6 @@
 package aQute.libg.glob;
 
+import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -99,20 +100,50 @@ public class Glob {
 		return sb.toString();
 	}
 
-	public void select(List<?> objects) {
-		for ( Iterator<?> i =objects.iterator(); i.hasNext(); ) {
+	public void select(List< ? > objects) {
+		for (Iterator< ? > i = objects.iterator(); i.hasNext();) {
 			String s = i.next().toString();
-			if ( !matcher(s).matches())
+			if (!matcher(s).matches())
 				i.remove();
 		}
 	}
 
 	public static Pattern toPattern(String s) {
 		try {
-			return Pattern.compile( convertGlobToRegEx(s));
-		} catch( Exception e) {
+			return Pattern.compile(convertGlobToRegEx(s));
+		}
+		catch (Exception e) {
 			// ignore
 		}
 		return null;
+	}
+
+	/**
+	 * Get a list of files that match the glob expression
+	 * 
+	 * @param root
+	 *            the directory to get the files from
+	 * @param recursive
+	 *            to traverse the dirs recursive
+	 * @return
+	 */
+	public List<File> getFiles(File root, boolean recursive, boolean usePath) {
+		List<File> result = new ArrayList<File>();
+		getFiles(root, result, recursive, usePath);
+		return result;
+	}
+
+	public void getFiles(File root, List<File> result, boolean recursive, boolean usePath) {
+		if (root == null || !root.isDirectory())
+			return;
+
+		for (File sub : root.listFiles()) {
+			if (sub.isFile()) {
+				String s = usePath ? sub.getAbsolutePath() : sub.getName();
+				if (matcher(s).matches())
+					result.add(sub);
+			} else if (recursive && sub.isDirectory())
+				getFiles(sub, result, recursive, usePath);
+		}
 	}
 }
