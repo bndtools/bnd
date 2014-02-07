@@ -21,33 +21,33 @@ import aQute.libg.generics.*;
 import aQute.service.reporter.*;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
-	static Pattern PACKAGES_IGNORED = Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
+	static Pattern					PACKAGES_IGNORED	= Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
-	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
-	static ExecutorService			executor		= Executors.newCachedThreadPool();
-	static Random					random			= new Random();
+	static ThreadLocal<Processor>	current				= new ThreadLocal<Processor>();
+	static ExecutorService			executor			= Executors.newCachedThreadPool();
+	static Random					random				= new Random();
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
-	public final static String		LIST_SPLITTER	= "\\s*,\\s*";
-	final List<String>				errors			= new ArrayList<String>();
-	final List<String>				warnings		= new ArrayList<String>();
-	final Set<Object>				basicPlugins	= new HashSet<Object>();
-	private final Set<Closeable>	toBeClosed		= new HashSet<Closeable>();
+	public final static String		LIST_SPLITTER		= "\\s*,\\s*";
+	final List<String>				errors				= new ArrayList<String>();
+	final List<String>				warnings			= new ArrayList<String>();
+	final Set<Object>				basicPlugins		= new HashSet<Object>();
+	private final Set<Closeable>	toBeClosed			= new HashSet<Closeable>();
 	Set<Object>						plugins;
 
 	boolean							pedantic;
 	boolean							trace;
 	boolean							exceptions;
-	boolean							fileMustExist	= true;
+	boolean							fileMustExist		= true;
 
-	private File					base			= new File("").getAbsoluteFile();
+	private File					base				= new File("").getAbsoluteFile();
 
 	Properties						properties;
 	String							profile;
 	private Macro					replacer;
 	private long					lastModified;
 	private File					propertiesFile;
-	private boolean					fixup			= true;
+	private boolean					fixup				= true;
 	long							modified;
 	Processor						parent;
 	List<File>						included;
@@ -187,8 +187,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void progress(float progress, String format, Object... args) {
-		format = String.format("[%2d] %s", (int) progress, format);
-		trace(format, args);
+		if (progress > 0)
+			format = String.format("[%2d] %s%n", (int) progress, format);
+		else
+			format = String.format("%s%n",format);
+
+		System.err.printf(format, args);
 	}
 
 	public void progress(String format, Object... args) {
@@ -203,7 +207,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		Processor p = current();
 		try {
 			if (p.exceptions) {
-				printExceptionSummary(t,System.err);
+				printExceptionSummary(t, System.err);
 			}
 			if (p.isFailOk()) {
 				return p.warning(string + ": " + t, args);
@@ -220,14 +224,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public int printExceptionSummary(Throwable e, PrintStream out) {
-		if ( e == null) {
+		if (e == null) {
 			return 0;
 		}
 		int count = 10;
 		int n = printExceptionSummary(e.getCause(), out);
-		
-		if ( n == 0) {
-			out.println("Root cause: " + e.getMessage()  + "   :"+e.getClass().getName());
+
+		if (n == 0) {
+			out.println("Root cause: " + e.getMessage() + "   :" + e.getClass().getName());
 			count = Integer.MAX_VALUE;
 		} else {
 			out.println("Rethrown from: " + e.toString());
@@ -235,53 +239,52 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		out.println();
 		printStackTrace(e, count, out);
 		System.err.println();
-		return n+1;
+		return n + 1;
 	}
 
 	public void printStackTrace(Throwable e, int count, PrintStream out) {
 		StackTraceElement st[] = e.getStackTrace();
 		String previousPkg = null;
 		boolean shorted = false;
-		if ( count < st.length) {
+		if (count < st.length) {
 			shorted = true;
 			count--;
 		}
-		
-		for ( int i=0; i<count && i<st.length; i++) {
+
+		for (int i = 0; i < count && i < st.length; i++) {
 			String cname = st[i].getClassName();
 			String file = st[i].getFileName();
 			String method = st[i].getMethodName();
 			int line = st[i].getLineNumber();
-		
+
 			String pkg = Descriptors.getPackage(cname);
-			if ( PACKAGES_IGNORED.matcher(pkg).matches())
+			if (PACKAGES_IGNORED.matcher(pkg).matches())
 				continue;
-			
+
 			String shortName = Descriptors.getShortName(cname);
-			if ( pkg.equals(previousPkg))
-				pkg="''";
+			if (pkg.equals(previousPkg))
+				pkg = "''";
 			else
-				pkg+="";
-			
-			if ( file.equals(shortName +".java") )
+				pkg += "";
+
+			if (file.equals(shortName + ".java"))
 				file = "";
 			else
 				file = " (" + file + ")";
 
 			String l;
-			if ( st[i].isNativeMethod())
+			if (st[i].isNativeMethod())
 				l = "native";
+			else if (line > 0)
+				l = "" + line;
 			else
-				if ( line > 0 )
-					l = "" + line;
-				else
-					l = "";
-			
-			out.printf(" %10s %-40s %s %s%n", l, shortName+"."+method , pkg,file);
-			
+				l = "";
+
+			out.printf(" %10s %-40s %s %s%n", l, shortName + "." + method, pkg, file);
+
 			previousPkg = pkg;
 		}
-		if ( shorted )
+		if (shorted)
 			out.println("...");
 	}
 
@@ -332,7 +335,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void use(Processor reporter) {
 		setPedantic(reporter.isPedantic());
 		setTrace(reporter.isTrace());
-		setBase(reporter.getBase());
 		setFailOk(reporter.isFailOk());
 	}
 
