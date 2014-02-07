@@ -476,7 +476,7 @@ public class Main extends ReporterAdapter {
 								error("[%s] %s", coordinate, result);
 							}
 						}
-					} else 
+					} else
 						error("No main class found. Please specify");
 				}
 			}
@@ -766,8 +766,7 @@ public class Main extends ReporterAdapter {
 	 * @throws Exception
 	 */
 	@Description("Install jpm on the current system")
-	interface InitOptions extends Options {
-	}
+	interface InitOptions extends Options {}
 
 	@Description("Install jpm on the current system")
 	public void _init(InitOptions opts) throws Exception {
@@ -824,7 +823,7 @@ public class Main extends ReporterAdapter {
 							error("Failed to run platform init, exit code %s.%n%s", result, j.wrap());
 						} else
 							out.append(stdout);
-						
+
 					}
 					out.println("Home dir      " + jpm.getHomeDir());
 					out.println("Bin  dir      " + jpm.getBinDir());
@@ -845,7 +844,9 @@ public class Main extends ReporterAdapter {
 	/**
 	 * Show platform
 	 */
-	@Arguments(arg = {"[cmd]", "..."})
+	@Arguments(arg = {
+			"[cmd]", "..."
+	})
 	@Description("Show the name of the platform, or more specific information")
 	public interface PlatformOptions extends Options {
 		@Description("Show detailed information")
@@ -872,10 +873,37 @@ public class Main extends ReporterAdapter {
 				out.println(jpm.getPlatform().getName());
 		} else {
 			String execute = cli.execute(jpm.getPlatform(), cmds.remove(0), cmds);
-			if ( execute != null) {
+			if (execute != null) {
 				out.append(execute);
 			}
 		}
+	}
+
+	/**
+	 * Show all the installed VMs
+	 */
+	@Description("Manage installed VMs ")
+	interface VMOptions extends Options {
+		String add();
+	}
+
+	public void _vm(VMOptions opts) throws Exception {
+		if (opts.add() != null) {
+			File f = IO.getFile(base,opts.add()).getCanonicalFile();
+			
+			if ( !f.isDirectory()) {
+				error("No such directory %s to add a JVM", f);
+			} else {
+				jpm.addVm(f);
+			}
+		}
+
+		SortedSet<JVM> vms = jpm.getVMs();
+
+		for (JVM jvm : vms) {
+			out.printf("%-30s %-5s %-20s %-30s %s\n", jvm.name, jvm.platformVersion, jvm.version, jvm.vendor, jvm.path);
+		}
+
 	}
 
 	/**
@@ -1691,7 +1719,7 @@ public class Main extends ReporterAdapter {
 		String coord = options._().get(0);
 		String f = options.output();
 		if (f == null)
-			IO.copy( new URL(coord).openStream(), System.out);
+			IO.copy(new URL(coord).openStream(), System.out);
 		else {
 			IO.copy(new URL(coord).openStream(), IO.getFile(f));
 		}

@@ -1,6 +1,9 @@
 package aQute.jpm.platform;
 
 import java.io.*;
+import java.util.*;
+
+import aQute.jpm.lib.*;
 
 class Linux extends Unix {
 
@@ -37,6 +40,18 @@ class Linux extends Unix {
 		parseCompletion(target, f);
 		
 		return "Bash completion file installed in "+COMPLETION_DIRECTORY;
+	}
+
+	@Override
+	public void getVMs(Collection<JVM> vms) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public JVM getJVM(File f) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

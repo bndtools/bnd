@@ -18,6 +18,7 @@ import aQute.jpm.facade.repo.*;
 import aQute.jpm.platform.*;
 import aQute.jsonrpc.proxy.*;
 import aQute.lib.base64.*;
+import aQute.lib.collections.*;
 import aQute.lib.converter.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
@@ -68,6 +69,7 @@ import aQute.struct.*;
  */
 
 public class JustAnotherPackageManager {
+	private static final String	JPM_VMS_EXTRA		= "jpm.vms.extra";
 	private static final String	SERVICE_JAR_FILE	= "service.jar";
 	public static final String	SERVICE				= "service";
 	public static final String	COMMANDS			= "commands";
@@ -97,22 +99,29 @@ public class JustAnotherPackageManager {
 	final File					serviceDir;
 	final File					service;
 	final Platform				platform;
-	final Reporter					reporter;
+	final Reporter				reporter;
 
 	JpmRepo						library;
 	final List<Service>			startedByDaemon		= new ArrayList<Service>();
 	boolean						localInstall		= false;
 	private URLClient			host;
-	private boolean				underTest;
+	private boolean				underTest			= System.getProperty("jpm.intest") != null;
+	Settings					settings;
 
 	/**
 	 * Constructor
 	 * 
-	 * @throws IOException
+	 * @throws Exception
 	 */
-	public JustAnotherPackageManager(Reporter reporter, Platform platform, File homeDir, File binDir)
-			throws IOException {
-		this.platform = platform;
+	public JustAnotherPackageManager(Reporter reporter, Platform platform, File homeDir, File binDir) throws Exception {
+
+		if (platform == null)
+			this.platform = Platform.getPlatform(reporter, null);
+		else
+			this.platform = platform;
+
+		settings = new Settings(this.platform.getConfigFile());
+
 		this.reporter = reporter;
 		this.homeDir = homeDir;
 		if (!homeDir.exists() && !homeDir.mkdirs())
@@ -129,8 +138,8 @@ public class JustAnotherPackageManager {
 		service = new File(repoDir, SERVICE_JAR_FILE);
 		if (!service.isFile())
 			init();
-		
-		this.binDir = binDir; 
+
+		this.binDir = binDir;
 		if (!binDir.exists() && !binDir.mkdirs())
 			throw new IllegalArgumentException("Could not create bin directory " + binDir);
 	}
@@ -1214,13 +1223,14 @@ public class JustAnotherPackageManager {
 			data.main = main.getValue("Main-Class");
 			data.description = main.getValue("Bundle-Description");
 			data.title = main.getValue("JPM-Name");
-			
-			if ( main.getValue("Class-Path")!= null) {
+
+			if (main.getValue("Class-Path") != null) {
 				File parent = source.getParentFile();
-				for ( String entry : main.getValue("Class-Path").split("\\s+")) {
-					File child = new File(parent,entry);
-					if ( !child.isFile()) {
-						reporter.error("Target specifies Class-Path in JAR but the indicated file %s is not found", child);
+				for (String entry : main.getValue("Class-Path").split("\\s+")) {
+					File child = new File(parent, entry);
+					if (!child.isFile()) {
+						reporter.error("Target specifies Class-Path in JAR but the indicated file %s is not found",
+								child);
 					} else {
 						ArtifactData x = put(child.toURI());
 						data.dependencies.add(x.sha);
@@ -1327,11 +1337,57 @@ public class JustAnotherPackageManager {
 		return library.getRevisionsByCoordinate(c);
 	}
 
-	
 	/**
-	 * Post install 
+	 * Post install
 	 */
 	public void doPostInstall() {
 		getPlatform().doPostInstall();
+	}
+
+	public SortedSet<JVM> getVMs() throws Exception {
+		TreeSet<JVM> set = new TreeSet<JVM>(JVM.comparator);
+		String list = settings.get(JPM_VMS_EXTRA);
+		if ( list != null) {
+			ExtList<String> elist = new ExtList<String>(list.split("\\s*,\\s*"));
+			for ( String dir : elist) {
+				File f  = new File(dir);
+				JVM jvm = getPlatform().getJVM(f);
+				if ( jvm == null) {
+					jvm = new JVM();
+					jvm.path = f.getCanonicalPath();
+					jvm.name = "Not a valid VM";
+					jvm.platformVersion = jvm.vendor=jvm.version = "";
+				}
+				set.add(jvm);
+			}
+		}
+		getPlatform().getVMs(set);
+		return set;
+	}
+
+	public JVM addVm(File platformRoot) throws Exception {
+		if (!platformRoot.isDirectory()) {
+			reporter.error("No such directory %s for a VM", platformRoot);
+			return null;
+		}
+
+		JVM jvm = getPlatform().getJVM(platformRoot);
+		if (jvm == null) {
+			return null;
+		}
+		
+		String list = settings.get(JPM_VMS_EXTRA);
+		if (list == null)
+			list = platformRoot.getCanonicalPath();
+		else {
+			ExtList<String> elist = new ExtList<String>(list.split("\\s*,\\s*"));
+			elist.remove(platformRoot.getCanonicalPath());
+			elist.add(0, platformRoot.getCanonicalPath());
+			list = Strings.join(",", elist);
+					
+		}
+		settings.put(JPM_VMS_EXTRA, list);
+		settings.save();
+		return jvm;
 	}
 }

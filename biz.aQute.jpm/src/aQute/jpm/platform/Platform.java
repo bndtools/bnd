@@ -278,4 +278,24 @@ public abstract class Platform {
 		// do nothing
 	}
 
+	abstract public  void getVMs(Collection<JVM> vms) throws Exception;
+
+	public String verifyVM(File f) {
+		if ( !f.isDirectory())
+			return "Not a directory";
+		
+		File bin = new File(f, "bin");
+		if ( !f.isDirectory())
+			return "No bin directory %s for a VM's executables";
+
+		
+		File lib = new File(f, "lib");
+		if ( !f.isDirectory())
+			return "No lib directory %s for a VM's libraries and certificates";
+		
+		return null;
+	}
+
+	abstract public JVM getJVM(File f) throws Exception;
+
 }

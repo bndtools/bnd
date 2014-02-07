@@ -340,4 +340,16 @@ public class Windows extends Platform {
 		}
 	}
 
+	@Override
+	public void getVMs(Collection<JVM> vms) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public JVM getJVM(File f) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

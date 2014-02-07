@@ -8,6 +8,7 @@ import aQute.jpm.lib.*;
 import aQute.jpm.platform.*;
 import aQute.lib.io.*;
 import aQute.lib.settings.*;
+import aQute.libg.reporter.*;
 
 public class JPMTest extends TestCase {
 
@@ -68,6 +69,18 @@ public class JPMTest extends TestCase {
 		public void uninstallDaemon(boolean user) throws Exception {
 			// TODO Auto-generated method stub
 
+		}
+
+		@Override
+		public void getVMs(Collection<JVM> vms) throws Exception {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public JVM getJVM(File f) throws Exception {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	}
 
@@ -152,6 +165,26 @@ public class JPMTest extends TestCase {
 		}
 		finally {
 			IO.delete(tmp);
+		}
+	}
+	
+	public void testVM() throws Exception {
+		File tmp = new File("tmp");
+		IO.delete(tmp);
+		tmp.mkdirs();
+		File home = new File(tmp, "home");
+		File bin = new File(tmp, "bin");
+		System.setProperty("jpm.intest", "true");
+		JustAnotherPackageManager jpm = new JustAnotherPackageManager(new ReporterAdapter(), null, home, bin);
+		SortedSet<JVM> vms = jpm.getVMs();
+		assertNotNull(vms);
+		assertTrue(vms.size()>=1);
+
+		System.out.println(vms);
+		File f = IO.getFile("~/jdk1.8");
+		if ( f.isDirectory()) {
+			JVM jvm = jpm.addVm( f);
+			assertNotNull(jvm);
 		}
 	}
 }
