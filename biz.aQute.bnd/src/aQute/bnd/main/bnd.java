@@ -36,6 +36,7 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
+import aQute.bnd.service.phases.*;
 import aQute.bnd.version.*;
 import aQute.configurable.*;
 import aQute.lib.base64.*;
@@ -63,7 +64,7 @@ import aQute.service.reporter.*;
  */
 public class bnd extends Processor {
 	static Pattern				ASSIGNMENT	= Pattern.compile( //
-			"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
+													"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
 	Settings					settings	= new Settings();
 	final PrintStream			err			= System.err;
 	final public PrintStream	out			= System.out;
@@ -97,7 +98,7 @@ public class bnd extends Processor {
 
 		@Description("Error/Warning ignore patterns")
 		String[] ignore();
-		
+
 	}
 
 	public static void main(String args[]) throws Exception {
@@ -676,12 +677,13 @@ public class bnd extends Processor {
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
 	@Arguments(arg = {})
-	interface buildoptions extends Options {
-		@Description("Path to another project than the current project")
-		String project();
+	interface buildoptions extends projectOptions {
 
 		@Description("Build for test")
 		boolean test();
+
+		@Description("Do full")
+		boolean full();
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
@@ -691,8 +693,11 @@ public class bnd extends Processor {
 			messages.NoProject();
 			return;
 		}
-		project.build(opts.test());
-		getInfo(project);
+		if (buildDeps(project)) {
+			project.compile(opts.test());
+			project.build(opts.test());
+			getInfo(project);
+		}
 	}
 
 	@Description("Test a project according to an OSGi test")
@@ -1586,8 +1591,9 @@ public class bnd extends Processor {
 	private void report(Justif justif, String string, Processor processor) throws Exception {
 		Map<String,Object> table = new LinkedHashMap<String,Object>();
 		processor.report(table);
-		Justif j = new Justif();
+		Justif j = new Justif(140,40,44,48,100);
 		j.formatter().format("$-\n%s %s\n$-\n", string, processor);
+		j.table(table, "-");
 		out.println(j.wrap());
 		out.println();
 	}
@@ -2111,7 +2117,7 @@ public class bnd extends Processor {
 			}
 			catch (Throwable e) {
 				if (isExceptions()) {
-					printExceptionSummary(e,out);
+					printExceptionSummary(e, out);
 				}
 
 				error("FAILURE IN RUNTESTS", e);
@@ -2149,7 +2155,6 @@ public class bnd extends Processor {
 			ws.close();
 		}
 	}
-
 
 	/**
 	 * Help function to run the tests
@@ -2920,9 +2925,9 @@ public class bnd extends Processor {
 						Collection<String> select = instr.select(settings.keySet(), true);
 
 						// check if there is a value a='b'
-						
+
 						String value = m.group(4);
-						if (value == null || value.trim().length()==0) {
+						if (value == null || value.trim().length() == 0) {
 							// no value
 							// check '=' presence
 							if (m.group(2) == null) {
@@ -3333,25 +3338,75 @@ public class bnd extends Processor {
 		}
 	}
 
-	public void _exception(Options options) throws Exception {
-		try {
-		throw new IllegalArgumentException("Hullo");
-		} catch( Exception e) {
-			throw new RuntimeException(e);
-		}
+	@Description("Compile current project")
+	interface BldOptions extends projectOptions {
+		@Description("Compile as test")
+		boolean test();
+
 	}
-	
+
+	public void _bld(BldOptions options) throws Exception {
+		Project project = getProject(options.project());
+		if (project == null) {
+			error("No current project ");
+			return;
+		}
+		List<String> actions = options._();
+		if (actions.isEmpty())
+			actions.add("build");
+
+		Phases phases = project.getWorkspace().getPhases(this,
+				isTrace() ? EnumSet.of(PhasesPlugin.Options.TRACE) : EnumSet.noneOf(PhasesPlugin.Options.class));
+
+		for (String s : actions) {
+			if (s.equals("compile"))
+				phases.compile(project, options.test());
+			else if (s.equals("build"))
+				phases.build(project, options.test());
+			else if (s.equals("test"))
+				phases.test(project);
+			else if (s.equals("test"))
+				phases.test(project);
+			else if (s.equals("junit"))
+				phases.junit(project);
+			else if (s.equals("release"))
+				phases.release(project);
+			else if (s.equals("valid"))
+				phases.valid(project);
+			else
+				phases.action(project, s);
+		}
+		getInfo(project);
+	}
+
+	private boolean buildDeps(Project project) throws Exception {
+		for (Project dependsOn : project.getDependson()) {
+			if (dependsOn == project)
+				continue;
+			dependsOn.use(this);
+			trace("compile as dep %s dir %s", dependsOn, dependsOn.getSrc());
+			dependsOn.compile(false);
+			trace("build as dep %s", dependsOn);
+			dependsOn.build();
+			getInfo(dependsOn);
+			if (!isOk())
+				return false;
+		}
+		return true;
+	}
+
 	/**
 	 * Show the class versions used in a JAR
 	 * 
 	 * @throws Exception
 	 */
 
-	@Arguments(arg="<jar-file>...")
+	@Arguments(arg = "<jar-file>...")
 	@Description("Show the Execution Environments of a JAR")
 	interface EEOptions extends Options {
-		
+
 	}
+
 	public void _ees(Options options) throws Exception {
 		for (String path : options._()) {
 			File f = getFile(path);
