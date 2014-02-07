@@ -34,15 +34,4 @@ public class WorkspaceTest extends TestCase {
 		assertEquals("project", p.getProperty("myprop3"));
 	}
 
-	public void testPhases() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File(".."));
-		Project p = ws.getProject("biz.aQute.bnd");
-
-		Processor processor = new Processor();
-		processor.setTrace(true);
-		Phases phases = ws.getPhases(processor,null);
-		phases.build(p,false);
-		assertTrue(processor.check());
-	}
-
 }
