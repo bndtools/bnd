@@ -21,7 +21,9 @@ import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.lib.strings.*;
+import aQute.libg.command.*;
 import aQute.libg.generics.*;
+import aQute.libg.glob.*;
 import aQute.libg.reporter.*;
 import aQute.libg.sed.*;
 
@@ -1801,7 +1803,7 @@ public class Project extends Processor {
 		try {
 			a.execute(this, command);
 		}
-		catch (Throwable t) {
+		catch (Exception t) {
 			after(this, command, t);
 			throw t;
 		}
@@ -2407,5 +2409,134 @@ public class Project extends Processor {
 		table.put("RunVM", getRunVM());
 		table.put("Runfw", getRunFw());
 		table.put("Runbundles", getRunbundles());
+	}
+
+	// TODO test format parametsr
+
+	public void compile(boolean test) throws Exception {
+
+		Command javac = getCommonJavac(false);
+		javac.add("-d", getOutput().getAbsolutePath());
+
+		StringBuilder buildpath = new StringBuilder();
+
+		String buildpathDel = "";
+		Collection<Container> bp = Container.flatten(getBuildpath());
+		trace("buildpath %s",getBuildpath() );
+		for (Container c : bp) {
+			buildpath.append(buildpathDel).append(c.getFile().getAbsolutePath());
+			buildpathDel = File.pathSeparator;
+		}
+
+		if (buildpath.length() != 0) {
+			javac.add("-classpath", buildpath.toString());
+		}
+
+		List<File> sp = new ArrayList<File>(getAllsourcepath());
+		StringBuilder sourcepath = new StringBuilder();
+		String sourcepathDel = "";
+
+		for (File sourceDir : sp) {
+			sourcepath.append(sourcepathDel).append(sourceDir.getAbsolutePath());
+			sourcepathDel = File.pathSeparator;
+		}
+		
+		javac.add("-sourcepath", sourcepath.toString());
+
+		Glob javaFiles = new Glob("*.java");
+		List<File> files = javaFiles.getFiles(getSrc(), true, false);
+
+		for (File file : files) {
+			javac.add(file.getAbsolutePath());
+		}
+		
+		
+		compile(javac, "src");
+
+		if (test) {
+			javac = getCommonJavac(true);
+			javac.add("-d", getTestOutput().getAbsolutePath());
+
+			Collection<Container> tp = Container.flatten(getTestpath());
+			for (Container c : tp) {
+				buildpath.append(buildpathDel).append(c.getFile().getAbsolutePath());
+				buildpathDel = File.pathSeparator;
+			}
+			if (buildpath.length() != 0) {
+				javac.add("-classpath", buildpath.toString());
+			}
+
+			sourcepath.append(sourcepathDel).append(getTestSrc().getAbsolutePath());
+			javac.add("-sourcepath", sourcepath.toString());
+
+			javaFiles.getFiles(getTestSrc(), files, true, false);
+			for (File file : files) {
+				javac.add(file.getAbsolutePath());
+			}
+			compile(javac,"test");
+		}
+	}
+
+	private void compile(Command javac, String what) throws Exception {
+		trace("compile %s %s", what, javac);
+		
+		StringBuilder stdout = new StringBuilder();
+		StringBuilder stderr = new StringBuilder();
+
+		int n = javac.execute(stdout, stderr);
+		trace("javac stdout: ", stdout);
+		trace("javac stderr: ", stderr);
+
+		if (n != 0) {
+			error("javac failed %s", stderr);
+		}
+	}
+
+	private Command getCommonJavac(boolean test) throws Exception {
+		Command javac = new Command();
+		javac.add(getProperty("javac", "javac"));
+		String target = getProperty("java.target");
+		String source = getProperty("java.source");
+		String debug = getProperty("java.debug");
+		Parameters options = new Parameters(getProperty("java.options"));
+
+		boolean deprecation = isTrue(getProperty("java.deprecation"));
+
+		javac.add("-encoding", "UTF-8");
+
+		if (source != null)
+			javac.add("-source", source);
+
+		if (target != null)
+			javac.add("-target", source);
+
+		if (target != null)
+			javac.add("-target", source);
+
+		if (deprecation)
+			javac.add("-deprecation");
+
+		if (test) {
+			javac.add("-g:source,lines,vars" + debug);
+		} else if (debug != null) {
+			javac.add("-g:" + debug);
+		}
+		
+		for( String option : options.keySet())
+			javac.add(option);
+
+		StringBuilder bootclasspath = new StringBuilder();
+		String bootclasspathDel = "-Xbootclasspath/p:";
+
+		Collection<Container> bcp = Container.flatten(getBootclasspath());
+		for (Container c : bcp) {
+			bootclasspath.append(bootclasspathDel).append(c.getFile().getAbsolutePath());
+			bootclasspathDel = File.pathSeparator;
+		}
+
+		if (bootclasspath.length() != 0) {
+			javac.add(bootclasspath.toString());
+		}
+		return javac;
 	}
 }
