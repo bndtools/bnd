@@ -193,12 +193,27 @@ public class Justif {
 		sb.append("\t1");
 		sb.append(separator);
 		sb.append("\t2");
+		if ( value instanceof Iterable) {
+			Iterator<?> it = ((Iterable< ? >) value).iterator();
+			boolean hadone=false;
+			String del = "";
+			while ( it.hasNext() ) {
+				sb.append(del).append(it.next()+"");
+				sb.append("\r");
+				hadone=true;
+				del = "\t2";
+			}
+			if ( !hadone)
+				sb.append("\r");
+		} else {
+			sb.append(value+"");
+			sb.append("\r");
+		}
 	}
 
 	public void table(Map<String,Object> table, String separator) {
 		for (Entry<String,Object> e : table.entrySet()) {
 			entry(e.getKey(), separator, e.getValue());
-			formatter().format("\r");
 		}
 	}
 
