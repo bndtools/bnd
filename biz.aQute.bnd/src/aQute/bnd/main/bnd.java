@@ -97,7 +97,7 @@ public class bnd extends Processor {
 
 		@Description("Error/Warning ignore patterns")
 		String[] ignore();
-
+		
 	}
 
 	public static void main(String args[]) throws Exception {
@@ -2110,8 +2110,9 @@ public class bnd extends Processor {
 				}
 			}
 			catch (Throwable e) {
-				if (isExceptions())
-					e.printStackTrace();
+				if (isExceptions()) {
+					printExceptionSummary(e,out);
+				}
 
 				error("FAILURE IN RUNTESTS", e);
 				errors++;
@@ -2148,6 +2149,7 @@ public class bnd extends Processor {
 			ws.close();
 		}
 	}
+
 
 	/**
 	 * Help function to run the tests
@@ -3331,6 +3333,14 @@ public class bnd extends Processor {
 		}
 	}
 
+	public void _exception(Options options) throws Exception {
+		try {
+		throw new IllegalArgumentException("Hullo");
+		} catch( Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	/**
 	 * Show the class versions used in a JAR
 	 * 

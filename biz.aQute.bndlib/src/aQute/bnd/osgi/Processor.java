@@ -21,11 +21,11 @@ import aQute.libg.generics.*;
 import aQute.service.reporter.*;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
+	static Pattern PACKAGES_IGNORED = Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
 	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
 	static ExecutorService			executor		= Executors.newCachedThreadPool();
 	static Random					random			= new Random();
-
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
 	public final static String		LIST_SPLITTER	= "\\s*,\\s*";
@@ -202,8 +202,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public SetLocation error(String string, Throwable t, Object... args) {
 		Processor p = current();
 		try {
-			if (p.exceptions)
-				t.printStackTrace();
+			if (p.exceptions) {
+				printExceptionSummary(t,System.err);
+			}
 			if (p.isFailOk()) {
 				return p.warning(string + ": " + t, args);
 			}
@@ -216,6 +217,72 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		finally {
 			p.signal();
 		}
+	}
+
+	public int printExceptionSummary(Throwable e, PrintStream out) {
+		if ( e == null) {
+			return 0;
+		}
+		int count = 10;
+		int n = printExceptionSummary(e.getCause(), out);
+		
+		if ( n == 0) {
+			out.println("Root cause: " + e.getMessage()  + "   :"+e.getClass().getName());
+			count = Integer.MAX_VALUE;
+		} else {
+			out.println("Rethrown from: " + e.toString());
+		}
+		out.println();
+		printStackTrace(e, count, out);
+		System.err.println();
+		return n+1;
+	}
+
+	public void printStackTrace(Throwable e, int count, PrintStream out) {
+		StackTraceElement st[] = e.getStackTrace();
+		String previousPkg = null;
+		boolean shorted = false;
+		if ( count < st.length) {
+			shorted = true;
+			count--;
+		}
+		
+		for ( int i=0; i<count && i<st.length; i++) {
+			String cname = st[i].getClassName();
+			String file = st[i].getFileName();
+			String method = st[i].getMethodName();
+			int line = st[i].getLineNumber();
+		
+			String pkg = Descriptors.getPackage(cname);
+			if ( PACKAGES_IGNORED.matcher(pkg).matches())
+				continue;
+			
+			String shortName = Descriptors.getShortName(cname);
+			if ( pkg.equals(previousPkg))
+				pkg="''";
+			else
+				pkg+="";
+			
+			if ( file.equals(shortName +".java") )
+				file = "";
+			else
+				file = " (" + file + ")";
+
+			String l;
+			if ( st[i].isNativeMethod())
+				l = "native";
+			else
+				if ( line > 0 )
+					l = "" + line;
+				else
+					l = "";
+			
+			out.printf(" %10s %-40s %s %s%n", l, shortName+"."+method , pkg,file);
+			
+			previousPkg = pkg;
+		}
+		if ( shorted )
+			out.println("...");
 	}
 
 	public void signal() {}
