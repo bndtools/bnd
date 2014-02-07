@@ -195,6 +195,47 @@ public class Container {
 	}
 
 	/**
+	 * Flatten a container in the output list. (e.g. expand any libraries).
+	 * 
+	 * @param container the container to flatten
+	 * @param list the result list
+	 */
+	public static void flatten(Container container, List<Container> list) throws Exception {
+		if (container.getType() == TYPE.LIBRARY) {
+			flatten(container.getMembers(), list);
+		} else
+			list.add(container);
+	}
+	/**
+	 * Take a container list and flatten it (e.g. expand any libraries).
+	 * 
+	 * @param containers The containers to flatten, can be null
+	 * @return a list of containers guaranteed to contain no libraries
+	 */
+	public static List<Container> flatten(Collection<Container> containers) throws Exception {
+		List<Container> list = new ArrayList<Container>();
+		flatten(containers, list);
+		return list;
+	}
+	/**
+	 * Take a container list and flatten it (e.g. expand any libraries).
+	 * 
+	 * @param containers The containers to flatten, can be null
+	 * @return a list of containers guaranteed to contain no libraries
+	 */
+
+	public static void flatten(Collection<Container> containers, List<Container> list) throws Exception {
+		if ( containers == null)
+			return;
+		
+		for (Container container : containers) {
+			flatten(container, list);
+		}
+
+	}
+
+
+	/**
 	 * Answer the manifest for this container (if possible). Manifest is cached
 	 * until the file is renewed.
 	 */
