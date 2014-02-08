@@ -2,6 +2,7 @@ package aQute.lib.converter;
 
 import java.io.*;
 import java.lang.reflect.*;
+import java.math.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -17,13 +18,16 @@ import aQute.libg.map.*;
 public class ConverterTest extends TestCase {
 	Converter	converter	= new Converter();
 
-	
 	interface M {
 		String a();
+
 		int b();
+
 		int c();
+
 		double d();
 	}
+
 	public void testMap() throws Exception {
 		Map<String,String> map = MAP.$("a", "A").$("b", "2");
 		M m = converter.convert(M.class, map);
@@ -32,25 +36,23 @@ public class ConverterTest extends TestCase {
 		assertEquals(0, m.c());
 		assertEquals(0d, m.d());
 	}
-	
-	
+
 	public void testTypeRef() throws Exception {
 		Map<String,Integer> f;
 		Type type = (new TypeReference<Map<String,Integer>>() {}).getType();
-		assertTrue( type instanceof ParameterizedType);
-		ParameterizedType ptype  = (ParameterizedType) type; 
-		assertEquals( Map.class, ptype.getRawType());
-		assertEquals( String.class, ptype.getActualTypeArguments()[0]);
-		assertEquals( Integer.class, ptype.getActualTypeArguments()[1]);
-		
-		Map<Integer,String> m = MAP.$(1, "1").$(2,"2");
-		f = converter.convert(new TypeReference<Map<String,Integer>>(){}, m);
-		
-		assertEquals( f.get("1"),(Integer) 1);
-		assertEquals( f.get("2"),(Integer) 2);
+		assertTrue(type instanceof ParameterizedType);
+		ParameterizedType ptype = (ParameterizedType) type;
+		assertEquals(Map.class, ptype.getRawType());
+		assertEquals(String.class, ptype.getActualTypeArguments()[0]);
+		assertEquals(Integer.class, ptype.getActualTypeArguments()[1]);
+
+		Map<Integer,String> m = MAP.$(1, "1").$(2, "2");
+		f = converter.convert(new TypeReference<Map<String,Integer>>() {}, m);
+
+		assertEquals(f.get("1"), (Integer) 1);
+		assertEquals(f.get("2"), (Integer) 2);
 	}
-	
-	
+
 	public static void hookTest() throws Exception {
 		Converter converter = new Converter().hook(File.class, new Hook() {
 
@@ -64,12 +66,12 @@ public class ConverterTest extends TestCase {
 		});
 		assertEquals(new Integer(6), converter.convert(Integer.class, "6"));
 		assertEquals(new File("src").getAbsoluteFile(), converter.convert(File.class, "src"));
-		
+
 		converter.hook(null, new Hook() {
-			
+
 			public Object convert(Type dest, Object o) throws Exception {
-				if ( dest instanceof Class) {
-					if ( Number.class.isAssignableFrom((Class< ? >) dest))
+				if (dest instanceof Class) {
+					if (Number.class.isAssignableFrom((Class< ? >) dest))
 						return 1;
 				}
 				return null;
@@ -115,7 +117,8 @@ public class ConverterTest extends TestCase {
 			ByteArrayOutputStream bout = new ByteArrayOutputStream();
 			bout.write("Hello World".getBytes());
 			assertTrue(Arrays.equals("Hello World".getBytes(), converter.convert(byte[].class, bout)));
-		} finally {
+		}
+		finally {
 			digester.close();
 		}
 	}
@@ -322,7 +325,8 @@ public class ConverterTest extends TestCase {
 		assertEquals("{a=1, b=2}", new TreeMap(gSemiMap.strings).toString());
 	}
 
-	void assertPrimitives(@SuppressWarnings("unused") Object source) throws Exception {
+	void assertPrimitives(@SuppressWarnings("unused")
+	Object source) throws Exception {
 		Class[] types = {
 				byte.class, boolean.class, char.class, short.class, int.class, long.class, float.class, double.class
 		};
@@ -354,7 +358,8 @@ public class ConverterTest extends TestCase {
 	public void testConstructor() throws Exception {
 		String home = System.getProperty("user.home");
 		assertEquals(new File(home), converter.convert(File.class, home));
-		//assertEquals(new Version(1, 0, 0), converter.convert(Version.class, "1.0.0"));
+		// assertEquals(new Version(1, 0, 0), converter.convert(Version.class,
+		// "1.0.0"));
 	}
 
 	/**
@@ -393,5 +398,50 @@ public class ConverterTest extends TestCase {
 			assertEquals(at, parray.getClass());
 			assertEquals(c, parray.getClass().getComponentType());
 		}
+	}
+
+	public void testProperties() throws Exception {
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, "1"));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, 1));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, 1L));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, 1D));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, 1f));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new String[]{"1"}));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList((byte)1)));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList((short)1)));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList(1)));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList(1L)));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList(1D)));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList(1L)));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigDecimal(1)));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigInteger(new byte[] {
+			1
+		})));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new byte[] {
+			1
+		}));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new short[] {
+			1
+		}));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new char[] {
+			1
+		}));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new long[] {
+			1
+		}));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new float[] {
+			1
+		}));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new double[] {
+			1
+		}));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigInteger[] {
+				new BigInteger(new byte[] {
+					1
+				})
+			}));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigDecimal[] {
+				new BigDecimal(1)
+			}));
 	}
 }
