@@ -2495,30 +2495,25 @@ public class Project extends Processor {
 	private Command getCommonJavac(boolean test) throws Exception {
 		Command javac = new Command();
 		javac.add(getProperty("javac", "javac"));
-		String target = getProperty("java.target");
-		String source = getProperty("java.source");
-		String debug = getProperty("java.debug");
+		String target = getProperty("javac.target", "1.6");
+		String source = getProperty("javac.source", "1.6");
+		String debug = getProperty("javac.debug");
 		Parameters options = new Parameters(getProperty("java.options"));
 
 		boolean deprecation = isTrue(getProperty("java.deprecation"));
 
 		javac.add("-encoding", "UTF-8");
 
-		if (source != null)
 			javac.add("-source", source);
 
-		if (target != null)
-			javac.add("-target", source);
-
-		if (target != null)
 			javac.add("-target", source);
 
 		if (deprecation)
 			javac.add("-deprecation");
 
-		if (test) {
+		if (test || debug == null) {
 			javac.add("-g:source,lines,vars" + debug);
-		} else if (debug != null) {
+		} else{
 			javac.add("-g:" + debug);
 		}
 		
