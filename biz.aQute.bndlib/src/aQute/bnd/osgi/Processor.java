@@ -1285,6 +1285,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
+	 * Return the properties but expand all macros. This always returns a new
+	 * Properties object that can be used in any way.
+	 * 
+	 * @return
+	 */
+	public Properties getFlattenedProperties(boolean ignoreInstructions) {
+		return getReplacer().getFlattenedProperties(ignoreInstructions);
+	}
+
+	/**
 	 * Return all inherited property keys
 	 * 
 	 * @return
