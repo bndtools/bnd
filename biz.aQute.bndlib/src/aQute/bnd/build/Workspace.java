@@ -75,7 +75,8 @@ public class Workspace extends Processor {
 			finally {
 				IO.close(propStream);
 			}
-		}
+		} else
+			System.err.println("Cannot load defaults");
 		defaults = new Processor(props);
 
 		return defaults;
