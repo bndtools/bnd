@@ -2446,12 +2446,15 @@ public class Project extends Processor {
 		Glob javaFiles = new Glob("*.java");
 		List<File> files = javaFiles.getFiles(getSrc(), true, false);
 
+		
 		for (File file : files) {
 			javac.add(file.getAbsolutePath());
 		}
 		
-		
-		compile(javac, "src");
+		if(files.isEmpty()) {
+			trace("Not compiled, no source files");
+		} else
+			compile(javac, "src");
 
 		if (test) {
 			javac = getCommonJavac(true);
@@ -2473,7 +2476,10 @@ public class Project extends Processor {
 			for (File file : files) {
 				javac.add(file.getAbsolutePath());
 			}
-			compile(javac,"test");
+			if(files.isEmpty()) {
+				trace("Not compiled for test, no test src files");
+			} else
+				compile(javac,"test");
 		}
 	}
 
@@ -2498,6 +2504,9 @@ public class Project extends Processor {
 		String target = getProperty("javac.target", "1.6");
 		String source = getProperty("javac.source", "1.6");
 		String debug = getProperty("javac.debug");
+		if ( "on".equalsIgnoreCase(debug) || "true".equalsIgnoreCase(debug))
+			debug = "vars,source,lines";
+		
 		Parameters options = new Parameters(getProperty("java.options"));
 
 		boolean deprecation = isTrue(getProperty("java.deprecation"));
