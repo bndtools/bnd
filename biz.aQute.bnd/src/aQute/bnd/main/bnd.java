@@ -6,6 +6,8 @@ import java.net.*;
 import java.security.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 import java.util.jar.*;
 import java.util.jar.Attributes.Name;
 import java.util.regex.*;
@@ -50,6 +52,7 @@ import aQute.lib.settings.*;
 import aQute.lib.tag.*;
 import aQute.libg.classdump.*;
 import aQute.libg.cryptography.*;
+import aQute.libg.forker.*;
 import aQute.libg.generics.*;
 import aQute.libg.glob.*;
 import aQute.libg.qtokens.*;
@@ -1548,8 +1551,12 @@ public class bnd extends Processor {
 	interface debugOptions extends Options {
 		@Description("Path to a project, default is current directory")
 		String project();
+
+		@Description("Show the flattened properties")
+		boolean flattened();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Description("Show a lot of info about the project you're in")
 	public void _debug(debugOptions options) throws Exception {
 		Project project = getProject(options.project());
@@ -1580,6 +1587,15 @@ public class bnd extends Processor {
 					}
 				}
 			}
+
+			if (options.flattened()) {
+				@SuppressWarnings("rawtypes")
+				Map fp = project.getFlattenedProperties();
+				Justif j = new Justif(140, 40, 44, 48, 100);
+				j.table(fp, "-");
+				out.println(j.wrap());
+			}
+
 			getInfo(project.getWorkspace());
 			getInfo(project);
 
@@ -1591,7 +1607,7 @@ public class bnd extends Processor {
 	private void report(Justif justif, String string, Processor processor) throws Exception {
 		Map<String,Object> table = new LinkedHashMap<String,Object>();
 		processor.report(table);
-		Justif j = new Justif(140,40,44,48,100);
+		Justif j = new Justif(140, 40, 44, 48, 100);
 		j.formatter().format("$-\n%s %s\n$-\n", string, processor);
 		j.table(table, "-");
 		out.println(j.wrap());
@@ -3427,4 +3443,77 @@ public class bnd extends Processor {
 		}
 	}
 
+	/**
+	 * Lets see if we can build in parallel
+	 * 
+	 * @throws Exception
+	 */
+
+	@Description("experimental - parallel build")
+	interface ParallelBuildOptions extends buildoptions {
+
+	}
+
+	public void __par(final ParallelBuildOptions options) throws Exception {
+		ExecutorService pool = Executors.newCachedThreadPool();
+		final AtomicBoolean quit = new AtomicBoolean();
+
+		try {
+			final Project p = getProject(options.project());
+			final Workspace workspace = p == null || options.full() ? Workspace.getWorkspace(getBase()) : p
+					.getWorkspace();
+
+			if (!workspace.exists()) {
+				error("cannot find workspace");
+				return;
+			}
+
+			final Collection<Project> targets = p == null ? workspace.getAllProjects() : p.getDependson();
+
+			final Forker<Project> forker = new Forker<Project>(pool);
+
+			for (final Project dep : targets) {
+				forker.doWhen(dep.getDependson(), dep, new Runnable() {
+
+					public void run() {
+						System.out.println("start " + dep);
+						if (!quit.get()) {
+
+							try {
+								dep.compile(false);
+								if (!quit.get())
+									dep.build();
+								if (!dep.isOk())
+									quit.set(true);
+							}
+							catch (Exception e) {
+								e.printStackTrace();
+							}
+							System.out.println("done " + dep);
+						}
+					}
+				});
+			}
+			System.err.flush();
+
+			forker.start(20000);
+
+			for (Project dep : targets) {
+				getInfo(dep, dep + ": ");
+			}
+			if (p != null && p.isOk() && !options.full()) {
+				p.compile(options.test());
+				p.build();
+				if (options.test() && p.isOk())
+					p.test();
+				getInfo(p);
+			}
+
+			workspace.close();
+		}
+		finally {
+			pool.shutdownNow();
+		}
+
+	}
 }
