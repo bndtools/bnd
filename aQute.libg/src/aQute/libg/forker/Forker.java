@@ -87,7 +87,7 @@ public class Forker<T> {
 	 * Constructor
 	 */
 	public Forker() {
-		this.executor = Executors.newFixedThreadPool(4);
+		this.executor = Executors.newFixedThreadPool(8);
 	}
 
 	/**
