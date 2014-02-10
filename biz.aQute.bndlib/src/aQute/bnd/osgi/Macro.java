@@ -1032,10 +1032,35 @@ public class Macro {
 	 * takes the set properties and traverse them over all entries, including
 	 * the default properties for that properties. The values no longer contain
 	 * macros.
+	 * <p>
+	 * There are some rules
+	 * <ul>
+	 * <li>Property names starting with an underscore ('_') are ignored. These
+	 * are reserved for properties that cause an unwanted side effect when
+	 * expanded unnecessary
+	 * <li>Property names starting with a minus sign ('-') are not expanded to
+	 * maintain readability
+	 * </ul>
 	 * 
 	 * @return A new Properties with the flattened values
 	 */
 	public Properties getFlattenedProperties() {
+		return getFlattenedProperties(true);
+	}
+
+	/**
+	 * Take all the properties and translate them to actual values. This method
+	 * takes the set properties and traverse them over all entries, including
+	 * the default properties for that properties. The values no longer contain
+	 * macros.
+	 * <p>
+	 * Property names starting with an underscore ('_') are ignored. These
+	 * are reserved for properties that cause an unwanted side effect when
+	 * expanded unnecessary
+	 * 
+	 * @return A new Properties with the flattened values
+	 */
+	public Properties getFlattenedProperties(boolean ignoreInstructions) {
 		// Some macros only work in a lower processor, so we
 		// do not report unknown macros while flattening
 		flattening = true;
@@ -1045,7 +1070,7 @@ public class Macro {
 			for (Enumeration< ? > e = source.propertyNames(); e.hasMoreElements();) {
 				String key = (String) e.nextElement();
 				if (!key.startsWith("_"))
-					if (key.startsWith("-"))
+					if (ignoreInstructions && key.startsWith("-"))
 						flattened.put(key, source.getProperty(key));
 					else
 						flattened.put(key, process(source.getProperty(key)));
