@@ -233,7 +233,7 @@ public class Workspace extends Processor {
 		List<Project> projects = new ArrayList<Project>();
 		for (File file : getBase().listFiles()) {
 			if (new File(file, Project.BNDFILE).isFile())
-				projects.add(getProject(file));
+				projects.add(getProject(file.getAbsoluteFile().getName()));
 		}
 		return projects;
 	}
