@@ -1,0 +1,6 @@
+bundle.enabled       = false
+release.enabled      = false
+export.enabled       = false
+bundleTest.enabled   = false
+findbugsMain.enabled = false
+findbugsTest.enabled = false
