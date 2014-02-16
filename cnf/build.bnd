@@ -16,7 +16,7 @@
 #project.output:        ${p-output}
 #project.testpath:      ${p-testpath;:}
 
-#-verbose:              true
+#-verbose:              false
 #project:               ${basedir}
 #src:                   src
 #bin:                   bin

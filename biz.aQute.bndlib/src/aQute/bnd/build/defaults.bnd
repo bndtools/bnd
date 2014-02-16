@@ -15,7 +15,7 @@ project.allsourcepath   = ${p-allsourcepath;:}
 project.output          = ${p-output}
 project.testpath        = ${p-testpath;:}
 
--verbose:     true
+-verbose:     false
 project:      ${basedir}
 target:       ${project}/${target-dir}
 build:        ${workspace}/cnf
