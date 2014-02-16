@@ -16,7 +16,7 @@
 #project.output:        ${p-output}
 #project.testpath:      ${p-testpath;:}
 
-#-verbose:              true
+#-verbose:              false
 #project:               ${basedir}
 #src:                   src
 #bin:                   bin
@@ -58,7 +58,6 @@
 # Customised Settings
 #
 
--verbose:                 false
 javac.ee:                 '[1.5,1.6)'
 
 
