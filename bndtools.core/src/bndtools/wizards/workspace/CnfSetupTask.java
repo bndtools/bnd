@@ -150,7 +150,8 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
             }
         }
 
-        IResource[] pluginFiles = workspaceRoot.getProject(Workspace.CNFDIR).getFolder("plugins").getFolder("biz.aQute.bnd").members();
+        // FIXME this needs to go with the introduction of the new Gradle template
+        IResource[] pluginFiles = workspaceRoot.getProject(Workspace.CNFDIR).getFolder("buildrepo").getFolder("biz.aQute.bnd").members();
         for (IResource iResource : pluginFiles) {
             if (iResource.getName().startsWith("biz.aQute.bnd-")) {
                 buildFileTemplate = buildFileTemplate.replace("{BNDLIB}", iResource.getName());

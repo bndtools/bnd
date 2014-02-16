@@ -16,7 +16,7 @@ bundlehub-template-resources: \
 	${bundlehub-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest},\
 	${bundlehub-template}/localrepo/=templates/repos/localrepo,\
 	${bundlehub-template}/releaserepo/=templates/repos/releaserepo,\
-	${bundlehub-template}/plugins/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
+	${bundlehub-template}/buildrepo/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
 	${bundlehub-template}/plugins/biz.aQute.repository/=${repo;biz.aQute.repository;${aQute-repository-base}}
 
 jpm-plugin-version:  1.1.3
@@ -31,7 +31,7 @@ jpm-template-resources: \
 	${jpm-template}/buildrepo/org.hamcrest/=templates/repos/buildrepo/org.hamcrest,\
 	${jpm-template}/localrepo/=templates/repos/localrepo,\
 	${jpm-template}/releaserepo/=templates/repos/releaserepo,\
-	${jpm-template}/plugins/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
+	${jpm-template}/buildrepo/biz.aQute.bnd/=${repo;biz.aQute.bnd;${bndlib-version-base}},\
 	${jpm-template}/plugins/biz.aQute.repository/=${repo;biz.aQute.repository;${aQute-repository-base}},\
 	${jpm-template}/plugins/aQute.library.bndrepo/=${repo;aQute.library.bndrepo;${jpm-plugin-version}}
 

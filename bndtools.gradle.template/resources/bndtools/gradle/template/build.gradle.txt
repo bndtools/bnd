@@ -4,7 +4,7 @@ defaultTasks 'clean', 'bndbuild'
 
 buildscript {
     dependencies {
-        classpath files('cnf/plugins/biz.aQute.bnd/{BNDLIB}')
+        classpath files('cnf/buildrepo/biz.aQute.bnd/{BNDLIB}')
     }
 }
 
