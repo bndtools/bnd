@@ -1253,7 +1253,7 @@ public class Project extends Processor {
 	 * Check if this project needs building. This is defined as:
 	 */
 	public boolean isStale() throws Exception {
-		if (workspace.isOffline()) {
+		if (workspace == null || workspace.isOffline()) {
 			trace("working %s offline, so always stale", this);
 			return true;
 		}
@@ -1657,6 +1657,15 @@ public class Project extends Processor {
 			} else
 				System.err.println("Error " + errors);
 		}
+	}
+
+	/**
+	 * Run JUnit
+	 * @throws Exception 
+	 */
+	public void junit() throws Exception {
+		JUnitLauncher launcher = new JUnitLauncher(this);
+		launcher.launch();
 	}
 
 	/**
@@ -2422,7 +2431,7 @@ public class Project extends Processor {
 
 		String buildpathDel = "";
 		Collection<Container> bp = Container.flatten(getBuildpath());
-		trace("buildpath %s",getBuildpath() );
+		trace("buildpath %s", getBuildpath());
 		for (Container c : bp) {
 			buildpath.append(buildpathDel).append(c.getFile().getAbsolutePath());
 			buildpathDel = File.pathSeparator;
@@ -2440,18 +2449,17 @@ public class Project extends Processor {
 			sourcepath.append(sourcepathDel).append(sourceDir.getAbsolutePath());
 			sourcepathDel = File.pathSeparator;
 		}
-		
+
 		javac.add("-sourcepath", sourcepath.toString());
 
 		Glob javaFiles = new Glob("*.java");
 		List<File> files = javaFiles.getFiles(getSrc(), true, false);
 
-		
 		for (File file : files) {
 			javac.add(file.getAbsolutePath());
 		}
-		
-		if(files.isEmpty()) {
+
+		if (files.isEmpty()) {
 			trace("Not compiled, no source files");
 		} else
 			compile(javac, "src");
@@ -2476,16 +2484,16 @@ public class Project extends Processor {
 			for (File file : files) {
 				javac.add(file.getAbsolutePath());
 			}
-			if(files.isEmpty()) {
+			if (files.isEmpty()) {
 				trace("Not compiled for test, no test src files");
 			} else
-				compile(javac,"test");
+				compile(javac, "test");
 		}
 	}
 
 	private void compile(Command javac, String what) throws Exception {
 		trace("compile %s %s", what, javac);
-		
+
 		StringBuilder stdout = new StringBuilder();
 		StringBuilder stderr = new StringBuilder();
 
@@ -2504,29 +2512,29 @@ public class Project extends Processor {
 		String target = getProperty("javac.target", "1.6");
 		String source = getProperty("javac.source", "1.6");
 		String debug = getProperty("javac.debug");
-		if ( "on".equalsIgnoreCase(debug) || "true".equalsIgnoreCase(debug))
+		if ("on".equalsIgnoreCase(debug) || "true".equalsIgnoreCase(debug))
 			debug = "vars,source,lines";
-		
+
 		Parameters options = new Parameters(getProperty("java.options"));
 
 		boolean deprecation = isTrue(getProperty("java.deprecation"));
 
 		javac.add("-encoding", "UTF-8");
 
-			javac.add("-source", source);
+		javac.add("-source", source);
 
-			javac.add("-target", source);
+		javac.add("-target", source);
 
 		if (deprecation)
 			javac.add("-deprecation");
 
 		if (test || debug == null) {
 			javac.add("-g:source,lines,vars" + debug);
-		} else{
+		} else {
 			javac.add("-g:" + debug);
 		}
-		
-		for( String option : options.keySet())
+
+		for (String option : options.keySet())
 			javac.add(option);
 
 		StringBuilder bootclasspath = new StringBuilder();
@@ -2543,4 +2551,5 @@ public class Project extends Processor {
 		}
 		return javac;
 	}
+	
 }
