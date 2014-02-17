@@ -173,6 +173,7 @@ public interface Constants {
 	String							TESTREPORT									= "-testreport";
 	String							TESTPATH									= "-testpath";
 	String							TESTCONTINUOUS								= "-testcontinuous";
+	String							TESTSOURCES									= "-testsources";
 	String							UNDERTEST									= "-undertest";
 	String							UPTO										= "-upto";
 	String							VERBOSE										= "-verbose";

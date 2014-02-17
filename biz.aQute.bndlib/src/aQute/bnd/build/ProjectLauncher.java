@@ -97,7 +97,6 @@ public abstract class ProjectLauncher {
 		runsystempackages = project.getParameters(Constants.RUNSYSTEMPACKAGES);
 		runsystemcapabilities = project.getProperty(Constants.RUNSYSTEMCAPABILITIES);
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
-		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 
 		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
 		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
@@ -172,6 +171,13 @@ public abstract class ProjectLauncher {
 			}
 		}
 	}
+
+	protected void addClasspath(Collection<Container> path) throws Exception {
+		for ( Container c : Container.flatten(path)) {
+			addClasspath(c);
+		}
+	}
+
 
 	public void addRunBundle(String f) {
 		runbundles.add(f);

@@ -509,4 +509,12 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		message("! ", msg, objects);
 	}
 
+	/**
+	 * Running a test from the command line
+	 * @param args
+	 */
+	
+	public static void main(String args[]) {
+		System.out.println("args " + Arrays.toString(args));
+	}
 }

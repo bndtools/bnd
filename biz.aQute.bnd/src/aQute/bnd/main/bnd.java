@@ -696,11 +696,8 @@ public class bnd extends Processor {
 			messages.NoProject();
 			return;
 		}
-		if (buildDeps(project)) {
-			project.compile(opts.test());
-			project.build(opts.test());
-			getInfo(project);
-		}
+		project.build(opts.test());
+		getInfo(project);
 	}
 
 	@Description("Test a project according to an OSGi test")
@@ -724,9 +721,9 @@ public class bnd extends Processor {
 			return;
 		}
 
-		if (!verifyDependencies(project, opts.verify(), true))
-			return;
-
+//		if (!verifyDependencies(project, opts.verify(), true))
+//			return;
+//
 		if (project.getProperty(TESTCASES) == null)
 			if (opts.force())
 				project.setProperty(TESTCASES, "");
@@ -737,6 +734,18 @@ public class bnd extends Processor {
 			}
 
 		project.test();
+		getInfo(project);
+	}
+
+	@Description("Test a project with plain JUnit")
+	public void _junit(testOptions opts) throws Exception {
+		Project project = getProject(opts.project());
+		if (project == null) {
+			messages.NoProject();
+			return;
+		}
+
+		project.junit();
 		getInfo(project);
 	}
 

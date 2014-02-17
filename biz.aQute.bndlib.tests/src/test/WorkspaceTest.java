@@ -4,8 +4,6 @@ import java.io.*;
 
 import junit.framework.*;
 import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.phases.*;
 
 public class WorkspaceTest extends TestCase {
 
