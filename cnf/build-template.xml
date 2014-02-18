@@ -38,7 +38,7 @@
 
         <!-- Define the classpath of bnd (location is defined in build.properties) -->
         <property file="${workspacedir}/cnf/build.properties"/>
-        <path id="bnd-classpath" location="${workspacedir}/${bnd.location}" />
+        <path id="bnd-classpath" location="${workspacedir}/cnf/${bnd.location}" />
 
         <!-- Load bnd and prepare the workspace -->
         <taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />
