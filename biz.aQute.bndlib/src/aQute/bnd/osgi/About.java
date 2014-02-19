@@ -40,6 +40,9 @@ import aQute.bnd.version.*;
 public class About {
 	public static Version				_2_3		= new Version(2, 3, 0);
 	public static String[]				CHANGES_2_3	= {
+			"Added annotations to create manifest headers: BundleCopyright, BundleDevelopers, BundleContributors, "
+					+ "BundleDocURL, RequireCapability, ProvideCapability. These headers work also when applied to a "
+					+ "custom annotation that is then applied to a class",
 			"Added a ees command in bnd to print out the Execution Environment of a JAR",
 			"Verify that the Meta-Persistence header's locations actually exist",
 			"Added a find command to bnd that can find imported or exported packages from a set of bundles",

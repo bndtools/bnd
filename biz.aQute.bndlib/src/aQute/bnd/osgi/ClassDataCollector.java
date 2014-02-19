@@ -4,6 +4,7 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 
 @SuppressWarnings("unused")
 public class ClassDataCollector {
+	
 	public void classBegin(int access, TypeRef name) {}
 
 	public boolean classStart(int access, TypeRef className) {
@@ -11,13 +12,18 @@ public class ClassDataCollector {
 		return true;
 	}
 
+	public boolean classStart(Clazz c) {
+		classBegin(c.accessx, c.className);
+		return true;
+	}
+	
 	public void extendsClass(TypeRef zuper) throws Exception {}
 
 	public void implementsInterfaces(TypeRef[] interfaces) throws Exception {}
 
 	public void addReference(TypeRef ref) {}
 
-	public void annotation(Annotation annotation) {}
+	public void annotation(Annotation annotation) throws Exception {}
 
 	public void parameter(int p) {}
 

@@ -39,6 +39,7 @@ import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
+import aQute.bnd.service.classparser.*;
 import aQute.bnd.version.*;
 import aQute.bnd.version.Version;
 import aQute.lib.base64.*;
@@ -80,6 +81,7 @@ public class Analyzer extends Processor {
 	private boolean									inited					= false;
 	final protected AnalyzerMessages				msgs					= ReporterMessages.base(this,
 																					AnalyzerMessages.class);
+	private AnnotationHeaders	annotationHeaders;
 
 	public Analyzer(Processor parent) {
 		super(parent);
@@ -168,6 +170,26 @@ public class Analyzer extends Processor {
 			// TODO handle better reanalyze
 			doPlugins();
 
+			if ( since(About._2_3)) {
+				List<ClassParser> parsers = getPlugins(ClassParser.class);
+				ClassDataCollectors cds = new ClassDataCollectors(this);
+				for ( ClassParser cp : parsers ) {
+					cds.add(cp.getClassDataCollector(this));
+				}
+				
+				//
+				// built ins
+				//
+				
+				cds.add( annotationHeaders = new AnnotationHeaders(this));
+				
+				for ( Clazz c : classspace.values()) {
+					cds.parse(c);
+				}
+				cds.close();
+			}
+			
+			
 			Jar extra = getExtra();
 			while (extra != null) {
 				dot.addAll(extra);
@@ -390,8 +412,8 @@ public class Analyzer extends Processor {
 
 			// ----- Require/Capabilities section
 
-			Parameters requirements = getRequireCapability();
-			Parameters capabilities = getProvideCapability();
+			Parameters requirements = new Parameters( annotationHeaders.getHeader(REQUIRE_CAPABILITY));
+			Parameters capabilities = new Parameters( annotationHeaders.getHeader(PROVIDE_CAPABILITY));
 
 			//
 			// Do any contracts contracts
@@ -428,6 +450,9 @@ public class Analyzer extends Processor {
 			if (!capabilities.isEmpty())
 				main.putValue(PROVIDE_CAPABILITY, capabilities.toString());
 
+			
+			
+			
 			// -----
 
 			doNamesection(dot, manifest);
@@ -458,20 +483,25 @@ public class Analyzer extends Processor {
 				}
 
 				if (Verifier.HEADER_PATTERN.matcher(header).matches()) {
-					String value = getProperty(header);
-					if (value != null && main.getValue(header) == null) {
-						if (value.trim().length() == 0)
-							main.remove(header);
-						else if (value.trim().equals(EMPTY_HEADER))
-							main.putValue(header, "");
-						else
-							main.putValue(header, value);
-					}
+					doHeader(main, header);
 				} else {
 					// TODO should we report?
 				}
 			}
-
+			
+			//
+			// Ensure we pick up any headers only set by the
+			// annotations (see AnnotationHeaders)
+			//
+			
+			doHeader(main, BUNDLE_LICENSE);
+			doHeader(main, BUNDLE_DEVELOPERS);
+			doHeader(main, BUNDLE_CONTRIBUTORS);
+			doHeader(main, BUNDLE_COPYRIGHT);
+			doHeader(main, BUNDLE_DOCURL);
+			doHeader(main, BUNDLE_LICENSE);
+			doHeader(main, BUNDLE_CATEGORY);
+			
 			// Copy old values into new manifest, when they
 			// exist in the old one, but not in the new one
 			merge(manifest, dot.getManifest());
@@ -514,6 +544,18 @@ public class Analyzer extends Processor {
 			// exceptions in normal situations. So if it happens we need more
 			// information. So to help diagnostics. We do a full property dump
 			throw new IllegalStateException("Calc manifest failed, state=\n" + getFlattenedProperties(), e);
+		}
+	}
+
+	private void doHeader(Attributes main, String header) {
+		String value = annotationHeaders.getHeader(header);
+		if (value != null && main.getValue(header) == null) {
+			if (value.trim().length() == 0)
+				main.remove(header);
+			else if (value.trim().equals(EMPTY_HEADER))
+				main.putValue(header, "");
+			else
+				main.putValue(header, value);
 		}
 	}
 
@@ -2820,5 +2862,44 @@ public class Analyzer extends Processor {
 	
 	public SortedSet<Clazz.JAVA> getEEs() {
 		return ees;
+	}
+	
+	
+	/**
+	 * Return a range expression for a filter from a version. By default this
+	 * is based on consumer compatibility. You can specify a third argument
+	 * (true) to get provider compatibility.
+	 * <pre>
+	 * ${frange;1.2.3}             -> (&(version>=1.2.3)(!(version>=1.3.0))
+	 * ${frange;1.2.3, true}       -> (&(version>=1.2.3)(!(version>=2.0.0))
+	 * </pre>
+	 */
+	public String _frange(String[] args) {
+		if (args.length < 2 || args.length >3) {
+			error("Invalid filter range, 2 or 3 args ${frange;<version>[;true|false]}");
+			return null;
+		}
+		
+		String v = args[1];
+		if (!Verifier.isVersion(v)) {
+			error("Invalid version arg %s",v);
+			return null;
+		}
+		
+		boolean isProvider = false;
+		if ( args.length == 3)
+			isProvider = Processor.isTrue(args[2]);
+		
+		Version low = new Version(v);
+		Version high;
+		if (isProvider)
+			high = new Version(low.getMajor(), low.getMinor() + 1, 0);
+		else
+			high = new Version(low.getMajor() + 1, 0, 0);
+
+		StringBuilder sb = new StringBuilder("(&(version>=").append(low.getWithoutQualifier()).append(")");
+		sb.append("(!(version>=").append(high.getWithoutQualifier()).append(")))");
+
+		return sb.toString();
 	}
 }

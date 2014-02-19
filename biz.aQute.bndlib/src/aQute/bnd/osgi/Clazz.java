@@ -571,7 +571,7 @@ public class Clazz {
 		try {
 
 			if (cd != null) {
-				if (!cd.classStart(accessx, className))
+				if (!cd.classStart(this))
 					return null;
 			}
 
@@ -1170,7 +1170,7 @@ public class Clazz {
 	}
 
 	private void doParameterAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy, int access_flags)
-			throws IOException {
+			throws Exception {
 		int num_parameters = in.readUnsignedByte();
 		for (int p = 0; p < num_parameters; p++) {
 			if (cd != null)
@@ -1180,7 +1180,7 @@ public class Clazz {
 	}
 
 	private void doAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy, int access_flags)
-			throws IOException {
+			throws Exception {
 		int num_annotations = in.readUnsignedShort(); // # of annotations
 		for (int a = 0; a < num_annotations; a++) {
 			if (cd == null)
