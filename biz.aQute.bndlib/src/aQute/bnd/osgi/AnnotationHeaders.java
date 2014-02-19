@@ -27,9 +27,19 @@ import aQute.lib.strings.*;
  * create a custom annotation for a specific resource.
  * 
  * <pre>
- * @RequireCapability("osgi.webresource;filter:='(&(osgi.webresource=/google/angular)(version>=${@version}))")
- * @interface Angular {
- * }
+ * &#064;RequireCapability(&quot;osgi.webresource;filter:='(&amp;(osgi.webresource=/google/angular)(version&gt;=${@version}))&quot;)
+ * &#064;interface Angular {}
+ * </pre>
+ * 
+ * Now all a user has to do is apply the @Angular annotation. It will then
+ * automatically create a Require-Capability, with the version of the package.
+ * 
+ * <pre>
+ * @Angular
+ * public class MySpace {...}
+ * </pre>
+ * 
+ * {@link About} provides some more information.
  */
 class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
@@ -37,6 +47,11 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	final Set<TypeRef>				interesting	= new HashSet<TypeRef>();
 	final Set<TypeRef>				used		= new HashSet<TypeRef>();
 	final MultiMap<String,String>	headers		= new MultiMap<String,String>();
+
+	//
+	// fixed names for faster comparison
+	//
+
 	final TypeRef					bundleLicenseRef;
 	final TypeRef					requireCapabilityRef;
 	final TypeRef					provideCapabilityRef;
@@ -46,15 +61,21 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	final TypeRef					bundleContributorRef;
 	final TypeRef					bundleCopyrightRef;
 
+	// Class we're currently processing
 	Clazz							current;
+
+	// we parse the annotations seperately at the ed
 	boolean							finalizing;
 
+	/*
+	 * Initialize
+	 */
 	AnnotationHeaders(Analyzer analyzer) {
 		this.analyzer = analyzer;
 
 		//
 		// The analyser has its own domain of type refs, so we need to get our
-		// standard set
+		// standard set to do fast comparisons
 		//
 
 		interesting.add(bundleLicenseRef = analyzer.getTypeRefFromFQN(BundleLicense.class.getName()));
@@ -70,16 +91,33 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	@Override
 	public boolean classStart(Clazz c) {
 		if (finalizing) {
+			//
+			// This is when we parse the annotations.
+			// so we should do add more used's annotations
+			// this does not work recursively
+			//
 			current = c;
 			return true;
 		}
 
 		current = null;
 
+		//
+		// We do annotations at the end
+		//
 		if (!c.isAnnotation()) {
 			if (c.annotations != null)
+				//
+				// Remember which annotations were actually applied
+				// on a non-annotation type
+				//
 				used.addAll(c.annotations);
+
 			if (c.annotations != null && containsAny(interesting, c.annotations)) {
+				//
+				// If any of the used annotations is ours, then we want to parse
+				// and find what those annotations are
+				//
 				current = c;
 				return true;
 			}
@@ -87,6 +125,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		return false;
 	}
 
+	/*
+	 * Called when an annotation is found. Dispatch on the known types.
+	 */
 	public void annotation(Annotation annotation) throws Exception {
 		TypeRef name = annotation.getName();
 		if (interesting.contains(name)) {
@@ -101,16 +142,20 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			else if (name == bundleDocURLRef)
 				doBundleDocURL(annotation.getAnnotation(BundleDocURL.class));
 			else if (name == bundleDeveloperRef)
-				doBundleDeveloper(annotation.getAnnotation(BundleDevelopers.class));
+				doBundleDevelopers(annotation.getAnnotation(BundleDevelopers.class));
 			else if (name == bundleContributorRef)
-				doBundleContributor(annotation.getAnnotation(BundleContributors.class));
+				doBundleContributors(annotation.getAnnotation(BundleContributors.class));
 			else if (name == bundleCopyrightRef)
 				doBundeCopyright(annotation.getAnnotation(BundleCopyright.class));
 			else
-				analyzer.error("Unknon annotation %s", name);
+				analyzer.error("Unknon annotation %s on %s", name, current.getClassName());
 		}
 	}
 
+	/*
+	 * Called after the class space has been parsed. We then continue to parse
+	 * the used annotations.
+	 */
 	public void close() throws IOException {
 		finalizing = true;
 		try {
@@ -125,46 +170,85 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 	}
 
-	private void doBundleDeveloper(BundleDevelopers annotation) {
+	/*
+	 * Bundle-Developers header
+	 */
+	private void doBundleDevelopers(BundleDevelopers annotation) throws IOException {
 		StringBuilder sb = new StringBuilder(annotation.value());
-		if (annotation.name() != null)
-			sb.append(";name='").append(escape(annotation.name())).append("'");
-		if (annotation.roles() != null)
-			sb.append(";roles='").append(escape(Strings.join(annotation.roles()))).append("'");
-		if (annotation.organizationUrl() != null)
-			sb.append(";organizationUrl='").append(escape(annotation.organizationUrl())).append("'");
-		if (annotation.organization() != null)
-			sb.append(";organization='").append(escape(annotation.organization())).append("'");
+		if (annotation.name() != null) {
+			sb.append(";name='");
+			escape(sb, annotation.name());
+			sb.append("'");
+		}
+		if (annotation.roles() != null) {
+			sb.append(";roles='");
+			escape(sb,annotation.roles());
+			sb.append("'");
+		}
+		if (annotation.organizationUrl() != null) {
+			sb.append(";organizationUrl='");
+			escape(sb,annotation.organizationUrl());
+			sb.append("'");
+		}
+		if (annotation.organization() != null) {
+			sb.append(";organization='");
+			escape(sb,annotation.organization());
+			sb.append("'");
+		}
 		if (annotation.timezone() != 0)
 			sb.append(";timezone=").append(annotation.timezone());
 
 		add(Constants.BUNDLE_DEVELOPERS, sb.toString());
 	}
 
-	private void doBundleContributor(BundleContributors annotation) {
+	/*
+	 * Bundle-Contributors header
+	 */
+
+	private void doBundleContributors(BundleContributors annotation) throws IOException {
 		StringBuilder sb = new StringBuilder(annotation.value());
-		if (annotation.name() != null)
-			sb.append(";name='").append(escape(annotation.name())).append("'");
-		if (annotation.roles() != null)
-			sb.append(";roles='").append(escape(Strings.join(annotation.roles()))).append("'");
-		if (annotation.organizationUrl() != null)
-			sb.append(";organizationUrl='").append(escape(annotation.organizationUrl())).append("'");
-		if (annotation.organization() != null)
-			sb.append(";organization='").append(escape(annotation.organization())).append("'");
+		if (annotation.name() != null) {
+			sb.append(";name='");
+			escape(sb, annotation.name());
+			sb.append("'");
+		}
+		if (annotation.roles() != null) {
+			sb.append(";roles='");
+			escape(sb,annotation.roles());
+			sb.append("'");
+		}
+		if (annotation.organizationUrl() != null) {
+			sb.append(";organizationUrl='");
+			escape(sb,annotation.organizationUrl());
+			sb.append("'");
+		}
+		if (annotation.organization() != null) {
+			sb.append(";organization='");
+			escape(sb,annotation.organization());
+			sb.append("'");
+		}
 		if (annotation.timezone() != 0)
 			sb.append(";timezone=").append(annotation.timezone());
-
 		add(Constants.BUNDLE_CONTRIBUTORS, sb.toString());
 	}
 
+	/*
+	 * Bundle-Copyright header
+	 */
 	private void doBundeCopyright(BundleCopyright annotation) {
 		add(Constants.BUNDLE_COPYRIGHT, annotation.value());
 	}
 
+	/*
+	 * Bundle-DocURL header
+	 */
 	private void doBundleDocURL(BundleDocURL annotation) {
 		add(Constants.BUNDLE_DOCURL, annotation.value());
 	}
 
+	/*
+	 * Bundle-Category header
+	 */
 	private void doBundleCategory(BundleCategory annotation) {
 		if (annotation.custom() != null)
 			for (String s : annotation.custom()) {
@@ -177,6 +261,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			}
 	}
 
+	/*
+	 * Provide-Capability header
+	 */
 	private void doProvideCapability(ProvideCapability annotation) {
 		StringBuilder sb = new StringBuilder(annotation.ns());
 		if (annotation.name() != null)
@@ -195,6 +282,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		add(Constants.PROVIDE_CAPABILITY, sb.toString());
 	}
 
+	/*
+	 * Require-Capability header
+	 */
 	private void doRequireCapability(RequireCapability annotation) {
 		StringBuilder sb = new StringBuilder(annotation.ns());
 		if (annotation.filter() != null)
@@ -210,6 +300,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		add(Constants.REQUIRE_CAPABILITY, sb.toString());
 	}
 
+	/*
+	 * Bundle-License header
+	 */
 	private void doLicense(BundleLicense annotation) {
 		StringBuilder sb = new StringBuilder(annotation.name());
 		if (!annotation.description().equals(""))
@@ -219,11 +312,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		add(Constants.BUNDLE_LICENSE, sb.toString());
 	}
 
+	/*
+	 * Adds a header. Will preprocess the text.
+	 */
 	private void add(String name, String value) {
 		if (value == null)
 			return;
 
-		@SuppressWarnings("unused")
 		Processor next = new Processor(analyzer);
 		next.setProperty("@class", current.getFQN());
 		next.setProperty("@class-short", current.getClassName().getShortName());
@@ -239,9 +334,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		Macro macro = next.getReplacer();
 
 		/*
-		 * These strings come from code, which might also be included
-		 * from external parties. So we just do not want to call any
-		 * system commands from these sources
+		 * These strings come from code, which might also be included from
+		 * external parties. So we just do not want to call any system commands
+		 * from these sources
 		 */
 		boolean prev = macro.setNosystem(true);
 		try {
@@ -254,11 +349,17 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 	}
 
+	/*
+	 * This method is a pass thru for the properties of the analyzer. If we have
+	 * such a header, we get the analyzer header and concatenate our values
+	 * after removing dups.
+	 */
+
 	public String getHeader(String name) {
 		String value = analyzer.getProperty(name);
 		if (headers.containsKey(name)) {
 			//
-			// Remove duplicates
+			// Remove duplicates and sort
 			//
 			Set<String> set = new TreeSet<String>(headers.get(name));
 			String header = Strings.join(set);
@@ -270,6 +371,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		return value;
 	}
 
+	/*
+	 * Helper to find out if there is an overlap. Always wonder why Java does
+	 * not have methods for this.
+	 */
 	private <T> boolean containsAny(Set<T> a, Set<T> b) {
 		for (T aa : a)
 			if (b.contains(aa))
@@ -278,8 +383,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		return false;
 	}
 
-	private CharSequence escape(String s) {
-		return s.replaceAll("'", "\\'");
+	private void escape(StringBuilder app, String s[]) throws IOException {
+		String joined = Strings.join(s);
+		escape(app,joined);
 	}
+	private void escape(StringBuilder app, String s) throws IOException {
+		Processor.quote(app, s);
+	}
+
 
 }

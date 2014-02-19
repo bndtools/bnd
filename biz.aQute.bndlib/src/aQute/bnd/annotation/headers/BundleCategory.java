@@ -9,6 +9,7 @@ import java.lang.annotation.*;
  * Website</a>
  * <p>
  * All categories are merged together with any duplicates removed
+ * See {@link About}
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({
