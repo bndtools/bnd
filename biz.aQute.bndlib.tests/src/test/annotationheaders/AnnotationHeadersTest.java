@@ -1,12 +1,14 @@
 package test.annotationheaders;
 
 import java.io.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.regex.*;
 
 import junit.framework.*;
 import aQute.bnd.annotation.headers.*;
 import aQute.bnd.annotation.licenses.*;
+import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 
 public class AnnotationHeadersTest extends TestCase {
@@ -48,6 +50,11 @@ public class AnnotationHeadersTest extends TestCase {
 	@BundleCategory(Category.adoption)
 	
 	class B {
+		
+	}
+	
+	@BundleCopyright("[[\n\rXyz: Hello world. , ; = \\]]")
+	class Z {
 		
 	}
 	
@@ -132,7 +139,21 @@ public class AnnotationHeadersTest extends TestCase {
 		System.out.println(dv);
 		assertTrue(dv.contains("http://www.aQute.biz"));
 		
-		
+
+		Parameters cpr = new Parameters(manifest.getMainAttributes().getValue(Constants.BUNDLE_COPYRIGHT));
+		for ( Entry<String,Attrs> e : cpr.entrySet()) {
+			System.out.println("cpr: " + e);
+		}
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		Jar.writeManifest(manifest,bout);
+		String s = new String( bout.toByteArray(), "UTF-8");
+		System.out.println(s);
+		ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
+		Manifest m2 = new Manifest(bin);
+		String v = m2.getMainAttributes().getValue(Constants.BUNDLE_COPYRIGHT);
+		assertNotNull(v );
+		assertTrue( v.contains("Hello world"));
+		assertNull( m2.getMainAttributes().getValue("Xyz"));
 		b.close();
 	}
 	

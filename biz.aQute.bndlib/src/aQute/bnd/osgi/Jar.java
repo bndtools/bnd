@@ -508,10 +508,31 @@ public class Jar implements Closeable {
 	}
 
 	private static String clean(String s) {
-		if (s.indexOf('\n') < 0)
+		StringBuilder sb = new StringBuilder(s);
+		boolean changed = false;
+		boolean replacedPrev = false;
+		for ( int i=0; i<sb.length(); i++) {
+			char c = s.charAt(i);
+			switch(c) {
+				case 0:
+				case '\n':
+				case '\r':
+					changed = true;
+					if ( !replacedPrev ) {
+						sb.replace(i, i+1, " ");
+						replacedPrev= true;
+					} else
+						sb.delete(i, i+1);
+					break;
+				default:
+					replacedPrev = false;
+					break;
+			}
+		}
+		if ( changed)
+			return sb.toString();
+		else
 			return s;
-
-		return s.replaceAll("(\n|\r)+", " ");
 	}
 
 	private void writeResource(ZipOutputStream jout, Set<String> directories, String path, Resource resource)
