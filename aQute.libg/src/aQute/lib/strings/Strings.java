@@ -56,5 +56,9 @@ public class Strings {
 		}
 		return "";
 	}
+
+	public static String join(String[] strings) {
+		return join(",",strings);
+	}
 	
 }
