@@ -53,7 +53,6 @@ public class Index {
 	 */
 	public static void main(String args[]) {
 		try {
-			printCopyright(System.err);
 
 			// Configure PojoSR
 			Map<String, Object> pojoSrConfig = new HashMap<String, Object>();
@@ -75,6 +74,11 @@ public class Index {
 			Set<File> fileList = new LinkedHashSet<File>();
 			Map<String, String> config = new HashMap<String, String>();
 			File outputFile = processArgs(args, config, fileList, framework.getBundleContext());
+
+			boolean verbose = Boolean.parseBoolean(config.get(ResourceIndexer.VERBOSE));
+			if (verbose) {
+				printCopyright(System.err);
+			}
 
 			// Run
 			if (fileList.isEmpty())
