@@ -130,7 +130,9 @@ public class RepoIndex implements ResourceIndexer {
 			config = new HashMap<String, String>(0);
 
 		Set<File> filesToIndex = new TreeSet<File>();
-		resolveDirectories(files, filesToIndex);
+		if (files != null && !files.isEmpty()) {
+			resolveDirectories(files, filesToIndex);
+		}
 
 		Indent indent;
 		PrintWriter pw = null;
