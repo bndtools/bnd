@@ -14,7 +14,7 @@ public class JUnitLauncher extends ProjectLauncher {
 	private Classpath		cp;
 	private Command			java;
 	private long			timeout;
-	private boolean			trace;
+//	private boolean			trace;
 	private List<String>	fqns	= new ArrayList<String>();
 
 	public JUnitLauncher(Project project) throws Exception {
@@ -38,7 +38,7 @@ public class JUnitLauncher extends ProjectLauncher {
 		}
 
 		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
-		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
+//		trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 		cp = new Classpath(project, "junit");
 		addClasspath(project.getTestpath());
 		addClasspath(project.getBuildpath());
