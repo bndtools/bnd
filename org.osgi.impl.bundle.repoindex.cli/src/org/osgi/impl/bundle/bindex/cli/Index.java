@@ -81,24 +81,20 @@ public class Index {
 			}
 
 			// Run
-			if (fileList.isEmpty())
-				printUsage();
-			else {
-				FileOutputStream fos = null;
-				try {
-					fos = new FileOutputStream(outputFile);
-					index.index(fileList, fos, config);
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					if (fos != null) {
-						try {
-							fos.close();
-						} catch (IOException e) {
-							/* swallow */
-						}
-						fos = null;
+			FileOutputStream fos = null;
+			try {
+				fos = new FileOutputStream(outputFile);
+				index.index(fileList, fos, config);
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (fos != null) {
+					try {
+						fos.close();
+					} catch (IOException e) {
+						/* swallow */
 					}
+					fos = null;
 				}
 			}
 		} catch (Exception e) {
@@ -201,6 +197,6 @@ public class Index {
 				+ "  [-d rootdir]                                                     --> Root directory.%n"
 				+ "  [-l file:license.html]                                           --> Licence file.%n"
 				+ "  [-v]                                                             --> Verbose reporting.%n"
-				+ "  [-stylesheet http://www.osgi.org/www/obr2html.xsl]               --> Stylesheet URL.%n" + "  <file> [<file>*]%n");
+				+ "  [-stylesheet http://www.osgi.org/www/obr2html.xsl]               --> Stylesheet URL.%n" + " [<file>*]%n");
 	}
 }
