@@ -27,6 +27,7 @@ public class Macro {
 	Object				targets[];
 	boolean				flattening;
 	String				profile;
+	private boolean				nosystem;
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
@@ -875,6 +876,9 @@ public class Macro {
 	 * @param high
 	 */
 	public String system_internal(boolean allowFail, String args[]) throws Exception {
+		if ( nosystem)
+			throw new RuntimeException("Macros in this mode cannot excute system commands");
+		
 		verifyCommand(args, "${" + (allowFail ? "system-allow-fail" : "system")
 				+ ";<command>[;<in>]}, execute a system command", null, 2, 3);
 		String command = args[1];
@@ -1127,5 +1131,14 @@ public class Macro {
 		return process(line, domain);
 	}
 
+	public boolean isNosystem() {
+		return nosystem;
+	}
+
+	public boolean setNosystem(boolean nosystem) {
+		boolean tmp = this.nosystem;
+		this.nosystem = nosystem;
+		return tmp;
+	}
 
 }
