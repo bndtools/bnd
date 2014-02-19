@@ -33,6 +33,8 @@ public interface Constants {
 	String							BUNDLE_UPDATELOCATION						= "Bundle-UpdateLocation";
 	String							BUNDLE_VENDOR								= "Bundle-Vendor";
 	String							BUNDLE_VERSION								= "Bundle-Version";
+	String							BUNDLE_DEVELOPERS							= "Bundle-Developers";
+	String							BUNDLE_CONTRIBUTORS							= "Bundle-Contributors";
 	String							DYNAMICIMPORT_PACKAGE						= "DynamicImport-Package";
 	String							EXPORT_PACKAGE								= "Export-Package";
 	String							EXPORT_SERVICE								= "Export-Service";
@@ -68,7 +70,7 @@ public interface Constants {
 			BUNDLE_NAME, BUNDLE_NATIVECODE, BUNDLE_REQUIREDEXECUTIONENVIRONMENT, BUNDLE_SYMBOLICNAME, BUNDLE_VERSION,
 			FRAGMENT_HOST, PRIVATE_PACKAGE, IGNORE_PACKAGE, INCLUDE_RESOURCE, REQUIRE_BUNDLE, IMPORT_SERVICE,
 			EXPORT_SERVICE, CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES, SIGNATURE_TEST, REQUIRE_CAPABILITY,
-			PROVIDE_CAPABILITY, BUNDLE_ICON, REPOSITORIES, META_PERSISTENCE
+			PROVIDE_CAPABILITY, BUNDLE_ICON, REPOSITORIES, META_PERSISTENCE, BUNDLE_DEVELOPERS, BUNDLE_CONTRIBUTORS
 																				};
 
 	String							BASELINE									= "-baseline";

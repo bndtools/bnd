@@ -49,26 +49,24 @@ public class Syntax implements Constants {
 					null,
 					null,
 					new Syntax[] {
-						new Syntax(
-								"build-deps",
-								"Stores build dependencies of bnd from gradle, ant, etc. In general, bnd will be "
-								+ "among this. The files in this directory must be fully versioned",
+			new Syntax("build-deps", "Stores build dependencies of bnd from gradle, ant, etc. In general, bnd will be "
+					+ "among this. The files in this directory must be fully versioned",
 					"~/.bnd/biz.aQute.bnd-2.2.0.jar", null, null),
-						new Syntax(
-								"settings.json",
-								"Contains the settings used by bnd in json format. These settings are maintained by "
-								+ "bnd command line (bnd help settings). These settings can be used through macros " 
-								+ "and can provide passwords, user ids, and platform specific settings. Names starting with"
-								+ "a dot (.) are considered protected",
-								"{\"id\":\"30...001\",\"map\":{\".github.secret\":\"xxxxxx\",\"github.user\":\"minime\","
-								+ "\"email\":\"Peter.Kriens@aQute.biz\"},\"secret\":\"308...CC56\"}", null, null, new Syntax[] {
-										new Syntax("email", "The user's email address", null, null, null),
-										new Syntax("id", "The public key for this machine", null, null, null),
-										new Syntax("secret", "The private key for this machine", null, null, null),
-								}),
-								new Syntax("caches/shas", "Directory with sha artifacts. The sha is the name of the "
-										+ "directory, it contains the artifact with a normal bsn-version.jar name",
-										null, null, null)
+			new Syntax(
+					"settings.json",
+					"Contains the settings used by bnd in json format. These settings are maintained by "
+							+ "bnd command line (bnd help settings). These settings can be used through macros "
+							+ "and can provide passwords, user ids, and platform specific settings. Names starting with"
+							+ "a dot (.) are considered protected",
+					"{\"id\":\"30...001\",\"map\":{\".github.secret\":\"xxxxxx\",\"github.user\":\"minime\","
+							+ "\"email\":\"Peter.Kriens@aQute.biz\"},\"secret\":\"308...CC56\"}", null, null,
+					new Syntax[] {
+			new Syntax("email", "The user's email address", null, null, null),
+			new Syntax("id", "The public key for this machine", null, null, null),
+			new Syntax("secret", "The private key for this machine", null, null, null),
+					}),
+			new Syntax("caches/shas", "Directory with sha artifacts. The sha is the name of the "
+					+ "directory, it contains the artifact with a normal bsn-version.jar name", null, null, null)
 					}),
 			new Syntax(BUNDLE_ACTIVATIONPOLICY, "The " + BUNDLE_ACTIVATIONPOLICY
 					+ " header specifies how the framework should activate the bundle once started.",
@@ -90,6 +88,27 @@ public class Syntax implements Constants {
 			new Syntax(BUNDLE_CONTACTADDRESS, "The " + BUNDLE_CONTACTADDRESS
 					+ " header provides the contact address of the vendor.", BUNDLE_CONTACTADDRESS
 					+ ": 2400 Oswego Road, Austin, TX 74563", null, null),
+			new Syntax(
+					BUNDLE_DEVELOPERS,
+					"Defines the primary developers of this bundle",
+					BUNDLE_DEVELOPERS
+							+ ": Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1",
+					null, null),
+			new Syntax(
+					BUNDLE_CONTRIBUTORS,
+					"Defines the people that contrbuted to this bundle",
+					BUNDLE_CONTRIBUTORS
+							+ ": Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1",
+					null, null, new Syntax("name", "The display name of the developer", "name='Peter Kriens'", null,
+							null), new Syntax("organization",
+							"The display name of organization that employs the developer", "organization='aQute'",
+							null, null), //
+					new Syntax("roles", "Roles played by the developer in this bundle's project (see Maven)",
+							"roles=ceo", null, null), //
+					new Syntax("timezone", "Timezone in offset of UTC this developer usually resides in", "timezone+2",
+							null, null), //
+					new Syntax("organizationUrl", "The URL of the developer's organization",
+							"organizationURL='http://www.aQute.biz'", null, null)),
 			new Syntax(BUNDLE_COPYRIGHT, "The " + BUNDLE_COPYRIGHT
 					+ " header contains the copyright specification for this bundle.", BUNDLE_COPYRIGHT
 					+ ": OSGi (c) 2002", null, null),
@@ -363,7 +382,11 @@ public class Syntax implements Constants {
 
 			new Syntax(FAIL_OK, "Return with an ok status (0) even if the build generates errors.", FAIL_OK + "=true",
 					"true,false", Verifier.TRUEORFALSEPATTERN),
-new Syntax(FIXUPMESSAGES, "Rearrange and/or replace errors and warnings. Errors that should be ignore or be warnings (and vice versa for warnings) can be moved or rewritten by specifying a globbing pattern for the message.",FIXUPMESSAGES+"='Version mismatch';replace:='************* ${@}';restrict:=error", null, null, new Syntax[] {}),
+			new Syntax(
+					FIXUPMESSAGES,
+					"Rearrange and/or replace errors and warnings. Errors that should be ignore or be warnings (and vice versa for warnings) can be moved or rewritten by specifying a globbing pattern for the message.",
+					FIXUPMESSAGES + "='Version mismatch';replace:='************* ${@}';restrict:=error", null, null,
+					new Syntax[] {}),
 			new Syntax(
 					INCLUDE,
 					"Include files. If an entry starts with '-', it does not have to exist. If it starts with '~', it must not overwrite any existing properties.",
