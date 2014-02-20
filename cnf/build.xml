@@ -95,6 +95,9 @@
         <bindex quiet="true" repositoryfile="bundles/repository.zip" root="${releaserepo}" name="bnd">
             <fileset dir="bundles" includes="**/*.jar" />
         </bindex>
+        <bindex quiet="true" repositoryfile="bundles/repository.xml" root="${releaserepo}" name="bnd">
+            <fileset dir="bundles" includes="**/*.jar" />
+        </bindex>
         <repoindex out="${releaserepo}/index.xml.gz" rooturl="${releaserepo}" name="bnd">
             <fileset dir="bundles" includes="**/*.jar" excludes="**/*-latest.jar"/>
         </repoindex>
