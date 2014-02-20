@@ -161,7 +161,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		try {
 			for (TypeRef typeRef : used) {
 				Clazz c = analyzer.findClass(typeRef);
-				c.parseClassFileWithCollector(this);
+				if ( c != null)
+					c.parseClassFileWithCollector(this);
 			}
 		}
 		catch (Exception e) {
