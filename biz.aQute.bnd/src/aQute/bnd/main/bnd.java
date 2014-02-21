@@ -3404,22 +3404,6 @@ public class bnd extends Processor {
 		getInfo(project);
 	}
 
-	private boolean buildDeps(Project project) throws Exception {
-		for (Project dependsOn : project.getDependson()) {
-			if (dependsOn == project)
-				continue;
-			dependsOn.use(this);
-			trace("compile as dep %s dir %s", dependsOn, dependsOn.getSrc());
-			dependsOn.compile(false);
-			trace("build as dep %s", dependsOn);
-			dependsOn.build();
-			getInfo(dependsOn);
-			if (!isOk())
-				return false;
-		}
-		return true;
-	}
-
 	/**
 	 * Show the class versions used in a JAR
 	 * 
