@@ -471,10 +471,13 @@ public class Macro {
 	}
 
 	public String _def(String args[]) {
-		if (args.length != 2)
+		if (args.length < 2)
 			throw new RuntimeException("Need a value for the ${def;<value>} macro");
+		
+		if (args.length > 3)
+			throw new RuntimeException("Too many args for ${def;<value>} macro");
 
-		return domain.getProperty(args[1], "");
+		return domain.getProperty(args[1], args.length == 3 ? args[2] : "");
 	}
 
 	/**
