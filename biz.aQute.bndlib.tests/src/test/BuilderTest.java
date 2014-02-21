@@ -100,9 +100,7 @@ public class BuilderTest extends BndTestCase {
 		b.addClasspath(new File("bin"));
 		b.setExportPackage("test.package_info_versioniskey");
 		b.build();
-		b.check();
 
-		b.getJar().getManifest().write(System.out);
 		String message = b.getErrors().get(0);
 		assertTrue("The lacking version error first",
 				message.contains("package info for test.package_info_versioniskey attribute [1.0.0=''],"));
@@ -694,7 +692,7 @@ public class BuilderTest extends BndTestCase {
 		// Only version in manifest
 		Builder bms = new Builder();
 		bms.addClasspath(fromManifest);
-		bms.setProperty("Import-Package", "=org.osgi.service.event");
+		bms.setProperty("Import-Package", "org.osgi.service.event");
 		bms.build();
 		assertTrue(bms.check("The JAR is empty"));
 		String s = bms.getImports().getByFQN("org.osgi.service.event").get("version");
@@ -1397,30 +1395,6 @@ public class BuilderTest extends BndTestCase {
 		assertEquals("true", export.get("x"));
 	}
 
-	/**
-	 * I am having some problems with split packages in 170. I get this output:
-	 * [java] 1 : There are split packages, use directive split-package:=merge
-	 * on instruction to get rid of this warning: my.package First of all, this
-	 * warning is falsely occurring. The classpath to the bnd task contains
-	 * something like: my/package/foo.class my/package/sub/bar.class and the
-	 * export is: Export-Package: my.package*;version=${version} so my.package
-	 * and my.package.sub are being incorrectly considered as the same package
-	 * by bnd.
-	 */
-	public static void testSplitOverlappingPackages() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		Properties p = new Properties();
-		p.put("build", "xyz");
-		p.put("Export-Package", "test*;version=3.1");
-		b.setProperties(p);
-		b.setPedantic(true);
-		b.build();
-		assertTrue(b.check("Imports that lack version ranges", "Invalid package name",
-				"value is empty which is not allowed in ARGUMENT"));
-	}
 
 	/**
 	 * Check Conditional package. First import a subpackage then let the
