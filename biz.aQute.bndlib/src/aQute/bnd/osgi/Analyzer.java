@@ -81,7 +81,8 @@ public class Analyzer extends Processor {
 	private boolean									inited					= false;
 	final protected AnalyzerMessages				msgs					= ReporterMessages.base(this,
 																					AnalyzerMessages.class);
-	private AnnotationHeaders	annotationHeaders;
+	private AnnotationHeaders						annotationHeaders;
+	private Set<PackageRef>							packagesVisited			= new HashSet<PackageRef>();
 
 	public Analyzer(Processor parent) {
 		super(parent);
@@ -130,6 +131,7 @@ public class Analyzer extends Processor {
 			classspace.clear();
 			classpathExports.clear();
 			contracts.clear();
+			packagesVisited.clear();
 
 			// Parse all the class in the
 			// the jar according to the OSGi bcp
@@ -150,11 +152,8 @@ public class Analyzer extends Processor {
 
 			for (Jar current : getClasspath()) {
 				getManifestInfoFromClasspath(current, classpathExports, contracts);
-				for (String dir : current.getDirectories().keySet()) {
-					PackageRef packageRef = getPackageRef(dir);
-					Resource resource = current.getResource(dir + "/packageinfo");
-					getExportVersionsFromPackageInfo(packageRef, resource, classpathExports);
-				}
+				for (String dir : current.getDirectories().keySet())
+					learnPackage(current, getPackageRef(dir), classpathExports);
 			}
 
 			// Handle the bundle activator
@@ -170,27 +169,37 @@ public class Analyzer extends Processor {
 			// TODO handle better reanalyze
 			doPlugins();
 
-			if ( since(About._2_3)) {
+			if (since(About._2_3)) {
 				List<ClassParser> parsers = getPlugins(ClassParser.class);
 				ClassDataCollectors cds = new ClassDataCollectors(this);
-				for ( ClassParser cp : parsers ) {
+				for (ClassParser cp : parsers) {
 					cds.add(cp.getClassDataCollector(this));
 				}
-				
+
 				//
 				// built ins
 				//
-				
-				cds.add( annotationHeaders = new AnnotationHeaders(this));
-				
-				for ( Clazz c : classspace.values()) {
+
+				cds.add(annotationHeaders = new AnnotationHeaders(this));
+
+				for (Clazz c : classspace.values()) {
 					cds.parse(c);
 				}
 				cds.close();
 			}
+
+			// Conditional packages
 			
+			//
+			// We need to find out the contained packages
+			// again ... so we need to clear any visited 
+			// packages otherwise new packages are not
+			// added to contained
+			//
+			packagesVisited.clear();
 			
 			Jar extra = getExtra();
+			
 			while (extra != null) {
 				dot.addAll(extra);
 				analyzeJar(extra, "", true);
@@ -311,9 +320,245 @@ public class Analyzer extends Processor {
 		}
 	}
 
+	/*
+	 * Learn the package details from the Jar. This can either be the manifest
+	 * (in that case the attrs are already set on the package), a
+	 * package-info.java file, or a packageinfo file (in the given priority).
+	 * This method will only learn a package once, so this method an be called
+	 * for every class. It will also ignore any metadata or java packages.
+	 */
+	private void learnPackage(Jar jar, PackageRef packageRef, Packages map) throws Exception {
+		if (packageRef.isMetaData() || packageRef.isJava() || packageRef.isPrimitivePackage())
+			return;
+
+		//
+		// Make sure we only do this once for each package
+		// in cp order (which is the calling order)
+		//
+
+		if (packagesVisited.contains(packageRef))
+			return;
+		packagesVisited.add(packageRef);
+
+		//
+		// The manifest has priority over the packageinfo or package-info.java
+		//
+
+		Attrs attrs = map.get(packageRef);
+		if (attrs != null && !attrs.isEmpty())
+			return;
+
+		//
+		// The previous bnd version forgot to parse
+		// the java-info file on the external classpath
+		// so in backward compatibility mode we should skip
+		// it.
+		//
+		if (map != classpathExports || since(About._2_3)) {
+			Resource resource = jar.getResource(packageRef.getBinary() + "/package-info.class");
+			if (resource != null) {
+				Attrs info = parsePackageInfoClass(resource);
+				if (info != null) {
+					info.put("from:", resource.toString());
+					map.put(packageRef, info);
+					return;
+				}
+			}
+		}
+
+		String path = packageRef.getBinary() + "/packageinfo";
+		Resource resource = jar.getResource(path);
+		if (resource != null) {
+			Attrs info = parsePackageinfo(packageRef, resource);
+			if (info != null) {
+				info.put("from:", resource.toString());
+				fixupOldStyleVersions(info);
+				map.put(packageRef, info);
+				return;
+			}
+		}
+
+		//
+		// We need to set an attribute because this is how the set
+		// of available packages is remembered
+		//
+		map.put(packageRef);
+
+		trace("%s from %s has no package info (either manifest, packageinfo or package-info.class", packageRef, jar);
+	}
+
+	/*
+	 * Helper method to set the package info resource
+	 */
+	static Pattern	OLD_PACKAGEINFO_SYNTAX_P	= Pattern.compile("class\\s+(.+)\\s+version\\s+(" + Verifier.VERSION_S
+														+ ")");
+
+	Attrs parsePackageinfo(PackageRef packageRef, Resource r) throws Exception {
+
+		Properties p = new Properties();
+		try {
+			InputStream in = r.openInputStream();
+			try {
+				p.load(in);
+			}
+			finally {
+				in.close();
+			}
+
+			Attrs attrs = new Attrs();
+
+			for (Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
+				String key = t.nextElement();
+				String propvalue = p.getProperty(key);
+
+				if (key.equalsIgnoreCase("include")) {
+
+					// Ouch, could be really old syntax
+					// We ignore the include part upto we
+					// ignored it long before.
+
+					Matcher m = OLD_PACKAGEINFO_SYNTAX_P.matcher(propvalue);
+					if (m.matches()) {
+						key = Constants.VERSION_ATTRIBUTE;
+						propvalue = m.group(2);
+						if (isPedantic())
+							warning("found old syntax in package info in package %s, from resource %s", packageRef, r);
+					}
+				}
+
+				String value = propvalue;
+
+				// Messy, to allow directives we need to
+				// allow the value to start with a ':' upto we cannot
+				// encode this in a property name
+
+				if (value.startsWith(":")) {
+					key = key + ":";
+					value = value.substring(1);
+				}
+				attrs.put(key, value);
+			}
+			return attrs;
+		}
+		catch (Exception e) {
+			msgs.NoSuchFile_(r);
+		}
+		return null;
+	}
+
+	/*
+	 * Parse the package-info.java class
+	 */
+	static Pattern	OBJECT_REFERENCE	= Pattern.compile("L([^/]+/)*([^;]+);");
+
+	private Attrs parsePackageInfoClass(Resource r) throws Exception {
+		final Attrs info = new Attrs();
+		final Clazz clazz = new Clazz(this, "", r);
+
+		clazz.parseClassFileWithCollector(new ClassDataCollector() {
+			@Override
+			public void annotation(Annotation a) {
+				String name = a.name.getFQN();
+				if (aQute.bnd.annotation.Version.class.getName().equals(name)) {
+
+					// Check version
+					String version = a.get("value");
+					if (!info.containsKey(Constants.VERSION_ATTRIBUTE)) {
+						if (version != null) {
+							version = getReplacer().process(version);
+							if (Verifier.VERSION.matcher(version).matches())
+								info.put(VERSION_ATTRIBUTE, version);
+							else
+								error("Export annotation in %s has invalid version info: %s", clazz, version);
+						}
+					} else {
+						// Verify this matches with packageinfo
+						String presentVersion = info.get(VERSION_ATTRIBUTE);
+						try {
+							Version av = new Version(presentVersion);
+							Version bv = new Version(version);
+							if (!av.equals(bv)) {
+								error("Version from annotation for %s differs with packageinfo or Manifest", clazz
+										.getClassName().getFQN());
+							}
+						}
+						catch (Exception e) {
+							// Ignore
+						}
+					}
+				} else if (name.equals(Export.class.getName())) {
+
+					// Check mandatory attributes
+					Attrs attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY), clazz, getReplacer());
+					if (!attrs.isEmpty()) {
+						info.putAll(attrs);
+						info.put(MANDATORY_DIRECTIVE, Processor.join(attrs.keySet()));
+					}
+
+					// Check optional attributes
+					attrs = doAttrbutes((Object[]) a.get(Export.OPTIONAL), clazz, getReplacer());
+					if (!attrs.isEmpty()) {
+						info.putAll(attrs);
+					}
+
+					// Check Included classes
+					Object[] included = a.get(Export.INCLUDE);
+					if (included != null && included.length > 0) {
+						StringBuilder sb = new StringBuilder();
+						String del = "";
+						for (Object i : included) {
+							Matcher m = OBJECT_REFERENCE.matcher((String) i);
+							if (m.matches()) {
+								sb.append(del);
+								sb.append(m.group(2));
+								del = ",";
+							}
+						}
+						info.put(INCLUDE_DIRECTIVE, sb.toString());
+					}
+
+					// Check Excluded classes
+					Object[] excluded = a.get(Export.EXCLUDE);
+					if (excluded != null && excluded.length > 0) {
+						StringBuilder sb = new StringBuilder();
+						String del = "";
+						for (Object i : excluded) {
+							Matcher m = OBJECT_REFERENCE.matcher((String) i);
+							if (m.matches()) {
+								sb.append(del);
+								sb.append(m.group(2));
+								del = ",";
+							}
+						}
+						info.put(EXCLUDE_DIRECTIVE, sb.toString());
+					}
+
+					// Check Uses
+					Object[] uses = a.get(Export.USES);
+					if (uses != null && uses.length > 0) {
+						String old = info.get(USES_DIRECTIVE);
+						if (old == null)
+							old = "";
+						StringBuilder sb = new StringBuilder(old);
+						String del = sb.length() == 0 ? "" : ",";
+
+						for (Object use : uses) {
+							sb.append(del);
+							sb.append(use);
+							del = ",";
+						}
+						info.put(USES_DIRECTIVE, sb.toString());
+					}
+				}
+			}
+
+		});
+		return info;
+	}
+
 	/**
 	 * Discussed with BJ and decided to kill the .
-	 *
+	 * 
 	 * @param referredAndExported
 	 */
 	void removeDynamicImports(Packages referredAndExported) {
@@ -360,7 +605,7 @@ public class Analyzer extends Processor {
 	/**
 	 * One of the main workhorses of this class. This will analyze the current
 	 * setup and calculate a new manifest according to this setup.
-	 *
+	 * 
 	 * @return
 	 * @throws IOException
 	 */
@@ -412,8 +657,8 @@ public class Analyzer extends Processor {
 
 			// ----- Require/Capabilities section
 
-			Parameters requirements = new Parameters( annotationHeaders.getHeader(REQUIRE_CAPABILITY));
-			Parameters capabilities = new Parameters( annotationHeaders.getHeader(PROVIDE_CAPABILITY));
+			Parameters requirements = new Parameters(annotationHeaders.getHeader(REQUIRE_CAPABILITY));
+			Parameters capabilities = new Parameters(annotationHeaders.getHeader(PROVIDE_CAPABILITY));
 
 			//
 			// Do any contracts contracts
@@ -450,9 +695,6 @@ public class Analyzer extends Processor {
 			if (!capabilities.isEmpty())
 				main.putValue(PROVIDE_CAPABILITY, capabilities.toString());
 
-			
-			
-			
 			// -----
 
 			doNamesection(dot, manifest);
@@ -488,12 +730,12 @@ public class Analyzer extends Processor {
 					// TODO should we report?
 				}
 			}
-			
+
 			//
 			// Ensure we pick up any headers only set by the
 			// annotations (see AnnotationHeaders)
 			//
-			
+
 			doHeader(main, BUNDLE_LICENSE);
 			doHeader(main, BUNDLE_DEVELOPERS);
 			doHeader(main, BUNDLE_CONTRIBUTORS);
@@ -501,7 +743,7 @@ public class Analyzer extends Processor {
 			doHeader(main, BUNDLE_DOCURL);
 			doHeader(main, BUNDLE_LICENSE);
 			doHeader(main, BUNDLE_CATEGORY);
-			
+
 			// Copy old values into new manifest, when they
 			// exist in the old one, but not in the new one
 			merge(manifest, dot.getManifest());
@@ -562,11 +804,11 @@ public class Analyzer extends Processor {
 	/**
 	 * Parse the namesection as instructions and then match them against the
 	 * current set of resources For example:
-	 *
+	 * 
 	 * <pre>
 	 * 	-namesection: *;baz=true, abc/def/bar/X.class=3
 	 * </pre>
-	 *
+	 * 
 	 * The raw value of {@link Constants#NAMESECTION} is used but the values of
 	 * the attributes are replaced where @ is set to the resource name. This
 	 * allows macro to operate on the resource
@@ -640,14 +882,14 @@ public class Analyzer extends Processor {
 	 * section header. The name part is defined by replacing all the @ signs to
 	 * a /, removing the first and the last, and using the last part as header
 	 * name:
-	 *
+	 * 
 	 * <pre>
 	 * &#064;org@osgi@service@event@Implementation-Title
 	 * </pre>
-	 *
+	 * 
 	 * This will be the header Implementation-Title in the
 	 * org/osgi/service/event named section.
-	 *
+	 * 
 	 * @param manifest
 	 * @param header
 	 */
@@ -672,7 +914,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Clear the key part of a header. I.e. remove everything from the first ';'
-	 *
+	 * 
 	 * @param value
 	 * @return
 	 */
@@ -708,7 +950,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Calculate an export header solely based on the contents of a JAR file
-	 *
+	 * 
 	 * @param bundle
 	 *            The jar file to analyze
 	 * @return
@@ -767,7 +1009,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Return the set of unreachable code depending on exports and the bundle
 	 * activator.
-	 *
+	 * 
 	 * @return
 	 */
 	public Set<PackageRef> getUnreachable() {
@@ -796,7 +1038,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Get the version for this bnd
-	 *
+	 * 
 	 * @return version or unknown.
 	 */
 	public String getBndVersion() {
@@ -851,7 +1093,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Merge the existing manifest with the instructions but do not override
 	 * existing properties.
-	 *
+	 * 
 	 * @param manifest
 	 *            The manifest to merge with
 	 * @throws IOException
@@ -880,7 +1122,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Set the classpath for this analyzer by file.
-	 *
+	 * 
 	 * @param classpath
 	 * @throws IOException
 	 */
@@ -916,7 +1158,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Set the JAR file we are going to work in. This will read the JAR in
 	 * memory.
-	 *
+	 * 
 	 * @param jar
 	 * @return
 	 * @throws IOException
@@ -929,7 +1171,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Set the JAR directly we are going to work on.
-	 *
+	 * 
 	 * @param jar
 	 * @return
 	 */
@@ -959,7 +1201,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Try to get a Jar from a file name/path or a url, or in last resort from
 	 * the classpath name part of their files.
-	 *
+	 * 
 	 * @param name
 	 *            URL or filename relative to the base
 	 * @param from
@@ -1050,7 +1292,7 @@ public class Analyzer extends Processor {
 	 * Bnd is case sensitive for the instructions so we better check people are
 	 * not using an invalid case. We do allow this to set headers that should
 	 * not be processed by us but should be used by the framework.
-	 *
+	 * 
 	 * @param properties
 	 *            Properties to verify.
 	 */
@@ -1191,8 +1433,15 @@ public class Analyzer extends Processor {
 					if (!classpathExports.containsKey(ref)) {
 						// TODO e.getValue().put(SOURCE_DIRECTIVE,
 						// jar.getBsn()+"-"+jar.getVersion());
+						Attrs attrs = e.getValue();
 
-						classpathExports.put(ref, e.getValue());
+						//
+						// Fixup any old style specification versions
+						//
+
+						fixupOldStyleVersions(attrs);
+
+						classpathExports.put(ref, attrs);
 					}
 				}
 
@@ -1209,11 +1458,18 @@ public class Analyzer extends Processor {
 		}
 	}
 
+	private void fixupOldStyleVersions(Attrs attrs) {
+		if (attrs.containsKey(SPECIFICATION_VERSION) && attrs.getVersion() == null) {
+			attrs.put("version", attrs.get(SPECIFICATION_VERSION));
+			attrs.remove(SPECIFICATION_VERSION);
+		}
+	}
+
 	/**
 	 * Find some more information about imports in manifest and other places. It
 	 * is assumed that the augmentsExports has already copied external attrs
 	 * from the classpathExports.
-	 *
+	 * 
 	 * @throws Exception
 	 */
 	void augmentImports(Packages imports, Packages exports) throws Exception {
@@ -1280,7 +1536,7 @@ public class Analyzer extends Processor {
 				if (exportAttributes.containsKey(IMPORT_DIRECTIVE))
 					importAttributes.put(IMPORT_DIRECTIVE, exportAttributes.get(IMPORT_DIRECTIVE));
 
-				fixupAttributes(importAttributes);
+				fixupAttributes(packageRef,importAttributes);
 				removeAttributes(importAttributes);
 
 				String result = importAttributes.get(Constants.VERSION_ATTRIBUTE);
@@ -1318,7 +1574,7 @@ public class Analyzer extends Processor {
 	 * Find the packages we depend on, where we implement an interface that is a
 	 * Provider Type. These packages, when we import them, must use the provider
 	 * policy.
-	 *
+	 * 
 	 * @throws Exception
 	 */
 	Set<PackageRef> findProvidedPackages() throws Exception {
@@ -1352,7 +1608,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Provide any macro substitutions and versions for exported packages.
-	 *
+	 * 
 	 * @throws IOException
 	 */
 
@@ -1366,14 +1622,11 @@ public class Analyzer extends Processor {
 				if (exporterAttributes != null) {
 					for (Map.Entry<String,String> entry : exporterAttributes.entrySet()) {
 						String key = entry.getKey();
-						if (key.equalsIgnoreCase(SPECIFICATION_VERSION))
-							key = VERSION_ATTRIBUTE;
 
 						// dont overwrite and no directives
-						if (!key.endsWith(":") && !attributes.containsKey(key)) {
-							verifyAttribute(exporterAttributes.get("from:"), "package info for " + packageRef, key,
-									entry.getValue());
-							attributes.put(key, entry.getValue());
+						if (!key.endsWith(":")) {
+							if (!attributes.containsKey(key))
+								attributes.put(key, entry.getValue());
 						}
 					}
 				}
@@ -1381,22 +1634,27 @@ public class Analyzer extends Processor {
 			finally {
 				unsetProperty(CURRENT_PACKAGE);
 			}
-			fixupAttributes(attributes);
+			fixupAttributes(packageRef, attributes);
 			removeAttributes(attributes);
 		}
 	}
 
 	/**
 	 * Fixup Attributes Execute any macros on an export and
+	 * @throws IOException 
 	 */
 
-	void fixupAttributes(Attrs attributes) {
+	void fixupAttributes(PackageRef packageRef, Attrs attributes) throws IOException {
 		// Convert any attribute values that have macros.
 		for (String key : attributes.keySet()) {
 			String value = attributes.get(key);
 			if (value.indexOf('$') >= 0) {
 				value = getReplacer().process(value);
 				attributes.put(key, value);
+			}
+			if ( !key.endsWith(":")) {
+				String from = attributes.get("from:");
+				verifyAttribute(from, "package info for " + packageRef, key, value);
 			}
 		}
 
@@ -1428,7 +1686,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Calculate a version from a version policy.
-	 *
+	 * 
 	 * @param version
 	 *            The actual exported version
 	 * @param impl
@@ -1447,7 +1705,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Add the uses clauses. This method iterates over the exports and cal
-	 *
+	 * 
 	 * @param exports
 	 * @param uses
 	 * @throws MojoExecutionException
@@ -1530,7 +1788,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Transitively remove all elemens from unreachable through the uses link.
-	 *
+	 * 
 	 * @param name
 	 * @param unreachable
 	 */
@@ -1550,78 +1808,8 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Helper method to set the package info resource
-	 *
-	 * @param dir
-	 * @param key
-	 * @param value
-	 * @throws Exception
-	 */
-	static Pattern	OLD_PACKAGEINFO_SYNTAX_P	= Pattern.compile("class\\s+(.+)\\s+version\\s+(" + Verifier.VERSION_S
-														+ ")");
-
-	void getExportVersionsFromPackageInfo(PackageRef packageRef, Resource r, Packages classpathExports)
-			throws Exception {
-		if (r == null)
-			return;
-
-		Properties p = new Properties();
-		try {
-			InputStream in = r.openInputStream();
-			try {
-				p.load(in);
-			}
-			finally {
-				in.close();
-			}
-			Attrs map = classpathExports.get(packageRef);
-			if (map == null) {
-				classpathExports.put(packageRef, map = new Attrs());
-			}
-			for (Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
-				String key = t.nextElement();
-				String propvalue = p.getProperty(key);
-
-				if (key.equalsIgnoreCase("include")) {
-
-					// Ouch, could be really old syntax
-					// We ignore the include part upto we
-					// ignored it long before.
-
-					Matcher m = OLD_PACKAGEINFO_SYNTAX_P.matcher(propvalue);
-					if (m.matches()) {
-						key = Constants.VERSION_ATTRIBUTE;
-						propvalue = m.group(2);
-						if (isPedantic())
-							warning("found old syntax in package info in package %s, from resource %s", packageRef, r);
-					}
-				}
-
-				String value = map.get(key);
-				if (value == null) {
-					value = propvalue;
-
-					// Messy, to allow directives we need to
-					// allow the value to start with a ':' upto we cannot
-					// encode this in a property name
-
-					if (value.startsWith(":")) {
-						key = key + ":";
-						value = value.substring(1);
-					}
-					map.put(key, value);
-					map.put("from:", r.toString());
-				}
-			}
-		}
-		catch (Exception e) {
-			msgs.NoSuchFile_(r);
-		}
-	}
-
-	/**
 	 * Verify an attribute
-	 *
+	 * 
 	 * @param f
 	 * @param where
 	 * @param key
@@ -1631,15 +1819,12 @@ public class Analyzer extends Processor {
 	private void verifyAttribute(String path, String where, String key, String value) throws IOException {
 		SetLocation location;
 		if (!Verifier.isExtended(key)) {
-			location = error("%s attribute [%s='%s'], key must be an EXTENDED (CORE1.3.2 %s)", where, key, value,
-					Verifier.EXTENDED_S);
+			location = error("%s attribute [%s='%s'], key must be an EXTENDED (CORE1.3.2 %s). From %s", where, key, value,
+					Verifier.EXTENDED_S, path);
 		} else if (value == null || value.trim().length() == 0) {
 			location = error(
-					"%s attribute [%s='%s'], value is empty which is not allowed in ARGUMENT_S (CORE1.3.2 %s)", where,
-					key, value, Verifier.ARGUMENT_S);
-		} else if (!Verifier.isArgument(value)) {
-			location = error("%s attribute [%s='%s'], value not an ARGUMENT_S (CORE1.3.2 %s)", where, key, value, key,
-					Verifier.ARGUMENT_S);
+					"%s attribute [%s='%s'], value is empty which is not allowed in ARGUMENT_S (CORE1.3.2 %s). From %s", where,
+					key, value, Verifier.ARGUMENT_S, path);
 		} else
 			return;
 		if (path != null) {
@@ -1690,7 +1875,7 @@ public class Analyzer extends Processor {
 	 * Findpath looks through the contents of the JAR and finds paths that end
 	 * with the given regular expression ${findpath (; reg-expr (; replacement)?
 	 * )? }
-	 *
+	 * 
 	 * @param args
 	 * @return
 	 */
@@ -1871,7 +2056,7 @@ public class Analyzer extends Processor {
 	 * We traverse through all the classes that we can find and calculate the
 	 * contained and referred set and uses. This method ignores the Bundle
 	 * classpath.
-	 *
+	 * 
 	 * @param jar
 	 * @param contained
 	 * @param referred
@@ -1893,39 +2078,19 @@ public class Analyzer extends Processor {
 					String relativeDir = relativePath.substring(0, n);
 
 					PackageRef packageRef = getPackageRef(relativeDir);
-					if (!packageRef.isMetaData() && !contained.containsKey(packageRef)) {
-						contained.put(packageRef);
-
-						// For each package we encounter for the first
-						// time. Unfortunately we can only do this once
-						// we found a class upto the bcp has a tendency
-						// to overlap
-						if (!packageRef.isMetaData()) {
-							Resource pinfo = jar.getResource(prefix + packageRef.getPath() + "/packageinfo");
-							getExportVersionsFromPackageInfo(packageRef, pinfo, classpathExports);
-						}
-					}
+					learnPackage(jar, packageRef, contained);
 				}
 
 				// Check class resources, we need to analyze them
 				if (path.endsWith(".class")) {
 					Resource resource = jar.getResource(path);
 					Clazz clazz;
-					Attrs info = null;
 
 					try {
 						InputStream in = resource.openInputStream();
 						clazz = new Clazz(this, path, resource);
 						try {
-							// Check if we have a package-info
-							if (relativePath.endsWith("/package-info.class")) {
-								// package-info can contain an Export annotation
-								info = new Attrs();
-								parsePackageInfoClass(clazz, info);
-							} else {
-								// Otherwise we just parse it simply
-								clazz.parseClassFile();
-							}
+							clazz.parseClassFile();
 						}
 						finally {
 							in.close();
@@ -1946,16 +2111,7 @@ public class Analyzer extends Processor {
 					} else {
 						classspace.put(clazz.getClassName(), clazz);
 						PackageRef packageRef = clazz.getClassName().getPackageRef();
-
-						if (!contained.containsKey(packageRef)) {
-							contained.put(packageRef);
-							if (!packageRef.isMetaData()) {
-								Resource pinfo = jar.getResource(prefix + packageRef.getPath() + "/packageinfo");
-								getExportVersionsFromPackageInfo(packageRef, pinfo, classpathExports);
-							}
-						}
-						if (info != null)
-							contained.merge(packageRef, false, info);
+						learnPackage(jar, packageRef, contained);
 
 						// Look at the referred packages
 						// and copy them to our baseline
@@ -1981,114 +2137,11 @@ public class Analyzer extends Processor {
 		return true;
 	}
 
-	static Pattern	OBJECT_REFERENCE	= Pattern.compile("L([^/]+/)*([^;]+);");
-
-	private void parsePackageInfoClass(final Clazz clazz, final Attrs info) throws Exception {
-		clazz.parseClassFileWithCollector(new ClassDataCollector() {
-			@Override
-			public void annotation(Annotation a) {
-				String name = a.name.getFQN();
-				if (aQute.bnd.annotation.Version.class.getName().equals(name)) {
-
-					// Check version
-					String version = a.get("value");
-					if (!info.containsKey(Constants.VERSION_ATTRIBUTE)) {
-						if (version != null) {
-							version = getReplacer().process(version);
-							if (Verifier.VERSION.matcher(version).matches())
-								info.put(VERSION_ATTRIBUTE, version);
-							else
-								error("Export annotation in %s has invalid version info: %s", clazz, version);
-						}
-					} else {
-						// Verify this matches with packageinfo
-						String presentVersion = info.get(VERSION_ATTRIBUTE);
-						try {
-							Version av = new Version(presentVersion);
-							Version bv = new Version(version);
-							if (!av.equals(bv)) {
-								error("Version from annotation for %s differs with packageinfo or Manifest", clazz
-										.getClassName().getFQN());
-							}
-						}
-						catch (Exception e) {
-							// Ignore
-						}
-					}
-				} else if (name.equals(Export.class.getName())) {
-
-					// Check mandatory attributes
-					Attrs attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY), clazz, getReplacer());
-					if (!attrs.isEmpty()) {
-						info.putAll(attrs);
-						info.put(MANDATORY_DIRECTIVE, Processor.join(attrs.keySet()));
-					}
-
-					// Check optional attributes
-					attrs = doAttrbutes((Object[]) a.get(Export.OPTIONAL), clazz, getReplacer());
-					if (!attrs.isEmpty()) {
-						info.putAll(attrs);
-					}
-
-					// Check Included classes
-					Object[] included = a.get(Export.INCLUDE);
-					if (included != null && included.length > 0) {
-						StringBuilder sb = new StringBuilder();
-						String del = "";
-						for (Object i : included) {
-							Matcher m = OBJECT_REFERENCE.matcher((String) i);
-							if (m.matches()) {
-								sb.append(del);
-								sb.append(m.group(2));
-								del = ",";
-							}
-						}
-						info.put(INCLUDE_DIRECTIVE, sb.toString());
-					}
-
-					// Check Excluded classes
-					Object[] excluded = a.get(Export.EXCLUDE);
-					if (excluded != null && excluded.length > 0) {
-						StringBuilder sb = new StringBuilder();
-						String del = "";
-						for (Object i : excluded) {
-							Matcher m = OBJECT_REFERENCE.matcher((String) i);
-							if (m.matches()) {
-								sb.append(del);
-								sb.append(m.group(2));
-								del = ",";
-							}
-						}
-						info.put(EXCLUDE_DIRECTIVE, sb.toString());
-					}
-
-					// Check Uses
-					Object[] uses = a.get(Export.USES);
-					if (uses != null && uses.length > 0) {
-						String old = info.get(USES_DIRECTIVE);
-						if (old == null)
-							old = "";
-						StringBuilder sb = new StringBuilder(old);
-						String del = sb.length() == 0 ? "" : ",";
-
-						for (Object use : uses) {
-							sb.append(del);
-							sb.append(use);
-							del = ",";
-						}
-						info.put(USES_DIRECTIVE, sb.toString());
-					}
-				}
-			}
-
-		});
-	}
-
 	/**
 	 * Clean up version parameters. Other builders use more fuzzy definitions of
 	 * the version syntax. This method cleans up such a version to match an OSGi
 	 * version.
-	 *
+	 * 
 	 * @param VERSION_STRING
 	 * @return
 	 */
@@ -2170,11 +2223,11 @@ public class Analyzer extends Processor {
 	 * TRhe cleanup version got confused when people used numeric dates like
 	 * 201209091230120 as qualifiers. These are too large for Integers. This
 	 * method checks if the all digit string fits in an integer.
-	 *
+	 * 
 	 * <pre>
 	 * maxint = 2,147,483,647 = 10 digits
 	 * </pre>
-	 *
+	 * 
 	 * @param integer
 	 * @return if this fits in an integer
 	 */
@@ -2300,7 +2353,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Locate a resource on the class path.
-	 *
+	 * 
 	 * @param path
 	 *            Path of the reosurce
 	 * @return A resource or <code>null</code>
@@ -2316,7 +2369,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Find a clazz on the class path. This class has been parsed.
-	 *
+	 * 
 	 * @param path
 	 * @return
 	 */
@@ -2346,7 +2399,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Answer the bundle version.
-	 *
+	 * 
 	 * @return
 	 */
 	public String getVersion() {
@@ -2484,7 +2537,7 @@ public class Analyzer extends Processor {
 	 * <li>!com.foo.* (throws away any match for com.foo.*)</li>
 	 * </ul>
 	 * Enough rope to hang the average developer I would say.
-	 *
+	 * 
 	 * @param instructions
 	 *            the instructions with patterns.
 	 * @param source
@@ -2602,7 +2655,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Calculate the output file for the given target. The strategy is:
-	 *
+	 * 
 	 * <pre>
 	 * parameter given if not null and not directory
 	 * if directory, this will be the output directory
@@ -2610,7 +2663,7 @@ public class Analyzer extends Processor {
 	 * name of the source file if exists
 	 * Untitled-[n]
 	 * </pre>
-	 *
+	 * 
 	 * @param output
 	 *            may be null, otherwise a file path relative to base
 	 */
@@ -2658,7 +2711,7 @@ public class Analyzer extends Processor {
 	 * Utility function to carefully save the file. Will create a backup if the
 	 * source file has the same path as the output. It will also only save if
 	 * the file was modified or the force flag is true
-	 *
+	 * 
 	 * @param output
 	 *            the output file, if null {@link #getOutputFile(String)} is
 	 *            used.
@@ -2720,7 +2773,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Remove the own references and optional java references from the uses lib
-	 *
+	 * 
 	 * @param apiUses
 	 * @param removeJava
 	 * @return
@@ -2742,7 +2795,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Return the classes for a given source package.
-	 *
+	 * 
 	 * @param source
 	 *            the source package
 	 * @return a set of classes for the requested package.
@@ -2758,7 +2811,7 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Create a cross reference from package source, to packages in dest
-	 *
+	 * 
 	 * @param source
 	 * @param dest
 	 * @param sourceModifiers
@@ -2852,44 +2905,44 @@ public class Analyzer extends Processor {
 		table.put("Exported", getExports().entrySet());
 		table.put("Referred", getReferred().entrySet());
 		table.put("Referred", getReferred().entrySet());
-		table.put("Bundle Symbolic Name",getBsn());
-		table.put("Execution Environments", ees );
+		table.put("Bundle Symbolic Name", getBsn());
+		table.put("Execution Environments", ees);
 	}
 
 	/**
 	 * Return the EEs
 	 */
-	
+
 	public SortedSet<Clazz.JAVA> getEEs() {
 		return ees;
 	}
-	
-	
+
 	/**
-	 * Return a range expression for a filter from a version. By default this
-	 * is based on consumer compatibility. You can specify a third argument
-	 * (true) to get provider compatibility.
+	 * Return a range expression for a filter from a version. By default this is
+	 * based on consumer compatibility. You can specify a third argument (true)
+	 * to get provider compatibility.
+	 * 
 	 * <pre>
 	 * ${frange;1.2.3}             -> (&(version>=1.2.3)(!(version>=1.3.0))
 	 * ${frange;1.2.3, true}       -> (&(version>=1.2.3)(!(version>=2.0.0))
 	 * </pre>
 	 */
 	public String _frange(String[] args) {
-		if (args.length < 2 || args.length >3) {
+		if (args.length < 2 || args.length > 3) {
 			error("Invalid filter range, 2 or 3 args ${frange;<version>[;true|false]}");
 			return null;
 		}
-		
+
 		String v = args[1];
 		if (!Verifier.isVersion(v)) {
-			error("Invalid version arg %s",v);
+			error("Invalid version arg %s", v);
 			return null;
 		}
-		
+
 		boolean isProvider = false;
-		if ( args.length == 3)
+		if (args.length == 3)
 			isProvider = Processor.isTrue(args[2]);
-		
+
 		Version low = new Version(v);
 		Version high;
 		if (isProvider)
