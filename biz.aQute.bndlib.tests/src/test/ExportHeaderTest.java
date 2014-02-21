@@ -67,6 +67,6 @@ public class ExportHeaderTest extends TestCase {
 		Map<String,String> exports = OSGiHeader.parseHeader(exph).get("test.packageinfo");
 		assertEquals("1.0.0.SNAPSHOT", exports.get(Constants.VERSION_ATTRIBUTE));
 		assertEquals("1.2.3", exports.get("Implementation-Version"));
-		assertEquals("", exports.get("Implementation-Title"));
+		assertEquals("Best Snapshot in the world", exports.get("Implementation-Title"));
 	}
 }
