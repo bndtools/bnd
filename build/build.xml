@@ -10,8 +10,8 @@
          <fileset dir="feature" includes="**/category.xml,**/feature.xml" />
       </copy>
 
-      <!-- Replace the qualifier string with a timestamp -->
-      <replace dir="${target}/features" includes="**/category.xml,**/feature.xml" token="qualifier" value="${NOW}" summary="true" />
+      <!-- Replace the @qualifier@ string with a timestamp -->
+      <replace dir="${target}/features" includes="**/category.xml,**/feature.xml" token="@qualifier@" value="${NOW}" summary="true" />
 
       <!-- Zip Main Feature -->
       <zip destfile="${target}/features/main/bndtools.feature.jar">
