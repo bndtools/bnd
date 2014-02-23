@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="bndtools" default="none">
+  <!-- Default Target -->
+  <target name="none">
+    <fail message="This ant script should never be called directly." />
+  </target>
+
+  <!-- Initialisation -->
+  <target name="init" unless="initialized">
+    <dirname  property="projectdir"   file="${ant.file}" />
+    <dirname  property="workspacedir" file="${projectdir}" />
+    <property name="target"           value="${projectdir}/generated" />
+    <property name="initialized"      value="set"          />
+  </target>
+
+  <!-- Called by the Eclipse embedded ANT application -->
+  <target name="p2Main" depends="init">
+    <p2.publish.featuresAndBundles
+        source="${workspacedir}"
+        repository="file:${target}/p2"
+        append="false"
+        repositoryname="Bndtools"
+        compress="true">
+      <features dir="${target}/features/main"   includes="*.jar"/>
+      <bundles  dir="${target}/plugins/main"    includes="*.jar"/>
+    </p2.publish.featuresAndBundles>
+  </target>
+
+  <!-- Called by the Eclipse embedded ANT application -->
+  <target name="p2Extras" depends="init">
+    <p2.publish.featuresAndBundles
+        source="${workspacedir}"
+        repository="file:${target}/extras/p2/child"
+        append="false"
+        repositoryname="BndtoolsExtras"
+        compress="true">
+      <features dir="${target}/features/extras" includes="*.jar"/>
+      <bundles  dir="${target}/plugins/extras"  includes="*.jar"/>
+    </p2.publish.featuresAndBundles>
+  </target>
+</project>

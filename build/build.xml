@@ -72,7 +72,7 @@
 			<arg line="-consoleLog"/>
 			<arg line="-application org.eclipse.ant.core.antRunner"/>
 			<arg line="-data ${target}"/>
-			<arg line="-buildfile build.xml __internal_p2"/>
+			<arg line="-buildfile p2.xml p2Main"/>
 		</java>
 
 		<!-- Append the category info -->
@@ -91,7 +91,7 @@
 			<arg line="-consoleLog"/>
 			<arg line="-application org.eclipse.ant.core.antRunner"/>
 			<arg line="-data ${target}"/>
-			<arg line="-buildfile build.xml __internal_p2_extras"/>
+			<arg line="-buildfile p2.xml p2Extras"/>
 		</java>
 		
 		<!-- Append the category info -->
@@ -130,32 +130,4 @@
 			<zipfileset dir="${target}/extras/p2" includes="**"/>
 		</zip>
 	</target>
-	
-	<!-- Called internally by the Eclipse embedded ANT application -->
-	<target name="__internal_p2" depends="init">
-		<p2.publish.featuresAndBundles
-				source="${workspacedir}"
-				repository="file:${target}/p2"
-				append="false"
-				repositoryname="Bndtools"
-				compress="true">
-			<features dir="${target}/features/main" includes="*.jar"/>
-			<bundles dir="${target}/plugins/main" includes="*.jar"/>
-		</p2.publish.featuresAndBundles>
-	</target>
-
-	<!-- Called internally by the Eclipse embedded ANT application -->
-	<target name="__internal_p2_extras" depends="init">
-		<p2.publish.featuresAndBundles
-				source="${workspacedir}"
-				repository="file:${target}/extras/p2/child"
-				append="false"
-				repositoryname="BndtoolsExtras"
-				compress="true"
-			>
-			<features dir="${target}/features/extras" includes="*.jar"/>
-			<bundles dir="${target}/plugins/extras" includes="*.jar"/>
-		</p2.publish.featuresAndBundles>
-	</target>
-
 </project>
