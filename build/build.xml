@@ -46,9 +46,9 @@
 		<unjar dest="${target}/plugins/main" src="${target}/${project.name}.jar">
 		    <patternset>
 		      <!-- mirror these excludes as includes in the unjar below -->
-		      <exclude name="*ace*"/>
-		      <exclude name="*amdatu*"/>
-		      <exclude name="*template.dm*"/>
+		      <exclude name="*ace*.jar"/>
+		      <exclude name="*amdatu*.jar"/>
+		      <exclude name="*template.dm*.jar"/>
 
 		      <include name="*.jar"/>
 		    </patternset>
@@ -58,9 +58,9 @@
 		<unjar dest="${target}/plugins/extras" src="${target}/${project.name}.jar">
 			<patternset>
 			  <!-- mirror these includes as excludes in the unjar above -->
-			  <include name="*ace*"/>
-			  <include name="*amdatu*"/>
-			  <include name="*template.dm*"/>
+			  <include name="*ace*.jar"/>
+			  <include name="*amdatu*.jar"/>
+			  <include name="*template.dm*.jar"/>
 			</patternset>
 		</unjar>
 	</target>
