@@ -18,28 +18,5 @@
 # Missing here:
 # bndtools.utils                            Always used as Conditional-Package
 
-Include-Resource:\
-	${repo;bndtools.ace.launcher;latest},\
-	${repo;bndtools.ace.plugin;latest},\
-	${repo;bndtools.api;latest},\
-	${repo;bndtools.builder;latest},\
-	${repo;bndtools.core;latest},\
-	${repo;bndtools.gradle.template;latest},\
-	${repo;bndtools.jareditor;latest},\
-	${repo;bndtools.release;latest},\
-	${repo;bndtools.repository.amdatu;latest},\
-	${repo;bndtools.repository.base;latest},\
-	${repo;bndtools.repository.maven;latest},\
-	${repo;bndtools.template.amdatu;latest},\
-	${repo;bndtools.template.dm;latest},\
-	${repo;org.bndtools.embeddedrepo;latest},\
-	${repo;biz.aQute.bndlib;${bndlib-version-base}},\
-	${repo;biz.aQute.repository;${aQute-repository-base}},\
-	${repo;biz.aQute.resolve;${aQute-resolve-base}},\
-	${repo;javax.xml;latest},\
-	${repo;javax.xml.stream;latest},\
-	${repo;org.apache.ace.bnd.repository;latest}
-
-# Missing here:
-# ${repo;bndtools.bndplugins;latest}
-# ${repo;bndtools.utils;latest}             Always used as Conditional-Package
+-sub: \
+	*.bnd
