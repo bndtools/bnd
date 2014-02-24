@@ -71,6 +71,27 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	/**
+	 * If a package-info.java + packageinfo are present then
+	 * normally package-info takes precedence if it sets a Version.
+	 * This test sees that if no version is sets, packageinfo is used.
+	 */
+	public void testPackageInfo_no_version() throws Exception {
+		Builder b = new Builder();
+		try {
+			b.addClasspath(new File("bin"));
+			b.setExportPackage("test.packageinfo.both_no_version");
+			Jar build = b.build();
+			assertTrue(b.check());
+			
+			Attrs imports = b.getExports().getByFQN("test.packageinfo.both_no_version");
+			assertEquals("1.2.3", imports.getVersion());
+		}
+		finally {
+			b.close();
+		}
+
+	}
+	/**
 	 * An old osgi 3.0.0 jar had an old packageinfo in it. This included some
 	 * never well developed syntax which now clashes with the proprty syntax.
 	 * 

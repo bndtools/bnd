@@ -358,7 +358,7 @@ public class Analyzer extends Processor {
 			Resource resource = jar.getResource(packageRef.getBinary() + "/package-info.class");
 			if (resource != null) {
 				Attrs info = parsePackageInfoClass(resource);
-				if (info != null) {
+				if (info != null && info.containsKey(VERSION_ATTRIBUTE)) {
 					info.put("from:", resource.toString());
 					map.put(packageRef, info);
 					return;
