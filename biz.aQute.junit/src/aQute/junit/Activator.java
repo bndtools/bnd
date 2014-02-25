@@ -81,7 +81,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		trace("run unresolved %s", unresolved);
 		
 		if (unresolved == null || unresolved.equalsIgnoreCase("true")) {
-			int err = test(null, "aQute.junit.ResolvedTester", null);
+			int err = test(context.getBundle(), "aQute.junit.UnresolvedTester", null);
 			if (err != 0)
 				System.exit(err);
 		}
