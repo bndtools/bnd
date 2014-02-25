@@ -40,6 +40,11 @@ public interface TesterConstants {
 	String	TESTER_TRACE		= "tester.trace";
 
 	/**
+	 * Do not run the resolved test
+	 */
+	String TESTER_UNRESOLVED = "tester.unresolved";
+
+	/**
 	 * Use a new thread to run the tests on (might be needed if a test uses the main thread for some 
 	 * other reason) and for backward compatibility.
 	 * <p/>

@@ -31,16 +31,21 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 					launcher.getRunProperties().put(TESTER_HOST, "" + host);
 
 			}
+			launcher.getRunProperties().put(TESTER_UNRESOLVED, project.getProperty(Constants.TESTUNRESOLVED, "true"));
+
 			launcher.getRunProperties().put(TESTER_DIR, getReportDir().getAbsolutePath());
 			launcher.getRunProperties().put(TESTER_CONTINUOUS, "" + getContinuous());
 			if (Processor.isTrue(project.getProperty(Constants.RUNTRACE)))
 				launcher.getRunProperties().put(TESTER_TRACE, "true");
-			
+
 			try {
-				// use reflection to avoid NoSuchMethodError due to change in API
+				// use reflection to avoid NoSuchMethodError due to change in
+				// API
 				File cwd = (File) getClass().getMethod("getCwd").invoke(this);
-				if (cwd != null) launcher.setCwd(cwd);
-			} catch (NoSuchMethodException e){
+				if (cwd != null)
+					launcher.setCwd(cwd);
+			}
+			catch (NoSuchMethodException e) {
 				// ignore
 			}
 

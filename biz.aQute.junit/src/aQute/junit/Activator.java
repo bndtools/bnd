@@ -77,6 +77,15 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			}
 		}
 
+		String unresolved = context.getProperty(TESTER_UNRESOLVED);
+		trace("run unresolved %s", unresolved);
+		
+		if (unresolved == null || unresolved.equalsIgnoreCase("true")) {
+			int err = test(null, "aQute.junit.ResolvedTester", null);
+			if (err != 0)
+				System.exit(err);
+		}
+
 		if (testcases == null) {
 			trace("automatic testing of all bundles with Test-Cases header");
 			try {

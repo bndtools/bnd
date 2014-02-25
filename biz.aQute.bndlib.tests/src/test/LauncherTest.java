@@ -301,4 +301,20 @@ public class LauncherTest extends TestCase {
 		l.getRunProperties().put("test.cmd", cmd);
 		assertEquals(rv, l.launch());
 	}
+	
+	public void testUnresolved() throws Exception {
+		Project project = getProject();
+		project.clear();
+		project.setProperty(Constants.RUNTRACE, "true");
+		
+		String runbundles = project.getProperty( Constants.RUNBUNDLES);
+		project.setProperty(Constants.RUNBUNDLES, runbundles+",jar/mandatorynoversion.jar;version=file");
+		ProjectTester tester = project.getProjectTester();
+
+		ProjectLauncher l = tester.getProjectLauncher();
+		l.addRunBundle("jar/mandatorynoversion.jar");
+		l.setTimeout(5000, TimeUnit.MILLISECONDS);
+		l.setTrace(true);
+		assertEquals(1, l.launch());
+	}
 }

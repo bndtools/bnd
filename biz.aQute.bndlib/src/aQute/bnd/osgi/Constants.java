@@ -176,6 +176,7 @@ public interface Constants {
 	String							TESTPATH									= "-testpath";
 	String							TESTCONTINUOUS								= "-testcontinuous";
 	String							TESTSOURCES									= "-testsources";
+	String							TESTUNRESOLVED								= "-testunresolved";
 	String							UNDERTEST									= "-undertest";
 	String							UPTO										= "-upto";
 	String							VERBOSE										= "-verbose";
@@ -198,7 +199,7 @@ public interface Constants {
 			RUNVM, RUNPROGRAMARGS, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION,
 			DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT,
 			STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS, UPTO,
-			INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK
+			INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK, TESTUNRESOLVED
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make
