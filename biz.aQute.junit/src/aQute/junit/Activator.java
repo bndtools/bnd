@@ -77,13 +77,34 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			}
 		}
 
+
+		//
+		// Jenkins does not detect test failures unless reported
+		// by JUnit XML output. If we have an unresolved failure
+		// we timeout. The following will test if there are any
+		// unresolveds and report this as a JUnit failure. It can 
+		// be disabled with -testunresolved=false
+		//
+		
 		String unresolved = context.getProperty(TESTER_UNRESOLVED);
 		trace("run unresolved %s", unresolved);
 		
 		if (unresolved == null || unresolved.equalsIgnoreCase("true")) {
-			int err = test(context.getBundle(), "aQute.junit.UnresolvedTester", null);
-			if (err != 0)
-				System.exit(err);
+			//
+			// Check if there are any unresolved bundles.
+			// If yes, we run a test case to get a proper JUnit report
+			//
+			for ( Bundle b : context.getBundles()) {
+				if ( b.getState() == Bundle.INSTALLED) {
+					//
+					// Now do it again but as a test case
+					// so we get a proper JUnit report
+					//
+					int err = test(context.getBundle(), "aQute.junit.UnresolvedTester", null);
+					if (err != 0)
+						System.exit(err);
+				}
+			}
 		}
 
 		if (testcases == null) {

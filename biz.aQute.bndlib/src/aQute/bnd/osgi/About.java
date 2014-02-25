@@ -40,6 +40,9 @@ import aQute.bnd.version.*;
 public class About {
 	public static Version				_2_3		= new Version(2, 3, 0);
 	public static String[]				CHANGES_2_3	= {
+			"Testing will look for unresolveds and fail unless -testunresolved=false is set",
+			"Cleaned up version augmentation. Finding a version has priority properties, Manifest, "
+					+ "package-info.java with Version annotation, packageinfo",
 			"Added annotations to create manifest headers: BundleCopyright, BundleDevelopers, BundleContributors, "
 					+ "BundleDocURL, RequireCapability, ProvideCapability. These headers work also when applied to a "
 					+ "custom annotation that is then applied to a class",
