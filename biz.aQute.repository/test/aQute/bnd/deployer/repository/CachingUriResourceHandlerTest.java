@@ -2,6 +2,7 @@ package aQute.bnd.deployer.repository;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 import junit.framework.*;
 import test.lib.*;
@@ -27,9 +28,12 @@ public class CachingUriResourceHandlerTest extends TestCase {
 	}
 
 	public static void testFailedLoadFromRemote() throws Exception {
+		String testDirName = "testdata/httpcache/2";
+		File cacheDir = new File(testDirName);
+		URI baseUri = new URI("http://localhost:18083/bundles");
+		URI uri = new URI(baseUri + "/dummybundle.jar");
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
-						"testdata/httpcache/2"), new DefaultURLConnector(), (String) null);
+				uri, cacheDir, new DefaultURLConnector(), (String) null);
 
 		try {
 			handle.request();
@@ -37,13 +41,26 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		}
 		catch (IOException e) {
 			// expected
+
+			/* cleanup */
+			List<String> cacheFiles = Arrays.asList(cacheDir.list());
+			String uriCacheDir = URLEncoder.encode(baseUri.toURL().toExternalForm(), "UTF-8");
+			assert(cacheFiles.size() == 1 || cacheFiles.size() == 2);
+			assert(cacheFiles.contains(uriCacheDir));
+			if (cacheFiles.size() == 2) {
+				assert(cacheFiles.contains(".gitignore"));
+			}
+			new File(testDirName + "/" + uriCacheDir).delete();
 		}
 	}
 
 	public static void testLoadFromRemote() throws Exception {
+		String testDirName = "testdata/httpcache/3";
+		File cacheDir = new File(testDirName);
+		URI baseUri = new URI("http://localhost:18083/bundles");
+		URI uri = new URI(baseUri + "/dummybundle.jar");
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
-						"testdata/httpcache/3"), new DefaultURLConnector(), (String) null);
+				uri, cacheDir, new DefaultURLConnector(), (String) null);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
 		try {
@@ -58,6 +75,16 @@ public class CachingUriResourceHandlerTest extends TestCase {
 
 			result.delete();
 			shaFile.delete();
+
+			/* cleanup */
+			List<String> cacheFiles = Arrays.asList(cacheDir.list());
+			String uriCacheDir = URLEncoder.encode(baseUri.toURL().toExternalForm(), "UTF-8");
+			assert(cacheFiles.size() == 1 || cacheFiles.size() == 2);
+			assert(cacheFiles.contains(uriCacheDir));
+			if (cacheFiles.size() == 2) {
+				assert(cacheFiles.contains(".gitignore"));
+			}
+			new File(testDirName + "/" + uriCacheDir).delete();
 		}
 		finally {
 			httpd.stop();
@@ -107,19 +134,35 @@ public class CachingUriResourceHandlerTest extends TestCase {
 	}
 
 	public static void testEmptyCache() throws Exception {
-		File cached = new File("testdata/httpcache/6/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
+		String testDirName = "testdata/httpcache/6";
+		File cacheDir = new File(testDirName);
+		URI baseUri = new URI("http://localhost:18083/bundles");
+		String jarName = "dummybundle.jar";
+		URI uri = new URI(baseUri + "/" + jarName);
+		String uriCacheDir = URLEncoder.encode(baseUri.toURL().toExternalForm(), "UTF-8");
+
+		File cached = new File(testDirName + "/" + uriCacheDir + "/" + jarName);
 		cached.delete();
 
 		File shaFile = new File(cached.getAbsolutePath() + AbstractIndexedRepo.REPO_INDEX_SHA_EXTENSION);
 		shaFile.delete();
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File("testdata/httpcache/6"), new DefaultURLConnector(), EXPECTED_SHA);
+				uri, cacheDir, new DefaultURLConnector(), EXPECTED_SHA);
 		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
 		try {
 			File result = handle.request();
 			assertEquals(cached, result);
 			assertEquals(EXPECTED_SHA, IO.collect(shaFile));
+
+			/* cleanup */
+			List<String> cacheFiles = Arrays.asList(cacheDir.list());
+			assert(cacheFiles.size() == 1 || cacheFiles.size() == 2);
+			assert(cacheFiles.contains(uriCacheDir));
+			if (cacheFiles.size() == 2) {
+				assert(cacheFiles.contains(".gitignore"));
+			}
+			IO.delete(new File(testDirName + "/" + uriCacheDir));
 		}
 		finally {
 			httpd.stop();
