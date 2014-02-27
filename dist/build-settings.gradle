@@ -1,0 +1,9 @@
+assert(project != rootProject)
+
+
+/* Index task overrides */
+ext.gradleBuild_indexDirectories               = "bundles;bnd"
+ext.gradleBuild_indexOBRUncompressed           = true
+ext.gradleBuild_indexOBRCompressed             = true
+ext.gradleBuild_indexR5Uncompressed            = true
+ext.gradleBuild_indexR5Compressed              = true

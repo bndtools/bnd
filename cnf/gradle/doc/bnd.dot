@@ -1,0 +1,211 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ */
+
+
+digraph GradleSetup {
+  label="Gradle Build Setup"
+  labelloc=t
+  labeljust=l
+
+  subgraph cluster1 {
+    label="Java Plugin";
+    labelloc=b
+    labeljust=l
+    style=filled;
+    fillcolor=lightgrey;
+    color=black;
+
+    subgraph cluster11 {
+      label="";
+      style=invis;
+      compileJava          [shape=box, style=filled, fillcolor=lightcyan, label="compileJava"         ]
+      processResources     [shape=box, style=filled, fillcolor=lightcyan, label="processResources"    ]
+      classes              [shape=box, style=filled, fillcolor=lightcyan, label="classes"             ]
+      jar                  [shape=box, style=filled, fillcolor=lightcyan, label="jar"                 ]
+    }
+
+    subgraph cluster12 {
+      label="";
+      style=invis;
+      compileTestJava      [shape=box, style=filled, fillcolor=lightcyan, label="compileTestJava"     ]
+      processTestResources [shape=box, style=filled, fillcolor=lightcyan, label="processTestResources"]
+      testClasses          [shape=box, style=filled, fillcolor=lightcyan, label="testClasses"         ]
+      test                 [shape=box, style=filled, fillcolor=lightcyan, label="test"                ]
+      check                [shape=box, style=filled, fillcolor=lightcyan, label="check"               ]
+    }
+
+    subgraph cluster13 {
+      label="";
+      style=invis;
+      uploadArchives       [shape=box, style=filled, fillcolor=lightcyan, label="uploadArchives"      ]
+      assemble             [shape=box, style=filled, fillcolor=lightcyan, label="assemble"            ]
+    }
+
+    build                  [shape=box, style=filled, fillcolor=lightcyan, label="build"               ]
+    javadoc                [shape=box, style=filled, fillcolor=lightcyan, label="javadoc"             ]
+    cleanJava              [shape=box, style=filled, fillcolor=lightcyan, label="clean"               ]
+
+    compileJava            -> classes
+    processResources       -> classes
+    classes                -> javadoc
+    classes                -> test
+    classes                -> compileTestJava
+    classes                -> jar
+    compileTestJava        -> testClasses
+    processTestResources   -> testClasses
+    jar                    -> uploadArchives
+    jar                    -> assemble
+    testClasses            -> test
+    assemble               -> build
+    test                   -> check
+    check                  -> build
+  }
+
+
+  subgraph cluster2 {
+    label="Bnd Projects";
+    labelloc=b
+    labeljust=l
+    style=filled;
+    fillcolor=lightgrey;
+    color=black;
+
+    subgraph cluster21 {
+      label="";
+      style=invis;
+      bundle               [shape=box, style=filled, fillcolor=cyan     , label="bundle"              ]
+      bundleTest           [shape=box, style=filled, fillcolor=cyan     , label="bundleTest"          ]
+    }
+
+    subgraph cluster22 {
+      label="";
+      style=invis;
+      release              [shape=box, style=filled, fillcolor=cyan     , label="release"             ]
+      releaseNeeded        [shape=box, style=filled, fillcolor=cyan     , label="releaseNeeded"       ]
+    }
+
+    subgraph cluster23 {
+      label="";
+      style=invis;
+      cleanBnd             [shape=box, style=filled, fillcolor=cyan     , label="clean"               ]
+      bndproperties        [shape=box, style=filled, fillcolor=cyan     , label="bndproperties"       ]
+      export               [shape=box, style=filled, fillcolor=cyan     , label="export"              ]
+    }
+
+    subgraph cluster100 {
+      label="Dist Project";
+      labelloc=b
+      labeljust=l
+      style=filled;
+      fillcolor=lightgrey;
+      color=black;
+
+      distIndexOBR           [shape=box, style=filled, fillcolor=cyan, label="indexOBR"]
+      distIndexR5            [shape=box, style=filled, fillcolor=cyan, label="indexR5"]
+      distIndex              [shape=box, style=filled, fillcolor=cyan, label="index"]
+      distDist               [shape=box, style=filled, fillcolor=cyan, label="dist"]
+
+      releaseNeeded          -> distIndexOBR
+      releaseNeeded          -> distIndexR5
+      distIndexOBR           -> distIndex
+      distIndexR5            -> distIndex
+      distIndex              -> distDist
+    }
+
+    classes                -> bundle
+    bundle                 -> compileJava        [color=red   ]
+    bundle                 -> jar                [style=dashed]
+    bundle                 -> bundleTest
+    bundle                 -> test
+    bundle                 -> release
+    bundle                 -> export
+    bundleTest             -> check
+    release                -> releaseNeeded
+    releaseNeeded          -> releaseNeeded      [color=red   ]
+  }
+
+
+  subgraph cluster3 {
+    label="Root Project";
+    labelloc=b
+    labeljust=l
+    style=filled;
+    fillcolor=lightgrey;
+    color=black;
+
+    wrapper                [shape=box, style=filled, fillcolor=cyan     , label="wrapper"             ]
+  }
+
+
+  subgraph cluster4 {
+    label="Java Projects";
+    labelloc=b
+    labeljust=l
+    style=filled;
+    fillcolor=lightgrey;
+    color=black;
+
+    subgraph cluster41 {
+      label="";
+      style=invis;
+      findbugstest         [shape=box, style=filled, fillcolor=cyan     , label="findbugstest"        ]
+      findbugsTest         [shape=box, style=filled, fillcolor=cyan     , label="findbugsTest"        ]
+    }
+
+    subgraph cluster42 {
+      label="";
+      style=invis;
+      findbugs             [shape=box, style=filled, fillcolor=cyan     , label="findbugs"            ]
+      findbugsMain         [shape=box, style=filled, fillcolor=cyan     , label="findbugsMain"        ]
+    }
+
+    classes                -> findbugsMain
+    testClasses            -> findbugsTest
+    findbugsMain           -> findbugs
+    findbugsTest           -> findbugstest
+    findbugs               -> check              [color=green ]
+    findbugstest           -> check              [color=green ]
+  }
+
+
+  subgraph cluster5 {
+    label="All Projects";
+    labelloc=b
+    labeljust=l
+    style=filled;
+    fillcolor=lightgrey;
+    color=black;
+
+    subgraph cluster21 {
+      label="";
+      style=invis;
+      indexOBR             [shape=box, style=filled, fillcolor=cyan     , label="indexOBR"            ]
+      indexR5              [shape=box, style=filled, fillcolor=cyan     , label="indexR5"             ]
+      index                [shape=box, style=filled, fillcolor=cyan     , label="index"               ]
+    }
+
+    subgraph cluster22 {
+      label="";
+      style=invis;
+      clean                [shape=box, style=filled, fillcolor=lightcyan, label="clean"               ]
+      cleanNeeded          [shape=box, style=filled, fillcolor=cyan     , label="cleanNeeded"         ]
+      distclean            [shape=box, style=filled, fillcolor=cyan     , label="distclean"           ]
+      distcleanNeeded      [shape=box, style=filled, fillcolor=cyan     , label="distcleanNeeded"     ]
+    }
+
+    indexOBR               -> index
+    indexR5                -> index
+
+    clean                  -> cleanNeeded        [color=blue  ]
+    cleanNeeded            -> cleanNeeded        [color=red   ]
+    clean                  -> distclean          [color=blue  ]
+    distclean              -> distcleanNeeded
+    distcleanNeeded        -> distcleanNeeded    [color=red   ]
+  }
+}

@@ -1,0 +1,15 @@
+assert(project != rootProject)
+
+
+distclean.doLast {
+   file("bundles").deleteDir()
+}
+
+task dist {
+  description   "Release project 'dist' and all projects it depends on, then index the release repository."
+  group         "Release"
+}
+
+indexOBR.dependsOn          += [releaseNeeded]
+indexR5.dependsOn           += [releaseNeeded]
+dist.dependsOn              += [index        ]
