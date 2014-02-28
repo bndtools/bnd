@@ -382,7 +382,8 @@ public class ResourcesTest extends TestCase {
 	}
 
 	public void testEmptyDirs2() throws Exception {
-		new File("testresources/ws/p2/Resources/empty").mkdirs();
+		File tstDir = new File("testresources/ws/p2/Resources/empty");
+		tstDir.mkdirs();
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources");
 		b.setProperty("-resourceonly", "true");
@@ -406,6 +407,7 @@ public class ResourcesTest extends TestCase {
 		}
 		assertTrue(hasDir);
 		assertFalse(hasContent);
+		IO.delete(tstDir);
 	}
 
 
