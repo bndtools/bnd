@@ -12,6 +12,33 @@ public class WorkspaceRepositoryTest extends TestCase {
 	static Workspace			workspace;
 	static WorkspaceRepository	repo;
 
+	private static void reallyClean(Workspace ws) throws Exception {
+		String wsName = ws.getBase().getName();
+		for (Project project : ws.getAllProjects()) {
+			if (("p1".equals(project.getName()) && "ws-repo-test".equals(wsName)) ||
+				("p2".equals(project.getName()) && "ws-repo-test".equals(wsName)) ||
+				("p3".equals(project.getName()) && "ws-repo-test".equals(wsName))
+			   ) {
+				File output = project.getSrcOutput().getAbsoluteFile();
+				if (output.isDirectory() && output.getParentFile() != null) {
+					IO.delete(output);
+				}
+			} else {
+				project.clean();
+
+				File target = project.getTargetDir();
+				if (target.isDirectory() && target.getParentFile() != null) {
+					IO.delete(target);
+				}
+				File output = project.getSrcOutput().getAbsoluteFile();
+				if (output.isDirectory() && output.getParentFile() != null) {
+					IO.delete(output);
+				}
+			}
+		}
+		IO.delete(ws.getFile("cnf/cache"));
+	}
+
 	public static void testIMustBeUpdated() {
 		
 	}
@@ -22,6 +49,7 @@ public class WorkspaceRepositoryTest extends TestCase {
 
 	public void tearDown() throws Exception {
 		IO.deleteWithException(new File("tmp-ws"));
+		reallyClean(workspace);
 	}
 
 	public void testListNoFilter() throws Exception {
