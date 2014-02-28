@@ -2523,7 +2523,7 @@ public class Project extends Processor {
 
 		javac.add("-source", source);
 
-		javac.add("-target", source);
+		javac.add("-target", target);
 
 		if (deprecation)
 			javac.add("-deprecation");
