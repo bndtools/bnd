@@ -2,6 +2,7 @@ package aQute.lib.index;
 
 import java.io.*;
 
+import aQute.lib.io.*;
 import junit.framework.*;
 
 public class TestIndex extends TestCase {
@@ -45,6 +46,8 @@ public class TestIndex extends TestCase {
 		}));
 
 		index.close();
+
+		IO.delete(test.getParentFile());
 	}
 
 	public void testBasic() throws Exception {
@@ -78,6 +81,7 @@ public class TestIndex extends TestCase {
 		assertEquals(12, index.search(new byte[] {
 			6
 		}), 12);
+		IO.delete(test.getParentFile());
 	}
 
 	// public void testMany() throws Exception {
