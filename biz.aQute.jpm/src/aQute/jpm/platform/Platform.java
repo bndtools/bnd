@@ -285,12 +285,12 @@ public abstract class Platform {
 			return "Not a directory";
 		
 		File bin = new File(f, "bin");
-		if ( !f.isDirectory())
+		if ( !bin.isDirectory())
 			return "No bin directory %s for a VM's executables";
 
 		
 		File lib = new File(f, "lib");
-		if ( !f.isDirectory())
+		if ( !lib.isDirectory())
 			return "No lib directory %s for a VM's libraries and certificates";
 		
 		return null;
