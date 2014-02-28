@@ -242,8 +242,8 @@ public class JustAnotherPackageManager {
 		int count = 0;
 		for (File f : repoDir.listFiles()) {
 			String name = f.getName();
-			if (!deps.contains(name)) {
-				if (!name.endsWith(".json") || !deps.contains(name.substring(0, name.length() - ".json".length()))) { // Remove
+			if (!deps.contains(name.getBytes())) {
+				if (!name.endsWith(".json") || !deps.contains(name.substring(0, name.length() - ".json".length()).getBytes())) { // Remove
 																														// json
 																														// files
 																														// only
