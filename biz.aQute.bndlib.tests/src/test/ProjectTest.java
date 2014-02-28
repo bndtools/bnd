@@ -15,6 +15,35 @@ import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class ProjectTest extends TestCase {
+
+	private static void reallyClean(Workspace ws) throws Exception {
+		String wsName = ws.getBase().getName();
+		for (Project project : ws.getAllProjects()) {
+			if (("p2".equals(project.getName()) && "ws".equals(wsName))) {
+				File output = project.getSrcOutput().getAbsoluteFile();
+				if (output.isDirectory() && output.getParentFile() != null) {
+					IO.delete(output);
+				}
+			} else {
+				project.clean();
+
+				File target = project.getTargetDir();
+				if (target.isDirectory() && target.getParentFile() != null) {
+					IO.delete(target);
+				}
+				File output = project.getSrcOutput().getAbsoluteFile();
+				if (output.isDirectory() && output.getParentFile() != null) {
+					IO.delete(output);
+				}
+			}
+		}
+		IO.delete(ws.getFile("cnf/cache"));
+	}
+
+	public void tearDown() throws Exception {
+		reallyClean(new Workspace(new File("testresources/ws")));
+	}
+
 	/**
 	 * Check if a project=version, which is illegal on -runbundles,
 	 * is actually reported as an error.
