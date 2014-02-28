@@ -255,7 +255,7 @@ public abstract class Unix extends Platform {
 		// Remove the current binary path. If it is add, we add it later
 		//
 		if (options.remove() || options.add()) {
-			if (!bd.equals(getGlobalBinDir())) {
+			if (!bd.equals(getGlobalBinDir().getAbsolutePath())) {
 				s = s.replaceAll("(PATH\\s*=)"+bd+ ":(.*\\$PATH)", "$1$2");
 				reporter.trace("removed %s", bd );
 			}
@@ -274,7 +274,7 @@ public abstract class Unix extends Platform {
 
 		List<String> additions = new ArrayList<String>();
 		if (options.add() ) {
-			if ( !bd.equals( getGlobalBinDir())) {
+			if ( !bd.equals( getGlobalBinDir().getAbsolutePath())) {
 				additions.add(bd);
 			}
 		}
