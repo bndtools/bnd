@@ -1630,7 +1630,7 @@ public class Builder extends Analyzer {
 	static String	_githeadHelp	= "${githead}, provide the SHA for the current git head";
 
 	public String _githead(String[] args) throws IOException {
-		Macro.verifyCommand(args, String.format(_githeadHelp, args[0]), null, 1, 1);
+		Macro.verifyCommand(args, _githeadHelp, null, 1, 1);
 		
 		//
 		// Locate the .git directory

@@ -193,7 +193,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			if (sha != null && !sha.equalsIgnoreCase(serverSHA)) {
 				shaFile.delete();
 				cachedFile.delete();
-				throw new IOException(String.format("Invalid SHA on remote resource", url));
+				throw new IOException(String.format("Invalid SHA on remote resource at %s", url));
 			}
 			saveSHAFile(serverSHA);
 			
