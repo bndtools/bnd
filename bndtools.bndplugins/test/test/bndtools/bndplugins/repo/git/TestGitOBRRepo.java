@@ -35,6 +35,7 @@ public class TestGitOBRRepo extends TestCase {
         File bundleFile = repo.get("osgi.core", new Version("4.2.0"), null);
         assertNotNull("Repository returned null", bundleFile);
         assertEquals(new File(checkoutDir, "jars/osgi.core/osgi.core-4.2.0.jar").getAbsoluteFile(), bundleFile);
+        removeOBRRepo();
     }
 
     public void testGitRepoPut() throws Exception {
@@ -43,10 +44,23 @@ public class TestGitOBRRepo extends TestCase {
         File bundleFile = repo.get("javax.servlet", new Version("2.5"), null);
         assertNotNull("Repository returned null", bundleFile);
         assertEquals(new File(checkoutDir, "jars/javax.servlet/javax.servlet-2.5.0.jar").getAbsoluteFile(), bundleFile);
+        removeOBRRepo();
+    }
+
+    private static File getOBRRepoDstDir() {
+        return new File("testdata/tmp/testrepo.git");
+    }
+
+    private static void removeOBRRepo() throws IOException {
+        IO.deleteWithException(getOBRRepoDstDir());
     }
 
     private GitOBRRepo getOBRRepo() throws IOException {
-        String repoUri = new File("testdata/testrepo.git").getAbsoluteFile().toURI().toString();
+        File srcDir = new File("testdata/testrepo.git");
+        File dstDir = getOBRRepoDstDir();
+        IO.copy(srcDir, dstDir);
+
+        String repoUri = dstDir.getAbsoluteFile().toURI().toString();
 
         Map<String,String> properties = new HashMap<String,String>();
         properties.put(GitOBRRepo.PROP_GIT_URI, repoUri);
