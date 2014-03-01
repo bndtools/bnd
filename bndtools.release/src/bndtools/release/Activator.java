@@ -244,8 +244,8 @@ public class Activator extends AbstractUIPlugin {
             	String strRanking = element.getAttribute("ranking");  //$NON-NLS-1$
             	int ranking = 0;
             	if (strRanking != null && strRanking.length() > 0) {
-            		ranking = Integer.valueOf(strRanking);
             	}
+                    ranking = Integer.parseInt(strRanking);
             	participant.setRanking(ranking);
             	participants.add(participant);
             } catch (CoreException e) {
