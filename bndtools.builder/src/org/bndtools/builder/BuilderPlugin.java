@@ -2,25 +2,25 @@ package org.bndtools.builder;
 
 import org.osgi.framework.BundleContext;
 
-public class Plugin extends org.eclipse.core.runtime.Plugin {
+public class BuilderPlugin extends org.eclipse.core.runtime.Plugin {
 
-	private static Plugin instance = null;
+	private static BuilderPlugin instance = null;
 
-	public static Plugin getInstance() {
-		synchronized (Plugin.class) {
+	public static BuilderPlugin getInstance() {
+		synchronized (BuilderPlugin.class) {
 			return instance;
 		}
 	}
 
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
-		synchronized (Plugin.class) {
+		synchronized (BuilderPlugin.class) {
 			instance = this;
 		}
 	}
 
 	public void stop(BundleContext context) throws Exception {
-		synchronized (Plugin.class) {
+		synchronized (BuilderPlugin.class) {
 			instance = null;
 		}
 		super.stop(context);
