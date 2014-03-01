@@ -341,7 +341,7 @@ public class ResolutionResultsWizardPage extends WizardPage {
         //        optionalViewer.setInput(result != null ? result.getResolve().getOptionalResources() : null);
         resolutionFailurePanel.setInput(result);
 
-        String log = result.getLog();
+        String log = (result != null) ? result.getLog() : null;
         txtLog.setText(log != null ? log : "<<UNAVAILABLE>>");
 
         boolean resolved = result != null && result.getOutcome().equals(ResolutionResult.Outcome.Resolved);
