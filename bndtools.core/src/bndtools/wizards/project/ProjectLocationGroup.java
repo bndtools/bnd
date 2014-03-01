@@ -143,7 +143,9 @@ public class ProjectLocationGroup {
                         directoryName = previous;
                 }
 
-                if (directoryName != null && directoryName.length() > 0) {
+                assert (directoryName != null);
+
+                if (directoryName.length() > 0) {
                     File path = new File(directoryName);
                     if (path.exists())
                         dialog.setFilterPath(directoryName);
