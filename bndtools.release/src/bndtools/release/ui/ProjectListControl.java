@@ -319,7 +319,7 @@ public class ProjectListControl {
                 } catch (Exception e) {
                     /* ignore */
                 }
-                return new Integer(bundles);
+                return Integer.valueOf(bundles);
             }
             return "";
         }
