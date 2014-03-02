@@ -116,7 +116,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                 //                markers.addAll(generateAddedTypeMarker(javaProject, pkgMember.getName(), pkgMember.ifAdded()));
             } else if (Delta.REMOVED == pkgMemberDiff.getDelta()) {} else {
                 Tree pkgMember = pkgMemberDiff.getOlder();
-                if (pkgMember != null && Type.INTERFACE == pkgMember.getType() || Type.CLASS == pkgMember.getType()) {
+                if (pkgMember != null && (Type.INTERFACE == pkgMember.getType() || Type.CLASS == pkgMember.getType())) {
                     String className = pkgMember.getName();
 
                     // Iterate into the class member diffs
