@@ -112,10 +112,13 @@ public class R5LabelFormatter {
     public static void appendResourceLabel(StyledString label, Resource resource) {
         Capability identity = ResourceUtils.getIdentityCapability(resource);
         String name = ResourceUtils.getIdentity(identity);
-        if (name == null)
-            name = resource.toString();
-        if (name == null)
-            name = "<unknown>";
+        if (name == null) {
+            if (resource != null) {
+                name = resource.toString();
+            } else {
+                name = "<unknown>";
+            }
+        }
         label.append(name, UIConstants.BOLD_STYLER);
 
         Version version = ResourceUtils.getVersion(identity);
