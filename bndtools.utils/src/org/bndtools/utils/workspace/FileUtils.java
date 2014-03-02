@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.IContainer;
@@ -77,7 +78,11 @@ public class FileUtils {
     public static void writeFully(String text, IFile file, boolean createIfAbsent) throws CoreException {
         ByteArrayInputStream inputStream;
         try {
-            inputStream = new ByteArrayInputStream(text.getBytes(file.getCharset(true)));
+			String charset = file.getCharset(true);
+			if (charset == null) {
+				charset = Charset.defaultCharset().name();
+			}
+			inputStream = new ByteArrayInputStream(text.getBytes(charset));
         } catch (UnsupportedEncodingException e) {
             return;
         }
