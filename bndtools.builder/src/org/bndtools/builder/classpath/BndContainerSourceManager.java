@@ -50,17 +50,19 @@ public class BndContainerSourceManager {
     public static void saveAttachedSources(final IJavaProject project, final List<IClasspathEntry> classpathEntries) throws CoreException {
         final Properties props = new Properties();
 
-        // Construct the Properties that represent the source attachment(s)
-        for (final IClasspathEntry entry : classpathEntries) {
-            if (IClasspathEntry.CPE_LIBRARY != entry.getEntryKind()) {
-                continue;
-            }
-            final String path = entry.getPath().toPortableString();
-            if (entry.getSourceAttachmentPath() != null) {
-                props.put(path + PROPERTY_SRC_PATH, entry.getSourceAttachmentPath().toPortableString());
-            }
-            if (entry.getSourceAttachmentRootPath() != null) {
-                props.put(path + PROPERTY_SRC_ROOT, entry.getSourceAttachmentRootPath().toPortableString());
+        if (classpathEntries != null) {
+            // Construct the Properties that represent the source attachment(s)
+            for (final IClasspathEntry entry : classpathEntries) {
+                if (IClasspathEntry.CPE_LIBRARY != entry.getEntryKind()) {
+                    continue;
+                }
+                final String path = entry.getPath().toPortableString();
+                if (entry.getSourceAttachmentPath() != null) {
+                    props.put(path + PROPERTY_SRC_PATH, entry.getSourceAttachmentPath().toPortableString());
+                }
+                if (entry.getSourceAttachmentRootPath() != null) {
+                    props.put(path + PROPERTY_SRC_ROOT, entry.getSourceAttachmentRootPath().toPortableString());
+                }
             }
         }
 

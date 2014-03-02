@@ -91,7 +91,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     // The suggested classpath container is ignored here; always recalculated
     // from the project.
     public void requestClasspathContainerUpdate(IPath containerPath, IJavaProject project, IClasspathContainer containerSuggestion) throws CoreException {
-        BndContainerSourceManager.saveAttachedSources(project, Arrays.asList(containerSuggestion.getClasspathEntries()));
+        BndContainerSourceManager.saveAttachedSources(project, (containerSuggestion == null) ? null : Arrays.asList(containerSuggestion.getClasspathEntries()));
 
         ArrayList<String> errors = new ArrayList<String>();
         calculateAndUpdateClasspathEntries(project, errors);
