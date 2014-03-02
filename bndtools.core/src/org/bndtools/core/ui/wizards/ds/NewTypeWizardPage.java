@@ -2275,10 +2275,6 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             type = "class "; //$NON-NLS-1$
             templateID = CodeGeneration.CLASS_BODY_TEMPLATE_ID;
             break;
-        case INTERFACE_TYPE :
-            type = "interface "; //$NON-NLS-1$
-            templateID = CodeGeneration.INTERFACE_BODY_TEMPLATE_ID;
-            break;
         case ENUM_TYPE :
             type = "enum "; //$NON-NLS-1$
             templateID = CodeGeneration.ENUM_BODY_TEMPLATE_ID;
@@ -2286,6 +2282,12 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         case ANNOTATION_TYPE :
             type = "@interface "; //$NON-NLS-1$
             templateID = CodeGeneration.ANNOTATION_BODY_TEMPLATE_ID;
+            break;
+
+        case INTERFACE_TYPE :
+        default :
+            type = "interface "; //$NON-NLS-1$
+            templateID = CodeGeneration.INTERFACE_BODY_TEMPLATE_ID;
             break;
         }
         buf.append(type);
