@@ -31,8 +31,8 @@ public class AceLaunchTab extends GenericStackedLaunchTab {
             if (image == null) {
                 image = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/brick.png").createImage();
             }
+            return image;
         }
-        return image;
     }
 
     @Override
