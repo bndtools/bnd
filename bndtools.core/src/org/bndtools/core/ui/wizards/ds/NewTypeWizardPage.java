@@ -322,8 +322,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     protected IStatus fModifierStatus;
     protected IStatus fSuperInterfacesStatus;
 
-    private final int PUBLIC_INDEX = 0, DEFAULT_INDEX = 1, PRIVATE_INDEX = 2, PROTECTED_INDEX = 3;
-    private final int ABSTRACT_INDEX = 0, FINAL_INDEX = 1, STATIC_INDEX = 2, ENUM_ANNOT_STATIC_INDEX = 1;
+    private static final int PUBLIC_INDEX = 0, DEFAULT_INDEX = 1, PRIVATE_INDEX = 2, PROTECTED_INDEX = 3;
+    private static final int ABSTRACT_INDEX = 0, FINAL_INDEX = 1, STATIC_INDEX = 2, ENUM_ANNOT_STATIC_INDEX = 1;
 
     private final int fTypeKind;
 
