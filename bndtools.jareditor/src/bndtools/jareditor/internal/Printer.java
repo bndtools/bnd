@@ -84,9 +84,9 @@ public class Printer extends Processor {
             if ((options & IMPEXP) != 0) {
                 out.println("[IMPEXP]");
                 Manifest m = jar.getManifest();
-                Domain domain = Domain.domain(m);
 
                 if (m != null) {
+                    Domain domain = Domain.domain(m);
                     Parameters imports = domain.getImportPackage();
                     Parameters exports = domain.getExportPackage();
                     for (String p : exports.keySet()) {
