@@ -182,7 +182,11 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         // Decorator for the Activator field
         ControlDecoration decorActivator = new ControlDecoration(txtActivator, SWT.LEFT | SWT.CENTER, composite);
         decorActivator.setImage(contentAssistDecoration.getImage());
-        decorActivator.setDescriptionText(MessageFormat.format("Content Assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
+        if (assistKeyStroke == null) {
+            decorActivator.setDescriptionText("Content Assist is available. Start typing to activate");
+        } else {
+            decorActivator.setDescriptionText(MessageFormat.format("Content Assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
+        }
         decorActivator.setShowOnlyOnFocus(true);
         decorActivator.setShowHover(true);
 

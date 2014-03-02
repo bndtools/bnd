@@ -88,7 +88,11 @@ public class PkgPatternsDetailsPage<C extends HeaderClause> extends AbstractForm
         txtName = toolkit.createText(mainComposite, "", SWT.BORDER);
         ControlDecoration decPattern = new ControlDecoration(txtName, SWT.LEFT | SWT.TOP, mainComposite);
         decPattern.setImage(assistDecor.getImage());
-        decPattern.setDescriptionText(MessageFormat.format("Content assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
+        if (assistKeyStroke == null) {
+            decPattern.setDescriptionText("Content assist is available. Start typing to activate");
+        } else {
+            decPattern.setDescriptionText(MessageFormat.format("Content assist is available. Press {0} or start typing to activate", assistKeyStroke.format()));
+        }
         decPattern.setShowHover(true);
         decPattern.setShowOnlyOnFocus(true);
 
