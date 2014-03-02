@@ -265,6 +265,9 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
 
     private static void copyBundleEntry(Bundle sourceBundle, String sourcePath, IPath sourcePrefix, IContainer destination, IProgressMonitor monitor) throws CoreException {
         URL entry = sourceBundle.getEntry(sourcePath);
+        if (entry == null) {
+            return;
+        }
         IPath destinationPath = new Path(sourcePath).makeRelativeTo(sourcePrefix);
         IFile file = destination.getFile(destinationPath);
 
