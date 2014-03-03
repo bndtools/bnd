@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import java.io.*;
 import java.util.*;
 
 import aQute.libg.generics.*;
@@ -22,6 +23,16 @@ public class Descriptors {
 	final static TypeRef	LONG				= new ConcreteRef("J", "long", PRIMITIVE_PACKAGE);
 	final static TypeRef	DOUBLE				= new ConcreteRef("D", "double", PRIMITIVE_PACKAGE);
 	final static TypeRef	FLOAT				= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
+
+	public enum SignatureType {
+		TYPEVAR, METHOD, FIELD;
+	}
+	public class Signature {
+		public Map<String,Signature>	typevariables	= new HashMap<String,Signature>();
+		public Signature				type;
+		public List<Signature>			parameters;
+
+	}
 
 	{
 		packageCache.put("", DEFAULT_PACKAGE);
@@ -386,8 +397,6 @@ public class Descriptors {
 		// com.example.Foo.Bar should have package com.example,
 		// not com.example.Foo.
 		//
-		
-		
 
 		ref = new PackageRef(binaryPackName);
 		packageCache.put(binaryPackName, ref);
@@ -570,4 +579,77 @@ public class Descriptors {
 		assert path.endsWith(".class");
 		return getTypeRef(path.substring(0, path.length() - 6));
 	}
+
+	
+//	static class Rover {
+//		int n = 0;
+//		String string;
+//		Rover(String string) {
+//			this.string = string;
+//
+//		}
+//		
+//		boolean at( String s) {
+//			if ( n + s.length() > string.length())
+//				return false;
+//			
+//			for ( int i=0; i<s.length(); i++) {
+//				if (  string.charAt(n+i) != s.charAt(n+i))
+//					return false;
+//			}
+//			
+//			n += s.length();
+//			return true;
+//		}
+//		
+//		String upTo(char c) {
+//			for ( int i=n; i < string.length(); i++) {
+//				if ( string.charAt(i) == c) {
+//					String s = string.substring(n,i);
+//					n = i;
+//					return s;
+//				}
+//			}
+//			throw new IllegalArgumentException("Looking for " + c + " in " + string + " from " + n);
+//		}
+//		
+//	}
+//	public Signature getSignature(String signature) {
+//		Signature s = new Signature();
+//		Rover r = new Rover(signature);
+//		
+//		
+//		int n = parseTypeVarsDecl(s, rover);
+//		n = parseParameters(s, descriptor, n);
+//		n = parseTypeVarsDecl(s, descriptor, n);
+//
+//		assert n == descriptor.length();
+//		return s;
+//	}
+//
+//	private int parseParameters(Signature s, String descriptor, int n) {
+//		// TODO Auto-generated method stub
+//		return 0;
+//	}
+//
+//	/**
+//	 * <X::Ljava/util/List<Ljava/lang/String;>;Y:Ljava/lang/Object;>(TY;)TX;
+//	 */
+//	private void parseTypeVarsDecl(Signature s, Rover rover) {
+//		if ( rover.at("<"))  {
+//			while ( !rover.at(">")) {
+//				String name = rover.upTo(':');
+//				rover.n++;
+//				do {
+//					Signature tr = parseTypeReference(s, rover);
+//					s.typevariables.put(name, tr);
+//				} while( rover.at(":"));
+//			}
+//		}
+//	}
+//
+//	private TypeRef parseTypeReference(String descriptor, int i) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 }

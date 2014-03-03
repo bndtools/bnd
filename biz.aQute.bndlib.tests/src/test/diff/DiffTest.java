@@ -11,6 +11,41 @@ import aQute.lib.io.*;
 public class DiffTest extends TestCase {
 	static DiffPluginImpl	differ	= new DiffPluginImpl();
 
+	
+	/**
+	 * Test API differences. We have a package in the /demo workspace project and we have
+	 * the same package in our test.api package. If you make changes, copy the demo.jar
+	 * in the testresources directory.
+	 * 
+	 */
+	
+	public void testAPI() throws Exception {
+		Jar older = new Jar(new File("testresources/demo.jar"));
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setExportPackage("test.api");
+		b.build();
+		assertTrue(b.check());
+		
+		Jar newer = b.getJar();
+		Tree newerTree = differ.tree(newer).get("<api>").get("test.api").get("test.api.Interf");
+		Tree olderTree = differ.tree(older).get("<api>").get("test.api").get("test.api.Interf");
+		Diff diff = newerTree.diff(olderTree);
+		
+		show(diff, 2);
+		assertEquals( Delta.MAJOR , diff.getDelta() );
+		assertEquals( Delta.MAJOR , diff.get("foo()").getDelta() );
+		assertEquals( Delta.UNCHANGED , diff.get("foo()").get("abstract").getDelta() );
+		assertEquals( Delta.ADDED , diff.get("foo()").get("java.util.Collection<Ljava.lang.Integer;>").getDelta() );
+		assertEquals( Delta.REMOVED , diff.get("foo()").get("java.util.Collection<Ljava.lang.String;>").getDelta() );
+		assertEquals( Delta.UNCHANGED , diff.get("fooInt()").getDelta() );
+		assertEquals( Delta.UNCHANGED , diff.get("fooString()").getDelta() );
+		b.close();
+	}
+	
+	
+	
+	
 	public void testInheritanceII() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));

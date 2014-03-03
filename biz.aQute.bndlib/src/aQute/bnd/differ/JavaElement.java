@@ -331,9 +331,15 @@ class JavaElement {
 				if (memberEnd) {
 					members.add(new Element(Type.ANNOTATED, annotation.getName().getFQN(), properties, CHANGED,
 							CHANGED, null));
-					if (ProviderType.class.getName().equals(annotation.getName().getFQN())) {
+					
+					//
+					// Check for the provider/consumer. We use strings because these are not officially
+					// released yet
+					//
+					String name = annotation.getName().getFQN();
+					if (ProviderType.class.getName().equals(name) || "org.osgi.annotation.versioning.ProviderType".equals(name)) {
 						provider.set(true);
-					} else if (ConsumerType.class.getName().equals(annotation.getName().getFQN())) {
+					} else if (ConsumerType.class.getName().equals(name) || "org.osgi.annotation.versioning.ConsumerType".equals(name)) {
 						provider.set(false);
 					}
 				} else if (last != null)
@@ -462,7 +468,8 @@ class JavaElement {
 			// and all the implemented and extended types. This is already
 			// do for us when we get the element of the return type.
 
-			getCovariantReturns(children, m.getType());
+
+			getCovariantReturns(children, m.getType(), m.getGenericReturnType());
 
 			/**
 			 * No longer includes synthetic methods in the tree
@@ -577,7 +584,7 @@ class JavaElement {
 	static Element	FLOAT_R		= new Element(RETURN, "float");
 	static Element	DOUBLE_R	= new Element(RETURN, "double");
 
-	private void getCovariantReturns(Collection<Element> elements, TypeRef type) throws Exception {
+	private void getCovariantReturns(Collection<Element> elements, TypeRef type, String generics) throws Exception {
 		if (type == null || type.isObject())
 			return;
 
@@ -619,7 +626,7 @@ class JavaElement {
 			elements.add(e);
 			return;
 		}
-		Element current = new Element(RETURN, type.getFQN());
+		Element current = new Element(RETURN, generics);
 		elements.add(current);
 
 //		List<Element> set = covariant.get(type);

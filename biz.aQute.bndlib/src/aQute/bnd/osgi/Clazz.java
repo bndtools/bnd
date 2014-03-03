@@ -14,7 +14,7 @@ import aQute.libg.generics.*;
 
 public class Clazz {
 
-	static Pattern	METHOD_DESCRIPTOR	= Pattern.compile("\\((.*)\\)(.+)");
+	static Pattern	METHOD_DESCRIPTOR	= Pattern.compile("(.*)\\)(.+)");
 
 	public class ClassConstant {
 		int	cname;
@@ -1621,7 +1621,7 @@ public class Clazz {
 	}
 
 	public static String objectDescriptorToFQN(String string) {
-		if (string.startsWith("L") && string.endsWith(";"))
+		if ((string.startsWith("L") || string.startsWith("T")) && string.endsWith(";"))
 			return string.substring(1, string.length() - 1).replace('/', '.');
 
 		switch (string.charAt(0)) {

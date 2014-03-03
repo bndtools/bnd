@@ -1,4 +1,6 @@
-Private-Package: com.example.demo, test
+Private-Package: \
+	com.example.demo,\
+	test
 Bundle-Activator: com.example.demo.Activator
 Bundle-SymbolicName: demo
 
@@ -19,9 +21,11 @@ Import-Package: \
 	junit.framework;resolution:=optional,\
 	*
 
--buildpath: osgi.core;version=4.3.1,\
+-buildpath: \
+	osgi.core;version=4.3.1,\
 	ee.j2se;version=1.5.0,\
-	junit.osgi
+	junit.osgi,\
+	biz.aQute.bnd.annotation;version=latest
 	
 javac.target=1.5
 javac.source=1.5
@@ -32,3 +36,5 @@ javac.source=1.5
 Bundle-Version: 1.1.0
 
 no.junit: true
+Export-Package: \
+	test.api
