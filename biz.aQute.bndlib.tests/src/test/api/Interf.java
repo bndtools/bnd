@@ -12,5 +12,7 @@ public interface Interf {
 	
 	public int fooInt();
 	public String fooString();
+	
+	<X extends List<String>,Y> X foo(Y bla);
 
 }

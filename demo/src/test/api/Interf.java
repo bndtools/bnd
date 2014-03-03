@@ -11,4 +11,6 @@ public interface Interf {
 	
 	public int fooInt();
 	public String fooString();
+	
+	<X,Y> X foo(Y bla);
 }
