@@ -459,7 +459,7 @@ public class Analyzer extends Processor {
 			@Override
 			public void annotation(Annotation a) {
 				String name = a.name.getFQN();
-				if (aQute.bnd.annotation.Version.class.getName().equals(name)) {
+				if (aQute.bnd.annotation.Version.class.getName().equals(name) || "org.osgi.annotation.versioning.Version".equals(name)) {
 
 					// Check version
 					String version = a.get("value");
@@ -469,7 +469,7 @@ public class Analyzer extends Processor {
 							if (Verifier.VERSION.matcher(version).matches())
 								info.put(VERSION_ATTRIBUTE, version);
 							else
-								error("Export annotation in %s has invalid version info: %s", clazz, version);
+								error("Version annotation in %s has invalid version info: %s", clazz, version);
 						}
 					} else {
 						// Verify this matches with packageinfo

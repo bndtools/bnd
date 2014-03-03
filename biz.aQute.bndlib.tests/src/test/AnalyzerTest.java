@@ -25,6 +25,26 @@ public class AnalyzerTest extends BndTestCase {
 	static File	cwd	= new File(System.getProperty("user.dir"));
 
 	/**
+	 * Verify that the OSGi and the bnd Version annotation both work
+	 */
+	
+	public void testVersionAnnotation() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setExportPackage("test.version.annotations.*");
+		b.build();
+		assertTrue(b.check());
+		b.getJar().getManifest().write(System.out);
+		Attrs bnd = b.getExports().getByFQN("test.version.annotations.bnd");
+		Attrs osgi = b.getExports().getByFQN("test.version.annotations.osgi");
+		assertEquals("1.2.3.bnd", bnd.getVersion());
+		assertEquals("1.2.3.osgi", osgi.getVersion());
+	}
+	
+	
+	
+	
+	/**
 	 * For the following annotation class in an OSGi bundle
 	 * 
 	 * @Retention(RetentionPolicy.RUNTIME)
