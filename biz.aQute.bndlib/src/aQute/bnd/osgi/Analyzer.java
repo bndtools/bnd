@@ -458,7 +458,7 @@ public class Analyzer extends Processor {
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
 			@Override
 			public void annotation(Annotation a) {
-				String name = a.name.getFQN();
+				String name = a.getName().getFQN();
 				if (aQute.bnd.annotation.Version.class.getName().equals(name) || "org.osgi.annotation.versioning.Version".equals(name)) {
 
 					// Check version

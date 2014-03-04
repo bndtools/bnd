@@ -7,15 +7,15 @@ import aQute.bnd.annotation.metatype.*;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
 public class Annotation {
-	TypeRef				name;
-	Map<String,Object>	elements;
-	ElementType			member;
-	RetentionPolicy		policy;
+	private TypeRef				name;
+	private Map<String,Object>	elements;
+	private ElementType			member;
+	private RetentionPolicy		policy;
 
 	public Annotation(TypeRef name, Map<String,Object> elements, ElementType member, RetentionPolicy policy) {
 		this.name = name;
 		if (elements == null)
-			this.elements = Collections.emptyMap();
+			this.elements = null;
 		else
 			this.elements = elements;
 		this.member = member;
@@ -48,7 +48,7 @@ public class Annotation {
 
 	public <T> void put(String string, Object v) {
 		if (elements == null)
-			return;
+			elements = new LinkedHashMap<String,Object>();
 
 		elements.put(string, v);
 	}
