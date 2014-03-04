@@ -27,7 +27,7 @@ public class Macro {
 	Object				targets[];
 	boolean				flattening;
 	String				profile;
-	private boolean				nosystem;
+	private boolean		nosystem;
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
@@ -40,7 +40,41 @@ public class Macro {
 	}
 
 	public String process(String line, Processor source) {
-		return process(line, new Link(source, null, line));
+		String s = process(line, new Link(source, null, line));
+		if (s.indexOf('\\') < 0)
+			return s;
+
+		StringBuilder sb = new StringBuilder(s);
+		for (int j = 0; j < sb.length() - 1; j++) {
+			if (sb.charAt(j) == '\\') {
+				switch (sb.charAt(j + 1)) {
+
+					case 'n' :
+						sb.replace(j, j + 2, "\n");
+						break;
+
+					case 'r' :
+						sb.replace(j, j + 2, "\r");
+						break;
+
+					case 'b' :
+						sb.replace(j, j + 2, "\b");
+						break;
+
+					case 'f' :
+						sb.replace(j, j + 2, "\f");
+						break;
+
+					case 't' :
+						sb.replace(j, j + 2, "\t");
+						break;
+
+					default :
+						break;
+				}
+			}
+		}
+		return sb.toString();
 	}
 
 	String process(String line, Link link) {
@@ -214,10 +248,9 @@ public class Macro {
 		if (value != null)
 			return value;
 		if (!flattening && !key.startsWith("@"))
-			domain.warning("No translation found for macro: %s, in %s", key, domain );
+			domain.warning("No translation found for macro: %s, in %s", key, domain);
 		return "${" + key + "}";
 	}
-
 
 	/**
 	 * Parse the key as a command. A command consist of parameters separated by
@@ -473,7 +506,7 @@ public class Macro {
 	public String _def(String args[]) {
 		if (args.length < 2)
 			throw new RuntimeException("Need a value for the ${def;<value>} macro");
-		
+
 		if (args.length > 3)
 			throw new RuntimeException("Too many args for ${def;<value>} macro");
 
@@ -487,10 +520,15 @@ public class Macro {
 	 * @return
 	 */
 	public String _replace(String args[]) {
-		if (args.length != 4) {
+		if (args.length < 4 || args.length > 5) {
 			domain.warning("Invalid nr of arguments to replace " + Arrays.asList(args));
 			return null;
 		}
+		
+		String middle = ", ";
+		if ( args.length > 4)
+			middle = args[4];
+		
 
 		String list[] = args[1].split("\\s*,\\s*");
 		StringBuilder sb = new StringBuilder();
@@ -500,7 +538,7 @@ public class Macro {
 			if (!element.equals("")) {
 				sb.append(del);
 				sb.append(element.replaceAll(args[2], args[3]));
-				del = ", ";
+				del = middle;
 			}
 		}
 
@@ -879,9 +917,9 @@ public class Macro {
 	 * @param high
 	 */
 	public String system_internal(boolean allowFail, String args[]) throws Exception {
-		if ( nosystem)
+		if (nosystem)
 			throw new RuntimeException("Macros in this mode cannot excute system commands");
-		
+
 		verifyCommand(args, "${" + (allowFail ? "system-allow-fail" : "system")
 				+ ";<command>[;<in>]}, execute a system command", null, 2, 3);
 		String command = args[1];
@@ -1061,9 +1099,9 @@ public class Macro {
 	 * the default properties for that properties. The values no longer contain
 	 * macros.
 	 * <p>
-	 * Property names starting with an underscore ('_') are ignored. These
-	 * are reserved for properties that cause an unwanted side effect when
-	 * expanded unnecessary
+	 * Property names starting with an underscore ('_') are ignored. These are
+	 * reserved for properties that cause an unwanted side effect when expanded
+	 * unnecessary
 	 * 
 	 * @return A new Properties with the flattened values
 	 */
@@ -1106,17 +1144,18 @@ public class Macro {
 		return Processor.join(list, File.pathSeparator);
 	}
 
-	
 	public final static String	_sizeHelp	= "${size;<collection>;...}, count the number of elements (of all collections combined)";
+
 	public int _size(String args[]) {
 		verifyCommand(args, _sizeHelp, null, 2, 16);
-		int size = 0; 
-		for ( int i=1; i<args.length; i++) {
-			ExtList<String > l = ExtList.from(args[i]);
+		int size = 0;
+		for (int i = 1; i < args.length; i++) {
+			ExtList<String> l = ExtList.from(args[i]);
 			size += l.size();
 		}
 		return size;
 	}
+
 	public static Properties getParent(Properties p) {
 		try {
 			Field f = Properties.class.getDeclaredField("defaults");

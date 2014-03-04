@@ -9,6 +9,17 @@ import aQute.bnd.osgi.*;
 
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
+	
+	/**
+	 * Test control characters
+	 */
+	public void testControlCharacters() throws Exception {
+		Processor p = new Processor();
+		p.setProperty("a", "a, b, c");
+		String s = p.getReplacer().process("${replace;${a};(.+);$0;\\n}\n");
+		assertEquals( "a\nb\nc\n",s);
+	}
+	
 	/**
 	 * Test the custom macros
 	 */

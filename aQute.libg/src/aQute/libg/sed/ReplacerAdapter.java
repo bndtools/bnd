@@ -62,7 +62,41 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	public String process(String line, Domain source) {
-		return process(line, new Link(source, null, line));
+		String s = process(line, new Link(source, null, line));
+		if (s.indexOf('\\') < 0)
+			return s;
+
+		StringBuilder sb = new StringBuilder(s);
+		for (int j = 0; j < sb.length() - 1; j++) {
+			if (sb.charAt(j) == '\\') {
+				switch (sb.charAt(j + 1)) {
+
+					case 'n' :
+						sb.replace(j, j + 2, "\n");
+						break;
+
+					case 'r' :
+						sb.replace(j, j + 2, "\r");
+						break;
+
+					case 'b' :
+						sb.replace(j, j + 2, "\b");
+						break;
+
+					case 'f' :
+						sb.replace(j, j + 2, "\f");
+						break;
+
+					case 't' :
+						sb.replace(j, j + 2, "\t");
+						break;
+
+					default :
+						break;
+				}
+			}
+		}
+		return sb.toString();
 	}
 
 	String process(String line, Link link) {
