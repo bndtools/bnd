@@ -287,8 +287,10 @@ public class Project extends Processor {
 					for (Project project : dependson) {
 						allsourcepath.addAll(project.getSourcePath());
 					}
-					if (isOk())
-						preparedPaths = true;
+					//[cs] Testing this commented out. If bad issues, never setting this to true means that
+					// TONS of extra preparing is done over and over again on the same projects.
+					//if (isOk())
+					preparedPaths = true;
 				}
 				finally {
 					inPrepare = false;
