@@ -218,7 +218,7 @@ public class Clazz {
 		void addAnnotation(Annotation a) {
 			if (annotations == null)
 				annotations = Create.set();
-			annotations.add(analyzer.getTypeRef(a.name.getBinary()));
+			annotations.add(analyzer.getTypeRef(a.getName().getBinary()));
 		}
 
 		public Collection<TypeRef> getAnnotations() {
