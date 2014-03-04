@@ -40,6 +40,10 @@ import aQute.bnd.version.*;
 public class About {
 	public static Version				_2_3		= new Version(2, 3, 0);
 	public static String[]				CHANGES_2_3	= {
+			"Macros now replace \n,\r, etc in their output",
+			"The replace macro can now take a separator string, this separator was alwas ', '",
+			"#477 baseline did not take generics into account for return types",
+			"Support R6 Version,ProviderType, and ConsumerType",
 			"Testing will look for unresolveds and fail unless -testunresolved=false is set",
 			"Cleaned up version augmentation. Finding a version has priority properties, Manifest, "
 					+ "package-info.java with Version annotation, packageinfo",
