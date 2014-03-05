@@ -15,4 +15,5 @@ public interface Interf {
 	
 	<X extends List<String>,Y> X foo(Y bla);
 
+	void foo(List<Integer> l);
 }

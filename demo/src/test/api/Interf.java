@@ -7,10 +7,12 @@ public interface Interf {
 	 * Test if a change in generic type is detected
 	 */
 	
-	public Collection<String> foo();
+	 Collection<String> foo();
 	
-	public int fooInt();
-	public String fooString();
+	 int fooInt();
+	 String fooString();
 	
 	<X,Y> X foo(Y bla);
+	
+	void foo(List<String> l);
 }

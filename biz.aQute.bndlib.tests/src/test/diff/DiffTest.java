@@ -33,6 +33,8 @@ public class DiffTest extends TestCase {
 		Diff diff = newerTree.diff(olderTree);
 		
 		show(diff, 2);
+		
+		
 		assertEquals( Delta.MAJOR , diff.getDelta() );
 		assertEquals( Delta.MAJOR , diff.get("foo()").getDelta() );
 		assertEquals( Delta.UNCHANGED , diff.get("foo()").get("abstract").getDelta() );
@@ -40,6 +42,13 @@ public class DiffTest extends TestCase {
 		assertEquals( Delta.REMOVED , diff.get("foo()").get("java.util.Collection<Ljava.lang.String;>").getDelta() );
 		assertEquals( Delta.UNCHANGED , diff.get("fooInt()").getDelta() );
 		assertEquals( Delta.UNCHANGED , diff.get("fooString()").getDelta() );
+		assertEquals( Delta.MAJOR , diff.get("foo()").getDelta() );
+
+		
+		assertEquals( Delta.ADDED , diff.get("foo(Ljava/util/List<Ljava/lang/Integer;>;)").getDelta() );
+		assertEquals( Delta.REMOVED , diff.get("foo(Ljava/util/List<Ljava/lang/String;>;)").getDelta() );
+
+		
 		b.close();
 	}
 	

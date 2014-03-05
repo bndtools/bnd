@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.*;
 import java.util.jar.*;
+import java.util.regex.*;
 
 import aQute.bnd.annotation.*;
 import aQute.bnd.header.*;
@@ -50,6 +51,8 @@ import aQute.libg.generics.*;
  */
 
 class JavaElement {
+	static Pattern						PARAMETERS_P	= Pattern.compile(".*(\\(.*\\)).*");
+
 	final static EnumSet<Type>			INHERITED		= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
 	private static final Element		PROTECTED		= new Element(ACCESS, "protected", null, MAJOR, MINOR, null);
 	private static final Element		STATIC			= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
@@ -482,7 +485,14 @@ class JavaElement {
 //				}
 //			}
 
-			Element member = new Element(Type.METHOD, m.getName() + toString(m.getPrototype()), children, add, remove,
+			String signature = m.getSignature();
+			Matcher matcher;
+			if (signature !=null && (matcher = PARAMETERS_P.matcher(signature)).matches()) {
+				signature = matcher.group(1);
+			} else
+				signature = toString(m.getPrototype());
+			
+			Element member = new Element(Type.METHOD, m.getName() + signature, children, add, remove,
 					null);
 
 			if (!members.add(member)) {
@@ -629,34 +639,35 @@ class JavaElement {
 		Element current = new Element(RETURN, generics);
 		elements.add(current);
 
-//		List<Element> set = covariant.get(type);
-//		if (set != null) {
-//			elements.addAll(set);
-//			return;
-//		}
-//
-//		Element current = new Element(RETURN, type.getFQN());
-//		Clazz clazz = analyzer.findClass(type);
-//		if (clazz == null) {
-//			elements.add(current);
-//			return;
-//		}
-//
-//		set = Create.list();
-//		set.add(current);
-//		getCovariantReturns(set, clazz.getSuper());
-//
-//		TypeRef[] interfaces = clazz.getInterfaces();
-//		if (interfaces != null)
-//			for (TypeRef intf : interfaces) {
-//				getCovariantReturns(set, intf);
-//			}
-//
-//		covariant.put(type, set);
-//		elements.addAll(set);
+		// List<Element> set = covariant.get(type);
+		// if (set != null) {
+		// elements.addAll(set);
+		// return;
+		// }
+		//
+		// Element current = new Element(RETURN, type.getFQN());
+		// Clazz clazz = analyzer.findClass(type);
+		// if (clazz == null) {
+		// elements.add(current);
+		// return;
+		// }
+		//
+		// set = Create.list();
+		// set.add(current);
+		// getCovariantReturns(set, clazz.getSuper());
+		//
+		// TypeRef[] interfaces = clazz.getInterfaces();
+		// if (interfaces != null)
+		// for (TypeRef intf : interfaces) {
+		// getCovariantReturns(set, intf);
+		// }
+		//
+		// covariant.put(type, set);
+		// elements.addAll(set);
 	}
 
-	private static void access(Collection<Element> children, int access, @SuppressWarnings("unused") boolean deprecated) {
+	private static void access(Collection<Element> children, int access, @SuppressWarnings("unused")
+	boolean deprecated) {
 		if (!isPublic(access))
 			children.add(PROTECTED);
 		if (isAbstract(access))
