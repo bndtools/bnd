@@ -36,7 +36,7 @@ public class Annotation {
 
 	@Override
 	public String toString() {
-		return name + ":" + member + ":" + policy + ":" + elements;
+		return name + ":" + member + ":" + policy + ":" + (elements == null ? "{}" : elements);
 	}
 
 	public <T> T get(String string) {
@@ -77,6 +77,6 @@ public class Annotation {
 		String cname = name.getFQN();
 		if (!c.getName().equals(cname))
 			return null;
-		return Configurable.createConfigurable(c, elements);
+		return Configurable.createConfigurable(c, elements == null ? elements=new LinkedHashMap<String,Object>() : elements);
 	}
 }
