@@ -40,6 +40,7 @@ import aQute.bnd.version.*;
 public class About {
 	public static Version				_2_3		= new Version(2, 3, 0);
 	public static String[]				CHANGES_2_3	= {
+			"Included DSTestWiring class which makes it easier to handle dependencies in unit tests, both inside and outside a framework",
 			"Macros now replace \n,\r, etc in their output",
 			"The replace macro can now take a separator string, this separator was alwas ', '",
 			"#477 baseline did not take generics into account for return types",
