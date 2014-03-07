@@ -1036,8 +1036,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (value == null)
 			return false;
 
-		return !"false".equalsIgnoreCase(value);
-	}
+		if ("false".equalsIgnoreCase(value))
+			return false;
+		
+		if ("off".equalsIgnoreCase(value))
+			return false;
+		
+		if ("not".equalsIgnoreCase(value))
+			return false;
+
+		return true;
+}
 
 	/**
 	 * Get a property without preprocessing it with a proper default
