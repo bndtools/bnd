@@ -3,6 +3,7 @@ package aQute.junit;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.regex.*;
 
 import junit.framework.*;
 
@@ -108,6 +109,11 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		}
 
 		if (testcases == null) {
+			if ( !continuous) {
+				System.err.println("\nThe -testcontinuous property must be set if invoked without arguments\n");
+				System.exit(-1);
+			}
+				
 			trace("automatic testing of all bundles with Test-Cases header");
 			try {
 				automatic();
@@ -277,7 +283,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 				try {
 					TestSuite suite = createSuite(bundle, names, result);
-					trace("created suite " + suite);
+					trace("created suite " + suite.getName() + " #" + suite.countTestCases());
 					List<Test> flattened = new ArrayList<Test>();
 					int realcount = flatten(flattened, suite);
 
@@ -336,7 +342,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				fqn = fqn.substring(0, n);
 				Class< ? > clazz = loadClass(tfw, fqn);
 				if (clazz != null)
-					addTest(tfw, suite, clazz, testResult, method);
+					addTest(suite, clazz, method);
 				else {
 					diagnoseNoClass(tfw, fqn);
 					testResult.addError(suite, new Exception("Cannot load class " + fqn
@@ -346,7 +352,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			} else {
 				Class< ? > clazz = loadClass(tfw, fqn);
 				if (clazz != null)
-					addTest(tfw, suite, clazz, testResult, null);
+					addTest(suite, clazz, null);
 				else {
 					diagnoseNoClass(tfw, fqn);
 					testResult.addError(suite, new Exception("Cannot load class " + fqn
@@ -383,10 +389,10 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void addTest(@SuppressWarnings("unused")
-	Bundle tfw, TestSuite suite, Class< ? > clazz, @SuppressWarnings("unused")
-	TestResult testResult, final String method) {
-		if (TestCase.class.isAssignableFrom(clazz)) {
+	private void addTest(TestSuite suite, Class< ? > clazz, final String method) {
+		org.junit.Test annotation = clazz.getAnnotation(org.junit.Test.class);
+		if ( annotation == null && TestCase.class.isAssignableFrom(clazz) ) {
+			trace("using JUnit 3");
 			if (method != null) {
 				suite.addTest(TestSuite.createTest(clazz, method));
 				return;
@@ -395,21 +401,27 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			return;
 		}
 
+		trace("using JUnit 4");
 		JUnit4TestAdapter adapter = new JUnit4TestAdapter(clazz);
 		if (method != null) {
+			trace("method specified " + clazz + ":" + method);
+			final Pattern glob = Pattern.compile( method.replaceAll("\\*", ".*").replaceAll("\\?", ".?"));
+			
 			try {
 				adapter.filter(new org.junit.runner.manipulation.Filter() {
 
 					@Override
 					public String describe() {
-						return "Method filter";
+						return "Method filter for " + method;
 					}
 
 					@Override
 					public boolean shouldRun(Description description) {
-						if (method.equals(description.getMethodName())) {
+						if (glob.matcher(description.getMethodName()).lookingAt()) {
+							trace("accepted " + description.getMethodName());
 							return true;
 						}
+						trace("rejected " + description.getMethodName());
 						return false;
 					}
 				});
@@ -418,7 +430,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				return;
 			}
 		}
-		suite.addTest(new JUnit4TestAdapter(clazz));
+		suite.addTest(adapter);
 	}
 
 	private Class< ? > loadClass(Bundle tfw, String fqn) {
@@ -433,13 +445,16 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				}
 			}
 
+			trace("finding %s", fqn);
 			Bundle bundles[] = context.getBundles();
 			for (int i = bundles.length - 1; i >= 0; i--) {
 				try {
 					checkResolved(bundles[i]);
+					trace("found in %s", bundles[i]);
 					return bundles[i].loadClass(fqn);
 				}
 				catch (ClassNotFoundException e1) {
+					trace("not in %s", bundles[i]);
 					// try next
 				}
 			}
@@ -463,10 +478,23 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		int realCount = 0;
 		for (Enumeration< ? > e = suite.tests(); e.hasMoreElements();) {
 			Test test = (Test) e.nextElement();
+			
+			if ( test instanceof JUnit4TestAdapter) {
+				
+				list.add(test);
+				
+				for ( Test t : ((JUnit4TestAdapter) test).getTests()) {
+					realCount++;
+					list.add(t);
+				}
+				continue;
+			}
+			
+			
 			list.add(test);
 			if (test instanceof TestSuite)
 				realCount += flatten(list, (TestSuite) test);
-			else
+			else 
 				realCount++;
 		}
 		return realCount;
@@ -489,9 +517,9 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	public void trace(String msg, Object... objects) {
-		if (trace) {
+		//if (trace) {
 			message("# ", msg, objects);
-		}
+		//}
 	}
 
 	private void message(String prefix, String string, Object[] objects) {

@@ -5,6 +5,7 @@ Bundle-Activator: com.example.demo.Activator
 Bundle-SymbolicName: demo
 
 -testpath: \
+	com.springsource.org.junit;version=4.11, \
 	biz.aQute.junit; version=snapshot
 
 -runpath: \
@@ -12,7 +13,8 @@ Bundle-SymbolicName: demo
 	biz.aQute.launcher; version=snapshot
  	
 -runbundles: org.apache.felix.scr,\
-	org.apache.felix.configadmin
+	org.apache.felix.configadmin, \
+	com.springsource.org.junit; version=4.11
 	
 
 Bundle-Activator: test.TestActivator
@@ -24,13 +26,16 @@ Import-Package: \
 -buildpath: \
 	osgi.core;version=4.3.1,\
 	ee.j2se;version=1.5.0,\
-	junit.osgi,\
-	biz.aQute.bnd.annotation;version=latest
+	biz.aQute.bnd.annotation;version=latest,\
+	com.springsource.org.junit
 	
 javac.target=1.5
 javac.source=1.5
 
 -runtrace: true
+-runvm: 
+#"-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044"
+
 -runee: JavaSE-1.6
 
 Bundle-Version: 1.1.0

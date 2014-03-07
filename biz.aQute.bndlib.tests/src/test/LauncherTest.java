@@ -12,6 +12,8 @@ import aQute.lib.io.*;
 
 public class LauncherTest extends TestCase {
 
+	
+
 	public static void testNoReferences() throws Exception {
 		Project project = getProject();
 		project.setProperty("-runnoreferences", true+"");
@@ -117,13 +119,13 @@ public class LauncherTest extends TestCase {
 
 	public static void testSimple() throws Exception {
 		Project project = getProject();
-		project.clear();
-
 		ProjectLauncher l = project.getProjectLauncher();
 		l.setTrace(true);
 		l.getRunProperties().put("test.cmd", "exit");
+		assertTrue(project.check());
 		assertEquals(42, l.launch());
 	}
+
 
 	/**
 	 * Test the packager
@@ -220,6 +222,8 @@ public class LauncherTest extends TestCase {
 		Project project = workspace.getProject("demo");
 		project.clear();
 		project.forceRefresh();
+		assertTrue(project.check());
+		assertTrue(project.getWorkspace().check());
 		return project;
 	}
 
@@ -236,6 +240,7 @@ public class LauncherTest extends TestCase {
 
 		ProjectTester pt = project.getProjectTester();
 		pt.addTest("test.TestCase1");
+		pt.addTest("test.TestCase2:m1");
 
 		assertEquals(2, pt.test());
 	}

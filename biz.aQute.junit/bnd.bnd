@@ -1,4 +1,4 @@
--buildpath: com.springsource.org.junit,\
+-buildpath: com.springsource.org.junit;version='[4.11,5)',\
 	osgi.cmpn;version=4.3.1,\
 	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
@@ -14,7 +14,7 @@ Private-Package: aQute.junit.*,\
 	org.junit.*
 	
 Export-Package: junit.framework; version=3.8,\
-				org.junit.*;version=4.10, \
+				org.junit.*;version=4.11, \
 				org.hamcrest.*;version=1.0.0
 
 # The dependency on aQute packages is only for the 

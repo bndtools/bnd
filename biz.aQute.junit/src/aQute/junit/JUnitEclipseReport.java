@@ -15,7 +15,7 @@ public class JUnitEclipseReport implements TestReporter {
 	long			startTime;
 	Bundle			targetBundle;
 	List<Test>		tests;
-	boolean			verbose	= false;
+	boolean			verbose	= true;
 	Test			current;
 
 	public JUnitEclipseReport(int port) throws Exception {
@@ -116,9 +116,16 @@ public class JUnitEclipseReport implements TestReporter {
 			sb.append(i + 1);
 			sb.append(",");
 			Test test = flattened.get(i);
-			sb.append(flattened.get(i));
-			sb.append(",");
-			sb.append(test instanceof TestSuite);
+			if (test instanceof TestSuite || test instanceof JUnit4TestAdapter) {
+				sb.append(test);
+				sb.append(",");
+				sb.append(true);
+			} else {
+				sb.append(test);
+				sb.append(",");
+				sb.append(false);
+
+			}
 			sb.append(",");
 			sb.append(test.countTestCases());
 			message("%TSTTREE", sb.toString());
