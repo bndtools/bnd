@@ -241,8 +241,16 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		try {
 			List<String> names = new ArrayList<String>();
 			StringTokenizer st = new StringTokenizer(testnames, " ,");
-			while (st.hasMoreTokens())
-				names.add(st.nextToken());
+			
+			//
+			// Collect the test names and remove any duplicates
+			//
+			
+			while (st.hasMoreTokens()) {
+				String token = st.nextToken();
+				if ( !names.contains(token))
+					names.add(token);
+			}
 
 			List<TestReporter> reporters = new ArrayList<TestReporter>();
 			final TestResult result = new TestResult();
