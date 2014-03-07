@@ -701,7 +701,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("Test a project according to an OSGi test")
-	@Arguments(arg = {})
+	@Arguments(arg = {"testclass[:method]..."})
 	interface testOptions extends Options {
 		@Description("Path to another project than the current project")
 		String project();
@@ -711,6 +711,12 @@ public class bnd extends Processor {
 
 		@Description("Launch the test even if this bundle does not contain Test-Cases")
 		boolean force();
+		
+		@Description("Set the -testcontinuous flag")
+		boolean continuous();
+		
+		@Description("Set the -runtrace flag")
+		boolean trace();
 	}
 
 	@Description("Test a project according to an OSGi test")
@@ -724,7 +730,17 @@ public class bnd extends Processor {
 //		if (!verifyDependencies(project, opts.verify(), true))
 //			return;
 //
-		if (project.getProperty(TESTCASES) == null)
+		List<String> testNames = opts._();
+		if ( !testNames.isEmpty())
+			project.setProperty(TESTCASES, "");
+			
+		if (   project.is(NOJUNITOSGI) && !opts.force()) {
+			warning("%s is set to true on this bundle. Use -f/--force to try this test anyway",
+					NOJUNITOSGI);
+			return;
+		}
+			
+		if (   project.getProperty(TESTCASES) == null)
 			if (opts.force())
 				project.setProperty(TESTCASES, "");
 			else {
@@ -733,7 +749,13 @@ public class bnd extends Processor {
 				return;
 			}
 
-		project.test();
+		if ( opts.continuous())
+			project.setProperty(TESTCONTINUOUS, "true");
+		
+		if ( opts.trace() || isTrace())
+			project.setProperty(RUNTRACE, "true");
+		
+		project.test(testNames);
 		getInfo(project);
 	}
 

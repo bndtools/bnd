@@ -2341,4 +2341,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		table.put("Base", getBase());
 		table.put("Properties", properties.entrySet());
 	}
+	
+	
+	/**
+	 * Simplified way to check booleans
+	 */
+	
+	public boolean is(String propertyName) {
+		return isTrue( getProperty(propertyName));
+	}
 }

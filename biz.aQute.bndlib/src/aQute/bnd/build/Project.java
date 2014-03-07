@@ -1634,6 +1634,10 @@ public class Project extends Processor {
 	}
 
 	public void test() throws Exception {
+		test(null);
+	}
+	
+	public void test(List<String> tests) throws Exception {
 
 		String testcases = getProperties().getProperty(Constants.TESTCASES);
 		if (testcases == null) {
@@ -1643,6 +1647,12 @@ public class Project extends Processor {
 		clear();
 
 		ProjectTester tester = getProjectTester();
+		if ( tests != null) {
+			trace("Adding tests %s", tests);
+			for ( String test : tests) {
+				tester.addTest(test);				
+			}
+		}
 		tester.setContinuous(isTrue(getProperty(Constants.TESTCONTINUOUS)));
 		tester.prepare();
 
