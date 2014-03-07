@@ -224,7 +224,7 @@ public class BndrunResolveContext extends ResolveContext {
     }
 
     private void constructInputRequirements() {
-        List<Requirement> requires = runModel.getRunRequires();
+        List<Requirement> requires = runModel.getRunRequiresProcessed();
         if (requires == null || requires.isEmpty()) {
             inputRequirementsResource = null;
         } else {

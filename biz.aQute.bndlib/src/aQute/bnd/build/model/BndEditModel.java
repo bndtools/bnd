@@ -11,6 +11,7 @@ import aQute.bnd.build.*;
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.build.model.conversions.*;
 import aQute.bnd.header.*;
+import aQute.bnd.help.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.properties.*;
 import aQute.bnd.version.*;
@@ -167,6 +168,8 @@ public class BndEditModel {
 	private Converter<String,Collection< ? extends String>>			runReposFormatter			= new CollectionFormatter<String>(
 																										LIST_SEPARATOR,
 																										aQute.bnd.osgi.Constants.EMPTY_HEADER);
+	private Macro replacer;
+	private Workspace workspace;
 
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
@@ -252,6 +255,15 @@ public class BndEditModel {
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
 		formatters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListFormatter);
 		formatters.put(Constants.INCLUDE_RESOURCE, stringListFormatter);
+	}
+
+	/**
+	 * Optional constructor. With it set, allows properties to have macros and variables.
+	 * @param ws
+	 */
+	public BndEditModel(Workspace ws) {
+		this();
+		this.workspace = ws;
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -782,14 +794,39 @@ public class BndEditModel {
         doSetObject(aQute.bnd.osgi.Constants.RUNFW, oldValue, clause, newlineEscapeFormatter);
     }
 
-    public List<Requirement> getRunRequires() {
-    	return doGetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListConverter);
-    }
-    
-    public void setRunRequires(List<Requirement> requires) {
-    	List<Requirement> oldValue = getRunRequires();
-    	doSetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
-    }
+	public List<Requirement> getRunRequiresProcessed() {
+		String prop = "";
+		if (objectProperties.containsKey(aQute.bnd.osgi.Constants.RUNREQUIRES)) {
+			prop = (String) objectProperties.get(aQute.bnd.osgi.Constants.RUNREQUIRES);
+		} else if (changesToSave.containsKey(aQute.bnd.osgi.Constants.RUNREQUIRES)) {
+			prop = changesToSave.get(aQute.bnd.osgi.Constants.RUNREQUIRES);
+		} else if (properties.containsKey(aQute.bnd.osgi.Constants.RUNREQUIRES)) {
+			prop = properties.getProperty(aQute.bnd.osgi.Constants.RUNREQUIRES);
+		}
+		Macro r = getReplacer();
+		if (r != null) {
+			prop = r.process(prop);
+		}
+		return requirementListConverter.convert(prop);
+	}
+
+	public List<Requirement> getRunRequires() {
+		String prop = "";
+		if (objectProperties.containsKey(aQute.bnd.osgi.Constants.RUNREQUIRES)) {
+			prop = (String) objectProperties.get(aQute.bnd.osgi.Constants.RUNREQUIRES);
+		} else if (changesToSave.containsKey(aQute.bnd.osgi.Constants.RUNREQUIRES)) {
+			prop = changesToSave.get(aQute.bnd.osgi.Constants.RUNREQUIRES);
+		} else if (properties.containsKey(aQute.bnd.osgi.Constants.RUNREQUIRES)) {
+			prop = properties.getProperty(aQute.bnd.osgi.Constants.RUNREQUIRES);
+		}
+		return requirementListConverter.convert(prop);
+	}
+
+	public void setRunRequires(List<Requirement> requires) {
+		String oldValue = doGetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, stringConverter);
+		String newValue = requirementListFormatter.convert(requires);
+		doSetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, oldValue, newValue, new DefaultFormatter());
+	}
 
 
 	private <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
@@ -807,6 +844,28 @@ public class BndEditModel {
 			result = converter.convert(null);
 		}
 		return result;
+	}
+
+	/**
+	 * @return Replacer or null if unable to create replacer.
+	 */
+	private Macro getReplacer() {
+		try {
+			if (replacer == null) {
+				if (this.isProjectFile()) {
+					Project p = Workspace.getProject(this.getBndResource());
+					replacer = new Macro(p, new Object[] {});
+				} else if (this.isBndrun() && workspace != null) {
+					Project p = new Project(workspace, this.getBndResource().getParentFile(), this.getBndResource());
+					replacer = new Macro(p, new Object[] {});
+				}
+			}
+		}
+		catch (Exception e) {
+			//TODO -- forward to logging mechanism.
+			e.printStackTrace();
+		}
+		return replacer;
 	}
 
 	private <T> void doSetObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {

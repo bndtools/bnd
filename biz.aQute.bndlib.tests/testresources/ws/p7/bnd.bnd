@@ -1,0 +1,5 @@
+-runbundles: something;version=latest
+
+var: ${raw;-runbundles;"unset"}
+
+-runvm: -XX:+UnlockCommercialFeatures, -XX:+FlightRecorder, "-XX:FlightRecorderOptions=defaultrecording=true,dumponexit=true"
