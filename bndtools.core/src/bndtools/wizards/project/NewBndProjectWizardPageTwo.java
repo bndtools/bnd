@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
@@ -88,6 +89,28 @@ public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
         } catch (InterruptedException e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Interrupted while adding Bnd OSGi Project nature to project.", e));
         }
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        boolean resultFromSuperClass = super.isPageComplete();
+        int nr = 0;
+        try {
+            IClasspathEntry[] entries = getJavaProject().getResolvedClasspath(true);
+            for (IClasspathEntry entry : entries) {
+                if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+                    nr++;
+                    // here we could do more validation on the paths if we want to
+                    // for now we just count pages
+                }
+            }
+        } catch (Exception e) {
+            // if for some reason we cannot access the resolved classpath
+            // we simply set an error message
+            setErrorMessage("Could not access resolved classpaths: " + e);
+        }
+        // we're okay if we have exactly two valid source paths
+        return resultFromSuperClass && (nr == 2);
     }
 
     @Override

@@ -44,7 +44,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     private IProjectTemplate projectTemplate;
