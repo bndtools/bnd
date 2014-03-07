@@ -343,6 +343,11 @@ public class Workspace extends Processor {
 					if (in != null)
 						unzip(in, root);
 					else {
+						if ( root.isDirectory() && root.list().length >= 2) {
+							trace("Assuming I am in a bnd test ...  the embedded repo is missig but it exists on the file system");
+							return true;
+						}
+							
 						error("Couldn't find embedded-repo.jar in bundle ");
 					}
 					return true;
