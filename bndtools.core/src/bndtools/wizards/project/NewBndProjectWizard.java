@@ -84,18 +84,18 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                     IPath srcOut = srcOutPath.makeRelativeTo(projectPath);
                     if (nr == 1) {
                         if (!ProjectPaths.PATH_SRC.equals(src.toString())) {
-                            model.genericSet(ProjectPaths.PATH_SRC, src.toString());
+                            model.genericSet("src", src.toString());
                         }
                         if (!ProjectPaths.PATH_SRC_BIN.equals(srcOut.toString())) {
-                            model.genericSet(ProjectPaths.PATH_SRC_BIN, srcOut.toString());
+                            model.genericSet("bin", srcOut.toString());
                         }
                         nr = 2;
                     } else if (nr == 2) {
                         if (!ProjectPaths.PATH_TEST_SRC.equals(src.toString())) {
-                            model.genericSet(ProjectPaths.PATH_TEST_SRC, src.toString());
+                            model.genericSet("testsrc", src.toString());
                         }
                         if (!ProjectPaths.PATH_TEST_BIN.equals(srcOut.toString())) {
-                            model.genericSet(ProjectPaths.PATH_TEST_BIN, srcOut.toString());
+                            model.genericSet("testbin", srcOut.toString());
                         }
                         nr = 2;
                     } else {
