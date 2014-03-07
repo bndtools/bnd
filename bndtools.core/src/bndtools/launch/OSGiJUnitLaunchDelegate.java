@@ -1,6 +1,10 @@
 package bndtools.launch;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.IResource;
@@ -23,11 +27,18 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectTester;
 import aQute.bnd.service.EclipseJUnitTester;
+import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.launch.util.LaunchUtils;
 
 public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
-
+    static String JNAME_S = "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
+    static Pattern FAILURES_P = Pattern.compile("^(" + JNAME_S + ")   # method name\n" //
+            + "\\(" //
+            + "     (" + JNAME_S + "(?:\\." + JNAME_S + ")*)          # fqn class name\n" //
+            + "\\)$                                                   # close\n", //
+            Pattern.UNIX_LINES + Pattern.MULTILINE + Pattern.COMMENTS);
+    public static final String ORG_BNDTOOLS_TESTNAMES = "org.bndtools.testnames";
     private static final String JDT_JUNIT_BSN = "org.eclipse.jdt.junit";
     private static final String ATTR_JUNIT_PORT = "org.eclipse.jdt.junit.PORT";
 
@@ -104,7 +115,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
         super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
     }
 
-    private int configureTester(ILaunchConfiguration configuration) throws CoreException {
+    private int configureTester(ILaunchConfiguration configuration) throws CoreException, IOException {
         assertBndEclipseTester();
 
         // Find free socket for JUnit protocol
@@ -117,15 +128,51 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
         // Keep alive?
         bndTester.setContinuous(enableKeepAlive(configuration));
 
+        //
+        // The JUnit runner can set a file with names of failed tests
+        // that are requested to rerun
+        //
+
+        String failuresFileName = configuration.getAttribute("org.eclipse.jdt.junit.FAILURENAMES", (String) null);
+        if (failuresFileName != null) {
+            File failuresFile = new File(failuresFileName);
+            if (failuresFile.isFile()) {
+                String failures = IO.collect(failuresFile);
+                Matcher m = FAILURES_P.matcher(failures);
+                while (m.find()) {
+                    bndTester.addTest(m.group(2) + ":" + m.group(1));
+                }
+            }
+        }
+
+        //
         // Check if we were asked to re-run a specific test class/method
+        //
+
         String testClass = configuration.getAttribute("org.eclipse.jdt.launching.MAIN_TYPE", (String) null);
         String testMethod = configuration.getAttribute("org.eclipse.jdt.junit.TESTNAME", (String) null);
+
         if (testClass != null) {
             String testName = testClass;
             if (testMethod != null)
                 testName += ":" + testMethod;
             bndTester.addTest(testName);
         }
+
+        String tests = configuration.getAttribute(ORG_BNDTOOLS_TESTNAMES, (String) null);
+        if (tests != null && !tests.trim().isEmpty()) {
+            for (String test : tests.trim().split("\\s+")) {
+                bndTester.addTest(test);
+            }
+        }
+
+        //        if (bndTester.getTests().isEmpty()) {
+        //            if (!bndTester.getContinuous() || bndTester.getProject().getProperty(Constants.TESTCASES) == null) {
+        //                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No tests are selected. " //
+        //                        + "This starts the tester who will then wait " //
+        //                        + "for bundles with the Test-Cases header listing the test cases. To enable this, set " + Constants.TESTCONTINUOUS + " to true", null));
+        //            }
+        //        }
 
         return port;
     }
