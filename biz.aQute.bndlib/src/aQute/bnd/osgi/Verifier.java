@@ -363,6 +363,9 @@ public class Verifier extends Processor {
 		if (dynamicImports == null)
 			dynamicImports = new Instructions(main.getDynamicImportPackage());
 
+		if (dynamicImports.isEmpty())
+			return false;
+		
 		return dynamicImports.matches(pack.getFQN());
 	}
 

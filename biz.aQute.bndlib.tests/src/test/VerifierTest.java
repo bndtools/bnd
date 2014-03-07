@@ -118,11 +118,12 @@ public class VerifierTest extends TestCase {
 				"Export-Package",
 				"org.osgi.service.eventadmin;version='[1,2)',org.osgi.framework;version=x13,test;-remove-attribute:=version,test.lib;specification-version=12,test.split");
 		bmaker.setProperty("Import-Package",
-				"foo;version=1,bar;version='[1,x2)',baz;version='[2,1)',baz2;version='(1,1)'");
+				"foo;version=1,bar;version='[1,x2)',baz;version='[2,1)',baz2;version='(1,1)',*");
 		bmaker.setProperty("-strict", "true");
 		Jar jar = bmaker.build();
 		assertTrue(bmaker
-				.check("Import Package bar has an invalid version range syntax \\[1,x2\\)",
+				.check("Import Package clauses without version range \\(excluding javax\\.\\*\\):",
+						"Import Package bar has an invalid version range syntax \\[1,x2\\)",
 						"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",
 						"Import Package baz has an invalid version range syntax \\[2,1\\):Low Range is higher than High Range: 2.0.0-1.0.0",
 						"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: \\[foo\\]",

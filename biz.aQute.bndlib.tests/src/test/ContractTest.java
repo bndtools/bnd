@@ -22,7 +22,7 @@ public class ContractTest extends TestCase {
 		a.addClasspath(bjara);
 
 		a.setProperty(Constants.CONTRACT, "*");
-		a.setImportPackage("test.packageinfo");
+		a.setImportPackage("test.packageinfo,*");
 		a.setProperty("Export-Package", "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check("Contract \\[name=abc;version=0.0.0;from=biz.aQute.bndlib.tests] does not declare a version"));
@@ -45,7 +45,7 @@ public class ContractTest extends TestCase {
 		a.addClasspath(bjara);
 
 		a.setProperty(Constants.CONTRACT, "*");
-		a.setImportPackage("test.packageinfo");
+		a.setImportPackage("test.packageinfo,*");
 		a.setProperty("Export-Package", "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check("Contract abc has no uses: directive"));
@@ -69,7 +69,7 @@ public class ContractTest extends TestCase {
 		a.addClasspath(bjara);
 
 		a.setProperty(Constants.CONTRACT, "*");
-		a.setImportPackage("test.packageinfo");
+		a.setImportPackage("test.packageinfo,*");
 		a.setProperty("Export-Package", "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check());
@@ -95,7 +95,7 @@ public class ContractTest extends TestCase {
 		a.addClasspath(bjara); // 1x
 		a.addClasspath(bjarb); // 2x
 		a.setProperty(Constants.CONTRACT, "atest;alpha=1");
-		a.setImportPackage("org.osgi.service.cm");
+		a.setImportPackage("org.osgi.service.cm,*");
 		a.setProperty("Export-Package", "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check());
@@ -126,7 +126,7 @@ public class ContractTest extends TestCase {
 		a.addClasspath(bjar); // 1x
 		a.addClasspath(bjar); // 2x
 		a.setProperty(Constants.CONTRACT, "*");
-		a.setImportPackage("org.osgi.service.cm");
+		a.setImportPackage("org.osgi.service.cm,*");
 		a.setProperty("Export-Package", "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a
@@ -141,7 +141,7 @@ public class ContractTest extends TestCase {
 		a.setTrace(true);
 		a.addClasspath(bjar);
 		a.setProperty(Constants.CONTRACT, "*");
-		a.setImportPackage("org.osgi.service.cm");
+		a.setImportPackage("org.osgi.service.cm,*");
 		a.setProperty("Export-Package", "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check());
