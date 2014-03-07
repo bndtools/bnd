@@ -1,4 +1,4 @@
 -pluginpath: \
-	${plugin-dir}/biz.aQute.repository/biz.aQute.repository-2.1.0.jar, \
-	${plugin-dir}/aQute.jpm.bndrepo/aQute.jpm.bndrepo-1.0.4.jar
+	${workspace}/cnf/plugins/aQute.jpm.bndrepo.jar, \
+	${workspace}/cnf/plugins/biz.aQute.repository/biz.aQute.repository-2.1.0.jar
 
