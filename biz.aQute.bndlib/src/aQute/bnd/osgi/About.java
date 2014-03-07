@@ -40,6 +40,8 @@ import aQute.bnd.version.*;
 public class About {
 	public static Version				_2_3		= new Version(2, 3, 0);
 	public static String[]				CHANGES_2_3	= {
+			"Now correctly supports JUnit 4",
+			"Added options to the bnd test command: test names, and setting continuous and trace flags",
 			"Included DSTestWiring class which makes it easier to handle dependencies in unit tests, both inside and outside a framework",
 			"Macros now replace \n,\r, etc in their output",
 			"The replace macro can now take a separator string, this separator was alwas ', '",

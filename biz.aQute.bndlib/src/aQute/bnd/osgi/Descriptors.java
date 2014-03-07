@@ -1,6 +1,5 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
 import java.util.*;
 
 import aQute.libg.generics.*;
