@@ -682,11 +682,10 @@ public class Analyzer extends Processor {
 																												// there
 																												// already
 			) {
-				for (JAVA ee : ees) {
-					Attrs attrs = new Attrs();
-					attrs.put(Constants.FILTER_DIRECTIVE, ee.getFilter());
-					requirements.add(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, attrs);
-				}
+				JAVA highest = ees.last();
+				Attrs attrs = new Attrs();
+				attrs.put(Constants.FILTER_DIRECTIVE, highest.getFilter());
+				requirements.add(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, attrs);
 			}
 
 			if (!requirements.isEmpty())
