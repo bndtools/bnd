@@ -29,9 +29,7 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Processor;
 import bndtools.Plugin;
-import bndtools.central.Central;
 import bndtools.editor.model.BndProject;
 
 class NewBndProjectWizard extends AbstractNewBndProjectWizard {
@@ -72,7 +70,6 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             template.modifyInitialBndModel(model);
         }
         try {
-            Processor defaults = Central.getWorkspace().getDefaults();
             String name = pageTwo.getJavaProject().getProject().getName();
             IPath projectPath = new Path(name).makeAbsolute();
             IClasspathEntry[] entries = pageTwo.getJavaProject().getResolvedClasspath(true);
@@ -87,18 +84,18 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                     }
                     IPath srcOut = srcOutPath.makeRelativeTo(projectPath);
                     if (nr == 1) {
-                        if (!defaults.getProperty(Constants.DEFAULT_PROP_SRC_DIR).equals(src.toString())) {
+                        if (!ProjectPaths.PATH_SRC.equals(src.toString())) {
                             model.genericSet(Constants.DEFAULT_PROP_SRC_DIR, src.toString());
                         }
-                        if (!defaults.getProperty(Constants.DEFAULT_PROP_BIN_DIR).equals(srcOut.toString())) {
+                        if (!ProjectPaths.PATH_SRC_BIN.equals(srcOut.toString())) {
                             model.genericSet(Constants.DEFAULT_PROP_BIN_DIR, srcOut.toString());
                         }
                         nr = 2;
                     } else if (nr == 2) {
-                        if (!defaults.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR).equals(src.toString())) {
+                        if (!ProjectPaths.PATH_TEST_SRC.equals(src.toString())) {
                             model.genericSet(Constants.DEFAULT_PROP_TESTSRC_DIR, src.toString());
                         }
-                        if (!defaults.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR).equals(srcOut.toString())) {
+                        if (!ProjectPaths.PATH_TEST_BIN.equals(srcOut.toString())) {
                             model.genericSet(Constants.DEFAULT_PROP_TESTBIN_DIR, srcOut.toString());
                         }
                         nr = 2;
