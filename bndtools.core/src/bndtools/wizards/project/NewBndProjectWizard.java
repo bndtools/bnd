@@ -28,6 +28,7 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.editor.model.BndProject;
 
@@ -84,18 +85,18 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                     IPath srcOut = srcOutPath.makeRelativeTo(projectPath);
                     if (nr == 1) {
                         if (!ProjectPaths.PATH_SRC.equals(src.toString())) {
-                            model.genericSet("src", src.toString());
+                            model.genericSet(Constants.DEFAULT_PROP_SRC_DIR, src.toString());
                         }
                         if (!ProjectPaths.PATH_SRC_BIN.equals(srcOut.toString())) {
-                            model.genericSet("bin", srcOut.toString());
+                            model.genericSet(Constants.DEFAULT_PROP_BIN_DIR, srcOut.toString());
                         }
                         nr = 2;
                     } else if (nr == 2) {
                         if (!ProjectPaths.PATH_TEST_SRC.equals(src.toString())) {
-                            model.genericSet("testsrc", src.toString());
+                            model.genericSet(Constants.DEFAULT_PROP_TESTSRC_DIR, src.toString());
                         }
                         if (!ProjectPaths.PATH_TEST_BIN.equals(srcOut.toString())) {
-                            model.genericSet("testbin", srcOut.toString());
+                            model.genericSet(Constants.DEFAULT_PROP_TESTBIN_DIR, srcOut.toString());
                         }
                         nr = 2;
                     } else {
