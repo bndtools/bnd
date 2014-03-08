@@ -59,7 +59,7 @@ public class Workspace extends Processor {
 		return ws.getProject(projectDir.getName());
 	}
 
-	static synchronized Processor getDefaults() {
+	static synchronized public Processor getDefaults() {
 		if (defaults != null)
 			return defaults;
 
