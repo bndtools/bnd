@@ -21,6 +21,22 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/**
+	 * A Require-Bundle should not fail on missing imports, just warn
+	 * @throws Exception 
+	 */
+	
+	public void testMissingImportWithRequireBundle() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File("bin"));
+		b.setExportPackage("test.classreference");
+		b.setImportPackage("!*");
+		b.setProperty("Require-Bundle", "com.abc");
+		b.build();
+		assertTrue(b.check());
+	}
+	
+	
+	/**
 	 * <pre>
 	 * [2013-12-11 15:55:14] BJ Hargrave: init:
 	 *      [echo] Enter project org.osgi.test.cases.prefs (${top})

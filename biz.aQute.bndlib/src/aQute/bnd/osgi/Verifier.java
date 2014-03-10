@@ -340,19 +340,28 @@ public class Verifier extends Processor {
 					p.remove();
 			}
 		}
+		
+		//
+		// If there is a Require bundle, all bets are off and
+		// we cannot verify anything
+		//
 
-		if (!unresolvedReferences.isEmpty()) {
-			// Now we want to know the
-			// classes that are the culprits
-			Set<String> culprits = new HashSet<String>();
-			for (Clazz clazz : analyzer.getClassspace().values()) {
-				if (hasOverlap(unresolvedReferences, clazz.getReferred()))
-					culprits.add(clazz.getAbsolutePath());
+		if (analyzer.getRequireBundle().isEmpty()) {
+			
+			if (!unresolvedReferences.isEmpty()) {
+				// Now we want to know the
+				// classes that are the culprits
+				Set<String> culprits = new HashSet<String>();
+				for (Clazz clazz : analyzer.getClassspace().values()) {
+					if (hasOverlap(unresolvedReferences, clazz.getReferred()))
+						culprits.add(clazz.getAbsolutePath());
+				}
+
+				error("Unresolved references to %s by class(es) %s on the Bundle-Classpath: %s", unresolvedReferences,
+						culprits, analyzer.getBundleClasspath().keySet());
 			}
-
-			error("Unresolved references to %s by class(es) %s on the Bundle-Classpath: %s", unresolvedReferences,
-					culprits, analyzer.getBundleClasspath().keySet());
-		}
+		} else if ( isPedantic())
+			warning("Use of Require-Bundle makes it impossible to verify unresolved references");
 	}
 
 	/**
@@ -365,7 +374,7 @@ public class Verifier extends Processor {
 
 		if (dynamicImports.isEmpty())
 			return false;
-		
+
 		return dynamicImports.matches(pack.getFQN());
 	}
 
