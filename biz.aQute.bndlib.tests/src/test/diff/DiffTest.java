@@ -11,7 +11,35 @@ import aQute.lib.io.*;
 public class DiffTest extends TestCase {
 	static DiffPluginImpl	differ	= new DiffPluginImpl();
 
+	/**
+	 * Test API differences. We have a package in the /demo workspace project and we have
+	 * the same package in our test.api package. If you make changes, copy the demo.jar
+	 * in the testresources directory.
+	 * 
+	 */
 	
+	public void testBaselineDiffs() throws Exception {
+		
+		Tree newerTree = make(new File("testresources/baseline/test1.jar"));
+		Tree olderTree = make(new File("testresources/baseline/test2.jar"));
+		Diff diff = newerTree.diff(olderTree);
+		
+		assertEquals( Delta.MAJOR, diff.getDelta());
+		assertEquals( Delta.UNCHANGED, diff.get("<init>()").getDelta());
+		assertEquals( Delta.ADDED, diff.get("putAll(Ljava/util/List<Ljava/lang/Integer;>;)").getDelta());
+		assertEquals( Delta.REMOVED, diff.get("putAll(Ljava/util/List<Ljava/lang/String;>;)").getDelta());
+		show(diff, 2);
+	}
+	
+	private Tree make(File file) throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(file);
+		b.setProperty("Export-Package", "*");
+		b.build();
+		assertTrue(b.check());
+		return differ.tree(b).get("<api>").get("a").get("a.clazzA");
+	}
+
 	/**
 	 * Test API differences. We have a package in the /demo workspace project and we have
 	 * the same package in our test.api package. If you make changes, copy the demo.jar
