@@ -102,11 +102,11 @@ public class BaselineCommands {
 		if (args.size() != 2) {
 			throw new IllegalArgumentException("Accepts only two argument (<jar>)");
 		}
-		File newer = bnd.getFile(args.get(0));
+		File newer = bnd.getFile(args.remove(0));
 		if (!newer.isFile())
 			throw new IllegalArgumentException("Not a valid newer input file: " + newer);
 
-		File older = bnd.getFile(args.get(0));
+		File older = bnd.getFile(args.remove(0));
 		if (!older.isFile())
 			throw new IllegalArgumentException("Not a valid older input file: " + older);
 
