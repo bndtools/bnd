@@ -15,6 +15,7 @@ public abstract class ProjectTester {
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
 		launcher = project.getProjectLauncher();
+		launcher.addRunVM("-ea");
 		testbundles = project.getTestpath();
 		for (Container c : testbundles) {
 			launcher.addClasspath(c);

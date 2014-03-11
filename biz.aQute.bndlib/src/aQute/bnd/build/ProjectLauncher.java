@@ -238,6 +238,20 @@ public abstract class ProjectLauncher {
 				java.add("-javaagent:" + agent);
 			}
 		}
+
+		if (isRunJdb()) {
+			int port = 1044;
+			try {
+				port = Integer.parseInt(project.getProperty(Constants.RUNJDB));
+			}
+			catch (Exception e) {
+				// ok, value can also be ok, or on, or true
+			}
+			String suspend = port > 0 ? "y" : "n";
+
+			java.add("-Xrunjdwp:server=y,transport=dt_socket,address=" + Math.abs(port) + ",suspend=" + suspend);
+		}
+		
 		java.add("-cp");
 		java.add(Processor.join(getClasspath(), File.pathSeparator));
 		java.addAll(getRunVM());
@@ -418,5 +432,9 @@ public abstract class ProjectLauncher {
 
 	public void setCwd(File cwd) {
 		this.cwd = cwd;
+	}
+
+	public boolean isRunJdb() {
+		return project.is(Constants.RUNJDB);
 	}
 }

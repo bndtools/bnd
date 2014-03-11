@@ -166,6 +166,7 @@ public interface Constants {
 	String							RUNFRAMEWORK								= "-runframework";
 	String							RUNFW										= "-runfw";
 	String							RUNTIMEOUT									= "-runtimeout";
+	String							RUNJDB										= "-runjdb";
 	String							SNAPSHOT									= "-snapshot";
 	String							RUNFRAMEWORK_SERVICES						= "services";
 	String							RUNFRAMEWORK_NONE							= "none";
