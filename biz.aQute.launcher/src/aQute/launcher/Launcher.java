@@ -152,11 +152,15 @@ public class Launcher implements ServiceListener {
 				properties.put(key, v);
 		}
 
+		trace("properties " + properties);
+
 		System.getProperties().putAll(properties);
+		
+		
 		this.parms = new LauncherConstants(properties);
 
 		out = System.err;
-		trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
+		trace("inited runbundles=%s activators=%s timeout=%s properties=%s", parms.runbundles, parms.activators, parms.timeout);
 		if (propertiesFile != null && parms.embedded == false) {
 			TimerTask watchdog = new TimerTask() {
 				long	begin	= propertiesFile.lastModified();
@@ -1023,7 +1027,10 @@ public class Launcher implements ServiceListener {
 
 		@Override
 		public PermissionCollection getPermissions(CodeSource codesource) {
-			trace("Granting AllPermission to %s", codesource.getLocation());
+			if ( codesource == null)
+				trace("Granting AllPermission to a bundle without codesource!");
+			else
+				trace("Granting AllPermission to %s", codesource.getLocation());
 			return all;
 		}
 
