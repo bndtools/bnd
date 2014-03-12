@@ -50,7 +50,7 @@ public class Launcher implements ServiceListener {
 	private List<Bundle>				wantsToBeStarted					= new ArrayList<Bundle>();
 	AtomicBoolean						active								= new AtomicBoolean();
 
-	public static void main(String[] args) {
+	public static void main(String[] args) {		
 		try {
 			int exitcode = 0;
 			try {
@@ -152,15 +152,16 @@ public class Launcher implements ServiceListener {
 				properties.put(key, v);
 		}
 
-		trace("properties " + properties);
 
 		System.getProperties().putAll(properties);
 		
 		
 		this.parms = new LauncherConstants(properties);
-
 		out = System.err;
+
+		trace("properties " + properties);
 		trace("inited runbundles=%s activators=%s timeout=%s properties=%s", parms.runbundles, parms.activators, parms.timeout);
+		
 		if (propertiesFile != null && parms.embedded == false) {
 			TimerTask watchdog = new TimerTask() {
 				long	begin	= propertiesFile.lastModified();
