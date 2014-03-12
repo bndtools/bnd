@@ -56,6 +56,6 @@ public enum EE {
             if (ee.eeName.equals(str))
                 return ee;
         }
-        throw new IllegalArgumentException("Unrecognised execution environment name: " + str);
+        return null;
     }
 }
