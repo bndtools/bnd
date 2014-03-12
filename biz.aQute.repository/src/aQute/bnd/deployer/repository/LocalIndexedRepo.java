@@ -13,13 +13,17 @@ import aQute.bnd.filerepo.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
+import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.version.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
 
-public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant {
+public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant, Actionable {
 
+	private final String							UPWARDS_ARROW					= " \u2191";
+	private final String							DOWNWARDS_ARROW					= " \u2193";
+	
 	private static final String			CACHE_PATH				= ".cache";
 	public static final String			PROP_LOCAL_DIR			= "local";
 	public static final String			PROP_READONLY			= "readonly";
@@ -105,7 +109,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		return indexFile;
 	}
 
-	private synchronized void regenerateAllIndexes() {
+	synchronized void regenerateAllIndexes() {
 		for (IRepositoryContentProvider provider : generatingProviders) {
 			if (!provider.supportsGeneration()) {
 				logService.log(LogService.LOG_WARNING,
@@ -371,6 +375,82 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			builder.append(", ").append(otherPaths);
 
 		return builder.toString();
+	}
+
+	public Map<String,Runnable> actions(Object... target) throws Exception {
+		Map<String,Runnable> map = new HashMap<String,Runnable>();
+		map.put("Reindex", new Runnable() {
+
+			public void run() {
+				regenerateAllIndexes();
+			}
+			
+		});
+		return map;
+	}
+
+	public String tooltip(Object... target) throws Exception {
+		if ( target == null || target.length==0)
+			return "LocalIndexedRepo @ " + getLocation(); 
+		
+		if ( target.length==2) {
+			ResourceHandle h = getHandle(target);
+			if ( h == null) {
+				regenerateAllIndexes();
+				refresh();
+				return null;
+			}
+			if ( h.getLocation() == Location.remote) {
+				return h.getName() + " (remote, not yet cached)";
+			}
+			
+			return h.request().getAbsolutePath() + "\n" + SHA1.digest(h.request()).asHex() + "\n" + h.getLocation();
+		}
+		return null;
+	}
+
+	private ResourceHandle getHandle(Object... target) throws Exception {
+		String bsn = (String) target[0];
+		Version v = (Version) target[1];
+		VersionRange r = new VersionRange("["+v.getWithoutQualifier()+","+v.getWithoutQualifier()+"]");
+		ResourceHandle[] handles = getHandles(bsn,r.toString());
+		if ( handles==null || handles.length==0) {
+			return null;
+		}
+		ResourceHandle h = handles[0];
+		return h;
+	}
+
+	public String title(Object... target) throws Exception {
+		if ( target == null)
+			return null;
+		
+		if ( target.length==2) {
+			ResourceHandle handle = getHandle(target);
+			if ( handle != null) {
+				String where = "";
+				switch( handle.getLocation()) {
+					case local :
+						where = "";
+						break;
+						
+					case remote :
+						where = UPWARDS_ARROW;
+						break;
+						
+					case remote_cached :
+						where = DOWNWARDS_ARROW;
+						break;
+					default :
+						where = "?";
+						break;
+					
+				}
+				return target[1] + " " + where;
+			}
+		}
+		
+		return null;
 	}
 
 }
