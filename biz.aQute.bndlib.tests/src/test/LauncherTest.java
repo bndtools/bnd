@@ -65,6 +65,20 @@ public class LauncherTest extends TestCase {
 	}
 
 	/**
+	 * Test env variables
+	 * 
+	 * @throws Exception
+	 */
+	public static void testEnv() throws Exception {
+		Project project = getProject();
+		project.clear();
+		project.setProperty("-runenv", "ANSWER=84");
+		ProjectLauncher l = project.getProjectLauncher();
+		l.setTrace(true);
+		l.getRunProperties().put("test.cmd", "env");
+		assertEquals(84, l.launch());
+	}
+	/**
 	 * Tests if the properties are cleaned up. This requires some knowledge of
 	 * the launcher unfortunately. It is also not sure if the file is not just
 	 * deleted by the onExit ...

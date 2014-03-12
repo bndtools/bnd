@@ -231,6 +231,18 @@ public abstract class ProjectLauncher {
 	public int launch() throws Exception {
 		prepare();
 		java = new Command();
+		
+		
+		//
+		// Handle the environment
+		//
+		
+		Map<String,String> env = getRunEnv();
+		for ( Map.Entry<String,String> e:env.entrySet()) {
+			java.var(e.getKey(), e.getValue());
+		}
+		
+		
 		java.add(project.getProperty("java", "java"));
 		String javaagent = project.getProperty(Constants.JAVAAGENT);
 		if (Processor.isTrue(javaagent)) {
@@ -239,7 +251,8 @@ public abstract class ProjectLauncher {
 			}
 		}
 
-		if (isRunJdb()) {
+		String jdb = getRunJdb();
+		if (jdb != null) {
 			int port = 1044;
 			try {
 				port = Integer.parseInt(project.getProperty(Constants.RUNJDB));
@@ -434,7 +447,15 @@ public abstract class ProjectLauncher {
 		this.cwd = cwd;
 	}
 
-	public boolean isRunJdb() {
-		return project.is(Constants.RUNJDB);
+	public String getRunJdb() {
+		return project.getProperty(Constants.RUNJDB);
+	}
+
+	public Map<String,String> getRunEnv() {
+		String runenv = project.getProperty(Constants.RUNENV);
+		if ( runenv != null) {
+			return OSGiHeader.parseProperties(runenv);
+		}		
+		return Collections.emptyMap();
 	}
 }

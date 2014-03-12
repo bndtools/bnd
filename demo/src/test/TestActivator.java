@@ -21,6 +21,16 @@ public class TestActivator implements BundleActivator {
 			System.exit(42);
 		else if ("timeout".equals(p)) {
 			Thread.sleep(10000);
+		}
+		if ("env".equals(p)) {
+			String answer = System.getenv("ANSWER");
+			try {
+				System.err.println("ANSWER=" + answer);
+				System.exit(Integer.parseInt(answer));
+			}
+			catch (NumberFormatException e) {
+				System.exit(-1);
+			}
 		} else if ("noreference".equals(p)) {
 			String location = context.getBundle().getLocation();
 
@@ -61,7 +71,7 @@ public class TestActivator implements BundleActivator {
 			//
 			// Stop the framework
 			//
-			
+
 			Runnable r = new Runnable() {
 
 				public void run() {
