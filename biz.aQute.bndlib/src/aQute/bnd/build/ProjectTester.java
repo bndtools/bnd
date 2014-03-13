@@ -3,6 +3,8 @@ package aQute.bnd.build;
 import java.io.*;
 import java.util.*;
 
+import aQute.bnd.osgi.*;
+
 public abstract class ProjectTester {
 	final Project				project;
 	final Collection<Container>	testbundles;
@@ -17,6 +19,8 @@ public abstract class ProjectTester {
 		launcher = project.getProjectLauncher();
 		launcher.addRunVM("-ea");
 		testbundles = project.getTestpath();
+		continuous = project.is(Constants.TESTCONTINUOUS);
+		
 		for (Container c : testbundles) {
 			launcher.addClasspath(c);
 		}
