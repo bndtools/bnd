@@ -139,7 +139,6 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
 
         try {
             VersionControlUtils.createDefaultProjectIgnores(project);
-            VersionControlUtils.addToIgnoreFile(project, null, "/generated/");
         } catch (IOException e) {
             logger.logError("Unable to create ignore file(s) for project " + project.getProject().getName(), e);
         }

@@ -345,6 +345,9 @@ public class VersionControlUtils {
             rootIgnores.add(VersionControlSystem.sanitiseGitIgnoreEntry(binDir, true, true));
         }
 
+        /* add the target directory to the ignores */
+        VersionControlUtils.addToIgnoreFile(javaProject, null, "/generated/");
+
         /* create an ignore file in the root of the project if there are entries to ignore */
         VersionControlUtils.addToIgnoreFile(javaProject, null, rootIgnores);
     }
