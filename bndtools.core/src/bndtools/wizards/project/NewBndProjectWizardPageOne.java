@@ -51,6 +51,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     private final ProjectNameGroup nameGroup = new ProjectNameGroup();
     private final ProjectLocationGroup locationGroup = new ProjectLocationGroup("Location");
+    private final ProjectLayoutGroup layoutGroup = new ProjectLayoutGroup("Project Layout");
     @SuppressWarnings("unused")
     private final Validator fValidator;
 
@@ -112,6 +113,9 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         Control jreControl = createJRESelectionControl(composite);
         jreControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        Control layoutControl = layoutGroup.createControl(composite);
+        layoutControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         Control workingSetControl = createWorkingSetControl(composite);
         workingSetControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -139,7 +143,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
     public IClasspathEntry[] getSourceClasspathEntries() {
         IPath projectPath = new Path(getProjectName()).makeAbsolute();
 
-        ProjectPaths projectPaths = ProjectPaths.get(ProjectLayout.BND);
+        ProjectPaths projectPaths = ProjectPaths.get(layoutGroup.getProjectLayout());
 
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(2);
         newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getSrc()), null, projectPath.append(projectPaths.getBin())));
@@ -152,7 +156,11 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     @Override
     public IPath getOutputLocation() {
-        return new Path(getProjectName()).makeAbsolute().append(ProjectPaths.get(ProjectLayout.BND).getBin());
+        return new Path(getProjectName()).makeAbsolute().append(ProjectPaths.get(layoutGroup.getProjectLayout()).getBin());
+    }
+
+    public ProjectLayout getProjectLayout() {
+        return layoutGroup.getProjectLayout();
     }
 
     public void setProjectTemplate(IProjectTemplate projectTemplate) {

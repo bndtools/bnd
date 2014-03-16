@@ -66,7 +66,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         ProjectPaths bndPaths = ProjectPaths.get(ProjectLayout.BND);
         BndEditModel model = super.generateBndModel(monitor);
 
-        ProjectPaths projectPaths = ProjectPaths.get(ProjectLayout.BND);
+        ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
 
         IProjectTemplate template = templatePage.getTemplate();
         if (template != null) {
@@ -134,7 +134,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
     protected BndProject generateBndProject(IProject project, IProgressMonitor monitor) {
         BndProject proj = super.generateBndProject(project, monitor);
 
-        ProjectPaths projectPaths = ProjectPaths.get(ProjectLayout.BND);
+        ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
         IProjectTemplate template = templatePage.getTemplate();
         if (template != null) {
             template.modifyInitialBndProject(proj, projectPaths);

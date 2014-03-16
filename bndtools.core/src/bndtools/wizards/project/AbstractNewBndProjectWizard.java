@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
 import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
@@ -192,7 +191,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                             // Make changes to the project
                             final IWorkspaceRunnable op = new IWorkspaceRunnable() {
                                 public void run(IProgressMonitor monitor) throws CoreException {
-                                    processGeneratedProject(ProjectPaths.get(ProjectLayout.BND), bndModel, javaProj, monitor);
+                                    processGeneratedProject(ProjectPaths.get(pageOne.getProjectLayout()), bndModel, javaProj, monitor);
                                 }
                             };
                             javaProj.getProject().getWorkspace().run(op, progress.newChild(2));
