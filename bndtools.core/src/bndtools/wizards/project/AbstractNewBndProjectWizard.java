@@ -112,8 +112,6 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         IFile bndBndFile = project.getProject().getFile(Project.BNDFILE);
         if (bndBndFile.exists()) {
             bndBndFile.setContents(bndInput, false, false, progress.newChild(1));
-        } else {
-            bndBndFile.create(bndInput, false, progress.newChild(1));
         }
 
         IFile buildXmlFile = project.getProject().getFile("build.xml");
@@ -141,6 +139,10 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             VersionControlUtils.createDefaultProjectIgnores(project);
         } catch (IOException e) {
             logger.logError("Unable to create ignore file(s) for project " + project.getProject().getName(), e);
+        }
+
+        if (!bndBndFile.exists()) {
+            bndBndFile.create(bndInput, false, progress.newChild(1));
         }
     }
 
