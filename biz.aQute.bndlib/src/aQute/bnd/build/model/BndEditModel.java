@@ -62,7 +62,7 @@ public class BndEditModel {
 	private File													bndResource;
 	private String													bndResourceName;
 	private final Map<String,Object>								objectProperties			= new HashMap<String,Object>();
-	private final Map<String,String>								changesToSave				= new HashMap<String,String>();
+	private final Map<String,String>								changesToSave				= new TreeMap<String,String>();
 
 	// CONVERTERS
 	private Converter<List<VersionedClause>,String>				buildPathConverter			= new ClauseListConverter<VersionedClause>(
