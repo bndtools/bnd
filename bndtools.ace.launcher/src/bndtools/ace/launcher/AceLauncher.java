@@ -77,7 +77,6 @@ public class AceLauncher {
 	private void connectToServer() {
 		ExecutorService threadPool = Executors.newFixedThreadPool(1);
 		threadPool.execute(new Runnable() {
-			@Override
 			public void run() {
 
 				try {

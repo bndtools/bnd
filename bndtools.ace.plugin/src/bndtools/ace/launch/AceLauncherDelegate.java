@@ -118,14 +118,12 @@ public class AceLauncherDelegate extends JavaLaunchDelegate implements BuildList
     	m_service = bundleContext.registerService(BuildListener.class.getName(), this, null);
     }
 
-	@Override
 	public void buildStarting(IProject project) {
 		if(m_launch.isTerminated()) {
 	    	m_service.unregister();
 		}
 	}
 
-	@Override
 	public void builtBundles(IProject project, IPath[] paths) {
 		m_aceLaunchSocket.sendUpdated();
 	}	
