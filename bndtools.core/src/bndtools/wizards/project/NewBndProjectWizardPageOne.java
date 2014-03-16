@@ -22,6 +22,7 @@ import java.util.Observer;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.IProjectTemplate;
+import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
@@ -138,18 +139,20 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
     public IClasspathEntry[] getSourceClasspathEntries() {
         IPath projectPath = new Path(getProjectName()).makeAbsolute();
 
+        ProjectPaths projectPaths = ProjectPaths.get(ProjectLayout.BND);
+
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(2);
-        newEntries.add(JavaCore.newSourceEntry(projectPath.append(ProjectPaths.PATH_SRC), null, projectPath.append(ProjectPaths.PATH_SRC_BIN)));
+        newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getSrc()), null, projectPath.append(projectPaths.getBin())));
 
         if (projectTemplate == null || projectTemplate.enableTestSourceFolder())
-            newEntries.add(JavaCore.newSourceEntry(projectPath.append(ProjectPaths.PATH_TEST_SRC), null, projectPath.append(ProjectPaths.PATH_TEST_BIN)));
+            newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getTestSrc()), null, projectPath.append(projectPaths.getTestBin())));
 
         return newEntries.toArray(new IClasspathEntry[newEntries.size()]);
     }
 
     @Override
     public IPath getOutputLocation() {
-        return new Path(getProjectName()).makeAbsolute().append(ProjectPaths.PATH_SRC_BIN);
+        return new Path(getProjectName()).makeAbsolute().append(ProjectPaths.get(ProjectLayout.BND).getBin());
     }
 
     public void setProjectTemplate(IProjectTemplate projectTemplate) {

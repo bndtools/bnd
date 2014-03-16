@@ -15,6 +15,7 @@ import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 
 import org.bndtools.api.IProjectTemplate;
+import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
@@ -62,6 +63,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
      */
     @Override
     protected BndEditModel generateBndModel(IProgressMonitor monitor) {
+        ProjectPaths bndPaths = ProjectPaths.get(ProjectLayout.BND);
         BndEditModel model = super.generateBndModel(monitor);
 
         IProjectTemplate template = templatePage.getTemplate();
@@ -84,18 +86,18 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                     }
                     IPath srcOut = srcOutPath.makeRelativeTo(projectPath);
                     if (nr == 1) {
-                        if (!ProjectPaths.PATH_SRC.equals(src.toString())) {
+                        if (!bndPaths.getSrc().equals(src.toString())) {
                             model.genericSet(Constants.DEFAULT_PROP_SRC_DIR, src.toString());
                         }
-                        if (!ProjectPaths.PATH_SRC_BIN.equals(srcOut.toString())) {
+                        if (!bndPaths.getBin().equals(srcOut.toString())) {
                             model.genericSet(Constants.DEFAULT_PROP_BIN_DIR, srcOut.toString());
                         }
                         nr = 2;
                     } else if (nr == 2) {
-                        if (!ProjectPaths.PATH_TEST_SRC.equals(src.toString())) {
+                        if (!bndPaths.getTestSrc().equals(src.toString())) {
                             model.genericSet(Constants.DEFAULT_PROP_TESTSRC_DIR, src.toString());
                         }
-                        if (!ProjectPaths.PATH_TEST_BIN.equals(srcOut.toString())) {
+                        if (!bndPaths.getTestBin().equals(srcOut.toString())) {
                             model.genericSet(Constants.DEFAULT_PROP_TESTBIN_DIR, srcOut.toString());
                         }
                         nr = 2;

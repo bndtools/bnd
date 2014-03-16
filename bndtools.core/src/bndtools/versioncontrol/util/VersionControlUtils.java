@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -323,8 +324,9 @@ public class VersionControlUtils {
             }
         } else {
             /* fallback to using defaults */
-            sourceOutputLocations.add(new Pair<String,String>(ProjectPaths.PATH_SRC, ProjectPaths.PATH_SRC_BIN));
-            sourceOutputLocations.add(new Pair<String,String>(ProjectPaths.PATH_TEST_SRC, ProjectPaths.PATH_TEST_BIN));
+            ProjectPaths bndPaths = ProjectPaths.get(ProjectLayout.BND);
+            sourceOutputLocations.add(new Pair<String,String>(bndPaths.getSrc(), bndPaths.getBin()));
+            sourceOutputLocations.add(new Pair<String,String>(bndPaths.getTestSrc(), bndPaths.getTestBin()));
         }
 
         List<String> emptyIgnores = new LinkedList<String>();
