@@ -4,9 +4,9 @@ import aQute.bnd.build.model.BndEditModel;
 
 public interface IProjectTemplate {
 
-    void modifyInitialBndModel(BndEditModel model);
+    void modifyInitialBndModel(BndEditModel model, ProjectPaths projectPaths);
 
-    void modifyInitialBndProject(IBndProject project);
+    void modifyInitialBndProject(IBndProject project, ProjectPaths projectPaths);
 
     boolean enableTestSourceFolder();
 }

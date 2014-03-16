@@ -12,6 +12,7 @@ import aQute.bnd.build.model.BndEditModel;
 
 import org.bndtools.api.IBndProject;
 import org.bndtools.api.IProjectTemplate;
+import org.bndtools.api.ProjectPaths;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
@@ -19,7 +20,7 @@ import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.build.model.clauses.HeaderClause;
 
 public class DependencyManagerAnnotationsTemplate implements IProjectTemplate {
-    public void modifyInitialBndModel(BndEditModel model) {
+    public void modifyInitialBndModel(BndEditModel model, ProjectPaths projectPaths) {
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
         List<VersionedClause> tmp;
 
@@ -71,9 +72,12 @@ public class DependencyManagerAnnotationsTemplate implements IProjectTemplate {
         }
     }
 
-    public void modifyInitialBndProject(IBndProject project) {
-        project.addResource("src/org/example/ExampleComponent.java", DependencyManagerAnnotationsTemplate.class.getResource("ExampleComponent.java.txt"));
-        project.addResource("test/org/example/ExampleComponentTest.java", DependencyManagerAnnotationsTemplate.class.getResource("ExampleComponentTest.java.txt"));
+    public void modifyInitialBndProject(IBndProject project, ProjectPaths projectPaths) {
+        String src = projectPaths.getSrc();
+        String testsrc = projectPaths.getTestSrc();
+
+        project.addResource(src + "/org/example/ExampleComponent.java", DependencyManagerAnnotationsTemplate.class.getResource("ExampleComponent.java.txt"));
+        project.addResource(testsrc + "/org/example/ExampleComponentTest.java", DependencyManagerAnnotationsTemplate.class.getResource("ExampleComponentTest.java.txt"));
     }
 
     public boolean enableTestSourceFolder() {

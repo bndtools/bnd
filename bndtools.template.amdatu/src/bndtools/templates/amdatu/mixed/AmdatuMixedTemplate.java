@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.bndtools.api.IBndProject;
 import org.bndtools.api.IProjectTemplate;
+import org.bndtools.api.ProjectPaths;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
@@ -14,7 +15,7 @@ import bndtools.templates.amdatu.mongo.AmdatuMongoTemplate;
 import bndtools.templates.amdatu.rest.AmdatuRestTemplate;
 
 public class AmdatuMixedTemplate implements IProjectTemplate {
-    public void modifyInitialBndModel(BndEditModel model) {
+    public void modifyInitialBndModel(BndEditModel model, ProjectPaths projectPaths) {
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
         List<VersionedClause> tmp;
 
@@ -40,20 +41,22 @@ public class AmdatuMixedTemplate implements IProjectTemplate {
         model.setSubBndFiles(Arrays.asList("mongo.bnd", "rest.bnd", "api.bnd"));
     }
 
-    public void modifyInitialBndProject(IBndProject project) {
+    public void modifyInitialBndProject(IBndProject project, ProjectPaths projectPaths) {
     	project.addResource("api.bnd", AmdatuMixedTemplate.class.getResource("api.bnd.txt"));
     	project.addResource("mongo.bnd", AmdatuMixedTemplate.class.getResource("mongo.bnd.txt"));
     	project.addResource("rest.bnd", AmdatuMixedTemplate.class.getResource("rest.bnd.txt"));
     	
-    	project.addResource("src/org/example/api/packageinfo", AmdatuMixedTemplate.class.getResource("packageinfo.txt"));
-    	project.addResource("src/org/example/api/Example.java", AmdatuMongoTemplate.class.getResource("Example.java.txt"));
-        project.addResource("src/org/example/api/ExampleDocument.java", AmdatuMongoTemplate.class.getResource("ExampleDocument.java.txt"));
+		String src = projectPaths.getSrc();
+    	
+    	project.addResource(src + "/org/example/api/packageinfo", AmdatuMixedTemplate.class.getResource("packageinfo.txt"));
+    	project.addResource(src + "/org/example/api/Example.java", AmdatuMongoTemplate.class.getResource("Example.java.txt"));
+        project.addResource(src + "/org/example/api/ExampleDocument.java", AmdatuMongoTemplate.class.getResource("ExampleDocument.java.txt"));
         
-        project.addResource("src/org/example/mongo/Activator.java", AmdatuMongoTemplate.class.getResource("Activator.java.txt"));
-        project.addResource("src/org/example/mongo/ExampleComponent.java", AmdatuMongoTemplate.class.getResource("ExampleComponent.java.txt"));
+        project.addResource(src + "/org/example/mongo/Activator.java", AmdatuMongoTemplate.class.getResource("Activator.java.txt"));
+        project.addResource(src + "/org/example/mongo/ExampleComponent.java", AmdatuMongoTemplate.class.getResource("ExampleComponent.java.txt"));
         
-        project.addResource("src/org/example/rest/Activator.java", AmdatuRestTemplate.class.getResource("Activator.java.txt"));
-        project.addResource("src/org/example/rest/ExampleComponent.java", AmdatuRestTemplate.class.getResource("ExampleComponent.java.txt"));
+        project.addResource(src + "/org/example/rest/Activator.java", AmdatuRestTemplate.class.getResource("Activator.java.txt"));
+        project.addResource(src + "/org/example/rest/ExampleComponent.java", AmdatuRestTemplate.class.getResource("ExampleComponent.java.txt"));
     }
 
     public boolean enableTestSourceFolder() {

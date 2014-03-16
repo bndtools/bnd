@@ -6,13 +6,14 @@ import java.util.List;
 
 import org.bndtools.api.IBndProject;
 import org.bndtools.api.IProjectTemplate;
+import org.bndtools.api.ProjectPaths;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 
 public class AmdatuRestTemplate implements IProjectTemplate {
-    public void modifyInitialBndModel(BndEditModel model) {
+    public void modifyInitialBndModel(BndEditModel model, ProjectPaths projectPaths) {
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
         List<VersionedClause> tmp;
 
@@ -35,9 +36,11 @@ public class AmdatuRestTemplate implements IProjectTemplate {
         model.setPrivatePackages(Arrays.asList(new String[] { "org.example.rest" }));
     }
 
-    public void modifyInitialBndProject(IBndProject project) {
-        project.addResource("src/org/example/rest/Activator.java", AmdatuRestTemplate.class.getResource("Activator.java.txt"));
-        project.addResource("src/org/example/rest/ExampleComponent.java", AmdatuRestTemplate.class.getResource("ExampleComponent.java.txt"));
+    public void modifyInitialBndProject(IBndProject project, ProjectPaths projectPaths) {
+		String src = projectPaths.getSrc();
+
+		project.addResource(src + "/org/example/rest/Activator.java", AmdatuRestTemplate.class.getResource("Activator.java.txt"));
+        project.addResource(src + "/org/example/rest/ExampleComponent.java", AmdatuRestTemplate.class.getResource("ExampleComponent.java.txt"));
     }
 
     public boolean enableTestSourceFolder() {

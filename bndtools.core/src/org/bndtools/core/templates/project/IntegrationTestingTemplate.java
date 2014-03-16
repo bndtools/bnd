@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.bndtools.api.IBndProject;
 import org.bndtools.api.IProjectTemplate;
+import org.bndtools.api.ProjectPaths;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.build.model.BndEditModel;
@@ -18,7 +19,7 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
 
     private static final String ALL_TEST_CASES_MACRO = "${classes;CONCRETE;EXTENDS;junit.framework.TestCase}"; //$NON-NLS-1$
 
-    public void modifyInitialBndModel(BndEditModel model) {
+    public void modifyInitialBndModel(BndEditModel model, ProjectPaths projectPaths) {
         List<VersionedClause> newBuildPath = new ArrayList<VersionedClause>();
 
         List<VersionedClause> oldBuildPath = model.getBuildPath();
@@ -54,8 +55,10 @@ public class IntegrationTestingTemplate implements IProjectTemplate {
         return new VersionedClause(bsn, attribs);
     }
 
-    public void modifyInitialBndProject(IBndProject project) {
-        project.addResource("src/org/example/tests/ExampleTest.java", IntegrationTestingTemplate.class.getResource("ExampleTest.java.txt"));
+    public void modifyInitialBndProject(IBndProject project, ProjectPaths projectPaths) {
+        String src = projectPaths.getSrc();
+
+        project.addResource(src + "/org/example/tests/ExampleTest.java", IntegrationTestingTemplate.class.getResource("ExampleTest.java.txt"));
     }
 
     public boolean enableTestSourceFolder() {
