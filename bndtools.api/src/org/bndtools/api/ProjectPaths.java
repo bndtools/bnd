@@ -31,6 +31,19 @@ public class ProjectPaths {
 		String targetDir = defaults.getProperty(Constants.DEFAULT_PROP_TARGET_DIR);
 
 		map.put(ProjectLayout.BND, new ProjectPaths(title, src, bin, testSrc, testBin, targetDir));
+
+		/*
+		 * MAVEN
+		 */
+
+		title = "maven";
+		src = "src/main/java";
+		bin = "target/classes";
+		testSrc = "src/main/test";
+		testBin = "target/test-classes";
+		targetDir = "target";
+
+		map.put(ProjectLayout.MAVEN, new ProjectPaths(title, src, bin, testSrc, testBin, targetDir));
 	}
 
 	public static ProjectPaths get(ProjectLayout projectLayout) {

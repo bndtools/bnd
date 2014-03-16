@@ -1,5 +1,5 @@
 package org.bndtools.api;
 
 public enum ProjectLayout {
-	BND;
+	BND, MAVEN;
 }
