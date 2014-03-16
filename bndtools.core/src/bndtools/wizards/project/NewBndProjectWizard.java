@@ -113,6 +113,11 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                     }
                 }
             }
+
+            String projectTargetDir = projectPaths.getTargetDir();
+            if (!bndPaths.getTargetDir().equals(projectTargetDir)) {
+                model.genericSet(Constants.DEFAULT_PROP_TARGET_DIR, projectTargetDir);
+            }
         } catch (Exception e) {
             ErrorDialog.openError(getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error setting paths in Bnd project descriptor file ({0}).", Project.BNDFILE), e));
         }
