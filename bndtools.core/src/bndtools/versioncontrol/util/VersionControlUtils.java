@@ -281,6 +281,8 @@ public class VersionControlUtils {
      * project can't store empty directories</li>
      * <li>an ignore file in the root of the project that ignores the output locations of the src and test directories</li>
      * 
+     * @param projectPaths
+     *            The project paths
      * @param javaProject
      *            The project
      * @throws IllegalArgumentException
@@ -288,7 +290,7 @@ public class VersionControlUtils {
      * @throws IOException
      *             When the folder for the ignore file could not be created or if it didn't exist
      */
-    public static void createDefaultProjectIgnores(IJavaProject javaProject) throws IllegalArgumentException, IOException {
+    public static void createDefaultProjectIgnores(ProjectPaths projectPaths, IJavaProject javaProject) throws IllegalArgumentException, IOException {
         if (javaProject == null) {
             throw new IllegalArgumentException("Can't create ignore files for a null project");
         }
@@ -348,7 +350,7 @@ public class VersionControlUtils {
         }
 
         /* add the target directory to the ignores */
-        VersionControlUtils.addToIgnoreFile(javaProject, null, "/generated/");
+        VersionControlUtils.addToIgnoreFile(javaProject, null, "/" + projectPaths.getTargetDir() + "/");
 
         /* create an ignore file in the root of the project if there are entries to ignore */
         VersionControlUtils.addToIgnoreFile(javaProject, null, rootIgnores);

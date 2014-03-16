@@ -13,6 +13,8 @@ import java.util.StringTokenizer;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.api.ProjectLayout;
+import org.bndtools.api.ProjectPaths;
 import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -221,7 +223,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         }
 
         try {
-            VersionControlUtils.createDefaultProjectIgnores(cnfJavaProject);
+            VersionControlUtils.createDefaultProjectIgnores(ProjectPaths.get(ProjectLayout.BND), cnfJavaProject);
             VersionControlUtils.addToIgnoreFile(cnfJavaProject, null, templateConfig.getAttribute("ignores"));
         } catch (IOException e) {
             logger.logError("Unable to create ignore file(s) for project " + cnfProject.getName(), e);

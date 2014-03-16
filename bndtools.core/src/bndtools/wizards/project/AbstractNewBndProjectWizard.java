@@ -21,6 +21,8 @@ import java.util.Map;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.api.ProjectLayout;
+import org.bndtools.api.ProjectPaths;
 import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -96,7 +98,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
      * 
      * @throws CoreException
      */
-    protected void processGeneratedProject(BndEditModel bndModel, IJavaProject project, IProgressMonitor monitor) throws CoreException {
+    protected void processGeneratedProject(ProjectPaths projectPaths, BndEditModel bndModel, IJavaProject project, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 3);
 
         Document document = new Document("");
@@ -136,7 +138,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         }
 
         try {
-            VersionControlUtils.createDefaultProjectIgnores(project);
+            VersionControlUtils.createDefaultProjectIgnores(projectPaths, project);
         } catch (IOException e) {
             logger.logError("Unable to create ignore file(s) for project " + project.getProject().getName(), e);
         }
@@ -190,7 +192,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                             // Make changes to the project
                             final IWorkspaceRunnable op = new IWorkspaceRunnable() {
                                 public void run(IProgressMonitor monitor) throws CoreException {
-                                    processGeneratedProject(bndModel, javaProj, monitor);
+                                    processGeneratedProject(ProjectPaths.get(ProjectLayout.BND), bndModel, javaProj, monitor);
                                 }
                             };
                             javaProj.getProject().getWorkspace().run(op, progress.newChild(2));

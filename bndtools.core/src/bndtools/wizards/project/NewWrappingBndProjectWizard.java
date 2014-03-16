@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.bndtools.api.ProjectPaths;
 import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -113,9 +114,9 @@ class NewWrappingBndProjectWizard extends AbstractNewBndProjectWizard {
     }
 
     @Override
-    protected void processGeneratedProject(BndEditModel bndModel, IJavaProject project, IProgressMonitor monitor) throws CoreException {
+    protected void processGeneratedProject(ProjectPaths projectPaths, BndEditModel bndModel, IJavaProject project, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 2);
-        super.processGeneratedProject(bndModel, project, progress.newChild(1));
+        super.processGeneratedProject(projectPaths, bndModel, project, progress.newChild(1));
 
         Collection<IPath> paths = classPathPage.getPaths();
         if (paths != null && !paths.isEmpty()) {
