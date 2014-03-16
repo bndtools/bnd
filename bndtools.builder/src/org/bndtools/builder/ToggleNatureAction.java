@@ -10,9 +10,11 @@
  *******************************************************************************/
 package org.bndtools.builder;
 
+import java.io.ByteArrayInputStream;
 import java.util.Iterator;
 
 import org.bndtools.api.BndtoolsConstants;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
@@ -23,6 +25,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
+import aQute.bnd.build.Project;
 
 public class ToggleNatureAction implements IObjectActionDelegate {
 
@@ -65,6 +68,12 @@ public class ToggleNatureAction implements IObjectActionDelegate {
      */
     public void setActivePart(IAction action, IWorkbenchPart targetPart) {}
 
+    private static void ensureBndBndExists(IProject project) throws CoreException {
+        IFile bndfile = project.getFile(Project.BNDFILE);
+        if (!bndfile.exists())
+            bndfile.create(new ByteArrayInputStream(new byte[0]), false, null);
+    }
+
     /**
      * Toggles sample nature on a project
      * 
@@ -89,6 +98,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
             }
 
             // Add the nature
+            ensureBndBndExists(project);
             String[] newNatures = new String[natures.length + 1];
             System.arraycopy(natures, 0, newNatures, 0, natures.length);
             newNatures[natures.length] = BndtoolsConstants.NATURE_ID;

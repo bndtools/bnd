@@ -10,13 +10,11 @@
  *******************************************************************************/
 package org.bndtools.builder;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.ICommand;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
@@ -26,8 +24,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-
-import aQute.bnd.build.Project;
 
 public class BndProjectNature implements IProjectNature {
 
@@ -80,12 +76,6 @@ public class BndProjectNature implements IProjectNature {
         desc.setBuildSpec(nu.toArray(new ICommand[nu.size()]));
     }
 
-    private void ensureBndBndExists() throws CoreException {
-        IFile bndfile = project.getFile(Project.BNDFILE);
-        if (!bndfile.exists())
-            bndfile.create(new ByteArrayInputStream(new byte[0]), false, null);
-    }
-
     private void installBndClasspath() throws CoreException {
         IJavaProject javaProject = JavaCore.create(project);
         IClasspathEntry[] classpath = javaProject.getRawClasspath();
@@ -124,7 +114,6 @@ public class BndProjectNature implements IProjectNature {
             public void run(IProgressMonitor monitor) throws CoreException {
                 project.setDescription(desc, monitor);
                 if (adding) {
-                    ensureBndBndExists();
                     installBndClasspath();
                 } else {
                     removeBndClasspath();
