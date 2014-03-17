@@ -460,9 +460,14 @@ public class Builder extends Analyzer {
 
 	private void doVerify(@SuppressWarnings("unused")
 	Jar dot) throws Exception {
-		Verifier verifier = new Verifier(this);
+		
 		// Give the verifier the benefit of our analysis
 		// prevents parsing the files twice
+		
+		Verifier verifier = new Verifier(this);
+		
+		verifier.setFrombuilder(true);
+		
 		verifier.verify();
 		getInfo(verifier);
 	}

@@ -184,6 +184,7 @@ public class Verifier extends Processor {
 
 	final Analyzer				analyzer;
 	private Instructions		dynamicImports;
+	private boolean				frombuilder;
 
 	public Verifier(Jar jar) throws Exception {
 		this.analyzer = new Analyzer(this);
@@ -323,8 +324,23 @@ public class Verifier extends Processor {
 	 * by the manifest and that are not part of our bundle class path. The are
 	 * calculated by removing all the imported packages and contained from the
 	 * referred packages.
+	 * @throws Exception 
 	 */
-	private void verifyUnresolvedReferences() {
+	private void verifyUnresolvedReferences() throws Exception {
+
+		//
+		// If we're being called from the builder then this should
+		// already have been done
+		//
+
+		if (isFrombuilder())
+			return;
+
+		Manifest m = analyzer.getJar().getManifest();
+		if (m == null) {
+			error("No manifest");
+		}
+
 		Set<PackageRef> unresolvedReferences = new TreeSet<PackageRef>(analyzer.getReferred().keySet());
 		unresolvedReferences.removeAll(analyzer.getImports().keySet());
 		unresolvedReferences.removeAll(analyzer.getContained().keySet());
@@ -340,14 +356,16 @@ public class Verifier extends Processor {
 					p.remove();
 			}
 		}
-		
+
 		//
 		// If there is a Require bundle, all bets are off and
 		// we cannot verify anything
 		//
 
-		if (analyzer.getRequireBundle().isEmpty()) {
-			
+		Domain domain = Domain.domain(m);
+		if (domain.getRequireBundle().isEmpty() && domain.get("ExtensionBundle-Activator") == null
+				&& domain.getFragmentHost()!= null && domain.getFragmentHost().getKey().equals("system.bundle")) {
+
 			if (!unresolvedReferences.isEmpty()) {
 				// Now we want to know the
 				// classes that are the culprits
@@ -357,11 +375,16 @@ public class Verifier extends Processor {
 						culprits.add(clazz.getAbsolutePath());
 				}
 
-				error("Unresolved references to %s by class(es) %s on the Bundle-Classpath: %s", unresolvedReferences,
-						culprits, analyzer.getBundleClasspath().keySet());
+				if (analyzer instanceof Builder)
+					warning("Unresolved references to %s by class(es) %s on the Bundle-Classpath: %s",
+							unresolvedReferences, culprits, analyzer.getBundleClasspath().keySet());
+				else
+					error("Unresolved references to %s by class(es) %s on the Bundle-Classpath: %s",
+							unresolvedReferences, culprits, analyzer.getBundleClasspath().keySet());
+				return;
 			}
-		} else if ( isPedantic())
-			warning("Use of Require-Bundle makes it impossible to verify unresolved references");
+		} else if (isPedantic())
+			warning("Use of Require-Bundle, ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references");
 	}
 
 	/**
@@ -1195,5 +1218,20 @@ public class Verifier extends Processor {
 			return;
 
 		error("Meta-Persistence refers to resources not in the bundle: %s", list).header("Meta-Persistence");
+	}
+
+	/**
+	 * @return the frombuilder
+	 */
+	public boolean isFrombuilder() {
+		return frombuilder;
+	}
+
+	/**
+	 * @param frombuilder
+	 *            the frombuilder to set
+	 */
+	public void setFrombuilder(boolean frombuilder) {
+		this.frombuilder = frombuilder;
 	}
 }
