@@ -39,7 +39,7 @@ Import-Package: org.eclipse.ui*;texteditor=!;ui.workbench=!,\
 	javax.xml.namespace;resolution:=optional,\
 	javax.xml.parsers;resolution:=optional,\
 	javax.xml.xpath;resolution:=optional,\
-	!org.osgi.service.component.annotations,\
+	org.osgi.service.component.annotations;resolution:=optional,\
 	*
 
 Bundle-Activator: bndtools.jareditor.internal.Plugin
