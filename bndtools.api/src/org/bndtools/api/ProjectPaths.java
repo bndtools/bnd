@@ -21,14 +21,19 @@ public class ProjectPaths {
 		 */
 
 		/* This call MUST NOT access any remotes */
-		Processor defaults = Workspace.getDefaults();
+//		Processor defaults = Workspace.getDefaults();
 
 		String title = "bnd";
-		String src = defaults.getProperty(Constants.DEFAULT_PROP_SRC_DIR);
-		String bin = defaults.getProperty(Constants.DEFAULT_PROP_BIN_DIR);
-		String testSrc = defaults.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR);
-		String testBin = defaults.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR);
-		String targetDir = defaults.getProperty(Constants.DEFAULT_PROP_TARGET_DIR);
+//		String src = defaults.getProperty(Constants.DEFAULT_PROP_SRC_DIR);
+//		String bin = defaults.getProperty(Constants.DEFAULT_PROP_BIN_DIR);
+//		String testSrc = defaults.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR);
+//		String testBin = defaults.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR);
+//		String targetDir = defaults.getProperty(Constants.DEFAULT_PROP_TARGET_DIR);
+		String src = "src";
+		String bin = "bin";
+		String testSrc = "test";
+		String testBin = "bin_test";
+		String targetDir = "generated";
 
 		map.put(ProjectLayout.BND, new ProjectPaths(title, src, bin, testSrc, testBin, targetDir));
 
