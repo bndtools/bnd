@@ -182,9 +182,12 @@ public class Project extends Processor {
 					sourcepath.clear();
 					allsourcepath.clear();
 					bootclasspath.clear();
+					
+					// JIT
 					testpath.clear();
 					runpath.clear();
 					runbundles.clear();
+					runfw.clear();
 
 					// We use a builder to construct all the properties for
 					// use.
@@ -611,6 +614,7 @@ public class Project extends Processor {
 
 	public Collection<Container> getTestpath() throws Exception {
 		prepare();
+		justInTime(testpath, parseTestpath(), false, TESTPATH);
 		return testpath;
 	}
 
