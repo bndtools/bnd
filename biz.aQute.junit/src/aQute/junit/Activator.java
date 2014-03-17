@@ -109,10 +109,10 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		}
 
 		if (testcases == null) {
-			if ( !continuous) {
-				System.err.println("\nThe -testcontinuous property must be set if invoked without arguments\n");
-				System.exit(-1);
-			}
+//			if ( !continuous) {
+//				System.err.println("\nThe -testcontinuous property must be set if invoked without arguments\n");
+//				System.exit(-1);
+//			}
 				
 			trace("automatic testing of all bundles with Test-Cases header");
 			try {
