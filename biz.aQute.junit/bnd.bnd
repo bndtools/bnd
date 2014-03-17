@@ -13,7 +13,7 @@ Private-Package: aQute.junit.*,\
 	junit.*,\
 	org.junit.*
 	
-Export-Package: junit.framework; version=3.8,\
+Export-Package: junit.*; version=3.8;-nouses=true,\
 				org.junit.*;version=4.11, \
 				org.hamcrest.*;version=1.0.0
 
