@@ -7,4 +7,4 @@
 
 Export-Package: org.bndtools.api
 Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
-Bundle-Version: 1.0.0
+Bundle-Version: 2.0.0
