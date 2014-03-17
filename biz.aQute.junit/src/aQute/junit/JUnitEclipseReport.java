@@ -15,7 +15,7 @@ public class JUnitEclipseReport implements TestReporter {
 	long			startTime;
 	Bundle			targetBundle;
 	List<Test>		tests;
-	boolean			verbose	= true;
+	boolean			verbose	= false;
 	Test			current;
 
 	public JUnitEclipseReport(int port) throws Exception {
