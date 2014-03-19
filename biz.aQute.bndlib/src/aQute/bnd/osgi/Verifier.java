@@ -16,6 +16,10 @@ import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.qtokens.*;
 
+//
+// TODO check that component XML that refer to a properties file actually have such a file
+//
+
 public class Verifier extends Processor {
 
 	private final Jar		dot;
@@ -341,9 +345,11 @@ public class Verifier extends Processor {
 			error("No manifest");
 		}
 
+		Domain domain = Domain.domain(m);
+		
 		Set<PackageRef> unresolvedReferences = new TreeSet<PackageRef>(analyzer.getReferred().keySet());
-		unresolvedReferences.removeAll(analyzer.getImports().keySet());
 		unresolvedReferences.removeAll(analyzer.getContained().keySet());
+		unresolvedReferences.removeAll(domain.getImportPackage().keySet());
 
 		// Remove any java.** packages.
 		for (Iterator<PackageRef> p = unresolvedReferences.iterator(); p.hasNext();) {
@@ -362,9 +368,8 @@ public class Verifier extends Processor {
 		// we cannot verify anything
 		//
 
-		Domain domain = Domain.domain(m);
 		if (domain.getRequireBundle().isEmpty() && domain.get("ExtensionBundle-Activator") == null
-				&& domain.getFragmentHost()!= null && domain.getFragmentHost().getKey().equals("system.bundle")) {
+				&& (domain.getFragmentHost()== null || domain.getFragmentHost().getKey().equals("system.bundle"))) {
 
 			if (!unresolvedReferences.isEmpty()) {
 				// Now we want to know the

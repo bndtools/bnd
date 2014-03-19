@@ -22,20 +22,64 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * A Require-Bundle should not fail on missing imports, just warn
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
-	
+
 	public void testMissingImportWithRequireBundle() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath( new File("bin"));
+		b.addClasspath(new File("bin"));
 		b.setExportPackage("test.classreference");
 		b.setImportPackage("!*");
 		b.setProperty("Require-Bundle", "com.abc");
 		b.build();
 		assertTrue(b.check());
+		
+		Verifier v = new Verifier(b.getJar());
+		v.verify();
+		assertTrue(v.check());
 	}
-	
-	
+
+	/**
+	 * #479 I have now tested this locally. Apparently the fix doesn't change
+	 * the reported behavior. In my test bundle, I have removed all imports. Bnd
+	 * builds this with no errors reported. I add: DynamicImport-Package: dummy
+	 * 
+	 */
+
+	public void testMissingImportsWithDynamicImport() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setExportPackage("test.classreference");
+		b.setImportPackage("!*");
+		b.setProperty(Constants.DYNAMICIMPORT_PACKAGE, "dummy");
+		b.build();
+		assertTrue(b.check());
+
+		Verifier v = new Verifier(b.getJar());
+		v.verify();
+		assertTrue(v.check("Unresolved references to \\[javax.swing\\] by class\\(es\\)"));
+	}
+
+	/**
+	 * #479 I have now tested this locally. Apparently the fix doesn't change
+	 * the reported behavior. In my test bundle, I have removed all imports. Bnd
+	 * builds this with no errors reported. I add: DynamicImport-Package: dummy
+	 * 
+	 */
+
+	public void testMissingImportsWithoutDynamicImport() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setExportPackage("test.classreference");
+		b.setImportPackage("!*");
+		b.build();
+		assertTrue(b.check());
+
+		Verifier v = new Verifier(b.getJar());
+		v.verify();
+		assertTrue(v.check("Unresolved references to \\[javax.swing\\] by class\\(es\\)"));
+	}
 	/**
 	 * <pre>
 	 * [2013-12-11 15:55:14] BJ Hargrave: init:
