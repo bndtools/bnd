@@ -29,7 +29,8 @@ public class BuilderTest extends BndTestCase {
 	public void testMissingImportWithRequireBundle() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setExportPackage("test.classreference");
+		b.setPedantic(true);
+		b.setExportPackage("test.classreference;version=1");
 		b.setImportPackage("!*");
 		b.setProperty("Require-Bundle", "com.abc");
 		b.build();
@@ -50,7 +51,8 @@ public class BuilderTest extends BndTestCase {
 	public void testMissingImportsWithDynamicImport() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setExportPackage("test.classreference");
+		b.setPedantic(true);
+		b.setExportPackage("test.classreference;version=1");
 		b.setImportPackage("!*");
 		b.setProperty(Constants.DYNAMICIMPORT_PACKAGE, "dummy");
 		b.build();
@@ -71,7 +73,8 @@ public class BuilderTest extends BndTestCase {
 	public void testMissingImportsWithoutDynamicImport() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setExportPackage("test.classreference");
+		b.setPedantic(true);
+		b.setExportPackage("test.classreference;version=1");
 		b.setImportPackage("!*");
 		b.build();
 		assertTrue(b.check());

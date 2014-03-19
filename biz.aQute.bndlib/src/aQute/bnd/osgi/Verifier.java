@@ -349,7 +349,10 @@ public class Verifier extends Processor {
 		
 		Set<PackageRef> unresolvedReferences = new TreeSet<PackageRef>(analyzer.getReferred().keySet());
 		unresolvedReferences.removeAll(analyzer.getContained().keySet());
-		unresolvedReferences.removeAll(domain.getImportPackage().keySet());
+		for ( String pname : domain.getImportPackage().keySet()) {
+			PackageRef pref = analyzer.getPackageRef(pname);
+			unresolvedReferences.remove(pref);
+		}
 
 		// Remove any java.** packages.
 		for (Iterator<PackageRef> p = unresolvedReferences.iterator(); p.hasNext();) {
