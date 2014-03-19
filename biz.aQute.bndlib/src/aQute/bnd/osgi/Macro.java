@@ -40,41 +40,7 @@ public class Macro {
 	}
 
 	public String process(String line, Processor source) {
-		String s = process(line, new Link(source, null, line));
-		if (s.indexOf('\\') < 0)
-			return s;
-
-		StringBuilder sb = new StringBuilder(s);
-		for (int j = 0; j < sb.length() - 1; j++) {
-			if (sb.charAt(j) == '\\') {
-				switch (sb.charAt(j + 1)) {
-
-					case 'n' :
-						sb.replace(j, j + 2, "\n");
-						break;
-
-					case 'r' :
-						sb.replace(j, j + 2, "\r");
-						break;
-
-					case 'b' :
-						sb.replace(j, j + 2, "\b");
-						break;
-
-					case 'f' :
-						sb.replace(j, j + 2, "\f");
-						break;
-
-					case 't' :
-						sb.replace(j, j + 2, "\t");
-						break;
-
-					default :
-						break;
-				}
-			}
-		}
-		return sb.toString();
+		return process(line, new Link(source, null, line));
 	}
 
 	String process(String line, Link link) {
@@ -1183,4 +1149,41 @@ public class Macro {
 		return tmp;
 	}
 
+	public String _unescape(String args[]) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 1; i < args.length; i++) {
+			sb.append(args[i]);
+		}
+
+		for (int j = 0; j < sb.length() - 1; j++) {
+			if (sb.charAt(j) == '\\') {
+				switch (sb.charAt(j + 1)) {
+
+					case 'n' :
+						sb.replace(j, j + 2, "\n");
+						break;
+
+					case 'r' :
+						sb.replace(j, j + 2, "\r");
+						break;
+
+					case 'b' :
+						sb.replace(j, j + 2, "\b");
+						break;
+
+					case 'f' :
+						sb.replace(j, j + 2, "\f");
+						break;
+
+					case 't' :
+						sb.replace(j, j + 2, "\t");
+						break;
+
+					default :
+						break;
+				}
+			}
+		}
+		return sb.toString();
+	}
 }

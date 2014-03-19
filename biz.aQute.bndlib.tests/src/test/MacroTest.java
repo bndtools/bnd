@@ -16,7 +16,7 @@ public class MacroTest extends TestCase {
 	public void testControlCharacters() throws Exception {
 		Processor p = new Processor();
 		p.setProperty("a", "a, b, c");
-		String s = p.getReplacer().process("${replace;${a};(.+);$0;\\n}\n");
+		String s = p.getReplacer().process("${unescape;${replace;${a};(.+);$0;\\n}}\n");
 		assertEquals( "a\nb\nc\n",s);
 	}
 	
