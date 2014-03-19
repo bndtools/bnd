@@ -140,6 +140,10 @@ public class bnd extends Processor {
 			args.add(0, "maven");
 			return;
 		}
+		if ( arg.equals("-version")) {
+			args.set(0, "version");
+			return;
+		}
 		Matcher m = JARCOMMANDS.matcher(arg);
 		if (m.matches()) {
 			rewriteJarCmd(args);
