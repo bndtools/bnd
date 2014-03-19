@@ -114,11 +114,18 @@ public class OSGiHeader {
 
 		while (del == ',') {
 			String key = qt.nextToken(",=");
+			if (key == null) {
+				// happens at a trailing ',' without a followup
+				if (logger == null)
+					throw new IllegalArgumentException("Trailing comma found, forgot to escape the newline? Input=" + input);
+				logger.error("Trailing comma found, forgot to escape the newline? Input=", input);
+				break;
+			}
 			String value = "";
 			del = qt.getSeparator();
 			if (del == '=') {
 				value = qt.nextToken(",=");
-				if ( value == null)
+				if (value == null)
 					value = "";
 				del = qt.getSeparator();
 			}
