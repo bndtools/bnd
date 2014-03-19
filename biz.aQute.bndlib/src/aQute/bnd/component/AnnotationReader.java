@@ -359,8 +359,16 @@ public class AnnotationReader extends ClassDataCollector {
 
 		String properties[] = comp.properties();
 		if (properties != null)
-			for (String entry : properties)
+			for (String entry : properties) {
+				if (entry.contains("=")) {
+					analyzer.error(
+							"Found an = sign in an OSGi DS Component annotation on %s. In the bnd annotation "
+									+ "this is an actual property but in the OSGi, this element must refer to a path with Java properties. "
+									+ "However, found a path with an '=' sign which looks like a mixup (%s) with the 'property' element.",
+							clazz, entry);
+				}
 				component.properties.add(entry);
+			}
 
 		doProperties(comp.property());
 		Object[] x = annotation.get("service");
