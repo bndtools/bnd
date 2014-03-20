@@ -267,7 +267,11 @@ public class AnnotationReader extends ClassDataCollector {
 	protected void doReference(Reference reference, Annotation raw) throws Exception {
 		ReferenceDef def = new ReferenceDef();
 		def.name = reference.name();
-
+	
+	
+		if ( ! (method.isProtected() || method.isPublic()))
+			def.updateVersion(V1_1);
+		
 		if (def.name == null) {
 			Matcher m = BINDNAME.matcher(method.getName());
 			if (m.matches())

@@ -75,17 +75,17 @@ public class DSAnnotationTest extends BndTestCase {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		protected void activate(@SuppressWarnings("unused")ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		protected void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
 
 		@Reference
-		void xsetLogService(@SuppressWarnings("unused") LogService log) {
+		protected void xsetLogService(@SuppressWarnings("unused") LogService log) {
 
 		}
 
-		void unxsetLogService(@SuppressWarnings("unused") LogService log) {
+		protected void unxsetLogService(@SuppressWarnings("unused") LogService log) {
 
 		}
 
