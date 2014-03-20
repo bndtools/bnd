@@ -1,6 +1,6 @@
 package aQute.junit;
 
-import java.util.*;
+import java.util.regex.*;
 
 import junit.framework.*;
 
@@ -11,7 +11,8 @@ import org.osgi.framework.*;
  */
 public class UnresolvedTester extends TestCase {
 	BundleContext	context;
-
+	static Pattern IP_P = Pattern.compile(" \\(&\\(osgi.wiring.package=([^)]+)\\)\\(version>=([^)]+)\\)\\(!\\(version>=([^)]+)\\)\\)\\)");
+	
 	public void setBundleContext(BundleContext context) {
 		this.context = context;
 		System.out.println("got context " + context);
@@ -20,18 +21,21 @@ public class UnresolvedTester extends TestCase {
 	@SuppressWarnings("deprecation")
 	public void testAllResolved() {
 		assertNotNull("Expected a Bundle Context", context);
+		StringBuilder sb = new StringBuilder();
 		
-		List<Bundle> unresolved = new ArrayList<Bundle>();
 		for (Bundle b : context.getBundles()) {
-			if (b.getState() == Bundle.INSTALLED) {
+			if (b.getState() == Bundle.INSTALLED && b.getHeaders().get("Fragment-Host") == null) {
 				try {
 					b.start();
 				} catch( BundleException e) {
+					sb.append(b.getBundleId()).append(" ").append(b.getSymbolicName()).append(";").append(b.getVersion()).append("\n");
+					sb.append("    ").append(e.getMessage()).append("\n\n");
 					System.err.println(e.getMessage());
-					unresolved.add(b);
 				}
 			}
 		}
-		assertTrue("Unresolved bundles: " + unresolved.toString(), unresolved.isEmpty());
+		Matcher matcher = IP_P.matcher(sb);
+		String out = matcher.replaceAll("\n\n         Import-Package: $1;version=[$2,$3)\n");
+		assertTrue("Unresolved bundles\n" + out, sb.length()==0);
 	}
 }
