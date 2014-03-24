@@ -22,7 +22,7 @@ public class APITemplate implements IProjectTemplate {
         }));
 
         // Bundle-Version: 1.0.0
-        model.setBundleVersion("1.0.0");
+        model.setBundleVersion("1.0.0.${tstamp}");
 
         // -buildpath
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
