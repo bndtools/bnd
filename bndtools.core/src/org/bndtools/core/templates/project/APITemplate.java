@@ -31,6 +31,7 @@ public class APITemplate implements IProjectTemplate {
         if (tmp != null)
             buildPath.addAll(tmp);
         buildPath.add(new VersionedClause("biz.aQute.bnd.annotation", new Attrs()));
+        buildPath.add(new VersionedClause("${junit}", new Attrs()));
         model.setBuildPath(buildPath);
     }
 
