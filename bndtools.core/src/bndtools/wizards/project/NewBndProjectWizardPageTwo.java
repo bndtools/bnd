@@ -104,7 +104,9 @@ public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
             // we simply set an error message
             setErrorMessage("Could not access resolved classpaths: " + e);
         }
-        // we're okay if we have exactly two valid source paths
-        return resultFromSuperClass && (nr == 2);
+        // we're okay if we have exactly at most two valid source paths
+        // most templates use 2 source sets (main + test) but some do not
+        // have the test source set
+        return resultFromSuperClass && (nr <= 2);
     }
 }
