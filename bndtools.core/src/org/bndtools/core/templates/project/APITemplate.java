@@ -43,7 +43,6 @@ public class APITemplate implements IProjectTemplate {
     }
 
     public boolean enableTestSourceFolder() {
-        return false;
+        return true;
     }
-
 }
