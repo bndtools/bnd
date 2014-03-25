@@ -1,5 +1,3 @@
-bin:
-
 Bundle-SymbolicName: bndtools.repository.amdatu;singleton:=true
 Bundle-Vendor: Bndtools
 Bundle-Version: ${master-version}
