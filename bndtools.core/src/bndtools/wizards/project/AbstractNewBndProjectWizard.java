@@ -288,6 +288,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                 });
                 result = true;
             } catch (InvocationTargetException e) {
+                logger.logError("Could not initialise the project", e);
                 ErrorDialog.openError(getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error creating Bnd project descriptor file ({0}).", Project.BNDFILE), e.getTargetException()));
                 result = false;
             } catch (InterruptedException e) {
