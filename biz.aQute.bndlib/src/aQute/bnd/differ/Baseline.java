@@ -206,7 +206,7 @@ public class Baseline {
 
 		binfo.bsn = bsn;
 		binfo.suggestedVersion = suggestedVersion;
-		binfo.version = olderVersion;
+		binfo.version = newerVersion;
 
 		if (newerVersion.getWithoutQualifier().equals(olderVersion.getWithoutQualifier())) {
 			// We have a special case, the current and repository revisions
