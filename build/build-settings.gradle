@@ -1,0 +1,10 @@
+assert(hasProperty("bnd_targetDir"))
+
+
+/* Index task overrides */
+ext.gradleBuild_indexDirectories      = \
+  "$bnd_targetDir/p2             ;Bndtools       ;plugins," +
+  "$bnd_targetDir/extras/p2/child;Bndtools Extras;plugins"
+
+/* Default tasks override */
+defaultTasks "dist"

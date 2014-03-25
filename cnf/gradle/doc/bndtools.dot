@@ -192,4 +192,69 @@ digraph GradleSetup {
     distclean              -> distcleanNeeded
     distcleanNeeded        -> distcleanNeeded    [color=red   ]
   }
+
+  subgraph cluster7 {
+    label="Build Project";
+    labelloc=b
+    labeljust=l
+    style=filled;
+    fillcolor=lightgrey;
+    color=black;
+
+    p2Entry                [shape=box, style=filled , fillcolor=none     , label="p2Entry"              ]
+
+    p2FeaturesTree         [shape=box, style=filled, fillcolor=none      , label="p2FeaturesTree"       ]
+    p2FeatureMain          [shape=box, style=filled, fillcolor=none      , label="p2FeatureMain"        ]
+    p2FeatureJarViewer     [shape=box, style=filled, fillcolor=none      , label="p2FeatureJarViewer"   ]
+    p2FeatureDMPlugin      [shape=box, style=filled, fillcolor=none      , label="p2FeatureDMPlugin"    ]
+    p2FeatureAmdatuPlugin  [shape=box, style=filled, fillcolor=none      , label="p2FeatureAmdatuPlugin"]
+    p2Features             [shape=box, style=filled, fillcolor=none      , label="p2Features"           ]
+
+    p2PluginsMain          [shape=box, style=filled, fillcolor=none      , label="p2PluginsMain"        ]
+    p2PluginsExtras        [shape=box, style=filled, fillcolor=none      , label="p2PluginsExtras"      ]
+    p2Plugins              [shape=box, style=filled, fillcolor=none      , label="p2Plugins"            ]
+
+    p2                     [shape=box, style=filled, fillcolor=cyan      , label="p2"                   ]
+
+    indexOBRBuild          [shape=box, style=filled, fillcolor=cyan      , label="indexOBR"             ]
+    indexR5Build           [shape=box, style=filled, fillcolor=cyan      , label="indexR5"              ]
+    indexBuild             [shape=box, style=filled, fillcolor=cyan      , label="index"                ]
+
+    distZipMain            [shape=box, style=filled, fillcolor=none      , label="distZipMain"          ]
+    distCompositeExtras    [shape=box, style=filled, fillcolor=none      , label="distCompositeExtras"  ]
+    distZipExtras          [shape=box, style=filled, fillcolor=none      , label="distZipExtras"        ]
+    dist                   [shape=box, style=filled, fillcolor=cyan      , label="dist"                 ]
+
+    bundle                 -> p2Entry
+
+    p2Entry                -> p2FeaturesTree
+    p2FeaturesTree         -> p2FeatureMain
+    p2FeaturesTree         -> p2FeatureJarViewer
+    p2FeaturesTree         -> p2FeatureDMPlugin
+    p2FeaturesTree         -> p2FeatureAmdatuPlugin
+    p2FeatureMain          -> p2Features
+    p2FeatureJarViewer     -> p2Features
+    p2FeatureDMPlugin      -> p2Features
+    p2FeatureAmdatuPlugin  -> p2Features
+
+    p2Entry                -> p2PluginsMain
+    p2Entry                -> p2PluginsExtras
+    p2PluginsMain          -> p2Plugins
+    p2PluginsExtras        -> p2Plugins
+
+    p2Features             -> p2
+    p2Plugins              -> p2
+
+    p2                     -> indexOBRBuild
+    p2                     -> indexR5Build
+    indexOBRBuild          -> indexBuild
+    indexR5Build           -> indexBuild
+
+    indexBuild             -> distZipMain
+    indexBuild             -> distCompositeExtras
+    indexBuild             -> distZipExtras
+    distCompositeExtras    -> distZipExtras
+    distZipMain            -> dist
+    distZipExtras          -> dist
+  }
 }
