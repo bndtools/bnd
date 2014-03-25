@@ -68,13 +68,14 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
         ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
 
+        String name = pageTwo.getJavaProject().getProject().getName();
+
         IProjectTemplate template = templatePage.getTemplate();
         if (template != null) {
             model.setBundleVersion(DEFAULT_BUNDLE_VERSION);
-            template.modifyInitialBndModel(model, projectPaths);
+            template.modifyInitialBndModel(model, name, projectPaths);
         }
         try {
-            String name = pageTwo.getJavaProject().getProject().getName();
             IPath projectPath = new Path(name).makeAbsolute();
             IClasspathEntry[] entries = pageTwo.getJavaProject().getResolvedClasspath(true);
             int nr = 1;
@@ -137,7 +138,8 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
         IProjectTemplate template = templatePage.getTemplate();
         if (template != null) {
-            template.modifyInitialBndProject(proj, projectPaths);
+            String name = pageTwo.getJavaProject().getProject().getName();
+            template.modifyInitialBndProject(proj, name, projectPaths);
         }
 
         return proj;

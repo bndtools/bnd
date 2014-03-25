@@ -1,4 +1,4 @@
-package org.example.rest;
+package @package@;
 
 import org.osgi.service.log.LogService;
 import javax.ws.rs.Path;

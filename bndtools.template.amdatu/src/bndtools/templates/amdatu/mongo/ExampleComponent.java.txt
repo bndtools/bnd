@@ -1,7 +1,7 @@
-package org.example.mongo;
+package @package@;
 
 import org.osgi.service.log.LogService;
-import org.example.api.*;
+import @package_api@.*;
 import java.util.List;
 import java.util.ArrayList;
 import net.vz.mongodb.jackson.DBCursor;

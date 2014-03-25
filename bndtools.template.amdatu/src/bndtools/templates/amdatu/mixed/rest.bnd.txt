@@ -1,2 +1,2 @@
-Bundle-Activator: org.example.rest.Activator
-Private-Package: org.example.rest
+Bundle-Activator: @package@.Activator
+Private-Package: @package@

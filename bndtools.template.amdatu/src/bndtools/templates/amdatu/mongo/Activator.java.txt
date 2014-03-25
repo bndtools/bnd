@@ -1,11 +1,11 @@
-package org.example.mongo;
+package @package@;
 
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 import org.amdatu.mongo.MongoDBService;
-import org.example.api.Example;
+import @package_api@.Example;
 
 public class Activator extends DependencyActivatorBase {
     @Override

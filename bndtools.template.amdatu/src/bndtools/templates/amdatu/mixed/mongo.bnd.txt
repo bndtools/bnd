@@ -1,2 +1,2 @@
-Bundle-Activator: org.example.mongo.Activator
-Private-Package: org.example.mongo
+Bundle-Activator: @package@.Activator
+Private-Package: @package@

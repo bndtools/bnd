@@ -3,8 +3,11 @@ package bndtools.templates.dm;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.bndtools.api.BndProjectResource;
 import org.bndtools.api.IBndProject;
 import org.bndtools.api.IProjectTemplate;
 import org.bndtools.api.ProjectPaths;
@@ -18,7 +21,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 
 public class DependencyManagerTemplate implements IProjectTemplate {
-    public void modifyInitialBndModel(BndEditModel model, ProjectPaths projectPaths) {
+    public void modifyInitialBndModel(BndEditModel model, String projectName, ProjectPaths projectPaths) {
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
         List<VersionedClause> tmp;
 
@@ -49,16 +52,18 @@ public class DependencyManagerTemplate implements IProjectTemplate {
         addRunBundle("org.apache.felix.gogo.runtime", runPath, requires, true);
         addRunBundle("org.apache.felix.log", runPath, requires, false);
 
-        model.setBundleActivator("org.example.Activator");
+        model.setBundleActivator(projectName + ".Activator");
         model.setRunRequires(requires);
         model.setRunBundles(runPath);
         model.setRunFw("org.apache.felix.framework");
         model.setEE(EE.JavaSE_1_6);
 
-        model.setPrivatePackages(Arrays.asList(new String[] { "org.example" }));
+        model.setPrivatePackages(Arrays.asList(new String[] {
+            projectName
+        }));
     }
 
-    private static void addRunBundle(String bsn, Collection<? super VersionedClause> runPath, Collection<? super Requirement> requires, boolean inferred) {
+    private static void addRunBundle(String bsn, Collection< ? super VersionedClause> runPath, Collection< ? super Requirement> requires, boolean inferred) {
         runPath.add(new VersionedClause(bsn, new Attrs()));
         if (!inferred) {
             Requirement req = new CapReqBuilder("osgi.identity").addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=" + bsn + ")").buildSyntheticRequirement();
@@ -66,13 +71,17 @@ public class DependencyManagerTemplate implements IProjectTemplate {
         }
     }
 
-    public void modifyInitialBndProject(IBndProject project, ProjectPaths projectPaths) {
+    public void modifyInitialBndProject(IBndProject project, String projectName, ProjectPaths projectPaths) {
         String src = projectPaths.getSrc();
         String testsrc = projectPaths.getTestSrc();
+        String pkgPath = projectName.replaceAll("\\.", "/");
 
-        project.addResource(src + "/org/example/Activator.java", DependencyManagerTemplate.class.getResource("Activator.java.txt"));
-        project.addResource(src + "/org/example/ExampleComponent.java", DependencyManagerTemplate.class.getResource("ExampleComponent.java.txt"));
-        project.addResource(testsrc + "/org/example/ExampleComponentTest.java", DependencyManagerTemplate.class.getResource("ExampleComponentTest.java.txt"));
+        Map<String,String> replaceRegularExpressions = new LinkedHashMap<String,String>();
+        replaceRegularExpressions.put("@package@", projectName);
+
+        project.addResource(src + "/" + pkgPath + "/Activator.java", new BndProjectResource(DependencyManagerTemplate.class.getResource("Activator.java.txt"), replaceRegularExpressions));
+        project.addResource(src + "/" + pkgPath + "/ExampleComponent.java", new BndProjectResource(DependencyManagerTemplate.class.getResource("ExampleComponent.java.txt"), replaceRegularExpressions));
+        project.addResource(testsrc + "/" + pkgPath + "/ExampleComponentTest.java", new BndProjectResource(DependencyManagerTemplate.class.getResource("ExampleComponentTest.java.txt"), replaceRegularExpressions));
     }
 
     public boolean enableTestSourceFolder() {

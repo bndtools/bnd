@@ -10,15 +10,23 @@
  *******************************************************************************/
 package bndtools.wizards.project;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Map;
 
+import org.bndtools.api.BndProjectResource;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ProjectPaths;
@@ -132,7 +140,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         BndProject proj = generateBndProject(project.getProject(), progress.newChild(1));
 
         progress.setWorkRemaining(proj.getResources().size());
-        for (Map.Entry<String,URL> resource : proj.getResources().entrySet()) {
+        for (Map.Entry<String,BndProjectResource> resource : proj.getResources().entrySet()) {
             importResource(project.getProject(), resource.getKey(), resource.getValue(), progress.newChild(1));
         }
 
@@ -147,19 +155,96 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         }
     }
 
-    protected static IFile importResource(IProject project, String fullPath, URL url, IProgressMonitor monitor) throws CoreException {
+    private static class ResourceReplacer extends Thread {
+        PipedInputStream in = null;
+        PipedOutputStream out = null;
+        Map<String,String> replaceRegularExpressions = null;
+        URL url = null;
+        IOException result = null;
+
+        ResourceReplacer(Map<String,String> replaceRegularExpressions, URL url) throws IOException {
+            if ((replaceRegularExpressions == null) || (replaceRegularExpressions.isEmpty())) {
+                this.replaceRegularExpressions = Collections.emptyMap();
+            } else {
+                this.replaceRegularExpressions = replaceRegularExpressions;
+            }
+            this.url = url;
+            in = new PipedInputStream();
+            out = new PipedOutputStream(in);
+        }
+
+        @Override
+        public void run() {
+            String line;
+            BufferedReader reader = null;
+            BufferedWriter writer = null;
+            try {
+                reader = new BufferedReader(new InputStreamReader(url.openStream()));
+                writer = new BufferedWriter(new OutputStreamWriter(out));
+                while ((line = reader.readLine()) != null) {
+                    for (Map.Entry<String,String> replaceRegularExpression : replaceRegularExpressions.entrySet()) {
+                        line = line.replaceAll(replaceRegularExpression.getKey(), replaceRegularExpression.getValue());
+                    }
+                    writer.write(line);
+                    writer.newLine();
+                }
+            } catch (IOException e) {
+                result = e;
+
+            } finally {
+                if (writer != null) {
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                        /* swallow */
+                    }
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        /* swallow */
+                    }
+                }
+            }
+        }
+
+    }
+
+    protected static IFile importResource(IProject project, String fullPath, BndProjectResource bndProjectResource, IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, 2);
+
+        URL url = bndProjectResource.getUrl();
+        Map<String,String> replaceRegularExpressions = bndProjectResource.getReplaceRegularExpressions();
 
         IFile p = project.getFile(fullPath);
         InputStream is = null;
+        ResourceReplacer replacer = null;
         try {
-            is = url.openStream();
+            if ((replaceRegularExpressions == null) || replaceRegularExpressions.isEmpty()) {
+                is = url.openStream();
+            } else {
+                replacer = new ResourceReplacer(replaceRegularExpressions, url);
+                replacer.start();
+                is = replacer.in;
+            }
 
             if (p.exists()) {
                 p.setContents(is, false, true, progress.newChild(2, SubMonitor.SUPPRESS_NONE));
             } else {
                 FileUtils.recurseCreate(p.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_NONE));
                 p.create(is, false, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+            }
+
+            if (replacer != null) {
+                try {
+                    replacer.join();
+                } catch (InterruptedException e) {
+                    /* swallow */
+                }
+                if (replacer.result != null) {
+                    throw replacer.result;
+                }
             }
         } catch (IOException e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, e.getMessage(), e));

@@ -1,4 +1,4 @@
-package org.example.api;
+package @package@;
 
 import net.vz.mongodb.jackson.ObjectId;
 

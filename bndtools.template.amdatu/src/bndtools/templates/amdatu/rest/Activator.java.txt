@@ -1,4 +1,4 @@
-package org.example.rest;
+package @package@;
 
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;

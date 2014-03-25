@@ -4,11 +4,11 @@ import aQute.bnd.build.model.BndEditModel;
 
 public class EmptyTemplate implements IProjectTemplate {
 
-    public void modifyInitialBndModel(BndEditModel model, ProjectPaths projectPaths) {
+    public void modifyInitialBndModel(BndEditModel model, String projectName, ProjectPaths projectPaths) {
         // noop
     }
 
-    public void modifyInitialBndProject(IBndProject project, ProjectPaths projectPaths) {
+    public void modifyInitialBndProject(IBndProject project, String projectName, ProjectPaths projectPaths) {
         // noop
     }
 

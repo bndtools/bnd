@@ -1,4 +1,4 @@
-package org.example;
+package @package@;
 
 import org.apache.felix.dm.annotation.api.Component;
 import org.apache.felix.dm.annotation.api.ServiceDependency;

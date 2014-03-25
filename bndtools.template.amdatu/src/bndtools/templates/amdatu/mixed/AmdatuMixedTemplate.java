@@ -2,8 +2,11 @@ package bndtools.templates.amdatu.mixed;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.bndtools.api.BndProjectResource;
 import org.bndtools.api.IBndProject;
 import org.bndtools.api.IProjectTemplate;
 import org.bndtools.api.ProjectPaths;
@@ -15,7 +18,7 @@ import bndtools.templates.amdatu.mongo.AmdatuMongoTemplate;
 import bndtools.templates.amdatu.rest.AmdatuRestTemplate;
 
 public class AmdatuMixedTemplate implements IProjectTemplate {
-    public void modifyInitialBndModel(BndEditModel model, ProjectPaths projectPaths) {
+    public void modifyInitialBndModel(BndEditModel model, String projectName, ProjectPaths projectPaths) {
         List<VersionedClause> buildPath = new ArrayList<VersionedClause>();
         List<VersionedClause> tmp;
 
@@ -41,22 +44,34 @@ public class AmdatuMixedTemplate implements IProjectTemplate {
         model.setSubBndFiles(Arrays.asList("mongo.bnd", "rest.bnd", "api.bnd"));
     }
 
-    public void modifyInitialBndProject(IBndProject project, ProjectPaths projectPaths) {
-    	project.addResource("api.bnd", AmdatuMixedTemplate.class.getResource("api.bnd.txt"));
-    	project.addResource("mongo.bnd", AmdatuMixedTemplate.class.getResource("mongo.bnd.txt"));
-    	project.addResource("rest.bnd", AmdatuMixedTemplate.class.getResource("rest.bnd.txt"));
+    public void modifyInitialBndProject(IBndProject project, String projectName, ProjectPaths projectPaths) {
+    	String pkgPath = projectName.replaceAll("\\.", "/");
     	
+    	Map<String, String> replaceRegularExpressionsApi = new LinkedHashMap<String,String>();
+    	replaceRegularExpressionsApi.put("@package@", projectName + ".api");
+
+    	Map<String, String> replaceRegularExpressionsMongo = new LinkedHashMap<String,String>();
+    	replaceRegularExpressionsMongo.put("@package@", projectName + ".mongo");
+    	replaceRegularExpressionsMongo.put("@package_api@", projectName + ".api");
+
+    	Map<String, String> replaceRegularExpressionsRest = new LinkedHashMap<String,String>();
+    	replaceRegularExpressionsRest.put("@package@", projectName + ".rest");
+
 		String src = projectPaths.getSrc();
     	
-    	project.addResource(src + "/org/example/api/packageinfo", AmdatuMixedTemplate.class.getResource("packageinfo.txt"));
-    	project.addResource(src + "/org/example/api/Example.java", AmdatuMongoTemplate.class.getResource("Example.java.txt"));
-        project.addResource(src + "/org/example/api/ExampleDocument.java", AmdatuMongoTemplate.class.getResource("ExampleDocument.java.txt"));
+    	project.addResource(src + "/" + pkgPath + "/api/packageinfo", new BndProjectResource(AmdatuMixedTemplate.class.getResource("packageinfo.txt"), null));
+    	project.addResource(src + "/" + pkgPath + "/api/Example.java", new BndProjectResource(AmdatuMongoTemplate.class.getResource("Example.java.txt"), replaceRegularExpressionsApi));
+        project.addResource(src + "/" + pkgPath + "/api/ExampleDocument.java", new BndProjectResource(AmdatuMongoTemplate.class.getResource("ExampleDocument.java.txt"), replaceRegularExpressionsApi));
         
-        project.addResource(src + "/org/example/mongo/Activator.java", AmdatuMongoTemplate.class.getResource("Activator.java.txt"));
-        project.addResource(src + "/org/example/mongo/ExampleComponent.java", AmdatuMongoTemplate.class.getResource("ExampleComponent.java.txt"));
+        project.addResource(src + "/" + pkgPath + "/mongo/Activator.java", new BndProjectResource(AmdatuMongoTemplate.class.getResource("Activator.java.txt"), replaceRegularExpressionsMongo));
+        project.addResource(src + "/" + pkgPath + "/mongo/ExampleComponent.java", new BndProjectResource(AmdatuMongoTemplate.class.getResource("ExampleComponent.java.txt"), replaceRegularExpressionsMongo));
         
-        project.addResource(src + "/org/example/rest/Activator.java", AmdatuRestTemplate.class.getResource("Activator.java.txt"));
-        project.addResource(src + "/org/example/rest/ExampleComponent.java", AmdatuRestTemplate.class.getResource("ExampleComponent.java.txt"));
+        project.addResource(src + "/" + pkgPath + "/rest/Activator.java", new BndProjectResource(AmdatuRestTemplate.class.getResource("Activator.java.txt"), replaceRegularExpressionsRest));
+        project.addResource(src + "/" + pkgPath + "/rest/ExampleComponent.java", new BndProjectResource(AmdatuRestTemplate.class.getResource("ExampleComponent.java.txt"), replaceRegularExpressionsRest));
+        
+        project.addResource("api.bnd", new BndProjectResource(AmdatuMixedTemplate.class.getResource("api.bnd.txt"), replaceRegularExpressionsApi));
+        project.addResource("mongo.bnd", new BndProjectResource(AmdatuMixedTemplate.class.getResource("mongo.bnd.txt"), replaceRegularExpressionsMongo));
+        project.addResource("rest.bnd", new BndProjectResource(AmdatuMixedTemplate.class.getResource("rest.bnd.txt"), replaceRegularExpressionsRest));
     }
 
     public boolean enableTestSourceFolder() {
