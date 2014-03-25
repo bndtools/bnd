@@ -22,6 +22,7 @@ import java.io.PipedOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Map;
@@ -179,8 +180,8 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             BufferedReader reader = null;
             BufferedWriter writer = null;
             try {
-                reader = new BufferedReader(new InputStreamReader(url.openStream()));
-                writer = new BufferedWriter(new OutputStreamWriter(out));
+                reader = new BufferedReader(new InputStreamReader(url.openStream(), Charset.defaultCharset()));
+                writer = new BufferedWriter(new OutputStreamWriter(out, Charset.defaultCharset()));
                 while ((line = reader.readLine()) != null) {
                     for (Map.Entry<String,String> replaceRegularExpression : replaceRegularExpressions.entrySet()) {
                         line = line.replaceAll(replaceRegularExpression.getKey(), replaceRegularExpression.getValue());
