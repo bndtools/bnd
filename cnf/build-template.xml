@@ -173,9 +173,6 @@
     -->
     <target name="clean" depends="init">
         <bnd command="clean" exceptions="true" basedir="${project}" />
-        <delete dir="${bin}"/>
-        <delete dir="${testbin}"/>
-        <delete dir="${target}"/>
     </target>
 
     <target name="deepclean" depends="init,clean" if="project.dependson">
