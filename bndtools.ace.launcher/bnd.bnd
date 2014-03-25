@@ -6,3 +6,4 @@
 Include-Resource: @libs/org.amdatu.ace.client-0.0.1-SNAPSHOT.jar,\
 	@libs/gson-1.7.1.jar
 Private-Package: bndtools.ace.launcher
+Bundle-Version: 0.0.0.${tstamp}

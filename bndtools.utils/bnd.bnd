@@ -21,3 +21,4 @@
 
 # No exports. This is bundle is not intended for runtime use.
 Private-Package: org.bndtools.utils.*
+Bundle-Version: 0.0.0.${tstamp}

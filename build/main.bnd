@@ -13,6 +13,7 @@ Include-Resource:\
     ${repo;biz.aQute.resolve;${aQute-resolve-base}},\
     ${repo;javax.xml;latest},\
     ${repo;javax.xml.stream;latest}
+Bundle-Version: 0.0.0.${tstamp}
 
 # Missing here:
 # ${repo;bndtools.bndplugins;latest}
