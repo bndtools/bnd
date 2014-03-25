@@ -1612,19 +1612,35 @@ public class Project extends Processor {
 	}
 
 	public void clean() throws Exception {
-		File target = getTarget0();
-		if (target.isDirectory() && target.getParentFile() != null) {
-			IO.delete(target);
-			if (!target.exists() && !target.mkdirs()) {
-				throw new IOException("Could not create directory " + target);
-			}
+		clean(getTarget(), "target");
+		clean(getSrcOutput(), "source output");
+		clean(getTestOutput(), "test output");
+		clean(getOutput(), "output");
+	}
+
+	void clean(File dir, String type) throws IOException {
+		if ( !dir.exists())
+			return;
+		
+		String basePath = getBase().getCanonicalPath();
+		String dirPath = dir.getCanonicalPath();
+		if ( ! dirPath.startsWith(basePath)) {
+			trace("path outside the project dir %s", type);
+			return;
 		}
-		File output = getSrcOutput().getAbsoluteFile();
-		if (getOutput().isDirectory())
-			IO.delete(output);
-		if (!output.exists() && !output.mkdirs()) {
-			throw new IOException("Could not create directory " + output);
+		
+		if ( dirPath.length() == basePath.length())  {
+			error("Trying to delete the project directory for %s", type);
+			return;
 		}
+		
+		IO.delete(dir);
+		if ( dir.exists()) {
+			error("Trying to delete %s (%s), but failed", dir, type);
+			return;
+		}
+		
+		dir.mkdirs();
 	}
 
 	public File[] build() throws Exception {
