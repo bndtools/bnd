@@ -10,10 +10,14 @@ public class Glob {
 	private final Pattern	pattern;
 
 	public Glob(String globString) {
-		this.glob = globString;
-		this.pattern = Pattern.compile(convertGlobToRegEx(globString));
+		this(globString,0);
 	}
 
+	public Glob(String globString, int flags) {
+		this.glob = globString;
+		this.pattern = Pattern.compile(convertGlobToRegEx(globString), flags);
+	}
+	
 	public Matcher matcher(CharSequence input) {
 		return pattern.matcher(input);
 	}
@@ -109,8 +113,12 @@ public class Glob {
 	}
 
 	public static Pattern toPattern(String s) {
+		return toPattern(s,0);
+	}
+	
+	public static Pattern toPattern(String s, int flags) {
 		try {
-			return Pattern.compile(convertGlobToRegEx(s));
+			return Pattern.compile(convertGlobToRegEx(s), flags);
 		}
 		catch (Exception e) {
 			// ignore
