@@ -4,4 +4,54 @@
  * Build customisations that are applied to all bnd projects.
  */
 
-assert(project != rootProject)
+assert(project != rootProject                             )
+assert(hasProperty("bnd_srcBinDir"                       ))
+assert(hasProperty("gradleBuild_classCycleDdfFile"       ))
+assert(hasProperty("gradleBuild_classcycleIgnoreFailures"))
+assert(hasProperty("gradleBuild_classCycleJar"           ))
+assert(hasProperty("gradleBuild_classCycleMain"          ))
+
+
+/*
+ * Setup tasks
+ */
+
+task checkClassCycle {
+  description  "Ensure no unwanted class cycles are present."
+  group        "Build"
+  inputs.files { fileTree(projectDir)
+                   .include(gradleBuild_classCycleDdfFile)
+                   .include("$bnd_srcBinDir/**/*.class") }
+
+  doLast {
+    ant.taskdef(
+      name     : "classcycle",
+      classname: gradleBuild_classCycleMain,
+      classpath: gradleBuild_classCycleJar
+    )
+
+    ant.classcycle (
+      failOnUnwantedDependencies: !gradleBuild_classcycleIgnoreFailures,
+      definitionFile            :  gradleBuild_classCycleDdfFile
+    ) {
+      fileset(dir: bnd_srcBinDir) {
+        include(name: "**/*.class")
+      }
+    }
+  }
+}
+
+
+/*
+ * Setup task dependencies
+ */
+
+checkClassCycle.dependsOn   += [classes                          ]
+bundle.dependsOn            += [checkClassCycle                  ]
+
+
+/*
+ * Setup task skipping
+ */
+
+checkClassCycle.onlyIf   { file(gradleBuild_classCycleDdfFile).exists() }

@@ -3,3 +3,12 @@
  *
  * Build settings overrides that are applied to all projects.
  */
+
+assert(rootProject.hasProperty("bnd_cnf"))
+
+
+/* Classcycle settings */
+ext.gradleBuild_classCycleDdfFile              = "classycle.ddf"
+ext.gradleBuild_classcycleIgnoreFailures       = false
+ext.gradleBuild_classCycleJar                  = "$rootProject.rootDir/$rootProject.bnd_cnf/buildlib/classycle.jar"
+ext.gradleBuild_classCycleMain                 = "classycle.ant.DependencyCheckingTask"
