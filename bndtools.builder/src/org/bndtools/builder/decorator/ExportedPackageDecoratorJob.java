@@ -111,11 +111,15 @@ public class ExportedPackageDecoratorJob extends Job implements ISchedulingRule 
                 }
             }
 
+            File projectBaseFile = project.getLocation().toFile().getAbsoluteFile();
             Collection<File> modelSourcePaths = model.getSourcePath();
             Collection<IResource> modelSourcePathsResources = null;
             if (modelSourcePaths != null && !modelSourcePaths.isEmpty()) {
                 modelSourcePathsResources = new HashSet<IResource>();
                 for (File modelSourcePath : modelSourcePaths) {
+                    if (projectBaseFile.equals(modelSourcePath.getAbsoluteFile())) {
+                        continue;
+                    }
                     IResource modelSourcePathResource = FileUtils.toProjectResource(project, modelSourcePath);
                     if (modelSourcePathResource != null) {
                         modelSourcePathsResources.add(modelSourcePathResource);
