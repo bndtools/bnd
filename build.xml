@@ -36,6 +36,7 @@
 		<ant dir="biz.aQute.bnd" target="mainRelease" />
 		<ant dir="biz.aQute.repository" target="mainRelease" />
 		<ant dir="biz.aQute.resolve" target="mainRelease" />
+		<ant dir="biz.aQute.repository.aether" target="mainRelease" />
 	</target>
 
 	<target name="clean" depends="__mainiterateinit">
