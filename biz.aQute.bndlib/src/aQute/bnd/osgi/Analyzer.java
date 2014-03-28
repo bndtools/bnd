@@ -1044,7 +1044,7 @@ public class Analyzer extends Processor {
 		return getBndInfo("version", "<unknown>");
 	}
 
-	static SimpleDateFormat	df	= new SimpleDateFormat("EEE MMM dd hh:mm:ss z yyyy");
+	static SimpleDateFormat	df	= new SimpleDateFormat("EEE MMM dd hh:mm:ss z yyyy", Locale.US);
 
 	public long getBndLastModified() {
 		String time = getBndInfo("lastmodified", "0");
