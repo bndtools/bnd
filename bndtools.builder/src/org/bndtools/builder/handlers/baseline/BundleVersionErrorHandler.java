@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
@@ -28,6 +30,9 @@ import aQute.service.reporter.Report.Location;
 public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler {
 
     private static final String PROP_SUGGESTED_VERSION = "suggestedVersion";
+
+    private final static String  VERSION_ACCEPTING_MACRO_STRING  = "(\\d+)\\.(\\d+)\\.(\\d+)\\.([-_\\.\\$\\{\\}\\da-zA-Z]+)";//$NON-NLS-1$
+    private final static Pattern VERSION_ACCEPTING_MACRO         = Pattern.compile(VERSION_ACCEPTING_MACRO_STRING);
 
     public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
         List<MarkerData> result = new LinkedList<MarkerData>();
@@ -60,7 +65,13 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
                     attribs.put(IMarker.CHAR_START, loc.start);
                     attribs.put(IMarker.CHAR_END, loc.end);
 
-                    attribs.put(PROP_SUGGESTED_VERSION, info.suggestedVersion.toString());
+                    String currentVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, "");
+                    Matcher m = VERSION_ACCEPTING_MACRO.matcher(currentVersion);
+                    String qualifier = null;
+                    if (m.matches()) {
+                        qualifier = m.group(4);
+                    }
+                    attribs.put(PROP_SUGGESTED_VERSION, info.suggestedVersion.toString() + (qualifier != null ? '.' + qualifier : ""));
 
                     result.add(new MarkerData(bndFile, attribs, true));
                 }
