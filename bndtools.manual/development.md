@@ -50,7 +50,6 @@ Ensure that all the following projects are checked:
 * `bndtools.bndplugins`
 * `bndtools.builder`
 * `bndtools.core`
-* `bndtools.gradle.template`
 * `bndtools.jareditor`
 * `bndtools.manual`
 * `bndtools.release`

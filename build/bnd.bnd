@@ -5,7 +5,6 @@
 	bndtools.bndplugins,\
 	bndtools.builder,\
 	bndtools.core,\
-	bndtools.gradle.template,\
 	bndtools.jareditor,\
 	bndtools.release,\
 	bndtools.repository.amdatu,\

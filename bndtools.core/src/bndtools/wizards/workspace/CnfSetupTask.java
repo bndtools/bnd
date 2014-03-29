@@ -1,9 +1,7 @@
 package bndtools.wizards.workspace;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.Enumeration;
@@ -23,7 +21,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -43,19 +40,12 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.osgi.framework.Bundle;
 
 import aQute.bnd.build.Workspace;
-import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.versioncontrol.util.VersionControlUtils;
 import bndtools.wizards.workspace.CnfInfo.Existence;
 
 public class CnfSetupTask extends WorkspaceModifyOperation {
-    private static final String BNDTOOLS_GRADLE_TEMPLATE_FILENAME = "bndtools/gradle/template/build.gradle.txt";
-
-    private static final String BNDTOOLS_GRADLE_TEMPLATE_BUNDLE = "bndtools.gradle.template";
-
-    private static final String BUILD_GRADLE_FILENAME = "build.gradle";
-
     private static final ILogger logger = Logger.getLogger(CnfSetupTask.class);
 
     private final IConfigurationElement templateConfig;
@@ -111,60 +101,10 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         case Create :
             progress.setWorkRemaining(3);
             createOrReplaceCnf(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-            createGradleBuildFile(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             rebuildWorkspace(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             break;
         case Nothing :
             break;
-        }
-    }
-
-    private void createGradleBuildFile(IProgressMonitor monitor) throws CoreException {
-        Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), BNDTOOLS_GRADLE_TEMPLATE_BUNDLE, null);
-        if (bundle == null) {
-            return;
-        }
-
-        IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-        File rootDir = workspaceRoot.getLocation().toFile();
-        File gradleBuildFile = new File(rootDir, BUILD_GRADLE_FILENAME);
-        if (gradleBuildFile.exists()) {
-            logger.logWarning("build.gradle already existed.", null);
-            return;
-        }
-
-        InputStream templateInputStream = null;
-        String buildFileTemplate;
-
-        try {
-            templateInputStream = bundle.getEntry(BNDTOOLS_GRADLE_TEMPLATE_FILENAME).openStream();
-            buildFileTemplate = IO.collect(templateInputStream);
-        } catch (IOException ex) {
-            logger.logError("Error reading build.gradle template", ex);
-            return;
-        } finally {
-            if (templateInputStream != null) {
-                try {
-                    templateInputStream.close();
-                } catch (IOException ex) {
-                    logger.logError("Error closing build.gradle template", ex);
-                }
-            }
-        }
-
-        // FIXME this needs to go with the introduction of the new Gradle template
-        IResource[] pluginFiles = workspaceRoot.getProject(Workspace.CNFDIR).getFolder("plugins").getFolder("biz.aQute.bnd").members();
-        for (IResource iResource : pluginFiles) {
-            if (iResource.getName().startsWith("biz.aQute.bnd-")) {
-                buildFileTemplate = buildFileTemplate.replace("{BNDLIB}", iResource.getName());
-                break;
-            }
-        }
-
-        try {
-            IO.store(buildFileTemplate, new FileOutputStream(gradleBuildFile));
-        } catch (Exception ex) {
-            logger.logError("Error writing build.gradle", ex);
         }
     }
 

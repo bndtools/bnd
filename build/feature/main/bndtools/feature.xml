@@ -192,13 +192,4 @@ This Agreement is governed by the laws of the State of New York and the intellec
          version="0.0.0"
          unpack="false"/>
 
-<!-- disabled for release, it's nowhere near from finished
-	<plugin
-         id="bndtools.gradle.template"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
--->
-
 </feature>
