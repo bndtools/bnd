@@ -65,11 +65,13 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
                     attribs.put(IMarker.CHAR_START, loc.start);
                     attribs.put(IMarker.CHAR_END, loc.end);
 
-                    String currentVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, "");
-                    Matcher m = VERSION_ACCEPTING_MACRO.matcher(currentVersion);
                     String qualifier = null;
-                    if (m.matches()) {
-                        qualifier = m.group(4);
+                    String currentVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, "");
+                    if (currentVersion != null) {
+                        Matcher m = VERSION_ACCEPTING_MACRO.matcher(currentVersion);
+                        if (m.matches()) {
+                            qualifier = m.group(4);
+                        }
                     }
                     attribs.put(PROP_SUGGESTED_VERSION, info.suggestedVersion.toString() + (qualifier != null ? '.' + qualifier : ""));
 
