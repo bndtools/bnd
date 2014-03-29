@@ -124,20 +124,6 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             bndBndFile.setContents(bndInput, false, false, progress.newChild(1));
         }
 
-        IFile buildXmlFile = project.getProject().getFile("build.xml");
-        InputStream buildXmlInput = getClass().getResourceAsStream("template_bnd_build.xml");
-        try {
-            if (buildXmlFile.exists()) {
-                buildXmlFile.setContents(buildXmlInput, false, false, progress.newChild(1));
-            } else {
-                buildXmlFile.create(buildXmlInput, false, progress.newChild(1));
-            }
-        } finally {
-            try {
-                buildXmlInput.close();
-            } catch (IOException e) {}
-        }
-
         BndProject proj = generateBndProject(project.getProject(), progress.newChild(1));
 
         progress.setWorkRemaining(proj.getResources().size());
@@ -153,6 +139,24 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
 
         if (!bndBndFile.exists()) {
             bndBndFile.create(bndInput, false, progress.newChild(1));
+        }
+
+        /*
+         * Ant files
+         */
+
+        IFile buildXmlFile = project.getProject().getFile("build.xml");
+        InputStream buildXmlInput = getClass().getResourceAsStream("template_bnd_build.xml");
+        try {
+            if (buildXmlFile.exists()) {
+                buildXmlFile.setContents(buildXmlInput, false, false, progress.newChild(1));
+            } else {
+                buildXmlFile.create(buildXmlInput, false, progress.newChild(1));
+            }
+        } finally {
+            try {
+                buildXmlInput.close();
+            } catch (IOException e) {}
         }
     }
 
