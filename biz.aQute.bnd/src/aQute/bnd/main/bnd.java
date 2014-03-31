@@ -1768,7 +1768,7 @@ public class bnd extends Processor {
 	}
 
 	private void doPrint(Jar jar, int options, printOptions po) throws ZipException, IOException, Exception {
-
+		Analyzer analyzer = null;
 		try {
 			if ((options & VERIFY) != 0) {
 				Verifier verifier = new Verifier(jar);
@@ -1810,72 +1810,66 @@ public class bnd extends Processor {
 
 			if ((options & (USES | USEDBY | API)) != 0) {
 				out.println();
-				Analyzer analyzer = new Analyzer();
-				try {
-					analyzer.setPedantic(isPedantic());
-					analyzer.setJar(jar);
-					Manifest m = jar.getManifest();
-					if (m != null) {
-						String s = m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
-						if (s != null)
-							analyzer.setExportPackage(s);
-					}
-					analyzer.analyze();
-
-					boolean java = po.java();
-
-					Packages exports = analyzer.getExports();
-
-					if ((options & API) != 0) {
-						Map<PackageRef,List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(),
-								!po.java());
-						if (!po.xport()) {
-							if (exports.isEmpty())
-								warning("Not filtering on exported only since exports are empty");
-							else
-								apiUses.keySet().retainAll(analyzer.getExports().keySet());
-						}
-						out.println("[API USES]");
-						printMultiMap(apiUses);
-
-						Set<PackageRef> privates = analyzer.getPrivates();
-						for (PackageRef export : exports.keySet()) {
-							Map<Def,List<TypeRef>> xRef = analyzer.getXRef(export, privates, Modifier.PROTECTED
-									+ Modifier.PUBLIC);
-							if (!xRef.isEmpty()) {
-								out.println();
-								out.printf("%s refers to private Packages (not good)\n\n", export);
-								for (Entry<Def,List<TypeRef>> e : xRef.entrySet()) {
-									TreeSet<PackageRef> refs = new TreeSet<Descriptors.PackageRef>();
-									for (TypeRef ref : e.getValue())
-										refs.add(ref.getPackageRef());
-
-									refs.retainAll(privates);
-									out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
-											, e.getKey().getName(), refs);
-								}
-								out.println();
-							}
-						}
-						out.println();
-					}
-
-					Map<PackageRef,List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
-					if ((options & USES) != 0) {
-						out.println("[USES]");
-						printMultiMap(uses);
-						out.println();
-					}
-					if ((options & USEDBY) != 0) {
-						out.println("[USEDBY]");
-						MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<Descriptors.PackageRef,Descriptors.PackageRef>(
-								uses).transpose();
-						printMultiMap(usedBy);
-					}
-
+				analyzer = new Analyzer();
+				analyzer.setPedantic(isPedantic());
+				analyzer.setJar(jar);
+				Manifest m = jar.getManifest();
+				if (m != null) {
+					String s = m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+					if (s != null)
+						analyzer.setExportPackage(s);
 				}
-				finally {
-					analyzer.close();
+				analyzer.analyze();
+
+				boolean java = po.java();
+
+				Packages exports = analyzer.getExports();
+
+				if ((options & API) != 0) {
+					Map<PackageRef, List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(),
+							!po.java());
+					if (!po.xport()) {
+						if (exports.isEmpty())
+							warning("Not filtering on exported only since exports are empty");
+						else
+							apiUses.keySet().retainAll(analyzer.getExports().keySet());
+					}
+					out.println("[API USES]");
+					printMultiMap(apiUses);
+
+					Set<PackageRef> privates = analyzer.getPrivates();
+					for (PackageRef export : exports.keySet()) {
+						Map<Def, List<TypeRef>> xRef = analyzer.getXRef(export, privates, Modifier.PROTECTED
+								+ Modifier.PUBLIC);
+						if (!xRef.isEmpty()) {
+							out.println();
+							out.printf("%s refers to private Packages (not good)\n\n", export);
+							for (Entry<Def, List<TypeRef>> e : xRef.entrySet()) {
+								TreeSet<PackageRef> refs = new TreeSet<Descriptors.PackageRef>();
+								for (TypeRef ref : e.getValue())
+									refs.add(ref.getPackageRef());
+
+								refs.retainAll(privates);
+								out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
+										, e.getKey().getName(), refs);
+							}
+							out.println();
+						}
+					}
+					out.println();
+				}
+
+				Map<PackageRef, List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
+				if ((options & USES) != 0) {
+					out.println("[USES]");
+					printMultiMap(uses);
+					out.println();
+				}
+				if ((options & USEDBY) != 0) {
+					out.println("[USEDBY]");
+					MultiMap<PackageRef, PackageRef> usedBy = new MultiMap<Descriptors.PackageRef, Descriptors.PackageRef>(
+							uses).transpose();
+					printMultiMap(usedBy);
 				}
 			}
 
@@ -1919,8 +1913,10 @@ public class bnd extends Processor {
 				}
 				out.println();
 			}
-		}
-		finally {
+		} finally {
+			if (analyzer != null) {
+				analyzer.close();
+			}
 			jar.close();
 		}
 	}
