@@ -36,8 +36,8 @@
         <dirname property="projectdir" file="${ant.file}" />
         <dirname property="workspacedir" file="${projectdir}" />
 
-        <!-- Define the classpath of bnd (location is defined in build.properties) -->
-        <property file="${workspacedir}/cnf/build.properties"/>
+        <!-- Define the classpath of bnd (location is defined in build.ant.properties) -->
+        <property file="${workspacedir}/cnf/build.ant.properties"/>
         <path id="bnd-classpath" location="${workspacedir}/${bnd.location}" />
 
         <!-- Load bnd and prepare the workspace -->

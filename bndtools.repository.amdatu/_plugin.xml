@@ -9,7 +9,7 @@
          doc="templateDocs/AmdatuConfig.xml"
          paths="templates/cnfs/amdatu"
          priority="0"
-         managed="ext/.*,plugins/.*,build-template.xml,build.properties"
+         managed="ext/.*,plugins/.*,build-template.xml,build.ant.properties"
          ignores="/cache/"
          version="0"
          category="AAA/Core"
