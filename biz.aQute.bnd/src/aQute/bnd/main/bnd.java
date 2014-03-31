@@ -1811,66 +1811,66 @@ public class bnd extends Processor {
 			if ((options & (USES | USEDBY | API)) != 0) {
 				out.println();
 				analyzer = new Analyzer();
-				analyzer.setPedantic(isPedantic());
-				analyzer.setJar(jar);
-				Manifest m = jar.getManifest();
-				if (m != null) {
-					String s = m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
-					if (s != null)
-						analyzer.setExportPackage(s);
-				}
-				analyzer.analyze();
-
-				boolean java = po.java();
-
-				Packages exports = analyzer.getExports();
-
-				if ((options & API) != 0) {
-					Map<PackageRef, List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(),
-							!po.java());
-					if (!po.xport()) {
-						if (exports.isEmpty())
-							warning("Not filtering on exported only since exports are empty");
-						else
-							apiUses.keySet().retainAll(analyzer.getExports().keySet());
+					analyzer.setPedantic(isPedantic());
+					analyzer.setJar(jar);
+					Manifest m = jar.getManifest();
+					if (m != null) {
+						String s = m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+						if (s != null)
+							analyzer.setExportPackage(s);
 					}
-					out.println("[API USES]");
-					printMultiMap(apiUses);
+					analyzer.analyze();
 
-					Set<PackageRef> privates = analyzer.getPrivates();
-					for (PackageRef export : exports.keySet()) {
-						Map<Def, List<TypeRef>> xRef = analyzer.getXRef(export, privates, Modifier.PROTECTED
-								+ Modifier.PUBLIC);
-						if (!xRef.isEmpty()) {
-							out.println();
-							out.printf("%s refers to private Packages (not good)\n\n", export);
-							for (Entry<Def, List<TypeRef>> e : xRef.entrySet()) {
-								TreeSet<PackageRef> refs = new TreeSet<Descriptors.PackageRef>();
-								for (TypeRef ref : e.getValue())
-									refs.add(ref.getPackageRef());
+					boolean java = po.java();
 
-								refs.retainAll(privates);
-								out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
-										, e.getKey().getName(), refs);
-							}
-							out.println();
+					Packages exports = analyzer.getExports();
+
+					if ((options & API) != 0) {
+						Map<PackageRef,List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(),
+								!po.java());
+						if (!po.xport()) {
+							if (exports.isEmpty())
+								warning("Not filtering on exported only since exports are empty");
+							else
+								apiUses.keySet().retainAll(analyzer.getExports().keySet());
 						}
-					}
-					out.println();
-				}
+						out.println("[API USES]");
+						printMultiMap(apiUses);
 
-				Map<PackageRef, List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
-				if ((options & USES) != 0) {
-					out.println("[USES]");
-					printMultiMap(uses);
-					out.println();
-				}
-				if ((options & USEDBY) != 0) {
-					out.println("[USEDBY]");
-					MultiMap<PackageRef, PackageRef> usedBy = new MultiMap<Descriptors.PackageRef, Descriptors.PackageRef>(
-							uses).transpose();
-					printMultiMap(usedBy);
-				}
+						Set<PackageRef> privates = analyzer.getPrivates();
+						for (PackageRef export : exports.keySet()) {
+							Map<Def,List<TypeRef>> xRef = analyzer.getXRef(export, privates, Modifier.PROTECTED
+									+ Modifier.PUBLIC);
+							if (!xRef.isEmpty()) {
+								out.println();
+								out.printf("%s refers to private Packages (not good)\n\n", export);
+								for (Entry<Def,List<TypeRef>> e : xRef.entrySet()) {
+									TreeSet<PackageRef> refs = new TreeSet<Descriptors.PackageRef>();
+									for (TypeRef ref : e.getValue())
+										refs.add(ref.getPackageRef());
+
+									refs.retainAll(privates);
+									out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
+											, e.getKey().getName(), refs);
+								}
+								out.println();
+							}
+						}
+						out.println();
+					}
+
+					Map<PackageRef,List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
+					if ((options & USES) != 0) {
+						out.println("[USES]");
+						printMultiMap(uses);
+						out.println();
+					}
+					if ((options & USEDBY) != 0) {
+						out.println("[USEDBY]");
+						MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<Descriptors.PackageRef,Descriptors.PackageRef>(
+								uses).transpose();
+						printMultiMap(usedBy);
+					}
 			}
 
 			if ((options & COMPONENT) != 0) {
