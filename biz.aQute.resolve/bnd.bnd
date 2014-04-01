@@ -6,7 +6,9 @@
 	ee.j2se;version=${javac.ee},\
 	org.mockito.mockito-all,\
 	org.apache.felix.resolver,\
-	osgi.cmpn;version=4.3.1
+	osgi.cmpn;version=4.3.1, \
+	org.osgi.impl.bundle.repoindex.lib;version=2.1.0
+	
 
 Bundle-Version: 0.1.0.${tstamp}_${Git-Descriptor}
 
