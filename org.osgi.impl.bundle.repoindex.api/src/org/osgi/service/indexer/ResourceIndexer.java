@@ -19,6 +19,8 @@ package org.osgi.service.indexer;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -125,4 +127,29 @@ public interface ResourceIndexer {
 	 *             in case of an error
 	 */
 	void indexFragment(Set<File> files, Writer out, Map<String, String> config) throws Exception;
+
+	/**
+	 * Return a Resource from a file
+	 * 
+	 * @param file
+	 *            a bundle to index
+	 * @return The resource, caps, and reqs for that file
+	 */
+
+	class IndexResult {
+		public Resource resource;
+		public List<Capability> capabilities = new ArrayList<Capability>();
+		public List<Requirement> requirements = new ArrayList<Requirement>();
+
+		/**
+		 * A unique signature for this indexer. It should be some kind of hash
+		 * that changes when the set of analyzers changes, or the results of
+		 * this parse are no longer compatible with other parse results. The
+		 * intention of this method is to allow caching of results and
+		 * invalidate the cache when the version has changed.
+		 */
+		public long signature;
+	}
+
+	IndexResult indexFile(File file) throws Exception;
 }

@@ -31,7 +31,7 @@ import org.osgi.service.indexer.impl.util.OSGiHeader;
 import org.osgi.service.indexer.impl.util.Yield;
 import org.osgi.service.log.LogService;
 
-class BundleAnalyzer implements ResourceAnalyzer {
+public class BundleAnalyzer implements ResourceAnalyzer {
 
 	private static final String SHA_256 = "SHA-256";
 

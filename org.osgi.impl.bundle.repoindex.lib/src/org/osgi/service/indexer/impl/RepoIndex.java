@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -321,4 +322,45 @@ public class RepoIndex implements ResourceIndexer {
 		}
 	}
 
+	/**
+	 * Get the current analyzers
+	 */
+
+	public List<ResourceAnalyzer> getAnalyzers() {
+		List<ResourceAnalyzer> list = new ArrayList<ResourceAnalyzer>();
+		for (Pair<ResourceAnalyzer, Filter> entry : analyzers) {
+			list.add(entry.getFirst());
+		}
+		return list;
+
+	}
+
+	/*
+	 * Index a file and return a resource for it.
+	 */
+
+	public IndexResult indexFile(File file) throws Exception {
+		IndexResult result = new IndexResult();
+		result.resource = new JarResource(file);
+		result.signature = getSignature();
+		synchronized (analyzers) {
+			for (Pair<ResourceAnalyzer, Filter> entry : analyzers) {
+				ResourceAnalyzer analyzer = entry.getFirst();
+				Filter filter = entry.getSecond();
+
+				if (filter == null || filter.match(result.resource.getProperties())) {
+					analyzer.analyzeResource(result.resource, result.capabilities, result.requirements);
+				}
+			}
+		}
+		return result;
+	}
+
+	private long getSignature() {
+		long value = 97;
+		for (Pair<ResourceAnalyzer, Filter> ra : analyzers) {
+			value *= 997 * ra.getFirst().getClass().getName().hashCode() + 13;
+		}
+		return value;
+	}
 }

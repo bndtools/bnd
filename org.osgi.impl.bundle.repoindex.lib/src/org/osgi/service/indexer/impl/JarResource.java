@@ -18,7 +18,7 @@ import java.util.jar.Manifest;
 
 import org.osgi.service.indexer.Resource;
 
-class JarResource implements Resource {
+public class JarResource implements Resource {
 
 	private final File file;
 	private final JarFile jarFile;
