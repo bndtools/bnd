@@ -9,7 +9,6 @@ import java.util.regex.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
-import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
@@ -48,8 +47,7 @@ import aQute.service.reporter.*;
  * (that is, machine local) settings from the ~/.bnd/settings.json file (can be
  * managed with bnd).
  */
-public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable,
-		InfoRepository {
+public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
 
 	/**
 	 * If set, will trace to stdout. Works only if no reporter is set.
@@ -74,6 +72,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Set the name of this repository (optional)
 	 */
 	public final static String				NAME				= "name";
+
+	/**
+	 * Should this file repo have an index? Either true or false (absent)
+	 */
+	public final static String				INDEX				= "index";
 
 	/**
 	 * Path property for commands. A comma separated path for directories to be
@@ -217,6 +220,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	boolean									trace;
 	PersistentMap<ResourceDescriptor>		index;
 
+	private boolean							hasIndex;
+
 	public FileRepo() {}
 
 	public FileRepo(String name, File location, boolean canWrite) {
@@ -254,7 +259,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			exec(init, root.getAbsolutePath());
 		}
 
-		index = new PersistentMap<ResourceDescriptor>(new File(root, ".index"), ResourceDescriptor.class);
+		if (hasIndex)
+			index = new PersistentMap<ResourceDescriptor>(new File(root, ".index"), ResourceDescriptor.class);
 
 		open();
 		return true;
@@ -273,6 +279,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (readonly != null && Boolean.valueOf(readonly).booleanValue())
 			canWrite = false;
 
+		hasIndex = Processor.isTrue(map.get(INDEX));
 		name = map.get(NAME);
 		path = map.get(CMD_PATH);
 		shell = map.get(CMD_SHELL);
@@ -357,7 +364,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			reporter.trace("updated %s", file.getAbsolutePath());
 
-			index.put(bsn + "-" + version, buildDescriptor(file, tmpJar, digest, bsn, version));
+			if ( hasIndex )
+				index.put(bsn + "-" + version, buildDescriptor(file, tmpJar, digest, bsn, version));
 
 			return file;
 		}
@@ -559,7 +567,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 					catch (Exception e) {
 						throw new RuntimeException(e);
 					}
-				}});
+				}
+			});
 			return actions; // no default actions
 		}
 
@@ -608,13 +617,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				map = (Map<String,String>) target[2];
 
 			File f = getLocal(bsn, version, map);
-			
+
 			String s = "";
 			ResourceDescriptor descriptor = getDescriptor(bsn, version);
-			if ( descriptor != null && descriptor.description != null) {
+			if (descriptor != null && descriptor.description != null) {
 				s = descriptor.description + "\n";
 			}
-			
+
 			s += String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0), SHA1
 					.digest(f).asHex());
 			if (f.getName().endsWith(".lib") && f.isFile()) {
@@ -860,28 +869,38 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			IO.delete(new File(root, bsn));
 	}
 
-	public ResourceDescriptor getDescriptor(String bsn, Version version)
-			throws Exception {
-		return index.get(bsn + "-" + version);
-	}
-
-	public SortedSet<ResourceDescriptor> getResources() {
-		TreeSet<ResourceDescriptor> resources= new TreeSet<ResourceDescriptor>();
-		for ( ResourceDescriptor rd : index.values()) {
-			resources.add(rd);
-		}
-		return resources;
-	}
-
-	public ResourceDescriptor getResource(byte[] sha) throws Exception {
-		for ( ResourceDescriptor rd : index.values()) {
-			if ( Arrays.equals(rd.id, sha))
-				return rd;
+	public ResourceDescriptor getDescriptor(String bsn, Version version) throws Exception {
+		if (hasIndex) {
+			return index.get(bsn + "-" + version);
 		}
 		return null;
 	}
 
-	 void rebuildIndex() throws Exception {
+	public SortedSet<ResourceDescriptor> getResources() {
+		if (hasIndex) {
+			TreeSet<ResourceDescriptor> resources = new TreeSet<ResourceDescriptor>();
+			for (ResourceDescriptor rd : index.values()) {
+				resources.add(rd);
+			}
+			return resources;
+		}
+		return null;
+	}
+
+	public ResourceDescriptor getResource(byte[] sha) throws Exception {
+		if (hasIndex) {
+			for (ResourceDescriptor rd : index.values()) {
+				if (Arrays.equals(rd.id, sha))
+					return rd;
+			}
+		}
+		return null;
+	}
+
+	void rebuildIndex() throws Exception {
+		if (!hasIndex)
+			return;
+
 		index.clear();
 		for (String bsn : list(null)) {
 			for (Version version : versions(bsn)) {
