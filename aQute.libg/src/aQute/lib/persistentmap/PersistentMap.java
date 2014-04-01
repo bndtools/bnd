@@ -112,7 +112,11 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 					public java.util.Map.Entry<String,V> next() {
 						try {
 							entry = it.next();
-							V value = entry.getValue().get();
+							SoftReference<V> ref= entry.getValue();
+							V value = null;
+							if ( ref != null)
+								value = ref.get();
+							
 							if (value == null) {
 								File file = new File(data, entry.getKey());
 								value = (V) codec.dec().from(file).get(type);
@@ -136,6 +140,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 								}};
 						}
 						catch (Exception e) {
+							e.printStackTrace();
 							throw new RuntimeException(e);
 						}
 					}
@@ -151,7 +156,11 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 	public V put(String key, V value) {
 		init();
 		try {
-			V old = cache.get(key).get();
+			V old = null;
+			SoftReference<V> ref = cache.get(key);
+			if ( ref != null)
+				old = ref.get();
+			
 			File file = new File(data, key);
 			codec.enc().to(file).put(value);
 			cache.put(key, new SoftReference<V>(value));

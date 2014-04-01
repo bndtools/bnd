@@ -14,16 +14,19 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
+import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
 import aQute.lib.deployer.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
+import aQute.libg.map.*;
 @SuppressWarnings("resource")
 
 public class FileRepoTest extends TestCase {
 
 	private  FileRepo	testRepo;
 	private  FileRepo	nonExistentRepo;
+	private  FileRepo	indexedRepo;
 
 	private  String hashToString(byte[] hash) {
 		Formatter formatter = new Formatter();
@@ -49,22 +52,107 @@ public class FileRepoTest extends TestCase {
 		nonExistentDir.mkdir();
 		nonExistentDir.setReadOnly();
 		nonExistentRepo = createRepo(nonExistentDir);
+		
+		File tmp = new File("tmp");
+		tmp.mkdir();
+		
+		indexedRepo = createRepo(tmp, MAP.$("index", "true"));
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		File nonExistentDir = new File("invalidrepo");
 		delete(nonExistentDir);
+		File tmp = new File("tmp");
+		IO.delete(tmp);
+
 	}
+	
 
 	private  FileRepo createRepo(File root) {
+		return createRepo(root, new HashMap<String,String>());
+	}
+	private  FileRepo createRepo(File root, Map<String,String> props) {
 		FileRepo repo = new FileRepo();
-
-		Map<String,String> props = new HashMap<String,String>();
+		
 		props.put("location", root.getAbsolutePath());
 		repo.setProperties(props);
 
 		return repo;
+	}
+
+	/**
+	 * Test a repo with an index
+	 */
+	public void testIndex() throws Exception {
+		
+		//
+		// Check if the index property works
+		// by verifying the diff between the 
+		// testRepo and the indexed Repo
+		//
+		
+		assertNull( testRepo.getResources());
+		assertNotNull( indexedRepo.getResources());
+
+		//
+		// Check that we can actually put a resource
+		//
+		
+		PutResult put = indexedRepo.put(new File("jar/osgi.jar").toURL().openStream(), null);
+		assertNotNull(put);
+		
+		// Can we get it?
+		
+		ResourceDescriptor desc = indexedRepo.getDescriptor("osgi", new Version("4.0"));
+		assertNotNull(desc);
+		
+		// Got the same file?
+		
+		assertTrue( Arrays.equals(put.digest, desc.id));
+		
+		//
+		// Check if the description was copied
+		//
+		
+		assertEquals( "OSGi Service Platform Release 4 Interfaces and Classes for use in compiling bundles.", desc.description);
+
+		//
+		// We must be able to access by its sha1
+		//
+		
+		ResourceDescriptor resource = indexedRepo.getResource(put.digest);
+		assertTrue( Arrays.equals(resource.id, desc.id));
+
+		//
+		// Check if we now have a set of resources
+		//
+		SortedSet<ResourceDescriptor> resources = indexedRepo.getResources();
+		assertEquals( 1, resources.size());
+		ResourceDescriptor rd  = resources.iterator().next();
+		assertTrue( Arrays.equals(rd.id, put.digest));
+
+		// 
+		// Check if the bsn brings us back
+		//
+		File file = indexedRepo.get(desc.bsn, desc.version, null);
+		assertNotNull(file);		
+		assertTrue( Arrays.equals(put.digest, SHA1.digest(file).digest()));
+		byte[] digest = SHA256.digest(file).digest();
+		assertTrue( Arrays.equals(rd.sha256, digest));
+		
+		//
+		// Delete and see if it is really gone
+		//
+		indexedRepo.delete(desc.bsn, desc.version);
+		resources = indexedRepo.getResources();
+		assertEquals( 0, resources.size());
+		
+		file = indexedRepo.get(desc.bsn, desc.version, null);
+		assertNull(file);
+		
+		resource = indexedRepo.getResource(put.digest);
+		assertNull(resource);
 	}
 
 	public void testListBSNs() throws Exception {
