@@ -4,7 +4,10 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
 
+import aQute.lib.io.*;
+
 public class JpmLauncher {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
 
 	public static void main(String args[]) throws Exception {
 		
@@ -74,7 +77,7 @@ public class JpmLauncher {
 		try {
 			OutputStream out = new FileOutputStream(tmpjpm);
 			try {
-				byte[] buffer = new byte[200000];
+				byte[] buffer = new byte[BUFFER_SIZE];
 				int size;
 				while ( (size=in.read(buffer)) > 0)
 					out.write(buffer,0,size);

@@ -3,6 +3,7 @@ package aQute.lib.io;
 import java.io.*;
 
 public class LimitedInputStream extends InputStream {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
 
 	final InputStream	in;
 	final int			size;
@@ -73,7 +74,7 @@ public class LimitedInputStream extends InputStream {
 	@Override
 	public long skip(long n) throws IOException {
 		long count = 0;
-		byte buffer[] = new byte[1024];
+		byte buffer[] = new byte[BUFFER_SIZE];
 		while (n > 0 && read() >= 0) {
 			int size = read(buffer);
 			if (size <= 0)

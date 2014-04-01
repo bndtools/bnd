@@ -16,6 +16,8 @@ import aQute.lib.io.*;
 import aQute.service.reporter.*;
 
 public class Jar implements Closeable {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+
 	public enum Compression {
 		DEFLATE, STORE
 	}
@@ -721,7 +723,7 @@ public class Jar implements Closeable {
 		for (String algorithm : algorithms)
 			digests[n++] = MessageDigest.getInstance(algorithm);
 
-		byte buffer[] = new byte[30000];
+		byte buffer[] = new byte[BUFFER_SIZE];
 
 		for (Map.Entry<String,Resource> entry : resources.entrySet()) {
 

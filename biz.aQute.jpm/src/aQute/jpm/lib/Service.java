@@ -8,6 +8,8 @@ import java.net.*;
 import aQute.lib.io.*;
 
 public class Service {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+
 	final ServiceData				data;
 	final JustAnotherPackageManager	jpm;
 	final File						lock;
@@ -90,8 +92,8 @@ public class Service {
 		dsocket.setSoTimeout(5000);
 		try {
 			dsocket.send(p);
-			byte[] buffer = new byte[1000];
-			DatagramPacket dp = new DatagramPacket(buffer, 1000);
+			byte[] buffer = new byte[BUFFER_SIZE];
+			DatagramPacket dp = new DatagramPacket(buffer, BUFFER_SIZE);
 			dsocket.receive(dp);
 			return new String(dp.getData(), dp.getOffset(), dp.getLength(), "UTF-8");
 		}

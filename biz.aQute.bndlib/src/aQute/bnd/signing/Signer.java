@@ -16,6 +16,8 @@ import aQute.lib.io.*;
  * signature. -sign: md5, sha1
  */
 public class Signer extends Processor {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+
 	static Pattern	METAINFDIR		= Pattern.compile("META-INF/[^/]*");
 	String			digestNames[]	= new String[] {
 										"MD5"
@@ -150,7 +152,7 @@ public class Signer extends Processor {
 
 	private void digest(MessageDigest[] algorithms, Resource r) throws Exception {
 		InputStream in = r.openInputStream();
-		byte[] data = new byte[1024];
+		byte[] data = new byte[BUFFER_SIZE];
 		int size = in.read(data);
 		while (size > 0) {
 			for (int a = 0; a < algorithms.length; a++) {

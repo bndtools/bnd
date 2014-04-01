@@ -29,6 +29,7 @@ import aQute.service.reporter.*;
  * @author njbartlett
  */
 public class CachingUriResourceHandle implements ResourceHandle {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
 
 	private static final String SHA_256 = "SHA-256";
 
@@ -286,14 +287,14 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			return null;
 		}
 		MessageDigest digest;
-		byte[] buf = new byte[1024];
+		byte[] buf = new byte[BUFFER_SIZE];
 		
 		InputStream stream = null;
 		try {
 			digest = MessageDigest.getInstance(SHA_256);
 			stream = new FileInputStream(file);
 			while (true) {
-				int bytesRead = stream.read(buf, 0, 1024);
+				int bytesRead = stream.read(buf, 0, BUFFER_SIZE);
 				if (bytesRead < 0)
 					break;
 				

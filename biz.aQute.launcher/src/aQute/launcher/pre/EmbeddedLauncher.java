@@ -6,10 +6,13 @@ import java.net.*;
 import java.util.*;
 import java.util.jar.*;
 
+import aQute.lib.io.*;
+
 public class EmbeddedLauncher {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
 
 	public static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
-	static byte[]				buffer				= new byte[30000];
+	static byte[]				buffer				= new byte[BUFFER_SIZE];
 
 	public static void main(String... args) throws Exception {
 

@@ -7,6 +7,7 @@ import java.security.*;
 import java.util.*;
 
 public class IO {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
 
 	static final public File	work	= new File(System.getProperty("user.dir"));
 	static final public File	home;
@@ -24,7 +25,7 @@ public class IO {
 
 	public static void copy(Reader r, Writer w) throws IOException {
 		try {
-			char buffer[] = new char[8000];
+			char buffer[] = new char[BUFFER_SIZE];
 			int size = r.read(buffer);
 			while (size > 0) {
 				w.write(buffer, 0, size);
@@ -80,7 +81,7 @@ public class IO {
 	}
 
 	public static void copy(InputStream in, DataOutput out) throws IOException {
-		byte[] buffer = new byte[10000];
+		byte[] buffer = new byte[BUFFER_SIZE];
 		try {
 			int size = in.read(buffer);
 			while (size > 0) {
@@ -94,7 +95,7 @@ public class IO {
 	}
 
 	public static void copy(InputStream in, ByteBuffer bb) throws IOException {
-		byte[] buffer = new byte[10000];
+		byte[] buffer = new byte[BUFFER_SIZE];
 		try {
 			int size = in.read(buffer);
 			while (size > 0) {
@@ -120,7 +121,7 @@ public class IO {
 	}
 
 	public static void copy(InputStream in, MessageDigest md) throws IOException {
-		byte[] buffer = new byte[10000];
+		byte[] buffer = new byte[BUFFER_SIZE];
 		try {
 			int size = in.read(buffer);
 			while (size > 0) {
@@ -229,7 +230,7 @@ public class IO {
 
 	public static String collect(Reader a) throws IOException {
 		StringWriter sw = new StringWriter();
-		char[] buffer = new char[10000];
+		char[] buffer = new char[BUFFER_SIZE];
 		int size = a.read(buffer);
 		while (size > 0) {
 			sw.write(buffer, 0, size);
@@ -383,7 +384,7 @@ public class IO {
 
 	public static long drain(InputStream in) throws IOException {
 		long result = 0;
-		byte[] buffer = new byte[10000];
+		byte[] buffer = new byte[BUFFER_SIZE];
 		try {
 			int size = in.read(buffer);
 			while (size >= 0) {

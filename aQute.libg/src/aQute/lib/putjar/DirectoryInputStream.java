@@ -3,9 +3,12 @@ package aQute.lib.putjar;
 import java.io.*;
 import java.util.zip.*;
 
+import aQute.lib.io.*;
 import aQute.libg.fileiterator.*;
 
 public class DirectoryInputStream extends InputStream {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+	
 	final File					root;
 	final FileIterator			fi;
 	File						element;
@@ -267,7 +270,7 @@ public class DirectoryInputStream extends InputStream {
 		CRC32 crc = new CRC32();
 		FileInputStream in = new FileInputStream(file);
 		try {
-			byte data[] = new byte[10000];
+			byte data[] = new byte[BUFFER_SIZE];
 			int size = in.read(data);
 			while (size > 0) {
 				crc.update(data, 0, size);

@@ -8,6 +8,8 @@ import java.util.*;
 import aQute.lib.io.*;
 
 public class ServiceMain extends Thread {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+
 	static File				lock;
 	Date					last	= new Date();
 	String					message	= "<>";
@@ -58,8 +60,8 @@ public class ServiceMain extends Thread {
 	@Override
 	public void run() {
 		try {
-			byte[] buffer = new byte[1000];
-			DatagramPacket dp = new DatagramPacket(buffer, 1000);
+			byte[] buffer = new byte[BUFFER_SIZE];
+			DatagramPacket dp = new DatagramPacket(buffer, BUFFER_SIZE);
 
 			boolean stopped = false;
 			socket.setSoTimeout(5000);

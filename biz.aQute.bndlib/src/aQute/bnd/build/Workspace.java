@@ -30,6 +30,8 @@ import aQute.lib.settings.*;
 import aQute.service.reporter.*;
 
 public class Workspace extends Processor {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+
 	public static final String					BUILDFILE	= "build.bnd";
 	public static final String					CNFDIR		= "cnf";
 	public static final String					BNDDIR		= "bnd";
@@ -305,7 +307,7 @@ public class Workspace extends Processor {
 	}
 
 	void copy(InputStream in, OutputStream out) throws Exception {
-		byte data[] = new byte[10000];
+		byte data[] = new byte[BUFFER_SIZE];
 		int size = in.read(data);
 		while (size > 0) {
 			out.write(data, 0, size);

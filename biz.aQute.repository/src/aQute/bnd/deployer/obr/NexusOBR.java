@@ -46,6 +46,8 @@ import aQute.lib.io.*;
  * 
  */
 public class NexusOBR extends AbstractIndexedRepo {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 2;
+
 	private static final String DEFAULT_PASSWORD = "deployment123";
 	private static final String DEFAULT_USERNAME = "deployment";
 	private static final String EMPTY_REPOSITORY_URL = "";
@@ -248,7 +250,7 @@ public class NexusOBR extends AbstractIndexedRepo {
 						+ Base64.encodeBase64(userPassword.getBytes("UTF-8")));
 			}
 			out = httpUrlConnection.getOutputStream();
-			byte[] buffer = new byte[8192];
+			byte[] buffer = new byte[BUFFER_SIZE];
 			while (true) {
 				int length = is.read(buffer);
 				if (length < 0)

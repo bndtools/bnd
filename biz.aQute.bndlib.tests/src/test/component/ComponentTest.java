@@ -21,6 +21,8 @@ import aQute.lib.io.*;
 @SuppressWarnings({"resource", "rawtypes"}
 )
 public class ComponentTest extends TestCase {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+
 	static final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
 	static final XPathFactory				xpathf	= XPathFactory.newInstance();
 	static final XPath						xpath	= xpathf.newXPath();
@@ -258,7 +260,7 @@ public class ComponentTest extends TestCase {
 	private static void print(Resource resource, OutputStream out) throws Exception {
 		InputStream in = resource.openInputStream();
 		try {
-			byte[] buffer = new byte[1024];
+			byte[] buffer = new byte[BUFFER_SIZE];
 			int size = in.read(buffer);
 			while (size > 0) {
 				out.write(buffer, 0, size);

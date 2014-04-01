@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import aQute.lib.io.*;
+
 /**
  * A simple, tiny, nicely embeddable HTTP 1.0 (partially 1.1) server in Java
  * <p>
@@ -48,6 +50,8 @@ import java.util.*;
  * licence)
  */
 public class NanoHTTPD {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+
 	// ==================================================
 	// API parts
 	// ==================================================
@@ -330,9 +334,9 @@ public class NanoHTTPD {
 					size = 0;
 
 				// Now read all the body and write it to f
-				buf = new byte[512];
+				buf = new byte[BUFFER_SIZE];
 				while (rlen >= 0 && size > 0) {
-					rlen = is.read(buf, 0, 512);
+					rlen = is.read(buf, 0, BUFFER_SIZE);
 					size -= rlen;
 					if (rlen > 0)
 						f.write(buf, 0, rlen);
@@ -372,7 +376,7 @@ public class NanoHTTPD {
 					} else {
 						// Handle application/x-www-form-urlencoded
 						String postLine = "";
-						char pbuf[] = new char[512];
+						char pbuf[] = new char[BUFFER_SIZE];
 						int read = in.read(pbuf);
 						while (read >= 0 && !postLine.endsWith("\r\n")) {
 							postLine += String.valueOf(pbuf, 0, read);

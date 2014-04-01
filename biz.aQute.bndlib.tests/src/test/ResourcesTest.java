@@ -10,7 +10,8 @@ import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class ResourcesTest extends TestCase {
-	
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+
 	/**
 	 * Command facility in Include-Resource
 	 */
@@ -320,7 +321,7 @@ public class ResourcesTest extends TestCase {
 		Jar jar = bmaker.build();
 		Resource resource = jar.getResource("text");
 		assertNotNull(resource);
-		byte buffer[] = new byte[1000];
+		byte buffer[] = new byte[BUFFER_SIZE];
 		int size = resource.openInputStream().read(buffer);
 		String s = new String(buffer, 0, size);
 		assertEquals("TEXT", s);

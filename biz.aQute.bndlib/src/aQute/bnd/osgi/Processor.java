@@ -21,6 +21,8 @@ import aQute.libg.generics.*;
 import aQute.service.reporter.*;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+
 	static Pattern					PACKAGES_IGNORED	= Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
 	static ThreadLocal<Processor>	current				= new ThreadLocal<Processor>();
@@ -1380,7 +1382,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		StringBuilder sb = new StringBuilder();
 
 		try {
-			char chars[] = new char[1000];
+			char chars[] = new char[BUFFER_SIZE];
 			int size = ir.read(chars);
 			while (size > 0) {
 				sb.append(chars, 0, size);

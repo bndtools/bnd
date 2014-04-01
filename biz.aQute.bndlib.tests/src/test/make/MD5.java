@@ -6,8 +6,10 @@ import java.util.*;
 
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.lib.io.*;
 
 public class MD5 implements MakePlugin {
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
 
 	@Override
 	public Resource make(Builder builder, String source, Map<String,String> arguments) throws Exception {
@@ -30,7 +32,7 @@ public class MD5 implements MakePlugin {
 		MessageDigest md5 = MessageDigest.getInstance("MD5");
 		InputStream in = new FileInputStream(f);
 		try {
-			byte[] b = new byte[1000];
+			byte[] b = new byte[BUFFER_SIZE];
 			int size;
 			while ((size = in.read()) > 0) {
 				md5.update(b, 0, size);
