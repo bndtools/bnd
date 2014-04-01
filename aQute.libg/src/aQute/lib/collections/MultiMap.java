@@ -170,4 +170,17 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> {
 		return inverted;
 	}
 
+	/**
+	 * Return a collection with all values
+	 * @return
+	 */
+	public List<V> allValues() {
+		List<V>	result = new ArrayList<V>();
+		Iterator<V> i = all();
+		while( i.hasNext())
+			result.add(i.next());
+		
+		return result;
+	}
+
 }
