@@ -194,6 +194,36 @@ public class IO {
 		copy(new FileInputStream(a), b);
 	}
 
+	public static byte[] read(File f) throws IOException {
+		byte[] data = new byte[(int) f.length()];
+		DataInputStream in = new DataInputStream(new FileInputStream(f));
+		try {
+			in.readFully(data);
+			return data;
+		}
+		finally {
+			in.close();
+		}
+	}
+
+	public static byte[] read(URL u) throws IOException {
+		return read(u.openStream());
+	}
+
+	public static byte[] read(InputStream in) throws IOException {
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		copy( in, bout);
+		return bout.toByteArray();
+	}
+	
+	public static void write(byte[] data, OutputStream out) throws Exception {
+		copy(new ByteArrayInputStream(data), out);
+	}
+
+	public static void write(byte[] data, File out) throws Exception {
+		copy(new ByteArrayInputStream(data), out);
+	}
+
 	public static String collect(File a, String encoding) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		copy(a, out);
