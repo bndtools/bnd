@@ -2,13 +2,14 @@ package aQute.bnd.service.repository;
 
 import java.util.*;
 
+import aQute.bnd.service.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
 
 /**
  * Can return a {@link ResourceDescriptor} for a given bsn/version.
  */
-public interface InfoRepository {
+public interface InfoRepository extends RepositoryPlugin {
 	/**
 	 * Return a resource descriptor for a given bsn/version. 
 	 * 

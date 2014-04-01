@@ -348,6 +348,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			reporter.trace("updating %s ", file.getAbsolutePath());
 
+			if ( hasIndex )
+				index.put(bsn + "-" + version, buildDescriptor(tmpFile, tmpJar, digest, bsn, version));
+			
 			// An open jar on file will fail rename on windows
 			tmpJar.close();
 
@@ -364,8 +367,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			reporter.trace("updated %s", file.getAbsolutePath());
 
-			if ( hasIndex )
-				index.put(bsn + "-" + version, buildDescriptor(file, tmpJar, digest, bsn, version));
 
 			return file;
 		}
@@ -850,6 +851,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @throws Exception
 	 */
 	public void delete(String bsn, Version version) throws Exception {
+		init();
 		assert bsn != null;
 
 		SortedSet<Version> versions;
@@ -867,16 +869,21 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 		if (versions(bsn).isEmpty())
 			IO.delete(new File(root, bsn));
+		
+		
+		index.remove(bsn+"-"+version);
 	}
 
 	public ResourceDescriptor getDescriptor(String bsn, Version version) throws Exception {
+		init();
 		if (hasIndex) {
 			return index.get(bsn + "-" + version);
 		}
 		return null;
 	}
 
-	public SortedSet<ResourceDescriptor> getResources() {
+	public SortedSet<ResourceDescriptor> getResources() throws Exception {
+		init();
 		if (hasIndex) {
 			TreeSet<ResourceDescriptor> resources = new TreeSet<ResourceDescriptor>();
 			for (ResourceDescriptor rd : index.values()) {
@@ -888,6 +895,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	public ResourceDescriptor getResource(byte[] sha) throws Exception {
+		init();
 		if (hasIndex) {
 			for (ResourceDescriptor rd : index.values()) {
 				if (Arrays.equals(rd.id, sha))
@@ -898,6 +906,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	void rebuildIndex() throws Exception {
+		init();
 		if (!hasIndex)
 			return;
 
@@ -912,6 +921,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	private ResourceDescriptor buildDescriptor(File f, Jar jar, byte[] digest, String bsn, Version version)
 			throws NoSuchAlgorithmException, Exception {
+		init();
 		Jar tmpjar = jar;
 		if (jar == null)
 			tmpjar = new Jar(f);

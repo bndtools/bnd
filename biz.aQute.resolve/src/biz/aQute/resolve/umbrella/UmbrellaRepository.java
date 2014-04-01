@@ -13,46 +13,29 @@ import aQute.bnd.build.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.filter.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.json.*;
+import aQute.lib.persistentmap.*;
 
 public class UmbrellaRepository implements Repository {
 	static JSONCodec						codec				= new JSONCodec();
-
-	private static final Comparator<byte[]>	BYTEARRAYCOMPARATOR	= new Comparator<byte[]>() {
-
-																	public int compare(byte[] o1, byte[] o2) {
-																		if (o1.length > o2.length)
-																			return 1;
-
-																		if (o1.length < o2.length)
-																			return -1;
-
-																		for (int i = 0; i < o1.length; i++)
-																			if (o1[i] > o2[i])
-																				return 1;
-																			else if (o1[i] < o2[i])
-																				return 1;
-
-																		return 0;
-																	}
-																};
 
 	private File							cache;
 	private boolean							inited;
 	private Workspace						workspace;
 
-	final TreeMap<byte[],DResource>			resources			= new TreeMap<byte[],DResource>(BYTEARRAYCOMPARATOR);
-	final TreeMap<byte[],String>			failures			= new TreeMap<byte[],String>(BYTEARRAYCOMPARATOR);
+	final Map<String,String>				failures			= new HashMap<String,String>();
 	final RepoIndex							repoIndex			= new RepoIndex();
+	final PersistentMap<DResource>			resources;
 
-	public UmbrellaRepository(Workspace workspace) {
+	public UmbrellaRepository(Workspace workspace) throws IOException {
 		this.workspace = workspace;
-		cache = IO.getFile("~/.bnd/cache/shas");
+		cache = IO.getFile("~/.bnd/cache/umbrella");
+		cache.mkdirs();
+		resources = new PersistentMap<DResource>(cache, DResource.class);
 	}
 
 	@SuppressWarnings({
@@ -77,7 +60,7 @@ public class UmbrellaRepository implements Repository {
 			return (Map) caps;
 		}
 		catch (Exception e) {
-			workspace.error("Failed findProviders for %s, reason %s", requirements, e); 
+			workspace.error("Failed findProviders for %s, reason %s", requirements, e);
 			throw new RuntimeException(e);
 		}
 	}
@@ -112,89 +95,57 @@ public class UmbrellaRepository implements Repository {
 		// We index InfoRepositories
 		//
 
+		Set<String> seen = new HashSet<String>();
+
 		for (InfoRepository info : workspace.getPlugins(InfoRepository.class)) {
-			if (info instanceof RepositoryPlugin) {
 
-				// But they must also be a repository to iterate
-				// over them
+			SortedSet<ResourceDescriptor> descriptors = info.getResources();
+			for (final ResourceDescriptor rd : descriptors) {
 
-				RepositoryPlugin rp = (RepositoryPlugin) info;
-				for (String bsn : rp.list(null)) {
+				final String key = Hex.toHexString(rd.id);
+				seen.add(key);
 
-					for (Version version : rp.versions(bsn)) {
+				if (resources.containsKey(key))
+					continue;
 
-						final ResourceDescriptor r = info.getDescriptor(bsn, version);
+				if (failures.containsKey(key))
+					continue;
 
-						// we should not get a null when the
-						// repo provides the iteration
+				final DResource r = new DResource();
+				resources.put(key, r);
 
-						assert r != null;
+				r.download = new RepositoryPlugin.DownloadListener() {
 
-						//
-						// Don't want to download failures repeatedly
-						//
+					public void success(File file) throws Exception {
+						try {
 
-						if (failures.containsKey(r.id))
-							continue;
-
-						//
-						// Check if we've already got this one
-						//
-
-						if (!resources.containsKey(r.id)) {
-
-							//
-							// Nope, check if we have this cached on disk
-							//
-
-							DResource dr = getCachedDResource(r.id);
-							if (dr == null) {
-
-								//
-								// Ok, now we're going to download
-								//
-								count++;
-
-								dr = new DResource();
-								resources.put(r.id, dr);
-								dr.download = new RepositoryPlugin.DownloadListener() {
-
-									public void success(File file) throws Exception {
-										try {
-											DResource dresource = index(file);
-											File dresourceFile = getDResourceFile(r.id);
-											file.getParentFile().mkdirs();
-
-											codec.enc().to(file).put(dresource);
-											waiter.release();
-										}
-										catch (Exception e) {
-											failure(file, "parsing resource " + e.getMessage());
-										}
-									}
-
-									public void failure(File file, String reason) throws Exception {
-										failures.put(r.id, reason);
-										waiter.release();
-									}
-
-									public boolean progress(File file, int percentage) throws Exception {
-										return true;
-									}
-								};
-
-								//
-								// Start fetching
-								//
-								rp.get(bsn, version, null, dr.download);
-							}
+							index(file, r);
+							waiter.release();
+						}
+						catch (Exception e) {
+							failure(file, "parsing resource " + e.getMessage());
 						}
 					}
-				}
+
+					public void failure(File file, String reason) throws Exception {
+						failures.put(key, reason);
+						waiter.release();
+					}
+
+					public boolean progress(File file, int percentage) throws Exception {
+						return true;
+					}
+				};
+
+				//
+				// Start fetching
+				//
+
+				info.get(rd.bsn, rd.version, null, r.download);
 			}
 		}
 
-		if ( failures.size() > 0) {
+		if (failures.size() > 0) {
 			workspace.error("Failed to download %s", failures);
 		}
 		//
@@ -210,43 +161,21 @@ public class UmbrellaRepository implements Repository {
 	/*
 	 * Index the file
 	 */
-	DResource index(File file) throws Exception {
+	DResource index(File file, DResource resource) throws Exception {
 		IndexResult result = repoIndex.indexFile(file);
-		DResource resource = new DResource();
-		for (Requirement req : result.requirements) {
-			resource.add(new DRequirement(req));
+		if (result.requirements != null && !result.requirements.isEmpty()) {
+			resource.requirements = new MultiMap<String,DRequirement>();
+			for (Requirement req : result.requirements) {
+				resource.add(new DRequirement(req));
+			}
 		}
-		for (Capability cap : result.capabilities) {
-			resource.capabilities.add(cap.getNamespace(), new DCapability(cap));
+
+		if (result.capabilities != null && !result.capabilities.isEmpty()) {
+			resource.capabilities = new MultiMap<String,DCapability>();
+			for (Capability cap : result.capabilities) {
+				resource.capabilities.add(cap.getNamespace(), new DCapability(cap));
+			}
 		}
 		return resource;
 	}
-
-	/*
-	 * Check if the file systems contains a cache
-	 */
-	private DResource getCachedDResource(byte[] id) throws Exception {
-		File file = getDResourceFile(id);
-		if (!file.isFile())
-			return null;
-
-		DResource resource = codec.dec().from(file).get(DResource.class);
-		resource.fixup();
-
-		return resource;
-	}
-
-	/*
-	 * Calculate the file name of the resource JSON
-	 */
-	File getDResourceFile(byte[] id) {
-		String hex = Hex.toHexString(id);
-		File dir = new File(cache, hex);
-		if (!dir.isDirectory())
-			return null;
-
-		File file = new File(dir, "resource.json");
-		return file;
-	}
-
 }
