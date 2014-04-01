@@ -46,11 +46,11 @@ public interface ResourceRepository {
 	 *            An OSGi filter matched against the {@link ResourceDescriptor}
 	 * @return an immutable list of resource descriptors
 	 */
-	List< ? extends ResourceDescriptor> list(String filter) throws Exception;
+	List< ? extends ResourceDescriptor> filter(String filter) throws Exception;
 
 	File getResource(byte[] id,RepositoryPlugin.DownloadListener ... listeners) throws Exception;
 
-	ResourceDescriptor getResourceDescriptor(byte[] id) throws Exception;
+	ResourceDescriptor getResourceDescriptor(byte[] sha) throws Exception;
 	
 	void delete(byte[] rd) throws Exception;
 
@@ -60,5 +60,5 @@ public interface ResourceRepository {
 	
 	boolean deleteCache(byte[] id) throws Exception;
 	
-	ResourceDescriptor findBestMatch(String bsn, VersionRange range) throws Exception;
+	SortedSet<ResourceDescriptor> find(String bsn, VersionRange range) throws Exception;
 }

@@ -22,10 +22,10 @@ import aQute.libg.cryptography.*;
 
 public class FileRepoTest extends TestCase {
 
-	private static FileRepo	testRepo;
-	private static FileRepo	nonExistentRepo;
+	private  FileRepo	testRepo;
+	private  FileRepo	nonExistentRepo;
 
-	private static String hashToString(byte[] hash) {
+	private  String hashToString(byte[] hash) {
 		Formatter formatter = new Formatter();
 		for (byte b : hash) {
 			formatter.format("%02x", b);
@@ -33,7 +33,7 @@ public class FileRepoTest extends TestCase {
 		return formatter.toString();
 	}
 
-	private static byte[] calculateHash(MessageDigest algorithm, File file) throws Exception {
+	private  byte[] calculateHash(MessageDigest algorithm, File file) throws Exception {
 		algorithm.reset();
 		copy(file, algorithm);
 		return algorithm.digest();
@@ -57,7 +57,7 @@ public class FileRepoTest extends TestCase {
 		delete(nonExistentDir);
 	}
 
-	private static FileRepo createRepo(File root) {
+	private  FileRepo createRepo(File root) {
 		FileRepo repo = new FileRepo();
 
 		Map<String,String> props = new HashMap<String,String>();
@@ -67,7 +67,7 @@ public class FileRepoTest extends TestCase {
 		return repo;
 	}
 
-	public static void testListBSNs() throws Exception {
+	public void testListBSNs() throws Exception {
 		List<String> list = testRepo.list(null);
 		assertNotNull(list);
 		assertEquals(4, list.size());
@@ -78,14 +78,14 @@ public class FileRepoTest extends TestCase {
 		assertTrue(list.contains("osgi"));
 	}
 
-	public static void testListNonExistentRepo() throws Exception {
+	public  void testListNonExistentRepo() throws Exception {
 		// Listing should succeed and return non-null empty list
 		List<String> list = nonExistentRepo.list(null);
 		assertNotNull(list);
 		assertEquals(0, list.size());
 	}
 
-	public static void testBundleNotModifiedOnPut() throws Exception {
+	public  void testBundleNotModifiedOnPut() throws Exception {
 		MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
 		File dstBundle = null;
 		try {
@@ -109,7 +109,7 @@ public class FileRepoTest extends TestCase {
 		}
 	}
 
-	public static void testDownloadListenerCallback() throws Exception {
+	public  void testDownloadListenerCallback() throws Exception {
 		File tmp = new File("tmp");
 		try {
 			FileRepo repo = new FileRepo("tmp", tmp, true);
@@ -139,7 +139,7 @@ public class FileRepoTest extends TestCase {
 		}
 	}
 
-	public static void testDeployToNonexistentRepoFails() throws Exception {
+	public  void testDeployToNonexistentRepoFails() throws Exception {
 
 		if(System.getProperty("os.name").toLowerCase().indexOf("win") >= 0 ) {
 			// File#setReadonly() is broken on windows

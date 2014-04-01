@@ -3,15 +3,20 @@ package aQute.lib.deployer;
 import java.io.*;
 import java.security.*;
 import java.util.*;
+import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
+import aQute.bnd.service.repository.*;
+import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
+import aQute.lib.json.*;
+import aQute.lib.persistentmap.*;
 import aQute.libg.command.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.reporter.*;
@@ -43,7 +48,8 @@ import aQute.service.reporter.*;
  * (that is, machine local) settings from the ~/.bnd/settings.json file (can be
  * managed with bnd).
  */
-public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
+public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable,
+		InfoRepository {
 
 	/**
 	 * If set, will trace to stdout. Works only if no reporter is set.
@@ -185,6 +191,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 																		Collections.singleton(new Version(MAX_MAJOR, 0,
 																				0)));
 
+	final static JSONCodec					codec				= new JSONCodec();
 	String									shell;
 	String									path;
 	String									init;
@@ -208,12 +215,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	String									name;
 	boolean									inited;
 	boolean									trace;
+	PersistentMap<ResourceDescriptor>		index;
 
 	public FileRepo() {}
 
 	public FileRepo(String name, File location, boolean canWrite) {
 		this.name = name;
 		this.root = location;
+
 		this.canWrite = canWrite;
 	}
 
@@ -244,6 +253,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			exec(init, root.getAbsolutePath());
 		}
+
+		index = new PersistentMap<ResourceDescriptor>(new File(root, ".index"), ResourceDescriptor.class);
+
 		open();
 		return true;
 	}
@@ -344,6 +356,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			IO.copy(file, latest);
 
 			reporter.trace("updated %s", file.getAbsolutePath());
+
+			index.put(bsn + "-" + version, buildDescriptor(file, tmpJar, digest, bsn, version));
 
 			return file;
 		}
@@ -490,6 +504,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			dirty = false;
 			return true;
 		}
+		rebuildIndex();
 		return false;
 	}
 
@@ -533,8 +548,20 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	public Map<String,Runnable> actions(Object... target) throws Exception {
-		if (target == null || target.length == 0)
-			return null; // no default actions
+		if (target == null || target.length == 0) {
+			Map<String,Runnable> actions = new LinkedHashMap<String,Runnable>();
+			actions.put("Rebuild Resource Index", new Runnable() {
+
+				public void run() {
+					try {
+						rebuildIndex();
+					}
+					catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				}});
+			return actions; // no default actions
+		}
 
 		try {
 			String bsn = (String) target[0];
@@ -581,7 +608,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				map = (Map<String,String>) target[2];
 
 			File f = getLocal(bsn, version, map);
-			String s = String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0), SHA1
+			
+			String s = "";
+			ResourceDescriptor descriptor = getDescriptor(bsn, version);
+			if ( descriptor != null && descriptor.description != null) {
+				s = descriptor.description + "\n";
+			}
+			
+			s += String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0), SHA1
 					.digest(f).asHex());
 			if (f.getName().endsWith(".lib") && f.isFile()) {
 				s += "\n" + IO.collect(f);
@@ -826,4 +860,58 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			IO.delete(new File(root, bsn));
 	}
 
+	public ResourceDescriptor getDescriptor(String bsn, Version version)
+			throws Exception {
+		return index.get(bsn + "-" + version);
+	}
+
+	public SortedSet<ResourceDescriptor> getResources() {
+		TreeSet<ResourceDescriptor> resources= new TreeSet<ResourceDescriptor>();
+		for ( ResourceDescriptor rd : index.values()) {
+			resources.add(rd);
+		}
+		return resources;
+	}
+
+	public ResourceDescriptor getResource(byte[] sha) throws Exception {
+		for ( ResourceDescriptor rd : index.values()) {
+			if ( Arrays.equals(rd.id, sha))
+				return rd;
+		}
+		return null;
+	}
+
+	 void rebuildIndex() throws Exception {
+		index.clear();
+		for (String bsn : list(null)) {
+			for (Version version : versions(bsn)) {
+				File f = get(bsn, version, null);
+				index.put(bsn + "-" + version, buildDescriptor(f, null, null, bsn, version));
+			}
+		}
+	}
+
+	private ResourceDescriptor buildDescriptor(File f, Jar jar, byte[] digest, String bsn, Version version)
+			throws NoSuchAlgorithmException, Exception {
+		Jar tmpjar = jar;
+		if (jar == null)
+			tmpjar = new Jar(f);
+		try {
+			Manifest m = tmpjar.getManifest();
+			ResourceDescriptor rd = new ResourceDescriptor();
+			rd.bsn = bsn;
+			rd.version = version;
+			rd.description = m.getMainAttributes().getValue("Bundle-Description");
+			rd.id = digest;
+			if (rd.id == null)
+				rd.id = SHA1.digest(f).digest();
+			rd.sha256 = SHA256.digest(f).digest();
+			rd.url = f.toURI();
+			return rd;
+		}
+		finally {
+			if (jar == null)
+				tmpjar.close();
+		}
+	}
 }

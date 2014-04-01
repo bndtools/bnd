@@ -23,6 +23,11 @@ public interface SearchableRepository {
 		 * SHA-1 for the resource.
 		 */
 		public byte[]	id;
+		
+		/**
+		 * Also need the sha 256 because of the OSGi Repository stuff
+		 */
+		public byte[] sha256;
 
 		/**
 		 * A description of the resource.

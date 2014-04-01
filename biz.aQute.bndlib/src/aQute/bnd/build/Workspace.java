@@ -440,8 +440,10 @@ public class Workspace extends Processor {
 	protected void setTypeSpecificPlugins(Set<Object> list) {
 		try {
 			super.setTypeSpecificPlugins(list);
+			list.add(this);
 			list.add(maven);
 			list.add(settings);
+			
 			if (!isTrue(getProperty(NOBUILDINCACHE))) {
 				list.add(new CachedFileRepo());
 			}
@@ -450,8 +452,7 @@ public class Workspace extends Processor {
 			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, "~/.bnd/caches/shas")));
 			resourceRepositoryImpl.setExecutor(getExecutor());
 			resourceRepositoryImpl.setIndexFile(getFile(CNFDIR + "/repo.json"));
-
-			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));
+			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));			
 			customize(resourceRepositoryImpl, null);
 			list.add(resourceRepositoryImpl);
 		}
@@ -490,15 +491,15 @@ public class Workspace extends Processor {
 				continue;
 			}
 			try {
-				ResourceDescriptor highest = resourceRepositoryImpl.findBestMatch(bsn, new VersionRange(stringRange));
-				if (highest == null) {
+				SortedSet<ResourceDescriptor> matches = resourceRepositoryImpl.find(bsn, new VersionRange(stringRange));
+				if (matches.isEmpty()) {
 					error("Extension %s;version=%s not found in base repo", bsn, stringRange);
 					continue;
 				}
 
 				DownloadBlocker blocker = new DownloadBlocker(this);
 				blockers.put(blocker, i.getValue());
-				resourceRepositoryImpl.getResource(highest.id, blocker);
+				resourceRepositoryImpl.getResource(matches.last().id, blocker);
 			}
 			catch (Exception e) {
 				error("Failed to load extension %s-%s, %s", bsn, stringRange, e);
@@ -517,7 +518,7 @@ public class Workspace extends Processor {
 
 				URLClassLoader cl = new URLClassLoader(new URL[] {
 					blocker.getKey().getFile().toURI().toURL()
-				});
+				}, getClass().getClassLoader());
 				Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 				while (manifests.hasMoreElements()) {
 					Manifest m = new Manifest(manifests.nextElement().openStream());

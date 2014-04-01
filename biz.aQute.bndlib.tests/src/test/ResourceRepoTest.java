@@ -39,7 +39,7 @@ public class ResourceRepoTest extends TestCase {
 
 	public void testBasic() throws Exception {
 		// Just basic check
-		assertEquals( 0, repoImpl.list(null).size());
+		assertEquals( 0, repoImpl.filter(null).size());
 		
 		
 		SearchableRepository.ResourceDescriptor osgi = create("jar/osgi.jar");
@@ -58,7 +58,7 @@ public class ResourceRepoTest extends TestCase {
 		//
 		// Should also be in the list
 		//
-		List<? extends ResourceDescriptor> list = repoImpl.list(null);
+		List<? extends ResourceDescriptor> list = repoImpl.filter(null);
 		assertNotNull(list);
 		assertEquals(1, list.size());
 		
@@ -74,7 +74,7 @@ public class ResourceRepoTest extends TestCase {
 		// not delete the index
 		//
 		repoImpl.deleteCache(t.id);
-		list = repoImpl.list(null);
+		list = repoImpl.filter(null);
 		assertNotNull(list);
 		assertEquals(1, list.size());
 
@@ -110,7 +110,7 @@ public class ResourceRepoTest extends TestCase {
 		assertTrue(success.get());
 		
 		repoImpl.delete(t.id);
-		assertEquals(0, repoImpl.list(null).size());
+		assertEquals(0, repoImpl.filter(null).size());
 		
 	}
 	
@@ -227,14 +227,14 @@ public class ResourceRepoTest extends TestCase {
 	}
 
 	public void testStore() throws Exception {
-		assertEquals( 0, repoImpl.list(null).size());
+		assertEquals( 0, repoImpl.filter(null).size());
 		repoImpl.add(create("jar/osgi.jar"));
-		assertEquals( 1, repoImpl.list(null).size());
+		assertEquals( 1, repoImpl.filter(null).size());
 		repoImpl = new ResourceRepositoryImpl();
 		repoImpl.setCache(new File(tmp, "cache"));
 		repoImpl.setExecutor(Executors.newCachedThreadPool());
 		repoImpl.setIndexFile(new File(tmp, "index.json"));
-		assertEquals( 1, repoImpl.list(null).size());
+		assertEquals( 1, repoImpl.filter(null).size());
 	}
 		
 	private SearchableRepository.ResourceDescriptor create(String path) throws NoSuchAlgorithmException, Exception {

@@ -28,20 +28,39 @@ import aQute.service.reporter.*;
  * provide faces on this hidden repository.
  */
 public class ResourceRepositoryImpl implements ResourceRepository {
-	private static final long					THRESHOLD		= 4 * 3600 * 1000;											// 4
-	protected static final DownloadListener[]	EMPTY_LISTENER	= new DownloadListener[0];
-	static JSONCodec							codec			= new JSONCodec();
-	private final List<Listener>				listeners		= new CopyOnWriteArrayList<ResourceRepository.Listener>();
-	private boolean								dirty;
-	private FileLayout							index;
-	private Map<URI,Long>						failures		= new HashMap<URI,Long>();
-	private File								cache;
-	private Reporter							reporter		= new ReporterAdapter(System.out);
-	private Executor							executor;
-	private File								indexFile;
-	private URLConnectionHandler				connector		= new DefaultURLConnectionHandler();
-	final MultiMap<File,DownloadListener>		queues			= new MultiMap<File,RepositoryPlugin.DownloadListener>();
-	final Semaphore								limitDownloads	= new Semaphore(5);
+	private static Comparator<ResourceDescriptor>	RESOURCE_DESCRIPTOR_COMPARATOR	= new Comparator<ResourceDescriptor>() {
+
+																						public int compare(
+																								ResourceDescriptor o1,
+																								ResourceDescriptor o2) {
+																							if (o1 == o2)
+																								return 0;
+
+																							int r = o1.bsn
+																									.compareTo(o2.bsn);
+																							if (r > 0)
+																								return 1;
+																							else if (r < 0)
+																								return -1;
+
+																							return o1.version
+																									.compareTo(o2.version);
+																						}
+																					};
+	private static final long						THRESHOLD						= 4 * 3600 * 1000;											// 4
+	protected static final DownloadListener[]		EMPTY_LISTENER					= new DownloadListener[0];
+	static JSONCodec								codec							= new JSONCodec();
+	private final List<Listener>					listeners						= new CopyOnWriteArrayList<ResourceRepository.Listener>();
+	private boolean									dirty;
+	private FileLayout								index;
+	private Map<URI,Long>							failures						= new HashMap<URI,Long>();
+	private File									cache;
+	private Reporter								reporter						= new ReporterAdapter(System.out);
+	private Executor								executor;
+	private File									indexFile;
+	private URLConnectionHandler					connector						= new DefaultURLConnectionHandler();
+	final MultiMap<File,DownloadListener>			queues							= new MultiMap<File,RepositoryPlugin.DownloadListener>();
+	final Semaphore									limitDownloads					= new Semaphore(5);
 
 	{
 		((ReporterAdapter) reporter).setTrace(true);
@@ -85,7 +104,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * List the resources. We skip the filter for now.
 	 */
-	public List< ? extends ResourceDescriptor> list(String filter) throws Exception {
+	public List< ? extends ResourceDescriptor> filter(String filter) throws Exception {
 		return Collections.unmodifiableList(getIndex().descriptors);
 	}
 
@@ -469,19 +488,19 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		this.connector = connector;
 	}
 
-	public ResourceDescriptor findBestMatch(String bsn, VersionRange range) throws Exception {
-		SearchableRepository.ResourceDescriptor highest = null;
-		for (SearchableRepository.ResourceDescriptor r : list(null)) {
+	public SortedSet<ResourceDescriptor> find(String bsn, VersionRange range) throws Exception {
+		TreeSet<ResourceDescriptor> result = new TreeSet<ResourceDescriptor>(RESOURCE_DESCRIPTOR_COMPARATOR);
+
+		for (SearchableRepository.ResourceDescriptor r : filter(null)) {
 			if (!bsn.equals(r.bsn))
 				continue;
 
 			if (!range.includes(r.version))
 				continue;
 
-			if (highest == null || highest.version.compareTo(r.version) < 0)
-				highest = r;
+			result.add(r);
 		}
-		return highest;
+		return result;
 	}
 
 }
