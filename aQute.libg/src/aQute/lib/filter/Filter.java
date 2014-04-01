@@ -239,6 +239,19 @@ public class Filter {
 			return dict.get(key);
 		}
 	}
+	
+	class MapQuery extends Query {
+		private Map< ? , ? >	map;
+
+		MapQuery(Map< ? , ? > dict) {
+			this.map = dict;
+		}
+
+		@Override
+		Object getProp(String key) {
+			return map.get(key);
+		}
+	}
 
 	public Filter(String filter) throws IllegalArgumentException {
 		// NYI: Normalize the filter string?
@@ -250,6 +263,15 @@ public class Filter {
 	public boolean match(Dictionary< ? , ? > dict) {
 		try {
 			return new DictQuery(dict).match();
+		}
+		catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+
+	public boolean matchMap(Map< ? , ? > dict) {
+		try {
+			return new MapQuery(dict).match();
 		}
 		catch (IllegalArgumentException e) {
 			return false;
