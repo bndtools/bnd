@@ -391,6 +391,12 @@ public class Workspace extends Processor {
 		}
 	}
 
+	
+	public void syncCache() throws Exception {
+		CachedFileRepo cf = new CachedFileRepo();
+		cf.init();
+		cf.close();
+	}
 	public List<RepositoryPlugin> getRepositories() {
 		return getPlugins(RepositoryPlugin.class);
 	}

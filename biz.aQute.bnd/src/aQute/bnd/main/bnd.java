@@ -584,7 +584,7 @@ public class bnd extends Processor {
 	 */
 
 	@Description("Execute a Project action, or if no parms given, show information about the project")
-	@Arguments(arg = "")
+	@Arguments(arg = {})
 	interface projectOptions extends Options {
 		@Description("Identify another project")
 		String project();
@@ -3533,6 +3533,30 @@ public class bnd extends Processor {
 		finally {
 			pool.shutdownNow();
 		}
-
+	}
+	
+	
+	/**
+	 * Force a cache update of the workspace
+	 * @throws Exception 
+	 */
+	
+	public void _sync(projectOptions options) throws Exception {
+		Workspace ws = null;
+		Project project = getProject(options.project());
+		if ( project != null) {
+			ws = project.getWorkspace();
+		} else {
+			File cnf = getFile("cnf");
+			if ( cnf.isDirectory()) {
+				ws = Workspace.getWorkspace(cnf.getParentFile());
+			}
+		}
+		if ( ws == null) {
+			error("Cannot find workspace, either reside in a project directory, point to a project with --project, or reside in the workspace directory");
+			return;
+		}
+		
+		ws.syncCache();
 	}
 }
