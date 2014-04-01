@@ -1,60 +1,36 @@
 package biz.aQute.resolve.internal;
 
-import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
-import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
+import static org.osgi.framework.namespace.BundleNamespace.*;
+import static org.osgi.framework.namespace.PackageNamespace.*;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.text.*;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
 
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.Version;
-import org.osgi.framework.namespace.BundleNamespace;
-import org.osgi.framework.namespace.IdentityNamespace;
-import org.osgi.framework.namespace.PackageNamespace;
-import org.osgi.namespace.contract.ContractNamespace;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Namespace;
-import org.osgi.resource.Requirement;
+import org.osgi.framework.*;
+import org.osgi.framework.namespace.*;
+import org.osgi.namespace.contract.*;
+import org.osgi.resource.*;
 import org.osgi.resource.Resource;
-import org.osgi.resource.Wiring;
-import org.osgi.service.log.LogService;
-import org.osgi.service.repository.Repository;
-import org.osgi.service.resolver.HostedCapability;
-import org.osgi.service.resolver.ResolveContext;
+import org.osgi.service.log.*;
+import org.osgi.service.repository.*;
+import org.osgi.service.resolver.*;
 
-import biz.aQute.resolve.ResolutionCallback;
-
-import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.build.model.EE;
-import aQute.bnd.build.model.clauses.ExportedPackage;
-import aQute.bnd.deployer.repository.MapToDictionaryAdapter;
-import aQute.bnd.header.Attrs;
-import aQute.bnd.header.Parameters;
+import aQute.bnd.build.*;
+import aQute.bnd.build.model.*;
+import aQute.bnd.build.model.clauses.*;
+import aQute.bnd.deployer.repository.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.resource.CapReqBuilder;
-import aQute.bnd.osgi.resource.Filters;
-import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.bnd.service.Registry;
-import aQute.bnd.service.resolve.hook.ResolverHook;
-import aQute.libg.filters.AndFilter;
+import aQute.bnd.osgi.resource.*;
+import aQute.bnd.service.*;
+import aQute.bnd.service.resolve.hook.*;
+import aQute.libg.filters.*;
 import aQute.libg.filters.Filter;
-import aQute.libg.filters.LiteralFilter;
-import aQute.libg.filters.SimpleFilter;
+import biz.aQute.resolve.*;
+import biz.aQute.resolve.umbrella.*;
 
 public class BndrunResolveContext extends ResolveContext {
 
@@ -151,6 +127,8 @@ public class BndrunResolveContext extends ResolveContext {
         // Get all of the repositories from the plugin registry
         List<Repository> allRepos = registry.getPlugins(Repository.class);
 
+        loadUmbrella(allRepos);
+        
         // Reorder/filter if specified by the run model
         List<String> repoNames = runModel.getRunRepos();
         if (repoNames == null) {
@@ -170,6 +148,19 @@ public class BndrunResolveContext extends ResolveContext {
             }
         }
     }
+
+	private void loadUmbrella(List<Repository> allRepos) {
+		Workspace ws;
+        if ( registry instanceof Workspace)
+        	ws = (Workspace) registry;
+        else
+        	ws = registry.getPlugin(Workspace.class);
+        
+        if ( ws != null) {
+        	UmbrellaRepository osgir = new UmbrellaRepository(ws);
+        	allRepos.add(osgir);
+        }
+	}
 
     private void loadEffectiveSet() {
         String effective = (String) runModel.genericGet(RUN_EFFECTIVE_INSTRUCTION);
