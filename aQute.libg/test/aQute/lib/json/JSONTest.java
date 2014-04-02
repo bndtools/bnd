@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import junit.framework.*;
+import aQute.lib.collections.*;
 import aQute.lib.converter.*;
 import aQute.lib.io.*;
 import aQute.libg.map.*;
@@ -32,7 +33,21 @@ public class JSONTest extends TestCase {
 		
 		assertEquals(s.field, b.field);
 	}
-		
+	static class A {
+		public MultiMap<String,B> mmap = new MultiMap<String,B>();
+	}
+	static class B {
+		public int b;
+	}
+
+	public void testMultiMap() throws Exception {
+		A a = new A();
+		B b = new B();
+		b.b=3;
+		a.mmap.add("x", b);
+		String s = codec.enc().put(a).toString();
+	}
+	
 	/**
 	 * An List<byte[]> was translated to a js array :-(
 	 */

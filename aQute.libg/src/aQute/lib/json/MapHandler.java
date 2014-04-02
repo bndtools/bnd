@@ -10,8 +10,16 @@ public class MapHandler extends Handler {
 	final Type			valueType;
 
 	MapHandler(Class< ? > rawClass, Type keyType, Type valueType) {
-		this.keyType = keyType;
-		this.valueType = valueType;
+
+		if ( rawClass != Map.class) {
+			ParameterizedType type = findAncestor(rawClass,Map.class);
+			this.keyType = type.getActualTypeArguments()[0];
+			this.valueType = type.getActualTypeArguments()[0];
+		} else {
+			this.keyType = keyType;
+			this.valueType = valueType;			
+		}
+		
 		if (rawClass.isInterface()) {
 			if (rawClass.isAssignableFrom(HashMap.class))
 				rawClass = HashMap.class;
@@ -27,6 +35,25 @@ public class MapHandler extends Handler {
 				throw new IllegalArgumentException("Unknown map interface: " + rawClass);
 		}
 		this.rawClass = rawClass;
+	}
+
+	private ParameterizedType findAncestor(Class< ? > start, Class<?> target) {
+		if ( start == Object.class)
+			return null;
+		
+		for ( Type t : start.getGenericInterfaces()) {
+			if ( t instanceof ParameterizedType ) {
+				if ( ((ParameterizedType) t).getRawType() == target)
+					return (ParameterizedType) t;
+			}
+		}
+		for ( Class<?> impls : start.getInterfaces()) {
+			ParameterizedType ancestor = findAncestor(impls, target);
+			if (ancestor != null)
+				return ancestor;
+		}
+		
+		return findAncestor(start.getSuperclass(), target);
 	}
 
 	@Override
