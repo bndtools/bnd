@@ -14,11 +14,10 @@
 
 Conditional-Package: org.example.tests.utils
 
--runbundles: org.mockito.mockito-all;version='[1.8,1.9)',\
-  org.osgi.impl.bundle.repoindex.lib;version=latest,\
+-runpath: org.mockito.mockito-all;version=${mockito.ver}
+-runbundles: org.osgi.impl.bundle.repoindex.lib;version=latest,\
   osgi.cmpn;version=${osgi.cmpn.ver}
   
 -runvm: -ea
 -runfw: org.apache.felix.framework;version=4.0
--runsystempackages: sun.reflect
 -sub: *.bnd
