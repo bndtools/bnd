@@ -172,6 +172,7 @@
   <requirement namespace="osgi.service">
     <directive name="filter" value="(objectClass=org.osgi.service.cm.ConfigurationAdmin)"/>
     <directive name="effective" value="active"/>
+    <directive name="resolution" value="optional"/>
   </requirement>
   <requirement namespace="osgi.extender">
     <directive name="filter" value="(&amp;(osgi.extender=osgi.blueprint)(version&gt;=1.0.0)(!(version&gt;=2.0.0)))"/>

@@ -40,6 +40,9 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	private static final String PROVIDE_CAPABILITY = "Provide-Capability";
 	private static final String REQUIRE_CAPABILITY = "Require-Capability";
 
+	// Obsolete OSGi constants
+	private static final String IMPORT_SERVICE_AVAILABILITY = "availability:";
+
 	// Filename suffix for JAR files
 	private static final String SUFFIX_JAR = ".jar";
 
@@ -400,11 +403,20 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 
 		for (Entry<String, Map<String, String>> imp : imports.entrySet()) {
 			String service = OSGiHeader.removeDuplicateMarker(imp.getKey());
+			Map<String, String> attribs = imp.getValue();
+
+			boolean optional = false;
+			String availabilityStr = attribs.get(IMPORT_SERVICE_AVAILABILITY);
+			if (Constants.RESOLUTION_OPTIONAL.equals(availabilityStr))
+				optional = true;
+
 			StringBuilder filter = new StringBuilder();
 			filter.append('(').append(Constants.OBJECTCLASS).append('=').append(service).append(')');
 
 			Builder builder = new Builder().setNamespace(Namespaces.NS_SERVICE).addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString())
 					.addDirective(Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
+			if (optional)
+				builder.addDirective(Namespaces.DIRECTIVE_RESOLUTION, Constants.RESOLUTION_OPTIONAL);
 			reqs.add(builder.buildRequirement());
 		}
 	}

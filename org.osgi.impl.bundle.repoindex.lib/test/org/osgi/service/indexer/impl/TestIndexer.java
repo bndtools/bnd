@@ -344,7 +344,7 @@ public class TestIndexer extends TestCase {
 
 		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new KnownBundleAnalyzer(props), FrameworkUtil.createFilter("(name=*)"));
-		assertFragmentMatch(indexer, "testdata/org.apache.felix.eventadmin.xml", "testdata/org.apache.felix.eventadmin-1.2.14.jar");
+		assertFragmentMatch(indexer, "testdata/org.apache.felix.eventadmin-1.2.14.xml", "testdata/org.apache.felix.eventadmin-1.2.14.jar");
 	}
 
 	public void testFragmentRequireBlueprint() throws Exception {
@@ -374,5 +374,9 @@ public class TestIndexer extends TestCase {
 
 	public void testFragmentPlainJarWithVersion() throws Exception {
 		assertFragmentMatch("testdata/fragment-plainjar-versioned.txt", "testdata/jcip-annotations-2.5.6.wibble.jar");
+	}
+
+	public void testImportServiceOptional() throws Exception {
+		assertFragmentMatch("testdata/org.apache.felix.eventadmin-1.3.2.xml", "testdata/org.apache.felix.eventadmin-1.3.2.jar");
 	}
 }
