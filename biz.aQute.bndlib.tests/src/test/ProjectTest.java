@@ -15,57 +15,38 @@ import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class ProjectTest extends TestCase {
+	File	tmp	= new File("tmp");
 
-	private static void reallyClean(Workspace ws) throws Exception {
-		String wsName = ws.getBase().getName();
-		for (Project project : ws.getAllProjects()) {
-			if (("p2".equals(project.getName()) && "ws".equals(wsName))) {
-				File output = project.getSrcOutput().getAbsoluteFile();
-				if (output.isDirectory() && output.getParentFile() != null) {
-					IO.delete(output);
-				}
-			} else {
-				project.clean();
-
-				File target = project.getTargetDir();
-				if (target.isDirectory() && target.getParentFile() != null) {
-					IO.delete(target);
-				}
-				File output = project.getSrcOutput().getAbsoluteFile();
-				if (output.isDirectory() && output.getParentFile() != null) {
-					IO.delete(output);
-				}
-			}
-		}
-		IO.delete(ws.getFile("cnf/cache"));
+	public void setUp() {
+		IO.delete(tmp);
+		tmp.mkdirs();
 	}
 
 	public void tearDown() throws Exception {
-		reallyClean(new Workspace(new File("testresources/ws")));
+		IO.delete(tmp);
 	}
 
 	/**
-	 * Check if a project=version, which is illegal on -runbundles,
-	 * is actually reported as an error.
+	 * Check if a project=version, which is illegal on -runbundles, is actually
+	 * reported as an error.
+	 * 
 	 * @throws Exception
 	 */
 	public void testErrorOnVersionIsProjectInRunbundles() throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles", "p2;version=project,p3;version=latest");
 		top.getRunbundles();
 		assertTrue(top.check("p2 is specified with version=project on -runbundles"));
 	}
 
-
 	/**
-	 * https://github.com/bndtools/bnd/issues/395
-	 *
-	 * Repo macro does not refer to anything
+	 * https://github.com/bndtools/bnd/issues/395 Repo macro does not refer to
+	 * anything
 	 */
 
-	public static void testRepoMacro2() throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
+	public  void testRepoMacro2() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project top = ws.getProject("p2");
 		top.addClasspath(top.getOutput());
 
@@ -81,61 +62,50 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Two subsequent builds should not change the last modified if none of the
 	 * source inputs have been modified.
-	 *
+	 * 
 	 * @throws Exception
 	 */
-	public static void testLastModified() throws Exception {
-		File tmp = new File("tmp-ws");
-		if (tmp.exists())
-			IO.deleteWithException(tmp);
-		tmp.mkdir();
-		assertTrue(tmp.isDirectory());
+	public  void testLastModified() throws Exception {
+
+		Workspace ws = getWorkspace("testresources/ws");
+		Project project = ws.getProject("p6");
+		File bnd = new File("testresources/ws/p6/bnd.bnd");
+		assertTrue(bnd.exists());
+
+		project.clean();
+		File pt = project.getTarget();
+		if (!pt.exists() && !pt.mkdirs()) {
+			throw new IOException("Could not create directory " + pt);
+		}
 		try {
-			IO.copy(new File("testresources/ws"), tmp);
+			// Now we build it.
+			File[] files = project.build();
+			assertTrue(project.check());
+			assertNotNull(files);
+			assertEquals(1, files.length);
 
-			Workspace ws = Workspace.getWorkspace(tmp);
-			Project project = ws.getProject("p6");
-			File bnd = new File("testresources/ws/p6/bnd.bnd");
-			assertTrue(bnd.exists());
+			Jar older = new Jar(files[0]);
+			byte[] olderDigest = older.getTimelessDigest();
+			older.close();
+			System.out.println();
+			Thread.sleep(3000); // Ensure system time granularity is < than
+								// wait
 
-			project.clean();
-			File pt = project.getTarget();
-			if (!pt.exists() && !pt.mkdirs()) {
-				throw new IOException("Could not create directory " + pt);
-			}
-			try {
-				// Now we build it.
-				File[] files = project.build();
-				assertTrue(project.check());
-				assertNotNull(files);
-				assertEquals(1, files.length);
+			files[0].delete();
 
-				Jar older = new Jar(files[0]);
-				byte[] olderDigest = older.getTimelessDigest();
-				older.close();
-				System.out.println();
-				Thread.sleep(3000); // Ensure system time granularity is < than
-									// wait
+			project.build();
+			assertTrue(project.check());
+			assertNotNull(files);
+			assertEquals(1, files.length);
 
-				files[0].delete();
+			Jar newer = new Jar(files[0]);
+			byte[] newerDigest = newer.getTimelessDigest();
+			newer.close();
 
-				project.build();
-				assertTrue(project.check());
-				assertNotNull(files);
-				assertEquals(1, files.length);
-
-				Jar newer = new Jar(files[0]);
-				byte[] newerDigest = newer.getTimelessDigest();
-				newer.close();
-
-				assertTrue(Arrays.equals(olderDigest, newerDigest));
-			}
-			finally {
-				project.clean();
-			}
+			assertTrue(Arrays.equals(olderDigest, newerDigest));
 		}
 		finally {
-			IO.delete(tmp);
+			project.clean();
 		}
 	}
 
@@ -143,8 +113,8 @@ public class ProjectTest extends TestCase {
 	 * #194 StackOverflowError when -runbundles in bnd.bnd refers to itself
 	 */
 
-	public static void testProjectReferringToItself() throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
+	public  void testProjectReferringToItself() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project top = ws.getProject("bug194");
 		top.addClasspath(top.getOutput());
 		assertTrue(top.check("Circular dependency context"));
@@ -155,8 +125,8 @@ public class ProjectTest extends TestCase {
 	 * checked only for files
 	 */
 
-	public static void testAddDirToClasspath() throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
+	public  void testAddDirToClasspath() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project top = ws.getProject("p1");
 		top.addClasspath(top.getOutput());
 		assertTrue(top.check());
@@ -165,8 +135,8 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Test bnd.bnd of project `foo`: `-runbundles: foo;version=latest`
 	 */
-	public static void testRunBundlesContainsSelf() throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
+	public  void testRunBundlesContainsSelf() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles", "p1;version=latest");
 		top.setChanged();
@@ -181,8 +151,8 @@ public class ProjectTest extends TestCase {
 	 * Test 2 equal bsns but diff. versions
 	 */
 
-	public static void testSameBsnRunBundles() throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
+	public  void testSameBsnRunBundles() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles",
 				"org.apache.felix.configadmin;version='[1.0.1,1.0.1]',org.apache.felix.configadmin;version='[1.1.0,1.1.0]'");
@@ -196,8 +166,8 @@ public class ProjectTest extends TestCase {
 	 * Duplicates in runbundles gave a bad error, should be ignored
 	 */
 
-	public static void testRunbundleDuplicates() throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
+	public  void testRunbundleDuplicates() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project top = ws.getProject("p1");
 		top.setPedantic(true);
 		top.clear();
@@ -212,8 +182,8 @@ public class ProjectTest extends TestCase {
 	 * Check isStale
 	 */
 
-	public static void testIsStale() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("testresources/ws"));
+	public  void testIsStale() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		ws.setOffline(false);
 		Project top = ws.getProject("p-stale");
 		assertNotNull(top);
@@ -247,7 +217,7 @@ public class ProjectTest extends TestCase {
 		// assertFalse(bottom.isStale());
 	}
 
-	private static void stale(Project project, boolean b) throws Exception {
+	private  void stale(Project project, boolean b) throws Exception {
 		File file = project.getBuildFiles(false)[0];
 		if (b)
 			file.setLastModified(project.lastModified() - 10000);
@@ -257,11 +227,11 @@ public class ProjectTest extends TestCase {
 
 	/**
 	 * Check multiple repos
-	 *
+	 * 
 	 * @throws Exception
 	 */
-	public static void testMultipleRepos() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("testresources/ws"));
+	public  void testMultipleRepos() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project project = ws.getProject("p1");
 		project.setPedantic(true);
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.EXACT, null));
@@ -278,53 +248,45 @@ public class ProjectTest extends TestCase {
 	 * Check if the getSubBuilders properly predicts the output.
 	 */
 
-	public static void testSubBuilders() throws Exception {
-		File tmp = new File("tmp");
-		tmp.mkdirs();
-		try {
-			IO.copy(new File("testresources/ws"), tmp);
-			Workspace ws = Workspace.getWorkspace(tmp);
-			Project project = ws.getProject("p4-sub");
+	public  void testSubBuilders() throws Exception {
+		Workspace ws = getWorkspace("testresources/ws");
+		Project project = ws.getProject("p4-sub");
 
-			Collection< ? extends Builder> bs = project.getSubBuilders();
-			assertNotNull(bs);
-			assertEquals(3, bs.size());
-			Set<String> names = new HashSet<String>();
-			for (Builder b : bs) {
-				names.add(b.getBsn());
-			}
-			assertTrue(names.contains("p4-sub.a"));
-			assertTrue(names.contains("p4-sub.b"));
-			assertTrue(names.contains("p4-sub.c"));
-
-			File[] files = project.build();
-			assertTrue(project.check());
-
-			System.err.println(Processor.join(project.getErrors(), "\n"));
-			System.err.println(Processor.join(project.getWarnings(), "\n"));
-			assertEquals(0, project.getErrors().size());
-			assertEquals(0, project.getWarnings().size());
-			assertNotNull(files);
-			assertEquals(3, files.length);
-			for (File file : files) {
-				Jar jar = new Jar(file);
-				Manifest m = jar.getManifest();
-				assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
-			}
+		Collection< ? extends Builder> bs = project.getSubBuilders();
+		assertNotNull(bs);
+		assertEquals(3, bs.size());
+		Set<String> names = new HashSet<String>();
+		for (Builder b : bs) {
+			names.add(b.getBsn());
 		}
-		finally {
-			IO.deleteWithException(tmp);
+		assertTrue(names.contains("p4-sub.a"));
+		assertTrue(names.contains("p4-sub.b"));
+		assertTrue(names.contains("p4-sub.c"));
+
+		File[] files = project.build();
+		assertTrue(project.check());
+
+		System.err.println(Processor.join(project.getErrors(), "\n"));
+		System.err.println(Processor.join(project.getWarnings(), "\n"));
+		assertEquals(0, project.getErrors().size());
+		assertEquals(0, project.getWarnings().size());
+		assertNotNull(files);
+		assertEquals(3, files.length);
+		for (File file : files) {
+			Jar jar = new Jar(file);
+			Manifest m = jar.getManifest();
+			assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
 		}
 	}
 
 	/**
 	 * Tests the handling of the -sub facility
-	 *
+	 * 
 	 * @throws Exception
 	 */
 
-	public static void testSub() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("testresources/ws"));
+	public  void testSub() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project project = ws.getProject("p4-sub");
 		File[] files = project.build();
 		Arrays.sort(files);
@@ -348,8 +310,8 @@ public class ProjectTest extends TestCase {
 		assertEquals("b", mb.getMainAttributes().getValue("Sub-Header"));
 	}
 
-	public static void testOutofDate() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("testresources/ws"));
+	public  void testOutofDate() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project project = ws.getProject("p3");
 		File bnd = new File("testresources/ws/p3/bnd.bnd");
 		assertTrue(bnd.exists());
@@ -386,8 +348,8 @@ public class ProjectTest extends TestCase {
 		}
 	}
 
-	public static void testRepoMacro() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("testresources/ws"));
+	public  void testRepoMacro() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project project = ws.getProject("p2");
 		System.err.println(project.getPlugins(FileRepo.class));
 		String s = project.getReplacer().process(("${repo;libtest}"));
@@ -404,7 +366,7 @@ public class ProjectTest extends TestCase {
 		assertTrue(s.endsWith("org.apache.felix.configadmin-1.0.1.jar"));
 	}
 
-	public static void testClasspath() throws Exception {
+	public  void testClasspath() throws Exception {
 		File project = new File("").getAbsoluteFile();
 		File workspace = project.getParentFile();
 		Processor processor = new Processor();
@@ -415,94 +377,58 @@ public class ProjectTest extends TestCase {
 		System.err.println(p.getOutput());
 	}
 
-	public static void testBump() throws Exception {
-		File tmp = new File("tmp-ws");
-		if (tmp.exists())
-			IO.deleteWithException(tmp);
-		tmp.mkdir();
-		assertTrue(tmp.isDirectory());
+	public  void testBump() throws Exception {
+		Workspace ws = getWorkspace("testresources/ws");
+		Project project = ws.getProject("p1");
+		int size = project.getProperties().size();
+		Version old = new Version(project.getProperty("Bundle-Version"));
+		System.err.println("Old version " + old);
+		project.bump("=+0");
+		Version newv = new Version(project.getProperty("Bundle-Version"));
+		System.err.println("New version " + newv);
+		assertEquals(old.getMajor(), newv.getMajor());
+		assertEquals(old.getMinor() + 1, newv.getMinor());
+		assertEquals(0, newv.getMicro());
+		assertEquals(size, project.getProperties().size());
+		assertEquals("sometime", newv.getQualifier());
+	}
 
-		try {
-			IO.copy(new File("testresources/ws"), tmp);
-			Workspace ws = Workspace.getWorkspace(tmp);
-			Project project = ws.getProject("p1");
-			int size = project.getProperties().size();
-			Version old = new Version(project.getProperty("Bundle-Version"));
-			System.err.println("Old version " + old);
-			project.bump("=+0");
-			Version newv = new Version(project.getProperty("Bundle-Version"));
-			System.err.println("New version " + newv);
-			assertEquals(old.getMajor(), newv.getMajor());
-			assertEquals(old.getMinor() + 1, newv.getMinor());
-			assertEquals(0, newv.getMicro());
-			assertEquals(size, project.getProperties().size());
-			assertEquals("sometime", newv.getQualifier());
-		}
-		finally {
-			IO.deleteWithException(tmp);
+	public  void testBumpIncludeFile() throws Exception {
+		Workspace ws = getWorkspace("testresources/ws");
+		Project project = ws.getProject("bump-included");
+		project.setTrace(true);
+		Version old = new Version(project.getProperty("Bundle-Version"));
+		assertEquals(new Version(1, 0, 0), old);
+		project.bump("=+0");
+
+		Processor processor = new Processor();
+		processor.setProperties(project.getFile("include.txt"));
+
+		Version newv = new Version(processor.getProperty("Bundle-Version"));
+		System.err.println("New version " + newv);
+		assertEquals(1, newv.getMajor());
+		assertEquals(1, newv.getMinor());
+		assertEquals(0, newv.getMicro());
+	}
+
+	public  void testBumpSubBuilders() throws Exception {
+		Workspace ws = getWorkspace("testresources/ws");
+		Project project = ws.getProject("bump-sub");
+		project.setTrace(true);
+
+		assertNull(project.getProperty("Bundle-Version"));
+
+		project.bump("=+0");
+
+		assertNull(project.getProperty("Bundle-Version"));
+
+		for (Builder b : project.getSubBuilders()) {
+			assertEquals(new Version(1, 1, 0), new Version(b.getVersion()));
 		}
 	}
 
-	public static void testBumpIncludeFile() throws Exception {
-		File tmp = new File("tmp-ws");
-		if (tmp.exists())
-			IO.deleteWithException(tmp);
-		tmp.mkdir();
-		assertTrue(tmp.isDirectory());
-
-		try {
-			IO.copy(new File("testresources/ws"), tmp);
-			Workspace ws = Workspace.getWorkspace(tmp);
-			Project project = ws.getProject("bump-included");
-			project.setTrace(true);
-			Version old = new Version(project.getProperty("Bundle-Version"));
-			assertEquals(new Version(1, 0, 0), old);
-			project.bump("=+0");
-
-			Processor processor = new Processor();
-			processor.setProperties(project.getFile("include.txt"));
-
-			Version newv = new Version(processor.getProperty("Bundle-Version"));
-			System.err.println("New version " + newv);
-			assertEquals(1, newv.getMajor());
-			assertEquals(1, newv.getMinor());
-			assertEquals(0, newv.getMicro());
-		}
-		finally {
-			IO.deleteWithException(tmp);
-		}
-	}
-
-	public static void testBumpSubBuilders() throws Exception {
-		File tmp = new File("tmp-ws");
-		if (tmp.exists())
-			IO.deleteWithException(tmp);
-		tmp.mkdir();
-		assertTrue(tmp.isDirectory());
-
-		try {
-			IO.copy(new File("testresources/ws"), tmp);
-			Workspace ws = Workspace.getWorkspace(tmp);
-			Project project = ws.getProject("bump-sub");
-			project.setTrace(true);
-
-			assertNull(project.getProperty("Bundle-Version"));
-
-			project.bump("=+0");
-
-			assertNull(project.getProperty("Bundle-Version"));
-
-			for (Builder b : project.getSubBuilders()) {
-				assertEquals(new Version(1, 1, 0), new Version(b.getVersion()));
-			}
-		}
-		finally {
-			IO.deleteWithException(tmp);
-		}
-	}
-
-	public static void testRunBuilds() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("testresources/ws"));
+	public  void testRunBuilds() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 
 		// Running a .bnd includes built bundles by default
 		Project p1 = ws.getProject("p1");
@@ -521,81 +447,68 @@ public class ProjectTest extends TestCase {
 		assertTrue(p1b.getRunBuilds());
 	}
 
-	public static void testSetPackageVersion() throws Exception {
-		File tmp = new File("tmp-ws");
-		if (tmp.exists())
-			IO.deleteWithException(tmp);
-		tmp.mkdir();
-		assertTrue(tmp.isDirectory());
+	public  void testSetPackageVersion() throws Exception {
+		Workspace ws = getWorkspace("testresources/ws");
+		Project project = ws.getProject("p5");
+		project.setTrace(true);
 
-		try {
-			IO.copy(new File("testresources/ws"), tmp);
-			Workspace ws = Workspace.getWorkspace(tmp);
-			Project project = ws.getProject("p5");
-			project.setTrace(true);
+		Version newVersion = new Version(2, 0, 0);
 
-			Version newVersion = new Version(2, 0, 0);
+		// Package with no package info
+		project.setPackageInfo("pkg1", newVersion);
+		Version version = project.getPackageInfo("pkg1");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg1", true, false);
 
-			// Package with no package info
-			project.setPackageInfo("pkg1", newVersion);
-			Version version = project.getPackageInfo("pkg1");
-			assertEquals(newVersion, version);
-			checkPackageInfoFiles(project, "pkg1", true, false);
+		// Package with package-info.java containing @Version("1.0.0")
+		project.setPackageInfo("pkg2", newVersion);
+		version = project.getPackageInfo("pkg2");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg2", false, true);
 
-			// Package with package-info.java containing @Version("1.0.0")
-			project.setPackageInfo("pkg2", newVersion);
-			version = project.getPackageInfo("pkg2");
-			assertEquals(newVersion, version);
-			checkPackageInfoFiles(project, "pkg2", false, true);
+		// Package with package-info.java containing
+		// @aQute.bnd.annotations.Version("1.0.0")
+		project.setPackageInfo("pkg3", newVersion);
+		version = project.getPackageInfo("pkg3");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg3", false, true);
 
-			// Package with package-info.java containing
-			// @aQute.bnd.annotations.Version("1.0.0")
-			project.setPackageInfo("pkg3", newVersion);
-			version = project.getPackageInfo("pkg3");
-			assertEquals(newVersion, version);
-			checkPackageInfoFiles(project, "pkg3", false, true);
+		// Package with package-info.java containing
+		// @aQute.bnd.annotations.Version(value="1.0.0")
+		project.setPackageInfo("pkg4", newVersion);
+		version = project.getPackageInfo("pkg4");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg4", false, true);
 
-			// Package with package-info.java containing
-			// @aQute.bnd.annotations.Version(value="1.0.0")
-			project.setPackageInfo("pkg4", newVersion);
-			version = project.getPackageInfo("pkg4");
-			assertEquals(newVersion, version);
-			checkPackageInfoFiles(project, "pkg4", false, true);
+		// Package with package-info.java containing version + packageinfo
+		project.setPackageInfo("pkg5", newVersion);
+		version = project.getPackageInfo("pkg5");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg5", true, true);
 
-			// Package with package-info.java containing version + packageinfo
-			project.setPackageInfo("pkg5", newVersion);
-			version = project.getPackageInfo("pkg5");
-			assertEquals(newVersion, version);
-			checkPackageInfoFiles(project, "pkg5", true, true);
+		// Package with package-info.java NOT containing version +
+		// packageinfo
+		project.setPackageInfo("pkg6", newVersion);
+		version = project.getPackageInfo("pkg6");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg6", true, true);
 
-			// Package with package-info.java NOT containing version +
-			// packageinfo
-			project.setPackageInfo("pkg6", newVersion);
-			version = project.getPackageInfo("pkg6");
-			assertEquals(newVersion, version);
-			checkPackageInfoFiles(project, "pkg6", true, true);
+		// Package with package-info.java NOT containing version
+		project.setPackageInfo("pkg7", newVersion);
+		version = project.getPackageInfo("pkg7");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg7", true, true);
 
-			// Package with package-info.java NOT containing version
-			project.setPackageInfo("pkg7", newVersion);
-			version = project.getPackageInfo("pkg7");
-			assertEquals(newVersion, version);
-			checkPackageInfoFiles(project, "pkg7", true, true);
+		newVersion = new Version(2, 2, 0);
 
-			newVersion = new Version(2, 2, 0);
-
-			// Update packageinfo file
-			project.setPackageInfo("pkg1", newVersion);
-			version = project.getPackageInfo("pkg1");
-			assertEquals(newVersion, version);
-			checkPackageInfoFiles(project, "pkg1", true, false);
-
-		}
-		finally {
-			IO.deleteWithException(tmp);
-		}
+		// Update packageinfo file
+		project.setPackageInfo("pkg1", newVersion);
+		version = project.getPackageInfo("pkg1");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg1", true, false);
 	}
 
-	private static void checkPackageInfoFiles(Project project, String packageName, boolean expectPackageInfo,
+	private  void checkPackageInfoFiles(Project project, String packageName, boolean expectPackageInfo,
 			boolean expectPackageInfoJava) throws Exception {
 		File pkgInfo = IO.getFile(project.getSrc(), packageName + "/packageinfo");
 		File pkgInfoJava = IO.getFile(project.getSrc(), packageName + "/package-info.java");
@@ -603,7 +516,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(expectPackageInfoJava, pkgInfoJava.exists());
 	}
 
-	public static void testBuildAll() throws Exception {
+	public  void testBuildAll() throws Exception {
 		assertTrue(testBuildAll("*", 14).check()); // there are 14 projects
 		assertTrue(testBuildAll("p*", 9).check()); // 7 begin with p
 		assertTrue(testBuildAll("!p*, *", 5).check()); // negation: 6 don't
@@ -629,8 +542,8 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Check that the output property can be used to name the output binary.
 	 */
-	public static void testGetOutputFile() throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
+	public  void testGetOutputFile() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project top = ws.getProject("p1");
 
 		//
@@ -638,7 +551,7 @@ public class ProjectTest extends TestCase {
 		//
 		assertEquals("p1 must be singleton", 1, top.getSubBuilders().size());
 		Builder builder = top.getSubBuilders().iterator().next();
-		assertEquals("p1 must be singleton","p1", builder.getBsn());
+		assertEquals("p1 must be singleton", "p1", builder.getBsn());
 
 		// Check the default bsn.jar form
 
@@ -675,9 +588,19 @@ public class ProjectTest extends TestCase {
 		top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
 		assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
 				top.getOutputFile(builder.getBsn(), builder.getVersion()));
-        }
+	}
 
-	private static Project testBuildAll(String dependsOn, int count) throws Exception {
+	private Workspace getWorkspace(File file) throws Exception {
+		File tmpx = new File(tmp, "tmp-ws");
+		IO.copy(file, tmpx);
+		return new Workspace(tmpx);
+	}
+
+	private Workspace getWorkspace(String dir) throws Exception {
+		return getWorkspace( new File(dir));
+	}
+
+	private  Project testBuildAll(String dependsOn, int count) throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
 		Project all = ws.getProject("build-all");
 		all.setProperty("-dependson", dependsOn);
@@ -686,4 +609,5 @@ public class ProjectTest extends TestCase {
 		assertEquals(count, dependson.size());
 		return all;
 	}
+
 }
