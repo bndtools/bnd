@@ -13,8 +13,8 @@ public class MapHandler extends Handler {
 
 		if ( rawClass != Map.class) {
 			ParameterizedType type = findAncestor(rawClass,Map.class);
-			this.keyType = type.getActualTypeArguments()[0];
-			this.valueType = type.getActualTypeArguments()[0];
+			this.keyType = resolve(type.getActualTypeArguments()[0]);
+			this.valueType = resolve(type.getActualTypeArguments()[1]);
 		} else {
 			this.keyType = keyType;
 			this.valueType = valueType;			
@@ -35,6 +35,15 @@ public class MapHandler extends Handler {
 				throw new IllegalArgumentException("Unknown map interface: " + rawClass);
 		}
 		this.rawClass = rawClass;
+	}
+
+	private Type resolve(Type type) {
+		if( type instanceof TypeVariable<?>) {
+			TypeVariable<?> tv = (TypeVariable<?>) type;
+			Type[] bounds = tv.getBounds();
+			return resolve( bounds[ bounds.length-1]);
+		}
+		return type;
 	}
 
 	private ParameterizedType findAncestor(Class< ? > start, Class<?> target) {

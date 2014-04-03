@@ -3,7 +3,7 @@ package aQute.lib.collections;
 import java.util.*;
 
 
-public class MultiMap<K, V> extends HashMap<K,List<V>> {
+public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>> {
 	private static final long	serialVersionUID	= 1L;
 	final boolean				noduplicates;
 	final Class< ? >			keyClass;
