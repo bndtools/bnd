@@ -52,7 +52,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 		if (!lock.isValid())
 			throw new IllegalArgumentException("PersistentMap cannot lock dir " + dir);
 
-		data = new File("data");
+		data = new File(dir,"data").getAbsoluteFile();
 		data.mkdir();
 		if (!dir.isDirectory())
 			throw new IllegalArgumentException("PersistentMap cannot create data directory " + dir);
@@ -186,6 +186,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 		try {
 			IO.deleteWithException(data);
 			cache.clear();
+			data.mkdir();
 		}
 		catch (IOException e) {
 			throw new RuntimeException(e);
