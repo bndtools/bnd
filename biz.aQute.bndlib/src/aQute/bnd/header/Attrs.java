@@ -1,5 +1,6 @@
 package aQute.bnd.header;
 
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -23,6 +24,22 @@ public class Attrs implements Map<String,String> {
 
 		public String toString() {
 			return toString;
+		}
+
+		public Type plural() {
+			switch (this) {
+				case DOUBLE :
+					return DOUBLES;
+
+				case LONG :
+					return LONGS;
+				case STRING :
+					return STRINGS;
+				case VERSION :
+					return VERSIONS;
+				default :
+					return null;
+			}
 		}
 	}
 
@@ -55,6 +72,8 @@ public class Attrs implements Map<String,String> {
 		EMPTY_ATTRS.map = Collections.emptyMap();
 	}
 
+	public Attrs() {}
+
 	public Attrs(Attrs... attrs) {
 		for (Attrs a : attrs) {
 			if (a != null) {
@@ -63,6 +82,81 @@ public class Attrs implements Map<String,String> {
 					types.putAll(a.types);
 			}
 		}
+	}
+
+	public void putAllTyped(Map<String,Object> attrs) {
+
+		for (Map.Entry<String,Object> entry : attrs.entrySet()) {
+			Object value = entry.getValue();
+			String key = entry.getKey();
+			putTyped(key, value);
+
+		}
+	}
+
+	public void putTyped(String key, Object value) {
+		
+		if ( value == null) {
+			put(key,null);
+			return;
+		}
+		
+		if (!(value instanceof String)) {
+			Type type;
+			
+			if (value instanceof Collection)
+				value = ((Collection< ? >) value).toArray();
+
+
+			if (value.getClass().isArray()) {
+				type = Type.STRINGS;
+				int l = Array.getLength(value);
+				StringBuilder sb = new StringBuilder();
+				String del = null;
+				
+				for (int i = 0; i < l; i++) {
+					
+					Object member = Array.get(value, i);
+					if (member == null) {
+						// TODO What do we do with null members?
+						continue;
+					} else if (del == null) {
+						type = getObjectType(member).plural();
+					} else {
+						sb.append(del);
+						int n=sb.length();
+						sb.append(member);
+						while ( n < sb.length()) {
+							char c = sb.charAt(n); 
+							if (c == '\\' || c== ',') {
+								sb.insert(n, '\\');
+								n++;
+							}
+							n++;
+						}
+					}
+					
+					del = ",";
+				}
+				value = sb;
+			} else {
+				type = getObjectType(value);
+			}
+			key += ":" + type.toString();
+		}
+		put(key, value.toString());
+
+	}
+
+	private Type getObjectType(Object member) {
+		if (member instanceof Double)
+			return Type.DOUBLE;
+		if (member instanceof Long)
+			return Type.LONG;
+		if (member instanceof Version)
+			return Type.VERSION;
+
+		return Type.STRING;
 	}
 
 	public void clear() {
