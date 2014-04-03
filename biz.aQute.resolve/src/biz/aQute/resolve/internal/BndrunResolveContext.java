@@ -18,7 +18,6 @@ import org.osgi.service.log.*;
 import org.osgi.service.repository.*;
 import org.osgi.service.resolver.*;
 
-import aQute.bnd.build.*;
 import aQute.bnd.build.model.*;
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.deployer.repository.*;
@@ -31,7 +30,6 @@ import aQute.bnd.service.resolve.hook.*;
 import aQute.libg.filters.*;
 import aQute.libg.filters.Filter;
 import biz.aQute.resolve.*;
-import biz.aQute.resolve.umbrella.*;
 
 public class BndrunResolveContext extends ResolveContext {
 
@@ -133,8 +131,6 @@ public class BndrunResolveContext extends ResolveContext {
 		// Get all of the repositories from the plugin registry
 		List<Repository> allRepos = registry.getPlugins(Repository.class);
 
-		loadUmbrella(allRepos);
-
 		// Reorder/filter if specified by the run model
 		List<String> repoNames = runModel.getRunRepos();
 		if (repoNames == null) {
@@ -152,19 +148,6 @@ public class BndrunResolveContext extends ResolveContext {
 				if (repo != null)
 					repos.add(repo);
 			}
-		}
-	}
-
-	private void loadUmbrella(List<Repository> allRepos) throws IOException {
-		Workspace ws;
-		if (registry instanceof Workspace)
-			ws = (Workspace) registry;
-		else
-			ws = registry.getPlugin(Workspace.class);
-
-		if (ws != null) {
-			UmbrellaRepository osgir = new UmbrellaRepository(ws);
-			allRepos.add(osgir);
 		}
 	}
 
