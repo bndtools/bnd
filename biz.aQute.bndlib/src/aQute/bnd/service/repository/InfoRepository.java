@@ -1,7 +1,5 @@
 package aQute.bnd.service.repository;
 
-import java.util.*;
-
 import aQute.bnd.service.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
@@ -18,12 +16,5 @@ public interface InfoRepository extends RepositoryPlugin {
 	 * @return a ResourceDescriptor describing the artifact
 	 */
 	ResourceDescriptor getDescriptor(String bsn, Version version) throws Exception;
-	
-	/**
-	 * Sorted by bsn/version
-	 * @return
-	 */
-	SortedSet<ResourceDescriptor> getResources() throws Exception;
-	
-	ResourceDescriptor getResource(byte[] sha) throws Exception;
+
 }

@@ -455,6 +455,7 @@ public class Workspace extends Processor {
 			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));			
 			customize(resourceRepositoryImpl, null);
 			list.add(resourceRepositoryImpl);
+			
 		}
 		catch (RuntimeException e) {
 			throw e;
@@ -491,7 +492,7 @@ public class Workspace extends Processor {
 				continue;
 			}
 			try {
-				SortedSet<ResourceDescriptor> matches = resourceRepositoryImpl.find(bsn, new VersionRange(stringRange));
+				SortedSet<ResourceDescriptor> matches = resourceRepositoryImpl.find(null,bsn, new VersionRange(stringRange));
 				if (matches.isEmpty()) {
 					error("Extension %s;version=%s not found in base repo", bsn, stringRange);
 					continue;

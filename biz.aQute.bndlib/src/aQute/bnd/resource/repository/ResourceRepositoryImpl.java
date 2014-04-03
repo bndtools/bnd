@@ -55,6 +55,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	private FileLayout								index;
 	private Map<URI,Long>							failures						= new HashMap<URI,Long>();
 	private File									cache;
+	private File									hosting;
 	private Reporter								reporter						= new ReporterAdapter(System.out);
 	private Executor								executor;
 	private File									indexFile;
@@ -85,8 +86,6 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 			format.format(//
 					"{\n\"version\"      :%s,\n" //
-							+ "\"increment\"   :%s,\n" //
-							+ "\"date\"        :%s,\n" //
 							+ "\"descriptors\"   : [\n", version, increment, date);
 			String del = "";
 
@@ -104,14 +103,20 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * List the resources. We skip the filter for now.
 	 */
-	public List< ? extends ResourceDescriptor> filter(String filter) throws Exception {
-		return Collections.unmodifiableList(getIndex().descriptors);
+	public List<ResourceDescriptorImpl> filter(String repoId, String filter) throws Exception {
+		List<ResourceDescriptorImpl> result = new ArrayList<ResourceDescriptorImpl>();
+		for (ResourceDescriptorImpl rdi : getIndex().descriptors) {
+			if (repoId == null || rdi.repositories.contains(repoId))
+				result.add(rdi);
+		}
+		return result;
 	}
 
 	/**
 	 * Delete a resource from the text file (not from the cache)
 	 */
-	public void delete(byte[] id) throws Exception {
+
+	void delete(byte[] id) throws Exception {
 		for (Iterator<ResourceDescriptorImpl> i = getIndex().descriptors.iterator(); i.hasNext();) {
 			ResourceDescriptorImpl d = i.next();
 			if (Arrays.equals(id, d.id)) {
@@ -122,6 +127,25 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			}
 		}
 		save();
+	}
+
+	public boolean delete(String repoId, byte[] id) throws Exception {
+		ResourceDescriptorImpl rd = getResourceDescriptor(id);
+		if (rd == null)
+			return false;
+
+		if (repoId == null) {
+			delete(id);
+			return true;
+		}
+
+		boolean remove = rd.repositories.remove(repoId);
+		if (rd.repositories.isEmpty()) {
+			delete(rd.id);
+		} else
+			save();
+
+		return remove;
 	}
 
 	/**
@@ -139,14 +163,22 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * Add a resource descriptor to the index.
 	 */
-	public void add(ResourceDescriptor rd) throws Exception {
-		delete(rd.id);
-		ResourceDescriptorImpl rdi = new ResourceDescriptorImpl(rd);
-		getIndex().descriptors.add(rdi);
-		reporter.trace("adding resource %s to index", rdi);
+	public boolean add(String repoId, ResourceDescriptor rd) throws Exception {
+		ResourceDescriptorImpl rdi = getResourceDescriptor(rd.id);
+		boolean add = false;
+		if (rdi != null) {
+			add = true;
+			reporter.trace("adding repo %s to resource %s to index", repoId, rdi);
+		} else {
+			rdi = new ResourceDescriptorImpl(rd);
+			getIndex().descriptors.add(rdi);
+			reporter.trace("adding resource %s to index", rdi);
+		}
+		rdi.repositories.add(repoId);
 		event(TYPE.ADD, rdi, null);
 		setDirty();
 		save();
+		return add;
 	}
 
 	/**
@@ -478,6 +510,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 	public void setCache(File cache) {
 		this.cache = cache;
+		this.hosting = new File(cache,"hosting");
 	}
 
 	public void setExecutor(Executor executor) throws Exception {
@@ -488,19 +521,25 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		this.connector = connector;
 	}
 
-	public SortedSet<ResourceDescriptor> find(String bsn, VersionRange range) throws Exception {
+	public SortedSet<ResourceDescriptor> find(String repoId, String bsn, VersionRange range) throws Exception {
 		TreeSet<ResourceDescriptor> result = new TreeSet<ResourceDescriptor>(RESOURCE_DESCRIPTOR_COMPARATOR);
 
-		for (SearchableRepository.ResourceDescriptor r : filter(null)) {
+		for (ResourceDescriptorImpl r : filter(repoId, null)) {
 			if (!bsn.equals(r.bsn))
 				continue;
 
-			if (!range.includes(r.version))
+			if (range != null && !range.includes(r.version))
 				continue;
 
 			result.add(r);
 		}
 		return result;
+	}
+
+	public File getCacheDir(String name) {
+		File dir = new File(hosting, name);
+		dir.mkdirs();
+		return dir;
 	}
 
 }

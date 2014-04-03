@@ -20,7 +20,7 @@ import aQute.libg.cryptography.*;
 
 public class ResourceRepoTest extends TestCase {
 	ResourceRepositoryImpl	repoImpl	= new ResourceRepositoryImpl();
-	File tmp = new File("tmp");
+	File					tmp			= new File("tmp");
 
 	public void setUp() throws Exception {
 		IO.delete(tmp);
@@ -30,61 +30,96 @@ public class ResourceRepoTest extends TestCase {
 		File file = new File(tmp, "index.json");
 		file.delete();
 		repoImpl.setIndexFile(file);
-		
+
 	}
-	
+
 	public void tearDown() throws Exception {
 		IO.delete(tmp);
 	}
 
-	public void testBasic() throws Exception {
+	public void testRepositoryId() throws Exception {
 		// Just basic check
-		assertEquals( 0, repoImpl.filter(null).size());
-		
-		
+		assertEquals(0, repoImpl.filter(null, null).size());
+
 		SearchableRepository.ResourceDescriptor osgi = create("jar/osgi.jar");
-		assertNull( repoImpl.getResource(osgi.id));
+		assertNull(repoImpl.getResource(osgi.id));
 		
 		// Add it
-		repoImpl.add(osgi);
+		boolean add = repoImpl.add("x", osgi);
+		assertNotNull(repoImpl.getResource(osgi.id));
+		assertEquals(1, repoImpl.filter(null, null).size());
+		assertEquals(1, repoImpl.filter("x", null).size());
+		assertEquals(0, repoImpl.filter("y", null).size());
 		
+		repoImpl.delete("y", osgi.id);
+		assertEquals(1, repoImpl.filter("x", null).size());
+		
+		repoImpl.add("y", osgi);
+		assertEquals(1, repoImpl.filter("x", null).size());
+		assertEquals(1, repoImpl.filter("y", null).size());
+		assertEquals(1, repoImpl.filter(null, null).size());
+		
+		repoImpl.delete("y", osgi.id);
+		assertEquals(1, repoImpl.filter("x", null).size());
+		assertEquals(0, repoImpl.filter("y", null).size());
+		assertEquals(1, repoImpl.filter(null, null).size());
+		
+		repoImpl.delete("x", osgi.id);
+		assertEquals(0, repoImpl.filter("x", null).size());
+		assertEquals(0, repoImpl.filter("y", null).size());
+		assertEquals(0, repoImpl.filter(null, null).size());
+
+	}
+
+	public void testBasic() throws Exception {
+		// Just basic check
+		assertEquals(0, repoImpl.filter(null, null).size());
+
+		SearchableRepository.ResourceDescriptor osgi = create("jar/osgi.jar");
+		assertNull(repoImpl.getResource(osgi.id));
+
+		// Add it
+		repoImpl.add("x", osgi);
+
 		// See if descriptor exists
 		SearchableRepository.ResourceDescriptor t = repoImpl.getResourceDescriptor(osgi.id);
 		assertNotNull(t);
-		
+
 		File ff = repoImpl.getResource(osgi.id);
 		assertTrue(ff.isFile());
-		
+
 		//
 		// Should also be in the list
 		//
-		List<? extends ResourceDescriptor> list = repoImpl.filter(null);
+		List< ? extends ResourceDescriptor> list = repoImpl.filter("x", null);
 		assertNotNull(list);
 		assertEquals(1, list.size());
-		
-		// 
-		// Adding it multiple times 
+
+		//
+		// Adding it multiple times
 		// is idempotent
 		//
-		repoImpl.add(osgi);
+		repoImpl.add("x", osgi);
 		assertEquals(1, list.size());
-		
+
+		repoImpl.add("y", osgi);
+		assertEquals(1, list.size());
+
 		//
 		// Check we can delete the cache but this should
 		// not delete the index
 		//
 		repoImpl.deleteCache(t.id);
-		list = repoImpl.filter(null);
+		list = repoImpl.filter(null, null);
 		assertNotNull(list);
 		assertEquals(1, list.size());
 
-		
 		//
 		// Check download listeners
 		//
 		final Semaphore s = new Semaphore(0);
-		final AtomicBoolean success =new AtomicBoolean(false);
-		
+		final AtomicBoolean success = new AtomicBoolean(false);
+
 		repoImpl.getResource(t.id, new DownloadListener() {
 
 			@Override
@@ -104,16 +139,17 @@ public class ResourceRepoTest extends TestCase {
 			@Override
 			public boolean progress(File file, int percentage) throws Exception {
 				return true;
-			}});
-		
+			}
+		});
+
 		s.acquire();
 		assertTrue(success.get());
-		
-		repoImpl.delete(t.id);
-		assertEquals(0, repoImpl.filter(null).size());
-		
+
+		repoImpl.delete(null,t.id);
+		assertEquals(0, repoImpl.filter(null, null).size());
+
 	}
-	
+
 	public void testEvents() throws Exception {
 		final AtomicInteger adds = new AtomicInteger();
 		final AtomicInteger removes = new AtomicInteger();
@@ -125,8 +161,8 @@ public class ResourceRepoTest extends TestCase {
 
 			@Override
 			public void events(ResourceRepositoryEvent... events) throws Exception {
-				for (ResourceRepositoryEvent event : events  ) {
-					switch( event.type) {
+				for (ResourceRepositoryEvent event : events) {
+					switch (event.type) {
 						case ADD :
 							adds.incrementAndGet();
 							break;
@@ -142,7 +178,7 @@ public class ResourceRepoTest extends TestCase {
 						case START_DOWNLOAD :
 							starts.incrementAndGet();
 							break;
-							
+
 						default :
 							errors.incrementAndGet();
 							break;
@@ -150,16 +186,17 @@ public class ResourceRepoTest extends TestCase {
 				}
 			}
 		});
-		
+
 		ResourceDescriptor rd = create("jar/osgi.jar");
-		repoImpl.add(rd);
+		repoImpl.add("x", rd);
 		assertEquals(1, adds.get());
 		assertEquals(0, removes.get());
-		repoImpl.delete(rd.id);;
+		repoImpl.delete(null,rd.id);
+		;
 		assertEquals(1, adds.get());
 		assertEquals(1, removes.get());
-		
-		repoImpl.add(rd);
+
+		repoImpl.add("x", rd);
 		File f = repoImpl.getResource(rd.id);
 		assertEquals(2, adds.get());
 		assertEquals(1, starts.get());
@@ -168,16 +205,15 @@ public class ResourceRepoTest extends TestCase {
 	}
 
 	public void testMultipleDownloads() throws Exception {
-		
+
 		final Semaphore s = new Semaphore(0);
 		final AtomicInteger downloads = new AtomicInteger();
 
-		
 		ResourceDescriptor rd = create("jar/osgi.jar");
-		repoImpl.add(rd);
-		
+		repoImpl.add("x", rd);
+
 		final Semaphore done = new Semaphore(0);
-		
+
 		DownloadListener l = new DownloadListener() {
 
 			@Override
@@ -195,48 +231,48 @@ public class ResourceRepoTest extends TestCase {
 				return false;
 			}
 		};
-		
+
 		repoImpl.addListener(new Listener() {
-			
+
 			@Override
 			public void events(ResourceRepositoryEvent... events) throws Exception {
-				for ( ResourceRepositoryEvent event : events) {
-					if ( event.type == TYPE.START_DOWNLOAD) {
+				for (ResourceRepositoryEvent event : events) {
+					if (event.type == TYPE.START_DOWNLOAD) {
 						System.out.println("trying to acquire s");
 						s.acquire();
 						System.out.println("got it");
 						downloads.incrementAndGet();
 					}
 				}
-				
+
 			}
 		});
 		File f1 = repoImpl.getResource(rd.id, l);
 		File f2 = repoImpl.getResource(rd.id, l);
-		assertFalse( f1.isFile());
-		assertFalse( f2.isFile());
+		assertFalse(f1.isFile());
+		assertFalse(f2.isFile());
 		assertEquals(0, downloads.get());
-		
+
 		s.release();
-		
+
 		done.acquire(2);
-		assertTrue( f1.isFile());
-		assertTrue( f2.isFile());
-		assertTrue( f1.equals(f2));
-		assertEquals( 1, downloads.get());
+		assertTrue(f1.isFile());
+		assertTrue(f2.isFile());
+		assertTrue(f1.equals(f2));
+		assertEquals(1, downloads.get());
 	}
 
 	public void testStore() throws Exception {
-		assertEquals( 0, repoImpl.filter(null).size());
-		repoImpl.add(create("jar/osgi.jar"));
-		assertEquals( 1, repoImpl.filter(null).size());
+		assertEquals(0, repoImpl.filter(null, null).size());
+		repoImpl.add("x", create("jar/osgi.jar"));
+		assertEquals(1, repoImpl.filter(null, null).size());
 		repoImpl = new ResourceRepositoryImpl();
 		repoImpl.setCache(new File(tmp, "cache"));
 		repoImpl.setExecutor(Executors.newCachedThreadPool());
 		repoImpl.setIndexFile(new File(tmp, "index.json"));
-		assertEquals( 1, repoImpl.filter(null).size());
+		assertEquals(1, repoImpl.filter(null, null).size());
 	}
-		
+
 	private SearchableRepository.ResourceDescriptor create(String path) throws NoSuchAlgorithmException, Exception {
 		SearchableRepository.ResourceDescriptor rd = new SearchableRepository.ResourceDescriptor();
 		File f = IO.getFile(path);
