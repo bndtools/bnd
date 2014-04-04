@@ -24,25 +24,83 @@ public class ClassReferenceTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testReference() throws Exception {
+
+	public void testSun_1_1() throws Exception {
+		doit("sun_1_1");
+	}
+
+	public void testSun_1_2() throws Exception {
+		doit("sun_1_2");
+	}
+
+	public void testSun_1_3() throws Exception {
+		doit("sun_1_3");
+	}
+
+	public void testSun_1_4() throws Exception {
+		doit("sun_1_4");
+	}
+
+	public void testSun_1_5() throws Exception {
+		doit("sun_1_5");
+	}
+
+	public void testSun_jsr14() throws Exception {
+		doit("sun_jsr14");
+	}
+
+	public void testSun_1_6() throws Exception {
+		doit("sun_1_6");
+	}
+
+	public void testSun_1_7() throws Exception {
+		doit("sun_1_7");
+	}
+
+	public void testSun_1_8() throws Exception {
+		doit("sun_1_8");
+	}
+
+	public void testEclipse_1_1() throws Exception {
+		doit("eclipse_1_1");
+	}
+
+	public void testEclipse_1_2() throws Exception {
+		doit("eclipse_1_2");
+	}
+
+	public void testEclipse_1_3() throws Exception {
+		doit("eclipse_1_3");
+	}
+
+	public void testEclipse_1_4() throws Exception {
+		doit("eclipse_1_4");
+	}
+
+	public void testEclipse_1_5() throws Exception {
+		doit("eclipse_1_5");
+	}
+
+	public void testEclipse_1_6() throws Exception {
+		doit("eclipse_1_6");
+	}
+
+	public void testEclipse_1_7() throws Exception {
+		doit("eclipse_1_7");
+	}
+
+	public void doit(String p) throws Exception {
 		Properties properties = new Properties();
 		properties.put("-classpath", "compilerversions/compilerversions.jar");
-		String[] packages = {
-				"sun_1_1", "sun_1_2", "sun_1_3", "sun_1_4", "sun_1_5", "sun_jsr14", "sun_1_6", "sun_1_7", "sun_1_8",//
-				"eclipse_1_1", "eclipse_1_2", "eclipse_1_3", "eclipse_1_4",
-				"eclipse_1_5", "eclipse_1_6", "eclipse_jsr14", "eclipse_1_7"
-		};
-		for (int i = 0; i < packages.length; i++) {
-			System.out.println("compiler version " + packages[i]);
-			Builder builder = new Builder();
-			properties.put("Export-Package", packages[i]);
-			builder.setProperties(properties);
-			Jar jar = builder.build();
-			assertTrue(builder.check());
-			Manifest manifest = jar.getManifest();
-			String imports = manifest.getMainAttributes().getValue("Import-Package");
-			assertTrue("Package " + packages[i] + "contains swing ref", imports.indexOf("javax.swing") >= 0);
-			assertFalse("Package " + packages[i] + "should not contain ClassRef", imports.indexOf("ClassRef") >= 0);
-		}
+		System.out.println("compiler version " + p);
+		Builder builder = new Builder();
+		properties.put("Export-Package", p);
+		builder.setProperties(properties);
+		Jar jar = builder.build();
+		assertTrue(builder.check());
+		Manifest manifest = jar.getManifest();
+		String imports = manifest.getMainAttributes().getValue("Import-Package");
+		assertTrue("Package " + p + "contains swing ref ", imports.indexOf("javax.swing") >= 0);
+		assertFalse("Package " + p + "should not contain ClassRef", imports.indexOf("ClassRef") >= 0);
 	}
 }
