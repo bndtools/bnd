@@ -828,9 +828,8 @@ public class OpCodes {
 	// reference index in constant
 	// pool (indexbyte1 << 8 +
 	// indexbyte2)
-	final static short	xxxunusedxxx	= 0xba;			// this opcode is
-															// reserved "for
-	// historical reasons"
+	final static short	invokedynamic	= 0xba;			// introduced in J7
+
 	final static short	new_			= 0xbb;			// indexbyte1,
 															// indexbyte2 ?
 	// objectref creates new object
@@ -1179,6 +1178,9 @@ public class OpCodes {
 		// reference index in
 		// constant pool (indexbyte1
 		// << 8 + indexbyte2)
+
+		OFFSETS[invokedynamic] = 4; // 4: indexbyte1, indexbyte2, 0, 0
+
 		OFFSETS[new_] = 2; // indexbyte1, indexbyte2 ? objectref
 		// creates new object of type identified
 		// by class reference in constant pool
