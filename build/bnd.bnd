@@ -12,10 +12,8 @@
 	bndtools.repository.maven,\
 	bndtools.template.amdatu,\
 	bndtools.template.dm,\
+	bndtools.utils,\
 	org.bndtools.embeddedrepo
-
-# Missing here:
-# bndtools.utils                            Always used as Conditional-Package
 
 -sub: \
 	*.bnd
