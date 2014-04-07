@@ -4,7 +4,7 @@ import java.util.*;
 
 import org.osgi.resource.*;
 
-class CapReq implements Capability, Requirement {
+class CapReq  {
 	
 	static enum MODE { Capability, Requirement }
 	

@@ -82,6 +82,8 @@ public class PersistentResource implements Resource {
 		}
 	}
 
+	public PersistentResource() {}
+
 	public PersistentResource(byte[] sha, List<Capability> caps, List<Requirement> reqs) {
 
 		this.sha = sha;
@@ -161,10 +163,10 @@ public class PersistentResource implements Resource {
 		for (int i = 0; i < namespaces.length; i++) {
 			final Namespace ns = namespaces[i];
 			for (final RCData rs : ns.capabilities) {
-				tcapabilities.add(ns.name, new RC(rs, ns.name, this));
+				tcapabilities.add(ns.name, new RC(rs, ns.name));
 			}
 			for (final RCData rs : ns.requirements) {
-				trequirements.add(ns.name, new RC(rs, ns.name, this));
+				trequirements.add(ns.name, new RC(rs, ns.name));
 			}
 		}
 
@@ -175,16 +177,14 @@ public class PersistentResource implements Resource {
 		final Attr					props[];
 		final int					directivesCount;
 		final String				namespace;
-		final PersistentResource	resource;
 
 		Map<String,Object>			attributes;
 		Map<String,String>			directives;
 
-		public RC(RCData data, String ns, PersistentResource resource) {
+		public RC(RCData data, String ns) {
 			this.props = data.properties;
 			this.directivesCount = data.directives;
 			this.namespace = ns;
-			this.resource = resource;
 		}
 
 		public String getNamespace() {
@@ -192,7 +192,7 @@ public class PersistentResource implements Resource {
 		}
 
 		public Resource getResource() {
-			return resource;
+			return PersistentResource.this;
 		}
 
 		class PropMap<V> implements Map<String,V> {

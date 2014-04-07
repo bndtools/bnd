@@ -1,11 +1,13 @@
 package aQute.bnd.osgi.resource;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 import org.osgi.framework.namespace.*;
 import org.osgi.resource.*;
 
-import aQute.bnd.osgi.resource.CapReq.MODE;
+import aQute.bnd.header.*;
+import aQute.bnd.version.*;
 import aQute.libg.filters.*;
 
 public class CapReqBuilder {
@@ -17,6 +19,17 @@ public class CapReqBuilder {
 
 	public CapReqBuilder(String namespace) {
 		this.namespace = namespace;
+	}
+
+	public CapReqBuilder(String ns, Attrs attrs) {
+		this.namespace = ns;
+		for (Entry<String,String> entry : attrs.entrySet()) {
+			String key = entry.getKey();
+			if (key.endsWith(":"))
+				addDirective(key.substring(0, key.length() - 1), entry.getValue());
+			else
+				addAttribute(key, entry.getValue());
+		}
 	}
 
 	public static CapReqBuilder clone(Capability capability) {
@@ -68,18 +81,18 @@ public class CapReqBuilder {
 		// TODO check the thrown exception
 		if (resource == null)
 			throw new IllegalStateException("Cannot build Capability with null Resource.");
-		return new CapReq(MODE.Capability, namespace, resource, directives, attributes);
+		return new CapabilityImpl(namespace, resource, directives, attributes);
 	}
 
 	public Requirement buildRequirement() {
 		// TODO check the thrown exception
 		if (resource == null)
 			throw new IllegalStateException("Cannot build Requirement with null Resource.");
-		return new CapReq(MODE.Requirement, namespace, resource, directives, attributes);
+		return new RequirementImpl(namespace, resource, directives, attributes);
 	}
 
 	public Requirement buildSyntheticRequirement() {
-		return new CapReq(MODE.Requirement, namespace, null, directives, attributes);
+		return new RequirementImpl(namespace, null, directives, attributes);
 	}
 
 	public static final CapReqBuilder createPackageRequirement(String pkgName, String range) {
@@ -94,18 +107,62 @@ public class CapReqBuilder {
 		return new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addDirective(
 				Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 	}
-	
-	   public static CapReqBuilder createBundleRequirement(String bsn, String range) {
-	        Filter filter;
-	        SimpleFilter bsnFilter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
-	        if (range != null)
-	            filter = new AndFilter().addChild(bsnFilter).addChild(new LiteralFilter(Filters.fromVersionRange(range)));
-	        else
-	            filter = bsnFilter;
 
-	        return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(
-	        		Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+	public static CapReqBuilder createBundleRequirement(String bsn, String range) {
+		Filter filter;
+		SimpleFilter bsnFilter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
+		if (range != null)
+			filter = new AndFilter().addChild(bsnFilter).addChild(new LiteralFilter(Filters.fromVersionRange(range)));
+		else
+			filter = bsnFilter;
 
-	    }
+		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(
+				Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 
+	}
+
+	public CharSequence and(Object... exprs) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("(&");
+		for (Object expr : exprs) {
+			sb.append("(").append(toFilter(expr)).append(")");
+		}
+		sb.append(")");
+		return sb;
+	}
+
+	public CharSequence or(Object... exprs) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("(|");
+		for (Object expr : exprs) {
+			sb.append("(").append(toFilter(expr)).append(")");
+		}
+		sb.append(")");
+		return sb;
+	}
+
+	public CharSequence not(Object expr) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("(!(").append(toFilter(expr)).append(")");
+		return sb;
+	}
+
+	private CharSequence toFilter(Object expr) {
+		if ( expr instanceof CharSequence)
+			return (CharSequence) expr;
+		
+		if ( expr instanceof Filter) {
+			return expr.toString();
+		}
+		
+		if ( expr instanceof VersionRange) {
+			return ((VersionRange) expr).toFilter();
+		}
+		
+		return expr.toString();
+	}
+
+	public void filter(CharSequence f) {
+		addDirective("filter", f.toString());
+	}
 }

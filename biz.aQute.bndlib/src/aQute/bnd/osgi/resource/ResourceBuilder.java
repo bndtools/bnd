@@ -52,4 +52,8 @@ public class ResourceBuilder {
 		return resource;
 	}
 
+	public List<Capability> getCapabilities() {
+		return capabilities;
+	}
+
 }
