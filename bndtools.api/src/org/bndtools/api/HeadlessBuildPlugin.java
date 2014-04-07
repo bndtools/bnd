@@ -31,10 +31,12 @@ public interface HeadlessBuildPlugin {
 	 *            the project directory
 	 * @param add
 	 *            true to add/create the files, false to remove them
+	 * @param ignoresManager
+	 *            the version control ignores manager
 	 * @throws IOException
 	 *             upon error(s)
 	 */
-	void setup(boolean cnf, File projectDir, boolean add) throws IOException;
+	void setup(boolean cnf, File projectDir, boolean add, VersionControlIgnoresManager ignoresManager) throws IOException;
 
 	// Future expansion of the interface: automatic management of template files
 	//

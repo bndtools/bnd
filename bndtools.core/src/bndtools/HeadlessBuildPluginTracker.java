@@ -20,11 +20,13 @@ import bndtools.preferences.BndPreferences;
 public class HeadlessBuildPluginTracker extends ServiceTracker {
     private final ILogger logger = Logger.getLogger(this.getClass());
 
+    private VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker = null;
     private final Map<String,ServiceReference<HeadlessBuildPlugin>> plugins = new TreeMap<String,ServiceReference<HeadlessBuildPlugin>>();
     private final Map<String,NamedPlugin> pluginsInformation = new TreeMap<String,NamedPlugin>();
 
-    public HeadlessBuildPluginTracker(BundleContext context) {
+    public HeadlessBuildPluginTracker(BundleContext context, VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker) {
         super(context, HeadlessBuildPlugin.class, null);
+        this.versionControlIgnoresPluginTracker = versionControlIgnoresPluginTracker;
     }
 
     /*
@@ -109,7 +111,7 @@ public class HeadlessBuildPluginTracker extends ServiceTracker {
             }
 
             try {
-                plugin.setup(cnf, projectDir, add);
+                plugin.setup(cnf, projectDir, add, versionControlIgnoresPluginTracker);
             } catch (Throwable e) {
                 logger.logError(String.format("Unable to %s headless build file(s) for the %sproject in %s", add ? "add" : "remove", cnf ? "cnf " : "", projectDir.getAbsolutePath()), e);
             }

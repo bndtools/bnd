@@ -89,11 +89,11 @@ public class Plugin extends AbstractUIPlugin {
         resourceIndexerTracker = new ResourceIndexerTracker(context, 1000);
         resourceIndexerTracker.open();
 
-        headlessBuildPluginTracker = new HeadlessBuildPluginTracker(context);
-        headlessBuildPluginTracker.open();
-
         versionControlIgnoresPluginTracker = new VersionControlIgnoresPluginTracker(context);
         versionControlIgnoresPluginTracker.open();
+
+        headlessBuildPluginTracker = new HeadlessBuildPluginTracker(context, versionControlIgnoresPluginTracker);
+        headlessBuildPluginTracker.open();
 
         registerWorkspaceServiceFactory(context);
 
@@ -158,8 +158,8 @@ public class Plugin extends AbstractUIPlugin {
         stopStartupParticipants();
 
         bndActivator.stop(context);
-        versionControlIgnoresPluginTracker.close();
         headlessBuildPluginTracker.close();
+        versionControlIgnoresPluginTracker.close();
         resourceIndexerTracker.close();
         indexerTracker.close();
         this.bundleContext = null;
