@@ -15,6 +15,21 @@ import aQute.libg.map.*;
 public class JSONTest extends TestCase {
 	JSONCodec	codec	= new JSONCodec();
 
+	
+	
+	static abstract class Base<V> implements List<V> {}
+	
+	public void testGenericsVars() {
+		ParameterizedType type = (ParameterizedType) new TypeReference<Base<String>>(){}.getType();
+		System.out.println(type);
+
+		ParameterizedType list = (ParameterizedType) Base.class.getGenericInterfaces()[0];
+		System.out.println(	list );
+		
+		TypeVariable<?> tv = (TypeVariable) list.getActualTypeArguments()[0];
+		System.out.println(	tv.getGenericDeclaration().getTypeParameters()[0] == tv );
+		System.out.println(	type.getRawType());
+	}
 	/**
 	 * Test generics for non maps/lists
 	 */
@@ -39,13 +54,15 @@ public class JSONTest extends TestCase {
 	static class B {
 		public int b;
 	}
+	
+	
 
 	public void testMultiMap() throws Exception {
-		A a = new A();
-		B b = new B();
-		b.b=3;
-		a.mmap.add("x", b);
-		String s = codec.enc().put(a).toString();
+//		A a = new A();
+//		B b = new B();
+//		b.b=3;
+//		a.mmap.add("x", b);
+//		String s = codec.enc().put(a).toString();
 	}
 	
 	/**

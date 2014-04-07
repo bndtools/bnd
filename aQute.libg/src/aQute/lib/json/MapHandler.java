@@ -13,8 +13,8 @@ public class MapHandler extends Handler {
 
 		if ( rawClass != Map.class) {
 			ParameterizedType type = findAncestor(rawClass,Map.class);
-			this.keyType = resolve(type.getActualTypeArguments()[0]);
-			this.valueType = resolve(type.getActualTypeArguments()[1]);
+			this.keyType = keyType == Object.class ? resolve(type.getActualTypeArguments()[0]) : keyType;
+			this.valueType = valueType == Object.class ? resolve(type.getActualTypeArguments()[1]) : valueType;
 		} else {
 			this.keyType = keyType;
 			this.valueType = valueType;			
