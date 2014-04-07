@@ -4,11 +4,54 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
+import org.xml.sax.*;
+
 import junit.framework.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 
 public class ClazzTest extends TestCase {
+
+	/**
+	 * Check that exceptions that are caught are added to the imports. 
+	 */
+	
+	// hide the direct reference in the throw
+	public static class E extends SAXException {
+		
+	}
+	
+	public static class Catching {
+		public void foo() {
+			try {
+				throw new E();
+			} catch( SAXException sax) {
+				
+			}
+		}
+	}
+	
+	public void testCaughtExceptions() throws Exception {
+		Analyzer a = new Analyzer();
+		Clazz c = new Clazz(a,"",null);
+		c.parseClassFile(new FileInputStream("bin/test/ClazzTest$Catching.class"), new ClassDataCollector() {});
+		assertTrue( c.getReferred().toString().contains("org.xml.sax"));
+	}
+	
+	/**
+	 * There is an unused class constant in the 
+	 * 
+	 * This actually looks wrong since 
+	 */
+	
+	public void testUnusedClassConstant() throws Exception {
+		Analyzer a = new Analyzer();
+		Clazz c = new Clazz(a,"",null);
+		c.parseClassFile(new FileInputStream("testresources/TestWeavingHook.jclass"), new ClassDataCollector() {});
+		// TODO test someething here
+		System.out.println(c.getReferred());
+	}
+	
 
 	/**
 	 * {@code java.lang.IllegalArgumentException: Expected IDENTIFIER: <S:Z>()V;}

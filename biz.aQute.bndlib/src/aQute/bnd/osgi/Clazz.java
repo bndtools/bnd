@@ -17,7 +17,8 @@ public class Clazz {
 	static Pattern	METHOD_DESCRIPTOR	= Pattern.compile("(.*)\\)(.+)");
 
 	public class ClassConstant {
-		int	cname;
+		int				cname;
+		public boolean	referred;
 
 		public ClassConstant(int class_index) {
 			this.cname = class_index;
@@ -25,6 +26,10 @@ public class Clazz {
 
 		public String getName() {
 			return (String) pool[cname];
+		}
+
+		public String toString() {
+			return "ClassConstant[" + getName() + "]";
 		}
 	}
 
@@ -152,6 +157,10 @@ public class Clazz {
 		byte	tag;
 		int		a;
 		int		b;
+
+		public String toString() {
+			return "Assoc[" + a + "," + b + "]";
+		}
 	}
 
 	public abstract class Def {
@@ -367,7 +376,7 @@ public class Clazz {
 		}
 	}
 
-	final static byte	SkipTable[]	= { //
+	final static byte						SkipTable[]		= { //
 			0, // 0 non existent
 			-1, // 1 CONSTANT_utf8 UTF 8, handled in
 			// method
@@ -388,41 +397,43 @@ public class Clazz {
 			2, // 16 CONSTANT_MethodType
 			-1, // 17 Not defined
 			4, // 18 CONSTANT_InvokeDynamic
-									};
+															};
 
 	public static final Comparator<Clazz>	NAME_COMPARATOR	= new Comparator<Clazz>() {
 
-		public int compare(Clazz a, Clazz b) {
-			return a.className.compareTo(b.className);
-		}
-		
-	};
+																public int compare(Clazz a, Clazz b) {
+																	return a.className.compareTo(b.className);
+																}
 
-	boolean				hasRuntimeAnnotations;
-	boolean				hasClassAnnotations;
+															};
 
-	TypeRef				className;
-	Object				pool[];
-	int					intPool[];
-	Set<PackageRef>		imports		= Create.set();
-	String				path;
-	int					minor		= 0;
-	int					major		= 0;
-	int					innerAccess	= -1;
-	int					accessx		= 0;
-	String				sourceFile;
-	Set<TypeRef>		xref;
-	Set<TypeRef>		annotations;
-	int					forName		= 0;
-	int					class$		= 0;
-	TypeRef[]			interfaces;
-	TypeRef				zuper;
-	ClassDataCollector	cd			= null;
-	Resource			resource;
-	FieldDef			last		= null;
-	boolean				deprecated;
-	Set<PackageRef>		api;
-	final Analyzer		analyzer;
+	boolean									hasRuntimeAnnotations;
+	boolean									hasClassAnnotations;
+
+	TypeRef									className;
+	Object									pool[];
+	int										intPool[];
+	Set<PackageRef>							imports			= Create.set();
+	String									path;
+	int										minor			= 0;
+	int										major			= 0;
+	int										innerAccess		= -1;
+	int										accessx			= 0;
+	String									sourceFile;
+	Set<TypeRef>							xref;
+	Set<TypeRef>							annotations;
+	int										forName			= 0;
+	int										class$			= 0;
+	TypeRef[]								interfaces;
+	TypeRef									zuper;
+	ClassDataCollector						cd				= null;
+	Resource								resource;
+	FieldDef								last			= null;
+	boolean									deprecated;
+	Set<PackageRef>							api;
+	final Analyzer							analyzer;
+
+	private boolean							detectLdc;
 
 	public Clazz(Analyzer analyzer, String path, Resource resource) {
 		this.path = path;
@@ -515,9 +526,10 @@ public class Clazz {
 					constantString(in, poolIndex);
 					break;
 
+				case 9 : // Field ref
 				case 10 : // Method ref
 				case 11 : // Interface Method ref
-					methodRef(in, poolIndex);
+					ref(in, poolIndex);
 					break;
 
 				// Name and Type
@@ -525,9 +537,11 @@ public class Clazz {
 					nameAndType(in, poolIndex, tag);
 					break;
 
-				// We get the skip count for each record type
-				// from the SkipTable. This will also automatically
-				// abort when
+				case 18 : // TODO Invoke dynamic
+
+					// We get the skip count for each record type
+					// from the SkipTable. This will also automatically
+					// abort when
 				default :
 					if (tag == 2)
 						throw new IOException("Invalid tag " + tag);
@@ -541,17 +555,41 @@ public class Clazz {
 		// All name& type and class constant records contain descriptors we must
 		// treat
 		// as references, though not API
-
+		int index = -1;
 		for (Object o : pool) {
+			index++;
 			if (o == null)
 				continue;
 
-			if (o instanceof Assoc && ((Assoc) o).tag == 12) {
-				referTo(((Assoc) o).b, 0); // Descriptor
-			} else if (o instanceof ClassConstant) {
-				String binaryClassName = (String) pool[((ClassConstant) o).cname];
-				TypeRef typeRef = analyzer.getTypeRef(binaryClassName);
-				referTo(typeRef, 0);
+			if (o instanceof Assoc) {
+				Assoc assoc = (Assoc) o;
+				switch (assoc.tag) {
+					case 9 :
+					case 10 :
+					case 11 :
+						classConstRef(assoc.a);
+						break;
+
+					case 12 :
+						referTo(assoc.b, 0); // Descriptor
+						break;
+				}
+			}
+		}
+
+		//
+		// There is a bug in J8 compiler that leaves an
+		// orphan class constant. So when we have a CC that
+		// is not referenced by fieldrefs, method refs, or other
+		// refs then we need to crawl the byte code.
+		//
+		index = -1;
+		for (Object o : pool) {
+			index++;
+			if (o instanceof ClassConstant) {
+				ClassConstant cc = (ClassConstant) o;
+				if (cc.referred == false)
+					detectLdc = true;
 			}
 		}
 
@@ -646,8 +684,11 @@ public class Clazz {
 			// There are some serious changes in the
 			// class file format. So we do not do any crawling
 			// it has also become less important
-			if (major >= JAVA.OpenJDK7.major)
-				crawl = false;
+			// however, jDK8 has a bug that leaves an orphan ClassConstnat
+			// so if we have those, we need to also crawl the byte codes.
+			// if (major >= JAVA.OpenJDK7.major)
+			
+			crawl |= detectLdc;
 
 			//
 			// Handle the methods
@@ -727,7 +768,7 @@ public class Clazz {
 	 * @param tag
 	 * @throws IOException
 	 */
-	private void methodRef(DataInputStream in, int poolIndex) throws IOException {
+	private void ref(DataInputStream in, int poolIndex) throws IOException {
 		int class_index = in.readUnsignedShort();
 		int name_and_type_index = in.readUnsignedShort();
 		pool[poolIndex] = new Assoc((byte) 10, class_index, name_and_type_index);
@@ -906,6 +947,7 @@ public class Clazz {
 	private void doEnclosingMethod(DataInputStream in) throws IOException {
 		int cIndex = in.readShort();
 		int mIndex = in.readShort();
+		classConstRef(cIndex);
 
 		if (cd != null) {
 			int nameIndex = intPool[cIndex];
@@ -1025,9 +1067,7 @@ public class Clazz {
 			int index = in.readUnsignedShort();
 			if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
 				ClassConstant cc = (ClassConstant) pool[index];
-				String descr = (String) pool[cc.cname];
-
-				TypeRef clazz = analyzer.getTypeRef(descr);
+				TypeRef clazz = analyzer.getTypeRef(cc.getName());
 				referTo(clazz, access_flags);
 			}
 		}
@@ -1065,7 +1105,13 @@ public class Clazz {
 		in.readFully(code);
 		crawl(code);
 		int exception_table_length = in.readUnsignedShort();
-		in.skipBytes(exception_table_length * 8);
+		for ( int i =0; i<exception_table_length; i++) {
+			int start_pc = in.readUnsignedShort();
+			int end_pc = in.readUnsignedShort();
+			int handler_pc = in.readUnsignedShort();
+			int catch_type = in.readUnsignedShort();
+			classConstRef(catch_type);
+		}
 		doAttributes(in, ElementType.METHOD, false, 0);
 	}
 
@@ -1084,10 +1130,12 @@ public class Clazz {
 			switch (instruction) {
 				case OpCodes.ldc :
 					lastReference = 0xFF & bb.get();
+					classConstRef(lastReference);
 					break;
 
 				case OpCodes.ldc_w :
 					lastReference = 0xFFFF & bb.getShort();
+					classConstRef(lastReference);
 					break;
 
 				case OpCodes.invokespecial : {
@@ -1148,10 +1196,12 @@ public class Clazz {
 
 				case OpCodes.lookupswitch :
 					// Skip to place divisible by 4
-					while ((bb.position() & 0x3) != 0)
-						bb.get();
+					while ((bb.position() & 0x3) != 0) {
+						int n = bb.get();
+						assert n == 0; // x
+					}
 					/* deflt = */
-					bb.getInt();
+					int deflt = bb.getInt();
 					int npairs = bb.getInt();
 					bb.position(bb.position() + npairs * 8);
 					lastReference = -1;
@@ -1760,5 +1810,24 @@ public class Clazz {
 
 	public Clazz.TypeDef getImplements(TypeRef type) {
 		return new TypeDef(type, true);
+	}
+
+	private void classConstRef(int lastReference) {
+		Object o = pool[lastReference];
+		if (o == null)
+			return;
+
+		if (o instanceof ClassConstant) {
+			ClassConstant cc = (ClassConstant) o;
+			if (cc.referred)
+				return;
+			cc.referred = true;
+			String name = cc.getName();
+			if (name != null) {
+				TypeRef tr = analyzer.getTypeRef(name);
+				referTo(tr, 0);
+			}
+		}
+
 	}
 }
