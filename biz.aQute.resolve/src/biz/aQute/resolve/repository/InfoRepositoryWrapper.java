@@ -2,7 +2,7 @@ package biz.aQute.resolve.repository;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.Map.Entry;
 
 import org.osgi.resource.*;
 import org.osgi.service.indexer.ResourceIndexer.IndexResult;
@@ -14,6 +14,8 @@ import aQute.bnd.osgi.resource.*;
 import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
+import aQute.lib.collections.*;
+import aQute.lib.filter.*;
 import aQute.lib.hex.*;
 import aQute.lib.persistentmap.*;
 
@@ -25,61 +27,132 @@ public class InfoRepositoryWrapper implements Repository {
 
 	private boolean							inited;
 
-	public InfoRepositoryWrapper(RepoIndex repoIndex, InfoRepository repo, File cache) throws IOException {
-		this.repoIndexer = repoIndex;
+	public InfoRepositoryWrapper(InfoRepository repo, File cache) throws IOException {
+		this.repoIndexer = new RepoIndex();
 		this.repo = repo;
 		this.cache = cache;
 		this.persistent = new PersistentMap<PersistentResource>(cache, PersistentResource.class);
 	}
 
-	boolean init() throws Exception {
+	boolean init() {
 		if (inited)
 			return false;
 
 		inited = true;
 
-		Map<String,ResourceDescriptor> map = collectKeys(repo);
-		
-		persistent.keySet().retainAll(map.keySet());
-		map.keySet().removeAll(persistent.keySet());
-		
-		//
-		// Initiate downloads
-		//
-		
-		Map<String,DownloadBlocker> blockers = new HashMap<String,DownloadBlocker>();
-		
-		for ( Map.Entry<String,ResourceDescriptor> entry : map.entrySet()) {
-			
-			final ResourceDescriptor rd = entry.getValue();
-			
-			DownloadBlocker blocker = new DownloadBlocker(null) {
-				
-				//
-				// We steal the thread of the downloader to index
-				//
-				
-				@Override
-				public void success(File file) throws Exception {
-					IndexResult index = repoIndexer.indexFile(file);
-					
-					//PersistentResource pr = new PersistentResource(rd.id, index.capabilities, index.requirements);
+		Set<String> errors = new LinkedHashSet<String>();
+
+		try {
+			//
+			// Get the current repo contents
+			//
+			Map<String,ResourceDescriptor> map = collectKeys(repo);
+
+			//
+			// Remove any keys not in the repo from the persistent set
+			// and remove any keys in the persistent set from the repo content
+			// (they do not need to be parsed)
+			//
+
+			persistent.keySet().retainAll(map.keySet());
+			map.keySet().removeAll(persistent.keySet());
+
+			//
+			// Initiate downloads
+			//
+
+			Map<String,DownloadBlocker> blockers = new HashMap<String,DownloadBlocker>();
+
+			for (final Map.Entry<String,ResourceDescriptor> entry : map.entrySet()) {
+				final String id = entry.getKey();
+				final ResourceDescriptor rd = entry.getValue();
+
+				DownloadBlocker blocker = new DownloadBlocker(null) {
+
+					//
+					// We steal the thread of the downloader to index
+					//
+
+					@Override
+					public void success(File file) throws Exception {
+						IndexResult index = repoIndexer.indexFile(file);
+
+						ResourceBuilder rb = new ResourceBuilder();
+
+						//
+						// Unfortunately, we need to convert the caps/reqs since
+						// they are not real caps/reqs
+						//
+						for (org.osgi.service.indexer.Capability capability : index.capabilities) {
+							CapReqBuilder cb = new CapReqBuilder(capability.getNamespace());
+							cb.addAttributes(capability.getAttributes());
+							cb.addDirectives(capability.getDirectives());
+						}
+						for (org.osgi.service.indexer.Requirement requirement : index.requirements) {
+							CapReqBuilder cb = new CapReqBuilder(requirement.getNamespace());
+							cb.addAttributes(requirement.getAttributes());
+							cb.addDirectives(requirement.getDirectives());
+						}
+
+						Resource resource = rb.build();
+
+						PersistentResource pr = new PersistentResource(rd.id, resource.getCapabilities(null),
+								resource.getRequirements(null));
+						persistent.put(id, pr);
+						super.success(file);
+					}
+				};
+				blockers.put(entry.getKey(), blocker);
+				repo.get(rd.bsn, rd.version, null, blocker);
+			}
+
+			for (Entry<String,DownloadBlocker> entry : blockers.entrySet()) {
+				String key = entry.getKey();
+				DownloadBlocker blocker = entry.getValue();
+
+				String reason = blocker.getReason();
+				if (reason != null) {
+					errors.add(key + ": " + reason);
 				}
-			};
-			blockers.put(entry.getKey(), blocker);
-			
-			
-			repo.get(rd.bsn, rd.version, null, blocker);
+			}
 		}
-		
-		
-		
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		if (!errors.isEmpty())
+			throw new IllegalStateException("Cannot index " + repo.getName() + " due to " + errors);
+
 		return true;
 	}
+	
+	
+	/**
+	 * The repository method
+	 */
 
+	@SuppressWarnings({
+			"unchecked", "rawtypes"
+	})
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-		// TODO Auto-generated method stub
-		return null;
+
+		MultiMap<Requirement,Capability> result = new MultiMap<Requirement,Capability>();
+
+		nextReq: for (Requirement req : requirements) {
+			String f = req.getDirectives().get("filter");
+			if (f == null)
+				continue nextReq;
+
+			Filter filter = new Filter(f);
+
+			for (Resource resource : persistent.values()) {
+				for (Capability cap : resource.getCapabilities(req.getNamespace())) {
+					if (filter.matchMap(cap.getAttributes()))
+						result.add(req, cap);
+				}
+			}
+		}
+		return (Map) result;
 	}
 
 	/*
@@ -87,15 +160,17 @@ public class InfoRepositoryWrapper implements Repository {
 	 */
 	private Map<String,ResourceDescriptor> collectKeys(InfoRepository repo) throws Exception {
 		Map<String,ResourceDescriptor> map = new HashMap<String,ResourceDescriptor>();
-		
+
 		for (String bsn : repo.list(null)) {
 			for (Version version : repo.versions(bsn)) {
 				ResourceDescriptor rd = repo.getDescriptor(bsn, version);
-				map.put( Hex.toHexString(rd.id), rd);
+				map.put(Hex.toHexString(rd.id), rd);
 			}
 		}
-
 		return map;
 	}
 
+	public String toString() {
+		return repo.getName();
+	}
 }

@@ -131,6 +131,13 @@ public class BndrunResolveContext extends ResolveContext {
 		// Get all of the repositories from the plugin registry
 		List<Repository> allRepos = registry.getPlugins(Repository.class);
 
+//		Workspace ws = registry.getPlugin(Workspace.class);
+//		if (ws != null) {
+//			for (InfoRepository ir : registry.getPlugins(InfoRepository.class)) {
+//				allRepos.add(new InfoRepositoryWrapper(ir, ws.getCache("ir-" + ir.getName())));
+//			}
+//		}
+
 		// Reorder/filter if specified by the run model
 		List<String> repoNames = runModel.getRunRepos();
 		if (repoNames == null) {
