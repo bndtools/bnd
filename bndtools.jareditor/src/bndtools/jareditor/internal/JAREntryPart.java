@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -76,6 +77,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         textSection.setText("Entry Content");
         Composite textComposite = toolkit.createComposite(textSection);
         text = toolkit.createText(textComposite, "", SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
+        text.setFont(JFaceResources.getTextFont());
         textSection.setClient(textComposite);
 
         Section encodingSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
