@@ -320,7 +320,7 @@ public class Workspace extends Processor {
 		boolean		inited;
 
 		CachedFileRepo() {
-			super("cache", getFile(buildDir, CACHEDIR), false);
+			super("cache", getFile(buildDir, CACHEDIR + "/repo"), false);
 		}
 
 		@Override
@@ -841,5 +841,10 @@ public class Workspace extends Processor {
 		}
 		reporter.getInfo(this);
 		return master;
+	}
+	
+
+	public File getCache(String name) {
+		return getFile(buildDir, CACHEDIR + "/" + name);
 	}
 }
