@@ -51,6 +51,13 @@ public class VersionRange {
 		}
 	}
 
+	public VersionRange(boolean b, Version lower, Version upper, boolean c) {
+		start = b ? '[' : '(';
+		end = c ? ']' : ')';
+		low = lower;
+		high = upper;
+	}
+
 	public boolean isRange() {
 		return high != low;
 	}
