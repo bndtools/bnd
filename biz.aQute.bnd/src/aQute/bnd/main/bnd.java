@@ -39,6 +39,8 @@ import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.service.phases.*;
+import aQute.bnd.service.repository.*;
+import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
 import aQute.configurable.*;
 import aQute.lib.base64.*;
@@ -140,7 +142,7 @@ public class bnd extends Processor {
 			args.add(0, "maven");
 			return;
 		}
-		if ( arg.equals("-version")) {
+		if (arg.equals("-version")) {
 			args.set(0, "version");
 			return;
 		}
@@ -705,7 +707,9 @@ public class bnd extends Processor {
 	}
 
 	@Description("Test a project according to an OSGi test")
-	@Arguments(arg = {"testclass[:method]..."})
+	@Arguments(arg = {
+		"testclass[:method]..."
+	})
 	interface testOptions extends Options {
 		@Description("Path to another project than the current project")
 		String project();
@@ -715,10 +719,10 @@ public class bnd extends Processor {
 
 		@Description("Launch the test even if this bundle does not contain Test-Cases")
 		boolean force();
-		
+
 		@Description("Set the -testcontinuous flag")
 		boolean continuous();
-		
+
 		@Description("Set the -runtrace flag")
 		boolean trace();
 	}
@@ -731,20 +735,19 @@ public class bnd extends Processor {
 			return;
 		}
 
-//		if (!verifyDependencies(project, opts.verify(), true))
-//			return;
-//
+		// if (!verifyDependencies(project, opts.verify(), true))
+		// return;
+		//
 		List<String> testNames = opts._();
-		if ( !testNames.isEmpty())
+		if (!testNames.isEmpty())
 			project.setProperty(TESTCASES, "");
-			
-		if (   project.is(NOJUNITOSGI) && !opts.force()) {
-			warning("%s is set to true on this bundle. Use -f/--force to try this test anyway",
-					NOJUNITOSGI);
+
+		if (project.is(NOJUNITOSGI) && !opts.force()) {
+			warning("%s is set to true on this bundle. Use -f/--force to try this test anyway", NOJUNITOSGI);
 			return;
 		}
-			
-		if (   project.getProperty(TESTCASES) == null)
+
+		if (project.getProperty(TESTCASES) == null)
 			if (opts.force())
 				project.setProperty(TESTCASES, "");
 			else {
@@ -753,12 +756,12 @@ public class bnd extends Processor {
 				return;
 			}
 
-		if ( opts.continuous())
+		if (opts.continuous())
 			project.setProperty(TESTCONTINUOUS, "true");
-		
-		if ( opts.trace() || isTrace())
+
+		if (opts.trace() || isTrace())
 			project.setProperty(RUNTRACE, "true");
-		
+
 		project.test(testNames);
 		getInfo(project);
 	}
@@ -3534,29 +3537,120 @@ public class bnd extends Processor {
 			pool.shutdownNow();
 		}
 	}
-	
-	
+
 	/**
 	 * Force a cache update of the workspace
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
-	
+
 	public void _sync(projectOptions options) throws Exception {
 		Workspace ws = null;
 		Project project = getProject(options.project());
-		if ( project != null) {
+		if (project != null) {
 			ws = project.getWorkspace();
 		} else {
 			File cnf = getFile("cnf");
-			if ( cnf.isDirectory()) {
+			if (cnf.isDirectory()) {
 				ws = Workspace.getWorkspace(cnf.getParentFile());
 			}
 		}
-		if ( ws == null) {
+		if (ws == null) {
 			error("Cannot find workspace, either reside in a project directory, point to a project with --project, or reside in the workspace directory");
 			return;
 		}
-		
+
 		ws.syncCache();
+	}
+
+	/**
+	 * From a set of bsns, create a list of urls
+	 */
+
+	interface Bsn2UrlOptions extends projectOptions {
+
+	}
+
+	static Pattern	LINE_P	= Pattern.compile("\\s*(([^\\s]#|[^#])+)(\\s*#.*)?");
+
+	public void _bsn2url(Bsn2UrlOptions opts) throws Exception {
+		Project p = getProject(opts.project());
+
+		if (p == null) {
+			error("You need to be in a project or specify the project with -p/--project");
+			return;
+		}
+
+		MultiMap<String,Version> revisions = new MultiMap<String,Version>();
+
+		for (RepositoryPlugin repo : p.getPlugins(RepositoryPlugin.class)) {
+			if (!(repo instanceof InfoRepository))
+				continue;
+
+			for (String bsn : repo.list(null)) {
+				revisions.addAll(bsn, repo.versions(bsn));
+			}
+		}
+
+		for (List<Version> versions : revisions.values()) {
+			Collections.sort(versions, Collections.reverseOrder());
+		}
+
+		List<String> files = opts._();
+
+		for (String f : files) {
+			BufferedReader r = IO.reader(getFile(f));
+			try {
+				String line;
+				nextLine: while ((line = r.readLine()) != null) {
+					Matcher matcher = LINE_P.matcher(line);
+					if (!matcher.matches())
+						continue nextLine;
+
+					line = matcher.group(1);
+
+					Parameters bundles = new Parameters(line);
+					for (Map.Entry<String,Attrs> entry : bundles.entrySet()) {
+
+						String bsn = entry.getKey();
+						VersionRange range = new VersionRange(entry.getValue().getVersion());
+
+						List<Version> versions = revisions.get(bsn);
+						if (versions == null) {
+							error("No for versions for " + bsn);
+							break nextLine;
+						}
+
+						for (Version version : versions) {
+							if (range.includes(version)) {
+
+								for (RepositoryPlugin repo : p.getPlugins(RepositoryPlugin.class)) {
+
+									if (!(repo instanceof InfoRepository))
+										continue;
+
+									InfoRepository rp = (InfoRepository) repo;
+									ResourceDescriptor descriptor = rp.getDescriptor(bsn, version);
+									if (descriptor == null) {
+										error("Found bundle, but no descriptor %s;version=%s", bsn, version);
+										return;
+									}
+
+									out.println(descriptor.url + " #" + descriptor.bsn + ";version=" + descriptor.version);
+								}
+							}
+						}
+
+					}
+
+				}
+			}
+			catch (Exception e) {
+				error("failed to create url list from file %s : %s", f, e);
+			}
+			finally {
+				r.close();
+			}
+		}
 	}
 }
