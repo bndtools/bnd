@@ -1,0 +1,7 @@
+/*
+ * This file is NOT maintained automatically by Bndtools.
+ *
+ * Build settings overrides that are applied to the workspace.
+ */
+
+assert(project == rootProject)

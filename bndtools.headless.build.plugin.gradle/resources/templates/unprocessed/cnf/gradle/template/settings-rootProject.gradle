@@ -1,0 +1,26 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Define the build settings and load overrides.
+ */
+
+assert(project == rootProject )
+assert(hasProperty("bnd_cnf" ))
+
+
+ext.gradleBuild_rootProjectDefaultTasks  = ["jar"]
+
+ext.gradleBuild_bindexJar                = "$rootDir/$bnd_cnf/gradle/dependencies/org.osgi.impl.bundle.bindex.jar"
+ext.gradleBuild_bindexMain               = "org.osgi.impl.bundle.bindex.cli.Index"
+
+ext.gradleBuild_repoindexJar             = "$rootDir/$bnd_cnf/gradle/dependencies/org.osgi.impl.bundle.repoindex.cli.jar"
+ext.gradleBuild_repoindexMain            = "org.osgi.impl.bundle.bindex.cli.Index"
+
+
+/* Load the overrides */
+apply from: file("$bnd_cnf/gradle/custom/settings-rootProject.gradle")

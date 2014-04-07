@@ -1,0 +1,71 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Setup the javadoc options.
+ *
+ * Note: the 'java' plugin must have been applied to the project before this
+ *       file can be applied.
+ */
+
+assert(project != rootProject                            )
+assert(hasProperty("bnd_targetDir"                      ))
+assert(hasProperty("gradleBuild_javadocAuthor"          ))
+assert(hasProperty("gradleBuild_javadocBreakIterator"   ))
+assert(hasProperty("gradleBuild_javadocClassPathBoot"   ))
+assert(hasProperty("gradleBuild_javadocDir"             ))
+assert(hasProperty("gradleBuild_javadocDocFilesSubDirs" ))
+assert(hasProperty("gradleBuild_javadocEncoding"        ))
+assert(hasProperty("gradleBuild_javadocFailOnError"     ))
+assert(hasProperty("gradleBuild_javadocMaxMemory"       ))
+assert(hasProperty("gradleBuild_javadocMemberLevel"     ))
+assert(hasProperty("gradleBuild_javadocNoComment"       ))
+assert(hasProperty("gradleBuild_javadocNoDeprecated"    ))
+assert(hasProperty("gradleBuild_javadocNoDeprecatedList"))
+assert(hasProperty("gradleBuild_javadocNoHelp"          ))
+assert(hasProperty("gradleBuild_javadocNoIndex"         ))
+assert(hasProperty("gradleBuild_javadocNoNavBar"        ))
+assert(hasProperty("gradleBuild_javadocNoSince"         ))
+assert(hasProperty("gradleBuild_javadocNoTimestamp"     ))
+assert(hasProperty("gradleBuild_javadocNoTree"          ))
+assert(hasProperty("gradleBuild_javadocSplitIndex"      ))
+assert(hasProperty("gradleBuild_javadocUse"             ))
+assert(hasProperty("gradleBuild_javadocVerbose"         ))
+assert(hasProperty("gradleBuild_javadocVersion"         ))
+assert(hasProperty("sourceSets"                         ))
+
+
+javadoc.destinationDir                     = file("$bnd_targetDir/$gradleBuild_javadocDir")
+javadoc.source                             = sourceSets.main.allJava
+javadoc.title                              = "$project.name"
+javadoc.failOnError                        = gradleBuild_javadocFailOnError
+javadoc.maxMemory                          = gradleBuild_javadocMaxMemory
+javadoc.verbose                            = gradleBuild_javadocVerbose
+
+configure(javadoc.options) {
+  docTitle                                 = "$project.name"
+  windowTitle                              = "$project.name"
+
+  author                                   = gradleBuild_javadocAuthor
+  bootClasspath                            = gradleBuild_javadocClassPathBoot
+  breakIterator                            = gradleBuild_javadocBreakIterator
+  docFilesSubDirs                          = gradleBuild_javadocDocFilesSubDirs
+  encoding                                 = gradleBuild_javadocEncoding
+  memberLevel                              = gradleBuild_javadocMemberLevel
+  noComment                                = gradleBuild_javadocNoComment
+  noDeprecated                             = gradleBuild_javadocNoDeprecated
+  noDeprecatedList                         = gradleBuild_javadocNoDeprecatedList
+  noHelp                                   = gradleBuild_javadocNoHelp
+  noIndex                                  = gradleBuild_javadocNoIndex
+  noNavBar                                 = gradleBuild_javadocNoNavBar
+  noSince                                  = gradleBuild_javadocNoSince
+  noTimestamp                              = gradleBuild_javadocNoTimestamp
+  noTree                                   = gradleBuild_javadocNoTree
+  splitIndex                               = gradleBuild_javadocSplitIndex
+  use                                      = gradleBuild_javadocUse
+  version                                  = gradleBuild_javadocVersion
+}

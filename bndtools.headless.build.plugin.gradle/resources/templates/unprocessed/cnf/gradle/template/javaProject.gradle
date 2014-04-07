@@ -1,0 +1,36 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Add tasks that are relevant to Java projects.
+ */
+
+assert(project != rootProject               )
+assert(rootProject.hasProperty("bnd_cnf"   ))
+assert(            hasProperty("sourceSets"))
+
+
+/*
+ * Java Project
+ */
+
+/* Setup javadoc options */
+apply from: rootProject.file("$rootProject.bnd_cnf/gradle/template/javaDoc.gradle")
+
+/* Add findbugs to the project */
+apply from: rootProject.file("$rootProject.bnd_cnf/gradle/template/findbugs.gradle")
+
+distclean.doLast {
+  sourceSets.each {
+    if (projectDir != it.output.classesDir) {
+      delete(it.output.classesDir)
+    }
+    if (projectDir != it.output.resourcesDir) {
+      delete(it.output.resourcesDir)
+    }
+  }
+}

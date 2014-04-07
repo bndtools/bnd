@@ -1,0 +1,20 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Include all bnd project and all gradle projects.
+ */
+
+
+properties.rootDir.eachFile {
+  if (it.isDirectory()
+      && (   new File(it, "bnd.bnd"     ).exists()
+          || new File(it, "build.gradle").exists())
+     ) {
+    include "$it.name"
+  }
+}

@@ -1,0 +1,113 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Define the build settings and load overrides.
+ */
+
+import aQute.bnd.osgi.Constants
+
+
+assert(rootProject.hasProperty("bnd_buildDependencies"))
+
+
+/* Setup the build dependencies */
+buildscript {
+  dependencies {
+    classpath rootProject.bnd_buildDependencies
+  }
+}
+
+
+assert(rootProject.hasProperty("bnd_cnf"              ))
+assert(rootProject.hasProperty("bnd_workspaceDefaults"))
+
+
+/* Gradle directory settings */
+ext.gradleBuild_libsDirName                    = "."                 /* relative to bnd_targetDir           */
+ext.gradleBuild_testReportDirName              = "tests/html"        /* relative to bnd_targetDir/reports   */
+ext.gradleBuild_testResultsDirName             = "reports/tests/xml" /* relative to bnd_targetDir           */
+
+/* Gradle default task settings */
+ext.gradleBuild_bndProjectsDefaultTasks        = ["bundle"]
+ext.gradleBuild_nonBndProjectsDefaultTasks     = ["jar"   ]
+
+/* Setup the bnd workspace defaults */
+ext.bnd_srcDir                                 = relativePath(rootProject.bnd_workspaceDefaults.getProperty(Constants.DEFAULT_PROP_SRC_DIR))
+ext.bnd_srcBinDir                              = relativePath(rootProject.bnd_workspaceDefaults.getProperty(Constants.DEFAULT_PROP_BIN_DIR))
+ext.bnd_testSrcDir                             = relativePath(rootProject.bnd_workspaceDefaults.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR))
+ext.bnd_testSrcBinDir                          = relativePath(rootProject.bnd_workspaceDefaults.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR))
+ext.bnd_targetDir                              = relativePath(rootProject.bnd_workspaceDefaults.getProperty(Constants.DEFAULT_PROP_TARGET_DIR))
+
+/* Java compilation settings */
+ext.gradleBuild_compileDeprecation             = true
+ext.gradleBuild_compileFork                    = true
+ext.gradleBuild_compileVerbose                 = false
+
+/* Java test settings */
+ext.gradleBuild_testEnableAssertions           = true
+ext.gradleBuild_testIgnoreFailures             = false
+ext.gradleBuild_testMaxParallelForks           = 1
+
+/* Java documentation settings */
+ext.gradleBuild_javadocAuthor                  = true
+ext.gradleBuild_javadocBreakIterator           = true
+ext.gradleBuild_javadocClassPathBoot           = new LinkedList<File>()
+ext.gradleBuild_javadocDir                     = "javadoc"           /* relative to bnd_targetDir           */
+ext.gradleBuild_javadocDocFilesSubDirs         = true
+ext.gradleBuild_javadocEncoding                = "UTF-8"
+ext.gradleBuild_javadocFailOnError             = true
+ext.gradleBuild_javadocMaxMemory               = "256M"
+ext.gradleBuild_javadocMemberLevel             = "PUBLIC"            /* PRIVATE, PROTECTED, PACKAGE, PUBLIC */
+ext.gradleBuild_javadocNoComment               = false
+ext.gradleBuild_javadocNoDeprecated            = false
+ext.gradleBuild_javadocNoDeprecatedList        = false
+ext.gradleBuild_javadocNoHelp                  = false
+ext.gradleBuild_javadocNoIndex                 = false
+ext.gradleBuild_javadocNoNavBar                = false
+ext.gradleBuild_javadocNoSince                 = false
+ext.gradleBuild_javadocNoTimestamp             = false
+ext.gradleBuild_javadocNoTree                  = false
+ext.gradleBuild_javadocSplitIndex              = true
+ext.gradleBuild_javadocUse                     = true
+ext.gradleBuild_javadocVerbose                 = false
+ext.gradleBuild_javadocVersion                 = true
+
+/* Findbugs settings */
+ext.gradleBuild_findbugsIncludesFile           = "$rootProject.rootDir/$rootProject.bnd_cnf/findbugs.include.xml"
+ext.gradleBuild_findbugsExcludesFile           = "$rootProject.rootDir/$rootProject.bnd_cnf/findbugs.exclude.xml"
+ext.gradleBuild_findbugsEffort                 = "default"           /* min, default (default),max          */
+ext.gradleBuild_findbugsIgnoreFailures         = true
+ext.gradleBuild_findbugsPropertyXmlReports     = "CI"
+ext.gradleBuild_findbugsReportLevel            = "medium"            /* low, medium (default), high         */
+ext.gradleBuild_findbugsReportsDir             = "findbugs"          /* relative to bnd_targetDir           */
+ext.gradleBuild_findbugsToolVersion            = "2.0.3"
+
+/* Export task settings */
+ext.gradleBuild_exportDir                      = "export"            /* relative to bnd_targetDir           */
+
+/* Index task settings */
+ext.gradleBuild_indexOBRUncompressed           = false
+ext.gradleBuild_indexOBRCompressed             = false
+ext.gradleBuild_indexR5Uncompressed            = false
+ext.gradleBuild_indexR5Compressed              = true
+
+/* ext.gradleBuild_indexDirectories = \
+ *   "<root directory>;<name>;<bundle directory>;<bundle directory>;..., ..." */
+ext.gradleBuild_indexDirectories               = ""
+ext.gradleBuild_indexDirectoriesProperty       = "gradleBuild_indexDirectories"
+
+
+/* Load the overrides */
+apply from: rootProject.file("$rootProject.bnd_cnf/gradle/custom/settings-allProjects.gradle")
+
+
+/* Allow projects to override these build settings */
+def settingsFile = file("build-settings.gradle")
+if (settingsFile.exists()) {
+  apply from: settingsFile
+}

@@ -4,6 +4,7 @@
 	bndtools.builder,\
 	bndtools.core,\
 	bndtools.headless.build.plugin.ant,\
+	bndtools.headless.build.plugin.gradle,\
 	bndtools.jareditor,\
 	bndtools.release,\
 	bndtools.repository.amdatu,\

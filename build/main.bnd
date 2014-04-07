@@ -3,6 +3,7 @@ Include-Resource:\
     ${repo;bndtools.builder;latest},\
     ${repo;bndtools.core;latest},\
     ${repo;bndtools.headless.build.plugin.ant;latest},\
+    ${repo;bndtools.headless.build.plugin.gradle;latest},\
     ${repo;bndtools.jareditor;latest},\
     ${repo;bndtools.release;latest},\
     ${repo;bndtools.repository.base;latest},\
