@@ -136,7 +136,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 								}
 
 								public V setValue(V value) {
-									return put(entry.getKey(), v);
+									return put(entry.getKey(), value);
 								}};
 						}
 						catch (Exception e) {
