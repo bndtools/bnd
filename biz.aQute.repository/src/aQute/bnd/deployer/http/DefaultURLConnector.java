@@ -15,6 +15,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 
 	private static final String	HEADER_IF_NONE_MATCH	= "If-None-Match";
 	private static final String	HEADER_ETAG				= "ETag";
+	private static final String	HEADER_LOCATION			= "Location";
 	private static final int	RESPONSE_NOT_MODIFIED	= 304;
 
 	private boolean				disableServerVerify		= false;
@@ -39,10 +40,15 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 	public TaggedData connectTagged(URL url) throws IOException {
 		return connectTagged(url, null);
 	}
-
+	
 	public TaggedData connectTagged(URL url, String tag) throws IOException {
+		return connectTagged(url, tag, new HashSet<String>());
+	}
+
+	public TaggedData connectTagged(URL url, String tag, Set<String> loopDetect) throws IOException {
 		TaggedData result;
 
+		loopDetect.add(url.toString());
 		URLConnection connection = url.openConnection();
 		try {
 			if (disableServerVerify)
@@ -60,13 +66,32 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 			httpConnection.setUseCaches(true);
 			if (tag != null)
 				httpConnection.setRequestProperty(HEADER_IF_NONE_MATCH, tag);
-
+			
+			httpConnection.setInstanceFollowRedirects(false);
 			httpConnection.connect();
 
 			int responseCode = httpConnection.getResponseCode();
 			if (responseCode == RESPONSE_NOT_MODIFIED) {
 				result = null;
 				httpConnection.disconnect();
+			} else if (responseCode >= 300 && responseCode < 400) {
+				String location = httpConnection.getHeaderField(HEADER_LOCATION);
+				if (location == null)
+					throw new IOException("HTTP server returned redirect status but Location header was missing.");
+
+				try {
+					URL resolved = url.toURI().resolve(location).toURL();
+					if (reporter != null)
+						reporter.warning("HTTP address redirected from %s to %s", url.toString(), resolved.toString());
+					if (loopDetect.contains(resolved.toString()))
+						throw new IOException(String.format("Detected loop in HTTP redirect from '%s' to '%s'.", url, resolved));
+					if (Thread.currentThread().isInterrupted())
+						throw new IOException("Interrupted");
+					result = connectTagged(resolved, tag, loopDetect);
+				}
+				catch (URISyntaxException e) {
+					throw new IOException(String.format("Failed to resolve location '%s' against origin URL: %s", location, url), e);
+				}
 			} else {
 				String responseTag = httpConnection.getHeaderField(HEADER_ETAG);
 				// TODO: get content-size from the http header
