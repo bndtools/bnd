@@ -18,6 +18,7 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
 import aQute.bnd.service.diff.*;
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
@@ -27,7 +28,7 @@ import aQute.libg.generics.*;
  * Include-Resource: ( [name '=' ] file )+ Private-Package: package-decl ( ','
  * package-decl )* Export-Package: package-decl ( ',' package-decl )*
  * Import-Package: package-decl ( ',' package-decl )*
- * 
+ *
  * @version $Revision: 1.27 $
  */
 public class Builder extends Analyzer {
@@ -128,7 +129,7 @@ public class Builder extends Analyzer {
 
 		doDiff(dot); // check if need to diff this bundle
 		doBaseline(dot); // check for a baseline
-		
+
 		String expand = getProperty("-expand");
 		if ( expand != null) {
 			File out = getFile(expand);
@@ -140,7 +141,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Check if we need to calculate any checksums.
-	 * 
+	 *
 	 * @param dot
 	 * @throws Exception
 	 */
@@ -170,7 +171,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Turn this normal bundle in a web and add any resources.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private Jar doWab(Jar dot) throws Exception {
@@ -202,7 +203,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Add a wab lib to the jar.
-	 * 
+	 *
 	 * @param f
 	 */
 	private void addWabLib(Jar dot, File f) throws Exception {
@@ -237,7 +238,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Get the manifest and write it out separately if -savemanifest is set
-	 * 
+	 *
 	 * @param dot
 	 */
 	private void doSaveManifest(Jar dot) throws Exception {
@@ -270,7 +271,7 @@ public class Builder extends Analyzer {
 	/**
 	 * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
 	 * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*
-	 * 
+	 *
 	 * @return
 	 */
 
@@ -353,6 +354,13 @@ public class Builder extends Analyzer {
 	}
 
 	public void cleanupVersion(Packages packages, String defaultVersion) {
+		if (defaultVersion != null) {
+			Matcher m = Verifier.VERSION.matcher(defaultVersion);
+			if (m.matches()) {
+				// Strip qualifier from default package version
+				defaultVersion = Version.parseVersion(defaultVersion).getWithoutQualifier().toString();
+			}
+		}
 		for (Map.Entry<PackageRef,Attrs> entry : packages.entrySet()) {
 			Attrs attributes = entry.getValue();
 			String v = attributes.get(Constants.VERSION_ATTRIBUTE);
@@ -372,7 +380,7 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-     * 
+     *
      */
 	private void addSources(Jar dot) {
 		if (!hasSources())
@@ -460,14 +468,14 @@ public class Builder extends Analyzer {
 
 	private void doVerify(@SuppressWarnings("unused")
 	Jar dot) throws Exception {
-		
+
 		// Give the verifier the benefit of our analysis
 		// prevents parsing the files twice
-		
+
 		Verifier verifier = new Verifier(this);
-		
+
 		verifier.setFrombuilder(true);
-		
+
 		verifier.verify();
 		getInfo(verifier);
 	}
@@ -516,7 +524,7 @@ public class Builder extends Analyzer {
 	/**
 	 * Destructively filter the packages from the build up index. This index is
 	 * used by the Export Package as well as the Private Package
-	 * 
+	 *
 	 * @param jar
 	 * @param name
 	 * @param instructions
@@ -597,7 +605,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Copy the package from the providers based on the split package strategy.
-	 * 
+	 *
 	 * @param dest
 	 * @param providers
 	 * @param directory
@@ -637,7 +645,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Cop
-	 * 
+	 *
 	 * @param dest
 	 * @param srce
 	 * @param path
@@ -667,7 +675,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Analyze the classpath for a split package
-	 * 
+	 *
 	 * @param pack
 	 * @param classpath
 	 * @param source
@@ -704,7 +712,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Matches the instructions against a package.
-	 * 
+	 *
 	 * @param instructions
 	 *            The list of instructions
 	 * @param pack
@@ -746,7 +754,7 @@ public class Builder extends Analyzer {
 	/**
 	 * Parse the Bundle-Includes header. Files in the bundles Include header are
 	 * included in the jar. The source can be a directory or a file.
-	 * 
+	 *
 	 * @throws IOException
 	 * @throws FileNotFoundException
 	 */
@@ -868,7 +876,7 @@ public class Builder extends Analyzer {
 	 * source is used as the only item. If the destination contains a macro,
 	 * each iteration will create a new file, otherwise the destination name is
 	 * used.
-	 * 
+	 *
 	 * @param jar
 	 * @param source
 	 * @param destination
@@ -972,7 +980,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Check if a file or directory is older than the given time.
-	 * 
+	 *
 	 * @param file
 	 * @param lastModified
 	 * @return
@@ -1075,7 +1083,7 @@ public class Builder extends Analyzer {
 	/**
 	 * Extra resources from a Jar and add them to the given jar. The clause is
 	 * the
-	 * 
+	 *
 	 * @param jar
 	 * @param clauses
 	 * @param i
@@ -1113,7 +1121,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Add all the resources in the given jar that match the given filter.
-	 * 
+	 *
 	 * @param sub
 	 *            the jar
 	 * @param filter
@@ -1125,7 +1133,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Add all the resources in the given jar that match the given filter.
-	 * 
+	 *
 	 * @param sub
 	 *            the jar
 	 * @param filter
@@ -1198,7 +1206,7 @@ public class Builder extends Analyzer {
 	/**
 	 * Build Multiple jars. If the -sub command is set, we filter the file with
 	 * the given patterns.
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */
@@ -1250,7 +1258,7 @@ public class Builder extends Analyzer {
 	 * be created artifacts and are each scoped to such an artifacts. The
 	 * builders can be used to build the bundles or they can be used to find out
 	 * information about the to be generated bundles.
-	 * 
+	 *
 	 * @return List of 0..n builders representing artifacts.
 	 * @throws Exception
 	 */
@@ -1370,7 +1378,7 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-     * 
+     *
      */
 	public void removeBundleSpecificHeaders() {
 		Set<String> set = new HashSet<String>(Arrays.asList(BUNDLE_SPECIFIC_HEADERS));
@@ -1382,7 +1390,7 @@ public class Builder extends Analyzer {
 	 * checks if the Include-Resource includes this resource or if it is a class
 	 * file it is on the class path and the Export-Package or Private-Package
 	 * include this resource.
-	 * 
+	 *
 	 * @param f
 	 * @return
 	 */
@@ -1426,7 +1434,7 @@ public class Builder extends Analyzer {
 	/**
 	 * Extra the paths for the directories and files that are used in the
 	 * Include-Resource header.
-	 * 
+	 *
 	 * @return
 	 */
 	private Collection<String> getIncludedResourcePrefixes() {
@@ -1449,7 +1457,7 @@ public class Builder extends Analyzer {
 	 * Answer the string of the resource that it has in the container. It is
 	 * possible that the resource is a classpath entry. In that case an empty
 	 * string is returned.
-	 * 
+	 *
 	 * @param resource
 	 *            The resource to look for
 	 * @return A suffix on the classpath or "" if the resource is a class path
@@ -1525,7 +1533,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Diff this bundle to another bundle for the given packages.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -1581,7 +1589,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Show the diff recursively
-	 * 
+	 *
 	 * @param p
 	 * @param i
 	 */
@@ -1619,7 +1627,7 @@ public class Builder extends Analyzer {
 	/**
 	 * Base line against a previous version. Should be overridden in the
 	 * ProjectBuilder where we have access to the repos
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -1629,7 +1637,7 @@ public class Builder extends Analyzer {
 	 * #388 Manifest header to get GIT head Get the head commit number. Look
 	 * for a .git/HEAD file, going up in the file hierarchy. Then get this file,
 	 * and resolve any symbolic reference.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	static Pattern	GITREF	= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
@@ -1638,11 +1646,11 @@ public class Builder extends Analyzer {
 
 	public String _githead(String[] args) throws IOException {
 		Macro.verifyCommand(args, _githeadHelp, null, 1, 1);
-		
+
 		//
 		// Locate the .git directory
 		//
-		
+
 		File rover = getBase();
 		while (rover.isDirectory()) {
 			File headFile = IO.getFile(rover, ".git/HEAD");
@@ -1657,9 +1665,9 @@ public class Builder extends Analyzer {
 					//
 					Matcher m = GITREF.matcher(head);
 					if (m.matches()) {
-						
+
 						// so the commit is in the following path
-						
+
 						head = IO.collect(IO.getFile(rover, ".git/" + m.group(1)));
 					}
 					else {
@@ -1678,9 +1686,9 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Create a report of the settings
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	
+
 	public void report(Map<String,Object> table) throws Exception {
 		build();
 		super.report(table);
