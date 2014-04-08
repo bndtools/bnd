@@ -95,47 +95,46 @@ public class Attrs implements Map<String,String> {
 	}
 
 	public void putTyped(String key, Object value) {
-		
-		if ( value == null) {
-			put(key,null);
+
+		if (value == null) {
+			put(key, null);
 			return;
 		}
-		
+
 		if (!(value instanceof String)) {
 			Type type;
-			
+
 			if (value instanceof Collection)
 				value = ((Collection< ? >) value).toArray();
-
 
 			if (value.getClass().isArray()) {
 				type = Type.STRINGS;
 				int l = Array.getLength(value);
 				StringBuilder sb = new StringBuilder();
-				String del = null;
-				
+				String del = "";
+				boolean first = true;
 				for (int i = 0; i < l; i++) {
-					
+
 					Object member = Array.get(value, i);
 					if (member == null) {
 						// TODO What do we do with null members?
 						continue;
-					} else if (del == null) {
+					} else if (first) {
 						type = getObjectType(member).plural();
-					} else {
-						sb.append(del);
-						int n=sb.length();
-						sb.append(member);
-						while ( n < sb.length()) {
-							char c = sb.charAt(n); 
-							if (c == '\\' || c== ',') {
-								sb.insert(n, '\\');
-								n++;
-							}
+						first = true;
+					}
+					sb.append(del);
+					int n = sb.length();
+					sb.append(member);
+					while (n < sb.length()) {
+						char c = sb.charAt(n);
+						if (c == '\\' || c == ',') {
+							sb.insert(n, '\\');
 							n++;
 						}
+						n++;
 					}
-					
+
 					del = ",";
 				}
 				value = sb;
@@ -149,9 +148,9 @@ public class Attrs implements Map<String,String> {
 	}
 
 	private Type getObjectType(Object member) {
-		if (member instanceof Double)
+		if (member instanceof Double || member instanceof Float)
 			return Type.DOUBLE;
-		if (member instanceof Long)
+		if (member instanceof Number)
 			return Type.LONG;
 		if (member instanceof Version)
 			return Type.VERSION;
