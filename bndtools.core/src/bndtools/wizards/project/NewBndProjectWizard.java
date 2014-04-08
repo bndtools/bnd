@@ -13,17 +13,16 @@ package bndtools.wizards.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
+import java.util.Map;
 
 import org.bndtools.api.IProjectTemplate;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
+import org.bndtools.utils.javaproject.JavaProjectUtils;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.ErrorDialog;
 
@@ -68,40 +67,34 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
         ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
 
-        String name = pageTwo.getJavaProject().getProject().getName();
-
         IProjectTemplate template = templatePage.getTemplate();
         if (template != null) {
+            String name = pageTwo.getJavaProject().getProject().getName();
             model.setBundleVersion(DEFAULT_BUNDLE_VERSION);
             template.modifyInitialBndModel(model, name, projectPaths);
         }
         try {
-            IPath projectPath = new Path(name).makeAbsolute();
-            IClasspathEntry[] entries = pageTwo.getJavaProject().getResolvedClasspath(true);
-            int nr = 1;
-            for (IClasspathEntry entry : entries) {
-                if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-                    IPath srcPath = entry.getPath();
-                    IPath src = srcPath.makeRelativeTo(projectPath);
-                    IPath srcOutPath = entry.getOutputLocation();
-                    if (srcOutPath == null) {
-                        srcOutPath = pageTwo.getJavaProject().getOutputLocation();
-                    }
-                    IPath srcOut = srcOutPath.makeRelativeTo(projectPath);
+            Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(pageTwo.getJavaProject());
+            if (sourceOutputLocations != null) {
+                int nr = 1;
+                for (Map.Entry<String,String> entry : sourceOutputLocations.entrySet()) {
+                    String src = entry.getKey();
+                    String bin = entry.getValue();
+
                     if (nr == 1) {
-                        if (!bndPaths.getSrc().equals(src.toString())) {
-                            model.genericSet(Constants.DEFAULT_PROP_SRC_DIR, src.toString());
+                        if (!bndPaths.getSrc().equals(src)) {
+                            model.genericSet(Constants.DEFAULT_PROP_SRC_DIR, src);
                         }
-                        if (!bndPaths.getBin().equals(srcOut.toString())) {
-                            model.genericSet(Constants.DEFAULT_PROP_BIN_DIR, srcOut.toString());
+                        if (!bndPaths.getBin().equals(bin)) {
+                            model.genericSet(Constants.DEFAULT_PROP_BIN_DIR, bin);
                         }
                         nr = 2;
                     } else if (nr == 2) {
-                        if (!bndPaths.getTestSrc().equals(src.toString())) {
-                            model.genericSet(Constants.DEFAULT_PROP_TESTSRC_DIR, src.toString());
+                        if (!bndPaths.getTestSrc().equals(src)) {
+                            model.genericSet(Constants.DEFAULT_PROP_TESTSRC_DIR, src);
                         }
-                        if (!bndPaths.getTestBin().equals(srcOut.toString())) {
-                            model.genericSet(Constants.DEFAULT_PROP_TESTBIN_DIR, srcOut.toString());
+                        if (!bndPaths.getTestBin().equals(bin)) {
+                            model.genericSet(Constants.DEFAULT_PROP_TESTBIN_DIR, bin);
                         }
                         nr = 2;
                     } else {
@@ -109,7 +102,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                         // extension properties (we cannot write comments) but this should never happen
                         // anyway since the second page will not complete if there are not exactly 2 paths
                         // so this could only happen if someone adds another page (that changes them again)
-                        model.genericSet("X-WARN-" + nr, "Ignoring source path " + src + " -> " + srcOut);
+                        model.genericSet("X-WARN-" + nr, "Ignoring source path " + src + " -> " + bin);
                         nr++;
                     }
                 }
