@@ -28,7 +28,7 @@ public class ProjectLayoutGroup {
     public Control createControl(Composite parent) {
         Group group = new Group(parent, SWT.NONE);
         group.setText(groupTitle);
-        group.setLayout(new GridLayout(Math.min(4, ProjectLayout.values().length), true));
+        group.setLayout(new GridLayout(Math.max(4, ProjectLayout.values().length), true));
 
         SelectionListener radioListener = new SelectionAdapter() {
             @Override
