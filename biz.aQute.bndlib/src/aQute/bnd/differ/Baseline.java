@@ -58,7 +58,7 @@ public class Baseline {
 	 * This method compares a jar to a baseline jar and returns version
 	 * suggestions if the baseline does not agree with the newer jar. The
 	 * returned set contains all the exported packages.
-	 * 
+	 *
 	 * @param newer
 	 * @param older
 	 * @return null if ok, otherwise a set of suggested versions for all
@@ -123,14 +123,7 @@ public class Baseline {
 			} else if (pdiff.getDelta() == Delta.REMOVED) {
 				info.suggestedVersion = null;
 			} else if (pdiff.getDelta() == Delta.ADDED) {
-				if (firstRelease) {
-					info.suggestedVersion = info.newerVersion;
-					if (info.suggestedVersion.equals(Version.emptyVersion)) {
-						info.suggestedVersion = newerVersion.getWithoutQualifier();
-					}
-				} else {
-					info.suggestedVersion = Version.ONE;
-				}
+				info.suggestedVersion = info.newerVersion;
 			} else {
 				// We have an API change
 				info.suggestedVersion = bump(pdiff.getDelta(), info.olderVersion, 1, 0);
@@ -227,7 +220,7 @@ public class Baseline {
 
 	/**
 	 * Gets the generated diff
-	 * 
+	 *
 	 * @return the diff
 	 */
 	public Diff getDiff() {
