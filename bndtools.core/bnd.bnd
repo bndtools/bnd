@@ -1,7 +1,7 @@
 -dependson: bndtools.bndplugins
 
 Bundle-SymbolicName: bndtools.core;singleton:=true
-Bundle-Version: ${master-version}
+Bundle-Version:3.0.0.${tstamp}
 Bundle-Activator: bndtools.Plugin
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
