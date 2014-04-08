@@ -16,12 +16,13 @@ import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
+import aQute.lib.strings.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.generics.*;
 import aQute.service.reporter.*;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+	static final int				BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
 
 	static Pattern					PACKAGES_IGNORED	= Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
@@ -192,7 +193,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (progress > 0)
 			format = String.format("[%2d] %s%n", (int) progress, format);
 		else
-			format = String.format("%s%n",format);
+			format = String.format("%s%n", format);
 
 		System.err.printf(format, args);
 	}
@@ -1040,15 +1041,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		if ("false".equalsIgnoreCase(value))
 			return false;
-		
+
 		if ("off".equalsIgnoreCase(value))
 			return false;
-		
+
 		if ("not".equalsIgnoreCase(value))
 			return false;
 
 		return true;
-}
+	}
 
 	/**
 	 * Get a property without preprocessing it with a proper default
@@ -1905,37 +1906,29 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 *            an args array of
 	 *            [native_capability,&nbsp;osversion=3.2.4,&nbsp;osname=Linux]
 	 */
+
 	public String _native_capability(String[] args) throws IllegalArgumentException {
 		StringBuilder builder = new StringBuilder().append(OSGI_NATIVE);
 
 		String processorNames = null;
 		OSInformation osInformation = null;
 		IllegalArgumentException osInformationException = null;
+		/*
+		 * Determine the processor information
+		 */
+		String[] aliases = OSInformation.getProcessorAliases();
+		if ( aliases != null)
+			processorNames = Strings.join(aliases);
+
+		/*
+		 * Determine the OS information
+		 */
+
 		try {
-			/*
-			 * Determine the processor information
-			 */
-
-			String arch = System.getProperty("os.arch");
-			if ("x86_64".equals(arch) || "amd64".equals(arch) || "em64t".equals(arch))
-				processorNames = "x86-64,amd64,em64t,x86_64";
-			else if ("x86".equals(arch))
-				processorNames = "x86,pentium,i386,i486,i586,i686";
-
-			/*
-			 * Determine the OS information
-			 */
-
-			try {
-				osInformation = new OSInformation();
-			}
-			catch (IllegalArgumentException e) {
-				osInformationException = e;
-			}
+			osInformation = new OSInformation();
 		}
-		catch (SecurityException e) {
-			throw new IllegalArgumentException(
-					"Security error retrieving system properties while processing ${native_capability} macro.");
+		catch (IllegalArgumentException e) {
+			osInformationException = e;
 		}
 
 		/*
@@ -2340,11 +2333,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 		return upto.compareTo(introduced) >= 0;
 	}
-	
+
 	/**
 	 * Report the details of this processor. Should in general be overridden
+	 * 
 	 * @param table
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 
 	public void report(Map<String,Object> table) throws Exception {
@@ -2352,13 +2346,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		table.put("Base", getBase());
 		table.put("Properties", properties.entrySet());
 	}
-	
-	
+
 	/**
 	 * Simplified way to check booleans
 	 */
-	
+
 	public boolean is(String propertyName) {
-		return isTrue( getProperty(propertyName));
+		return isTrue(getProperty(propertyName));
 	}
 }

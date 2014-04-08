@@ -14,6 +14,40 @@ public class OSInformation {
 
 	static private String	regexQualifierNotAllowedChars	= "[^\\p{Alnum}-_]";
 	static private Pattern	digitPattern					= Pattern.compile("(\\d+).*");
+	
+	final static  String[][] processorFamilies = {
+		new String[] {"x86-64", "amd64", "em64t", "x86_64"},
+		new String[] {"x86", "pentium", "i386", "i486", "i586"},
+		new String[] {"68k"},
+		new String[] {"ARM"},
+		new String[] {"ARM_be"},
+		new String[] {"ARM_le"},
+		new String[] {"Alpha"},
+		new String[] {"ia64n"},
+		new String[] {"ia64w"},
+		new String[] {"Ignite", "psc1k"},
+		new String[] {"Mips"},
+		new String[] {"PARisc"},
+		new String[] {"PowerPC", "power", "ppc"},
+		new String[] {"Sh4"},
+		new String[] {"Sparc"},
+		new String[] {"Sparcv9"},
+		new String[] {"S390"},
+		new String[] {"V850e"},
+	};
+	static String[] osarch =getProcessorAliases( System.getProperty("os.arch"));
+	
+	public static String[] getProcessorAliases( String osArch) {
+		for ( String[] pnames : processorFamilies) {
+			for ( String pname : pnames) 
+				if ( pname.equalsIgnoreCase(osArch))
+					return pnames;
+		}
+		return null;
+	}
+	public static String[] getProcessorAliases() {
+		return osarch;
+	}
 
 	/**
 	 * <p>

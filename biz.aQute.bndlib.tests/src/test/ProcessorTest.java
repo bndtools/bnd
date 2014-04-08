@@ -4,9 +4,29 @@ import java.io.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.strings.*;
 
 public class ProcessorTest extends TestCase {
 
+	
+	
+	public void testNative() {
+		Processor p = new Processor();
+		
+		String s = p._native_capability(new String[]{"_native_capability"});
+		System.out.println(s);
+		assertNotNull(s);
+		
+		s = Strings.join(OSInformation.getProcessorAliases("x86-64"));
+		assertEquals(s, Strings.join(OSInformation.getProcessorAliases("X86-64")));
+		assertEquals(s, Strings.join(OSInformation.getProcessorAliases("x86_64")));
+		assertEquals(s, Strings.join(OSInformation.getProcessorAliases("AMD64")));
+		assertEquals(s, Strings.join(OSInformation.getProcessorAliases("em64t")));
+		
+		p.close();
+	}
+	
+	
 	public static void testPlugins() {
 
 	}
