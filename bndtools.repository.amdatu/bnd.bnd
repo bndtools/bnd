@@ -6,7 +6,6 @@ amdatu-template: templates/cnfs/amdatu
 amdatu-template-resources: \
 	{${amdatu-template}=../bndtools.repository.base/templates/processed/bundlehub},\
 	${amdatu-template}=templates/unprocessed/amdatu,\
-	${amdatu-template}=../bndtools.repository.base/templates/unprocessed/ant,\
 	${amdatu-template}=../bndtools.repository.base/templates/unprocessed/common,\
 	${amdatu-template}/buildrepo/=../bndtools.repository.base/templates/repos/buildrepo,\
 	${amdatu-template}/buildrepo/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\

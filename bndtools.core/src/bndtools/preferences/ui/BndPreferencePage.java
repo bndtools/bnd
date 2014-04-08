@@ -1,7 +1,13 @@
 package bndtools.preferences.ui;
 
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+import org.bndtools.api.NamedPlugin;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.PreferencePage;
@@ -20,6 +26,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import aQute.bnd.build.Project;
+import bndtools.HeadlessBuildPluginTracker;
+import bndtools.Plugin;
 import bndtools.preferences.BndPreferences;
 import bndtools.utils.ModificationLock;
 import bndtools.versioncontrol.VersionControlSystem;
@@ -32,17 +40,25 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
     private final ModificationLock lock = new ModificationLock();
 
+    private final HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();
+
     private String enableSubs;
     private boolean noAskPackageInfo = false;
     private boolean noCheckCnf = false;
     private boolean warnExistingLaunch = true;
     private int buildLogging = 0;
     private boolean editorOpenSourceTab = false;
+    private boolean headlessBuildCreate = true;
+    private final Map<String,Boolean> headlessBuildPlugins = new HashMap<String,Boolean>();
     private boolean vcsCreateIgnoreFiles = true;
     private int vcsVcs = VersionControlSystem.GIT.ordinal();
 
     @Override
     protected Control createContents(Composite parent) {
+        // Layout
+        GridLayout layout;
+        GridData gd;
+
         Composite composite = new Composite(parent, SWT.NONE);
 
         // Create controls
@@ -95,6 +111,62 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         final Button btnEditorOpenSourceTab = new Button(editorGroup, SWT.CHECK);
         btnEditorOpenSourceTab.setText(Messages.BndPreferencePage_btnEditorOpenSourceTab);
 
+        Collection<NamedPlugin> allPluginsInformation = headlessBuildPluginTracker.getAllPluginsInformation();
+        if (allPluginsInformation.size() > 0) {
+            Group headlessMainGroup = new Group(composite, SWT.NONE);
+            headlessMainGroup.setText(Messages.BndPreferencePage_headlessGroup);
+
+            final Button btnHeadlessCreate = new Button(headlessMainGroup, SWT.CHECK);
+            btnHeadlessCreate.setText(Messages.BndPreferencePage_headlessCreate_text);
+            btnHeadlessCreate.setSelection(headlessBuildCreate);
+
+            final Group headlessGroup = new Group(headlessMainGroup, SWT.NONE);
+            final Set<Button> headlessGroupButtons = new HashSet<Button>();
+
+            for (NamedPlugin info : allPluginsInformation) {
+                final String pluginName = info.getName();
+                final Button btnHeadlessPlugin = new Button(headlessGroup, SWT.CHECK);
+                headlessGroupButtons.add(btnHeadlessPlugin);
+                btnHeadlessPlugin.setText(pluginName);
+                Boolean checked = headlessBuildPlugins.get(pluginName);
+                if (checked == null) {
+                    checked = Boolean.FALSE;
+                    headlessBuildPlugins.put(pluginName, checked);
+                }
+                btnHeadlessPlugin.setSelection(checked.booleanValue());
+                btnHeadlessPlugin.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        headlessBuildPlugins.put(pluginName, Boolean.valueOf(btnHeadlessPlugin.getSelection()));
+                        checkValid();
+                    }
+                });
+            }
+
+            gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+            headlessGroup.setLayoutData(gd);
+
+            layout = new GridLayout(Math.max(4, allPluginsInformation.size()), true);
+            headlessGroup.setLayout(layout);
+
+            gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+            headlessMainGroup.setLayoutData(gd);
+
+            layout = new GridLayout(1, true);
+            headlessMainGroup.setLayout(layout);
+
+            btnHeadlessCreate.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    headlessBuildCreate = btnHeadlessCreate.getSelection();
+                    for (Button button : headlessGroupButtons) {
+                        button.setEnabled(headlessBuildCreate);
+                    }
+                    checkValid();
+                }
+            });
+        }
+
         Group vcsGroup = new Group(composite, SWT.NONE);
         vcsGroup.setText(Messages.BndPreferencePage_vcsGroup_text);
 
@@ -129,6 +201,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         btnWarnExistingLaunch.setSelection(warnExistingLaunch);
         cmbBuildLogging.select(buildLogging);
         btnEditorOpenSourceTab.setSelection(editorOpenSourceTab);
+        // headless already done
         btnVcsCreateIgnoreFiles.setSelection(vcsCreateIgnoreFiles);
         cmbVcs.select(vcsVcs);
 
@@ -191,6 +264,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
                 editorOpenSourceTab = btnEditorOpenSourceTab.getSelection();
             }
         });
+        // headless already done
         btnVcsCreateIgnoreFiles.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -203,10 +277,6 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
                 vcsVcs = cmbVcs.getSelectionIndex();
             }
         });
-
-        // Layout
-        GridLayout layout;
-        GridData gd;
 
         layout = new GridLayout(1, false);
         composite.setLayout(layout);
@@ -244,6 +314,8 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         layout.verticalSpacing = 10;
         editorGroup.setLayout(layout);
 
+        // headless already done
+
         vcsGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         vcsGroup.setLayout(new GridLayout(2, false));
         cmbVcs.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -259,6 +331,11 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         prefs.setWarnExistingLaunch(warnExistingLaunch);
         prefs.setBuildLogging(buildLogging);
         prefs.setEditorOpenSourceTab(editorOpenSourceTab);
+        prefs.setHeadlessBuildCreate(headlessBuildCreate);
+        Collection<NamedPlugin> pluginsInformation = headlessBuildPluginTracker.getAllPluginsInformation();
+        if (pluginsInformation.size() > 0) {
+            prefs.setHeadlessBuildPlugins(headlessBuildPlugins);
+        }
         prefs.setVcsCreateIgnoreFiles(vcsCreateIgnoreFiles);
         prefs.setVcsVcs(vcsVcs);
 
@@ -274,7 +351,35 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         warnExistingLaunch = prefs.getWarnExistingLaunches();
         buildLogging = prefs.getBuildLogging();
         editorOpenSourceTab = prefs.getEditorOpenSourceTab();
+        headlessBuildCreate = prefs.getHeadlessBuildCreate();
+        Collection<NamedPlugin> pluginsInformation = headlessBuildPluginTracker.getAllPluginsInformation();
+        if (pluginsInformation.size() > 0) {
+            headlessBuildPlugins.clear();
+            headlessBuildPlugins.putAll(prefs.getHeadlessBuildPlugins(pluginsInformation, false));
+        }
         vcsCreateIgnoreFiles = prefs.getVcsCreateIgnoreFiles();
         vcsVcs = prefs.getVcsVcs();
+    }
+
+    private void checkValid() {
+        boolean valid = true;
+        if (headlessBuildCreate) {
+            Collection<NamedPlugin> pluginsInformation = headlessBuildPluginTracker.getAllPluginsInformation();
+            if (pluginsInformation.size() > 0) {
+                boolean atLeastOneEnabled = false;
+                for (Boolean b : headlessBuildPlugins.values()) {
+                    atLeastOneEnabled = atLeastOneEnabled || b.booleanValue();
+                }
+                if (!atLeastOneEnabled) {
+                    valid = false;
+                    setErrorMessage(Messages.BndPreferencePage_msgCheckValidHeadless);
+                }
+            }
+        }
+
+        if (valid) {
+            setErrorMessage(null);
+        }
+        setValid(valid);
     }
 }

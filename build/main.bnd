@@ -2,6 +2,7 @@ Include-Resource:\
     ${repo;bndtools.api;latest},\
     ${repo;bndtools.builder;latest},\
     ${repo;bndtools.core;latest},\
+    ${repo;bndtools.headless.build.plugin.ant;latest},\
     ${repo;bndtools.jareditor;latest},\
     ${repo;bndtools.release;latest},\
     ${repo;bndtools.repository.base;latest},\

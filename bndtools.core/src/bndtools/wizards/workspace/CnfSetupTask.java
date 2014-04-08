@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.bndtools.api.ILogger;
@@ -40,8 +41,10 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.osgi.framework.Bundle;
 
 import aQute.bnd.build.Workspace;
+import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
 import bndtools.central.Central;
+import bndtools.preferences.BndPreferences;
 import bndtools.versioncontrol.util.VersionControlUtils;
 import bndtools.wizards.workspace.CnfInfo.Existence;
 
@@ -174,6 +177,14 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         } catch (Exception e) {
             logger.logError("Unable to refresh Bnd workspace", e);
         }
+
+        /* Headless build files */
+        HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();
+        Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildPluginTracker, null);
+        headlessBuildPluginTracker.setup(enabledPlugins, true, cnfJavaProject.getProject().getLocation().toFile(), true);
+
+        /* refresh the project; files were created outside of Eclipse API */
+        cnfProject.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
     }
 
     static void rebuildWorkspace(IProgressMonitor monitor) throws CoreException {

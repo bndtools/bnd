@@ -3,6 +3,7 @@
 	bndtools.bndplugins,\
 	bndtools.builder,\
 	bndtools.core,\
+	bndtools.headless.build.plugin.ant,\
 	bndtools.jareditor,\
 	bndtools.release,\
 	bndtools.repository.amdatu,\

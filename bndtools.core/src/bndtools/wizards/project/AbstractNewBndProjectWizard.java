@@ -12,12 +12,12 @@ package bndtools.wizards.project;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.Set;
 
 import org.bndtools.api.BndProjectResource;
 import org.bndtools.api.ILogger;
@@ -26,6 +26,7 @@ import org.bndtools.api.ProjectPaths;
 import org.bndtools.utils.copy.ResourceCopier;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -43,8 +44,10 @@ import org.eclipse.ui.ide.IDE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.Document;
+import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
 import bndtools.editor.model.BndProject;
+import bndtools.preferences.BndPreferences;
 import bndtools.versioncontrol.util.VersionControlUtils;
 
 abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
@@ -133,23 +136,13 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             bndBndFile.create(bndInput, false, progress.newChild(1));
         }
 
-        /*
-         * Ant files
-         */
+        /* Headless build files */
+        HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();
+        Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildPluginTracker, null);
+        headlessBuildPluginTracker.setup(enabledPlugins, false, project.getProject().getLocation().toFile(), true);
 
-        IFile buildXmlFile = project.getProject().getFile("build.xml");
-        InputStream buildXmlInput = getClass().getResourceAsStream("template_bnd_build.xml");
-        try {
-            if (buildXmlFile.exists()) {
-                buildXmlFile.setContents(buildXmlInput, false, false, progress.newChild(1));
-            } else {
-                buildXmlFile.create(buildXmlInput, false, progress.newChild(1));
-            }
-        } finally {
-            try {
-                buildXmlInput.close();
-            } catch (IOException e) {}
-        }
+        /* refresh the project; files were created outside of Eclipse API */
+        project.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
     }
 
     protected static IFile importResource(IProject project, String fullPath, BndProjectResource bndProjectResource, IProgressMonitor monitor) throws CoreException {

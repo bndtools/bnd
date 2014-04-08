@@ -66,6 +66,7 @@ public class Plugin extends AbstractUIPlugin {
     private volatile ServiceRegistration urlHandlerReg;
     private volatile IndexerTracker indexerTracker;
     private volatile ResourceIndexerTracker resourceIndexerTracker;
+    private volatile HeadlessBuildPluginTracker headlessBuildPluginTracker;
 
     private volatile ScheduledExecutorService scheduler;
 
@@ -86,6 +87,9 @@ public class Plugin extends AbstractUIPlugin {
 
         resourceIndexerTracker = new ResourceIndexerTracker(context, 1000);
         resourceIndexerTracker.open();
+
+        headlessBuildPluginTracker = new HeadlessBuildPluginTracker(context);
+        headlessBuildPluginTracker.open();
 
         registerWorkspaceServiceFactory(context);
 
@@ -150,6 +154,7 @@ public class Plugin extends AbstractUIPlugin {
         stopStartupParticipants();
 
         bndActivator.stop(context);
+        headlessBuildPluginTracker.close();
         resourceIndexerTracker.close();
         indexerTracker.close();
         this.bundleContext = null;
@@ -271,6 +276,10 @@ public class Plugin extends AbstractUIPlugin {
 
     public ResourceIndexer getResourceIndexer() {
         return resourceIndexerTracker;
+    }
+
+    public HeadlessBuildPluginTracker getHeadlessBuildPluginTracker() {
+        return headlessBuildPluginTracker;
     }
 
     public ScheduledExecutorService getScheduler() {

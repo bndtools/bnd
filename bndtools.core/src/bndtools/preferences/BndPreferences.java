@@ -1,7 +1,18 @@
 package bndtools.preferences;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import org.bndtools.api.NamedPlugin;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
 import bndtools.versioncontrol.VersionControlSystem;
 
@@ -15,6 +26,8 @@ public class BndPreferences {
     private static final String PREF_HIDE_WARNING_EXTERNAL_FILE = "hideExternalFileWarning";
     private static final String PREF_BUILD_LOGGING = "buildLogging";
     private static final String PREF_EDITOR_OPEN_SOURCE_TAB = "editorOpenSourceTab";
+    private static final String PREF_HEADLESS_BUILD_CREATE = "headlessBuildCreate";
+    private static final String PREF_HEADLESS_BUILD_PLUGINS = "headlessBuildPlugins";
     private static final String PREF_VCS_CREATE_IGNORE_FILES = "vcsCreateIgnoreFiles";
     private static final String PREF_VCS_VCS = "vcsVcs";
 
@@ -25,8 +38,59 @@ public class BndPreferences {
 
         // Defaults...
         store.setDefault(PREF_WARN_EXISTING_LAUNCH, true);
+        store.setDefault(PREF_HEADLESS_BUILD_CREATE, true);
+        store.setDefault(PREF_HEADLESS_BUILD_PLUGINS, "");
         store.setDefault(PREF_VCS_CREATE_IGNORE_FILES, true);
         store.setDefault(PREF_VCS_VCS, VersionControlSystem.GIT.ordinal());
+    }
+
+    private String mapToPreference(Map<String,Boolean> names) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String,Boolean> nameEntry : names.entrySet()) {
+            if (nameEntry.getValue().booleanValue()) {
+                if (sb.length() > 0) {
+                    sb.append("|");
+                }
+                sb.append(nameEntry.getKey());
+            }
+        }
+        return sb.toString();
+    }
+
+    private Map<String,Boolean> preferenceToMap(String preference, Collection< ? extends NamedPlugin> allPluginsInformation, boolean onlyEnabled) {
+        List<String> names = null;
+        if (preference != null && !preference.isEmpty()) {
+            names = Arrays.asList(preference.split("\\|"));
+        }
+
+        boolean atLeastOneEnabled = false;
+
+        Map<String,Boolean> map = new TreeMap<String,Boolean>();
+        for (NamedPlugin info : allPluginsInformation) {
+            boolean enabled = (names == null) ? info.isEnabledByDefault() : names.contains(info.getName());
+            map.put(info.getName(), enabled);
+            atLeastOneEnabled = atLeastOneEnabled || enabled;
+        }
+
+        if (!atLeastOneEnabled && (map.size() > 0)) {
+            for (String name : map.keySet()) {
+                map.put(name, Boolean.TRUE);
+            }
+        }
+
+        if (onlyEnabled) {
+            Set<String> pluginsToRemove = new HashSet<String>();
+            for (Map.Entry<String,Boolean> entry : map.entrySet()) {
+                if (!entry.getValue().booleanValue()) {
+                    pluginsToRemove.add(entry.getKey());
+                }
+            }
+            for (String plugin : pluginsToRemove) {
+                map.remove(plugin);
+            }
+        }
+
+        return map;
     }
 
     public void setNoAskPackageInfo(boolean noAskPackageInfo) {
@@ -111,5 +175,46 @@ public class BndPreferences {
 
     public int getVcsVcs() {
         return store.getInt(PREF_VCS_VCS);
+    }
+
+    public void setHeadlessBuildCreate(boolean headlessCreate) {
+        store.setValue(PREF_HEADLESS_BUILD_CREATE, headlessCreate);
+    }
+
+    public boolean getHeadlessBuildCreate() {
+        return store.getBoolean(PREF_HEADLESS_BUILD_CREATE);
+    }
+
+    public void setHeadlessBuildPlugins(Map<String,Boolean> names) {
+        store.setValue(PREF_HEADLESS_BUILD_PLUGINS, mapToPreference(names));
+    }
+
+    public Map<String,Boolean> getHeadlessBuildPlugins(Collection< ? extends NamedPlugin> allPluginsInformation, boolean onlyEnabled) {
+        if (!getHeadlessBuildCreate()) {
+            return Collections.emptyMap();
+        }
+
+        return preferenceToMap(store.getString(PREF_HEADLESS_BUILD_PLUGINS), allPluginsInformation, onlyEnabled);
+    }
+
+    /**
+     * Return the enabled headless build plugins.
+     * <ul>
+     * <li>When plugins is not null and not empty then plugins itself is returned</li>
+     * <li>Otherwise this method determines from the preferences which plugins are enabled</li>
+     * </ul>
+     * 
+     * @param tracker
+     *            the headless build plugins tracker
+     * @param plugins
+     *            the plugins, can be null or empty.
+     * @return the enabled plugins
+     */
+    public Set<String> getHeadlessBuildPluginsEnabled(HeadlessBuildPluginTracker tracker, Set<String> plugins) {
+        if (plugins != null && !plugins.isEmpty()) {
+            return plugins;
+        }
+
+        return getHeadlessBuildPlugins(tracker.getAllPluginsInformation(), true).keySet();
     }
 }

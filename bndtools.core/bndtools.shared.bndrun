@@ -7,6 +7,7 @@
 workspace.bundles: \
 	bndtools.api;version=snapshot,\
 	bndtools.core;version=snapshot,\
+	bndtools.headless.build.plugin.ant;version=snapshot,\
 	bndtools.builder;version=snapshot,\
 	bndtools.repository.base;version=snapshot,\
 	bndtools.repository.amdatu;version=snapshot,\
