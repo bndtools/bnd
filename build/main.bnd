@@ -7,6 +7,7 @@ Include-Resource:\
     ${repo;bndtools.release;latest},\
     ${repo;bndtools.repository.base;latest},\
     ${repo;bndtools.repository.maven;latest},\
+    ${repo;bndtools.versioncontrol.ignores.plugin.git;latest},\
     ${repo;org.bndtools.embeddedrepo;latest},\
     ${repo;biz.aQute.bndlib;${bndlib-version-base}},\
     ${repo;biz.aQute.repository;${aQute-repository-base}},\

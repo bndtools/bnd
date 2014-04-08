@@ -43,9 +43,9 @@ import org.osgi.framework.Bundle;
 import aQute.bnd.build.Workspace;
 import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
+import bndtools.VersionControlIgnoresPluginTracker;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
-import bndtools.versioncontrol.util.VersionControlUtils;
 import bndtools.wizards.workspace.CnfInfo.Existence;
 
 public class CnfSetupTask extends WorkspaceModifyOperation {
@@ -166,16 +166,23 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         }
 
         try {
-            VersionControlUtils.createDefaultProjectIgnores(ProjectPaths.get(ProjectLayout.BND), cnfJavaProject);
-            VersionControlUtils.addToIgnoreFile(cnfJavaProject, null, templateConfig.getAttribute("ignores"));
-        } catch (IOException e) {
-            logger.logError("Unable to create ignore file(s) for project " + cnfProject.getName(), e);
-        }
-
-        try {
             Central.getWorkspace().refresh();
         } catch (Exception e) {
             logger.logError("Unable to refresh Bnd workspace", e);
+        }
+
+        /* Version control ignores */
+        VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker = Plugin.getDefault().getVersionControlIgnoresPluginTracker();
+        Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresPluginTracker, cnfJavaProject, null);
+        versionControlIgnoresPluginTracker.createProjectIgnores(enabledIgnorePlugins, cnfJavaProject, ProjectPaths.get(ProjectLayout.BND));
+        String templateIgnores = null;
+        try {
+            templateIgnores = templateConfig.getAttribute("ignores");
+        } catch (Exception e) {
+            logger.logError("Could not retrieve the 'ignores' property from the cnf template " + bsn, e);
+        }
+        if (templateIgnores != null && !templateIgnores.isEmpty()) {
+            versionControlIgnoresPluginTracker.addIgnores(enabledIgnorePlugins, cnfJavaProject.getProject().getLocation().toFile(), templateIgnores);
         }
 
         /* Headless build files */

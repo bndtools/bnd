@@ -16,6 +16,7 @@ workspace.bundles: \
 	bndtools.template.amdatu;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
 	bndtools.release;version=snapshot,\
+	bndtools.versioncontrol.ignores.plugin.git;version=snapshot,\
 	org.bndtools.embeddedrepo;version=snapshot
 
 p2.bundles: org.eclipse.equinox.p2.core,\

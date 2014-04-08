@@ -46,9 +46,9 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.Document;
 import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
+import bndtools.VersionControlIgnoresPluginTracker;
 import bndtools.editor.model.BndProject;
 import bndtools.preferences.BndPreferences;
-import bndtools.versioncontrol.util.VersionControlUtils;
 
 abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
     private static final ILogger logger = Logger.getLogger(AbstractNewBndProjectWizard.class);
@@ -126,15 +126,14 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             importResource(project.getProject(), resource.getKey(), resource.getValue(), progress.newChild(1));
         }
 
-        try {
-            VersionControlUtils.createDefaultProjectIgnores(projectPaths, project);
-        } catch (IOException e) {
-            logger.logError("Unable to create ignore file(s) for project " + project.getProject().getName(), e);
-        }
-
         if (!bndBndFile.exists()) {
             bndBndFile.create(bndInput, false, progress.newChild(1));
         }
+
+        /* Version control ignores */
+        VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker = Plugin.getDefault().getVersionControlIgnoresPluginTracker();
+        Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresPluginTracker, project, null);
+        versionControlIgnoresPluginTracker.createProjectIgnores(enabledIgnorePlugins, project, projectPaths);
 
         /* Headless build files */
         HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();

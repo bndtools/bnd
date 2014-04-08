@@ -1,0 +1,10 @@
+-buildpath: \
+	ee.j2se;version='[1.6,1.7)',\
+	bndtools.api;version=latest,\
+	biz.aQute.bnd.annotation,\
+	${junit}
+
+Bundle-Version:1.0.0.${tstamp}
+Private-Package: \
+	bndtools.versioncontrol.ignores.plugin.git
+Service-Component: *

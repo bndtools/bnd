@@ -10,11 +10,12 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.bndtools.api.NamedPlugin;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
-import bndtools.versioncontrol.VersionControlSystem;
+import bndtools.VersionControlIgnoresPluginTracker;
 
 public class BndPreferences {
 
@@ -28,8 +29,8 @@ public class BndPreferences {
     private static final String PREF_EDITOR_OPEN_SOURCE_TAB = "editorOpenSourceTab";
     private static final String PREF_HEADLESS_BUILD_CREATE = "headlessBuildCreate";
     private static final String PREF_HEADLESS_BUILD_PLUGINS = "headlessBuildPlugins";
-    private static final String PREF_VCS_CREATE_IGNORE_FILES = "vcsCreateIgnoreFiles";
-    private static final String PREF_VCS_VCS = "vcsVcs";
+    private static final String PREF_VCS_IGNORES_CREATE = "versionControlIgnoresCreate";
+    private static final String PREF_VCS_IGNORES_PLUGINS = "versionControlIgnoresPlugins";
 
     private final IPreferenceStore store;
 
@@ -40,8 +41,8 @@ public class BndPreferences {
         store.setDefault(PREF_WARN_EXISTING_LAUNCH, true);
         store.setDefault(PREF_HEADLESS_BUILD_CREATE, true);
         store.setDefault(PREF_HEADLESS_BUILD_PLUGINS, "");
-        store.setDefault(PREF_VCS_CREATE_IGNORE_FILES, true);
-        store.setDefault(PREF_VCS_VCS, VersionControlSystem.GIT.ordinal());
+        store.setDefault(PREF_VCS_IGNORES_CREATE, true);
+        store.setDefault(PREF_VCS_IGNORES_PLUGINS, "");
     }
 
     private String mapToPreference(Map<String,Boolean> names) {
@@ -161,22 +162,6 @@ public class BndPreferences {
         return store.getBoolean(PREF_EDITOR_OPEN_SOURCE_TAB);
     }
 
-    public void setVcsCreateIgnoreFiles(boolean vcsCreateIgnoreFiles) {
-        store.setValue(PREF_VCS_CREATE_IGNORE_FILES, vcsCreateIgnoreFiles);
-    }
-
-    public boolean getVcsCreateIgnoreFiles() {
-        return store.getBoolean(PREF_VCS_CREATE_IGNORE_FILES);
-    }
-
-    public void setVcsVcs(int vcs) {
-        store.setValue(PREF_VCS_VCS, vcs);
-    }
-
-    public int getVcsVcs() {
-        return store.getInt(PREF_VCS_VCS);
-    }
-
     public void setHeadlessBuildCreate(boolean headlessCreate) {
         store.setValue(PREF_HEADLESS_BUILD_CREATE, headlessCreate);
     }
@@ -216,5 +201,57 @@ public class BndPreferences {
         }
 
         return getHeadlessBuildPlugins(tracker.getAllPluginsInformation(), true).keySet();
+    }
+
+    public void setVersionControlIgnoresCreate(boolean versionControlIgnoresCreate) {
+        store.setValue(PREF_VCS_IGNORES_CREATE, versionControlIgnoresCreate);
+    }
+
+    public boolean getVersionControlIgnoresCreate() {
+        return store.getBoolean(PREF_VCS_IGNORES_CREATE);
+    }
+
+    public void setVersionControlIgnoresPlugins(Map<String,Boolean> names) {
+        store.setValue(PREF_VCS_IGNORES_PLUGINS, mapToPreference(names));
+    }
+
+    public Map<String,Boolean> getVersionControlIgnoresPlugins(Collection< ? extends NamedPlugin> allPluginsInformation, boolean onlyEnabled) {
+        if (!getVersionControlIgnoresCreate()) {
+            return Collections.emptyMap();
+        }
+
+        return preferenceToMap(store.getString(PREF_VCS_IGNORES_PLUGINS), allPluginsInformation, onlyEnabled);
+    }
+
+    /**
+     * Return the enabled version control ignores plugins.
+     * <ul>
+     * <li>When plugins is not null and not empty then plugins itself is returned</li>
+     * <li>Otherwise, when the files in the project are already managed by a version control system, this method tries
+     * to detect which plugins can apply ignores for the version control system</li>
+     * <li>Otherwise this method determines from the preferences which plugins are enabled</li>
+     * </ul>
+     * 
+     * @param tracker
+     *            the version control ignores plugins tracker
+     * @param project
+     *            the project (can be null to ignore it)
+     * @param plugins
+     *            the plugins, can be null or empty.
+     * @return the enabled plugins
+     */
+    public Set<String> getVersionControlIgnoresPluginsEnabled(VersionControlIgnoresPluginTracker tracker, IJavaProject project, Set<String> plugins) {
+        if (plugins != null && !plugins.isEmpty()) {
+            return plugins;
+        }
+
+        if (project != null) {
+            Set<String> pluginsInternal = tracker.getPluginsForProjectVersionControlSystem(project);
+            if (pluginsInternal != null && !pluginsInternal.isEmpty()) {
+                return pluginsInternal;
+            }
+        }
+
+        return getVersionControlIgnoresPlugins(tracker.getAllPluginsInformation(), true).keySet();
     }
 }

@@ -12,6 +12,7 @@
 	bndtools.template.amdatu,\
 	bndtools.template.dm,\
 	bndtools.utils,\
+	bndtools.versioncontrol.ignores.plugin.git,\
 	org.bndtools.embeddedrepo
 
 -sub: \

@@ -28,9 +28,9 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import aQute.bnd.build.Project;
 import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
+import bndtools.VersionControlIgnoresPluginTracker;
 import bndtools.preferences.BndPreferences;
 import bndtools.utils.ModificationLock;
-import bndtools.versioncontrol.VersionControlSystem;
 import bndtools.wizards.workspace.CnfSetupWizard;
 
 public class BndPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
@@ -41,6 +41,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private final ModificationLock lock = new ModificationLock();
 
     private final HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();
+    private final VersionControlIgnoresPluginTracker versionControlIgnoresTracker = Plugin.getDefault().getVersionControlIgnoresPluginTracker();
 
     private String enableSubs;
     private boolean noAskPackageInfo = false;
@@ -50,8 +51,8 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private boolean editorOpenSourceTab = false;
     private boolean headlessBuildCreate = true;
     private final Map<String,Boolean> headlessBuildPlugins = new HashMap<String,Boolean>();
-    private boolean vcsCreateIgnoreFiles = true;
-    private int vcsVcs = VersionControlSystem.GIT.ordinal();
+    private boolean versionControlIgnoresCreate = true;
+    private final Map<String,Boolean> versionControlIgnoresPlugins = new HashMap<String,Boolean>();
 
     @Override
     protected Control createContents(Composite parent) {
@@ -167,19 +168,61 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
             });
         }
 
-        Group vcsGroup = new Group(composite, SWT.NONE);
-        vcsGroup.setText(Messages.BndPreferencePage_vcsGroup_text);
+        allPluginsInformation = versionControlIgnoresTracker.getAllPluginsInformation();
+        if (allPluginsInformation.size() > 0) {
+            Group versionControlIgnoresMainGroup = new Group(composite, SWT.NONE);
+            versionControlIgnoresMainGroup.setText(Messages.BndPreferencePage_versionControlIgnoresGroup_text);
 
-        final Button btnVcsCreateIgnoreFiles = new Button(vcsGroup, SWT.CHECK);
-        btnVcsCreateIgnoreFiles.setText(Messages.BndPreferencePage_btnVcsCreateIgnoreFiles_text);
+            final Button btnVersionControlIgnoresCreate = new Button(versionControlIgnoresMainGroup, SWT.CHECK);
+            btnVersionControlIgnoresCreate.setText(Messages.BndPreferencePage_versionControlIgnoresCreate_text);
+            btnVersionControlIgnoresCreate.setSelection(versionControlIgnoresCreate);
 
-        final Combo cmbVcs = new Combo(vcsGroup, SWT.READ_ONLY);
-        VersionControlSystem[] vcsEntries = VersionControlSystem.values();
-        String[] vcsNames = new String[vcsEntries.length];
-        for (int i = 0; i < vcsEntries.length; i++) {
-            vcsNames[i] = vcsEntries[i].getName();
+            Group versionControlIgnoresGroup = new Group(versionControlIgnoresMainGroup, SWT.NONE);
+            final Set<Button> versionControlIgnoresGroupButtons = new HashSet<Button>();
+
+            for (NamedPlugin info : allPluginsInformation) {
+                final String pluginName = info.getName();
+                final Button btnVersionControlIgnoresPlugin = new Button(versionControlIgnoresGroup, SWT.CHECK);
+                versionControlIgnoresGroupButtons.add(btnVersionControlIgnoresPlugin);
+                btnVersionControlIgnoresPlugin.setText(pluginName);
+                Boolean checked = versionControlIgnoresPlugins.get(pluginName);
+                if (checked == null) {
+                    checked = Boolean.FALSE;
+                    versionControlIgnoresPlugins.put(pluginName, checked);
+                }
+                btnVersionControlIgnoresPlugin.setSelection(checked.booleanValue());
+                btnVersionControlIgnoresPlugin.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        versionControlIgnoresPlugins.put(pluginName, btnVersionControlIgnoresPlugin.getSelection());
+                        checkValid();
+                    }
+                });
+            }
+
+            gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+            versionControlIgnoresGroup.setLayoutData(gd);
+
+            layout = new GridLayout(Math.max(4, allPluginsInformation.size()), true);
+            versionControlIgnoresGroup.setLayout(layout);
+
+            gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+            versionControlIgnoresMainGroup.setLayoutData(gd);
+
+            layout = new GridLayout(1, true);
+            versionControlIgnoresMainGroup.setLayout(layout);
+
+            btnVersionControlIgnoresCreate.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    versionControlIgnoresCreate = btnVersionControlIgnoresCreate.getSelection();
+                    for (Button button : versionControlIgnoresGroupButtons) {
+                        button.setEnabled(versionControlIgnoresCreate);
+                    }
+                    checkValid();
+                }
+            });
         }
-        cmbVcs.setItems(vcsNames);
 
         // Load Data
         if (MessageDialogWithToggle.ALWAYS.equals(enableSubs)) {
@@ -202,8 +245,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         cmbBuildLogging.select(buildLogging);
         btnEditorOpenSourceTab.setSelection(editorOpenSourceTab);
         // headless already done
-        btnVcsCreateIgnoreFiles.setSelection(vcsCreateIgnoreFiles);
-        cmbVcs.select(vcsVcs);
+        // versionControlIgnores already done
 
         // Listeners
         SelectionAdapter adapter = new SelectionAdapter() {
@@ -265,18 +307,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
             }
         });
         // headless already done
-        btnVcsCreateIgnoreFiles.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                vcsCreateIgnoreFiles = btnVcsCreateIgnoreFiles.getSelection();
-            }
-        });
-        cmbVcs.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                vcsVcs = cmbVcs.getSelectionIndex();
-            }
-        });
+        // versionControlIgnores already done
 
         layout = new GridLayout(1, false);
         composite.setLayout(layout);
@@ -315,10 +346,8 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         editorGroup.setLayout(layout);
 
         // headless already done
+        // versionControlIgnores already done
 
-        vcsGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-        vcsGroup.setLayout(new GridLayout(2, false));
-        cmbVcs.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         return composite;
     }
 
@@ -336,8 +365,11 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         if (pluginsInformation.size() > 0) {
             prefs.setHeadlessBuildPlugins(headlessBuildPlugins);
         }
-        prefs.setVcsCreateIgnoreFiles(vcsCreateIgnoreFiles);
-        prefs.setVcsVcs(vcsVcs);
+        prefs.setVersionControlIgnoresCreate(versionControlIgnoresCreate);
+        pluginsInformation = versionControlIgnoresTracker.getAllPluginsInformation();
+        if (pluginsInformation.size() > 0) {
+            prefs.setVersionControlIgnoresPlugins(versionControlIgnoresPlugins);
+        }
 
         return true;
     }
@@ -357,8 +389,12 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
             headlessBuildPlugins.clear();
             headlessBuildPlugins.putAll(prefs.getHeadlessBuildPlugins(pluginsInformation, false));
         }
-        vcsCreateIgnoreFiles = prefs.getVcsCreateIgnoreFiles();
-        vcsVcs = prefs.getVcsVcs();
+        versionControlIgnoresCreate = prefs.getVersionControlIgnoresCreate();
+        pluginsInformation = versionControlIgnoresTracker.getAllPluginsInformation();
+        if (pluginsInformation.size() > 0) {
+            versionControlIgnoresPlugins.clear();
+            versionControlIgnoresPlugins.putAll(prefs.getVersionControlIgnoresPlugins(versionControlIgnoresTracker.getAllPluginsInformation(), false));
+        }
     }
 
     private void checkValid() {
@@ -373,6 +409,19 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
                 if (!atLeastOneEnabled) {
                     valid = false;
                     setErrorMessage(Messages.BndPreferencePage_msgCheckValidHeadless);
+                }
+            }
+        }
+        if (valid && versionControlIgnoresCreate) {
+            Collection<NamedPlugin> pluginsInformation = versionControlIgnoresTracker.getAllPluginsInformation();
+            if (pluginsInformation.size() > 0) {
+                boolean atLeastOneEnabled = false;
+                for (Boolean b : versionControlIgnoresPlugins.values()) {
+                    atLeastOneEnabled = atLeastOneEnabled || b.booleanValue();
+                }
+                if (!atLeastOneEnabled) {
+                    valid = false;
+                    setErrorMessage(Messages.BndPreferencePage_msgCheckValidVersionControlIgnores);
                 }
             }
         }

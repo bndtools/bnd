@@ -15,6 +15,8 @@ public class Messages extends NLS {
     public static String BndPreferencePage_editorGroup;
     public static String BndPreferencePage_headlessGroup;
     public static String BndPreferencePage_headlessCreate_text;
+    public static String BndPreferencePage_versionControlIgnoresGroup_text;
+    public static String BndPreferencePage_versionControlIgnoresCreate_text;
     public static String BndPreferencePage_btnEditorOpenSourceTab;
     public static String BndPreferencePage_btnCheckCnfNow_BndConf;
     public static String BndPreferencePage_btnCheckCnfNow_Exists;
@@ -26,9 +28,8 @@ public class Messages extends NLS {
     public static String BndPreferencePage_lblBuildLogging_text;
     public static String BndPreferencePage_grpLaunching_text;
     public static String BndPreferencePage_btnWarnExistingLaunch;
-    public static String BndPreferencePage_vcsGroup_text;
-    public static String BndPreferencePage_btnVcsCreateIgnoreFiles_text;
     public static String BndPreferencePage_msgCheckValidHeadless;
+    public static String BndPreferencePage_msgCheckValidVersionControlIgnores;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
