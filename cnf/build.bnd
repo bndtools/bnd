@@ -100,3 +100,6 @@ junit3:                   junit.osgi;version=3.8.2;export="junit.framework;versi
 
 # Extra Headers
 Bundle-License:           http://www.eclipse.org/legal/epl-v10.html
+
+
+-diffignore: Git-Descriptor,Git-SHA
