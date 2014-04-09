@@ -40,7 +40,7 @@ public class InfoContentProvider implements ITreeContentProvider {
 			Set<Info> infos = ((Baseline) parent).getPackageInfos();
 			List<Info> filteredDiffs = new ArrayList<Info>();
 			for (Info info : infos) {
-				if (info.packageDiff.getDelta() == Delta.IGNORED || info.packageDiff.getDelta() == Delta.UNCHANGED) {
+				if (info.packageDiff.getDelta() == Delta.IGNORED || (info.packageDiff.getDelta() == Delta.UNCHANGED && info.olderVersion.equals(info.suggestedVersion))) {
 					continue;
 				}
 				filteredDiffs.add(info);
