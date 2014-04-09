@@ -461,7 +461,10 @@ public class ReleaseHelper {
 
     static String updateTemplateVersion(String currentVersion, Version newVersion) {
         String version = newVersion.toString();
-        if (currentVersion == null) {
+        if (currentVersion == null || currentVersion.startsWith("${")) {
+            if (newVersion.getQualifier() == null) {
+                version = newVersion.toString() + ".${tstamp}";
+            }
             return version;
         }
 
@@ -470,5 +473,34 @@ public class ReleaseHelper {
             return newVersion.getMajor() + "." + newVersion.getMinor() + "." + newVersion.getMicro() + "." + m.group(4);
         }
         return version;
+    }
+
+    public static List<MacroInfo> getBsnsWithBundleVersionMacro(List<ProjectDiff> projectDiffs) {
+        List<MacroInfo> bsns = new ArrayList<MacroInfo>();
+        for (ProjectDiff diff : projectDiffs) {
+            if (diff.isRelease()) {
+                for (Baseline baseline : diff.getBaselines()) {
+                    try {
+                        Builder builder = diff.getProject().getSubBuilder(baseline.getBsn());
+                        String bundleVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, "");
+                        if (bundleVersion.startsWith("${")) {
+                            MacroInfo info = new MacroInfo();
+                            info.projectDiff = diff;
+                            info.bsn = builder.getBsn();
+                            info.macro = bundleVersion;
+                            bsns.add(info);
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+            }
+        }
+        return bsns;
+    }
+
+    public static class MacroInfo {
+        public ProjectDiff projectDiff;
+        public String bsn;
+        public String macro;
     }
 }

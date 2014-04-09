@@ -19,6 +19,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -114,6 +115,13 @@ public class Activator extends AbstractUIPlugin {
             run.run();
     }
 
+    static void sync(Runnable run) {
+        if (Display.getCurrent() == null) {
+            Display.getDefault().syncExec(run);
+        } else
+            run.run();
+    }
+
     public static void message(final String msg) {
         async(new Runnable() {
             public void run() {
@@ -122,7 +130,17 @@ public class Activator extends AbstractUIPlugin {
         });
     }
 
-	/**
+    public static boolean confirmationMessage(final String msg) {
+        final AtomicBoolean result = new AtomicBoolean();
+        sync(new Runnable() {
+            public void run() {
+                result.set(MessageDialog.openConfirm(null, Messages.releaseDialogTitle1, msg));
+            }
+        });
+        return result.get();
+    }
+
+    /**
 	 * Returns an image descriptor for the image file at the given
 	 * plug-in relative path
 	 *
