@@ -96,7 +96,7 @@ public class ClassReferenceTest extends TestCase {
 		System.out.println("compiler version " + p);
 		Builder builder = new Builder();
 		properties.put(Constants.EEPROFILE, "auto");
-		properties.put("Export-Package", p);
+		properties.put(Constants.EXPORT_PACKAGE, p);
 		builder.setProperties(properties);
 		Jar jar = builder.build();
 		assertTrue(builder.check());
@@ -109,7 +109,7 @@ public class ClassReferenceTest extends TestCase {
 		
 		assertTrue(builder.check());
 		Manifest manifest = jar.getManifest();
-		String imports = manifest.getMainAttributes().getValue("Import-Package");
+		String imports = manifest.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
 		assertTrue("Package " + p + "contains swing ref ", imports.indexOf("javax.swing") >= 0);
 		assertFalse("Package " + p + "should not contain ClassRef", imports.indexOf("ClassRef") >= 0);
 	}

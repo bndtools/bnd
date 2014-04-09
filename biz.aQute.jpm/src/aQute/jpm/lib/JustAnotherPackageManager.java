@@ -13,6 +13,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.header.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.version.*;
 import aQute.jpm.facade.repo.*;
 import aQute.jpm.platform.*;
@@ -1213,15 +1214,15 @@ public class JustAnotherPackageManager {
 			reporter.trace("Parsing %s", source);
 			Manifest m = jar.getManifest();
 			Attributes main = m.getMainAttributes();
-			data.name = data.bsn = main.getValue("Bundle-SymbolicName");
-			String version = main.getValue("Bundle-Version");
+			data.name = data.bsn = main.getValue(Constants.BUNDLE_SYMBOLICNAME);
+			String version = main.getValue(Constants.BUNDLE_VERSION);
 			if (version == null)
 				data.version = Version.LOWEST;
 			else
 				data.version = new Version(version);
 
 			data.main = main.getValue("Main-Class");
-			data.description = main.getValue("Bundle-Description");
+			data.description = main.getValue(Constants.BUNDLE_DESCRIPTION);
 			data.title = main.getValue("JPM-Name");
 
 			if (main.getValue("Class-Path") != null) {

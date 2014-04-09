@@ -22,7 +22,7 @@ public class PluginTest extends TestCase {
 
 		p.setProperty("-abc", "whatever");
 		p.setProperty("-resourceonly", "true");
-		p.setProperty("Include-Resource", "jar/osgi.jar");
+		p.setProperty(Constants.INCLUDE_RESOURCE, "jar/osgi.jar");
 		p.build();
 		assertEquals(1, p.getErrors().size());
 		assertTrue(p.getErrors().get(0).contains("Missing plugin"));

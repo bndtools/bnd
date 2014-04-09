@@ -15,7 +15,7 @@ public class ManifestTest extends TestCase {
 
 	public static void testNameSection() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Export-Package", "org.osgi.framework");
+		b.setProperty(Constants.EXPORT_PACKAGE, "org.osgi.framework");
 		b.addClasspath(new File("jar/osgi.jar"));
 
 		Jar jar = b.build();
@@ -65,7 +65,7 @@ public class ManifestTest extends TestCase {
 		b.setProperty("Long", longSentence);
 
 		b.setProperty("-resourceonly", "true");
-		b.setProperty("Include-Resource", "jar/osgi.jar");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "jar/osgi.jar");
 		Jar jar = b.build();
 		File f = File.createTempFile("abc", ".jar");
 		f.deleteOnExit();
@@ -98,7 +98,7 @@ public class ManifestTest extends TestCase {
 		b.setProperty("H68", "01234567890123456789012345678901234567890123456789012345678901234567");
 		b.setProperty("H69", "012345678901234567890123456789012345678901234567890123456789012345678");
 		b.setProperty("-resourceonly", "true");
-		b.setProperty("Include-Resource", "jar/osgi.jar");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "jar/osgi.jar");
 		Jar jar = b.build();
 		File f = File.createTempFile("abc", ".jar");
 		f.deleteOnExit();
@@ -131,7 +131,7 @@ public class ManifestTest extends TestCase {
 	public static void testNoManifest() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-nomanifest", "true");
-		b.setProperty("Export-Package", "org.osgi.service.event.*");
+		b.setProperty(Constants.EXPORT_PACKAGE, "org.osgi.service.event.*");
 		b.addClasspath(new File("jar/osgi.jar"));
 		Jar jar = b.build();
 		assertNull(jar.getResource("META-INF/MANIFEST.MF"));
@@ -148,7 +148,7 @@ public class ManifestTest extends TestCase {
 		Builder b = new Builder();
 		b.setProperty("-manifest-name", "META-INF/FESTYMAN.MF");
 		b.setProperty("Subsystem-Wibble", "hullo");
-		b.setProperty("Export-Package", "org.osgi.service.event.*");
+		b.setProperty(Constants.EXPORT_PACKAGE, "org.osgi.service.event.*");
 
 		b.addClasspath(new File("jar/osgi.jar"));
 		Jar jar = b.build();

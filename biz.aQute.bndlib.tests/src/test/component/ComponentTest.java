@@ -94,13 +94,13 @@ public class ComponentTest extends TestCase {
 	public static void testScalaObject() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/com.test.scala.jar"));
-		b.setProperty("Service-Component", "*");
-		b.setProperty("Export-Package", "com.test.scala.*");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*");
+		b.setProperty(Constants.EXPORT_PACKAGE, "com.test.scala.*");
 		Jar jar = b.build();
 		Manifest m = jar.getManifest();
 		System.err.println(Processor.join(b.getErrors()));
 		System.err.println(Processor.join(b.getWarnings()));
-		System.err.println(m.getMainAttributes().getValue("Service-Component"));
+		System.err.println(m.getMainAttributes().getValue(Constants.SERVICE_COMPONENT));
 		IO.copy(jar.getResource("OSGI-INF/com.test.scala.Service.xml").openInputStream(), System.err);
 		Document doc = doc(b, "com.test.scala.Service");
 		assertEquals("com.test.scala.Service", xpath.evaluate("component/implementation/@class", doc));
@@ -118,8 +118,8 @@ public class ComponentTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*InheritedActivator");
-		b.setProperty("Private-Package", "test.activator.inherits");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*InheritedActivator");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.activator.inherits");
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.build();
 		System.err.println(b.getErrors());
@@ -128,7 +128,7 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Manifest m = b.getJar().getManifest();
-		String imports = m.getMainAttributes().getValue("Import-Package");
+		String imports = m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
 		assertTrue(imports.contains("org.osgi.framework"));
 	}
 
@@ -140,9 +140,9 @@ public class ComponentTest extends TestCase {
 
 	public static void testNonFQNAndNoAnnotations() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource",
+		b.setProperty(Constants.INCLUDE_RESOURCE,
 				"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
-		b.setProperty("Service-Component", "*;" + Constants.NOANNOTATIONS + "=true");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*;" + Constants.NOANNOTATIONS + "=true");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		System.err.println(b.getErrors());
@@ -151,7 +151,7 @@ public class ComponentTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 
 		Manifest manifest = jar.getManifest();
-		String component = manifest.getMainAttributes().getValue("Service-Component");
+		String component = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
 		System.err.println(component);
 		assertNull(component);
 	}
@@ -232,7 +232,7 @@ public class ComponentTest extends TestCase {
 		b.setClasspath(new File[] {
 				new File("bin"), new File("jar/osgi.jar")
 		});
-		b.setProperty("Private-Package", "test.activator, org.osgi.service.http.*");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.activator, org.osgi.service.http.*");
 		b.build();
 
 		System.err.println(b.getErrors());
@@ -276,7 +276,7 @@ public class ComponentTest extends TestCase {
 	/*
 	 * public void testWildcards() throws Exception { Builder b = new Builder();
 	 * b .setProperty(Analyzer.SERVICE_COMPONENT, "testresources/component/*.xml");
-	 * b.setProperty("-resourceonly", "true"); b.setProperty("Include-Resource",
+	 * b.setProperty("-resourceonly", "true"); b.setProperty(Constants.INCLUDE_RESOURCE,
 	 * "testresources/component=testresources/component"); Jar jar = b.build();
 	 * System.err.println(b.getErrors()); System.err.println(b.getWarnings());
 	 * assertEquals(0, b.getErrors().size()); assertEquals(0,
@@ -289,7 +289,7 @@ public class ComponentTest extends TestCase {
 		b.setClasspath(new File[] {
 				new File("bin"), new File("jar/osgi.jar")
 		});
-		b.setProperty("Private-Package", "test.activator");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.activator");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());

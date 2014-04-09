@@ -18,7 +18,7 @@ public class CorruptManifest extends TestCase {
 		b.setProperty("NL3", ".");
 		b.setProperty("NL4", ".\n.\n");
 		b.setProperty("NL5", ltext);
-		b.setProperty("Export-Package", "*");
+		b.setProperty(Constants.EXPORT_PACKAGE, "*");
 		b.setClasspath(new File[] {
 			new File("jar/asm.jar")
 		});

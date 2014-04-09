@@ -82,7 +82,7 @@ public class JunitXmlReport implements TestReporter {
 			bundles.addContent(bundle);
 		}
 		if (targetBundle != null) {
-			String header = (String) targetBundle.getHeaders().get("Bnd-AddXMLToTest");
+			String header = (String) targetBundle.getHeaders().get(aQute.bnd.osgi.Constants.BND_ADDXMLTOTEST);
 			if (header != null) {
 				StringTokenizer st = new StringTokenizer(header, " ,");
 

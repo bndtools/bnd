@@ -335,15 +335,15 @@ public class MacroTest extends TestCase {
 		top.setProperty("a", "top.a");
 		top.setProperty("b", "top.b");
 		top.setProperty("c", "top.c");
-		top.setProperty("Bundle-Version", "0.0.0");
+		top.setProperty(Constants.BUNDLE_VERSION, "0.0.0");
 		middle.setProperty("a", "middle.a");
 		middle.setProperty("b", "${^a}");
 		middle.setProperty("c", "-${^c}-");
-		middle.setProperty("Bundle-Version", "${^Bundle-Version}");
+		middle.setProperty(Constants.BUNDLE_VERSION, "${^" + Constants.BUNDLE_VERSION + "}");
 		assertEquals("middle.a", bottom.getProperty("a"));
 		assertEquals("top.a", bottom.getProperty("b"));
 		assertEquals("-top.c-", bottom.getProperty("c"));
-		assertEquals("0.0.0", bottom.getProperty("Bundle-Version"));
+		assertEquals("0.0.0", bottom.getProperty(Constants.BUNDLE_VERSION));
 	}
 
 	/**
@@ -355,19 +355,19 @@ public class MacroTest extends TestCase {
 		p.setProperty("groupId", "com.trivadis.tomas");
 		p.setProperty("artifactId", "common");
 		p.setProperty("bsn", "${if;${symbolicName};${symbolicName};${groupId}.${artifactId}}");
-		p.setProperty("Bundle-SymbolicName", "${bsn}");
+		p.setProperty(Constants.BUNDLE_SYMBOLICNAME, "${bsn}");
 		p.setProperty("symbolicName", "");
 
 		// Not set, so get the maven name
-		assertEquals("com.trivadis.tomas.common", p.getProperty("Bundle-SymbolicName"));
+		assertEquals("com.trivadis.tomas.common", p.getProperty(Constants.BUNDLE_SYMBOLICNAME));
 
 		// Set it
 		p.setProperty("symbolicName", "testing");
-		assertEquals("testing", p.getProperty("Bundle-SymbolicName"));
+		assertEquals("testing", p.getProperty(Constants.BUNDLE_SYMBOLICNAME));
 
 		// And remove it
 		p.setProperty("symbolicName", "");
-		assertEquals("com.trivadis.tomas.common", p.getProperty("Bundle-SymbolicName"));
+		assertEquals("com.trivadis.tomas.common", p.getProperty(Constants.BUNDLE_SYMBOLICNAME));
 	}
 
 	/**
@@ -613,14 +613,14 @@ public class MacroTest extends TestCase {
 	public static void testMavenVersionMacro() throws Exception {
 		Builder builder = new Builder();
 		Properties p = new Properties();
-		p.setProperty("Export-Package", "org.objectweb.*;version=1.5-SNAPSHOT");
+		p.setProperty(Constants.EXPORT_PACKAGE, "org.objectweb.*;version=1.5-SNAPSHOT");
 		builder.setProperties(p);
 		builder.setClasspath(new File[] {
 			new File("jar/asm.jar")
 		});
 		Jar jar = builder.build();
 		Manifest manifest = jar.getManifest();
-		String export = manifest.getMainAttributes().getValue("Export-Package");
+		String export = manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
 		assertNotNull(export);
 		assertTrue("Test snapshot version", export.contains("1.5.0.SNAPSHOT"));
 	}
@@ -791,7 +791,7 @@ public class MacroTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.addClasspath(new File("jar/ds.jar"));
-		b.setProperty("Export-Package", "org.eclipse.*, org.osgi.*");
+		b.setProperty(Constants.EXPORT_PACKAGE, "org.eclipse.*, org.osgi.*");
 		b.setProperty("fwusers", "${classes;importing;org.osgi.framework}");
 		b.setProperty("foo", "${filterout;${fwusers};org\\.osgi\\..*}");
 		b.build();

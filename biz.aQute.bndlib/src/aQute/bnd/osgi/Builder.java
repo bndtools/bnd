@@ -165,7 +165,7 @@ public class Builder extends Analyzer {
 
 		if (getClasspath().size() == 0
 				&& (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null || getProperty(PRIVATE_PACKAGE) != null || getProperty(PRIVATEPACKAGE) != null))
-			warning("Classpath is empty. Private-Package (-privatepackage) and Export-Package can only expand from the classpath when there is one");
+			warning("Classpath is empty. " + Constants.PRIVATE_PACKAGE + " (-privatepackage) and " + EXPORT_PACKAGE + " can only expand from the classpath when there is one");
 
 	}
 
@@ -504,7 +504,7 @@ public class Builder extends Analyzer {
 			Set<Instruction> unused = doExpand(dot, packages, privateFilter);
 
 			if (!unused.isEmpty()) {
-				warning("Unused Private-Package instructions, no such package(s) on the class path: %s", unused);
+				warning("Unused " + Constants.PRIVATE_PACKAGE + " instructions, no such package(s) on the class path: %s", unused);
 			}
 		}
 
@@ -763,7 +763,7 @@ public class Builder extends Analyzer {
 		if (includes == null) {
 			includes = getProperty(INCLUDERESOURCE);
 			if (includes == null || includes.length() == 0)
-				includes = getProperty("Include-Resource");
+				includes = getProperty(Constants.INCLUDE_RESOURCE);
 		} else
 			warning("Please use -includeresource instead of Bundle-Includes");
 
@@ -896,7 +896,7 @@ public class Builder extends Analyzer {
 		for (String required : requires) {
 			File file = getFile(required);
 			if (!file.exists()) {
-				error("Include-Resource.cmd for %s, requires %s, but no such file %s", source, required,
+				error(Constants.INCLUDE_RESOURCE + ".cmd for %s, requires %s, but no such file %s", source, required,
 						file.getAbsoluteFile());
 			} else
 				lastModified = findLastModifiedWhileOlder(file, lastModified());
@@ -963,7 +963,7 @@ public class Builder extends Analyzer {
 		if (cr != null)
 			jar.putResource(destination, cr);
 
-		updateModified(lastModified, "Include-Resource: cmd");
+		updateModified(lastModified, Constants.INCLUDE_RESOURCE + ": cmd");
 	}
 
 	private void traverse(List<String> paths, File item) {
@@ -1049,7 +1049,7 @@ public class Builder extends Analyzer {
 			} else {
 				String p = appendPath(path, file.getName());
 				if (files.containsKey(p))
-					warning("Include-Resource overwrites entry %s from file %s", p, file);
+					warning(Constants.INCLUDE_RESOURCE + " overwrites entry %s from file %s", p, file);
 				files.put(p, file);
 			}
 		}
@@ -1061,7 +1061,7 @@ public class Builder extends Analyzer {
 
 	private void noSuchFile(Jar jar, @SuppressWarnings("unused")
 	String clause, Map<String,String> extra, String source, String destinationPath) throws Exception {
-		Jar src = getJarFromName(source, "Include-Resource " + source);
+		Jar src = getJarFromName(source, Constants.INCLUDE_RESOURCE + " " + source);
 		if (src != null) {
 			// Do not touch the manifest so this also
 			// works for signed files.

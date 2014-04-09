@@ -717,7 +717,7 @@ public class bnd extends Processor {
 		@Description("Verify all the dependencies before launching (runpath, runbundles, testpath)")
 		boolean verify();
 
-		@Description("Launch the test even if this bundle does not contain Test-Cases")
+		@Description("Launch the test even if this bundle does not contain " + Constants.TESTCASES)
 		boolean force();
 
 		@Description("Set the -testcontinuous flag")
@@ -1805,8 +1805,8 @@ public class bnd extends Processor {
 							}
 						}
 					}
-					print("Import-Package", new TreeMap<String,Attrs>(imports));
-					print("Export-Package", new TreeMap<String,Attrs>(exports));
+					print(Constants.IMPORT_PACKAGE, new TreeMap<String,Attrs>(imports));
+					print(Constants.EXPORT_PACKAGE, new TreeMap<String,Attrs>(exports));
 				} else
 					warning("File has no manifest");
 			}
@@ -2591,7 +2591,7 @@ public class bnd extends Processor {
 			"<jar-path>", "[...]"
 	})
 	interface selectOptions extends Options {
-		@Description("A simple assertion on a manifest header (e.g. Bundle-Version=1.0.1) or an OSGi filter that is asserted on all manifest headers. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted to check for the presence of a header.")
+		@Description("A simple assertion on a manifest header (e.g. " + Constants.BUNDLE_VERSION + "=1.0.1) or an OSGi filter that is asserted on all manifest headers. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted to check for the presence of a header.")
 		String where();
 
 		@Description("A manifest header to print or: path, name, size, length, modified for information about the file, wildcards are allowed to print multiple headers. ")
@@ -2740,7 +2740,7 @@ public class bnd extends Processor {
 
 				long lastModified = 0;
 				try {
-					lastModified = Long.parseLong(attrs.getValue("Bnd-LastModified"));
+					lastModified = Long.parseLong(attrs.getValue(Constants.BND_LASTMODIFIED));
 				}
 				catch (Exception ee) {
 					// Ignore

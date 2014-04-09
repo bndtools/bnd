@@ -930,7 +930,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			ResourceDescriptor rd = new ResourceDescriptor();
 			rd.bsn = bsn;
 			rd.version = version;
-			rd.description = m.getMainAttributes().getValue("Bundle-Description");
+			rd.description = m.getMainAttributes().getValue(Constants.BUNDLE_DESCRIPTION);
 			rd.id = digest;
 			if (rd.id == null)
 				rd.id = SHA1.digest(f).digest();

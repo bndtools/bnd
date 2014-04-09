@@ -94,8 +94,8 @@ public class BNDAnnotationTest extends TestCase {
 	public static void testAnnotationReferenceOrdering() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setProperty("Service-Component", "*TestReferenceOrdering");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*TestReferenceOrdering");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		Document doc = doc(b, "test.component.BNDAnnotationTest$TestReferenceOrdering");
 		NodeList nodes = (NodeList) xpath.evaluate("//reference", doc, XPathConstants.NODESET);
@@ -134,8 +134,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*MetatypeConfig*");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*MetatypeConfig*");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		assertTrue(b.check());
 		System.err.println(b.getJar().getResources().keySet());
@@ -200,8 +200,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*PropertiesAndConfig");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*PropertiesAndConfig");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -272,8 +272,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*ActivateMethod");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*ActivateMethod");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		assertTrue(b.check());
 
@@ -334,8 +334,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*NoUnbind;log=org.osgi.service.log.LogService");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*NoUnbind;log=org.osgi.service.log.LogService");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		Jar jar = b.build();
 		Manifest manifest = jar.getManifest();
 		String sc = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
@@ -355,9 +355,9 @@ public class BNDAnnotationTest extends TestCase {
 	 */
 	public static void testJSR14ComponentAnnotations() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource",
+		b.setProperty(Constants.INCLUDE_RESOURCE,
 				"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
-		b.setProperty("Service-Component", "*");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		System.err.println(b.getErrors());
@@ -366,7 +366,7 @@ public class BNDAnnotationTest extends TestCase {
 		assertEquals(1, b.getWarnings().size());
 
 		Manifest manifest = jar.getManifest();
-		String component = manifest.getMainAttributes().getValue("Service-Component");
+		String component = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
 		System.err.println(component);
 		assertNull(component);
 	}
@@ -385,8 +385,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*NoUnbind");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*NoUnbind");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -411,8 +411,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*NoUnbindDynamic");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*NoUnbindDynamic");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -436,8 +436,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*ExplicitUnbind");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*ExplicitUnbind");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -486,8 +486,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*Version");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*Version");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		assertTrue(b.check());
 
@@ -526,8 +526,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*.SameRefName");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*.SameRefName");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -553,8 +553,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*.ConfigurationPolicyTest");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*.ConfigurationPolicyTest");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -610,8 +610,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*.ActivateWithWrongArguments");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*.ActivateWithWrongArguments");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -646,8 +646,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*.ActivateWithMultipleArguments");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*.ActivateWithMultipleArguments");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -685,8 +685,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*.(MultipleArguments|ReferenceArgument)");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*.(MultipleArguments|ReferenceArgument)");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -728,8 +728,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*.TypeVersusDetailed");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*.TypeVersusDetailed");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -760,8 +760,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*.MyComponent4");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*.MyComponent4");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -789,8 +789,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*.MyComponent2");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*.MyComponent2");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -823,8 +823,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*.MyComponent3");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*.MyComponent3");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -873,8 +873,8 @@ public class BNDAnnotationTest extends TestCase {
 		b.setClasspath(new File[] {
 			new File("bin")
 		});
-		b.setProperty("Service-Component", "*.MyComponent");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(Constants.SERVICE_COMPONENT, "*.MyComponent");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.component");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());

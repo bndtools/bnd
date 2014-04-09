@@ -34,7 +34,7 @@ public class DiffTest extends TestCase {
 	private Tree make(File file) throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(file);
-		b.setProperty("Export-Package", "*");
+		b.setProperty(Constants.EXPORT_PACKAGE, "*");
 		b.build();
 		assertTrue(b.check());
 		return differ.tree(b).get("<api>").get("a").get("a.clazzA");
@@ -207,7 +207,10 @@ public class DiffTest extends TestCase {
 	public static void testSimple() throws Exception {
 
 		DiffPluginImpl differ = new DiffPluginImpl();
-		differ.setIgnore("Bundle-Copyright,Bundle-Description,Bundle-License,Bundle-Name,bundle-manifestversion,Export-Package,Import-Package,Bundle-Vendor,Bundle-Version");
+		differ.setIgnore(Constants.BUNDLE_COPYRIGHT + "," + Constants.BUNDLE_DESCRIPTION + ","
+				+ Constants.BUNDLE_LICENSE + "," + Constants.BUNDLE_NAME + "," + Constants.BUNDLE_MANIFESTVERSION + ","
+				+ Constants.EXPORT_PACKAGE + "," + Constants.IMPORT_PACKAGE + "," + Constants.BUNDLE_VENDOR + ","
+				+ Constants.BUNDLE_VERSION);
 		Tree newer = differ.tree(new Jar(new File("jar/osgi.core-4.3.0.jar")));
 		Tree older = differ.tree(new Jar(new File("jar/osgi.core.jar"))); // 4.2
 		Diff diff = newer.get("<manifest>").diff(older.get("<manifest>"));

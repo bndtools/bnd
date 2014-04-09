@@ -114,8 +114,8 @@ public class Launcher implements ServiceListener {
 				InputStream in = url.openStream();
 				try {
 					Manifest m = new Manifest(in);
-					String bsn =m.getMainAttributes().getValue("Bundle-SymbolicName"); 
-					String version =m.getMainAttributes().getValue("Bundle-Version");
+					String bsn =m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME); 
+					String version =m.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
 					if ( bsn != null && version != null) {
 						sb.append(del).append(bsn).append(";version=").append(version);
 						del = ", ";

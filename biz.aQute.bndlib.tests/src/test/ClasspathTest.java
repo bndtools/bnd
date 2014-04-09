@@ -18,8 +18,8 @@ public class ClasspathTest extends TestCase {
 	 */
 	public static void testBundleClasspath() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource", "bin=bin");
-		b.setProperty("Bundle-Classpath", "bin");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "bin=bin");
+		b.setProperty(Constants.BUNDLE_CLASSPATH, "bin");
 
 		Jar jar = b.build();
 		assertNotNull(jar.getResource("bin/test/activator/Activator.class")); // from
@@ -34,7 +34,7 @@ public class ClasspathTest extends TestCase {
 	 */
 	public static void testFindJarOnClasspath() throws Exception {
 		Properties p = new Properties();
-		p.put("Include-Resource", "tb1.jar, @test.jar");
+		p.put(Constants.INCLUDE_RESOURCE, "tb1.jar, @test.jar");
 
 		Builder b = new Builder();
 		b.setClasspath(new String[] {
@@ -55,8 +55,8 @@ public class ClasspathTest extends TestCase {
 	public static void testSimple() throws Exception {
 		Properties p = new Properties();
 		p.put("-classpath", new File("jar/osgi.jar").toURI().toURL().toString());
-		p.put("Export-Package", "org.osgi.service.event");
-		p.put("Private-Package", "test.refer");
+		p.put(Constants.EXPORT_PACKAGE, "org.osgi.service.event");
+		p.put(Constants.PRIVATE_PACKAGE, "test.refer");
 
 		Builder b = new Builder();
 		b.setClasspath(new String[] {
@@ -65,7 +65,7 @@ public class ClasspathTest extends TestCase {
 		b.setProperties(p);
 		Jar jar = b.build();
 		Manifest m = jar.getManifest();
-		String importPackage = m.getMainAttributes().getValue("Import-Package");
+		String importPackage = m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
 		assertTrue(importPackage.contains("org.osgi.framework;version=\"[1.3,2)\""));
 		assertTrue(importPackage.contains("org.osgi.service.event;version=\"[1.0,2)\""));
 	}

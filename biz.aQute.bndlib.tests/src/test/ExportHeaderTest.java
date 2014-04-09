@@ -24,13 +24,13 @@ public class ExportHeaderTest extends TestCase {
 			bin
 		});
 		Properties p = new Properties();
-		p.setProperty("Private-Package", "test.packageinfo.ref");
-		p.setProperty("Import-Package", "test.packageinfo;version=\"[1.1.1-SNAPSHOT,1.1.1-SNAPSHOT]");
+		p.setProperty(Constants.PRIVATE_PACKAGE, "test.packageinfo.ref");
+		p.setProperty(Constants.IMPORT_PACKAGE, "test.packageinfo;version=\"[1.1.1-SNAPSHOT,1.1.1-SNAPSHOT]");
 		builder.setProperties(p);
 		Jar jar = builder.build();
 		Manifest manifest = jar.getManifest();
 
-		String imph = manifest.getMainAttributes().getValue("Import-Package");
+		String imph = manifest.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
 		assertEquals("test.packageinfo;version=\"[1.1.1.SNAPSHOT,1.1.1.SNAPSHOT]\"", imph);
 	}
 
@@ -41,12 +41,12 @@ public class ExportHeaderTest extends TestCase {
 			bin
 		});
 		Properties p = new Properties();
-		p.setProperty("Private-Package", "test.packageinfo.ref");
+		p.setProperty(Constants.PRIVATE_PACKAGE, "test.packageinfo.ref");
 		builder.setProperties(p);
 		Jar jar = builder.build();
 		Manifest manifest = jar.getManifest();
 
-		String imph = manifest.getMainAttributes().getValue("Import-Package");
+		String imph = manifest.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
 		assertEquals("test.packageinfo;version=\"[1.0,2)\"", imph);
 	}
 
@@ -57,13 +57,13 @@ public class ExportHeaderTest extends TestCase {
 			bin
 		});
 		Properties p = new Properties();
-		p.setProperty("Export-Package", "test.packageinfo");
+		p.setProperty(Constants.EXPORT_PACKAGE, "test.packageinfo");
 		builder.setProperties(p);
 
 		Jar jar = builder.build();
 		Manifest manifest = jar.getManifest();
 
-		String exph = manifest.getMainAttributes().getValue("Export-Package");
+		String exph = manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
 		Map<String,String> exports = OSGiHeader.parseHeader(exph).get("test.packageinfo");
 		assertEquals("1.0.0.SNAPSHOT", exports.get(Constants.VERSION_ATTRIBUTE));
 		assertEquals("1.2.3", exports.get("Implementation-Version"));

@@ -15,17 +15,17 @@ public class ComponentOrderingTest extends TestCase {
 	public static void testOrdering() throws Exception {
 		Builder builder = new Builder();
 		builder.addClasspath(new File("bin"));
-		builder.setProperty("Service-Component", "OSGI-INF/a.xml,OSGI-INF/b.xml,OSGI-INF/c.xml,OSGI-INF/d.xml");
+		builder.setProperty(Constants.SERVICE_COMPONENT, "OSGI-INF/a.xml,OSGI-INF/b.xml,OSGI-INF/c.xml,OSGI-INF/d.xml");
 		Jar a = builder.build();
 
 		String exa = (String) a.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
 		
 		builder = new Builder();
 		builder.addClasspath(new File("bin"));
-		builder.setProperty("Service-Component", "OSGI-INF/d.xml,OSGI-INF/b.xml,OSGI-INF/a.xml,OSGI-INF/c.xml");
+		builder.setProperty(Constants.SERVICE_COMPONENT, "OSGI-INF/d.xml,OSGI-INF/b.xml,OSGI-INF/a.xml,OSGI-INF/c.xml");
 		Jar b = builder.build();
 
-		String exb = (String) b.getManifest().getMainAttributes().getValue("Service-Component");
+		String exb = (String) b.getManifest().getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
 
 		Tree newer = differ.tree(b);
 		Tree older = differ.tree(a);

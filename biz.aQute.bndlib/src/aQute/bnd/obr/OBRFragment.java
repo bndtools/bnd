@@ -51,7 +51,7 @@ public class OBRFragment {
 				d.translate(Constants.BUNDLE_DESCRIPTION));
 		identity.addAttribute(IdentityNamespace.CAPABILITY_DOCUMENTATION_ATTRIBUTE,
 				d.translate(Constants.BUNDLE_DOCURL));
-		identity.addAttribute(IdentityNamespace.CAPABILITY_LICENSE_ATTRIBUTE, d.translate("Bundle-License"));
+		identity.addAttribute(IdentityNamespace.CAPABILITY_LICENSE_ATTRIBUTE, d.translate(aQute.bnd.osgi.Constants.BUNDLE_LICENSE));
 		if (singleton)
 			identity.addAttribute(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
 		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, isFragment ? IdentityNamespace.TYPE_FRAGMENT

@@ -266,7 +266,7 @@ public class Syntax implements Constants {
 					null,
 					new Syntax(
 							EXTENSION_DIRECTIVE,
-							"Indicates this extension is a system or boot class path extension. It is only applicable when the Fragment-Host is the System Bundle.",
+							"Indicates this extension is a system or boot class path extension. It is only applicable when the " + Constants.FRAGMENT_HOST + " is the System Bundle.",
 							EXTENSION_DIRECTIVE + "=framework", "framework,bootclasspath", Pattern
 									.compile("framework|bootclasspath")), bundle_version),
 			new Syntax(

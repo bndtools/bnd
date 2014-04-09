@@ -75,7 +75,7 @@ public class PropertiesTest extends TestCase {
 	}
 
 	public static void testInternationalCharacters() throws Exception {
-		String test = "#comment\n" + "Namex=Lo\u00EFc Coton\u00E9a\n" + "Export-Package: *\n" + "Unicode=\\u0040\n"
+		String test = "#comment\n" + "Namex=Lo\u00EFc Coton\u00E9a\n" + Constants.EXPORT_PACKAGE + ": *\n" + "Unicode=\\u0040\n"
 				+ "NameAgain=Loïc Cotonéa";
 
 		byte[] bytes = test.getBytes("ISO8859-1");
