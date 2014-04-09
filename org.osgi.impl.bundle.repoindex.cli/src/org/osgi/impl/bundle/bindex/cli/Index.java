@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.launch.Framework;
 import org.osgi.service.indexer.ResourceAnalyzer;
@@ -43,9 +41,6 @@ import de.kalpatec.pojosr.framework.launch.ClasspathScanner;
 import de.kalpatec.pojosr.framework.launch.PojoServiceRegistryFactory;
 
 public class Index {
-
-	/** the program name */
-	static final String PROGRAM_NAME = "repoindex";
 
 	public static final String DEFAULT_FILENAME_UNCOMPRESSED = "index.xml";
 	public static final String DEFAULT_FILENAME_COMPRESSED = DEFAULT_FILENAME_UNCOMPRESSED + ".gz";
@@ -78,16 +73,14 @@ public class Index {
 			// Process arguments
 			Set<File> fileList = new LinkedHashSet<File>();
 			Map<String, String> config = new HashMap<String, String>();
-			File outputFile = processArgs(args, System.err, config, fileList, framework.getBundleContext());
-			if (outputFile == null) {
-				System.exit(1);
-			}
+			File outputFile = processArgs(args, config, fileList, framework.getBundleContext());
 
 			boolean verbose = Boolean.parseBoolean(config.get(ResourceIndexer.VERBOSE));
 			if (verbose) {
 				printCopyright(System.err);
 			}
 
+			// Run
 			FileOutputStream fos = null;
 			try {
 				fos = new FileOutputStream(outputFile);
@@ -114,82 +107,53 @@ public class Index {
 		System.exit(0);
 	}
 
-	private static File processArgs(String[] args, PrintStream err, Map<String, String> config, Collection<? super File> fileList, BundleContext context) throws Exception {
-		/*
-		 * Parse the command line
-		 */
-
-		CommandLineOptions commandLineOptions = new CommandLineOptions();
-		CmdLineParser parser = new CmdLineParser(commandLineOptions);
-		try {
-			parser.parseArgument(args);
-		} catch (CmdLineException e) {
-			err.printf("Error during command-line parsing: %s%n", e.getLocalizedMessage());
-			commandLineOptions.help = true;
-		}
-
-		/*
-		 * Process command-line options
-		 */
-
-		/* print usage when so requested and exit */
-		if (commandLineOptions.help) {
-			try {
-				/* can't be covered by a test */
-				int cols = Integer.parseInt(System.getenv("COLUMNS")); //$NON-NLS-1$
-				if (cols > 80) {
-					parser.setUsageWidth(cols);
-				}
-			} catch (NumberFormatException e) {
-				/* swallow, can't be covered by a test */
-			}
-
-			CommandLineOptions.usage(err, PROGRAM_NAME, parser);
-			return null;
-		}
+	private static File processArgs(String[] args, Map<String, String> config, Collection<? super File> fileList, BundleContext context) throws Exception {
+		File output = new File(DEFAULT_FILENAME_COMPRESSED);
 
 		KnownBundleAnalyzer knownBundleAnalyzer = null;
+		File knownBundlesExtraFile = null;
 
-		config.put(ResourceIndexer.REPOSITORY_NAME, commandLineOptions.repositoryName);
-
-		if (commandLineOptions.stylesheetURL != null) {
-			config.put(ResourceIndexer.STYLESHEET, commandLineOptions.stylesheetURL.toString());
+		for (int i = 0; i < args.length; i++) {
+			try {
+				if (args[i].startsWith("-n")) {
+					String repoName = args[++i];
+					config.put(ResourceIndexer.REPOSITORY_NAME, repoName);
+				} else if (args[i].equals("-stylesheet")) {
+					String styleSheet = args[++i];
+					config.put(ResourceIndexer.STYLESHEET, styleSheet);
+				} else if (args[i].startsWith("-r")) {
+					output = new File(args[++i]);
+				} else if (args[i].startsWith("-v")) {
+					config.put(ResourceIndexer.VERBOSE, Boolean.TRUE.toString());
+				} else if (args[i].startsWith("-d")) {
+					config.put(ResourceIndexer.ROOT_URL, args[++i]);
+				} else if (args[i].startsWith("-t")) {
+					String urlTemplate = args[++i];
+					config.put(ResourceIndexer.URL_TEMPLATE, urlTemplate);
+				} else if (args[i].startsWith("-l")) {
+					String licenceUrl = args[++i];
+					config.put(ResourceIndexer.LICENSE_URL, licenceUrl);
+				} else if (args[i].equalsIgnoreCase("--pretty")) {
+					output = new File(DEFAULT_FILENAME_UNCOMPRESSED);
+					config.put(ResourceIndexer.PRETTY, Boolean.toString(true));
+				} else if (args[i].equals("-K")) {
+					knownBundleAnalyzer = new KnownBundleAnalyzer(new Properties());
+				} else if (args[i].equals("-k")) {
+					knownBundlesExtraFile = new File(args[++i]);
+				} else if (args[i].equalsIgnoreCase("--noincrement")) {
+					config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "");
+				} else if (args[i].startsWith("-h")) {
+					printUsage();
+				} else if (args[i].startsWith("-")) {
+					throw new Exception("Unknown argument");
+				} else {
+					fileList.add(new File(args[i]));
+				}
+			} catch (Exception e) {
+				System.err.println("Error in " + args[i] + " : " + e.getMessage());
+				System.exit(1);
+			}
 		}
-
-		File output = commandLineOptions.outputFile;
-
-		if (commandLineOptions.verbose) {
-			config.put(ResourceIndexer.VERBOSE, Boolean.TRUE.toString());
-		}
-
-		if (commandLineOptions.rootURL != null) {
-			config.put(ResourceIndexer.ROOT_URL, commandLineOptions.rootURL.toString());
-		}
-
-		config.put(ResourceIndexer.URL_TEMPLATE, commandLineOptions.resourceUrlTemplate);
-
-		if (commandLineOptions.licenseURL != null) {
-			config.put(ResourceIndexer.LICENSE_URL, commandLineOptions.licenseURL.toString());
-		}
-
-		if (commandLineOptions.pretty) {
-			config.put(ResourceIndexer.PRETTY, Boolean.TRUE.toString());
-		}
-
-		if (commandLineOptions.overrideBuiltinKnownBundles) {
-			knownBundleAnalyzer = new KnownBundleAnalyzer(new Properties());
-		}
-
-		File knownBundlesExtraFile = commandLineOptions.knownBundlePropertiesFile;
-
-		if (commandLineOptions.incrementOverride) {
-			config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "");
-		}
-
-		if (commandLineOptions.fileList.isEmpty()) {
-			return null;
-		}
-		fileList.addAll(commandLineOptions.fileList);
 
 		if (knownBundleAnalyzer == null)
 			knownBundleAnalyzer = new KnownBundleAnalyzer();
@@ -220,5 +184,19 @@ public class Index {
 	public static void printCopyright(PrintStream out) {
 		out.println("Bindex2 | Resource Indexer v1.0");
 		out.println("(c) 2012 OSGi, All Rights Reserved");
+	}
+
+	private static void printUsage() {
+		System.err.printf("Arguments:%n" //
+				+ "  [-r index.xml(.gz)]                                              --> Output file name.%n" //
+				+ "  [--pretty]                                                       --> Non-compressed, indented output.%n" //
+				+ "  [-n Untitled]                                                    --> Repository name.%n"
+				+ "  [-k known-bundles.properties]                                    --> Load extra known-bundles data from file.%n"
+				+ "  [-K]                                                             --> Override built-in known-bundles data.%n"
+				+ "  [-t \"%%s\" symbolic name \"%%v\" version \"%%f\" filename \"%%p\" dirpath ] --> Resource URL template.%n" //
+				+ "  [-d rootdir]                                                     --> Root directory.%n"
+				+ "  [-l file:license.html]                                           --> Licence file.%n"
+				+ "  [-v]                                                             --> Verbose reporting.%n"
+				+ "  [-stylesheet http://www.osgi.org/www/obr2html.xsl]               --> Stylesheet URL.%n" + " [<file>*]%n");
 	}
 }
