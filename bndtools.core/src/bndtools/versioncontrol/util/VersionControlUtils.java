@@ -5,24 +5,24 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ProjectPaths;
+import org.bndtools.utils.javaproject.JavaProjectUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.team.core.RepositoryProvider;
 
 import bndtools.preferences.BndPreferences;
-import bndtools.types.Pair;
 import bndtools.versioncontrol.VersionControlSystem;
 
 /**
@@ -294,47 +294,21 @@ public class VersionControlUtils {
             throw new IllegalArgumentException("Can't create ignore files for a null project");
         }
 
-        List<Pair<String,String>> sourceOutputLocations = new LinkedList<Pair<String,String>>();
+        Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(javaProject);
 
-        /* access the project classpath to determine the source folders and their output locations */
-        IClasspathEntry[] rawClasspath = null;
-        IPath defaultOutputLocation = null;
-        try {
-            rawClasspath = javaProject.getRawClasspath();
-            defaultOutputLocation = javaProject.getOutputLocation();
-        } catch (Exception e) {
-            logger.logError("Could not access the project classpath for " + javaProject.getProject().getName() + ", falling back to using the defaults in the ignore file(s)", e);
-        }
-
-        if (rawClasspath != null && defaultOutputLocation != null) {
-            IPath projectRootPath = javaProject.getPath();
-            for (IClasspathEntry rawClasspathEntry : rawClasspath) {
-                if (rawClasspathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-                    IPath srcDir = rawClasspathEntry.getPath();
-                    IPath outputLocation = rawClasspathEntry.getOutputLocation();
-
-                    if (outputLocation == null) {
-                        outputLocation = defaultOutputLocation;
-                    }
-
-                    assert (srcDir != null);
-                    assert (outputLocation != null);
-
-                    sourceOutputLocations.add(new Pair<String,String>(srcDir.makeRelativeTo(projectRootPath).toString(), outputLocation.makeRelativeTo(projectRootPath).toString()));
-                }
-            }
-        } else {
+        if (sourceOutputLocations == null) {
             /* fallback to using defaults */
-            sourceOutputLocations.add(new Pair<String,String>(projectPaths.getSrc(), projectPaths.getBin()));
-            sourceOutputLocations.add(new Pair<String,String>(projectPaths.getTestSrc(), projectPaths.getTestBin()));
+            sourceOutputLocations = new LinkedHashMap<String,String>();
+            sourceOutputLocations.put(projectPaths.getSrc(), projectPaths.getBin());
+            sourceOutputLocations.put(projectPaths.getTestSrc(), projectPaths.getTestBin());
         }
 
         List<String> emptyIgnores = new LinkedList<String>();
         List<String> rootIgnores = new LinkedList<String>();
 
-        for (Pair<String,String> sourceOutputLocation : sourceOutputLocations) {
-            String srcDir = sourceOutputLocation.getFirst();
-            String binDir = sourceOutputLocation.getSecond();
+        for (Map.Entry<String,String> sourceOutputLocation : sourceOutputLocations.entrySet()) {
+            String srcDir = sourceOutputLocation.getKey();
+            String binDir = sourceOutputLocation.getValue();
             assert (srcDir != null);
             assert (binDir != null);
 
