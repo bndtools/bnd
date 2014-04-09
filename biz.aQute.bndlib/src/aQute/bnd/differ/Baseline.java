@@ -117,7 +117,11 @@ public class Baseline {
 			info.olderVersion = getVersion(oExports.get(info.packageName));
 			if (pdiff.getDelta() == Delta.UNCHANGED) {
 				info.suggestedVersion = info.olderVersion;
-				if (!info.newerVersion.equals(info.olderVersion)) {
+				// Fix previously released package containing version qualifier
+				if (info.olderVersion.getQualifier() != null) {
+					info.suggestedVersion = bump(Delta.MICRO, info.olderVersion, 1, 0);
+					info.warning += "Found package version with qualifier. Bumping micro version";
+				} else if (!info.newerVersion.equals(info.olderVersion)) {
 					info.warning += "No difference but versions are not equal";
 				}
 			} else if (pdiff.getDelta() == Delta.REMOVED) {
