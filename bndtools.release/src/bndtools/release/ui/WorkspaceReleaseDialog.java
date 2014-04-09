@@ -17,6 +17,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -52,12 +53,12 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 	protected Control createDialogArea(Composite parent) {
 		Composite composite = (Composite) super.createDialogArea(parent);
 
-		int screenWidth = getShell().getDisplay().getClientArea().width;
-	    int screenHeight = getShell().getDisplay().getClientArea().height;
-
 		GridData gridData = createFillGridData();
-		gridData.heightHint = Math.min(screenHeight, 500);
-		gridData.widthHint = Math.min(screenWidth, 800);
+
+		/* take 80% of the application window or 800x500 if that's bigger */
+		Point size = getParentShell().getSize();
+		gridData.widthHint = Math.max(Double.valueOf(size.x * 0.8).intValue(), 800);
+		gridData.heightHint = Math.max(Double.valueOf(size.y * 0.8).intValue(), 500);
 
 	    sashForm = new SashForm(composite, SWT.HORIZONTAL);
 	    sashForm.setLayout(createGridLayout());
