@@ -21,7 +21,7 @@ import aQute.libg.tuple.*;
  * A model for a Bnd file. In the first iteration, use a simple Properties
  * object; this will need to be enhanced to additionally record formatting, e.g.
  * line breaks and empty lines, and comments.
- * 
+ *
  * @author Neil Bartlett
  */
 public class BndEditModel {
@@ -135,7 +135,7 @@ public class BndEditModel {
 																										});
 
 	private Converter<Map<String,String>,String>					propertiesConverter			= new PropertiesConverter();
-	
+
 	private Converter<List<Requirement>,String>					requirementListConverter	= new RequirementListConverter();
 	private Converter<EE,String>									eeConverter					= new EEConverter();
 
@@ -157,7 +157,7 @@ public class BndEditModel {
 																										LIST_SEPARATOR,
 																										new PropertiesEntryFormatter(),
 																										null);
-	
+
 	private Converter<String,Collection< ? extends Requirement>>	requirementListFormatter	= new CollectionFormatter<Requirement>(
 																										LIST_SEPARATOR,
 																										new RequirementFormatter(),
@@ -258,11 +258,11 @@ public class BndEditModel {
 		InputStream	in = toEscaped(document.get());
 		loadFrom(in);
 	}
-	
+
 	public InputStream toEscaped(String text) throws IOException {
 		StringReader unicode = new StringReader(text);
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		
+
 		while ( true) {
 			int c = unicode.read();
 			if ( c < 0)
@@ -272,10 +272,10 @@ public class BndEditModel {
 			else
 				bout.write((char)c);
 		}
-		
+
 		return new ByteArrayInputStream(bout.toByteArray());
 	}
-	
+
 	public InputStream toAsciiStream(IDocument doc) throws IOException {
 		saveChangesTo(doc);
 		return toEscaped(doc.get());
@@ -335,7 +335,7 @@ public class BndEditModel {
 		String newEntry;
 		if (value != null) {
 			StringBuilder buffer = new StringBuilder();
-			buffer.append(name).append(":").append(value);
+			buffer.append(name).append(": ").append(value);
 			newEntry = buffer.toString();
 		} else {
 			newEntry = "";
@@ -742,7 +742,7 @@ public class BndEditModel {
 		List<String> old = getPluginPath();
 		doSetObject(aQute.bnd.osgi.Constants.PLUGINPATH, old, pluginPath, stringListFormatter);
 	}
-	
+
     public List<String> getRunRepos() {
         return doGetObject(aQute.bnd.osgi.Constants.RUNREPOS, listConverter);
     }
@@ -751,7 +751,7 @@ public class BndEditModel {
         List<String> old = getRunRepos();
         doSetObject(aQute.bnd.osgi.Constants.RUNREPOS, old, repos, runReposFormatter);
     }
-    
+
     public String getRunFramework() {
         return doGetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, stringConverter);
     }
@@ -769,14 +769,14 @@ public class BndEditModel {
         doSetObject(aQute.bnd.osgi.Constants.RUNEE, old, ee, eeFormatter);
     }
 
-    
+
     public void setRunFramework(String clause) {
         assert (Constants.RUNFRAMEWORK_SERVICES.equals(clause.toLowerCase().trim()) ||
                 Constants.RUNFRAMEWORK_NONE.equals(clause.toLowerCase().trim()));
         String oldValue = getRunFramework();
         doSetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
     }
-    
+
     public void setRunFw(String clause) {
         String oldValue = getRunFw();
         doSetObject(aQute.bnd.osgi.Constants.RUNFW, oldValue, clause, newlineEscapeFormatter);
@@ -785,7 +785,7 @@ public class BndEditModel {
     public List<Requirement> getRunRequires() {
     	return doGetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListConverter);
     }
-    
+
     public void setRunRequires(List<Requirement> requires) {
     	List<Requirement> oldValue = getRunRequires();
     	doSetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
@@ -856,7 +856,7 @@ public class BndEditModel {
 	public void setBndResourceName(String bndResourceName) {
 		this.bndResourceName = bndResourceName;
 	}
-	
+
 	public List<HeaderClause> getBundleBlueprint() {
 		return doGetObject(aQute.bnd.osgi.Constants.BUNDLE_BLUEPRINT, headerClauseListConverter);
 	}
@@ -865,7 +865,7 @@ public class BndEditModel {
 		List<HeaderClause> old = getPlugins();
 		doSetObject(aQute.bnd.osgi.Constants.BUNDLE_BLUEPRINT, old, bundleBlueprint, headerClauseListFormatter);
 	}
-	
+
 	public void addBundleBlueprint(String location) {
 		List<HeaderClause> bpLocations = getBundleBlueprint();
 		if (bpLocations == null)
@@ -879,12 +879,12 @@ public class BndEditModel {
 	public List<String> getIncludeResource() {
 		return doGetObject(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, listConverter);
 	}
-	
+
 	public void setIncludeResource(List<String> includeResource) {
 		List<String> old = getIncludeResource();
 		doSetObject(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, old, includeResource, stringListFormatter);
 	}
-	
+
 	public void addIncludeResource(String resource) {
 		List<String> includeResource = getIncludeResource();
 		if (includeResource == null)
@@ -894,9 +894,9 @@ public class BndEditModel {
 		includeResource.add(resource);
 		setIncludeResource(includeResource);
 	}
-	
-	
+
+
 	/**
-	 * Save a document to 
+	 * Save a document to
 	 */
 }
