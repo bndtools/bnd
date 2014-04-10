@@ -47,7 +47,7 @@ public class PomResource extends WriteResource {
 		int n = bsn.lastIndexOf('.');
 		if (n <= 0)
 			throw new RuntimeException(
-					"Can not create POM unless Bundle-SymbolicName contains a . to separate group and  artifact id");
+					"Can not create POM unless " + Constants.BUNDLE_SYMBOLICNAME + " contains a . to separate group and  artifact id");
 
 		if (version == null)
 			version = "0";

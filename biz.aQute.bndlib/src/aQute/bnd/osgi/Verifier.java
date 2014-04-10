@@ -222,7 +222,7 @@ public class Verifier extends Processor {
 	 * optional ::= ’*’
 	 */
 	public void verifyNative() {
-		String nc = get("Bundle-NativeCode");
+		String nc = get(Constants.BUNDLE_NATIVECODE);
 		doNative(nc);
 	}
 
@@ -294,7 +294,7 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyActivator() throws Exception {
-		String bactivator = main.get("Bundle-Activator");
+		String bactivator = main.get(Constants.BUNDLE_ACTIVATOR);
 		if (bactivator != null) {
 			TypeRef ref = analyzer.getTypeRefFromFQN(bactivator);
 			if (analyzer.getClassspace().containsKey(ref))
@@ -304,18 +304,18 @@ public class Verifier extends Processor {
 			if (packageRef.isDefaultPackage())
 				error("The Bundle Activator is not in the bundle and it is in the default package ");
 			else if (!analyzer.isImported(packageRef)) {
-				error("Bundle-Activator not found on the bundle class path nor in imports: " + bactivator);
+				error(Constants.BUNDLE_ACTIVATOR + " not found on the bundle class path nor in imports: " + bactivator);
 			}
 		}
 	}
 
 	private void verifyComponent() {
-		String serviceComponent = main.get("Service-Component");
+		String serviceComponent = main.get(Constants.SERVICE_COMPONENT);
 		if (serviceComponent != null) {
 			Parameters map = parseHeader(serviceComponent);
 			for (String component : map.keySet()) {
 				if (component.indexOf("*") < 0 && !dot.exists(component)) {
-					error("Service-Component entry can not be located in JAR: " + component);
+					error(Constants.SERVICE_COMPONENT + " entry can not be located in JAR: " + component);
 				} else {
 					// validate component ...
 				}
@@ -384,15 +384,15 @@ public class Verifier extends Processor {
 				}
 
 				if (analyzer instanceof Builder)
-					warning("Unresolved references to %s by class(es) %s on the Bundle-Classpath: %s",
+					warning("Unresolved references to %s by class(es) %s on the " + Constants.BUNDLE_CLASSPATH + ": %s",
 							unresolvedReferences, culprits, analyzer.getBundleClasspath().keySet());
 				else
-					error("Unresolved references to %s by class(es) %s on the Bundle-Classpath: %s",
+					error("Unresolved references to %s by class(es) %s on the " + Constants.BUNDLE_CLASSPATH + ": %s",
 							unresolvedReferences, culprits, analyzer.getBundleClasspath().keySet());
 				return;
 			}
 		} else if (isPedantic())
-			warning("Use of Require-Bundle, ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references");
+			warning("Use of " + Constants.REQUIRE_BUNDLE + ", ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references");
 	}
 
 	/**
@@ -419,14 +419,14 @@ public class Verifier extends Processor {
 
 	public void verify() throws Exception {
 		verifyHeaders();
-		verifyDirectives("Export-Package", "uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE, PACKAGEPATTERN,
+		verifyDirectives(Constants.EXPORT_PACKAGE, "uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE, PACKAGEPATTERN,
 				"package");
-		verifyDirectives("Import-Package", "resolution:", PACKAGEPATTERN, "package");
-		verifyDirectives("Require-Bundle", "visibility:|resolution:", SYMBOLICNAME, "bsn");
-		verifyDirectives("Fragment-Host", "extension:", SYMBOLICNAME, "bsn");
-		verifyDirectives("Provide-Capability", "effective:|uses:", null, null);
-		verifyDirectives("Require-Capability", "effective:|resolution:|filter:", null, null);
-		verifyDirectives("Bundle-SymbolicName", "singleton:|fragment-attachment:|mandatory:", SYMBOLICNAME, "bsn");
+		verifyDirectives(Constants.IMPORT_PACKAGE, "resolution:", PACKAGEPATTERN, "package");
+		verifyDirectives(Constants.REQUIRE_BUNDLE, "visibility:|resolution:", SYMBOLICNAME, "bsn");
+		verifyDirectives(Constants.FRAGMENT_HOST, "extension:", SYMBOLICNAME, "bsn");
+		verifyDirectives(Constants.PROVIDE_CAPABILITY, "effective:|uses:", null, null);
+		verifyDirectives(Constants.REQUIRE_CAPABILITY, "effective:|resolution:|filter:", null, null);
+		verifyDirectives(Constants.BUNDLE_SYMBOLICNAME, "singleton:|fragment-attachment:|mandatory:", SYMBOLICNAME, "bsn");
 
 		verifyManifestFirst();
 		verifyActivator();
@@ -437,10 +437,10 @@ public class Verifier extends Processor {
 		verifyExports();
 		verifyUnresolvedReferences();
 		verifySymbolicName();
-		verifyListHeader("Bundle-RequiredExecutionEnvironment", EENAME, false);
-		verifyHeader("Bundle-ManifestVersion", BUNDLEMANIFESTVERSION, false);
-		verifyHeader("Bundle-Version", VERSION, true);
-		verifyListHeader("Bundle-Classpath", FILE, false);
+		verifyListHeader(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, EENAME, false);
+		verifyHeader(Constants.BUNDLE_MANIFESTVERSION, BUNDLEMANIFESTVERSION, false);
+		verifyHeader(Constants.BUNDLE_VERSION, VERSION, true);
+		verifyListHeader(Constants.BUNDLE_CLASSPATH, FILE, false);
 		verifyDynamicImportPackage();
 		verifyBundleClasspath();
 		verifyUses();
@@ -782,7 +782,7 @@ public class Verifier extends Processor {
 		// uses.removeAll(analyzer.getExports().keySet());
 		// uses.removeAll(analyzer.getImports().keySet());
 		// if ( !uses.isEmpty())
-		// warning("Export-Package uses: directive contains packages that are not imported nor exported: %s",
+		// warning(Constants.EXPORT_PACKAGE + " uses: directive contains packages that are not imported nor exported: %s",
 		// uses);
 	}
 
@@ -797,13 +797,13 @@ public class Verifier extends Processor {
 	public boolean verifyActivationPolicy(String policy) {
 		Parameters map = parseHeader(policy);
 		if (map.size() == 0)
-			warning("Bundle-ActivationPolicy is set but has no argument %s", policy);
+			warning(Constants.BUNDLE_ACTIVATIONPOLICY + " is set but has no argument %s", policy);
 		else if (map.size() > 1)
-			warning("Bundle-ActivationPolicy has too many arguments %s", policy);
+			warning(Constants.BUNDLE_ACTIVATIONPOLICY + " has too many arguments %s", policy);
 		else {
 			Map<String,String> s = map.get("lazy");
 			if (s == null)
-				warning("Bundle-ActivationPolicy set but is not set to lazy: %s", policy);
+				warning(Constants.BUNDLE_ACTIVATIONPOLICY + " set but is not set to lazy: %s", policy);
 			else
 				return true;
 		}
@@ -818,7 +818,7 @@ public class Verifier extends Processor {
 
 		for (String path : bcp.keySet()) {
 			if (path.endsWith("/"))
-				error("A Bundle-ClassPath entry must not end with '/': %s", path);
+				error("A " + Constants.BUNDLE_CLASSPATH + " entry must not end with '/': %s", path);
 
 			if (dot.getDirectories().containsKey(path))
 				// We assume that any classes are in a directory
@@ -828,7 +828,7 @@ public class Verifier extends Processor {
 
 		for (String path : dot.getResources().keySet()) {
 			if (path.endsWith(".class")) {
-				warning("The Bundle-Classpath does not contain the actual bundle JAR (as specified with '.' in the Bundle-Classpath) but the JAR does contain classes. Is this intentional?");
+				warning("The " + Constants.BUNDLE_CLASSPATH + " does not contain the actual bundle JAR (as specified with '.' in the " + Constants.BUNDLE_CLASSPATH + ") but the JAR does contain classes. Is this intentional?");
 				return;
 			}
 		}
@@ -847,8 +847,8 @@ public class Verifier extends Processor {
 	 * </pre>
 	 */
 	private void verifyDynamicImportPackage() {
-		verifyListHeader("DynamicImport-Package", WILDCARDPACKAGE, true);
-		String dynamicImportPackage = get("DynamicImport-Package");
+		verifyListHeader(Constants.DYNAMICIMPORT_PACKAGE, WILDCARDPACKAGE, true);
+		String dynamicImportPackage = get(Constants.DYNAMICIMPORT_PACKAGE);
 		if (dynamicImportPackage == null)
 			return;
 
@@ -856,7 +856,7 @@ public class Verifier extends Processor {
 		for (String name : map.keySet()) {
 			name = name.trim();
 			if (!verify(name, WILDCARDPACKAGE))
-				error("DynamicImport-Package header contains an invalid package name: " + name);
+				error(Constants.DYNAMICIMPORT_PACKAGE + " header contains an invalid package name: " + name);
 
 			Map<String,String> sub = map.get(name);
 			if (r3 && sub.size() != 0) {
@@ -1225,7 +1225,7 @@ public class Verifier extends Processor {
 		if (list.isEmpty())
 			return;
 
-		error("Meta-Persistence refers to resources not in the bundle: %s", list).header("Meta-Persistence");
+		error(Constants.META_PERSISTENCE + " refers to resources not in the bundle: %s", list).header(Constants.META_PERSISTENCE);
 	}
 
 	/**

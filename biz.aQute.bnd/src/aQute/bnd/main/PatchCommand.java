@@ -54,7 +54,7 @@ public class PatchCommand {
 		}
 
 		bm.getMainAttributes().putValue("Patch-Delete", Processor.join(delete, ", "));
-		bm.getMainAttributes().putValue("Patch-Version", am.getMainAttributes().getValue("Bundle-Version"));
+		bm.getMainAttributes().putValue("Patch-Version", am.getMainAttributes().getValue(Constants.BUNDLE_VERSION));
 
 		b.write(patch);
 		a.close();
@@ -128,7 +128,7 @@ public class PatchCommand {
 		// b.putResource(path, a.getResource(path));
 		// }
 		//
-		// bm.getMainAttributes().putValue("Bundle-Version", patchVersion);
+		// bm.getMainAttributes().putValue(Constants.BUNDLE_VERSION, patchVersion);
 		// b.write(new File(newer));
 		// a.close();
 		// b.close();

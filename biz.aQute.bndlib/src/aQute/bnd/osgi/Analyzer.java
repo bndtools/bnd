@@ -220,7 +220,7 @@ public class Analyzer extends Processor {
 				exports = filter(filter, contained, unused);
 
 				if (!unused.isEmpty()) {
-					warning("Unused Export-Package instructions: %s ", unused);
+					warning("Unused " + Constants.EXPORT_PACKAGE + " instructions: %s ", unused);
 				}
 
 				// See what information we can find to augment the
@@ -253,14 +253,14 @@ public class Analyzer extends Processor {
 					h = "*";
 
 				if (isPedantic() && h.trim().length() == 0)
-					warning("Empty Import-Package header");
+					warning("Empty " + Constants.IMPORT_PACKAGE + " header");
 
 				Instructions filter = new Instructions(h);
 				imports = filter(filter, referredAndExported, unused);
 				if (!unused.isEmpty()) {
 					// We ignore the end wildcard catch
 					if (!(unused.size() == 1 && unused.iterator().next().toString().equals("*")))
-						warning("Unused Import-Package instructions: %s ", unused);
+						warning("Unused " + Constants.IMPORT_PACKAGE + " instructions: %s ", unused);
 				}
 
 				// See what information we can find to augment the
@@ -310,7 +310,7 @@ public class Analyzer extends Processor {
 			// Checks
 			//
 			if (referred.containsKey(Descriptors.DEFAULT_PACKAGE)) {
-				error("The default package '.' is not permitted by the Import-Package syntax. \n"
+				error("The default package '.' is not permitted by the " + Constants.IMPORT_PACKAGE + " syntax. \n"
 						+ " This can be caused by compile errors in Eclipse because Eclipse creates \n"
 						+ "valid class files regardless of compile errors.\n"
 						+ "The following package(s) import from the default package "
@@ -1353,7 +1353,7 @@ public class Analyzer extends Processor {
 				Map.Entry<Object,Object> entry = e.next();
 				Attributes.Name name = (Attributes.Name) entry.getKey();
 				String value = (String) entry.getValue();
-				if (name.toString().equalsIgnoreCase("Created-By"))
+				if (name.toString().equalsIgnoreCase(Constants.CREATED_BY))
 					name = new Attributes.Name("Originally-Created-By");
 				if (!result.getMainAttributes().containsKey(name))
 					result.getMainAttributes().put(name, value);
@@ -2123,7 +2123,7 @@ public class Analyzer extends Processor {
 						// would have the classes in these directories on the
 						// class path twice.
 						if (bcp.containsKey("."))
-							warning("Bundle-ClassPath uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
+							warning(Constants.BUNDLE_CLASSPATH + " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 									path, path);
 						analyzeJar(dot, Processor.appendPath(path) + "/", true);
 					} else {

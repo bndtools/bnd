@@ -30,7 +30,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		analyzer.setProperty(Constants.SERVICE_COMPONENT, Processor.printClauses(l));
 
-		analyzer.getInfo(m, "Service-Component: ");
+		analyzer.getInfo(m, Constants.SERVICE_COMPONENT + ": ");
 		m.close();
 
 		return false;
@@ -75,7 +75,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 				}
 				catch (Exception e) {
 					e.printStackTrace();
-					error("Invalid Service-Component header: %s %s, throws %s", name, info, e);
+					error("Invalid " + Constants.SERVICE_COMPONENT + " header: %s %s, throws %s", name, info, e);
 					throw e;
 				}
 			}

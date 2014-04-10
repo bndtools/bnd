@@ -1113,9 +1113,9 @@ public class Main extends ReporterAdapter {
 			URL url = urls.nextElement();
 			trace("found manifest %s", url);
 			Manifest m = new Manifest(url.openStream());
-			String name = m.getMainAttributes().getValue("Bundle-SymbolicName");
+			String name = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
 			if (name != null && name.trim().equals("biz.aQute.jpm.run")) {
-				out.println(m.getMainAttributes().getValue("Bundle-Version"));
+				out.println(m.getMainAttributes().getValue(Constants.BUNDLE_VERSION));
 				return;
 			}
 		}
