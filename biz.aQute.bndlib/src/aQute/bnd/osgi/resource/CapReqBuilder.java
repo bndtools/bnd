@@ -79,15 +79,15 @@ public class CapReqBuilder {
 
 	public Capability buildCapability() {
 		// TODO check the thrown exception
-		if (resource == null)
-			throw new IllegalStateException("Cannot build Capability with null Resource.");
+//		if (resource == null)
+//			throw new IllegalStateException("Cannot build Capability with null Resource.");
 		return new CapabilityImpl(namespace, resource, directives, attributes);
 	}
 
 	public Requirement buildRequirement() {
 		// TODO check the thrown exception
-		if (resource == null)
-			throw new IllegalStateException("Cannot build Requirement with null Resource.");
+//		if (resource == null)
+//			throw new IllegalStateException("Cannot build Requirement with null Resource.");
 		return new RequirementImpl(namespace, resource, directives, attributes);
 	}
 
@@ -162,7 +162,7 @@ public class CapReqBuilder {
 		return expr.toString();
 	}
 
-	public void filter(CharSequence f) {
-		addDirective("filter", f.toString());
+	public CapReqBuilder filter(CharSequence f) {
+		return addDirective("filter", f.toString());
 	}
 }
