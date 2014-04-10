@@ -23,7 +23,7 @@ public class TestWrapper extends TestCase {
 	
 	
 	public void testRepo() throws Exception {
-		WrapperTestRepository testRepo = new WrapperTestRepository( new File("testdata/repo3"));
+		WrapperTstRepository testRepo = new WrapperTstRepository( new File("testdata/repo3"));
 		
 		assertEquals(4, testRepo.list(null).size());
 		
