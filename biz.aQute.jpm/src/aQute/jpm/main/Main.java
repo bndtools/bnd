@@ -889,9 +889,9 @@ public class Main extends ReporterAdapter {
 
 	public void _vm(VMOptions opts) throws Exception {
 		if (opts.add() != null) {
-			File f = IO.getFile(base,opts.add()).getCanonicalFile();
-			
-			if ( !f.isDirectory()) {
+			File f = IO.getFile(base, opts.add()).getCanonicalFile();
+
+			if (!f.isDirectory()) {
 				error("No such directory %s to add a JVM", f);
 			} else {
 				jpm.addVm(f);
@@ -1402,6 +1402,9 @@ public class Main extends ReporterAdapter {
 
 		@Description("Override the default $JAVA_HOME/lib/security/(jsse)cacerts file location.")
 		File cacerts();
+
+		@Description("Delete the given name")
+		boolean delete();
 	}
 
 	@Description("Install a certificate that is trusted by this VM (persistent for the JVM!)")
@@ -1409,9 +1412,13 @@ public class Main extends ReporterAdapter {
 		if (!this.jpm.hasAccess())
 			error("Must be administrator");
 
-		InstallCert.installCert(this, opts._().get(0), opts.port() == 0 ? 443 : opts.port(),
-				opts.secret() == null ? jpm.getPlatform().defaultCacertsPassword() : opts.secret(), opts.cacerts(),
-				opts.install());
+		if (opts.delete())
+			InstallCert.deleteCert(opts._().get(0), opts.secret() == null ? jpm.getPlatform().defaultCacertsPassword()
+					: opts.secret(), opts.cacerts());
+		else
+			InstallCert.installCert(this, opts._().get(0), opts.port() == 0 ? 443 : opts.port(),
+					opts.secret() == null ? jpm.getPlatform().defaultCacertsPassword() : opts.secret(), opts.cacerts(),
+					opts.install());
 	}
 
 	// void print(Iterable<RevisionRef> revisions) {

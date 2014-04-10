@@ -41,10 +41,11 @@ package aQute.jpm.main;
 import java.io.*;
 import java.security.*;
 import java.security.cert.*;
+import java.security.cert.Certificate;
+import java.util.*;
 
 import javax.net.ssl.*;
 
-import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.service.reporter.*;
 
@@ -54,30 +55,10 @@ import aQute.service.reporter.*;
  */
 public class InstallCert {
 
-	public static void installCert(Reporter reporter, String host, int port, String passphrase, File file, boolean install)
-			throws Exception {
-		if (file == null) {
-			File java = new File(System.getProperty("java.home"));
-			reporter.trace("java.home=%s",java);
-			file = IO.getFile(java, "lib/security/jssecacerts");
-			if (!file.isFile())
-				file = IO.getFile(java, "lib/security/cacerts");
-			if (!file.isFile())
-				file = IO.getFile(java, "jre/lib/security/cacerts");
-			if (!file.isFile())
-				throw new IllegalArgumentException(
-						"Cannot find certifcate file in $JAVA_HOME/lib/security/(jsse)?cacerts");
-			reporter.trace("using cacerts %s",file);
-		}
-		KeyStore ks;
-		InputStream in = new FileInputStream(file);
-		try {
-			ks = KeyStore.getInstance(KeyStore.getDefaultType());
-			ks.load(in, passphrase.toCharArray());
-		}
-		finally {
-			in.close();
-		}
+	public static void installCert(Reporter reporter, String host, int port, String passphrase, File file,
+			boolean install) throws Exception {
+		
+		KeyStore ks = getKeystore(passphrase, file);
 
 		SSLContext context = SSLContext.getInstance("TLS");
 		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -109,16 +90,24 @@ public class InstallCert {
 		}
 
 		reporter.trace("Server sent " + chain.length + " certificate(s):");
-		MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-		MessageDigest md5 = MessageDigest.getInstance("MD5");
 
+		System.out.println("Chain");
+		String trusted=null;
+		
 		for (int i = 0; i < chain.length; i++) {
 			X509Certificate cert = chain[i];
-			System.out.printf("%3s Subject %s Issuer %s sha1=%s md5=%s\n" ,i, cert.getSubjectDN(), cert.getIssuerDN(), Hex.toHexString(sha1.digest()),
-					Hex.toHexString(md5.digest()));
-			sha1.update(cert.getEncoded());
-			md5.update(cert.getEncoded());
+			String alias = ks.getCertificateAlias(cert);
+			if ( alias != null && trusted == null)
+				trusted = alias;
+			
+			System.out.printf("%-40s %s%n", alias, cert.getSubjectDN());
 		}
+		
+		if ( trusted != null) {
+			System.out.println("This server is trusted, certificate in the chain was found as alias \"" + trusted + "\"");
+			return;
+		}
+		
 		if (!install)
 			return;
 
@@ -126,6 +115,14 @@ public class InstallCert {
 		String alias = host;
 		ks.setCertificateEntry(alias, cert);
 
+		saveKeystore(passphrase, file, ks);
+
+		reporter.trace("Added certificate to keystore '%s' using alias '%s'", file, alias);
+	}
+
+	private static void saveKeystore(String passphrase, File file, KeyStore ks) throws FileNotFoundException,
+			IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+		file = getCacertFile(file);
 		OutputStream out = new FileOutputStream(file);
 		try {
 			ks.store(out, passphrase.toCharArray());
@@ -133,14 +130,69 @@ public class InstallCert {
 		finally {
 			out.close();
 		}
-
-		reporter.trace("Added certificate to keystore '%s' using alias '%s'", file, alias);
 	}
+
+	private static KeyStore getKeystore(String passphrase, File file) throws FileNotFoundException, KeyStoreException,
+			IOException, NoSuchAlgorithmException, CertificateException {
+		file = getCacertFile(file);
+		KeyStore ks;
+		InputStream in = new FileInputStream(file);
+		try {
+			ks = KeyStore.getInstance(KeyStore.getDefaultType());
+			ks.load(in, passphrase.toCharArray());
+		}
+		finally {
+			in.close();
+		}
+
+		System.out.println("In key store");
+		for (Enumeration<String> e = ks.aliases(); e.hasMoreElements();) {
+			String alias = e.nextElement();
+			Certificate certificate = ks.getCertificate(alias);
+			if (certificate instanceof X509Certificate) {
+				X509Certificate x509 = (X509Certificate) certificate;
+				System.out.printf("%-40s %s%n", alias, x509.getSubjectDN());
+			}
+		}
+		System.out.println("---------------");
+		return ks;
+	}
+
+	private static File getCacertFile(File file) {
+		if (file == null) {
+			File java = new File(System.getProperty("java.home"));
+			file = IO.getFile(java, "lib/security/jssecacerts");
+			if (!file.isFile())
+				file = IO.getFile(java, "lib/security/cacerts");
+			if (!file.isFile())
+				file = IO.getFile(java, "jre/lib/security/cacerts");
+			if (!file.isFile())
+				throw new IllegalArgumentException(
+						"Cannot find certifcate file in $JAVA_HOME/lib/security/(jsse)?cacerts");
+			System.out.printf("using cacerts %s%n", file);
+		}
+		return file;
+	}
+	
+	public static void deleteCert(String alias, String password, File cacerts) throws FileNotFoundException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+		KeyStore ks = getKeystore(password, cacerts);
+		
+		Certificate certificate = ks.getCertificate(alias);
+		if ( certificate == null) {
+			System.out.println("No such alias " + alias);
+			return;
+		}
+
+		ks.deleteEntry(alias);
+		
+		saveKeystore(password, cacerts, ks);
+	}
+
 
 	private static class SavingTrustManager implements X509TrustManager {
 
 		private final X509TrustManager	tm;
-		X509Certificate[]		chain;
+		X509Certificate[]				chain;
 
 		SavingTrustManager(X509TrustManager tm) {
 			this.tm = tm;
@@ -159,5 +211,6 @@ public class InstallCert {
 			tm.checkServerTrusted(chain, authType);
 		}
 	}
+
 
 }
