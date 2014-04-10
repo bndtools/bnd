@@ -14,12 +14,12 @@ import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
 
-public class TestRepository implements InfoRepository {
+public class WrapperTestRepository implements InfoRepository {
 	final Map<String,SearchableRepository.ResourceDescriptor>	files	= new HashMap<String,SearchableRepository.ResourceDescriptor>();
 	final MultiMap<String,Version>								index	= new MultiMap<String,Version>();
 	final File													dir;
 
-	public TestRepository(File dir) throws Exception {
+	public WrapperTestRepository(File dir) throws Exception {
 		this.dir = dir;
 		traverse(dir);
 	}
