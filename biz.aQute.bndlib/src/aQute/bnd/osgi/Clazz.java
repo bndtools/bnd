@@ -41,7 +41,31 @@ public class Clazz {
 		J2SE5(49, "J2SE-1.5", "(&(osgi.ee=JavaSE)(version=1.5))"), //
 		J2SE6(50, "JavaSE-1.6", "(&(osgi.ee=JavaSE)(version=1.6))"), //
 		OpenJDK7(51, "JavaSE-1.7", "(&(osgi.ee=JavaSE)(version=1.7))"), //
-		OpenJDK8(52, "JavaSE-1.8", "(&(osgi.ee=JavaSE)(version=1.8))"), //
+		OpenJDK8(52, "JavaSE-1.8", "(&(osgi.ee=JavaSE)(version=1.8))") {
+			
+			Map<String,Set<String>> profiles;
+			public Map<String,Set<String>> getProfiles() throws IOException {
+				if ( profiles == null) {
+					Properties p = new Properties();
+					InputStream in = Clazz.class.getResourceAsStream("profiles-"+this+".properties");
+					try {
+						p.load(in);
+					} finally {
+						in.close();
+					}
+					profiles=new HashMap<String,Set<String>>();
+					for ( Map.Entry<Object,Object> prop : p.entrySet()) {
+						String list = (String) prop.getValue();
+						Set<String> set = new HashSet<String>();
+						for ( String s : list.split("\\s*,\\s*")) {
+							set.add(s);
+						}
+						profiles.put((String) prop.getKey(), set);
+					}
+				}
+				return profiles;
+			}
+		}, //
 		UNKNOWN(Integer.MAX_VALUE, "<>", null)//
 		;
 
@@ -93,6 +117,10 @@ public class Clazz {
 
 		public String getFilter() {
 			return filter;
+		}
+
+		public Map<String,Set<String>> getProfiles() throws IOException {
+			return null;
 		}
 	}
 

@@ -189,17 +189,17 @@ public class Analyzer extends Processor {
 			}
 
 			// Conditional packages
-			
+
 			//
 			// We need to find out the contained packages
-			// again ... so we need to clear any visited 
+			// again ... so we need to clear any visited
 			// packages otherwise new packages are not
 			// added to contained
 			//
 			packagesVisited.clear();
-			
+
 			Jar extra = getExtra();
-			
+
 			while (extra != null) {
 				dot.addAll(extra);
 				analyzeJar(extra, "", true);
@@ -407,7 +407,8 @@ public class Analyzer extends Processor {
 
 			Attrs attrs = new Attrs();
 
-			for (Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
+			for (@SuppressWarnings("unchecked")
+			Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
 				String key = t.nextElement();
 				String propvalue = p.getProperty(key);
 
@@ -459,7 +460,8 @@ public class Analyzer extends Processor {
 			@Override
 			public void annotation(Annotation a) {
 				String name = a.getName().getFQN();
-				if (aQute.bnd.annotation.Version.class.getName().equals(name) || "org.osgi.annotation.versioning.Version".equals(name)) {
+				if (aQute.bnd.annotation.Version.class.getName().equals(name)
+						|| "org.osgi.annotation.versioning.Version".equals(name)) {
 
 					// Check version
 					String version = a.get("value");
@@ -682,9 +684,17 @@ public class Analyzer extends Processor {
 																												// there
 																												// already
 			) {
+
 				JAVA highest = ees.last();
 				Attrs attrs = new Attrs();
 				attrs.put(Constants.FILTER_DIRECTIVE, highest.getFilter());
+
+				//
+				// Java 1.8 introduced profiles.
+				// If -eeprofile= auto | (<profile>="...")+ is set then
+				// we add a
+				doEEProfiles(highest, attrs);
+
 				requirements.add(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, attrs);
 			}
 
@@ -786,6 +796,81 @@ public class Analyzer extends Processor {
 			// information. So to help diagnostics. We do a full property dump
 			throw new IllegalStateException("Calc manifest failed, state=\n" + getFlattenedProperties(), e);
 		}
+	}
+
+	/**
+	 * Added for 1.8 profiles. A 1.8 profile is a set of packages
+	 * so the VM can be delivered in smaller versions. This method
+	 * will look at the {@link Constants#EEPROFILE} option. If it is
+	 * set, it can be "auto" or it can contain a list of profiles
+	 * specified as name="a,b,c" values. If we find a package outside
+	 * the profiles, no profile is set. Otherwise the highest found profile
+	 * is added. This only works for java packages.
+	 */
+	private void doEEProfiles(JAVA highest, Attrs attrs) throws IOException {
+		String ee = getProperty(EEPROFILE);
+		if (ee == null)
+			return;
+
+		ee = ee.trim();
+
+		Map<String,Set<String>> profiles;
+
+		if (ee.equals(EEPROFILE_AUTO_ATTRIBUTE)) {
+			profiles = highest.getProfiles();
+			if ( profiles == null)
+				return;
+		}
+		else {
+			Attrs t = OSGiHeader.parseProperties(ee);
+			profiles = new HashMap<String,Set<String>>();
+
+			for (Map.Entry<String,String> e : t.entrySet()) {
+				String profile = e.getKey();
+				String l = e.getValue();
+				SortedList<String> sl = new SortedList<String>(l.split("\\s*,\\s*"));
+				profiles.put(profile, sl);
+			}
+		}
+		SortedSet<String> found = new TreeSet<String>();
+		nextPackage: for (PackageRef p : referred.keySet()) {
+			if (p.isJava()) {
+				String fqn = p.getFQN();
+				for (Entry<String,Set<String>> entry : profiles.entrySet()) {
+					if (entry.getValue().contains(fqn)) {
+						
+						found.add(entry.getKey());
+						
+						//
+						// Check if we found all the possible profiles
+						// that means we're finished
+						//
+						
+						if (found.size() == profiles.size())
+							break nextPackage;
+
+						// 
+						// Profiles should be exclusive
+						// so we can break if we found one
+						//
+						continue nextPackage;
+					}
+				}
+
+				//
+				// Ouch, outside any profile
+				//
+				return;
+			}
+		}
+		if (found.isEmpty())
+			return;
+
+		String filter = attrs.get(Constants.FILTER_DIRECTIVE);
+		filter = "(&" + filter + "(profile=" + found.last() + "))";
+		attrs.put(Constants.FILTER_DIRECTIVE, filter);
+		attrs.putTyped("profile", found);
+
 	}
 
 	private void doHeader(Attributes main, String header) {
@@ -942,8 +1027,7 @@ public class Analyzer extends Processor {
 		return value.trim();
 	}
 
-	public String _bsn(@SuppressWarnings("unused")
-	String args[]) {
+	public String _bsn(@SuppressWarnings("unused") String args[]) {
 		return getBsn();
 	}
 
@@ -1535,7 +1619,7 @@ public class Analyzer extends Processor {
 				if (exportAttributes.containsKey(IMPORT_DIRECTIVE))
 					importAttributes.put(IMPORT_DIRECTIVE, exportAttributes.get(IMPORT_DIRECTIVE));
 
-				fixupAttributes(packageRef,importAttributes);
+				fixupAttributes(packageRef, importAttributes);
 				removeAttributes(importAttributes);
 
 				String result = importAttributes.get(Constants.VERSION_ATTRIBUTE);
@@ -1640,7 +1724,8 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Fixup Attributes Execute any macros on an export and
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 
 	void fixupAttributes(PackageRef packageRef, Attrs attributes) throws IOException {
@@ -1651,7 +1736,7 @@ public class Analyzer extends Processor {
 				value = getReplacer().process(value);
 				attributes.put(key, value);
 			}
-			if ( !key.endsWith(":")) {
+			if (!key.endsWith(":")) {
 				String from = attributes.get("from:");
 				verifyAttribute(from, "package info for " + packageRef, key, value);
 			}
@@ -1818,12 +1903,12 @@ public class Analyzer extends Processor {
 	private void verifyAttribute(String path, String where, String key, String value) throws IOException {
 		SetLocation location;
 		if (!Verifier.isExtended(key)) {
-			location = error("%s attribute [%s='%s'], key must be an EXTENDED (CORE1.3.2 %s). From %s", where, key, value,
-					Verifier.EXTENDED_S, path);
+			location = error("%s attribute [%s='%s'], key must be an EXTENDED (CORE1.3.2 %s). From %s", where, key,
+					value, Verifier.EXTENDED_S, path);
 		} else if (value == null || value.trim().length() == 0) {
 			location = error(
-					"%s attribute [%s='%s'], value is empty which is not allowed in ARGUMENT_S (CORE1.3.2 %s). From %s", where,
-					key, value, Verifier.ARGUMENT_S, path);
+					"%s attribute [%s='%s'], value is empty which is not allowed in ARGUMENT_S (CORE1.3.2 %s). From %s",
+					where, key, value, Verifier.ARGUMENT_S, path);
 		} else
 			return;
 		if (path != null) {

@@ -5,6 +5,7 @@ import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz.JAVA;
 
 @SuppressWarnings("resource")
 public class ClassReferenceTest extends TestCase {
@@ -94,9 +95,18 @@ public class ClassReferenceTest extends TestCase {
 		properties.put("-classpath", "compilerversions/compilerversions.jar");
 		System.out.println("compiler version " + p);
 		Builder builder = new Builder();
+		properties.put(Constants.EEPROFILE, "auto");
 		properties.put("Export-Package", p);
 		builder.setProperties(properties);
 		Jar jar = builder.build();
+		assertTrue(builder.check());
+		JAVA highestEE = builder.getHighestEE();
+		Map<String,Set<String>> profiles = highestEE.getProfiles();
+		if ( profiles != null) {
+			System.out.println("profiles" + profiles);
+			jar.getManifest().write(System.out);			
+		}
+		
 		assertTrue(builder.check());
 		Manifest manifest = jar.getManifest();
 		String imports = manifest.getMainAttributes().getValue("Import-Package");

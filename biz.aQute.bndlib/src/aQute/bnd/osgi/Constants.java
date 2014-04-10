@@ -95,6 +95,7 @@ public interface Constants {
 	String							EXPERIMENTS									= "-experiments";
 	String							EXPORT_CONTENTS								= "-exportcontents";
 	String							EXTENSION									= "-extension";
+	String							EEPROFILE									= "-eeprofile";
 	String							FAIL_OK										= "-failok";
 	String							FIXUPMESSAGES								= "-fixupmessages";
 	String							INCLUDE										= "-include";
@@ -202,7 +203,7 @@ public interface Constants {
 			DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT,
 			STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS, UPTO,
 			INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK, TESTUNRESOLVED,
-			RUNJDB, RUNENV, RUNEE
+			RUNJDB, RUNENV, RUNEE, EEPROFILE
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make
@@ -265,7 +266,7 @@ public interface Constants {
 	String							FIXUPMESSAGES_IS_ERROR						= "error";
 	String							FIXUPMESSAGES_IS_WARNING					= "warning";
 	String							FIXUPMESSAGES_IS_IGNORE						= "ignore";
-
+	String							EEPROFILE_AUTO_ATTRIBUTE					= "auto";
 	String							NONE										= "none";
 
 	String							directives[]								= {
