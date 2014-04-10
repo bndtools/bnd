@@ -1916,7 +1916,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		/*
 		 * Determine the processor information
 		 */
-		String[] aliases = OSInformation.getProcessorAliases();
+		String[] aliases = OSInformation.getProcessorAliases(System.getProperty("os.arch"));
 		if ( aliases != null)
 			processorNames = Strings.join(aliases);
 

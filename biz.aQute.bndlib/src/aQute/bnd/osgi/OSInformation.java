@@ -17,7 +17,7 @@ public class OSInformation {
 	
 	final static  String[][] processorFamilies = {
 		new String[] {"x86-64", "amd64", "em64t", "x86_64"},
-		new String[] {"x86", "pentium", "i386", "i486", "i586"},
+		new String[] {"x86", "pentium", "i386", "i486", "i586", "i686"},
 		new String[] {"68k"},
 		new String[] {"ARM"},
 		new String[] {"ARM_be"},
