@@ -24,7 +24,7 @@ public class UnresolvedTester extends TestCase {
 		StringBuilder sb = new StringBuilder();
 		
 		for (Bundle b : context.getBundles()) {
-			if (b.getState() == Bundle.INSTALLED && b.getHeaders().get("Fragment-Host") == null) {
+			if (b.getState() == Bundle.INSTALLED && b.getHeaders().get(aQute.bnd.osgi.Constants.FRAGMENT_HOST) == null) {
 				try {
 					b.start();
 				} catch( BundleException e) {
@@ -35,7 +35,7 @@ public class UnresolvedTester extends TestCase {
 			}
 		}
 		Matcher matcher = IP_P.matcher(sb);
-		String out = matcher.replaceAll("\n\n         Import-Package: $1;version=[$2,$3)\n");
+		String out = matcher.replaceAll("\n\n         " + aQute.bnd.osgi.Constants.IMPORT_PACKAGE + ": $1;version=[$2,$3)\n");
 		assertTrue("Unresolved bundles\n" + out, sb.length()==0);
 	}
 }

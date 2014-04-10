@@ -62,7 +62,7 @@ public class SpringTest extends TestCase {
 	//
 	// void test(Jar jar) throws Exception {
 	// Manifest m = jar.getManifest();
-	// String header = m.getMainAttributes().getValue("Import-Package");
+	// String header = m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
 	// assertTrue(header.indexOf("com.foo.one") >= 0);
 	// assertTrue(header.indexOf("com.foo.one.one") >= 0);
 	// assertTrue(header.indexOf("com.foo.one.two") >= 0);

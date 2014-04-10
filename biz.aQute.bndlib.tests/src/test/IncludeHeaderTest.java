@@ -34,7 +34,7 @@ public class IncludeHeaderTest extends TestCase {
 	public static void testTopBottom() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setProperties(new File("src/test/include.bnd/top.bnd"));
-		assertEquals("0.0.257", analyzer.getProperty("Bundle-Version"));
+		assertEquals("0.0.257", analyzer.getProperty(Constants.BUNDLE_VERSION));
 	}
 
 	public static void testPrecedence() throws Exception {

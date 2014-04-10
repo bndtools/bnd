@@ -50,10 +50,10 @@ public class MergeTest extends TestCase {
 		});
 		Properties p = new Properties();
 		if (type != null)
-			p.put("Export-Package", "test.split;-split-package:=" + type);
+			p.put(Constants.EXPORT_PACKAGE, "test.split;-split-package:=" + type);
 		else
-			p.put("Export-Package", "test.split");
-		p.put("Import-Package", "");
+			p.put(Constants.EXPORT_PACKAGE, "test.split");
+		p.put(Constants.IMPORT_PACKAGE, "");
 		b.setProperties(p);
 		Jar jar = b.build();
 

@@ -9,13 +9,13 @@ import aQute.bnd.osgi.*;
 public class InlineTest extends TestCase {
 	public static void testSimple() throws Exception {
 		Builder builder = new Builder();
-		builder.setProperty("Include-Resource", "@jar/osgi.jar");
+		builder.setProperty(Constants.INCLUDE_RESOURCE, "@jar/osgi.jar");
 		Jar jar = builder.build();
 		Manifest manifest = jar.getManifest();
 
 		// See if the version is the default and not copied from the inline
 		// bundle.
-		String version = manifest.getMainAttributes().getValue("Bundle-Version");
+		String version = manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
 		assertEquals("0", version);
 
 		// Check if we got some relevant directories

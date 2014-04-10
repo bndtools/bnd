@@ -333,14 +333,14 @@ public class MavenCommand extends Processor {
 
 		Manifest sm = source.getManifest();
 		Manifest dm = dest.getManifest();
-		copyInfoHeader(sm, dm, "Bundle-Description", "");
-		copyInfoHeader(sm, dm, "Bundle-Vendor", "");
-		copyInfoHeader(sm, dm, "Bundle-Copyright", "");
-		copyInfoHeader(sm, dm, "Bundle-DocURL", "");
-		copyInfoHeader(sm, dm, "Bundle-License", "");
-		copyInfoHeader(sm, dm, "Bundle-Name", " " + type);
-		copyInfoHeader(sm, dm, "Bundle-SymbolicName", "." + type);
-		copyInfoHeader(sm, dm, "Bundle-Version", "");
+		copyInfoHeader(sm, dm, Constants.BUNDLE_DESCRIPTION, "");
+		copyInfoHeader(sm, dm, Constants.BUNDLE_VENDOR, "");
+		copyInfoHeader(sm, dm, Constants.BUNDLE_COPYRIGHT, "");
+		copyInfoHeader(sm, dm, Constants.BUNDLE_DOCURL, "");
+		copyInfoHeader(sm, dm, Constants.BUNDLE_LICENSE, "");
+		copyInfoHeader(sm, dm, Constants.BUNDLE_NAME, " " + type);
+		copyInfoHeader(sm, dm, Constants.BUNDLE_SYMBOLICNAME, "." + type);
+		copyInfoHeader(sm, dm, Constants.BUNDLE_VERSION, "");
 	}
 
 	private void copyInfoHeader(Manifest sm, Manifest dm, String key, String value) {

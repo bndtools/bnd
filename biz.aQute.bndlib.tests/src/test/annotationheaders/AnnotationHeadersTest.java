@@ -80,7 +80,7 @@ public class AnnotationHeadersTest extends TestCase {
 	public void testBasic() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setProperty("Private-Package", "test.annotationheaders");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test.annotationheaders");
 		b.build();
 		assertTrue(b.check());
 		Manifest manifest = b.getJar().getManifest();

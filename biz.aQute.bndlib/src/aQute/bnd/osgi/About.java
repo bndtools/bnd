@@ -58,7 +58,7 @@ public class About {
 					+ "BundleDocURL, RequireCapability, ProvideCapability. These headers work also when applied to a "
 					+ "custom annotation that is then applied to a class",
 			"Added a ees command in bnd to print out the Execution Environment of a JAR",
-			"Verify that the Meta-Persistence header's locations actually exist",
+			"Verify that the " + Constants.META_PERSISTENCE + " header's locations actually exist",
 			"Added a find command to bnd that can find imported or exported packages from a set of bundles",
 			"Support X.class instruction in older Groovy (189)",
 			"[-fixupmessages] Patterns to fixup errors and warnings, you can remove, move, or replace messages.",

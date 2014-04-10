@@ -197,11 +197,11 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 	}
 
 	public String getSymbolicName() {
-		return ((String) getHeaders().get("Bundle-SymbolicName")).trim();
+		return ((String) getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME)).trim();
 	}
 
 	public Version getVersion() {
-		String v = ((String) getHeaders().get("Bundle-Version")).trim();
+		String v = ((String) getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_VERSION)).trim();
 		if (v == null)
 			return new Version("0");
 		return new Version(v);

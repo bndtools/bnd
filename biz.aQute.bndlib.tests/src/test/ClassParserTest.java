@@ -197,7 +197,7 @@ public class ClassParserTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/nl.fuji.general.jar"));
 		b.addClasspath(new File("jar/spring.jar"));
-		b.setProperty("Export-Package", "nl.fuji.log");
+		b.setProperty(Constants.EXPORT_PACKAGE, "nl.fuji.log");
 		b.build();
 		assertFalse(b.getImports().getByFQN("org.aopalliance.aop") != null);
 	}
@@ -205,7 +205,7 @@ public class ClassParserTest extends TestCase {
 	// public void testImplemented() throws Exception {
 	// Builder a = new Builder();
 	// a.addClasspath(new File("bin"));
-	// a.setProperty("Private-Package", "test");
+	// a.setProperty(Constants.PRIVATE_PACKAGE, "test");
 	// a.build();
 	// Clazz c = a.getClassspace().get("testresources/Implemented.class");
 	// Set<PackageRef> s = Create.set();
@@ -269,7 +269,7 @@ public class ClassParserTest extends TestCase {
 	public static void testJQuantlib() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("testresources/jquantlib-0.1.2.jar"));
-		b.setProperty("Export-Package", "*");
+		b.setProperty(Constants.EXPORT_PACKAGE, "*");
 		b.build();
 	}
 

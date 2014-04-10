@@ -30,9 +30,9 @@ public class BaselineCommands {
 	final bnd					bnd;
 	final Baseline				baseline;
 	final DiffPluginImpl		differ				= new DiffPluginImpl();
-	final Collection<String>	SKIP_HEADERS		= Arrays.asList("Created-By", Constants.BND_LASTMODIFIED,
+	final Collection<String>	SKIP_HEADERS		= Arrays.asList(Constants.CREATED_BY, Constants.BND_LASTMODIFIED,
 															Constants.BUNDLE_MANIFESTVERSION, "Manifest-Version",
-															"Tool");
+															Constants.TOOL);
 
 	BaselineCommands(bnd bnd) throws IOException {
 		this.bnd = bnd;

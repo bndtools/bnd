@@ -1774,7 +1774,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public void bump(String mask) throws Exception {
-		String pattern = "(Bundle-Version\\s*(:|=)\\s*)(([0-9]+(\\.[0-9]+(\\.[0-9]+)?)?))";
+		String pattern = "(" + Constants.BUNDLE_VERSION + "\\s*(:|=)\\s*)(([0-9]+(\\.[0-9]+(\\.[0-9]+)?)?))";
 		String replace = "$1${version;" + mask + ";$3}";
 		try {
 			// First try our main bnd file
@@ -1809,7 +1809,7 @@ public class Project extends Processor {
 			if (!found) {
 				trace("no version in sub builders, add it to bnd.bnd");
 				String bndfile = IO.collect(getPropertiesFile());
-				bndfile += "\n# Added by by bump\nBundle-Version: 0.0.0\n";
+				bndfile += "\n# Added by by bump\n" + Constants.BUNDLE_VERSION + ": 0.0.0\n";
 				IO.store(bndfile, getPropertiesFile());
 			}
 		}

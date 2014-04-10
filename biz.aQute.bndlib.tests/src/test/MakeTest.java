@@ -19,8 +19,8 @@ public class MakeTest extends TestCase {
 
 	public static void testMakePlugin() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Export-Package", "*");
-		b.setProperty("Include-Resource", "jar/asm.jar.md5");
+		b.setProperty(Constants.EXPORT_PACKAGE, "*");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "jar/asm.jar.md5");
 		b.setProperty("-make", "(*).md5;type=md5;file=$1");
 		b.setProperty("-plugin", "test.make.MD5");
 		b.addClasspath(new File("jar/osgi.jar"));
@@ -43,7 +43,7 @@ public class MakeTest extends TestCase {
 		p.setProperty("-resourceonly", "true");
 		p.setProperty("-plugin", "aQute.bnd.make.MakeBnd, aQute.bnd.make.MakeCopy");
 		p.setProperty("-make", "(*).jar;type=bnd;recipe=bnd/$1.bnd, (*).jar;type=copy;from=jar/$1.jar");
-		p.setProperty("Include-Resource", "asm.jar,xyz=asm.jar");
+		p.setProperty(Constants.INCLUDE_RESOURCE, "asm.jar,xyz=asm.jar");
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
 		assertNotNull(jar.getResource("asm.jar"));
@@ -63,7 +63,7 @@ public class MakeTest extends TestCase {
 		p.setProperty("-plugin", "aQute.bnd.make.MakeBnd, aQute.bnd.make.MakeCopy");
 		p.setProperty("-resourceonly", "true");
 		p.setProperty("-make", "(*).jar;type=bnd;recipe=bnd/$1.bnd");
-		p.setProperty("Include-Resource", "makesondemand.jar");
+		p.setProperty(Constants.INCLUDE_RESOURCE, "makesondemand.jar");
 		bmaker.setProperties(p);
 		bmaker.setClasspath(new String[] {
 			"bin"
@@ -91,7 +91,7 @@ public class MakeTest extends TestCase {
 		p.setProperty("-resourceonly", "true");
 		p.setProperty("-plugin", "aQute.bnd.make.MakeBnd, aQute.bnd.make.MakeCopy");
 		p.setProperty("-make", "(*).jar;type=bnd;recipe=bnd/$1.bnd");
-		p.setProperty("Include-Resource", "www/xyz.jar=ondemand.jar");
+		p.setProperty(Constants.INCLUDE_RESOURCE, "www/xyz.jar=ondemand.jar");
 		bmaker.setProperties(p);
 		bmaker.setClasspath(new String[] {
 			"bin"

@@ -275,7 +275,7 @@ public class ProjectTest extends TestCase {
 		for (File file : files) {
 			Jar jar = new Jar(file);
 			Manifest m = jar.getManifest();
-			assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
+			assertTrue(names.contains(m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME)));
 		}
 	}
 
@@ -381,10 +381,10 @@ public class ProjectTest extends TestCase {
 		Workspace ws = getWorkspace("testresources/ws");
 		Project project = ws.getProject("p1");
 		int size = project.getProperties().size();
-		Version old = new Version(project.getProperty("Bundle-Version"));
+		Version old = new Version(project.getProperty(Constants.BUNDLE_VERSION));
 		System.err.println("Old version " + old);
 		project.bump("=+0");
-		Version newv = new Version(project.getProperty("Bundle-Version"));
+		Version newv = new Version(project.getProperty(Constants.BUNDLE_VERSION));
 		System.err.println("New version " + newv);
 		assertEquals(old.getMajor(), newv.getMajor());
 		assertEquals(old.getMinor() + 1, newv.getMinor());
@@ -397,14 +397,14 @@ public class ProjectTest extends TestCase {
 		Workspace ws = getWorkspace("testresources/ws");
 		Project project = ws.getProject("bump-included");
 		project.setTrace(true);
-		Version old = new Version(project.getProperty("Bundle-Version"));
+		Version old = new Version(project.getProperty(Constants.BUNDLE_VERSION));
 		assertEquals(new Version(1, 0, 0), old);
 		project.bump("=+0");
 
 		Processor processor = new Processor();
 		processor.setProperties(project.getFile("include.txt"));
 
-		Version newv = new Version(processor.getProperty("Bundle-Version"));
+		Version newv = new Version(processor.getProperty(Constants.BUNDLE_VERSION));
 		System.err.println("New version " + newv);
 		assertEquals(1, newv.getMajor());
 		assertEquals(1, newv.getMinor());
@@ -416,11 +416,11 @@ public class ProjectTest extends TestCase {
 		Project project = ws.getProject("bump-sub");
 		project.setTrace(true);
 
-		assertNull(project.getProperty("Bundle-Version"));
+		assertNull(project.getProperty(Constants.BUNDLE_VERSION));
 
 		project.bump("=+0");
 
-		assertNull(project.getProperty("Bundle-Version"));
+		assertNull(project.getProperty(Constants.BUNDLE_VERSION));
 
 		for (Builder b : project.getSubBuilders()) {
 			assertEquals(new Version(1, 1, 0), new Version(b.getVersion()));
@@ -563,7 +563,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
 				top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
-		top.setProperty("Bundle-Version", "1.260.0.SNAPSHOT");
+		top.setProperty(Constants.BUNDLE_VERSION, "1.260.0.SNAPSHOT");
 		assertEquals(new File(top.getTarget(), "p1-1.260.0-SNAPSHOT.jar"),
 				top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
@@ -571,7 +571,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(new File(top.getTarget(), "p1-1.260.0-SNAPSHOT.jar"),
 				top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
-		top.setProperty("Bundle-Version", "1.260.0.NOTSNAPSHOT");
+		top.setProperty(Constants.BUNDLE_VERSION, "1.260.0.NOTSNAPSHOT");
 		top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
 		assertEquals(new File(top.getTarget(), "p1-1.260.0.NOTSNAPSHOT.jar"),
 				top.getOutputFile(builder.getBsn(), builder.getVersion()));
@@ -580,7 +580,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
 				top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
-		top.setProperty("Bundle-Version", "42");
+		top.setProperty(Constants.BUNDLE_VERSION, "42");
 		top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
 		assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
 				top.getOutputFile(builder.getBsn(), builder.getVersion()));

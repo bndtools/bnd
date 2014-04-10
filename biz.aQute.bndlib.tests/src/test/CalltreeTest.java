@@ -14,7 +14,7 @@ public class CalltreeTest extends TestCase {
 		PrintWriter pw = new PrintWriter(sw);
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setProperty("Private-Package", "test");
+		b.setProperty(Constants.PRIVATE_PACKAGE, "test");
 		b.build();
 		Collection<Clazz> clazzes = b.getClassspace().values();
 		assertTrue(clazzes.size() > 10);
@@ -66,13 +66,13 @@ public class CalltreeTest extends TestCase {
 	// public void testCoverage() throws Exception {
 	// Builder b = new Builder();
 	// b.addClasspath(new File("bin"));
-	// b.setProperty("Private-Package", "test");
+	// b.setProperty(Constants.PRIVATE_PACKAGE, "test");
 	// b.build();
 	// Collection<Clazz> testsuite = b.getClassspace().values();
 	//
 	// Builder c = new Builder();
 	// c.addClasspath(new File("bin"));
-	// c.setProperty("Private-Package", "aQute.bnd.osgi");
+	// c.setProperty(Constants.PRIVATE_PACKAGE, "aQute.bnd.osgi");
 	// c.build();
 	// Collection<Clazz> target = c.getClassspace().values();
 	//
@@ -120,7 +120,7 @@ public class CalltreeTest extends TestCase {
 	// public void testCatalog() throws Exception {
 	// Builder b = new Builder();
 	// b.addClasspath(new File("jar/osgi.jar"));
-	// b.setProperty("Private-Package", "org.osgi.framework");
+	// b.setProperty(Constants.PRIVATE_PACKAGE, "org.osgi.framework");
 	// b.build();
 	// Collection<Clazz> target = b.getClassspace().values();
 	//
@@ -149,7 +149,7 @@ public class CalltreeTest extends TestCase {
 	// public void testResource() throws Exception {
 	// Builder b = new Builder();
 	// b.addClasspath(new File("jar/osgi.jar"));
-	// b.setProperty("Private-Package", "org.osgi.framework");
+	// b.setProperty(Constants.PRIVATE_PACKAGE, "org.osgi.framework");
 	// b.build();
 	// Collection<Clazz> target = b.getClassspace().values();
 	//

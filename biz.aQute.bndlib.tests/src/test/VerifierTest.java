@@ -30,7 +30,7 @@ public class VerifierTest extends TestCase {
 		outer.setManifest(m);
 		Verifier v = new Verifier(outer);
 		v.verifyMetaPersistence();
-		assertTrue(v.check("Meta-Persistence refers to resources not in the bundle: \\[absent.xml\\]"));
+		assertTrue(v.check(Constants.META_PERSISTENCE + " refers to resources not in the bundle: \\[absent.xml\\]"));
 	}
 	
 	
@@ -90,7 +90,7 @@ public class VerifierTest extends TestCase {
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setExportPackage("org.osgi.framework");
 		b.setProperty(
-				"Require-Capability",
+				Constants.REQUIRE_CAPABILITY,
 				"test; filter:=\"(&(test=aName)(version>=1.1.0))\", "
 						+ " test; filter:=\"(&(version>=1.1)(string~=astring))\", "
 						+ " test; filter:=\"(&(version>=1.1)(long>=99))\", "
@@ -115,9 +115,9 @@ public class VerifierTest extends TestCase {
 		bmaker.addClasspath(new File("jar/osgi.jar"));
 		bmaker.addClasspath(new File("bin"));
 		bmaker.setProperty(
-				"Export-Package",
+				Constants.EXPORT_PACKAGE,
 				"org.osgi.service.eventadmin;version='[1,2)',org.osgi.framework;version=x13,test;-remove-attribute:=version,test.lib;specification-version=12,test.split");
-		bmaker.setProperty("Import-Package",
+		bmaker.setProperty(Constants.IMPORT_PACKAGE,
 				"foo;version=1,bar;version='[1,x2)',baz;version='[2,1)',baz2;version='(1,1)',*");
 		bmaker.setProperty("-strict", "true");
 		Jar jar = bmaker.build();
@@ -161,8 +161,8 @@ public class VerifierTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("-resourceonly", "true");
-		b.setProperty("Include-Resource", "native/win32/NTEventLogAppender-1.2.dll;literal='abc'");
-		b.setProperty("Bundle-NativeCode", "native/win32/NTEventLogAppender-1.2.dll; osname=Win32; processor=x86");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "native/win32/NTEventLogAppender-1.2.dll;literal='abc'");
+		b.setProperty(Constants.BUNDLE_NATIVECODE, "native/win32/NTEventLogAppender-1.2.dll; osname=Win32; processor=x86");
 		b.build();
 		Verifier v = new Verifier(b);
 
@@ -301,7 +301,7 @@ public class VerifierTest extends TestCase {
 
 	public static void testBundleActivationPolicyNone() throws Exception {
 		Builder v = new Builder();
-		v.setProperty("Private-Package", "test.activator");
+		v.setProperty(Constants.PRIVATE_PACKAGE, "test.activator");
 		v.addClasspath(new File("bin"));
 		v.build();
 		assertTrue(v.check());
@@ -309,16 +309,16 @@ public class VerifierTest extends TestCase {
 
 	public static void testBundleActivationPolicyBad() throws Exception {
 		Builder v = new Builder();
-		v.setProperty("Private-Package", "test.activator");
+		v.setProperty(Constants.PRIVATE_PACKAGE, "test.activator");
 		v.addClasspath(new File("bin"));
 		v.setProperty(Constants.BUNDLE_ACTIVATIONPOLICY, "eager");
 		v.build();
-		assertTrue(v.check("Bundle-ActivationPolicy set but is not set to lazy: eager"));
+		assertTrue(v.check(Constants.BUNDLE_ACTIVATIONPOLICY + " set but is not set to lazy: eager"));
 	}
 
 	public static void testBundleActivationPolicyGood() throws Exception {
 		Builder v = new Builder();
-		v.setProperty("Private-Package", "test.activator");
+		v.setProperty(Constants.PRIVATE_PACKAGE, "test.activator");
 		v.addClasspath(new File("bin"));
 		v.setProperty(Constants.BUNDLE_ACTIVATIONPOLICY, "lazy   ;   hello:=1");
 		v.build();
@@ -327,17 +327,17 @@ public class VerifierTest extends TestCase {
 
 	public static void testBundleActivationPolicyMultiple() throws Exception {
 		Builder v = new Builder();
-		v.setProperty("Private-Package", "test.activator");
+		v.setProperty(Constants.PRIVATE_PACKAGE, "test.activator");
 		v.addClasspath(new File("bin"));
 		v.setProperty(Constants.BUNDLE_ACTIVATIONPOLICY, "lazy;hello:=1,2");
 		v.build();
-		assertTrue(v.check("Bundle-ActivationPolicy has too many arguments lazy;hello:=1,2"));
+		assertTrue(v.check(Constants.BUNDLE_ACTIVATIONPOLICY + " has too many arguments lazy;hello:=1,2"));
 	}
 
 	public static void testInvalidCaseForHeader() throws Exception {
 		Properties p = new Properties();
-		p.put("Export-package", "org.apache.mina.*");
-		p.put("Bundle-Classpath", ".");
+		p.put(Constants.EXPORT_PACKAGE, "org.apache.mina.*");
+		p.put(Constants.BUNDLE_CLASSPATH, ".");
 		Analyzer analyzer = new Analyzer();
 		analyzer.setProperties(p);
 		analyzer.getProperties();
@@ -350,15 +350,15 @@ public class VerifierTest extends TestCase {
 	public static void testSimple() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.addClasspath(new File("jar/mina.jar"));
-		bmaker.set("Export-Package", "org.apache.mina.*;version=1");
-		bmaker.set("DynamicImport-Package", "org.slf4j");
+		bmaker.set(Constants.EXPORT_PACKAGE, "org.apache.mina.*;version=1");
+		bmaker.set(Constants.DYNAMICIMPORT_PACKAGE, "org.slf4j");
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
 
 		Manifest m = jar.getManifest();
 		m.write(System.err);
-		assertTrue(m.getMainAttributes().getValue("Import-Package").indexOf("org.slf4j") >= 0);
-		assertTrue(m.getMainAttributes().getValue("DynamicImport-Package").indexOf("org.slf4j") >= 0);
+		assertTrue(m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE).indexOf("org.slf4j") >= 0);
+		assertTrue(m.getMainAttributes().getValue(Constants.DYNAMICIMPORT_PACKAGE).indexOf("org.slf4j") >= 0);
 	}
 
 }

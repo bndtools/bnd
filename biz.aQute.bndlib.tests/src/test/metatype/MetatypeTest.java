@@ -246,7 +246,7 @@ public class MetatypeTest extends TestCase {
 
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.EXPORT_PACKAGE, "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
 		assertEquals(0, b.getErrors().size());
@@ -610,7 +610,7 @@ public class MetatypeTest extends TestCase {
 	public static void testEnum() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.EXPORT_PACKAGE, "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
 		assertEquals(0, b.getErrors().size());
@@ -662,7 +662,7 @@ public class MetatypeTest extends TestCase {
 	public static void testOCD() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.EXPORT_PACKAGE, "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
 		assertEquals(0, b.getErrors().size());
@@ -785,7 +785,7 @@ public class MetatypeTest extends TestCase {
 	public static void testAD() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.EXPORT_PACKAGE, "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$TestAD.xml");
@@ -851,7 +851,7 @@ public class MetatypeTest extends TestCase {
 	public static void testADWithInheritance() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.EXPORT_PACKAGE, "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.setProperty("-metatype-inherit", "true");
 		b.build();
@@ -990,7 +990,7 @@ public class MetatypeTest extends TestCase {
 	public static void testReturnTypes() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.EXPORT_PACKAGE, "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$TestReturnTypes.xml");
@@ -1109,7 +1109,7 @@ public class MetatypeTest extends TestCase {
 	public static void testSimple() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.EXPORT_PACKAGE, "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$TestSimple.xml");

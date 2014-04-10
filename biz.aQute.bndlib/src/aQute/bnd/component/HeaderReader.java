@@ -357,7 +357,7 @@ public class HeaderReader extends Processor {
 			String referenceName = entry.getKey();
 			if (referenceName.endsWith(":")) {
 				if (!SET_COMPONENT_DIRECTIVES.contains(referenceName))
-					error("Unrecognized directive in Service-Component header: "
+					error("Unrecognized directive in " + Constants.SERVICE_COMPONENT + " header: "
 							+ referenceName);
 				continue;
 			}

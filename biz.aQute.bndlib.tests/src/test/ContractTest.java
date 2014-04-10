@@ -23,7 +23,7 @@ public class ContractTest extends TestCase {
 
 		a.setProperty(Constants.CONTRACT, "*");
 		a.setImportPackage("test.packageinfo,*");
-		a.setProperty("Export-Package", "test.refer");
+		a.setProperty(Constants.EXPORT_PACKAGE, "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check("Contract \\[name=abc;version=0.0.0;from=biz.aQute.bndlib.tests] does not declare a version"));
 
@@ -46,7 +46,7 @@ public class ContractTest extends TestCase {
 
 		a.setProperty(Constants.CONTRACT, "*");
 		a.setImportPackage("test.packageinfo,*");
-		a.setProperty("Export-Package", "test.refer");
+		a.setProperty(Constants.EXPORT_PACKAGE, "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check("Contract abc has no uses: directive"));
 
@@ -70,7 +70,7 @@ public class ContractTest extends TestCase {
 
 		a.setProperty(Constants.CONTRACT, "*");
 		a.setImportPackage("test.packageinfo,*");
-		a.setProperty("Export-Package", "test.refer");
+		a.setProperty(Constants.EXPORT_PACKAGE, "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check());
 
@@ -96,7 +96,7 @@ public class ContractTest extends TestCase {
 		a.addClasspath(bjarb); // 2x
 		a.setProperty(Constants.CONTRACT, "atest;alpha=1");
 		a.setImportPackage("org.osgi.service.cm,*");
-		a.setProperty("Export-Package", "test.refer");
+		a.setProperty(Constants.EXPORT_PACKAGE, "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check());
 		ajar.getManifest().write(System.out);
@@ -127,7 +127,7 @@ public class ContractTest extends TestCase {
 		a.addClasspath(bjar); // 2x
 		a.setProperty(Constants.CONTRACT, "*");
 		a.setImportPackage("org.osgi.service.cm,*");
-		a.setProperty("Export-Package", "test.refer");
+		a.setProperty(Constants.EXPORT_PACKAGE, "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a
 				.check("Contracts \\[Contract \\[name=test;version=2.5.0;from=biz.aQute.bndlib.tests\\], Contract \\[name=test;version=2.5.0"));
@@ -142,7 +142,7 @@ public class ContractTest extends TestCase {
 		a.addClasspath(bjar);
 		a.setProperty(Constants.CONTRACT, "*");
 		a.setImportPackage("org.osgi.service.cm,*");
-		a.setProperty("Export-Package", "test.refer");
+		a.setProperty(Constants.EXPORT_PACKAGE, "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check());
 		Domain domain = Domain.domain(ajar.getManifest());
@@ -170,8 +170,8 @@ public class ContractTest extends TestCase {
 			if (uses != null)
 				sb.format(";uses:='%s'", uses);
 
-			b.setProperty("Provide-Capability", sb.toString());
-			b.setProperty("Export-Package", "org.osgi.service.eventadmin,org.osgi.service.cm");
+			b.setProperty(Constants.PROVIDE_CAPABILITY, sb.toString());
+			b.setProperty(Constants.EXPORT_PACKAGE, "org.osgi.service.eventadmin,org.osgi.service.cm");
 			Jar bjar = b.build();
 			assertTrue(b.check());
 

@@ -12,7 +12,7 @@ public class TestBndBook extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.addClasspath(new File("jar/ds.jar"));
-		b.setProperty("Export-Package", "org.eclipse.*, org.osgi.*");
+		b.setProperty(Constants.EXPORT_PACKAGE, "org.eclipse.*, org.osgi.*");
 		b.setProperty("fwusers", "${classes;importing;org.osgi.framework}");
 		b.setProperty("foo", "${filterout;${fwusers};org\\.osgi\\..*}");
 		b.build();

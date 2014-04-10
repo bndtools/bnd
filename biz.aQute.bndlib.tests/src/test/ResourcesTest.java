@@ -18,7 +18,7 @@ public class ResourcesTest extends TestCase {
 	
 	public void testCommand() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource", "xkeystore; requires='testresources/keystore';cmd='file ${@requires}', ");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "xkeystore; requires='testresources/keystore';cmd='file ${@requires}', ");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		assertTrue(b.check());
@@ -115,7 +115,7 @@ public class ResourcesTest extends TestCase {
 	public static void testAbsentIsOk() throws Exception {
 		{
 			Builder b = new Builder();
-			b.setProperty("Include-Resource", "TargetFolder=-testresources/ws/p2/Resources");
+			b.setProperty(Constants.INCLUDE_RESOURCE, "TargetFolder=-testresources/ws/p2/Resources");
 			b.setProperty("-resourceonly", "true");
 			Jar jar = b.build();
 			assertTrue(b.check());
@@ -129,7 +129,7 @@ public class ResourcesTest extends TestCase {
 
 		{
 			Builder b = new Builder();
-			b.setProperty("Include-Resource", "TargetFolder=-doesnotexist, text;literal='Hello'");
+			b.setProperty(Constants.INCLUDE_RESOURCE, "TargetFolder=-doesnotexist, text;literal='Hello'");
 			b.setProperty("-resourceonly", "true");
 			b.build();
 			assertTrue(b.check());
@@ -137,7 +137,7 @@ public class ResourcesTest extends TestCase {
 
 		{
 			Builder b = new Builder();
-			b.setProperty("Include-Resource", "-doesnotexist, text;literal='Hello'");
+			b.setProperty(Constants.INCLUDE_RESOURCE, "-doesnotexist, text;literal='Hello'");
 			b.setProperty("-resourceonly", "true");
 			b.build();
 			assertTrue(b.check());
@@ -145,7 +145,7 @@ public class ResourcesTest extends TestCase {
 
 		{
 			Builder b = new Builder();
-			b.setProperty("Include-Resource", "-testresources/ws/p2/Resources");
+			b.setProperty(Constants.INCLUDE_RESOURCE, "-testresources/ws/p2/Resources");
 			b.setProperty("-resourceonly", "true");
 			Jar jar = b.build();
 			assertTrue(b.check());
@@ -157,7 +157,7 @@ public class ResourcesTest extends TestCase {
 
 	public static void testNegativeFilter() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources;filter:=!*.txt");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "TargetFolder=testresources/ws/p2/Resources;filter:=!*.txt");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		Resource r = jar.getResource("TargetFolder/resource1.res");
@@ -172,7 +172,7 @@ public class ResourcesTest extends TestCase {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
-		p.setProperty("Include-Resource", "/=src/test/activator");
+		p.setProperty(Constants.INCLUDE_RESOURCE, "/=src/test/activator");
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
 		for (String s : jar.getResources().keySet())
@@ -184,7 +184,7 @@ public class ResourcesTest extends TestCase {
 
 	public static void testIncludeResourceDirectivesDefault() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "TargetFolder=testresources/ws/p2/Resources");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		Resource r = jar.getResource("TargetFolder/resource3.txt");
@@ -208,7 +208,7 @@ public class ResourcesTest extends TestCase {
 		// Use Properties file otherwise -donotcopy is not picked up
 		Properties p = new Properties();
 		p.put("-donotcopy", "CVS|.svn|stuff");
-		p.put("Include-Resource", "TargetFolder=testresources/ws/p2/Resources");
+		p.put(Constants.INCLUDE_RESOURCE, "TargetFolder=testresources/ws/p2/Resources");
 		p.put("-resourceonly", "true");
 		b.setProperties(p);
 
@@ -230,7 +230,7 @@ public class ResourcesTest extends TestCase {
 
 	public static void testIncludeResourceDirectivesFilterRecursive() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		Resource r = jar.getResource("TargetFolder/resource3.txt");
@@ -248,7 +248,7 @@ public class ResourcesTest extends TestCase {
 
 	public static void testIncludeResourceDirectivesFilterRecursive2() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource", "testresources/ws/p2/Resources;filter:=re*.txt");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "testresources/ws/p2/Resources;filter:=re*.txt");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		Resource r = jar.getResource("resource3.txt");
@@ -266,7 +266,7 @@ public class ResourcesTest extends TestCase {
 
 	public static void testIncludeResourceDirectivesFilterNonRecursive() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt;recursive:=false");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt;recursive:=false");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		Resource r = jar.getResource("TargetFolder/resource3.txt");
@@ -281,7 +281,7 @@ public class ResourcesTest extends TestCase {
 
 	public static void testIncludeResourceDirectivesFilterRecursiveFlatten() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt;flatten:=true");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt;flatten:=true");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 
@@ -302,7 +302,7 @@ public class ResourcesTest extends TestCase {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
-		p.setProperty("Include-Resource", "  ");
+		p.setProperty(Constants.INCLUDE_RESOURCE, "  ");
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
 		assertEquals(0, jar.getResources().size());
@@ -313,7 +313,7 @@ public class ResourcesTest extends TestCase {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.setProperty("-resourceonly", "true");
-		p.setProperty("Include-Resource", "text;literal=TEXT;extra='hello/world;charset=UTF-8'");
+		p.setProperty(Constants.INCLUDE_RESOURCE, "text;literal=TEXT;extra='hello/world;charset=UTF-8'");
 		bmaker.setProperties(p);
 		bmaker.setClasspath(new String[] {
 			"src"
@@ -341,7 +341,7 @@ public class ResourcesTest extends TestCase {
 		p.setProperty("-resourceonly", "true");
 		p.setProperty("-plugin", "aQute.bnd.make.MakeBnd, aQute.bnd.make.MakeCopy");
 		p.setProperty("-make", "(*).jar;type=bnd;recipe=bnd/$1.bnd");
-		p.setProperty("Include-Resource", "ondemand.jar");
+		p.setProperty(Constants.INCLUDE_RESOURCE, "ondemand.jar");
 		bmaker.setProperties(p);
 		bmaker.setClasspath(new String[] {
 			"bin"
@@ -358,7 +358,7 @@ public class ResourcesTest extends TestCase {
 	public void testEmptyDirs() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-resourceonly", "true");
-		b.setProperty("Include-Resource", "hello/world/<<EMPTY>>;literal=''");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "hello/world/<<EMPTY>>;literal=''");
 		Jar jar = b.build();
 		Map<String, Map<String, Resource>> directories = jar.getDirectories();
 		assertTrue(directories.containsKey("hello/world"));
@@ -386,7 +386,7 @@ public class ResourcesTest extends TestCase {
 		File tstDir = new File("testresources/ws/p2/Resources/empty");
 		tstDir.mkdirs();
 		Builder b = new Builder();
-		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "TargetFolder=testresources/ws/p2/Resources");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		Resource r = jar.getResource("TargetFolder/empty/<<EMPTY>>");

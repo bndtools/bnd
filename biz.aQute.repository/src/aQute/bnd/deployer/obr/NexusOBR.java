@@ -214,7 +214,7 @@ public class NexusOBR extends AbstractIndexedRepo {
 			bsn = jar.getBsn();
 			if (bsn == null || !Verifier.isBsn(bsn))
 				throw new IllegalArgumentException(
-						"Jar does not have a Bundle-SymbolicName manifest header");
+						"Jar does not have a " + Constants.BUNDLE_SYMBOLICNAME + " manifest header");
 
 			String versionString = jar.getVersion();
 			if (versionString == null)

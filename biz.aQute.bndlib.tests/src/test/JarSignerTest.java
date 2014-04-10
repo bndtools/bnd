@@ -19,7 +19,7 @@ public class JarSignerTest extends TestCase {
 				+ ";keystore=testresources/keystore;keypass=testtest;storepass=testtest;sigfile=test");
 		b.setProperty("-nomanifest", "true");
 		b.setProperty("-resourceonly", "true");
-		b.setProperty("Include-Resource", "WEB-INF/classes=@jar/osgi.jar");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "WEB-INF/classes=@jar/osgi.jar");
 
 		Jar jar = b.build();
 		File tmp = new File("xyztmp.jar");

@@ -37,7 +37,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public static void testProperties() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.*x");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
@@ -272,7 +272,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public static void testBasic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.*_basic");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
@@ -719,7 +719,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.*_basicFelix12");
 		b.setProperty("-ds-felix-extensions", "");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
@@ -804,7 +804,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public static void testEnums() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Enums");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
@@ -880,7 +880,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public static void testMethods() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Methods");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
@@ -953,7 +953,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Bottom");
 		b.setProperty("-dsannotations-inherit", "true");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
@@ -1019,7 +1019,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public static void testPrototypes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Prototypes");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
@@ -1076,7 +1076,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public static void testBinds() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*CheckBinds");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
@@ -1105,7 +1105,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public static void testNoUnbindDynamic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*NoUnbindDynamic");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
@@ -1120,7 +1120,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public static void testConfigPolicySetsNamespace() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*TestConfigPolicy");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
@@ -1161,7 +1161,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public static void testIssue347() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.*issue347");
-		b.setProperty("Private-Package", "test.component");
+		b.setProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
