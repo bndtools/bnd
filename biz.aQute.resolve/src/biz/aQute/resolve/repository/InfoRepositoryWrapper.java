@@ -135,7 +135,7 @@ public class InfoRepositoryWrapper implements Repository {
 			"unchecked", "rawtypes"
 	})
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-
+		init();
 		MultiMap<Requirement,Capability> result = new MultiMap<Requirement,Capability>();
 
 		nextReq: for (Requirement req : requirements) {
