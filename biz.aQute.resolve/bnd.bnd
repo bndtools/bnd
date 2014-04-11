@@ -24,3 +24,4 @@ Export-Package: biz.aQute.resolve,\
 Private-Package: biz.aQute.resolve.*
 
 Conditional-Package: aQute.lib*
+
