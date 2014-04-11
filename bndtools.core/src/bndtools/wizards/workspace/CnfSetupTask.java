@@ -188,7 +188,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         /* Headless build files */
         HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();
         Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildPluginTracker, null);
-        headlessBuildPluginTracker.setup(enabledPlugins, true, cnfJavaProject.getProject().getLocation().toFile(), true);
+        headlessBuildPluginTracker.setup(enabledPlugins, true, cnfJavaProject.getProject().getLocation().toFile(), true, enabledIgnorePlugins);
 
         /* refresh the project; files were created outside of Eclipse API */
         cnfProject.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);

@@ -91,8 +91,10 @@ public class HeadlessBuildPluginTracker extends ServiceTracker {
      *            the project directory
      * @param add
      *            true to add/create the files, false to remove them
+     * @param enabledIgnorePlugins
+     *            set with enabled version control ignore plugins
      */
-    public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add) {
+    public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) {
         if (plugins == null || plugins.isEmpty()) {
             return;
         }
@@ -111,7 +113,7 @@ public class HeadlessBuildPluginTracker extends ServiceTracker {
             }
 
             try {
-                plugin.setup(cnf, projectDir, add, versionControlIgnoresPluginTracker);
+                plugin.setup(cnf, projectDir, add, versionControlIgnoresPluginTracker, enabledIgnorePlugins);
             } catch (Throwable e) {
                 logger.logError(String.format("Unable to %s headless build file(s) for the %sproject in %s", add ? "add" : "remove", cnf ? "cnf " : "", projectDir.getAbsolutePath()), e);
             }

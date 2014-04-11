@@ -2,6 +2,7 @@ package bndtools.headless.build.plugin.ant;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
 import org.bndtools.api.HeadlessBuildPlugin;
 import org.bndtools.api.NamedPlugin;
@@ -35,7 +36,7 @@ public class AntHeadlessBuildPlugin implements HeadlessBuildPlugin {
         return new AntHeadlessBuildPluginInformation();
     }
 
-    public void setup(boolean cnf, File projectDir, boolean add, VersionControlIgnoresManager ignoresManager) throws IOException {
+    public void setup(boolean cnf, File projectDir, boolean add, VersionControlIgnoresManager ignoresManager, Set<String> enabledIgnorePlugins) throws IOException {
         String baseDir;
         if (cnf) {
             baseDir = "templates/cnf/";

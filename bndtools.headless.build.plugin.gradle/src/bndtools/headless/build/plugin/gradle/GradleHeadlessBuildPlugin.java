@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.bndtools.api.HeadlessBuildPlugin;
 import org.bndtools.api.NamedPlugin;
@@ -39,7 +40,7 @@ public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
         return new GradleHeadlessBuildPluginInformation();
     }
 
-    public void setup(boolean cnf, File projectDir, boolean add, VersionControlIgnoresManager ignoresManager) throws IOException {
+    public void setup(boolean cnf, File projectDir, boolean add, VersionControlIgnoresManager ignoresManager, Set<String> enabledIgnorePlugins) throws IOException {
         if (!cnf) {
             return;
         }
@@ -59,6 +60,6 @@ public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
         ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, "/reports/", true));
         ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TARGET_DIR), true));
 
-        ignoresManager.addIgnores(null, workspaceRoot, ignoredEntries);
+        ignoresManager.addIgnores(enabledIgnorePlugins, workspaceRoot, ignoredEntries);
     }
 }
