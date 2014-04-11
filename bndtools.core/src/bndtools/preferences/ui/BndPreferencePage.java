@@ -128,7 +128,11 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
                 final String pluginName = info.getName();
                 final Button btnHeadlessPlugin = new Button(headlessGroup, SWT.CHECK);
                 headlessGroupButtons.add(btnHeadlessPlugin);
-                btnHeadlessPlugin.setText(pluginName);
+                if (info.isDeprecated()) {
+                    btnHeadlessPlugin.setText(pluginName + Messages.BndPreferencePage_namedPluginDeprecated_text);
+                } else {
+                    btnHeadlessPlugin.setText(pluginName);
+                }
                 Boolean checked = headlessBuildPlugins.get(pluginName);
                 if (checked == null) {
                     checked = Boolean.FALSE;
@@ -184,7 +188,11 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
                 final String pluginName = info.getName();
                 final Button btnVersionControlIgnoresPlugin = new Button(versionControlIgnoresGroup, SWT.CHECK);
                 versionControlIgnoresGroupButtons.add(btnVersionControlIgnoresPlugin);
-                btnVersionControlIgnoresPlugin.setText(pluginName);
+                if (info.isDeprecated()) {
+                    btnVersionControlIgnoresPlugin.setText(pluginName + Messages.BndPreferencePage_namedPluginDeprecated_text);
+                } else {
+                    btnVersionControlIgnoresPlugin.setText(pluginName);
+                }
                 Boolean checked = versionControlIgnoresPlugins.get(pluginName);
                 if (checked == null) {
                     checked = Boolean.FALSE;

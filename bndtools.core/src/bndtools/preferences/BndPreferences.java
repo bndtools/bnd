@@ -68,7 +68,7 @@ public class BndPreferences {
 
         Map<String,Boolean> map = new TreeMap<String,Boolean>();
         for (NamedPlugin info : allPluginsInformation) {
-            boolean enabled = (names == null) ? info.isEnabledByDefault() : names.contains(info.getName());
+            boolean enabled = (names == null) ? (info.isEnabledByDefault() && !info.isDeprecated()) : names.contains(info.getName());
             map.put(info.getName(), enabled);
             atLeastOneEnabled = atLeastOneEnabled || enabled;
         }

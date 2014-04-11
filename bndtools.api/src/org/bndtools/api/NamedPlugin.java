@@ -25,4 +25,10 @@ public interface NamedPlugin {
 	 *         the bndtools source tree are allowed to return true.
 	 */
 	public boolean isEnabledByDefault();
+
+	/**
+	 * @return true when the plugin is deprecated, which will result in it never
+	 *         being enabled by default.
+	 */
+	public boolean isDeprecated();
 }

@@ -30,6 +30,7 @@ public class Messages extends NLS {
     public static String BndPreferencePage_btnWarnExistingLaunch;
     public static String BndPreferencePage_msgCheckValidHeadless;
     public static String BndPreferencePage_msgCheckValidVersionControlIgnores;
+    public static String BndPreferencePage_namedPluginDeprecated_text;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
