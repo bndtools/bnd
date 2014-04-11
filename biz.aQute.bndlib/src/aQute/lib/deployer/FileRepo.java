@@ -348,9 +348,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			reporter.trace("updating %s ", file.getAbsolutePath());
 
-			if ( hasIndex )
+			if (hasIndex)
 				index.put(bsn + "-" + version, buildDescriptor(tmpFile, tmpJar, digest, bsn, version));
-			
+
 			// An open jar on file will fail rename on windows
 			tmpJar.close();
 
@@ -366,7 +366,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			IO.copy(file, latest);
 
 			reporter.trace("updated %s", file.getAbsolutePath());
-
 
 			return file;
 		}
@@ -869,9 +868,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 		if (versions(bsn).isEmpty())
 			IO.delete(new File(root, bsn));
-		
-		
-		index.remove(bsn+"-"+version);
+
+		index.remove(bsn + "-" + version);
 	}
 
 	public ResourceDescriptor getDescriptor(String bsn, Version version) throws Exception {
@@ -885,7 +883,41 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public SortedSet<ResourceDescriptor> getResources() throws Exception {
 		init();
 		if (hasIndex) {
-			TreeSet<ResourceDescriptor> resources = new TreeSet<ResourceDescriptor>();
+			TreeSet<ResourceDescriptor> resources = new TreeSet<ResourceDescriptor>(
+					new Comparator<ResourceDescriptor>() {
+
+						public int compare(ResourceDescriptor a, ResourceDescriptor b) {
+							if (a == b)
+								return 0;
+
+							int r = a.bsn.compareTo(b.bsn);
+							if (r != 0)
+								return r;
+
+							if (a.version != b.version) {
+								if (a.version == null)
+									return 1;
+								if (b.version == null)
+									return -1;
+
+								r = a.version.compareTo(b.version);
+								if (r != 0)
+									return r;
+							}
+							if (a.id.length > b.id.length)
+								return 1;
+							if (a.id.length < b.id.length)
+								return -1;
+
+							for (int i = 0; i < a.id.length; i++) {
+								if (a.id[i] > b.id[i])
+									return 1;
+								if (a.id[i] < b.id[i])
+									return 1;
+							}
+							return 0;
+						}
+					});
 			for (ResourceDescriptor rd : index.values()) {
 				resources.add(rd);
 			}
