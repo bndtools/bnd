@@ -371,6 +371,7 @@ public class BndEditModel {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<String> getAllPropertyNames() {
 		List<String> result = new ArrayList<String>(properties.size());
 
@@ -391,6 +392,7 @@ public class BndEditModel {
 
 	public void genericSet(String propertyName, Object value) {
 		Object oldValue = genericGet(propertyName);
+		@SuppressWarnings("unchecked")
 		Converter<String,Object> formatter = (Converter<String,Object>) formatters.get(propertyName);
 		if (formatter == null)
 			formatter = new DefaultFormatter();
@@ -795,6 +797,7 @@ public class BndEditModel {
 	private <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
 		R result;
 		if (objectProperties.containsKey(name)) {
+			@SuppressWarnings("unchecked")
 			R temp = (R) objectProperties.get(name);
 			result = temp;
 		} else if (changesToSave.containsKey(name)) {
