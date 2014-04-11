@@ -1,4 +1,4 @@
 Fragment-Host: biz.aQute.bndlib;bundle-version="[${bndlib-version-base},${bndlib-version-ceiling})"
 Include-Resource: embedded-repo.jar
-Bundle-Version: ${master-version}
+Bundle-Version: 2.3.1.${tstamp}
 Bundle-Vendor: Bndtools

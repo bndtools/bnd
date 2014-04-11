@@ -2,4 +2,4 @@ Include-Resource:\
     ${repo;bndtools.repository.amdatu;latest},\
     ${repo;bndtools.template.amdatu;latest},\
     ${repo;bndtools.template.dm;latest}
-Bundle-Version:1.0.0.${tstamp}
+Bundle-Version: 1.0.0.${tstamp}

@@ -1,6 +1,6 @@
 Bundle-SymbolicName: bndtools.repository.amdatu;singleton:=true
 Bundle-Vendor: Bndtools
-Bundle-Version: ${master-version}
+Bundle-Version: 2.3.1.${tstamp}
 
 amdatu-template: templates/cnfs/amdatu
 amdatu-template-resources: \

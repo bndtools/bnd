@@ -10,7 +10,7 @@
 
 Bundle-SymbolicName: bndtools.template.dm;singleton:=true
 Bundle-Vendor: Bndtools
-Bundle-Version: ${master-version}
+Bundle-Version: 2.3.1.${tstamp}
 
 Include-Resource:\
 	plugin.xml=_plugin.xml,\
