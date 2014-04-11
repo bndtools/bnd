@@ -187,13 +187,13 @@ public class ParseHeaderTest extends TestCase {
 		Attrs attrs = map.get("capability");
 
 		assertEquals(Type.STRINGS, attrs.getType("foo"));
-		List<String> foo = (List<String>) attrs.getTyped("foo");
+		List<String> foo = attrs.getTyped(Attrs.LIST_STRING, "foo");
 		assertEquals(2, foo.size());
 		assertEquals("MacOSX", foo.get(0));
 		assertEquals("Mac OS X", foo.get(1));
 
 		assertEquals(Type.VERSIONS, attrs.getType("version"));
-		List<Version> version = (List<Version>) attrs.getTyped("version");
+		List<Version> version = attrs.getTyped(Attrs.LIST_VERSION, "version");
 		assertEquals(3, version.size());
 		assertEquals(new Version(1), version.get(0));
 		assertEquals(new Version(2), version.get(1));

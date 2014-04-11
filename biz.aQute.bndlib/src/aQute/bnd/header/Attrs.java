@@ -6,9 +6,61 @@ import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
 import aQute.bnd.version.*;
-import aQute.lib.collections.*;
 
 public class Attrs implements Map<String,String> {
+	public interface DataType<T> {
+		Type type();
+	}
+
+	public static DataType<String>			STRING			= new DataType<String>() {
+
+																public Type type() {
+																	return Type.STRING;
+																}
+															};
+	public static DataType<Long>			LONG			= new DataType<Long>() {
+
+																public Type type() {
+																	return Type.LONG;
+																}
+															};	;
+	public static DataType<Double>			DOUBLE			= new DataType<Double>() {
+
+																public Type type() {
+																	return Type.DOUBLE;
+																}
+															};	;
+	public static DataType<Version>			VERSION			= new DataType<Version>() {
+
+																public Type type() {
+																	return Type.VERSION;
+																}
+															};	;
+	public static DataType<List<String>>	LIST_STRING		= new DataType<List<String>>() {
+
+																public Type type() {
+																	return Type.STRINGS;
+																}
+															};	;
+	public static DataType<List<Long>>		LIST_LONG		= new DataType<List<Long>>() {
+
+																public Type type() {
+																	return Type.LONGS;
+																}
+															};	;
+	public static DataType<List<Double>>	LIST_DOUBLE		= new DataType<List<Double>>() {
+
+																public Type type() {
+																	return Type.DOUBLES;
+																}
+															};	;
+	public static DataType<List<Version>>	LIST_VERSION	= new DataType<List<Version>>() {
+
+																public Type type() {
+																	return Type.VERSIONS;
+																}
+															};	;
+
 	public enum Type {
 		STRING(null, "String"), LONG(null, "Long"), VERSION(null, "Version"), DOUBLE(null, "Double"), STRINGS(STRING,
 				"List<String>"), LONGS(LONG, "List<Long>"), VERSIONS(VERSION, "List<Version>"), DOUBLES(DOUBLE,
@@ -381,9 +433,9 @@ public class Attrs implements Map<String,String> {
 		if (isEmpty())
 			return true;
 
-		SortedList<String> l = new SortedList<String>(keySet());
-		SortedList<String> lo = new SortedList<String>(other.keySet());
-		if (!l.isEqual(lo))
+		TreeSet<String> l = new TreeSet<String>(keySet());
+		TreeSet<String> lo = new TreeSet<String>(other.keySet());
+		if (!l.equals(lo))
 			return false;
 
 		for (String key : keySet()) {
@@ -402,6 +454,19 @@ public class Attrs implements Map<String,String> {
 
 		Type t = getType(adname);
 		return convert(t, s);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getTyped(DataType<T> type, String adname) {
+		String s = get(adname);
+		if (s == null)
+			return null;
+
+		Type t = getType(adname);
+		if ( t != type.type())
+			throw new IllegalArgumentException("For key " + adname + ", expected " + type.type() + " but had a " + t +". Value is " + s);
+		
+		return (T) convert(t, s);
 	}
 
 	private Object convert(Type t, String s) {
