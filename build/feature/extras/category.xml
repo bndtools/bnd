@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/bndtools.ace.feature_2.3.0.DEV-@qualifier@" id="bndtools.ace.feature" version="2.3.0.DEV-@qualifier@">
-      <category name="bndtools.extras.category"/>
-   </feature>
    <feature url="features/bndtools.dm.feature_2.3.0.DEV-@qualifier@" id="bndtools.dm.feature" version="2.3.0.DEV-@qualifier@">
       <category name="bndtools.extras.category"/>
    </feature>

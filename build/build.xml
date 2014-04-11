@@ -25,10 +25,6 @@
    	  <!-- 
    	  		Extra Features - TODO move these out of the core bndtools git repository
    	  -->
-      <zip destfile="${target}/features/extras/bndtools.ace.feature.jar">
-   	     <fileset dir="${target}/features/extras/ace" includes="feature.xml" />
-   	  </zip>
-   	
  	  <zip destfile="${target}/features/extras/bndtools.dm.feature.jar">
    	   	<fileset dir="${target}/features/extras/dm" includes="feature.xml" />
    	  </zip>

@@ -6,15 +6,6 @@
        <Package name="bndtools" />
      </Match>
      <Match>
-       <Package name="bndtools.ace.launch" />
-     </Match>
-     <Match>
-       <Package name="bndtools.ace.launcher" />
-     </Match>
-     <Match>
-       <Package name="bndtools.ace.launch.ui" />
-     </Match>
-     <Match>
        <Package name="bndtools.bndplugins.repo" />
      </Match>
      <Match>

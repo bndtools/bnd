@@ -1,6 +1,4 @@
 -dependson:\
-	bndtools.ace.launcher,\
-	bndtools.ace.plugin,\
 	bndtools.api,\
 	bndtools.bndplugins,\
 	bndtools.builder,\

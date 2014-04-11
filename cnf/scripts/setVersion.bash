@@ -6,7 +6,6 @@ set -u
 
 # these are the files in which the version must be adjusted
 declare -a filesToAdjust=( \
-  build/feature/extras/ace/feature.xml \
   build/feature/extras/amdatu/feature.xml \
   build/feature/extras/dm/feature.xml \
   build/feature/extras/category.xml \
