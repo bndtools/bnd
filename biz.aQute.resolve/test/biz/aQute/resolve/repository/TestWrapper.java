@@ -17,6 +17,10 @@ public class TestWrapper extends TestCase {
 		IO.delete(tmp);
 	}
 	
+	public void test() {
+		
+	}
+	
 	
 //	public void testRepo() throws Exception {
 //		WrapperTstRepository testRepo = new WrapperTstRepository( new File("testdata/repo3"));
