@@ -1,0 +1,122 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Determine the build dependencies.
+ */
+
+assert(project == rootProject                    )
+assert(hasProperty("bnd_cnf")                    )
+assert(hasProperty("gradleBuild_buildProperties"))
+
+
+/*
+ * Determine the build dependencies from the bnd build properties that end with
+ * the specified extension and interpret the value as an URL (when asUrl is
+ * true) or as a path (when asUrl is false). Add these build dependencies to the
+ * 'bnd_buildDependencies' file tree.
+ * URL dependencies are downloaded into the configured cache directory.
+ */
+void addToBuildDependencies(Set<String> evaluatedDependencies, String extension, boolean asUrl) {
+  assert(evaluatedDependencies != null                  )
+  assert(extension != null && !extension.isEmpty()      )
+  assert(hasProperty("bnd_buildProperties"             ))
+  assert(hasProperty("gradleBuild_dependenciesCacheDir"))
+
+  def propKeyExtensionRegex = "\\." + extension + "\$"
+  bnd_buildProperties
+     .findAll({it -> it.key.trim().toLowerCase() ==~ (".+" + propKeyExtensionRegex)})
+     .each {
+    def propKey        = it.key.trim()
+    def propValue      = it.value.trim()
+    def dependencyName = propKey.toLowerCase().replaceFirst(propKeyExtensionRegex, "")
+    if (!propValue.isEmpty()) {
+      if (evaluatedDependencies.contains(dependencyName)) {
+        println "Warning: Build dependency $dependencyName was already processed, skipping $propKey"
+      } else {
+        def dependencyFileName = null
+        def dependencyFile     = null
+        if (!asUrl) {
+          dependencyFileName   = relativePath(propValue)
+          dependencyFile       = file(dependencyFileName)
+        } else {
+          def url = null
+          try {
+            url = new URL(propValue)
+          } catch (MalformedURLException e) {
+            throw new GradleException("Build dependency $propKey specifies an invalid URL", e)
+          }
+
+          if (url.protocol.toLowerCase().equals("file")) {
+            def urlPath = url.path
+            dependencyFileName = relativePath(urlPath)
+            dependencyFile     = file(dependencyFileName)
+          } else {
+            def urlBaseName    = new File(url.path).name
+            dependencyFileName = "$gradleBuild_dependenciesCacheDir/$urlBaseName"
+            dependencyFile     = file(dependencyFileName)
+
+            /* Download from the URL when needed */
+            if (!dependencyFile.exists()) {
+              printf "Downloading build dependency $dependencyName..."
+              def downloadDir = file(dependencyFileName).parentFile
+              if ((!downloadDir.exists() && !downloadDir.mkdirs()) || !downloadDir.isDirectory()) {
+                throw new GradleException("Could not create directory $downloadDir")
+              }
+              try {
+                url.withInputStream{ is -> dependencyFile.withOutputStream{ it << is }}
+              } catch (Exception e) {
+                throw new GradleException("Downloading build dependency $dependencyName from $url failed", e)
+              }
+              println " done"
+            }
+          }
+        }
+
+        assert(dependencyFileName != null)
+        assert(dependencyFile     != null)
+
+        if (!dependencyFile.exists()) {
+          throw new GradleException("Build dependency $dependencyName ($dependencyFileName) does not exist.")
+        }
+
+        /* Include the dependency in the bnd_buildDependencies file tree (created when needed) */
+        if (!rootProject.hasProperty("bnd_buildDependencies")) {
+          rootProject.ext.bnd_buildDependencies = fileTree(rootDir).include(dependencyFileName)
+        } else {
+          /* Avoid duplicate build dependencies */
+          if (!rootProject.bnd_buildDependencies.contains(dependencyFile)) {
+            rootProject.bnd_buildDependencies.include(dependencyFileName)
+          }
+        }
+        evaluatedDependencies.add(dependencyName)
+      }
+    }
+  }
+}
+
+
+/* Ensure the build properties file exists */
+if (!file(gradleBuild_buildProperties).exists()) {
+  throw new GradleException("Build properties file \"$gradleBuild_buildProperties\" does not exist")
+}
+
+/* Load the build properties */
+ext.bnd_buildProperties = new Properties()
+file(gradleBuild_buildProperties).withReader {
+  reader -> bnd_buildProperties.load(reader)
+}
+
+/* Determine build dependencies */
+def evaluatedDependencies = new HashSet<String>()
+addToBuildDependencies(evaluatedDependencies, "location", false)
+addToBuildDependencies(evaluatedDependencies, "url"     , true)
+
+/* Setup an empty file tree when there are no dependencies */
+if (!hasProperty("bnd_buildDependencies")) {
+  ext.bnd_buildDependencies = fileTree(rootDir).exclude("**")
+}

@@ -1,0 +1,45 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ */
+
+assert(project == rootProject)
+
+
+/* Scan for the location of the configuration (cnf) project, relative to the root project */
+def cnfs = new LinkedList<String>();
+rootDir.eachFile {
+  if (it.isDirectory() && new File(it, "build.bnd").exists()) {
+    cnfs.add(relativePath(it))
+  }
+}
+if (cnfs.isEmpty()) {
+  throw new GradleException("Could not locate the cnf project.")
+}
+if (cnfs.size() > 1) {
+  throw new GradleException("Multiple cnf projects found: $cnfs")
+}
+ext.bnd_cnf = cnfs.get(0)
+
+
+/* Load the workspace build settings */
+apply from: file("$bnd_cnf/gradle/template/settings-workspace.gradle")
+
+/* Logging */
+assert(hasProperty("gradleBuild_loggingCaptureStandardOutput"))
+assert(hasProperty("gradleBuild_loggingLevel"))
+logging.captureStandardOutput   gradleBuild_loggingCaptureStandardOutput
+logging.level                 = gradleBuild_loggingLevel
+
+/* Determine the build dependencies */
+apply from: file("$bnd_cnf/gradle/template/buildDependencies.gradle")
+
+/* Initialise the bnd workspace and load the workspace defaults */
+apply from: file("$bnd_cnf/gradle/template/bndWorkspace.gradle")
+
+/* Apply the build template */
+apply from: file("$bnd_cnf/gradle/template/template.gradle")

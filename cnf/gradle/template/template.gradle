@@ -1,0 +1,83 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Main build template.
+ */
+
+assert(project == rootProject      )
+assert(hasProperty("bnd_cnf"      ))
+assert(hasProperty("bnd_workspace"))
+
+
+/*
+ * All Projects
+ */
+
+allprojects { project ->
+  /* Load the build settings */
+  apply from: rootProject.file("$rootProject.bnd_cnf/gradle/template/settings-allProjects.gradle")
+
+  /* The Gradle build directory */
+  project.buildDir = project.bnd_targetDir
+
+  /* Add findbugs placeholder tasks to the project */
+  apply from: rootProject.file("$rootProject.bnd_cnf/gradle/template/findbugs-placeholders.gradle")
+
+  /* Add index tasks to the project */
+  apply from: rootProject.file("$rootProject.bnd_cnf/gradle/template/index.gradle")
+
+  /* Add clean tasks to the project */
+  apply from: rootProject.file("$rootProject.bnd_cnf/gradle/template/clean.gradle")
+
+  /* Load the build customisations */
+  apply from: rootProject.file("$rootProject.bnd_cnf/gradle/custom/allProjects.gradle")
+}
+
+
+/*
+ * Sub-Projects
+ */
+
+subprojects { project ->
+  def bnd_project = rootProject.bnd_workspace.getProject(project.projectDir)
+  if (bnd_project == null) {
+    assert(project.hasProperty("gradleBuild_nonBndProjectsDefaultTasks"))
+
+    defaultTasks.clear()
+    project.gradleBuild_nonBndProjectsDefaultTasks.each {
+      defaultTasks += it
+    }
+
+    /* Load the build customisations */
+    apply from: rootProject.file("$rootProject.bnd_cnf/gradle/custom/nonBndProjects.gradle")
+  } else {
+    assert(project.hasProperty("gradleBuild_bndProjectsDefaultTasks"))
+
+    defaultTasks.clear()
+    project.gradleBuild_bndProjectsDefaultTasks.each {
+      defaultTasks += it
+    }
+
+    /* Store the bnd project for use in the bnd project template */
+    project.ext.bnd_project = bnd_project
+
+    /* Apply the bnd project template */
+    apply from: rootProject.file("$rootProject.bnd_cnf/gradle/template/bndProject.gradle")
+  }
+
+  /* Load the build customisations */
+  apply from: rootProject.file("$rootProject.bnd_cnf/gradle/custom/subProjects.gradle")
+}
+
+
+/*
+ * Root Project
+ */
+
+/* Apply the rootProject template */
+apply from: file("$bnd_cnf/gradle/template/rootProject.gradle")

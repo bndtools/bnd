@@ -1,0 +1,56 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Build template for the root project.
+ */
+
+assert(project == rootProject)
+
+
+/*
+ * Root Project
+ */
+
+assert(hasProperty("bnd_cnf"))
+
+
+/* Load the default build settings for the root project */
+apply from: file("$bnd_cnf/gradle/template/settings-rootProject.gradle")
+
+
+assert(hasProperty("gradleBuild_gradleVersion"))
+assert(hasProperty("gradleBuild_rootProjectDefaultTasks"))
+
+
+defaultTasks.clear()
+gradleBuild_rootProjectDefaultTasks.each {
+  defaultTasks += it
+}
+
+
+/*
+ * Setup tasks
+ */
+
+/* Create a gradle wrapper */
+task wrapper(type: Wrapper) {
+  description     "Download Gradle and generate wrapper scripts."
+  group           "Build Setup"
+
+  gradleVersion = gradleBuild_gradleVersion
+  jarFile       = file(".gradle-wrapper/gradle-wrapper.jar")
+}
+
+distclean.doLast {
+  delete("$bnd_cnf/cache")
+  delete(".gradle")
+}
+
+
+/* Load the build customisations */
+apply from: file("$bnd_cnf/gradle/custom/rootProject.gradle")

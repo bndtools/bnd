@@ -24,3 +24,7 @@
 
 /bndtools.ace.launcher/.settings
 /bndtools.ace.plugin/.settings
+
+/.gradle/
+/reports/
+/generated/

@@ -1,0 +1,47 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Initialise the bnd workspace and load the workspace defaults.
+ */
+
+import aQute.bnd.ant.ConsoleProgress
+import aQute.bnd.build.Workspace
+import aQute.bnd.osgi.Constants
+
+assert(project == rootProject              )
+assert(hasProperty("bnd_buildDependencies"))
+
+
+/* Setup the build dependencies */
+buildscript {
+  dependencies {
+    classpath rootProject.bnd_buildDependencies
+  }
+}
+
+
+/* Initialise the bnd workspace */
+assert(!hasProperty("bnd_workspace"))
+ext.bnd_workspace = Workspace.getWorkspace(projectDir)
+if (bnd_workspace == null) {
+  throw new GradleException("No bnd workspace found")
+}
+
+/* Ensure that the bnd output goes to the console */
+bnd_workspace.addBasicPlugin(new ConsoleProgress());
+
+/* Load the workspace defaults */
+assert(!hasProperty("bnd_workspaceDefaults"))
+ext.bnd_workspaceDefaults = Workspace.defaults
+
+/*
+ * Early setup of the Gradle build directory to ensure that output gets into
+ * the correct directory; less chance of output ending up in the default Gradle
+ * build directory when the build script fails.
+ */
+buildDir = relativePath(bnd_workspaceDefaults.getProperty(Constants.DEFAULT_PROP_TARGET_DIR))
