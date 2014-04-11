@@ -687,13 +687,15 @@ public class Analyzer extends Processor {
 
 				JAVA highest = ees.last();
 				Attrs attrs = new Attrs();
-				attrs.put(Constants.FILTER_DIRECTIVE, highest.getFilter());
+
+				String filter = doEEProfiles(highest);
+
+				attrs.put(Constants.FILTER_DIRECTIVE, filter);
 
 				//
 				// Java 1.8 introduced profiles.
 				// If -eeprofile= auto | (<profile>="...")+ is set then
 				// we add a
-				doEEProfiles(highest, attrs);
 
 				requirements.add(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, attrs);
 			}
@@ -799,18 +801,17 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Added for 1.8 profiles. A 1.8 profile is a set of packages
-	 * so the VM can be delivered in smaller versions. This method
-	 * will look at the {@link Constants#EEPROFILE} option. If it is
-	 * set, it can be "auto" or it can contain a list of profiles
-	 * specified as name="a,b,c" values. If we find a package outside
-	 * the profiles, no profile is set. Otherwise the highest found profile
-	 * is added. This only works for java packages.
+	 * Added for 1.8 profiles. A 1.8 profile is a set of packages so the VM can
+	 * be delivered in smaller versions. This method will look at the
+	 * {@link Constants#EEPROFILE} option. If it is set, it can be "auto" or it
+	 * can contain a list of profiles specified as name="a,b,c" values. If we
+	 * find a package outside the profiles, no profile is set. Otherwise the
+	 * highest found profile is added. This only works for java packages.
 	 */
-	private void doEEProfiles(JAVA highest, Attrs attrs) throws IOException {
+	private String doEEProfiles(JAVA highest) throws IOException {
 		String ee = getProperty(EEPROFILE);
 		if (ee == null)
-			return;
+			return highest.getFilter();
 
 		ee = ee.trim();
 
@@ -818,10 +819,9 @@ public class Analyzer extends Processor {
 
 		if (ee.equals(EEPROFILE_AUTO_ATTRIBUTE)) {
 			profiles = highest.getProfiles();
-			if ( profiles == null)
-				return;
-		}
-		else {
+			if (profiles == null)
+				return highest.getFilter();
+		} else {
 			Attrs t = OSGiHeader.parseProperties(ee);
 			profiles = new HashMap<String,Set<String>>();
 
@@ -838,18 +838,18 @@ public class Analyzer extends Processor {
 				String fqn = p.getFQN();
 				for (Entry<String,Set<String>> entry : profiles.entrySet()) {
 					if (entry.getValue().contains(fqn)) {
-						
+
 						found.add(entry.getKey());
-						
+
 						//
 						// Check if we found all the possible profiles
 						// that means we're finished
 						//
-						
+
 						if (found.size() == profiles.size())
 							break nextPackage;
 
-						// 
+						//
 						// Profiles should be exclusive
 						// so we can break if we found one
 						//
@@ -860,16 +860,15 @@ public class Analyzer extends Processor {
 				//
 				// Ouch, outside any profile
 				//
-				return;
+				return highest.getFilter();
 			}
 		}
-		if (found.isEmpty())
-			return;
 
-		String filter = attrs.get(Constants.FILTER_DIRECTIVE);
-		filter = "(&" + filter + "(profile=" + found.last() + "))";
-		attrs.put(Constants.FILTER_DIRECTIVE, filter);
-		attrs.putTyped("profile", found);
+		String filter = highest.getFilter();
+		if (!found.isEmpty())
+			filter = filter.replaceAll("JavaSE", "JavaSE/" + found.last());
+		// TODO a more elegant way to build the filter, we now assume JavaSE
+		return filter;
 
 	}
 
@@ -2123,7 +2122,8 @@ public class Analyzer extends Processor {
 						// would have the classes in these directories on the
 						// class path twice.
 						if (bcp.containsKey("."))
-							warning(Constants.BUNDLE_CLASSPATH + " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
+							warning(Constants.BUNDLE_CLASSPATH
+									+ " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 									path, path);
 						analyzeJar(dot, Processor.appendPath(path) + "/", true);
 					} else {
