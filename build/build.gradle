@@ -144,15 +144,27 @@ task p2PluginsMain(type: Copy) {
   from    zipTree("$bnd_targetDir/${bnd_project.name}.main.jar")
   into    "$bnd_targetDir/plugins/main"
   include "*.jar"
+
+  doLast {
+    delete("$bnd_targetDir/tmp");
+  }
 }
 
 task p2PluginsExtras(type: Copy) {
   from    zipTree("$bnd_targetDir/${bnd_project.name}.extras.jar")
   into    "$bnd_targetDir/plugins/extras"
   include "*.jar"
+
+  doLast {
+    delete("$bnd_targetDir/tmp");
+  }
 }
 
 task p2Plugins {
+
+  doLast {
+    delete("$bnd_targetDir/tmp");
+  }
 }
 
 
