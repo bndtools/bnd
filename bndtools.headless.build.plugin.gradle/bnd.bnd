@@ -10,6 +10,9 @@
 	templates=resources/templates/unprocessed,\
 	templates/cnf/gradle/dependencies/biz.aQute.bnd.jar=${repo;biz.aQute.bnd;${bndlib-version-base}}
 
+# we really need this, otherwise Eclipse will not start our bundles
+Bundle-ActivationPolicy: lazy
+
 Bundle-Version:1.0.0.${tstamp}
 Conditional-Package: \
 	org.bndtools.utils.copy.bundleresource,\
