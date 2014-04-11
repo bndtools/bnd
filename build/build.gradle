@@ -226,6 +226,8 @@ task dist {
  * Setup task dependencies
  */
 
+release.enabled                      = false
+
 p2Entry.dependsOn                   += [bundle                        ]
 
 p2FeaturesTree.dependsOn            += [p2Entry                       ]
