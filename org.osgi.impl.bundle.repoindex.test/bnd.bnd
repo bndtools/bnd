@@ -20,4 +20,7 @@ Conditional-Package: org.example.tests.utils
   
 -runvm: -ea
 -runfw: org.apache.felix.framework;version=4.0
--sub: *.bnd
+
+Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
+Private-Package: org.example.tests.osgi,\
+    testdata
