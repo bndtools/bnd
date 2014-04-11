@@ -18,6 +18,7 @@ public class ClazzTest extends TestCase {
 	
 	// hide the direct reference in the throw
 	public static class E extends SAXException {
+		private static final long	serialVersionUID	= 1L;
 		
 	}
 	
