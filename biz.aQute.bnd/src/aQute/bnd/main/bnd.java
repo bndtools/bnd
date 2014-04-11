@@ -38,7 +38,6 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
-import aQute.bnd.service.phases.*;
 import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
@@ -1211,6 +1210,7 @@ public class bnd extends Processor {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void printxref(MultiMap< ? , ? > map, String direction) {
 		SortedList< ? > labels = new SortedList<Comparable< ? >>((Collection< ? extends Comparable< ? >>) map.keySet());
 		for (Object element : labels) {
@@ -3392,46 +3392,6 @@ public class bnd extends Processor {
 		}
 	}
 
-	@Description("Compile current project")
-	interface BldOptions extends projectOptions {
-		@Description("Compile as test")
-		boolean test();
-
-	}
-
-	public void _bld(BldOptions options) throws Exception {
-		Project project = getProject(options.project());
-		if (project == null) {
-			error("No current project ");
-			return;
-		}
-		List<String> actions = options._();
-		if (actions.isEmpty())
-			actions.add("build");
-
-		Phases phases = project.getWorkspace().getPhases(this,
-				isTrace() ? EnumSet.of(PhasesPlugin.Options.TRACE) : EnumSet.noneOf(PhasesPlugin.Options.class));
-
-		for (String s : actions) {
-			if (s.equals("compile"))
-				phases.compile(project, options.test());
-			else if (s.equals("build"))
-				phases.build(project, options.test());
-			else if (s.equals("test"))
-				phases.test(project);
-			else if (s.equals("test"))
-				phases.test(project);
-			else if (s.equals("junit"))
-				phases.junit(project);
-			else if (s.equals("release"))
-				phases.release(project);
-			else if (s.equals("valid"))
-				phases.valid(project);
-			else
-				phases.action(project, s);
-		}
-		getInfo(project);
-	}
 
 	/**
 	 * Show the class versions used in a JAR
