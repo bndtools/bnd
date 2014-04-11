@@ -249,6 +249,9 @@
        <Package name="org.bndtools.utils.collections" />
      </Match>
      <Match>
+       <Package name="org.bndtools.utils.copy" />
+     </Match>
+     <Match>
        <Package name="org.bndtools.utils.dnd" />
      </Match>
      <Match>
@@ -256,6 +259,9 @@
      </Match>
      <Match>
        <Package name="org.bndtools.utils.jar" />
+     </Match>
+     <Match>
+       <Package name="org.bndtools.utils.javaproject" />
      </Match>
      <Match>
        <Package name="org.bndtools.utils.jdt" />
