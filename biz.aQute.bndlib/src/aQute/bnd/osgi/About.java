@@ -40,6 +40,14 @@ import aQute.bnd.version.*;
 public class About {
 	public static Version				_2_3		= new Version(2, 3, 0);
 	public static String[]				CHANGES_2_3	= {
+			"More aggressive upgrade to a later DS release, current analyzer was missing cases that required a higher version",
+			"Allow bnd -version",
+			"Added bnd sync command that forces the cache to be the current version",
+			"Invoke Dynamic instruction length was missing",
+			"Skips Class Constants if not used in the code (in Java 8, a constant expression can still refer to the defining class",
+			"Added x86-64 for the processors",
+			"For 1.8 (and later), the -eeprofile option specifies either 'auto' or a set of profiles: "
+					+ "-eeprofile: compact1=\"java.lang,java.io,...\", compact2=...",
 			"Wherever a version range can be used, you can now use a version that starts with a @ (consumer range) "
 					+ "or ends with a @ (provider range). I.e. @1.2.3 -> [1.2.3,2) and 1.2.3@ -> [1.2.3,1.3.0) ",
 			"Added an ${unescape;...} macro that changes \n, \t etc to their unescaped characters",
