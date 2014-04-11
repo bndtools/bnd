@@ -10,7 +10,6 @@ import org.osgi.resource.Resource;
 import aQute.bnd.indexer.analyzers.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.resource.*;
-import aQute.libg.cryptography.*;
 
 /**
  * The repository indexer. See OSGi Enterprise Specification 5.0.0, chapter 132.
@@ -72,7 +71,7 @@ public class RepoIndex {
 	}
 
 
-	private void doContent(Jar resource, MimeType mimeType, List<? super Capability> capabilities) throws Exception {
+//	private void doContent(Jar resource, MimeType mimeType, List<? super Capability> capabilities) throws Exception {
 //		CapReqBuilder builder = new CapReqBuilder(Namespaces.NS_CONTENT);
 //
 //		File source = resource.getSource();
@@ -92,5 +91,5 @@ public class RepoIndex {
 //		builder.addAttribute(Namespaces.ATTR_CONTENT_MIME, mimeType.toString());
 //
 //		capabilities.add(builder.buildCapability());
-	}
+//	}
 }

@@ -1,10 +1,8 @@
 package aQute.bnd.indexer;
 
-import java.util.List;
+import java.util.*;
 
-import org.osgi.resource.*;
-
-import aQute.bnd.annotation.ConsumerType;
+import aQute.bnd.annotation.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.resource.*;
 
