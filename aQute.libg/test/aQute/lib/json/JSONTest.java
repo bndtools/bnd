@@ -414,12 +414,17 @@ public class JSONTest extends TestCase {
 
 		// Check the file system
 		File f = File.createTempFile("tmp", ".tmp");
-		IO.store("Hello", f);
-		String encoded = new JSONCodec().enc().put(f).toString();
-		File otherTempFile = dec.from(encoded).get(File.class);
-		String hello = IO.collect(otherTempFile);
-		assertEquals("Hello", hello);
-		assertNotSame(f, otherTempFile);
+		try {
+			IO.store("Hello", f);
+			String encoded = new JSONCodec().enc().put(f).toString();
+			File otherTempFile = dec.from(encoded).get(File.class);
+			String hello = IO.collect(otherTempFile);
+			assertEquals("Hello", hello);
+			assertNotSame(f, otherTempFile);
+		}
+		finally {
+			IO.delete(new File("tmp"));
+		}
 
 		// Enums
 		assertEquals(E.A, dec.from("\"A\"").get(E.class));
@@ -430,7 +435,6 @@ public class JSONTest extends TestCase {
 		// Objects as strings
 		assertEquals("{\"a\":1, \"b\":\"abc\"}", dec.from("{\"a\":1, \"b\":\"abc\"}").get(String.class));
 		assertEquals("{\"a\":1, \"b\":\"}{}\"}", dec.from("{\"a\":1, \"b\":\"}{}\"}").get(String.class));
-
 	}
 
 	/**

@@ -3,6 +3,7 @@ package aQute.lib.persistentmap;
 import java.io.*;
 import java.util.*;
 
+import aQute.lib.io.*;
 import junit.framework.*;
 
 public class PersistentMapTest extends TestCase {
@@ -30,7 +31,7 @@ public class PersistentMapTest extends TestCase {
 		}
 		finally {
 			pm.close();
-			tmp.delete();
+			IO.delete(tmp);
 		}
 	}
 
@@ -65,7 +66,7 @@ public class PersistentMapTest extends TestCase {
 		}
 		finally {
 			pm.close();
-			tmp.delete();
+			IO.delete(tmp);
 		}
 	}
 }
