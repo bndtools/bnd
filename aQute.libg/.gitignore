@@ -1,1 +1,5 @@
+/bin/
+/bin_test/
+/generated/
 /test.tmp
+/tmp/
