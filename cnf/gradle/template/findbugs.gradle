@@ -1,0 +1,69 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Add findbugs tasks to a (java) project.
+ *
+ * Note: the 'java' plugin must have been applied to the project before this
+ *       file can be applied.
+ *
+ * Note: Set the 'CI' property (-PCI on the command line) to generate XML
+ *       reports instead of html reports.
+ */
+
+assert(project != rootProject                               )
+assert(hasProperty("bnd_targetDir"                         ))
+assert(hasProperty("gradleBuild_findbugsEffort"            ))
+assert(hasProperty("gradleBuild_findbugsExcludesFile"      ))
+assert(hasProperty("gradleBuild_findbugsIgnoreFailures"    ))
+assert(hasProperty("gradleBuild_findbugsIncludesFile"      ))
+assert(hasProperty("gradleBuild_findbugsPropertyXmlReports"))
+assert(hasProperty("gradleBuild_findbugsReportLevel"       ))
+assert(hasProperty("gradleBuild_findbugsReportsDir"        ))
+assert(hasProperty("gradleBuild_findbugsToolVersion"       ))
+
+
+repositories {
+  mavenCentral()
+}
+
+
+apply plugin: "findbugs"
+
+
+findbugs {
+  reportsDir     = file("$bnd_targetDir/$gradleBuild_findbugsReportsDir")
+  includeFilter  = file(gradleBuild_findbugsIncludesFile                )
+  excludeFilter  = file(gradleBuild_findbugsExcludesFile                )
+  effort         =      gradleBuild_findbugsEffort
+  ignoreFailures =      gradleBuild_findbugsIgnoreFailures
+  reportLevel    =      gradleBuild_findbugsReportLevel
+  toolVersion    =      gradleBuild_findbugsToolVersion
+}
+
+findbugsMain {
+  reports {
+    xml.enabled  = rootProject.hasProperty(gradleBuild_findbugsPropertyXmlReports) ? true  : false
+    html.enabled = rootProject.hasProperty(gradleBuild_findbugsPropertyXmlReports) ? false : true
+  }
+}
+
+findbugsTest {
+  reports {
+    xml.enabled  = rootProject.hasProperty(gradleBuild_findbugsPropertyXmlReports) ? true  : false
+    html.enabled = rootProject.hasProperty(gradleBuild_findbugsPropertyXmlReports) ? false : true
+  }
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+  tasks.findbugsMain.onlyIf {
+    taskGraph.hasTask((tasks.findbugs))
+  }
+  tasks.findbugsTest.onlyIf {
+    taskGraph.hasTask((tasks.findbugstest))
+  }
+}

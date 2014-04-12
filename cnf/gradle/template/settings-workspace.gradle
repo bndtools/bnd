@@ -1,0 +1,26 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Define the build settings and load overrides.
+ */
+
+assert(project == rootProject)
+assert(hasProperty("bnd_cnf"))
+
+
+ext.gradleBuild_gradleVersion                = "1.11"
+
+ext.gradleBuild_loggingCaptureStandardOutput = LogLevel.INFO
+ext.gradleBuild_loggingLevel                 = LogLevel.INFO
+
+ext.gradleBuild_buildProperties              = "$bnd_cnf/build.gradle.properties"
+ext.gradleBuild_dependenciesCacheDir         = "$bnd_cnf/cache/gradle"
+
+
+/* Load the overrides */
+apply from: file("$bnd_cnf/gradle/custom/settings-workspace.gradle")

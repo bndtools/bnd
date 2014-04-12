@@ -1,0 +1,23 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Add findbugs placeholder tasks.
+ */
+
+
+/* Placeholder task to facilitate enabling the findbugsMain task (disabled by default) */
+task findbugs {
+  description  "Enables findbugs on the source code (disabled by default; use -PCI to generate xml reports)."
+  group        "Verification"
+}
+
+/* Placeholder task to facilitate enabling the findbugsTest task (disabled by default) */
+task findbugstest {
+  description  "Enables findbugs on the test code (disabled by default; use -PCI to generate xml reports)."
+  group        "Verification"
+}

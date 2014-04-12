@@ -1,0 +1,40 @@
+/*
+ * WARNING
+ *
+ * This file is maintained automatically by Bndtools.
+ * You should not edit it.
+ *
+ * See the BUILDING-GRADLE.md document in the root project for more details.
+ *
+ * Setup a (java) project to use the default layout of a bnd (java) project.
+ *
+ * Note: the 'java' plugin must have been applied to the project before this
+ *       file can be applied.
+ */
+
+assert(project != rootProject                       )
+assert(hasProperty("bnd_srcBinDir"                 ))
+assert(hasProperty("bnd_srcDir"                    ))
+assert(hasProperty("bnd_testSrcBinDir"             ))
+assert(hasProperty("bnd_testSrcDir"                ))
+assert(hasProperty("gradleBuild_libsDirName"       ))
+assert(hasProperty("gradleBuild_testReportDirName" ))
+assert(hasProperty("gradleBuild_testResultsDirName"))
+
+
+/* Gradle directory settings */
+libsDirName                            = gradleBuild_libsDirName
+testResultsDirName                     = gradleBuild_testResultsDirName
+testReportDirName                      = gradleBuild_testReportDirName
+
+/* Java source code source set */
+sourceSets.main.java.srcDirs           = files(bnd_srcDir       )
+sourceSets.main.resources.srcDirs      = files(bnd_srcDir       )
+sourceSets.main.output.classesDir      =       bnd_srcBinDir
+sourceSets.main.output.resourcesDir    =       bnd_srcBinDir
+
+/* Java test code source set */
+sourceSets.test.java.srcDirs           = files(bnd_testSrcDir   )
+sourceSets.test.resources.srcDirs      = files(bnd_testSrcDir   )
+sourceSets.test.output.classesDir      =       bnd_testSrcBinDir
+sourceSets.test.output.resourcesDir    =       bnd_testSrcBinDir
