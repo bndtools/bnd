@@ -1,8 +1,0 @@
-#
-# This directory holds the distribution of the bnd project
-#
-
--dependson: biz.aQute.bnd, biz.aQute.resolve, biz.aQute.repository, biz.aQute.jpm, osgi.r5
--nobundles: true
-
-no.junit:	true

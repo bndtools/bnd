@@ -10,6 +10,12 @@ task dist {
   group         "Release"
 }
 
-indexOBR.dependsOn          += [releaseNeeded]
-indexR5.dependsOn           += [releaseNeeded]
-dist.dependsOn              += [index        ]
+/* depend on all bnd projects in the workspace */
+rootProject.subprojects.each {
+  if (it.hasProperty("bnd_project")) {
+    indexOBR.dependsOn += [":" + it.name + ":release"]
+    indexR5.dependsOn  += [":" + it.name + ":release"]
+  }
+}
+
+dist.dependsOn += [index]

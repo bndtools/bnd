@@ -98,26 +98,6 @@ digraph GradleSetup {
       export               [shape=box, style=filled, fillcolor=cyan     , label="export"              ]
     }
 
-    subgraph cluster100 {
-      label="Dist Project";
-      labelloc=b
-      labeljust=l
-      style=filled;
-      fillcolor=lightgrey;
-      color=black;
-
-      distIndexOBR           [shape=box, style=filled, fillcolor=cyan, label="indexOBR"]
-      distIndexR5            [shape=box, style=filled, fillcolor=cyan, label="indexR5"]
-      distIndex              [shape=box, style=filled, fillcolor=cyan, label="index"]
-      distDist               [shape=box, style=filled, fillcolor=cyan, label="dist"]
-
-      releaseNeeded          -> distIndexOBR
-      releaseNeeded          -> distIndexR5
-      distIndexOBR           -> distIndex
-      distIndexR5            -> distIndex
-      distIndex              -> distDist
-    }
-
     classes                -> bundle
     bundle                 -> compileJava        [color=red   ]
     bundle                 -> jar                [style=dashed]
@@ -208,4 +188,24 @@ digraph GradleSetup {
     distclean              -> distcleanNeeded
     distcleanNeeded        -> distcleanNeeded    [color=red   ]
   }
+
+    subgraph cluster100 {
+      label="Dist Project";
+      labelloc=b
+      labeljust=l
+      style=filled;
+      fillcolor=lightgrey;
+      color=black;
+
+      distIndexOBR           [shape=box, style=filled, fillcolor=cyan, label="indexOBR"]
+      distIndexR5            [shape=box, style=filled, fillcolor=cyan, label="indexR5"]
+      distIndex              [shape=box, style=filled, fillcolor=cyan, label="index"]
+      distDist               [shape=box, style=filled, fillcolor=cyan, label="dist"]
+
+      release                -> distIndexOBR     [color=red   ]
+      release                -> distIndexR5      [color=red   ]
+      distIndexOBR           -> distIndex
+      distIndexR5            -> distIndex
+      distIndex              -> distDist
+    }
 }
