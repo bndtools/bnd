@@ -13,7 +13,7 @@
 <feature
       id="bndtools.jarviewer.feature"
       label="JAR Viewer"
-      version="2.4.0.DEV-@qualifier@"
+      version="@master-version@"
       provider-name="Bndtools"
       plugin="bndtools.jareditor">
 

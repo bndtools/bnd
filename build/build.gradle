@@ -19,6 +19,26 @@ ext.bnd_eclipseCategoryPublisher = "org.eclipse.equinox.p2.publisher.CategoryPub
  */
 
 /*
+ * Get a property from the project's flattened bnd properties.
+ * Returns an empty string when the property is not set unless instructed to
+ * throw an exception when the property is not set.
+ */
+String getBndProjectProperty(String key, boolean throwOnNotSet) {
+  assert(project != null                       )
+  assert(key != null && !key.isEmpty()         )
+  assert(hasProperty("bnd_flattenedProperties"))
+
+  def value = bnd_flattenedProperties.getProperty(key, null)
+  if (value == null) {
+    if (throwOnNotSet) {
+      throw new GradleException("Bnd property \"$key\" not found in project $project.name")
+    }
+    value = ""
+  }
+  return value.trim()
+}
+
+/*
  * Generate a p2 repository.
  */
 void generateP2Repository(String title, String antTarget, String metadataRepository, String categoryDefinition) {
@@ -99,7 +119,7 @@ task p2Entry {
 task p2FeaturesTree(type: Copy) {
   from    "feature"
   into    "$bnd_targetDir/features"
-  filter(ReplaceTokens, tokens: [qualifier: new Date().format('yyyyMMdd-HHmmss')])
+  filter(ReplaceTokens, tokens: ["master-version" : getBndProjectProperty("master-version", true) + "-g" + getBndProjectProperty("Git-SHA", true).replaceAll("([0-9a-fA-F]{7}).*", "\$1")])
   include "**/category.xml"
   include "**/feature.xml"
 }

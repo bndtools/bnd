@@ -41,7 +41,8 @@ Export-Package: \
 	bndtools.wizards.workspace
 
 Include-Resource: plugin.xml=_plugin.xml,\
-	resources
+    /=resources/unprocessed,\
+    {/=resources/processed}
 	
 # Build and Run
 eclipse.deps: \

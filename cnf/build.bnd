@@ -62,9 +62,10 @@ javac.ee:                 '[1.5,1.6)'
 
 
 # Master Version Settings
-base-version:             2.4.0.DEV
-version-qualifier:        ${tstamp;yyyyMMdd-HHmm}-${Git-Descriptor}
-master-version:           ${base-version}-${version-qualifier}
+base-version:             2.4.0
+base-version-qualifier:   DEV
+master-version-qualifier: ${tstamp;yyyyMMdd-HHmmss}
+master-version:           ${base-version}.${base-version-qualifier}-${master-version-qualifier}
 
 # Version of bnd/bndlib to use consistently throughout the build
 # NB. this must be specified as full M.m.u version (but no qualifier)
