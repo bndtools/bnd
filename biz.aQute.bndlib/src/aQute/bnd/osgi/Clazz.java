@@ -1166,6 +1166,24 @@ public class Clazz {
 					classConstRef(lastReference);
 					break;
 
+				case OpCodes.anewarray :
+				case OpCodes.checkcast :
+				case OpCodes.instanceof_ :
+				case OpCodes.new_ : {
+					int cref = 0xFFFF & bb.getShort();
+					classConstRef(cref);
+					lastReference = -1;
+					break;
+				}
+
+				case OpCodes.multianewarray : {
+					int cref = 0xFFFF & bb.getShort();
+					classConstRef(cref);
+					bb.get();
+					lastReference = -1;
+					break;
+				}
+
 				case OpCodes.invokespecial : {
 					int mref = 0xFFFF & bb.getShort();
 					if (cd != null)
