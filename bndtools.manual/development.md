@@ -12,7 +12,7 @@ Building Bndtools
 Bndtools is built with Bndtools! If you want to work on the bndtools source code, you have two options:
 
 * Install the current public release of bndtools from the [Eclipse Marketplace][2] and start working straight away.
-* Build Bndtools from the command line using bnd (with ANT), then install the build results into your Eclipse IDE.
+* Build Bndtools from the command line, then install the build results into your Eclipse IDE.
 
 Checking Out from GitHub
 ========================
@@ -23,16 +23,18 @@ First check out the source code from GitHub as follows:
 
 If you have Bndtools installed in your Eclipse IDE already (e.g. using Marketplace) then skip to **Importing Into Eclipse** below. Otherwise read on...
 
-Building With bnd/ANT
-=====================
+Building from the command-line
+==============================
 
-Assuming you have Apache ANT (version 1.7 or better) installed, you can build bndtools from the command line by changing to the `build` directory and typing:
+Read the document `BUILDING-GRADLE.md` to learn how the build works.
 
-	ant build p2
+Assuming you have Gradle (version 1.11 or better) installed, you can build bndtools from the command line by changing to the root of your checkout and typing:
 
-After a minute or two, a directory named `generated/p2` will appear. This contains an Eclipse Update Site that you can use to install bndtools from the code you have just built.
+	gradle build dist
 
-To install from the generated Update Site, open the Help menu in Eclipse and select "Install New Software". In the update dialog, click the "Add" button (near the top left) and then click the "Local" button. Browse to the location of the `build/generated/p2` directory that you just built. Then set the name of this update site to "Bndtools Local Snapshot" (or whatever you like, it's not really important so long as you enter *something*). Click "OK".
+After a a short while, two directories - `build/generated/p2` and `build/generated/extras/p2` will appear. These contains an Eclipse Update Sites that you can use to install bndtools from the code you have just built.
+
+To install from the generated Update Sites, open the Help menu in Eclipse and select "Install New Software". In the update dialog, click the "Add" button (near the top left) and then click the "Local" button. Browse to the location of the `build/generated/p2` directory that you just built. Then set the name of this update site to "Bndtools Local Snapshot" (or whatever you like, it's not really important so long as you enter *something*). Click "OK". Do the same for the `build/generated/extras/p2` directory.
 
 Back in the update dialog, Bndtools will appear in the category list. Place a check next to it and click Next. Drive the rest of the wizard to completion... congratulations, you have just built and installed bndtools!
 
@@ -43,20 +45,7 @@ Now you have Bndtools installed in your Eclipse IDE, you can import the bndtools
 
 Open the File menu and select "Import" and then "Existing Projects into Workspace" (under the General category). Click "Next". Click the "Browse" button (top right) and select the root directory of the bndtools projects.
 
-Ensure that all the following projects are checked:
-
-* `cnf`
-* `bndtools.api`
-* `bndtools.bndplugins`
-* `bndtools.builder`
-* `bndtools.core`
-* `bndtools.jareditor`
-* `bndtools.manual`
-* `bndtools.release`
-* `bndtools.repository.base`
-* `bndtools.utils`
-* `build`
-* `org.bndtools.embedddedrepo`
+Ensure that all projects (sub-directories) are checked.
 
 NB: These projects must all be in the same directory!
 
@@ -70,6 +59,7 @@ Launching Bndtools from Eclipse
 To launch bndtools from Eclipse (e.g. to try out a change to debug), use one of the `.bndrun` files from the `bndtools.core` project. There are three launchers, one per architecture, i.e.:
 
 * `bndtools.cocoa.macosx.x86_64.bndrun` for running on Mac OS X (64-bit Intel x86)
+* `bndtools.gtk.linux.x86_64.bndrun` for running on Linux (64-bit Intel x86).
 * `bndtools.gtk.linux.x86.bndrun` for running on Linux (32-bit Intel x86).
 * `bndtools.win32.x86.bndrun` for running on Win32 (XP, Vista etc).
 
