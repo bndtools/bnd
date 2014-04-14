@@ -31,7 +31,7 @@ bnd-repo-local:              file:///${workspace}/../bnd/dist/bundles/index.xml.
 # Switch locations as required
 # WARNING: bnd-repo-local will break the build if pushed to GitHub... it is used for local testing only!!
 
-bndRepo: ${bnd-repo-cb-master}
+bndRepo: ${bnd-repo-cb-next}
 
 
 
