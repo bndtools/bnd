@@ -39,6 +39,7 @@ public class Annotation {
 		return name + ":" + member + ":" + policy + ":" + (elements == null ? "{}" : elements);
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> T get(String string) {
 		if (elements == null)
 			return null;
@@ -63,6 +64,7 @@ public class Annotation {
 	public <T extends java.lang.annotation.Annotation> T getAnnotation() throws Exception {
 		String cname = name.getFQN();
 		try {
+			@SuppressWarnings("unchecked")
 			Class<T> c = (Class<T>) getClass().getClassLoader().loadClass(cname);
 			return getAnnotation(c);
 		}
