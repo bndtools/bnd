@@ -8,18 +8,20 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	lib/jetty-server-7.6.3.v20120416.jar;version=file,\
 	lib/jetty-util-7.6.3.v20120416.jar;version=file
 
--buildpath: osgi.core;version=4.3.1,\
+-buildpath: \
+	osgi.core;version=4.3.1,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	org.osgi.impl.bundle.bindex,\
-	org.osgi.impl.bundle.repoindex.lib;version=0.0.4,\
+	org.osgi.impl.bundle.repoindex.lib;version=2.1.0,\
 	junit.osgi,\
 	osgi.cmpn;version=4.3.1,\
 	osgi.r5;version=1.0.1,\
 	javax.xml.stream-1.0.1.jar;version=file,\
 	org.mockito.mockito-all,\
 	ee.j2se;version=${javac.ee},\
-	${jetty.libs}
+	${jetty.libs},\
+	aQute.jpm.bndrepo;version=1.0
 
 Bnd-Plugins:
 	aQute.bnd.deployer.repository.FixedIndexedRepo,\
@@ -66,11 +68,11 @@ libg-pkgs: \
 	aQute.libg.filters;-split-package:=first
 
 # NB: `org.osgi.framework` API is included in Private-Package for running outside of OSGi.
-Private-Package:\
+Private-Package: \
 	${bindex-pkgs},\
 	${repoindex-pkgs},\
 	org.osgi.framework;-split-package:=first,\
-
+	aQute.bnd.deployer.repository.wrapper
 Conditional-Package:\
 	aQute.lib.*;-split-package:=first,\
 	aQute.libg.*;-split-package:=first
