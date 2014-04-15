@@ -11,7 +11,7 @@
 
 -runtrace: true
 
-Bundle-Version: 2.3.0.${tstamp}
+Bundle-Version:2.4.0.${tstamp}
 
 testsrc: src
 testbin: bin
