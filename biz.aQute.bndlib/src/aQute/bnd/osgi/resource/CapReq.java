@@ -100,4 +100,10 @@ class CapReq  {
 		return builder.toString();
 	}
 
+	protected void toString(StringBuilder sb) {
+		sb.append("[").append(namespace).append("]");
+		sb.append(attributes);
+		sb.append(directives);
+	}
+
 }

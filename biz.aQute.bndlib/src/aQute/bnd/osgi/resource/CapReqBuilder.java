@@ -78,16 +78,19 @@ public class CapReqBuilder {
 	}
 
 	public Capability buildCapability() {
-		// TODO check the thrown exception
-//		if (resource == null)
-//			throw new IllegalStateException("Cannot build Capability with null Resource.");
+		if (resource == null)
+			throw new IllegalStateException("Cannot build Capability with null Resource.");
+		return new CapabilityImpl(namespace, resource, directives, attributes);
+	}
+
+	public Capability buildSyntheticCapability() {
 		return new CapabilityImpl(namespace, resource, directives, attributes);
 	}
 
 	public Requirement buildRequirement() {
-		// TODO check the thrown exception
-//		if (resource == null)
-//			throw new IllegalStateException("Cannot build Requirement with null Resource.");
+		if (resource == null)
+			throw new IllegalStateException(
+					"Cannot build Requirement with null Resource. use buildSyntheticRequirement");
 		return new RequirementImpl(namespace, resource, directives, attributes);
 	}
 
@@ -148,21 +151,22 @@ public class CapReqBuilder {
 	}
 
 	private CharSequence toFilter(Object expr) {
-		if ( expr instanceof CharSequence)
+		if (expr instanceof CharSequence)
 			return (CharSequence) expr;
-		
-		if ( expr instanceof Filter) {
+
+		if (expr instanceof Filter) {
 			return expr.toString();
 		}
-		
-		if ( expr instanceof VersionRange) {
+
+		if (expr instanceof VersionRange) {
 			return ((VersionRange) expr).toFilter();
 		}
-		
+
 		return expr.toString();
 	}
 
 	public CapReqBuilder filter(CharSequence f) {
 		return addDirective("filter", f.toString());
 	}
+
 }

@@ -10,4 +10,10 @@ public class RequirementImpl extends CapReq implements Requirement {
 		super(MODE.Requirement, namespace, resource, directives, attributes);
 	}
 
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Require");
+		super.toString(sb);
+		return sb.toString();
+	}
 }

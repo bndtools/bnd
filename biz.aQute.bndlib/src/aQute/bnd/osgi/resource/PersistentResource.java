@@ -7,11 +7,20 @@ import java.util.Map.Entry;
 import org.osgi.framework.*;
 import org.osgi.resource.*;
 
+import aQute.bnd.util.dto.*;
 import aQute.lib.collections.*;
 
-public class PersistentResource implements Resource {
+/**
+ * This class provides an efficient way to store a resource through JSON
+ * serialization. It stores the requirements and provides in a structure of
+ * Resource 1 -> * Namespace 1 -> * Req/Cap. It optimizes
+ */
+public class PersistentResource extends DTO {
 
-	public static class Namespace implements Comparable<Namespace> {
+	public Namespace[]	namespaces;
+	transient Resource	resource;
+	
+	public static class Namespace extends DTO implements Comparable<Namespace> {
 		public String	name;
 		public RCData[]	capabilities;
 		public RCData[]	requirements;
@@ -21,19 +30,18 @@ public class PersistentResource implements Resource {
 		}
 	}
 
-	public static class RCData {
+	public static class RCData extends DTO {
+		public boolean	require;
 		public Attr[]	properties;
 		public int		directives;
 	}
 
-	public Namespace[]	namespaces;
-	public byte[]		sha;
 
 	public enum DataType {
 		STRING, LONG, DOUBLE, VERSION;
 	}
 
-	public static class Attr implements Comparable<Attr> {
+	public static class Attr extends DTO implements Comparable<Attr> {
 
 		public String		key;
 		public int			type;
@@ -84,16 +92,14 @@ public class PersistentResource implements Resource {
 
 	public PersistentResource() {}
 
-	public PersistentResource(byte[] sha, List<Capability> caps, List<Requirement> reqs) {
-
-		this.sha = sha;
+	public PersistentResource(Resource resource) {
 
 		MultiMap<String,Capability> capMap = new MultiMap<String,Capability>();
-		for (Capability cap : caps)
+		for (Capability cap : resource.getCapabilities(null))
 			capMap.add(cap.getNamespace(), cap);
 
 		MultiMap<String,Requirement> reqMap = new MultiMap<String,Requirement>();
-		for (Requirement req : reqs)
+		for (Requirement req : resource.getRequirements(null))
 			reqMap.add(req.getNamespace(), req);
 
 		Set<String> names = new HashSet<String>(capMap.keySet());
@@ -105,244 +111,71 @@ public class PersistentResource implements Resource {
 		for (String name : names) {
 
 			Namespace ns = new Namespace();
-
+			ns.name = name;
 			List<Requirement> requirements = reqMap.get(name);
-			if (requirements.size() > 0) {
+			if (requirements != null && requirements.size() > 0) {
 
 				ns.requirements = new RCData[requirements.size()];
 				int rqi = 0;
 				for (Requirement r : requirements)
-					ns.requirements[rqi] = getData(r.getAttributes(), r.getDirectives());
+					ns.requirements[rqi++] = getData(true, r.getAttributes(), r.getDirectives());
 				;
 			}
 
 			List<Capability> capabilities = capMap.get(name);
-			if (capabilities.size() > 0) {
+			if (capabilities != null && capabilities.size() > 0) {
 
 				ns.capabilities = new RCData[capabilities.size()];
 				int rci = 0;
 				for (Capability c : capabilities)
-					ns.requirements[rci] = getData(c.getAttributes(), c.getDirectives());
+					ns.capabilities[rci++] = getData(false, c.getAttributes(), c.getDirectives());
 			}
-			namespaces[i] = ns;
+			namespaces[i++] = ns;
 		}
 		Arrays.sort(namespaces);
 	}
 
-	transient MultiMap<String,Capability>	tcapabilities;
-	transient MultiMap<String,Requirement>	trequirements;
 
-	public List<Capability> getCapabilities(final String namespace) {
-		init();
-		if (namespace == null)
-			return tcapabilities.allValues();
+	public Resource getResource() {
+		if (resource == null) {
+			ResourceBuilder rb = new ResourceBuilder();
 
-		List<Capability> list = tcapabilities.get(namespace);
-		if (list != null)
-			return list;
+			for (Namespace ns : namespaces) {
+				if ( ns.capabilities != null)
+				for (RCData rcdata : ns.capabilities) {
 
-		return Collections.emptyList();
-	}
+					CapReqBuilder capb = new CapReqBuilder(ns.name);
 
-	public List<Requirement> getRequirements(String namespace) {
-		init();
-		if (namespace == null)
-			return trequirements.allValues();
-
-		List<Requirement> list = trequirements.get(namespace);
-		if (list != null)
-			return list;
-
-		return Collections.emptyList();
-	}
-
-	private void init() {
-		tcapabilities = new MultiMap<String,Capability>();
-		trequirements = new MultiMap<String,Requirement>();
-
-		for (int i = 0; i < namespaces.length; i++) {
-			final Namespace ns = namespaces[i];
-			for (final RCData rs : ns.capabilities) {
-				tcapabilities.add(ns.name, new RC(rs, ns.name));
-			}
-			for (final RCData rs : ns.requirements) {
-				trequirements.add(ns.name, new RC(rs, ns.name));
-			}
-		}
-
-	}
-
-	public class RC implements Requirement, Capability {
-
-		final Attr					props[];
-		final int					directivesCount;
-		final String				namespace;
-
-		Map<String,Object>			attributes;
-		Map<String,String>			directives;
-
-		public RC(RCData data, String ns) {
-			this.props = data.properties;
-			this.directivesCount = data.directives;
-			this.namespace = ns;
-		}
-
-		public String getNamespace() {
-			return namespace;
-		}
-
-		public Resource getResource() {
-			return PersistentResource.this;
-		}
-
-		class PropMap<V> implements Map<String,V> {
-			boolean	directive;
-
-			public PropMap(boolean directive) {
-				this.directive = directive;
-			}
-
-			public int size() {
-				return directive ? directivesCount : props.length - directivesCount;
-			}
-
-			public boolean isEmpty() {
-				return props.length == 0;
-			}
-
-			public boolean containsKey(Object key) {
-				return get(key) != null;
-			}
-
-			public boolean containsValue(Object value) {
-				if (value == null)
-					return false;
-
-				for (Attr attr : props) {
-					if (value.equals(attr.getValue()))
-						return true;
-				}
-				return false;
-			}
-
-			@SuppressWarnings("unchecked")
-			public V get(Object key) {
-				if (key instanceof String) {
-					Attr attr = search((String) key);
-					if (attr != null)
-						return (V) attr.getValue();
-				}
-				return null;
-			}
-
-			public V put(String key, V value) {
-				throw new UnsupportedOperationException();
-			}
-
-			public V remove(Object key) {
-				throw new UnsupportedOperationException();
-			}
-
-			public void putAll(Map< ? extends String, ? extends V> m) {
-				throw new UnsupportedOperationException();
-			}
-
-			public void clear() {
-				throw new UnsupportedOperationException();
-			}
-
-			public Set<String> keySet() {
-				Set<String> result = new HashSet<String>();
-				for (Attr attr : props) {
-					if (attr.directive == directive)
-						result.add(attr.key);
-				}
-				return result;
-			}
-
-			@SuppressWarnings("unchecked")
-			public Collection<V> values() {
-				List<V> values = new ArrayList<V>();
-				for (Attr attr : props) {
-					if (attr.directive == directive)
-						values.add((V) attr.getValue());
-				}
-				return values;
-			}
-
-			public Set<java.util.Map.Entry<String,V>> entrySet() {
-				Set<java.util.Map.Entry<String,V>> result = new HashSet<java.util.Map.Entry<String,V>>();
-				for (final Attr attr : props) {
-					if (attr.directive == directive)
-						result.add(new Map.Entry<String,V>() {
-
-							public String getKey() {
-								return attr.key;
-							}
-
-							@SuppressWarnings("unchecked")
-							public V getValue() {
-								return (V) attr.getValue();
-							}
-
-							public V setValue(V value) {
-								throw new UnsupportedOperationException();
-							}
-						});
-				}
-				return result;
-			}
-
-			private Attr search(String key) {
-				int low = 0;
-				int high = props.length - 1;
-
-				while (low <= high) {
-					int mid = (low + high) >>> 1;
-					Attr midVal = props[mid];
-
-					int r = midVal.key.compareTo(key);
-					if (r < 0)
-						low = mid + 1;
-					else if (r > 0)
-						high = mid - 1;
-					else {
-						Attr attr = props[mid];
-						if (attr.directive == this.directive)
-							return attr;
-
-						mid += 1;
-
-						if (mid <= high && props[mid].key.equals(key))
-							return props[mid];
-
-						mid -= 2;
-
-						if (mid >= 0 && props[mid].key.equals(key))
-							return props[mid];
-
-						break;
+					for (Attr attrs : rcdata.properties) {
+						if (attrs.directive)
+							capb.addDirective(attrs.key, (String) attrs.value);
+						else
+							capb.addAttribute(attrs.key, attrs.getValue());
 					}
+					rb.addCapability(capb);
 				}
-				return null;
+				if ( ns.requirements != null)
+				for (RCData rcdata : ns.requirements) {
+
+					CapReqBuilder reqb = new CapReqBuilder(ns.name);
+
+					for (Attr attrs : rcdata.properties) {
+						if (attrs.directive)
+							reqb.addDirective(attrs.key, (String) attrs.value);
+						else
+							reqb.addAttribute(attrs.key, attrs.getValue());
+					}
+					rb.addRequirement(reqb);
+				}
 			}
-		}
 
-		public Map<String,Object> getAttributes() {
-			if (attributes != null)
-				return attributes;
-			return attributes = new PropMap<Object>(false);
+			resource = rb.build();
 		}
-
-		public Map<String,String> getDirectives() {
-			if (directives != null)
-				return directives;
-			return directives = new PropMap<String>(true);
-		}
-
+		return resource;
 	}
 
-	static int getType(Object value) {
+
+	private static int getType(Object value) {
 		if (value == null || value instanceof String)
 			return DataType.STRING.ordinal();
 
@@ -397,8 +230,9 @@ public class PersistentResource implements Resource {
 		return attr;
 	}
 
-	public static RCData getData(Map<String,Object> attributes, Map<String,String> directives) {
+	private static RCData getData(boolean require, Map<String,Object> attributes, Map<String,String> directives) {
 		RCData data = new RCData();
+		data.require = require;
 		List<Attr> props = new ArrayList<Attr>(attributes.size() + directives.size());
 
 		for (Entry<String,Object> entry : attributes.entrySet()) {
@@ -414,4 +248,7 @@ public class PersistentResource implements Resource {
 		return data;
 	}
 
+	public String toString() {
+		return "P-" + getResource();
+	}
 }

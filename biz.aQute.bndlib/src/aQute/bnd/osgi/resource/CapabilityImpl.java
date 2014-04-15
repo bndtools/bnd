@@ -10,5 +10,11 @@ public class CapabilityImpl extends CapReq implements Capability {
 			Map<String,Object> attributes) {
 		super(MODE.Capability, namespace, resource, directives, attributes);
 	}
-
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Provide");
+		super.toString(sb);
+		return sb.toString();
+	}
 }
