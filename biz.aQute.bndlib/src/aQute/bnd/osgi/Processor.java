@@ -419,6 +419,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		addExtensions(plugins);
+		
+		for ( RegistryDonePlugin rdp : getPlugins(RegistryDonePlugin.class)) {
+			try {
+				rdp.done();
+			} catch( Exception e) {
+				error( "Calling done on %s, gives an exception %s", rdp, e );
+			}
+		}
 		return this.plugins;
 	}
 
