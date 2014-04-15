@@ -16,7 +16,7 @@
 	osgi.cmpn;version=4.3.1
 	
 
-Bundle-Version: 0.1.0.${tstamp}_${Git-Descriptor}
+Bundle-Version: 0.1.0.${tstamp}
 
 Export-Package: biz.aQute.resolve,\
 	org.osgi.service.log;-split-package:=first
