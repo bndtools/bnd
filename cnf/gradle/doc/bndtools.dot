@@ -225,7 +225,7 @@ digraph GradleSetup {
     distZipExtras          [shape=box, style=filled, fillcolor=none      , label="distZipExtras"        ]
     dist                   [shape=box, style=filled, fillcolor=cyan      , label="dist"                 ]
 
-    bundle                 -> p2Entry
+    bundle                 -> p2Entry            [color=red   ]
 
     p2Entry                -> p2FeaturesTree
     p2FeaturesTree         -> p2FeatureMain

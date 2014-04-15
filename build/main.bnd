@@ -1,22 +1,8 @@
+# Only extra bundles that are needed for the main feature are mentioned here
 Include-Resource:\
-    ${repo;bndtools.api;latest},\
-    ${repo;bndtools.builder;latest},\
-    ${repo;bndtools.core;latest},\
-    ${repo;bndtools.headless.build.plugin.ant;latest},\
-    ${repo;bndtools.headless.build.plugin.gradle;latest},\
-    ${repo;bndtools.jareditor;latest},\
-    ${repo;bndtools.release;latest},\
-    ${repo;bndtools.repository.base;latest},\
-    ${repo;bndtools.repository.maven;latest},\
-    ${repo;bndtools.versioncontrol.ignores.plugin.git;latest},\
-    ${repo;org.bndtools.embeddedrepo;latest},\
     ${repo;biz.aQute.bndlib;${bndlib-version-base}},\
     ${repo;biz.aQute.repository;${aQute-repository-base}},\
     ${repo;biz.aQute.resolve;${aQute-resolve-base}},\
     ${repo;javax.xml;latest},\
     ${repo;javax.xml.stream;latest}
 Bundle-Version: 1.0.0.${tstamp}
-
-# Missing here:
-# ${repo;bndtools.bndplugins;latest}
-# ${repo;bndtools.utils;latest}             Always used as Conditional-Package

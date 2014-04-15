@@ -290,8 +290,8 @@
 </g>
 <!-- bundle&#45;&gt;p2Entry -->
 <g id="edge40" class="edge"><title>bundle&#45;&gt;p2Entry</title>
-<path fill="none" stroke="black" d="M719.616,-803.308C686.397,-786.699 630.156,-758.578 592.313,-739.657"/>
-<polygon fill="black" stroke="black" points="593.623,-736.399 583.114,-735.057 590.493,-742.66 593.623,-736.399"/>
+<path fill="none" stroke="red" d="M719.616,-803.308C686.397,-786.699 630.156,-758.578 592.313,-739.657"/>
+<polygon fill="red" stroke="red" points="593.623,-736.399 583.114,-735.057 590.493,-742.66 593.623,-736.399"/>
 </g>
 <!-- bundleTest&#45;&gt;check -->
 <g id="edge24" class="edge"><title>bundleTest&#45;&gt;check</title>

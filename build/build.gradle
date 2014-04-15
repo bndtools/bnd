@@ -39,6 +39,29 @@ String getBndProjectProperty(String key, boolean throwOnNotSet) {
 }
 
 /*
+ * Copy the bundle outputs of the specified projects into a directory
+ */
+void copyProjectBundles(List<String> projs, String dstDir) {
+  projs.each {
+    def proj = rootProject.findProject(it)
+    if (proj == null) {
+      throw new GradleException("Could not find project " + it)
+    }
+
+    proj.bnd_project.subBuilders.each { subBuilder ->
+      def targetDir = file(dstDir)
+      if ((!targetDir.exists() && !targetDir.mkdirs()) || !targetDir.isDirectory()) {
+        throw new GradleException("Could not create directory $targetDir")
+      }
+      copy {
+        from project.relativePath(proj.bnd_project.getOutputFile(subBuilder.bsn))
+        into targetDir
+      }
+    }
+  }
+}
+
+/*
  * Generate a p2 repository.
  */
 void generateP2Repository(String title, String antTarget, String metadataRepository, String categoryDefinition) {
@@ -167,21 +190,17 @@ task p2PluginsMain(type: Copy) {
 
   doLast {
     delete("$bnd_targetDir/tmp");
+    copyProjectBundles(p2_main, "$bnd_targetDir/plugins/main")
   }
 }
 
-task p2PluginsExtras(type: Copy) {
-  from    zipTree("$bnd_targetDir/${bnd_project.name}.extras.jar")
-  into    "$bnd_targetDir/plugins/extras"
-  include "*.jar"
-
+task p2PluginsExtras() {
   doLast {
-    delete("$bnd_targetDir/tmp");
+    copyProjectBundles(p2_extras, "$bnd_targetDir/plugins/extras")
   }
 }
 
 task p2Plugins {
-
   doLast {
     delete("$bnd_targetDir/tmp");
   }
@@ -248,7 +267,13 @@ task dist {
 
 release.enabled                      = false
 
-p2Entry.dependsOn                   += [bundle                        ]
+
+/* depend on all bnd projects in the workspace */
+rootProject.subprojects.each {
+  if (it.hasProperty("bnd_project")) {
+    p2Entry.dependsOn += [":" + it.name + ":bundle"]
+  }
+}
 
 p2FeaturesTree.dependsOn            += [p2Entry                       ]
 p2FeatureMain.dependsOn             += [p2FeaturesTree                ]
