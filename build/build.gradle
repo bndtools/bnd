@@ -226,6 +226,8 @@ task p2 {
   doLast {
     generateP2Repository("Main",   "p2Main",   "p2",              "features/main/category.xml")
     generateP2Repository("Extras", "p2Extras", "extras/p2/child", "features/extras/category.xml")
+    delete("$bnd_targetDir/features")
+    delete("$bnd_targetDir/plugins")
   }
 }
 
