@@ -23,7 +23,7 @@ Export-Package: junit.*; version=3.8;-nouses=true,\
 Import-Package: aQute.*;resolution:=optional,*
 Bundle-Activator: aQute.junit.Activator
 Embedded-Activator: aQute.junit.Activator
-Bundle-Version: 1.2.0.${tstamp;yyyyMMdd-HHmmss}
+Bundle-Version: 1.2.0.${tstamp}
 Bundle-Release: Use main thread for testing, optionally allowing old separate thread model
 
 
