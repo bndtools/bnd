@@ -154,7 +154,19 @@ public class Workspace extends Processor {
 
 		setProperties(buildFile, dir);
 		propertiesChanged();
-
+		
+		//
+		// There is a nasty bug/feature in Java that gives errors on our 
+		// SSL use of github. The flag jsse.enableSNIExtension should be set
+		// to false. So here we provide a way to set system properties
+		// as early as possible
+		// 
+		
+		Attrs sysProps = OSGiHeader.parseProperties( getProperty(SYSTEMPROPERTIES));
+		for ( Entry<String,String> e : sysProps.entrySet()) {
+			System.setProperty(e.getKey(), e.getValue());
+		}
+		
 	}
 
 	public Project getProject(String bsn) throws Exception {
@@ -194,7 +206,6 @@ public class Workspace extends Processor {
 
 	@Override
 	public void propertiesChanged() {
-		super.propertiesChanged();
 		File extDir = new File(this.buildDir, "ext");
 		File[] extensions = extDir.listFiles();
 		if (extensions != null) {
@@ -211,6 +222,7 @@ public class Workspace extends Processor {
 				}
 			}
 		}
+		super.propertiesChanged();
 	}
 
 	public String _workspace(@SuppressWarnings("unused")
