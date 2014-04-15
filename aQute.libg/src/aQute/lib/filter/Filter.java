@@ -24,7 +24,7 @@ public class Filter {
 	final static int	GE			= 2;
 	final static int	APPROX		= 3;
 
-	String		filter;
+	String				filter;
 
 	abstract class Query {
 		static final String	GARBAGE		= "Trailing garbage";
@@ -180,11 +180,12 @@ public class Filter {
 			throw new IllegalArgumentException(m + " " + tail);
 		}
 
-		private boolean compare(Object obj, int op, String s) {
+		@SuppressWarnings("unchecked")
+		private <T> boolean compare(T obj, int op, String s) {
 			if (obj == null)
 				return false;
 			try {
-				Class< ? > numClass = obj.getClass();
+				Class< T > numClass = (Class<T>) obj.getClass();
 				if (numClass == String.class) {
 					return compareString((String) obj, op, s);
 				} else if (numClass == Character.class) {
@@ -220,6 +221,14 @@ public class Filter {
 					for (int i = 0; i < len; i++)
 						if (compare(Array.get(obj, i), op, s))
 							return true;
+				} else {
+					Constructor< T > constructor = numClass.getConstructor(String.class);
+					T source = constructor.newInstance(s);
+					if ( op == EQ )
+						return source.equals(obj);
+					Comparable<T> a = Comparable.class.cast(source);
+					Comparable<T> b = Comparable.class.cast(obj);
+						return compareSign(op,a.compareTo((T)b));
 				}
 			}
 			catch (Exception e) {}
@@ -239,7 +248,7 @@ public class Filter {
 			return dict.get(key);
 		}
 	}
-	
+
 	class MapQuery extends Query {
 		private Map< ? , ? >	map;
 
