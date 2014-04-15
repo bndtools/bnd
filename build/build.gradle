@@ -139,10 +139,18 @@ task p2Entry {
  * Setup tasks (p2 features)
  */
 
+ext.gitShaShort = getBndProjectProperty("Git-SHA", true).replaceAll("([0-9a-fA-F]{7}).*", "\$1")
+ext.masterVersion =  String.format("%s.%s-%s-g%s",
+                       getBndProjectProperty("base-version", true),
+                       getBndProjectProperty("base-version-qualifier", true),
+                       new Date().format('yyyyMMdd-HHmmss').toString(),
+                       gitShaShort)
+
+
 task p2FeaturesTree(type: Copy) {
   from    "feature"
   into    "$bnd_targetDir/features"
-  filter(ReplaceTokens, tokens: ["master-version" : getBndProjectProperty("master-version", true) + "-g" + getBndProjectProperty("Git-SHA", true).replaceAll("([0-9a-fA-F]{7}).*", "\$1")])
+  filter(ReplaceTokens, tokens: ["master-version" : masterVersion])
   include "**/category.xml"
   include "**/feature.xml"
 }
