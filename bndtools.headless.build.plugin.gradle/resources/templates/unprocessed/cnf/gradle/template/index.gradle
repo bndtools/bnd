@@ -17,11 +17,33 @@ assert(hasProperty("gradleBuild_indexR5Compressed"   ))
 
 
 /*
+ * Retrieve a property and ensure that it's an instance of FileTree
+ */
+FileTree getFileTreeInstance(String propertyName) {
+  def fileTreeInstance = properties.get(propertyName)
+  if (fileTreeInstance == null) {
+    throw new GradleException("Property \"$propertyName\" not found")
+  }
+  if (!(fileTreeInstance instanceof FileTree)) {
+    throw new GradleException("Property \"$propertyName\" is not an instance of FileTree")
+  }
+
+  return fileTreeInstance
+}
+
+
+/*
  * Create repository indexes
  *
  * Syntax:
  * ext.gradleBuild_indexDirectories = \
- *   "<root directory>;<name>;<bundle directory>;<bundle directory>;..., ..."
+ *   "<root directory>;<name>;<name of fileTree property>, ..."
+ *
+ *  root directory           : mandatory.
+ *  name                     : optional. if not specified then the basename of
+ *                             the root directory is used.
+ *  name of fileTree variable: optional. if not specified then all *.jar files
+ *                             below the root directory will be indexed
  */
 void createIndexes(boolean r5, boolean uncompressed, boolean compressed) {
   assert(hasProperty("gradleBuild_indexDirectories"))
@@ -45,6 +67,10 @@ void createIndexes(boolean r5, boolean uncompressed, boolean compressed) {
   gradleBuild_indexDirectories.trim().split("\\s*,\\s*").each { indexDirectory ->
     def parts              = indexDirectory.trim().split("\\s*;\\s*")
 
+    if (parts.length > 3) {
+        throw new GradleException("Too many parts to the indexing configuration \"$gradleBuild_indexDirectories\"")
+    }
+
     if (parts.length > 1) {
         indexDirectory     = parts[0]
     }
@@ -61,19 +87,11 @@ void createIndexes(boolean r5, boolean uncompressed, boolean compressed) {
       throw new GradleException("Could not create directory $indexDirectory")
     }
 
-    def bundlesToIndex = null
-    if (parts.length < 3) {
-      bundlesToIndex = fileTree(indexDirectoryFile).include("**/*.jar")
+    def bundlesToIndex
+    if (parts.length > 2) {
+      bundlesToIndex = getFileTreeInstance(parts[2])
     } else {
-      def partIndex = 2
-      while (partIndex < parts.length) {
-        if (bundlesToIndex == null) {
-          bundlesToIndex = fileTree(indexDirectoryFile).include("${parts[partIndex]}/**/*.jar")
-        } else {
-          bundlesToIndex.include("${parts[partIndex]}/**/*.jar")
-        }
-        partIndex++
-      }
+      bundlesToIndex = fileTree(indexDirectoryFile).include("**/*.jar")
     }
 
     def uncompressedIndexFile

@@ -1,10 +1,15 @@
 assert(hasProperty("bnd_targetDir"))
 
 
+ext.bnd_buildP2IndexRootMain   = "$bnd_targetDir/p2"
+ext.bnd_buildP2IndexRootExtras = "$bnd_targetDir/extras/p2/child"
+ext.bnd_buildP2IndexTreeMain   = fileTree("$bnd_buildP2IndexRootMain/plugins"  ).include("**/*.jar")
+ext.bnd_buildP2IndexTreeExtras = fileTree("$bnd_buildP2IndexRootExtras/plugins").include("**/*.jar")
+
 /* Index task overrides */
 ext.gradleBuild_indexDirectories      = \
-  "$bnd_targetDir/p2             ;Bndtools       ;plugins," +
-  "$bnd_targetDir/extras/p2/child;Bndtools Extras;plugins"
+  "$bnd_buildP2IndexRootMain  ;Bndtools       ;bnd_buildP2IndexTreeMain," +
+  "$bnd_buildP2IndexRootExtras;Bndtools Extras;bnd_buildP2IndexTreeExtras"
 
 /* Default tasks override */
 defaultTasks "dist"

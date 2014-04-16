@@ -97,7 +97,7 @@ ext.gradleBuild_indexR5Uncompressed            = false
 ext.gradleBuild_indexR5Compressed              = true
 
 /* ext.gradleBuild_indexDirectories = \
- *   "<root directory>;<name>;<bundle directory>;<bundle directory>;..., ..." */
+ *   "<root directory>;<name>;<name of fileTree property>, ..." */
 ext.gradleBuild_indexDirectories               = ""
 ext.gradleBuild_indexDirectoriesProperty       = "gradleBuild_indexDirectories"
 
