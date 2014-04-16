@@ -2,7 +2,7 @@ assert(project != rootProject)
 
 
 distclean.doLast {
-   file("bundles").deleteDir()
+   file("$bnd_distIndexRoot").deleteDir()
 }
 
 task dist {
