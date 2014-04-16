@@ -63,14 +63,14 @@ void createIndexes(boolean r5, boolean uncompressed, boolean compressed) {
 
     def bundlesToIndex = null
     if (parts.length < 3) {
-      bundlesToIndex = fileTree(indexDirectoryFile).include("**/*.jar")
+      bundlesToIndex = fileTree(indexDirectoryFile).include("**/*.jar").exclude("**/*-latest.jar")
     } else {
       def partIndex = 2
       while (partIndex < parts.length) {
         if (bundlesToIndex == null) {
-          bundlesToIndex = fileTree(indexDirectoryFile).include("${parts[partIndex]}/**/*.jar")
+          bundlesToIndex = fileTree(indexDirectoryFile).include("${parts[partIndex]}/**/*.jar").exclude("${parts[partIndex]}/**/*-latest.jar")
         } else {
-          bundlesToIndex.include("${parts[partIndex]}/**/*.jar")
+          bundlesToIndex.include("${parts[partIndex]}/**/*.jar").exclude("${parts[partIndex]}/**/*-latest.jar")
         }
         partIndex++
       }
