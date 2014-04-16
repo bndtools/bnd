@@ -36,13 +36,13 @@ apply plugin: "findbugs"
 
 
 findbugs {
-  reportsDir     = file("$bnd_targetDir/$gradleBuild_findbugsReportsDir")
-  includeFilter  = file(gradleBuild_findbugsIncludesFile                )
-  excludeFilter  = file(gradleBuild_findbugsExcludesFile                )
-  effort         =      gradleBuild_findbugsEffort
-  ignoreFailures =      gradleBuild_findbugsIgnoreFailures
-  reportLevel    =      gradleBuild_findbugsReportLevel
-  toolVersion    =      gradleBuild_findbugsToolVersion
+  reporting.baseDir = file("$bnd_targetDir/$gradleBuild_findbugsReportsDir")
+  includeFilter     = file(gradleBuild_findbugsIncludesFile                )
+  excludeFilter     = file(gradleBuild_findbugsExcludesFile                )
+  effort            =      gradleBuild_findbugsEffort
+  ignoreFailures    =      gradleBuild_findbugsIgnoreFailures
+  reportLevel       =      gradleBuild_findbugsReportLevel
+  toolVersion       =      gradleBuild_findbugsToolVersion
 }
 
 findbugsMain {
