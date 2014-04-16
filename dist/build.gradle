@@ -18,4 +18,18 @@ rootProject.subprojects.each {
   }
 }
 
+void removeLatestBundles() {
+  fileTree("bundles").include("**/*-latest.jar").each {
+    delete(it)
+  }
+}
+
+indexOBR.doFirst {
+  removeLatestBundles()
+}
+indexR5.doFirst {
+  removeLatestBundles()
+}
+
+
 dist.dependsOn += [index]
