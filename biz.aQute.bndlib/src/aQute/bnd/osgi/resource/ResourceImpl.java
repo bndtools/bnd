@@ -28,7 +28,13 @@ class ResourceImpl implements Resource {
 	}
 
 	public List<Capability> getCapabilities(String namespace) {
-		return namespace == null ? allCapabilities : capabilityMap.get(namespace);
+		List<Capability> caps = allCapabilities;
+		if ( namespace != null)
+			caps = capabilityMap.get(namespace);
+		if ( caps == null || caps.isEmpty())
+			return Collections.emptyList();
+		
+		return Collections.unmodifiableList(caps);
 	}
 
 	void setRequirements(List<Requirement> requirements) {
@@ -46,7 +52,13 @@ class ResourceImpl implements Resource {
 	}
 
 	public List<Requirement> getRequirements(String namespace) {
-		return namespace == null ? allRequirements : requirementMap.get(namespace);
+		List<Requirement> reqs = allRequirements;
+		if ( namespace != null)
+			reqs = requirementMap.get(namespace);
+		if ( reqs == null || reqs.isEmpty())
+			return Collections.emptyList();
+		
+		return Collections.unmodifiableList(reqs);
 	}
 
 	@Override
@@ -58,7 +70,7 @@ class ResourceImpl implements Resource {
 			Object id = idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
 			Object version = idCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 			
-			builder.append(id).append(" ver=").append(version);
+			builder.append(id).append(" version=").append(version);
 		} else {
 			// Generic toString
 			builder.append("ResourceImpl [caps=");
