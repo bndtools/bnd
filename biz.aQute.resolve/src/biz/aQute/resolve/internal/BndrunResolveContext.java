@@ -170,26 +170,10 @@ public class BndrunResolveContext extends ResolveContext {
 	}
 
 	private void findFramework() {
-		String header = runModel.getRunFw();
-		if (header == null)
+		Requirement frameworkReq = getFrameworkRequirement();
+		if ( frameworkReq == null)
 			return;
-
-		// Get the identity and version of the requested JAR
-		Parameters params = new Parameters(header);
-		if (params.size() > 1)
-			throw new IllegalArgumentException("Cannot specify more than one OSGi Framework.");
-		Entry<String,Attrs> entry = params.entrySet().iterator().next();
-		String identity = entry.getKey();
-
-		String versionStr = entry.getValue().get("version");
-
-		// Construct a filter & requirement to find matches
-		Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, identity);
-		if (versionStr != null)
-			filter = new AndFilter().addChild(filter).addChild(new LiteralFilter(Filters.fromVersionRange(versionStr)));
-		Requirement frameworkReq = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(
-				Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
-
+		
 		// Iterate over repos looking for matches
 		for (Repository repo : repos) {
 			Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections
@@ -213,6 +197,29 @@ public class BndrunResolveContext extends ResolveContext {
 				}
 			}
 		}
+	}
+
+	private Requirement getFrameworkRequirement() {
+		String header = runModel.getRunFw();
+		if (header == null)
+			return null;
+
+		// Get the identity and version of the requested JAR
+		Parameters params = new Parameters(header);
+		if (params.size() > 1)
+			throw new IllegalArgumentException("Cannot specify more than one OSGi Framework.");
+		Entry<String,Attrs> entry = params.entrySet().iterator().next();
+		String identity = entry.getKey();
+
+		String versionStr = entry.getValue().getVersion();
+
+		// Construct a filter & requirement to find matches
+		Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, identity);
+		if (versionStr != null)
+			filter = new AndFilter().addChild(filter).addChild(new LiteralFilter(Filters.fromVersionRange(versionStr)));
+		Requirement frameworkReq = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(
+				Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
+		return frameworkReq;
 	}
 
 	private void constructInputRequirements() {
@@ -685,6 +692,26 @@ public class BndrunResolveContext extends ResolveContext {
 			// 8. The resource with most capabilities
 			return res2.getCapabilities(null).size() - res1.getCapabilities(null).size();
 		}
+	}
+
+	public void checkInitial() throws ResolutionException {
+		List<Requirement> requires = new ArrayList<Requirement>(runModel.getRunRequires());
+		
+		Requirement frameworkReq = getFrameworkRequirement();
+		if ( frameworkReq != null)
+			requires.add(frameworkReq);
+		
+		
+		for ( Iterator<Requirement> it = requires.iterator(); it.hasNext();) {
+			Requirement requirement = it.next();
+			List<Capability> providers = findProviders(requirement);
+			if ( providers == null || providers.isEmpty())
+				it.remove();
+		}
+		if ( requires.isEmpty())
+			return;
+		
+		throw new ResolutionException("Initial requirements are missing",null,requires);
 	}
 
 }
