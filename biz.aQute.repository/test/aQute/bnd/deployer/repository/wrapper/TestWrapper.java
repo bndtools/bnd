@@ -1,4 +1,4 @@
-package aQute.bnd.deployer.repsitory.wrapper;
+package aQute.bnd.deployer.repository.wrapper;
 
 import java.io.*;
 import java.util.*;
@@ -7,7 +7,6 @@ import junit.framework.*;
 
 import org.osgi.resource.*;
 
-import aQute.bnd.deployer.repository.wrapper.*;
 import aQute.bnd.osgi.resource.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
