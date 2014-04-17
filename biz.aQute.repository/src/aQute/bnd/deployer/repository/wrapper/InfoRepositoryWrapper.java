@@ -35,10 +35,10 @@ public class InfoRepositoryWrapper implements Repository {
 	}
 
 	boolean init() {
-		if (inited)
-			return false;
-
-		inited = true;
+//		if (inited)
+//			return false;
+//
+//		inited = true;
 
 		Set<String> errors = new LinkedHashSet<String>();
 

@@ -30,7 +30,7 @@ Bnd-Plugins:
 	aQute.bnd.deployer.deployer.obr.LocalOBR,\
 	aQute.bnd.deployer.deployer.http.HttpBasicAuthURLConnector
 
-Export-Package:\
+Export-Package: \
 	aQute.bnd.service.progress,\
 	aQute.bnd.deployer.http,\
 	aQute.bnd.deployer.obr,\
@@ -40,7 +40,8 @@ Export-Package:\
 	org.osgi.service.indexer;provide:=true,\
 	org.osgi.service.bindex;version=1.0;provide:=true,\
 	org.osgi.service.coordinator;-split-package:=merge-first,\
-	org.osgi.service.log;provide:=true;-split-package:=merge-first
+	org.osgi.service.log;provide:=true;-split-package:=merge-first,\
+	aQute.bnd.deployer.repository.wrapper
 
 bindex-pkgs: \
 	org.osgi.service.obr,\
@@ -71,8 +72,7 @@ libg-pkgs: \
 Private-Package: \
 	${bindex-pkgs},\
 	${repoindex-pkgs},\
-	org.osgi.framework;-split-package:=first,\
-	aQute.bnd.deployer.repository.wrapper
+	org.osgi.framework;-split-package:=first
 Conditional-Package:\
 	aQute.lib.*;-split-package:=first,\
 	aQute.libg.*;-split-package:=first
