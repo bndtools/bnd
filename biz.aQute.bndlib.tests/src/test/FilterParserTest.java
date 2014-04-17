@@ -5,7 +5,6 @@ import java.io.*;
 import junit.framework.*;
 import aQute.bnd.osgi.resource.*;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
-import org.osgi.resource.Requirement;
 
 public class FilterParserTest extends TestCase {
 	FilterParser fp = new FilterParser();

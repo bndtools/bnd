@@ -1,7 +1,5 @@
 package aQute.bnd.indexer.analyzers;
 
-import java.util.*;
-
 import javax.xml.parsers.*;
 
 import org.osgi.resource.*;

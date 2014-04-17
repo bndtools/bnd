@@ -2,7 +2,6 @@ package aQute.bnd.deployer.repository.aether;
 
 import java.io.PrintStream;
 
-import org.eclipse.aether.AbstractRepositoryListener;
 import org.eclipse.aether.RepositoryEvent;
 import org.eclipse.aether.RepositoryListener;
 

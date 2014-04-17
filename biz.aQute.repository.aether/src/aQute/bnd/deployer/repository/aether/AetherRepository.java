@@ -72,7 +72,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 
 	private static final String	META_OBR	= ".meta/obr.xml";
 
-	private Reporter reporter;
+	Reporter reporter;
 	private Registry registry;
 	
 	// Config Properties

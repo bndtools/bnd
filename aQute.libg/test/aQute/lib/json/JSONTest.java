@@ -26,7 +26,7 @@ public class JSONTest extends TestCase {
 		ParameterizedType list = (ParameterizedType) Base.class.getGenericInterfaces()[0];
 		System.out.println(	list );
 		
-		TypeVariable<?> tv = (TypeVariable) list.getActualTypeArguments()[0];
+		TypeVariable<?> tv = (TypeVariable<?>) list.getActualTypeArguments()[0];
 		System.out.println(	tv.getGenericDeclaration().getTypeParameters()[0] == tv );
 		System.out.println(	type.getRawType());
 	}

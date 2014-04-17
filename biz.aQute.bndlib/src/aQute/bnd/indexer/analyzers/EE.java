@@ -48,9 +48,9 @@ public class EE {
 		return ee;
 	}
 
-	private static class Segment {
-		private String name;
-		private String version;
+	static class Segment {
+		String name;
+		String version;
 	}
 
 	private static Segment versionSplit(String input) {

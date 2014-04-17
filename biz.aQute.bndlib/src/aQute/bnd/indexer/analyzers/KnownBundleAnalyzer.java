@@ -1,10 +1,8 @@
 package aQute.bnd.indexer.analyzers;
 
 import java.io.*;
-import java.util.*;
 import java.util.Map.Entry;
-
-import org.osgi.resource.*;
+import java.util.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.indexer.*;
