@@ -5,13 +5,22 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
 
+import org.osgi.resource.*;
+
 import aQute.bnd.version.*;
+import aQute.lib.strings.*;
 
 public class FilterParser {
 	final Map<String,Expression>	cache	= new HashMap<String,FilterParser.Expression>();
 
 	enum Op {
-		GREATER, GREATER_OR_EQUAL, LESS, LESS_OR_EQUAL, EQUAL, NOT_EQUAL, RANGE;
+		GREATER(">"), GREATER_OR_EQUAL(">="), LESS("<"), LESS_OR_EQUAL("<="), EQUAL("=="), NOT_EQUAL("!="), RANGE("..");
+
+		private String	symbol;
+
+		Op(String s) {
+			this.symbol = s;
+		}
 
 		public Op not() {
 			switch (this) {
@@ -31,6 +40,10 @@ public class FilterParser {
 				default :
 					return null;
 			}
+		}
+
+		public String toString() {
+			return symbol;
 		}
 	}
 
@@ -82,9 +95,13 @@ public class FilterParser {
 			toString(sb);
 			return sb.toString();
 		}
+
+		public String query() {
+			return null;
+		}
 	}
 
-	static class RangeExpression extends SimpleExpression {
+	public static class RangeExpression extends SimpleExpression {
 		final SimpleExpression	low;
 		final SimpleExpression	high;
 
@@ -124,15 +141,23 @@ public class FilterParser {
 		}
 
 		public void toString(StringBuilder sb) {
+			sb.append(key).append("=");
 			if (low != null) {
-				if (low.op == Op.GREATER)
-					sb.append("(");
-				else
-					sb.append("[");
-				sb.append(low.value);
+				if (high == null)
+					sb.append(low.value);
+				else {
+					if (low.op == Op.GREATER)
+						sb.append("(");
+					else
+						sb.append("[");
+					sb.append(low.value);
+				}
 			}
-			sb.append(",");
 			if (high != null) {
+				sb.append(",");
+				if (low == null) {
+					sb.append("[0.0.0,");
+				}
 				sb.append(high.value);
 				if (high.op == Op.LESS)
 					sb.append(")");
@@ -243,7 +268,7 @@ public class FilterParser {
 					return new HostExpression(value);
 				else if ("osgi.wiring.package".equals(key))
 					return new PackageExpression(value);
-				else if ("osgi.wiring.identity".equals(key))
+				else if ("osgi.identity".equals(key))
 					return new IdentityExpression(value);
 			}
 			return new SimpleExpression(key, op, value);
@@ -261,9 +286,15 @@ public class FilterParser {
 		public void toString(StringBuilder sb) {
 			sb.append(key).append(op.toString()).append(value);
 		}
+
+		@Override
+		public String query() {
+			return value;
+		}
+
 	}
 
-	abstract static class WithRangeExpression extends Expression {
+	public abstract static class WithRangeExpression extends Expression {
 		RangeExpression	range;
 
 		public boolean eval(Map<String,Object> map) {
@@ -275,12 +306,12 @@ public class FilterParser {
 			if (range == null)
 				return;
 
-			sb.append(";");
+			sb.append("; ");
 			range.toString(sb);
 		}
 	}
 
-	static class PackageExpression extends WithRangeExpression {
+	public static class PackageExpression extends WithRangeExpression {
 		final String	packageName;
 
 		public PackageExpression(String value) {
@@ -298,13 +329,20 @@ public class FilterParser {
 
 		@Override
 		void toString(StringBuilder sb) {
-			sb.append("[I-P:").append(packageName);
+			sb.append(packageName);
 			super.toString(sb);
-			sb.append("]");
+		}
+
+		public String getPackageName() {
+			return packageName;
+		}
+
+		public String query() {
+			return "p:" + packageName;
 		}
 	}
 
-	static class HostExpression extends WithRangeExpression {
+	public static class HostExpression extends WithRangeExpression {
 		final String	hostName;
 
 		public HostExpression(String value) {
@@ -322,13 +360,20 @@ public class FilterParser {
 
 		@Override
 		void toString(StringBuilder sb) {
-			sb.append("[F-H:").append(hostName);
+			sb.append(hostName);
 			super.toString(sb);
-			sb.append("]");
+		}
+
+		public String getHostName() {
+			return hostName;
+		}
+
+		public String query() {
+			return "bsn:" + hostName;
 		}
 	}
 
-	static class BundleExpression extends WithRangeExpression {
+	public static class BundleExpression extends WithRangeExpression {
 		final String	bundleName;
 
 		public BundleExpression(String value) {
@@ -346,13 +391,17 @@ public class FilterParser {
 
 		@Override
 		void toString(StringBuilder sb) {
-			sb.append("[R-B:").append(bundleName);
+			sb.append(bundleName);
 			super.toString(sb);
-			sb.append("]");
 		}
+
+		public String query() {
+			return "bsn:" + bundleName;
+		}
+
 	}
 
-	static class IdentityExpression extends Expression {
+	public static class IdentityExpression extends WithRangeExpression {
 		final String	identity;
 
 		public IdentityExpression(String value) {
@@ -370,12 +419,20 @@ public class FilterParser {
 
 		@Override
 		void toString(StringBuilder sb) {
-			sb.append("[ID:").append(identity);
-			sb.append("]");
+			sb.append(identity);
+			super.toString(sb);
+		}
+
+		public String getSymbolicName() {
+			return identity;
+		}
+
+		public String query() {
+			return "bsn:" + identity;
 		}
 	}
 
-	static abstract class SubExpression extends Expression {
+	public static abstract class SubExpression extends Expression {
 		Expression[]	expressions;
 
 		void toString(StringBuilder sb) {
@@ -385,9 +442,33 @@ public class FilterParser {
 				sb.append(")");
 			}
 		}
+
+		public Expression[] getExpressions() {
+			return expressions;
+		}
+
+		@Override
+		public String query() {
+			if (expressions == null || expressions.length == 0)
+				return null;
+
+			if (expressions[0] instanceof WithRangeExpression) {
+				return expressions[0].query();
+			}
+
+			List<String> words = new ArrayList<String>();
+			for (Expression e : expressions) {
+				String query = e.query();
+				if (query != null)
+					words.add(query);
+			}
+			
+			return Strings.join(" ", words);
+		}
+
 	}
 
-	static class And extends SubExpression {
+	public static class And extends SubExpression {
 		private And(List<Expression> exprs) {
 			this.expressions = exprs.toArray(new Expression[exprs.size()]);
 		}
@@ -458,9 +539,22 @@ public class FilterParser {
 
 		@Override
 		public void toString(StringBuilder sb) {
-			sb.append("&");
-			super.toString(sb);
+			if (expressions != null && expressions.length > 0) {
+				if (expressions[0] instanceof WithRangeExpression) {
+					sb.append(expressions[0]);
+
+					for (int i = 1; i < expressions.length; i++) {
+						sb.append("; ");
+						expressions[i].toString(sb);
+					}
+
+				}
+			} else {
+				sb.append("&");
+				super.toString(sb);
+			}
 		}
+
 	}
 
 	static class Or extends SubExpression {
@@ -496,12 +590,12 @@ public class FilterParser {
 
 		@Override
 		public void toString(StringBuilder sb) {
-			sb.append("&");
+			sb.append("|");
 			super.toString(sb);
 		}
 	}
 
-	static class Not extends Expression {
+	public static class Not extends Expression {
 		Expression	expr;
 
 		private Not(Expression expr) {
@@ -538,7 +632,7 @@ public class FilterParser {
 		}
 	}
 
-	static class PatternExpression extends SimpleExpression {
+	public static class PatternExpression extends SimpleExpression {
 		final Pattern	pattern;
 
 		public PatternExpression(String key, String value) {
@@ -557,7 +651,7 @@ public class FilterParser {
 
 	}
 
-	static class ApproximateExpression extends SimpleExpression {
+	public static class ApproximateExpression extends SimpleExpression {
 		public ApproximateExpression(String key, String value) {
 			super(key, Op.EQUAL, value);
 		}
@@ -650,6 +744,22 @@ public class FilterParser {
 		return parse(rover);
 	}
 
+	public Expression parse(Requirement req) throws IOException {
+		String f = req.getDirectives().get("filter");
+		if ( f == null)
+			return new Expression(){
+
+				@Override
+				public boolean eval(Map<String,Object> map) {
+					return false;
+				}
+
+				@Override
+				void toString(StringBuilder sb) {
+				}};
+			
+		return parse(f);		
+	}
 	public Expression parse(Rover rover) throws IOException {
 		String s = rover.findExpr();
 		Expression e = cache.get(s);
@@ -725,4 +835,35 @@ public class FilterParser {
 		return exprs;
 	}
 
+	public static String toString(Requirement r) {
+		try {
+			StringBuilder sb = new StringBuilder();
+			String namespace = r.getNamespace();
+			if ("osgi.wiring.package".equals(namespace)) {
+				sb.append("Import-Package");
+			} else if ("osgi.wiring.bundle".equals(namespace)) {
+				sb.append("Require-Bundle");
+			} else if ("osgi.wiring.host".equals(namespace)) {
+				sb.append("Fragment-Host");
+			} else if ("osgi.identity".equals(namespace)) {
+				sb.append("");
+			} else if ("osgi.content".equals(namespace)) {
+				sb.append("Content");
+			} else
+				sb.append(namespace);
+
+			FilterParser fp = new FilterParser();
+			String filter = r.getDirectives().get("filter");
+			if (filter == null)
+				sb.append("<no filter>");
+			else {
+				Expression parse = fp.parse(filter);
+				sb.append(parse);
+			}
+			return sb.toString();
+		}
+		catch (Exception e) {
+			return e.toString();
+		}
+	}
 }
