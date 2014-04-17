@@ -5,7 +5,6 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
 import org.eclipse.core.runtime.IStatus;
@@ -96,6 +95,10 @@ public class ResolutionFailurePanel {
         return composite;
     }
 
+    //
+    // TODO pkr: To Neil. I think this is where we need to change
+    //
+
     public void setInput(ResolutionResult resolutionResult) {
         if (composite == null)
             throw new IllegalStateException("Control not created");
@@ -105,9 +108,25 @@ public class ResolutionFailurePanel {
         ResolutionException resolutionException = resolutionResult.getResolutionException();
         Collection<Requirement> unresolved = resolutionException != null ? resolutionException.getUnresolvedRequirements() : Collections.<Requirement> emptyList();
 
-        unresolvedViewer.setInput(unresolved);
-        processingErrorsText.setText(formatFailureStatus(resolutionResult.getStatus()));
+        if (resolutionException != null && resolutionException.getUnresolvedRequirements() != null && !resolutionException.getUnresolvedRequirements().isEmpty())
+            //
+            // In this case I think we need to close the upper sash (right name?) with the exception
+            // and only show the bottom one (the resolution result. The previous exception trace was
+            // kind of silly
+            //
+            processingErrorsText.setText("Unresolved");
+        else {
+            processingErrorsText.setText(formatFailureStatus(resolutionResult.getStatus()));
+        }
 
+        //
+        // This might be a bit more fundamental. First, 
+        // the URL to search on JPM can be found on {@link RequirementLabelProvider.java#requirementToUrl(Requirement)}.
+        // However, we have an alternative option. The JPM Repo implements SearchableRepository which
+        // has a findRequirement(Requirement,boolean) method. This would allow us to click on a requirement
+        // and show a list of resources as a consequence, and allow people to add it to the repository.
+        //
+        unresolvedViewer.setInput(unresolved);
         unresolvedViewer.expandToLevel(2);
     }
 

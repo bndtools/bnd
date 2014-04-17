@@ -12,17 +12,18 @@ public class RequirementWithResourceLabelProvider extends RequirementLabelProvid
 
     @Override
     public StyledString getLabel(Requirement requirement) {
-        StyledString label = super.getLabel(requirement);
 
-        if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
-            label.append(" OPTIONALLY", StyledString.QUALIFIER_STYLER);
-        label.append(" REQUIRED BY ", StyledString.QUALIFIER_STYLER);
+        StyledString label = new StyledString();
 
         Resource resource = requirement.getResource();
-        if (resource != null)
+        if (!(resource == null || resource.getCapabilities("osgi.content").isEmpty()))
             appendResourceLabel(label, resource);
-        else
-            label.append(" INITIAL");
+
+        if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
+            label.append(" optionally", StyledString.QUALIFIER_STYLER);
+        label.append(" requires ", StyledString.QUALIFIER_STYLER);
+
+        super.getLabel(label, requirement);
 
         return label;
     }

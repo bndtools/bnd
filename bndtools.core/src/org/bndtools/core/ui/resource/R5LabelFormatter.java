@@ -1,14 +1,8 @@
 package org.bndtools.core.ui.resource;
 
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.jface.viewers.StyledString.Styler;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
@@ -24,11 +18,11 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
 
+import aQute.bnd.osgi.resource.FilterParser;
 import bndtools.UIConstants;
 
 public class R5LabelFormatter {
-
-    private static final ConcurrentMap<String,Pattern> FILTER_PATTERNS = new ConcurrentHashMap<String,Pattern>();
+    static FilterParser filterParser = new FilterParser();
 
     public static String getVersionAttributeName(String ns) {
         String r;
@@ -133,39 +127,12 @@ public class R5LabelFormatter {
         if (filter == null) {
             // not a proper requirement... maybe a substitution?
             label.append("[parse error]", StyledString.QUALIFIER_STYLER);
-        } else {
-            label.append(filter, StyledString.QUALIFIER_STYLER);
-            String namespace = requirement.getNamespace();
-            if (namespace != null) {
-                applyPattern(getFilterPattern(namespace), UIConstants.BOLD_STYLER, label);
-
-                String versionAttrib = ResourceUtils.getVersionAttributeForNamespace(namespace);
-                if (versionAttrib != null)
-                    applyPattern(getFilterPattern(versionAttrib), UIConstants.BOLD_COUNTER_STYLER, label);
+        } else
+            try {
+                String s = FilterParser.toString(requirement);
+                label.append(s, UIConstants.BOLD_STYLER);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        }
     }
-
-    private static Pattern getFilterPattern(String name) {
-        Pattern pattern = FILTER_PATTERNS.get(name);
-        if (pattern == null) {
-            pattern = Pattern.compile("\\(" + name + "[<>]?=([^\\)]*)\\)");
-            Pattern existing = FILTER_PATTERNS.putIfAbsent(name, pattern);
-            if (existing != null)
-                pattern = existing;
-        }
-        return pattern;
-    }
-
-    private static void applyPattern(Pattern pattern, Styler styler, StyledString label) {
-        if (pattern == null)
-            return;
-        Matcher matcher = pattern.matcher(label.getString());
-        while (matcher.find()) {
-            int begin = matcher.start(1);
-            int end = matcher.end(1);
-            label.setStyle(begin, end - begin, styler);
-        }
-    }
-
 }

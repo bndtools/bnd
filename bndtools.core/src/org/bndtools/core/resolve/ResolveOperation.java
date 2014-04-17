@@ -95,7 +95,7 @@ public class ResolveOperation implements IRunnableWithProgress {
                 coordination.fail(e);
         } catch (ResolutionException e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, e.getLocalizedMessage(), e));
-            result = new ResolutionResult(Outcome.Unresolved, null, null, status, logger.getLog());
+            result = new ResolutionResult(Outcome.Unresolved, null, e, status, logger.getLog());
 
             if (coordination != null)
                 coordination.fail(e);
