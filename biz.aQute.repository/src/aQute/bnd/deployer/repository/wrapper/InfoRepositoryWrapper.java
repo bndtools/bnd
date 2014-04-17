@@ -26,19 +26,19 @@ public class InfoRepositoryWrapper implements Repository {
 	final RepoIndex							repoIndexer;
 	final PersistentMap<PersistentResource>	persistent;
 
-	private boolean							inited;
+	// private boolean inited;
 
-	public InfoRepositoryWrapper(InfoRepository repo, PersistentMap<PersistentResource> pmap) throws IOException {
+	InfoRepositoryWrapper(InfoRepository repo, PersistentMap<PersistentResource> pmap) throws IOException {
 		this.repoIndexer = new RepoIndex();
 		this.repo = repo;
 		this.persistent = pmap;
 	}
 
 	boolean init() {
-//		if (inited)
-//			return false;
-//
-//		inited = true;
+		// if (inited)
+		// return false;
+		//
+		// inited = true;
 
 		Set<String> errors = new LinkedHashSet<String>();
 
@@ -140,7 +140,7 @@ public class InfoRepositoryWrapper implements Repository {
 	 * @param result2
 	 */
 
-	public void findProviders(MultiMap<Requirement,Capability> result, Collection< ? extends Requirement> requirements) {
+	public void findProviders(Map<Requirement,List<Capability>> result, Collection< ? extends Requirement> requirements) {
 		init();
 
 		nextReq: for (Requirement req : requirements) {
@@ -155,8 +155,12 @@ public class InfoRepositoryWrapper implements Repository {
 				List<Capability> provided = resource.getCapabilities(req.getNamespace());
 				if (provided != null)
 					for (Capability cap : provided) {
-						if (filter.matchMap(cap.getAttributes()))
-							result.add(req, cap);
+						if (filter.matchMap(cap.getAttributes())) {
+							List<Capability> l = result.get(req);
+							if (l == null)
+								result.put(req, l = new ArrayList<Capability>());
+							l.add(cap);
+						}
 					}
 			}
 		}
