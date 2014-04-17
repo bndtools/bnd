@@ -29,11 +29,15 @@ public class ResourceIndexerTracker extends ServiceTracker implements ResourceIn
         indexer.indexFragment(files, out, config);
     }
 
+    public IndexResult indexFile(File file) throws Exception {
+        ResourceIndexer indexer = doGetIndexer();
+        return indexer.indexFile(file);
+    }
+
     private ResourceIndexer doGetIndexer() throws InterruptedException {
         ResourceIndexer indexer = (ResourceIndexer) waitForService(timeout);
         if (indexer == null)
             throw new IllegalStateException("Resource indexer service not available.");
         return indexer;
     }
-
 }
