@@ -187,10 +187,11 @@ public class Index {
 		}
 
 		if (commandLineOptions.fileList.isEmpty()) {
-			return null;
-		}
-		for (File file : commandLineOptions.fileList) {
-			fileList.add(new File(file.toURI().normalize().getPath()));
+			fileList.clear();
+		} else {
+			for (File file : commandLineOptions.fileList) {
+				fileList.add(new File(file.toURI().normalize().getPath()));
+			}
 		}
 
 		if (knownBundleAnalyzer == null)
