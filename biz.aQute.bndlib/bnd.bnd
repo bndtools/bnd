@@ -18,7 +18,8 @@ Private-Package: 				\
 	aQute.libg.*;-split-package:=first, \
 	org.osgi.service.component.annotations
 
-Export-Package: aQute.bnd.annotation.*,\
+Export-Package: \
+	aQute.bnd.annotation.*,\
 	aQute.bnd.osgi,\
 	aQute.bnd.osgi.resource,\
 	aQute.bnd.build,\
@@ -35,7 +36,8 @@ Export-Package: aQute.bnd.annotation.*,\
 	aQute.bnd.build.model.clauses,\
 	aQute.service.reporter,\
 	aQute.bnd.maven.support,\
-	aQute.bnd.url
+	aQute.bnd.url,\
+	aQute.bnd.util.dto
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 Include-Resource: 				LICENSE, img/=img/, {readme.md}
