@@ -5,7 +5,6 @@
 #
 
 -buildpath: osgi.core;version=4.3.1,\
-	org.osgi.impl.bundle.repoindex.lib;version=2.1.0, \
 	osgi.r5;version=1.0.1,\
 	junit.osgi,\
 	biz.aQute.bndlib;version=snapshot,\
