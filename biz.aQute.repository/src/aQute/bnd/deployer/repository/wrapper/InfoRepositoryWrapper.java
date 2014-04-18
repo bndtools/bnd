@@ -35,10 +35,6 @@ public class InfoRepositoryWrapper implements Repository {
 	}
 
 	boolean init() {
-		// if (inited)
-		// return false;
-		//
-		// inited = true;
 
 		Set<String> errors = new LinkedHashSet<String>();
 
@@ -75,7 +71,6 @@ public class InfoRepositoryWrapper implements Repository {
 
 					@Override
 					public void success(File file) throws Exception {
-						System.out.println("Found file " + file + " " + id);
 						try {
 							IndexResult index = repoIndexer.indexFile(file);
 
@@ -114,7 +109,6 @@ public class InfoRepositoryWrapper implements Repository {
 			}
 
 			for (Entry<String,DownloadBlocker> entry : blockers.entrySet()) {
-				System.out.println("Waiting " + entry.getKey());
 				String key = entry.getKey();
 				DownloadBlocker blocker = entry.getValue();
 
@@ -191,7 +185,7 @@ public class InfoRepositoryWrapper implements Repository {
 	}
 
 	public String toString() {
-		return repo.getName();
+		return "InfoRepositoryWrapper[" + repo.getName() + "]";
 	}
 
 }

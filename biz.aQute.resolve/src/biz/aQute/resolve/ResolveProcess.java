@@ -31,7 +31,7 @@ public class ResolveProcess {
         BndrunResolveContext rc = new BndrunResolveContext(inputModel, plugins, log);
         rc.addCallbacks(callbacks);
 
-        rc.checkInitial();
+      //  rc.checkInitial();
         
         Map<Resource,List<Wire>> wirings = resolver.resolve(rc);
         Map<Resource,List<Wire>> result = invertWirings(wirings);

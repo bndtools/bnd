@@ -26,6 +26,7 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 
 	interface Config {
 		String location();
+
 		boolean reindex();
 	}
 
@@ -42,7 +43,7 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 		}
 
 		pmap = new PersistentMap<PersistentResource>(file, PersistentResource.class);
-		if ( config.reindex())
+		if (config.reindex())
 			pmap.clear();
 	}
 
@@ -56,6 +57,8 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 		}
 	}
 
+	FilterParser	fp	= new FilterParser();
+
 	@SuppressWarnings({
 			"unchecked", "rawtypes"
 	})
@@ -65,6 +68,10 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 			wrapper.findProviders(result, requirements);
 		}
 		return (Map) result;
+	}
+
+	public String toString() {
+		return "OSGi Repository Wrapper for " + wrappers;
 	}
 
 }
