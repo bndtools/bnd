@@ -12,17 +12,16 @@ import aQute.bnd.service.repository.*;
 import aQute.lib.collections.*;
 import aQute.lib.converter.*;
 import aQute.lib.io.*;
-import aQute.lib.persistentmap.*;
 import aQute.libg.reporter.*;
 import aQute.service.reporter.*;
 
 public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, RegistryDonePlugin, Repository {
 
 	private Registry							registry;
-	private final List<InfoRepositoryWrapper>	wrappers	= new ArrayList<InfoRepositoryWrapper>();
-	private PersistentMap<PersistentResource>	pmap;
 	private Config								config;
 	private Reporter							reporter	= new ReporterAdapter();
+	private File	dir;
+	private InfoRepositoryWrapper	wrapper;
 
 	interface Config {
 		String location();
@@ -41,10 +40,7 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 		if (!file.isDirectory()) {
 			reporter.error("Repository Wrapper: cannot create cache: %s", file);
 		}
-
-		pmap = new PersistentMap<PersistentResource>(file, PersistentResource.class);
-		if (config.reindex())
-			pmap.clear();
+		this.dir = file;
 	}
 
 	public void setReporter(Reporter reporter) {
@@ -52,9 +48,11 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 	}
 
 	public void done() throws IOException {
+		List<InfoRepository> irs = new ArrayList<InfoRepository>();
 		for (InfoRepository ir : registry.getPlugins(InfoRepository.class)) {
-			wrappers.add(new InfoRepositoryWrapper(ir, pmap));
+			irs.add(ir);
 		}
+		this.wrapper = new InfoRepositoryWrapper(dir, irs);
 	}
 
 	FilterParser	fp	= new FilterParser();
@@ -64,14 +62,12 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 	})
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
 		MultiMap<Requirement,Capability> result = new MultiMap<Requirement,Capability>();
-		for (InfoRepositoryWrapper wrapper : wrappers) {
-			wrapper.findProviders(result, requirements);
-		}
+		wrapper.findProviders(result, requirements);
 		return (Map) result;
 	}
 
 	public String toString() {
-		return "OSGi Repository Wrapper for " + wrappers;
+		return wrapper != null ? wrapper.toString() : "<wrapper not set>";
 	}
 
 }
