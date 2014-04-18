@@ -971,7 +971,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			return rd;
 		}
 		finally {
-			if (jar == null)
+			if (tmpjar != null)
 				tmpjar.close();
 		}
 	}
