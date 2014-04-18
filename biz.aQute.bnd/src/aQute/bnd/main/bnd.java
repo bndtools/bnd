@@ -2535,6 +2535,28 @@ public class bnd extends Processor {
 		return null;
 	}
 
+	public Workspace getWorkspace(String where) throws Exception {
+		Project p = getProject(where);
+		if ( p != null)
+			return p.getWorkspace();
+
+		File dir ;
+		if ( where != null) {
+			dir = getFile(where);
+		} else 
+			dir = getBase();
+		
+
+		if ( !dir.isDirectory())
+			return null;
+		
+		File buildBnd = getFile(dir, "cnf/build.bnd");
+		if ( !buildBnd.isFile())
+			return null;
+		
+
+		return getWorkspace(dir);
+	}
 	/**
 	 * Convert files
 	 */
@@ -3612,5 +3634,29 @@ public class bnd extends Processor {
 				r.close();
 			}
 		}
+	}
+	
+	/**
+	 * Show the loaded workspace plugins
+	 * @throws Exception 
+	 */
+	
+	public void _plugins(projectOptions opts) throws Exception {
+		Workspace ws = getWorkspace(opts.project());
+		
+		if ( ws == null) {
+			error("Can't find a workspace");
+			return;
+		}
+		
+		int n = 0;
+		for ( Object o : ws.getPlugins()) {
+			String s = o.toString();
+			if ( s.trim().length() == 0)
+				s = o.getClass().getName();
+			
+			out.printf("%03d %s%n", n++, s);
+		}
+			
 	}
 }
