@@ -462,7 +462,7 @@ public class FilterParser {
 				if (query != null)
 					words.add(query);
 			}
-			
+
 			return Strings.join(" ", words);
 		}
 
@@ -547,12 +547,11 @@ public class FilterParser {
 						sb.append("; ");
 						expressions[i].toString(sb);
 					}
-
+					return;
 				}
-			} else {
-				sb.append("&");
-				super.toString(sb);
 			}
+			sb.append("&");
+			super.toString(sb);
 		}
 
 	}
@@ -746,8 +745,8 @@ public class FilterParser {
 
 	public Expression parse(Requirement req) throws IOException {
 		String f = req.getDirectives().get("filter");
-		if ( f == null)
-			return new Expression(){
+		if (f == null)
+			return new Expression() {
 
 				@Override
 				public boolean eval(Map<String,Object> map) {
@@ -755,11 +754,12 @@ public class FilterParser {
 				}
 
 				@Override
-				void toString(StringBuilder sb) {
-				}};
-			
-		return parse(f);		
+				void toString(StringBuilder sb) {}
+			};
+
+		return parse(f);
 	}
+
 	public Expression parse(Rover rover) throws IOException {
 		String s = rover.findExpr();
 		Expression e = cache.get(s);
@@ -865,5 +865,22 @@ public class FilterParser {
 		catch (Exception e) {
 			return e.toString();
 		}
+	}
+
+	public String simple(Resource resource) {
+		if (resource == null)
+			return "<>";
+
+		List<Capability> capabilities = resource.getCapabilities("osgi.identity");
+		if (capabilities == null || capabilities.size() == 0)
+			return resource.toString();
+
+		Capability c = capabilities.get(0);
+		String bsn = (String) c.getAttributes().get("osgi.identity");
+		Object version = c.getAttributes().get("version");
+		if (version == null)
+			return bsn;
+		else
+			return bsn + ";version=" + version;
 	}
 }
