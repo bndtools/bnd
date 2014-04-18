@@ -9,12 +9,12 @@ import org.osgi.service.coordinator.*;
 import org.osgi.service.log.*;
 
 import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.filerepo.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
 import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.version.*;
+import aQute.lib.deployer.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
@@ -29,8 +29,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	public static final String			PROP_READONLY			= "readonly";
 	public static final String			PROP_PRETTY				= "pretty";
 	public static final String			PROP_OVERWRITE			= "overwrite";
-
-	private static final VersionRange	RANGE_ANY				= new VersionRange(Version.LOWEST.toString());
 
 	private FileRepo					storageRepo;
 	private boolean						readOnly;
@@ -59,9 +57,11 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		readOnly = Boolean.parseBoolean(map.get(PROP_READONLY));
 		pretty = Boolean.parseBoolean(map.get(PROP_PRETTY));
 		overwrite = map.get(PROP_OVERWRITE) == null ? true : Boolean.parseBoolean(map.get(PROP_OVERWRITE));
+		String propName = map.get(AbstractIndexedRepo.PROP_NAME);
+		name = (propName == null || propName.length() == 0) ? storageDir.getName() : propName;
 
 		// Configure the storage repository
-		storageRepo = new FileRepo(storageDir);
+		storageRepo = new FileRepo(name, storageDir, !readOnly);
 
 		// Set the local index and cache directory locations
 		cacheDir = new File(storageDir, CACHE_PATH);
@@ -172,14 +172,15 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			return;
 		
 		List<String> bsns = storageRepo.list(null);
-		if (bsns != null)
+		if (bsns != null) {
+			List<VersionFilePair> versionsPairList = new LinkedList<VersionFilePair>();
 			for (String bsn : bsns) {
-				File[] files = storageRepo.get(bsn, RANGE_ANY);
-				if (files != null)
-					for (File file : files) {
-						allFiles.add(file.getCanonicalFile());
-					}
+				storageRepo.getVersionsLists(bsn, null, versionsPairList);
+				for (VersionFilePair versionsPair : versionsPairList) {
+					allFiles.add(versionsPair.getFile());
+				}
 			}
+		}
 	}
 
 	@Override
