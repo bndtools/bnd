@@ -1,3 +1,0 @@
--pluginpath:\
-    \${plugin-dir}/aQute.library.bndrepo/aQute.library.bndrepo-${jpm-plugin-version}.jar,\
-    \${plugin-dir}/biz.aQute.repository/biz.aQute.repository-${aQute-repository-base}.jar
