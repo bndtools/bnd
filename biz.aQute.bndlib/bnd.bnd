@@ -31,7 +31,6 @@ Export-Package:  \
 	aQute.lib.deployer,\
 	aQute.bnd.header,\
 	aQute.bnd.version,\
-	aQute.bnd.filerepo,\
 	aQute.bnd.properties,\
 	aQute.bnd.build.model,\
 	aQute.bnd.build.model.clauses,\
