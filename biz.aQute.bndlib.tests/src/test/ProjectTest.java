@@ -51,7 +51,7 @@ public class ProjectTest extends TestCase {
 		top.addClasspath(top.getOutput());
 
 		top.setProperty("a", "${repo;org.apache.felix.configadmin;latest}");
-		assertTrue(top.getProperty("a").endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.2.0.jar"));
+		assertTrue(top.getProperty("a").endsWith("releaserepo/org.apache.felix.configadmin/org.apache.felix.configadmin-1.1.0.jar"));
 
 		top.setProperty("a", "${repo;IdoNotExist;latest}");
 		top.getProperty("a");
@@ -148,21 +148,6 @@ public class ProjectTest extends TestCase {
 	}
 
 	/**
-	 * Test 2 equal bsns but diff. versions
-	 */
-
-	public  void testSameBsnRunBundles() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
-		Project top = ws.getProject("p1");
-		top.setProperty("-runbundles",
-				"org.apache.felix.configadmin;version='[1.0.1,1.0.1]',org.apache.felix.configadmin;version='[1.1.0,1.1.0]'");
-		Collection<Container> runbundles = top.getRunbundles();
-		assertTrue(top.check());
-		assertNotNull(runbundles);
-		assertEquals(2, runbundles.size());
-	}
-
-	/**
 	 * Duplicates in runbundles gave a bad error, should be ignored
 	 */
 
@@ -234,12 +219,12 @@ public class ProjectTest extends TestCase {
 		Workspace ws = getWorkspace(new File("testresources/ws"));
 		Project project = ws.getProject("p1");
 		project.setPedantic(true);
-		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.EXACT, null));
-		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.HIGHEST, null));
-		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.LOWEST, null));
+		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.0.1", Strategy.EXACT, null));
+		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.0.1", Strategy.HIGHEST, null));
+		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.0.1", Strategy.LOWEST, null));
 
 		List<Container> bundles = project.getBundles(Strategy.LOWEST,
-				"org.apache.felix.configadmin;version=1.1.0,org.apache.felix.configadmin;version=1.1.0", "test");
+				"org.apache.felix.configadmin;version=1.0.1,org.apache.felix.configadmin;version=1.0.1", "test");
 		assertTrue(project.check("Multiple bundles with the same final URL"));
 		assertEquals(1, bundles.size());
 	}
@@ -354,16 +339,18 @@ public class ProjectTest extends TestCase {
 		System.err.println(project.getPlugins(FileRepo.class));
 		String s = project.getReplacer().process(("${repo;libtest}"));
 		System.err.println(s);
-		assertTrue(s.contains("org.apache.felix.configadmin" + File.separator + "org.apache.felix.configadmin-1.2.0"));
-		assertTrue(s.contains("org.apache.felix.ipojo" + File.separator + "org.apache.felix.ipojo-1.0.0.jar"));
+		assertTrue(s.contains("releaserepo/org.apache.felix.configadmin" + File.separator + "org.apache.felix.configadmin-1.1.0"));
+		assertTrue(s.contains("repo/org.apache.felix.ipojo" + File.separator + "org.apache.felix.ipojo-1.0.0.jar"));
 
 		s = project.getReplacer().process(("${repo;libtestxyz}"));
 		assertTrue(s.matches(""));
 
 		s = project.getReplacer().process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
-		assertTrue(s.endsWith("org.apache.felix.configadmin-1.2.0.jar"));
+		System.err.println(s);
+		assertTrue(s.endsWith("releaserepo/org.apache.felix.configadmin" + File.separator + "org.apache.felix.configadmin-1.1.0.jar"));
 		s = project.getReplacer().process("${repo;org.apache.felix.configadmin;1.0.0;lowest}");
-		assertTrue(s.endsWith("org.apache.felix.configadmin-1.0.1.jar"));
+		System.err.println(s);
+		assertTrue(s.endsWith("releaserepo/org.apache.felix.configadmin" + File.separator + "org.apache.felix.configadmin-1.1.0.jar"));
 	}
 
 	public  void testClasspath() throws Exception {

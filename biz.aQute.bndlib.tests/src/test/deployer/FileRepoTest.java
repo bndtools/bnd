@@ -148,8 +148,11 @@ public class FileRepoTest extends TestCase {
 		resources = indexedRepo.getResources();
 		assertEquals( 0, resources.size());
 		
+		//
+		// We should now get 'latest'
+		//
 		file = indexedRepo.get(desc.bsn, desc.version, null);
-		assertNull(file);
+		assertEquals(new File(indexedRepo.getRoot(), "osgi/osgi-latest.jar").getAbsoluteFile(), file);
 		
 		resource = indexedRepo.getResource(put.digest);
 		assertNull(resource);
