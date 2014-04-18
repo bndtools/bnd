@@ -849,7 +849,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		/* no match, try file names */
 
-		if (LATEST_VERSION.equals(version)) {
+		if (getLatest) {
 			File fjar = new File(dir, bsn + LATEST_POSTFIX);
 			if (fjar.isFile())
 				return fjar.getAbsoluteFile();
