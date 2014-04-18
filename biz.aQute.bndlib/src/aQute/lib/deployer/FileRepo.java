@@ -213,8 +213,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File							root;
 	Registry								registry;
 	boolean									canWrite			= true;
-	Pattern									REPO_FILE			= Pattern.compile("(?:([-a-zA-z0-9_\\.]+)-)([0-9\\.]+|"
-																	+ LATEST_STRING + ")\\.(jar|lib)");
+	Pattern									REPO_FILE			= Pattern.compile("(?:([-a-zA-z0-9_\\.]+)-)("
+																		+ Version.VERSION_STRING + "|" + LATEST_STRING
+																		+ ")\\.(jar|lib)");
 	Reporter								reporter;
 	boolean									dirty;
 	String									name;
