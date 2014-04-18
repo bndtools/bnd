@@ -124,9 +124,9 @@ public class TestFileRepo extends TestCase {
 			}
 		} else if (FileRepo.LATEST_VERSION.toString().equals(version)) {
 			if ("ee.minimum".equals(bsn)) {
-				return new File(repoDir, "ee.minimum/ee.minimum-latest.jar");
+				return new File(repoDir, "ee.minimum/ee.minimum-1.2.1.2013.jar");
 			} else if ("org.hamcrest".equals(bsn)) {
-				return null;
+				return new File(repoDir, "org.hamcrest/hamcrest-core.jar");
 			} else if ("org.junit".equals(bsn)) {
 				return new File(repoDir, "org.junit/junit-latest.jar");
 			}
@@ -183,9 +183,6 @@ public class TestFileRepo extends TestCase {
 				if (repoFile == null) {
 					assertNull(expectedFile);
 				} else {
-					System.out.printf("bsn@version    = %s@%s\n", bsn, version);
-					System.out.printf("  repoFile     = %s\n", repoFile);
-					System.out.printf("  expectedFile = %s\n", expectedFile.getAbsoluteFile());
 					assertEquals(expectedFile.getAbsoluteFile(), repoFile);
 				}
 			}

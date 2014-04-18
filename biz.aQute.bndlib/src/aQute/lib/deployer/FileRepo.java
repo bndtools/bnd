@@ -816,29 +816,35 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File getLocal(String bsn, Version version, Map<String,String> properties) {
 		File dir = new File(root, bsn);
 
+		boolean getLatest = LATEST_VERSION.equals(version);
+
 		/* first look in files */
 
 		List<VersionFilePair> versionsPairList = new LinkedList<VersionFilePair>();
 		getVersionsLists(bsn, null, versionsPairList);
 
-		File match = null;
+		VersionFilePair match = null;
 		boolean matchIsLatest = true;
 		for (VersionFilePair pair : versionsPairList) {
+			if (getLatest && ((match == null) || (pair.getVersion().compareTo(match.getVersion()) > 0))) {
+				/* prefer the (first hit) highest version when we want latest */
+				match = pair;
+				matchIsLatest = true;
+				continue;
+			}
+
 			if (pair.getVersion().equals(version)) {
-				File file = pair.getFile();
-				if (match == null) {
-					match = file;
-					matchIsLatest = file.getName().endsWith(LATEST_POSTFIX);
-				} else if (matchIsLatest && !file.getName().endsWith(LATEST_POSTFIX)) {
-					/* prefer first hit file names without '-latest' */
-					match = file;
-					matchIsLatest = false;
+				boolean pairIsLatest = pair.getFile().getName().endsWith(LATEST_POSTFIX);
+				if (match == null || (matchIsLatest && !pairIsLatest)) {
+					/* first hit || prefer file names without '-latest' */
+					match = pair;
+					matchIsLatest = pairIsLatest;
 				}
 			}
 		}
 
 		if (match != null) {
-			return match.getAbsoluteFile();
+			return match.getFile().getAbsoluteFile();
 		}
 
 		/* no match, try file names */
