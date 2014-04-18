@@ -64,6 +64,7 @@ public class BndrunResolveContext extends ResolveContext {
 	private List<ExportedPackage>					sysPkgsExtra;
 	private Parameters								sysCapsExtraParams;
 	private Parameters								resolvePrefs;
+	private final List<Requirement>					failed						= new ArrayList<Requirement>();
 
 	public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
 		this.runModel = runModel;
@@ -85,6 +86,8 @@ public class BndrunResolveContext extends ResolveContext {
 			return;
 
 		try {
+			failed.clear();
+
 			loadEE();
 			loadSystemPackagesExtra();
 			loadSystemCapabilitiesExtra();
@@ -131,12 +134,13 @@ public class BndrunResolveContext extends ResolveContext {
 		// Get all of the repositories from the plugin registry
 		List<Repository> allRepos = registry.getPlugins(Repository.class);
 
-//		Workspace ws = registry.getPlugin(Workspace.class);
-//		if (ws != null) {
-//			for (InfoRepository ir : registry.getPlugins(InfoRepository.class)) {
-//				allRepos.add(new InfoRepositoryWrapper(ir, ws.getCache("ir-" + ir.getName())));
-//			}
-//		}
+		// Workspace ws = registry.getPlugin(Workspace.class);
+		// if (ws != null) {
+		// for (InfoRepository ir : registry.getPlugins(InfoRepository.class)) {
+		// allRepos.add(new InfoRepositoryWrapper(ir, ws.getCache("ir-" +
+		// ir.getName())));
+		// }
+		// }
 
 		// Reorder/filter if specified by the run model
 		List<String> repoNames = runModel.getRunRepos();
@@ -171,9 +175,9 @@ public class BndrunResolveContext extends ResolveContext {
 
 	private void findFramework() {
 		Requirement frameworkReq = getFrameworkRequirement();
-		if ( frameworkReq == null)
+		if (frameworkReq == null)
 			return;
-		
+
 		// Iterate over repos looking for matches
 		for (Repository repo : repos) {
 			Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections
@@ -297,6 +301,15 @@ public class BndrunResolveContext extends ResolveContext {
 
 	@Override
 	public List<Capability> findProviders(Requirement requirement) {
+		List<Capability> result = findProviders0(requirement);
+		if (result == null || result.isEmpty()) {
+			failed.add(requirement);
+		}
+		return result;
+	}
+
+	private List<Capability> findProviders0(Requirement requirement) {
+
 		init();
 
 		List<Capability> result;
@@ -696,22 +709,25 @@ public class BndrunResolveContext extends ResolveContext {
 
 	public void checkInitial() throws ResolutionException {
 		List<Requirement> requires = new ArrayList<Requirement>(runModel.getRunRequires());
-		
+
 		Requirement frameworkReq = getFrameworkRequirement();
-		if ( frameworkReq != null)
+		if (frameworkReq != null)
 			requires.add(frameworkReq);
-		
-		
-		for ( Iterator<Requirement> it = requires.iterator(); it.hasNext();) {
+
+		for (Iterator<Requirement> it = requires.iterator(); it.hasNext();) {
 			Requirement requirement = it.next();
 			List<Capability> providers = findProviders(requirement);
-			if ( providers == null || providers.isEmpty())
+			if (providers == null || providers.isEmpty())
 				it.remove();
 		}
-		if ( requires.isEmpty())
+		if (requires.isEmpty())
 			return;
-		
-		throw new ResolutionException("Initial requirements are missing",null,requires);
+
+		throw new ResolutionException("Initial requirements are missing", null, requires);
 	}
 
+
+	public List<Requirement> getFailed() {
+		return failed;
+	}
 }
