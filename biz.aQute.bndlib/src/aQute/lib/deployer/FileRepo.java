@@ -190,9 +190,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	public static final int					MAX_MAJOR			= 999999999;
 
+	private static final String				LATEST_STRING		= "latest";
+	private static final String				LATEST_POSTFIX		= "-" + LATEST_STRING + ".jar";
+	public static final Version				LATEST_VERSION		= new Version(MAX_MAJOR, 0, 0);
 	private static final SortedSet<Version>	LATEST_SET			= new TreeSet<Version>(
-																		Collections.singleton(new Version(MAX_MAJOR, 0,
-																				0)));
+																		Collections.singleton(LATEST_VERSION));
 
 	final static JSONCodec					codec				= new JSONCodec();
 	String									shell;
@@ -211,8 +213,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File							root;
 	Registry								registry;
 	boolean									canWrite			= true;
-	Pattern									REPO_FILE			= Pattern
-																		.compile("(?:([-a-zA-z0-9_\\.]+)-)([0-9\\.]+|latest)\\.(jar|lib)");
+	Pattern									REPO_FILE			= Pattern.compile("(?:([-a-zA-z0-9_\\.]+)-)([0-9\\.]+|"
+																	+ LATEST_STRING + ")\\.(jar|lib)");
 	Reporter								reporter;
 	boolean									dirty;
 	String									name;
@@ -362,7 +364,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			// TODO like to beforeGet rid of the latest option. This is only
 			// used to have a constant name for the outside users (like ant)
 			// we should be able to handle this differently?
-			File latest = new File(dir, bsn + "-latest.jar");
+			File latest = new File(dir, bsn + LATEST_POSTFIX);
 			IO.copy(file, latest);
 
 			reporter.trace("updated %s", file.getAbsolutePath());
@@ -482,7 +484,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				Matcher m = REPO_FILE.matcher(v);
 				if (m.matches()) {
 					String version = m.group(2);
-					if (!version.equals("latest"))
+					if (!version.equals(LATEST_STRING))
 						list.add(new Version(version));
 					else
 						latest = true;
@@ -658,9 +660,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File getLocal(String bsn, Version version, Map<String,String> properties) {
 		File dir = new File(root, bsn);
 
-		if (version.getMajor() == MAX_MAJOR && version.getMinor() == 0 && version.getMicro() == 0
-				&& version.getQualifier() == null) {
-			File fjar = new File(dir, bsn + "-latest.jar");
+		if (LATEST_VERSION.equals(version)) {
+			File fjar = new File(dir, bsn + LATEST_POSTFIX);
 			if (fjar.isFile())
 				return fjar.getAbsoluteFile();
 		}
