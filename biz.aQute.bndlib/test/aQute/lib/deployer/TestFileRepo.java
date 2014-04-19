@@ -28,7 +28,7 @@ public class TestFileRepo extends TestCase {
 		Version v;
 		for (String fileName : fileNames) {
 			if ("ee.minimum-1.1.99.jar".equals(fileName)) {
-				v = new Version("1.1.99");
+				v = new Version("1.2.0.x200908310645");
 				versionsList.add(v);
 				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
 			} else if ("ee.minimum-1.2.0.jar".equals(fileName)) {
@@ -48,7 +48,7 @@ public class TestFileRepo extends TestCase {
 				versionsList.add(v);
 				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
 			} else if ("ee.minimum-no-matches.jar".equals(fileName)) {
-				v = FileRepo.ZERO_VERSION;
+				v = new Version("1.2.0.x200908310645");
 				versionsList.add(v);
 				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
 			} else if ("hamcrest-core.jar".equals(fileName)) {
@@ -65,6 +65,10 @@ public class TestFileRepo extends TestCase {
 				v = FileRepo.LATEST_VERSION;
 				versionsList.add(v);
 				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
+			} else if ("junit.jar".equals(fileName)) {
+				v = FileRepo.ZERO_VERSION;
+				versionsList.add(v);
+				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
 			} else if ("junit_no_manifest.jar".equals(fileName)) {
 				// nothing
 			} else {
@@ -76,13 +80,21 @@ public class TestFileRepo extends TestCase {
 	private File getExpectedGet(String bsn, String version) throws Exception {
 		if (FileRepo.ZERO_VERSION.toString().equals(version)) {
 			if ("ee.minimum".equals(bsn)) {
-				return new File(repoDir, "ee.minimum/ee.minimum-no-matches.jar");
+				return null;
+			} else if ("org.hamcrest".equals(bsn)) {
+				return null;
+			} else if ("org.junit".equals(bsn)) {
+				return new File(repoDir, "org.junit/junit.jar");
+			}
+		} else if ("1.1.99".equals(version)) {
+			if ("ee.minimum".equals(bsn)) {
+				return null;
 			} else if ("org.hamcrest".equals(bsn)) {
 				return null;
 			} else if ("org.junit".equals(bsn)) {
 				return null;
 			}
-		} else if ("1.1.99".equals(version)) {
+		} else if ("1.2.0.x200908310645".equals(version)) {
 			if ("ee.minimum".equals(bsn)) {
 				return new File(repoDir, "ee.minimum/ee.minimum-1.1.99.jar");
 			} else if ("org.hamcrest".equals(bsn)) {
