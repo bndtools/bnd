@@ -5,8 +5,7 @@
 	osgi.cmpn;version=${osgi.cmpn.ver},\
 	de.kalpatec.pojosr.framework;version=${pojosr.ver},\
 	lib/apache-ant-1.6.1.jar;version=file,\
-	${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file,\
-	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file
+	${junit}
 
 bindex-pkgs:\
 	org.osgi.service.indexer.impl,\

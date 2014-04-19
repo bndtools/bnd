@@ -6,8 +6,7 @@
 	osgi.cmpn;version=${osgi.cmpn.ver},\
 	de.kalpatec.pojosr.framework;version=${pojosr.ver},\
 	org.kohsuke.args4j;version=${args4j.ver},\
-	${workspace}/cnf/buildrepo/org.junit/junit-latest.jar;version=file,\
-	${workspace}/cnf/buildrepo/org.hamcrest/hamcrest-core-latest.jar;version=file
+	${junit}
 
 # Define Contents
 bindex-pkgs:\
