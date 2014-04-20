@@ -477,8 +477,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 */
 	protected static final String[]	VERSION_HEADERS	= {
 			Constants.BUNDLE_VERSION,
-			"Version",
-			"Implementation-Version"
+			"Implementation-Version",
+			"Specification-Version",
+			"Version"
 		};
 
 	/**
