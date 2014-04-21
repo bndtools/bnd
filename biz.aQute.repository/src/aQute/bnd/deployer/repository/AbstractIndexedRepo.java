@@ -37,7 +37,7 @@ import aQute.service.reporter.*;
  * @author Neil Bartlett
  */
 @SuppressWarnings("synthetic-access")
-public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository {
+public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository, Refreshable {
 
 	public static final String									PROP_NAME						= "name";
 	public static final String									PROP_REPO_TYPE					= "type";
@@ -518,6 +518,32 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			reporter.warning(format, args);
 		else
 			System.err.println(String.format(format, args));
+	}
+	
+	public boolean refresh() throws Exception {
+		boolean ret=true;
+		if (indexLocations != null) {
+			final URLConnector connector = getConnector();
+			for (URI indexLocation : indexLocations) {
+				CachingUriResourceHandle indexHandle;
+				try {
+					indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null);
+					if (indexHandle.cachedFile.exists()) {
+						if (!indexHandle.cachedFile.delete()) {
+							error("Unable to delete cached repo index file: %s", indexHandle.cachedFile.getAbsolutePath());
+						}
+					}
+				}
+				catch (IOException e) {
+					error("Exception while creating CachingUriResourceHandle in refreshCacheMetadata for %s: %s",
+							indexLocation, e.getMessage());
+					ret=false;
+				}
+			}
+		}
+		initialised=false;
+		init();
+		return ret;
 	}
 
 }

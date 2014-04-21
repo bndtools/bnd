@@ -291,4 +291,8 @@ public class NexusOBR extends AbstractIndexedRepo {
 				+ ".jar");
 	}
 
+	public File getRoot() {
+		return cacheDir;
+	}
+
 }

@@ -663,12 +663,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public boolean refresh() throws Exception {
 		init();
 		exec(refresh, root);
-		if (dirty) {
-			dirty = false;
-			return true;
-		}
+//		if (dirty) {
+//			dirty = false;
+//			return true;
+//		}
 		rebuildIndex();
-		return false;
+		return true;
 	}
 
 	public String getName() {
