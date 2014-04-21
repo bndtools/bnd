@@ -716,7 +716,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 				public void run() {
 					try {
-						rebuildIndex();
+						refresh();
 					}
 					catch (Exception e) {
 						throw new RuntimeException(e);
