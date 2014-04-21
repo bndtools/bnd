@@ -44,13 +44,14 @@ public class RefreshReposHandler extends AbstractHandler {
                                 for (RepositoryPlugin i : repos) {
                                     if (i instanceof Refreshable) {
                                         boolean success = false;
+                                        Exception ex = null;
                                         try {
                                             success = ((Refreshable) i).refresh();
                                         } catch (Exception e) {
-                                            logger.logError("Exception while refreshing repository: " + i.getName(), e);
+                                            ex = e;
                                         }
                                         if (!success) {
-                                            logger.logError("Failed to refresh repository: " + i.getName(), null);
+                                            logger.logError("Failed to refresh repository: " + i.getName(), ex);
                                         }
                                     }
                                 }
