@@ -215,7 +215,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 																	+ Version.VERSION_STRING + "|" + LATEST_STRING
 																	+ ")\\.(jar|lib)");
 	Reporter								reporter;
-	boolean									dirty;
+	boolean									dirty = true;
 	String									name;
 	boolean									inited;
 	boolean									trace;
@@ -323,8 +323,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		Jar tmpJar = new Jar(tmpFile);
 		try {
-			dirty = true;
-
 			String bsn = tmpJar.getBsn();
 			if (bsn == null)
 				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
@@ -354,6 +352,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			// An open jar on file will fail rename on windows
 			tmpJar.close();
 
+			dirty = true;
 			IO.rename(tmpFile, file);
 
 			fireBundleAdded(file);
@@ -1125,7 +1124,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	void rebuildIndex() throws Exception {
 		init();
-		if (!hasIndex)
+		if (!hasIndex || !dirty)
 			return;
 
 		index.clear();
@@ -1135,6 +1134,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				index.put(bsn + "-" + version, buildDescriptor(f, null, null, bsn, version));
 			}
 		}
+		dirty = false;
 	}
 
 	private ResourceDescriptor buildDescriptor(File f, Jar jar, byte[] digest, String bsn, Version version)
