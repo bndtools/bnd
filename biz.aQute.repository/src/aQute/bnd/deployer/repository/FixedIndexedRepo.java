@@ -97,4 +97,8 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 			return locations.toString();
 	}
 
+	public File getRoot() {
+		return cacheDir;
+	}
+
 }

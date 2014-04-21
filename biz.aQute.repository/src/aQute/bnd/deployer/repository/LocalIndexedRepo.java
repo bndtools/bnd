@@ -337,6 +337,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 	public boolean refresh() {
 		reset();
+		regenerateAllIndexes();
 		return true;
 	}
 
@@ -453,5 +454,4 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		
 		return null;
 	}
-
 }
