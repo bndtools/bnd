@@ -519,31 +519,27 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		else
 			System.err.println(String.format(format, args));
 	}
-	
+
 	public boolean refresh() throws Exception {
-		boolean ret=true;
+		boolean ret = true;
 		if (indexLocations != null) {
 			final URLConnector connector = getConnector();
 			for (URI indexLocation : indexLocations) {
 				CachingUriResourceHandle indexHandle;
 				try {
-					indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null);
-					if (indexHandle.cachedFile.exists()) {
-						if (!indexHandle.cachedFile.delete()) {
-							error("Unable to delete cached repo index file: %s", indexHandle.cachedFile.getAbsolutePath());
-						}
+					File f = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null).cachedFile;
+					if (f != null && f.exists() && !f.delete()) {
+						error("Unable to delete cached repository index file %s", f.getAbsolutePath());
 					}
 				}
 				catch (IOException e) {
-					error("Exception while creating CachingUriResourceHandle in refreshCacheMetadata for %s: %s",
-							indexLocation, e.getMessage());
-					ret=false;
+					error("Exception during refresh of %s", indexLocation, e);
+					ret = false;
 				}
 			}
 		}
-		initialised=false;
+		initialised = false;
 		init();
 		return ret;
 	}
-
 }
