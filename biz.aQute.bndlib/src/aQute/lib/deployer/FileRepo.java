@@ -192,7 +192,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	private static final String				LATEST_STRING		= "latest";
 	private static final String				LATEST_POSTFIX		= "-" + LATEST_STRING + ".jar";
 	public static final Version				LATEST_VERSION		= new Version(MAX_MAJOR, 0, 0);
-	public static final Version				ZERO_VERSION		= new Version(0);
 
 	final static JSONCodec					codec				= new JSONCodec();
 	String									shell;
@@ -331,7 +330,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (version == null) {
 				/* should not happen because bsn != null, which mean that the
 				 * jar is valid and it has a manifest. just to be safe though */
-				version = ZERO_VERSION;
+				version = Version.ZERO;
 			}
 
 			reporter.trace("bsn=%s version=%s", bsn, version);
@@ -487,7 +486,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * 
 	 * @param jar
 	 *            the jar to get the version from
-	 * @return null when the jar has no manifest, {@link #ZERO_VERSION} when
+	 * @return null when the jar has no manifest, {@link Version#ZERO} when
 	 *         there is no valid version in the jar, the version from the jar
 	 *         otherwise
 	 */
@@ -510,8 +509,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				}
 			}
 
-			/* valid jar but no valid version found: ZERO_VERSION */
-			return ZERO_VERSION;
+			/* valid jar but no valid version found: Version.ZERO */
+			return Version.ZERO;
 		}
 		catch (Exception e) {
 			/* can't get the manifest */
@@ -526,7 +525,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param file
 	 *            the jar file to get the version from
 	 * @return null when the jar is invalid or has no manifest,
-	 *         {@link #ZERO_VERSION} when there is no valid version in the jar,
+	 *         {@link Version#ZERO} when there is no valid version in the jar,
 	 *         the version from the jar otherwise
 	 */
 	protected Version getVersionFromJarFile(File file) {
@@ -589,7 +588,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 					continue;
 				}
 
-				if (!ZERO_VERSION.equals(jarVersion)) {
+				if (!Version.ZERO.equals(jarVersion)) {
 					/* there is a VALID version in the jar */
 					if (versionsList != null) {
 						versionsList.add(jarVersion);
@@ -632,12 +631,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				continue;
 			}
 
-			/* no version in the fileName: ZERO_VERSION */
+			/* no version in the fileName: Version.ZERO */
 			if (versionsList != null) {
-				versionsList.add(ZERO_VERSION);
+				versionsList.add(Version.ZERO);
 			}
 			if (versionsPairList != null) {
-				versionsPairList.add(new VersionFilePair(ZERO_VERSION, file));
+				versionsPairList.add(new VersionFilePair(Version.ZERO, file));
 			}
 		}
 	}
