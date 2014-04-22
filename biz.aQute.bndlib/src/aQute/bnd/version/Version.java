@@ -14,7 +14,6 @@ public class Version implements Comparable<Version> {
 														"\uFFFF");
 
 	public static final Version	emptyVersion	= LOWEST;
-	public static final Version	ZERO			= new Version(0, 0, 0);
 	public static final Version	ONE				= new Version(1, 0, 0);
 
 	public Version() {

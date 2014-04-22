@@ -329,7 +329,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (version == null) {
 				/* should not happen because bsn != null, which mean that the
 				 * jar is valid and it has a manifest. just to be safe though */
-				version = Version.ZERO;
+				version = Version.LOWEST;
 			}
 
 			reporter.trace("bsn=%s version=%s", bsn, version);
@@ -485,7 +485,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * 
 	 * @param jar
 	 *            the jar to get the version from
-	 * @return null when the jar has no manifest, {@link Version#ZERO} when
+	 * @return null when the jar has no manifest, {@link Version#LOWEST} when
 	 *         there is no valid version in the jar, the version from the jar
 	 *         otherwise
 	 */
@@ -508,8 +508,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				}
 			}
 
-			/* valid jar but no valid version found: Version.ZERO */
-			return Version.ZERO;
+			/* valid jar but no valid version found: Version.LOWEST */
+			return Version.LOWEST;
 		}
 		catch (Exception e) {
 			/* can't get the manifest */
@@ -524,7 +524,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @param file
 	 *            the jar file to get the version from
 	 * @return null when the jar is invalid or has no manifest,
-	 *         {@link Version#ZERO} when there is no valid version in the jar,
+	 *         {@link Version#LOWEST} when there is no valid version in the jar,
 	 *         the version from the jar otherwise
 	 */
 	protected Version getVersionFromJarFile(File file) {
@@ -587,7 +587,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 					continue;
 				}
 
-				if (!Version.ZERO.equals(jarVersion)) {
+				if (!Version.LOWEST.equals(jarVersion)) {
 					/* there is a VALID version in the jar */
 					if (versionsList != null) {
 						versionsList.add(jarVersion);
@@ -630,12 +630,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				continue;
 			}
 
-			/* no version in the fileName: Version.ZERO */
+			/* no version in the fileName: Version.LOWEST */
 			if (versionsList != null) {
-				versionsList.add(Version.ZERO);
+				versionsList.add(Version.LOWEST);
 			}
 			if (versionsPairList != null) {
-				versionsPairList.add(new VersionFilePair(Version.ZERO, file));
+				versionsPairList.add(new VersionFilePair(Version.LOWEST, file));
 			}
 		}
 	}
