@@ -134,7 +134,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 					if (v == null)
 						v = "0";
 					else {
-						v = Analyzer.cleanupVersion(v);
+						v = Version.cleanupVersion(v);
 						if (!Verifier.isVersion(v))
 							continue; // skip
 					}

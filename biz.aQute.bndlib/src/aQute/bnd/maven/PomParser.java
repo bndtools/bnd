@@ -9,6 +9,7 @@ import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
 import aQute.bnd.osgi.*;
+import aQute.bnd.version.*;
 import aQute.lib.io.*;
 
 /**
@@ -100,7 +101,7 @@ public class PomParser extends Processor {
 			sb.append(xpath.evaluate("artifactId", child));
 			if (version != null && version.trim().length() != 0) {
 				sb.append(";version=");
-				sb.append(Analyzer.cleanupVersion(version));
+				sb.append(Version.cleanupVersion(version));
 			}
 			del = ", ";
 		}

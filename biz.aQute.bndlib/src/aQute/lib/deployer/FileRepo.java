@@ -500,7 +500,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			for (String header : VERSION_HEADERS) {
 				try {
-					Version v = new Version(Analyzer.cleanupVersion(attributes.getValue(header)));
+					Version v = new Version(Version.cleanupVersion(attributes.getValue(header)));
 					return v;
 				}
 				catch (Exception e) {
@@ -620,7 +620,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				}
 
 				/* use the (valid) version from the fileName */
-				Version fileVersion = new Version(Analyzer.cleanupVersion(fileNameVersion));
+				Version fileVersion = new Version(Version.cleanupVersion(fileNameVersion));
 				if (versionsList != null) {
 					versionsList.add(fileVersion);
 				}
