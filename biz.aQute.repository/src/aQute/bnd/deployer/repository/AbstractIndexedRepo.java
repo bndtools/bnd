@@ -278,7 +278,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		init();
 
 		// If the range is set to "project", we cannot resolve it.
-		if ("project".equals(rangeStr))
+		if (Constants.VERSION_ATTR_PROJECT.equals(rangeStr))
 			return null;
 
 		List<Resource> resources = identityMap.getRange(bsn, rangeStr);
