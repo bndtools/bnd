@@ -1771,7 +1771,7 @@ public class bnd extends Processor {
 	}
 
 	private void doPrint(Jar jar, int options, printOptions po) throws ZipException, IOException, Exception {
-
+		Analyzer analyzer = null;
 		try {
 			if ((options & VERIFY) != 0) {
 				Verifier verifier = new Verifier(jar);
@@ -1813,8 +1813,7 @@ public class bnd extends Processor {
 
 			if ((options & (USES | USEDBY | API)) != 0) {
 				out.println();
-				Analyzer analyzer = new Analyzer();
-				try {
+				analyzer = new Analyzer();
 					analyzer.setPedantic(isPedantic());
 					analyzer.setJar(jar);
 					Manifest m = jar.getManifest();
@@ -1875,11 +1874,6 @@ public class bnd extends Processor {
 								uses).transpose();
 						printMultiMap(usedBy);
 					}
-
-				}
-				finally {
-					analyzer.close();
-				}
 			}
 
 			if ((options & COMPONENT) != 0) {
@@ -1922,8 +1916,10 @@ public class bnd extends Processor {
 				}
 				out.println();
 			}
-		}
-		finally {
+		} finally {
+			if (analyzer != null) {
+				analyzer.close();
+			}
 			jar.close();
 		}
 	}
