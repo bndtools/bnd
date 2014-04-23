@@ -1232,26 +1232,25 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 	}
-		
+
 	/**
-	 * Check that a DS 1.3 bind method causes a DS 1.3 namespace
-	 *
+	 * Check that a DS 1.3 activate method causes a DS 1.3 namespace
 	 */
 	@Component()
-	public static class DS13_ref1_basic implements Serializable, Runnable {
+	public static class DS13_ref_activate_basic implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") Component anno) {}
 
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
-		
+
 		@Modified
 		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
 
 		@Reference(service=LogService.class)
-		void setLogService(@SuppressWarnings({"unused"})  Map<String, Object> map) {
+		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
 
 		}
 
@@ -1269,28 +1268,203 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 	}
+
+	/**
+	 * Check that a DS 1.3 deactivate method causes a DS 1.3 namespace
+	 */
+	@Component()
+	public static class DS13_ref_deactivate_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") Component anno) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference(service=LogService.class)
+		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
+
+		}
+
+		void unsetLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	/**
+	 * Check that a DS 1.3 modified method causes a DS 1.3 namespace
+	 */
+	@Component()
+	public static class DS13_ref_modified_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") Component anno) {}
+
+		@Reference(service=LogService.class)
+		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
+
+		}
+
+		void unsetLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	/**
+	 * Check that a DS 1.3 bind method causes a DS 1.3 namespace
+	 */
+	@Component()
+	public static class DS13_ref_bind_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference(service=LogService.class)
+		void setLogService(@SuppressWarnings("unused")  Map<String, Object> map) {
+
+		}
+
+		void unsetLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	/**
+	 * Check that a DS 1.3 unbind method causes a DS 1.3 namespace
+	 */
+	@Component()
+	public static class DS13_ref_unbind_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference(service=LogService.class)
+		void setLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr)  {
+
+		}
+
+		void unsetLogService(@SuppressWarnings("unused") Map<String, Object> map) {
+
+		}
+
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	/**
+	 * Check that a DS 1.3 updated method causes a DS 1.3 namespace
+	 */
+	@Component()
+	public static class DS13_ref_updated_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference(service=LogService.class)
+		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
+
+		}
+
+		void unsetLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		void updatedLogService(@SuppressWarnings("unused") Map<String, Object> map) {
+
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+	
 	public static void testBasic13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest$DS13_*");
-//		b.setProperty("-ds-felix-extensions", "");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
 		assertOk(b);
 
-		// Test 1.3 bind gives 1.3 namespace 
-		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref1_basic");
-		// Test Felix12 deactivate gives Felix 1.2 namespace 
-//		checkDS13(jar, "test.component.DSAnnotationTest$deactivate_basicFelix12");
-//		// Test Felix12 modified gives Felix 1.2 namespace 
-//		checkDS13(jar, "test.component.DSAnnotationTest$modified_basicFelix12");
-//		// Test Felix12 bind gives Felix 1.2 namespace 
-//		checkDS13(jar, "test.component.DSAnnotationTest$bind_basicFelix12");
-//		// Test Felix12 bind gives Felix 1.2 namespace 
-//		checkDS13(jar, "test.component.DSAnnotationTest$unbind_basicFelix12");
-//		// Test Felix12 updated gives Felix 1.2 namespace 
-//		checkDS13(jar, "test.component.DSAnnotationTest$updated_basicFelix12");
+		// Test 1.3 signature methods give 1.3 namespace 
+		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_activate_basic");
+		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_deactivate_basic");
+		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_modified_basic");
+		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_bind_basic");
+		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_unbind_basic");
+		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_updated_basic");
 	}
 
 	private static void checkDS13(Jar jar, String name) throws Exception, XPathExpressionException {

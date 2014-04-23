@@ -48,17 +48,16 @@ public class AnnotationReader extends ClassDataCollector {
 																.compile("\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/framework/ServiceObjects;)|(Ljava/util/Map;)|(L([^;]+);))+\\)(V|(Ljava/util/Map;))");
 
 	static Pattern				LIFECYCLEDESCRIPTORDS10		= Pattern
-																.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)V");
+																.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)(V|(Ljava/util/Map;))");
 	static Pattern				LIFECYCLEDESCRIPTORDS11		= Pattern
-			.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
+																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)(V|(Ljava/util/Map;))");
 	static Pattern				LIFECYCLEDESCRIPTORDS13		= Pattern
-			.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(L([^;]+);))*\\)V");
-	static Pattern				LIFECYCLEDESCRIPTORDS13FELIX		= Pattern
-																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(L([^;]+);))*\\)Ljava/util/Map;");
+																.compile("\\((L([^;]+);)*\\)(V|(Ljava/util/Map;))");
+
 	static Pattern				DEACTIVATEDESCRIPTORDS11	= Pattern
-																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)V");
-	static Pattern				DEACTIVATEDESCRIPTORDS13FELIX	= Pattern
-																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)Ljava/util/Map;");
+																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)(V|(Ljava/util/Map;))");
+	static Pattern				DEACTIVATEDESCRIPTORDS13	= Pattern
+																.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
 
 	ComponentDef				component				= new ComponentDef();
 
@@ -143,53 +142,10 @@ public class AnnotationReader extends ClassDataCollector {
 				String service = determineReferenceType(descriptor, rdef, rdef.service, rdef.scope);
 				if (service != null)
 					return value;
-//				Matcher matcher = BINDDESCRIPTORDS10.matcher(descriptor);
-//				if (matcher.matches()) {
-//					String type = matcher.group(2);
-//					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) 
-//							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
-//
-//						return value;
-//					}
-//				}
-//				matcher = BINDDESCRIPTORDS11.matcher(descriptor);
-//				if (matcher.matches()) {
-//					String type = matcher.group(1);
-//					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) 
-//							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
-//						rdef.updateVersion(V1_1);
-//						return value;
-//					}
-//				}
-//				matcher = BINDDESCRIPTORDS13.matcher(descriptor);
-//				if (matcher.matches()) {
-//					String type = matcher.group(5);
-//					if (type == null || rdef.service.equals(Clazz.objectDescriptorToFQN(type))) {
-//						rdef.updateVersion(V1_3);
-//						ReferenceScope scope = rdef.scope;
-//						if (!ReferenceScope.PROTOTYPE.equals(scope) && matcher.group(3) != null) {
-//							analyzer.error(
-//									"In component %s, to use ServiceObjects the scope must be 'prototype'",
-//									component.implementation, "");				
-//						}
-//						if ("Ljava/util/Map;".equals(matcher.group(7))) {
-//							if (!felixExtensions) {
-//								analyzer.error(
-//										"In component %s, to use a return type of Map you must specify -felixExtensions",
-//										component.implementation, "");
-//							}
-//							//TODO rethink how this is signalled.
-//							if (component.xmlns == null) {
-//								component.xmlns = FELIX_1_2;
-//							}
-//						}
-//						return value;
-//					}
-//				}
 			}
 			analyzer.error(
-					"A related method to %s from the reference %s has no proper prototype for class %s. Expected void %s(%s s [,Map m] | ServiceReference r)",
-					rdef.bind, value, component.implementation, value, rdef.service);
+					"None of the methods related method to %s in the class %s named %s for service type %s have an acceptable signature. The descriptors found are: %s",
+					rdef.bind, component.implementation, value, rdef.service, methods);
 		}
 		return null;
 	}
@@ -220,22 +176,32 @@ public class AnnotationReader extends ClassDataCollector {
 	 */
 	protected void doActivate() {
 		String methodDescriptor = method.getDescriptor().toString();
-		if ("activate".equals(method.getName()) && LIFECYCLEDESCRIPTORDS10.matcher(methodDescriptor).matches()) {
-			component.activate = method.getName();			
-		} else if (LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor).matches()) {
-			component.activate = method.getName();	
-			component.updateVersion(V1_1);
-		} else if (felixExtensions && LIFECYCLEDESCRIPTORDS13FELIX.matcher(methodDescriptor).matches()) {
-			component.activate = method.getName();	
-			component.updateVersion(V1_2);
-			if (component.xmlns == null) {
-				component.xmlns = FELIX_1_2;
+		boolean hasMapReturnType = false;
+		Matcher m = LIFECYCLEDESCRIPTORDS10.matcher(methodDescriptor);
+		if ("activate".equals(method.getName()) && m.matches()) {
+			component.activate = method.getName();
+			hasMapReturnType = m.group(3) != null;
+		} else {
+			m = LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor);
+			if (m.matches()) {
+				component.activate = method.getName();	
+				component.updateVersion(V1_1);
+				hasMapReturnType = m.group(6) != null;
+			} else {
+				m = LIFECYCLEDESCRIPTORDS13.matcher(methodDescriptor);
+				if (m.matches()) {
+					component.activate = method.getName();	
+					component.updateVersion(V1_3);
+					hasMapReturnType = m.group(4) != null;
+
+				} else 
+					analyzer.error(
+							"Activate method for %s descriptor %s is not acceptable.",
+							clazz, method.getDescriptor());
 			}
-		} else 
-			analyzer.error(
-					"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-					clazz, method.getDescriptor());
-		
+		}
+		checkMapReturnType(hasMapReturnType);
+
 	}
 
 	/**
@@ -243,41 +209,56 @@ public class AnnotationReader extends ClassDataCollector {
 	 */
 	protected void doDeactivate() {
 		String methodDescriptor = method.getDescriptor().toString();
-		if ( "deactivate".equals(method.getName()) && LIFECYCLEDESCRIPTORDS10.matcher(methodDescriptor).matches()) {
+		boolean hasMapReturnType = false;
+		Matcher m = LIFECYCLEDESCRIPTORDS10.matcher(methodDescriptor);
+		if ( "deactivate".equals(method.getName()) && m.matches()) {
 			component.deactivate = method.getName();			
-		} else if (DEACTIVATEDESCRIPTORDS11.matcher(methodDescriptor).matches()) {
-			component.deactivate = method.getName();
-			component.updateVersion(V1_1);
-		} else if (felixExtensions && DEACTIVATEDESCRIPTORDS13FELIX.matcher(methodDescriptor).matches()) {
-			component.deactivate = method.getName();
-			component.updateVersion(V1_2);
-			if (component.xmlns == null) {
-				component.xmlns = FELIX_1_2;
+			hasMapReturnType = m.group(3) != null;
+		} else {
+			m = DEACTIVATEDESCRIPTORDS11.matcher(methodDescriptor);
+			if (m.matches()) {
+				component.deactivate = method.getName();
+				component.updateVersion(V1_1);
+				hasMapReturnType = m.group(8) != null;
+			} else {
+				m = DEACTIVATEDESCRIPTORDS13.matcher(methodDescriptor);
+				if (m.matches()) {
+					component.deactivate = method.getName();
+					component.updateVersion(V1_3);
+					hasMapReturnType = m.group(6) != null;
+				} else
+					analyzer.error(
+							"Deactivate method for %s descriptor %s is not acceptable.",
+							clazz, method.getDescriptor());
 			}
-		} else
-			analyzer.error(
-					"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, BundleContext, int, or Integer is allowed. Found: %s",
-					clazz, method.getDescriptor());
+		}
+		checkMapReturnType(hasMapReturnType);
 	}
 
 	/**
 	 * 
 	 */
 	protected void doModified() {
-		if (LIFECYCLEDESCRIPTORDS11.matcher(method.getDescriptor().toString()).matches()) {
+		String methodDescriptor = method.getDescriptor().toString();
+		boolean hasMapReturnType = false;
+		Matcher m = LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor);
+		if (m.matches()) {
 			component.modified = method.getName();
 			component.updateVersion(V1_1);
-		} else if (felixExtensions && LIFECYCLEDESCRIPTORDS13FELIX.matcher(method.getDescriptor().toString()).matches()) {
-			component.modified = method.getName();
-			component.updateVersion(V1_2);
-			if (component.xmlns == null) {
-				component.xmlns = FELIX_1_2;
-			}
-		} else
+			hasMapReturnType = m.group(6) != null;
+		} else {
+			m = LIFECYCLEDESCRIPTORDS13.matcher(methodDescriptor);
+			if (m.matches()) {
+				component.modified = method.getName();
+				component.updateVersion(V1_3);
+				hasMapReturnType = m.group(4) != null;
+			} else
 
-			analyzer.error(
-					"Modified method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-					clazz, method.getDescriptor());
+				analyzer.error(
+						"Modified method for %s descriptor %s is not acceptable.",
+						clazz, method.getDescriptor());
+		}
+		checkMapReturnType(hasMapReturnType);
 	}
 
 	/**
@@ -366,17 +347,6 @@ public class AnnotationReader extends ClassDataCollector {
 								component.implementation, "");				
 					}
 					hasMapReturnType = m.group(8) != null;
-//					if ("Ljava/util/Map;".equals(m.group(7))) {
-//						if (!felixExtensions) {
-//							analyzer.error(
-//									"In component %s, to use a return type of Map you must specify -felixExtensions",
-//									component.implementation, "");
-//						}
-//						//TODO rethink how this is signalled.
-//						if (component.xmlns == null) {
-//							component.xmlns = FELIX_1_2;
-//						}
-//					}
 				} else { 
 //					analyzer.error(
 //							"In component %s, cannot determine the type of a Component Reference from the descriptor: %s",
@@ -386,10 +356,18 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 		}
 
+		checkMapReturnType(hasMapReturnType);
+		String service = annoService;
+		if (service == null) 
+			service = inferredService;
+		return service;
+	}
+
+	private void checkMapReturnType(boolean hasMapReturnType) {
 		if (hasMapReturnType) {
 			if (!felixExtensions) {
 				analyzer.error(
-						"In component %s, to use a return type of Map you must specify -felixExtensions",
+						"In component %s, to use a return type of Map you must specify -ds-felix-extensions",
 						component.implementation, "");
 			}
 			//TODO rethink how this is signalled.
@@ -398,10 +376,6 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 
 		}
-		String service = annoService;
-		if (service == null) 
-			service = inferredService;
-		return service;
 	}
 
 	/**
