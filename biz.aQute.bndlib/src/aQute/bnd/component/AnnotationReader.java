@@ -394,6 +394,7 @@ public class AnnotationReader extends ClassDataCollector {
 	 * @param annotation
 	 * @throws Exception
 	 */
+	@SuppressWarnings("deprecation")
 	protected void doComponent(Component comp, Annotation annotation) throws Exception {
 
 		// Check if we are doing a super class
@@ -411,7 +412,13 @@ public class AnnotationReader extends ClassDataCollector {
 		if (annotation.get("immediate") != null)
 			component.immediate = comp.immediate();
 		if (annotation.get("servicefactory") != null)
-			component.servicefactory = comp.servicefactory();
+			component.scope = comp.servicefactory()? ServiceScope.BUNDLE: ServiceScope.SINGLETON;
+		if (annotation.get("scope") != null && comp.scope() != ServiceScope.DEFAULT) {
+			component.scope = comp.scope();
+			if (comp.scope() == ServiceScope.PROTOTYPE) {
+				component.updateVersion(V1_3);
+			}
+		}
 
 		if (annotation.get("configurationPid") != null) {
 			component.configurationPid = comp.configurationPid();
@@ -469,7 +476,7 @@ public class AnnotationReader extends ClassDataCollector {
 				refdef.policy = ref.policy();
 				refdef.policyOption = ref.policyOption();
 				refdef.target = ref.target();
-//				refdef.version = ref.
+				refdef.scope = ref.scope();
 				component.references.put(refdef.name, refdef);
 			}
 		}

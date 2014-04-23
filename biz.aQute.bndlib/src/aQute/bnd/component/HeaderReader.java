@@ -16,6 +16,7 @@ import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
+import org.osgi.service.component.annotations.ServiceScope;
 
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.MethodDef;
@@ -64,12 +65,12 @@ public class HeaderReader extends Processor {
 		String provides = info.get(COMPONENT_PROVIDE);
 		if (info.get(COMPONENT_SERVICEFACTORY) != null) {
 			if (provides != null)
-			    cd.servicefactory = Boolean.valueOf(info.get(COMPONENT_SERVICEFACTORY));
+			    cd.scope = Boolean.valueOf(info.get(COMPONENT_SERVICEFACTORY))? ServiceScope.BUNDLE: ServiceScope.SINGLETON;
 			else
 				warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
 		}
 
-		if (cd.servicefactory != null && cd.servicefactory  && cd.immediate != null && cd.immediate) {
+		if (cd.scope == ServiceScope.BUNDLE  && cd.immediate != null && cd.immediate) {
 			// TODO can become error() if it is up to me
 			warning("For a Service Component, the immediate option and the servicefactory option are mutually exclusive for %(%s)",
 					name, impl);

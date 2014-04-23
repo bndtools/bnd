@@ -29,7 +29,7 @@ class ComponentDef {
 	String							name;
 	String							factory;
 	Boolean							immediate;
-	Boolean							servicefactory;
+	ServiceScope					scope;
 	ConfigurationPolicy				configurationPolicy;
 	TypeRef							implementation;
 	TypeRef							service[];
@@ -67,7 +67,7 @@ class ComponentDef {
 		if (service != null && service.length > 0) {
 			for (TypeRef interfaceName : service)
 				analyzer.referTo(interfaceName);
-		} else if (servicefactory != null && servicefactory)
+		} else if (scope != null && scope != ServiceScope.BUNDLE)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
 
 		for (Map.Entry<String,List<String>> kvs : property.entrySet()) {
@@ -143,9 +143,6 @@ class ComponentDef {
 
 		component.addAttribute("name", name);
 
-		if (servicefactory != null)
-			component.addAttribute("servicefactory", servicefactory);
-
 		if (configurationPolicy != null)
 			component.addAttribute("configuration-policy", configurationPolicy.toString().toLowerCase());
 
@@ -181,8 +178,16 @@ class ComponentDef {
 
 		if (service != null && service.length != 0) {
 			Tag s = new Tag(component, "service");
-			if (servicefactory != null && servicefactory)
-				s.addAttribute("servicefactory", true);
+			if (scope != null) {//TODO check for DEFAULT???
+				if (AnnotationReader.V1_3.compareTo(version) >0 ) {
+					if (scope == ServiceScope.PROTOTYPE) {
+						throw new IllegalStateException("verification failed, pre 1.3 component with scope PROTOTYPE");
+					}
+				    s.addAttribute("servicefactory", scope == ServiceScope.BUNDLE);
+				} else {
+					s.addAttribute("scope", scope.toString().toLowerCase());
+				}
+			}
 
 			for (TypeRef ss : service) {
 				Tag provide = new Tag(s, "provide");

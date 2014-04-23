@@ -299,7 +299,7 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("", "component/@immediate");
 			xt.assertAttribute("", "component/@enabled");
 			xt.assertAttribute("", "component/@factory");
-			xt.assertAttribute("", "component/@servicefactory");
+			xt.assertAttribute("", "component/service/@servicefactory");
 			xt.assertAttribute("", "component/@configuration-pid");
 			xt.assertAttribute("", "component/@activate");
 			xt.assertAttribute("", "component/@deactivate");
@@ -342,7 +342,7 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("", "scr:component/@immediate");
 			xt.assertAttribute("", "scr:component/@enabled");
 			xt.assertAttribute("", "scr:component/@factory");
-			xt.assertAttribute("", "scr:component/@servicefactory");
+			xt.assertAttribute("", "scr:component/service/@servicefactory");
 			xt.assertAttribute("", "scr:component/@configuration-pid");
 			xt.assertAttribute("activate", "scr:component/@activate");
 			xt.assertAttribute("deactivate", "scr:component/@deactivate");
@@ -385,7 +385,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("", "scr:component/@immediate");
 		xt.assertAttribute("", "scr:component/@enabled");
 		xt.assertAttribute("", "scr:component/@factory");
-		xt.assertAttribute("", "scr:component/@servicefactory");
+		xt.assertAttribute("", "scr:component/service/@servicefactory");
 		xt.assertAttribute("", "scr:component/@configuration-pid");
 		xt.assertAttribute("activate", "scr:component/@activate");
 		xt.assertAttribute("deactivate", "scr:component/@deactivate");
@@ -428,7 +428,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("", "scr:component/@immediate");
 		xt.assertAttribute("", "scr:component/@enabled");
 		xt.assertAttribute("", "scr:component/@factory");
-		xt.assertAttribute("", "scr:component/@servicefactory");
+		xt.assertAttribute("", "scr:component/service/@servicefactory");
 		xt.assertAttribute("", "scr:component/@configuration-pid");
 		xt.assertAttribute("activate", "scr:component/@activate");
 		xt.assertAttribute("deactivate", "scr:component/@deactivate");
@@ -471,7 +471,7 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("", "scr:component/@immediate");
 			xt.assertAttribute("", "scr:component/@enabled");
 			xt.assertAttribute("", "scr:component/@factory");
-			xt.assertAttribute("", "scr:component/@servicefactory");
+			xt.assertAttribute("", "scr:component/service/@servicefactory");
 			xt.assertAttribute("", "scr:component/@configuration-pid");
 			xt.assertAttribute("open", "scr:component/@activate");
 			xt.assertAttribute("close", "scr:component/@deactivate");
@@ -512,7 +512,7 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("false", "scr:component/@immediate");
 			xt.assertAttribute("false", "scr:component/@enabled");
 			xt.assertAttribute("factory", "scr:component/@factory");
-			xt.assertAttribute("false", "scr:component/@servicefactory");
+			xt.assertAttribute("false", "scr:component/service/@servicefactory");
 			xt.assertAttribute("open", "scr:component/@activate");
 			xt.assertAttribute("close", "scr:component/@deactivate");
 			xt.assertAttribute("changed", "scr:component/@modified");
@@ -755,7 +755,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("", "scr:component/@immediate");
 		xt.assertAttribute("", "scr:component/@enabled");
 		xt.assertAttribute("", "scr:component/@factory");
-		xt.assertAttribute("", "scr:component/@servicefactory");
+		xt.assertAttribute("", "scr:component/service/@servicefactory");
 		xt.assertAttribute("", "scr:component/@configuration-pid");
 		xt.assertAttribute("activate", "scr:component/@activate");
 		xt.assertAttribute("deactivate", "scr:component/@deactivate");
@@ -1449,6 +1449,43 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 	
+
+	/**
+	 * Check that a DS 1.3 prototype scope method causes a DS 1.3 namespace
+	 */
+	@Component(scope = ServiceScope.PROTOTYPE)
+	public static class DS13_ref_scope_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference(service=LogService.class)
+		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
+
+		}
+
+		void unsetLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+	
 	public static void testBasic13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest$DS13_*");
@@ -1465,6 +1502,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_bind_basic");
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_unbind_basic");
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_updated_basic");
+		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_scope_basic");
 	}
 
 	private static void checkDS13(Jar jar, String name) throws Exception, XPathExpressionException {
@@ -1483,7 +1521,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("", "scr:component/@immediate");
 		xt.assertAttribute("", "scr:component/@enabled");
 		xt.assertAttribute("", "scr:component/@factory");
-		xt.assertAttribute("", "scr:component/@servicefactory");
+		xt.assertAttribute("", "scr:component/service/@servicefactory");
 		xt.assertAttribute("", "scr:component/@configuration-pid");
 		xt.assertAttribute("activate", "scr:component/@activate");
 		xt.assertAttribute("deactivate", "scr:component/@deactivate");
