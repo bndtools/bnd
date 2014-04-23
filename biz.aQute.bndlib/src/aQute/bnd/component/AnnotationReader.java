@@ -422,7 +422,11 @@ public class AnnotationReader extends ClassDataCollector {
 
 		if (annotation.get("configurationPid") != null) {
 			component.configurationPid = comp.configurationPid();
-			component.updateVersion(V1_2);
+			if (component.configurationPid.length > 1) {
+				component.updateVersion(V1_3);
+			} else {
+				component.updateVersion(V1_2);
+			}
 		}
 
 		if (annotation.get("xmlns") != null)

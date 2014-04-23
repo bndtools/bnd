@@ -168,6 +168,8 @@ class ComponentDef {
 			StringBuilder b = new StringBuilder();
 			String space = "";
 			for (String pid: configurationPid) {
+				if ("$".equals(pid))
+					pid = name;
 				b.append(space).append(pid);
 				space = " ";
 			}
