@@ -39,13 +39,13 @@ public class AnnotationReader extends ClassDataCollector {
 	static Pattern				BINDNAME				= Pattern.compile("(set|add|bind)?(.*)");
 	
 	static Pattern				BINDDESCRIPTORDS10			= Pattern
-																.compile("\\(L(((org/osgi/framework/ServiceReference)|(org/osgi/framework/ServiceObjects)|(java/util/Map))|([^;]+));\\)V");
+																.compile("\\(L(((org/osgi/framework/ServiceReference)|(org/osgi/framework/ServiceObjects)|(java/util/Map))|([^;]+));\\)(V|(Ljava/util/Map;))");
 	static Pattern				BINDDESCRIPTORDS11			= Pattern
-																.compile("\\(L([^;]+);(Ljava/util/Map;)?\\)V");
+																.compile("\\(L([^;]+);(Ljava/util/Map;)?\\)(V|(Ljava/util/Map;))");
 
 	//includes support for felix extensions
 	static Pattern				BINDDESCRIPTORDS13			= Pattern
-																.compile("\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/framework/ServiceObjects;)|(Ljava/util/Map;)|(L([^;]+);))+\\)(V|Ljava/util/Map;)");
+																.compile("\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/framework/ServiceObjects;)|(Ljava/util/Map;)|(L([^;]+);))+\\)(V|(Ljava/util/Map;))");
 
 	static Pattern				LIFECYCLEDESCRIPTORDS10		= Pattern
 																.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)V");
@@ -335,6 +335,7 @@ public class AnnotationReader extends ClassDataCollector {
 
 	private String determineReferenceType(String methodDescriptor, ReferenceDef def, String annoService, ReferenceScope scope) {
 		String inferredService = null;
+		boolean hasMapReturnType;
 		// We have to find the type of the current method to
 		// link it to the referenced service.
 		Matcher m = BINDDESCRIPTORDS10.matcher(methodDescriptor);
@@ -345,11 +346,13 @@ public class AnnotationReader extends ClassDataCollector {
 					def.updateVersion(V1_3); // single arg, Map or ServiceObjects, and it's not the service type, so we must be V3.
 				} //if the type is specified it may still not match as it could be a superclass of the specified service.
 			}
+			hasMapReturnType = m.group(8) != null;
 		} else {
 			m = BINDDESCRIPTORDS11.matcher(methodDescriptor);
 			if (m.matches()) {
 				inferredService = Descriptors.binaryToFQN(m.group(1));
 				def.updateVersion(V1_1);
+				hasMapReturnType = m.group(4) != null;
 			} else {
 				m = BINDDESCRIPTORDS13.matcher(methodDescriptor);
 				if (m.matches()) {
@@ -362,17 +365,18 @@ public class AnnotationReader extends ClassDataCollector {
 								"In component %s, to use ServiceObjects the scope must be 'prototype'",
 								component.implementation, "");				
 					}
-					if ("Ljava/util/Map;".equals(m.group(7))) {
-						if (!felixExtensions) {
-							analyzer.error(
-									"In component %s, to use a return type of Map you must specify -felixExtensions",
-									component.implementation, "");
-						}
-						//TODO rethink how this is signalled.
-						if (component.xmlns == null) {
-							component.xmlns = FELIX_1_2;
-						}
-					}
+					hasMapReturnType = m.group(8) != null;
+//					if ("Ljava/util/Map;".equals(m.group(7))) {
+//						if (!felixExtensions) {
+//							analyzer.error(
+//									"In component %s, to use a return type of Map you must specify -felixExtensions",
+//									component.implementation, "");
+//						}
+//						//TODO rethink how this is signalled.
+//						if (component.xmlns == null) {
+//							component.xmlns = FELIX_1_2;
+//						}
+//					}
 				} else { 
 //					analyzer.error(
 //							"In component %s, cannot determine the type of a Component Reference from the descriptor: %s",
@@ -381,7 +385,19 @@ public class AnnotationReader extends ClassDataCollector {
 				}
 			}
 		}
-		
+
+		if (hasMapReturnType) {
+			if (!felixExtensions) {
+				analyzer.error(
+						"In component %s, to use a return type of Map you must specify -felixExtensions",
+						component.implementation, "");
+			}
+			//TODO rethink how this is signalled.
+			if (component.xmlns == null) {
+				component.xmlns = FELIX_1_2;
+			}
+
+		}
 		String service = annoService;
 		if (service == null) 
 			service = inferredService;
