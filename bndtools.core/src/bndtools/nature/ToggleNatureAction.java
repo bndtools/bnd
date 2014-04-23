@@ -12,11 +12,13 @@ package bndtools.nature;
 
 import java.io.ByteArrayInputStream;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.core.IJavaProject;
@@ -28,6 +30,10 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
 import aQute.bnd.build.Project;
+import bndtools.HeadlessBuildPluginTracker;
+import bndtools.Plugin;
+import bndtools.VersionControlIgnoresPluginTracker;
+import bndtools.preferences.BndPreferences;
 
 public class ToggleNatureAction implements IObjectActionDelegate {
 
@@ -92,6 +98,14 @@ public class ToggleNatureAction implements IObjectActionDelegate {
      */
     private static void toggleNature(IJavaProject project) {
         try {
+            /* Version control ignores */
+            VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker = Plugin.getDefault().getVersionControlIgnoresPluginTracker();
+            Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresPluginTracker, project, null);
+
+            /* Headless build files */
+            HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();
+            Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildPluginTracker, null);
+
             IProject iProject = project.getProject();
             IProjectDescription description = iProject.getDescription();
             String[] natures = description.getNatureIds();
@@ -104,9 +118,19 @@ public class ToggleNatureAction implements IObjectActionDelegate {
                     System.arraycopy(natures, i + 1, newNatures, i, natures.length - i - 1);
                     description.setNatureIds(newNatures);
                     iProject.setDescription(description, null);
+
+                    /* Remove the headless build files */
+                    headlessBuildPluginTracker.setup(enabledPlugins, false, iProject.getLocation().toFile(), false, enabledIgnorePlugins);
+
+                    /* refresh the project; files were created outside of Eclipse API */
+                    iProject.refreshLocal(IResource.DEPTH_INFINITE, null);
+
                     return;
                 }
             }
+
+            /* Add the headless build files */
+            headlessBuildPluginTracker.setup(enabledPlugins, false, iProject.getLocation().toFile(), true, enabledIgnorePlugins);
 
             // Add the nature
             ensureBndBndExists(iProject);
@@ -115,7 +139,11 @@ public class ToggleNatureAction implements IObjectActionDelegate {
             newNatures[natures.length] = BndtoolsConstants.NATURE_ID;
             description.setNatureIds(newNatures);
             iProject.setDescription(description, null);
+
+            /* refresh the project; files were created outside of Eclipse API */
+            iProject.refreshLocal(IResource.DEPTH_INFINITE, null);
+
+            return;
         } catch (CoreException e) {}
     }
-
 }
