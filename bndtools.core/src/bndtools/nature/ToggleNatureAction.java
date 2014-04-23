@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package org.bndtools.builder;
+package bndtools.nature;
 
 import java.io.ByteArrayInputStream;
 import java.util.Iterator;
@@ -50,7 +50,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
                 if (project != null) {
                     boolean isJavaProject = false;
                     try {
-                        isJavaProject= project.hasNature(JavaCore.NATURE_ID);
+                        isJavaProject = project.hasNature(JavaCore.NATURE_ID);
                     } catch (CoreException e) {
                         /* swallow */
                     }
