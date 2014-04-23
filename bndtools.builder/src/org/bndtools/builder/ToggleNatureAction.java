@@ -19,6 +19,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -46,7 +48,15 @@ public class ToggleNatureAction implements IObjectActionDelegate {
                     project = (IProject) ((IAdaptable) element).getAdapter(IProject.class);
                 }
                 if (project != null) {
-                    toggleNature(project);
+                    boolean isJavaProject = false;
+                    try {
+                        isJavaProject= project.hasNature(JavaCore.NATURE_ID);
+                    } catch (CoreException e) {
+                        /* swallow */
+                    }
+                    if (isJavaProject) {
+                        toggleNature(JavaCore.create(project));
+                    }
                 }
             }
         }
@@ -80,9 +90,10 @@ public class ToggleNatureAction implements IObjectActionDelegate {
      * @param project
      *            to have sample nature added or removed
      */
-    private static void toggleNature(IProject project) {
+    private static void toggleNature(IJavaProject project) {
         try {
-            IProjectDescription description = project.getDescription();
+            IProject iProject = project.getProject();
+            IProjectDescription description = iProject.getDescription();
             String[] natures = description.getNatureIds();
 
             for (int i = 0; i < natures.length; ++i) {
@@ -92,18 +103,18 @@ public class ToggleNatureAction implements IObjectActionDelegate {
                     System.arraycopy(natures, 0, newNatures, 0, i);
                     System.arraycopy(natures, i + 1, newNatures, i, natures.length - i - 1);
                     description.setNatureIds(newNatures);
-                    project.setDescription(description, null);
+                    iProject.setDescription(description, null);
                     return;
                 }
             }
 
             // Add the nature
-            ensureBndBndExists(project);
+            ensureBndBndExists(iProject);
             String[] newNatures = new String[natures.length + 1];
             System.arraycopy(natures, 0, newNatures, 0, natures.length);
             newNatures[natures.length] = BndtoolsConstants.NATURE_ID;
             description.setNatureIds(newNatures);
-            project.setDescription(description, null);
+            iProject.setDescription(description, null);
         } catch (CoreException e) {}
     }
 
