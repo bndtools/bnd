@@ -39,13 +39,13 @@ public class AnnotationReader extends ClassDataCollector {
 	static Pattern				BINDNAME				= Pattern.compile("(set|add|bind)?(.*)");
 	
 	static Pattern				BINDDESCRIPTORDS10			= Pattern
-																.compile("\\(((L([^;]+);)|Lorg/osgi/framework/ServiceReference;)\\)V");
+																.compile("\\(L(((org/osgi/framework/ServiceReference)|(org/osgi/framework/ServiceObjects)|(java/util/Map))|([^;]+));\\)V");
 	static Pattern				BINDDESCRIPTORDS11			= Pattern
-																.compile("\\(((L([^;]+);)(Ljava/util/Map;)?|Lorg/osgi/framework/ServiceReference;)\\)V");
+																.compile("\\(L([^;]+);(Ljava/util/Map;)?\\)V");
+
+	//includes support for felix extensions
 	static Pattern				BINDDESCRIPTORDS13			= Pattern
-																.compile("\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/framework/ServiceObjects;)|(Ljava/util/Map;)|(L([^;]+);))*\\)(V|Ljava/util/Map;)");
-	static Pattern				BINDDESCRIPTORDS13FELIX		= Pattern
-																.compile("\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/framework/ServiceObjects;)|(Ljava/util/Map;)|(L([^;]+);))*\\)Ljava/util/Map;");
+																.compile("\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/framework/ServiceObjects;)|(Ljava/util/Map;)|(L([^;]+);))+\\)(V|Ljava/util/Map;)");
 
 	static Pattern				LIFECYCLEDESCRIPTORDS10		= Pattern
 																.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)V");
@@ -140,36 +140,52 @@ public class AnnotationReader extends ClassDataCollector {
 
 		if (methods.containsKey(value)) {
 			for (String descriptor : methods.get(value)) {
-				Matcher matcher = BINDDESCRIPTORDS10.matcher(descriptor);
-				if (matcher.matches()) {
-					String type = matcher.group(2);
-					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) 
-							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
-
-						return value;
-					}
-				}
-				matcher = BINDDESCRIPTORDS11.matcher(descriptor);
-				if (matcher.matches()) {
-					String type = matcher.group(2);
-					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) 
-							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
-						rdef.updateVersion(V1_1);
-						return value;
-					}
-				}
-				matcher = BINDDESCRIPTORDS13FELIX.matcher(descriptor);
-				if (felixExtensions && matcher.matches()) {
-					String type = matcher.group(2);
-					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) 
-							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
-						rdef.updateVersion(V1_2);
-						if (component.xmlns == null) {
-							component.xmlns = FELIX_1_2;
-						}
-						return value;
-					}
-				}
+				String service = determineReferenceType(descriptor, rdef, rdef.service, rdef.scope);
+				if (service != null)
+					return value;
+//				Matcher matcher = BINDDESCRIPTORDS10.matcher(descriptor);
+//				if (matcher.matches()) {
+//					String type = matcher.group(2);
+//					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) 
+//							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
+//
+//						return value;
+//					}
+//				}
+//				matcher = BINDDESCRIPTORDS11.matcher(descriptor);
+//				if (matcher.matches()) {
+//					String type = matcher.group(1);
+//					if (rdef.service.equals(Clazz.objectDescriptorToFQN(type)) 
+//							|| type.equals("Lorg/osgi/framework/ServiceReference;")) {
+//						rdef.updateVersion(V1_1);
+//						return value;
+//					}
+//				}
+//				matcher = BINDDESCRIPTORDS13.matcher(descriptor);
+//				if (matcher.matches()) {
+//					String type = matcher.group(5);
+//					if (type == null || rdef.service.equals(Clazz.objectDescriptorToFQN(type))) {
+//						rdef.updateVersion(V1_3);
+//						ReferenceScope scope = rdef.scope;
+//						if (!ReferenceScope.PROTOTYPE.equals(scope) && matcher.group(3) != null) {
+//							analyzer.error(
+//									"In component %s, to use ServiceObjects the scope must be 'prototype'",
+//									component.implementation, "");				
+//						}
+//						if ("Ljava/util/Map;".equals(matcher.group(7))) {
+//							if (!felixExtensions) {
+//								analyzer.error(
+//										"In component %s, to use a return type of Map you must specify -felixExtensions",
+//										component.implementation, "");
+//							}
+//							//TODO rethink how this is signalled.
+//							if (component.xmlns == null) {
+//								component.xmlns = FELIX_1_2;
+//							}
+//						}
+//						return value;
+//					}
+//				}
 			}
 			analyzer.error(
 					"A related method to %s from the reference %s has no proper prototype for class %s. Expected void %s(%s s [,Map m] | ServiceReference r)",
@@ -209,7 +225,7 @@ public class AnnotationReader extends ClassDataCollector {
 		} else if (LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor).matches()) {
 			component.activate = method.getName();	
 			component.updateVersion(V1_1);
-		} else if (felixExtensions && LIFECYCLEDESCRIPTORDS13.matcher(methodDescriptor).matches()) {
+		} else if (felixExtensions && LIFECYCLEDESCRIPTORDS13FELIX.matcher(methodDescriptor).matches()) {
 			component.activate = method.getName();	
 			component.updateVersion(V1_2);
 			if (component.xmlns == null) {
@@ -251,7 +267,7 @@ public class AnnotationReader extends ClassDataCollector {
 		if (LIFECYCLEDESCRIPTORDS11.matcher(method.getDescriptor().toString()).matches()) {
 			component.modified = method.getName();
 			component.updateVersion(V1_1);
-		} else if (felixExtensions && LIFECYCLEDESCRIPTORDS13.matcher(method.getDescriptor().toString()).matches()) {
+		} else if (felixExtensions && LIFECYCLEDESCRIPTORDS13FELIX.matcher(method.getDescriptor().toString()).matches()) {
 			component.modified = method.getName();
 			component.updateVersion(V1_2);
 			if (component.xmlns == null) {
@@ -289,54 +305,17 @@ public class AnnotationReader extends ClassDataCollector {
 		def.bind = method.getName();
 
 		String annoService = raw.get("service");
-		String inferredService = null;
-		// We have to find the type of the current method to
-		// link it to the referenced service.
-		String methodDescriptor = method.getDescriptor().toString();
-		Matcher m = BINDDESCRIPTORDS10.matcher(methodDescriptor);
-		if (m.matches()) {
-			inferredService = Descriptors.binaryToFQN(m.group(3));
-		} else {
-			m = BINDDESCRIPTORDS11.matcher(methodDescriptor);
-			if (m.matches()) {
-				inferredService = Descriptors.binaryToFQN(m.group(3));
-				def.updateVersion(V1_1);
-			} else {
-				m = BINDDESCRIPTORDS13.matcher(methodDescriptor);
-				if (m.matches()) {
-					inferredService = Descriptors.binaryToFQN(m.group(6));
-					def.updateVersion(V1_3);
-					String scope = raw.get("scope");
-					if (!"prototype".equals(scope) && m.group(3) != null) {
-						analyzer.error(
-								"In component %s, to use ServiceObjects the scope must be 'prototype'",
-								component.implementation, "");				
-					}
-					if ("Ljava.util.Map;".equals(m.group(7))) {
-						if (!felixExtensions) {
-							analyzer.error(
-									"In component %s, to use a return type of Map you must specify -felixExtensions",
-									component.implementation, "");
-						}
-						//TODO rethink how this is signalled.
-						if (component.xmlns == null) {
-							component.xmlns = FELIX_1_2;
-						}
-					}
-					} else 
-						throw new IllegalArgumentException(
-								"Cannot detect the type of a Component Reference from the descriptor: "
-										+ method.getDescriptor());
-			}
-		}
-		if (annoService != null) {
-			def.service = Clazz.objectDescriptorToFQN(annoService);
-		} else if (inferredService != null) {
-			def.service = inferredService;
-		} else 
+		if (annoService != null) 
+			annoService = Clazz.objectDescriptorToFQN(annoService);
+		ReferenceScope scope = reference.scope();
+
+		String service = determineReferenceType(method.getDescriptor().toString(), def, annoService, scope);
+		
+		def.service = service;
+		if (service == null)
 			analyzer.error(
-					"In component %s, cannot determine the type of the service",
-					component.implementation, "");
+					"In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
+					component.name, def.name, method.getDescriptor());
 
 		// Check if we have a target, this must be a filter
 		def.target = reference.target();
@@ -351,6 +330,74 @@ public class AnnotationReader extends ClassDataCollector {
 		def.cardinality = reference.cardinality();
 		def.policy = reference.policy();
 		def.policyOption = reference.policyOption();
+		def.scope = reference.scope();
+	}
+
+	private String determineReferenceType(String methodDescriptor, ReferenceDef def, String annoService, ReferenceScope scope) {
+		String inferredService = null;
+		// We have to find the type of the current method to
+		// link it to the referenced service.
+		Matcher m = BINDDESCRIPTORDS10.matcher(methodDescriptor);
+		if (m.matches()) {
+			inferredService = Descriptors.binaryToFQN(m.group(1));
+			if (m.group(3) == null && noMatch(annoService, inferredService)) { //ServiceReference is always OK, match is always OK
+				if (m.group(6) == null) {
+					def.updateVersion(V1_3); // single arg, Map or ServiceObjects, and it's not the service type, so we must be V3.
+				} //if the type is specified it may still not match as it could be a superclass of the specified service.
+			}
+		} else {
+			m = BINDDESCRIPTORDS11.matcher(methodDescriptor);
+			if (m.matches()) {
+				inferredService = Descriptors.binaryToFQN(m.group(1));
+				def.updateVersion(V1_1);
+			} else {
+				m = BINDDESCRIPTORDS13.matcher(methodDescriptor);
+				if (m.matches()) {
+					inferredService = m.group(6);
+					if (inferredService != null)
+						inferredService = Descriptors.binaryToFQN(inferredService);
+					def.updateVersion(V1_3);
+					if (!ReferenceScope.PROTOTYPE.equals(scope) && m.group(3) != null) {
+						analyzer.error(
+								"In component %s, to use ServiceObjects the scope must be 'prototype'",
+								component.implementation, "");				
+					}
+					if ("Ljava/util/Map;".equals(m.group(7))) {
+						if (!felixExtensions) {
+							analyzer.error(
+									"In component %s, to use a return type of Map you must specify -felixExtensions",
+									component.implementation, "");
+						}
+						//TODO rethink how this is signalled.
+						if (component.xmlns == null) {
+							component.xmlns = FELIX_1_2;
+						}
+					}
+				} else { 
+//					analyzer.error(
+//							"In component %s, cannot determine the type of a Component Reference from the descriptor: %s",
+//							component.implementation, methodDescriptor);
+					return null;
+				}
+			}
+		}
+		
+		String service = annoService;
+		if (service == null) 
+			service = inferredService;
+		return service;
+	}
+
+	/**
+	 * 
+	 * @param annoService
+	 * @param inferredService
+	 * @return true if the inferred service is a non-parameter object because it differs from the specified service type.
+	 */
+	private boolean noMatch(String annoService, String inferredService) {
+		if (annoService == null)
+			return false;
+		return !annoService.equals(inferredService);
 	}
 
 	/**

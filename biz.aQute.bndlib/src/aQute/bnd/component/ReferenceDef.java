@@ -21,6 +21,7 @@ class ReferenceDef {
 	String					bind;
 	String					unbind;
 	String					updated;
+	ReferenceScope			scope;
 
 	/**
 	 * Prepare the reference, will check for any errors.
@@ -77,6 +78,9 @@ class ReferenceDef {
 
 		if (policyOption != null)
 			ref.addAttribute("policy-option", policyOption.toString());
+		
+		if (scope != null)
+			ref.addAttribute("scope", scope.toString());
 
 		return ref;
 	}

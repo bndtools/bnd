@@ -735,6 +735,8 @@ public class DSAnnotationTest extends BndTestCase {
 		checkDSFelix12(jar, "test.component.DSAnnotationTest$bind_basicFelix12");
 		// Test Felix12 bind gives Felix 1.2 namespace 
 		checkDSFelix12(jar, "test.component.DSAnnotationTest$unbind_basicFelix12");
+		// Test Felix12 updated gives Felix 1.2 namespace 
+		checkDSFelix12(jar, "test.component.DSAnnotationTest$updated_basicFelix12");
 	}
 
 	private static void checkDSFelix12(Jar jar, String name) throws Exception, XPathExpressionException {
@@ -1231,5 +1233,103 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 		
+	/**
+	 * Check that a DS 1.3 bind method causes a DS 1.3 namespace
+	 *
+	 */
+	@Component()
+	public static class DS13_ref1_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Reference(service=LogService.class)
+		void setLogService(@SuppressWarnings({"unused"})  Map<String, Object> map) {
+
+		}
+
+		void unsetLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
+
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+	public static void testBasic13() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest$DS13_*");
+//		b.setProperty("-ds-felix-extensions", "");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		// Test 1.3 bind gives 1.3 namespace 
+		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref1_basic");
+		// Test Felix12 deactivate gives Felix 1.2 namespace 
+//		checkDS13(jar, "test.component.DSAnnotationTest$deactivate_basicFelix12");
+//		// Test Felix12 modified gives Felix 1.2 namespace 
+//		checkDS13(jar, "test.component.DSAnnotationTest$modified_basicFelix12");
+//		// Test Felix12 bind gives Felix 1.2 namespace 
+//		checkDS13(jar, "test.component.DSAnnotationTest$bind_basicFelix12");
+//		// Test Felix12 bind gives Felix 1.2 namespace 
+//		checkDS13(jar, "test.component.DSAnnotationTest$unbind_basicFelix12");
+//		// Test Felix12 updated gives Felix 1.2 namespace 
+//		checkDS13(jar, "test.component.DSAnnotationTest$updated_basicFelix12");
+	}
+
+	private static void checkDS13(Jar jar, String name) throws Exception, XPathExpressionException {
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr","http://www.osgi.org/xmlns/scr/v1.3.0"); 
+		// Test the defaults
+		xt.assertAttribute(name, "scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute(name, "scr:component/@name");
+
+		xt.assertAttribute("", "scr:component/@configuration-policy");
+		xt.assertAttribute("", "scr:component/@immediate");
+		xt.assertAttribute("", "scr:component/@enabled");
+		xt.assertAttribute("", "scr:component/@factory");
+		xt.assertAttribute("", "scr:component/@servicefactory");
+		xt.assertAttribute("", "scr:component/@configuration-pid");
+		xt.assertAttribute("activate", "scr:component/@activate");
+		xt.assertAttribute("deactivate", "scr:component/@deactivate");
+		xt.assertAttribute("modified", "scr:component/@modified");
+		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+
+		xt.assertAttribute("0", "count(scr:component/properties)");
+		xt.assertAttribute("0", "count(scr:component/property)");
+
+		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
+		xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
+		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
+		xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
+	}
+
 
 }

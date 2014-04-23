@@ -16,7 +16,7 @@ Private-Package: 				\
 	aQute.bnd.*, \
 	aQute.lib.*;-split-package:=first, \
 	aQute.libg.*;-split-package:=first, \
-	org.osgi.service.component.annotations
+	org.osgi.service.component.annotations;-split-package:=first
 
 Export-Package:  \
 	aQute.bnd.annotation.*,\
