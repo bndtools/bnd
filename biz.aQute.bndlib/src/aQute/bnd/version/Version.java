@@ -1,22 +1,28 @@
 package aQute.bnd.version;
 
+import java.io.*;
+import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
 
 public class Version implements Comparable<Version> {
+	public final static String	VERSION_STRING				= "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9})(\\.([-_\\da-zA-Z]+))?)?)?";
+	public final static String	VERSION_STRING_NON_STRICT3	= "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9})([\\.-]([-_\\da-zA-Z]+))?)?)?";
+	public final static String	VERSION_STRING_NON_STRICT2	= "(\\d{1,9})(\\.(\\d{1,9})([\\.-]([-_\\da-zA-Z]+))?)?";
+	public final static String	VERSION_STRING_NON_STRICT1	= "(\\d{1,9})([\\.-]([-_\\da-zA-Z]+))?";
+	public final static Pattern	VERSION						= Pattern.compile(VERSION_STRING);
+	public final static Version	LOWEST						= new Version();
+	public final static Version	ONE							= new Version(1, 0, 0);
+	public final static Version	HIGHEST						= new Version(Integer.MAX_VALUE, Integer.MAX_VALUE,
+																	Integer.MAX_VALUE, "\uFFFF");	
+	public final static Version	emptyVersion				= LOWEST;
+
 	final int					major;
 	final int					minor;
 	final int					micro;
 	final String				qualifier;
-	public final static String	VERSION_STRING	= "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9})(\\.([-_\\da-zA-Z]+))?)?)?";
-	public final static Pattern	VERSION			= Pattern.compile(VERSION_STRING);
-	public final static Version	LOWEST			= new Version();
-	public final static Version	HIGHEST			= new Version(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE,
-														"\uFFFF");
 
-	public static final Version	emptyVersion	= LOWEST;
-	public static final Version	ONE				= new Version(1, 0, 0);
 
 	public Version() {
 		this(0);
@@ -287,6 +293,149 @@ public class Version implements Comparable<Version> {
 			char c = modifier.charAt(i);
 			if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c == '-')
 				result.append(c);
+		}
+	}
+
+	/**
+	 * Ordered list of manifest headers that are used by
+	 * {@link #fromManifest(Manifest, boolean)}
+	 */
+	static private final String[] VERSION_HEADERS = {
+			Constants.BUNDLE_VERSION /* MUST be first */,
+			"Implementation-Version",
+			"Specification-Version",
+			"Version"
+		};
+
+	/**
+	 * <p>
+	 * Get the version from a manifest
+	 * </p>
+	 * <p>
+	 * Loop over the headers listed in {@link #VERSION_HEADERS}: when the header
+	 * is set in the manifest _and_ its value denotes a valid version, then
+	 * return that version.
+	 * </p>
+	 * <p>
+	 * For headers other than {@link Constants#BUNDLE_VERSION}: the header value
+	 * will be cleaned up by {@link #cleanupVersion(String)} before constructing
+	 * a Version.
+	 * </p>
+	 * <p>
+	 * If construction of a Version fails then the header's value doesn't denote
+	 * a valid version and the next header is tried: invalid versions are
+	 * ignored.
+	 * </p>
+	 * 
+	 * @param manifest
+	 *            the manifest
+	 * @param strict
+	 *            when true then only the {@link Constants#BUNDLE_VERSION}
+	 *            header is tried
+	 * @return null when manifest is null or when there is no valid version in
+	 *         the manifest, the version from the manifest otherwise
+	 */
+	static public Version fromManifest(Manifest manifest, boolean strict) {
+		if (manifest == null) {
+			return null;
+		}
+
+		Attributes attributes = manifest.getMainAttributes();
+		if (!attributes.isEmpty()) {
+			for (int index = 0; index < VERSION_HEADERS.length; index++) {
+				String headerValue = attributes.getValue(VERSION_HEADERS[index]);
+				headerValue = (headerValue == null) ? "" : headerValue.trim();
+				if (headerValue.length() > 0) {
+					try {
+						if (index != 0) {
+							headerValue = cleanupVersion(headerValue);
+						}
+						Version version = new Version(headerValue);
+						return version;
+					}
+					catch (Exception e) {
+						/* not a valid version */
+					}
+				}
+				if (strict) {
+					/* not a valid bundle version */
+					return null;
+				}
+			}
+		}
+
+		/* not a valid version */
+		return null;
+	}
+
+	/**
+	 * The regular expression used by {@link #fromFileName(String, boolean)} for
+	 * strict mode matching
+	 */
+	public final static Pattern	REPO_FILE_STRICT			= Pattern.compile("\\s*(?:([-\\w\\._]+?)\\s*-\\s*)("
+																	+ VERSION_STRING + "|"
+																	+ Constants.VERSION_ATTR_LATEST + ")\\s*\\.(jar|lib)");
+
+	/**
+	 * The regular expression used by {@link #fromFileName(String, boolean)} for
+	 * non-strict mode matching
+	 */
+	public final static Pattern	REPO_FILE_NONSTRICT			= Pattern.compile("\\s*(?:([-a-zA-z0-9_\\.]+?)\\s*-\\s*)("
+																	+ VERSION_STRING_NON_STRICT3 + "|"
+																	+ VERSION_STRING_NON_STRICT2 + "|"
+																	+ VERSION_STRING_NON_STRICT1 + "|"
+																	+ Constants.VERSION_ATTR_LATEST + ")\\s*\\.(jar|lib)");
+
+	/**
+	 * <p>
+	 * Get the version from a a file name
+	 * </p>
+	 * <p>
+	 * In non-strict mode the version that is taken from the file name will be
+	 * cleaned up by {@link #cleanupVersion(String)} before constructing a
+	 * Version (when it is not {@link Constants#VERSION_ATTR_LATEST}).
+	 * </p>
+	 * 
+	 * @param fileName
+	 *            the file name
+	 * @param strict
+	 *            true to match against {@link #REPO_FILE_STRICT}, false to
+	 *            match against {@link #REPO_FILE_NONSTRICT}
+	 * @return null when fileName is null, when fileName does not denote a
+	 *         '*.jar' file, when fileName contains no version, when fileName
+	 *         contains an invalid version, {@link #HIGHEST} when the version in
+	 *         fileName is {@link Constants#VERSION_ATTR_LATEST}, the version
+	 *         otherwise
+	 */
+	static public Version fromFileName(String fileName, boolean strict) {
+		if (fileName == null) {
+			return null;
+		}
+
+		String baseName = new File(fileName).getName();
+
+		Matcher m = (strict ? REPO_FILE_STRICT : REPO_FILE_NONSTRICT).matcher(baseName);
+		if (!m.matches()) {
+			return null;
+		}
+
+		/* there is a version in the fileName */
+
+		String fileNameVersion = m.group(2);
+		if (fileNameVersion.equals(Constants.VERSION_ATTR_LATEST)) {
+			/* the fileName version is 'latest' */
+			return HIGHEST;
+		}
+
+		if (!strict) {
+			fileNameVersion = cleanupVersion(fileNameVersion);
+		}
+
+		try {
+			return new Version(fileNameVersion);
+		}
+		catch (Exception e) {
+			return null;
 		}
 	}
 }
