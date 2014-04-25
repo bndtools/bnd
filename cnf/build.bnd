@@ -62,7 +62,7 @@ javac.ee:                 '[1.5,1.6)'
 
 
 # Master Version Settings
-base-version:             2.3.0.RC1
+base-version:             2.3.0.RC2
 version-qualifier:        ${tstamp;yyyyMMdd-HHmm}-${Git-Descriptor}
 master-version:           ${base-version}-${version-qualifier}
 
