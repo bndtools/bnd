@@ -86,4 +86,6 @@ public class ClassDataCollector {
 	 */
 	public void referTo(TypeRef typeRef, int modifiers) {}
 
+	public void annotationDefault(Clazz.MethodDef last) {}
+
 }

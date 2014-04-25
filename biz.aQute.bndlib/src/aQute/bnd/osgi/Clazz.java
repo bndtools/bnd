@@ -728,8 +728,9 @@ public class Clazz {
 				int descriptor_index = in.readUnsignedShort();
 				String name = pool[name_index].toString();
 				String descriptor = pool[descriptor_index].toString();
+				MethodDef mdef = null;
 				if (cd != null) {
-					MethodDef mdef = new MethodDef(access_flags, name, descriptor);
+					mdef = new MethodDef(access_flags, name, descriptor);
 					last = mdef;
 					cd.method(mdef);
 				}
@@ -947,9 +948,13 @@ public class Clazz {
 			doSignature(in, member, access_flags);
 		else if ("ConstantValue".equals(attributeName))
 			doConstantValue(in);
-		else if ("AnnotationDefault".equals(attributeName))
-			doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
-		else if ("Exceptions".equals(attributeName))
+		else if ("AnnotationDefault".equals(attributeName)) {
+			Object value = doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
+			if (last instanceof MethodDef) {
+				((MethodDef)last).constant = value;
+				cd.annotationDefault((MethodDef)last);
+			}
+		} else if ("Exceptions".equals(attributeName))
 			doExceptions(in, access_flags);
 		else {
 			if (attribute_length > 0x7FFFFFFF) {

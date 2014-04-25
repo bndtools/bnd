@@ -53,6 +53,11 @@ public class AnnotationReader extends ClassDataCollector {
 																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)(V|(Ljava/util/Map;))");
 	static Pattern				LIFECYCLEDESCRIPTORDS13		= Pattern
 																.compile("\\((L([^;]+);)*\\)(V|(Ljava/util/Map;))");
+	static Pattern				LIFECYCLEARGUMENT			= Pattern
+																.compile("((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(L([^;]+);))");	
+
+	static Pattern				IDENTIFIERTOPROPERTY		= Pattern
+																.compile("(__)|(_)|(\\$\\$)|(\\$)");
 
 	static Pattern				DEACTIVATEDESCRIPTORDS11	= Pattern
 																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)(V|(Ljava/util/Map;))");
@@ -193,6 +198,7 @@ public class AnnotationReader extends ClassDataCollector {
 					component.activate = method.getName();	
 					component.updateVersion(V1_3);
 					hasMapReturnType = m.group(4) != null;
+					processAnnotationArguments(methodDescriptor);
 
 				} else 
 					analyzer.error(
@@ -202,6 +208,84 @@ public class AnnotationReader extends ClassDataCollector {
 		}
 		checkMapReturnType(hasMapReturnType);
 
+	}
+
+	/**
+	 * look for annotation arguments and extract properties from them
+	 * @param methodDescriptor
+	 */
+	private void processAnnotationArguments(String methodDescriptor) {
+		Matcher m = LIFECYCLEARGUMENT.matcher(methodDescriptor);
+		while (m.find()) {
+			String type = m.group(6);
+			if (type != null) {
+				TypeRef typeRef = analyzer.getTypeRef(type);
+				try {
+					Clazz clazz = analyzer.findClass(typeRef);
+					if (clazz.isAnnotation()) {
+						clazz.parseClassFileWithCollector(new ClassDataCollector() {
+
+							@Override
+							public void annotationDefault(Clazz.MethodDef defined) {
+								Object value = defined.getConstant();
+								//check type, exit with warning if annotation or annotation array
+								if (value != null) {
+									String name = identifierToPropertyName(defined.getName());
+									if (value.getClass().isArray()) {
+										//add element individually
+										for (int i = 0; i< Array.getLength(value); i++) {
+											Object element = Array.get(value, i);
+											valueToProperty(defined, element);
+										}
+									} else
+									valueToProperty(defined, value);
+								}
+							}
+
+							private void valueToProperty(MethodDef defined, Object value) {
+								value = convertValue(value);
+								String key = defined.getName() + ":" + value.getClass().getSimpleName();
+								component.property.add(key, value.toString());
+							}
+
+							private Object convertValue(Object value) {
+								if (value instanceof Class<?>)
+									return ((Class<?>)value).getName();
+								if (value.getClass().isEnum())
+									return ((Enum)value).name();
+								return value;
+							}
+
+							private String identifierToPropertyName(String name) {
+								Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
+								StringBuffer b = new StringBuffer();
+								while (m.matches()) {
+									String replace = "";
+									if (m.group(1) != null) // __ to _
+										replace = "_";
+									else if (m.group(2) != null) // _ to .
+										replace = ".";
+									else if (m.group(3) != null) // $$ to $
+										replace = "$";
+									//group 4 $ removed.
+									m.appendReplacement(b, replace); 
+								}
+								m.appendTail(b);
+								return b.toString();
+							}
+
+						});
+					} else if (clazz.isInterface() && felixExtensions) {
+						//ok
+					} else {
+						analyzer.error("Non annotation argument to lifecycle method with descriptor %s,  type %s", methodDescriptor, type);
+					}
+				}
+				catch (Exception e) {
+					analyzer.error("Exception looking at annotation argument to lifecycle method with descriptor %s,  type %s", e, methodDescriptor, type);
+				}
+			}
+		}
 	}
 
 	/**

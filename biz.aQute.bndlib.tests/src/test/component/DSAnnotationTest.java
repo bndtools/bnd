@@ -1233,6 +1233,9 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
+	public @interface NoDefaults {
+		String string();
+	}
 	/**
 	 * Check that a DS 1.3 activate method causes a DS 1.3 namespace
 	 */
@@ -1241,7 +1244,7 @@ public class DSAnnotationTest extends BndTestCase {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") Component anno) {}
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno) {}
 
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
@@ -1280,7 +1283,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") Component anno) {}
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno) {}
 
 		@Modified
 		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
@@ -1319,7 +1322,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") Component anno) {}
+		void modified(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno) {}
 
 		@Reference(service=LogService.class)
 		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
@@ -1616,6 +1619,56 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("", "scr:component/reference[1]/@target");
 		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
 	}
+	
+	public @interface Config1 {
+		String string() default "foo";
+		int myInt() default 1;
+		float myFloat() default 1.0f;
+	}
 
+	@Component()
+	public static class DS13anno_config1_basic implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
 
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")Config1 config1) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	public static void testAnnoConfig13() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest$DS13anno_*");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+		Resource r = jar.getResource("OSGI-INF/" + DS13anno_config1_basic.class.getName() + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr","http://www.osgi.org/xmlns/scr/v1.3.0"); 
+fail();
+//		// Test 1.3 signature methods give 1.3 namespace 
+//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_activate_basic", "");
+//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_deactivate_basic", "");
+//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_modified_basic", "");
+//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_bind_basic", "");
+//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_unbind_basic", "");
+//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_updated_basic", "");
+//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_scope_basic", "");
+//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_pids_basic", "pid1 pid2");
+//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_dollar_pids_basic", "test.component.DSAnnotationTest$DS13_dollar_pids_basic pid2");
+	}
 }
