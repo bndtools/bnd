@@ -28,7 +28,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		Domain domain = Domain.domain(manifest);
 		MimeType mimeType = MimeType.Jar;
 
-		if (resource.getBsn() != null) {
+		if (resource.getBsn(true) != null) {
 			mimeType = MimeType.Bundle;
 
 			if (domain.getFragmentHost() != null)

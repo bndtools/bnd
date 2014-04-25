@@ -230,9 +230,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 		Jar jar = new Jar(tmpFile);
 		try {
-			String bsn = jar.getBsn();
+			String bsn = jar.getBsn(true);
 			if (bsn == null || !Verifier.isBsn(bsn))
-				throw new IllegalArgumentException("Jar does not have a " + Constants.BUNDLE_SYMBOLICNAME + " manifest header");
+				throw new IllegalArgumentException("Jar does not have a symbolic name");
 
 			File dir = new File(storageDir, bsn);
 			if (dir.exists() && !dir.isDirectory())

@@ -115,9 +115,9 @@ public class ProjectBuilder extends Builder {
 		Version newer = new Version(getVersion());
 		Version older = new Version(fromRepo.getVersion());
 
-		if (!getBsn().equals(fromRepo.getBsn())) {
+		if (!getBsn().equals(fromRepo.getBsn(true))) {
 			error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(),
-					fromRepo.getBsn());
+					fromRepo.getBsn(true));
 			return;
 		}
 

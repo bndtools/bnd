@@ -42,7 +42,7 @@ public class KnownBundleAnalyzer implements ResourceAnalyzer {
 
 	public void analyzeResource(Jar resource, ResourceBuilder rb) throws Exception {
 		
-		String bsn = resource.getBsn();
+		String bsn = resource.getBsn(true);
 		if ( bsn == null)
 			return;
 		

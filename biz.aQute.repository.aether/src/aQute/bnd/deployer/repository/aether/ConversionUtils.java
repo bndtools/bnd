@@ -17,7 +17,7 @@ final class ConversionUtils {
 		String groupId;
 		String artifactId;
 
-		String bsn = jar.getBsn();
+		String bsn = jar.getBsn(true);
 
 		groupId = jar.getManifest().getMainAttributes().getValue("Maven-GroupId");
 		if (groupId != null) {

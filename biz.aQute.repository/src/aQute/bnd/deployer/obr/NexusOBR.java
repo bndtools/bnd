@@ -211,7 +211,7 @@ public class NexusOBR extends AbstractIndexedRepo {
 		String bsn;
 		Jar jar = new Jar(tmpFile);
 		try {
-			bsn = jar.getBsn();
+			bsn = jar.getBsn(true);
 			if (bsn == null || !Verifier.isBsn(bsn))
 				throw new IllegalArgumentException(
 						"Jar does not have a " + Constants.BUNDLE_SYMBOLICNAME + " manifest header");

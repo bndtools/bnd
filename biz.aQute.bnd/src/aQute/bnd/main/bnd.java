@@ -2387,7 +2387,7 @@ public class bnd extends Processor {
 				error("No such file: %ss", f);
 			} else {
 				Jar jar = new Jar(f);
-				if (jar.getManifest() == null || jar.getBsn() == null)
+				if (jar.getManifest() == null || jar.getBsn(true) == null)
 					error("Not a bundle %s", f);
 				else {
 					Verifier v = new Verifier(jar);
