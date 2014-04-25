@@ -1619,11 +1619,18 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("", "scr:component/reference[1]/@target");
 		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
 	}
+
+	public enum foo {A, B}
 	
 	public @interface Config1 {
 		String string() default "foo";
 		int myInt() default 1;
 		float myFloat() default 1.0f;
+		int[] myIntArray() default {2, 3};
+		String[] myStringArray() default {"foo", "bar"};
+		Class<?> myClass() default Config1.class;
+		Class<?>[] myClassArray() default {Config1.class, Config1.class};
+		foo myEnum() default foo.A;
 	}
 
 	@Component()

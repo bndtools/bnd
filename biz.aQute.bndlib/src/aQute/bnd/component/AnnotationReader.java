@@ -214,7 +214,7 @@ public class AnnotationReader extends ClassDataCollector {
 	 * look for annotation arguments and extract properties from them
 	 * @param methodDescriptor
 	 */
-	private void processAnnotationArguments(String methodDescriptor) {
+	private void processAnnotationArguments(final String methodDescriptor) {
 		Matcher m = LIFECYCLEARGUMENT.matcher(methodDescriptor);
 		while (m.find()) {
 			String type = m.group(6);
@@ -229,31 +229,43 @@ public class AnnotationReader extends ClassDataCollector {
 							public void annotationDefault(Clazz.MethodDef defined) {
 								Object value = defined.getConstant();
 								//check type, exit with warning if annotation or annotation array
+								boolean isClass = false;
+								TypeRef type = defined.getType().getClassRef();
+								if (!type.isPrimitive()) {
+									if (Class.class.getName().equals(type.getFQN())) {
+										isClass = true;
+									} else {
+										try {
+											Clazz r = analyzer.findClass(type);
+											if (r.isAnnotation()) {
+												analyzer.warning("Nested annotation type found in field % s, %s", defined.getName(), type.getFQN());
+												return;
+											}
+										} catch (Exception e) {
+											analyzer.error("Exception looking at annotation type to lifecycle method with descriptor %s,  type %s", e, methodDescriptor, type);
+										}
+									}
+								}
 								if (value != null) {
 									String name = identifierToPropertyName(defined.getName());
 									if (value.getClass().isArray()) {
 										//add element individually
 										for (int i = 0; i< Array.getLength(value); i++) {
 											Object element = Array.get(value, i);
-											valueToProperty(defined, element);
+											valueToProperty(defined, element, isClass);
 										}
 									} else
-									valueToProperty(defined, value);
+									valueToProperty(defined, value, isClass);
 								}
 							}
 
-							private void valueToProperty(MethodDef defined, Object value) {
-								value = convertValue(value);
+							private void valueToProperty(MethodDef defined, Object value, boolean isClass) {
+								if (isClass) {
+									value = Clazz.objectDescriptorToFQN((String) value);
+								}
+								//enums already come out as the enum name, no processing needed.
 								String key = defined.getName() + ":" + value.getClass().getSimpleName();
 								component.property.add(key, value.toString());
-							}
-
-							private Object convertValue(Object value) {
-								if (value instanceof Class<?>)
-									return ((Class<?>)value).getName();
-								if (value.getClass().isEnum())
-									return ((Enum)value).name();
-								return value;
 							}
 
 							private String identifierToPropertyName(String name) {
