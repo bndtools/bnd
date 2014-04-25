@@ -199,7 +199,6 @@ public class AnnotationReader extends ClassDataCollector {
 					component.updateVersion(V1_3);
 					hasMapReturnType = m.group(4) != null;
 					processAnnotationArguments(methodDescriptor);
-
 				} else 
 					analyzer.error(
 							"Activate method for %s descriptor %s is not acceptable.",
@@ -208,6 +207,66 @@ public class AnnotationReader extends ClassDataCollector {
 		}
 		checkMapReturnType(hasMapReturnType);
 
+	}
+
+
+	/**
+	 * 
+	 */
+	protected void doDeactivate() {
+		String methodDescriptor = method.getDescriptor().toString();
+		boolean hasMapReturnType = false;
+		Matcher m = LIFECYCLEDESCRIPTORDS10.matcher(methodDescriptor);
+		if ( "deactivate".equals(method.getName()) && m.matches()) {
+			component.deactivate = method.getName();			
+			hasMapReturnType = m.group(3) != null;
+		} else {
+			m = DEACTIVATEDESCRIPTORDS11.matcher(methodDescriptor);
+			if (m.matches()) {
+				component.deactivate = method.getName();
+				component.updateVersion(V1_1);
+				hasMapReturnType = m.group(8) != null;
+			} else {
+				m = DEACTIVATEDESCRIPTORDS13.matcher(methodDescriptor);
+				if (m.matches()) {
+					component.deactivate = method.getName();
+					component.updateVersion(V1_3);
+					hasMapReturnType = m.group(6) != null;
+					processAnnotationArguments(methodDescriptor);
+				} else
+					analyzer.error(
+							"Deactivate method for %s descriptor %s is not acceptable.",
+							clazz, method.getDescriptor());
+			}
+		}
+		checkMapReturnType(hasMapReturnType);
+	}
+
+	/**
+	 * 
+	 */
+	protected void doModified() {
+		String methodDescriptor = method.getDescriptor().toString();
+		boolean hasMapReturnType = false;
+		Matcher m = LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor);
+		if (m.matches()) {
+			component.modified = method.getName();
+			component.updateVersion(V1_1);
+			hasMapReturnType = m.group(6) != null;
+		} else {
+			m = LIFECYCLEDESCRIPTORDS13.matcher(methodDescriptor);
+			if (m.matches()) {
+				component.modified = method.getName();
+				component.updateVersion(V1_3);
+				hasMapReturnType = m.group(4) != null;
+				processAnnotationArguments(methodDescriptor);
+			} else
+
+				analyzer.error(
+						"Modified method for %s descriptor %s is not acceptable.",
+						clazz, method.getDescriptor());
+		}
+		checkMapReturnType(hasMapReturnType);
 	}
 
 	/**
@@ -230,6 +289,7 @@ public class AnnotationReader extends ClassDataCollector {
 								Object value = defined.getConstant();
 								//check type, exit with warning if annotation or annotation array
 								boolean isClass = false;
+								boolean isCharacter = false;
 								TypeRef type = defined.getType().getClassRef();
 								if (!type.isPrimitive()) {
 									if (Class.class.getName().equals(type.getFQN())) {
@@ -245,6 +305,8 @@ public class AnnotationReader extends ClassDataCollector {
 											analyzer.error("Exception looking at annotation type to lifecycle method with descriptor %s,  type %s", e, methodDescriptor, type);
 										}
 									}
+								} else if ("char".equals(type.getFQN())) {
+									isCharacter = true;
 								}
 								if (value != null) {
 									String name = identifierToPropertyName(defined.getName());
@@ -252,19 +314,20 @@ public class AnnotationReader extends ClassDataCollector {
 										//add element individually
 										for (int i = 0; i< Array.getLength(value); i++) {
 											Object element = Array.get(value, i);
-											valueToProperty(defined, element, isClass);
+											valueToProperty(defined, element, isClass, isCharacter);
 										}
 									} else
-									valueToProperty(defined, value, isClass);
+									valueToProperty(defined, value, isClass, isCharacter);
 								}
 							}
 
-							private void valueToProperty(MethodDef defined, Object value, boolean isClass) {
+							private void valueToProperty(MethodDef defined, Object value, boolean isClass, boolean isCharacter) {
 								if (isClass) {
 									value = Clazz.objectDescriptorToFQN((String) value);
 								}
+								Class<?> typeClass = isCharacter? Character.class: value.getClass();
 								//enums already come out as the enum name, no processing needed.
-								String key = defined.getName() + ":" + value.getClass().getSimpleName();
+								String key = defined.getName() + ":" + typeClass.getSimpleName();
 								component.property.add(key, value.toString());
 							}
 
@@ -298,63 +361,6 @@ public class AnnotationReader extends ClassDataCollector {
 				}
 			}
 		}
-	}
-
-	/**
-	 * 
-	 */
-	protected void doDeactivate() {
-		String methodDescriptor = method.getDescriptor().toString();
-		boolean hasMapReturnType = false;
-		Matcher m = LIFECYCLEDESCRIPTORDS10.matcher(methodDescriptor);
-		if ( "deactivate".equals(method.getName()) && m.matches()) {
-			component.deactivate = method.getName();			
-			hasMapReturnType = m.group(3) != null;
-		} else {
-			m = DEACTIVATEDESCRIPTORDS11.matcher(methodDescriptor);
-			if (m.matches()) {
-				component.deactivate = method.getName();
-				component.updateVersion(V1_1);
-				hasMapReturnType = m.group(8) != null;
-			} else {
-				m = DEACTIVATEDESCRIPTORDS13.matcher(methodDescriptor);
-				if (m.matches()) {
-					component.deactivate = method.getName();
-					component.updateVersion(V1_3);
-					hasMapReturnType = m.group(6) != null;
-				} else
-					analyzer.error(
-							"Deactivate method for %s descriptor %s is not acceptable.",
-							clazz, method.getDescriptor());
-			}
-		}
-		checkMapReturnType(hasMapReturnType);
-	}
-
-	/**
-	 * 
-	 */
-	protected void doModified() {
-		String methodDescriptor = method.getDescriptor().toString();
-		boolean hasMapReturnType = false;
-		Matcher m = LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor);
-		if (m.matches()) {
-			component.modified = method.getName();
-			component.updateVersion(V1_1);
-			hasMapReturnType = m.group(6) != null;
-		} else {
-			m = LIFECYCLEDESCRIPTORDS13.matcher(methodDescriptor);
-			if (m.matches()) {
-				component.modified = method.getName();
-				component.updateVersion(V1_3);
-				hasMapReturnType = m.group(4) != null;
-			} else
-
-				analyzer.error(
-						"Modified method for %s descriptor %s is not acceptable.",
-						clazz, method.getDescriptor());
-		}
-		checkMapReturnType(hasMapReturnType);
 	}
 
 	/**
@@ -444,9 +450,6 @@ public class AnnotationReader extends ClassDataCollector {
 					}
 					hasMapReturnType = m.group(8) != null;
 				} else { 
-//					analyzer.error(
-//							"In component %s, cannot determine the type of a Component Reference from the descriptor: %s",
-//							component.implementation, methodDescriptor);
 					return null;
 				}
 			}
