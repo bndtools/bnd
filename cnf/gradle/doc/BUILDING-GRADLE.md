@@ -494,9 +494,15 @@ This is in addition to the ```clean``` task that is defined by the Java plugin.
 
 ## All Projects
 
-### Index Tasks
+### index
 
-#### Index Tasks Configuration
+This task can create one or more of the following:
+* an uncompressed OBR index
+* an uncompressed R5 index
+* a compressed OBR index
+* a compressed R5 index
+
+These indexes are generated from/for one or more configured directories.
 
 Which directories are indexed is controlled by
 the ```gradleBuild_indexDirectories``` property. Its **syntax** is:
@@ -524,10 +530,9 @@ above):
 syntax,syntax,...
 ```
 
-#### indexOBR
-
-This task creates an uncompressed OBR index and/or a compressed OBR index of
-one or more configured directories.
+This task is automatically disabled when no index directories have been defined
+or when no OBR indexes **and** no R5 indexes are configured to be created
+(either uncompressed or compressed).
 
 OBR index generation is controlled by the properties
 
@@ -537,16 +542,6 @@ OBR index generation is controlled by the properties
 * &nbsp;```gradleBuild_indexOBRCompressed``` if set to ```true``` then a
   compressed OBR index is generated.
 
-This task is automatically disabled when no index directories have been defined
-or when no OBR indexes are configured to be created (either uncompressed or
-compressed).
-
-#### indexR5
-
-This task creates an uncompressed R5 index and/or a compressed R5 index of
-one or more configured directories, and is completely equivalent to
-the ```indexOBR``` task.
-
 R5 index generation is controlled by the properties
 
 * &nbsp;```gradleBuild_indexR5Uncompressed```: if set to ```true``` then an
@@ -554,18 +549,6 @@ R5 index generation is controlled by the properties
 
 * &nbsp;```gradleBuild_indexR5Compressed``` if set to ```true``` then a
   compressed R5 index is generated.
-
-This task is automatically disabled when no index directories have been defined
-or when no R5 indexes are configured to be created (either uncompressed or
-compressed).
-
-### index
-
-This task simply runs the ```indexOBR``` and ```indexR5``` tasks.
-
-This task is automatically disabled when no index directories have been defined
-or when no OBR indexes **and** no R5 indexes are configured to be created
-(either uncompressed or compressed).
 
 ### cleanNeeded
 

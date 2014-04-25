@@ -302,8 +302,7 @@ p2Plugins.dependsOn                 += [p2PluginsMain, p2PluginsExtras]
 
 p2.dependsOn                        += [p2Features,    p2Plugins      ]
 
-indexOBR.dependsOn                  += [p2]
-indexR5.dependsOn                   += [p2]
+index.dependsOn                     += [p2]
 
 distZipMain.dependsOn               += [index                         ]
 distCompositeExtras.dependsOn       += [index                         ]
