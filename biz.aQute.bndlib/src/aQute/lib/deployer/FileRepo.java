@@ -318,7 +318,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		Jar tmpJar = new Jar(tmpFile);
 		try {
-			String bsn = tmpJar.getBsn(true);
+			String bsn = tmpJar.getBsn(false);
+
 			if (bsn == null)
 				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
 
