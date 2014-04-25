@@ -169,8 +169,6 @@ digraph GradleSetup {
     subgraph cluster21 {
       label="";
       style=invis;
-      indexOBR             [shape=box, style=filled, fillcolor=cyan     , label="indexOBR"            ]
-      indexR5              [shape=box, style=filled, fillcolor=cyan     , label="indexR5"             ]
       index                [shape=box, style=filled, fillcolor=cyan     , label="index"               ]
     }
 
@@ -182,9 +180,6 @@ digraph GradleSetup {
       distclean            [shape=box, style=filled, fillcolor=cyan     , label="distclean"           ]
       distcleanNeeded      [shape=box, style=filled, fillcolor=cyan     , label="distcleanNeeded"     ]
     }
-
-    indexOBR               -> index
-    indexR5                -> index
 
     clean                  -> cleanNeeded        [color=blue  ]
     cleanNeeded            -> cleanNeeded        [color=red   ]

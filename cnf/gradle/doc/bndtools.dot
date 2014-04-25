@@ -169,8 +169,6 @@ digraph GradleSetup {
     subgraph cluster21 {
       label="";
       style=invis;
-      indexOBR             [shape=box, style=filled, fillcolor=cyan     , label="indexOBR"            ]
-      indexR5              [shape=box, style=filled, fillcolor=cyan     , label="indexR5"             ]
       index                [shape=box, style=filled, fillcolor=cyan     , label="index"               ]
     }
 
@@ -182,9 +180,6 @@ digraph GradleSetup {
       distclean            [shape=box, style=filled, fillcolor=cyan     , label="distclean"           ]
       distcleanNeeded      [shape=box, style=filled, fillcolor=cyan     , label="distcleanNeeded"     ]
     }
-
-    indexOBR               -> index
-    indexR5                -> index
 
     clean                  -> cleanNeeded        [color=blue  ]
     cleanNeeded            -> cleanNeeded        [color=red   ]
@@ -216,8 +211,6 @@ digraph GradleSetup {
 
     p2                     [shape=box, style=filled, fillcolor=cyan      , label="p2"                   ]
 
-    indexOBRBuild          [shape=box, style=filled, fillcolor=cyan      , label="indexOBR"             ]
-    indexR5Build           [shape=box, style=filled, fillcolor=cyan      , label="indexR5"              ]
     indexBuild             [shape=box, style=filled, fillcolor=cyan      , label="index"                ]
 
     distZipMain            [shape=box, style=filled, fillcolor=none      , label="distZipMain"          ]
@@ -245,10 +238,7 @@ digraph GradleSetup {
     p2Features             -> p2
     p2Plugins              -> p2
 
-    p2                     -> indexOBRBuild
-    p2                     -> indexR5Build
-    indexOBRBuild          -> indexBuild
-    indexR5Build           -> indexBuild
+    p2                     -> indexBuild
 
     indexBuild             -> distZipMain
     indexBuild             -> distCompositeExtras
