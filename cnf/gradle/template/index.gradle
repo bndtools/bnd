@@ -170,27 +170,18 @@ void createIndexes(boolean r5, boolean uncompressed, boolean compressed) {
  * Setup tasks
  */
 
-task indexOBR {
-  description "Generate an OBR repository index (set the '$gradleBuild_indexDirectoriesProperty' property)"
-  group       "Release"
-
-  doLast {
-    createIndexes(false, gradleBuild_indexOBRUncompressed, gradleBuild_indexOBRCompressed)
-  }
-}
-
-task indexR5 {
-  description "Generate an R5 repository index (set the '$gradleBuild_indexDirectoriesProperty' property)"
-  group       "Release"
-
-  doLast {
-    createIndexes(true , gradleBuild_indexR5Uncompressed , gradleBuild_indexR5Compressed )
-  }
-}
-
 task index {
   description "Generate OBR and R5 repository indexes (set the '$gradleBuild_indexDirectoriesProperty' property)"
   group       "Release"
+
+  doLast {
+    if (gradleBuild_indexOBRUncompressed || gradleBuild_indexOBRCompressed) {
+      createIndexes(false, gradleBuild_indexOBRUncompressed, gradleBuild_indexOBRCompressed)
+    }
+    if (gradleBuild_indexR5Uncompressed  || gradleBuild_indexR5Compressed ) {
+      createIndexes(true , gradleBuild_indexR5Uncompressed , gradleBuild_indexR5Compressed )
+    }
+  }
 }
 
 
@@ -198,22 +189,16 @@ task index {
  * Setup task dependencies
  */
 
-index.dependsOn             += [indexOBR, indexR5]
-
 
 /*
  * Setup task skipping
  */
 
-ext.gradleBuild_doIndexOBR =
+ext.gradleBuild_doIndex =
   !gradleBuild_indexDirectories.isEmpty() &&
-   (gradleBuild_indexOBRUncompressed || gradleBuild_indexOBRCompressed)
+   (gradleBuild_indexOBRUncompressed
+    || gradleBuild_indexOBRCompressed
+    || gradleBuild_indexR5Uncompressed
+    || gradleBuild_indexR5Compressed  )
 
-ext.gradleBuild_doIndexR5  =
-  !gradleBuild_indexDirectories.isEmpty() &&
-   (gradleBuild_indexR5Uncompressed  || gradleBuild_indexR5Compressed )
-
-
-indexOBR.onlyIf { gradleBuild_doIndexOBR                          }
-indexR5.onlyIf  { gradleBuild_doIndexR5                           }
-index.onlyIf    { gradleBuild_doIndexOBR || gradleBuild_doIndexR5 }
+index.onlyIf    { gradleBuild_doIndex }
