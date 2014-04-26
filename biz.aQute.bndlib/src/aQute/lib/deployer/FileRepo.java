@@ -63,9 +63,16 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Property name for the readonly state of the repository. If no, will
 	 * read/write, otherwise it must be a boolean value read by
 	 * {@link Boolean#parseBoolean(String)}. Read only repositories will not
-	 * accept writes.
+	 * accept writes. Defaults to false.
 	 */
 	public final static String				READONLY			= "readonly";
+
+	/**
+	 * Property name for the latest option of the repository. If true, will copy
+	 * the put jar to a 'latest' file (option must be a boolean value read by
+	 * {@link Boolean#parseBoolean(String)}). Defaults to false.
+	 */
+	public final static String				LATEST_OPTION		= "latest";
 
 	/**
 	 * Set the name of this repository (optional)
@@ -208,6 +215,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	File[]									EMPTY_FILES			= new File[0];
 	protected File							root;
 	Registry								registry;
+	boolean									createLatest		= false;
 	boolean									canWrite			= true;
 	Reporter								reporter;
 	boolean									dirty = true;
@@ -271,9 +279,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			throw new IllegalArgumentException("Location must be set on a FileRepo plugin");
 
 		root = IO.getFile(IO.home, location);
+
 		String readonly = map.get(READONLY);
-		if (readonly != null && Boolean.valueOf(readonly).booleanValue())
-			canWrite = false;
+		if (readonly != null)
+			canWrite = !Boolean.valueOf(readonly).booleanValue();
+
+		String createLatest = map.get(LATEST_OPTION);
+		if (createLatest != null)
+			this.createLatest = Boolean.valueOf(createLatest).booleanValue();
 
 		hasIndex = Processor.isTrue(map.get(INDEX));
 		name = map.get(NAME);
@@ -368,11 +381,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			fireBundleAdded(file);
 			afterPut(file, bsn, version, Hex.toHexString(digest));
 
-			// TODO like to beforeGet rid of the latest option. This is only
-			// used to have a constant name for the outside users (like ant)
-			// we should be able to handle this differently?
-			File latest = new File(dir, bsn + LATEST_POSTFIX);
-			IO.copy(file, latest);
+			if (createLatest) {
+				File latest = new File(dir, bsn + LATEST_POSTFIX);
+				IO.copy(file, latest);
+			}
 
 			reporter.trace("updated %s", file.getAbsolutePath());
 
