@@ -189,8 +189,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	public static final int					MAX_MAJOR			= 999999999;
 
-	private static final String				LATEST_STRING		= "latest";
-	private static final String				LATEST_POSTFIX		= "-" + LATEST_STRING + ".jar";
+	private static final String				LATEST_POSTFIX		= "-" + Constants.VERSION_ATTR_LATEST + ".jar";
 	public static final Version				LATEST_VERSION		= new Version(MAX_MAJOR, 0, 0);
 
 	final static JSONCodec					codec				= new JSONCodec();
@@ -211,8 +210,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	Registry								registry;
 	boolean									canWrite			= true;
 	Pattern									REPO_FILE			= Pattern.compile("(?:([-a-zA-z0-9_\\.]+)-)("
-																	+ Version.VERSION_STRING + "|" + LATEST_STRING
-																	+ ")\\.(jar|lib)");
+																	+ Version.VERSION_STRING + "|"
+																	+ Constants.VERSION_ATTR_LATEST + ")\\.(jar|lib)");
 	Reporter								reporter;
 	boolean									dirty = true;
 	String									name;
@@ -609,7 +608,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				/* there is a VALID (via the regex) version in the fileName */
 
 				String fileNameVersion = m.group(2);
-				if (fileNameVersion.equals(LATEST_STRING)) {
+				if (fileNameVersion.equals(Constants.VERSION_ATTR_LATEST)) {
 					/* the fileName version is 'latest' */
 					if (versionsList != null) {
 						versionsList.add(LATEST_VERSION);
@@ -866,7 +865,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (file != null) {
 			String vs;
 			if (LATEST_VERSION.equals(version)) {
-				vs = LATEST_STRING;
+				vs = Constants.VERSION_ATTR_LATEST;
 			} else {
 				vs = version.toString();
 			}

@@ -53,7 +53,7 @@ public class RunconfigToDistributionTask extends Task {
 						for (Version availableVersion : versions) {
 							VersionRange range = null;
 							
-							if(runBundle.getVersionRange() != null &&  !runBundle.getVersionRange().equals("latest")) {
+							if(runBundle.getVersionRange() != null &&  !runBundle.getVersionRange().equals(Constants.VERSION_ATTR_LATEST)) {
 								range = new VersionRange(runBundle.getVersionRange());
 							}
 							

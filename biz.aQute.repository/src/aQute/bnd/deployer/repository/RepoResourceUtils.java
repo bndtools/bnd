@@ -139,7 +139,7 @@ public final class RepoResourceUtils {
 	
 	public static List<Resource> narrowVersionsByVersionRange(SortedMap<Version,Resource> versionMap, String rangeStr) {
 		List<Resource> result;
-		if ("latest".equals(rangeStr)) {
+		if (aQute.bnd.osgi.Constants.VERSION_ATTR_LATEST.equals(rangeStr)) {
 			Version highest = versionMap.lastKey();
 			result = Create.list(new Resource[] {
 				versionMap.get(highest)
