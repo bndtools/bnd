@@ -7,7 +7,7 @@ maven-minimal-template-resources: \
 	${maven-minimal-template}=../bndtools.repository.base/templates/unprocessed/bundlehub,\
 	${maven-minimal-template}=../bndtools.repository.base/templates/unprocessed/common,\
 	${maven-minimal-template}=templates/unprocessed/maven-minimal,\
-	${maven-minimal-template}/buildrepo/junit/=../bndtools.repository.base/templates/repos/buildrepo/junit,\
+	${maven-minimal-template}/buildrepo/JUnit/=../bndtools.repository.base/templates/repos/buildrepo/JUnit,\
 	${maven-minimal-template}/buildrepo/hamcrest-core/=../bndtools.repository.base/templates/repos/buildrepo/hamcrest-core,\
 	${maven-minimal-template}/plugins/biz.aQute.repository/biz.aQute.repository.jar=${repo;biz.aQute.repository;${aQute-repository-base}}
 

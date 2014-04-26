@@ -18,7 +18,7 @@ jpm-template: templates/cnfs/jpm
 jpm-template-resources: \
 	${jpm-template}=templates/unprocessed/common,\
 	${jpm-template}=templates/unprocessed/jpm,\
-	${jpm-template}/buildrepo/junit/=templates/repos/buildrepo/junit,\
+	${jpm-template}/buildrepo/JUnit/=templates/repos/buildrepo/JUnit,\
 	${jpm-template}/buildrepo/hamcrest-core/=templates/repos/buildrepo/hamcrest-core,\
 	${jpm-template}/localrepo/=templates/repos/localrepo,\
 	${jpm-template}/releaserepo/=templates/repos/releaserepo,\
