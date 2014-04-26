@@ -864,7 +864,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected String status(String bsn, Version version) {
 		File file = getLocal(bsn, version, null);
 		if (file != null) {
-			StringBuilder sb = new StringBuilder(version.toString());
+			String vs;
+			if (LATEST_VERSION.equals(version)) {
+				vs = LATEST_STRING;
+			} else {
+				vs = version.toString();
+			}
+			StringBuilder sb = new StringBuilder(vs);
 			String del = " [";
 			if (file.getName().endsWith(".lib")) {
 				sb.append(del).append("L");
