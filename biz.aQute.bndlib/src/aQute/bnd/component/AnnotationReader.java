@@ -282,6 +282,7 @@ public class AnnotationReader extends ClassDataCollector {
 				try {
 					Clazz clazz = analyzer.findClass(typeRef);
 					if (clazz.isAnnotation()) {
+						final MultiMap<String, String> props = new MultiMap<String, String>();
 						clazz.parseClassFileWithCollector(new ClassDataCollector() {
 
 							@Override
@@ -317,7 +318,7 @@ public class AnnotationReader extends ClassDataCollector {
 											valueToProperty(name, element, isClass, isCharacter);
 										}
 									} else
-									valueToProperty(name, value, isClass, isCharacter);
+										valueToProperty(name, value, isClass, isCharacter);
 								}
 							}
 
@@ -328,7 +329,7 @@ public class AnnotationReader extends ClassDataCollector {
 								Class<?> typeClass = isCharacter? Character.class: value.getClass();
 								//enums already come out as the enum name, no processing needed.
 								String key = name + ":" + typeClass.getSimpleName();
-								component.property.add(key, value.toString());
+								props.add(key, value.toString());
 							}
 
 							private String identifierToPropertyName(String name) {
@@ -350,6 +351,7 @@ public class AnnotationReader extends ClassDataCollector {
 							}
 
 						});
+						component.property.putAll(props);
 					} else if (clazz.isInterface() && felixExtensions) {
 						//ok
 					} else {
@@ -544,7 +546,7 @@ public class AnnotationReader extends ClassDataCollector {
 				component.properties.add(entry);
 			}
 
-		doProperties(comp.property());
+		doProperty(comp.property());
 		Object[] x = annotation.get("service");
 
 		if (x == null) {
@@ -590,8 +592,9 @@ public class AnnotationReader extends ClassDataCollector {
 	 * Parse the properties
 	 */
 
-	private void doProperties(String[] properties) {
-		if (properties != null) {
+	private void doProperty(String[] properties) {
+		if (properties != null && properties.length > 0) {
+			MultiMap<String, String> props = new MultiMap<String, String>();
 			for (String p : properties) {
 				Matcher m = PROPERTY_PATTERN.matcher(p);
 
@@ -602,10 +605,11 @@ public class AnnotationReader extends ClassDataCollector {
 						key += ":" + type;
 					
 					String value = m.group(3);
-					component.property.add(key, value);
+					props.add(key, value);
 				} else
-					throw new IllegalArgumentException("Malformed property '" + p + "' on component: " + className);
+					analyzer.error("Malformed property '" + p + "' on component: " + className);
 			}
+			component.property.putAll(props);
 		}
 	}
 

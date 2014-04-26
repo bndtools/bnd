@@ -1782,21 +1782,14 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component()
 	public static class DS13annoNames_config implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
-
 		@Activate
 		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigNames configNames) {}
-
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
-
 		@Modified
 		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
-
 		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-
-		}
+		public void run() {}
 	}
 
 	public static void testAnnoConfigNames13() throws Exception {
@@ -1859,5 +1852,123 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("String", "scr:component/property[@name='my.String7']/@type");
 
 	}
+	
+	public @interface ConfigA {
+		String a() default "a";
+		String one() default "a";
+		String two() default "a";
+	}
+	
+	public @interface ConfigB {
+		String b() default "b";
+		String one() default "b";
+	}
+
+	@Component(property = {"two:String=c"})
+	public static class DS13annoOverride_a_a implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigA a,  @SuppressWarnings("unused")ConfigB b) {}
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		@Override
+		public void run() {}
+	}
+
+	@Component(property = {"two:String=c"})
+	public static class DS13annoOverride_a_d implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigA a) {}
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigB b) {}
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		@Override
+		public void run() {}
+	}
+
+	@Component(property = {"two:String=c"})
+	public static class DS13annoOverride_a_m implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigA a) {}
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigB b) {}
+		@Override
+		public void run() {}
+	}
+
+	@Component(property = {"two:String=c"})
+	public static class DS13annoOverride_d_m implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigA a) {}
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigB b) {}
+		@Override
+		public void run() {}
+	}
+
+	public static void testAnnoConfigOverrides13() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest$DS13annoOverride_*");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		checkDS13AnnoOverride(jar, DS13annoOverride_a_a.class.getName());
+		checkDS13AnnoOverride(jar, DS13annoOverride_a_d.class.getName());
+		checkDS13AnnoOverride(jar, DS13annoOverride_a_m.class.getName());
+		checkDS13AnnoOverride(jar, DS13annoOverride_d_m.class.getName());
+	}
+	
+	private static void checkDS13AnnoOverride(Jar jar, String name) throws Exception, XPathExpressionException {
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr","http://www.osgi.org/xmlns/scr/v1.3.0"); 
+		// Test the defaults
+		xt.assertAttribute(name, "scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute(name, "scr:component/@name");
+
+		xt.assertAttribute("", "scr:component/@configuration-policy");
+		xt.assertAttribute("", "scr:component/@immediate");
+		xt.assertAttribute("", "scr:component/@enabled");
+		xt.assertAttribute("", "scr:component/@factory");
+		xt.assertAttribute("", "scr:component/service/@scope");
+		xt.assertAttribute("", "scr:component/@configuration-pid");
+		xt.assertAttribute("activate", "scr:component/@activate");
+		xt.assertAttribute("deactivate", "scr:component/@deactivate");
+		xt.assertAttribute("modified", "scr:component/@modified");
+		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+
+		xt.assertAttribute("4", "count(scr:component/property)");
+
+		xt.assertAttribute("a", "scr:component/property[@name='a']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='a']/@type");
+
+		xt.assertAttribute("b", "scr:component/property[@name='b']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='b']/@type");
+
+		xt.assertAttribute("b", "scr:component/property[@name='one']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='one']/@type");
+
+		xt.assertAttribute("c", "scr:component/property[@name='two']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='two']/@type");
+	}
+
 
 }
