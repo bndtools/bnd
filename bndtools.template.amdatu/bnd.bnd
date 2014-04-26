@@ -14,7 +14,7 @@ Bundle-Version: 2.3.1.${tstamp}
 
 Include-Resource:\
 	plugin.xml=_plugin.xml,\
-	templateDocs/=templateDocs,\
+	templateDocs/=templateDocs
 
 Private-Package: bndtools.templates.amdatu.rest,\
 	bndtools.templates.amdatu.mongo,\
