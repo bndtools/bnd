@@ -26,7 +26,7 @@ import aQute.bnd.version.Version;
 
 public class HeaderReader extends Processor {
 	final static Pattern		PROPERTY_PATTERN		= Pattern
-	.compile("([^=]+([:@](Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
+    		.compile("(([^=:@]+)([:@](Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
 	private final static Set<String> LIFECYCLE_METHODS = new HashSet<String>(Arrays.asList("activate", "deactivate", "modified"));
 	
     private final Analyzer analyzer;
@@ -253,8 +253,11 @@ public class HeaderReader extends Processor {
 			Matcher m = PROPERTY_PATTERN.matcher(p);
 
 			if (m.matches()) {
-				String key = m.group(1).replaceAll("@", ":");
-				String value = m.group(4);
+				String key = m.group(2);
+				String type = m.group(4);
+				if (type == null)
+					type = "String"; //default
+				String value = m.group(5);
 				String parts[] = value.split("\\s*(\\||\\n)\\s*");
 				if (parts.length == 1 && value.endsWith("|")) {
 					String v = parts[0];
@@ -262,6 +265,7 @@ public class HeaderReader extends Processor {
 					parts[0] = v;
 					parts[1] = ComponentDef.MARKER;
 				}
+				cd.propertyType.put(key, type);
 				for (String part: parts) {
 					cd.property.add(key, part);
 				}

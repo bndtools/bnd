@@ -22,7 +22,8 @@ class ComponentDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
 	final static String 			MARKER 			= new String("|marker");
 	final List<String>				properties		= new ArrayList<String>();
-	final MultiMap<String,String>	property		= new MultiMap<String,String>();
+	final MultiMap<String,String>	property		= new MultiMap<String,String>(); //key is property name
+	final Map<String, String>		propertyType	= new HashMap<String, String>();
 	final Map<String,ReferenceDef>	references		= new LinkedHashMap<String,ReferenceDef>();
 
 	Version							version			= AnnotationReader.V1_0;
@@ -73,12 +74,7 @@ class ComponentDef {
 		for (Map.Entry<String,List<String>> kvs : property.entrySet()) {
 			Tag property = new Tag("property");
 			String name = kvs.getKey();
-			String type = null;
-			int n = name.indexOf(':');
-			if (n > 0) {
-				type = name.substring(n + 1);
-				name = name.substring(0, n);
-			}
+			String type = propertyType.get(name);
 
 			property.addAttribute("name", name);
 			if (type != null) {

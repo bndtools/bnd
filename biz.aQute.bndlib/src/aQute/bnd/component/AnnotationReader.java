@@ -328,8 +328,9 @@ public class AnnotationReader extends ClassDataCollector {
 								}
 								Class<?> typeClass = isCharacter? Character.class: value.getClass();
 								//enums already come out as the enum name, no processing needed.
-								String key = name + ":" + typeClass.getSimpleName();
-								props.add(key, value.toString());
+								String type = typeClass.getSimpleName();
+								component.propertyType.put(name, type);
+								props.add(name, value.toString());
 							}
 
 							private String identifierToPropertyName(String name) {
@@ -601,8 +602,10 @@ public class AnnotationReader extends ClassDataCollector {
 				if (m.matches()) {
 					String key = m.group(1);
 					String type = m.group(2);
-					if ( type != null)
-						key += ":" + type;
+					if ( type == null)
+						type = "String";
+					
+					component.propertyType.put(key,  type);
 					
 					String value = m.group(3);
 					props.add(key, value);
