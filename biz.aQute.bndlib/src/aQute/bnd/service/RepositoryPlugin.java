@@ -35,6 +35,9 @@ public interface RepositoryPlugin {
 		 * repository to guess the content type.
 		 */
 		public String	type;
+
+		public String bsnHint = null;
+		public Version versionHint = null;
 	}
 
 	PutOptions	DEFAULTOPTIONS	= new PutOptions();

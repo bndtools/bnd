@@ -313,12 +313,15 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @return a File that contains the content of the tmpFile
 	 * @throws Exception
 	 */
-	protected File putArtifact(File tmpFile, byte[] digest) throws Exception {
+	protected File putArtifact(File tmpFile, PutOptions options, byte[] digest) throws Exception {
 		assert (tmpFile != null);
 
 		Jar tmpJar = new Jar(tmpFile);
 		try {
 			String bsn = tmpJar.getBsn(false);
+
+			if (bsn == null && options.bsnHint != null)
+				bsn = options.bsnHint;
 
 			if (bsn == null)
 				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
@@ -329,6 +332,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			}
 			catch (Exception e) {
 				/* can't get the manifest */
+			}
+
+			if (version == null && options.versionHint != null) {
+				version = options.versionHint;
 			}
 
 			if (version == null) {
@@ -414,7 +421,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				 * file)
 				 */
 				beforePut(tmpFile);
-				File file = putArtifact(tmpFile, digest);
+				File file = putArtifact(tmpFile, options, digest);
 				file.setReadOnly();
 
 				PutResult result = new PutResult();
