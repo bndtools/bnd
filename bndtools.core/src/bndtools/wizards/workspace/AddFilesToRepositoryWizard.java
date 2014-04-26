@@ -9,18 +9,17 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.jar.Attributes;
 
-import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.wizard.Wizard;
 
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.RepositoryPlugin.PutOptions;
+import aQute.bnd.version.Version;
 import bndtools.Plugin;
 import bndtools.central.RefreshFileJob;
 import bndtools.types.Pair;
@@ -33,14 +32,19 @@ public class AddFilesToRepositoryWizard extends Wizard {
 
     private final LocalRepositorySelectionPage repoSelectionPage;
     private final AddFilesToRepositoryWizardPage fileSelectionPage;
+    private boolean strict = true;
 
     public AddFilesToRepositoryWizard(RepositoryPlugin repository, File[] initialFiles) {
         this.repository = repository;
         this.files = initialFiles;
 
+        if ("aQute.lib.deployer.FileRepo".equals(repository.getClass().getName())) {
+            strict = false;
+        }
+
         repoSelectionPage = new LocalRepositorySelectionPage("repoSelectionPage", repository);
 
-        fileSelectionPage = new AddFilesToRepositoryWizardPage("fileSelectionPage");
+        fileSelectionPage = new AddFilesToRepositoryWizardPage(repository, "fileSelectionPage");
         fileSelectionPage.setFiles(files);
     }
 
@@ -64,17 +68,33 @@ public class AddFilesToRepositoryWizard extends Wizard {
         List<File> files = fileSelectionPage.getFiles();
         selectedBundles = new LinkedList<Pair<String,String>>();
         for (File file : files) {
+            String bsn = null;
+            Version version = null;
             Jar jar = null;
             try {
                 jar = new Jar(file);
                 jar.setDoNotTouchManifest();
 
-                Attributes mainAttribs = jar.getManifest().getMainAttributes();
-                String bsn = BundleUtils.getBundleSymbolicName(mainAttribs);
-                String version = mainAttribs.getValue(Constants.BUNDLE_VERSION);
-                if (version == null)
-                    version = "0";
-                selectedBundles.add(Pair.newInstance(bsn, version));
+                bsn = jar.getBsn(strict);
+                if (bsn == null && !strict) {
+                    bsn = Jar.getBsnFromFileName(file.getName(), strict);
+                }
+
+                try {
+                    version = Version.fromManifest(jar.getManifest(), strict);
+                } catch (Exception e) {
+                    /* swallow */
+                }
+                if (version == null && !strict) {
+                    version = Version.fromFileName(file.getName(), strict);
+                }
+
+                if (version == null) {
+                    version = Version.LOWEST;
+                }
+                assert (version != null);
+
+                selectedBundles.add(Pair.newInstance(bsn, version.toString()));
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to analyse JAR: {0}", file.getPath()), e));
                 continue;
@@ -84,7 +104,10 @@ public class AddFilesToRepositoryWizard extends Wizard {
             }
 
             try {
-                RepositoryPlugin.PutResult result = repository.put(new BufferedInputStream(new FileInputStream(file)), new RepositoryPlugin.PutOptions());
+                PutOptions options = new RepositoryPlugin.PutOptions();
+                options.bsnHint = bsn;
+                options.versionHint = version;
+                RepositoryPlugin.PutResult result = repository.put(new BufferedInputStream(new FileInputStream(file)), options);
                 if (result.artifact != null && result.artifact.getScheme().equals("file")) {
                     File newFile = new File(result.artifact);
 

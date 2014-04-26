@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.Attributes;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -43,9 +42,10 @@ import org.eclipse.ui.dialogs.ISelectionStatusValidator;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.osgi.framework.Constants;
 
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.version.Version;
 import bndtools.Plugin;
 import bndtools.types.Pair;
 import bndtools.utils.FileExtensionFilter;
@@ -58,13 +58,18 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
     private final Image errorImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/error.gif").createImage();
     private final Image okayImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tick.png").createImage();
 
-    private final Map<File,Pair<String,String>> bsnMap = new HashMap<File,Pair<String,String>>();
+    private final Map<File,Pair<String,Version>> bsnMap = new HashMap<File,Pair<String,Version>>();
     private final List<File> files = new ArrayList<File>(1);
 
     private TableViewer viewer;
 
-    public AddFilesToRepositoryWizardPage(String pageName) {
+    private boolean strict = true;
+
+    public AddFilesToRepositoryWizardPage(RepositoryPlugin repository, String pageName) {
         super(pageName);
+        if ("aQute.lib.deployer.FileRepo".equals(repository.getClass().getName())) {
+            strict = false;
+        }
     }
 
     public void setFiles(File[] files) {
@@ -88,11 +93,23 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
         Jar jar = null;
         try {
             jar = new Jar(file);
-            Attributes attribs = jar.getManifest().getMainAttributes();
-            String bsn = attribs.getValue(Constants.BUNDLE_SYMBOLICNAME);
-            String version = attribs.getValue(Constants.BUNDLE_VERSION);
 
-            bsnMap.put(file, Pair.newInstance(bsn, version));
+            String bsn = jar.getBsn(strict);
+            if (bsn == null && !strict) {
+                bsn = Jar.getBsnFromFileName(file.getName(), strict);
+            }
+
+            Version v = null;
+            try {
+                v = Version.fromManifest(jar.getManifest(), strict);
+            } catch (Exception e) {
+                /* swallow */
+            }
+            if (v == null && !strict) {
+                v = Version.fromFileName(file.getName(), strict);
+            }
+
+            bsnMap.put(file, Pair.newInstance(bsn, v));
         } catch (Exception e) {
             logger.logError("Error reading JAR file content", e);
         } finally {
@@ -127,7 +144,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
             @Override
             public void update(ViewerCell cell) {
                 File file = (File) cell.getElement();
-                Pair<String,String> bundleId = bsnMap.get(file);
+                Pair<String,Version> bundleId = bsnMap.get(file);
 
                 int index = cell.getColumnIndex();
                 if (index == 0) {
@@ -149,10 +166,10 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
                         cell.setText("Not a JAR file");
                     } else {
                         String bsn = bundleId.getFirst();
-                        String version = bundleId.getSecond();
+                        Version version = bundleId.getSecond();
                         if (bsn == null) {
                             cell.setImage(warnImg);
-                            cell.setText("Not a Bundle JAR");
+                            cell.setText("Not a " + (strict ? "bundle " : "") + "JAR");
                         } else {
                             cell.setImage(okayImg);
                             StyledString styledString = new StyledString(bsn);
@@ -286,13 +303,13 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
         String warning = null;
 
         for (File file : files) {
-            Pair<String,String> pair = bsnMap.get(file);
+            Pair<String,Version> pair = bsnMap.get(file);
             if (pair == null) {
                 error = "One or more selected files is not a JAR.";
             } else {
                 String bsn = pair.getFirst();
                 if (bsn == null) {
-                    warning = "One or more selected files is not a Bundle JAR";
+                    warning = "One or more selected files is not a " + (strict ? "bundle " : "") + "JAR";
                 }
             }
         }
