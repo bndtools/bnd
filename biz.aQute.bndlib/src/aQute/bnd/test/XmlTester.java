@@ -67,7 +67,6 @@ public class XmlTester {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
 		Assert.assertNotNull(o);
-		System.err.println("'" + o.replaceAll("\n", "\\\\n") + "'");
 		Assert.assertEquals(value, o.trim().replaceAll("\n", "\\\\n"));
 	}
 	

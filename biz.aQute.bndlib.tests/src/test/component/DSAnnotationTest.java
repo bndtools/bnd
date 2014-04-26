@@ -1622,13 +1622,13 @@ public class DSAnnotationTest extends BndTestCase {
 
 	public enum foo {A, B}
 	
-	public @interface Config1 {
+	public @interface ConfigTypes {
 		String myString() default "foo";
 		String[] myStringArray() default {"foo", "bar"};
 		int myInt() default 1;
 		int[] myIntArray() default {2, 3};
-		Class<?> myClass() default Config1.class;
-		Class<?>[] myClassArray() default {Config1.class, Config1.class};
+		Class<?> myClass() default ConfigTypes.class;
+		Class<?>[] myClassArray() default {ConfigTypes.class, ConfigTypes.class};
 		foo myEnum() default foo.A;
 		foo[] myEnumArray() default {foo.A, foo.B};
 		float myFloat() default 1.0f;
@@ -1636,11 +1636,11 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component()
-	public static class DS13anno_config1_activate implements Serializable, Runnable {
+	public static class DS13anno_configTypes_activate implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")Config1 config1) {}
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigTypes config1) {}
 
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
@@ -1656,7 +1656,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component()
-	public static class DS13anno_config1_modified implements Serializable, Runnable {
+	public static class DS13anno_configTypes_modified implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
@@ -1666,7 +1666,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")Config1 config1) {}
+		void modified(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigTypes config1) {}
 
 		@Override
 		public void run() {
@@ -1676,14 +1676,14 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component()
-	public static class DS13anno_config1_deactivate implements Serializable, Runnable {
+	public static class DS13anno_configTypes_deactivate implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
 		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")Config1 config1) {}
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigTypes config1) {}
 
 		@Modified
 		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
@@ -1705,17 +1705,9 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b);
 
 //		// Test 1.3 signature methods give 1.3 namespace 
-		checkDS13Anno(jar, DS13anno_config1_activate.class.getName(), "");
-		checkDS13Anno(jar, DS13anno_config1_deactivate.class.getName(), "");
-		checkDS13Anno(jar, DS13anno_config1_modified.class.getName(), "");
-//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_deactivate_basic", "");
-//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_modified_basic", "");
-//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_bind_basic", "");
-//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_unbind_basic", "");
-//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_updated_basic", "");
-//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_scope_basic", "");
-//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_pids_basic", "pid1 pid2");
-//		checkDS13(jar, "test.component.DSAnnotationTest$DS13_dollar_pids_basic", "test.component.DSAnnotationTest$DS13_dollar_pids_basic pid2");
+		checkDS13Anno(jar, DS13anno_configTypes_activate.class.getName(), "");
+		checkDS13Anno(jar, DS13anno_configTypes_deactivate.class.getName(), "");
+		checkDS13Anno(jar, DS13anno_configTypes_modified.class.getName(), "");
 	}
 	
 	private static void checkDS13Anno(Jar jar, String name, String pids) throws Exception, XPathExpressionException {
@@ -1757,10 +1749,10 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertTrimmedAttribute("2\\n3", "scr:component/property[@name='myIntArray']");
 		xt.assertAttribute("Integer", "scr:component/property[@name='myIntArray']/@type");
 		
-		xt.assertAttribute("test.component.DSAnnotationTest$Config1", "scr:component/property[@name='myClass']/@value");
+		xt.assertAttribute("test.component.DSAnnotationTest$ConfigTypes", "scr:component/property[@name='myClass']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myClass']/@type");
 		
-		xt.assertTrimmedAttribute("test.component.DSAnnotationTest$Config1\\ntest.component.DSAnnotationTest$Config1", "scr:component/property[@name='myClassArray']");
+		xt.assertTrimmedAttribute("test.component.DSAnnotationTest$ConfigTypes\\ntest.component.DSAnnotationTest$ConfigTypes", "scr:component/property[@name='myClassArray']");
 		xt.assertAttribute("String", "scr:component/property[@name='myClassArray']/@type");
 		
 		xt.assertAttribute("A", "scr:component/property[@name='myEnum']/@value");
@@ -1777,5 +1769,95 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	public @interface ConfigNames {
+		String myString1() default "foo";
+		String my$String2() default "foo";
+		String my$$String3() default "foo";
+		String my_String4() default "foo";
+		String my__String5() default "foo";
+		String my$$__String6() default "foo";
+		String my$_$String7() default "foo";
+	}
+
+	@Component()
+	public static class DS13annoNames_config implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigNames configNames) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+		}
+	}
+
+	public static void testAnnoConfigNames13() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest$DS13annoNames_config*");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		checkDS13AnnoConfigNames(jar, DS13annoNames_config.class.getName());
+	}
+	
+	private static void checkDS13AnnoConfigNames(Jar jar, String name) throws Exception, XPathExpressionException {
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr","http://www.osgi.org/xmlns/scr/v1.3.0"); 
+		// Test the defaults
+		xt.assertAttribute(name, "scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute(name, "scr:component/@name");
+
+		xt.assertAttribute("", "scr:component/@configuration-policy");
+		xt.assertAttribute("", "scr:component/@immediate");
+		xt.assertAttribute("", "scr:component/@enabled");
+		xt.assertAttribute("", "scr:component/@factory");
+		xt.assertAttribute("", "scr:component/service/@scope");
+		xt.assertAttribute("", "scr:component/@configuration-pid");
+		xt.assertAttribute("activate", "scr:component/@activate");
+		xt.assertAttribute("deactivate", "scr:component/@deactivate");
+		xt.assertAttribute("modified", "scr:component/@modified");
+		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+
+		xt.assertAttribute("7", "count(scr:component/property)");
+
+		xt.assertAttribute("foo", "scr:component/property[@name='myString1']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='myString1']/@type");
+
+		xt.assertAttribute("foo", "scr:component/property[@name='myString2']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='myString2']/@type");
+
+		xt.assertAttribute("foo", "scr:component/property[@name='my$String3']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='my$String3']/@type");
+
+		xt.assertAttribute("foo", "scr:component/property[@name='my.String4']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='my.String4']/@type");
+
+		xt.assertAttribute("foo", "scr:component/property[@name='my_String5']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='my_String5']/@type");
+
+		xt.assertAttribute("foo", "scr:component/property[@name='my$_String6']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='my$_String6']/@type");
+
+		xt.assertAttribute("foo", "scr:component/property[@name='my.String7']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='my.String7']/@type");
+
+	}
 
 }

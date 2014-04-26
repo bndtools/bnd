@@ -314,34 +314,34 @@ public class AnnotationReader extends ClassDataCollector {
 										//add element individually
 										for (int i = 0; i< Array.getLength(value); i++) {
 											Object element = Array.get(value, i);
-											valueToProperty(defined, element, isClass, isCharacter);
+											valueToProperty(name, element, isClass, isCharacter);
 										}
 									} else
-									valueToProperty(defined, value, isClass, isCharacter);
+									valueToProperty(name, value, isClass, isCharacter);
 								}
 							}
 
-							private void valueToProperty(MethodDef defined, Object value, boolean isClass, boolean isCharacter) {
+							private void valueToProperty(String name, Object value, boolean isClass, boolean isCharacter) {
 								if (isClass) {
 									value = Clazz.objectDescriptorToFQN((String) value);
 								}
 								Class<?> typeClass = isCharacter? Character.class: value.getClass();
 								//enums already come out as the enum name, no processing needed.
-								String key = defined.getName() + ":" + typeClass.getSimpleName();
+								String key = name + ":" + typeClass.getSimpleName();
 								component.property.add(key, value.toString());
 							}
 
 							private String identifierToPropertyName(String name) {
 								Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
 								StringBuffer b = new StringBuffer();
-								while (m.matches()) {
+								while (m.find()) {
 									String replace = "";
 									if (m.group(1) != null) // __ to _
 										replace = "_";
 									else if (m.group(2) != null) // _ to .
 										replace = ".";
 									else if (m.group(3) != null) // $$ to $
-										replace = "$";
+										replace = "\\$";
 									//group 4 $ removed.
 									m.appendReplacement(b, replace); 
 								}
