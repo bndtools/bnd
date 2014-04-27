@@ -58,7 +58,10 @@
 # Customised Settings
 #
 
-javac.ee:                 '[1.5,1.6)'
+javac.source:               1.6
+javac.target:               1.6
+javac.ee:                 '[1.6,1.7)'
+java.req.ee:              JavaSE-1.6
 
 
 # Master Version Settings

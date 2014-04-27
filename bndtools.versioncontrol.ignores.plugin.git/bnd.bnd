@@ -1,5 +1,5 @@
 -buildpath: \
-	ee.j2se;version='[1.6,1.7)',\
+	ee.j2se;version=${javac.ee},\
 	bndtools.api;version=latest,\
 	biz.aQute.bnd.annotation,\
 	${junit}

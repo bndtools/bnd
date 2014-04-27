@@ -4,7 +4,7 @@ Bundle-SymbolicName: bndtools.core;singleton:=true
 Bundle-Version: 3.0.0.${tstamp}
 Bundle-Activator: bndtools.Plugin
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: ${java.req.ee}
 Bundle-Localization: plugin
 Bundle-Vendor: Bndtools
 
@@ -82,7 +82,7 @@ eclipse.deps: \
 	org.eclipse.core.contenttype
 
 -buildpath: \
-	ee.j2se;version='[1.6,1.7)',\
+	ee.j2se;version=${javac.ee},\
 	osgi.core;version=${osgi.core.version},\
 	${bndlib},\
 	${aQute-repository},\
