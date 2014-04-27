@@ -31,5 +31,3 @@ Include-Resource:\
 	templateDocs/=templateDocs,\
 	${bundlehub-template-resources},\
 	${jpm-template-resources}
-
--removeheaders: Include-Resource, Private-Package

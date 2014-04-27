@@ -18,5 +18,3 @@ Include-Resource:\
 
 Private-Package: bndtools.templates.dm,\
 	bndtools.templates.dm.annotations
-
--removeheaders: Private-Package

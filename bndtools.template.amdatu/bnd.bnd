@@ -19,5 +19,3 @@ Include-Resource:\
 Private-Package: bndtools.templates.amdatu.rest,\
 	bndtools.templates.amdatu.mongo,\
 	bndtools.templates.amdatu.mixed
-
--removeheaders: Private-Package

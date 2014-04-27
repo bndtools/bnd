@@ -16,5 +16,3 @@ Include-Resource:\
 	icons/=../bndtools.repository.base/icons,\
 	templateDocs/=templateDocs,\
 	${maven-minimal-template-resources}
-
--removeheaders: Include-Resource, Private-Package
