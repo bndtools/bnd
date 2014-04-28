@@ -204,19 +204,22 @@ public class BundleTree extends Composite {
 				if (widget == showAll) {
 
 					bundleTreeViewerProvider.setShowAll(!bundleTreeViewerProvider.isShowAll());
-					bundleTreeViewer.setSelection(null, false);
 					infoTreeViewerProvider.setShowAll(!infoTreeViewerProvider.isShowAll());
-					infoViewer.setSelection(null, false);
 
-					boolean showInfoView = showInfoView(bundleTreeViewer.getInput());
-					if (showInfoView) {
-						sashForm.setMaximizedControl(null);
-					} else {
-						sashForm.setMaximizedControl(bundleTreeViewerComposite);
+					if (bundleTreeViewer.getInput() != null || infoViewer.getInput() != null) {
+    					bundleTreeViewer.setSelection(null, false);
+    					infoViewer.setSelection(null, false);
+
+    					boolean showInfoView = showInfoView(bundleTreeViewer.getInput());
+    					if (showInfoView) {
+    						sashForm.setMaximizedControl(null);
+    					} else {
+    						sashForm.setMaximizedControl(bundleTreeViewerComposite);
+    					}
+    					bundleTreeViewer.refresh();
+    					infoViewer.refresh();
+    					sashForm.redraw();
 					}
-					bundleTreeViewer.refresh();
-					infoViewer.refresh();
-					sashForm.redraw();
 				}
 			}
 		});
