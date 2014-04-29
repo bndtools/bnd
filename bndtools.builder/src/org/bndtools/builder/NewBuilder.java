@@ -69,8 +69,8 @@ import bndtools.preferences.EclipseClasspathPreference;
 
 public class NewBuilder extends IncrementalProjectBuilder {
 
-	public static final String PLUGIN_ID = "bndtools.builder";
-	public static final String BUILDER_ID = BndtoolsConstants.BUILDER_ID;
+    public static final String PLUGIN_ID = "bndtools.builder";
+    public static final String BUILDER_ID = BndtoolsConstants.BUILDER_ID;
 
     private static final ILogger logger = Logger.getLogger(NewBuilder.class);
 
@@ -344,7 +344,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         for (Project dep : dependson) {
             File targetDir = dep.getTarget();
             // Does not exist... was it deleted?
-            if (targetDir != null && !(targetDir.isDirectory()))
+            if (targetDir == null || !(targetDir.isDirectory()))
                 return dep;
 
             IProject project = WorkspaceUtils.findOpenProject(wsroot, dep);
