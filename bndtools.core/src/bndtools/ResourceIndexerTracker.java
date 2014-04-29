@@ -10,8 +10,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.util.tracker.ServiceTracker;
 
-public class ResourceIndexerTracker extends ServiceTracker implements ResourceIndexer {
-
+public class ResourceIndexerTracker extends ServiceTracker<ResourceIndexer,ResourceIndexer> implements ResourceIndexer {
     private final long timeout;
 
     public ResourceIndexerTracker(BundleContext context, long timeout) {
@@ -35,7 +34,7 @@ public class ResourceIndexerTracker extends ServiceTracker implements ResourceIn
     }
 
     private ResourceIndexer doGetIndexer() throws InterruptedException {
-        ResourceIndexer indexer = (ResourceIndexer) waitForService(timeout);
+        ResourceIndexer indexer = waitForService(timeout);
         if (indexer == null)
             throw new IllegalStateException("Resource indexer service not available.");
         return indexer;

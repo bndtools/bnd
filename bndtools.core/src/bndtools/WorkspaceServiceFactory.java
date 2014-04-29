@@ -6,12 +6,13 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 
+import aQute.bnd.build.Workspace;
 import bndtools.central.Central;
 
-public class WorkspaceServiceFactory implements ServiceFactory {
+public class WorkspaceServiceFactory implements ServiceFactory<Workspace> {
     private static final ILogger logger = Logger.getLogger(WorkspaceServiceFactory.class);
 
-    public Object getService(Bundle bundle, ServiceRegistration registration) {
+    public Workspace getService(Bundle bundle, ServiceRegistration<Workspace> registration) {
         try {
             return Central.getWorkspace();
         } catch (Exception e) {
@@ -20,6 +21,5 @@ public class WorkspaceServiceFactory implements ServiceFactory {
         }
     }
 
-    public void ungetService(Bundle bundle, ServiceRegistration registration, Object service) {}
-
+    public void ungetService(Bundle bundle, ServiceRegistration<Workspace> registration, Workspace service) {}
 }

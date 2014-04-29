@@ -8,12 +8,12 @@ Bundle-Localization: plugin
 Bundle-Vendor: Bndtools
 
 Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
+	org.osgi.service.component.annotations;resolution:=optional,\
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 Private-Package: \
 	bndtools.release,\
 	bndtools.release.nl,\
-	org.osgi.service.component.annotations,\
 	bndtools.release.ui,\
 	org.bndtools.utils.swt
 
@@ -25,6 +25,7 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 -buildpath:\
 	ee.j2se;version=${javac.ee},\
 	osgi.core;version=${osgi.core.version},\
+	osgi.cmpn;version=${osgi.cmpn.version},\
 	bndtools.core;version=latest, \
 	org.eclipse.core.runtime,\
 	org.eclipse.core.contenttype,\

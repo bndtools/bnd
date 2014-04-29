@@ -26,7 +26,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import bndtools.preferences.BndPreferences;
 
-public class VersionControlIgnoresPluginTracker extends ServiceTracker implements VersionControlIgnoresManager {
+public class VersionControlIgnoresPluginTracker extends ServiceTracker<VersionControlIgnoresPlugin,VersionControlIgnoresPlugin> implements VersionControlIgnoresManager {
     private final ILogger logger = Logger.getLogger(this.getClass());
 
     private final Map<String,ServiceReference<VersionControlIgnoresPlugin>> plugins = new TreeMap<String,ServiceReference<VersionControlIgnoresPlugin>>();
@@ -49,8 +49,8 @@ public class VersionControlIgnoresPluginTracker extends ServiceTracker implement
     }
 
     @Override
-    public VersionControlIgnoresPlugin addingService(ServiceReference reference) {
-        VersionControlIgnoresPlugin plugin = (VersionControlIgnoresPlugin) super.addingService(reference);
+    public VersionControlIgnoresPlugin addingService(ServiceReference<VersionControlIgnoresPlugin> reference) {
+        VersionControlIgnoresPlugin plugin = super.addingService(reference);
         NamedPlugin pluginInformation = plugin.getInformation();
         String name = pluginInformation.getName();
         synchronized (plugins) {
@@ -61,8 +61,8 @@ public class VersionControlIgnoresPluginTracker extends ServiceTracker implement
     }
 
     @Override
-    public void remove(ServiceReference reference) {
-        VersionControlIgnoresPlugin plugin = (VersionControlIgnoresPlugin) getService(reference);
+    public void remove(ServiceReference<VersionControlIgnoresPlugin> reference) {
+        VersionControlIgnoresPlugin plugin = getService(reference);
         String name = plugin.getInformation().getName();
         synchronized (plugins) {
             pluginsInformation.remove(name);
@@ -120,7 +120,7 @@ public class VersionControlIgnoresPluginTracker extends ServiceTracker implement
             if (pluginReference == null) {
                 continue;
             }
-            VersionControlIgnoresPlugin plugin = (VersionControlIgnoresPlugin) getService(pluginReference);
+            VersionControlIgnoresPlugin plugin = getService(pluginReference);
             if (plugin == null) {
                 continue;
             }
@@ -166,7 +166,7 @@ public class VersionControlIgnoresPluginTracker extends ServiceTracker implement
                 if (pluginReference == null) {
                     continue;
                 }
-                VersionControlIgnoresPlugin plugin = (VersionControlIgnoresPlugin) getService(pluginReference);
+                VersionControlIgnoresPlugin plugin = getService(pluginReference);
                 if (plugin == null) {
                     continue;
                 }
@@ -229,7 +229,7 @@ public class VersionControlIgnoresPluginTracker extends ServiceTracker implement
             if (pluginReference == null) {
                 continue;
             }
-            VersionControlIgnoresPlugin plugin = (VersionControlIgnoresPlugin) getService(pluginReference);
+            VersionControlIgnoresPlugin plugin = getService(pluginReference);
             if (plugin == null) {
                 continue;
             }

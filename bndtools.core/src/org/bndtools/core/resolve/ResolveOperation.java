@@ -47,7 +47,7 @@ public class ResolveOperation implements IRunnableWithProgress {
 
         // Start a coordination
         BundleContext bc = Plugin.getDefault().getBundleContext();
-        ServiceReference coordSvcRef = bc.getServiceReference(Coordinator.class.getName());
+        ServiceReference<Coordinator> coordSvcRef = bc.getServiceReference(Coordinator.class);
         Coordinator coordinator = coordSvcRef != null ? (Coordinator) bc.getService(coordSvcRef) : null;
         Coordination coordination = coordinator != null ? coordinator.begin(ResolveOperation.class.getName(), 0) : null;
 

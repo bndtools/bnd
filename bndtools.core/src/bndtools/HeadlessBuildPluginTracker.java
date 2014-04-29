@@ -17,7 +17,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import bndtools.preferences.BndPreferences;
 
-public class HeadlessBuildPluginTracker extends ServiceTracker {
+public class HeadlessBuildPluginTracker extends ServiceTracker<HeadlessBuildPlugin,HeadlessBuildPlugin> {
     private final ILogger logger = Logger.getLogger(this.getClass());
 
     private VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker = null;
@@ -42,8 +42,8 @@ public class HeadlessBuildPluginTracker extends ServiceTracker {
     }
 
     @Override
-    public HeadlessBuildPlugin addingService(ServiceReference reference) {
-        HeadlessBuildPlugin plugin = (HeadlessBuildPlugin) super.addingService(reference);
+    public HeadlessBuildPlugin addingService(ServiceReference<HeadlessBuildPlugin> reference) {
+        HeadlessBuildPlugin plugin = super.addingService(reference);
         NamedPlugin pluginInformation = plugin.getInformation();
         String name = pluginInformation.getName();
         synchronized (plugins) {
@@ -54,8 +54,8 @@ public class HeadlessBuildPluginTracker extends ServiceTracker {
     }
 
     @Override
-    public void remove(ServiceReference reference) {
-        HeadlessBuildPlugin plugin = (HeadlessBuildPlugin) getService(reference);
+    public void remove(ServiceReference<HeadlessBuildPlugin> reference) {
+        HeadlessBuildPlugin plugin = getService(reference);
         String name = plugin.getInformation().getName();
         synchronized (plugins) {
             pluginsInformation.remove(name);
@@ -107,7 +107,7 @@ public class HeadlessBuildPluginTracker extends ServiceTracker {
             if (pluginReference == null) {
                 continue;
             }
-            HeadlessBuildPlugin plugin = (HeadlessBuildPlugin) getService(pluginReference);
+            HeadlessBuildPlugin plugin = getService(pluginReference);
             if (plugin == null) {
                 continue;
             }

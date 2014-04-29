@@ -62,8 +62,8 @@ public class Plugin extends AbstractUIPlugin {
     private Activator bndActivator;
     private final List<IStartupParticipant> startupParticipants = new LinkedList<IStartupParticipant>();
 
-    private volatile ServiceTracker workspaceTracker;
-    private volatile ServiceRegistration urlHandlerReg;
+    private volatile ServiceTracker<IWorkspace,IWorkspace> workspaceTracker;
+    private volatile ServiceRegistration<URLStreamHandlerService> urlHandlerReg;
     private volatile IndexerTracker indexerTracker;
     private volatile ResourceIndexerTracker resourceIndexerTracker;
     private volatile HeadlessBuildPluginTracker headlessBuildPluginTracker;
@@ -108,14 +108,14 @@ public class Plugin extends AbstractUIPlugin {
     }
 
     private void registerWorkspaceURLHandler(BundleContext context) {
-        workspaceTracker = new ServiceTracker(context, IWorkspace.class.getName(), null);
+        workspaceTracker = new ServiceTracker<IWorkspace,IWorkspace>(context, IWorkspace.class.getName(), null);
         workspaceTracker.open();
 
         Dictionary<String,Object> props = new Hashtable<String,Object>();
         props.put(URLConstants.URL_HANDLER_PROTOCOL, new String[] {
             WorkspaceURLStreamHandlerService.PROTOCOL
         });
-        urlHandlerReg = context.registerService(URLStreamHandlerService.class.getName(), new WorkspaceURLStreamHandlerService(workspaceTracker), props);
+        urlHandlerReg = context.registerService(URLStreamHandlerService.class, new WorkspaceURLStreamHandlerService(workspaceTracker), props);
     }
 
     private void runStartupParticipants() {

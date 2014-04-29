@@ -16,12 +16,11 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 
-
 public class BuildListeners {
     private static final ILogger logger = Logger.getLogger(BuildListeners.class);
 
     private final List<BuildListener> listeners;
-    private final ServiceTracker listenerTracker;
+    private final ServiceTracker<BuildListener,BuildListener> listenerTracker;
 
     public BuildListeners() {
         IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(BndtoolsConstants.CORE_PLUGIN_ID, "buildListeners");
@@ -38,7 +37,7 @@ public class BuildListeners {
 
         BundleContext context = FrameworkUtil.getBundle(BuildListeners.class).getBundleContext();
 
-        listenerTracker = new ServiceTracker(context, BuildListener.class.getName(), null);
+        listenerTracker = new ServiceTracker<BuildListener,BuildListener>(context, BuildListener.class, null);
         listenerTracker.open();
     }
 

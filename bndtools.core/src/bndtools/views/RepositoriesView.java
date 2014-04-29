@@ -102,7 +102,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     private Action refreshAction;
     private Action addBundlesAction;
 
-    private ServiceRegistration registration;
+    private ServiceRegistration<RepositoryListenerPlugin> registration;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -312,7 +312,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         fillToolBar(getViewSite().getActionBars().getToolBarManager());
 
         // Register as repository listener
-        registration = Activator.getDefault().getBundleContext().registerService(RepositoryListenerPlugin.class.getName(), this, null);
+        registration = Activator.getDefault().getBundleContext().registerService(RepositoryListenerPlugin.class, this, null);
     }
 
     @Override
