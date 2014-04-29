@@ -1343,15 +1343,21 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     protected IStatus containerChanged() {
         IStatus status = super.containerChanged();
         IPackageFragmentRoot root = getPackageFragmentRoot();
+        if (root == null) {
+            return status;
+        }
+
+        IJavaProject project = root.getJavaProject();
+
         if ((fTypeKind == ANNOTATION_TYPE || fTypeKind == ENUM_TYPE) && !status.matches(IStatus.ERROR)) {
-            if (root != null && !JavaModelUtil.is50OrHigher(root.getJavaProject())) {
+            if (!JavaModelUtil.is50OrHigher(project)) {
                 // error as createType will fail otherwise (bug 96928)
-                return new StatusInfo(IStatus.ERROR, Messages.format(NewWizardMessages.NewTypeWizardPage_warning_NotJDKCompliant, BasicElementLabels.getJavaElementName(root.getJavaProject().getElementName())));
+                return new StatusInfo(IStatus.ERROR, Messages.format(NewWizardMessages.NewTypeWizardPage_warning_NotJDKCompliant, BasicElementLabels.getJavaElementName(project.getElementName())));
             }
             if (fTypeKind == ENUM_TYPE) {
                 try {
                     // if findType(...) == null then Enum is unavailable
-                    if (findType(root.getJavaProject(), "java.lang.Enum") == null) //$NON-NLS-1$
+                    if (findType(project, "java.lang.Enum") == null) //$NON-NLS-1$
                         return new StatusInfo(IStatus.WARNING, NewWizardMessages.NewTypeWizardPage_warning_EnumClassNotFound);
                 } catch (JavaModelException e) {
                     JavaPlugin.log(e);
@@ -1360,9 +1366,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         }
 
         fCurrPackageCompletionProcessor.setPackageFragmentRoot(root);
-        if (root != null) {
-            fEnclosingTypeCompletionProcessor.setPackageFragment(root.getPackageFragment("")); //$NON-NLS-1$
-        }
+        fEnclosingTypeCompletionProcessor.setPackageFragment(root.getPackageFragment("")); //$NON-NLS-1$
         return status;
     }
 
