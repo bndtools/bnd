@@ -1401,6 +1401,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         }
 
         if (project != null) {
+            assert (root != null);
             if (project.exists() && packName.length() > 0) {
                 try {
                     IPath rootPath = root.getPath();
