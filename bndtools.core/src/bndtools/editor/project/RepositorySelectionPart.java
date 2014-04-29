@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.bndtools.api.ILogger;
-import org.bndtools.api.Logger;
 import org.bndtools.utils.Function;
 import org.bndtools.utils.collections.CollectionUtils;
 import org.bndtools.utils.jface.StrikeoutStyler;
@@ -66,8 +64,6 @@ public class RepositorySelectionPart extends BndEditorPart {
 
     private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png").createImage();
     private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
-
-    private final ILogger logger = Logger.getLogger(RepositorySelectionPart.class);
 
     private final Object MESSAGE_KEY = new Object();
 

@@ -3,8 +3,6 @@ package bndtools.editor.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import org.bndtools.api.ILogger;
-import org.bndtools.api.Logger;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
@@ -35,8 +33,6 @@ import bndtools.utils.ModificationLock;
 import bndtools.editor.common.BndEditorPart;
 
 public class RunFrameworkPart extends BndEditorPart implements PropertyChangeListener {
-    private static final ILogger logger = Logger.getLogger(RunFrameworkPart.class);
-
     private static final String[] PROPERTIES = new String[] {
             BndConstants.RUNFW, BndConstants.RUNEE
     };

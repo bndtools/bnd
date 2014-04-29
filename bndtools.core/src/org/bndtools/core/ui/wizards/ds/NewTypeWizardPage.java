@@ -660,6 +660,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * @param nColumns
      *            number of columns to span
      */
+    @SuppressWarnings("unused")
     protected void createEnclosingTypeControls(Composite composite, int nColumns) {
         // #6891
         Composite tabGroup = new Composite(composite, SWT.NONE);
@@ -2335,6 +2336,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      *             thrown when creation of the type members failed
      * @see #createType(IProgressMonitor)
      */
+    @SuppressWarnings("unused")
     protected void createTypeMembers(IType newType, final ImportsManager imports, IProgressMonitor monitor) throws CoreException {
         // default implementation does nothing
         // example would be
@@ -2349,6 +2351,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * @return returns the file template or <code>null</code>
      * @deprecated Instead of file templates, the new type code template specifies the stub for a compilation unit.
      */
+    @SuppressWarnings("unused")
     @Deprecated
     protected String getFileComment(ICompilationUnit parentCU) {
         return null;

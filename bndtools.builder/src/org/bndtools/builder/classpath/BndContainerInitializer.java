@@ -153,6 +153,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
     }
 
+    @SuppressWarnings("unused")
     public static void workspaceChanged(Workspace ws) throws Exception {
         System.out.println("Workspace changed");
     }
