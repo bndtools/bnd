@@ -2092,6 +2092,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     }
 
     private Set<String> getExistingImports(CompilationUnit root) {
+        @SuppressWarnings("unchecked")
         List<ImportDeclaration> imports = root.imports();
         Set<String> res = new HashSet<String>(imports.size());
         for (int i = 0; i < imports.size(); i++) {
@@ -2110,6 +2111,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             return;
         }
 
+        @SuppressWarnings("unchecked")
         List<ImportDeclaration> importsDecls = root.imports();
         if (importsDecls.isEmpty()) {
             return;
