@@ -65,7 +65,7 @@ public class BndPerspective implements IPerspectiveFactory {
         layout.addShowViewShortcut(PartConstants.VIEW_ID_REPOSITORIES);
         layout.addShowViewShortcut(IPageLayout.ID_OUTLINE);
         layout.addShowViewShortcut(IPageLayout.ID_PROBLEM_VIEW);
-        layout.addShowViewShortcut(IPageLayout.ID_RES_NAV);
+        layout.addShowViewShortcut(IPageLayout.ID_PROJECT_EXPLORER);
         layout.addShowViewShortcut(IPageLayout.ID_TASK_LIST);
         layout.addShowViewShortcut(IProgressConstants.PROGRESS_VIEW_ID);
         layout.addShowViewShortcut(ID_PROJECT_EXPLORER);
