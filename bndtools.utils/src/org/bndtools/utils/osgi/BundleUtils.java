@@ -36,7 +36,7 @@ public class BundleUtils {
         for (Bundle bundle : bundles) {
             try {
                 String name = bundle.getSymbolicName();
-                String versionStr = (String) bundle.getHeaders().get(Constants.BUNDLE_VERSION);
+                String versionStr = bundle.getHeaders().get(Constants.BUNDLE_VERSION);
                 Version version = versionStr != null ? new Version(versionStr) : new Version();
                 if (range == null || range.includes(version)) {
                     if (symbolicName.equals(name)) {
@@ -115,12 +115,12 @@ public class BundleUtils {
 
         return header.keySet().iterator().next();
     }
-    
-    public static String getBundleSymbolicName(Class<?> clazz) {
+
+    public static String getBundleSymbolicName(Class< ? > clazz) {
         Bundle bundle = FrameworkUtil.getBundle(clazz);
         if (bundle == null)
             return null;
-        
+
         return bundle.getSymbolicName();
     }
 }

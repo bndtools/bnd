@@ -1,5 +1,7 @@
 -buildpath: \
     ee.j2se;version=${javac.ee},\
+    osgi.core;version=${osgi.core.version},\
+    osgi.cmpn;version=${osgi.cmpn.version},\
     ${bndlib}, \
     org.eclipse.osgi, \
     osgi.r5;version=1.0.1, \
