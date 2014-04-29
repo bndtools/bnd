@@ -7,6 +7,7 @@ import org.eclipse.jface.dialogs.IInputValidator;
 
 public class URLInputValidator implements IInputValidator {
 
+    @SuppressWarnings("unused")
     public String isValid(String newText) {
         String s = null;
         try {
