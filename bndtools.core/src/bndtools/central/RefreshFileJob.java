@@ -11,7 +11,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-
 public class RefreshFileJob extends WorkspaceJob {
 
     private final boolean derived;
@@ -49,7 +48,7 @@ public class RefreshFileJob extends WorkspaceJob {
     @Override
     public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
         resource.refreshLocal(depth, monitor);
-        resource.setDerived(derived);
+        resource.setDerived(derived, null);
 
         return Status.OK_STATUS;
     }

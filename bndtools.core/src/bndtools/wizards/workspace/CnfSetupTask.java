@@ -258,7 +258,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         IFolder outputFolder = project.getFolder("bin");
         if (!outputFolder.exists())
             outputFolder.create(true, true, progress.newChild(1));
-        outputFolder.setDerived(true);
+        outputFolder.setDerived(true, null);
         progress.setWorkRemaining(2);
 
         // Set the output location

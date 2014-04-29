@@ -100,7 +100,7 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
             IO.close(output);
             indexPath.refreshLocal(IResource.DEPTH_ZERO, null);
             if (indexPath.exists())
-                indexPath.setDerived(true);
+                indexPath.setDerived(true, null);
         } catch (Exception e) {
             logger.logError(MessageFormat.format("Failed to generate index file for bundles in project {0}.", project.getName()), e);
             return;
