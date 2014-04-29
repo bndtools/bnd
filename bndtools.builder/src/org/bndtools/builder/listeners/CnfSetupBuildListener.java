@@ -58,6 +58,7 @@ public class CnfSetupBuildListener extends AbstractBuildListener {
             super("Rebuilding bnd projects after creating workspace configuration.");
         }
 
+        @Override
         public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
             Collection<Project> projects = null;
             try {
