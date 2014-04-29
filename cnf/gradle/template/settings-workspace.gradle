@@ -13,7 +13,7 @@ assert(project == rootProject)
 assert(hasProperty("bnd_cnf"))
 
 
-ext.gradleBuild_gradleVersion                = "1.11"
+ext.gradleBuild_gradleVersion                = "1.12"
 
 ext.gradleBuild_loggingCaptureStandardOutput = LogLevel.INFO
 ext.gradleBuild_loggingLevel                 = LogLevel.INFO
