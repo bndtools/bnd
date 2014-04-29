@@ -71,7 +71,6 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.BndConstants;
 import bndtools.Plugin;
-import bndtools.central.Central;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.model.IDocumentWrapper;
 import bndtools.editor.pages.BundleContentPage;
@@ -481,14 +480,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
             public void elementContentAboutToBeReplaced(Object element) {}
         });
-    }
-
-    private static Workspace getWorkspace() {
-        try {
-            return Central.getWorkspace();
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     private void setPartNameForInput(IEditorInput input) {
