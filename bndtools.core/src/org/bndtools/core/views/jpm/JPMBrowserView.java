@@ -116,13 +116,14 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
     }
 
     public void setSearchFilter(String filter) {
-        Matcher matcher = stripWildcardsPattern.matcher(filter);
+        String strippedFilter = filter;
+        Matcher matcher = stripWildcardsPattern.matcher(strippedFilter);
         boolean found = matcher.find();
         if (found)
-            filter = matcher.group(1);
+            strippedFilter = matcher.group(1);
 
         try {
-            String url = SEARCH_PREFIX + URLEncoder.encode(filter, "UTF-8");
+            String url = SEARCH_PREFIX + URLEncoder.encode(strippedFilter, "UTF-8");
             String current = browser.getUrl();
             if (!url.equals(current))
                 browser.setUrl(url);
