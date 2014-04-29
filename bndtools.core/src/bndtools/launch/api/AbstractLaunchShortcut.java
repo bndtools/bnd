@@ -102,6 +102,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         }
     }
 
+    @SuppressWarnings("unused")
     protected void launchJavaElement(IJavaElement element, String mode) throws CoreException {
         launch(element.getJavaProject().getProject().getFullPath(), mode);
     }

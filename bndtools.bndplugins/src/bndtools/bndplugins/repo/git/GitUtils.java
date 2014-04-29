@@ -8,10 +8,7 @@ import java.util.Map;
 
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.InvalidRefNameException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
-import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.ConfigConstants;
@@ -26,8 +23,7 @@ public class GitUtils {
 
     private static final Map<File,FileRepository> localRepos = new HashMap<File,FileRepository>();
 
-    public static synchronized FileRepository getRepository(File gitRoot, String branch, String gitUrl, String gitPushUrl) throws IOException, ConfigInvalidException, JGitInternalException, RefAlreadyExistsException, RefNotFoundException,
-            InvalidRefNameException {
+    public static synchronized FileRepository getRepository(File gitRoot, String branch, String gitUrl, String gitPushUrl) throws IOException, ConfigInvalidException, JGitInternalException {
 
         File dotGit;
         if (gitRoot.getName().equals(Constants.DOT_GIT)) {

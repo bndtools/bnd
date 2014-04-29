@@ -154,7 +154,7 @@ public class AnalyseBundleResolutionJob extends Job {
         return builder;
     }
 
-    static Builder setupBuilderForBndFile(File file) throws IOException, CoreException {
+    static Builder setupBuilderForBndFile(File file) throws CoreException {
         IFile[] wsfiles = FileUtils.getWorkspaceFiles(file);
         if (wsfiles == null || wsfiles.length == 0)
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to determine project owner for Bnd file: " + file.getAbsolutePath(), null));
