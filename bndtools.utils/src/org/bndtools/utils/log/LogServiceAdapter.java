@@ -4,7 +4,6 @@ import org.bndtools.api.ILogger;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
 
-
 public class LogServiceAdapter implements LogService {
 
     private final ILogger delegate;
@@ -21,10 +20,12 @@ public class LogServiceAdapter implements LogService {
         log(null, level, message, exception);
     }
 
+    @SuppressWarnings("rawtypes")
     public void log(ServiceReference sr, int level, String message) {
         log(sr, level, message, null);
     }
 
+    @SuppressWarnings("rawtypes")
     public void log(ServiceReference sr, int level, String message, Throwable exception) {
         switch (level) {
         case LogService.LOG_ERROR :
