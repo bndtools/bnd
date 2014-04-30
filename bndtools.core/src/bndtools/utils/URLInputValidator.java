@@ -6,15 +6,18 @@ import java.net.URL;
 import org.eclipse.jface.dialogs.IInputValidator;
 
 public class URLInputValidator implements IInputValidator {
-
-    @SuppressWarnings("unused")
     public String isValid(String newText) {
         String s = null;
+        boolean valid = true;
         try {
-            if (new URL(newText) == null)
-                s = "Invalid URL " + newText;
+            s = new URL(newText).toString();
         } catch (MalformedURLException e) {
             s = "Invalid URL " + newText + ": " + e.getMessage();
+            valid = false;
+        }
+
+        if (valid) {
+            return null;
         }
 
         return s;
