@@ -4,7 +4,7 @@ Bundle-Version: 2.3.1.${tstamp}
 Bundle-RequiredExecutionEnvironment: ${java.req.ee}
 Include-Resource: resources
 
--buildpath: \
+-buildpath:  \
 	ee.j2se;version=${javac.ee},\
 	osgi.core;version=${osgi.core.version},\
 	${bndlib},\
@@ -36,10 +36,12 @@ Conditional-Package: \
 
 Import-Package: org.eclipse.ui*;texteditor=!;ui.workbench=!,\
 	javax.naming;resolution:=optional,\
+	javax.net.ssl;resolution:=optional,\
 	javax.xml.namespace;resolution:=optional,\
 	javax.xml.parsers;resolution:=optional,\
 	javax.xml.xpath;resolution:=optional,\
 	org.osgi.service.component.annotations;resolution:=optional,\
+	org.w3c.dom;resolution:=optional,\
 	*
 
 Bundle-Activator: bndtools.jareditor.internal.Plugin
