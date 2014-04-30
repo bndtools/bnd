@@ -28,8 +28,12 @@ public class ApplyCompletionProposalAction extends Action {
 
     @Override
     public void run() {
-        if (mainEditor != null && switchToPageId != null)
-            mainEditor.setActivePage(switchToPageId);
+        assert (proposal != null);
+        assert (textEditor != null);
+        assert (mainEditor != null);
+        assert (switchToPageId != null);
+
+        mainEditor.setActivePage(switchToPageId);
 
         IDocument document = textEditor.getDocumentProvider().getDocument(mainEditor.getEditorInput());
         proposal.apply(document);
@@ -38,5 +42,4 @@ public class ApplyCompletionProposalAction extends Action {
         if (selection != null)
             textEditor.selectAndReveal(selection.x, 0);
     }
-
 }
