@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -207,7 +206,6 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         ITextEditor sourcePage = editor.getSourcePage();
         if (sourcePage == null)
             return;
-        IDocument document = sourcePage.getDocumentProvider().getDocument(getEditorInput());
 
         String type = marker.getAttribute("$bndType", (String) null);
         if (type == null)
