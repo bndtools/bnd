@@ -39,7 +39,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
 import bndtools.central.Central;
-
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.repository.SearchableRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
@@ -70,6 +69,7 @@ public class JpmDependencyWizardPage extends WizardPage {
         setTitle("Add Dependencies from JPM4J");
     }
 
+    @SuppressWarnings("unused")
     public void createControl(Composite parent) {
         // CREATE CONTROLS
         Composite container = new Composite(parent, SWT.NULL);
@@ -104,8 +104,7 @@ public class JpmDependencyWizardPage extends WizardPage {
         Button btnSelectNone = new Button(cmpIndirect, SWT.PUSH);
         btnSelectNone.setText("None");
 
-        @SuppressWarnings("unused")
-        Label lblSpacer = new Label(cmpIndirect, SWT.NONE);
+        new Label(cmpIndirect, SWT.NONE);
 
         createHelpLabel(container, "The above dependencies will be added to the JPM4J local index. Checked dependencies will also be added directly to the project.");
 

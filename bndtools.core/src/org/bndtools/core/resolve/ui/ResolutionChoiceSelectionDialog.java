@@ -51,6 +51,7 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
         this.candidates = candidates;
     }
 
+    @SuppressWarnings("unused")
     @Override
     protected Control createDialogArea(Composite parent) {
         setTitle("Multiple Provider Candidates");
@@ -70,8 +71,7 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
         //        txtRequirement.setBackground(contents.getBackground());
         txtRequirement.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 
-        @SuppressWarnings("unused")
-        Label lblSpacer = new Label(contents, SWT.NONE);
+        new Label(contents, SWT.NONE);
 
         Label lblCandidates = new Label(contents, SWT.NONE);
         lblCandidates.setText("Candidates");
