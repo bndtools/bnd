@@ -38,7 +38,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
         this.repository = repository;
         this.files = initialFiles;
 
-        if ("aQute.lib.deployer.FileRepo".equals(repository.getClass().getName())) {
+        if (repository != null && "aQute.lib.deployer.FileRepo".equals(repository.getClass().getName())) {
             strict = false;
         }
 

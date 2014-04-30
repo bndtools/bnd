@@ -67,7 +67,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
 
     public AddFilesToRepositoryWizardPage(RepositoryPlugin repository, String pageName) {
         super(pageName);
-        if ("aQute.lib.deployer.FileRepo".equals(repository.getClass().getName())) {
+        if (repository != null && "aQute.lib.deployer.FileRepo".equals(repository.getClass().getName())) {
             strict = false;
         }
     }
