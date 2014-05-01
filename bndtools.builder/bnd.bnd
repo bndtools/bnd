@@ -38,7 +38,7 @@ Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 
 # Content
-repoindex-bundles: \
+repoindex-packages: \
 	org.osgi.service.indexer.impl.types,\
 	org.osgi.service.indexer.impl,\
 	org.osgi.service.indexer.impl.util,\
@@ -47,7 +47,7 @@ repoindex-bundles: \
 	
 Private-Package: \
 	org.bndtools.builder.*, \
-	${repoindex-bundles}
+	${repoindex-packages}
 
 Conditional-Package: \
 	aQute.lib.*;-split-package:=merge-first, \
