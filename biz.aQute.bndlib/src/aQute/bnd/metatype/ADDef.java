@@ -19,7 +19,12 @@ public class ADDef {
 	String[] defaults;
 	boolean required = true;
 	final List<OptionDef> options = new ArrayList<OptionDef>();
-	
+	private final Map<String, String> extensionAttributes = new LinkedHashMap<String, String>();
+
+	public void addExtensionAttribute(String prefix, String key, String value) {
+		extensionAttributes.put(prefix + ":" + key, value);
+	}
+
 	public void prepare() {
 		typeString = (type == null)? "*INVALID*": type.toString();		
 	}
@@ -59,6 +64,10 @@ public class ADDef {
 				sep = ",";
 			}
 			ad.addAttribute("default", b.toString());
+		}
+		
+		for (Map.Entry<String,String> entry: extensionAttributes.entrySet()) {
+			ad.addAttribute(entry.getKey(), entry.getValue());
 		}
 		
 		for (OptionDef option: options) {

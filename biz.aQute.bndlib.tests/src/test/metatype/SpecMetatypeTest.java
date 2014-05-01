@@ -11,6 +11,7 @@ import junit.framework.*;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.*;
 
+import aQute.bnd.annotation.xml.*;
 import aQute.bnd.metatype.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
@@ -1073,6 +1074,67 @@ public class SpecMetatypeTest extends TestCase {
 		xt.assertExactAttribute("false", "metatype:MetaData/OCD/AD[@id='enabled']/@required");
 		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='enabled']/@default");
 		xt.assertExactAttribute(Integer.MAX_VALUE + "", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@cardinality");
+	}
+	
+	@ObjectClassDefinition
+	@Attribute(attributes = {"foo=bar"}, namespace = "org.foo/xmlns/foo/1", prefix = "foo")
+	@Attributes({@Attribute(attributes = {"foo1=bar1"}, namespace = "org.foo/xmlns/foo/2", prefix = "foo")})
+	public static interface TestExtensions {
+		@AttributeDefinition
+		@Attribute(attributes = {"foo=bar"}, namespace = "org.foo/xmlns/foo/1", prefix = "foo")
+		@Attributes({@Attribute(attributes = {"foo1=bar1"}, namespace = "org.foo/xmlns/foo/2", prefix = "foo")})
+		String simple();
+
+		@Attribute(attributes = {"foo=bar"}, namespace = "org.foo/xmlns/foo/3", prefix = "foo")
+		@Attributes({@Attribute(attributes = {"foo1=bar1"}, namespace = "org.foo/xmlns/foo/4", prefix = "foo")})
+		String[] notSoSimple();
+
+		Collection<String> stringCollection();
+
+		@AttributeDefinition(defaultValue = {"true"}, required=false)
+		boolean enabled();
+	}
+
+	public static void testExtensions() throws Exception {
+		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty(Constants.PLUGIN, BndExtensionReader.class.getName());
+		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestExtensions.class.getName());
+		b.setProperty(Constants.METAYTPE_ANNOTATIONS_EXTENSIONS, BndExtensionReader.BND_METATYPE_EXTENSIONS);
+		b.build();
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestExtensions.xml");
+		assertEquals(0, b.getErrors().size());
+		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings().size());
+		System.err.println(b.getJar().getResources().keySet());
+		assertNotNull(r);
+		IO.copy(r.openInputStream(), System.err);
+
+		XmlTester xt = new XmlTester(r.openInputStream(), "metatype", version.getNamespace(),
+				"foo", "org.foo/xmlns/foo/1", 
+				"foo1", "org.foo/xmlns/foo/2", 
+				"foo2", "org.foo/xmlns/foo/3", 
+				"foo3", "org.foo/xmlns/foo/4"); 
+		xt.assertNamespace(version.getNamespace());
+
+		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$TestExtensions", "metatype:MetaData/OCD/@id");
+		xt.assertExactAttribute("simple", "metatype:MetaData/OCD/AD[@id='simple']/@id");
+		xt.assertExactAttribute("Simple", "metatype:MetaData/OCD/AD[@id='simple']/@name");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='simple']/@type");
+		xt.assertExactAttribute("false", "metatype:MetaData/OCD/AD[@id='enabled']/@required");
+		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='enabled']/@default");
+		xt.assertExactAttribute(Integer.MAX_VALUE + "", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@cardinality");
+
+		xt.assertExactAttribute("bar", "metatype:MetaData/OCD/@foo:foo");
+		xt.assertExactAttribute("bar1", "metatype:MetaData/OCD/@foo1:foo1");
+
+		xt.assertExactAttribute("bar", "metatype:MetaData/OCD/AD[@id='simple']/@foo:foo");
+		xt.assertExactAttribute("bar1", "metatype:MetaData/OCD/AD[@id='simple']/@foo1:foo1");
+
+		xt.assertExactAttribute("bar", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@foo2:foo");
+		xt.assertExactAttribute("bar1", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@foo3:foo1");
+
 	}
 	
 	@ObjectClassDefinition

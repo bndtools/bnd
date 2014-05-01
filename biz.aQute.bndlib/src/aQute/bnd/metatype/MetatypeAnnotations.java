@@ -2,7 +2,6 @@ package aQute.bnd.metatype;
 
 import java.util.*;
 
-import aQute.bnd.component.TagResource;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
@@ -38,6 +37,24 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		Set<String> ocdIds = new HashSet<String>();
 		Set<String> pids = new HashSet<String>();
 
+		List<ExtensionReader> allExtensions = analyzer.getPlugins(ExtensionReader.class);
+		List<ExtensionReader> extensions = new ArrayList<ExtensionReader>();
+		Parameters extHeader = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METAYTPE_ANNOTATIONS_EXTENSIONS));
+		Instructions extInstructions = new Instructions(extHeader);
+		Set<Instruction> notFound = new HashSet<Instruction>(extInstructions.keySet());
+		for (Instruction instruction: extInstructions.keySet()) {
+			String extension = instruction.toString();
+			for (ExtensionReader ext : allExtensions) {
+				if (ext.name().equalsIgnoreCase(extension)) {
+					extensions.add(ext);
+					notFound.remove(instruction);
+				}
+			}
+		}
+		if (!notFound.isEmpty()) {
+			analyzer.warning("Some extensions not found: " + notFound);
+		}
+
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace().values();
 
@@ -47,7 +64,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options);
+					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, extensions);
 					if (definition != null) {
 						definition.prepare(analyzer);
 						if (!ocdIds.add(definition.id)) {

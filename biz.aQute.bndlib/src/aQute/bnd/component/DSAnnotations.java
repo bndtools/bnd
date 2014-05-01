@@ -12,7 +12,7 @@ import aQute.lib.strings.*;
  * Analyze the class space for any classes that have an OSGi annotation for DS.
  */
 public class DSAnnotations implements AnalyzerPlugin {
-
+	
 	enum Options {
 		inherit, felixExtensions, extender
 	};
@@ -46,6 +46,24 @@ public class DSAnnotations implements AnalyzerPlugin {
 		List<String> names = new ArrayList<String>();
 		if (sc != null && sc.trim().length() > 0)
 			names.add(sc);
+		
+		List<ExtensionReader> allExtensions = analyzer.getPlugins(ExtensionReader.class);
+		List<ExtensionReader> extensions = new ArrayList<ExtensionReader>();
+		Parameters extHeader = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS_EXTENSIONS));
+		Instructions extInstructions = new Instructions(extHeader);
+		Set<Instruction> notFound = new HashSet<Instruction>(extInstructions.keySet());
+		for (Instruction instruction: extInstructions.keySet()) {
+			String extension = instruction.toString();
+			for (ExtensionReader ext : allExtensions) {
+				if (ext.name().equalsIgnoreCase(extension)) {
+					extensions.add(ext);
+					notFound.remove(instruction);
+				}
+			}
+		}
+		if (!notFound.isEmpty()) {
+			analyzer.warning("Some extensions not found: " + notFound);
+		}
 
 		TreeSet<String> provides = new TreeSet<String>();
 		TreeSet<String> requires = new TreeSet<String>();
@@ -57,7 +75,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, options);
+					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, options, extensions);
 					if (definition != null) {
 
 						definition.sortReferences();
