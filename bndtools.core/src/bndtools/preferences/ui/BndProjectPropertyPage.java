@@ -80,6 +80,7 @@ public class BndProjectPropertyPage extends PropertyPage {
             btnContinue.setSelection(false);
             break;
         case skip :
+        default :
             btnDelete.setSelection(false);
             btnSkip.setSelection(true);
             btnContinue.setSelection(false);
@@ -93,6 +94,7 @@ public class BndProjectPropertyPage extends PropertyPage {
         classpathPref = EclipseClasspathPreference.parse(store.getString(EclipseClasspathPreference.PREFERENCE_KEY));
         switch (classpathPref) {
         case expose :
+        default :
             btnExposeEclipseClasspath.setSelection(true);
             btnHideEclipseClasspath.setSelection(false);
             break;

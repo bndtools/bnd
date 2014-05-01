@@ -60,15 +60,15 @@ import bndtools.release.ui.TableSortingEnabler.IColumnContentProvider;
 
 public class ProjectListControl {
 
-    private Color COLOR_RELEASE_REQUIRED;
-    private Color COLOR_VERSION_UPDATE_REQUIRED;
+    private final Color COLOR_RELEASE_REQUIRED;
+    private final Color COLOR_VERSION_UPDATE_REQUIRED;
 
-	private Table projects;
-	private String[] releaseRepos;
-	private CheckboxTableViewer tableViewer;
-	private final SelectionListener selectionListener;
-	private List<ProjectDiff> projectDiffs;
-	private ContentProvider contentProvider;
+    private Table projects;
+    private final String[] releaseRepos;
+    private CheckboxTableViewer tableViewer;
+    private final SelectionListener selectionListener;
+    private List<ProjectDiff> projectDiffs;
+    private ContentProvider contentProvider;
 
     private static final String PROJECT_COLUMN = "project";
     private static final String REPOSITORY_COLUMN = "repository";
@@ -76,18 +76,16 @@ public class ProjectListControl {
 
     // Set column names
     private static final String[] columnNames = new String[] {
-            PROJECT_COLUMN,
-            REPOSITORY_COLUMN,
-            BUNDLES_COLUMN
-            };
+            PROJECT_COLUMN, REPOSITORY_COLUMN, BUNDLES_COLUMN
+    };
 
-	public ProjectListControl(SelectionListener selectionListener, String[] releaseRepos) {
-		this.selectionListener = selectionListener;
-		this.releaseRepos = releaseRepos;
+    public ProjectListControl(SelectionListener selectionListener, String[] releaseRepos) {
+        this.selectionListener = selectionListener;
+        this.releaseRepos = releaseRepos;
 
-		COLOR_VERSION_UPDATE_REQUIRED = new Color(Display.getCurrent(), 250, 85, 125);
+        COLOR_VERSION_UPDATE_REQUIRED = new Color(Display.getCurrent(), 250, 85, 125);
         COLOR_RELEASE_REQUIRED = new Color(Display.getCurrent(), 100, 250, 100);
-	}
+    }
 
     public void createControl(final Composite parent) {
 
@@ -185,6 +183,7 @@ public class ProjectListControl {
             public void widgetSelected(SelectionEvent e) {
                 selectionListener.widgetSelected(e);
             }
+
             public void widgetDefaultSelected(SelectionEvent e) {
                 selectionListener.widgetDefaultSelected(e);
             }
@@ -268,27 +267,25 @@ public class ProjectListControl {
         tableViewer.setInput(projectDiffs);
     }
 
-	public Table getTable() {
-		return projects;
-	}
+    public Table getTable() {
+        return projects;
+    }
 
-	public void setSelected(int index) {
-		projects.select(index);
-	}
+    public void setSelected(int index) {
+        projects.select(index);
+    }
 
-	private class ContentProvider implements IStructuredContentProvider, IColumnContentProvider {
+    private class ContentProvider implements IStructuredContentProvider, IColumnContentProvider {
 
-	    private AtomicReference<String> filterRef = new AtomicReference<String>();
+        private final AtomicReference<String> filterRef = new AtomicReference<String>();
 
-	    public void setFilter(String filter) {
-	        this.filterRef.set(filter);
-	    }
-
-        public void dispose() {
+        public void setFilter(String filter) {
+            this.filterRef.set(filter);
         }
 
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-        }
+        public void dispose() {}
+
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
         public Object[] getElements(Object parent) {
             final String filter = filterRef.get();
@@ -305,14 +302,14 @@ public class ProjectListControl {
             return filtered.toArray();
         }
 
-        public Comparable<?> getValue(Object element, int columnIndex) {
+        public Comparable< ? > getValue(Object element, int columnIndex) {
             ProjectDiff diff = (ProjectDiff) element;
             switch (columnIndex) {
-            case 0:
+            case 0 :
                 return diff.getProject().getName();
-            case 1:
+            case 1 :
                 return diff.getReleaseRepository();
-            case 2:
+            case 2 :
                 int bundles = -1;
                 try {
                     bundles = diff.getProject().getSubBuilders().size();
@@ -320,12 +317,13 @@ public class ProjectListControl {
                     /* ignore */
                 }
                 return Integer.valueOf(bundles);
+            default :
+                return "";
             }
-            return "";
         }
-	}
+    }
 
-	private class TableLabelProvider extends LabelProvider implements ITableColorProvider, ITableLabelProvider {
+    private class TableLabelProvider extends LabelProvider implements ITableColorProvider, ITableLabelProvider {
 
         public Image getColumnImage(Object element, int columnIndex) {
             return null;
@@ -335,25 +333,25 @@ public class ProjectListControl {
             String text = "";
             ProjectDiff diff = (ProjectDiff) element;
             switch (columnIndex) {
-            case 0:
+            case 0 :
                 text = diff.getProject().getName();
                 break;
-            case 1:
+            case 1 :
                 text = diff.getReleaseRepository();
                 if (text == null) {
                     text = diff.getDefaultReleaseRepository();
                 }
                 break;
-            case 2:
-              int bundles = -1;
-              try {
-                  bundles = diff.getProject().getSubBuilders().size();
-              } catch (Exception e) {
-                  /* ignore */
-              }
-              text = String.valueOf(bundles);
-              break;
-            default:
+            case 2 :
+                int bundles = -1;
+                try {
+                    bundles = diff.getProject().getSubBuilders().size();
+                } catch (Exception e) {
+                    /* ignore */
+                }
+                text = String.valueOf(bundles);
+                break;
+            default :
                 break;
             }
             return text;
@@ -373,7 +371,7 @@ public class ProjectListControl {
         public Color getForeground(Object element, int columnIndex) {
             return null;
         }
-	}
+    }
 
     class InlineComboEditingSupport extends EditingSupport {
 
@@ -453,8 +451,8 @@ public class ProjectListControl {
         }
     }
 
-	public void dispose() {
-	    COLOR_RELEASE_REQUIRED.dispose();
-	    COLOR_VERSION_UPDATE_REQUIRED.dispose();
-	}
+    public void dispose() {
+        COLOR_RELEASE_REQUIRED.dispose();
+        COLOR_VERSION_UPDATE_REQUIRED.dispose();
+    }
 }

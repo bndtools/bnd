@@ -56,112 +56,113 @@ import bndtools.release.nl.Messages;
 
 public class ReleaseHelper {
 
-    public final static String  VERSION_WITH_MACRO_STRING  = "(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\$\\{[-_\\.\\da-zA-Z]+\\})";//$NON-NLS-1$
-    public final static Pattern VERSION_WITH_MACRO         = Pattern.compile(VERSION_WITH_MACRO_STRING);
+    public final static String VERSION_WITH_MACRO_STRING = "(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\$\\{[-_\\.\\da-zA-Z]+\\})";//$NON-NLS-1$
+    public final static Pattern VERSION_WITH_MACRO = Pattern.compile(VERSION_WITH_MACRO_STRING);
 
-	public static void updateProject(ReleaseContext context) throws Exception {
+    public static void updateProject(ReleaseContext context) throws Exception {
 
-		Collection<? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
-		for (Builder builder : builders) {
+        Collection< ? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
+        for (Builder builder : builders) {
 
-			Baseline current = getBaselineForBuilder(builder, context);
-			if (current == null) {
-				continue;
-			}
-			for (Info info : current.getPackageInfos()) {
-			    context.getProject().setPackageInfo(info.packageName, info.suggestedVersion);
-			}
+            Baseline current = getBaselineForBuilder(builder, context);
+            if (current == null) {
+                continue;
+            }
+            for (Info info : current.getPackageInfos()) {
+                context.getProject().setPackageInfo(info.packageName, info.suggestedVersion);
+            }
 
-			updateBundleVersion(context, current, builder);
-   		}
-	}
+            updateBundleVersion(context, current, builder);
+        }
+    }
 
-	private static void updateBundleVersion(ReleaseContext context, Baseline current, Builder builder) throws IOException, CoreException {
+    private static void updateBundleVersion(ReleaseContext context, Baseline current, Builder builder) throws IOException, CoreException {
 
-		Version bundleVersion = current.getSuggestedVersion();
-		if (bundleVersion != null) {
+        Version bundleVersion = current.getSuggestedVersion();
+        if (bundleVersion != null) {
 
-			File file = builder.getPropertiesFile();
-			Properties properties = builder.getProperties();
-			if (file == null) {
-				file = context.getProject().getPropertiesFile();
-				properties = context.getProject().getProperties();
-			}
-			final IFile resource = (IFile) ReleaseUtils.toResource(file);
+            File file = builder.getPropertiesFile();
+            Properties properties = builder.getProperties();
+            if (file == null) {
+                file = context.getProject().getPropertiesFile();
+                properties = context.getProject().getProperties();
+            }
+            final IFile resource = (IFile) ReleaseUtils.toResource(file);
 
-			final Document document;
-			if (resource.exists()) {
-				byte[] bytes = readFully(resource.getContents());
-				document = new Document(new String(bytes, resource.getCharset()));
-			} else {
-				document = new Document(""); //$NON-NLS-1$
-			}
+            final Document document;
+            if (resource.exists()) {
+                byte[] bytes = readFully(resource.getContents());
+                document = new Document(new String(bytes, resource.getCharset()));
+            } else {
+                document = new Document(""); //$NON-NLS-1$
+            }
 
-			final BndEditModel model = new BndEditModel();
-			model.loadFrom(document);
+            final BndEditModel model = new BndEditModel();
+            model.loadFrom(document);
 
-			String currentVersion = model.getBundleVersionString();
-			String templateVersion = updateTemplateVersion(currentVersion, bundleVersion);
-			model.setBundleVersion(templateVersion);
-			properties.setProperty(Constants.BUNDLE_VERSION, templateVersion);
+            String currentVersion = model.getBundleVersionString();
+            String templateVersion = updateTemplateVersion(currentVersion, bundleVersion);
+            model.setBundleVersion(templateVersion);
+            properties.setProperty(Constants.BUNDLE_VERSION, templateVersion);
 
-			final Document finalDoc = document;
-			Runnable run = new Runnable() {
-				public void run() {
-					model.saveChangesTo(finalDoc);
+            final Document finalDoc = document;
+            Runnable run = new Runnable() {
+                public void run() {
+                    model.saveChangesTo(finalDoc);
 
-					try {
-						writeFully(finalDoc.get(), resource, false);
-						resource.refreshLocal(IResource.DEPTH_ZERO, null);
-					} catch (CoreException e) {
-						throw new RuntimeException(e);
-					}
-				}
-			};
-	        if (Display.getCurrent() == null) {
-	            Display.getDefault().syncExec(run);
-	        } else
-	            run.run();
-		}
-	}
+                    try {
+                        writeFully(finalDoc.get(), resource, false);
+                        resource.refreshLocal(IResource.DEPTH_ZERO, null);
+                    } catch (CoreException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+            if (Display.getCurrent() == null) {
+                Display.getDefault().syncExec(run);
+            } else
+                run.run();
+        }
+    }
 
-	private static Baseline getBaselineForBuilder(Builder builder, ReleaseContext context) {
-	    Baseline current = null;
-		for (Baseline jd : context.getBaselines()) {
-			if (jd.getBsn().equals(builder.getBsn())) {
-				current = jd;
-				break;
-			}
-		}
-		return current;
-	}
+    private static Baseline getBaselineForBuilder(Builder builder, ReleaseContext context) {
+        Baseline current = null;
+        for (Baseline jd : context.getBaselines()) {
+            if (jd.getBsn().equals(builder.getBsn())) {
+                current = jd;
+                break;
+            }
+        }
+        return current;
+    }
 
-	public static boolean release(ReleaseContext context, List<Baseline> diffs) throws Exception {
+    public static boolean release(ReleaseContext context, List<Baseline> diffs) throws Exception {
 
-		boolean ret = true;
+        boolean ret = true;
 
-		List<IReleaseParticipant> participants = Activator.getReleaseParticipants();
+        List<IReleaseParticipant> participants = Activator.getReleaseParticipants();
 
-		switch (context.getReleaseOption()) {
-		case UPDATE:
-		    if (!doUpdateVersions(context, participants)) {
-		        return false;
-		    }
-		    break;
-        case RELEASE:
+        switch (context.getReleaseOption()) {
+        case UPDATE :
+        default :
+            if (!doUpdateVersions(context, participants)) {
+                return false;
+            }
+            break;
+        case RELEASE :
             ret = doRelease(context, diffs, participants);
             break;
-        case UPDATE_RELEASE:
+        case UPDATE_RELEASE :
             if (!doUpdateVersions(context, participants)) {
                 return false;
             }
             ret = doRelease(context, diffs, participants);
             break;
-		}
+        }
 
-		postRelease(context, participants, ret);
-		return ret;
-	}
+        postRelease(context, participants, ret);
+        return ret;
+    }
 
     private static boolean doUpdateVersions(ReleaseContext context, List<IReleaseParticipant> participants) throws Exception {
 
@@ -188,7 +189,7 @@ public class ReleaseHelper {
         }
 
         for (Baseline diff : diffs) {
-            Collection<? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
+            Collection< ? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
             Builder builder = null;
             for (Builder b : builders) {
                 if (b.getBsn().equals(diff.getBsn())) {
@@ -204,162 +205,164 @@ public class ReleaseHelper {
         }
         return ret;
     }
-	private static void handleBuildErrors(ReleaseContext context, Reporter reporter, Jar jar) {
-		String symbName = null;
-		String version = null;
-		if (jar != null) {
-			symbName = ReleaseUtils.getBundleSymbolicName(jar);
-			version = ReleaseUtils.getBundleVersion(jar);
-		}
-		for (String message : reporter.getErrors()) {
-			context.getErrorHandler().error(symbName, version, message);
-		}
-	}
 
-	private static void handleReleaseErrors(ReleaseContext context, Reporter reporter, String symbolicName, String version) {
-		for (String message : reporter.getErrors()) {
-			context.getErrorHandler().error(symbolicName, version, message);
-		}
-	}
+    private static void handleBuildErrors(ReleaseContext context, Reporter reporter, Jar jar) {
+        String symbName = null;
+        String version = null;
+        if (jar != null) {
+            symbName = ReleaseUtils.getBundleSymbolicName(jar);
+            version = ReleaseUtils.getBundleVersion(jar);
+        }
+        for (String message : reporter.getErrors()) {
+            context.getErrorHandler().error(symbName, version, message);
+        }
+    }
 
-	private static void displayErrors(ReleaseContext context) {
+    private static void handleReleaseErrors(ReleaseContext context, Reporter reporter, String symbolicName, String version) {
+        for (String message : reporter.getErrors()) {
+            context.getErrorHandler().error(symbolicName, version, message);
+        }
+    }
 
-		final String name = context.getProject().getName();
-		final List<Error> errors = context.getErrorHandler().getErrors();
-		if (errors.size() > 0) {
-			Runnable runnable = new Runnable() {
-				public void run() {
-					Shell shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-					ErrorDialog error = new ErrorDialog(shell, name, errors);
-					error.open();
-				}
-			};
+    private static void displayErrors(ReleaseContext context) {
 
-			if (Display.getCurrent() == null) {
-				Display.getDefault().asyncExec(runnable);
-			} else {
-				runnable.run();
-			}
+        final String name = context.getProject().getName();
+        final List<Error> errors = context.getErrorHandler().getErrors();
+        if (errors.size() > 0) {
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    Shell shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
+                    ErrorDialog error = new ErrorDialog(shell, name, errors);
+                    error.open();
+                }
+            };
 
-		}
+            if (Display.getCurrent() == null) {
+                Display.getDefault().asyncExec(runnable);
+            } else {
+                runnable.run();
+            }
 
-	}
+        }
 
-	private static boolean release(ReleaseContext context, List<IReleaseParticipant> participants, Builder builder) throws Exception {
+    }
 
-	    Jar jar;
+    private static boolean release(ReleaseContext context, List<IReleaseParticipant> participants, Builder builder) throws Exception {
 
-	    if (context.getReleaseOption() == ReleaseOption.UPDATE_RELEASE) {
-	        jar = builder.build();
-	    } else {
-	        // No need to rebuild if release only
-	        File jarFile = new File(context.getProject().getTarget(), builder.getBsn() + ".jar");
-	        if (jarFile.isFile()) {
-	            jar = new Jar(jarFile);
-	        } else {
-	            jar = builder.build();
-	        }
-	    }
+        Jar jar;
 
-		handleBuildErrors(context, builder, jar);
+        if (context.getReleaseOption() == ReleaseOption.UPDATE_RELEASE) {
+            jar = builder.build();
+        } else {
+            // No need to rebuild if release only
+            File jarFile = new File(context.getProject().getTarget(), builder.getBsn() + ".jar");
+            if (jarFile.isFile()) {
+                jar = new Jar(jarFile);
+            } else {
+                jar = builder.build();
+            }
+        }
 
-		String symbName = ReleaseUtils.getBundleSymbolicName(jar);
-		String version = ReleaseUtils.getBundleVersion(jar);
+        handleBuildErrors(context, builder, jar);
 
-		boolean proceed = preJarRelease(context, participants, jar);
-		if (!proceed) {
-			postRelease(context, participants, false);
-			displayErrors(context);
-			return false;
-		}
+        String symbName = ReleaseUtils.getBundleSymbolicName(jar);
+        String version = ReleaseUtils.getBundleVersion(jar);
 
-		JarResource jr = new JarResource(jar);
-		InputStream is = new BufferedInputStream(jr.openInputStream());
-		try {
-		    context.getProject().release(context.getReleaseRepository().getName(), jar.getName(), is);
-		} finally {
-		    is.close();
-		}
+        boolean proceed = preJarRelease(context, participants, jar);
+        if (!proceed) {
+            postRelease(context, participants, false);
+            displayErrors(context);
+            return false;
+        }
 
-		File file = context.getReleaseRepository().get(symbName, Version.parseVersion(version), null);
-		Jar releasedJar = null;
-		if (file != null && file.exists()) {
-			IResource resource = ReleaseUtils.toResource(file);
-			if (resource != null) {
-				resource.refreshLocal(IResource.DEPTH_ZERO, null);
-			}
-			releasedJar = jar;
-		}
-		if (releasedJar == null) {
-			handleReleaseErrors(context, context.getProject(), symbName, version);
+        JarResource jr = new JarResource(jar);
+        InputStream is = new BufferedInputStream(jr.openInputStream());
+        try {
+            context.getProject().release(context.getReleaseRepository().getName(), jar.getName(), is);
+        } finally {
+            is.close();
+        }
 
-			postRelease(context, participants, false);
-			displayErrors(context);
-			return false;
-		}
-		context.addReleasedJar(releasedJar);
+        File file = context.getReleaseRepository().get(symbName, Version.parseVersion(version), null);
+        Jar releasedJar = null;
+        if (file != null && file.exists()) {
+            IResource resource = ReleaseUtils.toResource(file);
+            if (resource != null) {
+                resource.refreshLocal(IResource.DEPTH_ZERO, null);
+            }
+            releasedJar = jar;
+        }
+        if (releasedJar == null) {
+            handleReleaseErrors(context, context.getProject(), symbName, version);
 
-		postJarRelease(context, participants, releasedJar);
-		return true;
-	}
+            postRelease(context, participants, false);
+            displayErrors(context);
+            return false;
+        }
+        context.addReleasedJar(releasedJar);
 
-	private static boolean preUpdateProjectVersions(ReleaseContext context, List<IReleaseParticipant> participants) {
-		context.setCurrentScope(Scope.PRE_UPDATE_VERSIONS);
-		for (IReleaseParticipant participant : participants) {
-			if (!participant.preUpdateProjectVersions(context)) {
-				return false;
-			}
-		}
-		return true;
-	}
+        postJarRelease(context, participants, releasedJar);
+        return true;
+    }
 
-	private static boolean preRelease(ReleaseContext context, List<IReleaseParticipant> participants) {
-		context.setCurrentScope(Scope.PRE_RELEASE);
-		for (IReleaseParticipant participant : participants) {
-			if (!participant.preRelease(context)) {
-				return false;
-			}
-		}
-		return true;
-	}
+    private static boolean preUpdateProjectVersions(ReleaseContext context, List<IReleaseParticipant> participants) {
+        context.setCurrentScope(Scope.PRE_UPDATE_VERSIONS);
+        for (IReleaseParticipant participant : participants) {
+            if (!participant.preUpdateProjectVersions(context)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-	private static boolean preJarRelease(ReleaseContext context, List<IReleaseParticipant> participants, Jar jar) {
-		context.setCurrentScope(Scope.PRE_JAR_RELEASE);
-		for (IReleaseParticipant participant : participants) {
-			if (!participant.preJarRelease(context, jar)) {
-				return false;
-			}
-		}
-		return true;
-	}
+    private static boolean preRelease(ReleaseContext context, List<IReleaseParticipant> participants) {
+        context.setCurrentScope(Scope.PRE_RELEASE);
+        for (IReleaseParticipant participant : participants) {
+            if (!participant.preRelease(context)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-	private static void postJarRelease(ReleaseContext context, List<IReleaseParticipant> participants, Jar jar) {
-		context.setCurrentScope(Scope.POST_JAR_RELEASE);
-		for (IReleaseParticipant participant : participants) {
-			participant.postJarRelease(context, jar);
-		}
-	}
+    private static boolean preJarRelease(ReleaseContext context, List<IReleaseParticipant> participants, Jar jar) {
+        context.setCurrentScope(Scope.PRE_JAR_RELEASE);
+        for (IReleaseParticipant participant : participants) {
+            if (!participant.preJarRelease(context, jar)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-	private static void postRelease(ReleaseContext context, List<IReleaseParticipant> participants, boolean success) {
-		context.setCurrentScope(Scope.POST_RELEASE);
-		for (IReleaseParticipant participant : participants) {
-			participant.postRelease(context, success);
-		}
-	}
-	public static String[] getReleaseRepositories() {
-		List<RepositoryPlugin> repos = Activator.getRepositories();
-		List<String> ret = new ArrayList<String>();
-		for (RepositoryPlugin repo : repos) {
-			if (repo.canWrite()) {
-				if (repo.getName() != null) {
-					ret.add(repo.getName());
-				} else {
-					ret.add(repo.toString());
-				}
-			}
-		}
-		return ret.toArray(new String[ret.size()]);
-	}
+    private static void postJarRelease(ReleaseContext context, List<IReleaseParticipant> participants, Jar jar) {
+        context.setCurrentScope(Scope.POST_JAR_RELEASE);
+        for (IReleaseParticipant participant : participants) {
+            participant.postJarRelease(context, jar);
+        }
+    }
+
+    private static void postRelease(ReleaseContext context, List<IReleaseParticipant> participants, boolean success) {
+        context.setCurrentScope(Scope.POST_RELEASE);
+        for (IReleaseParticipant participant : participants) {
+            participant.postRelease(context, success);
+        }
+    }
+
+    public static String[] getReleaseRepositories() {
+        List<RepositoryPlugin> repos = Activator.getRepositories();
+        List<String> ret = new ArrayList<String>();
+        for (RepositoryPlugin repo : repos) {
+            if (repo.canWrite()) {
+                if (repo.getName() != null) {
+                    ret.add(repo.getName());
+                } else {
+                    ret.add(repo.toString());
+                }
+            }
+        }
+        return ret.toArray(new String[ret.size()]);
+    }
 
     public static RepositoryPlugin getReleaseRepo(Project project) {
         RepositoryPlugin repo = null;
@@ -380,11 +383,9 @@ public class ReleaseHelper {
         return repo;
     }
 
-
-
-	public static void initializeProjectDiffs(List<ProjectDiff> projects) {
-		String[] repos =  getReleaseRepositories();
-		for (ProjectDiff projectDiff : projects) {
+    public static void initializeProjectDiffs(List<ProjectDiff> projects) {
+        String[] repos = getReleaseRepositories();
+        for (ProjectDiff projectDiff : projects) {
 
             RepositoryPlugin repoPlugin = ReleaseHelper.getReleaseRepo(projectDiff.getProject());
             String repo;
@@ -394,15 +395,15 @@ public class ReleaseHelper {
                 repo = null;
             }
 
-			if (repo == null) {
-				if (repos.length > 0) {
-					repo = repos[0];
-				} else {
-					repo = "";
-				}
-			}
-			projectDiff.setReleaseRepository(repo);
-			projectDiff.setDefaultReleaseRepository(repo);
+            if (repo == null) {
+                if (repos.length > 0) {
+                    repo = repos[0];
+                } else {
+                    repo = "";
+                }
+            }
+            projectDiff.setReleaseRepository(repo);
+            projectDiff.setDefaultReleaseRepository(repo);
 
             for (Baseline baseline : projectDiff.getBaselines()) {
                 if (ReleaseUtils.needsRelease(baseline)) {
@@ -421,9 +422,9 @@ public class ReleaseHelper {
                 } else {
                     baseline.setSuggestedVersion(baseline.getOlderVersion());
                 }
-           }
-		}
-	}
+            }
+        }
+    }
 
     private static byte[] readFully(InputStream stream) throws IOException {
         try {
@@ -490,8 +491,7 @@ public class ReleaseHelper {
                             info.macro = bundleVersion;
                             bsns.add(info);
                         }
-                    } catch (Exception e) {
-                    }
+                    } catch (Exception e) {}
                 }
             }
         }

@@ -253,6 +253,7 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
             switch (activateSignature) {
             case NoActivate :
             case NoArg :
+            default :
                 // Nothing to do
                 break;
             case ConfigMap :

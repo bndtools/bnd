@@ -188,6 +188,7 @@ public class CnfSetupWizard extends Wizard {
             operation = new CnfSetupOperation(CnfSetupOperation.Type.Import, location);
             break;
         case None :
+        default :
             operation = new CnfSetupOperation(CnfSetupOperation.Type.Create, null);
             break;
         }

@@ -524,6 +524,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(getProject()), BndtoolsConstants.CORE_PLUGIN_ID);
             switch (CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY))) {
             case skip :
+            default :
                 addBuildMarkers(String.format("Will not build OSGi bundle(s) for project %s until compilation problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
                 log(LOG_BASIC, "SKIPPING due to Java problem markers");
                 return false;
@@ -538,6 +539,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             ScopedPreferenceStore store = new ScopedPreferenceStore(new ProjectScope(getProject()), BndtoolsConstants.CORE_PLUGIN_ID);
             switch (CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY))) {
             case skip :
+            default :
                 addBuildMarkers(String.format("Will not build OSGi bundle(s) for project %s until classpath resolution problems are fixed.", model.getName()), IMarker.SEVERITY_ERROR);
                 log(LOG_BASIC, "SKIPPING due to classpath resolution problem markers");
                 return false;

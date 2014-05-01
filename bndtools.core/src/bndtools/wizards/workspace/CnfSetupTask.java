@@ -107,6 +107,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
             rebuildWorkspace(progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             break;
         case Nothing :
+        default :
             break;
         }
     }
