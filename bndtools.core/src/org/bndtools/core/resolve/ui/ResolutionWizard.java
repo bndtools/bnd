@@ -24,6 +24,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
@@ -77,8 +78,17 @@ public class ResolutionWizard extends Wizard {
         // Open stream for physical paths list in target dir
         PrintStream pathsStream = null;
         try {
-            Project project = Central.getProject(file.getProject().getLocation().toFile());
-            File targetDir = project.getTarget();
+            File targetDir;
+
+            File projectDir = file.getProject().getLocation().toFile();
+            Project project = Central.getProject(projectDir);
+            if (project != null)
+                targetDir = project.getTarget();
+            else {
+                String targetName = Workspace.getDefaults().get("target", "generated");
+                targetDir = new File(projectDir, targetName);
+            }
+
             if (!targetDir.exists() && !targetDir.mkdirs()) {
                 throw new IOException("Could not create directory " + targetDir);
             }
