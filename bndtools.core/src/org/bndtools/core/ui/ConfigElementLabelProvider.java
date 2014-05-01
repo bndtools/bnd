@@ -32,7 +32,7 @@ public class ConfigElementLabelProvider extends StyledCellLabelProvider {
     @Override
     public void update(ViewerCell cell) {
         Image icon = defaultImg;
-        ImageDescriptor iconDescriptor = null;
+        ImageDescriptor iconDescriptor;
 
         Object data = cell.getElement();
         if (data instanceof ConfigurationElementCategory) {
@@ -46,6 +46,8 @@ public class ConfigElementLabelProvider extends StyledCellLabelProvider {
             String iconPath = element.getAttribute("icon");
             if (iconPath != null)
                 iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor().getName(), iconPath);
+            else
+                iconDescriptor = null;
         } else {
             cell.setText("<<ERROR>>");
             iconDescriptor = null;

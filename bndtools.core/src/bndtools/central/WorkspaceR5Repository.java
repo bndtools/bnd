@@ -71,7 +71,7 @@ public class WorkspaceR5Repository implements Repository {
                 File targetDir = getTarget(model);
                 if (targetDir != null) {
                     File indexFile = new File(targetDir, ".index");
-                    if (indexFile != null && indexFile.isFile()) {
+                    if (indexFile.isFile()) {
                         loadProjectIndex(project, new FileInputStream(indexFile), project.getLocation().toFile().toURI());
                     }
                 }

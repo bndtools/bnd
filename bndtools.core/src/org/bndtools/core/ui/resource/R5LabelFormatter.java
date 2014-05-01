@@ -31,7 +31,7 @@ public class R5LabelFormatter {
     private static final ConcurrentMap<String,Pattern> FILTER_PATTERNS = new ConcurrentHashMap<String,Pattern>();
 
     public static String getVersionAttributeName(String ns) {
-        String r = null;
+        String r;
 
         if (ns == null)
             r = null;
@@ -52,6 +52,8 @@ public class R5LabelFormatter {
         else if (ns.equals(ContractNamespace.CONTRACT_NAMESPACE))
             r = ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE;
         else if (ns.equals(ServiceNamespace.SERVICE_NAMESPACE))
+            r = null;
+        else
             r = null;
 
         return r;
