@@ -55,7 +55,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
     private static final String PACKAGEINFO = "packageinfo";
     private static final String PROP_SUGGESTED_VERSION = "suggestedVersion";
-    
+
     private static final ILogger logger = Logger.getLogger(BaselineErrorHandler.class);
 
     public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
@@ -112,6 +112,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                 continue;
 
             if (Delta.ADDED == pkgMemberDiff.getDelta()) {
+                @SuppressWarnings("unused")
                 Tree pkgMember = pkgMemberDiff.getNewer();
                 //                markers.addAll(generateAddedTypeMarker(javaProject, pkgMember.getName(), pkgMember.ifAdded()));
             } else if (Delta.REMOVED == pkgMemberDiff.getDelta()) {} else {

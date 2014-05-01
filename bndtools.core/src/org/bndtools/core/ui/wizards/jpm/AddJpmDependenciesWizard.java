@@ -22,6 +22,7 @@ import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 
 public class AddJpmDependenciesWizard extends Wizard {
 
+    @SuppressWarnings("unused")
     private final URI uri;
     private final JpmDependencyWizardPage depsPage;
     private final Set<ResourceDescriptor> result = new HashSet<ResourceDescriptor>();

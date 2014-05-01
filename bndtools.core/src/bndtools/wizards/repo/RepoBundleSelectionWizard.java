@@ -5,12 +5,12 @@ import java.util.List;
 import org.eclipse.jface.wizard.Wizard;
 
 import bndtools.model.repo.DependencyPhase;
-
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.clauses.VersionedClause;
 
 public class RepoBundleSelectionWizard extends Wizard {
 
+    @SuppressWarnings("unused")
     private final DependencyPhase phase;
     private final RepoBundleSelectionWizardPage selectionPage;
 

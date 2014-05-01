@@ -43,6 +43,7 @@ public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
         List<ICompletionProposal> proposals = new LinkedList<ICompletionProposal>();
 
         ISourceViewer viewer = context.getSourceViewer();
+        @SuppressWarnings("unused")
         IDocument document = viewer.getDocument();
         IAnnotationModel model = viewer.getAnnotationModel();
 

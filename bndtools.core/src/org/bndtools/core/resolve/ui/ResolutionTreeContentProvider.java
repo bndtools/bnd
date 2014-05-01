@@ -15,6 +15,7 @@ import org.osgi.resource.Wire;
 
 public class ResolutionTreeContentProvider implements ITreeContentProvider {
 
+    @SuppressWarnings("unused")
     private boolean optional;
     private Map<Resource,List<Wire>> resolution;
 
