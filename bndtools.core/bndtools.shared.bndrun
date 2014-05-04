@@ -7,8 +7,6 @@
 workspace.bundles: \
 	bndtools.api;version=snapshot,\
 	bndtools.core;version=snapshot,\
-	bndtools.headless.build.plugin.ant;version=snapshot,\
-	bndtools.headless.build.plugin.gradle;version=snapshot,\
 	bndtools.builder;version=snapshot,\
 	bndtools.repository.base;version=snapshot,\
 	bndtools.repository.amdatu;version=snapshot,\
@@ -17,8 +15,10 @@ workspace.bundles: \
 	bndtools.template.amdatu;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
 	bndtools.release;version=snapshot,\
-	bndtools.versioncontrol.ignores.plugin.git;version=snapshot,\
-	org.bndtools.embeddedrepo;version=snapshot
+	org.bndtools.embeddedrepo;version=snapshot,\
+	org.bndtools.headless.build.plugin.ant;version=snapshot,\
+	org.bndtools.headless.build.plugin.gradle;version=snapshot,\
+	org.bndtools.versioncontrol.ignores.plugin.git;version=snapshot
 
 p2.bundles: org.eclipse.equinox.p2.core,\
 	org.eclipse.equinox.p2.engine,\

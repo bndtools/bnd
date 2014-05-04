@@ -20,14 +20,14 @@ ext.p2_main = [
     "bndtools.api",
     "bndtools.builder",
     "bndtools.core",
-    "bndtools.headless.build.plugin.ant",
-    "bndtools.headless.build.plugin.gradle",
     "bndtools.jareditor",
     "bndtools.release",
     "bndtools.repository.base",
     "bndtools.repository.maven",
-    "bndtools.versioncontrol.ignores.plugin.git",
-    "org.bndtools.embeddedrepo"
+    "org.bndtools.embeddedrepo",
+    "org.bndtools.headless.build.plugin.ant",
+    "org.bndtools.headless.build.plugin.gradle",
+    "org.bndtools.versioncontrol.ignores.plugin.git"
   ]
 
 /* the extras feature */

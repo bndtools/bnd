@@ -1,0 +1,13 @@
+-buildpath: \
+	ee.j2se;version=${javac.ee},\
+	bndtools.api;version=latest,\
+	biz.aQute.bnd.annotation,\
+	${junit}
+
+# we really need this, otherwise Eclipse will not start our bundles
+Bundle-ActivationPolicy: lazy
+
+Bundle-Version: 1.0.0.${tstamp}
+Private-Package: \
+	org.bndtools.versioncontrol.ignores.plugin.git
+Service-Component: *

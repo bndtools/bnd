@@ -1,0 +1,22 @@
+-buildpath: \
+	ee.j2se;version=${javac.ee},\
+	osgi.core;version=${osgi.core.version},\
+	bndtools.api;version=latest,\
+	bndtools.utils;version=project,\
+	biz.aQute.bnd.annotation,\
+	${bndlib},\
+	${junit}
+-includeresource: \
+	templates=resources/templates/unprocessed,\
+	templates/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd.jar=${repo;biz.aQute.bnd;${bndlib-version-base}}
+
+# we really need this, otherwise Eclipse will not start our bundles
+Bundle-ActivationPolicy: lazy
+
+Bundle-Version: 1.0.0.${tstamp}
+Conditional-Package: \
+	org.bndtools.utils.copy.bundleresource,\
+	aQute.lib.io
+Private-Package: \
+	org.bndtools.headless.build.plugin.ant
+Service-Component: *

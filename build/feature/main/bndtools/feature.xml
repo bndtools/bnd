@@ -137,20 +137,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
          unpack="false"/>
 
    <plugin
-         id="bndtools.headless.build.plugin.ant"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="bndtools.headless.build.plugin.gradle"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="bndtools.core"
          download-size="0"
          install-size="0"
@@ -186,14 +172,28 @@ This Agreement is governed by the laws of the State of New York and the intellec
          unpack="false"/>
 
    <plugin
-         id="bndtools.versioncontrol.ignores.plugin.git"
+         id="org.bndtools.embeddedrepo"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.bndtools.embeddedrepo"
+         id="org.bndtools.headless.build.plugin.ant"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.bndtools.headless.build.plugin.gradle"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.bndtools.versioncontrol.ignores.plugin.git"
          download-size="0"
          install-size="0"
          version="0.0.0"
