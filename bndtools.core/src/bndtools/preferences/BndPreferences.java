@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.bndtools.api.HeadlessBuildManager;
 import org.bndtools.api.NamedPlugin;
-import org.bndtools.api.VersionControlIgnoresManager;
+import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
+import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.preference.IPreferenceStore;
 

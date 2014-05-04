@@ -1,7 +1,7 @@
 -buildpath:  \
     ee.j2se;version='[1.6,1.7)',\
-    osgi.core;version=${osgi.core.version},\
     bndtools.api;version=latest,\
+    org.bndtools.versioncontrol.ignores.manager;version=latest,\
 	biz.aQute.bnd.annotation,\
 	${junit}
 
@@ -12,3 +12,5 @@ Bundle-Version: 1.0.0.${tstamp}
 Private-Package:  \
 	org.bndtools.headless.build.manager
 Service-Component: *
+Export-Package:  \
+	org.bndtools.headless.build.manager.api;provide:=true

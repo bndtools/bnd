@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.bndtools.api.NamedPlugin;
-import org.bndtools.api.VersionControlIgnoresPlugin;
+import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresPlugin;
 
 import aQute.bnd.annotation.component.Component;
 

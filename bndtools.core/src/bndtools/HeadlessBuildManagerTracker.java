@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.bndtools.api.HeadlessBuildManager;
 import org.bndtools.api.NamedPlugin;
+import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;

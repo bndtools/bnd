@@ -15,8 +15,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.bndtools.api.BndtoolsConstants;
-import org.bndtools.api.HeadlessBuildManager;
-import org.bndtools.api.VersionControlIgnoresManager;
+import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
+import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;

@@ -20,13 +20,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bndtools.api.BndProjectResource;
-import org.bndtools.api.HeadlessBuildManager;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ProjectPaths;
-import org.bndtools.api.VersionControlIgnoresManager;
+import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.utils.copy.ResourceCopier;
 import org.bndtools.utils.javaproject.JavaProjectUtils;
+import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;

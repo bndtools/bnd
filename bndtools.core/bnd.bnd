@@ -96,5 +96,7 @@ eclipse.deps: \
 	libs/org.osgi.service.obr-1.0.2.jar;version=file,\
 	libs/jcip-annotations.jar;version=file,\
 	bndtools.api;version=latest,\
+	org.bndtools.headless.build.manager;version=latest,\
+	org.bndtools.versioncontrol.ignores.manager;version=latest,\
 	bndtools.utils;version=project,\
 	bndtools.repository.base;version=latest

@@ -6,10 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.bndtools.api.HeadlessBuildPlugin;
 import org.bndtools.api.NamedPlugin;
-import org.bndtools.api.VersionControlIgnoresManager;
+import org.bndtools.headless.build.manager.api.HeadlessBuildPlugin;
 import org.bndtools.utils.copy.bundleresource.BundleResourceCopier;
+import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.osgi.framework.BundleContext;
 
 import aQute.bnd.annotation.component.Activate;

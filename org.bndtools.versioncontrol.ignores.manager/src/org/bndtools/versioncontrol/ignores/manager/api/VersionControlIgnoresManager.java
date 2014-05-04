@@ -1,4 +1,4 @@
-package org.bndtools.api;
+package org.bndtools.versioncontrol.ignores.manager.api;
 
 import java.io.File;
 import java.util.Collection;

@@ -8,12 +8,12 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.bndtools.api.HeadlessBuildManager;
-import org.bndtools.api.HeadlessBuildPlugin;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.NamedPlugin;
-import org.bndtools.api.VersionControlIgnoresManager;
+import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
+import org.bndtools.headless.build.manager.api.HeadlessBuildPlugin;
+import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;

@@ -11,14 +11,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.bndtools.api.HeadlessBuildManager;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
-import org.bndtools.api.VersionControlIgnoresManager;
+import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.utils.javaproject.JavaProjectUtils;
 import org.bndtools.utils.osgi.BundleUtils;
+import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
