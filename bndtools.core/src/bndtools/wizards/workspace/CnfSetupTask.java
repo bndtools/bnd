@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.bndtools.api.HeadlessBuildManager;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ProjectLayout;
@@ -44,7 +45,6 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.osgi.framework.Bundle;
 
 import aQute.bnd.build.Workspace;
-import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -190,9 +190,9 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         }
 
         /* Headless build files */
-        HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();
-        Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildPluginTracker, null);
-        headlessBuildPluginTracker.setup(enabledPlugins, true, cnfJavaProject.getProject().getLocation().toFile(), true, enabledIgnorePlugins);
+        HeadlessBuildManager headlessBuildManager = Plugin.getDefault().getHeadlessBuildManager();
+        Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildManager, null);
+        headlessBuildManager.setup(enabledPlugins, true, cnfJavaProject.getProject().getLocation().toFile(), true, enabledIgnorePlugins);
 
         /* refresh the project; files were created outside of Eclipse API */
         cnfProject.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);

@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.HeadlessBuildManager;
 import org.bndtools.api.VersionControlIgnoresManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -31,7 +32,6 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
 import aQute.bnd.build.Project;
-import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
 import bndtools.preferences.BndPreferences;
 
@@ -103,8 +103,8 @@ public class ToggleNatureAction implements IObjectActionDelegate {
             Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresManager, project, null);
 
             /* Headless build files */
-            HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();
-            Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildPluginTracker, null);
+            HeadlessBuildManager headlessBuildManager = Plugin.getDefault().getHeadlessBuildManager();
+            Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildManager, null);
 
             IProject iProject = project.getProject();
             IProjectDescription description = iProject.getDescription();
@@ -120,7 +120,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
                     iProject.setDescription(description, null);
 
                     /* Remove the headless build files */
-                    headlessBuildPluginTracker.setup(enabledPlugins, false, iProject.getLocation().toFile(), false, enabledIgnorePlugins);
+                    headlessBuildManager.setup(enabledPlugins, false, iProject.getLocation().toFile(), false, enabledIgnorePlugins);
 
                     /* refresh the project; files were created outside of Eclipse API */
                     iProject.refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -130,7 +130,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
             }
 
             /* Add the headless build files */
-            headlessBuildPluginTracker.setup(enabledPlugins, false, iProject.getLocation().toFile(), true, enabledIgnorePlugins);
+            headlessBuildManager.setup(enabledPlugins, false, iProject.getLocation().toFile(), true, enabledIgnorePlugins);
 
             // Add the nature
             ensureBndBndExists(iProject);

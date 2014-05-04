@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.bndtools.api.HeadlessBuildManager;
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.api.VersionControlIgnoresManager;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.preference.IPreferenceStore;
 
-import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
 import bndtools.team.TeamUtils;
 
@@ -190,18 +190,18 @@ public class BndPreferences {
      * <li>Otherwise this method determines from the preferences which plugins are enabled</li>
      * </ul>
      * 
-     * @param tracker
-     *            the headless build plugins tracker
+     * @param manager
+     *            the headless build manager
      * @param plugins
      *            the plugins, can be null or empty.
      * @return the enabled plugins
      */
-    public Set<String> getHeadlessBuildPluginsEnabled(HeadlessBuildPluginTracker tracker, Set<String> plugins) {
+    public Set<String> getHeadlessBuildPluginsEnabled(HeadlessBuildManager manager, Set<String> plugins) {
         if (plugins != null && !plugins.isEmpty()) {
             return plugins;
         }
 
-        return getHeadlessBuildPlugins(tracker.getAllPluginsInformation(), true).keySet();
+        return getHeadlessBuildPlugins(manager.getAllPluginsInformation(), true).keySet();
     }
 
     public void setVersionControlIgnoresCreate(boolean versionControlIgnoresCreate) {

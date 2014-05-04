@@ -25,6 +25,7 @@ ext.p2_main = [
     "bndtools.repository.base",
     "bndtools.repository.maven",
     "org.bndtools.embeddedrepo",
+    "org.bndtools.headless.build.manager",
     "org.bndtools.headless.build.plugin.ant",
     "org.bndtools.headless.build.plugin.gradle",
     "org.bndtools.versioncontrol.ignores.manager",

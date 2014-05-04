@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bndtools.api.BndProjectResource;
+import org.bndtools.api.HeadlessBuildManager;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ProjectPaths;
@@ -46,7 +47,6 @@ import org.eclipse.ui.ide.IDE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.Document;
-import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
 import bndtools.editor.model.BndProject;
 import bndtools.preferences.BndPreferences;
@@ -138,9 +138,9 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         versionControlIgnoresManager.createProjectIgnores(enabledIgnorePlugins, project.getProject().getLocation().toFile(), sourceOutputLocations, projectPaths.getTargetDir());
 
         /* Headless build files */
-        HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();
-        Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildPluginTracker, null);
-        headlessBuildPluginTracker.setup(enabledPlugins, false, project.getProject().getLocation().toFile(), true, enabledIgnorePlugins);
+        HeadlessBuildManager headlessBuildManager = Plugin.getDefault().getHeadlessBuildManager();
+        Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildManager, null);
+        headlessBuildManager.setup(enabledPlugins, false, project.getProject().getLocation().toFile(), true, enabledIgnorePlugins);
 
         /* refresh the project; files were created outside of Eclipse API */
         project.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);

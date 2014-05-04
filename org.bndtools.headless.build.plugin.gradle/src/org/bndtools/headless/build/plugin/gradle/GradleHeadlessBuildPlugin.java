@@ -55,11 +55,13 @@ public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
         baseDir = "templates/cnf/";
         copier.addOrRemoveDirectory(projectDir, baseDir, "/", add);
 
-        List<String> ignoredEntries = new LinkedList<String>();
-        ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, "/.gradle/", true));
-        ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, "/reports/", true));
-        ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TARGET_DIR), true));
+        if (ignoresManager != null) {
+            List<String> ignoredEntries = new LinkedList<String>();
+            ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, "/.gradle/", true));
+            ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, "/reports/", true));
+            ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TARGET_DIR), true));
 
-        ignoresManager.addIgnores(enabledIgnorePlugins, workspaceRoot, ignoredEntries);
+            ignoresManager.addIgnores(enabledIgnorePlugins, workspaceRoot, ignoredEntries);
+        }
     }
 }

@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.bndtools.api.HeadlessBuildManager;
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.api.VersionControlIgnoresManager;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -27,7 +28,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import aQute.bnd.build.Project;
-import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
 import bndtools.preferences.BndPreferences;
 import bndtools.utils.ModificationLock;
@@ -40,7 +40,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
     private final ModificationLock lock = new ModificationLock();
 
-    private final HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();
+    private final HeadlessBuildManager headlessBuildManager = Plugin.getDefault().getHeadlessBuildManager();
     private final VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault().getVersionControlIgnoresManager();
 
     private String enableSubs;
@@ -112,7 +112,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         final Button btnEditorOpenSourceTab = new Button(editorGroup, SWT.CHECK);
         btnEditorOpenSourceTab.setText(Messages.BndPreferencePage_btnEditorOpenSourceTab);
 
-        Collection<NamedPlugin> allPluginsInformation = headlessBuildPluginTracker.getAllPluginsInformation();
+        Collection<NamedPlugin> allPluginsInformation = headlessBuildManager.getAllPluginsInformation();
         if (allPluginsInformation.size() > 0) {
             Group headlessMainGroup = new Group(composite, SWT.NONE);
             headlessMainGroup.setText(Messages.BndPreferencePage_headlessGroup);
@@ -369,7 +369,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         prefs.setBuildLogging(buildLogging);
         prefs.setEditorOpenSourceTab(editorOpenSourceTab);
         prefs.setHeadlessBuildCreate(headlessBuildCreate);
-        Collection<NamedPlugin> pluginsInformation = headlessBuildPluginTracker.getAllPluginsInformation();
+        Collection<NamedPlugin> pluginsInformation = headlessBuildManager.getAllPluginsInformation();
         if (pluginsInformation.size() > 0) {
             prefs.setHeadlessBuildPlugins(headlessBuildPlugins);
         }
@@ -392,7 +392,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         buildLogging = prefs.getBuildLogging();
         editorOpenSourceTab = prefs.getEditorOpenSourceTab();
         headlessBuildCreate = prefs.getHeadlessBuildCreate();
-        Collection<NamedPlugin> pluginsInformation = headlessBuildPluginTracker.getAllPluginsInformation();
+        Collection<NamedPlugin> pluginsInformation = headlessBuildManager.getAllPluginsInformation();
         if (pluginsInformation.size() > 0) {
             headlessBuildPlugins.clear();
             headlessBuildPlugins.putAll(prefs.getHeadlessBuildPlugins(pluginsInformation, false));
@@ -408,7 +408,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private void checkValid() {
         boolean valid = true;
         if (headlessBuildCreate) {
-            Collection<NamedPlugin> pluginsInformation = headlessBuildPluginTracker.getAllPluginsInformation();
+            Collection<NamedPlugin> pluginsInformation = headlessBuildManager.getAllPluginsInformation();
             if (pluginsInformation.size() > 0) {
                 boolean atLeastOneEnabled = false;
                 for (Boolean b : headlessBuildPlugins.values()) {

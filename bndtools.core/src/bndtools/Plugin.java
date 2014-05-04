@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.bndtools.api.HeadlessBuildManager;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.IStartupParticipant;
 import org.bndtools.api.Logger;
@@ -67,7 +68,7 @@ public class Plugin extends AbstractUIPlugin {
     private volatile ServiceRegistration<URLStreamHandlerService> urlHandlerReg;
     private volatile IndexerTracker indexerTracker;
     private volatile ResourceIndexerTracker resourceIndexerTracker;
-    private volatile HeadlessBuildPluginTracker headlessBuildPluginTracker;
+    private volatile HeadlessBuildManagerTracker headlessBuildManager;
     private volatile VersionControlIgnoresManagerTracker versionControlIgnoresManager;
 
     private volatile ScheduledExecutorService scheduler;
@@ -93,8 +94,8 @@ public class Plugin extends AbstractUIPlugin {
         versionControlIgnoresManager = new VersionControlIgnoresManagerTracker(context);
         versionControlIgnoresManager.open();
 
-        headlessBuildPluginTracker = new HeadlessBuildPluginTracker(context, versionControlIgnoresManager);
-        headlessBuildPluginTracker.open();
+        headlessBuildManager = new HeadlessBuildManagerTracker(context);
+        headlessBuildManager.open();
 
         registerWorkspaceServiceFactory(context);
 
@@ -159,7 +160,7 @@ public class Plugin extends AbstractUIPlugin {
         stopStartupParticipants();
 
         bndActivator.stop(context);
-        headlessBuildPluginTracker.close();
+        headlessBuildManager.close();
         versionControlIgnoresManager.close();
         resourceIndexerTracker.close();
         indexerTracker.close();
@@ -284,8 +285,8 @@ public class Plugin extends AbstractUIPlugin {
         return resourceIndexerTracker;
     }
 
-    public HeadlessBuildPluginTracker getHeadlessBuildPluginTracker() {
-        return headlessBuildPluginTracker;
+    public HeadlessBuildManager getHeadlessBuildManager() {
+        return headlessBuildManager;
     }
 
     public VersionControlIgnoresManager getVersionControlIgnoresManager() {
