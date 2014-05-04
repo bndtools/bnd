@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.bndtools.api.NamedPlugin;
-import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 
 import aQute.bnd.annotation.ConsumerType;
 
@@ -34,14 +33,12 @@ public interface HeadlessBuildPlugin {
      *            the project directory
      * @param add
      *            true to add/create the files, false to remove them
-     * @param ignoresManager
-     *            the version control ignores manager
      * @param enabledIgnorePlugins
      *            set with enabled version control ignore plugins
      * @throws IOException
      *             upon error(s)
      */
-    void setup(boolean cnf, File projectDir, boolean add, VersionControlIgnoresManager ignoresManager, Set<String> enabledIgnorePlugins) throws IOException;
+    void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) throws IOException;
 
     // Future expansion of the interface: automatic management of template files
     //

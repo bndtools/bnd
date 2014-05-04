@@ -7,7 +7,6 @@ import java.util.Set;
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildPlugin;
 import org.bndtools.utils.copy.bundleresource.BundleResourceCopier;
-import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.osgi.framework.BundleContext;
 
 import aQute.bnd.annotation.component.Activate;
@@ -36,7 +35,7 @@ public class AntHeadlessBuildPlugin implements HeadlessBuildPlugin {
         return new AntHeadlessBuildPluginInformation();
     }
 
-    public void setup(boolean cnf, File projectDir, boolean add, VersionControlIgnoresManager ignoresManager, Set<String> enabledIgnorePlugins) throws IOException {
+    public void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) throws IOException {
         String baseDir;
         if (cnf) {
             baseDir = "templates/cnf/";

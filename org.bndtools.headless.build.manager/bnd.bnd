@@ -1,7 +1,6 @@
 -buildpath:  \
     ee.j2se;version='[1.6,1.7)',\
     bndtools.api;version=latest,\
-    org.bndtools.versioncontrol.ignores.manager;version=latest,\
 	biz.aQute.bnd.annotation,\
 	${junit}
 

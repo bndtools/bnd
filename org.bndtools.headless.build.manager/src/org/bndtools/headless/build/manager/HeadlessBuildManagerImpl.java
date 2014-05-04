@@ -6,14 +6,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.headless.build.manager.api.HeadlessBuildPlugin;
-import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
@@ -21,17 +19,6 @@ import aQute.bnd.annotation.component.Reference;
 @Component
 public class HeadlessBuildManagerImpl implements HeadlessBuildManager {
     private final ILogger logger = Logger.getLogger(this.getClass());
-
-    private final AtomicReference<VersionControlIgnoresManager> versionControlIgnoresManager = new AtomicReference<VersionControlIgnoresManager>();
-
-    @Reference(type = '?')
-    public void setVersionControlIgnoresManager(VersionControlIgnoresManager versionControlIgnoresManager) {
-        this.versionControlIgnoresManager.set(versionControlIgnoresManager);
-    }
-
-    public void unsetVersionControlIgnoresManager(VersionControlIgnoresManager versionControlIgnoresManager) {
-        this.versionControlIgnoresManager.compareAndSet(versionControlIgnoresManager, null);
-    }
 
     private final Map<String,HeadlessBuildPlugin> plugins = new TreeMap<String,HeadlessBuildPlugin>();
     private final Map<String,NamedPlugin> pluginsInformation = new TreeMap<String,NamedPlugin>();
@@ -77,7 +64,6 @@ public class HeadlessBuildManagerImpl implements HeadlessBuildManager {
             return;
         }
 
-        VersionControlIgnoresManager versionControlIgnoresManager = this.versionControlIgnoresManager.get();
         for (String pluginName : plugins) {
             HeadlessBuildPlugin plugin = null;
             synchronized (this.plugins) {
@@ -88,7 +74,7 @@ public class HeadlessBuildManagerImpl implements HeadlessBuildManager {
             }
 
             try {
-                plugin.setup(cnf, projectDir, add, versionControlIgnoresManager, enabledIgnorePlugins);
+                plugin.setup(cnf, projectDir, add, enabledIgnorePlugins);
             } catch (Throwable e) {
                 logger.logError(String.format("Unable to %s headless build file(s) for the %sproject in %s", add ? "add" : "remove", cnf ? "cnf " : "", projectDir.getAbsolutePath()), e);
             }

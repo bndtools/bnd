@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildPlugin;
@@ -15,12 +16,22 @@ import org.osgi.framework.BundleContext;
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
+import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 
 @Component
 public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
-    private BundleResourceCopier copier = null;
+    private final AtomicReference<VersionControlIgnoresManager> versionControlIgnoresManager = new AtomicReference<VersionControlIgnoresManager>();
+
+    @Reference(type = '?')
+    public void setVersionControlIgnoresManager(VersionControlIgnoresManager versionControlIgnoresManager) {
+        this.versionControlIgnoresManager.set(versionControlIgnoresManager);
+    }
+
+    public void unsetVersionControlIgnoresManager(VersionControlIgnoresManager versionControlIgnoresManager) {
+        this.versionControlIgnoresManager.compareAndSet(versionControlIgnoresManager, null);
+    }
 
     @Activate
     public void activate(BundleContext bundleContext) {
@@ -32,15 +43,19 @@ public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
         copier = null;
     }
 
+    private BundleResourceCopier copier = null;
+
     /*
      * HeadlessBuildPlugin
      */
 
+    @Override
     public NamedPlugin getInformation() {
         return new GradleHeadlessBuildPluginInformation();
     }
 
-    public void setup(boolean cnf, File projectDir, boolean add, VersionControlIgnoresManager ignoresManager, Set<String> enabledIgnorePlugins) throws IOException {
+    @Override
+    public void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) throws IOException {
         if (!cnf) {
             return;
         }
@@ -55,6 +70,7 @@ public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
         baseDir = "templates/cnf/";
         copier.addOrRemoveDirectory(projectDir, baseDir, "/", add);
 
+        VersionControlIgnoresManager ignoresManager = versionControlIgnoresManager.get();
         if (ignoresManager != null) {
             List<String> ignoredEntries = new LinkedList<String>();
             ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, "/.gradle/", true));
