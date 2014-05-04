@@ -10,12 +10,13 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.bndtools.api.NamedPlugin;
+import org.bndtools.api.VersionControlIgnoresManager;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
-import bndtools.VersionControlIgnoresPluginTracker;
+import bndtools.team.TeamUtils;
 
 public class BndPreferences {
 
@@ -232,26 +233,29 @@ public class BndPreferences {
      * <li>Otherwise this method determines from the preferences which plugins are enabled</li>
      * </ul>
      * 
-     * @param tracker
-     *            the version control ignores plugins tracker
+     * @param manager
+     *            the version control ignores manager
      * @param project
      *            the project (can be null to ignore it)
      * @param plugins
      *            the plugins, can be null or empty.
      * @return the enabled plugins
      */
-    public Set<String> getVersionControlIgnoresPluginsEnabled(VersionControlIgnoresPluginTracker tracker, IJavaProject project, Set<String> plugins) {
+    public Set<String> getVersionControlIgnoresPluginsEnabled(VersionControlIgnoresManager manager, IJavaProject project, Set<String> plugins) {
         if (plugins != null && !plugins.isEmpty()) {
             return plugins;
         }
 
         if (project != null) {
-            Set<String> pluginsInternal = tracker.getPluginsForProjectVersionControlSystem(project);
-            if (pluginsInternal != null && !pluginsInternal.isEmpty()) {
-                return pluginsInternal;
+            String repositoryProviderId = TeamUtils.getProjectRepositoryProviderId(project);
+            if (repositoryProviderId != null) {
+                Set<String> managingPlugins = Plugin.getDefault().getVersionControlIgnoresManager().getPluginsForProjectRepositoryProviderId(repositoryProviderId);
+                if (managingPlugins != null && !managingPlugins.isEmpty()) {
+                    return managingPlugins;
+                }
             }
         }
 
-        return getVersionControlIgnoresPlugins(tracker.getAllPluginsInformation(), true).keySet();
+        return getVersionControlIgnoresPlugins(manager.getAllPluginsInformation(), true).keySet();
     }
 }

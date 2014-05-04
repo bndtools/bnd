@@ -11,6 +11,7 @@ import org.bndtools.api.HeadlessBuildPlugin;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.NamedPlugin;
+import org.bndtools.api.VersionControlIgnoresManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
@@ -20,13 +21,13 @@ import bndtools.preferences.BndPreferences;
 public class HeadlessBuildPluginTracker extends ServiceTracker<HeadlessBuildPlugin,HeadlessBuildPlugin> {
     private final ILogger logger = Logger.getLogger(this.getClass());
 
-    private VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker = null;
+    private VersionControlIgnoresManager versionControlIgnoresManager = null;
     private final Map<String,ServiceReference<HeadlessBuildPlugin>> plugins = new TreeMap<String,ServiceReference<HeadlessBuildPlugin>>();
     private final Map<String,NamedPlugin> pluginsInformation = new TreeMap<String,NamedPlugin>();
 
-    public HeadlessBuildPluginTracker(BundleContext context, VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker) {
+    public HeadlessBuildPluginTracker(BundleContext context, VersionControlIgnoresManager versionControlIgnoresManager) {
         super(context, HeadlessBuildPlugin.class, null);
-        this.versionControlIgnoresPluginTracker = versionControlIgnoresPluginTracker;
+        this.versionControlIgnoresManager = versionControlIgnoresManager;
     }
 
     /*
@@ -113,7 +114,7 @@ public class HeadlessBuildPluginTracker extends ServiceTracker<HeadlessBuildPlug
             }
 
             try {
-                plugin.setup(cnf, projectDir, add, versionControlIgnoresPluginTracker, enabledIgnorePlugins);
+                plugin.setup(cnf, projectDir, add, versionControlIgnoresManager, enabledIgnorePlugins);
             } catch (Throwable e) {
                 logger.logError(String.format("Unable to %s headless build file(s) for the %sproject in %s", add ? "add" : "remove", cnf ? "cnf " : "", projectDir.getAbsolutePath()), e);
             }

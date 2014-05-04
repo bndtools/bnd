@@ -23,7 +23,9 @@ import org.bndtools.api.BndProjectResource;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ProjectPaths;
+import org.bndtools.api.VersionControlIgnoresManager;
 import org.bndtools.utils.copy.ResourceCopier;
+import org.bndtools.utils.javaproject.JavaProjectUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -46,7 +48,6 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.Document;
 import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
-import bndtools.VersionControlIgnoresPluginTracker;
 import bndtools.editor.model.BndProject;
 import bndtools.preferences.BndPreferences;
 
@@ -131,9 +132,10 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         }
 
         /* Version control ignores */
-        VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker = Plugin.getDefault().getVersionControlIgnoresPluginTracker();
-        Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresPluginTracker, project, null);
-        versionControlIgnoresPluginTracker.createProjectIgnores(enabledIgnorePlugins, project, projectPaths);
+        VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault().getVersionControlIgnoresManager();
+        Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresManager, project, null);
+        Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(project);
+        versionControlIgnoresManager.createProjectIgnores(enabledIgnorePlugins, project.getProject().getLocation().toFile(), sourceOutputLocations, projectPaths.getTargetDir());
 
         /* Headless build files */
         HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();

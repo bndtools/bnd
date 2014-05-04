@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -14,6 +15,8 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
+import org.bndtools.api.VersionControlIgnoresManager;
+import org.bndtools.utils.javaproject.JavaProjectUtils;
 import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -43,7 +46,6 @@ import org.osgi.framework.Bundle;
 import aQute.bnd.build.Workspace;
 import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
-import bndtools.VersionControlIgnoresPluginTracker;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
 import bndtools.wizards.workspace.CnfInfo.Existence;
@@ -173,9 +175,10 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         }
 
         /* Version control ignores */
-        VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker = Plugin.getDefault().getVersionControlIgnoresPluginTracker();
-        Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresPluginTracker, cnfJavaProject, null);
-        versionControlIgnoresPluginTracker.createProjectIgnores(enabledIgnorePlugins, cnfJavaProject, ProjectPaths.get(ProjectLayout.BND));
+        VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault().getVersionControlIgnoresManager();
+        Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresManager, cnfJavaProject, null);
+        Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(cnfJavaProject);
+        versionControlIgnoresManager.createProjectIgnores(enabledIgnorePlugins, cnfJavaProject.getProject().getLocation().toFile(), sourceOutputLocations, ProjectPaths.get(ProjectLayout.BND).getTargetDir());
         String templateIgnores = null;
         try {
             templateIgnores = templateConfig.getAttribute("ignores");
@@ -183,7 +186,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
             logger.logError("Could not retrieve the 'ignores' property from the cnf template " + bsn, e);
         }
         if (templateIgnores != null && !templateIgnores.isEmpty()) {
-            versionControlIgnoresPluginTracker.addIgnores(enabledIgnorePlugins, cnfJavaProject.getProject().getLocation().toFile(), templateIgnores);
+            versionControlIgnoresManager.addIgnores(enabledIgnorePlugins, cnfJavaProject.getProject().getLocation().toFile(), templateIgnores);
         }
 
         /* Headless build files */

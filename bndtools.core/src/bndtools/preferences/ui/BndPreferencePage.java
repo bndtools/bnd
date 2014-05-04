@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bndtools.api.NamedPlugin;
+import org.bndtools.api.VersionControlIgnoresManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.PreferencePage;
@@ -28,7 +29,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import aQute.bnd.build.Project;
 import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
-import bndtools.VersionControlIgnoresPluginTracker;
 import bndtools.preferences.BndPreferences;
 import bndtools.utils.ModificationLock;
 import bndtools.wizards.workspace.CnfSetupWizard;
@@ -41,7 +41,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private final ModificationLock lock = new ModificationLock();
 
     private final HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();
-    private final VersionControlIgnoresPluginTracker versionControlIgnoresTracker = Plugin.getDefault().getVersionControlIgnoresPluginTracker();
+    private final VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault().getVersionControlIgnoresManager();
 
     private String enableSubs;
     private boolean noAskPackageInfo = false;
@@ -172,7 +172,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
             });
         }
 
-        allPluginsInformation = versionControlIgnoresTracker.getAllPluginsInformation();
+        allPluginsInformation = versionControlIgnoresManager.getAllPluginsInformation();
         if (allPluginsInformation.size() > 0) {
             Group versionControlIgnoresMainGroup = new Group(composite, SWT.NONE);
             versionControlIgnoresMainGroup.setText(Messages.BndPreferencePage_versionControlIgnoresGroup_text);
@@ -374,7 +374,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
             prefs.setHeadlessBuildPlugins(headlessBuildPlugins);
         }
         prefs.setVersionControlIgnoresCreate(versionControlIgnoresCreate);
-        pluginsInformation = versionControlIgnoresTracker.getAllPluginsInformation();
+        pluginsInformation = versionControlIgnoresManager.getAllPluginsInformation();
         if (pluginsInformation.size() > 0) {
             prefs.setVersionControlIgnoresPlugins(versionControlIgnoresPlugins);
         }
@@ -398,10 +398,10 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
             headlessBuildPlugins.putAll(prefs.getHeadlessBuildPlugins(pluginsInformation, false));
         }
         versionControlIgnoresCreate = prefs.getVersionControlIgnoresCreate();
-        pluginsInformation = versionControlIgnoresTracker.getAllPluginsInformation();
+        pluginsInformation = versionControlIgnoresManager.getAllPluginsInformation();
         if (pluginsInformation.size() > 0) {
             versionControlIgnoresPlugins.clear();
-            versionControlIgnoresPlugins.putAll(prefs.getVersionControlIgnoresPlugins(versionControlIgnoresTracker.getAllPluginsInformation(), false));
+            versionControlIgnoresPlugins.putAll(prefs.getVersionControlIgnoresPlugins(versionControlIgnoresManager.getAllPluginsInformation(), false));
         }
     }
 
@@ -421,7 +421,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
             }
         }
         if (valid && versionControlIgnoresCreate) {
-            Collection<NamedPlugin> pluginsInformation = versionControlIgnoresTracker.getAllPluginsInformation();
+            Collection<NamedPlugin> pluginsInformation = versionControlIgnoresManager.getAllPluginsInformation();
             if (pluginsInformation.size() > 0) {
                 boolean atLeastOneEnabled = false;
                 for (Boolean b : versionControlIgnoresPlugins.values()) {

@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.bndtools.api.BndtoolsConstants;
+import org.bndtools.api.VersionControlIgnoresManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -32,7 +33,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import aQute.bnd.build.Project;
 import bndtools.HeadlessBuildPluginTracker;
 import bndtools.Plugin;
-import bndtools.VersionControlIgnoresPluginTracker;
 import bndtools.preferences.BndPreferences;
 
 public class ToggleNatureAction implements IObjectActionDelegate {
@@ -99,8 +99,8 @@ public class ToggleNatureAction implements IObjectActionDelegate {
     private static void toggleNature(IJavaProject project) {
         try {
             /* Version control ignores */
-            VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker = Plugin.getDefault().getVersionControlIgnoresPluginTracker();
-            Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresPluginTracker, project, null);
+            VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault().getVersionControlIgnoresManager();
+            Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresManager, project, null);
 
             /* Headless build files */
             HeadlessBuildPluginTracker headlessBuildPluginTracker = Plugin.getDefault().getHeadlessBuildPluginTracker();

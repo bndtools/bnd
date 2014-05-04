@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.IStartupParticipant;
 import org.bndtools.api.Logger;
+import org.bndtools.api.VersionControlIgnoresManager;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -67,7 +68,7 @@ public class Plugin extends AbstractUIPlugin {
     private volatile IndexerTracker indexerTracker;
     private volatile ResourceIndexerTracker resourceIndexerTracker;
     private volatile HeadlessBuildPluginTracker headlessBuildPluginTracker;
-    private volatile VersionControlIgnoresPluginTracker versionControlIgnoresPluginTracker;
+    private volatile VersionControlIgnoresManagerTracker versionControlIgnoresManager;
 
     private volatile ScheduledExecutorService scheduler;
 
@@ -89,10 +90,10 @@ public class Plugin extends AbstractUIPlugin {
         resourceIndexerTracker = new ResourceIndexerTracker(context, 1000);
         resourceIndexerTracker.open();
 
-        versionControlIgnoresPluginTracker = new VersionControlIgnoresPluginTracker(context);
-        versionControlIgnoresPluginTracker.open();
+        versionControlIgnoresManager = new VersionControlIgnoresManagerTracker(context);
+        versionControlIgnoresManager.open();
 
-        headlessBuildPluginTracker = new HeadlessBuildPluginTracker(context, versionControlIgnoresPluginTracker);
+        headlessBuildPluginTracker = new HeadlessBuildPluginTracker(context, versionControlIgnoresManager);
         headlessBuildPluginTracker.open();
 
         registerWorkspaceServiceFactory(context);
@@ -159,7 +160,7 @@ public class Plugin extends AbstractUIPlugin {
 
         bndActivator.stop(context);
         headlessBuildPluginTracker.close();
-        versionControlIgnoresPluginTracker.close();
+        versionControlIgnoresManager.close();
         resourceIndexerTracker.close();
         indexerTracker.close();
         this.bundleContext = null;
@@ -287,8 +288,8 @@ public class Plugin extends AbstractUIPlugin {
         return headlessBuildPluginTracker;
     }
 
-    public VersionControlIgnoresPluginTracker getVersionControlIgnoresPluginTracker() {
-        return versionControlIgnoresPluginTracker;
+    public VersionControlIgnoresManager getVersionControlIgnoresManager() {
+        return versionControlIgnoresManager;
     }
 
     public ScheduledExecutorService getScheduler() {
