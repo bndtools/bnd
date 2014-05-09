@@ -756,7 +756,7 @@ public class Jar implements Closeable {
 		}
 	}
 
-	Pattern	BSN	= Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;?.*");
+	static Pattern	BSN	= Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;?.*");
 
 	/**
 	 * Get the jar bsn from the {@link Constants#BUNDLE_SYMBOLICNAME} manifest
