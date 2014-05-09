@@ -66,7 +66,7 @@ public class TestFileRepo extends TestCase {
 				versionsList.add(v);
 				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
 			} else if ("junit.jar".equals(fileName)) {
-				v = Version.LOWEST;
+				v = FileRepo.ZERO_VERSION;
 				versionsList.add(v);
 				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
 			} else if ("junit_no_manifest.jar".equals(fileName)) {
@@ -78,7 +78,7 @@ public class TestFileRepo extends TestCase {
 	}
 
 	private File getExpectedGet(String bsn, String version) throws Exception {
-		if (Version.LOWEST.toString().equals(version)) {
+		if (FileRepo.ZERO_VERSION.toString().equals(version)) {
 			if ("ee.minimum".equals(bsn)) {
 				return null;
 			} else if ("org.hamcrest".equals(bsn)) {
@@ -184,7 +184,7 @@ public class TestFileRepo extends TestCase {
 				"ee.minimum", "org.junit", "org.hamcrest"
 		};
 		String[] versions = {
-				Version.LOWEST.toString(), "1.1.99", "1.2.0.200908310645", "1.2.1.201305092016", "1.3.0",
+				FileRepo.ZERO_VERSION.toString(), "1.1.99", "1.2.0.200908310645", "1.2.1.201305092016", "1.3.0",
 				"4.11.0", "123.321.123", FileRepo.LATEST_VERSION.toString()
 		};
 
