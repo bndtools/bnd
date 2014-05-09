@@ -876,7 +876,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		/* no match, try file names */
 
-		if (getLatest) {
+		if (LATEST_VERSION.equals(version)) {
 			File fjar = new File(dir, bsn + LATEST_POSTFIX);
 			if (fjar.isFile())
 				return fjar.getAbsoluteFile();
