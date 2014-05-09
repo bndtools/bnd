@@ -326,6 +326,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @return a File that contains the content of the tmpFile
 	 * @throws Exception
 	 */
+	protected File putArtifact(File tmpFile, byte[] digest) throws Exception {
+		return putArtifact(tmpFile, null, digest);
+	}
+
 	protected File putArtifact(File tmpFile, PutOptions options, byte[] digest) throws Exception {
 		assert (tmpFile != null);
 
