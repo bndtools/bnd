@@ -756,7 +756,7 @@ public class Jar implements Closeable {
 		}
 	}
 
-	static Pattern	BSN	= Pattern.compile("\\s*([-\\w\\._]+)\\s*;?.*");
+	Pattern	BSN	= Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;?.*");
 
 	/**
 	 * Get the jar bsn from the {@link Constants#BUNDLE_SYMBOLICNAME} manifest
@@ -783,140 +783,6 @@ public class Jar implements Closeable {
 		if (matcher.matches()) {
 			return matcher.group(1);
 		}
-		return null;
-	}
-
-	/**
-	 * Ordered list of manifest headers that are used by
-	 * {@link #fromManifest(Manifest, boolean)}
-	 */
-	static private final String[] BSN_HEADERS = {
-			Constants.BUNDLE_SYMBOLICNAME /* MUST be first */,
-			"Implementation-Title",
-			"Implementation-Vendor",
-			"Specification-Title",
-			"Specification-Vendor",
-			"Implementation-Vendor-Id",
-			"Name"
-		};
-
-	private static final Pattern JAR_FILE_NAME = Pattern.compile("(.+)\\.jar");
-
-	/**
-	 * <p>
-	 * Get the bsn from the jar's manifest
-	 * </p>
-	 * <p>
-	 * Loop over the manifest headers listed in {@link #BSN_HEADERS}: when the
-	 * manifest header is set _and_ its value is a valid bsn according to
-	 * {@link #BSN} then return the valid bsn.
-	 * </p>
-	 * <p>
-	 * <b>Strict mode:</b> only the {@link Constants#BUNDLE_SYMBOLICNAME}
-	 * manifest header is tried.
-	 * </p>
-	 * 
-	 * @param strict
-	 *            when true then only the {@link Constants#BUNDLE_SYMBOLICNAME}
-	 *            header is tried
-	 * @return null when:
-	 *         <ul>
-	 *         <li>the jar has no manifest</li>
-	 *         <li>the manifest has no {@link Constants#BUNDLE_SYMBOLICNAME}
-	 *         header (only for strict mode)</li>
-	 *         <li>the found bsn is not a valid bsn according to {@link #BSN}</li>
-	 *         <li>no bsn was found</li>
-	 *         </ul>
-	 *         A valid bsn otherwise.
-	 * @throws Exception
-	 *             when the jar is closed or when the manifest could not be
-	 *             retrieved.
-	 */
-	public String getBsn(boolean strict) throws Exception {
-		check();
-		Manifest manifest = getManifest();
-		if (manifest == null) {
-			return null;
-		}
-
-		Attributes attributes = manifest.getMainAttributes();
-		if (!attributes.isEmpty()) {
-			for (int index = 0; index < BSN_HEADERS.length; index++) {
-				String headerValue = attributes.getValue(BSN_HEADERS[index]);
-				headerValue = (headerValue == null) ? "" : headerValue.trim();
-				if (headerValue.length() > 0) {
-					Matcher matcherBsn = BSN.matcher(headerValue);
-					if (matcherBsn.matches()) {
-						return matcherBsn.group(1);
-					}
-				}
-				if (strict) {
-					return null;
-				}
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * <p>
-	 * Get the bsn from the jar's file name (source)
-	 * </p>
-	 * <p>
-	 * Only in non-strict mode: when no valid bsn is found from matching the
-	 * file name against {@link Version#REPO_FILE_NONSTRICT} then the entire
-	 * file name (without extension) will be returned as the bsn (in case that
-	 * is a valid bsn according to {@link #BSN}).
-	 * </p>
-	 * 
-	 * @param fileName
-	 *            the file name
-	 * @param strict
-	 *            true to match against {@link Version#REPO_FILE_STRICT}, false
-	 *            to match against {@link Version#REPO_FILE_NONSTRICT}
-	 * @return null when:
-	 *         <ul>
-	 *         <li>fileName is null or denotes a directory</li>
-	 *         <li>fileName is does not denote a '*.jar' file</li>
-	 *         <li>the found bsn is not a valid bsn according to {@link #BSN}</li>
-	 *         </ul>
-	 *         A valid bsn otherwise.
-	 */
-	static public String getBsnFromFileName(String fileName, boolean strict) {
-		if (fileName == null) {
-			return null;
-		}
-
-		File file = new File(fileName);
-		if (file.isDirectory()) {
-			return null;
-		}
-
-		String baseName = file.getName();
-
-		Matcher matcherPlain = JAR_FILE_NAME.matcher(baseName);
-		if (!matcherPlain.matches()) {
-			return null;
-		}
-
-		Matcher matcherElaborate = (strict ? Version.REPO_FILE_STRICT : Version.REPO_FILE_NONSTRICT).matcher(baseName);
-		if (matcherElaborate.matches()) {
-			Matcher matcherBsn = BSN.matcher(matcherElaborate.group(1));
-			if (matcherBsn.matches()) {
-				return matcherBsn.group(1);
-			}
-		}
-
-		if (strict) {
-			return null;
-		}
-		
-		Matcher matcherBsn = BSN.matcher(matcherPlain.group(1));
-		if (matcherBsn.matches()) {
-			return matcherBsn.group(1);
-		}
-
 		return null;
 	}
 
