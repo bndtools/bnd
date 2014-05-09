@@ -33,12 +33,9 @@ import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecoration;
@@ -60,7 +57,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
-import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
@@ -73,7 +69,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.ServiceComponent;
 import aQute.bnd.header.Attrs;
 import bndtools.Plugin;
@@ -91,9 +86,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     private static final String[] EDITABLE_PROPERTIES = new String[] {
             Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.DSANNOTATIONS
     };
-
-    private static final String UNKNOWN_ACTIVATOR_ERROR_KEY = "ERROR_" + Constants.BUNDLE_ACTIVATOR + "_UNKNOWN";
-    private static final String UNINCLUDED_ACTIVATOR_WARNING_KEY = "WARNING_" + Constants.BUNDLE_ACTIVATOR + "_UNINCLUDED";
 
     private static enum ComponentChoice {
         None("None/Undefined"), Bnd("Bnd Annotations"), DS("DS 1.2 Annotations");
@@ -199,8 +191,10 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
         // Listeners
         txtVersion.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_VERSION);
                     }
@@ -211,6 +205,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
             @Override
             public void widgetSelected(SelectionEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         ComponentChoice old = componentChoice;
 
@@ -230,42 +225,14 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
             }
         });
         txtActivator.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent ev) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_ACTIVATOR);
                     }
                 });
-                IMessageManager msgs = getManagedForm().getMessageManager();
-                String activatorError = null;
-                int activatorErrorLevel = IMessageProvider.ERROR;
-
-                String activatorClassName = txtActivator.getText();
-                if (activatorClassName != null && activatorClassName.length() > 0) {
-                    try {
-                        IJavaProject javaProject = getJavaProject();
-                        if (javaProject == null) {
-                            activatorError = "Cannot validate activator class name, the bnd file is not in a Java project.";
-                            activatorErrorLevel = IMessageProvider.WARNING;
-                        } else {
-                            IType activatorType = javaProject.findType(activatorClassName);
-                            if (activatorType == null) {
-                                activatorError = "The activator class name is not known in this project.";
-                                activatorErrorLevel = IMessageProvider.ERROR;
-                            }
-                        }
-                    } catch (JavaModelException e) {
-                        logger.logError("Error looking up activator class name: " + activatorClassName, e);
-                    }
-                }
-
-                if (activatorError != null) {
-                    msgs.addMessage(UNKNOWN_ACTIVATOR_ERROR_KEY, activatorError, null, activatorErrorLevel, txtActivator);
-                } else {
-                    msgs.removeMessage(UNKNOWN_ACTIVATOR_ERROR_KEY, txtActivator);
-                }
-
-                checkActivatorIncluded();
             }
         });
         linkActivator.addHyperlinkListener(new HyperlinkAdapter() {
@@ -292,6 +259,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
             }
         });
         activatorProposalAdapter.addContentProposalListener(new IContentProposalListener() {
+            @Override
             public void proposalAccepted(IContentProposal proposal) {
                 if (proposal instanceof JavaContentProposal) {
                     String selectedPackageName = ((JavaContentProposal) proposal).getPackageName();
@@ -318,47 +286,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         txtActivator.setLayoutData(gd);
     }
 
-    void checkActivatorIncluded() {
-        String warningMessage = null;
-        IAction[] fixes = null;
-
-        String activatorClassName = txtActivator.getText();
-        if (activatorClassName != null && activatorClassName.length() > 0) {
-            int dotIndex = activatorClassName.lastIndexOf('.');
-            if (dotIndex == -1) {
-                warningMessage = "Cannot use an activator in the default package.";
-            } else {
-                final String packageName = activatorClassName.substring(0, dotIndex);
-                if (!model.isIncludedPackage(packageName)) {
-                    warningMessage = "Activator package is not included in the bundle. It will be imported instead.";
-                    fixes = new Action[] {
-                            new Action(MessageFormat.format("Add \"{0}\" to Private Packages.", packageName)) {
-                                @Override
-                                public void run() {
-                                    model.addPrivatePackage(packageName);
-                                    addDirtyProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE);
-                                }
-                            }, new Action(MessageFormat.format("Add \"{0}\" to Exported Packages.", packageName)) {
-                                @Override
-                                public void run() {
-                                    model.addExportedPackage(new ExportedPackage(packageName, null));
-                                    addDirtyProperty(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE);
-                                }
-                            }
-                    };
-                }
-            }
-        }
-
-        IMessageManager msgs = getManagedForm().getMessageManager();
-        if (warningMessage != null)
-            msgs.addMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, warningMessage, fixes, IMessageProvider.WARNING, txtActivator);
-        else
-            msgs.removeMessage(UNINCLUDED_ACTIVATOR_WARNING_KEY, txtActivator);
-    }
-
     protected void addDirtyProperty(final String property) {
         lock.ifNotModifying(new Runnable() {
+            @Override
             public void run() {
                 dirtySet.add(property);
                 getManagedForm().dirtyStateChanged();
@@ -421,6 +351,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     public void refresh() {
         super.refresh();
         lock.modifyOperation(new Runnable() {
+            @Override
             public void run() {
                 String bundleVersion = model.getBundleVersionString();
                 txtVersion.setText(bundleVersion != null ? bundleVersion : ""); //$NON-NLS-1$
@@ -462,6 +393,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         this.model.addPropertyChangeListener(this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (editablePropertySet.contains(evt.getPropertyName())) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();
@@ -470,8 +402,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
             } else {
                 markStale();
             }
-        } else if (Constants.EXPORT_PACKAGE.equals(evt.getPropertyName()) || aQute.bnd.osgi.Constants.PRIVATE_PACKAGE.equals(evt.getPropertyName())) {
-            checkActivatorIncluded();
         }
     }
 
@@ -500,6 +430,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 final List<IContentProposal> result = new ArrayList<IContentProposal>();
 
                 final IRunnableWithProgress runnable = new IRunnableWithProgress() {
+                    @Override
                     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {
                             IType activatorType = javaProject.findType(BundleActivator.class.getName());
