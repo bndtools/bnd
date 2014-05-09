@@ -7,6 +7,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.header.*;
+import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.version.*;
@@ -297,14 +298,38 @@ public class Verifier extends Processor {
 		String bactivator = main.get(Constants.BUNDLE_ACTIVATOR);
 		if (bactivator != null) {
 			TypeRef ref = analyzer.getTypeRefFromFQN(bactivator);
-			if (analyzer.getClassspace().containsKey(ref))
+			if (analyzer.getClassspace().containsKey(ref)) {
+				Clazz activatorClazz = analyzer.getClassspace().get(ref);
+				
+				if (activatorClazz.isInterface()) {
+					error("The Bundle Activator " + bactivator + " is an interface and therefore cannot be instantiated.");
+				} else {
+					if(activatorClazz.isAbstract()) {
+						error("The Bundle Activator " + bactivator + " is abstract and therefore cannot be instantiated.");
+					}
+					if(!activatorClazz.isPublic()) {
+						error("Bundle Activator classes must be public, and " + bactivator + " is not.");
+					}
+					if(!activatorClazz.hasPublicNoArgsConstructor()) {
+						error("Bundle Activator classes must have a public zero-argument constructor and " + bactivator + " does not.");
+					}
+
+					if (!activatorClazz.is(QUERY.IMPLEMENTS, 
+							new Instruction("org.osgi.framework.BundleActivator"), analyzer)) {
+						error("The Bundle Activator " + bactivator + " does not implement BundleActivator.");
+					}
+				}
 				return;
+			}
 
 			PackageRef packageRef = ref.getPackageRef();
 			if (packageRef.isDefaultPackage())
 				error("The Bundle Activator is not in the bundle and it is in the default package ");
 			else if (!analyzer.isImported(packageRef)) {
 				error(Constants.BUNDLE_ACTIVATOR + " not found on the bundle class path nor in imports: " + bactivator);
+			} else {
+				warning(Constants.BUNDLE_ACTIVATOR + " " + bactivator + 
+						" is being imported into the bundle rather than being contained inside it. This is usually a bundle packaging error");
 			}
 		}
 	}

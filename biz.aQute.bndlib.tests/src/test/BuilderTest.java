@@ -364,7 +364,7 @@ public class BuilderTest extends BndTestCase {
 		b.setIncludeResource("p;literal='x'");
 
 		b.build();
-		assertTrue(b.check("on the class path: \\[com.example\\]"));
+		assertTrue(b.check("on the class path: \\[com.example\\]", "Bundle-Activator com.example.Activator is being imported"));
 	}
 
 	/**
