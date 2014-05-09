@@ -339,7 +339,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (options != null && options.bsn != null) {
 				bsn = options.bsn;
 			} else {
-				bsn = tmpJar.getBsn(false);
+				bsn = tmpJar.getBsn(true);
 			}
 
 			if (bsn == null)
