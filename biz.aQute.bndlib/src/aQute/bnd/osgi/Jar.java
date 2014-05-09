@@ -758,11 +758,6 @@ public class Jar implements Closeable {
 
 	static Pattern	BSN	= Pattern.compile("\\s*([-\\w\\._]+)\\s*;?.*");
 
-	/**
-	 * @deprecated Use {@link #getBsn(boolean)} (1-on-1 replacement when invoked
-	 *             with 'true' argument)
-	 */
-	@Deprecated
 	public String getBsn() throws Exception {
 		return getBsn(true);
 	}
@@ -902,20 +897,23 @@ public class Jar implements Closeable {
 	}
 
 	/**
+	 * <p>
 	 * Get the jar version from the {@link Constants#BUNDLE_VERSION} manifest
 	 * header.
+	 * </p>
+	 * <p>
+	 * It's better to use
+	 * {@link Version#fromManifest(Manifest, boolean)}. The difference is that
+	 * that method does check whether the header value is a valid version, while
+	 * this method does not.
+	 * </p>
 	 * 
 	 * @return null when the jar has no manifest or when the manifest has no
 	 *         {@link Constants#BUNDLE_VERSION} header
 	 * @throws Exception
 	 *             when the jar is closed or when the manifest could not be
 	 *             retrieved.
-	 * @deprecated It's better to use
-	 *             {@link Version#fromManifest(Manifest, boolean)}. The
-	 *             difference is that that method does check whether the header
-	 *             value is a valid version, while this method does not.
 	 */
-	@Deprecated
 	public String getVersion() throws Exception {
 		check();
 		Manifest m = getManifest();
