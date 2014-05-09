@@ -40,6 +40,7 @@ javac.source=1.5
 
 Bundle-Version: 1.1.0
 
-no.junit: true
+-nojunit: true
+-releaserepo:
 Export-Package: \
 	test.api

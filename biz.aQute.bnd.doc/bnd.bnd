@@ -1,4 +1,4 @@
-no.junit:true
+-nojunit:true
 -expand: generated/test
 
 doc 			= ${project}/docs

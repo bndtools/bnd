@@ -1,0 +1,12 @@
+-dependson = aQute.libg, \
+             biz.aQute.bnd, \
+             biz.aQute.bndlib, \
+             biz.aQute.bndlib.tests, \
+             biz.aQute.jpm, \
+             biz.aQute.junit, \
+             biz.aQute.launcher, \
+             biz.aQute.repository, \
+             biz.aQute.repository.aether, \
+             biz.aQute.resolve, \
+             osgi.r5
+-nobundles = true

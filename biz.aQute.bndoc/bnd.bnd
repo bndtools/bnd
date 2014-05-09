@@ -26,7 +26,7 @@ javac.target 			= ${org.eclipse.jdt.core.compiler.codegen.targetPlatform}
 	com.lowagie__itext;version=2.1.7
 
 
-no.junit: true
+-nojunit: true
 
 -sub: \
 	*.bnd
