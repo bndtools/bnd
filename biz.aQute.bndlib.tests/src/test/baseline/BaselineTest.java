@@ -171,7 +171,7 @@ public class BaselineTest extends TestCase {
 
 		Jar v1_2_0_a = mock(Jar.class);
 		when(v1_2_0_a.getVersion()).thenReturn("1.2.0.b");
-		when(v1_2_0_a.getBsn(true)).thenReturn("p3");
+		when(v1_2_0_a.getBsn()).thenReturn("p3");
 
 		RepositoryPlugin repo = mock(RepositoryPlugin.class);
 		ws.addBasicPlugin(repo);

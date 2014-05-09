@@ -99,7 +99,7 @@ public class WrapTask extends BaseTask {
 				if (wrapper.isOk()) {
 				    wrapper.getJar().setManifest(manifest);
 					boolean saved = wrapper.save(outputFile, force);
-					log(String.format("%30s %6d %s%n", wrapper.getJar().getBsn(true) + "-" + wrapper.getJar().getVersion(),
+					log(String.format("%30s %6d %s%n", wrapper.getJar().getBsn() + "-" + wrapper.getJar().getVersion(),
 							outputFile.length(), saved ? "" : "(not modified)"));
 				}
 

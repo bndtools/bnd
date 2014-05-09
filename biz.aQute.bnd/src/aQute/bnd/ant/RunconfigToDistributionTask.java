@@ -125,7 +125,7 @@ public class RunconfigToDistributionTask extends Task {
 				Jar jar;
 				try {
 					jar = new Jar(generatedFile);
-					snapshots.put(jar.getBsn(true), jar);
+					snapshots.put(jar.getBsn(), jar);
 				}
 				catch (Exception e) {
 					log("Error creating a bundle from " + generatedFile.getAbsolutePath());

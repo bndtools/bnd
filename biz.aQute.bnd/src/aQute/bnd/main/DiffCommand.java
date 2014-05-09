@@ -220,7 +220,7 @@ public class DiffCommand {
 
 	private static Tag getTagFrom(String name, Jar jar) throws Exception {
 		Tag tag = new Tag(name);
-		tag.addAttribute("bsn", jar.getBsn(true));
+		tag.addAttribute("bsn", jar.getBsn());
 		tag.addAttribute("name", jar.getName());
 		tag.addAttribute("version", jar.getVersion());
 		tag.addAttribute("lastmodified", jar.lastModified());

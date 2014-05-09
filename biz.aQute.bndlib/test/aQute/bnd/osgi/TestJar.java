@@ -55,7 +55,7 @@ public class TestJar extends TestCase {
 
 		try {
 			String strictOrg = jar.getBsn();
-			String strict = jar.getBsn(true);
+			String strict = jar.getBsn();
 			String nonStrict = jar.getBsn(false);
 
 			assertNull("org strict ", strictOrg);
@@ -72,7 +72,7 @@ public class TestJar extends TestCase {
 
 		try {
 			String strictOrg = jar.getBsn();
-			String strict = jar.getBsn(true);
+			String strict = jar.getBsn();
 			String nonStrict = jar.getBsn(false);
 
 			assertNull("org strict ", strictOrg);
@@ -116,7 +116,7 @@ public class TestJar extends TestCase {
 			Jar jar = setupJar(header, headerValue);
 			try {
 				String strictOrg = jar.getBsn();
-				String strict = jar.getBsn(true);
+				String strict = jar.getBsn();
 				String nonStrict = jar.getBsn(false);
 
 				String title = header + "=" + headerValue;

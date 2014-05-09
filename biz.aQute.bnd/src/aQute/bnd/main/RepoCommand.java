@@ -336,7 +336,7 @@ public class RepoCommand {
 
 			Jar jar = new Jar(file);
 			try {
-				String bsn = jar.getBsn(true);
+				String bsn = jar.getBsn();
 				if (bsn == null) {
 					bnd.error("File %s is not a bundle (it has no bsn) ", file);
 					return;

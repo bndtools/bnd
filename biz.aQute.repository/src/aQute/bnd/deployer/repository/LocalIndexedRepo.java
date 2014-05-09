@@ -230,7 +230,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 		Jar jar = new Jar(tmpFile);
 		try {
-			String bsn = jar.getBsn(true);
+			String bsn = jar.getBsn();
 			if (bsn == null || !Verifier.isBsn(bsn))
 				throw new IllegalArgumentException("Jar does not have a symbolic name");
 

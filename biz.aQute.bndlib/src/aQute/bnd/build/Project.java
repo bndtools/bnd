@@ -1434,7 +1434,7 @@ public class Project extends Processor {
 
 	public File saveBuild(Jar jar) throws Exception {
 		try {
-			File f = getOutputFile(jar.getBsn(true), jar.getVersion());
+			File f = getOutputFile(jar.getBsn(), jar.getVersion());
 			String msg = "";
 			if (!f.exists() || f.lastModified() < jar.lastModified()) {
 				reportNewer(f.lastModified(), jar);
