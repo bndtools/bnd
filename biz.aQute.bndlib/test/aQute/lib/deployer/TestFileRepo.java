@@ -28,7 +28,7 @@ public class TestFileRepo extends TestCase {
 		Version v;
 		for (String fileName : fileNames) {
 			if ("ee.minimum-1.1.99.jar".equals(fileName)) {
-				v = new Version("1.1.99");
+				v = new Version("1.2.0.x200908310645");
 				versionsList.add(v);
 				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
 			} else if ("ee.minimum-1.2.0.jar".equals(fileName)) {
@@ -48,7 +48,7 @@ public class TestFileRepo extends TestCase {
 				versionsList.add(v);
 				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
 			} else if ("ee.minimum-no-matches.jar".equals(fileName)) {
-				v = new Version("0.0.0");
+				v = new Version("1.2.0.x200908310645");
 				versionsList.add(v);
 				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
 			} else if ("hamcrest-core.jar".equals(fileName)) {
@@ -61,10 +61,6 @@ public class TestFileRepo extends TestCase {
 				v = new Version("4.11.0");
 				versionsList.add(v);
 				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
-			} else if ("junit-4.11-xqualifier.jar".equals(fileName)) {
-				v = new Version("4.11.0.xqualifier");
-				versionsList.add(v);
-				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
 			} else if ("junit-latest.jar".equals(fileName)) {
 				v = FileRepo.LATEST_VERSION;
 				versionsList.add(v);
@@ -74,9 +70,7 @@ public class TestFileRepo extends TestCase {
 				versionsList.add(v);
 				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
 			} else if ("junit_no_manifest.jar".equals(fileName)) {
-				v = Version.LOWEST;
-				versionsList.add(v);
-				versionsPairList.add(new VersionFilePair(v, new File(dir, fileName)));
+				// nothing
 			} else {
 				throw new Exception("unhandled file name " + bsn + "/" + fileName);
 			}
@@ -86,7 +80,7 @@ public class TestFileRepo extends TestCase {
 	private File getExpectedGet(String bsn, String version) throws Exception {
 		if (Version.LOWEST.toString().equals(version)) {
 			if ("ee.minimum".equals(bsn)) {
-				return new File(repoDir, "ee.minimum/ee.minimum-no-matches.jar");
+				return null;
 			} else if ("org.hamcrest".equals(bsn)) {
 				return null;
 			} else if ("org.junit".equals(bsn)) {
@@ -94,7 +88,7 @@ public class TestFileRepo extends TestCase {
 			}
 		} else if ("1.1.99".equals(version)) {
 			if ("ee.minimum".equals(bsn)) {
-				return new File(repoDir, "ee.minimum/ee.minimum-1.1.99.jar");
+				return null;
 			} else if ("org.hamcrest".equals(bsn)) {
 				return null;
 			} else if ("org.junit".equals(bsn)) {
@@ -102,7 +96,7 @@ public class TestFileRepo extends TestCase {
 			}
 		} else if ("1.2.0.x200908310645".equals(version)) {
 			if ("ee.minimum".equals(bsn)) {
-				return null;
+				return new File(repoDir, "ee.minimum/ee.minimum-1.1.99.jar");
 			} else if ("org.hamcrest".equals(bsn)) {
 				return null;
 			} else if ("org.junit".equals(bsn)) {
@@ -139,14 +133,6 @@ public class TestFileRepo extends TestCase {
 				return null;
 			} else if ("org.junit".equals(bsn)) {
 				return new File(repoDir, "org.junit/junit-4.11.jar");
-			}
-		} else if ("4.11.0.xqualifier".equals(version)) {
-			if ("ee.minimum".equals(bsn)) {
-				return null;
-			} else if ("org.hamcrest".equals(bsn)) {
-				return null;
-			} else if ("org.junit".equals(bsn)) {
-				return new File(repoDir, "org.junit/junit-4.11-xqualifier.jar");
 			}
 		} else if (FileRepo.LATEST_VERSION.toString().equals(version)) {
 			if ("ee.minimum".equals(bsn)) {
@@ -195,11 +181,11 @@ public class TestFileRepo extends TestCase {
 
 	public void testGet() throws Exception {
 		String[] bsns = {
-				"ee.minimum", "org.hamcrest", "org.junit"
+				"ee.minimum", "org.junit", "org.hamcrest"
 		};
 		String[] versions = {
-				Version.LOWEST.toString(), "1.1.99", "1.2.0.200908310645", "1.2.1.201305092016", "1.2.0.x200908310645",
-				"1.3.0", "4.11.0","4.11.0.xqualifier", "123.321.123", FileRepo.LATEST_VERSION.toString()
+				Version.LOWEST.toString(), "1.1.99", "1.2.0.200908310645", "1.2.1.201305092016", "1.3.0",
+				"4.11.0", "123.321.123", FileRepo.LATEST_VERSION.toString()
 		};
 
 		for (String bsn : bsns) {

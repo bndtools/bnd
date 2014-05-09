@@ -217,6 +217,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	Registry								registry;
 	boolean									createLatest		= true;
 	boolean									canWrite			= true;
+	Pattern									REPO_FILE			= Pattern.compile("(?:([-a-zA-z0-9_\\.]+)-)("
+																	+ Version.VERSION_STRING + "|"
+																	+ Constants.VERSION_ATTR_LATEST + ")\\.(jar|lib)");
 	Reporter								reporter;
 	boolean									dirty = true;
 	String									name;
@@ -345,7 +348,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (bsn == null)
 				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
 
-			Version version = null;
+			Version version = getVersionFromJar(tmpJar);
 			if (options != null && options.version != null) {
 				version = options.version;
 			} else {
@@ -358,8 +361,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			}
 
 			if (version == null) {
-				/* when the jar has no manifest or when there is no valid
-				 * version in the jar's manifest */
+				/* should not happen because bsn != null, which mean that the
+				 * jar is valid and it has a manifest. just to be safe though */
 				version = Version.LOWEST;
 			}
 
@@ -510,6 +513,71 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		};
 
 	/**
+	 * Get the version from a jar: search the manifest headers for headers
+	 * listed in {@link #VERSION_HEADERS} to retrieve the version.
+	 * 
+	 * @param jar
+	 *            the jar to get the version from
+	 * @return null when the jar has no manifest, {@link Version#LOWEST} when
+	 *         there is no valid version in the jar, the version from the jar
+	 *         otherwise
+	 */
+	protected Version getVersionFromJar(Jar jar) {
+		try {
+			Manifest manifest = jar.getManifest();
+			if (manifest == null) {
+				return null;
+			}
+
+			Attributes attributes = manifest.getMainAttributes();
+
+			for (String header : VERSION_HEADERS) {
+				try {
+					Version v = new Version(Version.cleanupVersion(attributes.getValue(header)));
+					return v;
+				}
+				catch (Exception e) {
+					/* not a valid version */
+				}
+			}
+
+			/* valid jar but no valid version found: Version.LOWEST */
+			return Version.LOWEST;
+		}
+		catch (Exception e) {
+			/* can't get the manifest */
+			return null;
+		}
+	}
+
+	/**
+	 * Get the version from a jar file: open the jar, call
+	 * {@link #getVersionFromJar(Jar)} and close the jar before returning.
+	 * 
+	 * @param file
+	 *            the jar file to get the version from
+	 * @return null when the jar is invalid or has no manifest,
+	 *         {@link Version#LOWEST} when there is no valid version in the jar,
+	 *         the version from the jar otherwise
+	 */
+	protected Version getVersionFromJarFile(File file) {
+		Jar jar = null;
+		try {
+			jar = new Jar(file);
+			return getVersionFromJar(jar);
+		}
+		catch (Exception e) {
+			/* can't open the jar or get its manifest */
+			return null;
+		}
+		finally {
+			if (jar != null) {
+				jar.close();
+			}
+		}
+	}
+
+	/**
 	 * Get all versions for the specified bsn from the backing files in the
 	 * repository. Store these versions in the provided (optional) lists (at
 	 * least one of the lists must be non-null). The backing file names are
@@ -546,29 +614,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		for (String fileName : fileNames) {
 			File file = new File(dir, fileName);
 			if (!fileName.endsWith(".lib")) {
-				Jar jar = null;
-				Version jarVersion = null;
-				boolean jarIsValid = false;
-				try {
-					jar = new Jar(file);
-					jarIsValid = true;
-					jarVersion = Version.fromManifest(jar.getManifest(), false);
-				}
-				catch (Exception e) {
-					if (!jarIsValid) {
-						/* ignore invalid jars */
-						continue;
-					}
-					/* the manifest could not be retrieved */
-				}
-				finally {
-					if (jar != null) {
-						jar.close();
-						jar = null;
-					}
+				Version jarVersion = getVersionFromJarFile(file);
+				if (jarVersion == null) {
+					/* the jar is invalid or has no manifest */
+					continue;
 				}
 
-				if (jarVersion != null) {
+				if (!Version.LOWEST.equals(jarVersion)) {
 					/* there is a VALID version in the jar */
 					if (versionsList != null) {
 						versionsList.add(jarVersion);
@@ -580,13 +632,16 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				}
 			}
 
-			/* there is no valid version in the jar: fall back to the fileName */
+			/*
+			 * there is no valid version in the jar: fall back to in the
+			 * fileName
+			 */
+			Matcher m = REPO_FILE.matcher(fileName);
+			if (m.matches()) {
+				/* there is a VALID (via the regex) version in the fileName */
 
-			Version fileVersion = Version.fromFileName(fileName, false);
-			if (fileVersion != null) {
-				/* there is a VALID version in the fileName */
-
-				if (Version.HIGHEST.equals(fileVersion)) {
+				String fileNameVersion = m.group(2);
+				if (fileNameVersion.equals(Constants.VERSION_ATTR_LATEST)) {
 					/* the fileName version is 'latest' */
 					if (versionsList != null) {
 						versionsList.add(LATEST_VERSION);
@@ -598,6 +653,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				}
 
 				/* use the (valid) version from the fileName */
+				Version fileVersion = new Version(Version.cleanupVersion(fileNameVersion));
 				if (versionsList != null) {
 					versionsList.add(fileVersion);
 				}
