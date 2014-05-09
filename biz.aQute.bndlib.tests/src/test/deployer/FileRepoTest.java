@@ -76,7 +76,6 @@ public class FileRepoTest extends TestCase {
 		FileRepo repo = new FileRepo();
 		
 		props.put("location", root.getAbsolutePath());
-		props.put("latest", "true");
 		repo.setProperties(props);
 
 		return repo;
