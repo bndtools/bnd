@@ -1133,7 +1133,6 @@ public class BuilderTest extends BndTestCase {
 		b.setProperty("C1", "${classes;implementing;org.osgi.service.component.*}");
 		b.setProperty("C2", "${classes;extending;org.xml.sax.helpers.*}");
 		b.setProperty("C3", "${classes;importing;org.xml.sax}");
-		b.setProperty("C3", "${classes;importing;org.xml.sax}");
 		b.setProperty("C4", "${classes;named;*Parser*}");
 		b.setProperty("C5", "${classes;named;*Parser*;version;45.*}");
 		Jar jar = b.build();
@@ -2055,7 +2054,7 @@ public class BuilderTest extends BndTestCase {
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
 		assertEquals(
-				"[test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class, test/activator/Activator3.class, test/activator/ActivatorPackage.class, test/activator/ActivatorPrivate.class]",
+				"[test/activator/AbstractActivator.class, test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class, test/activator/Activator3.class, test/activator/ActivatorPackage.class, test/activator/ActivatorPrivate.class, test/activator/DefaultVisibilityActivator.class, test/activator/IActivator.class, test/activator/MissingNoArgsConstructorActivator.class, test/activator/NotAnActivator.class]",
 				new SortedList<String>(jar.getDirectories().get("test/activator").keySet()).toString());
 	}
 

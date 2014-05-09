@@ -1656,6 +1656,7 @@ public class Clazz {
 					if (instr.matches(imp.getFQN()))
 						return !instr.isNegated();
 				}
+				break;
 			case DEFAULT_CONSTRUCTOR :
 				return hasPublicNoArgsConstructor();
 		}
