@@ -345,7 +345,7 @@ public class Builder extends Analyzer {
 		cleanupVersion(getExports(), getVersion());
 		String version = getProperty(BUNDLE_VERSION);
 		if (version != null) {
-			version = Version.cleanupVersion(version);
+			version = cleanupVersion(version);
 			if (version.endsWith(".SNAPSHOT")) {
 				version = version.replaceAll("SNAPSHOT$", getProperty(SNAPSHOT, "SNAPSHOT"));
 			}
@@ -375,7 +375,7 @@ public class Builder extends Analyzer {
 				}
 			}
 			if (v != null)
-				attributes.put(Constants.VERSION_ATTRIBUTE, Version.cleanupVersion(v));
+				attributes.put(Constants.VERSION_ATTRIBUTE, cleanupVersion(v));
 		}
 	}
 
@@ -1345,7 +1345,7 @@ public class Builder extends Analyzer {
 		else if (args.length < 2)
 			error("${maven_version} macro has no arguments, use ${maven_version;1.2.3-SNAPSHOT}");
 		else {
-			return Version.cleanupVersion(args[1]);
+			return cleanupVersion(args[1]);
 		}
 		return null;
 	}

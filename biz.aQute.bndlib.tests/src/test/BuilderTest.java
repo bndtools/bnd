@@ -1455,7 +1455,7 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	static void assertVersion(String input, String expected) {
-		assertEquals(expected, Version.cleanupVersion(input));
+		assertEquals(expected, Builder.cleanupVersion(input));
 	}
 
 	/**

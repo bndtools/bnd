@@ -1597,7 +1597,7 @@ public class Analyzer extends Processor {
 					boolean provider = isTrue(importAttributes.get(PROVIDE_DIRECTIVE))
 							|| isTrue(exportAttributes.get(PROVIDE_DIRECTIVE)) || provided.contains(packageRef);
 
-					exportVersion = Version.cleanupVersion(exportVersion);
+					exportVersion = cleanupVersion(exportVersion);
 
 					importRange = applyVersionPolicy(exportVersion, importRange, provider);
 					importAttributes.put(VERSION_ATTRIBUTE, importRange);
@@ -1640,7 +1640,7 @@ public class Analyzer extends Processor {
 			setProperty("@", exportVersion);
 
 			if (importRange != null) {
-				importRange = Version.cleanupVersion(importRange);
+				importRange = cleanupVersion(importRange);
 				importRange = getReplacer().process(importRange);
 			} else
 				importRange = getVersionPolicy(provider);
@@ -2219,6 +2219,129 @@ public class Analyzer extends Processor {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Clean up version parameters. Other builders use more fuzzy definitions of
+	 * the version syntax. This method cleans up such a version to match an OSGi
+	 * version.
+	 * 
+	 * @param VERSION_STRING
+	 * @return
+	 */
+	static Pattern	fuzzyVersion		= Pattern.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?",
+												Pattern.DOTALL);
+	static Pattern	fuzzyVersionRange	= Pattern.compile(
+												"(\\(|\\[)\\s*([-\\da-zA-Z.]+)\\s*,\\s*([-\\da-zA-Z.]+)\\s*(\\]|\\))",
+												Pattern.DOTALL);
+	static Pattern	fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
+
+	static Pattern	nummeric			= Pattern.compile("\\d*");
+
+	static public String cleanupVersion(String version) {
+		Matcher m = Verifier.VERSIONRANGE.matcher(version);
+
+		if (m.matches()) {
+			try {
+				VersionRange vr = new VersionRange(version);
+				return version;
+			}
+			catch (Exception e) {
+				// ignore
+			}
+		}
+
+		m = fuzzyVersionRange.matcher(version);
+		if (m.matches()) {
+			String prefix = m.group(1);
+			String first = m.group(2);
+			String last = m.group(3);
+			String suffix = m.group(4);
+			return prefix + cleanupVersion(first) + "," + cleanupVersion(last) + suffix;
+		}
+
+		m = fuzzyVersion.matcher(version);
+		if (m.matches()) {
+			StringBuilder result = new StringBuilder();
+			String major = removeLeadingZeroes(m.group(1));
+			String minor = removeLeadingZeroes(m.group(3));
+			String micro = removeLeadingZeroes(m.group(5));
+			String qualifier = m.group(7);
+
+			if (qualifier == null) {
+				if (!isInteger(minor)) {
+					qualifier = minor;
+					minor = "0";
+				} else if (!isInteger(micro)) {
+					qualifier = micro;
+					micro = "0";
+				}
+			}
+			if (major != null) {
+				result.append(major);
+				if (minor != null) {
+					result.append(".");
+					result.append(minor);
+					if (micro != null) {
+						result.append(".");
+						result.append(micro);
+						if (qualifier != null) {
+							result.append(".");
+							cleanupModifier(result, qualifier);
+						}
+					} else if (qualifier != null) {
+						result.append(".0.");
+						cleanupModifier(result, qualifier);
+					}
+				} else if (qualifier != null) {
+					result.append(".0.0.");
+					cleanupModifier(result, qualifier);
+				}
+				return result.toString();
+			}
+		}
+		return version;
+	}
+
+	/**
+	 * TRhe cleanup version got confused when people used numeric dates like
+	 * 201209091230120 as qualifiers. These are too large for Integers. This
+	 * method checks if the all digit string fits in an integer.
+	 * 
+	 * <pre>
+	 * maxint = 2,147,483,647 = 10 digits
+	 * </pre>
+	 * 
+	 * @param integer
+	 * @return if this fits in an integer
+	 */
+	private static boolean isInteger(String minor) {
+		return minor.length() < 10 || (minor.length() == 10 && minor.compareTo("2147483647") < 0);
+	}
+
+	private static String removeLeadingZeroes(String group) {
+		if (group == null)
+			return "0";
+
+		int n = 0;
+		while (n < group.length() - 1 && group.charAt(n) == '0')
+			n++;
+		if (n == 0)
+			return group;
+
+		return group.substring(n);
+	}
+
+	static void cleanupModifier(StringBuilder result, String modifier) {
+		Matcher m = fuzzyModifier.matcher(modifier);
+		if (m.matches())
+			modifier = m.group(2);
+
+		for (int i = 0; i < modifier.length(); i++) {
+			char c = modifier.charAt(i);
+			if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c == '-')
+				result.append(c);
+		}
 	}
 
 	final static String	DEFAULT_PROVIDER_POLICY	= "${range;[==,=+)}";

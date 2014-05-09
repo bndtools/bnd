@@ -60,7 +60,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		if (vsdir.isDirectory()) {
 			String versions[] = vsdir.list();
 			for (String v : versions) {
-				String vv = Version.cleanupVersion(v);
+				String vv = Analyzer.cleanupVersion(v);
 				if (Verifier.isVersion(vv)) {
 					Version vvv = new Version(vv);
 					if (range.includes(vvv)) {
@@ -124,7 +124,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		List<Version> versions = new ArrayList<Version>();
 		for (File f : files) {
 			String version = f.getParentFile().getName();
-			version = Version.cleanupVersion(version);
+			version = Builder.cleanupVersion(version);
 			Version v = new Version(version);
 			versions.add(v);
 		}
