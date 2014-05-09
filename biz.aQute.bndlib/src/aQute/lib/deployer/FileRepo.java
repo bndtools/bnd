@@ -331,24 +331,26 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		Jar tmpJar = new Jar(tmpFile);
 		try {
-			String bsn = tmpJar.getBsn(false);
-
-			if (bsn == null && options.bsnHint != null)
-				bsn = options.bsnHint;
+			String bsn = null;
+			if (options != null && options.bsn != null) {
+				bsn = options.bsn;
+			} else {
+				bsn = tmpJar.getBsn(false);
+			}
 
 			if (bsn == null)
 				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
 
 			Version version = null;
-			try {
-				version = Version.fromManifest(tmpJar.getManifest(), false);
-			}
-			catch (Exception e) {
-				/* can't get the manifest */
-			}
-
-			if (version == null && options.versionHint != null) {
-				version = options.versionHint;
+			if (options != null && options.version != null) {
+				version = options.version;
+			} else {
+				try {
+					version = Version.fromManifest(tmpJar.getManifest(), false);
+				}
+				catch (Exception e) {
+					/* can't get the manifest */
+				}
 			}
 
 			if (version == null) {

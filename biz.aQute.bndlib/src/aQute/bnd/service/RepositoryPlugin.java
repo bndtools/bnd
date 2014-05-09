@@ -36,8 +36,15 @@ public interface RepositoryPlugin {
 		 */
 		public String	type;
 
-		public String bsnHint = null;
-		public Version versionHint = null;
+		/**
+		 * When set, the repository must use it as the bsn
+		 */
+		public String bsn = null;
+
+		/**
+		 * When set, the repository must use it as the version
+		 */
+		public Version version = null;
 	}
 
 	PutOptions	DEFAULTOPTIONS	= new PutOptions();
