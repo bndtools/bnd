@@ -758,8 +758,32 @@ public class Jar implements Closeable {
 
 	static Pattern	BSN	= Pattern.compile("\\s*([-\\w\\._]+)\\s*;?.*");
 
+	/**
+	 * Get the jar bsn from the {@link Constants#BUNDLE_SYMBOLICNAME} manifest
+	 * header.
+	 * 
+	 * @return null when the jar has no manifest, when the manifest has no
+	 *         {@link Constants#BUNDLE_SYMBOLICNAME} header, or when the value
+	 *         of the header is not a valid bsn according to {@link #BSN}.
+	 * @throws Exception
+	 *             when the jar is closed or when the manifest could not be
+	 *             retrieved.
+	 */
 	public String getBsn() throws Exception {
-		return getBsn(true);
+		check();
+		Manifest m = getManifest();
+		if (m == null)
+			return null;
+
+		String s = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+		if (s == null)
+			return null;
+
+		Matcher matcher = BSN.matcher(s);
+		if (matcher.matches()) {
+			return matcher.group(1);
+		}
+		return null;
 	}
 
 	/**
