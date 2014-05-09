@@ -70,7 +70,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * Property name for the latest option of the repository. If true, will copy
 	 * the put jar to a 'latest' file (option must be a boolean value read by
-	 * {@link Boolean#parseBoolean(String)}). Defaults to false.
+	 * {@link Boolean#parseBoolean(String)}). Defaults to true.
 	 */
 	public final static String				LATEST_OPTION		= "latest";
 
@@ -215,7 +215,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	File[]									EMPTY_FILES			= new File[0];
 	protected File							root;
 	Registry								registry;
-	boolean									createLatest		= false;
+	boolean									createLatest		= true;
 	boolean									canWrite			= true;
 	Reporter								reporter;
 	boolean									dirty = true;
