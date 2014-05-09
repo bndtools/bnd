@@ -7,6 +7,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
@@ -198,7 +199,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	private static final String				LATEST_POSTFIX		= "-" + Constants.VERSION_ATTR_LATEST + ".jar";
 	public static final Version				LATEST_VERSION		= new Version(MAX_MAJOR, 0, 0);
-	public static final Version				ZERO_VERSION		= new Version(0);
+	private static final SortedSet<Version>	LATEST_SET			= new TreeSet<Version>(
+																		Collections.singleton(LATEST_VERSION));
 
 	final static JSONCodec					codec				= new JSONCodec();
 	String									shell;
@@ -349,22 +351,22 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (bsn == null)
 				throw new IllegalArgumentException("No bsn set in jar: " + tmpFile);
 
-			Version version = getVersionFromJar(tmpJar);
+			Version version = null;
 			if (options != null && options.version != null) {
 				version = options.version;
 			} else {
 				try {
-					version = Version.fromManifest(tmpJar.getManifest(), false);
+					version = new Version(tmpJar.getVersion());
 				}
 				catch (Exception e) {
-					/* can't get the manifest */
+					throw new IllegalArgumentException("Incorrect version in : " + tmpFile + " " + tmpJar.getVersion());
 				}
 			}
 
 			if (version == null) {
 				/* should not happen because bsn != null, which mean that the
 				 * jar is valid and it has a manifest. just to be safe though */
-				version = ZERO_VERSION;
+				version = Version.LOWEST;
 			}
 
 			reporter.trace("bsn=%s version=%s", bsn, version);
@@ -502,183 +504,29 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return result;
 	}
 
-	/**
-	 * Ordered list of manifest headers that are used to determine a jar's
-	 * version
-	 */
-	protected static final String[]	VERSION_HEADERS	= {
-			Constants.BUNDLE_VERSION,
-			"Version",
-			"Implementation-Version"
-		};
-
-	/**
-	 * Get the version from a jar: search the manifest headers for headers
-	 * listed in {@link #VERSION_HEADERS} to retrieve the version.
-	 * 
-	 * @param jar
-	 *            the jar to get the version from
-	 * @return null when the jar has no manifest, {@link #ZERO_VERSION} when
-	 *         there is no valid version in the jar, the version from the jar
-	 *         otherwise
-	 */
-	protected Version getVersionFromJar(Jar jar) {
-		try {
-			Manifest manifest = jar.getManifest();
-			if (manifest == null) {
-				return null;
-			}
-
-			Attributes attributes = manifest.getMainAttributes();
-
-			for (String header : VERSION_HEADERS) {
-				try {
-					Version v = new Version(attributes.getValue(header));
-					return v;
-				}
-				catch (Exception e) {
-					/* not a valid version */
-				}
-			}
-
-			/* valid jar but no valid version found: ZERO_VERSION */
-			return ZERO_VERSION;
-		}
-		catch (Exception e) {
-			/* can't get the manifest */
-			return null;
-		}
-	}
-
-	/**
-	 * Get the version from a jar file: open the jar, call
-	 * {@link #getVersionFromJar(Jar)} and close the jar before returning.
-	 * 
-	 * @param file
-	 *            the jar file to get the version from
-	 * @return null when the jar is invalid or has no manifest,
-	 *         {@link #ZERO_VERSION} when there is no valid version in the jar,
-	 *         the version from the jar otherwise
-	 */
-	protected Version getVersionFromJarFile(File file) {
-		Jar jar = null;
-		try {
-			jar = new Jar(file);
-			return getVersionFromJar(jar);
-		}
-		catch (Exception e) {
-			/* can't open the jar or get its manifest */
-			return null;
-		}
-		finally {
-			if (jar != null) {
-				jar.close();
-			}
-		}
-	}
-
-	/**
-	 * Get all versions for the specified bsn from the backing files in the
-	 * repository. Store these versions in the provided (optional) lists (at
-	 * least one of the lists must be non-null). The backing file names are
-	 * sorted before determining the versions.
-	 * 
-	 * @param bsn
-	 *            the bsn to get all versions for. must be non-null and not
-	 *            empty. should denote a directory in the repository.
-	 * @param versionsList
-	 *            an ordered list of versions of the backing files. can be null.
-	 * @param versionsPairList
-	 *            an ordered list of Version-File pairs of the backing files.
-	 *            can be null.
-	 */
-	public void getVersionsLists(String bsn, List<Version> versionsList, List<VersionFilePair> versionsPairList) {
-		if (versionsList != null) {
-			versionsList.clear();
-		}
-		if (versionsPairList != null) {
-			versionsPairList.clear();
-		}
-
-		if ((bsn == null || bsn.length() == 0) || ((versionsList == null) && (versionsPairList == null))) {
-			return;
-		}
-
-		File dir = new File(root, bsn);
-		if (!dir.isDirectory()) {
-			return;
-		}
-
-		List<String> fileNames = Arrays.asList(dir.list());
-		Collections.sort(fileNames);
-		for (String fileName : fileNames) {
-			File file = new File(dir, fileName);
-			if (!fileName.endsWith(".lib")) {
-				Version jarVersion = getVersionFromJarFile(file);
-				if (jarVersion == null) {
-					/* the jar is invalid or has no manifest */
-					continue;
-				}
-
-				if (!ZERO_VERSION.equals(jarVersion)) {
-					/* there is a VALID version in the jar */
-					if (versionsList != null) {
-						versionsList.add(jarVersion);
-					}
-					if (versionsPairList != null) {
-						versionsPairList.add(new VersionFilePair(jarVersion, file));
-					}
-					continue;
-				}
-			}
-
-			/*
-			 * there is no valid version in the jar: fall back to in the
-			 * fileName
-			 */
-			Matcher m = REPO_FILE.matcher(fileName);
-			if (m.matches()) {
-				/* there is a VALID (via the regex) version in the fileName */
-
-				String fileNameVersion = m.group(2);
-				if (fileNameVersion.equals(Constants.VERSION_ATTR_LATEST)) {
-					/* the fileName version is 'latest' */
-					if (versionsList != null) {
-						versionsList.add(LATEST_VERSION);
-					}
-					if (versionsPairList != null) {
-						versionsPairList.add(new VersionFilePair(LATEST_VERSION, file));
-					}
-					continue;
-				}
-
-				/* use the (valid) version from the fileName */
-				Version fileVersion = new Version(fileNameVersion);
-				if (versionsList != null) {
-					versionsList.add(fileVersion);
-				}
-				if (versionsPairList != null) {
-					versionsPairList.add(new VersionFilePair(fileVersion, file));
-				}
-				continue;
-			}
-
-			/* no version in the fileName: ZERO_VERSION */
-			if (versionsList != null) {
-				versionsList.add(ZERO_VERSION);
-			}
-			if (versionsPairList != null) {
-				versionsPairList.add(new VersionFilePair(ZERO_VERSION, file));
-			}
-		}
-	}
-
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
-
-		List<Version> versionsList = new LinkedList<Version>();
-		getVersionsLists(bsn, versionsList, null);
-		return new SortedList<Version>(versionsList);
+		File dir = new File(root, bsn);
+		boolean latest = false;
+		if (dir.isDirectory()) {
+			String versions[] = dir.list();
+			List<Version> list = new ArrayList<Version>();
+			for (String v : versions) {
+				Matcher m = REPO_FILE.matcher(v);
+				if (m.matches()) {
+					String version = m.group(2);
+					if (!version.equals(Constants.VERSION_ATTR_LATEST))
+						list.add(new Version(version));
+					else
+						latest = true;
+				}
+			}
+			if (list.isEmpty() && latest)
+				return LATEST_SET;
+			else
+				return new SortedList<Version>(list);
+		}
+		return SortedList.empty();
 	}
 
 	@Override
@@ -714,7 +562,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		init();
 		beforeGet(bsn, version);
 		File file = getLocal(bsn, version, properties);
-		if (file != null && file.exists()) {
+		if (file.exists()) {
 			for (DownloadListener l : listeners) {
 				try {
 					l.success(file);
@@ -805,13 +653,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				s = descriptor.description + "\n";
 			}
 
-			if (f == null) {
-				s += String.format("Path: %s\nSize: %s\nSHA1: %s", "<not found>", "-", "-");
-			} else {
-				s += String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0), SHA1
-						.digest(f).asHex());
-			}
-			if (f != null && f.getName().endsWith(".lib") && f.isFile()) {
+			s += String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0), SHA1
+					.digest(f).asHex());
+			if (f.getName().endsWith(".lib") && f.isFile()) {
 				s += "\n" + IO.collect(f);
 			}
 			return s;
@@ -843,38 +687,19 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File getLocal(String bsn, Version version, Map<String,String> properties) {
 		File dir = new File(root, bsn);
 
-		/* first look in files */
-
-		List<VersionFilePair> versionsPairList = new LinkedList<VersionFilePair>();
-		getVersionsLists(bsn, null, versionsPairList);
-
-		File match = null;
-		boolean matchIsLatest = true;
-		for (VersionFilePair pair : versionsPairList) {
-			if (pair.getVersion().equals(version)) {
-				File file = pair.getFile();
-				if (match == null) {
-					match = file;
-					matchIsLatest = file.getName().endsWith(LATEST_POSTFIX);
-				} else if (matchIsLatest && !file.getName().endsWith(LATEST_POSTFIX)) {
-					/* prefer first hit file names without '-latest' */
-					match = file;
-					matchIsLatest = false;
-				}
-			}
-		}
-
-		if (match != null) {
-			return match.getAbsoluteFile();
-		}
-
-		/* no match, try file names */
-
 		if (LATEST_VERSION.equals(version)) {
 			File fjar = new File(dir, bsn + LATEST_POSTFIX);
 			if (fjar.isFile())
 				return fjar.getAbsoluteFile();
 		}
+
+		File fjar = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".jar");
+		if (fjar.isFile())
+			return fjar.getAbsoluteFile();
+
+		File sfjar = new File(dir, version.getWithoutQualifier() + ".jar");
+		if (sfjar.isFile())
+			return sfjar.getAbsoluteFile();
 
 		File flib = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".lib");
 		if (flib.isFile())
@@ -884,41 +709,39 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (sflib.isFile())
 			return sflib.getAbsoluteFile();
 
-		return null;
+		return fjar.getAbsoluteFile();
 	}
 
 	protected String status(String bsn, Version version) {
 		File file = getLocal(bsn, version, null);
-		if (file != null) {
-			String vs;
-			if (LATEST_VERSION.equals(version)) {
-				vs = Constants.VERSION_ATTR_LATEST;
-			} else {
-				vs = version.toString();
-			}
-			StringBuilder sb = new StringBuilder(vs);
-			String del = " [";
-			if (file.getName().endsWith(".lib")) {
-				sb.append(del).append("L");
-				del = "";
-			} else if (!file.getName().endsWith(".jar")) {
-				sb.append(del).append("?");
-				del = "";
-			}
-			if (!file.isFile()) {
-				sb.append(del).append("X");
-				del = "";
-			}
-			if (file.length() == 0) {
-				sb.append(del).append("0");
-				del = "";
-			}
-			if (del.equals(""))
-				sb.append("]");
-			return sb.toString();
-		}
 
-		return "";
+		String vs;
+		if (LATEST_VERSION.equals(version)) {
+			vs = Constants.VERSION_ATTR_LATEST;
+		} else {
+			vs = version.toString();
+		}
+		StringBuilder sb = new StringBuilder(vs);
+		String del = " [";
+
+		if (file.getName().endsWith(".lib")) {
+			sb.append(del).append("L");
+			del = "";
+		} else if (!file.getName().endsWith(".jar")) {
+			sb.append(del).append("?");
+			del = "";
+		}
+		if (!file.isFile()) {
+			sb.append(del).append("X");
+			del = "";
+		}
+		if (file.length() == 0) {
+			sb.append(del).append("0");
+			del = "";
+		}
+		if (del.equals(""))
+			sb.append("]");
+		return sb.toString();
 	}
 
 	private static String[]	names	= {
@@ -1073,7 +896,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		for (Version v : versions) {
 			File f = getLocal(bsn, version, null);
-			if (f == null || !f.isFile())
+			if (!f.isFile())
 				reporter.error("No artifact found for %s:%s", bsn, version);
 			else
 				IO.delete(f);
