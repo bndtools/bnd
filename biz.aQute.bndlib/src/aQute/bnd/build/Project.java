@@ -990,16 +990,18 @@ public class Project extends Processor {
 				}
 				if (provider != null) {
 					RepositoryPlugin repo = versions.get(provider);
+					if ( repo == null) {
+						// A null provider indicates that we have a local project
+						return getBundleFromProject(bsn, attrs);
+					}
+					
 					String version = provider.toString();
 					DownloadBlocker blocker = new DownloadBlocker(this);
 					File result = repo.get(bsn, provider, attrs, blocker);
 					if (result != null)
 						return toContainer(bsn, version, attrs, result, blocker);
 				} else {
-					
-					// A null provider indicates that we have a local project
-					
-					return getBundleFromProject(bsn, attrs);
+					msgs.FoundVersions_ForStrategy_ButNoProvider(versions, useStrategy);
 				}
 			}
 		}
