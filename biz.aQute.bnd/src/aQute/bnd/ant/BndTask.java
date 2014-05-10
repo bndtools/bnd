@@ -92,7 +92,7 @@ import aQute.libg.qtokens.*;
 public class BndTask extends BaseTask {
 	String			command;
 	File			basedir;
-
+	boolean 		test;
 	boolean			failok;
 	boolean			exceptions;
 	boolean			print;
@@ -138,7 +138,11 @@ public class BndTask extends BaseTask {
 				project.setProperty(prop.getName(), prop.getValue());
 			}
 
-			project.action(command);
+			if ( test )
+				project.action(command,test);
+			else
+				project.action(command);
+				
 
 			for (Project p : ws.getCurrentProjects())
 				ws.getInfo(p, p + ":");
