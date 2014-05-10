@@ -8,7 +8,7 @@ import org.apache.maven.artifact.handler.*;
 public class BndArtifactHandler extends DefaultArtifactHandler {
 
 	public BndArtifactHandler() {
-		super("bnd");
+		super("bundle");
 		setExtension("jar");
 		setLanguage("java");
 		setAddedToClasspath(true);

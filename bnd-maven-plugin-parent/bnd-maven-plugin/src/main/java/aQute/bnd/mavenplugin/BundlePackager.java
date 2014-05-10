@@ -27,7 +27,7 @@ public class BundlePackager extends AbstractMojo {
 
 	@Parameter(property = "supportedProjectTypes")
 	protected List<String> supportedProjectTypes = Arrays.asList(new String[] {
-			"jar", "bnd" });
+			"jar", "bundle" });
 
 	@Component
 	protected MavenProject mavenProject;
