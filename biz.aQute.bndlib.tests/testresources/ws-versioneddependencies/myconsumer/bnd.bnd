@@ -1,0 +1,5 @@
+Bundle-Version:0.0.0.${tstamp}
+-buildpath: \
+	mydependency;version=latest
+Private-Package: \
+	myconsumer
