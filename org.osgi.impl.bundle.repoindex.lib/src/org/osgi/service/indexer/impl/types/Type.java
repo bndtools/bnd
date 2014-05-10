@@ -29,6 +29,8 @@ class Type {
 			result = scalar(ScalarType.Long);
 		} else if (value instanceof String) {
 			result = scalar(ScalarType.String);
+		} else if (value instanceof Boolean) {
+			result = scalar(ScalarType.String);
 		} else if (value instanceof Collection<?>) {
 			Collection<?> coll = (Collection<?>) value;
 			if (coll.isEmpty())

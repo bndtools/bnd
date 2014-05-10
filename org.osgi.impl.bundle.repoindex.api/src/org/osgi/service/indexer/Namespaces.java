@@ -1,6 +1,5 @@
 package org.osgi.service.indexer;
 
-
 /**
  * Predefined namespaces
  */
@@ -57,8 +56,10 @@ public final class Namespaces {
 	public static final String DIRECTIVE_MANDATORY = "mandatory";
 	public static final String DIRECTIVE_USES = "uses";
 	public static final String DIRECTIVE_RESOLUTION = "resolution";
+	public static final String DIRECTIVE_CARDINALITY = "cardinality";
 
 	public static final String RESOLUTION_OPTIONAL = "optional";
+	public static final String CARDINALITY_MULTIPLE = "multiple";
 
 	public static final String EFFECTIVE_RESOLVE = "resolve";
 	public static final String EFFECTIVE_ACTIVE = "active";

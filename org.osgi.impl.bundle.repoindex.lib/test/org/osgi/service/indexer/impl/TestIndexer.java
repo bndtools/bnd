@@ -110,6 +110,10 @@ public class TestIndexer extends TestCase {
 		assertFragmentMatch("testdata/fragment-scr1_2.txt", "testdata/scr1_2.jar");
 	}
 
+	public void testFragmentSCRServices() throws Exception {
+		assertFragmentMatch("testdata/fragment-scr_services.txt", "testdata/scr_services.jar");
+	}
+
 	private static void assertFragmentMatch(String expectedPath, String jarPath) throws Exception {
 		RepoIndex indexer = new RepoIndex();
 		assertFragmentMatch(indexer, expectedPath, jarPath);
