@@ -71,7 +71,7 @@ public class MapHandler extends Handler {
 
 		app.append("{");
 		String del = "";
-		for (Map.Entry< ? , ? > e : map.entrySet()) {
+		for (Map.Entry< ? , ? > e : map.entrySet()) try {
 			app.append(del);
 			String key;
 			if (e.getKey() != null && (keyType == String.class || keyType == Object.class))
@@ -83,6 +83,8 @@ public class MapHandler extends Handler {
 			app.append(":");
 			app.encode(e.getValue(), valueType, visited);
 			del = ",";
+		} catch( Exception ee) {
+			throw new IllegalArgumentException("[\"" + e.getKey() +"\"]", ee);
 		}
 		app.append("}");
 	}
