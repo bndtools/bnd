@@ -10,6 +10,7 @@ import aQute.bnd.header.*;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.util.dto.*;
 import aQute.bnd.version.*;
 import aQute.lib.base64.*;
 import aQute.lib.filter.*;
@@ -294,6 +295,21 @@ public class Verifier extends Processor {
 		}
 	}
 
+	public static class BundleActivatorError extends DTO {
+		public final String activatorClassName;
+		public final ActivatorErrorType errorType;
+		
+		public BundleActivatorError(String activatorName, ActivatorErrorType type) {
+			activatorClassName = activatorName;
+			errorType = type;
+		}
+	}
+	
+	public static enum ActivatorErrorType {
+		IS_INTERFACE, IS_ABSTRACT, NOT_PUBLIC, NO_SUITABLE_CONSTRUCTOR, 
+		NOT_AN_ACTIVATOR, DEFAULT_PACKAGE, NOT_ACCESSIBLE, IS_IMPORTED;
+	}
+	
 	private void verifyActivator() throws Exception {
 		String bactivator = main.get(Constants.BUNDLE_ACTIVATOR);
 		if (bactivator != null) {
@@ -302,21 +318,28 @@ public class Verifier extends Processor {
 				Clazz activatorClazz = analyzer.getClassspace().get(ref);
 				
 				if (activatorClazz.isInterface()) {
-					error("The Bundle Activator " + bactivator + " is an interface and therefore cannot be instantiated.");
+					registerActivatorErrorLocation(error("The Bundle Activator " + bactivator + 
+							" is an interface and therefore cannot be instantiated."),
+							bactivator, ActivatorErrorType.IS_INTERFACE);
 				} else {
 					if(activatorClazz.isAbstract()) {
-						error("The Bundle Activator " + bactivator + " is abstract and therefore cannot be instantiated.");
+						registerActivatorErrorLocation(error("The Bundle Activator " + bactivator + 
+								" is abstract and therefore cannot be instantiated."),
+								bactivator, ActivatorErrorType.IS_ABSTRACT);
 					}
 					if(!activatorClazz.isPublic()) {
-						error("Bundle Activator classes must be public, and " + bactivator + " is not.");
+						registerActivatorErrorLocation(error("Bundle Activator classes must be public, and " + 
+								bactivator + " is not."), bactivator, ActivatorErrorType.NOT_PUBLIC);
 					}
 					if(!activatorClazz.hasPublicNoArgsConstructor()) {
-						error("Bundle Activator classes must have a public zero-argument constructor and " + bactivator + " does not.");
+						registerActivatorErrorLocation(error("Bundle Activator classes must have a public zero-argument constructor and " + 
+								bactivator + " does not."), bactivator, ActivatorErrorType.NO_SUITABLE_CONSTRUCTOR);
 					}
 
 					if (!activatorClazz.is(QUERY.IMPLEMENTS, 
 							new Instruction("org.osgi.framework.BundleActivator"), analyzer)) {
-						error("The Bundle Activator " + bactivator + " does not implement BundleActivator.");
+						registerActivatorErrorLocation(error("The Bundle Activator " + bactivator + 
+								" does not implement BundleActivator."), bactivator, ActivatorErrorType.NOT_AN_ACTIVATOR);
 					}
 				}
 				return;
@@ -324,16 +347,30 @@ public class Verifier extends Processor {
 
 			PackageRef packageRef = ref.getPackageRef();
 			if (packageRef.isDefaultPackage())
-				error("The Bundle Activator is not in the bundle and it is in the default package ");
+				registerActivatorErrorLocation(error("The Bundle Activator is not in the bundle and it is in the default package "),
+						bactivator, ActivatorErrorType.DEFAULT_PACKAGE);
 			else if (!analyzer.isImported(packageRef)) {
-				error(Constants.BUNDLE_ACTIVATOR + " not found on the bundle class path nor in imports: " + bactivator);
+				registerActivatorErrorLocation(error(Constants.BUNDLE_ACTIVATOR + 
+						" not found on the bundle class path nor in imports: " + bactivator),
+						bactivator, ActivatorErrorType.NOT_ACCESSIBLE);
 			} else {
-				warning(Constants.BUNDLE_ACTIVATOR + " " + bactivator + 
-						" is being imported into the bundle rather than being contained inside it. This is usually a bundle packaging error");
+				registerActivatorErrorLocation(warning(Constants.BUNDLE_ACTIVATOR + " " + bactivator + 
+						" is being imported into the bundle rather than being contained inside it. This is usually a bundle packaging error"),
+						bactivator, ActivatorErrorType.IS_IMPORTED);
 			}
 		}
 	}
 
+	private void registerActivatorErrorLocation(SetLocation location, String activator, ActivatorErrorType errorType)
+		throws Exception {
+		FileLine fl = getHeader(Constants.BUNDLE_ACTIVATOR);
+		location.header(Constants.BUNDLE_ACTIVATOR)
+			.file(fl.file.getAbsolutePath())
+			.line(fl.line)
+			.length(fl.length)
+			.details(new BundleActivatorError(activator, errorType));
+	}
+	
 	private void verifyComponent() {
 		String serviceComponent = main.get(Constants.SERVICE_COMPONENT);
 		if (serviceComponent != null) {

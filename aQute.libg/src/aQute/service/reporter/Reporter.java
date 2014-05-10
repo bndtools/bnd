@@ -53,9 +53,10 @@ public interface Reporter extends Report {
 		SetLocation reference(String reference);
 		
 		/**
-		 * Set a reference for the error (url or so)
+		 * Pass a DTO containing detailed information about the error.
+		 * This can be recognised by other tools (e.g. bndtools) and
+		 * used for further error reporting/fixing.
 		 */
-
 		SetLocation details(Object details);
 		
 		Location location();
