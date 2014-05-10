@@ -19,7 +19,7 @@ The git repository contains all code. It contains the following projects:
 * biz.aQute.resolve - OBR Resolver
 * cnf - Configuration directory
 * demo - Used in testing
-* dist - Contains the distribution after 'ant dist'
+* dist - Contains the distribution after 'gradle'
 * osgi.r5 - OSGi jars without all dependencies
 
 ## License
@@ -41,19 +41,14 @@ bndtools is the development environment of bnd. An earlier Eclipse plugin in bnd
 available.
 
 ## Building
-The workspace root has a build.xml that builds all project in proper order. Due
-to the fact that bnd builds itself there are certain cases where you get an error
-during build. Trying again should fix the issue.
+Gradle is used to build bnd. The workspace root has a `build.gradle` file that builds all projects in proper order.
 
-Each project directory has a build.xml. The following targets are available:
+`gradle`              - Assembles, tests and releases the projects into dist/bundles  
+`gradle :dist:build`  - Assembles and tests the projects  
+`gradle :dist:index`  - Assembles and releases the projects into dist/bundles  
 
-ant build (default) - Build
-ant clean           - Clean the project
-ant test            - Run a bnd OSGi test
-ant junit           - Run standard JUnit tests in the test package
-ant dist            - Create a dist directory with all the bundles in repo format + obr indexes
-
-Outputs are stored in the tmp directory in the different projects.
+The workspace root also includes the gradle wrapper, `gradlew`, command if you do not have gradle installed
+on your system.
 
 ## Testing
 The main tests are in the biz.aQute.bndlib.tests project. These are standard JUnit tests. They
