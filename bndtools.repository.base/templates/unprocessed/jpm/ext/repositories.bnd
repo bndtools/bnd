@@ -4,6 +4,6 @@
 	aQute.library.bnd.JpmRepository;\
 		index=${workspace}/cnf/jpm-index.json;\
 		location=${user.home}/.bnd/cache,\
-	aQute.lib.deployer.FileRepo;                    name=Build;   location=${workspace}/cnf/buildrepo
+	aQute.lib.deployer.FileRepo;                    name=Build;   location=${workspace}/cnf/buildrepo;latest=false
 
 -releaserepo: Release
