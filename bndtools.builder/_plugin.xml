@@ -98,6 +98,11 @@
 			class="org.bndtools.builder.handlers.baseline.BundleVersionErrorHandler" />
 	</extension>
 
+	<extension point="bndtools.core.buildErrorDetailsHandlers">
+		<handler typeMatch="aQute.bnd.osgi.Verifier$BundleActivatorError"
+			class="org.bndtools.builder.handlers.activator.BundleActivatorErrorHandler" />
+	</extension>
+
 	<extension point="org.eclipse.ui.ide.markerResolution">
 		<markerResolutionGenerator markerType="bndtools.core.bndproblem"
 			class="org.bndtools.builder.BndtoolsMarkerResolutionGenerator" />

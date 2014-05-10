@@ -22,13 +22,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -58,6 +54,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
     private static final ILogger logger = Logger.getLogger(BaselineErrorHandler.class);
 
+    @Override
     public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
         List<MarkerData> result = new LinkedList<MarkerData>();
 
@@ -152,22 +149,6 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
     }
     */
 
-    CompilationUnit createAST(IJavaProject javaProject, String className) throws JavaModelException {
-        IType type = javaProject.findType(className);
-        if (type == null)
-            return null;
-
-        final ICompilationUnit cunit = type.getCompilationUnit();
-        if (cunit == null)
-            return null; // not a source type
-
-        ASTParser parser = ASTParser.newParser(AST.JLS4);
-        parser.setKind(ASTParser.K_COMPILATION_UNIT);
-        parser.setSource(cunit);
-        parser.setResolveBindings(true);
-        return (CompilationUnit) parser.createAST(null);
-    }
-
     List<MarkerData> generateAddedMethodMarker(IJavaProject javaProject, String className, final String methodName, final Delta requiresDelta) throws JavaModelException {
         final List<MarkerData> markers = new LinkedList<MarkerData>();
         final CompilationUnit ast = createAST(javaProject, className);
@@ -228,11 +209,13 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
         final String suggestedVersion = marker.getAttribute(PROP_SUGGESTED_VERSION, null);
         if (suggestedVersion != null) {
             result.add(new IMarkerResolution() {
+                @Override
                 public void run(IMarker marker) {
                     final IFile file = (IFile) marker.getResource();
                     final IWorkspace workspace = file.getWorkspace();
                     try {
                         workspace.run(new IWorkspaceRunnable() {
+                            @Override
                             public void run(IProgressMonitor monitor) throws CoreException {
                                 String input = "version " + suggestedVersion;
                                 ByteArrayInputStream stream = new ByteArrayInputStream(input.getBytes());
@@ -244,6 +227,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                     }
                 }
 
+                @Override
                 public String getLabel() {
                     return "Change package version to " + suggestedVersion;
                 }
