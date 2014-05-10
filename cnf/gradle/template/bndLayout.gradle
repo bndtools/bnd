@@ -28,8 +28,8 @@ testResultsDirName                     = gradleBuild_testResultsDirName
 testReportDirName                      = gradleBuild_testReportDirName
 
 /* Java source code source set */
-sourceSets.main.java.srcDirs           = files(bnd_srcDir       )
-sourceSets.main.resources.srcDirs      = files(bnd_srcDir       )
+sourceSets.main.java.srcDirs           = files(bnd_project.sourcePath.collect { relativePath(it) })
+sourceSets.main.resources.srcDirs      = files(bnd_project.sourcePath.collect { relativePath(it) })
 sourceSets.main.output.classesDir      =       bnd_srcBinDir
 sourceSets.main.output.resourcesDir    =       bnd_srcBinDir
 

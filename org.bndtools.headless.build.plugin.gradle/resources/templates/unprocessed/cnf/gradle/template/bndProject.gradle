@@ -170,6 +170,7 @@ assert(            hasProperty("gradleBuild_testIgnoreFailures"  ))
 assert(            hasProperty("gradleBuild_testMaxParallelForks"))
 
 
+bnd_project.setDelayRunDependencies(true)
 bnd_project.prepare()
 if (!bnd_project.isValid()) {
   printBndProjectWarningsAndErrors()
@@ -235,14 +236,14 @@ if (bnd_javacTarget ==~ "^\\d+\\.\\d+\$") {
 compileJava.options.debug                    = bnd_debug
 compileJava.options.listFiles                = bnd_verbose
 compileJava.options.verbose                  = gradleBuild_compileVerbose
-compileJava.options.fork                     = gradleBuild_compileFork
+compileJava.options.fork                     = gradleBuild_compileFork || (bnd_javac != "javac")
 compileJava.options.deprecation              = gradleBuild_compileDeprecation
 compileJava.options.forkOptions.setExecutable(bnd_javac)
 
 compileTestJava.options.debug                = bnd_debug
 compileTestJava.options.listFiles            = bnd_verbose
 compileTestJava.options.verbose              = gradleBuild_compileVerbose
-compileTestJava.options.fork                 = gradleBuild_compileFork
+compileTestJava.options.fork                 = gradleBuild_compileFork || (bnd_javac != "javac")
 compileTestJava.options.deprecation          = gradleBuild_compileDeprecation
 compileTestJava.options.forkOptions.setExecutable(bnd_javac)
 
