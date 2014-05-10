@@ -29,21 +29,22 @@ import aQute.lib.settings.*;
 import aQute.service.reporter.*;
 
 public class Workspace extends Processor {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+	static final int							BUFFER_SIZE		= IOConstants.PAGE_SIZE * 16;
 
-	public static final String					BUILDFILE	= "build.bnd";
-	public static final String					CNFDIR		= "cnf";
-	public static final String					BNDDIR		= "bnd";
-	public static final String					CACHEDIR	= "cache";
+	public static final String					BUILDFILE		= "build.bnd";
+	public static final String					CNFDIR			= "cnf";
+	public static final String					BNDDIR			= "bnd";
+	public static final String					CACHEDIR		= "cache";
 
-	static Map<File,WeakReference<Workspace>>	cache		= newHashMap();
-	static Processor							defaults	= null;
-	final Map<String,Project>					models		= newHashMap();
-	final Map<String,Action>					commands	= newMap();
+	static Map<File,WeakReference<Workspace>>	cache			= newHashMap();
+	static Processor							defaults		= null;
+	final Map<String,Project>					models			= newHashMap();
+	final Map<String,Action>					commands		= newMap();
 	final File									buildDir;
-	final Maven									maven		= new Maven(Processor.getExecutor());
-	private boolean								offline		= true;
-	Settings									settings	= new Settings();
+	final Maven									maven			= new Maven(Processor.getExecutor());
+	private boolean								offline			= true;
+	Settings									settings		= new Settings();
+	WorkspaceRepository							workspaceRepo	= new WorkspaceRepository(this);
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -154,19 +155,19 @@ public class Workspace extends Processor {
 
 		setProperties(buildFile, dir);
 		propertiesChanged();
-		
+
 		//
-		// There is a nasty bug/feature in Java that gives errors on our 
+		// There is a nasty bug/feature in Java that gives errors on our
 		// SSL use of github. The flag jsse.enableSNIExtension should be set
 		// to false. So here we provide a way to set system properties
 		// as early as possible
-		// 
-		
-		Attrs sysProps = OSGiHeader.parseProperties( getProperty(SYSTEMPROPERTIES));
-		for ( Entry<String,String> e : sysProps.entrySet()) {
+		//
+
+		Attrs sysProps = OSGiHeader.parseProperties(getProperty(SYSTEMPROPERTIES));
+		for (Entry<String,String> e : sysProps.entrySet()) {
 			System.setProperty(e.getKey(), e.getValue());
 		}
-		
+
 	}
 
 	public Project getProject(String bsn) throws Exception {
@@ -225,8 +226,7 @@ public class Workspace extends Processor {
 		super.propertiesChanged();
 	}
 
-	public String _workspace(@SuppressWarnings("unused")
-	String args[]) {
+	public String _workspace(@SuppressWarnings("unused") String args[]) {
 		return getBase().getAbsolutePath();
 	}
 
@@ -356,11 +356,11 @@ public class Workspace extends Processor {
 					if (in != null)
 						unzip(in, root);
 					else {
-						if ( root.isDirectory() && root.list().length >= 2) {
+						if (root.isDirectory() && root.list().length >= 2) {
 							trace("Assuming I am in a bnd test ...  the embedded repo is missig but it exists on the file system");
 							return true;
 						}
-							
+
 						error("Couldn't find embedded-repo.jar in bundle ");
 					}
 					return true;
@@ -402,12 +402,12 @@ public class Workspace extends Processor {
 		}
 	}
 
-	
 	public void syncCache() throws Exception {
 		CachedFileRepo cf = new CachedFileRepo();
 		cf.init();
 		cf.close();
 	}
+
 	public List<RepositoryPlugin> getRepositories() {
 		return getPlugins(RepositoryPlugin.class);
 	}
@@ -454,7 +454,7 @@ public class Workspace extends Processor {
 			list.add(this);
 			list.add(maven);
 			list.add(settings);
-			
+
 			if (!isTrue(getProperty(NOBUILDINCACHE))) {
 				list.add(new CachedFileRepo());
 			}
@@ -463,10 +463,10 @@ public class Workspace extends Processor {
 			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, "~/.bnd/caches/shas")));
 			resourceRepositoryImpl.setExecutor(getExecutor());
 			resourceRepositoryImpl.setIndexFile(getFile(CNFDIR + "/repo.json"));
-			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));			
+			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));
 			customize(resourceRepositoryImpl, null);
 			list.add(resourceRepositoryImpl);
-			
+
 		}
 		catch (RuntimeException e) {
 			throw e;
@@ -503,7 +503,8 @@ public class Workspace extends Processor {
 				continue;
 			}
 			try {
-				SortedSet<ResourceDescriptor> matches = resourceRepositoryImpl.find(null,bsn, new VersionRange(stringRange));
+				SortedSet<ResourceDescriptor> matches = resourceRepositoryImpl.find(null, bsn, new VersionRange(
+						stringRange));
 				if (matches.isEmpty()) {
 					error("Extension %s;version=%s not found in base repo", bsn, stringRange);
 					continue;
@@ -673,9 +674,16 @@ public class Workspace extends Processor {
 		table.put("Projects in build order", getBuildOrder());
 	}
 
-
-
 	public File getCache(String name) {
 		return getFile(buildDir, CACHEDIR + "/" + name);
 	}
+
+	/**
+	 * Return the workspace repo
+	 */
+	
+	public WorkspaceRepository getWorkspaceRepository() {
+		return workspaceRepo;
+	}
+
 }

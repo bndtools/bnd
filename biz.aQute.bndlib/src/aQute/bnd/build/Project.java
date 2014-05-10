@@ -957,6 +957,19 @@ public class Project extends Processor {
 				}
 			}
 
+			//
+			// We have to augment the list of returned versions
+			// with info from the workspace. We use null as a marker
+			// to indicate that it is a workspace project
+			//
+			
+			SortedSet<Version> localVersions = getWorkspace().getWorkspaceRepository().versions(bsn);
+			for (Version v : localVersions) {
+				if (!versions.containsKey(v) && versionRange.includes(v))
+					versions.put(v, null);
+			}
+			
+			
 			// Verify if we found any, if so, we use the strategy to pick
 			// the first or last
 
@@ -982,8 +995,12 @@ public class Project extends Processor {
 					File result = repo.get(bsn, provider, attrs, blocker);
 					if (result != null)
 						return toContainer(bsn, version, attrs, result, blocker);
-				} else
-					msgs.FoundVersions_ForStrategy_ButNoProvider(versions, useStrategy);
+				} else {
+					
+					// A null provider indicates that we have a local project
+					
+					return getBundleFromProject(bsn, attrs);
+				}
 			}
 		}
 

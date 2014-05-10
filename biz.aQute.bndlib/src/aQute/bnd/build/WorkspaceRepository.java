@@ -21,7 +21,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		Collection<Project> projects = workspace.getAllProjects();
 		SortedMap<Version,File> foundVersion = new TreeMap<Version,File>();
 		for (Project project : projects) {
-			for (Builder builder : project.getSubBuilders()) {	
+			for (Builder builder : project.getSubBuilders()) {
 				if (!bsn.equals(builder.getBsn())) {
 					continue;
 				}
@@ -103,7 +103,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		List<String> names = new ArrayList<String>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
-			for (Builder builder : project.getSubBuilders()) {	
+			for (Builder builder : project.getSubBuilders()) {
 				String bsn = builder.getBsn();
 				if (pattern != null) {
 					Glob glob = new Glob(pattern);
@@ -130,7 +130,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		for (Project project : projects) {
 			for (Builder builder : project.getSubBuilders()) {
 				if (bsn.equals(builder.getBsn())) {
-					String v  = builder.getVersion();
+					String v = builder.getVersion();
 					if (v == null)
 						v = "0";
 					else {
@@ -138,14 +138,14 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 						if (!Verifier.isVersion(v))
 							continue; // skip
 					}
-					
+
 					versions.add(new Version(v));
 				}
 			}
 		}
-		if ( versions.isEmpty())
+		if (versions.isEmpty())
 			return SortedList.empty();
-		
+
 		return new SortedList<Version>(versions);
 	}
 
@@ -157,22 +157,22 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		return workspace.getBase().getAbsolutePath();
 	}
 
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener ... listeners) throws Exception {
+	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
+			throws Exception {
 		File file = get(bsn, version.toString(), Strategy.EXACT, properties);
-		if ( file == null)
+		if (file == null)
 			return null;
 		for (DownloadListener l : listeners) {
 			try {
 				l.success(file);
 			}
 			catch (Exception e) {
-				workspace.exception(e, "Workspace repo listener callback for %s" ,file);
+				workspace.exception(e, "Workspace repo listener callback for %s", file);
 			}
 		}
 		return file;
 	}
 
-	
 	public Map<String,Runnable> actions(Object... target) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
