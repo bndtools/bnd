@@ -1,8 +1,13 @@
 package org.bndtools.utils.swt;
 
+import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 
 public class SWTUtil {
 
@@ -27,6 +32,9 @@ public class SWTUtil {
             for (Control child : ((Composite) control).getChildren()) {
                 recurseEnable(en, child);
             }
+        } else if (control instanceof Label) {
+            Color color = enable ? control.getDisplay().getSystemColor(SWT.COLOR_BLACK) : JFaceResources.getColorRegistry().get(JFacePreferences.QUALIFIER_COLOR);
+            control.setForeground(color);
         }
     }
 
