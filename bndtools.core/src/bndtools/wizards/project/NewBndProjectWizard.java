@@ -42,6 +42,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         super(pageOne, pageTwo);
 
         templatePage.addPropertyChangeListener(TemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 pageOne.setProjectTemplate((IProjectTemplate) evt.getNewValue());
             }
@@ -57,7 +58,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
     /**
      * Generate the new Bnd model for the project. This implementation simply returns an empty Bnd model.
-     * 
+     *
      * @param monitor
      */
     @Override
@@ -112,6 +113,11 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             if (!bndPaths.getTargetDir().equals(projectTargetDir)) {
                 model.genericSet(Constants.DEFAULT_PROP_TARGET_DIR, projectTargetDir);
             }
+
+            if (ProjectLayout.MAVEN == projectPaths.getLayout()) {
+                model.setBundleVersion("1.0.0.SNAPSHOT");
+                model.genericSet(Constants.OUTPUTMASK, "${@bsn}-${version;===S;${@version}}.jar");
+            }
         } catch (Exception e) {
             ErrorDialog.openError(getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error setting paths in Bnd project descriptor file ({0}).", Project.BNDFILE), e));
         }
@@ -121,7 +127,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
     /**
      * Allows for an IProjectTemplate to modify the new Bnd project
-     * 
+     *
      * @param monitor
      */
     @Override

@@ -9,121 +9,122 @@ import aQute.bnd.osgi.Processor;
 
 public class ProjectPaths {
 
-	/*
-	 * Static part
-	 */
+    /*
+     * Static part
+     */
 
-	private static final Map<ProjectLayout, ProjectPaths> map = new HashMap<ProjectLayout, ProjectPaths>();
+    private static final Map<ProjectLayout,ProjectPaths> map = new HashMap<ProjectLayout,ProjectPaths>();
 
-	static {
-		/*
-		 * BND
-		 */
+    static {
+        /*
+         * BND
+         */
 
-		/* This call MUST NOT access any remotes */
-		Processor defaults = Workspace.getDefaults();
+        /* This call MUST NOT access any remotes */
+        Processor defaults = Workspace.getDefaults();
 
-		String title = "bnd";
-		String src = defaults.getProperty(Constants.DEFAULT_PROP_SRC_DIR);
-		String bin = defaults.getProperty(Constants.DEFAULT_PROP_BIN_DIR);
-		String testSrc = defaults.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR);
-		String testBin = defaults.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR);
-		String targetDir = defaults.getProperty(Constants.DEFAULT_PROP_TARGET_DIR);
+        ProjectPaths projectPaths = new ProjectPaths( //
+                ProjectLayout.BND, //
+                "bnd", //
+                defaults.getProperty(Constants.DEFAULT_PROP_SRC_DIR), //
+                defaults.getProperty(Constants.DEFAULT_PROP_BIN_DIR), //
+                defaults.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR), //
+                defaults.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR), //
+                defaults.getProperty(Constants.DEFAULT_PROP_TARGET_DIR));
+        map.put(projectPaths.getLayout(), projectPaths);
 
-		map.put(ProjectLayout.BND, new ProjectPaths(title, src, bin, testSrc, testBin, targetDir));
+        /*
+         * MAVEN
+         */
 
-		/*
-		 * MAVEN
-		 */
+        projectPaths = new ProjectPaths( //
+                ProjectLayout.MAVEN, //
+                "maven", //
+                "src/main/java", //
+                "target/classes", //
+                "src/main/test", //
+                "target/test-classes", //
+                "target");
+        map.put(projectPaths.getLayout(), projectPaths);
+    }
 
-		title = "maven";
-		src = "src/main/java";
-		bin = "target/classes";
-		testSrc = "src/main/test";
-		testBin = "target/test-classes";
-		targetDir = "target";
+    public static ProjectPaths get(ProjectLayout projectLayout) {
+        return map.get(projectLayout);
+    }
 
-		map.put(ProjectLayout.MAVEN, new ProjectPaths(title, src, bin, testSrc, testBin, targetDir));
-	}
+    /*
+     * Instance part
+     */
 
-	public static ProjectPaths get(ProjectLayout projectLayout) {
-		return map.get(projectLayout);
-	}
+    private final ProjectLayout layout;
+    private final String title;
+    private final String src;
+    private final String bin;
+    private final String testSrc;
+    private final String testBin;
+    private final String targetDir;
+    private final String toolTip;
 
-	/*
-	 * Instance part
-	 */
+    private ProjectPaths(ProjectLayout layout, String title, String src, String bin, String testSrc, String testBin, String targetDir) {
+        this.layout = layout;
+        this.title = title;
+        this.src = src;
+        this.bin = bin;
+        this.testSrc = testSrc;
+        this.testBin = testBin;
+        this.targetDir = targetDir;
 
-	private String title;
-	private String src;
-	private String bin;
-	private String testSrc;
-	private String testBin;
-	private String targetDir;
-	private String toolTip;
+        if (!validate()) {
+            throw new ExceptionInInitializerError("Could not construct " + layout + " ProjectPaths");
+        }
 
-	private ProjectPaths(String title, String src, String bin, String testSrc,
-			String testBin, String targetDir) {
-		super();
-		this.title = title;
-		this.src = src;
-		this.bin = bin;
-		this.testSrc = testSrc;
-		this.testBin = testBin;
-		this.targetDir = targetDir;
+        this.toolTip = constructToolTip();
+    }
 
-		if (!validate()) {
-			throw new ExceptionInInitializerError("Could not construct " + title + " ProjectPaths");
-		}
+    private String constructToolTip() {
+        return String.format("Main sources directory: %s (%s)%n" + "Test sources directory: %s (%s)%n" + "Target directory: %s", src, bin, testSrc, testBin, targetDir);
+    }
 
-		this.toolTip = constructToolTip();
-	}
+    private boolean validate() {
+        boolean titleValid = (title != null && (title.length() != 0));
+        boolean srcValid = (src != null && (src.length() != 0));
+        boolean binValid = (bin != null && (bin.length() != 0));
+        boolean testSrcValid = (testSrc != null && (testSrc.length() != 0));
+        boolean testBinValid = (testBin != null && (testBin.length() != 0));
+        boolean targetDirValid = (targetDir != null && (targetDir.length() != 0));
 
-	private String constructToolTip() {
-		return String.format(
-				  "Main sources directory: %s (%s)%n"
-				+ "Test sources directory: %s (%s)%n"
-			    + "Target directory: %s",
-				src, bin, testSrc, testBin, targetDir);
-	}
+        return titleValid && srcValid && binValid && testSrcValid && testBinValid && targetDirValid;
+    }
 
-	private boolean validate() {
-		boolean titleValid = (title != null && (title.length() != 0));
-		boolean srcValid = (src != null && (src.length() != 0));
-		boolean binValid = (bin != null && (bin.length() != 0));
-		boolean testSrcValid = (testSrc != null && (testSrc.length() != 0));
-		boolean testBinValid = (testBin != null && (testBin.length() != 0));
-		boolean targetDirValid = (targetDir != null && (targetDir.length() != 0));
+    public ProjectLayout getLayout() {
+        return layout;
+    }
 
-		return titleValid && srcValid && binValid && testSrcValid
-				&& testBinValid && targetDirValid;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public String getTitle() {
-		return title;
-	}
+    public String getSrc() {
+        return src;
+    }
 
-	public String getSrc() {
-		return src;
-	}
+    public String getBin() {
+        return bin;
+    }
 
-	public String getBin() {
-		return bin;
-	}
+    public String getTestSrc() {
+        return testSrc;
+    }
 
-	public String getTestSrc() {
-		return testSrc;
-	}
+    public String getTestBin() {
+        return testBin;
+    }
 
-	public String getTestBin() {
-		return testBin;
-	}
+    public String getTargetDir() {
+        return targetDir;
+    }
 
-	public String getTargetDir() {
-		return targetDir;
-	}
-
-	public String getToolTip() {
-		return toolTip;
-	}
+    public String getToolTip() {
+        return toolTip;
+    }
 }
