@@ -20,14 +20,16 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.PrimitiveType.Code;
 import org.eclipse.jdt.core.dom.QualifiedType;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
-import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
@@ -138,7 +140,7 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
      *            - the fully qualified class name (e.g java.lang.String)
      * @param methodName
      * @param methodSignature
-     *            - signatures are in "internal form" e.g. (Ljava.lang.Integer;[Ljava.lang.String;Z)V
+     *            - signatures are in "internal form" e.g. (Ljava.lang.Integer;[Ljava/lang/String;Z)V
      * @param markerAttributes
      *            - attributes that should be included in the marker, typically a message. The start and end points for
      *            the marker are added by this method.
@@ -158,7 +160,7 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
         ast.accept(new ASTVisitor() {
             @Override
             public boolean visit(MethodDeclaration methodDecl) {
-                if (matches(methodDecl, methodName, methodSignature)) {
+                if (matches(ast, methodDecl, methodName, methodSignature)) {
                     // Create the marker attribs here
                     markerAttributes.put(IMarker.CHAR_START, methodDecl.getStartPosition());
                     markerAttributes.put(IMarker.CHAR_END, methodDecl.getStartPosition() + methodDecl.getLength());
@@ -167,7 +169,7 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                 return false;
             }
 
-            private boolean matches(MethodDeclaration methodDecl, String methodName, String signature) {
+            private boolean matches(CompilationUnit ast, MethodDeclaration methodDecl, String methodName, String signature) {
                 if ("<init>".equals(methodName)) {
                     if (!methodDecl.isConstructor()) {
                         return false;
@@ -176,25 +178,25 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                     return false;
                 }
 
-                return getSignature(methodDecl).equals(signature);
+                return getSignature(ast, methodDecl).equals(signature);
             }
 
-            private String getSignature(MethodDeclaration methodDecl) {
+            private String getSignature(CompilationUnit ast, MethodDeclaration methodDecl) {
                 StringBuilder signatureBuilder = new StringBuilder("(");
 
                 for (@SuppressWarnings("unchecked")
                 Iterator<SingleVariableDeclaration> it = methodDecl.parameters().iterator(); it.hasNext();) {
                     SingleVariableDeclaration decl = it.next();
-                    appendType(signatureBuilder, decl.getType(), decl.getExtraDimensions());
+                    appendType(ast, signatureBuilder, decl.getType(), decl.getExtraDimensions());
                 }
 
                 signatureBuilder.append(")");
 
-                appendType(signatureBuilder, methodDecl.getReturnType2(), 0);
+                appendType(ast, signatureBuilder, methodDecl.getReturnType2(), 0);
                 return signatureBuilder.toString();
             }
 
-            private void appendType(StringBuilder signatureBuilder, Type typeToAdd, int extraDimensions) {
+            private void appendType(CompilationUnit ast, StringBuilder signatureBuilder, Type typeToAdd, int extraDimensions) {
                 for (int i = 0; i < extraDimensions; i++) {
                     signatureBuilder.append('[');
                 }
@@ -216,13 +218,55 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                         PrimitiveType type = (PrimitiveType) typeToAdd;
                         signatureBuilder.append(PRIMITIVES_TO_SIGNATURES.get(type.getPrimitiveTypeCode()));
                     } else if (typeToAdd.isSimpleType()) {
-                        signatureBuilder.append("L").append(((SimpleType) typeToAdd).getName()).append(";");
+                        SimpleType type = (SimpleType) typeToAdd;
+                        String name;
+                        if (type.getName().isQualifiedName()) {
+                            name = type.getName().getFullyQualifiedName();
+                        } else {
+                            name = getFullyQualifiedNameForSimpleName(ast, type.getName());
+                        }
+                        name = name.replace('.', '/');
+                        signatureBuilder.append("L").append(name).append(";");
                     } else if (typeToAdd.isQualifiedType()) {
-                        signatureBuilder.append("L").append(((QualifiedType) typeToAdd).getName()).append(";");
+                        QualifiedType type = (QualifiedType) typeToAdd;
+                        String name = type.getQualifier().toString().replace('.', '/') + '/' + type.getName().getFullyQualifiedName().replace('.', '/');
+                        signatureBuilder.append("L").append(name).append(";");
                     } else {
                         throw new IllegalArgumentException("We hit an unknown type " + typeToAdd);
                     }
                 }
+            }
+
+            private String getFullyQualifiedNameForSimpleName(CompilationUnit ast, Name typeName) {
+                String name = typeName.getFullyQualifiedName();
+
+                for (ImportDeclaration id : (List<ImportDeclaration>) ast.imports()) {
+                    if (id.isStatic())
+                        continue;
+                    if (id.isOnDemand()) {
+                        String packageName = id.getName().getFullyQualifiedName();
+                        try {
+                            if (ast.getJavaElement().getJavaProject().findType(packageName + "." + name) != null) {
+                                name = packageName + '.' + name;
+                            }
+                        } catch (JavaModelException e) {}
+                    } else {
+                        String importName = id.getName().getFullyQualifiedName();
+                        if (importName.endsWith("." + name)) {
+                            name = importName;
+                            break;
+                        }
+                    }
+                }
+
+                if (name.indexOf('.') < 0) {
+                    try {
+                        if (ast.getJavaElement().getJavaProject().findType(name) == null) {
+                            name = "java.lang." + name;
+                        }
+                    } catch (JavaModelException e) {}
+                }
+                return name;
             }
         });
 
