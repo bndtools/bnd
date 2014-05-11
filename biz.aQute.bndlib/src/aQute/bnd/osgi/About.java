@@ -39,6 +39,13 @@ import aQute.bnd.version.*;
  */
 public class About {
 	public static Version				_2_3		= new Version(2, 3, 0);
+	public static Version				_2_4		= new Version(2, 4, 0);
+
+	public static String[]				CHANGES_2_4	= {
+														"Projects can now be selected by version in a path. This "
+																+ "enables a project to depend on a version that starts as a project but "
+																+ "later becomes a repository entry."
+													};
 	public static String[]				CHANGES_2_3	= {
 			"More aggressive upgrade to a later DS release, current analyzer was missing cases that required a higher version",
 			"Allow bnd -version",
