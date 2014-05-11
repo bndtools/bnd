@@ -7,7 +7,6 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
