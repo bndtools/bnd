@@ -117,6 +117,7 @@ public class ObjectHandler extends Handler {
 					r.getExtra().put(rawClass.getName() + "." + key, value);
 				} else {
 
+					@SuppressWarnings("unchecked")
 					Map<String,Object> map = (Map<String,Object>) extra.get(targetObject);
 					if (map == null) {
 						map = new LinkedHashMap<String,Object>();

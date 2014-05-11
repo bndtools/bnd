@@ -93,6 +93,7 @@ public class MapHandler extends Handler {
 	Object decodeObject(Decoder r) throws Exception {
 		assert r.current() == '{';
 
+		@SuppressWarnings("unchecked")
 		Map<Object,Object> map = (Map<Object,Object>) rawClass.newInstance();
 
 		int c = r.next();
