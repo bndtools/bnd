@@ -1,0 +1,20 @@
+Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
+Bundle-Version: 1.0.0.SNAPSHOT
+
+Private-Package: org.example.tests
+-runee: JavaSE-1.6
+-runvm: -ea
+-runfw: org.apache.felix.framework
+-buildpath: osgi.cmpn,\
+	junit.osgi,\
+	org.mockito.mockito-all,\
+	osgi.core;version=5.0
+-runsystempackages: sun.reflect
+
+-outputmask = ${@bsn}-${version;===S;${@version}}.jar
+target-dir = target
+bin = target/classes
+src = src/main/java
+testsrc = src/test/java
+testbin = target/test-classes
+
