@@ -1,0 +1,8 @@
+-buildpath: \
+	osgi.core; version=4.2, \
+	osgi.cmpn; version=4.2, \
+	junit.osgi
+
+Bundle-Version: 0.0.0.${tstamp}
+Export-Package:  \
+	biz.aQute.configadmin
