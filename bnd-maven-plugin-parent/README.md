@@ -52,9 +52,21 @@ This basically builds the project using Bnd. Setting are taken from the bnd.bnd 
 You can also include tests that are run via bnd. These tests are run as part of the integration-test phase in Maven. For example the ExampleTest that is created via the bndtoold 'Integration Testing' template just works with this.
 
 
+Samples
+=======
+Samples can be found in `bnd-maven-plugin-parent/samples` and subdirectories.
+
 Sample Projects
-===============
-Sample projects can be found in `bnd-maven-plugin-parent/samples` and subdirectories.
+---------------
+The `bnd-maven-plugin-parent/samples/sample-projects` contains composite set of projects that can be built as a single build from the root using `mvn install`. It contains the following components:
+```
+cnf
+TestBundle	- a default bndtools project that can be built using maven
+TestBundle2	- a bndtools project using the maven layout that can be built using maven and bndtools
+TestBundle3	- a bndtools project with an integration test, which also runs from maven
+MBPBundle	- a maven-bundle-plugin based project project
+pom.xml     - a root pom that kicks off the overall build.
+```
 
 Open Issues
 ===========
