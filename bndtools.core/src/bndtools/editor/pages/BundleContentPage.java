@@ -41,11 +41,9 @@ import bndtools.editor.common.SaneDetailsPart;
 import bndtools.editor.contents.BundleCalculatedImportsPart;
 import bndtools.editor.contents.GeneralInfoPart;
 import bndtools.editor.contents.PrivatePackagesPart;
-import bndtools.editor.exports.ExportPackagesDetailsPage;
 import bndtools.editor.exports.ExportPatternsListPart;
 import bndtools.editor.imports.ImportPatternsDetailsPage;
 import bndtools.editor.imports.ImportPatternsListPart;
-import bndtools.editor.pkgpatterns.PkgPatternsDetailsPage;
 import bndtools.utils.MessageHyperlinkAdapter;
 
 public class BundleContentPage extends FormPage {
@@ -58,15 +56,15 @@ public class BundleContentPage extends FormPage {
     private ImportPatternsListPart importPatternListPart;
     private ExportPatternsListPart exportPatternListPart;
 
-    private PkgPatternsDetailsPage<ExportedPackage> exportDetailsPage;
-
     private ImportPatternsDetailsPage importDetailsPage;
 
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
+        @Override
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new BundleContentPage(editor, model, id, "Contents");
         }
 
+        @Override
         public boolean supportsMode(Mode mode) {
             return mode == Mode.bundle;
         }
@@ -152,9 +150,6 @@ public class BundleContentPage extends FormPage {
         SaneDetailsPart detailsPart = new SaneDetailsPart();
         mform.addPart(detailsPart);
 
-        exportDetailsPage = new ExportPackagesDetailsPage();
-        detailsPart.registerPage(ExportedPackage.class, exportDetailsPage);
-
         importDetailsPage = new ImportPatternsDetailsPage();
         detailsPart.registerPage(ImportPattern.class, importDetailsPage);
 
@@ -165,13 +160,14 @@ public class BundleContentPage extends FormPage {
     }
 
     void registerDetailsPages() {
-        exportDetailsPage.setListPart(exportPatternListPart);
         importDetailsPage.setListPart(importPatternListPart);
     }
 
     class NoSelectionPage extends AbstractFormPart implements IDetailsPage {
+        @Override
         public void selectionChanged(IFormPart part, ISelection selection) {}
 
+        @Override
         public void createContents(Composite parent) {
             FormToolkit toolkit = getManagedForm().getToolkit();
             // toolkit.createLabel(parent, "Nothing is selected");
