@@ -3,13 +3,16 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.coderthoughts.demo.bndmvn</groupId>
+    <groupId>biz.aQute.bnd.demo.bndmvn</groupId>
     <artifactId>ParentPom</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <relativePath>../ParentPom/pom.xml</relativePath>
   </parent>
 
   <artifactId>TestBundle3</artifactId>
+  <description>A bndtools OSGi integration test example that works both under 
+  bndtools (by using the BND JUnit runner) as well as under maven (in the 
+  integration-test phase).</description>
   <packaging>bundle</packaging>
 
   <build>

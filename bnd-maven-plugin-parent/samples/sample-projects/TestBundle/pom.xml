@@ -3,13 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.coderthoughts.demo.bndmvn</groupId>
+    <groupId>biz.aQute.bnd.demo.bndmvn</groupId>
     <artifactId>ParentPom</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <relativePath>../ParentPom/pom.xml</relativePath>
   </parent>
 
   <artifactId>TestBundle</artifactId>
+  <description>A bndtools bundle, which can be built using Maven.</description>
   <packaging>bundle</packaging>
 
   <build>
