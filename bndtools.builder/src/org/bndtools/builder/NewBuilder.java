@@ -242,6 +242,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         final AtomicBoolean result = new AtomicBoolean(false);
         cnfDelta.accept(new IResourceDeltaVisitor() {
+            @Override
             public boolean visit(IResourceDelta delta) throws CoreException {
                 if (!isChangeDelta(delta))
                     return false;
@@ -294,6 +295,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         final AtomicBoolean result = new AtomicBoolean(false);
         myDelta.accept(new IResourceDeltaVisitor() {
+            @Override
             public boolean visit(IResourceDelta delta) throws CoreException {
                 if (!isChangeDelta(delta))
                     return false;
@@ -486,6 +488,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private Set<File> findJarsInTarget() throws Exception {
         File targetDir = model.getTarget();
         File[] targetJars = targetDir.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File pathname) {
                 return pathname.getName().toLowerCase().endsWith(".jar");
             }
@@ -797,6 +800,17 @@ public class NewBuilder extends IncrementalProjectBuilder {
         getProject().deleteMarkers(BndtoolsConstants.MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
     }
 
+    private void addBuildMarkers(IStatus status) throws Exception {
+        if (status.isMultiStatus()) {
+            for (IStatus child : status.getChildren()) {
+                addBuildMarkers(child);
+            }
+            return;
+        }
+
+        addBuildMarkers(status.getMessage(), iStatusSeverityToIMarkerSeverity(status));
+    }
+
     private void addBuildMarkers(String message, int severity) throws Exception {
         Location location = model != null ? model.getLocation(message) : null;
         if (location != null) {
@@ -827,7 +841,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         marker.setAttribute(IMarker.MESSAGE, message);
     }
 
-    private void addClasspathMarker(IStatus status) throws CoreException {
+    private int iStatusSeverityToIMarkerSeverity(IStatus status) {
         int severity;
         switch (status.getSeverity()) {
         case IStatus.CANCEL :
@@ -840,7 +854,19 @@ public class NewBuilder extends IncrementalProjectBuilder {
         default :
             severity = IMarker.SEVERITY_INFO;
         }
-        addClasspathMarker(status.getMessage(), severity);
+
+        return severity;
+    }
+
+    private void addClasspathMarker(IStatus status) throws CoreException {
+        if (status.isMultiStatus()) {
+            for (IStatus child : status.getChildren()) {
+                addClasspathMarker(child);
+            }
+            return;
+        }
+
+        addClasspathMarker(status.getMessage(), iStatusSeverityToIMarkerSeverity(status));
     }
 
     private void log(int level, String message, Object... args) {
@@ -864,6 +890,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             this.targetDirFullPath = project.getFullPath().append(calculateTargetDirPath(model));
         }
 
+        @Override
         public boolean visit(IResourceDelta delta) throws CoreException {
             if (targetDirFullPath == null) {
                 return false;
