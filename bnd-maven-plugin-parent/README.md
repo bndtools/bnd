@@ -58,7 +58,12 @@ Sample projects can be found in `bnd-maven-plugin-parent/samples` and subdirecto
 
 Open Issues
 ===========
+There are some points not yet addressed by the bnd-maven-plugin. They are outlined here as discussion points with linked issues.
 
 Maven Release Process
 ---------------------
-Typically in Maven you'd develop using -SNAPSHOT versions (note that the bnd-maven-plugin transforms x.y.z.SNAPSHOT into x.y.z-SNAPSHOT for Maven). Then when you're done developing you use the [maven-release-plugin](http://maven.apache.org/maven-release/maven-release-plugin/index.html) to create the non-snapshot poms, tag/release them etc. For people using this process, you'd really want the Bundle-Version in the bnd.bnd file to be updated as part of this as well. Note that the bnd-maven-plugin fails if there is a mismatch between the versions in the pom.xml and bnd.bnd. We need to investigate a little bit more how this can be done, for example by looking at how Tycho does this.
+Typically in Maven you'd develop using -SNAPSHOT versions (note that the bnd-maven-plugin transforms x.y.z.SNAPSHOT into x.y.z-SNAPSHOT for Maven). Then when you're done developing you use the [maven-release-plugin](http://maven.apache.org/maven-release/maven-release-plugin/index.html) to create the non-snapshot poms, tag/release them etc. For people using this process, you'd really want the Bundle-Version in the bnd.bnd file to be updated as part of this as well. Note that the bnd-maven-plugin fails if there is a mismatch between the versions in the pom.xml and bnd.bnd. We need to investigate a little bit more how this can be done, for example by looking at how Tycho does this. See [Issue #454](https://github.com/bndtools/bnd/issues/454).
+
+Maven Dependency Integration
+----------------------------
+The Bnd build has its own dependency mechanism. For the compilation stage these dependencies are dynamically added to the maven classpath, but they are not visible directly in the `pom.xml`. This might be an issue with other tools that use the maven dependencies in other phases to achieve some task. See [Issue #509](https://github.com/bndtools/bnd/issues/509).
