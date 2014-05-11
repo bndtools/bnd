@@ -791,7 +791,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         if (!validationResults.isOK()) {
             for (IStatus status : validationResults.getChildren()) {
-                addClasspathMarker(status);
+                addBuildMarkers(status);
             }
         }
     }
