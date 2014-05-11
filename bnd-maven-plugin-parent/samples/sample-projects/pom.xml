@@ -9,6 +9,7 @@
     <packaging>pom</packaging>
     
     <modules>
+        <module>ParentPom</module>
         <module>TestBundle</module>
         <module>TestBundle2</module>
         <module>TestBundle3</module>

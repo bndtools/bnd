@@ -1,10 +1,15 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.example</groupId>
+  <parent>
+    <groupId>org.coderthoughts.demo.bndmvn</groupId>
+    <artifactId>ParentPom</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../ParentPom/pom.xml</relativePath>
+  </parent>
+
   <artifactId>MBPBundle</artifactId>
   <description>maven-bundle-plugin based bundle</description>
-  <version>1.0.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
   <dependencies>
@@ -21,7 +26,6 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.3.4</version>
         <extensions>true</extensions>
         <configuration>
           <instructions>
