@@ -12,6 +12,7 @@ package bndtools.editor.pkgpatterns;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -63,6 +64,9 @@ import bndtools.editor.common.PackageDropAdapter;
 
 public abstract class PkgPatternsListPart<C extends HeaderClause> extends SectionPart implements PropertyChangeListener {
 
+    protected static final String PROP_SELECTION = "selection";
+    private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
+
     private final String propertyName;
     private final IBaseLabelProvider labelProvider;
     protected ArrayList<C> clauses = new ArrayList<C>();
@@ -70,6 +74,8 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
     private IManagedForm managedForm;
     private TableViewer viewer;
     private BndEditModel model;
+
+    private List<C> selection;
 
     private final Image imgAnalyse = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/cog_go.png").createImage();
     private final Image imgInsert = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/table_row_insert.png").createImage();
@@ -89,7 +95,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         createSection(section, toolkit);
     }
 
-    void createSection(Section section, FormToolkit toolkit) {
+    protected void createSection(Section section, FormToolkit toolkit) {
         Composite composite = toolkit.createComposite(section);
         section.setClient(composite);
 
@@ -138,7 +144,17 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
             }
         });
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
+                List<C> oldSelection = selection;
+                IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
+
+                @SuppressWarnings("unchecked")
+                List<C> newSelection = structSel.toList();
+                selection = newSelection;
+
+                propChangeSupport.firePropertyChange(PROP_SELECTION, oldSelection, selection);
+
                 managedForm.fireSelectionChanged(PkgPatternsListPart.this, event.getSelection());
                 boolean enabled = !viewer.getSelection().isEmpty();
                 insertItem.setEnabled(enabled);
@@ -241,7 +257,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 
     /**
      * Add the specified clauses to the view.
-     * 
+     *
      * @param newClauses
      *            The new clauses.
      * @param index
@@ -334,12 +350,6 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         return selectionIndexes;
     }
 
-    /*
-     * void resetSelection(int[] selectedIndexes) { ArrayList<ImportPattern> selection = new
-     * ArrayList<ImportPattern>(selectedIndexes.length); for (int index : selectedIndexes) {
-     * selection.add(patterns.get(index)); } viewer.setSelection(new StructuredSelection(selection), true); }
-     */
-
     @Override
     public void initialize(IManagedForm form) {
         super.initialize(form);
@@ -394,6 +404,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         IFormPage page = (IFormPage) managedForm.getContainer();
         if (page.isActive())
@@ -413,4 +424,31 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
     public ISelectionProvider getSelectionProvider() {
         return viewer;
     }
+
+    public List<C> getSelection() {
+        return selection;
+    }
+
+    public void setSelection(List<C> selection) {
+        List<C> oldSelection = selection;
+        this.selection = selection;
+        propChangeSupport.firePropertyChange(PROP_SELECTION, oldSelection, selection);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        propChangeSupport.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        propChangeSupport.addPropertyChangeListener(l);
+    }
+
+    public void addPropertyChangeListener(String name, PropertyChangeListener l) {
+        propChangeSupport.addPropertyChangeListener(name, l);
+    }
+
+    public void removePropertyChangeListener(String name, PropertyChangeListener l) {
+        propChangeSupport.addPropertyChangeListener(name, l);
+    }
+
 }

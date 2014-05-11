@@ -10,24 +10,36 @@
  *******************************************************************************/
 package bndtools.editor.imports;
 
+import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bndtools.utils.swt.SWTUtil;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ImportPattern;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
+import bndtools.utils.ModificationLock;
 
 public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
 
@@ -59,8 +71,86 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
         }
     }
 
+    private final ModificationLock modifyLock = new ModificationLock();
+    private Text txtPattern;
+    private Text txtVersion;
+    private Button btnOptional;
+    private Composite pnlDetails;
+
     public ImportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style, Constants.IMPORT_PACKAGE, "Customise Imports", new ImportPatternLabelProvider());
+        addPropertyChangeListener(PROP_SELECTION, this);
+    }
+
+    @Override
+    protected void createSection(Section section, FormToolkit toolkit) {
+        super.createSection(section, toolkit);
+
+        Composite parentComposite = (Composite) getSection().getClient();
+        pnlDetails = toolkit.createComposite(parentComposite);
+
+        toolkit.createLabel(pnlDetails, "Pattern:");
+        txtPattern = toolkit.createText(pnlDetails, "");
+
+        toolkit.createLabel(pnlDetails, "Version:");
+        txtVersion = toolkit.createText(pnlDetails, "", SWT.BORDER);
+        btnOptional = toolkit.createButton(pnlDetails, "Optional", SWT.CHECK);
+
+        pnlDetails.setLayout(new GridLayout(5, false));
+        txtPattern.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        txtVersion.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+        pnlDetails.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        SWTUtil.recurseEnable(false, pnlDetails);
+
+        txtPattern.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                if (!modifyLock.isUnderModification()) {
+                    List<ImportPattern> selectedClauses = getSelection();
+                    if (selectedClauses.size() == 1) {
+                        selectedClauses.get(0).setName(txtPattern.getText());
+                        updateLabels(selectedClauses);
+                        validate();
+                        markDirty();
+                    }
+                }
+            }
+        });
+        txtVersion.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                if (!modifyLock.isUnderModification()) {
+                    String text = txtVersion.getText();
+                    if (text.length() == 0)
+                        text = null;
+
+                    List<ImportPattern> selectedClauses = getSelection();
+                    for (ImportPattern clause : selectedClauses) {
+                        clause.getAttribs().put(Constants.VERSION_ATTRIBUTE, text);
+                    }
+                    updateLabels(selectedClauses);
+                    validate();
+                    markDirty();
+                }
+            }
+        });
+        btnOptional.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (!modifyLock.isUnderModification()) {
+                    boolean optional = btnOptional.getSelection();
+                    List<ImportPattern> patterns = getSelection();
+                    for (ImportPattern pattern : patterns) {
+                        pattern.setOptional(optional);
+                    }
+                    updateLabels(patterns);
+                    validate();
+                    markDirty();
+                }
+            }
+        });
     }
 
     @Override
@@ -121,5 +211,51 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
     @Override
     protected void saveToModel(BndEditModel model, List< ? extends ImportPattern> clauses) {
         model.setImportPatterns(clauses);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PROP_SELECTION.equals(evt.getPropertyName())) {
+            final List<ImportPattern> selectedClauses = getSelection();
+            modifyLock.modifyOperation(new Runnable() {
+                @Override
+                public void run() {
+                    if (selectedClauses.isEmpty()) {
+                        SWTUtil.recurseEnable(false, pnlDetails);
+                        txtPattern.setText("");
+                        txtVersion.setText("");
+                        btnOptional.setSelection(false);
+                    } else if (selectedClauses.size() == 1) {
+                        SWTUtil.recurseEnable(true, pnlDetails);
+                        ImportPattern pattern = selectedClauses.get(0);
+                        txtPattern.setText(pattern.getName() != null ? pattern.getName() : "");
+                        txtVersion.setText(pattern.getVersionRange() != null ? pattern.getVersionRange() : "");
+                        btnOptional.setSelection(pattern.isOptional());
+                    } else {
+                        SWTUtil.recurseEnable(false, pnlDetails);
+                        btnOptional.setEnabled(true);
+                        pnlDetails.setEnabled(true);
+
+                        boolean differs = false;
+                        boolean first = selectedClauses.get(0).isOptional();
+                        for (ImportPattern pattern : selectedClauses) {
+                            if (first != pattern.isOptional()) {
+                                differs = true;
+                                break;
+                            }
+                        }
+                        if (differs) {
+                            btnOptional.setGrayed(true);
+                        } else {
+                            btnOptional.setGrayed(false);
+                            btnOptional.setSelection(first);
+                        }
+                    }
+
+                }
+            });
+        } else {
+            super.propertyChange(evt);
+        }
     }
 }
