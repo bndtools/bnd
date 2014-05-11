@@ -6,6 +6,8 @@ import java.util.regex.*;
 
 import org.osgi.service.component.annotations.*;
 
+import aQute.bnd.component.error.*;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -100,7 +102,8 @@ public class AnnotationReader extends ClassDataCollector {
 				Clazz ec = analyzer.findClass(extendsClass);
 				if (ec == null) {
 					analyzer.error("Missing super class for DS annotations: " + extendsClass + " from "
-							+ clazz.getClassName());
+							+ clazz.getClassName()).details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null, 
+									ErrorType.UNABLE_TO_LOCATE_SUPER_CLASS));
 				} else {
 					ec.parseClassFileWithCollector(this);
 				}
@@ -112,7 +115,9 @@ public class AnnotationReader extends ClassDataCollector {
 					"updated$1");
 			
 			if (rdef.policy == ReferencePolicy.DYNAMIC && rdef.unbind == null)
-				analyzer.error("In component %s, reference %s is dynamic but has no unbind method.", component.name, rdef.name);
+				analyzer.error("In component %s, reference %s is dynamic but has no unbind method.", component.name, rdef.name)
+					.details(new DeclarativeServicesAnnotationError(className.getFQN(), rdef.bind, rdef.bindDescriptor, 
+							ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
 		}
 		return component;
 	}
@@ -167,9 +172,14 @@ public class AnnotationReader extends ClassDataCollector {
 					}
 				}
 			}
-			analyzer.error(
+			//We make this a separate loop because we shouldn't add warnings until we know that there was no match
+			for(String descriptor : methods.get(value)) {
+				analyzer.warning(
 					"A related method to %s from the reference %s has no proper prototype for class %s. Expected void %s(%s s [,Map m] | ServiceReference r)",
-					rdef.bind, value, component.implementation, value, rdef.service);
+					rdef.bind, value, component.implementation, value, rdef.service).details(
+							new DeclarativeServicesAnnotationError(className.getFQN(), value, descriptor, 
+							ErrorType.UNSET_OR_MODIFY_WITH_WRONG_SIGNATURE));
+			}
 		}
 		return null;
 	}
@@ -214,7 +224,8 @@ public class AnnotationReader extends ClassDataCollector {
 		} else 
 			analyzer.error(
 					"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-					clazz, method.getDescriptor());
+					clazz, method.getDescriptor()).details(new DeclarativeServicesAnnotationError(className.getFQN(), method.getName(), methodDescriptor, 
+							ErrorType.ACTIVATE_SIGNATURE_ERROR));
 		
 	}
 
@@ -237,17 +248,19 @@ public class AnnotationReader extends ClassDataCollector {
 		} else
 			analyzer.error(
 					"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, BundleContext, int, or Integer is allowed. Found: %s",
-					clazz, method.getDescriptor());
+					clazz, method.getDescriptor()).details(new DeclarativeServicesAnnotationError(className.getFQN(), method.getName(), methodDescriptor, 
+							ErrorType.DEACTIVATE_SIGNATURE_ERROR));
 	}
 
 	/**
 	 * 
 	 */
 	protected void doModified() {
-		if (LIFECYCLEDESCRIPTORDS11.matcher(method.getDescriptor().toString()).matches()) {
+		String methodDescriptor = method.getDescriptor().toString();
+		if (LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor).matches()) {
 			component.modified = method.getName();
 			component.updateVersion(V1_1);
-		} else if (felixExtensions && LIFECYCLEDESCRIPTORDS13.matcher(method.getDescriptor().toString()).matches()) {
+		} else if (felixExtensions && LIFECYCLEDESCRIPTORDS13.matcher(methodDescriptor).matches()) {
 			component.modified = method.getName();
 			component.updateVersion(V1_2);
 			if (component.xmlns == null) {
@@ -257,7 +270,8 @@ public class AnnotationReader extends ClassDataCollector {
 
 			analyzer.error(
 					"Modified method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-					clazz, method.getDescriptor());
+					clazz, method.getDescriptor()).details(new DeclarativeServicesAnnotationError(className.getFQN(), method.getName(), methodDescriptor, 
+							ErrorType.MODIFIED_SIGNATURE_ERROR));
 	}
 
 	/**
@@ -266,6 +280,7 @@ public class AnnotationReader extends ClassDataCollector {
 	 */
 	protected void doReference(Reference reference, Annotation raw) throws Exception {
 		ReferenceDef def = new ReferenceDef();
+		def.className = className.getFQN();
 		def.name = reference.name();
 	
 	
@@ -277,12 +292,15 @@ public class AnnotationReader extends ClassDataCollector {
 			if (m.matches())
 				def.name = m.group(2);
 			else
-				analyzer.error("Invalid name for bind method %s", method.getName());
+				analyzer.error("Invalid name for bind method %s", method.getName()).details(
+						new DeclarativeServicesAnnotationError(className.getFQN(), method.getName(), method.getDescriptor().toString(), 
+						ErrorType.INVALID_REFERENCE_BIND_METHOD_NAME));
 		}
 
 		def.unbind = reference.unbind();
 		def.updated = reference.updated();
 		def.bind = method.getName();
+		def.bindDescriptor = method.getDescriptor().toString();
 
 		def.service = raw.get("service");
 		if (def.service != null) {
@@ -317,11 +335,22 @@ public class AnnotationReader extends ClassDataCollector {
 
 		// Check if we have a target, this must be a filter
 		def.target = reference.target();
+		
+		if (def.target != null) {
+			String error = Verifier.validateFilter(def.target);
+			if (error != null)
+				analyzer.error("Invalid target filter %s for %s: %s", def.target, def.name, error)
+					.details(new DeclarativeServicesAnnotationError(className.getFQN(), def.bind, def.bindDescriptor,
+							ErrorType.INVALID_TARGET_FILTER));
+		}
+		
 
 		if (component.references.containsKey(def.name))
 			analyzer.error(
 					"In component %s, multiple references with the same name: %s. Previous def: %s, this def: %s",
-					component.implementation, component.references.get(def.name), def.service, "");
+					component.implementation, component.references.get(def.name), def.service, "")
+					.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null, 
+							ErrorType.MULTIPLE_REFERENCES_SAME_NAME));
 		else
 			component.references.put(def.name, def);
 
@@ -369,7 +398,8 @@ public class AnnotationReader extends ClassDataCollector {
 							"Found an = sign in an OSGi DS Component annotation on %s. In the bnd annotation "
 									+ "this is an actual property but in the OSGi, this element must refer to a path with Java properties. "
 									+ "However, found a path with an '=' sign which looks like a mixup (%s) with the 'property' element.",
-							clazz, entry);
+							clazz, entry).details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null, 
+									ErrorType.COMPONENT_PROPERTIES_ERROR));
 				}
 				component.properties.add(entry);
 			}

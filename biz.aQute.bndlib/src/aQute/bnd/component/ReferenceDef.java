@@ -11,6 +11,10 @@ import aQute.lib.tag.*;
  */
 
 class ReferenceDef {
+	
+	String					className;
+	String					bindDescriptor;
+	
 	Version					version	= AnnotationReader.V1_0;
 	String					name;
 	String					service;
@@ -21,7 +25,7 @@ class ReferenceDef {
 	String					bind;
 	String					unbind;
 	String					updated;
-
+	
 	/**
 	 * Prepare the reference, will check for any errors.
 	 * 

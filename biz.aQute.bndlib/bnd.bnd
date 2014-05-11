@@ -37,7 +37,8 @@ Export-Package: \
 	aQute.service.reporter,\
 	aQute.bnd.maven.support,\
 	aQute.bnd.url,\
-	aQute.bnd.util.dto
+	aQute.bnd.util.dto,\
+	aQute.bnd.component.error
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 Include-Resource: 				LICENSE, img/=img/, {readme.md}
