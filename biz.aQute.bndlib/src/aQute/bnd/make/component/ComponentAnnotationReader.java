@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.component.*;
+import aQute.bnd.component.error.*;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -147,7 +149,8 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			if (!ACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 				reporter.error(
 						"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-						className, method.getDescriptor());
+						className, method.getDescriptor()).details(new DeclarativeServicesAnnotationError(
+								className.getFQN(), method.getName(), method.getDescriptor().toString(), ErrorType.ACTIVATE_SIGNATURE_ERROR));
 
 			if (method.getName().equals("activate")
 					&& OLDACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches()) {
@@ -164,7 +167,8 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			if (!ACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 				reporter.error(
 						"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-						className, method.getDescriptor());
+						className, method.getDescriptor()).details(new DeclarativeServicesAnnotationError(
+								className.getFQN(), method.getName(), method.getDescriptor().toString(), ErrorType.DEACTIVATE_SIGNATURE_ERROR));
 			if (method.getName().equals("deactivate")
 					&& OLDACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches()) {
 				// This is the default!
@@ -173,6 +177,11 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				set(COMPONENT_DEACTIVATE, method, "<>");
 			}
 		} else if (fqn.equals(Modified.class.getName())) {
+			if (!ACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
+				reporter.error(
+						"Modified method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
+						className, method.getDescriptor()).details(new DeclarativeServicesAnnotationError(
+								className.getFQN(), method.getName(), method.getDescriptor().toString(), ErrorType.MODIFIED_SIGNATURE_ERROR));
 			set(COMPONENT_MODIFIED, method, "<>");
 			setVersion(V1_1);
 		} else if (fqn.equals(Reference.class.getName())) {
@@ -221,9 +230,14 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			// Check if we have a target, this must be a filter
 			String target = annotation.get(Reference.TARGET);
 			if (target != null) {
-				Verifier.verifyFilter(target, 0);
+				String error = Verifier.validateFilter(target);
+				if(error != null) {
+					reporter.error("Invalid target filter %s for %s: %s", target, name, error)
+						.details(new DeclarativeServicesAnnotationError(className.getFQN(), bind, method.getDescriptor().toString(),
+							ErrorType.INVALID_TARGET_FILTER));
+				}
 				service = service + target;
-			}
+			} 
 
 			Integer c = annotation.get(Reference.TYPE);
 			if (c != null && !c.equals(0) && !c.equals((int) '1')) {
@@ -233,7 +247,8 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			if (map.containsKey(name))
 				reporter.error(
 						"In component %s, Multiple references with the same name: %s. Previous def: %s, this def: %s",
-						name, map.get(name), service, "");
+						name, map.get(name), service, "").details(new DeclarativeServicesAnnotationError(
+								className.getFQN(), null, null, ErrorType.MULTIPLE_REFERENCES_SAME_NAME));
 			map.put(name, service);
 
 			if (isTrue(annotation.get(Reference.MULTIPLE)))

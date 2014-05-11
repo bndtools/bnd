@@ -17,6 +17,8 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 
+import aQute.bnd.component.error.*;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -488,7 +490,8 @@ public class HeaderReader extends Processor {
 			if (dynamic.contains(referenceName)) {
 				rd.policy = ReferencePolicy.DYNAMIC;
 				if (rd.unbind == null)
-					error("In component %s, reference %s is dynamic but has no unbind method.", cd.name, rd.name);
+					error("In component %s, reference %s is dynamic but has no unbind method.", cd.name, rd.name)
+					.details(new DeclarativeServicesAnnotationError(cd.implementation.getFQN(), null, null, ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
 			}
 			
 			if (greedy.contains(referenceName)) {
