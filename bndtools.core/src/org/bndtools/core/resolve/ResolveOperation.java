@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.felix.resolver.ResolverImpl;
 import org.bndtools.core.resolve.ResolutionResult.Outcome;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -21,8 +20,10 @@ import org.osgi.service.resolver.ResolutionException;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.deployer.repository.ReporterLogService;
+import biz.aQute.resolve.BndResolver;
 import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolveProcess;
+import biz.aQute.resolve.ResolverLogger;
 import bndtools.Plugin;
 import bndtools.central.Central;
 
@@ -42,6 +43,7 @@ public class ResolveOperation implements IRunnableWithProgress {
         this.callbacks = callbacks;
     }
 
+    @Override
     public void run(IProgressMonitor monitor) {
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorOverview, null);
 
@@ -55,10 +57,10 @@ public class ResolveOperation implements IRunnableWithProgress {
         ResolveProcess resolve = new ResolveProcess();
         ResolverLogger logger = new ResolverLogger();
         try {
-            ResolverImpl felixResolver = new ResolverImpl(logger);
+            BndResolver bndResolver = new BndResolver(logger);
 
             ReporterLogService log = new ReporterLogService(Central.getWorkspace());
-            Map<Resource,List<Wire>> wirings = resolve.resolveRequired(model, Central.getWorkspace(), felixResolver, callbacks, log);
+            Map<Resource,List<Wire>> wirings = resolve.resolveRequired(model, Central.getWorkspace(), bndResolver, callbacks, log);
             result = new ResolutionResult(Outcome.Resolved, wirings, null, status, logger.getLog());
             if (coordination != null)
                 coordination.end();
