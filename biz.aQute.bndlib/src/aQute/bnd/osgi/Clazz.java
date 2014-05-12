@@ -102,6 +102,10 @@ public class Clazz {
 			return major >= J2SE5.major;
 		}
 
+		public boolean hasDefaultMethods() {
+			return major >= OpenJDK8.major;
+		}
+
 		public static JAVA getJava(int major, @SuppressWarnings("unused")
 		int minor) {
 			for (JAVA j : JAVA.values()) {

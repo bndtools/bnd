@@ -181,10 +181,10 @@ public class VersionPolicyTest extends TestCase {
 	/**
 	 * hardcoded imports
 	 */
-	public static void testHardcodedImports() throws Exception {
+	public static void testHardcodedImportsConsumer() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
-		b.setProperty("-versionpolicy", "${range;[==,+)}");
+		b.setProperty("-consumer-policy", "${range;[=-,+)}");
 		b.setProperty("Private-Package", "org.objectweb.asm");
 		b.setProperty("Import-Package", "org.osgi.framework,org.objectweb.asm,abc;version=2.0.0,*");
 		b.build();
@@ -196,8 +196,30 @@ public class VersionPolicyTest extends TestCase {
 		assertEquals("2.0.0", s);
 
 		s = b.getImports().getByFQN("org.osgi.framework").get("version");
-		assertEquals("[1.3,2)", s);
+		assertEquals("[1.2,2)", s);
 
+	}
+
+	/**
+	 * hardcoded imports
+	 */
+	public static void testHardcodedImportsProvider() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("jar/osgi.jar"));
+		b.setProperty("-provider-policy", "${range;[=,=+)}");
+		b.setProperty("Private-Package", "org.objectweb.asm");
+		b.setProperty("Import-Package", "org.osgi.framework;provide:=true,org.objectweb.asm,abc;version=2.0.0,*");
+		b.build();
+		Manifest m = b.getJar().getManifest();
+		m.write(System.err);
+		String s = b.getImports().getByFQN("org.objectweb.asm").get("version");
+		assertNull(s);
+		s = b.getImports().getByFQN("abc").get("version");
+		assertEquals("2.0.0", s);
+		
+		s = b.getImports().getByFQN("org.osgi.framework").get("version");
+		assertEquals("[1,1.4)", s);
+		
 	}
 
 	/**
@@ -246,18 +268,35 @@ public class VersionPolicyTest extends TestCase {
 		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
 		assertEquals("[1.0,2)", s);
 	}
+	
+	/**
+	 * Test if we can get the version from the source and apply the default
+	 * policy.
+	 */
+	public static void testVersionPolicyImportedExportsDefaultPolicyWithJava8() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(new File("bin"));
+		b.addClasspath(new File("jar/java8.jar"));
+		b.setProperty("Export-Package", "org.osgi.service.event");
+		b.setProperty("Private-Package", "test.refer, test.java8");
+		Jar jar = b.build();
+		jar.toString();
+		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
+		assertEquals("[1.0.1,2)", s);
+	}
 
 	/**
 	 * The default policy is truncate micro. Check if this is applied to the
 	 * import.
 	 */
-	public static void testImportMicroTruncated() throws Exception {
+	public static void testImportMicroNotTruncatedForUnknownByteCode() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Import-Package", "org.osgi.service.event");
 		b.build();
 		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
-		assertEquals("[1.0,2)", s);
+		assertEquals("[1.0.1,2)", s);
 	}
 
 	/**

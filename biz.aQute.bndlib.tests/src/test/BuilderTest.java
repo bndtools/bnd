@@ -780,7 +780,7 @@ public class BuilderTest extends BndTestCase {
 		bms.build();
 		assertTrue(bms.check("The JAR is empty"));
 		String s = bms.getImports().getByFQN("org.osgi.service.event").get("version");
-		assertEquals("[100.0,101)", s);
+		assertEquals("[100.0.0,101)", s);
 
 		// Only version in packageinfo
 		Builder bpinfos = new Builder();
@@ -789,7 +789,7 @@ public class BuilderTest extends BndTestCase {
 		bpinfos.build();
 		assertTrue(bms.check());
 		s = bpinfos.getImports().getByFQN("org.osgi.service.event").get("version");
-		assertEquals("[99.0,100)", s);
+		assertEquals("[99.0.0,100)", s);
 
 		// Version in manifest + packageinfo
 		Builder bboth = new Builder();
@@ -798,7 +798,7 @@ public class BuilderTest extends BndTestCase {
 		bboth.build();
 		assertTrue(bms.check());
 		s = bboth.getImports().getByFQN("org.osgi.service.event").get("version");
-		assertEquals("[101.0,102)", s);
+		assertEquals("[101.0.0,102)", s);
 
 	}
 
@@ -1183,19 +1183,33 @@ public class BuilderTest extends BndTestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Import-Package", "org.osgi.service.event;version=${@}");
+		b.setProperty("Private-Package", "test.refer");
+		b.addClasspath(new File("bin"));
 		b.build();
-		assertTrue(b.check("The JAR is empty"));
+		assertTrue(b.check());
 		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
 		assertEquals("1.0.1", s);
 	}
 
-	public static void testImportMicroTruncated() throws Exception {
+	public static void testImportMicroNotTruncatedWhenNoContent() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Import-Package", "org.osgi.service.event");
 		b.build();
 		assertTrue(b.check("The JAR is empty"));
 
+		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
+		assertEquals("[1.0.1,2)", s);
+	}
+
+	public static void testImportMicroNotTruncatedWithContent() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("jar/osgi.jar"));
+		b.setProperty("Import-Package", "org.osgi.service.event");
+		b.setProperty("Private-Package", "test.refer");
+		b.addClasspath(new File("bin"));b.build();
+		assertTrue(b.check());
+		
 		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
 		assertEquals("[1.0,2)", s);
 	}
