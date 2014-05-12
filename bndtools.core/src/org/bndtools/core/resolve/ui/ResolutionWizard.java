@@ -43,6 +43,7 @@ public class ResolutionWizard extends Wizard {
 
     private final ResolutionResultsWizardPage resultsPage;
     private final Comparator<Entry<String,String>> clauseAttributeSorter = new Comparator<Map.Entry<String,String>>() {
+        @Override
         public int compare(Entry<String,String> e1, Entry<String,String> e2) {
             // Reverse lexical ordering on keys
             return e2.getKey().compareTo(e1.getKey());
@@ -123,6 +124,7 @@ public class ResolutionWizard extends Wizard {
                 }
             }
             Collections.sort(runBundles, new Comparator<VersionedClause>() {
+                @Override
                 public int compare(VersionedClause vc1, VersionedClause vc2) {
                     int diff = vc1.getName().compareTo(vc2.getName());
                     if (diff != 0)

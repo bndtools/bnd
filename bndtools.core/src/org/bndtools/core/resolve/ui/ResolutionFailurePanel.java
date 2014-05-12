@@ -7,13 +7,10 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.bndtools.core.resolve.ResolutionResult;
-import org.bndtools.core.ui.SashFormPanelMaximiser;
 import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
-import org.bndtools.utils.swt.SashHighlightForm;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerSorter;
@@ -23,20 +20,18 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.osgi.resource.Requirement;
 import org.osgi.service.resolver.ResolutionException;
 
@@ -49,72 +44,62 @@ public class ResolutionFailurePanel {
     private final Image treeViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/tree_mode.gif").createImage();
     private final Image flatViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/flat_mode.gif").createImage();
 
-    private SashHighlightForm sashForm;
+    private Composite composite;
 
     private Text processingErrorsText;
-    private SashFormPanelMaximiser processingErrorsMaximiser;
-
     private TreeViewer unresolvedViewer;
-    private SashFormPanelMaximiser unresolvedMaximiser;
 
     private static final boolean failureTreeMode = true;
 
-    public Control createControl(final Composite parent) {
-        sashForm = new SashHighlightForm(parent, SWT.VERTICAL);
-        sashForm.setSashWidth(6);
+    public void createControl(final Composite parent) {
+        FormToolkit toolkit = new FormToolkit(parent.getDisplay());
+        composite = toolkit.createComposite(parent);
 
-        Color sashColor = JFaceResources.getColorRegistry().get(EditorsUI.PLUGIN_ID + "." + AbstractDecoratedTextEditorPreferenceConstants.EDITOR_CURRENT_LINE_COLOR);
-        sashForm.setSashBackground(sashColor);
-        sashForm.setSashForeground(sashColor);
+        composite.setLayout(new GridLayout(1, false));
+        GridData gd;
 
-        Composite cmpProcessingErrors = new Composite(sashForm, SWT.NONE);
-        GridLayout gl_processingErrors = new GridLayout(2, false);
-        gl_processingErrors.marginRight = 7;
-        cmpProcessingErrors.setLayout(gl_processingErrors);
-        Label lblProcessingErrors = new Label(cmpProcessingErrors, SWT.NONE);
-        lblProcessingErrors.setText("Processing Errors:");
+        Section sectProcessingErrors = toolkit.createSection(composite, Section.TITLE_BAR | Section.EXPANDED);
+        sectProcessingErrors.setText("Processing Errors:");
 
-        createProcessingErrorsToolBar(cmpProcessingErrors);
-
-        processingErrorsText = new Text(cmpProcessingErrors, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.READ_ONLY);
-        GridData gd_processingErrors = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
-        gd_processingErrors.heightHint = 80;
-        processingErrorsText.setLayoutData(gd_processingErrors);
+        processingErrorsText = toolkit.createText(sectProcessingErrors, "", SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.READ_ONLY);
+        sectProcessingErrors.setClient(processingErrorsText);
 
         ControlDecoration controlDecoration = new ControlDecoration(processingErrorsText, SWT.RIGHT | SWT.TOP);
         controlDecoration.setMarginWidth(2);
         controlDecoration.setDescriptionText("Double-click to view details");
         controlDecoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL).getImage());
 
-        Composite cmpUnresolved = new Composite(sashForm, SWT.NONE);
-        GridLayout gl_unresolved = new GridLayout(2, false);
-        gl_unresolved.marginRight = 7;
-        cmpUnresolved.setLayout(gl_unresolved);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.widthHint = 600;
+        gd.heightHint = 300;
+        sectProcessingErrors.setLayoutData(gd);
 
-        Label lblUnresolvedResources = new Label(cmpUnresolved, SWT.NONE);
-        lblUnresolvedResources.setBounds(0, 0, 59, 14);
-        lblUnresolvedResources.setText("Unresolved Requirements:");
+        Section sectUnresolved = toolkit.createSection(composite, Section.TITLE_BAR | Section.TWISTIE);
+        sectUnresolved.setText("Unresolved Requirements:");
 
-        createUnresolvedViewToolBar(cmpUnresolved);
+        createUnresolvedViewToolBar(sectUnresolved);
 
-        Tree treeUnresolved = new Tree(cmpUnresolved, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
-        GridData gd_tblUnresolved = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
-        gd_tblUnresolved.heightHint = 80;
-        gd_tblUnresolved.widthHint = 400;
-        treeUnresolved.setLayoutData(gd_tblUnresolved);
+        Tree treeUnresolved = toolkit.createTree(sectUnresolved, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        sectUnresolved.setClient(treeUnresolved);
+
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd.widthHint = 600;
+        sectUnresolved.setLayoutData(gd);
 
         unresolvedViewer = new TreeViewer(treeUnresolved);
         unresolvedViewer.setContentProvider(new UnresolvedRequirementsContentProvider());
         unresolvedViewer.setLabelProvider(new RequirementWithResourceLabelProvider());
         setFailureViewMode();
+    }
 
-        return sashForm;
+    public Control getControl() {
+        return composite;
     }
 
     public void setInput(ResolutionResult resolutionResult) {
-        if (sashForm == null)
+        if (composite == null)
             throw new IllegalStateException("Control not created");
-        else if (sashForm.isDisposed())
+        else if (composite.isDisposed())
             throw new IllegalStateException("Control already disposed");
 
         ResolutionException resolutionException = resolutionResult.getResolutionException();
@@ -148,17 +133,6 @@ public class ResolutionFailurePanel {
         clipboardImg.dispose();
         treeViewImg.dispose();
         flatViewImg.dispose();
-
-        processingErrorsMaximiser.dispose();
-        unresolvedMaximiser.dispose();
-    }
-
-    private void createProcessingErrorsToolBar(Composite parent) {
-        ToolBar toolbar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
-        toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, false));
-
-        processingErrorsMaximiser = new SashFormPanelMaximiser(sashForm);
-        processingErrorsMaximiser.createToolItem(parent, toolbar);
     }
 
     @SuppressWarnings("unused")
@@ -182,9 +156,6 @@ public class ResolutionFailurePanel {
         ToolItem toolErrorsToClipboard = new ToolItem(unresolvedToolBar, SWT.PUSH);
         toolErrorsToClipboard.setImage(clipboardImg);
         toolErrorsToClipboard.setToolTipText("Copy to Clipboard");
-
-        unresolvedMaximiser = new SashFormPanelMaximiser(sashForm);
-        unresolvedMaximiser.createToolItem(parent, unresolvedToolBar);
 
         /*
         SelectionListener modeListener = new SelectionAdapter() {
@@ -259,7 +230,7 @@ public class ResolutionFailurePanel {
          * buffer.append('\n'); } }
          */
 
-        Clipboard clipboard = new Clipboard(sashForm.getDisplay());
+        Clipboard clipboard = new Clipboard(composite.getDisplay());
         TextTransfer transfer = TextTransfer.getInstance();
         clipboard.setContents(new Object[] {
             builder.toString()
