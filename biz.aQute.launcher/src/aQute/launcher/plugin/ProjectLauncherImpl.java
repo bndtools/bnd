@@ -1,6 +1,7 @@
 package aQute.launcher.plugin;
 
 import java.io.*;
+import java.net.*;
 import java.text.*;
 import java.util.*;
 import java.util.Map.Entry;
@@ -22,6 +23,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	final private Project		project;
 	final private File			propertiesFile;
 	boolean						prepared;
+	
+	private DatagramSocket 		listenerComms;
 
 	public ProjectLauncherImpl(Project project) throws Exception {
 		super(project);
@@ -47,6 +50,11 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	@Override
 	public void cleanup() {
 		propertiesFile.delete();
+		if(listenerComms != null) {
+			listenerComms.close();
+			listenerComms = null;
+		}
+		prepared = false;
 		project.trace("Deleted ", propertiesFile.getAbsolutePath());
 	}
 
@@ -76,7 +84,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	}
 
 	void writeProperties() throws Exception {
-		LauncherConstants lc = getConstants(getRunBundles());
+		LauncherConstants lc = getConstants(getRunBundles(), false);
 		OutputStream out = new FileOutputStream(propertiesFile);
 		try {
 			lc.getProperties().store(out, "Launching " + project);
@@ -92,7 +100,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private LauncherConstants getConstants(Collection<String> runbundles) throws Exception, FileNotFoundException,
+	private LauncherConstants getConstants(Collection<String> runbundles, boolean exported) throws Exception, FileNotFoundException,
 			IOException {
 		project.trace("preparing the aQute launcher plugin");
 
@@ -107,6 +115,35 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.services = super.getRunFramework() == SERVICES ? true : false;
 		lc.activators.addAll(getActivators());
 		lc.name = getProject().getName();
+		
+		if(!exported && !getNotificationListeners().isEmpty()) {
+			if(listenerComms == null) {
+				listenerComms = new DatagramSocket(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+				new Thread(new Runnable() {
+					public void run() {
+						DatagramSocket socket = listenerComms;
+						DatagramPacket packet = new DatagramPacket(new byte[65536], 65536);
+						while(!socket.isClosed()) {
+							try {
+								socket.receive(packet);
+								DataInputStream dai = new DataInputStream(new ByteArrayInputStream(
+										packet.getData(), packet.getOffset(), packet.getLength()));
+								NotificationType type = NotificationType.values()[dai.readInt()];
+								String message = dai.readUTF();
+								for(NotificationListener listener : getNotificationListeners()) {
+									listener.notify(type, message);
+								}
+							}
+							catch (IOException e) {
+							}
+						}
+					}
+				}).start();
+			}
+			lc.notificationPort = listenerComms.getLocalPort();
+		} else {
+			lc.notificationPort = -1;
+		}
 
 		try {
 			// If the workspace contains a newer version of biz.aQute.launcher
@@ -211,7 +248,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			}
 		}
 
-		LauncherConstants lc = getConstants(actualPaths);
+		LauncherConstants lc = getConstants(actualPaths, true);
 		lc.embedded = !useShas;
 		lc.storageDir = null; // cannot use local info
 
