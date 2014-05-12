@@ -544,7 +544,19 @@
        <page
              class="bndtools.preferences.ui.BndPreferencePage"
              id="bndtools.prefPages.basic"
-             name="Bndtools OSGi">
+             name="Bndtools">
+       </page>
+       <page
+             class="bndtools.preferences.ui.BndBuildPreferencePage"
+             id="bndtools.prefPages.build"
+             category="bndtools.prefPages.basic"
+             name="Build">
+       </page>
+       <page
+             class="bndtools.preferences.ui.GeneratedResourcesPreferencePage"
+             id="bndtools.prefPages.generatedResources"
+             category="bndtools.prefPages.basic"
+             name="Generated Resources">
        </page>
     </extension>
 	<extension point="org.eclipse.ui.propertyPages">

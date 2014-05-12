@@ -24,7 +24,6 @@ public class Messages extends NLS {
     public static String BndPreferencePage_optionNeverEnable;
     public static String BndPreferencePage_optionPrompt;
     public static String BndPreferencePage_titleSubBundles;
-    public static String BndPreferencePage_grpDebugging_text;
     public static String BndPreferencePage_lblBuildLogging_text;
     public static String BndPreferencePage_grpLaunching_text;
     public static String BndPreferencePage_btnWarnExistingLaunch;
