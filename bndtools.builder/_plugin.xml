@@ -122,4 +122,9 @@
 		<validator name="Project paths check"
 			class="org.bndtools.builder.validate.ProjectPathsValidator" />
 	</extension>
+
+	<extension point="bndtools.core.validators">
+		<validator name="Java versions check"
+			class="org.bndtools.builder.validate.JavaVersionsValidator" />
+	</extension>
 </plugin>
