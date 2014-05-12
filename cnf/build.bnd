@@ -84,8 +84,8 @@ aQute-repository-base:    2.1.0
 aQute-repository-ceiling: 2.2.0
 aQute-repository:         biz.aQute.repository;version='[${aQute-repository-base},${aQute-repository-ceiling})'
 
-aQute-resolve-base :      0.1.0
-aQute-resolve-ceiling:    0.1.1
+aQute-resolve-base :      0.2.0
+aQute-resolve-ceiling:    0.2.1
 aQute-resolve:            biz.aQute.resolve;version='[${aQute-resolve-base},${aQute-resolve-ceiling})'
 
 osgi.core.version:        4.3.1
