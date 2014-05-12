@@ -18,6 +18,7 @@ public class BndPerspective implements IPerspectiveFactory {
     private static final String VIEW_ID_CONSOLE = "org.eclipse.ui.console.ConsoleView";
     private static final String VIEW_ID_SEARCH = "org.eclipse.search.ui.views.SearchView";
 
+    @Override
     public void createInitialLayout(IPageLayout layout) {
         String editorArea = layout.getEditorArea();
 
@@ -63,13 +64,11 @@ public class BndPerspective implements IPerspectiveFactory {
         // views - standard workbench
         layout.addShowViewShortcut(PartConstants.VIEW_ID_IMPORTSEXPORTS);
         layout.addShowViewShortcut(PartConstants.VIEW_ID_REPOSITORIES);
+        layout.addShowViewShortcut(PartConstants.VIEW_ID_JPM);
         layout.addShowViewShortcut(IPageLayout.ID_OUTLINE);
         layout.addShowViewShortcut(IPageLayout.ID_PROBLEM_VIEW);
         layout.addShowViewShortcut(IPageLayout.ID_PROJECT_EXPLORER);
-        layout.addShowViewShortcut(IPageLayout.ID_TASK_LIST);
-        layout.addShowViewShortcut(IProgressConstants.PROGRESS_VIEW_ID);
         layout.addShowViewShortcut(ID_PROJECT_EXPLORER);
-        layout.addShowViewShortcut(TemplatesView.ID);
 
         // new actions - Java project creation wizard
         layout.addNewWizardShortcut(PartConstants.WIZARD_ID_NEWPROJECT);

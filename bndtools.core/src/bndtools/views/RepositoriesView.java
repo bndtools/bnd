@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -85,6 +86,7 @@ import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
+import bndtools.preferences.JpmPreferences;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
@@ -121,8 +123,12 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
         createActions();
 
+        JpmPreferences jpmPrefs = new JpmPreferences();
+        final boolean showJpmOnClick = jpmPrefs.getBrowserSelection() != JpmPreferences.PREF_BROWSER_EXTERNAL;
+
         // LISTENERS
         filterPart.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent event) {
                 String filter = (String) event.getNewValue();
                 updatedFilter(filter);
@@ -229,6 +235,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         }, new SelectionDragAdapter(viewer));
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 boolean writableRepoSelected = false;
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
@@ -246,7 +253,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 Object element = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
                 if (element instanceof ContinueSearchElement) {
                     try {
-                        getViewSite().getPage().showView(Plugin.JPM_BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
+                        getViewSite().getPage().showView(Plugin.JPM_BROWSER_VIEW_ID, null, showJpmOnClick ? IWorkbenchPage.VIEW_ACTIVATE : IWorkbenchPage.VIEW_CREATE);
                     } catch (PartInitException e) {
                         Plugin.getDefault().getLog().log(e.getStatus());
                     }
@@ -254,6 +261,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
             }
         });
         viewer.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
             public void doubleClick(DoubleClickEvent event) {
                 if (!event.getSelection().isEmpty()) {
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -270,10 +278,17 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                             }
                         }
                     } else if (element instanceof ContinueSearchElement) {
+                        ContinueSearchElement searchElement = (ContinueSearchElement) element;
                         try {
-                            getViewSite().getPage().showView(Plugin.JPM_BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
+                            JpmPreferences jpmPrefs = new JpmPreferences();
+                            if (jpmPrefs.getBrowserSelection() == JpmPreferences.PREF_BROWSER_EXTERNAL)
+                                getViewSite().getWorkbenchWindow().getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL("https://www.jpm4j.org/" + searchElement.getFilter()));
+                            else
+                                getViewSite().getPage().showView(Plugin.JPM_BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
                         } catch (PartInitException e) {
                             Plugin.getDefault().getLog().log(e.getStatus());
+                        } catch (MalformedURLException e) {
+                            // ignore
                         }
                     }
 
@@ -285,9 +300,11 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
         // LOAD
         Central.onWorkspaceInit(new Function<Workspace,Void>() {
+            @Override
             public Void run(Workspace a) {
                 final List<RepositoryPlugin> repositories = RepositoryUtils.listRepositories(true);
                 SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                    @Override
                     public void run() {
                         viewer.setInput(repositories);
                     }
@@ -428,6 +445,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
         mgr.addMenuListener(new IMenuListener() {
 
+            @Override
             public void menuAboutToShow(IMenuManager manager) {
                 try {
                     manager.removeAll();
@@ -517,36 +535,44 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         toolBar.add(new Separator());
     }
 
+    @Override
     public void bundleAdded(final RepositoryPlugin repository, Jar jar, File file) {
         if (viewer != null)
             SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                @Override
                 public void run() {
                     viewer.refresh(repository);
                 }
             });
     }
 
+    @Override
     public void bundleRemoved(final RepositoryPlugin repository, Jar jar, File file) {
         if (viewer != null)
             SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                @Override
                 public void run() {
                     viewer.refresh(repository);
                 }
             });
     }
 
+    @Override
     public void repositoryRefreshed(final RepositoryPlugin repository) {
         if (viewer != null)
             SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                @Override
                 public void run() {
                     viewer.refresh(repository);
                 }
             });
     }
 
+    @Override
     public void repositoriesRefreshed() {
         if (viewer != null)
             SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                @Override
                 public void run() {
                     doRefresh();
                 }
@@ -555,7 +581,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
     /**
      * Handle the drop on targets that understand drops.
-     * 
+     *
      * @param target
      *            The current target
      * @param data
@@ -578,7 +604,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     /**
      * Try a drop on the target. A drop is allowed if the target implements a {@code dropTarget} method that returns a
      * boolean.
-     * 
+     *
      * @param target
      *            the target being dropped upon
      * @param data
@@ -600,14 +626,14 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
     /**
      * Return the class of the dropped object
-     * 
+     *
      * <pre>
      *    URLTransfer             URI
      *    FileTransfer            File[]
      *    TextTransfer            String
      *    ImageTransfer           ImageData
      * </pre>
-     * 
+     *
      * @param data
      *            the dropped object
      * @return the class of the dropped object, or null when it's unknown
@@ -628,14 +654,14 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
     /**
      * Return a native data type that represents the dropped object
-     * 
+     *
      * <pre>
      *    URLTransfer             URI
      *    FileTransfer            File[]
      *    TextTransfer            String
      *    ImageTransfer           ImageData
      * </pre>
-     * 
+     *
      * @param data
      *            the dropped object
      * @return a native data type that represents the dropped object, or null when the data type is unknown

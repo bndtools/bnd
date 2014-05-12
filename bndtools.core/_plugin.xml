@@ -558,6 +558,12 @@
              category="bndtools.prefPages.basic"
              name="Generated Resources">
        </page>
+       <page
+             class="bndtools.preferences.ui.JpmPreferencePage"
+             id="bndtools.prefPages.jpm"
+             category="bndtools.prefPages.basic"
+             name="JPM">
+       </page>
     </extension>
 	<extension point="org.eclipse.ui.propertyPages">
 		<page id="org.bndtools.core.propPages.project" name="Bndtools"
