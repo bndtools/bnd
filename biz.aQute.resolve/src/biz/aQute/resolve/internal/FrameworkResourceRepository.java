@@ -141,4 +141,8 @@ public class FrameworkResourceRepository implements Repository {
         return result;
     }
 
+    public CapabilityIndex getCapabilityIndex() {
+    	return capIndex;
+    }
+
 }
