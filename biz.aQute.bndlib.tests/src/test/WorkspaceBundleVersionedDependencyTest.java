@@ -3,6 +3,7 @@ package test;
 import java.io.*;
 
 import aQute.bnd.build.*;
+import aQute.lib.io.*;
 import junit.framework.*;
 
 /**
@@ -11,7 +12,8 @@ import junit.framework.*;
 public class WorkspaceBundleVersionedDependencyTest extends TestCase{
 	
 	public static void testWorkspaceVersionedDependency() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("testresources/ws-versioneddependencies"));
+		IO.copy(new File("testresources/ws-versioneddependencies"), new File("generated/ws-versioneddependencies"));
+		Workspace ws = Workspace.getWorkspace(new File("generated/ws-versioneddependencies"));
 		
 		Project project = ws.getProject("myconsumer");
 		project.clean();
@@ -20,7 +22,8 @@ public class WorkspaceBundleVersionedDependencyTest extends TestCase{
 	}
 	
 	public static void testWorkspaceVersionedDependencyWithSubbundle() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("testresources/ws-versioneddependencies-withsubbundle"));
+		IO.copy(new File("testresources/ws-versioneddependencies-withsubbundle"), new File("generated/ws-versioneddependencies-withsubbundle"));
+		Workspace ws = Workspace.getWorkspace(new File("generated/ws-versioneddependencies-withsubbundle"));
 		
 		ws.getProject("mydependency").build();
 		Project project = ws.getProject("myconsumer");
