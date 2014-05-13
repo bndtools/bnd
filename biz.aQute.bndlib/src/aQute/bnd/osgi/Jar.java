@@ -240,6 +240,7 @@ public class Jar implements Closeable {
 			finally {
 				IO.close(out);
 			}
+			file.setLastModified(lastModified);
 			return;
 
 		}
@@ -326,7 +327,7 @@ public class Jar implements Closeable {
 			return;
 
 		JarEntry ze = new JarEntry(manifestName);
-
+		ze.setTime(lastModified);
 		jout.putNextEntry(ze);
 		writeManifest(jout);
 		jout.closeEntry();

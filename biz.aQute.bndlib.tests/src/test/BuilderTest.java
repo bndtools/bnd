@@ -21,6 +21,46 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/**
+	 * Test if the Manifest gets the last modified date
+	 */
+
+	public void testLastModifiedForManifest() throws Exception {
+		File file = new File("tmp.jar");
+		try {
+			long time = System.currentTimeMillis();
+
+			Builder b = new Builder();
+			b.addClasspath(new File("jar/osgi.jar"));
+			b.setExportPackage("org.osgi.framework");
+			Jar build = b.build();
+			try {
+				assertTrue(b.check());
+
+				build.write("tmp.jar");
+				Jar ajr = new Jar(file);
+				try {
+					Resource r = ajr.getResource("META-INF/MANIFEST.MF");
+					assertNotNull(r);
+					long t = r.lastModified();
+					Date date = new Date(t);
+					System.out.println(date + " " + t);
+					assertTrue(t ==1142552022000L);
+				}
+				finally {
+					ajr.close();
+				}
+			}
+			finally {
+				build.close();
+			}
+		}
+		finally {
+			file.delete();
+		}
+
+	}
+
+	/**
 	 * A Require-Bundle should not fail on missing imports, just warn
 	 * 
 	 * @throws Exception
