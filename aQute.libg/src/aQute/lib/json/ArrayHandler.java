@@ -27,10 +27,12 @@ public class ArrayHandler extends Handler {
 		app.indent();
 		String del = "";
 		int l = Array.getLength(object);
-		for (int i = 0; i < l; i++) {
+		for (int i = 0; i < l; i++) try {
 			app.append(del);
 			app.encode(Array.get(object, i), componentType, visited);
 			del = ",";
+		} catch( Exception e) {
+			throw new IllegalArgumentException("[" + i + "]", e);
 		}
 		app.undent();
 		app.append("]");

@@ -37,7 +37,7 @@ import aQute.service.reporter.*;
  * @author Neil Bartlett
  */
 @SuppressWarnings("synthetic-access")
-public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository {
+public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository, Refreshable {
 
 	public static final String									PROP_NAME						= "name";
 	public static final String									PROP_REPO_TYPE					= "type";
@@ -278,7 +278,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		init();
 
 		// If the range is set to "project", we cannot resolve it.
-		if ("project".equals(rangeStr))
+		if (Constants.VERSION_ATTR_PROJECT.equals(rangeStr))
 			return null;
 
 		List<Resource> resources = identityMap.getRange(bsn, rangeStr);
@@ -520,4 +520,26 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			System.err.println(String.format(format, args));
 	}
 
+	public boolean refresh() throws Exception {
+		boolean ret = true;
+		if (indexLocations != null) {
+			final URLConnector connector = getConnector();
+			for (URI indexLocation : indexLocations) {
+				CachingUriResourceHandle indexHandle;
+				try {
+					File f = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null).cachedFile;
+					if (f != null && f.exists() && !f.delete()) {
+						error("Unable to delete cached repository index file %s", f.getAbsolutePath());
+					}
+				}
+				catch (IOException e) {
+					error("Exception during refresh of %s", indexLocation, e);
+					ret = false;
+				}
+			}
+		}
+		initialised = false;
+		init();
+		return ret;
+	}
 }

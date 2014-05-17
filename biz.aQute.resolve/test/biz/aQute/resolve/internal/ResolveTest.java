@@ -7,7 +7,6 @@ import java.util.*;
 
 import junit.framework.*;
 
-import org.apache.felix.resolver.*;
 import org.osgi.framework.*;
 import org.osgi.framework.namespace.*;
 import org.osgi.resource.*;
@@ -17,6 +16,7 @@ import org.osgi.service.resolver.*;
 import test.lib.*;
 import aQute.bnd.build.model.*;
 import aQute.bnd.osgi.resource.*;
+import biz.aQute.resolve.*;
 
 public class ResolveTest extends TestCase {
 
@@ -38,7 +38,7 @@ public class ResolveTest extends TestCase {
         model.setRunRequires(requires);
         BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
 
-        Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4));
+        Resolver resolver = new BndResolver(new ResolverLogger(4));
 
         try {
             Map<Resource,List<Wire>> resolved = resolver.resolve(context);

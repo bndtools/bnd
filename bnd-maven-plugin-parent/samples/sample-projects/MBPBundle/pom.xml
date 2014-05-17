@@ -1,0 +1,42 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>biz.aQute.bnd.demo.bndmvn</groupId>
+    <artifactId>ParentPom</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../ParentPom/pom.xml</relativePath>
+  </parent>
+
+  <artifactId>MBPBundle</artifactId>
+  <description>maven-bundle-plugin based bundle</description>
+  <packaging>bundle</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+      <version>${osgi.core.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>${project.name}</Bundle-SymbolicName>
+            <Bundle-Activator>org.example.myosgibundle.Activator</Bundle-Activator>
+            <Import-Package>*</Import-Package>
+            <Export-Package/>
+            <Private-Package>org.example.myosgibundle</Private-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -15,4 +15,8 @@ public class ScriptAction implements Action {
 		project.script(type, script);
 	}
 
+	public void execute(Project project, Object... args) throws Exception {
+		project.script(type, script, args);
+	}
+
 }

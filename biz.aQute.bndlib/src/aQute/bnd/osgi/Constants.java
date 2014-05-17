@@ -83,8 +83,6 @@ public interface Constants {
 	String							CACHEDIR									= "-cachedir";
 	String							CONDITIONALPACKAGE							= "-conditionalpackage";
 	String							DIFFIGNORE									= "-diffignore";
-	String							COMPILER_SOURCE								= "-source";
-	String							COMPILER_TARGET								= "-target";
 	String							DEPENDSON									= "-dependson";
 	String							DEPLOY										= "-deploy";
 	String							DEPLOYREPO									= "-deployrepo";
@@ -391,4 +389,17 @@ public interface Constants {
 	String							DEFAULT_PROP_TESTSRC_DIR					= "testsrc";
 	String							DEFAULT_PROP_TESTBIN_DIR					= "testbin";
 	String							DEFAULT_PROP_TARGET_DIR						= "target-dir";
+
+
+	/*
+	 * Deprecated Section
+	 */
+
+	/** we use the eclipse setting in eclipse and the javac.source setting in offline build */
+	@Deprecated
+	String							COMPILER_SOURCE								= "-source";
+
+	/** we use the eclipse setting in eclipse and the javac.target setting in offline build */
+	@Deprecated
+	String							COMPILER_TARGET								= "-target";
 }

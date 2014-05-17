@@ -8,7 +8,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 
 public class Utils {
-    static Version findIdentityVersion(Resource resource) {
+    public static Version findIdentityVersion(Resource resource) {
         List<Capability> idCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
         if (idCaps == null || idCaps.isEmpty())
             throw new IllegalArgumentException("Resource has no identity capability.");

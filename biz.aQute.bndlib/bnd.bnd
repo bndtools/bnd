@@ -1,6 +1,6 @@
 -sourcepath:					../aQute.libg/src
 
-Bundle-Version:2.4.0.${tstamp}
+Bundle-Version:					2.4.0.${tstamp}
 Bundle-SCM:						git://github.com/bndtools/bnd.git
 Bundle-Vendor: 					aQute SARL http://www.aQute.biz
 Bundle-Copyright:				Copyright © aQute SARL (2000, 2011). All Rights Reserved.
@@ -18,7 +18,7 @@ Private-Package: 				\
 	aQute.libg.*;-split-package:=first, \
 	org.osgi.service.component.annotations;-split-package:=first
 
-Export-Package:  \
+Export-Package: \
 	aQute.bnd.annotation.*,\
 	aQute.bnd.osgi,\
 	aQute.bnd.osgi.resource,\
@@ -28,16 +28,17 @@ Export-Package:  \
 	aQute.bnd.help.*,\
 	org.osgi.service.repository,\
 	org.osgi.resource,\
-	aQute.lib.deployer,\
 	aQute.bnd.header,\
 	aQute.bnd.version,\
+	aQute.bnd.filerepo,\
 	aQute.bnd.properties,\
 	aQute.bnd.build.model,\
 	aQute.bnd.build.model.clauses,\
 	aQute.service.reporter,\
 	aQute.bnd.maven.support,\
 	aQute.bnd.url,\
-	aQute.bnd.util.dto
+	aQute.bnd.util.dto,\
+	aQute.bnd.component.error
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 Include-Resource: 				LICENSE, img/=img/, {readme.md}

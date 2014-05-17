@@ -53,7 +53,7 @@ public class ObjectHandler extends Handler {
 		app.append("{");
 		app.indent();
 		String del = "";
-		for (int i = 0; i < fields.length; i++) {
+		for (int i = 0; i < fields.length; i++) try {
 			if (fields[i].getName().startsWith("__"))
 				continue;
 
@@ -71,6 +71,8 @@ public class ObjectHandler extends Handler {
 			app.append(":");
 			app.encode(value, types[i], visited);
 			del = ",";
+		} catch( Exception e) {
+			throw new IllegalArgumentException(fields[i].getName() +":", e);
 		}
 		app.undent();
 		app.append("}");
@@ -115,6 +117,7 @@ public class ObjectHandler extends Handler {
 					r.getExtra().put(rawClass.getName() + "." + key, value);
 				} else {
 
+					@SuppressWarnings("unchecked")
 					Map<String,Object> map = (Map<String,Object>) extra.get(targetObject);
 					if (map == null) {
 						map = new LinkedHashMap<String,Object>();

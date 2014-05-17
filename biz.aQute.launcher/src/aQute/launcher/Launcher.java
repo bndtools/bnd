@@ -19,6 +19,7 @@ import org.osgi.framework.launch.*;
 import org.osgi.service.packageadmin.*;
 import org.osgi.service.permissionadmin.*;
 
+import aQute.bnd.build.ProjectLauncher.NotificationType;
 import aQute.launcher.agent.*;
 import aQute.launcher.constants.*;
 import aQute.launcher.minifw.*;
@@ -49,6 +50,8 @@ public class Launcher implements ServiceListener {
 	private File						bnd									= new File(home, "bnd");
 	private List<Bundle>				wantsToBeStarted					= new ArrayList<Bundle>();
 	AtomicBoolean						active								= new AtomicBoolean();
+	
+	private AtomicReference<DatagramSocket> commsSocket = new AtomicReference<DatagramSocket>();
 
 	public static void main(String[] args) {		
 		try {
@@ -158,6 +161,8 @@ public class Launcher implements ServiceListener {
 		
 		this.parms = new LauncherConstants(properties);
 		out = System.err;
+		
+		setupComms();
 
 		trace("properties " + properties);
 		trace("inited runbundles=%s activators=%s timeout=%s properties=%s", parms.runbundles, parms.activators, parms.timeout);
@@ -189,6 +194,33 @@ public class Launcher implements ServiceListener {
 				}
 			};
 			new Timer(true).scheduleAtFixedRate(watchdog, 5000, 1000);
+		}
+	}
+
+	private void setupComms() {
+		DatagramSocket oldSocket;
+		if(parms.notificationPort == -1) {
+			oldSocket = commsSocket.getAndSet(null);
+		} else {
+			oldSocket = commsSocket.get();
+			if(oldSocket != null && oldSocket.getPort() == parms.notificationPort) {
+				oldSocket = null;
+			} else {
+				DatagramSocket newSocket;
+				try {
+					newSocket = new DatagramSocket(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+					newSocket.connect(new InetSocketAddress(InetAddress.getLocalHost(), parms.notificationPort));
+					
+				} catch (IOException ioe) {
+					//TODO what now?
+					newSocket = null;
+				}
+				commsSocket.compareAndSet(oldSocket, newSocket);
+			}
+		}
+		
+		if(oldSocket != null) {
+			oldSocket.close();
 		}
 	}
 
@@ -1157,10 +1189,40 @@ public class Launcher implements ServiceListener {
 				sb.append(c);
 			}
 		}
-		out.println(sb);
+		String message = sb.toString();
+		out.println(message);
 		if (e != null && parms.trace)
 			e.printStackTrace(out);
 		out.flush();
+		
+		DatagramSocket socket = commsSocket.get();
+
+		if(socket != null) {
+			int severity;
+			if(message.startsWith("! ")) {
+				severity = 0; //NotificationType.ERROR.ordinal();
+			} else if (message.startsWith("# ") && parms.trace) {
+				severity = 2; //NotificationType.INFO.ordinal();
+			} else {
+				return;
+			}
+			
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(outputStream);
+			try {
+				dos.writeInt(severity);
+				dos.writeUTF(message.substring(2));
+				
+				byte[] byteArray = outputStream.toByteArray();
+				socket.send(new DatagramPacket(byteArray, byteArray.length));
+			} catch (IOException ioe) {
+				out.println("! Unable to send notification to " + socket.getRemoteSocketAddress());
+				if (parms.trace)
+					ioe.printStackTrace(out);
+				out.flush();
+			}
+		}
+		
 	}
 
 	public void error(String msg, Object... objects) {

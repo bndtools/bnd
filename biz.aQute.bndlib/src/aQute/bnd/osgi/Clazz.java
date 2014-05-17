@@ -102,6 +102,10 @@ public class Clazz {
 			return major >= J2SE5.major;
 		}
 
+		public boolean hasDefaultMethods() {
+			return major >= OpenJDK8.major;
+		}
+
 		public static JAVA getJava(int major, @SuppressWarnings("unused")
 		int minor) {
 			for (JAVA j : JAVA.values()) {
@@ -125,7 +129,8 @@ public class Clazz {
 	}
 
 	public static enum QUERY {
-		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATED, RUNTIMEANNOTATIONS, CLASSANNOTATIONS;
+		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATED, RUNTIMEANNOTATIONS, CLASSANNOTATIONS,
+		DEFAULT_CONSTRUCTOR;
 
 	}
 
@@ -437,6 +442,7 @@ public class Clazz {
 
 	boolean									hasRuntimeAnnotations;
 	boolean									hasClassAnnotations;
+	boolean									hasDefaultConstructor;
 
 	TypeRef									className;
 	Object									pool[];
@@ -462,6 +468,7 @@ public class Clazz {
 	final Analyzer							analyzer;
 
 	private boolean							detectLdc;
+
 
 	public Clazz(Analyzer analyzer, String path, Resource resource) {
 		this.path = path;
@@ -737,6 +744,9 @@ public class Clazz {
 				referTo(descriptor_index, access_flags);
 
 				if ("<init>".equals(name)) {
+					if(Modifier.isPublic(access_flags) && "()V".equals(descriptor)) {
+						hasDefaultConstructor = true;
+					}
 					doAttributes(in, ElementType.CONSTRUCTOR, crawl, access_flags);
 				} else {
 					doAttributes(in, ElementType.METHOD, crawl, access_flags);
@@ -1655,6 +1665,9 @@ public class Clazz {
 					if (instr.matches(imp.getFQN()))
 						return !instr.isNegated();
 				}
+				break;
+			case DEFAULT_CONSTRUCTOR :
+				return hasPublicNoArgsConstructor();
 		}
 
 		if (zuper == null)
@@ -1793,6 +1806,10 @@ public class Clazz {
 
 	public boolean isAbstract() {
 		return Modifier.isAbstract(accessx);
+	}
+
+	public boolean hasPublicNoArgsConstructor() {
+		return hasDefaultConstructor;
 	}
 
 	public int getAccess() {

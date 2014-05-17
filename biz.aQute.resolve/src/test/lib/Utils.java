@@ -1,18 +1,13 @@
 package test.lib;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import org.osgi.resource.Capability;
-import org.osgi.resource.Resource;
-import org.osgi.service.repository.Repository;
+import org.osgi.resource.*;
+import org.osgi.service.repository.*;
 
-import aQute.bnd.deployer.repository.AbstractIndexedRepo;
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.deployer.repository.*;
 
 public class Utils {
 
@@ -20,11 +15,36 @@ public class Utils {
         return createRepo(index, null);
     }
 
+    public static Repository createRepo(URI uri) {
+        return createRepo(uri, null);
+    }
+
     public static Repository createRepo(File index, String name) {
         FixedIndexedRepo repo = new FixedIndexedRepo();
 
         Map<String,String> props = new HashMap<String,String>();
         props.put(FixedIndexedRepo.PROP_LOCATIONS, index.toURI().toString());
+        if (name != null)
+            props.put(AbstractIndexedRepo.PROP_NAME, name);
+        repo.setProperties(props);
+
+        return repo;
+    }
+
+    public static Repository createRepo(String uriStr, String name) {
+    	try {
+			URI uri = new URI(uriStr);
+			return createRepo(uri, name);
+		}
+		catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+    }
+    public static Repository createRepo(URI uri, String name) {
+        FixedIndexedRepo repo = new FixedIndexedRepo();
+
+        Map<String,String> props = new HashMap<String,String>();
+        props.put(FixedIndexedRepo.PROP_LOCATIONS, uri.toString());
         if (name != null)
             props.put(AbstractIndexedRepo.PROP_NAME, name);
         repo.setProperties(props);

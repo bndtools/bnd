@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
 
+
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
@@ -41,6 +42,8 @@ public abstract class ProjectLauncher {
 	private int					framework;
 	private File				cwd;
 	private Collection<String>	agents = new ArrayList<String>();
+	private Map<NotificationListener, Boolean> 
+								listeners = new IdentityHashMap<NotificationListener, Boolean>();
 
 	public final static int		SERVICES			= 10111;
 	public final static int		NONE				= 20123;
@@ -242,7 +245,6 @@ public abstract class ProjectLauncher {
 			java.var(e.getKey(), e.getValue());
 		}
 		
-		
 		java.add(project.getProperty("java", "java"));
 		String javaagent = project.getProperty(Constants.JAVAAGENT);
 		if (Processor.isTrue(javaagent)) {
@@ -287,6 +289,7 @@ public abstract class ProjectLauncher {
 		}
 		finally {
 			cleanup();
+			listeners.clear();
 		}
 	}
 
@@ -457,5 +460,21 @@ public abstract class ProjectLauncher {
 			return OSGiHeader.parseProperties(runenv);
 		}		
 		return Collections.emptyMap();
+	}
+	
+	public static interface NotificationListener {
+		void notify(NotificationType type, String notification);
+	}
+	
+	public static enum NotificationType {
+		ERROR, WARNING, INFO;
+	}
+	
+	public void registerForNotifications(NotificationListener listener) {
+		listeners.put(listener, Boolean.TRUE);
+	}
+	
+	public Set<NotificationListener> getNotificationListeners() {
+		return Collections.unmodifiableSet(listeners.keySet());
 	}
 }

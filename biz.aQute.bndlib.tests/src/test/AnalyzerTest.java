@@ -402,22 +402,20 @@ public class AnalyzerTest extends BndTestCase {
 	public static void testPrivataBundleActivatorNotImported() throws Exception {
 		Builder a = new Builder();
 		Properties p = new Properties();
-		p.put("Import-Package", "*");
-		p.put("Private-Package", "org.objectweb.*");
-		p.put("Bundle-Activator", "org.objectweb.asm.Item");
-		a.setClasspath(new Jar[] {
-			new Jar(new File("jar/asm.jar"))
-		});
+		p.put("Import-Package", "!org.osgi.service.component, *");
+		p.put("Private-Package", "test.activator");
+		p.put("Bundle-Activator", "test.activator.Activator");
+		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
-		System.err.println(a.getErrors());
-		System.err.println(a.getWarnings());
+		
 		assertEquals(0, a.getErrors().size());
 		assertEquals(0, a.getWarnings().size());
+		
 		String imports = manifest.getMainAttributes().getValue("Import-Package");
 		System.err.println(imports);
-		assertNull(imports);
+		assertEquals("org.osgi.framework", imports);
 	}
 
 	/**
@@ -459,13 +457,114 @@ public class AnalyzerTest extends BndTestCase {
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
-		System.err.println(a.getErrors());
-		System.err.println(a.getWarnings());
+
 		assertEquals(0, a.getErrors().size());
-		assertEquals(0, a.getWarnings().size());
+		assertEquals(1, a.getWarnings().size());
+		assertTrue(a.check("Bundle-Activator org.osgi.framework.BundleActivator is being imported into the bundle"));
+		
 		String imports = manifest.getMainAttributes().getValue("Import-Package");
 		assertNotNull(imports);
 		assertTrue(imports.indexOf("org.osgi.framework") >= 0);
+	}
+
+	/**
+	 * Use an activator that abstract, and so cannot be instantiated.
+	 * 
+	 * @throws Exception
+	 */
+	public static void testBundleActivatorAbstract() throws Exception {
+		Builder a = new Builder();
+		Properties p = new Properties();
+		p.put("Private-Package", "test.activator");
+		p.put("Bundle-Activator", "test.activator.AbstractActivator");
+		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
+		a.setProperties(p);
+		a.build();
+		Manifest manifest = a.getJar().getManifest();
+		
+		assertEquals(1, a.getErrors().size());
+		assertEquals(0, a.getWarnings().size());
+		assertTrue(a.check("The Bundle Activator test.activator.AbstractActivator is abstract"));
+	}
+
+	/**
+	 * Use an activator that is an interface, and so cannot be instantiated.
+	 * 
+	 * @throws Exception
+	 */
+	public static void testBundleActivatorInterface() throws Exception {
+		Builder a = new Builder();
+		Properties p = new Properties();
+		p.put("Private-Package", "test.activator");
+		p.put("Bundle-Activator", "test.activator.IActivator");
+		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
+		a.setProperties(p);
+		a.build();
+		Manifest manifest = a.getJar().getManifest();
+		
+		assertEquals(1, a.getErrors().size());
+		assertEquals(0, a.getWarnings().size());
+		assertTrue(a.check("The Bundle Activator test.activator.IActivator is an interface"));
+	}
+
+	/**
+	 * Use an activator that has no default constructor, and so cannot be instantiated.
+	 * 
+	 * @throws Exception
+	 */
+	public static void testBundleActivatorNoDefaultConstructor() throws Exception {
+		Builder a = new Builder();
+		Properties p = new Properties();
+		p.put("Private-Package", "test.activator");
+		p.put("Bundle-Activator", "test.activator.MissingNoArgsConstructorActivator");
+		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
+		a.setProperties(p);
+		a.build();
+		Manifest manifest = a.getJar().getManifest();
+		
+		assertEquals(1, a.getErrors().size());
+		assertEquals(0, a.getWarnings().size());
+		assertTrue(a.check("Bundle Activator classes must have a public zero-argument constructor and test.activator.MissingNoArgsConstructorActivator does not"));
+	}
+
+	/**
+	 * Use an activator that is not public, and so cannot be instantiated.
+	 * 
+	 * @throws Exception
+	 */
+	public static void testBundleActivatorNotPublic() throws Exception {
+		Builder a = new Builder();
+		Properties p = new Properties();
+		p.put("Private-Package", "test.activator");
+		p.put("Bundle-Activator", "test.activator.DefaultVisibilityActivator");
+		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
+		a.setProperties(p);
+		a.build();
+		Manifest manifest = a.getJar().getManifest();
+		
+		assertEquals(2, a.getErrors().size());
+		assertEquals(0, a.getWarnings().size());
+		assertTrue(a.check("Bundle Activator classes must be public, and test.activator.DefaultVisibilityActivator is not", "Bundle Activator classes must have a public zero-argument constructor and test.activator.DefaultVisibilityActivator does not"));
+	}
+
+	/**
+	 * Use an activator that is not an instance of BundleActivator, and so cannot be used.
+	 * 
+	 * @throws Exception
+	 */
+	public static void testNotABundleActivator() throws Exception {
+		Builder a = new Builder();
+		Properties p = new Properties();
+		p.put("Private-Package", "test.activator");
+		p.put("Bundle-Activator", "test.activator.NotAnActivator");
+		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
+		a.setProperties(p);
+		a.build();
+		Manifest manifest = a.getJar().getManifest();
+		
+		assertEquals(1, a.getErrors().size());
+		assertEquals(0, a.getWarnings().size());
+		assertTrue(a.check("The Bundle Activator test.activator.NotAnActivator does not implement BundleActivator"));
 	}
 
 	/**

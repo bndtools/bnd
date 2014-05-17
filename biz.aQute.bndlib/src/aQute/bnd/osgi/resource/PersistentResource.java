@@ -15,11 +15,12 @@ import aQute.lib.collections.*;
  * serialization. It stores the requirements and provides in a structure of
  * Resource 1 -> * Namespace 1 -> * Req/Cap. It optimizes
  */
-public class PersistentResource extends DTO {
+public class PersistentResource extends DTO implements Resource {
 
 	public Namespace[]	namespaces;
 	transient Resource	resource;
-	
+	public byte[]		sha;
+
 	public static class Namespace extends DTO implements Comparable<Namespace> {
 		public String	name;
 		public RCData[]	capabilities;
@@ -91,7 +92,7 @@ public class PersistentResource extends DTO {
 	}
 
 	public PersistentResource() {}
-
+	
 	public PersistentResource(Resource resource) {
 
 		MultiMap<String,Capability> capMap = new MultiMap<String,Capability>();
@@ -250,5 +251,47 @@ public class PersistentResource extends DTO {
 
 	public String toString() {
 		return "P-" + getResource();
+	}
+
+
+
+	@Deprecated
+	public List<Capability> getCapabilities(String ns ) {
+		return null;
+	}
+	@Deprecated
+	public List<Requirement> getRequirements(String ns ) {
+		return null;
+	}
+	
+	@Deprecated
+	public static RCData getData(Map<String,Object> attributes, Map<String,String> directives) {
+		return null;
+	}
+
+	@Deprecated
+	public PersistentResource(byte[] digest, List<Capability> caps, List<Requirement> reqs){}
+
+	@Deprecated
+	public class RC implements Requirement, Capability {
+		public RC(RCData data, String ns) {
+		}
+
+		public String getNamespace() {
+			return null;
+		}
+
+		public Resource getResource() {
+			return null;
+		}
+
+		public Map<String,Object> getAttributes() {
+			return null;
+		}
+
+		public Map<String,String> getDirectives() {
+			return null;
+		}
+
 	}
 }

@@ -105,7 +105,7 @@ public class ResolveProcess {
     private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap, BndrunResolveContext rc) {
         for (Iterator<Resource> iter = resourceMap.keySet().iterator(); iter.hasNext();) {
             Resource resource = iter.next();
-            if (rc.isInputRequirementsResource(resource) || rc.isFrameworkResource(resource))
+            if (rc.isInputResource(resource) || rc.isSystemResource(resource))
                 iter.remove();
         }
     }

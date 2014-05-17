@@ -35,6 +35,16 @@ public interface RepositoryPlugin {
 		 * repository to guess the content type.
 		 */
 		public String	type;
+
+		/**
+		 * When set, the repository must use it as the bsn
+		 */
+		public String bsn = null;
+
+		/**
+		 * When set, the repository must use it as the version
+		 */
+		public Version version = null;
 	}
 
 	PutOptions	DEFAULTOPTIONS	= new PutOptions();

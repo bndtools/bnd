@@ -21,6 +21,46 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/**
+	 * Test if the Manifest gets the last modified date
+	 */
+
+	public void testLastModifiedForManifest() throws Exception {
+		File file = new File("tmp.jar");
+		try {
+			long time = System.currentTimeMillis();
+
+			Builder b = new Builder();
+			b.addClasspath(new File("jar/osgi.jar"));
+			b.setExportPackage("org.osgi.framework");
+			Jar build = b.build();
+			try {
+				assertTrue(b.check());
+
+				build.write("tmp.jar");
+				Jar ajr = new Jar(file);
+				try {
+					Resource r = ajr.getResource("META-INF/MANIFEST.MF");
+					assertNotNull(r);
+					long t = r.lastModified();
+					Date date = new Date(t);
+					System.out.println(date + " " + t);
+					assertTrue(t ==1142552022000L);
+				}
+				finally {
+					ajr.close();
+				}
+			}
+			finally {
+				build.close();
+			}
+		}
+		finally {
+			file.delete();
+		}
+
+	}
+
+	/**
 	 * A Require-Bundle should not fail on missing imports, just warn
 	 * 
 	 * @throws Exception
@@ -364,7 +404,7 @@ public class BuilderTest extends BndTestCase {
 		b.setIncludeResource("p;literal='x'");
 
 		b.build();
-		assertTrue(b.check("on the class path: \\[com.example\\]"));
+		assertTrue(b.check("on the class path: \\[com.example\\]", "Bundle-Activator com.example.Activator is being imported"));
 	}
 
 	/**
@@ -780,7 +820,7 @@ public class BuilderTest extends BndTestCase {
 		bms.build();
 		assertTrue(bms.check("The JAR is empty"));
 		String s = bms.getImports().getByFQN("org.osgi.service.event").get("version");
-		assertEquals("[100.0,101)", s);
+		assertEquals("[100.0.0,101)", s);
 
 		// Only version in packageinfo
 		Builder bpinfos = new Builder();
@@ -789,7 +829,7 @@ public class BuilderTest extends BndTestCase {
 		bpinfos.build();
 		assertTrue(bms.check());
 		s = bpinfos.getImports().getByFQN("org.osgi.service.event").get("version");
-		assertEquals("[99.0,100)", s);
+		assertEquals("[99.0.0,100)", s);
 
 		// Version in manifest + packageinfo
 		Builder bboth = new Builder();
@@ -798,7 +838,7 @@ public class BuilderTest extends BndTestCase {
 		bboth.build();
 		assertTrue(bms.check());
 		s = bboth.getImports().getByFQN("org.osgi.service.event").get("version");
-		assertEquals("[101.0,102)", s);
+		assertEquals("[101.0.0,102)", s);
 
 	}
 
@@ -1133,7 +1173,6 @@ public class BuilderTest extends BndTestCase {
 		b.setProperty("C1", "${classes;implementing;org.osgi.service.component.*}");
 		b.setProperty("C2", "${classes;extending;org.xml.sax.helpers.*}");
 		b.setProperty("C3", "${classes;importing;org.xml.sax}");
-		b.setProperty("C3", "${classes;importing;org.xml.sax}");
 		b.setProperty("C4", "${classes;named;*Parser*}");
 		b.setProperty("C5", "${classes;named;*Parser*;version;45.*}");
 		Jar jar = b.build();
@@ -1184,19 +1223,33 @@ public class BuilderTest extends BndTestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Import-Package", "org.osgi.service.event;version=${@}");
+		b.setProperty("Private-Package", "test.refer");
+		b.addClasspath(new File("bin"));
 		b.build();
-		assertTrue(b.check("The JAR is empty"));
+		assertTrue(b.check());
 		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
 		assertEquals("1.0.1", s);
 	}
 
-	public static void testImportMicroTruncated() throws Exception {
+	public static void testImportMicroNotTruncatedWhenNoContent() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("jar/osgi.jar"));
 		b.setProperty("Import-Package", "org.osgi.service.event");
 		b.build();
 		assertTrue(b.check("The JAR is empty"));
 
+		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
+		assertEquals("[1.0.1,2)", s);
+	}
+
+	public static void testImportMicroNotTruncatedWithContent() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("jar/osgi.jar"));
+		b.setProperty("Import-Package", "org.osgi.service.event");
+		b.setProperty("Private-Package", "test.refer");
+		b.addClasspath(new File("bin"));b.build();
+		assertTrue(b.check());
+		
 		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
 		assertEquals("[1.0,2)", s);
 	}
@@ -2055,7 +2108,7 @@ public class BuilderTest extends BndTestCase {
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
 		assertEquals(
-				"[test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class, test/activator/Activator3.class, test/activator/ActivatorPackage.class, test/activator/ActivatorPrivate.class]",
+				"[test/activator/AbstractActivator.class, test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class, test/activator/Activator3.class, test/activator/ActivatorPackage.class, test/activator/ActivatorPrivate.class, test/activator/DefaultVisibilityActivator.class, test/activator/IActivator.class, test/activator/MissingNoArgsConstructorActivator.class, test/activator/NotAnActivator.class]",
 				new SortedList<String>(jar.getDirectories().get("test/activator").keySet()).toString());
 	}
 

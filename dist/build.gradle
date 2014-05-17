@@ -13,8 +13,7 @@ task dist {
 /* depend on all bnd projects in the workspace */
 rootProject.subprojects.each {
   if (it.hasProperty("bnd_project")) {
-    indexOBR.dependsOn += [":" + it.name + ":release"]
-    indexR5.dependsOn  += [":" + it.name + ":release"]
+    index.dependsOn += [":" + it.name + ":release"]
   }
 }
 

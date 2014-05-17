@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="template" default="none">
+    <!--
+         WARNING!!!
+
+         This file is maintained automatically by Bndtools! You should not edit it directly.
+         Instead, insert overrides into build.xml as follows:
+
+         <target name="compile" depends="template.init">
+            <echo message="This task executed before compilation..."/>
+            <antcall target="template.compile"/>
+            <echo message="This task executed after compilation."/>
+         </target>
+    -->
+
+
+    <!--
+         Default Target
+    -->
+    <target name="none">
+        <fail message="This ant script should never be called directly." />
+    </target>
+
+
+    <!--
+         INIT
+
+         All other targets depend on init.
+         It's purpose is to set up the environment only once and avoid it being repeated for each antcall.
+    -->
+    <target name="init" unless="initialized">
+        <!-- Initialise some basic properties -->
+        <tstamp>
+            <format property="NOW" pattern="yyyyMMdd-HHmmss" timezone="UTC"/>
+        </tstamp>
+        <dirname property="projectdir" file="${ant.file}" />
+        <dirname property="workspacedir" file="${projectdir}" />
+
+        <!-- Define the classpath of bnd (location is defined in build.properties) -->
+        <property file="${workspacedir}/cnf/build.properties"/>
+        <path id="bnd-classpath" location="${workspacedir}/cnf/${bnd.location}" />
+
+        <!-- Load bnd and prepare the workspace -->
+        <taskdef resource="aQute/bnd/ant/taskdef.properties" classpathref="bnd-classpath" />
+        <bndprepare basedir="${projectdir}" print="false" top="${release.dir}" />
+
+        <condition property="testDirExists">
+            <available file="${basedir}/test" type="dir"/>
+        </condition>
+
+        <!-- Create a marker property to indicate that initialisation has been completed -->
+        <property name="initialized" value="set" />
+        <echo message="Enter project ${project.name}"/>
+    </target>
+
+
+    <!--
+        DEPENDENCIES
+
+        Build project dependencies.
+    -->
+    <target name="dependencies" depends="init" if="project.dependson" unless="donotrecurse">
+        <subant target="build" inheritAll="false" buildpath="${project.dependson}">
+            <property name="donotrecurse" value="true" />
+        </subant>
+    </target>
+
+
+    <!--
+         COMPILE
+
+         Compile the sources.
+    -->
+    <target name="compile" depends="dependencies" if="project.sourcepath">
+        <mkdir dir="${project.output}"/>
+        <javac fork="yes" executable="${javac}" srcdir="${project.sourcepath}" destdir="${project.output}" classpath="${project.buildpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
+        <!--
+          The eclipse compiler copies resources but the Javac compiler does not
+          If ${src} == ${bin} then this is not necessary, but unfortunately, now
+          it is.
+        -->
+        <copy todir="${project.output}" verbose="${verbose}" preservelastmodified="true">
+            <fileset dir="${project.sourcepath}">
+                <exclude name="**/*.java" />
+                <exclude name="**/*.class" />
+            </fileset>
+        </copy>
+    </target>
+
+
+    <!--
+        BUILD
+
+        Build the project after building its dependencies.
+    -->
+    <target name="build" depends="compile">
+        <mkdir dir="${target}"/>
+        <bnd command="build" exceptions="true" basedir="${project}" />
+    </target>
+
+
+    <!--
+        JUNIT
+
+        Run the junit test if present and no disabled by the no.junit property.
+    -->
+    <target name="compileTests" depends="init,build" if="testDirExists">
+        <mkdir dir="bin_test"/>
+        <javac fork="yes" executable="${javac}" srcdir="test" destdir="bin_test" classpath="${project.buildpath}:${project.testpath}" bootclasspath="${project.bootclasspath}" deprecation="true" listfiles="true" target="${javac.target}" source="${javac.source}" debug="${javac.debug}" includeAntRuntime="no" verbose="${verbose}" />
+        <!--
+          The eclipse compiler copies resources but the Javac compiler does not
+          If ${src} == ${bin} then this is not necessary, but unfortunately, now
+          it is.
+        -->
+        <copy todir="bin_test" verbose="${verbose}" preservelastmodified="true">
+            <fileset dir="test">
+                <exclude name="**/*.java" />
+                <exclude name="**/*.class" />
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="junit" depends="init,compileTests" if="testDirExists" unless="no.junit">
+        <junit showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' fork="true" dir="${basedir}">
+            <assertions>
+                <enable />
+            </assertions>
+            <classpath path="${project.buildpath}:bin_test/" />
+            <formatter type="xml"/>
+            <batchtest todir="${target}">
+                <fileset dir="test">
+                    <include name="**/*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+
+    <!--
+         TEST
+    -->
+    <target name="test" depends="compile">
+        <bndtest/>
+    </target>
+
+
+    <!--
+        RELEASE
+
+        Run the bnd release task on the project and its dependencies.
+    -->
+    <target name="_release" depends="init">
+        <bndrelease/>
+    </target>
+
+    <target name="release" depends="build">
+        <subant target="_release" inheritAll="false" buildpath="${project.dependson}">
+            <property name="donotrecurse" value="true" />
+        </subant>
+    </target>
+
+
+    <!--
+         CLEAN
+
+         Clean up the project.
+    -->
+    <target name="deepclean" depends="init,clean" if="project.dependson">
+        <subant target="clean" inheritAll="false" buildpath="${project.dependson}" />
+    </target>
+
+    <target name="clean" depends="init">
+        <bnd command="clean" exceptions="true" basedir="${project}" />
+        <delete dir="bin"/>
+        <delete dir="bin_test"/>
+        <delete dir="${target}"/>
+    </target>
+
+
+    <!--
+         ECHO
+
+         Print some settings
+    -->
+    <target name="echo" depends="init">
+        <echo>verbose:                ${verbose}</echo>
+        <echo>project.name:           ${project.name}</echo>
+        <echo>Bundle-Version:         ${Bundle-Version}</echo>
+        <echo>project.output:         ${project.output}</echo>
+        <echo>project.sourcepath:     ${project.sourcepath}</echo>
+        <echo>project.allsourcepath:  ${project.allsourcepath}</echo>
+        <echo>project.buildpath:      ${project.buildpath}</echo>
+        <echo>project.testpath:       ${project.testpath}</echo>
+        <echo>project.dependson:      ${project.dependson}</echo>
+        <echo>project.bootclasspath:  ${project.bootclasspath}</echo>
+        <echo>javac:                  ${javac}</echo>
+        <echo>javac.debug:            ${javac.debug}</echo>
+        <echo>javac.source:           ${javac.source}</echo>
+        <echo>javac.target:           ${javac.target}</echo>
+        <echo>p:                      ${p}</echo>
+        <echo>btool.manifestVersion:  ${btool.manifestVersion}</echo>
+        <echo>btool.analyse:          ${btool.analyse}</echo>
+        <echo>btool.showmanifest:     ${btool.showmanifest}</echo>
+        <echo>btool.noversion:        ${btool.noversion}</echo>
+        <echo>btool.sources:          ${btool.sources}</echo>
+        <echo>btool.noextraheaders:   ${btool.noextraheaders}</echo>
+        <echo>jars.compile.order:     ${jars.compile.order}</echo>
+        <echo>bin.includes:           ${bin.includes}</echo>
+        <echo>base.modfied:           ${base.modified} (${base.modified.readable})</echo>
+        <echo>target:                 ${target}</echo>
+        <echo>release.target:         ${release.target}</echo>
+        <echo>licensed repo:          ${licensed-repo}</echo>
+        <echo>repo:                   ${repo}</echo>
+        <echo>use.bnd:                ${use.bnd}</echo>
+        <echo>nodeploy:               ${nodeploy}</echo>
+        <echo>-dependson:             ${-dependson}</echo>
+    </target>
+</project>

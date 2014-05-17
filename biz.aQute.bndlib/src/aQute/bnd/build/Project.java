@@ -19,6 +19,7 @@ import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.action.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
+import aQute.lib.converter.*;
 import aQute.lib.io.*;
 import aQute.lib.strings.*;
 import aQute.libg.command.*;
@@ -956,6 +957,19 @@ public class Project extends Processor {
 				}
 			}
 
+			//
+			// We have to augment the list of returned versions
+			// with info from the workspace. We use null as a marker
+			// to indicate that it is a workspace project
+			//
+			
+			SortedSet<Version> localVersions = getWorkspace().getWorkspaceRepository().versions(bsn);
+			for (Version v : localVersions) {
+				if (!versions.containsKey(v) && versionRange.includes(v))
+					versions.put(v, null);
+			}
+			
+			
 			// Verify if we found any, if so, we use the strategy to pick
 			// the first or last
 
@@ -976,13 +990,19 @@ public class Project extends Processor {
 				}
 				if (provider != null) {
 					RepositoryPlugin repo = versions.get(provider);
+					if ( repo == null) {
+						// A null provider indicates that we have a local project
+						return getBundleFromProject(bsn, attrs);
+					}
+					
 					String version = provider.toString();
 					DownloadBlocker blocker = new DownloadBlocker(this);
 					File result = repo.get(bsn, provider, attrs, blocker);
 					if (result != null)
 						return toContainer(bsn, version, attrs, result, blocker);
-				} else
+				} else {
 					msgs.FoundVersions_ForStrategy_ButNoProvider(versions, useStrategy);
+				}
 			}
 		}
 
@@ -1834,6 +1854,10 @@ public class Project extends Processor {
 	}
 
 	public void action(String command) throws Exception {
+		action(command, new Object[0]);
+	}
+
+	public void action(String command, Object... args) throws Exception {
 		Map<String,Action> actions = getActions();
 
 		Action a = actions.get(command);
@@ -1842,7 +1866,10 @@ public class Project extends Processor {
 
 		before(this, command);
 		try {
-			a.execute(this, command);
+			if ( args.length == 0)
+				a.execute(this, command);
+			else
+				a.execute(this, args);
 		}
 		catch (Exception t) {
 			after(this, command, t);
@@ -1904,15 +1931,25 @@ public class Project extends Processor {
 	@SuppressWarnings("unchecked")
 	public void script(@SuppressWarnings("unused")
 	String type, String script) throws Exception {
+		script(type, script, new Object[0]);
+	}
+
+	@SuppressWarnings({
+			"unchecked", "rawtypes"
+	})
+	public void script(String type, String script, Object... args) throws Exception {
 		// TODO check tyiping
 		List<Scripter> scripters = getPlugins(Scripter.class);
 		if (scripters.isEmpty()) {
 			msgs.NoScripters_(script);
 			return;
 		}
-		@SuppressWarnings("rawtypes")
-		Map x = getProperties();
-		scripters.get(0).eval(x, new StringReader(script));
+
+		Properties p = new Properties(getProperties());
+
+		for (int i = 0; i < args.length; i++)
+			p.setProperty("" + i, Converter.cnv(String.class, args[i]));
+		scripters.get(0).eval((Map) p, new StringReader(script));
 	}
 
 	public String _repos(@SuppressWarnings("unused")

@@ -1,0 +1,87 @@
+package aQute.bnd.deployer.http;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
+
+import aQute.lib.io.*;
+import aQute.service.reporter.*;
+import test.lib.*;
+import junit.framework.*;
+import static org.mockito.Mockito.*;
+
+public class HttpRedirectionTest extends TestCase {
+
+	public void testFollowRedirect() throws Exception {
+		Reporter reporter = mock(Reporter.class);
+
+		NanoHTTPD httpd = new NanoHTTPD(0, new File(".")) {
+			@Override
+			public Response serve(String uri, String method, Properties header, Properties parms, Properties files) {
+				Response r;
+				if ("/foo".equals(uri)) {
+					r = new Response("302 Found", "text/plain", "over there");
+					r.header.put("Location", "/bar");
+				} else if("/bar".equals(uri)) {
+					r = new Response(NanoHTTPD.HTTP_OK, "text/plain", "got it");
+				} else {
+					r = new Response(NanoHTTPD.HTTP_BADREQUEST, "text/plain", "sod off");
+				}
+				return r;
+			}
+		};
+		String baseUrl = "http://localhost:" + httpd.getPort() + "/";
+		String originalUrl = baseUrl + "foo";
+		String redirectUrl = baseUrl + "bar";
+
+		DefaultURLConnector connector = new DefaultURLConnector();
+		connector.setReporter(reporter);
+
+		InputStream stream = connector.connect(new URL(originalUrl));
+		String result = IO.collect(stream);
+		
+		assertEquals("got it", result);
+		verify(reporter).warning("HTTP address redirected from %s to %s", originalUrl, redirectUrl);
+	}
+	
+	public void testDetectRedirectLoop() throws Exception {
+		final NanoHTTPD httpd = new NanoHTTPD(0, new File(".")) {
+			@Override
+			public Response serve(String uri, String method, Properties header, Properties parms, Properties files) {
+				Response r;
+				if ("/foo".equals(uri)) {
+					r = new Response("302 Found", "text/plain", "over there");
+					r.header.put("Location", "/bar");
+				} else if("/bar".equals(uri)) {
+					r = new Response("302 Found", "text/plain", "go back");
+					r.header.put("Location", "/foo");
+				} else {
+					r = new Response(NanoHTTPD.HTTP_BADREQUEST, "text/plain", "sod off");
+				}
+				return r;
+			}
+		};
+		
+		// Use a future to ensure we timeout after 1s if the redirect does actually loop forever
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		Future< ? > future = executor.submit(new Runnable() {
+			public void run() {
+				DefaultURLConnector connector = new DefaultURLConnector();
+				try {
+					InputStream stream = connector.connect(new URL("http://localhost:" + httpd.getPort() + "/foo"));
+					IO.collect(stream);
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		try {
+			future.get(1, TimeUnit.SECONDS);
+		} finally {
+			future.cancel(true);
+			executor.shutdownNow();
+		}
+	}
+}

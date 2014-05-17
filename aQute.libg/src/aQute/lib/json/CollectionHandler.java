@@ -40,16 +40,21 @@ public class CollectionHandler extends Handler {
 
 		app.append("[");
 		String del = "";
-		for (Object o : collection) {
+		int index = 0;
+		for (Object o : collection) try {
 			app.append(del);
 			app.encode(o, componentType, visited);
 			del = ",";
+			index++;
+		} catch( Exception e) {
+			throw new IllegalArgumentException("["+index+"]", e);
 		}
 		app.append("]");
 	}
 
 	@Override
 	Object decodeArray(Decoder r) throws Exception {
+		@SuppressWarnings("unchecked")
 		Collection<Object> c = (Collection<Object>) rawClass.newInstance();
 		r.codec.parseArray(c, componentType, r);
 		return c;

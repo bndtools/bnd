@@ -45,7 +45,7 @@ ext.bnd_targetDir                              = relativePath(rootProject.bnd_wo
 
 /* Java compilation settings */
 ext.gradleBuild_compileDeprecation             = true
-ext.gradleBuild_compileFork                    = true
+ext.gradleBuild_compileFork                    = false
 ext.gradleBuild_compileVerbose                 = false
 
 /* Java test settings */
