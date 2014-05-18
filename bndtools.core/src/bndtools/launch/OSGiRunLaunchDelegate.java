@@ -194,7 +194,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
     /**
      * Registers a resource listener with the project model file to update the launcher when the model or any of the
      * run-bundles changes. The resource listener is automatically unregistered when the launched process terminates.
-     * 
+     *
      * @param project
      * @param launch
      * @throws CoreException
@@ -288,7 +288,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                 display.asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        if (dialog != null) {
+                        if (dialog != null && dialog.getShell() != null) {
                             dialog.getShell().dispose();
                         }
                     }
