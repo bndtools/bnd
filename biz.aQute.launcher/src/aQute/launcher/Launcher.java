@@ -19,7 +19,6 @@ import org.osgi.framework.launch.*;
 import org.osgi.service.packageadmin.*;
 import org.osgi.service.permissionadmin.*;
 
-import aQute.bnd.build.ProjectLauncher.NotificationType;
 import aQute.launcher.agent.*;
 import aQute.launcher.constants.*;
 import aQute.launcher.minifw.*;
