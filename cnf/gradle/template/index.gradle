@@ -128,7 +128,7 @@ void createIndexes(boolean r5, boolean uncompressed, boolean compressed) {
           indexArgs       += "-r"
           indexArgs       += indexFile
           indexArgs       += "-d"
-          indexArgs       += new URL("file", null, -1, relativePath(indexDirectoryFile))
+          indexArgs       += indexDirectoryFile.toURI()
           indexArgs       += "-n"
           indexArgs       += repoName
         } else {
@@ -145,7 +145,7 @@ void createIndexes(boolean r5, boolean uncompressed, boolean compressed) {
 
         if (!bundlesToIndex.isEmpty()) {
           bundlesToIndex.each {
-            indexArgs     += relativePath(it)
+            indexArgs     += it.absolutePath
           }
         }
 
