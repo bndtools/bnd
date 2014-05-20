@@ -746,7 +746,9 @@ public class NanoHTTPD {
 					pw.print("Content-Type: " + mime + "\r\n");
 
 				if (header == null || header.getProperty("Date") == null)
-					pw.print("Date: " + gmtFrmt.format(new Date()) + "\r\n");
+					synchronized (gmtFrmt) {
+						pw.print("Date: " + gmtFrmt.format(new Date()) + "\r\n");
+					}
 
 				if (header != null) {
 					Enumeration< ? > e = header.keys();

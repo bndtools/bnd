@@ -11,12 +11,12 @@ import java.util.*;
  * objects or other Tag objects.
  */
 public class Tag {
-	Tag							parent;													// Parent
-	String						name;														// Name
-	final Map<String,String>	attributes	= new LinkedHashMap<String,String>();
-	final List<Object>			content		= new ArrayList<Object>();						// Content
-	SimpleDateFormat			format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
-	boolean						cdata;
+	Tag								parent;													// Parent
+	String							name;														// Name
+	final Map<String,String>		attributes	= new LinkedHashMap<String,String>();
+	final List<Object>				content		= new ArrayList<Object>();						// Content
+	final static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	boolean							cdata;
 
 	/**
 	 * Construct a new Tag with a name.
@@ -91,8 +91,11 @@ public class Tag {
 	 * describes at the top of this class.
 	 */
 	public Tag addAttribute(String key, Date value) {
-		if (value != null)
-			attributes.put(key, format.format(value));
+		if (value != null) {
+			synchronized (format) {
+				attributes.put(key, format.format(value));
+			}
+		}
 		return this;
 	}
 

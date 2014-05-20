@@ -37,7 +37,7 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 	private static final String		PRIVATE_KEY				= "privateKey";
 	private static final String		PUBLIC_KEY				= "publicKey";
 	private static final String		EMAIL					= "email";
-	private static SimpleDateFormat	httpFormat				= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+	private static SimpleDateFormat httpFormat				= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 	private static final String		X_A_QUTE_AUTHORIZATION	= "X-aQute-Authorization";
 	private String					identity;
 	private String					email;

@@ -50,7 +50,7 @@ import aQute.lib.io.*;
  * licence)
  */
 public class NanoHTTPD {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+	static final int	BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
 
 	// ==================================================
 	// API parts
@@ -678,7 +678,9 @@ public class NanoHTTPD {
 					pw.print("Content-Type: " + mime + "\r\n");
 
 				if (header == null || header.getProperty("Date") == null)
-					pw.print("Date: " + gmtFrmt.format(new Date()) + "\r\n");
+					synchronized (gmtFrmt) {
+						pw.print("Date: " + gmtFrmt.format(new Date()) + "\r\n");
+					}
 
 				if (header != null) {
 					Enumeration<Object> e = header.keys();
@@ -746,10 +748,10 @@ public class NanoHTTPD {
 		return newUri;
 	}
 
-	private int					myTcpPort;
+	private int			myTcpPort;
 	final ServerSocket	myServerSocket;
-	private Thread				myThread;
-	private File				myRootDir;
+	private Thread		myThread;
+	private File		myRootDir;
 
 	// ==================================================
 	// File server code
@@ -933,7 +935,7 @@ public class NanoHTTPD {
 	/**
 	 * Hashtable mapping (String)FILENAME_EXTENSION -> (String)MIME_TYPE
 	 */
-	private static Hashtable<String,String>		theMimeTypes	= new Hashtable<String,String>();
+	private static Hashtable<String,String>	theMimeTypes	= new Hashtable<String,String>();
 	static {
 		StringTokenizer st = new StringTokenizer("css		text/css " + "htm		text/html " + "html		text/html "
 				+ "xml		text/xml " + "txt		text/plain " + "asc		text/plain " + "gif		image/gif " + "jpg		image/jpeg "
@@ -946,15 +948,15 @@ public class NanoHTTPD {
 			theMimeTypes.put(st.nextToken(), st.nextToken());
 	}
 
-	static int							theBufferSize	= 16 * 1024;
+	static int								theBufferSize	= 16 * 1024;
 
 	// Change this if you want to log to somewhere else than stdout
-	protected static PrintStream				myOut			= System.out;
+	protected static PrintStream			myOut			= System.out;
 
 	/**
 	 * GMT date formatter
 	 */
-	static java.text.SimpleDateFormat	gmtFrmt;
+	static java.text.SimpleDateFormat		gmtFrmt;
 	static {
 		gmtFrmt = new java.text.SimpleDateFormat("E, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
 		gmtFrmt.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -963,29 +965,29 @@ public class NanoHTTPD {
 	/**
 	 * The distribution licence
 	 */
-	private static final String					LICENCE			= "Copyright (C) 2001,2005-2011 by Jarno Elonen <elonen@iki.fi>\n"
-																		+ "and Copyright (C) 2010 by Konstantinos Togias <info@ktogias.gr>\n"
-																		+ "\n"
-																		+ "Redistribution and use in source and binary forms, with or without\n"
-																		+ "modification, are permitted provided that the following conditions\n"
-																		+ "are met:\n"
-																		+ "\n"
-																		+ "Redistributions of source code must retain the above copyright notice,\n"
-																		+ "this list of conditions and the following disclaimer. Redistributions in\n"
-																		+ "binary form must reproduce the above copyright notice, this list of\n"
-																		+ "conditions and the following disclaimer in the documentation and/or other\n"
-																		+ "materials provided with the distribution. The name of the author may not\n"
-																		+ "be used to endorse or promote products derived from this software without\n"
-																		+ "specific prior written permission. \n"
-																		+ " \n"
-																		+ "THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR\n"
-																		+ "IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES\n"
-																		+ "OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.\n"
-																		+ "IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,\n"
-																		+ "INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT\n"
-																		+ "NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n"
-																		+ "DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n"
-																		+ "THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n"
-																		+ "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n"
-																		+ "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.";
+	private static final String				LICENCE			= "Copyright (C) 2001,2005-2011 by Jarno Elonen <elonen@iki.fi>\n"
+																	+ "and Copyright (C) 2010 by Konstantinos Togias <info@ktogias.gr>\n"
+																	+ "\n"
+																	+ "Redistribution and use in source and binary forms, with or without\n"
+																	+ "modification, are permitted provided that the following conditions\n"
+																	+ "are met:\n"
+																	+ "\n"
+																	+ "Redistributions of source code must retain the above copyright notice,\n"
+																	+ "this list of conditions and the following disclaimer. Redistributions in\n"
+																	+ "binary form must reproduce the above copyright notice, this list of\n"
+																	+ "conditions and the following disclaimer in the documentation and/or other\n"
+																	+ "materials provided with the distribution. The name of the author may not\n"
+																	+ "be used to endorse or promote products derived from this software without\n"
+																	+ "specific prior written permission. \n"
+																	+ " \n"
+																	+ "THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR\n"
+																	+ "IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES\n"
+																	+ "OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.\n"
+																	+ "IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,\n"
+																	+ "INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT\n"
+																	+ "NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n"
+																	+ "DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n"
+																	+ "THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n"
+																	+ "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n"
+																	+ "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.";
 }

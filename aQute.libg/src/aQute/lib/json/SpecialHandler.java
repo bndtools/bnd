@@ -11,7 +11,6 @@ public class SpecialHandler extends Handler {
 	final Class						type;
 	final Method					valueOf;
 	final Constructor< ? >			constructor;
-	final static SimpleDateFormat	sdf	= new SimpleDateFormat();
 
 	public SpecialHandler(Class< ? > type, Constructor< ? > constructor, Method valueOf) {
 		this.type = type;

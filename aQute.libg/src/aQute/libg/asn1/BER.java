@@ -5,7 +5,7 @@ import java.text.*;
 import java.util.*;
 
 public class BER implements Types {
-	DateFormat				df	= new SimpleDateFormat("yyyyMMddHHmmss\\Z");
+	final static DateFormat				df	= new SimpleDateFormat("yyyyMMddHHmmss\\Z");
 
 	final DataInputStream	xin;
 	long					position;
@@ -449,9 +449,11 @@ public class BER implements Types {
 			case UTCTIME :
 			case GENERALIZED_TIME :
 				Date date = pdu.getDate();
-				String ss = df.format(date);
-				byte d[] = ss.getBytes("ASCII");
-				out.write(d);
+				synchronized(df) {
+					String ss = df.format(date);
+					byte d[] = ss.getBytes("ASCII");
+					out.write(d);
+				}
 				break;
 
 		}
