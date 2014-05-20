@@ -21,11 +21,11 @@ public class Create {
 	}
 
 	public static <T> Set<T> set() {
-		return new HashSet<T>();
+		return new LinkedHashSet<T>();
 	}
 
 	public static <T> Set<T> set(Class<T> c) {
-		return Collections.checkedSet(new HashSet<T>(), c);
+		return Collections.checkedSet(new LinkedHashSet<T>(), c);
 	}
 
 	public static <T> List<T> list(T[] source) {
@@ -47,7 +47,7 @@ public class Create {
 	public static <T> Set<T> copy(Collection<T> source) {
 		if (source == null)
 			return set();
-		return new HashSet<T>(source);
+		return new LinkedHashSet<T>(source);
 	}
 
 }
