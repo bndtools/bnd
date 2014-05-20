@@ -48,6 +48,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public static final String									REPO_TYPE_OBR					= ObrContentProvider.NAME;
 	public static final String									REPO_INDEX_SHA_EXTENSION		= ".sha";
 	public static final String									PROP_CACHE_TIMEOUT				= "timeout";
+	public static final String									PROP_ONLINE						= "online";
 	
 	private final static int DEFAULT_CACHE_TIMEOUT = 5;
 
@@ -71,6 +72,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	private final CapabilityIndex							capabilityIndex					= new CapabilityIndex();
 	private final VersionedResourceIndex					identityMap						= new VersionedResourceIndex();
 	private int cacheTimeoutSeconds = DEFAULT_CACHE_TIMEOUT;
+	private boolean online = true;
 
 	protected AbstractIndexedRepo() {
 		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
@@ -176,9 +178,16 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			for (URI indexLocation : indexLocations) {
 				try {
 					CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null);
-					if (indexHandle.cachedFile != null && System.currentTimeMillis() - indexHandle.cachedFile.lastModified() < this.cacheTimeoutSeconds * 1000) {
-						// Within cache timeout, skipping download
+					// If there is a cachedFile, then just use it IF
+					// 1) the cachedFile is within the timeout period
+					// OR 2) online is false
+					if (indexHandle.cachedFile != null &&
+							((System.currentTimeMillis() - indexHandle.cachedFile.lastModified() < this.cacheTimeoutSeconds * 1000)
+							|| !this.online)) {
 						indexHandle.sha = indexHandle.getCachedSHA();
+						if (indexHandle.sha != null && !this.online) {
+							System.out.println(String.format("Offline. Using cached %s.", indexLocation));
+						}
 					}
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
@@ -252,6 +261,10 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			}
 		}
 
+		if (map.containsKey(PROP_ONLINE)) {
+			this.online = Boolean.parseBoolean(map.get(PROP_ONLINE));
+		}
+		
 		requestedContentProviderList = map.get(PROP_REPO_TYPE);
 	}
 
