@@ -113,6 +113,8 @@ public class Verifier extends Processor {
 	public final static Pattern	NUMBERPATTERN					= Pattern.compile("\\d+");
 	public final static Pattern	PACKAGEPATTERN					= Pattern
 																		.compile("\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*");
+	public final static Pattern	MULTIPACKAGEPATTERN				= Pattern
+																		.compile("(\\s*" + PACKAGEPATTERN + ")(" + LIST_SPLITTER + PACKAGEPATTERN + ")*\\s*");
 	public final static Pattern	PATHPATTERN						= Pattern.compile(".*");
 	public final static Pattern	FQNPATTERN						= Pattern.compile(".*");
 	public final static Pattern	URLPATTERN						= Pattern.compile(".*");
@@ -757,7 +759,7 @@ public class Verifier extends Processor {
 						"Contracts %s must always have the osgi.contract attribute set", key);
 
 			} else if (key.equals("osgi.service")) {
-				verify(attrs, "objectClass", PACKAGEPATTERN, true,
+				verify(attrs, "objectClass", MULTIPACKAGEPATTERN, true,
 						"osgi.service %s must have the objectClass attribute set", key);
 
 			} else if (key.equals("osgi.ee")) {
