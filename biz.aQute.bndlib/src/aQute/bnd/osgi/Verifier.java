@@ -114,7 +114,7 @@ public class Verifier extends Processor {
 	public final static Pattern	PACKAGEPATTERN					= Pattern
 																		.compile("\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*");
 	public final static Pattern	MULTIPACKAGEPATTERN				= Pattern
-																		.compile("(" + PACKAGEPATTERN + ")(," + PACKAGEPATTERN + ")*");
+																		.compile("(\\s*" + PACKAGEPATTERN + ")(" + LIST_SPLITTER + PACKAGEPATTERN + ")*\\s*");
 	public final static Pattern	PATHPATTERN						= Pattern.compile(".*");
 	public final static Pattern	FQNPATTERN						= Pattern.compile(".*");
 	public final static Pattern	URLPATTERN						= Pattern.compile(".*");
