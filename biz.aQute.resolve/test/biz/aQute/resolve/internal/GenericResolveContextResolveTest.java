@@ -7,7 +7,6 @@ import java.util.*;
 
 import junit.framework.*;
 
-import org.apache.felix.resolver.*;
 import org.osgi.framework.*;
 import org.osgi.framework.namespace.*;
 import org.osgi.resource.*;

@@ -24,7 +24,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	final private File			propertiesFile;
 	boolean						prepared;
 	
-	private DatagramSocket 		listenerComms;
+	DatagramSocket 		listenerComms;
 
 	public ProjectLauncherImpl(Project project) throws Exception {
 		super(project);

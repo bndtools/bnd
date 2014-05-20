@@ -22,7 +22,6 @@ public class ResolutionBlacklistFilter implements ResolverHook, Plugin {
 
 	public static final String BLACKLIST_PROPERTYNAME = "blacklist";
 	
-	private Reporter reporter;
 	private HashMap<String, List<VersionRange>> filterOut = new HashMap<String, List<VersionRange>>();
 	private Converter<List<VersionedClause>,String>	converter	= new ClauseListConverter<VersionedClause>(new VersionedClauseConverter());
 	
@@ -43,7 +42,6 @@ public class ResolutionBlacklistFilter implements ResolverHook, Plugin {
 	}
 
 	public void setReporter(Reporter processor) {
-		this.reporter = processor;
 	}
 
 	public void filterMatches(Requirement requirement, List<Capability> candidates) {
