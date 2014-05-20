@@ -32,9 +32,13 @@ public class Baseline {
 
 	public static class BundleInfo {
 		public String	bsn;
-		public Version	version;
+		public Version	olderVersion;
+		public Version	newerVersion;
 		public Version	suggestedVersion;
 		public boolean	mismatch;
+		
+		@Deprecated
+		public Version	version;
 	}
 
 	final Differ		differ;
@@ -203,7 +207,8 @@ public class Baseline {
 
 		binfo.bsn = bsn;
 		binfo.suggestedVersion = suggestedVersion;
-		binfo.version = olderVersion;
+		binfo.version = binfo.olderVersion = olderVersion;
+		binfo.newerVersion = newerVersion;
 
 		if (newerVersion.getWithoutQualifier().equals(olderVersion.getWithoutQualifier())) {
 			// We have a special case, the current and repository revisions
