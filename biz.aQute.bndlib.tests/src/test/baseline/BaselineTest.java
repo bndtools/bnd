@@ -233,7 +233,7 @@ public class BaselineTest extends TestCase {
 			builder.setProperty(Constants.BASELINEREPO, "Baseline");
 			builder.build();
 
-			if (!builder.check("The bundle version 1.2.0 is too low, must be at least 1.3.0"))
+			if (!builder.check("The bundle version \\(1.2.0/1.2.0\\) is too low, must be at least 1.3.0"))
 				fail();
 
 		}
