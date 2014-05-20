@@ -1772,6 +1772,7 @@ public class bnd extends Processor {
 
 	private void doPrint(Jar jar, int options, printOptions po) throws ZipException, IOException, Exception {
 
+		Analyzer analyzer = new Analyzer();
 		try {
 			if ((options & VERIFY) != 0) {
 				Verifier verifier = new Verifier(jar);
@@ -1813,73 +1814,66 @@ public class bnd extends Processor {
 
 			if ((options & (USES | USEDBY | API)) != 0) {
 				out.println();
-				Analyzer analyzer = new Analyzer();
-				try {
-					analyzer.setPedantic(isPedantic());
-					analyzer.setJar(jar);
-					Manifest m = jar.getManifest();
-					if (m != null) {
-						String s = m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
-						if (s != null)
-							analyzer.setExportPackage(s);
+				analyzer.setPedantic(isPedantic());
+				analyzer.setJar(jar);
+				Manifest m = jar.getManifest();
+				if (m != null) {
+					String s = m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+					if (s != null)
+						analyzer.setExportPackage(s);
+				}
+				analyzer.analyze();
+
+				boolean java = po.java();
+
+				Packages exports = analyzer.getExports();
+
+				if ((options & API) != 0) {
+					Map<PackageRef,List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(), !po.java());
+					if (!po.xport()) {
+						if (exports.isEmpty())
+							warning("Not filtering on exported only since exports are empty");
+						else
+							apiUses.keySet().retainAll(analyzer.getExports().keySet());
 					}
-					analyzer.analyze();
+					out.println("[API USES]");
+					printMultiMap(apiUses);
 
-					boolean java = po.java();
+					Set<PackageRef> privates = analyzer.getPrivates();
+					for (PackageRef export : exports.keySet()) {
+						Map<Def,List<TypeRef>> xRef = analyzer.getXRef(export, privates, Modifier.PROTECTED
+								+ Modifier.PUBLIC);
+						if (!xRef.isEmpty()) {
+							out.println();
+							out.printf("%s refers to private Packages (not good)\n\n", export);
+							for (Entry<Def,List<TypeRef>> e : xRef.entrySet()) {
+								TreeSet<PackageRef> refs = new TreeSet<Descriptors.PackageRef>();
+								for (TypeRef ref : e.getValue())
+									refs.add(ref.getPackageRef());
 
-					Packages exports = analyzer.getExports();
-
-					if ((options & API) != 0) {
-						Map<PackageRef,List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(),
-								!po.java());
-						if (!po.xport()) {
-							if (exports.isEmpty())
-								warning("Not filtering on exported only since exports are empty");
-							else
-								apiUses.keySet().retainAll(analyzer.getExports().keySet());
-						}
-						out.println("[API USES]");
-						printMultiMap(apiUses);
-
-						Set<PackageRef> privates = analyzer.getPrivates();
-						for (PackageRef export : exports.keySet()) {
-							Map<Def,List<TypeRef>> xRef = analyzer.getXRef(export, privates, Modifier.PROTECTED
-									+ Modifier.PUBLIC);
-							if (!xRef.isEmpty()) {
-								out.println();
-								out.printf("%s refers to private Packages (not good)\n\n", export);
-								for (Entry<Def,List<TypeRef>> e : xRef.entrySet()) {
-									TreeSet<PackageRef> refs = new TreeSet<Descriptors.PackageRef>();
-									for (TypeRef ref : e.getValue())
-										refs.add(ref.getPackageRef());
-
-									refs.retainAll(privates);
-									out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
-											, e.getKey().getName(), refs);
-								}
-								out.println();
+								refs.retainAll(privates);
+								out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
+										, e.getKey().getName(), refs);
 							}
+							out.println();
 						}
-						out.println();
 					}
-
-					Map<PackageRef,List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
-					if ((options & USES) != 0) {
-						out.println("[USES]");
-						printMultiMap(uses);
-						out.println();
-					}
-					if ((options & USEDBY) != 0) {
-						out.println("[USEDBY]");
-						MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<Descriptors.PackageRef,Descriptors.PackageRef>(
-								uses).transpose();
-						printMultiMap(usedBy);
-					}
-
+					out.println();
 				}
-				finally {
-					analyzer.close();
+
+				Map<PackageRef,List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
+				if ((options & USES) != 0) {
+					out.println("[USES]");
+					printMultiMap(uses);
+					out.println();
 				}
+				if ((options & USEDBY) != 0) {
+					out.println("[USEDBY]");
+					MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<Descriptors.PackageRef,Descriptors.PackageRef>(
+							uses).transpose();
+					printMultiMap(usedBy);
+				}
+
 			}
 
 			if ((options & COMPONENT) != 0) {
@@ -1925,6 +1919,7 @@ public class bnd extends Processor {
 		}
 		finally {
 			jar.close();
+			analyzer.close();
 		}
 	}
 
@@ -2537,26 +2532,25 @@ public class bnd extends Processor {
 
 	public Workspace getWorkspace(String where) throws Exception {
 		Project p = getProject(where);
-		if ( p != null)
+		if (p != null)
 			return p.getWorkspace();
 
-		File dir ;
-		if ( where != null) {
+		File dir;
+		if (where != null) {
 			dir = getFile(where);
-		} else 
+		} else
 			dir = getBase();
-		
 
-		if ( !dir.isDirectory())
+		if (!dir.isDirectory())
 			return null;
-		
+
 		File buildBnd = getFile(dir, "cnf/build.bnd");
-		if ( !buildBnd.isFile())
+		if (!buildBnd.isFile())
 			return null;
-		
 
 		return getWorkspace(dir);
 	}
+
 	/**
 	 * Convert files
 	 */
@@ -2613,7 +2607,9 @@ public class bnd extends Processor {
 			"<jar-path>", "[...]"
 	})
 	interface selectOptions extends Options {
-		@Description("A simple assertion on a manifest header (e.g. " + Constants.BUNDLE_VERSION + "=1.0.1) or an OSGi filter that is asserted on all manifest headers. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted to check for the presence of a header.")
+		@Description("A simple assertion on a manifest header (e.g. "
+				+ Constants.BUNDLE_VERSION
+				+ "=1.0.1) or an OSGi filter that is asserted on all manifest headers. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted to check for the presence of a header.")
 		String where();
 
 		@Description("A manifest header to print or: path, name, size, length, modified for information about the file, wildcards are allowed to print multiple headers. ")
@@ -3414,7 +3410,6 @@ public class bnd extends Processor {
 		}
 	}
 
-
 	/**
 	 * Show the class versions used in a JAR
 	 * 
@@ -3618,7 +3613,8 @@ public class bnd extends Processor {
 										return;
 									}
 
-									out.println(descriptor.url + " #" + descriptor.bsn + ";version=" + descriptor.version);
+									out.println(descriptor.url + " #" + descriptor.bsn + ";version="
+											+ descriptor.version);
 								}
 							}
 						}
@@ -3635,28 +3631,29 @@ public class bnd extends Processor {
 			}
 		}
 	}
-	
+
 	/**
 	 * Show the loaded workspace plugins
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
-	
+
 	public void _plugins(projectOptions opts) throws Exception {
 		Workspace ws = getWorkspace(opts.project());
-		
-		if ( ws == null) {
+
+		if (ws == null) {
 			error("Can't find a workspace");
 			return;
 		}
-		
+
 		int n = 0;
-		for ( Object o : ws.getPlugins()) {
+		for (Object o : ws.getPlugins()) {
 			String s = o.toString();
-			if ( s.trim().length() == 0)
+			if (s.trim().length() == 0)
 				s = o.getClass().getName();
-			
+
 			out.printf("%03d %s%n", n++, s);
 		}
-			
+
 	}
 }
