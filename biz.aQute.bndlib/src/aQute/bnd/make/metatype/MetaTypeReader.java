@@ -24,7 +24,7 @@ public class MetaTypeReader extends WriteResource {
 
 	// Resource
 	String					extra;
-	
+
 	// Should we process super interfaces
 	boolean					inherit;
 
@@ -234,9 +234,14 @@ public class MetaTypeReader extends WriteResource {
 					// but we have no access to these defaults.
 					// i.e. the defaults are implemented in the code
 					// thus here
-					if ( annotation.get("required") == null)
-						annotation.put("required", true);
-					
+					try {
+						if (annotation.get("required") == null)
+							annotation.put("required", true);
+					}
+					catch (Exception e) {
+						// can fail ... see #514
+					}
+
 					methods.put(method, ad);
 				}
 			}
@@ -317,22 +322,21 @@ public class MetaTypeReader extends WriteResource {
 
 			this.object.addAttribute("ocdref", id);
 
-			
 			if (inherit) {
 				handleInheritedClasses(clazz);
 			}
 		}
 	}
-	
+
 	private void handleInheritedClasses(Clazz child) throws Exception {
 		TypeRef[] ifaces = child.getInterfaces();
-		if(ifaces != null) {
-			for(TypeRef ref : ifaces) {
+		if (ifaces != null) {
+			for (TypeRef ref : ifaces) {
 				parseAndMergeInheritedMetadata(ref, child);
 			}
 		}
 		TypeRef superClazz = child.getSuper();
-		if(superClazz != null) {
+		if (superClazz != null) {
 			parseAndMergeInheritedMetadata(superClazz, child);
 		}
 	}
@@ -342,8 +346,7 @@ public class MetaTypeReader extends WriteResource {
 			return;
 		Clazz ec = reporter.findClass(ref);
 		if (ec == null) {
-			reporter.error("Missing inherited class for Metatype annotations: " + ref + " from "
-					+ child.getClassName());
+			reporter.error("Missing inherited class for Metatype annotations: " + ref + " from " + child.getClassName());
 		} else {
 			MetaTypeReader mtr = new MetaTypeReader(ec, reporter);
 			mtr.setDesignate(designatePid, factory);
