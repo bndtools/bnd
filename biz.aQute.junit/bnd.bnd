@@ -8,7 +8,8 @@
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
 javac.source = 1.5
-javac.target = jsr14
+javac.target = 1.5
+
 Private-Package: aQute.junit.*,\
 	junit.*,\
 	org.junit.*
@@ -23,7 +24,7 @@ Export-Package: junit.*; version=3.8;-nouses=true,\
 Import-Package: aQute.*;resolution:=optional,*
 Bundle-Activator: aQute.junit.Activator
 Embedded-Activator: aQute.junit.Activator
-Bundle-Version: 1.2.0.${tstamp}
+Bundle-Version: 1.3.0.${tstamp}
 Bundle-Release: Use main thread for testing, optionally allowing old separate thread model
 
 
