@@ -17,12 +17,12 @@ public class PropertiesTest extends TestCase {
 
 	public static void testFlattening() throws Exception {
 		Processor p = new Processor();
-		p.setProperty("-consumer-policy", "${version;===;${@}}");
+		p.setProperty("-versionpolicy", "${version;===;${@}}");
 		p.setProperty("x", "x");
 		p.setProperty("_x", "_x");
 
 		Properties flattened = notNull(p.getFlattenedProperties());
-		String x = notNull(flattened.getProperty("-consumer-policy"));
+		String x = notNull(flattened.getProperty("-versionpolicy"));
 		assertTrue(x.contains("@"));
 		notNull(flattened.getProperty("x"));
 		assertNull(flattened.getProperty("_x"));

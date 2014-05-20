@@ -2347,24 +2347,15 @@ public class Analyzer extends Processor {
 		}
 	}
 
-	final static String	DEFAULT_PROVIDER_POLICY_JAVA_7_AND_BELOW	= "${range;[==,=+)}";
-	final static String	DEFAULT_CONSUMER_POLICY_JAVA_7_AND_BELOW	= "${range;[==,+)}";
-
-	final static String	DEFAULT_PROVIDER_POLICY_JAVA_8_AND_UP	= "${range;[===,=+)}";
-	final static String	DEFAULT_CONSUMER_POLICY_JAVA_8_AND_UP	= "${range;[===,+)}";
+	final static String	DEFAULT_PROVIDER_POLICY	= "${range;[==,=+)}";
+	final static String	DEFAULT_CONSUMER_POLICY	= "${range;[==,+)}";
 
 	public String getVersionPolicy(boolean implemented) {
-		JAVA highestEE = ees.isEmpty() ? JAVA.UNKNOWN : ees.last();
-
 		if (implemented) {
-			return getProperty(PROVIDER_POLICY, highestEE.hasDefaultMethods() ? 
-					DEFAULT_PROVIDER_POLICY_JAVA_8_AND_UP :
-					DEFAULT_PROVIDER_POLICY_JAVA_7_AND_BELOW);
+			return getProperty(PROVIDER_POLICY, DEFAULT_PROVIDER_POLICY);
 		}
 
-		return getProperty(CONSUMER_POLICY, highestEE.hasDefaultMethods() ? 
-				DEFAULT_CONSUMER_POLICY_JAVA_8_AND_UP :
-				DEFAULT_CONSUMER_POLICY_JAVA_7_AND_BELOW);
+		return getProperty(CONSUMER_POLICY, DEFAULT_CONSUMER_POLICY);
 	}
 
 	/**
