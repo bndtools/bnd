@@ -2,7 +2,7 @@ Include-Resource: 				LICENSE, embedded-repo.jar
 
 Private-Package: aQute.bnd.*,\
 	aQute.configurable.*,\
-	org.osgi.service.component.annotations.*,\
+	org.osgi.service.component.annotations.*;-split-package:=first,\
 	aQute.lib.deployer.*;-split-package:=first,\
 	org.osgi.service.coordinator
 

@@ -9,6 +9,7 @@ Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
 	biz.aQute.junit;version=project,\
 	biz.aQute.launcher;version=project,\
 	org.apache.tools.ant,\
+	org.osgi.service.component.annotations;version=6.0.0,\
 	osgi.cmpn;version=4.3.1,\
 	osgi.core;version=4.3.1,\
 	junit.osgi,\
