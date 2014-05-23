@@ -114,7 +114,7 @@ public class Project extends Processor {
 	/**
 	 * Return a new builder that is nicely setup for this project. Please close
 	 * this builder after use.
-	 * 
+	 *
 	 * @param parent
 	 *            The project builder to use as parent, use this project if null
 	 * @return
@@ -183,7 +183,7 @@ public class Project extends Processor {
 					sourcepath.clear();
 					allsourcepath.clear();
 					bootclasspath.clear();
-					
+
 					// JIT
 					testpath.clear();
 					runpath.clear();
@@ -307,7 +307,7 @@ public class Project extends Processor {
 	}
 
 	/*
-	 * 
+	 *
 	 */
 
 	private File getTarget0() throws IOException {
@@ -361,7 +361,7 @@ public class Project extends Processor {
 	/**
 	 * Iterate over the entries and place the projects on the projects list and
 	 * all the files of the entries on the resultpath.
-	 * 
+	 *
 	 * @param resultpath
 	 *            The list that gets all the files
 	 * @param projects
@@ -404,7 +404,7 @@ public class Project extends Processor {
 	 * Bundles are listed in repo specific names. So we just let our repo
 	 * plugins iterate over the list of bundles and we get the highest version
 	 * from them.
-	 * 
+	 *
 	 * @return
 	 */
 
@@ -436,7 +436,7 @@ public class Project extends Processor {
 	 * indicates there is a project in the same workspace. The path to the
 	 * output directory is calculated. The default directory ${bin} can be
 	 * overridden with the output attribute.
-	 * 
+	 *
 	 * @param strategy
 	 *            STRATEGY_LOWEST or STRATEGY_HIGHEST
 	 * @param spec
@@ -535,7 +535,7 @@ public class Project extends Processor {
 
 	/**
 	 * Just calls a new method with a default parm.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	Collection<Container> getBundles(Strategy strategy, String spec) throws Exception {
@@ -575,7 +575,7 @@ public class Project extends Processor {
 	/**
 	 * The user selected pom in a path. This will place the pom as well as its
 	 * dependencies on the list
-	 * 
+	 *
 	 * @param strategyx
 	 *            the strategy to use.
 	 * @param result
@@ -621,7 +621,7 @@ public class Project extends Processor {
 
 	/**
 	 * Handle dependencies for paths that are calculated on demand.
-	 * 
+	 *
 	 * @param testpath2
 	 * @param parseTestpath
 	 */
@@ -644,7 +644,7 @@ public class Project extends Processor {
 
 	/**
 	 * Return the run framework
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public Collection<Container> getRunFw() throws Exception {
@@ -780,7 +780,7 @@ public class Project extends Processor {
 
 	/**
 	 * Release
-	 * 
+	 *
 	 * @param name
 	 *            The repository name
 	 * @param jarName
@@ -797,6 +797,11 @@ public class Project extends Processor {
 	}
 
 	public URI releaseURI(String name, String jarName, InputStream jarStream) throws Exception {
+
+		// Blank repository name means no release
+		if ("".equals(name)) {
+			return null;
+		}
 
 		trace("release to %s", name);
 		RepositoryPlugin repo = getReleaseRepo(name);
@@ -845,7 +850,7 @@ public class Project extends Processor {
 
 	/**
 	 * Release
-	 * 
+	 *
 	 * @param name
 	 *            The respository name
 	 * @param test
@@ -870,7 +875,7 @@ public class Project extends Processor {
 	 * Get a bundle from one of the plugin repositories. If an exact version is
 	 * required we just return the first repository found (in declaration order
 	 * in the build.bnd file).
-	 * 
+	 *
 	 * @param bsn
 	 *            The bundle symbolic name
 	 * @param range
@@ -962,14 +967,14 @@ public class Project extends Processor {
 			// with info from the workspace. We use null as a marker
 			// to indicate that it is a workspace project
 			//
-			
+
 			SortedSet<Version> localVersions = getWorkspace().getWorkspaceRepository().versions(bsn);
 			for (Version v : localVersions) {
 				if (!versions.containsKey(v) && versionRange.includes(v))
 					versions.put(v, null);
 			}
-			
-			
+
+
 			// Verify if we found any, if so, we use the strategy to pick
 			// the first or last
 
@@ -994,7 +999,7 @@ public class Project extends Processor {
 						// A null provider indicates that we have a local project
 						return getBundleFromProject(bsn, attrs);
 					}
-					
+
 					String version = provider.toString();
 					DownloadBlocker blocker = new DownloadBlocker(this);
 					File result = repo.get(bsn, provider, attrs, blocker);
@@ -1072,7 +1077,7 @@ public class Project extends Processor {
 	/**
 	 * Look for the bundle in the workspace. The premise is that the bsn must
 	 * start with the project name.
-	 * 
+	 *
 	 * @param bsn
 	 *            The bsn
 	 * @param attrs
@@ -1098,7 +1103,7 @@ public class Project extends Processor {
 
 	/**
 	 * Deploy the file (which must be a bundle) into the repository.
-	 * 
+	 *
 	 * @param name
 	 *            The repository name
 	 * @param file
@@ -1137,7 +1142,7 @@ public class Project extends Processor {
 
 	/**
 	 * Deploy the file (which must be a bundle) into the repository.
-	 * 
+	 *
 	 * @param file
 	 *            bundle
 	 */
@@ -1148,7 +1153,7 @@ public class Project extends Processor {
 
 	/**
 	 * Deploy the current project to a repository
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void deploy() throws Exception {
@@ -1245,7 +1250,7 @@ public class Project extends Processor {
 	/**
 	 * This is the external method that will pre-build any dependencies if it is
 	 * out of date.
-	 * 
+	 *
 	 * @param underTest
 	 * @return
 	 * @throws Exception
@@ -1339,7 +1344,7 @@ public class Project extends Processor {
 	 * build before in the same session. It is a bit yucky, but ant creates
 	 * different class spaces which makes it hard to detect we already build it.
 	 * This method remembers the files in the appropriate instance vars.
-	 * 
+	 *
 	 * @return
 	 */
 
@@ -1385,7 +1390,7 @@ public class Project extends Processor {
 	/**
 	 * Build without doing any dependency checking. Make sure any dependent
 	 * projects are built first.
-	 * 
+	 *
 	 * @param underTest
 	 * @return
 	 * @throws Exception
@@ -1445,7 +1450,7 @@ public class Project extends Processor {
 
 	/**
 	 * Answer if this project does not have any output
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isNoBundles() {
@@ -1482,7 +1487,7 @@ public class Project extends Processor {
 	/**
 	 * Calculate the file for a JAR. The default name is bsn.jar, but this can
 	 * be overridden with an
-	 * 
+	 *
 	 * @param jar
 	 * @return
 	 * @throws Exception
@@ -1622,7 +1627,7 @@ public class Project extends Processor {
 
 	/**
 	 * Release.
-	 * 
+	 *
 	 * @param name
 	 *            The repository name
 	 * @throws Exception
@@ -1641,25 +1646,25 @@ public class Project extends Processor {
 	void clean(File dir, String type) throws IOException {
 		if ( !dir.exists())
 			return;
-		
+
 		String basePath = getBase().getCanonicalPath();
 		String dirPath = dir.getCanonicalPath();
 		if ( ! dirPath.startsWith(basePath)) {
 			trace("path outside the project dir %s", type);
 			return;
 		}
-		
+
 		if ( dirPath.length() == basePath.length())  {
 			error("Trying to delete the project directory for %s", type);
 			return;
 		}
-		
+
 		IO.delete(dir);
 		if ( dir.exists()) {
 			error("Trying to delete %s (%s), but failed", dir, type);
 			return;
 		}
-		
+
 		dir.mkdirs();
 	}
 
@@ -1676,7 +1681,7 @@ public class Project extends Processor {
 	public void test() throws Exception {
 		test(null);
 	}
-	
+
 	public void test(List<String> tests) throws Exception {
 
 		String testcases = getProperties().getProperty(Constants.TESTCASES);
@@ -1690,7 +1695,7 @@ public class Project extends Processor {
 		if ( tests != null) {
 			trace("Adding tests %s", tests);
 			for ( String test : tests) {
-				tester.addTest(test);				
+				tester.addTest(test);
 			}
 		}
 		tester.setContinuous(isTrue(getProperty(Constants.TESTCONTINUOUS)));
@@ -1713,7 +1718,7 @@ public class Project extends Processor {
 
 	/**
 	 * Run JUnit
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public void junit() throws Exception {
 		JUnitLauncher launcher = new JUnitLauncher(this);
@@ -1724,7 +1729,7 @@ public class Project extends Processor {
 	 * This methods attempts to turn any jar into a valid jar. If this is a
 	 * bundle with manifest, a manifest is added based on defaults. If it is a
 	 * bundle, but not r4, we try to add the r4 headers.
-	 * 
+	 *
 	 * @param descriptor
 	 * @param in
 	 * @return
@@ -1788,7 +1793,7 @@ public class Project extends Processor {
 	 * does not contain a version, check the include files. If they still do not
 	 * contain a version, then check ALL the sub builders. If not, add a version
 	 * to the main bnd file.
-	 * 
+	 *
 	 * @param mask
 	 *            the mask for bumping, see {@link Macro#_version(String[])}
 	 * @throws Exception
@@ -1989,7 +1994,7 @@ public class Project extends Processor {
 	 * Returns containers for the deliverables of this project. The deliverables
 	 * is the project builder for this project if no -sub is specified.
 	 * Otherwise it contains all the sub bnd files.
-	 * 
+	 *
 	 * @return A collection of containers
 	 * @throws Exception
 	 */
@@ -2012,7 +2017,7 @@ public class Project extends Processor {
 	 * same directory that should drive the generation of multiple deliverables.
 	 * This method figures out if the bndFile is actually one of the bnd files
 	 * of a deliverable.
-	 * 
+	 *
 	 * @param bndFile
 	 *            A file pointing to a bnd file.
 	 * @return null or the builder for a sub file.
@@ -2041,7 +2046,7 @@ public class Project extends Processor {
 
 	/**
 	 * Return a build that maps to the sub file.
-	 * 
+	 *
 	 * @param string
 	 * @throws Exception
 	 */
@@ -2056,7 +2061,7 @@ public class Project extends Processor {
 
 	/**
 	 * Answer the container associated with a given bsn.
-	 * 
+	 *
 	 * @param bndFile
 	 *            A file pointing to a bnd file.
 	 * @return null or the builder for a sub file.
@@ -2077,7 +2082,7 @@ public class Project extends Processor {
 	 * option. This will generate multiple deliverables. This method returns the
 	 * builders for each sub file. If no -sub option is present, the list will
 	 * contain a builder for the bnd.bnd file.
-	 * 
+	 *
 	 * @return A list of builders.
 	 * @throws Exception
 	 */
@@ -2089,7 +2094,7 @@ public class Project extends Processor {
 	 * Calculate the classpath. We include our own runtime.jar which includes
 	 * the test framework and we include the first of the test frameworks
 	 * specified.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	Collection<File> toFile(Collection<Container> containers) throws Exception {
@@ -2116,7 +2121,7 @@ public class Project extends Processor {
 
 	/**
 	 * Get a launcher.
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */
@@ -2174,7 +2179,7 @@ public class Project extends Processor {
 
 	/**
 	 * Sets the package version on an exported package
-	 * 
+	 *
 	 * @param packageName
 	 *            The package name
 	 * @param version
@@ -2407,7 +2412,7 @@ public class Project extends Processor {
 
 	/**
 	 * Do a baseline for this project
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -2423,7 +2428,7 @@ public class Project extends Processor {
 
 	/**
 	 * Method to verify that the paths are correct, ie no missing dependencies
-	 * 
+	 *
 	 * @param test
 	 *            for test cases, also adds -testpath
 	 * @throws Exception
@@ -2455,7 +2460,7 @@ public class Project extends Processor {
 
 	/**
 	 * Report detailed info from this project
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -2620,5 +2625,5 @@ public class Project extends Processor {
 		}
 		return javac;
 	}
-	
+
 }
