@@ -3,7 +3,7 @@ bnd is a swiss army knife for OSGi, it creates manifest headers for you based on
 analyzing the class code, it verifies your settings, it manages project dependencies,
 gives you quote of the day, diffs jars, and much more. 
 
-The information about bnd can be found at http://www.aQute.biz/Bnd
+The information about bnd can be found at <http://www.aQute.biz/Bnd>
 
 ## Repository
 The git repository contains all code. It contains the following projects:
@@ -26,7 +26,7 @@ The git repository contains all code. It contains the following projects:
 All code is Apache 2.0 Licensed so you can do what you want with the source code. 
 
 ## API
-though I am usually pretty good at backward compatibility, there is no guarantee. This
+Though I am usually pretty good at backward compatibility, there is no guarantee. This
 is an unpaid project and one of the most annoying thing of work is being backward compatible
 on the Java API when you know a better way to do it. Properties will be backward compatible
 if there is any possibility. So be aware, its ok to use this package but do not complain
@@ -61,9 +61,9 @@ bnd is continuously built on Cloudbees: https://bndtools.ci.cloudbees.com/#
 A more comprehensive release process is in the works.
 
 ## Feedback
-Feedback is always welcome, for general discussions use bndtools-users@googlegroups.com
+Feedback is always welcome, for general discussions use <bndtools-users@googlegroups.com>
 
-Bugs and issues should go to https://github.com/bndtools/bnd
+Bugs and issues should go to <https://github.com/bndtools/bnd/issues>
 
-Other feedback or specific functionality send to Peter.Kriens@aQute.biz
+Other feedback or specific functionality send to <Peter.Kriens@aQute.biz>
 
