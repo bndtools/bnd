@@ -50,13 +50,16 @@ Gradle is used to build bnd. The workspace root has a `build.gradle` file that b
 The workspace root also includes the gradle wrapper, `gradlew`, command if you do not have gradle installed
 on your system.
 
+[![Build Status](https://travis-ci.org/bndtools/bnd.svg?branch=master)](https://travis-ci.org/bndtools/bnd)
+
 ## Testing
 The main tests are in the biz.aQute.bndlib.tests project. These are standard JUnit tests. They
 are all in the src/test directory. Tests are quite extensive and run from the
 Eclipse JUnit screen.
 
 ## Release
-bnd is continuously built on Cloudbees: https://bndtools.ci.cloudbees.com/#
+bnd is continuously built on [CloudBees](https://bndtools.ci.cloudbees.com/) and
+[Travis CI](https://travis-ci.org/bndtools/bnd)
 
 A more comprehensive release process is in the works.
 
