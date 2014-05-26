@@ -132,7 +132,7 @@ public class Workspace extends Processor {
 	}
 
 	public Workspace(File dir) throws Exception {
-		this(dir, BNDDIR);
+		this(dir, CNFDIR);
 	}
 
 	public Workspace(File dir, String bndDir) throws Exception {
