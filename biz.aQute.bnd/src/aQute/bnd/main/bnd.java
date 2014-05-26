@@ -1605,6 +1605,7 @@ public class bnd extends Processor {
 		if (project != null) {
 			Workspace ws  = project.getWorkspace();
 			
+			ws.checkStructure();
 			
 			getInfo(project.getWorkspace());
 
