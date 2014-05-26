@@ -713,4 +713,8 @@ public class Workspace extends Processor {
 		}
 	}
 
+	public File getBuildDir() {
+		return buildDir;
+	}
+
 }

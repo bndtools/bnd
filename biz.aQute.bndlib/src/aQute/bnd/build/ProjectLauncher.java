@@ -1,11 +1,12 @@
 package aQute.bnd.build;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.jar.*;
-
+import java.util.regex.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
