@@ -5,11 +5,19 @@
     
     <groupId>biz.aQute.bnd</groupId>
     <artifactId>bnd-maven-plugin-parent</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     
+    <licenses>
+        <license>
+            <name>Apache Software License 2.0</name>
+            <url>http://www.opensource.org/licenses/apache2.0.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    
     <properties>
-        <bnd.version>2.3.0-SNAPSHOT</bnd.version>
+        <bnd.version>2.3.0</bnd.version>
     </properties>
     
     <modules>
@@ -17,8 +25,9 @@
          of bnd. It will take the built bnd jar from the current clone and install it in the local maven
          repo under the version as defined in the bnd.version property. The bnd-maven-plugin-dependencies
          module should be commented out/skipped if using a released bnd.jar version that is available in 
-         maven central. -->
+         maven central.
         <module>bnd-maven-plugin-dependencies</module>
+         -->
         <module>bnd-maven-plugin</module>
     </modules>
 </project>
