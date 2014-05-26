@@ -8,7 +8,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>The bnd-maven-plugin</name>
+    <name>The bnd-maven-plugin parent pom.</name>
     <description>This maven plugin can build and test bndtools.org projects created using
          the bndtools Eclipse-Based developer tooling from the command line using Maven</description>
     <url>http://github.com/bndtools/bnd/blob/master/bnd-maven-plugin-parent/README.md</url>
