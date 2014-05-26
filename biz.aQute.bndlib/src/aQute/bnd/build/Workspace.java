@@ -462,7 +462,7 @@ public class Workspace extends Processor {
 			resourceRepositoryImpl = new ResourceRepositoryImpl();
 			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, "~/.bnd/caches/shas")));
 			resourceRepositoryImpl.setExecutor(getExecutor());
-			resourceRepositoryImpl.setIndexFile(getFile(CNFDIR + "/repo.json"));
+			resourceRepositoryImpl.setIndexFile(getFile(buildDir, "repo.json"));
 			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));
 			customize(resourceRepositoryImpl, null);
 			list.add(resourceRepositoryImpl);

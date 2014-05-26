@@ -1540,7 +1540,12 @@ public class Project extends Processor {
 	}
 
 	public boolean isCnf() {
-		return getBase().getName().equals(Workspace.CNFDIR);
+		try {
+			return getBase().getCanonicalPath().equals(getWorkspace().buildDir.getCanonicalPath());
+		}
+		catch (IOException e) {
+			return false;
+		}
 	}
 
 	@Override
