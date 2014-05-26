@@ -2499,7 +2499,10 @@ public class bnd extends Processor {
 	}
 
 	public Workspace getWorkspace(File workspaceDir) throws Exception {
-		ws = Workspace.getWorkspace(workspaceDir);
+		if ( workspaceDir == null) {
+			workspaceDir = getBase();
+		}
+		ws = Workspace.findWorkspace(workspaceDir);
 		ws.setTrace(isTrace());
 		ws.setPedantic(isPedantic());
 		ws.setExceptions(isExceptions());
@@ -3526,16 +3529,8 @@ public class bnd extends Processor {
 	 */
 
 	public void _sync(projectOptions options) throws Exception {
-		Workspace ws = null;
-		Project project = getProject(options.project());
-		if (project != null) {
-			ws = project.getWorkspace();
-		} else {
-			File cnf = getFile("cnf");
-			if (cnf.isDirectory()) {
-				ws = Workspace.getWorkspace(cnf.getParentFile());
-			}
-		}
+		Workspace ws = getWorkspace((File)null);
+		
 		if (ws == null) {
 			error("Cannot find workspace, either reside in a project directory, point to a project with --project, or reside in the workspace directory");
 			return;
@@ -3659,5 +3654,29 @@ public class bnd extends Processor {
 			out.printf("%03d %s%n", n++, s);
 		}
 
+	}
+	
+	/**
+	 * start a local framework
+	 */
+	
+	interface BootstrapOptions extends Options {
+		
+	}
+	
+	public void _bootstrap(BootstrapOptions options) throws Exception {
+		Workspace ws = getWorkspace(getBase());
+		File buildDir = ws.getBuildDir();
+		File bndFile = IO.getFile(buildDir, "bnd.bnd");
+		if ( !bndFile.isFile()) {
+			error("No bnd.bnd file found in cnf directory %s", bndFile);
+			return;
+		}
+		
+		Run run = new Run(ws, buildDir, bndFile);
+		
+		run.runLocal();
+		
+		getInfo(run);
 	}
 }

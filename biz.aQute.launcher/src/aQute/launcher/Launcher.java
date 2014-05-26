@@ -142,6 +142,11 @@ public class Launcher implements ServiceListener {
 		System.exit(ERROR);
 	}
 
+	public static int main(String[] args,Properties p) throws Throwable {
+		Launcher target = new Launcher(p, null);
+		return target.run(args);
+	}
+	
 	public Launcher(Properties properties, final File propertiesFile) throws Exception {
 		this.properties = properties;
 

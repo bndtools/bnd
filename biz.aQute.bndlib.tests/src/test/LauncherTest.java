@@ -13,6 +13,15 @@ import aQute.lib.io.*;
 public class LauncherTest extends TestCase {
 
 	
+//	public static void testLocalLaunch() throws Exception {
+//		Project project = getProject();
+//		ProjectLauncher l = project.getProjectLauncher();
+//		l.setTrace(true);
+//		l.getRunProperties().put("test.cmd", "exit");
+//		//assertTrue(project.check());
+//		assertEquals(42, l.start(null));
+//	}
+
 
 	public static void testNoReferences() throws Exception {
 		Project project = getProject();

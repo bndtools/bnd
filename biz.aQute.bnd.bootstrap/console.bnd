@@ -1,0 +1,4 @@
+Private-Package: \
+	aQute.bnd.bootstrap.console
+	
+-includeresource: @${repo;jline;2.11.0}

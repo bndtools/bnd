@@ -294,6 +294,55 @@ public abstract class ProjectLauncher {
 	}
 
 	/**
+	 * launch a framework internally. I.e. do not start a separate process.
+	 * 
+	 * @throws Exception
+	 */
+	static Pattern	IGNORE	= Pattern.compile("org(/|\\.)osgi(/|\\.).resource.*");
+
+	public int start(ClassLoader parent) throws Exception {
+
+		prepare();
+		
+		//
+		// Intermediate class loader to not load osgi framework packages 
+		// from bnd's loader. Unfortunately, bnd uses some osgi classes
+		// itself that would unnecessarily constrain the framework.
+		//
+		
+		ClassLoader fcl = new ClassLoader(parent) {
+			protected Class< ? > loadClass(String name, boolean resolve) throws ClassNotFoundException {
+				if ( IGNORE.matcher(name).matches())
+					throw new ClassNotFoundException();
+
+				return super.loadClass(name, resolve);
+			}
+		};
+		
+		//
+		// Load the class that would have gone to the class path
+		// i.e. the framework etc.
+		//
+		
+		List<URL> cp = new ArrayList<URL>();
+		for (String path : getClasspath()) {
+			cp.add(new File(path).toURI().toURL());
+		}
+		URLClassLoader cl = new URLClassLoader(cp.toArray(new URL[cp.size()]), fcl);
+
+		
+		String[] args = getRunProgramArgs().toArray(new String[0]);
+		
+		Class< ? > main = cl.loadClass(getMainTypeName());
+		return invoke(main, args);
+	}
+	
+	
+	protected int invoke(Class< ? > main, String args[]) throws Exception {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
 	 * Is called after the process exists. Can you be used to cleanup the
 	 * properties file.
 	 */

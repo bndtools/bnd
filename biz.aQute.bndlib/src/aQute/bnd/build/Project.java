@@ -1679,10 +1679,16 @@ public class Project extends Processor {
 
 	public void run() throws Exception {
 		ProjectLauncher pl = getProjectLauncher();
-		pl.setTrace(isTrace());
+		pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
 		pl.launch();
 	}
 
+	public void runLocal() throws Exception {
+		ProjectLauncher pl = getProjectLauncher();
+		pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
+		pl.start(null);
+	}
+	
 	public void test() throws Exception {
 		test(null);
 	}
@@ -2154,6 +2160,7 @@ public class Project extends Processor {
 
 			if (manifest != null) {
 				String launcher = manifest.getMainAttributes().getValue(header);
+				System.out.println("Plugin found " + launcher+ " " + manifest.getMainAttributes().getValue("Bundle-Version"));
 				if (launcher != null) {
 					Class< ? > clz = getClass(launcher, c.getFile());
 					if (clz != null) {

@@ -97,6 +97,22 @@ public class Workspace extends Processor {
 		}
 	}
 
+	/**
+	 * /* Return the nearest workspace
+	 */
+	public static Workspace findWorkspace(File base) throws Exception {
+		File rover = base;
+		while (rover != null) {
+			File file = IO.getFile(rover,"cnf/build.bnd");
+			if ( file.isFile())
+				return getWorkspace(rover);
+			
+
+			rover = rover.getParentFile();
+		}
+		return null;
+	}
+
 	public static Workspace getWorkspace(File parent, String bndDir) throws Exception {
 		File workspaceDir = parent.getAbsoluteFile();
 
@@ -331,7 +347,7 @@ public class Workspace extends Processor {
 		boolean		inited;
 
 		CachedFileRepo() {
-			super("cache", getFile(buildDir, CACHEDIR + "/repo"), false);
+			super("cache", getFile(buildDir, CACHEDIR ), false);
 		}
 
 		@Override

@@ -1,6 +1,7 @@
 package aQute.launcher.plugin;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.text.*;
 import java.util.*;
@@ -43,6 +44,21 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		super.addDefault(Constants.DEFAULT_LAUNCHER_BSN);
 	}
 
+	//
+	// Initialize the main class for a local launch start
+	//
+	
+	protected int invoke(Class< ? > main, String args[]) throws Exception {
+		LauncherConstants lc = getConstants(getRunBundles(), false);
+		
+		Method mainMethod = main.getMethod("main", args.getClass(), Properties.class);
+		Object o = mainMethod.invoke(null, (Object) args, lc.getProperties());
+		if ( o == null)
+			return 0;
+		
+		return (Integer) o;
+	}
+	
 	/**
 	 * Cleanup the properties file. Is called after the process terminates.
 	 */

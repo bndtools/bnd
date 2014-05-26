@@ -1,0 +1,12 @@
+-buildpath: \
+	osgi.core,\
+	osgi.cmpn,\
+	biz.aQute.bnd.annotation,\
+	jline;version=2.11,\
+	org.apache.felix.gogo.runtime;version=0.9
+Bundle-Version:0.0.0.${tstamp}
+Service-Component: \
+	*
+-sub: \
+	*.bnd
+	
