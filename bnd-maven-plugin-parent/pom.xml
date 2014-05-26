@@ -4,7 +4,7 @@
     
     <groupId>biz.aQute.bnd</groupId>
     <artifactId>bnd-maven-plugin-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>The bnd-maven-plugin parent pom.</name>
