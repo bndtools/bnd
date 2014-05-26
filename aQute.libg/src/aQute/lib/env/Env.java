@@ -255,6 +255,7 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 	 *            the prefix in the properties
 	 * @return an interface that can be used to get and set properties
 	 */
+	@SuppressWarnings("unchecked")
 	public <T> T config(Class< ? > front, final String prefix) {
 		final Env THIS = this;
 		

@@ -109,6 +109,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 						return it.hasNext();
 					}
 
+					@SuppressWarnings("unchecked")
 					public java.util.Map.Entry<String,V> next() {
 						try {
 							entry = it.next();

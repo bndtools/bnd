@@ -16,6 +16,7 @@ public class Crypto {
 	 * @return
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T> T fromString(String spec, Class<T> c) throws Exception {
 		if (PrivateKey.class.isAssignableFrom(c)) {
 			Matcher m = RSA_PRIVATE.matcher(spec);

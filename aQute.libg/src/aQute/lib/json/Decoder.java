@@ -74,6 +74,7 @@ public class Decoder implements Closeable {
 		return digest.digest();
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> T get(Class<T> clazz) throws Exception {
 		try {
 			return (T) codec.decode(clazz, this);
@@ -104,6 +105,7 @@ public class Decoder implements Closeable {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> T get(TypeReference<T> ref) throws Exception {
 		try {
 			return (T) codec.decode(ref.getType(), this);
