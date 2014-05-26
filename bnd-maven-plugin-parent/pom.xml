@@ -23,8 +23,8 @@
 
     <scm>
         <url>https://github.com/bndtools/bnd</url>
-        <connection>scm:git:git://github.com/bndtools/bnd.git</connection>
-        <developerConnection>scm:git:ssh://github.com/bndtools/bnd.git</developerConnection>
+        <connection>scm:git:https://github.com/bndtools/bnd.git</connection>
+        <developerConnection>scm:git:https://github.com/bndtools/bnd.git</developerConnection>
     </scm>
 
     <developers>
