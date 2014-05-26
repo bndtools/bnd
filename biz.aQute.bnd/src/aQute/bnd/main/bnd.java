@@ -1603,6 +1603,9 @@ public class bnd extends Processor {
 		trace("using %s", project);
 		Processor target = project;
 		if (project != null) {
+			Workspace ws  = project.getWorkspace();
+			
+			
 			getInfo(project.getWorkspace());
 
 			report(justif, "Workspace", project.getWorkspace());

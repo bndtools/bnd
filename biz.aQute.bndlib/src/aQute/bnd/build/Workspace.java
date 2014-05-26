@@ -686,4 +686,15 @@ public class Workspace extends Processor {
 		return workspaceRepo;
 	}
 
+	public void checkStructure() {
+		if ( !buildDir.isDirectory())
+			error ("No directory for cnf %s" , buildDir);
+		else {
+			File build = IO.getFile(buildDir,"build.bnd");
+			if ( build.isFile()) {
+				error ("No build.bnd file in %s" , buildDir);
+			}			
+		}
+	}
+
 }
