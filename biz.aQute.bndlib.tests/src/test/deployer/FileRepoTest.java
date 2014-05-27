@@ -99,7 +99,7 @@ public class FileRepoTest extends TestCase {
 		// Check that we can actually put a resource
 		//
 		
-		PutResult put = indexedRepo.put(new File("jar/osgi.jar").toURL().openStream(), null);
+		PutResult put = indexedRepo.put(new File("jar/osgi.jar").toURI().toURL().openStream(), null);
 		assertNotNull(put);
 		
 		// Can we get it?
