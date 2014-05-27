@@ -56,34 +56,34 @@ public class JpmRepoTest extends TestCase {
 				
 	}
 
-    public void testSimpleResolve() {
-		Repository repo = ws.getPlugin(Repository.class);
-
-        BndEditModel model = new BndEditModel();
-        model.setRunFw("org.apache.felix.framework");
-
-        List<Requirement> requires = new ArrayList<Requirement>();
-        CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.gogo.shell", "[0,1)");
-        requires.add(capReq.buildSyntheticRequirement());
-
-        Map<Requirement,Collection<Capability>> shell = repo.findProviders(requires);
-        assertNotNull(shell);
-        assertEquals(1, shell.size());
-        
-        model.setRunRequires(requires);
-        BndrunResolveContext context = new BndrunResolveContext(model, ws, log);
-
-        Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4));
-
-        try {
-            Map<Resource,List<Wire>> resolved = resolver.resolve(context);
-            Set<Resource> resources = resolved.keySet();
-            Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.12");
-            assertNotNull(resource);
-        } catch (ResolutionException e) {
-            fail("Resolve failed");
-        }
-    }
+//    public void testSimpleResolve() {
+//		Repository repo = ws.getPlugin(Repository.class);
+//
+//        BndEditModel model = new BndEditModel();
+//        model.setRunFw("org.apache.felix.framework");
+//
+//        List<Requirement> requires = new ArrayList<Requirement>();
+//        CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.gogo.shell", "[0,1)");
+//        requires.add(capReq.buildSyntheticRequirement());
+//
+//        Map<Requirement,Collection<Capability>> shell = repo.findProviders(requires);
+//        assertNotNull(shell);
+//        assertEquals(1, shell.size());
+//        
+//        model.setRunRequires(requires);
+//        BndrunResolveContext context = new BndrunResolveContext(model, ws, log);
+//
+//        Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4));
+//
+//        try {
+//            Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+//            Set<Resource> resources = resolved.keySet();
+//            Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.12");
+//            assertNotNull(resource);
+//        } catch (ResolutionException e) {
+//            fail("Resolve failed");
+//        }
+//    }
 
     private static Resource getResource(Set<Resource> resources, String bsn, String versionString) {
         for (Resource resource : resources) {
