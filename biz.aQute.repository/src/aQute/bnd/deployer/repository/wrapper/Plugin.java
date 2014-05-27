@@ -17,10 +17,10 @@ import aQute.service.reporter.*;
 
 public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, RegistryDonePlugin, Repository {
 
-	private Registry							registry;
-	private Config								config;
-	private Reporter							reporter	= new ReporterAdapter();
-	private File	dir;
+	private Registry				registry;
+	private Config					config;
+	private Reporter				reporter	= new ReporterAdapter();
+	private File					dir;
 	private InfoRepositoryWrapper	wrapper;
 
 	interface Config {
@@ -47,12 +47,19 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 		this.reporter = reporter;
 	}
 
-	public void done() throws IOException {
-		List<InfoRepository> irs = new ArrayList<InfoRepository>();
-		for (InfoRepository ir : registry.getPlugins(InfoRepository.class)) {
-			irs.add(ir);
+	public void done() throws Exception {
+		try {
+			System.out.println("done ... ");
+			List<InfoRepository> irs = new ArrayList<InfoRepository>();
+			for (InfoRepository ir : registry.getPlugins(InfoRepository.class)) {
+				irs.add(ir);
+			}
+			this.wrapper = new InfoRepositoryWrapper(dir, irs);
 		}
-		this.wrapper = new InfoRepositoryWrapper(dir, irs);
+		catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
 	FilterParser	fp	= new FilterParser();
