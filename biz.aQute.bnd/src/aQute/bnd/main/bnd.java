@@ -50,6 +50,7 @@ import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.justif.*;
 import aQute.lib.settings.*;
+import aQute.lib.strings.*;
 import aQute.lib.tag.*;
 import aQute.libg.classdump.*;
 import aQute.libg.cryptography.*;
@@ -3679,4 +3680,15 @@ public class bnd extends Processor {
 		
 		getInfo(run);
 	}
+
+
+	/**
+	 * Show all the defaults in bnd
+	 */
+	
+	public void _defaults(Options o) {
+		Processor defaults = Workspace.getDefaults();
+		out.println( Strings.join("\n", defaults.getProperties().entrySet()));
+	}
+
 }
