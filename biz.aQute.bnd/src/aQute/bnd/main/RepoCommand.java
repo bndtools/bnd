@@ -90,8 +90,15 @@ public class RepoCommand {
 		if (repos.isEmpty()) {
 			bnd.trace("getting project repos");
 			Project p = bnd.getProject(opts.project());
+			
 			if (p != null) {
 				repos.addAll(p.getWorkspace().getRepositories());
+			} else {
+				Workspace w = bnd.getWorkspace((File)null);
+				if ( w != null ) {
+					System.out.println("Ws " + w.getBase());
+					repos.addAll(w.getRepositories());
+				}
 			}
 		}
 		bnd.trace("repos " + repos);
