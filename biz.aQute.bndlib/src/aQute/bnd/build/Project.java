@@ -63,6 +63,7 @@ public class Project extends Processor {
 	static List<Project>		trail					= new ArrayList<Project>();
 	boolean						delayRunDependencies	= false;
 	final ProjectMessages		msgs					= ReporterMessages.base(this, ProjectMessages.class);
+	private Properties			ide;
 
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
@@ -973,7 +974,6 @@ public class Project extends Processor {
 				if (!versions.containsKey(v) && versionRange.includes(v))
 					versions.put(v, null);
 			}
-
 
 			// Verify if we found any, if so, we use the strategy to pick
 			// the first or last
@@ -2638,4 +2638,27 @@ public class Project extends Processor {
 		return javac;
 	}
 
+	public String _ide(String[] args) throws IOException {
+		if (args.length < 2) {
+			error("The ${ide;<>} macro needs an argument");
+			return null;
+		}
+		if (ide == null) {
+			ide = new Properties();
+			File file = getFile(".settings/org.eclipse.jdt.core.prefs");
+			if (!file.isFile()) {
+				error("The ${ide;<>} macro requires a .settings/org.eclipse.jdt.core.prefs file in the project");
+				return null;
+			}
+			FileInputStream in = new FileInputStream(file);
+			ide.load(in);
+		}
+		if ("javac.target".equals(args[1])) {
+			return ide.getProperty("org.eclipse.jdt.core.compiler.codegen.targetPlatform");
+		}
+		if ("javac.source".equals(args[1])) {
+			return ide.getProperty("org.eclipse.jdt.core.compiler.source");
+		}
+		return null;
+	}
 }
