@@ -2,10 +2,11 @@
 -runee: JavaSE-1.7
 -runsystemcapabilities: ${native_capability}
 
--runbundles:\
+-runbundles:  \
 	org.apache.felix.gogo.runtime,\
-	org.apache.felix.gogo.command, \
-	biz.aQute.bnd.bootstrap.console;version=latest
+	org.apache.felix.gogo.command,\
+	biz.aQute.bnd.bootstrap.console;version=latest,\
+	org.apache.felix.scr
 
 -runtrace: true
 -runpath: 

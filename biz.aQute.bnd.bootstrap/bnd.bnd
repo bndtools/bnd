@@ -1,9 +1,10 @@
--buildpath: \
+-buildpath:  \
 	osgi.core,\
 	osgi.cmpn,\
-	biz.aQute.bnd.annotation,\
+	biz.aQute.bnd.annotation;version=2.3,\
 	jline;version=2.11,\
-	org.apache.felix.gogo.runtime;version=0.9
+	org.apache.felix.gogo.runtime;version=0.9,\
+	aQute.libg;version=latest
 Bundle-Version:0.0.0.${tstamp}
 Service-Component: \
 	*
