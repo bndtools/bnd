@@ -124,6 +124,19 @@ public class CapReqBuilder {
 
 	}
 
+	public static CapReqBuilder createSimpleRequirement(String ns, String name, String range) {
+		Filter filter;
+		SimpleFilter bsnFilter = new SimpleFilter(ns, name);
+		if (range != null)
+			filter = new AndFilter().addChild(bsnFilter).addChild(new LiteralFilter(Filters.fromVersionRange(range)));
+		else
+			filter = bsnFilter;
+
+		return new CapReqBuilder(ns).addDirective(
+				Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+
+	}
+
 	public CharSequence and(Object... exprs) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(&");
