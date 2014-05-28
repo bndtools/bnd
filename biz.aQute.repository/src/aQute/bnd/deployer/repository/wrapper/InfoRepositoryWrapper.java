@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
+import org.osgi.framework.*;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -15,9 +16,9 @@ import aQute.bnd.build.*;
 import aQute.bnd.osgi.resource.*;
 import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
+import aQute.bnd.version.Version;
 import aQute.lib.collections.*;
-import aQute.lib.filter.*;
+import aQute.lib.filter.Filter;
 import aQute.lib.hex.*;
 import aQute.lib.persistentmap.*;
 
@@ -29,8 +30,9 @@ public class InfoRepositoryWrapper implements Repository {
 
 	// private boolean inited;
 
-	public InfoRepositoryWrapper(File dir, Collection< ? extends InfoRepository> repos) throws IOException {
+	public InfoRepositoryWrapper(File dir, Collection< ? extends InfoRepository> repos) throws Exception {
 		this.repoIndexer = new RepoIndex();
+		this.repoIndexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
 		this.repos = repos;
 		this.persistent = new PersistentMap<PersistentResource>(dir, PersistentResource.class);
 	}
