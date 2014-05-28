@@ -2653,11 +2653,13 @@ public class Project extends Processor {
 			FileInputStream in = new FileInputStream(file);
 			ide.load(in);
 		}
+		
+		String deflt = args.length > 2 ? args[2] : null;
 		if ("javac.target".equals(args[1])) {
-			return ide.getProperty("org.eclipse.jdt.core.compiler.codegen.targetPlatform");
+			return ide.getProperty("org.eclipse.jdt.core.compiler.codegen.targetPlatform", deflt);
 		}
 		if ("javac.source".equals(args[1])) {
-			return ide.getProperty("org.eclipse.jdt.core.compiler.source");
+			return ide.getProperty("org.eclipse.jdt.core.compiler.source", deflt);
 		}
 		return null;
 	}
