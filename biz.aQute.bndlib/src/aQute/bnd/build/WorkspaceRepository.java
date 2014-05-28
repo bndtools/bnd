@@ -21,25 +21,26 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		Collection<Project> projects = workspace.getAllProjects();
 		SortedMap<Version,File> foundVersion = new TreeMap<Version,File>();
 		for (Project project : projects) {
-			for (Builder builder : project.getSubBuilders()) {
-				if (!bsn.equals(builder.getBsn())) {
-					continue;
-				}
-				Version version = new Version(builder.getVersion());
-				boolean exact = range.matches("[0-9]+\\.[0-9]+\\.[0-9]+\\..*");
-				if (Constants.VERSION_ATTR_LATEST.equals(range) || matchVersion(range, version, exact)) {
-					File file = project.getOutputFile(bsn, version.toString());
-					if (!file.exists()) {
-						Jar jar = builder.build();
-						if (jar == null) {
-							project.getInfo(builder);
-							continue;
-						}
-						file = project.saveBuild(jar);
-						jar.close();
+			Map<String, Version> versions = project.getVersions();
+			if (!versions.containsKey(bsn)) {
+				continue;
+			}
+			Version version = versions.get(bsn);
+			boolean exact = range.matches("[0-9]+\\.[0-9]+\\.[0-9]+\\..*");
+			if (Constants.VERSION_ATTR_LATEST.equals(range) || matchVersion(range, version, exact)) {
+				File file = project.getOutputFile(bsn, version.toString());
+				if (!file.exists()) {
+					Builder builder = project.getSubBuilder(bsn);
+					Jar jar = builder.build();
+					if (jar == null) {
+						project.getInfo(builder);
+						continue;
 					}
-					foundVersion.put(version, file);
+					file = project.saveBuild(jar);
+					jar.close();
 				}
+				foundVersion.put(version, file);
+				break;
 			}
 		}
 
@@ -103,8 +104,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		List<String> names = new ArrayList<String>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
-			for (Builder builder : project.getSubBuilders()) {
-				String bsn = builder.getBsn();
+			for (String bsn : project.getBsns()) {
 				if (pattern != null) {
 					Glob glob = new Glob(pattern);
 					Matcher matcher = glob.matcher(bsn);
@@ -128,20 +128,12 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		List<Version> versions = new ArrayList<Version>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
-			for (Builder builder : project.getSubBuilders()) {
-				if (bsn.equals(builder.getBsn())) {
-					String v = builder.getVersion();
-					if (v == null)
-						v = "0";
-					else {
-						v = Analyzer.cleanupVersion(v);
-						if (!Verifier.isVersion(v))
-							continue; // skip
-					}
-
-					versions.add(new Version(v));
-				}
+			Map<String, Version> projectVersions = project.getVersions();
+			if (!projectVersions.containsKey(bsn)) {
+				continue;
 			}
+			versions.add(projectVersions.get(bsn));
+			break;
 		}
 		if (versions.isEmpty())
 			return SortedList.empty();

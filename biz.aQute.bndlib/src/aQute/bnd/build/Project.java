@@ -52,6 +52,7 @@ public class Project extends Processor {
 	final Collection<File>		sourcepath				= new LinkedHashSet<File>();
 	final Collection<File>		allsourcepath			= new LinkedHashSet<File>();
 	final Collection<Container>	bootclasspath			= new LinkedHashSet<Container>();
+	final Map<String, Version>	versionMap				= new LinkedHashMap<String, Version>();
 	final Lock					lock					= new ReentrantLock(true);
 	volatile String				lockingReason;
 	volatile Thread				lockingThread;
@@ -1532,6 +1533,9 @@ public class Project extends Processor {
 	 */
 	@Override
 	public boolean refresh() {
+		synchronized (versionMap) {
+			versionMap.clear();
+		}
 		boolean changed = false;
 		if (isCnf()) {
 			changed = workspace.refresh();
@@ -1688,7 +1692,7 @@ public class Project extends Processor {
 		pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
 		pl.start(null);
 	}
-	
+
 	public void test() throws Exception {
 		test(null);
 	}
@@ -2662,5 +2666,38 @@ public class Project extends Processor {
 			return ide.getProperty("org.eclipse.jdt.core.compiler.source", deflt);
 		}
 		return null;
+	}
+
+	public Map<String, Version> getVersions() throws Exception {
+		synchronized (versionMap) {
+			if (versionMap.isEmpty()) {
+				for (Builder builder : getSubBuilders()) {
+					String v = builder.getVersion();
+					if (v == null)
+						v = "0";
+					else {
+						v = Analyzer.cleanupVersion(v);
+						if (!Verifier.isVersion(v))
+							continue; // skip
+					}
+
+					Version version = new Version(v);
+					versionMap.put(builder.getBsn(), version);
+				}
+			}
+			return new LinkedHashMap<String, Version>(versionMap);
+		}
+	}
+
+	public Collection<String> getBsns() throws Exception {
+		return new ArrayList<String>(getVersions().keySet());
+	}
+
+	public Version getVersion(String bsn) throws Exception {
+		Version version = getVersions().get(bsn);
+		if (version == null) {
+			throw new IllegalArgumentException("Bsn " + bsn + " does not exist in project " + getName());
+		}
+		return version;
 	}
 }
