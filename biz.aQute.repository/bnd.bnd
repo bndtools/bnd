@@ -58,10 +58,17 @@ repoindex-pkgs: \
 	org.osgi.resource;-split-package:=first
 
 # NB: `org.osgi.framework` API is included in Private-Package for running outside of OSGi.
-Private-Package: \
+Private-Package:  \
 	${bindex-pkgs},\
 	${repoindex-pkgs},\
-	org.osgi.framework;-split-package:=first
+	org.osgi.framework;-split-package:=first,\
+	aQute.bnd.jpm,\
+	aQute.jpm.facade.repo,\
+	aQute.jsonrpc.proxy,\
+	aQute.rest.urlclient,\
+	aQute.service.library,\
+	aQute.jsonrpc.domain,\
+	aQute.struct
 Conditional-Package:\
 	aQute.lib.*;-split-package:=first,\
 	aQute.libg.*;-split-package:=first

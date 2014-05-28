@@ -7,11 +7,11 @@ import junit.framework.*;
 
 import org.osgi.resource.*;
 
+import aQute.bnd.jpm.*;
 import aQute.bnd.osgi.resource.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.libg.map.*;
-import aQute.library.bnd.*;
 
 public class TestWrapper extends TestCase {
 	File				tmp	= new File("tmp");
@@ -28,7 +28,7 @@ public class TestWrapper extends TestCase {
 	}
 
 	public void testbasic() throws Exception {
-		JpmRepository repo = new JpmRepository();
+		Repository repo = new Repository();
 		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "testdata/ws/cnf/jpm4j.json"));
 		assertNotNull(repo.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
 
