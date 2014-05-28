@@ -1,24 +1,16 @@
 package biz.aQute.resolve;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
-import org.osgi.resource.Resource;
-import org.osgi.resource.Wire;
-import org.osgi.service.log.LogService;
-import org.osgi.service.resolver.ResolutionException;
-import org.osgi.service.resolver.Resolver;
+import org.osgi.framework.*;
+import org.osgi.resource.*;
+import org.osgi.service.log.*;
+import org.osgi.service.resolver.*;
 
-import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.service.Registry;
-import biz.aQute.resolve.internal.BndrunResolveContext;
+import aQute.bnd.build.model.*;
+import aQute.bnd.service.*;
+import biz.aQute.resolve.internal.*;
 
 public class ResolveProcess {
 
@@ -28,14 +20,58 @@ public class ResolveProcess {
     private ResolutionException resolutionException;
 
     public Map<Resource,List<Wire>> resolveRequired(BndEditModel inputModel, Registry plugins, Resolver resolver, Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
-        BndrunResolveContext rc = new BndrunResolveContext(inputModel, plugins, log);
-        rc.addCallbacks(callbacks);
 
-      //  rc.checkInitial();
-        
+    	// 1. Resolve initial requirements
+    	BndrunResolveContext rc = new BndrunResolveContext(inputModel, plugins, log);
+        rc.addCallbacks(callbacks);
         Map<Resource,List<Wire>> wirings = resolver.resolve(rc);
+
+        // 2. Save the resolved root resources
+		final List<Resource> resources = new ArrayList<Resource>();
+		for (Resource r : rc.getMandatoryResources()) {
+			reqs: for (Requirement req : r.getRequirements(null)) {
+				for (Resource found : wirings.keySet()) {
+					String filterStr = req.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+					try {
+						org.osgi.framework.Filter filter = filterStr != null ? org.osgi.framework.FrameworkUtil
+								.createFilter(filterStr) : null;
+
+						for (Capability c : found.getCapabilities(req.getNamespace())) {
+							if (filter != null && filter.matches(c.getAttributes())) {
+								resources.add(found);
+								continue reqs;
+							}
+						}
+					}
+					catch (InvalidSyntaxException e) {}
+				}
+			}
+			// Add back initial requirement
+			if (GenericResolveContext.isInputRequirementResource(r)) {
+				resources.add(r);
+			}
+		}
+
+    	// 3. Resolve the rest
+		BndrunResolveContext rc2 = new BndrunResolveContext(inputModel, plugins, log) {
+
+			@Override
+			public Collection<Resource> getMandatoryResources() {
+				return resources;
+			}
+
+			@Override
+			public boolean isInputResource(Resource resource) {
+				return false;
+			}
+
+		};
+
+		rc2.addCallbacks(callbacks);
+        wirings = resolver.resolve(rc2);
+
         Map<Resource,List<Wire>> result = invertWirings(wirings);
-        removeFrameworkAndInputResources(result, rc);
+        removeFrameworkAndInputResources(result, rc2);
 
         return result;
     }
@@ -102,7 +138,7 @@ public class ResolveProcess {
      * resourceReasons.put(cap, capRequirements); } capRequirements.add(req); } } } } }
      */
 
-    private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap, BndrunResolveContext rc) {
+    private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap, GenericResolveContext rc) {
         for (Iterator<Resource> iter = resourceMap.keySet().iterator(); iter.hasNext();) {
             Resource resource = iter.next();
             if (rc.isInputResource(resource) || rc.isSystemResource(resource))
