@@ -191,7 +191,6 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 	}
 
 	private FileLock lock() throws IOException {
-		System.out.println("locking " + Thread.currentThread().getName());
 		FileLock lock = lockFile.getChannel().lock();
 		if ( !lock.isValid()) {
 			System.out.println("Ouch, got invalid lock " + dir + " " + Thread.currentThread().getName());

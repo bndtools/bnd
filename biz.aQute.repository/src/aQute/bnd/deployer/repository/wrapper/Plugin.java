@@ -49,7 +49,6 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 
 	public void done() throws Exception {
 		try {
-			System.out.println("done ... ");
 			List<InfoRepository> irs = new ArrayList<InfoRepository>();
 			for (InfoRepository ir : registry.getPlugins(InfoRepository.class)) {
 				irs.add(ir);
