@@ -4,8 +4,8 @@ import java.util.*;
 import java.util.regex.*;
 
 public class VersionRange {
-	final Version			high;
-	final Version			low;
+	final Version	high;
+	final Version	low;
 	char			start	= '[';
 	char			end		= ']';
 
@@ -14,19 +14,22 @@ public class VersionRange {
 
 	public VersionRange(String string) {
 		string = string.trim();
-		
-		// If a range starts with @ then we make it a 
+
+		// If a range starts with @ then we make it a
 		// a semantic import range
-		
+
 		int auto = 0;
-		if ( string.startsWith("@")) {
+		if (string.startsWith("@")) {
 			string = string.substring(1);
 			auto = 1; // for consumers
-		} else if ( string.endsWith("@")) {
-			string = string.substring(0, string.length()-1);
+		} else if (string.endsWith("@")) {
+			string = string.substring(0, string.length() - 1);
 			auto = 2; // for providers
+		} else if (string.startsWith("=")) {
+			string = string.substring(1);
+			auto = 3;
 		}
-		
+
 		Matcher m = RANGE.matcher(string);
 		if (m.matches()) {
 			start = m.group(1).charAt(0);
@@ -40,11 +43,16 @@ public class VersionRange {
 
 		} else {
 			Version v = new Version(string);
-			if ( auto != 0) {
-				low = v;
-				high = auto == 1 ? new Version(v.getMajor()+1, 0,0) : new Version(v.getMajor(), v.getMinor()+1,0);
+			if (auto == 3) {
 				start = '[';
-				end=')';
+				end = ']';
+				low = v;
+				high = v;
+			} else if (auto != 0) {
+				low = v;
+				high = auto == 1 ? new Version(v.getMajor() + 1, 0, 0) : new Version(v.getMajor(), v.getMinor() + 1, 0);
+				start = '[';
+				end = ')';
 			} else {
 				low = high = v;
 			}
