@@ -1,0 +1,4 @@
+bundles = a, b, c
+fw=framework
+
+-runbundles: ${bundles}

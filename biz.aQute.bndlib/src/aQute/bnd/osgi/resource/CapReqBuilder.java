@@ -7,6 +7,7 @@ import org.osgi.framework.namespace.*;
 import org.osgi.resource.*;
 
 import aQute.bnd.header.*;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.*;
 import aQute.libg.filters.*;
 
@@ -182,4 +183,25 @@ public class CapReqBuilder {
 		return addDirective("filter", f.toString());
 	}
 
+	public static List<Requirement> getRequirementsFrom(Parameters rr) {
+		List<Requirement> requirements = new ArrayList<Requirement>();
+		for (Entry<String,Attrs> e : rr.entrySet()) {
+			requirements.add(getRequirementFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue()));
+		}
+		return requirements;
+	}
+
+	public static Requirement getRequirementFrom(String namespace, Attrs attrs) {
+		CapReqBuilder builder = new CapReqBuilder(namespace);
+		for (Entry<String,String> entry : attrs.entrySet()) {
+			String key = entry.getKey();
+			if (key.endsWith(":")) {
+				key = key.substring(0, key.length() - 1);
+				builder.addDirective(key, entry.getValue());
+			} else {
+				builder.addAttribute(key, entry.getValue());
+			}
+		}
+		return builder.buildSyntheticRequirement();
+	}
 }

@@ -29,23 +29,26 @@ public class BndEditModel {
 	public static final String										NEWLINE_LINE_SEPARATOR		= "\\n\\\n\t";
 	public static final String										LIST_SEPARATOR				= ",\\\n\t";
 
-	private static String[]										KNOWN_PROPERTIES			= new String[] {
-			Constants.BUNDLE_LICENSE, Constants.BUNDLE_CATEGORY,
-			Constants.BUNDLE_NAME, Constants.BUNDLE_DESCRIPTION, Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_UPDATELOCATION,
-			Constants.BUNDLE_VENDOR, Constants.BUNDLE_CONTACTADDRESS, Constants.BUNDLE_DOCURL,
-			Constants.BUNDLE_SYMBOLICNAME, Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR,
-			Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE, aQute.bnd.osgi.Constants.PRIVATE_PACKAGE,
-			aQute.bnd.osgi.Constants.SOURCES,
+	private static String[]											KNOWN_PROPERTIES			= new String[] {
+			Constants.BUNDLE_LICENSE, Constants.BUNDLE_CATEGORY, Constants.BUNDLE_NAME, Constants.BUNDLE_DESCRIPTION,
+			Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_UPDATELOCATION, Constants.BUNDLE_VENDOR,
+			Constants.BUNDLE_CONTACTADDRESS, Constants.BUNDLE_DOCURL, Constants.BUNDLE_SYMBOLICNAME,
+			Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE,
+			aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, aQute.bnd.osgi.Constants.SOURCES,
 			aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.CLASSPATH,
 			aQute.bnd.osgi.Constants.BUILDPATH, aQute.bnd.osgi.Constants.BUILDPACKAGES,
-			aQute.bnd.osgi.Constants.RUNBUNDLES, aQute.bnd.osgi.Constants.RUNPROPERTIES, aQute.bnd.osgi.Constants.SUB,
-			aQute.bnd.osgi.Constants.RUNFRAMEWORK, aQute.bnd.osgi.Constants.RUNFW,
-			aQute.bnd.osgi.Constants.RUNVM, aQute.bnd.osgi.Constants.RUNPROGRAMARGS,
+			aQute.bnd.osgi.Constants.RUNBUNDLES, aQute.bnd.osgi.Constants.RUNPROPERTIES,
+			aQute.bnd.osgi.Constants.SUB,
+			aQute.bnd.osgi.Constants.RUNFRAMEWORK,
+			aQute.bnd.osgi.Constants.RUNFW,
+			aQute.bnd.osgi.Constants.RUNVM,
+			aQute.bnd.osgi.Constants.RUNPROGRAMARGS,
 			// BndConstants.RUNVMARGS,
 			// BndConstants.TESTSUITES,
 			aQute.bnd.osgi.Constants.TESTCASES, aQute.bnd.osgi.Constants.PLUGIN, aQute.bnd.osgi.Constants.PLUGINPATH,
 			aQute.bnd.osgi.Constants.RUNREPOS, aQute.bnd.osgi.Constants.RUNREQUIRES, aQute.bnd.osgi.Constants.RUNEE,
-			Constants.BUNDLE_BLUEPRINT, Constants.INCLUDE_RESOURCE};
+			Constants.BUNDLE_BLUEPRINT, Constants.INCLUDE_RESOURCE
+																								};
 
 	public static final String										BUNDLE_VERSION_MACRO		= "${"
 																										+ Constants.BUNDLE_VERSION
@@ -55,16 +58,15 @@ public class BndEditModel {
 	private final Map<String,Converter<String, ? extends Object>>	formatters					= new HashMap<String,Converter<String, ? extends Object>>();
 	// private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
-
 	private File													bndResource;
 	private String													bndResourceName;
-	
+
 	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
-			this);
+																										this);
 	private final Properties										properties					= new Properties();
 	private final Map<String,Object>								objectProperties			= new HashMap<String,Object>();
 	private final Map<String,String>								changesToSave				= new TreeMap<String,String>();
-	private Processor												override;
+	private Project													project;
 
 	// CONVERTERS
 	private Converter<List<VersionedClause>,String>					buildPathConverter			= new ClauseListConverter<VersionedClause>(
@@ -306,9 +308,6 @@ public class BndEditModel {
 			properties.load(inputStream);
 			objectProperties.clear();
 			changesToSave.clear();
-
-			if (override != null)
-				override.getProperties().clear();
 
 			// Fire property changes on all known property names
 			for (String prop : KNOWN_PROPERTIES) {
@@ -811,16 +810,6 @@ public class BndEditModel {
 
 	private <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
 
-		
-		//
-		// If we have an override, we ignore any caching
-		//
-		
-		if ( override != null) {
-			return converter.convert(override.getProperty(name));
-		}
-		
-		
 		R result;
 		if (objectProperties.containsKey(name)) {
 			@SuppressWarnings("unchecked")
@@ -843,14 +832,6 @@ public class BndEditModel {
 		objectProperties.put(name, newValue);
 		String v = formatter.convert(newValue);
 		changesToSave.put(name, v);
-
-		//
-		// If override is set, we also update it to reflect the latest
-		// values
-		//
-
-		if (override != null)
-			override.setProperty(name, v);
 
 		propChangeSupport.firePropertyChange(name, oldValue, newValue);
 	}
@@ -935,21 +916,47 @@ public class BndEditModel {
 		setIncludeResource(includeResource);
 	}
 
-	/*
-	 * If a parent is given, we will expand any properties using the parent
-	 * context before we con
+	public void setProject(Project project) {
+		this.project = project;
+	}
+
+	public Project getProject() {
+		return project;
+	}
+
+	/**
+	 * Return a processor for this model. This processor is based on the parent
+	 * project or the bndrun file. It will contain the properties of the project
+	 * file and the changes from the model.
+	 * 
+	 * @return a processor that reflects the actual project or bndrun file setup
 	 */
-	public void setExpand(Processor parent) {
-		Processor p = new Processor(parent);
-		p.getProperties().putAll(properties);
-		p.getProperties().putAll(changesToSave);
-		this.override = p;
+	public Processor getProperties() throws Exception {
+		Processor parent = null;
 
-		//
-		// This invalidates any already made conversions
-		// they will have to be relearned
-		//
+		if (isProjectFile() && project != null)
+			parent = project;
+		else if (getBndResource() != null) {
+			parent = Workspace.getRun(getBndResource());
+			if (parent == null) {
+				parent = new Processor();
+				parent.setProperties(getBndResource(), getBndResource().getParentFile());
+			}
+		}
 
-		objectProperties.clear();
+		Processor result;
+		if ( parent == null)
+			result = new Processor();
+		else
+			result = new Processor(parent);
+		result.getProperties().putAll(properties);
+		for ( Entry<String,String> e : changesToSave.entrySet()) {
+			result.setProperty(e.getKey(), cleanup(e.getValue()));
+		}
+		return result;
+	}
+
+	private String cleanup(String value) {
+		return value.replaceAll("\\\\\n", "");
 	}
 }

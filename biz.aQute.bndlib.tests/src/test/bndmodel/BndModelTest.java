@@ -39,24 +39,23 @@ public class BndModelTest  extends TestCase {
 		assertEquals(BND_BUILDPATH_EXPECTED, data);
 	}
 
+	
+	/**
+	 * Check if we can get a processor of the model and verify that
+	 * we get the proper properties.
+	 */
 	public void testParent() throws Exception {
+		
 		BndEditModel model = new BndEditModel();
-		Processor p = new Processor();
-		p.setProperty("abc", "${def}");
-		p.setProperty("def", "DEF");
-		model.setExpand(p);
+		model.setRunFw("${fw}"); // set changes
+		File f = new File("testresources/bndmodel/test-01.bndrun");
+		model.setBndResource(f);
+		
+		Processor p = model.getProperties();
+		
 
-		assertEquals("DEF", model.genericGet("abc"));
-		
-		//
-		// Check roundtrip expansion that go through
-		// changesToSafe
-		//
-		
-		model.addIncludeResource("${abc}");
-		List<String> result = model.getIncludeResource();
-		assertEquals(Arrays.asList("\\\n\tDEF"), result);
-		
+		assertEquals("Set in file, refers to macro", "a, b, c", p.getProperty(Constants.RUNBUNDLES));
+		assertEquals("Changes, refers to macro", p.getProperty(Constants.RUNFW));
 		
 	}
 	

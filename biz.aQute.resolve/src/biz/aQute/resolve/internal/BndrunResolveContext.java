@@ -2,7 +2,7 @@ package biz.aQute.resolve.internal;
 
 import java.io.*;
 import java.util.*;
-import java.util.Map.*;
+import java.util.Map.Entry;
 
 import org.osgi.framework.*;
 import org.osgi.framework.namespace.*;
@@ -25,25 +25,30 @@ import biz.aQute.resolve.*;
 
 public class BndrunResolveContext extends GenericResolveContext {
 
-	public static final String						RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
-	public static final String						PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
+	public static final String			RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
+	public static final String			PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
 
-	private BndEditModel	runModel;
-	private Registry		registry;
+	private Registry					registry;
 
-	private EE				ee;
+	private EE							ee;
 
-	private List<ExportedPackage>					sysPkgsExtra;
-	private Parameters								sysCapsExtraParams;
-	private Parameters								resolvePrefs;
+	private List<ExportedPackage>		sysPkgsExtra;
+	private Parameters					sysCapsExtraParams;
+	private Parameters					resolvePrefs;
 
-	private Version									frameworkResourceVersion	= null;
-	private FrameworkResourceRepository				frameworkResourceRepo;
+	private Version						frameworkResourceVersion	= null;
+	private FrameworkResourceRepository	frameworkResourceRepo;
+	private final Processor				properties;
 
 	public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
 		super(log);
-		this.runModel = runModel;
-		this.registry = registry;
+		try {
+			this.registry = registry;
+			this.properties = runModel.getProperties();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -60,19 +65,20 @@ public class BndrunResolveContext extends GenericResolveContext {
 			findFramework();
 			constructInputRequirements();
 			loadPreferences();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		super.init();
 	}
 
 	private void loadEE() {
-		EE tmp = runModel.getEE();
+		EE tmp = EE.parse(properties.getProperty(Constants.RUNEE));
 		ee = (tmp != null) ? tmp : EE.JavaSE_1_6;
 	}
 
 	private void loadEffectiveSet() {
-		String effective = (String) runModel.genericGet(RUN_EFFECTIVE_INSTRUCTION);
+		String effective = properties.getProperty(RUN_EFFECTIVE_INSTRUCTION);
 		if (effective == null)
 			effectiveSet = null;
 		else {
@@ -83,24 +89,23 @@ public class BndrunResolveContext extends GenericResolveContext {
 	}
 
 	private void loadSystemPackagesExtra() {
-		sysPkgsExtra = runModel.getSystemPackages();
+		Parameters p = new Parameters( properties.mergeProperties(Constants.RUNSYSTEMPACKAGES));
+		
+		sysPkgsExtra = toExportedPackages(p); // runModel.getSystemPackages();
+	}
+
+	private List<ExportedPackage> toExportedPackages(Parameters p) {
+		List<ExportedPackage> list = new ArrayList<ExportedPackage>();
+		for ( Entry<String,Attrs> e : p.entrySet()) {
+			list.add( new ExportedPackage(Processor.removeDuplicateMarker(e.getKey()), e.getValue()));
+		}
+		
+		return list;
 	}
 
 	private void loadSystemCapabilitiesExtra() {
-		String header = (String) runModel.genericGet(Constants.RUNSYSTEMCAPABILITIES);
-		if (header != null) {
-			Processor processor = new Processor();
-			try {
-				processor.setProperty(Constants.RUNSYSTEMCAPABILITIES, header);
-				String processedHeader = processor.getProperty(Constants.RUNSYSTEMCAPABILITIES);
-				sysCapsExtraParams = new Parameters(processedHeader);
-			}
-			finally {
-				processor.close();
-			}
-		} else {
-			sysCapsExtraParams = null;
-		}
+		String header = properties.mergeProperties(Constants.RUNSYSTEMCAPABILITIES);
+		sysCapsExtraParams = header == null ? null : new Parameters(header);
 	}
 
 	private void loadRepositories() throws IOException {
@@ -115,21 +120,25 @@ public class BndrunResolveContext extends GenericResolveContext {
 		// }
 		// }
 
+		
 		// Reorder/filter if specified by the run model
-		List<String> repoNames = runModel.getRunRepos();
-		if (repoNames == null) {
+
+		String rn = properties.mergeProperties(Constants.RUNREPOS);
+		if (rn == null) {
 			// No filter, use all
 			for (Repository repo : allRepos) {
 				super.addRepository(repo);
 			}
 		} else {
+			Parameters repoNames = new Parameters(rn);
+			
 			// Map the repository names...
 			Map<String,Repository> repoNameMap = new HashMap<String,Repository>(allRepos.size());
 			for (Repository repo : allRepos)
 				repoNameMap.put(repo.toString(), repo);
 
 			// Create the result list
-			for (String repoName : repoNames) {
+			for (String repoName : repoNames.keySet()) {
 				Repository repo = repoNameMap.get(repoName);
 				if (repo != null)
 					super.addRepository(repo);
@@ -169,7 +178,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 	}
 
 	private Requirement getFrameworkRequirement() {
-		String header = runModel.getRunFw();
+		String header = properties.getProperty(Constants.RUNFW);
 		if (header == null)
 			return null;
 
@@ -210,10 +219,12 @@ public class BndrunResolveContext extends GenericResolveContext {
 	}
 
 	private void constructInputRequirements() {
-		List<Requirement> requires = runModel.getRunRequires();
-		if (requires == null || requires.isEmpty()) {
+		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES));		
+		if (inputRequirements == null || inputRequirements.isEmpty()) {
 			inputResource = null;
 		} else {
+			List<Requirement> requires = CapReqBuilder.getRequirementsFrom(inputRequirements);
+
 			ResourceBuilder resBuilder = new ResourceBuilder();
 			CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addAttribute(
 					IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_INITIAL_RESOURCE);
@@ -227,11 +238,9 @@ public class BndrunResolveContext extends GenericResolveContext {
 		}
 	}
 
+
 	private void loadPreferences() {
-		String prefsStr = (String) runModel.genericGet(PROP_RESOLVE_PREFERENCES);
-		if (prefsStr == null)
-			prefsStr = "";
-		resolvePrefs = new Parameters(prefsStr);
+		resolvePrefs = new Parameters(properties.getProperty(PROP_RESOLVE_PREFERENCES));
 	}
 
 	protected void postProcessProviders(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
