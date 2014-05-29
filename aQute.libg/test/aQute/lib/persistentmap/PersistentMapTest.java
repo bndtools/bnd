@@ -8,7 +8,7 @@ import junit.framework.*;
 
 public class PersistentMapTest extends TestCase {
 
-	public void testSimple() throws IOException {
+	public void testSimple() throws Exception {
 		File tmp = new File("tmp");
 		PersistentMap<String> pm = new PersistentMap<String>(new File(tmp, "simple"), String.class);
 		try {

@@ -5,6 +5,7 @@ import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.nio.channels.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 import aQute.lib.io.*;
 import aQute.lib.json.*;
@@ -29,7 +30,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 
 	Type								type;
 
-	public PersistentMap(File dir, Type type) throws IOException {
+	public PersistentMap(File dir, Type type) throws Exception {
 		this.dir = dir;
 		this.type = type;
 		dir.mkdirs();
@@ -58,16 +59,16 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 
 	}
 
-	public PersistentMap(File dir, Class<V> type) throws IOException {
+	public PersistentMap(File dir, Class<V> type) throws Exception {
 		this(dir, (Type) type);
 	}
 
-	public PersistentMap(File dir, Class<V> type, Map<String,V> map) throws IOException {
+	public PersistentMap(File dir, Class<V> type, Map<String,V> map) throws Exception {
 		this(dir, (Type) type);
 		putAll(map);
 	}
 
-	public PersistentMap(File dir, Type type, Map<String,V> map) throws IOException {
+	public PersistentMap(File dir, Type type, Map<String,V> map) throws Exception {
 		this(dir, type);
 		putAll(map);
 	}
@@ -190,23 +191,32 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 		}
 	}
 
-	private FileLock lock() throws IOException {
-		FileLock lock = lockFile.getChannel().lock();
-		if ( !lock.isValid()) {
-			System.out.println("Ouch, got invalid lock " + dir + " " + Thread.currentThread().getName());
-			return null;
-		}		
-		
-		return lock;
+	private FileLock lock() throws IOException, InterruptedException {
+		int count = 400;
+		while (true)
+			try {
+				FileLock lock = lockFile.getChannel().lock();
+				if (!lock.isValid()) {
+					System.out.println("Ouch, got invalid lock " + dir + " " + Thread.currentThread().getName());
+					return null;
+				}
+				return lock;
+			}
+			catch (OverlappingFileLockException e) {
+				if (count-- > 0)
+					TimeUnit.MILLISECONDS.sleep(5);
+				else
+					throw new RuntimeException("Could not obtain lock");
+			}
 	}
+
 	private void unlock(FileLock lock) throws IOException {
-		if ( lock == null || !lock.isValid()) {
-			System.out.println("Ouch, invalid lock was used " + dir+ " " + Thread.currentThread().getName());
+		if (lock == null || !lock.isValid()) {
+			System.out.println("Ouch, invalid lock was used " + dir + " " + Thread.currentThread().getName());
 			return;
 		}
 		lock.release();
 	}
-
 
 	public V remove(String key) {
 		try {
