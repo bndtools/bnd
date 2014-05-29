@@ -3,7 +3,7 @@
  *
  * Called by build.gradle in the root of the workspace to configure the project set.
  *
- * Depends on bndURI, bndWorkspace and cnf properties set by settings.gradle.
+ * Depends on bndURI and bndWorkspace properties set by settings.gradle.
  */
 
 /* Add bnd as a script dependency */
