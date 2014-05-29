@@ -55,12 +55,13 @@ public class BndEditModel {
 	private final Map<String,Converter<String, ? extends Object>>	formatters					= new HashMap<String,Converter<String, ? extends Object>>();
 	// private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
-	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
-																										this);
-	private final Properties										properties					= new Properties();
 
 	private File													bndResource;
 	private String													bndResourceName;
+	
+	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
+			this);
+	private final Properties										properties					= new Properties();
 	private final Map<String,Object>								objectProperties			= new HashMap<String,Object>();
 	private final Map<String,String>								changesToSave				= new TreeMap<String,String>();
 	private Processor												override;
@@ -258,6 +259,13 @@ public class BndEditModel {
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
 		formatters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListFormatter);
 		formatters.put(Constants.INCLUDE_RESOURCE, stringListFormatter);
+	}
+	
+	public BndEditModel(BndEditModel model) {
+		this();
+		this.bndResource = model.bndResource;
+		this.properties.putAll(model.properties);
+		this.changesToSave.putAll(model.changesToSave);
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -931,7 +939,7 @@ public class BndEditModel {
 	 * If a parent is given, we will expand any properties using the parent
 	 * context before we con
 	 */
-	public void setOverride(Processor parent) {
+	public void setExpand(Processor parent) {
 		Processor p = new Processor(parent);
 		p.getProperties().putAll(properties);
 		p.getProperties().putAll(changesToSave);
