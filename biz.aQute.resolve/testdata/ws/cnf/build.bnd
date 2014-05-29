@@ -1,7 +1,6 @@
 -plugin: \
 \
-    aQute.library.bnd.JpmRepository; \
-    	path:=../../../cnf/plugins/aQute.jpm.bndrepo.jar; \
+    aQute.bnd.jpm.Repository; \
         name=JPM; \
         location=~/.bnd/caches/shas; \
         index=${workspace}/cnf/jpm4j.json, \

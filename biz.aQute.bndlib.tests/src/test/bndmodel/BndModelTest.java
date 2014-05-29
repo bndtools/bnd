@@ -44,7 +44,7 @@ public class BndModelTest  extends TestCase {
 		Processor p = new Processor();
 		p.setProperty("abc", "${def}");
 		p.setProperty("def", "DEF");
-		model.setOverride(p);
+		model.setExpand(p);
 
 		assertEquals("DEF", model.genericGet("abc"));
 		
