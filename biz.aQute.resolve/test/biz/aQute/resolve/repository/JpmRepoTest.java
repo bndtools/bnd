@@ -31,8 +31,8 @@ public class JpmRepoTest extends TestCase {
 		tmp.mkdirs();
 		IO.delete(tmp);
 		tmp.mkdirs();
-		
-		ws = Workspace.getWorkspace("testdata/ws");
+		IO.copy(new File("testdata/ws"), tmp);
+		ws = new Workspace(tmp);
 		assertTrue(ws.check());
 	}
 	

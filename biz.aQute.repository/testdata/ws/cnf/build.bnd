@@ -1,10 +1,9 @@
 -plugin: \
 \
-    aQute.library.bnd.JpmRepository; \
-    	path:=../../../../cnf/plugins/aQute.jpm.bndrepo.jar; \
+    aQute.bnd.jpm.Repository; \
         name=JPM; \
-        location=~/.bnd/caches/shas; \
+        location=cache/shas; \
         index=${workspace}/cnf/jpm4j.json, \
 \
 	aQute.bnd.deployer.repository.wrapper.Plugin; \
-		location="~/.bnd/caches/wrapper"
+		location="cache/wrapper"

@@ -2,9 +2,9 @@
 \
     aQute.bnd.jpm.Repository; \
         name=JPM; \
-        location=~/.bnd/caches/shas; \
+        location=${build}/cache/shas; \
         index=${workspace}/cnf/jpm4j.json, \
 \
 	aQute.bnd.deployer.repository.wrapper.Plugin; \
-		location="~/.bnd/caches/wrapper"; \
+		location="${build}/cache/wrapper"; \
 		reindex=true
