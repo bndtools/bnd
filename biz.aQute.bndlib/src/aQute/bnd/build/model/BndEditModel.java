@@ -63,31 +63,34 @@ public class BndEditModel {
 	private String													bndResourceName;
 	private final Map<String,Object>								objectProperties			= new HashMap<String,Object>();
 	private final Map<String,String>								changesToSave				= new TreeMap<String,String>();
+	private Processor												override;
 
 	// CONVERTERS
-	private Converter<List<VersionedClause>,String>				buildPathConverter			= new ClauseListConverter<VersionedClause>(
+	private Converter<List<VersionedClause>,String>					buildPathConverter			= new ClauseListConverter<VersionedClause>(
 																										new Converter<VersionedClause,Pair<String,Attrs>>() {
 																											public VersionedClause convert(
 																													Pair<String,Attrs> input)
 																													throws IllegalArgumentException {
-																												if (input == null) return null;
+																												if (input == null)
+																													return null;
 																												return new VersionedClause(
 																														input.getFirst(),
 																														input.getSecond());
 																											}
 																										});
-	private Converter<List<VersionedClause>,String>				buildPackagesConverter		= new ClauseListConverter<VersionedClause>(
+	private Converter<List<VersionedClause>,String>					buildPackagesConverter		= new ClauseListConverter<VersionedClause>(
 																										new Converter<VersionedClause,Pair<String,Attrs>>() {
 																											public VersionedClause convert(
 																													Pair<String,Attrs> input)
 																													throws IllegalArgumentException {
-																												if (input == null) return null;
+																												if (input == null)
+																													return null;
 																												return new VersionedClause(
 																														input.getFirst(),
 																														input.getSecond());
 																											}
 																										});
-	private Converter<List<VersionedClause>,String>				clauseListConverter			= new ClauseListConverter<VersionedClause>(
+	private Converter<List<VersionedClause>,String>					clauseListConverter			= new ClauseListConverter<VersionedClause>(
 																										new VersionedClauseConverter());
 	private Converter<String,String>								stringConverter				= new NoopConverter<String>();
 	private Converter<Boolean,String>								includedSourcesConverter	= new Converter<Boolean,String>() {
@@ -98,14 +101,15 @@ public class BndEditModel {
 																												.valueOf(string);
 																									}
 																								};
-	private Converter<List<String>,String>						listConverter				= SimpleListConverter
+	private Converter<List<String>,String>							listConverter				= SimpleListConverter
 																										.create();
 	private Converter<List<HeaderClause>,String>					headerClauseListConverter	= new HeaderClauseListConverter();
 	private ClauseListConverter<ExportedPackage>					exportPackageConverter		= new ClauseListConverter<ExportedPackage>(
 																										new Converter<ExportedPackage,Pair<String,Attrs>>() {
 																											public ExportedPackage convert(
 																													Pair<String,Attrs> input) {
-																												if (input == null) return null;
+																												if (input == null)
+																													return null;
 																												return new ExportedPackage(
 																														input.getFirst(),
 																														input.getSecond());
@@ -116,7 +120,8 @@ public class BndEditModel {
 																											public ServiceComponent convert(
 																													Pair<String,Attrs> input)
 																													throws IllegalArgumentException {
-																												if (input == null) return null;
+																												if (input == null)
+																													return null;
 																												return new ServiceComponent(
 																														input.getFirst(),
 																														input.getSecond());
@@ -127,7 +132,8 @@ public class BndEditModel {
 																											public ImportPattern convert(
 																													Pair<String,Attrs> input)
 																													throws IllegalArgumentException {
-																												if (input == null) return null;
+																												if (input == null)
+																													return null;
 																												return new ImportPattern(
 																														input.getFirst(),
 																														input.getSecond());
@@ -136,7 +142,7 @@ public class BndEditModel {
 
 	private Converter<Map<String,String>,String>					propertiesConverter			= new PropertiesConverter();
 
-	private Converter<List<Requirement>,String>					requirementListConverter	= new RequirementListConverter();
+	private Converter<List<Requirement>,String>						requirementListConverter	= new RequirementListConverter();
 	private Converter<EE,String>									eeConverter					= new EEConverter();
 
 	// Converter<ResolveMode, String> resolveModeConverter =
@@ -255,7 +261,7 @@ public class BndEditModel {
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
-		InputStream	in = toEscaped(document.get());
+		InputStream in = toEscaped(document.get());
 		loadFrom(in);
 	}
 
@@ -263,14 +269,14 @@ public class BndEditModel {
 		StringReader unicode = new StringReader(text);
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 
-		while ( true) {
+		while (true) {
 			int c = unicode.read();
-			if ( c < 0)
+			if (c < 0)
 				break;
-			if ( c >= 0x7F)
-				bout.write(String.format("\\u%04X",c).getBytes());
+			if (c >= 0x7F)
+				bout.write(String.format("\\u%04X", c).getBytes());
 			else
-				bout.write((char)c);
+				bout.write((char) c);
 		}
 
 		return new ByteArrayInputStream(bout.toByteArray());
@@ -292,6 +298,9 @@ public class BndEditModel {
 			properties.load(inputStream);
 			objectProperties.clear();
 			changesToSave.clear();
+
+			if (override != null)
+				override.getProperties().clear();
 
 			// Fire property changes on all known property names
 			for (String prop : KNOWN_PROPERTIES) {
@@ -745,56 +754,65 @@ public class BndEditModel {
 		doSetObject(aQute.bnd.osgi.Constants.PLUGINPATH, old, pluginPath, stringListFormatter);
 	}
 
-    public List<String> getRunRepos() {
-        return doGetObject(aQute.bnd.osgi.Constants.RUNREPOS, listConverter);
-    }
+	public List<String> getRunRepos() {
+		return doGetObject(aQute.bnd.osgi.Constants.RUNREPOS, listConverter);
+	}
 
-    public void setRunRepos(List<String> repos) {
-        List<String> old = getRunRepos();
-        doSetObject(aQute.bnd.osgi.Constants.RUNREPOS, old, repos, runReposFormatter);
-    }
+	public void setRunRepos(List<String> repos) {
+		List<String> old = getRunRepos();
+		doSetObject(aQute.bnd.osgi.Constants.RUNREPOS, old, repos, runReposFormatter);
+	}
 
-    public String getRunFramework() {
-        return doGetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, stringConverter);
-    }
+	public String getRunFramework() {
+		return doGetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, stringConverter);
+	}
 
-    public String getRunFw() {
-        return doGetObject(aQute.bnd.osgi.Constants.RUNFW, stringConverter);
-    }
+	public String getRunFw() {
+		return doGetObject(aQute.bnd.osgi.Constants.RUNFW, stringConverter);
+	}
 
-    public EE getEE() {
-        return doGetObject(aQute.bnd.osgi.Constants.RUNEE, eeConverter);
-    }
+	public EE getEE() {
+		return doGetObject(aQute.bnd.osgi.Constants.RUNEE, eeConverter);
+	}
 
-    public void setEE(EE ee) {
-        EE old = getEE();
-        doSetObject(aQute.bnd.osgi.Constants.RUNEE, old, ee, eeFormatter);
-    }
+	public void setEE(EE ee) {
+		EE old = getEE();
+		doSetObject(aQute.bnd.osgi.Constants.RUNEE, old, ee, eeFormatter);
+	}
 
+	public void setRunFramework(String clause) {
+		assert (Constants.RUNFRAMEWORK_SERVICES.equals(clause.toLowerCase().trim()) || Constants.RUNFRAMEWORK_NONE
+				.equals(clause.toLowerCase().trim()));
+		String oldValue = getRunFramework();
+		doSetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
+	}
 
-    public void setRunFramework(String clause) {
-        assert (Constants.RUNFRAMEWORK_SERVICES.equals(clause.toLowerCase().trim()) ||
-                Constants.RUNFRAMEWORK_NONE.equals(clause.toLowerCase().trim()));
-        String oldValue = getRunFramework();
-        doSetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
-    }
+	public void setRunFw(String clause) {
+		String oldValue = getRunFw();
+		doSetObject(aQute.bnd.osgi.Constants.RUNFW, oldValue, clause, newlineEscapeFormatter);
+	}
 
-    public void setRunFw(String clause) {
-        String oldValue = getRunFw();
-        doSetObject(aQute.bnd.osgi.Constants.RUNFW, oldValue, clause, newlineEscapeFormatter);
-    }
+	public List<Requirement> getRunRequires() {
+		return doGetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListConverter);
+	}
 
-    public List<Requirement> getRunRequires() {
-    	return doGetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, requirementListConverter);
-    }
-
-    public void setRunRequires(List<Requirement> requires) {
-    	List<Requirement> oldValue = getRunRequires();
-    	doSetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
-    }
-
+	public void setRunRequires(List<Requirement> requires) {
+		List<Requirement> oldValue = getRunRequires();
+		doSetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
+	}
 
 	private <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
+
+		
+		//
+		// If we have an override, we ignore any caching
+		//
+		
+		if ( override != null) {
+			return converter.convert(override.getProperty(name));
+		}
+		
+		
 		R result;
 		if (objectProperties.containsKey(name)) {
 			@SuppressWarnings("unchecked")
@@ -807,14 +825,25 @@ public class BndEditModel {
 			result = converter.convert(properties.getProperty(name));
 			objectProperties.put(name, result);
 		} else {
-			result = converter.convert(null);
+				result = converter.convert(null);
 		}
+
 		return result;
 	}
 
 	private <T> void doSetObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {
 		objectProperties.put(name, newValue);
-		changesToSave.put(name, formatter.convert(newValue));
+		String v = formatter.convert(newValue);
+		changesToSave.put(name, v);
+
+		//
+		// If override is set, we also update it to reflect the latest
+		// values
+		//
+
+		if (override != null)
+			override.setProperty(name, v);
+
 		propChangeSupport.firePropertyChange(name, oldValue, newValue);
 	}
 
@@ -898,8 +927,21 @@ public class BndEditModel {
 		setIncludeResource(includeResource);
 	}
 
-
-	/**
-	 * Save a document to
+	/*
+	 * If a parent is given, we will expand any properties using the parent
+	 * context before we con
 	 */
+	public void setOverride(Processor parent) {
+		Processor p = new Processor(parent);
+		p.getProperties().putAll(properties);
+		p.getProperties().putAll(changesToSave);
+		this.override = p;
+
+		//
+		// This invalidates any already made conversions
+		// they will have to be relearned
+		//
+
+		objectProperties.clear();
+	}
 }

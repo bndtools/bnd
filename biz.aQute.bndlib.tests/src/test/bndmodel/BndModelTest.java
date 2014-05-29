@@ -6,6 +6,7 @@ import java.util.*;
 import junit.framework.*;
 import aQute.bnd.build.model.*;
 import aQute.bnd.build.model.clauses.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.properties.*;
 import aQute.lib.io.*;
 
@@ -38,6 +39,29 @@ public class BndModelTest  extends TestCase {
 		assertEquals(BND_BUILDPATH_EXPECTED, data);
 	}
 
+	public void testParent() throws Exception {
+		BndEditModel model = new BndEditModel();
+		Processor p = new Processor();
+		p.setProperty("abc", "${def}");
+		p.setProperty("def", "DEF");
+		model.setOverride(p);
+
+		assertEquals("DEF", model.genericGet("abc"));
+		
+		//
+		// Check roundtrip expansion that go through
+		// changesToSafe
+		//
+		
+		model.addIncludeResource("${abc}");
+		List<String> result = model.getIncludeResource();
+		assertEquals(Arrays.asList("\\\n\tDEF"), result);
+		
+		
+	}
+	
+	
+	
 	private static File getFile(String data) throws IOException {
 		File file = File.createTempFile("bndtest", "bnd");
 		file.deleteOnExit();
