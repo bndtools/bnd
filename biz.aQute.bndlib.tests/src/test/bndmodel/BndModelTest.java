@@ -55,7 +55,7 @@ public class BndModelTest  extends TestCase {
 		
 
 		assertEquals("Set in file, refers to macro", "a, b, c", p.getProperty(Constants.RUNBUNDLES));
-		assertEquals("Changes, refers to macro", p.getProperty(Constants.RUNFW));
+		assertEquals("Changes, refers to macro", "framework", p.getProperty(Constants.RUNFW));
 		
 	}
 	
