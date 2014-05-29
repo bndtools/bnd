@@ -14,7 +14,7 @@ buildscript {
 }
 
 /* Load the BndPlugin class */
-apply from: rootProject.file('biz.aQute.bnd/src/aQute/bnd/gradle/BndPlugin.gradle')
+apply from: buildscript.classLoader.getResource('aQute/bnd/gradle/BndPlugin.gradle')
 
 /* Configure the subprojects */
 subprojects {
