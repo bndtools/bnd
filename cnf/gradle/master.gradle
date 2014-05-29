@@ -18,7 +18,8 @@ apply from: buildscript.classLoader.getResource('aQute/bnd/gradle/BndPlugin.grad
 
 /* Configure the subprojects */
 subprojects {
-  if (bndWorkspace.getProject(name) != null) {
+  def bndProject = bndWorkspace.getProject(name)
+  if (bndProject != null) {
     plugins.apply BndPlugin
   }
 }
