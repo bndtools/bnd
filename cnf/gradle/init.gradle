@@ -11,7 +11,28 @@ import aQute.bnd.build.Workspace
 /* Add bnd as a script dependency */
 buildscript {
   dependencies {
-    classpath files(new File(rootDir, bnd_jar))
+    def bndURI = rootDir.toURI().resolve(bnd_jar)
+    if (bndURI.scheme != 'file') {
+      /* If not a local file, copy to a local file in cnf/cache */
+      def cnfCache = mkdir("${rootDir}/${bnd_cnf}/cache")
+      def bndJarFile = new File(cnfCache, bndURI.path.tokenize('/')[-1])
+      if (!bndJarFile.exists()) {
+        println "Downloading ${bndURI} to ${bndJarFile} ..."
+        bndURI.toURL().withInputStream { is ->
+          bndJarFile.withOutputStream { os ->
+            def bos = new BufferedOutputStream( os )
+            bos << is
+          }
+        }
+      }
+      bndURI = bndJarFile.toURI()
+    }
+    classpath files(bndURI)
+
+    /* After the rootProject is created, pass URI to projects */
+    gradle.rootProject { rootProject ->
+      rootProject.ext.bndURI = bndURI
+    }
   }
 }
 
