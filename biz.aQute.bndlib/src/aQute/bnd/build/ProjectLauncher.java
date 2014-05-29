@@ -98,8 +98,8 @@ public abstract class ProjectLauncher {
 		}
 
 		Collection<Container> runpath = project.getRunpath();
-		runsystempackages = project.getParameters(Constants.RUNSYSTEMPACKAGES);
-		runsystemcapabilities = project.getProperty(Constants.RUNSYSTEMCAPABILITIES);
+		runsystempackages = new Parameters( project.mergeProperties(Constants.RUNSYSTEMPACKAGES));
+		runsystemcapabilities = project.mergeProperties(Constants.RUNSYSTEMCAPABILITIES);
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
 
 		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);

@@ -414,17 +414,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			if (spe.equals(NONE))
 				return new LinkedHashSet<Object>();
 
-			String pluginPath = getProperty(PLUGINPATH);
+			spe = mergeProperties(PLUGIN);
+			String pluginPath = mergeProperties(PLUGINPATH);
 			loadPlugins(plugins, spe, pluginPath);
 		}
 
 		addExtensions(plugins);
-		
-		for ( RegistryDonePlugin rdp : getPlugins(RegistryDonePlugin.class)) {
+
+		for (RegistryDonePlugin rdp : getPlugins(RegistryDonePlugin.class)) {
 			try {
 				rdp.done();
-			} catch( Exception e) {
-				error( "Calling done on %s, gives an exception %s", rdp, e );
+			}
+			catch (Exception e) {
+				error("Calling done on %s, gives an exception %s", rdp, e);
 			}
 		}
 		return this.plugins;
@@ -766,8 +768,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		toBeClosed.clear();
 	}
 
-	public String _basedir(@SuppressWarnings("unused")
-	String args[]) {
+	public String _basedir(@SuppressWarnings("unused") String args[]) {
 		if (base == null)
 			throw new IllegalArgumentException("No base dir set");
 
@@ -1203,8 +1204,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map< ? , ? extends Map< ? , ? >> exports, @SuppressWarnings("unused")
-	boolean checkMultipleVersions) throws IOException {
+	public static String printClauses(Map< ? , ? extends Map< ? , ? >> exports,
+			@SuppressWarnings("unused") boolean checkMultipleVersions) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Entry< ? , ? extends Map< ? , ? >> entry : exports.entrySet()) {
@@ -1331,8 +1332,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return result;
 	}
 
-	public boolean updateModified(long time, @SuppressWarnings("unused")
-	String reason) {
+	public boolean updateModified(long time, @SuppressWarnings("unused") String reason) {
 		if (time > lastModified) {
 			lastModified = time;
 			return true;
@@ -1925,7 +1925,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		 * Determine the processor information
 		 */
 		String[] aliases = OSInformation.getProcessorAliases(System.getProperty("os.arch"));
-		if ( aliases != null)
+		if (aliases != null)
 			processorNames = Strings.join(aliases);
 
 		/*
@@ -2362,4 +2362,21 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public boolean is(String propertyName) {
 		return isTrue(getProperty(propertyName));
 	}
+
+	/**
+	 * Return merged properties. The parameters provide a list of property names
+	 * which are concatenated in the output, separated by a comma. Not only are
+	 * those property names looked for, also all property names that have that
+	 * constant as a prefix, a '.', and then whatever (.*). The result is either
+	 * null if nothing was found or a list of properties
+	 */
+
+	public String mergeProperties(String key) {
+		if (since(About._2_4))
+			return getProperty(key + "|" + key + ".*");
+		else
+			return getProperty(key);
+
+	}
+
 }

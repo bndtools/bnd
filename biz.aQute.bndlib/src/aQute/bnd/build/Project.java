@@ -411,16 +411,17 @@ public class Project extends Processor {
 	 */
 
 	private List<Container> parseBuildpath() throws Exception {
-		List<Container> bundles = getBundles(Strategy.LOWEST, getProperty(Constants.BUILDPATH), Constants.BUILDPATH);
+		List<Container> bundles = getBundles(Strategy.LOWEST, mergeProperties(Constants.BUILDPATH), Constants.BUILDPATH);
 		return bundles;
 	}
 
 	private List<Container> parseRunpath() throws Exception {
-		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNPATH), Constants.RUNPATH);
+		return getBundles(Strategy.HIGHEST, mergeProperties(Constants.RUNPATH), Constants.RUNPATH);
 	}
 
 	private List<Container> parseRunbundles() throws Exception {
-		return getBundles(Strategy.HIGHEST, getProperty(Constants.RUNBUNDLES), Constants.RUNBUNDLES);
+		
+		return getBundles(Strategy.HIGHEST, mergeProperties(Constants.RUNBUNDLES), Constants.RUNBUNDLES);
 	}
 
 	private List<Container> parseRunFw() throws Exception {
@@ -428,8 +429,9 @@ public class Project extends Processor {
 	}
 
 	private List<Container> parseTestpath() throws Exception {
-		return getBundles(Strategy.HIGHEST, getProperty(Constants.TESTPATH), Constants.TESTPATH);
+		return getBundles(Strategy.HIGHEST, mergeProperties(Constants.TESTPATH), Constants.TESTPATH);
 	}
+
 
 	/**
 	 * Analyze the header and return a list of files that should be on the

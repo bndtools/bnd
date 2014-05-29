@@ -42,9 +42,12 @@ public class About {
 	public static Version				_2_4		= new Version(2, 4, 0);
 
 	public static String[]				CHANGES_2_4	= {
-														"Projects can now be selected by version in a path. This "
-																+ "enables a project to depend on a version that starts as a project but "
-																+ "later becomes a repository entry."
+			"Most paths can now be set with their primary key (e.g. -runbundles) but are appended with "
+			+ "secondary keys (anything that begins with the primary key  + .*, e.g. '-runbundles.5'). "
+			+ "The mergeProperties is the function creating this collective path",
+			"Projects can now be selected by version in a path. This "
+					+ "enables a project to depend on a version that starts as a project but "
+					+ "later becomes a repository entry."
 													};
 	public static String[]				CHANGES_2_3	= {
 			"More aggressive upgrade to a later DS release, current analyzer was missing cases that required a higher version",

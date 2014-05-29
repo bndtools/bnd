@@ -1,0 +1,16 @@
+
+-runbundles: org.apache.felix.configadmin 
+-runbundles.5: osgi.core
+-runbundles.2: org.apache.felix.ipojo
+
+-runpath: org.apache.felix.configadmin
+-runpath.xyz: org.apache.felix.ipojo
+-runpath.5: osgi.core
+
+-testpath: org.apache.felix.configadmin 
+-testpath.2: org.apache.felix.ipojo
+-testpath.5: osgi.core
+
+-buildpath: org.apache.felix.configadmin 
+-buildpath.2: org.apache.felix.ipojo
+-buildpath.5: osgi.core

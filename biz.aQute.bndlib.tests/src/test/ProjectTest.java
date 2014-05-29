@@ -26,6 +26,32 @@ public class ProjectTest extends TestCase {
 		IO.delete(tmp);
 	}
 
+	
+	/**
+	 * Test the multi-key support on runbundles/runpath/testpath and buildpath
+	 */
+	
+	public void testMulti() throws Exception {
+		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Project project = ws.getProject("multipath");
+		assertNotNull(project);
+		
+		List<Container> runbundles = new ArrayList<Container>(project.getRunbundles());
+		assertEquals( 3, runbundles.size());
+		assertEquals( "org.apache.felix.configadmin", runbundles.get(0).getBundleSymbolicName());
+		assertEquals( "org.apache.felix.ipojo", runbundles.get(1).getBundleSymbolicName());
+		assertEquals( "osgi.core", runbundles.get(2).getBundleSymbolicName());
+		
+		List<Container> runpath = new ArrayList<Container>(project.getRunpath());
+		assertEquals( 3, runpath.size());
+		
+		List<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
+		assertEquals( 4, buildpath.size()); // adds output ...
+		
+		List<Container> testpath = new ArrayList<Container>(project.getTestpath());
+		assertEquals( 3, testpath.size());
+	}
+	
 	/**
 	 * Check if a project=version, which is illegal on -runbundles, is actually
 	 * reported as an error.
@@ -517,13 +543,13 @@ public class ProjectTest extends TestCase {
 	}
 
 	public  void testBuildAll() throws Exception {
-		assertTrue(testBuildAll("*", 14).check()); // there are 14 projects
+		assertTrue(testBuildAll("*", 15).check()); // there are 14 projects
 		assertTrue(testBuildAll("p*", 9).check()); // 7 begin with p
-		assertTrue(testBuildAll("!p*, *", 5).check()); // negation: 6 don't
+		assertTrue(testBuildAll("!p*, *", 6).check()); // negation: 6 don't
 														// begin with p
 		assertTrue(testBuildAll("*-*", 6).check()); // more than one wildcard: 7
 													// have a dash
-		assertTrue(testBuildAll("!p*, p1, *", 5).check("Missing dependson p1")); // check
+		assertTrue(testBuildAll("!p*, p1, *", 6).check("Missing dependson p1")); // check
 																					// that
 																					// an
 																					// unused
@@ -531,7 +557,7 @@ public class ProjectTest extends TestCase {
 																					// is
 																					// an
 																					// error
-		assertTrue(testBuildAll("p*, !*-*, *", 12).check()); // check that
+		assertTrue(testBuildAll("p*, !*-*, *", 13).check()); // check that
 																// negation
 																// works after
 																// some projects
