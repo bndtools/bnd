@@ -103,10 +103,10 @@ public class BndPlugin implements Plugin<Project> {
         if (logger.isEnabled(LogLevel.INFO)) {
           doFirst {
             logger.info "Compile ${sourceSets.main.java.srcDirs} to ${destinationDir}"
-            if (profile.empty) {
+            if (javacProfile.empty) {
               logger.info "-source ${sourceCompatibility} -target ${targetCompatibility}"
             } else {
-              logger.info "-source ${sourceCompatibility} -target ${targetCompatibility} -profile ${profile}"
+              logger.info "-source ${sourceCompatibility} -target ${targetCompatibility} -profile ${javacProfile}"
             }
             logger.info "-classpath ${classpath.asPath}"
             if (options.bootClasspath != null) {
