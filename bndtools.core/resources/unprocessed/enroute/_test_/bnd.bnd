@@ -1,0 +1,14 @@
+Bundle-Version:1.0.0.${tstamp}
+Bundle-Description: 				\
+	${warning;Replace this comment with a description of what this bundles does}
+
+	
+-buildpath: \
+	osgi.enroute.base.api;version=1.0, \
+	osgi.enroute.testing.support;version=1.0 \
+	
+
+Test-Cases: ${testcases}
+
+Private-Package:  \
+	_test_

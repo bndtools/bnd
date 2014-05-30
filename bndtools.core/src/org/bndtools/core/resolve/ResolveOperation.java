@@ -1,5 +1,6 @@
 package org.bndtools.core.resolve;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.osgi.service.coordinator.Coordination;
 import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.resolver.ResolutionException;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.deployer.repository.ReporterLogService;
 import biz.aQute.resolve.BndResolver;
@@ -45,6 +47,7 @@ public class ResolveOperation implements IRunnableWithProgress {
 
     @Override
     public void run(IProgressMonitor monitor) {
+
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorOverview, null);
 
         // Start a coordination
@@ -58,6 +61,19 @@ public class ResolveOperation implements IRunnableWithProgress {
         ResolverLogger logger = new ResolverLogger();
         try {
             BndResolver bndResolver = new BndResolver(logger);
+
+            //
+            // Make sure we do macro expansion
+            //
+
+            if (model.isProjectFile()) {
+
+                File resource = model.getBndResource();
+                if (resource != null) {
+                    Project project = Central.getProject(resource.getParentFile());
+                    // TODO setOverride
+                }
+            }
 
             ReporterLogService log = new ReporterLogService(Central.getWorkspace());
             Map<Resource,List<Wire>> wirings = resolve.resolveRequired(model, Central.getWorkspace(), bndResolver, callbacks, log);

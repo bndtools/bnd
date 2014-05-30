@@ -36,8 +36,8 @@ public class ResourceReplacer extends Thread {
         BufferedReader reader = null;
         BufferedWriter writer = null;
         try {
-            reader = new BufferedReader(new InputStreamReader(url.openStream(), Charset.defaultCharset()));
-            writer = new BufferedWriter(new OutputStreamWriter(out, Charset.defaultCharset()));
+            reader = new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName("UTF-8")));
+            writer = new BufferedWriter(new OutputStreamWriter(out, Charset.forName("UTF-8")));
             while ((line = reader.readLine()) != null) {
                 for (Map.Entry<String,String> replaceRegularExpression : replaceRegularExpressions.entrySet()) {
                     line = line.replaceAll(replaceRegularExpression.getKey(), replaceRegularExpression.getValue());

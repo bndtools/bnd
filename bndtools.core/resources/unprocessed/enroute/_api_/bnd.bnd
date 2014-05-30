@@ -1,0 +1,13 @@
+Bundle-Version:1.0.0.${tstamp}
+Bundle-Description: 				\
+	${warning;Replace this comment with a description of what this api bundles does}
+
+	
+Export-Package:  \
+	_package_
+
+
+-buildpath: \
+	osgi.enroute.base.api;version=1.0
+	
+

@@ -597,6 +597,11 @@
 
    <extension point="bndtools.core.launchTemplates">
       <template
+         name="OSGi enRoute Distro"
+         path="enroute/launch/base-debug.bndrun"
+         doc= "enroute/base-debug.xml"
+         icon="enroute/enroute-color-16x16.png"/>
+      <template
          name="Apache Felix 4 with Gogo Shell"
          path="launchTemplates/felix4+shell.bndrun"
          doc="html/felix4+shell.form.xml"
@@ -716,7 +721,7 @@
 	<extension point="bndtools.core.projectTemplates">
 		<template name="Component Development (OSGi Declarative Services)"
 			priority="500" category="AAA/Core"
-			class="org.bndtools.core.templates.enroute.ComponentTemplate" doc="html/componentTemplate.xml"
+			class="org.bndtools.core.templates.project.ComponentTemplate" doc="html/componentTemplate.xml"
 			icon="icons/cog.png" />
 	</extension>
 
@@ -725,8 +730,9 @@
 
 	<extension point="bndtools.core.projectTemplates">
 		<template name="OSGi enRoute "
-			priority="500" category="AAA/Core"
-			class="org.bndtools.core.templates.enroute.ProjectTemplate" doc="enroute/project-template.xml"
+			priority="400" category="AAA/Core"
+			class="org.bndtools.core.templates.enroute.ProjectTemplate" 
+			doc="enroute/project-template.xml"
 			icon="enroute/enroute-color-16x16.png" />
 	</extension>
 

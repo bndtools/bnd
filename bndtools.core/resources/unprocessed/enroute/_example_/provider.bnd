@@ -1,0 +1,4 @@
+Export-Package:  \
+	_package_.api
+Private-Package:  \
+	_package_.provider

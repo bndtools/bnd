@@ -1,9 +1,0 @@
-<form>
-	<p>
-		Creates a configuration based on <a href="http://www.jpm4j.org">JPM4J</a>: Just Another Package Manager for Java.
-	</p>
-	
-	<p>
-		<b>N.B.:</b> This configuration is currently experimental.
-	</p>
-</form>

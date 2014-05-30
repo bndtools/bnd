@@ -1,0 +1,4 @@
+
+javac.source = ${ide;javac.source}
+javac.target = ${ide;javac.target}
+

@@ -45,6 +45,7 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.osgi.framework.Bundle;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Processor;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -63,7 +64,7 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
 
     /**
      * Returns whether the workspace is configured for bnd (i.e. the cnf project exists).
-     * 
+     *
      * @return the cnf info
      */
     static CnfInfo getWorkspaceCnfInfo() {
@@ -190,10 +191,12 @@ public class CnfSetupTask extends WorkspaceModifyOperation {
         }
 
         /* Headless build files */
-        HeadlessBuildManager headlessBuildManager = Plugin.getDefault().getHeadlessBuildManager();
-        Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildManager, null);
-        headlessBuildManager.setup(enabledPlugins, true, cnfJavaProject.getProject().getLocation().toFile(), true, enabledIgnorePlugins);
-
+        String nobuild = templateConfig.getAttribute("nobuild");
+        if (!Processor.isTrue(nobuild)) {
+            HeadlessBuildManager headlessBuildManager = Plugin.getDefault().getHeadlessBuildManager();
+            Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildManager, null);
+            headlessBuildManager.setup(enabledPlugins, true, cnfJavaProject.getProject().getLocation().toFile(), true, enabledIgnorePlugins);
+        }
         /* refresh the project; files were created outside of Eclipse API */
         cnfProject.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
     }

@@ -74,7 +74,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
 
     /**
      * Generate the new Bnd model for the project. This implementation simply returns an empty Bnd model.
-     * 
+     *
      * @param monitor
      */
     @SuppressWarnings({
@@ -86,7 +86,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
 
     /**
      * Allows for an IProjectTemplate to modify the new Bnd project
-     * 
+     *
      * @param monitor
      */
     @SuppressWarnings({
@@ -99,7 +99,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
     /**
      * Modify the newly generated Java project; this method is executed from within a workspace operation so is free to
      * make workspace resource modifications.
-     * 
+     *
      * @throws CoreException
      */
     protected void processGeneratedProject(ProjectPaths projectPaths, BndEditModel bndModel, IJavaProject project, IProgressMonitor monitor) throws CoreException {
@@ -166,6 +166,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             try {
                 // Run using the progress bar from the wizard dialog
                 getContainer().run(false, false, new IRunnableWithProgress() {
+                    @Override
                     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {
                             SubMonitor progress = SubMonitor.convert(monitor, 3);
@@ -175,6 +176,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
 
                             // Make changes to the project
                             final IWorkspaceRunnable op = new IWorkspaceRunnable() {
+                                @Override
                                 public void run(IProgressMonitor monitor) throws CoreException {
                                     processGeneratedProject(ProjectPaths.get(pageOne.getProjectLayout()), bndModel, javaProj, monitor);
                                 }

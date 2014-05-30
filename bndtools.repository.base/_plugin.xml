@@ -15,15 +15,16 @@
          category="AAA/Core"
       />
       <template
-         id="jpm"
-         name="JPM4J Configuration (Experimental)"
-         doc="templateDocs/JpmConfig.xml"
-         paths="templates/cnfs/jpm"
+         id="enRoute"
+         name="OSGi enRoute Configuration (Alpha)"
+         doc="${enroute}/doc.xml"
+         paths="${enroute}/cnf"
          priority="0"
-         managed="ext/.*,plugins/.*"
+         managed="ext/.*"
          ignores="/cache/"
          version="10"
          category="AAA/Core"
+         nobuild="true"
       />
    </extension>
 
