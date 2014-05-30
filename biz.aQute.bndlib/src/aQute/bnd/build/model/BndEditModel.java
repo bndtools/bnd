@@ -328,8 +328,13 @@ public class BndEditModel {
 
 			String propertyName = entry.getKey();
 			String stringValue = entry.getValue();
-
+			
 			updateDocument(document, propertyName, stringValue);
+			
+			//
+			// Ensure that properties keeps reflecting the current document value
+			//
+			properties.setProperty(propertyName, cleanup(stringValue));
 		}
 	}
 
