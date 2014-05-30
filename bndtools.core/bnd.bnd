@@ -39,9 +39,10 @@ Export-Package: \
 	bndtools.launch.api,\
 	bndtools.wizards.workspace
 
-Include-Resource: plugin.xml=_plugin.xml,\
+Include-Resource: {plugin.xml=_plugin.xml},\
     /=resources/unprocessed,\
-    {/=resources/processed}
+    {/=resources/processed},\
+    enroute=resources/enroute
 
 # Build and Run
 eclipse.deps: \

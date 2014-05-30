@@ -20,6 +20,7 @@ import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.resolver.ResolutionException;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Run;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.deployer.repository.ReporterLogService;
 import biz.aQute.resolve.BndResolver;
@@ -63,16 +64,23 @@ public class ResolveOperation implements IRunnableWithProgress {
             BndResolver bndResolver = new BndResolver(logger);
 
             //
-            // Make sure we do macro expansion
+            // Make sure we do macro expansion properly
             //
 
+            File resource = model.getBndResource();
+            Project project = Central.getProject(resource.getParentFile());
             if (model.isProjectFile()) {
-
-                File resource = model.getBndResource();
-                if (resource != null) {
-                    Project project = Central.getProject(resource.getParentFile());
-                    // TODO setOverride
-                }
+                //
+                // run's in projects are based on the project
+                // and implicitly the ws
+                //
+                model.setProject(project);
+            } else {
+                //
+                // run's in bndrun files are the bndrun + workspace
+                //
+                Run run = new Run(project.getWorkspace(), project.getBase(), resource);
+                model.setProject(run);
             }
 
             ReporterLogService log = new ReporterLogService(Central.getWorkspace());

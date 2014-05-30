@@ -14,18 +14,6 @@
          version="0"
          category="AAA/Core"
       />
-      <template
-         id="enRoute"
-         name="OSGi enRoute Configuration (Alpha)"
-         doc="${enroute}/doc.xml"
-         paths="${enroute}/cnf"
-         priority="0"
-         managed="ext/.*"
-         ignores="/cache/"
-         version="10"
-         category="AAA/Core"
-         nobuild="true"
-      />
    </extension>
 
 </plugin>

@@ -13,12 +13,8 @@ bundlehub-template-resources: \
 	${bundlehub-template}/releaserepo/=templates/repos/releaserepo,\
 	${bundlehub-template}/plugins/biz.aQute.repository/biz.aQute.repository.jar=${repo;biz.aQute.repository;${aQute-repository-base}}
 
-enroute: templates/enroute
-
 Include-Resource:\
 	{plugin.xml=_plugin.xml},\
 	icons/=icons,\
 	templateDocs/=templateDocs,\
-	${bundlehub-template-resources},\
-	${enroute}=${enroute}
-	
+	${bundlehub-template-resources}	

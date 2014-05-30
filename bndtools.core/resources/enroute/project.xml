@@ -1,5 +1,5 @@
 <form>Creates a project for developing with enRoute base profile, a profile 
 for basic OSGi applications. The profile is implemented in different <em>distros</em>. 
 <p>You can create an API project (end the name with <code>.api</code>), PROVIDER project 
-(end the name with <core>.adapter</code> or <code>.provider</code>), or an OSGi TEST project (end the name with <code>.test</code>).</p>
+(end the name with <code>.adapter</code> or <code>.provider</code>), or an OSGi TEST project (end the name with <code>.test</code>).</p>
 </form>

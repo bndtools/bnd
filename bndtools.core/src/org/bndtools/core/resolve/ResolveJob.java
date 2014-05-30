@@ -27,24 +27,28 @@ public class ResolveJob extends Job {
         this.model = model;
     }
 
-    public IStatus validateBeforeRun() throws Exception {
+    public IStatus validateBeforeRun() {
+        try {
 
-        //
-        // The BndEdit model does not do property expansion. So
-        // get the processor to get the expansions.
-        //
+            //
+            // The BndEdit model does not do property expansion. So
+            // get the processor to get the expansions.
+            //
 
-        Processor p = model.getProperties();
+            Processor p = model.getProperties();
 
-        String runfw = p.getProperty(Constants.RUNFW);
-        if (runfw == null)
-            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
+            String runfw = p.getProperty(Constants.RUNFW);
+            if (runfw == null)
+                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
 
-        EE ee = EE.parse(p.getProperty(Constants.RUNEE));
-        if (ee == null)
-            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
+            EE ee = EE.parse(p.getProperty(Constants.RUNEE));
+            if (ee == null)
+                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
 
-        return Status.OK_STATUS;
+            return Status.OK_STATUS;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
