@@ -1,6 +1,7 @@
 package aQute.junit;
 
 import java.io.*;
+import java.lang.annotation.*;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
@@ -398,23 +399,17 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	@SuppressWarnings("unchecked")
 	private void addTest(TestSuite suite, Class< ? > clazz, final String method) {
-		org.junit.Test annotation = clazz.getAnnotation(org.junit.Test.class);
-		if ( annotation == null && TestCase.class.isAssignableFrom(clazz) ) {
-			trace("using JUnit 3");
-			if (method != null) {
-				suite.addTest(TestSuite.createTest(clazz, method));
-				return;
-			}
-			suite.addTestSuite((Class< ? extends TestCase>) clazz);
-			return;
+		if (TestCase.class.isAssignableFrom(clazz) && hasJunit4Annotations(clazz)) {
+			error("The test class %s extends %s and it uses JUnit 4 annotations. This means that the annotations will be ignored.",
+					clazz.getName(), TestCase.class.getName());
 		}
 
 		trace("using JUnit 4");
 		JUnit4TestAdapter adapter = new JUnit4TestAdapter(clazz);
 		if (method != null) {
 			trace("method specified " + clazz + ":" + method);
-			final Pattern glob = Pattern.compile( method.replaceAll("\\*", ".*").replaceAll("\\?", ".?"));
-			
+			final Pattern glob = Pattern.compile(method.replaceAll("\\*", ".*").replaceAll("\\?", ".?"));
+
 			try {
 				adapter.filter(new org.junit.runner.manipulation.Filter() {
 
@@ -439,6 +434,25 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			}
 		}
 		suite.addTest(adapter);
+	}
+
+	private boolean hasJunit4Annotations(Class< ? > clazz) {
+		if ( hasAnnotations("org.junit.", clazz.getAnnotations()))
+			return true;
+		
+		for ( Method m : clazz.getMethods()) {
+			if ( hasAnnotations("org.junit.", m.getAnnotations()) )
+				return true;
+		}
+		return false;
+	}
+
+	private boolean hasAnnotations(String prefix, Annotation[] annotations) {
+		if (annotations != null)
+			for (Annotation a : annotations)
+				if (a.getClass().getName().startsWith(prefix))
+					return true;
+		return false;
 	}
 
 	private Class< ? > loadClass(Bundle tfw, String fqn) {
