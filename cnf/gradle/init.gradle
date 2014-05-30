@@ -76,11 +76,21 @@ if ((startParameter.currentDir != rootDir) || projectNames.empty) {
   projectNames += defaultProjectName
 }
 
+/* If bnd_build used but declared empty, add all non-private folders of rootDir */
+if (projectNames.remove('')) {
+  rootDir.eachDir {
+    def projectName = it.name
+    if (!projectName.startsWith('.')) {
+      projectNames += projectName
+    }
+  }
+}
+
 /* Add each project and its dependencies to the graph */
 projectNames.each { projectName ->
+  include projectName
   def project = getBndProject(workspace, projectName)
-  include project.name
-  project.dependson.each {
+  project?.dependson.each {
     include it.name
   }
 }
@@ -89,7 +99,7 @@ projectNames.each { projectName ->
 def getBndProject(Workspace workspace, String projectName) {
   def project = workspace.getProject(projectName)
   if (project == null) {
-    throw new GradleException("Unable to load project from ${rootDir}/${projectName}")
+    return null
   }
   project.prepare()
   if (project.isValid()) {
