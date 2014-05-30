@@ -70,6 +70,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 				Field f;
 				try {
 					f = test.getClass().getField("context");
+					f.setAccessible(true);
 					f.set(test, context);
 					activator.trace("set context in field");
 				}
