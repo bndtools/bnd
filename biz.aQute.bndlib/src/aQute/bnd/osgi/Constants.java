@@ -152,7 +152,7 @@ public interface Constants {
 	String							RUNREQUIRE									= "-runrequire";
 
 	String							RUNREQUIRES									= "-runrequires";
-
+	String							RESOLVE										= "-resolve";
 	String							RUNEE										= "-runee";
 	String							RUNPATH										= "-runpath";
 	String							RUNSTORAGE									= "-runstorage";
@@ -202,7 +202,7 @@ public interface Constants {
 			DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT,
 			STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS, UPTO,
 			INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK, TESTUNRESOLVED,
-			RUNJDB, RUNENV, RUNEE, EEPROFILE
+			RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, RESOLVE
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make
@@ -390,16 +390,21 @@ public interface Constants {
 	String							DEFAULT_PROP_TESTBIN_DIR					= "testbin";
 	String							DEFAULT_PROP_TARGET_DIR						= "target-dir";
 
-
 	/*
 	 * Deprecated Section
 	 */
 
-	/** we use the eclipse setting in eclipse and the javac.source setting in offline build */
+	/**
+	 * we use the eclipse setting in eclipse and the javac.source setting in
+	 * offline build
+	 */
 	@Deprecated
 	String							COMPILER_SOURCE								= "-source";
 
-	/** we use the eclipse setting in eclipse and the javac.target setting in offline build */
+	/**
+	 * we use the eclipse setting in eclipse and the javac.target setting in
+	 * offline build
+	 */
 	@Deprecated
 	String							COMPILER_TARGET								= "-target";
 }
