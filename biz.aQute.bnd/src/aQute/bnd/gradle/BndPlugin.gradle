@@ -54,7 +54,7 @@ public class BndPlugin implements Plugin<Project> {
       /* We use the same directory for java and resources. */
       sourceSets {
         main {
-          java.srcDirs = resources.srcDirs = files(bndProject.sourcePath.collect { relativePath(it) })
+          java.srcDirs = resources.srcDirs = files(relativePath(bndProject.src))
           output.classesDir = output.resourcesDir = relativePath(bndProject.srcOutput)
         }
         test {
