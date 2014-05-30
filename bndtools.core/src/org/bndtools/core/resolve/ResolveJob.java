@@ -10,6 +10,8 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import biz.aQute.resolve.ResolutionCallback;
 import bndtools.Plugin;
 
@@ -25,12 +27,20 @@ public class ResolveJob extends Job {
         this.model = model;
     }
 
-    public IStatus validateBeforeRun() {
-        String runfw = model.getRunFw();
+    public IStatus validateBeforeRun() throws Exception {
+
+        //
+        // The BndEdit model does not do property expansion. So
+        // get the processor to get the expansions.
+        //
+
+        Processor p = model.getProperties();
+
+        String runfw = p.getProperty(Constants.RUNFW);
         if (runfw == null)
             return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
 
-        EE ee = model.getEE();
+        EE ee = EE.parse(p.getProperty(Constants.RUNEE));
         if (ee == null)
             return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
 
