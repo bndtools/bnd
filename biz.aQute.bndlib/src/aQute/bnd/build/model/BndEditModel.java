@@ -962,6 +962,9 @@ public class BndEditModel {
 	}
 
 	private String cleanup(String value) {
+		if ( value == null)
+			return null;
+			
 		return value.replaceAll("\\\\\n", "");
 	}
 }
