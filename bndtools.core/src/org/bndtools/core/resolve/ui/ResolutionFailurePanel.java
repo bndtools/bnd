@@ -47,6 +47,8 @@ public class ResolutionFailurePanel {
 
     private Text processingErrorsText;
     private TreeViewer unresolvedViewer;
+    private Section sectProcessingErrors;
+    private Section sectUnresolved;
 
     private static final boolean failureTreeMode = true;
 
@@ -57,7 +59,7 @@ public class ResolutionFailurePanel {
         composite.setLayout(new GridLayout(1, false));
         GridData gd;
 
-        Section sectProcessingErrors = toolkit.createSection(composite, Section.TITLE_BAR | Section.EXPANDED);
+        sectProcessingErrors = toolkit.createSection(composite, Section.TITLE_BAR | Section.EXPANDED);
         sectProcessingErrors.setText("Processing Errors:");
 
         processingErrorsText = toolkit.createText(sectProcessingErrors, "", SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.READ_ONLY);
@@ -73,7 +75,7 @@ public class ResolutionFailurePanel {
         gd.heightHint = 300;
         sectProcessingErrors.setLayoutData(gd);
 
-        Section sectUnresolved = toolkit.createSection(composite, Section.TITLE_BAR | Section.TWISTIE);
+        sectUnresolved = toolkit.createSection(composite, Section.TITLE_BAR | Section.TWISTIE);
         sectUnresolved.setText("Unresolved Requirements:");
 
         createUnresolvedViewToolBar(sectUnresolved);
@@ -83,6 +85,7 @@ public class ResolutionFailurePanel {
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         gd.widthHint = 600;
+        gd.heightHint = 300;
         sectUnresolved.setLayoutData(gd);
 
         unresolvedViewer = new TreeViewer(treeUnresolved);
@@ -108,19 +111,21 @@ public class ResolutionFailurePanel {
         ResolutionException resolutionException = resolutionResult.getResolutionException();
         Collection<Requirement> unresolved = resolutionException != null ? resolutionException.getUnresolvedRequirements() : Collections.<Requirement> emptyList();
 
-        if (resolutionException != null && resolutionException.getUnresolvedRequirements() != null && !resolutionException.getUnresolvedRequirements().isEmpty())
+        if (resolutionException != null && resolutionException.getUnresolvedRequirements() != null && !resolutionException.getUnresolvedRequirements().isEmpty()) {
             //
             // In this case I think we need to close the upper sash (right name?) with the exception
             // and only show the bottom one (the resolution result. The previous exception trace was
             // kind of silly
             //
-            processingErrorsText.setText("Unresolved");
-        else {
+            processingErrorsText.setText("Unresolved " + resolutionException.getMessage());
+            sectProcessingErrors.setExpanded(false);
+            sectUnresolved.setExpanded(true);
+        } else {
             processingErrorsText.setText(formatFailureStatus(resolutionResult.getStatus()));
         }
 
         //
-        // This might be a bit more fundamental. First, 
+        // This might be a bit more fundamental. First,
         // the URL to search on JPM can be found on {@link RequirementLabelProvider.java#requirementToUrl(Requirement)}.
         // However, we have an alternative option. The JPM Repo implements SearchableRepository which
         // has a findRequirement(Requirement,boolean) method. This would allow us to click on a requirement
