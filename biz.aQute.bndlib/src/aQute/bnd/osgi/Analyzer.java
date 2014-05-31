@@ -646,7 +646,20 @@ public class Analyzer extends Processor {
 
 			Packages temp = new Packages(contained);
 			temp.keySet().removeAll(exports.keySet());
-
+			
+			//
+			// This actually can contain file names if the look
+			// like packages. So remove anything that maps
+			// to a resource in the JAR
+			//
+			
+			for ( Iterator<PackageRef> i = temp.keySet().iterator(); i.hasNext(); ) {
+				String binary = i.next().getBinary();
+				Resource r  = dot.getResource(binary);
+				if ( r != null)
+					i.remove();
+			}
+			
 			if (!temp.isEmpty())
 				main.putValue(PRIVATE_PACKAGE, printClauses(temp));
 			else
