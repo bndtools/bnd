@@ -218,6 +218,12 @@ public class BndrunResolveContext extends GenericResolveContext {
 		return systemResource;
 	}
 
+	@Override
+	public boolean isSystemResource(Resource resource) {
+		Resource systemResource = getSystemResource();
+		return resource == systemResource;
+	}
+
 	private void constructInputRequirements() {
 		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES));
 		if (inputRequirements == null || inputRequirements.isEmpty()) {

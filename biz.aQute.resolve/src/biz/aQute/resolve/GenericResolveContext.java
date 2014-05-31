@@ -753,6 +753,9 @@ public class GenericResolveContext extends ResolveContext {
 	}
 
 	public static Capability getIdentityCapability(Resource resource) {
+		if (resource == null) {
+			return null;
+		}
 		List<Capability> identityCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (identityCaps == null || identityCaps.isEmpty()) {
 			return null;
