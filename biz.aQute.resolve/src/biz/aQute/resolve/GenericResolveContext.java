@@ -30,6 +30,7 @@ public class GenericResolveContext extends ResolveContext {
 
 	protected static final String					CONTRACT_OSGI_FRAMEWORK		= "OSGiFramework";
 	protected static final String					IDENTITY_INITIAL_RESOURCE	= "<<INITIAL>>";
+	protected static final String					IDENTITY_SYSTEM_RESOURCE	= "<<SYSTEM>>";
 
 	protected final LogService						log;
 
@@ -401,9 +402,9 @@ public class GenericResolveContext extends ResolveContext {
 			Resource res2 = o2.getResource();
 
 			// 1. Framework bundle
-			if (res1 == getSystemResource())
+			if (isSystemResource(res1))
 				return -1;
-			if (res2 == getSystemResource())
+			if (isSystemResource(res2))
 				return +1;
 
 			// 2. Wired
@@ -417,12 +418,12 @@ public class GenericResolveContext extends ResolveContext {
 				return +1;
 
 			// 3. Input requirements
-			if (isInputRequirementResource(res1)) {
-				if (!isInputRequirementResource(res2))
+			if (isInputResource(res1)) {
+				if (!isInputResource(res2))
 					return -1;
 			}
-			if (isInputRequirementResource(res2)) {
-				if (!isInputRequirementResource(res1))
+			if (isInputResource(res2)) {
+				if (!isInputResource(res1))
 					return +1;
 			}
 
@@ -496,6 +497,10 @@ public class GenericResolveContext extends ResolveContext {
 			return systemResource;
 		}
 		ResourceBuilder resBuilder = new ResourceBuilder();
+
+		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addAttribute(
+				IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_SYSTEM_RESOURCE);
+		resBuilder.addCapability(identity);
 		for (Requirement req : systemRequirements) {
 			resBuilder.addRequirement(req);
 		}
@@ -564,11 +569,11 @@ public class GenericResolveContext extends ResolveContext {
 	}
 
 	public boolean isInputResource(Resource resource) {
-		return resource == inputResource;
+		return GenericResolveContext.resourceIdentityEquals(resource, inputResource);
 	}
 
 	public boolean isSystemResource(Resource resource) {
-		return resource == systemResource;
+		return GenericResolveContext.resourceIdentityEquals(resource, systemResource);
 	}
 
 	public static Resource getFrameworkResource(List<Repository> repos, String bsn, String version) {
@@ -732,5 +737,42 @@ public class GenericResolveContext extends ResolveContext {
 		Version version = versionString != null ? new Version(versionString) : Version.emptyVersion;
 		builder.addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 		return builder.buildSyntheticCapability();
+	}
+
+	public static boolean resourceIdentityEquals(Resource r1, Resource r2) {
+		String id1 = getResourceIdentity(r1);
+		String id2 = getResourceIdentity(r2);
+		if (id1 != null && id1.equals(id2)) {
+			Version v1 = getResourceVersion(r1);
+			Version v2 = getResourceVersion(r2);
+			if (v1 == null && v2 == null || v1 != null && v1.equals(v2)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static Capability getIdentityCapability(Resource resource) {
+		List<Capability> identityCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
+		if (identityCaps == null || identityCaps.isEmpty()) {
+			return null;
+		}
+		return identityCaps.iterator().next();
+	}
+
+	public static String getResourceIdentity(Resource resource) {
+		Capability cap = getIdentityCapability(resource);
+		if (cap == null) {
+			return null;
+		}
+		return (String) cap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+	}
+
+	public static Version getResourceVersion(Resource resource) {
+		Capability cap = getIdentityCapability(resource);
+		if (cap == null) {
+			return null;
+		}
+		return getVersion(cap, IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 	}
 }

@@ -1,5 +1,7 @@
 package biz.aQute.resolve;
 
+import static org.osgi.framework.namespace.BundleNamespace.*;
+
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -10,6 +12,7 @@ import org.osgi.service.resolver.*;
 
 import aQute.bnd.build.model.*;
 import aQute.bnd.service.*;
+import aQute.libg.tuple.*;
 import biz.aQute.resolve.internal.*;
 
 public class ResolveProcess {
@@ -26,7 +29,15 @@ public class ResolveProcess {
         rc.addCallbacks(callbacks);
         Map<Resource,List<Wire>> wirings = resolver.resolve(rc);
 
-        // 2. Save the resolved root resources
+		// 2. Save initial requirement resolution
+        Pair<Resource, List<Wire>> initialRequirement = null;
+        for (Map.Entry<Resource, List<Wire>> wiring : wirings.entrySet()) {
+        	if (rc.getInputResource() == wiring.getKey()) {
+        		initialRequirement = new Pair<Resource, List<Wire>>(wiring.getKey(), wiring.getValue());
+        	}
+        }
+
+        // 3. Save the resolved root resources
 		final List<Resource> resources = new ArrayList<Resource>();
 		for (Resource r : rc.getMandatoryResources()) {
 			reqs: for (Requirement req : r.getRequirements(null)) {
@@ -46,13 +57,20 @@ public class ResolveProcess {
 					catch (InvalidSyntaxException e) {}
 				}
 			}
-			// Add back initial requirement
-			if (GenericResolveContext.isInputRequirementResource(r)) {
-				resources.add(r);
+		}
+
+		// 4. Add any 'osgi.wiring.bundle' requirements
+		List<Resource> wiredBundles = new ArrayList<Resource>();
+		for (Resource resource : resources) {
+			addWiredBundle(wirings, resource, wiredBundles);
+		}
+		for (Resource resource : wiredBundles) {
+			if (!resources.contains(resource)) {
+				resources.add(resource);
 			}
 		}
 
-    	// 3. Resolve the rest
+    	// 5. Resolve the rest
 		BndrunResolveContext rc2 = new BndrunResolveContext(inputModel, plugins, log) {
 
 			@Override
@@ -62,18 +80,43 @@ public class ResolveProcess {
 
 			@Override
 			public boolean isInputResource(Resource resource) {
+				for (Resource r : resources) {
+					if (GenericResolveContext.resourceIdentityEquals(r, resource)) {
+						return true;
+					}
+				}
 				return false;
 			}
-
 		};
 
 		rc2.addCallbacks(callbacks);
         wirings = resolver.resolve(rc2);
+        if (initialRequirement != null) {
+        	wirings.put(initialRequirement.getFirst(), initialRequirement.getSecond());
+        }
 
         Map<Resource,List<Wire>> result = invertWirings(wirings);
         removeFrameworkAndInputResources(result, rc2);
 
         return result;
+    }
+
+    private void addWiredBundle(Map<Resource, List<Wire>> wirings, Resource resource, List<Resource> result) {
+		List<Requirement> reqs = resource.getRequirements(BUNDLE_NAMESPACE);
+		for (Requirement req : reqs) {
+			List<Wire> wrs = wirings.get(resource);
+			for (Wire w : wrs) {
+				if (w.getRequirement().equals(req)) {
+					Resource res = w.getProvider();
+					if (res != null) {
+						if (!result.contains(res)) {
+							result.add(res);
+							addWiredBundle(wirings, res, result);
+						}
+					}
+				}
+			}
+		}
     }
 
     public Map<Resource,List<Wire>> resolveOptional(BndEditModel inputModel, Set<Resource> requiredResources, Registry plugins, Resolver resolver, Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
@@ -141,7 +184,7 @@ public class ResolveProcess {
     private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap, GenericResolveContext rc) {
         for (Iterator<Resource> iter = resourceMap.keySet().iterator(); iter.hasNext();) {
             Resource resource = iter.next();
-            if (rc.isInputResource(resource) || rc.isSystemResource(resource))
+            if (rc.isSystemResource(resource))
                 iter.remove();
         }
     }

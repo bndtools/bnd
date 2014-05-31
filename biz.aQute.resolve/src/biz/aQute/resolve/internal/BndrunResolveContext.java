@@ -90,7 +90,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 
 	private void loadSystemPackagesExtra() {
 		Parameters p = new Parameters( properties.mergeProperties(Constants.RUNSYSTEMPACKAGES));
-		
+
 		sysPkgsExtra = toExportedPackages(p); // runModel.getSystemPackages();
 	}
 
@@ -99,7 +99,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 		for ( Entry<String,Attrs> e : p.entrySet()) {
 			list.add( new ExportedPackage(Processor.removeDuplicateMarker(e.getKey()), e.getValue()));
 		}
-		
+
 		return list;
 	}
 
@@ -120,7 +120,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 		// }
 		// }
 
-		
+
 		// Reorder/filter if specified by the run model
 
 		String rn = properties.mergeProperties(Constants.RUNREPOS);
@@ -131,7 +131,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 			}
 		} else {
 			Parameters repoNames = new Parameters(rn);
-			
+
 			// Map the repository names...
 			Map<String,Repository> repoNameMap = new HashMap<String,Repository>(allRepos.size());
 			for (Repository repo : allRepos)
@@ -219,7 +219,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 	}
 
 	private void constructInputRequirements() {
-		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES));		
+		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES));
 		if (inputRequirements == null || inputRequirements.isEmpty()) {
 			inputResource = null;
 		} else {
@@ -276,17 +276,5 @@ public class BndrunResolveContext extends GenericResolveContext {
 				callback.processCandidates(requirement, wired, candidates);
 			}
 		}
-	}
-
-	private static String getResourceIdentity(Resource resource) throws IllegalArgumentException {
-		List<Capability> identities = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
-		if (identities == null || identities.size() != 1)
-			throw new IllegalArgumentException("Resource element does not contain exactly one identity capability");
-
-		Object idObj = identities.get(0).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
-		if (idObj == null || !(idObj instanceof String))
-			throw new IllegalArgumentException("Resource identity capability does not have a string identity attribute");
-
-		return (String) idObj;
 	}
 }
