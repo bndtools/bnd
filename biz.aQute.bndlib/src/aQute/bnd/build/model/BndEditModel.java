@@ -262,7 +262,7 @@ public class BndEditModel {
 		formatters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListFormatter);
 		formatters.put(Constants.INCLUDE_RESOURCE, stringListFormatter);
 	}
-	
+
 	public BndEditModel(BndEditModel model) {
 		this();
 		this.bndResource = model.bndResource;
@@ -324,17 +324,24 @@ public class BndEditModel {
 	public void saveChangesTo(IDocument document) {
 		for (Iterator<Entry<String,String>> iter = changesToSave.entrySet().iterator(); iter.hasNext();) {
 			Entry<String,String> entry = iter.next();
-			iter.remove();
 
 			String propertyName = entry.getKey();
 			String stringValue = entry.getValue();
-			
+
 			updateDocument(document, propertyName, stringValue);
+
+			//
+			// Ensure that properties keeps reflecting the current document
+			// value
+			//
+			String value = cleanup(stringValue);
+			if ( value == null)
+				value = "";
 			
-			//
-			// Ensure that properties keeps reflecting the current document value
-			//
-			properties.setProperty(propertyName, cleanup(stringValue));
+			if (propertyName != null)
+				properties.setProperty(propertyName, value);
+
+			iter.remove();
 		}
 	}
 
@@ -465,7 +472,8 @@ public class BndEditModel {
 	}
 
 	public void setBundleUpdateLocation(String bundleUpdateLocation) {
-		doSetObject(Constants.BUNDLE_UPDATELOCATION, getBundleUpdateLocation(), bundleUpdateLocation, newlineEscapeFormatter);
+		doSetObject(Constants.BUNDLE_UPDATELOCATION, getBundleUpdateLocation(), bundleUpdateLocation,
+				newlineEscapeFormatter);
 	}
 
 	public String getBundleVendor() {
@@ -481,7 +489,8 @@ public class BndEditModel {
 	}
 
 	public void setBundleContactAddress(String bundleContactAddress) {
-		doSetObject(Constants.BUNDLE_CONTACTADDRESS, getBundleContactAddress(), bundleContactAddress, newlineEscapeFormatter);
+		doSetObject(Constants.BUNDLE_CONTACTADDRESS, getBundleContactAddress(), bundleContactAddress,
+				newlineEscapeFormatter);
 	}
 
 	public String getBundleDocUrl() {
@@ -827,7 +836,7 @@ public class BndEditModel {
 			result = converter.convert(properties.getProperty(name));
 			objectProperties.put(name, result);
 		} else {
-				result = converter.convert(null);
+			result = converter.convert(null);
 		}
 
 		return result;
@@ -950,21 +959,21 @@ public class BndEditModel {
 		}
 
 		Processor result;
-		if ( parent == null)
+		if (parent == null)
 			result = new Processor();
 		else
 			result = new Processor(parent);
 		result.getProperties().putAll(properties);
-		for ( Entry<String,String> e : changesToSave.entrySet()) {
+		for (Entry<String,String> e : changesToSave.entrySet()) {
 			result.setProperty(e.getKey(), cleanup(e.getValue()));
 		}
 		return result;
 	}
 
 	private String cleanup(String value) {
-		if ( value == null)
+		if (value == null)
 			return null;
-			
+
 		return value.replaceAll("\\\\\n", "");
 	}
 }
