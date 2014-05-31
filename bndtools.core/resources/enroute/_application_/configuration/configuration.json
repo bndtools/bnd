@@ -1,0 +1,8 @@
+[
+   { 
+   	  "comment":							"Factory configuration for _stem_",
+      "service.factoryPid":					"_pid_",
+      "service.pid":						"initial",
+      "name":								"_STEM_"
+   }
+]

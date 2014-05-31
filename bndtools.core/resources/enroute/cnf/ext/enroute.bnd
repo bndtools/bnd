@@ -1,11 +1,14 @@
 #
-# This file is empty because it is based on defaults. You can see the actual settings
-# with 'bnd debug' when in a project directory.
+# -ENROUTE-
+# 
+# This file contains the setup for OSGi enRoute
 #
 
+bnd-release	=	https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles
+
+ 
 -pluginpath:\
-        ${build}/cache/aQute.jpm.bndrepo.jar;url=file:/Ws/aQute.jpm/aQute.jpm.bndrepo/generated/aQute.jpm.bndrepo.jar , \
-        ${build}/cache/biz.aQute.repository.jar;url=file:/Ws/bnd/biz.aQute.repository/generated/biz.aQute.repository.jar
+        ${build}/cache/biz.aQute.repository.jar;url=${bnd-release}/biz.aQute.repository/biz.aQute.repository-2.1.0.jar
 
 
 -plugin:  \
@@ -14,16 +17,40 @@
             location            =	"${build}/cache/wrapper"; \
             reindex				=	true, \
 \
-        aQute.library.bnd.JpmRepository; \
+        aQute.bnd.jpm.Repository; \
 	        includeStaged   	=       true; \
 	        name                =       Central; \
 	        location            =       ~/.bnd/shacache; \
 	        index               =       ${build}/repository.json, \
 \
         aQute.lib.deployer.FileRepo; \
-            name                =       'Assemblies' ; \
-            location            =       ${build}/assemblies
+            name                =       'Release' ; \
+            location            =       ${build}/release
 
 
--releaserepo: Central
+-releaserepo: 			Release
+-baselinerepo:			Central
 
+javac.source: 			1.8
+javac.target: 			1.8
+
+Service-Component: 		*
+-dsannotations: 		*
+-runfw:					org.eclipse.osgi;version=@3.9.1
+-runee:					JavaSE-1.8
+-runproperties: 		osgi.console.enable.builtin=false, osgi.console=
+-runsystempackages.eqnx:javax.script
+
+
+test-cases: 			${classes;NAMED;*Test}
+
+debug-bundles: \
+	osgi.identity;filter:='(osgi.identity=aQute.xray.plugin)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.metatype)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.eventadmin)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.log)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)', \
+	osgi.identity;filter:='(osgi.identity=osgi.base.debug.provider)'
+
+	

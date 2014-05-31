@@ -1,0 +1,9 @@
+#
+# _STEM_ APPLICATION DEBUG RUN SPECIFICATION
+#
+
+-include: ~_project_.bndrun
+
+-runrequires.debug:  ${debug-bundles}
+
+-runtrace: true

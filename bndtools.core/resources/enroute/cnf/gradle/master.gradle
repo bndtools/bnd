@@ -1,0 +1,25 @@
+/*
+ * Master Gradle build script
+ *
+ * Called by build.gradle in the root of the workspace to configure the project set.
+ *
+ * Depends on bndURI and bndWorkspace properties set by settings.gradle.
+ */
+
+/* Add bnd as a script dependency */
+buildscript {
+  dependencies {
+    classpath files(bndURI)
+  }
+}
+
+/* Load the BndPlugin class */
+apply from: buildscript.classLoader.getResource('aQute/bnd/gradle/BndPlugin.gradle')
+
+/* Configure the subprojects */
+subprojects {
+  def bndProject = bndWorkspace.getProject(name)
+  if (bndProject != null) {
+    plugins.apply BndPlugin
+  }
+}

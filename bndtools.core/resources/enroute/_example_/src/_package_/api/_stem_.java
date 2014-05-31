@@ -2,8 +2,19 @@ package _package_.api;
 
 import org.osgi.annotation.versioning.ProviderType;
 
+/**
+ * This is an example enroute bundle that has a component that implements a
+ * simple API. 
+ */
+
 @ProviderType
-//@ConsumerType
 public interface _stem_ {
+	
+	/**
+	 * The interface is a minimal method.
+	 * 
+	 * @param message the message to say
+	 */
 	void say(String message);
+
 }

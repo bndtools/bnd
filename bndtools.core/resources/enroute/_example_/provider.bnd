@@ -1,4 +1,18 @@
+#
+# _PROJECT_	BUNDLE 
+#
+
+Bundle-Description: \
+	The provider bundle for _example_. \
+	\
+	${warning;Please update this Bundle-Description in provider.bnd}
+	
 Export-Package:  \
 	_package_.api
 Private-Package:  \
 	_package_.provider
+	
+
+Require-Capability: osgi.extender;osgi.extender=ds;effective:=active
+
+-includeresource: {readme.md}

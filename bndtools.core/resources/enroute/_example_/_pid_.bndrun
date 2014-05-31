@@ -1,0 +1,20 @@
+#
+# _PROJECT_	LAUNCH SPECFICATION 
+#
+
+
+Bundle-Version:				1.0.0.${tstamp}
+Bundle-SymbolicName:		_project_.launch
+JPMCommand:					_cmd_
+
+
+-runrequires:  \
+	osgi.identity;filter:='(osgi.identity=_example_.provider)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.scr)'
+
+-runsystempackages: javax.script
+
+-runbundles:  \
+	_example_.provider;version=latest,\
+	org.apache.felix.configadmin;version='[1.8.0,1.8.1)',\
+	org.apache.felix.scr;version='[1.8.2,1.8.3)'

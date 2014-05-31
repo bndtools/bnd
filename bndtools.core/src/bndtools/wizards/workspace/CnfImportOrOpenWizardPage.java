@@ -22,7 +22,7 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
     public static final String PROP_OPERATION = "operation";
 
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
-    private CnfSetupOperation operation;
+    private CnfSetupOperation operation = CnfSetupOperation.NOTHING;
 
     private boolean suppressEvents = false;
 
@@ -44,9 +44,10 @@ public class CnfImportOrOpenWizardPage extends WizardPage {
 
     /**
      * Create contents of the wizard.
-     * 
+     *
      * @param parent
      */
+    @Override
     public void createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NULL);
 

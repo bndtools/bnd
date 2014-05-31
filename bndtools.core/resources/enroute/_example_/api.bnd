@@ -1,2 +1,10 @@
+Bundle-Description: \
+	
+	
+
 Export-Package:  \
 	_package_.api
+
+
+-includeresource: {readme.md}
+

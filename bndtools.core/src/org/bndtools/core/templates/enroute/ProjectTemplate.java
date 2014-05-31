@@ -27,6 +27,7 @@ import aQute.bnd.header.Attrs;
 public class ProjectTemplate implements IProjectTemplate {
     static Pattern LAST_PART = Pattern.compile(".*\\.([^.]+)");
     static Pattern SKIP = Pattern.compile("\\.classpath|\\.project");
+    static Pattern TOP_LEVEL = Pattern.compile("((com|biz|org|net|uk.co|gnu|gov|mil|[a-z][a-z]|info|name)\\.).*", Pattern.CASE_INSENSITIVE);
 
     @Override
     public void modifyInitialBndModel(BndEditModel model, String projectName, ProjectPaths projectPaths) {
@@ -56,9 +57,11 @@ public class ProjectTemplate implements IProjectTemplate {
         model.setBuildPath(buildPath);
     }
 
-    static Pattern API = Pattern.compile(".*\\.([^.]+)\\.api");
-    static Pattern PROVIDER = Pattern.compile(".*\\.([^.]+)\\.(provider|adapter)");
-    static Pattern TEST = Pattern.compile(".*\\.([^.]+)\\.test");
+    static Pattern API = Pattern.compile("(.*\\.([^.]+))\\.api");
+    static Pattern PROVIDER = Pattern.compile("(.*\\.([^.]+))\\.(provider|adapter)");
+    static Pattern TEST = Pattern.compile("(.*\\.([^.]+))\\.test");
+    static Pattern APPLICATION = Pattern.compile("(.*\\.([^.]+))\\.(app|webapp|application)");
+    static Pattern EXAMPLE = Pattern.compile("(.*\\.([^.]+))\\.example");
     static Pattern UNKNOWN = Pattern.compile(".*\\.([^.]+)");
 
     @Override
@@ -66,29 +69,49 @@ public class ProjectTemplate implements IProjectTemplate {
         String pkg = projectName;
         String stem;
         String type;
+        String pid;
 
         Matcher m = API.matcher(projectName);
         if (m.matches()) {
-            stem = m.group(1);
+            pid = m.group(1);
+            stem = m.group(2);
             type = "_api_";
         } else {
             m = PROVIDER.matcher(projectName);
             if (m.matches()) {
-                stem = m.group(1);
+                pid = m.group(1);
+                stem = m.group(2);
                 type = "_provider_";
             } else {
                 m = TEST.matcher(projectName);
                 if (m.matches()) {
-                    stem = m.group(1);
+                    pid = m.group(1);
+                    stem = m.group(2);
                     type = "_test_";
                 } else {
-                    m = UNKNOWN.matcher(projectName);
+                    m = APPLICATION.matcher(projectName);
                     if (m.matches()) {
-                        stem = m.group(1);
-                        type = "_example_";
+                        pid = m.group(1);
+                        stem = m.group(2);
+                        type = "_application_";
                     } else {
-                        stem = projectName;
-                        type = "_example_";
+                        m = EXAMPLE.matcher(projectName);
+                        if (m.matches()) {
+                            pid = m.group(1);
+                            stem = m.group(2);
+                            type = "_example_";
+                        } else {
+                            m = UNKNOWN.matcher(projectName);
+                            if (m.matches()) {
+                                stem = m.group(1);
+                                pid = projectName;
+                                type = "_example_";
+                            } else {
+                                stem = projectName;
+                                pid = projectName;
+                                type = "_example_";
+                            }
+                        }
                     }
                 }
             }
@@ -96,15 +119,13 @@ public class ProjectTemplate implements IProjectTemplate {
 
         stem = Character.toUpperCase(stem.charAt(0)) + stem.substring(1);
 
-        // TODO test
-        type = "_example_";
-
         String src = projectPaths.getSrc();
         String testsrc = projectPaths.getTestSrc();
         String pkgPath = pkg.replaceAll("\\.", "/");
 
         Map<String,String> regex = new LinkedHashMap<String,String>();
         regex.put("_stem_", stem);
+        regex.put("_STEM_", stem.toUpperCase());
         regex.put("_type_", type);
         regex.put("_package_", pkgPath);
         regex.put("_packagepath_", pkgPath);
@@ -112,11 +133,40 @@ public class ProjectTemplate implements IProjectTemplate {
         regex.put("_api_", projectName);
         regex.put("_provider_", projectName);
         regex.put("_test_", projectName);
+        regex.put("_application_", projectName);
         regex.put("_unknown_", projectName);
+        regex.put("_cmd_", toCmd(stem));
+        regex.put("_project_", projectName);
+        regex.put("_project(\\.[a-zA-Z]+)_", projectName);
+        regex.put("_PROJECT_", toPROJECT(projectName));
+        regex.put("_pid_", pid);
         regex.put("_src_", src);
         regex.put("_test_", testsrc);
 
         copy(project, "/enroute/" + type, regex);
+    }
+
+    private String toPROJECT(String projectName) {
+        String name = TOP_LEVEL.matcher(projectName).replaceFirst("");
+        return name.toUpperCase().replace('.', ' ');
+    }
+
+    private String toCmd(String stem) {
+        StringBuilder sb = new StringBuilder(stem.toLowerCase());
+
+        outer: while (sb.length() > 7) {
+            for (int i = sb.length() - 1; i >= 1; i--) {
+                char c = sb.charAt(i);
+                if ("aeiouy".indexOf(c) >= 0) {
+                    sb.delete(i, i + 1);
+                    continue outer;
+                }
+            }
+            sb.delete(7, sb.length());
+            break;
+        }
+
+        return sb.toString();
     }
 
     protected void copy(IBndProject project, String prefix, Map<String,String> regex) {

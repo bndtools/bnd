@@ -1,0 +1,20 @@
+#
+# _PROJECT_ RUN SPECIFICATION
+#
+
+
+Bundle-Version:				1.0.0.${tstamp}
+Bundle-SymbolicName:		_project_.launch
+JPMCommand:					_cmd_
+
+
+-runfw:						org.eclipse.osgi
+
+-runproperties: 			osgi.console.enable.builtin=false, osgi.console=
+
+-runrequires:  \
+	osgi.identity;filter:='(osgi.identity=_project_)'
+
+-runsystempackages: javax.script
+
+-runtrace: true

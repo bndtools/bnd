@@ -1,5 +1,30 @@
-<form>Creates a project for developing with enRoute base profile, a profile 
-for basic OSGi applications. The profile is implemented in different <em>distros</em>. 
-<p>You can create an API project (end the name with <code>.api</code>), PROVIDER project 
-(end the name with <code>.adapter</code> or <code>.provider</code>), or an OSGi TEST project (end the name with <code>.test</code>).</p>
+<form>
+	<p>
+		Creates a project for developing with enRoute base profile, a profile 
+		for basic OSGi applications. The profile is implemented in different <em>distros</em>.
+		The name of the project must be a Bundle Symbolic Name (e.g. com.example.foo). The last
+		segment of this name has special meaning for the chosen project template. 	
+	</p>
+	<ul>
+		<li>
+			<em>*.example</em> — Create an example project with some stub code that demonstrates 
+			the key features of OSGi enRoute, like multiple bundles in one project, executable jars,
+			debug configurations, etc. Choose this to play with bndtools/enRoute.
+		</li>
+		<li>
+			<em>*.api</em> — Create an API project. Use this when you have a service API that should be shared
+			with others, i.e. it must be releasable as a separate bundle.
+		</li>
+		<li>
+			<em>*.provider | .adapter</em> — Create a provider project. Use this when you create an implementation
+			of a service specification.
+		</li>
+		<li>
+			<em>*.test</em> — Create an OSGi JUnit test project.
+		</li>
+		<li>
+			<em>*.application</em> — Create an application project. An application usually contains little
+			or no code but defines configuration, web pages, and dependencies.
+		</li>
+	</ul>
 </form>

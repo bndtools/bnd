@@ -1,0 +1,15 @@
+#
+# _PROJECT_ GOGO COMMAND BUNDLE (_cmd_) 
+#
+
+Bundle-Description: \
+	Provides a command to the Gogo shell. \
+	\
+	${warning;Please update this Bundle-Description in command.bnd}
+	
+
+Private-Package:  \
+	_package_.command
+	
+	
+-includeresource: {readme.md}

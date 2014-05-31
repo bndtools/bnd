@@ -1,4 +1,3 @@
-
-javac.source = ${ide;javac.source}
-javac.target = ${ide;javac.target}
-
+#
+# This file is left open for you to define your macros
+#
