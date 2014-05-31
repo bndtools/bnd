@@ -1,10 +1,12 @@
 Include-Resource: 				LICENSE, embedded-repo.jar
 
-Private-Package: aQute.bnd.*,\
+Private-Package:  \
+	aQute.bnd.*,\
 	aQute.configurable.*,\
 	org.osgi.service.component.annotations.*;-split-package:=first,\
 	aQute.lib.deployer.*;-split-package:=first,\
-	org.osgi.service.coordinator
+	org.osgi.service.coordinator,\
+	aQute.bnd.enroute.commands
 
 Export-Package: aQute.bnd.service.*,\
         aQute.bnd.header, \
@@ -31,3 +33,6 @@ Bundle-Version:					${^Bundle-Version}
 
 Bundle-Description: This command line utility is the Swiss army knife of OSGi. It provides you with a breadth
  of tools to understand and manage OSGi based systems. This project basically uses bndlib 
+ 
+ 
+-includeresource: templates=templates

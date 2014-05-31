@@ -22,6 +22,7 @@ import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
 import aQute.bnd.build.*;
+import aQute.bnd.enroute.commands.*;
 import aQute.bnd.header.*;
 import aQute.bnd.help.*;
 import aQute.bnd.main.BaselineCommands.baseLineOptions;
@@ -1675,6 +1676,15 @@ public class bnd extends Processor {
 		new RepoCommand(this, opts);
 	}
 
+	/**
+	 * Run enroute commands
+	 * 
+	 */
+
+	@Description("OSGi enRoute commands to maintain bnd workspaces (create workspace, add  project, etc)")
+	public void _enroute(EnrouteOptions opts) throws Exception {
+		new EnrouteCommand(this, opts);
+	}
 	/**
 	 * Print out a JAR
 	 */

@@ -717,4 +717,8 @@ public class Workspace extends Processor {
 		return buildDir;
 	}
 
+
+	public boolean isValid() {
+		return getFile(BUILDFILE).isFile();
+	}
 }
