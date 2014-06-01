@@ -1,0 +1,29 @@
+/*
+ * bndtools.core Gradle build script
+ */
+
+task('classycle') {
+  description 'Check for undesired class cycles.'
+  group 'build'
+  dependsOn classes
+  onlyIf {
+    compileJava.didWork
+  }
+  doLast {
+    ant.taskdef(
+      name : 'classycle',
+      classname: 'classycle.ant.DependencyCheckingTask',
+      classpath: cnf.file('buildlib/classycle.jar')
+    )
+    ant.classycle (
+      failOnUnwantedDependencies: true,
+      definitionFile : file('classycle.ddf')
+    ) {
+      fileset(dir: compileJava.destinationDir) {
+        include(name: '**/*.class')
+      }
+    }
+  }
+}
+
+jar.dependsOn += classycle
