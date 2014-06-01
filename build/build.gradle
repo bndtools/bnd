@@ -10,7 +10,7 @@ configure(rootProject) {
   buildDir = buildProject.buildDir
 
   task build {
-    dependsOn ":${buildProject.name}:buildNeeded"
+    dependsOn ":${buildProject.name}:build"
     dependsOn ":${buildProject.name}:checkNeeded"
     dependsOn ":${buildProject.name}:dist"
     description "Assembles and packages the ${buildProject.name} project."
