@@ -1,60 +1,43 @@
+/*
+ * build Gradle build script
+ */
+
+def buildProject = project
+
+/* Configure the rootProject */
+configure(rootProject) {
+  defaultTasks = [':build']
+  buildDir = buildProject.buildDir
+
+  task build {
+    dependsOn ":${buildProject.name}:buildNeeded"
+    dependsOn ":${buildProject.name}:checkNeeded"
+    dependsOn ":${buildProject.name}:dist"
+    description "Assembles and packages the ${buildProject.name} project."
+    group 'build'
+  }
+}
+
 import org.apache.tools.ant.filters.ReplaceTokens
 
-
-assert(rootProject.hasProperty("bnd_cnf"      ))
-assert(            hasProperty("bnd_project"  ))
-assert(            hasProperty("bnd_targetDir"))
-
-
-/* Eclipse settings for p2 publishing */
-ext.bnd_eclipseDirectory         = "$rootProject.rootDir/$rootProject.bnd_cnf/eclipse-3.5.2"
-ext.bnd_eclipseJar               = files("$bnd_eclipseDirectory/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar")
-ext.bnd_eclipseJarMain           = "org.eclipse.equinox.launcher.Main"
-ext.bnd_eclipseAntRunner         = "org.eclipse.ant.core.antRunner"
-ext.bnd_eclipseCategoryPublisher = "org.eclipse.equinox.p2.publisher.CategoryPublisher"
-
-
-/*
- * Helper Methods
- */
-
-/*
- * Get a property from the project's flattened bnd properties.
- * Returns an empty string when the property is not set unless instructed to
- * throw an exception when the property is not set.
- */
-String getBndProjectProperty(String key, boolean throwOnNotSet) {
-  assert(project != null                       )
-  assert(key != null && !key.isEmpty()         )
-  assert(hasProperty("bnd_flattenedProperties"))
-
-  def value = bnd_flattenedProperties.getProperty(key, null)
-  if (value == null) {
-    if (throwOnNotSet) {
-      throw new GradleException("Bnd property \"$key\" not found in project $project.name")
-    }
-    value = ""
-  }
-  return value.trim()
-}
 
 /*
  * Copy the bundle outputs of the specified projects into a directory
  */
-void copyProjectBundles(List<String> projs, String dstDir) {
+void copyProjectBundles(String[] projs, String dstDir) {
   projs.each {
     def proj = rootProject.findProject(it)
     if (proj == null) {
       throw new GradleException("Could not find project " + it)
     }
 
-    proj.bnd_project.subBuilders.each { subBuilder ->
+    proj.bnd.project.subBuilders.each { subBuilder ->
       def targetDir = file(dstDir)
       if ((!targetDir.exists() && !targetDir.mkdirs()) || !targetDir.isDirectory()) {
         throw new GradleException("Could not create directory $targetDir")
       }
       copy {
-        from project.relativePath(proj.bnd_project.getOutputFile(subBuilder.bsn))
+        from project.relativePath(proj.bnd.project.getOutputFile(subBuilder.bsn))
         into targetDir
       }
     }
@@ -64,13 +47,15 @@ void copyProjectBundles(List<String> projs, String dstDir) {
 /*
  * Generate a p2 repository.
  */
-void generateP2Repository(String title, String antTarget, String metadataRepository, String categoryDefinition) {
-  assert(hasProperty("bnd_eclipseJar"              ))
-  assert(hasProperty("bnd_eclipseJarMain"          ))
-  assert(hasProperty("bnd_eclipseAntRunner"        ))
-  assert(hasProperty("bnd_eclipseCategoryPublisher"))
-  assert(hasProperty("bnd_targetDir"               ))
+/* Eclipse settings for p2 publishing */
+ext.bnd_eclipseDirectory         = cnf.file('eclipse-3.5.2')
+ext.bnd_eclipseJar               = new File(bnd_eclipseDirectory, 'plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar')
+ext.bnd_eclipseJarMain           = 'org.eclipse.equinox.launcher.Main'
+ext.bnd_eclipseAntRunner         = 'org.eclipse.ant.core.antRunner'
+ext.bnd_eclipseCategoryPublisher = 'org.eclipse.equinox.p2.publisher.CategoryPublisher'
+ext.bnd_verbose = logger.isEnabled(LogLevel.INFO)
 
+void generateP2Repository(String title, String antTarget, String metadataRepository, String categoryDefinition) {
   def javaArgs  = []
   if (bnd_verbose) {
     javaArgs   += "-consoleLog"
@@ -78,13 +63,13 @@ void generateP2Repository(String title, String antTarget, String metadataReposit
   javaArgs     += "-application"
   javaArgs     += bnd_eclipseAntRunner
   javaArgs     += "-data"
-  javaArgs     += "$projectDir/$bnd_targetDir"
+  javaArgs     += buildDir
   javaArgs     += "-buildfile"
   javaArgs     += "p2.xml"
   javaArgs     += antTarget
 
   def result = javaexec {
-    classpath      = bnd_eclipseJar
+    classpath      = files(bnd_eclipseJar)
     main           = bnd_eclipseJarMain
     args           = javaArgs
   }
@@ -99,15 +84,15 @@ void generateP2Repository(String title, String antTarget, String metadataReposit
   javaArgs     += "-application"
   javaArgs     += bnd_eclipseCategoryPublisher
   javaArgs     += "-data"
-  javaArgs     += "$projectDir/$bnd_targetDir"
+  javaArgs     += buildDir
   javaArgs     += "-metadataRepository"
-  javaArgs     += "file:$projectDir/$bnd_targetDir/$metadataRepository"
+  javaArgs     += "file:$buildDir/$metadataRepository"
   javaArgs     += "-categoryDefinition"
-  javaArgs     += "file:$projectDir/$bnd_targetDir/$categoryDefinition"
+  javaArgs     += "file:$buildDir/$categoryDefinition"
   javaArgs     += "-compress"
 
   result = javaexec {
-    classpath      = bnd_eclipseJar
+    classpath      = files(bnd_eclipseJar)
     main           = bnd_eclipseJarMain
     args           = javaArgs
   }
@@ -128,114 +113,154 @@ void generateP2Repository(String title, String antTarget, String metadataReposit
 
 
 /*
- * Setup tasks (p2 entry)
- */
-
-task p2Entry {
-}
-
-
-/*
  * Setup tasks (p2 features)
  */
-
-ext.gitShaShort = getBndProjectProperty("Git-SHA", true).replaceAll("([0-9a-fA-F]{7}).*", "\$1")
-ext.masterVersion =  String.format("%s.%s-%s-g%s",
-                       getBndProjectProperty("base-version", true),
-                       getBndProjectProperty("base-version-qualifier", true),
+task p2FeaturesTree(type: Copy) {
+  def gitShaShort = bnd('Git-SHA').substring(0, 7)
+  def masterVersion =  String.format("%s.%s-%s-g%s",
+                       bnd('base-version'),
+                       bnd('base-version-qualifier'),
                        new Date().format('yyyyMMdd-HHmmss').toString(),
                        gitShaShort)
-
-
-task p2FeaturesTree(type: Copy) {
   from    "feature"
-  into    "$bnd_targetDir/features"
+  into    "$buildDir/features"
   filter(ReplaceTokens, tokens: ["master-version" : masterVersion])
   include "**/category.xml"
   include "**/feature.xml"
 }
 
 task p2FeatureMain(type: Zip) {
-  destinationDir = file("$bnd_targetDir/features/main")
+  dependsOn p2FeaturesTree
+  destinationDir = file("$buildDir/features/main")
   archiveName    = "bndtools.feature.jar"
-  from             "$bnd_targetDir/features/main/bndtools"
+  from             "$buildDir/features/main/bndtools"
   include          "feature.xml"
 }
 
 task p2FeatureJarViewer(type: Zip) {
-  destinationDir = file("$bnd_targetDir/features/main")
+  dependsOn p2FeaturesTree
+  destinationDir = file("$buildDir/features/main")
   archiveName    = "bndtools.jarviewer.feature.jar"
-  from             "$bnd_targetDir/features/main/jarviewer"
+  from             "$buildDir/features/main/jarviewer"
   include          "feature.xml"
 }
 
 task p2FeatureDMPlugin(type: Zip) {
-  destinationDir = file("$bnd_targetDir/features/extras")
+  dependsOn p2FeaturesTree
+  destinationDir = file("$buildDir/features/extras")
   archiveName    = "bndtools.dm.feature.jar"
-  from             "$bnd_targetDir/features/extras/dm"
+  from             "$buildDir/features/extras/dm"
   include          "feature.xml"
 }
 
 task p2FeatureAmdatuPlugin(type: Zip) {
-  destinationDir = file("$bnd_targetDir/features/extras")
+  dependsOn p2FeaturesTree
+  destinationDir = file("$buildDir/features/extras")
   archiveName    = "bndtools.amdatu.feature.jar"
-  from             "$bnd_targetDir/features/extras/amdatu"
+  from             "$buildDir/features/extras/amdatu"
   include          "feature.xml"
 }
 
 task p2Features {
+  dependsOn p2FeatureMain, p2FeatureJarViewer, p2FeatureDMPlugin, p2FeatureAmdatuPlugin
 }
 
 
 /*
  * Setup tasks (p2 plugins)
  */
-
 task p2PluginsMain(type: Copy) {
-  from    zipTree("$bnd_targetDir/${bnd_project.name}.main.jar")
-  into    "$bnd_targetDir/plugins/main"
+  dependsOn buildNeeded
+  from    zipTree("$buildDir/${project.name}.main.jar")
+  into    "$buildDir/plugins/main"
   include "*.jar"
 
   doLast {
-    delete("$bnd_targetDir/tmp");
-    copyProjectBundles(p2_main, "$bnd_targetDir/plugins/main")
+    copyProjectBundles(bnd('p2_main', '').split(/\s*,\s*/), "$buildDir/plugins/main")
   }
 }
 
 task p2PluginsExtras() {
+  dependsOn buildNeeded
   doLast {
-    copyProjectBundles(p2_extras, "$bnd_targetDir/plugins/extras")
+    copyProjectBundles(bnd('p2_extras', '').split(/\s*,\s*/), "$buildDir/plugins/extras")
   }
 }
 
 task p2Plugins {
-  doLast {
-    delete("$bnd_targetDir/tmp");
-  }
+  dependsOn p2PluginsMain, p2PluginsExtras
 }
 
 
 /*
  * Setup tasks (p2 repositories)
  */
-
 task p2 {
-  description "Generate the p2 repositories."
-  group       "Distribution"
+  description 'Generate the p2 repositories.'
+  group       'release'
+  dependsOn p2Features, p2Plugins
 
-  inputs.files { fileTree(projectDir)
-                   .include("p2.xml")
-                   .include("$bnd_targetDir/p2/**")
-                   .include("$bnd_targetDir/extras/p2/child/**")
-                   .include("$bnd_targetDir/features/main/category.xml")
-                   .include("$bnd_targetDir/features/extras/category.xml")
-               }
+  inputs.files file('p2.xml'),
+               fileTree(buildDir)
+                   .include('p2/**')
+                   .include('extras/p2/child/**')
+                   .include('features/main/category.xml')
+                   .include('features/extras/category.xml')
 
   doLast {
     generateP2Repository("Main",   "p2Main",   "p2",              "features/main/category.xml")
     generateP2Repository("Extras", "p2Extras", "extras/p2/child", "features/extras/category.xml")
-    delete("$bnd_targetDir/features")
-    delete("$bnd_targetDir/plugins")
+    delete("$buildDir/features")
+    delete("$buildDir/plugins")
+  }
+}
+
+
+task('index') {
+  description 'Index the p2 repositories.'
+  dependsOn p2
+  group 'release'
+
+  /* Bundles to index. */
+  def p2_index_main_bundles = fileTree("$buildDir/p2/plugins") {
+    include '**/*.jar'
+  }
+  def p2_index_extras_bundles = fileTree("$buildDir/extras/p2/child/plugins") {
+    include '**/*.jar'
+  }
+
+  inputs.files p2_index_main_bundles, p2_index_extras_bundles
+
+  /* Index files */
+  def p2_index_main = new File("$buildDir/p2/index.xml.gz")
+  def p2_index_extras = new File("$buildDir/extras/p2/child/index.xml.gz")
+
+  outputs.files p2_index_main, p2_index_extras
+
+  doLast {
+    /* p2 main */
+    def bundlesToIndex = p2_index_main_bundles.collect { it.absolutePath }
+    javaexec {
+      classpath cnf.file('gradle/dependencies/org.osgi.impl.bundle.repoindex.cli.jar')
+      main = 'org.osgi.impl.bundle.bindex.cli.Index'
+      args '-r', p2_index_main
+      args '-d', "$buildDir/p2"
+      args '-n', 'Bndtools'
+      args bundlesToIndex
+    }.assertNormalExitValue()
+    logger.info "Generated index ${p2_index_main}."
+
+    /* p2 extras */
+    bundlesToIndex = p2_index_extras_bundles.collect { it.absolutePath }
+    javaexec {
+      classpath cnf.file('gradle/dependencies/org.osgi.impl.bundle.repoindex.cli.jar')
+      main = 'org.osgi.impl.bundle.bindex.cli.Index'
+      args '-r', p2_index_extras
+      args '-d', "$buildDir/extras/p2/child"
+      args '-n', 'Bndtools Extras'
+      args bundlesToIndex
+    }.assertNormalExitValue()
+    logger.info "Generated index ${p2_index_extras}."
   }
 }
 
@@ -243,68 +268,33 @@ task p2 {
 /*
  * Setup tasks (distribution)
  */
-
 task distZipMain(type: Zip) {
-  destinationDir = file(bnd_targetDir)
+  dependsOn index
+  destinationDir = file(buildDir)
   archiveName    = "bndtools-latest.zip"
-  from             "$bnd_targetDir/p2"
+  from             "$buildDir/p2"
   include          "**"
 }
 
 task distCompositeExtras(type: Copy) {
+  dependsOn index
   from    "feature/extras"
-  into    "$bnd_targetDir/extras/p2"
+  into    "$buildDir/extras/p2"
   include "compositeContent.xml"
   include "compositeArtifacts.xml"
 }
 
 task distZipExtras(type: Zip) {
-  destinationDir = file(bnd_targetDir)
+  dependsOn index, distCompositeExtras
+  destinationDir = file(buildDir)
   archiveName    = "bndtools-extras-latest.zip"
-  from             "$bnd_targetDir/extras/p2"
+  from             "$buildDir/extras/p2"
   include          "**"
 }
 
 task dist {
-  description "Create distribution archives containing p2 repositories (including R5 indexes)."
-  group       "Distribution"
+  description 'Create distribution archives containing p2 repositories (including R5 indexes).'
+  group       'release'
+  dependsOn index, distZipMain, distZipExtras
 }
 
-
-/*
- * Setup task dependencies
- */
-
-release.enabled                      = false
-
-
-/* depend on all bnd projects in the workspace */
-rootProject.subprojects.each {
-  if (it.hasProperty("bnd_project")) {
-    p2Entry.dependsOn += [":" + it.name + ":bundle"]
-  }
-}
-
-p2FeaturesTree.dependsOn            += [p2Entry                       ]
-p2FeatureMain.dependsOn             += [p2FeaturesTree                ]
-p2FeatureJarViewer.dependsOn        += [p2FeaturesTree                ]
-p2FeatureDMPlugin.dependsOn         += [p2FeaturesTree                ]
-p2FeatureAmdatuPlugin.dependsOn     += [p2FeaturesTree                ]
-p2Features.dependsOn                += [p2FeatureMain,
-                                        p2FeatureJarViewer, 
-                                        p2FeatureDMPlugin,
-                                        p2FeatureAmdatuPlugin
-                                       ]
-
-p2PluginsMain.dependsOn             += [p2Entry                       ]
-p2PluginsExtras.dependsOn           += [p2Entry                       ]
-p2Plugins.dependsOn                 += [p2PluginsMain, p2PluginsExtras]
-
-p2.dependsOn                        += [p2Features,    p2Plugins      ]
-
-index.dependsOn                     += [p2]
-
-distZipMain.dependsOn               += [index                         ]
-distCompositeExtras.dependsOn       += [index                         ]
-distZipExtras.dependsOn             += [index, distCompositeExtras    ]
-dist.dependsOn                      += [distZipMain, distZipExtras    ]

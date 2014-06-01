@@ -1,0 +1,10 @@
+/*
+ * cnf Gradle build script
+ */
+
+task('clean') {
+  /* clean bnd cache */
+  doLast {
+    project.delete(file('cache'))
+  }
+}
