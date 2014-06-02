@@ -116,17 +116,16 @@ void generateP2Repository(String title, String antTarget, String metadataReposit
  * Setup tasks (p2 features)
  */
 task p2FeaturesTree(type: Copy) {
-  def gitShaShort = bnd('Git-SHA').substring(0, 7)
-  def masterVersion =  String.format("%s.%s-%s-g%s",
+  def masterVersion = String.format('%s.%s-%tY%<tm%<td-%<tH%<tM%<tS-g%.7s',
                        bnd('base-version'),
                        bnd('base-version-qualifier'),
-                       new Date().format('yyyyMMdd-HHmmss').toString(),
-                       gitShaShort)
-  from    "feature"
+                       new Date(),
+                       bnd('Git-SHA'))
+  from    'feature'
   into    "$buildDir/features"
-  filter(ReplaceTokens, tokens: ["master-version" : masterVersion])
-  include "**/category.xml"
-  include "**/feature.xml"
+  filter(ReplaceTokens, tokens: ['master-version' : masterVersion])
+  include '**/category.xml'
+  include '**/feature.xml'
 }
 
 task p2FeatureMain(type: Zip) {
