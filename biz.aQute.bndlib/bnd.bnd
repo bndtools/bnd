@@ -15,8 +15,7 @@ Bundle-SymbolicName: 	        biz.aQute.bndlib
 Private-Package: 				\
 	aQute.bnd.*, \
 	aQute.lib.*;-split-package:=first, \
-	aQute.libg.*;-split-package:=first, \
-	org.osgi.service.component.annotations;-split-package:=first
+	aQute.libg.*;-split-package:=first
 
 Export-Package: \
 	aQute.bnd.annotation.*,\
@@ -26,8 +25,6 @@ Export-Package: \
 	aQute.bnd.differ,\
 	aQute.bnd.service.*,\
 	aQute.bnd.help.*,\
-	org.osgi.service.repository,\
-	org.osgi.resource,\
 	aQute.bnd.header,\
 	aQute.bnd.version,\
 	aQute.bnd.filerepo,\
@@ -38,7 +35,10 @@ Export-Package: \
 	aQute.bnd.maven.support,\
 	aQute.bnd.url,\
 	aQute.bnd.util.dto,\
-	aQute.bnd.component.error
+	aQute.bnd.component.error, \
+	org.osgi.service.repository,\
+	org.osgi.resource,\
+	org.osgi.service.component.annotations;-split-package:=first
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 Include-Resource: 				LICENSE, img/=img/, {readme.md}
