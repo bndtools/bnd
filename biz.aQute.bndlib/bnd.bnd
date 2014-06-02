@@ -17,7 +17,7 @@ Private-Package: 				\
 	aQute.lib.*;-split-package:=first, \
 	aQute.libg.*;-split-package:=first
 
-Export-Package: \
+Export-Package:  \
 	aQute.bnd.annotation.*,\
 	aQute.bnd.osgi,\
 	aQute.bnd.osgi.resource,\
@@ -35,7 +35,8 @@ Export-Package: \
 	aQute.bnd.maven.support,\
 	aQute.bnd.url,\
 	aQute.bnd.util.dto,\
-	aQute.bnd.component.error, \
+	aQute.bnd.component.error,\
+	aQute.bnd.testing,\
 	org.osgi.service.repository,\
 	org.osgi.resource,\
 	org.osgi.service.component.annotations;-split-package:=first
