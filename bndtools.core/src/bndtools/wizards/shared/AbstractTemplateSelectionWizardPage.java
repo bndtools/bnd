@@ -58,6 +58,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         super(pageName);
     }
 
+    @Override
     public void createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NULL);
 
@@ -103,6 +104,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         loadData();
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 Object selected = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
                 if (selected instanceof IConfigurationElement)
@@ -167,12 +169,15 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
                 Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
                 if (bundle != null) {
                     URL htmlUrl = bundle.getResource(htmlAttr);
-                    try {
-                        byte[] bytes = FileUtils.readFully(htmlUrl.openStream());
-                        browserText = new String(bytes, "UTF-8");
-                    } catch (IOException e) {
-                        logger.logError("Error reading template description document.", e);
-                    }
+                    if (htmlUrl == null)
+                        browserText = "<no description for " + htmlAttr + ">";
+                    else
+                        try {
+                            byte[] bytes = FileUtils.readFully(htmlUrl.openStream());
+                            browserText = new String(bytes, "UTF-8");
+                        } catch (IOException e) {
+                            logger.logError("Error reading template description document.", e);
+                        }
                 }
             }
         }
