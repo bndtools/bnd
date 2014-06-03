@@ -399,9 +399,19 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	@SuppressWarnings("unchecked")
 	private void addTest(TestSuite suite, Class< ? > clazz, final String method) {
-		if (TestCase.class.isAssignableFrom(clazz) && hasJunit4Annotations(clazz)) {
-			error("The test class %s extends %s and it uses JUnit 4 annotations. This means that the annotations will be ignored.",
-					clazz.getName(), TestCase.class.getName());
+
+		if (TestCase.class.isAssignableFrom(clazz)) {
+			if (hasJunit4Annotations(clazz)) {
+				error("The test class %s extends %s and it uses JUnit 4 annotations. This means that the annotations will be ignored.",
+						clazz.getName(), TestCase.class.getName());
+			}
+			trace("using JUnit 3");
+			if (method != null) {
+				suite.addTest(TestSuite.createTest(clazz, method));
+				return;
+			}
+			suite.addTestSuite((Class< ? extends TestCase>) clazz);
+			return;
 		}
 
 		trace("using JUnit 4");
