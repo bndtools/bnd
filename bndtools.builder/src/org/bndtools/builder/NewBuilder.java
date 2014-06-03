@@ -819,12 +819,34 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
             List<MarkerData> markers = handler.generateMarkerData(getProject(), model, location);
             for (MarkerData markerData : markers) {
-                IMarker marker = markerData.getResource().createMarker(BndtoolsConstants.MARKER_BND_PROBLEM);
-                marker.setAttribute(IMarker.SEVERITY, severity);
-                marker.setAttribute("$bndType", type);
-                marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
-                for (Entry<String,Object> attrib : markerData.getAttribs().entrySet())
-                    marker.setAttribute(attrib.getKey(), attrib.getValue());
+                IResource resource = markerData.getResource();
+                //
+                // TODO pkr: Just fixed an NPE java.lang.NullPointerException
+                //                at org.bndtools.builder.NewBuilder.addBuildMarkers(NewBuilder.java:822)
+                //                at org.bndtools.builder.NewBuilder.createBuildMarkers(NewBuilder.java:783)
+                //                at org.bndtools.builder.NewBuilder.rebuild(NewBuilder.java:637)
+                //                at org.bndtools.builder.NewBuilder.rebuildIfLocalChanges(NewBuilder.java:481)
+                //                at org.bndtools.builder.NewBuilder.build(NewBuilder.java:184)
+                //                at org.eclipse.core.internal.events.BuildManager$2.run(BuildManager.java:734)
+                //                at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:42)
+                //                at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:206)
+                //                at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:246)
+                //                at org.eclipse.core.internal.events.BuildManager$1.run(BuildManager.java:299)
+                //                at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:42)
+                //                at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:302)
+                //                at org.eclipse.core.internal.events.BuildManager.basicBuildLoop(BuildManager.java:358)
+                //                at org.eclipse.core.internal.events.BuildManager.build(BuildManager.java:381)
+                //                at org.eclipse.core.internal.events.AutoBuildJob.doBuild(AutoBuildJob.java:143)
+                //                at org.eclipse.core.internal.events.AutoBuildJob.run(AutoBuildJob.java:241)
+                //                at org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+                if (resource != null) {
+                    IMarker marker = resource.createMarker(BndtoolsConstants.MARKER_BND_PROBLEM);
+                    marker.setAttribute(IMarker.SEVERITY, severity);
+                    marker.setAttribute("$bndType", type);
+                    marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
+                    for (Entry<String,Object> attrib : markerData.getAttribs().entrySet())
+                        marker.setAttribute(attrib.getKey(), attrib.getValue());
+                }
             }
         } else {
             IMarker marker = DefaultBuildErrorDetailsHandler.getDefaultResource(getProject()).createMarker(BndtoolsConstants.MARKER_BND_PROBLEM);
