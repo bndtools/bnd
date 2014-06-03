@@ -59,8 +59,9 @@ are all in the src/test directory. Tests are quite extensive and run from the
 Eclipse JUnit screen.
 
 ## Release
-bnd is continuously built on [CloudBees](https://bndtools.ci.cloudbees.com/) and
-[Travis CI](https://travis-ci.org/bndtools/bnd)
+bnd is continuously built and released on [CloudBees](https://bndtools.ci.cloudbees.com/).
+
+[![Built on DEV@cloud](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](http://www.cloudbees.com/foss/foss-dev.cb)
 
 A more comprehensive release process is in the works.
 
