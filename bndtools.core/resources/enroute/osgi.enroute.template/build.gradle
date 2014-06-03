@@ -1,0 +1,1 @@
+apply from: rootProject.file("${bnd_cnf}/gradle/master.gradle")

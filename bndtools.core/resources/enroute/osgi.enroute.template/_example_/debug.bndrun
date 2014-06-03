@@ -1,0 +1,28 @@
+#
+# _PROJECT_	DEBUG LAUNCH SPECFICATION 
+#
+
+-include: ~_pid_.bndrun
+
+-runrequires.debug:  \
+	${debug-bundles}
+
+-runtrace: true
+
+-runbundles:  \
+	_example_.provider;version=latest,\
+	aQute.xray.plugin;version='[1.7.0,1.7.1)',\
+	biz.aQute.bnd.annotation;version='[2.3.0,2.3.1)',\
+	org.apache.felix.configadmin;version='[1.8.0,1.8.1)',\
+	org.apache.felix.eventadmin;version='[1.3.2,1.3.3)',\
+	org.apache.felix.gogo.command;version='[0.12.0,0.12.1)',\
+	org.apache.felix.gogo.runtime;version='[0.12.0,0.12.1)',\
+	org.apache.felix.gogo.shell;version='[0.10.0,0.10.1)',\
+	org.apache.felix.http.jetty;version='[2.2.2,2.2.3)',\
+	org.apache.felix.log;version='[1.0.1,1.0.2)',\
+	org.apache.felix.metatype;version='[1.0.10,1.0.11)',\
+	org.apache.felix.scr;version='[1.8.2,1.8.3)',\
+	org.apache.felix.webconsole;version='[3.1.8,3.1.9)',\
+	osgi.base.debug.provider;version='[1.0.0,1.0.1)',\
+	osgi.base.provider;version='[1.0.0,1.0.1)',\
+	osgi.logger.provider;version='[1.0.0,1.0.1)'

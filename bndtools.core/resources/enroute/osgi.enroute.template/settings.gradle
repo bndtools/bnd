@@ -1,0 +1,1 @@
+apply from: file("${bnd_cnf}/gradle/init.gradle")

@@ -1,0 +1,12 @@
+#
+# _PROJECT_	DEBUG LAUNCH SPECFICATION 
+#
+
+-include: bnd.bnd
+
+Bundle-Version:						1.0.0.{tstamp}
+JPM-Command:						<cmd>
+
+-runrequires: \
+
+

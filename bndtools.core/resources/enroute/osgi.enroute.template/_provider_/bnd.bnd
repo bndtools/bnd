@@ -1,0 +1,42 @@
+#
+# _PROJECT_ BUNDLE 
+#
+
+
+Bundle-Version:					1.0.0.${tstamp}
+Bundle-Description: 				\
+	A bundle with a provider. Notice that this provider exports the API package. \
+	It also provides a JUnit test and it can be run standalone. \
+	\
+	${warning;Please update this Bundle-Description in bnd.bnd}
+
+Export-Package:  \
+	_package_.api;provide:=true
+
+Private-Package:  \
+	_package_.provider
+	
+-buildpath: \
+	osgi.enroute.base.api;version=1.0, \
+	osgi.enroute.testing.support;version=1.0, \
+	biz.aQute.junit
+
+-includeresource: {readme.md}
+
+
+-runfw:org.eclipse.osgi
+-runee:JavaSE-1.8
+
+-runproperties: osgi.console.enable.builtin=false, osgi.console=
+-runrequires:  \
+	osgi.identity;filter:='(osgi.identity=_project_)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+	osgi.identity;filter:='(osgi.identity=osgi.base.debug.provider)'
+
+
+-runtrace: true
+
+-runsystempackages: javax.script
+
+	

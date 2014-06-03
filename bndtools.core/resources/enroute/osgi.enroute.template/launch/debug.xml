@@ -1,0 +1,4 @@
+<form>Launch Configuration that will add the debug bundles as defined in
+	cnf/ext/enroute.bnd. This configuration must be resolved before it can
+	run.
+</form>

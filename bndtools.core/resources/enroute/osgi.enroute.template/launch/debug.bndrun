@@ -1,0 +1,11 @@
+#
+# DEBUG LAUNCH SPECFICATION 
+#
+
+# -include: ~${p}.bndrun
+
+-runrequires.debug:  \
+	${debug-bundles}
+
+-runtrace: true
+

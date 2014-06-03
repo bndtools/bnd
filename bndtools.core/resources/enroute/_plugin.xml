@@ -1,36 +1,35 @@
-	<!--
-	
-		ENROUTE TEMPLATES
-	-->
-	
-	<extension point="bndtools.core.cnfTemplates">
-      <template
-         id="enRoute"
-         name="OSGi enRoute Configuration (alpha)"
-         doc="enroute/cnf.xml"
-         paths="enroute/cnf"
-         priority="0"
-         managed="ext/.*"
-         ignores="/cache/"
-         version="10"
-         category="AAA/Core"
-         nobuild="true"
-         icon="enroute/enroute-bw-16x16.png"
-      />
-   </extension>
-	
+<!-- ENROUTE TEMPLATES -->
 
-	<extension point="bndtools.core.projectTemplates">
-		<template name="OSGi enRoute (alpha)"
-			priority="400" category="AAA/Core"
-			class="org.bndtools.core.templates.enroute.ProjectTemplate" 
-			doc="enroute/project.xml"
-			icon="enroute/enroute-bw-16x16.png" />
-	</extension>
+<extension point="bndtools.core.cnfTemplates">
+	<template id="enRoute" name="OSGi enRoute Configuration (alpha)"
+		doc="enroute/cnf.xml" paths="enroute/osgi.enroute.template/cnf"
+		priority="0" managed="ext/.*" ignores="/cache/" version="10" category="AAA/Core"
+		nobuild="true" icon="enroute/enroute-bw-16x16.png" />
+</extension>
 
 
+<extension point="bndtools.core.projectTemplates">
+	<template name="OSGi enRoute (alpha)" priority="400" category="AAA/Core"
+		class="org.bndtools.core.templates.enroute.ProjectTemplate" doc="enroute/project.xml"
+		icon="enroute/enroute-bw-16x16.png" />
+</extension>
 
 
+<extension point="bndtools.core.launchTemplates">
+
+	<template name="OSGi enRoute Base Launcher"
+		path="enroute/osgi.enroute.template/launch/base.bndrun" doc="enroute/osgi.enroute.template/launch/base.xml"
+		icon="enroute/enroute-bw-16x16.png" />
+
+	<template name="OSGi enRoute Debug Launcher"
+		path="enroute/osgi.enroute.template/launch/debug.bndrun" doc="enroute/osgi.enroute.template/launch/debug.xml"
+		icon="enroute/enroute-bw-16x16.png" />
+
+	<template name="OSGi enRoute JPM Launcher"
+		path="enroute/osgi.enroute.template/launch/jpm.bndrun" doc="enroute/osgi.enroute.template/launch/jpm.xml"
+		icon="enroute/enroute-bw-16x16.png" />
+
+</extension>
 
 
 
