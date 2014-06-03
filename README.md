@@ -28,7 +28,8 @@ Gradle is used to build bndtools. The workspace root has a `build.gradle` file t
 The workspace root also includes the gradle wrapper, `gradlew`, command if you do not have gradle installed
 on your system.
 
-[![Build Status](https://travis-ci.org/bndtools/bndtools.svg?branch=master)](https://travis-ci.org/bndtools/bndtools)
+[![CloudBees Build Status](https://bndtools.ci.cloudbees.com/job/bndtools.master/badge/icon)](https://bndtools.ci.cloudbees.com/job/bndtools.master/)
+[![Travis CI Build Status](https://travis-ci.org/bndtools/bndtools.svg?branch=master)](https://travis-ci.org/bndtools/bndtools)
 
 ## Release
 bndtools is continuously built on [CloudBees](https://bndtools.ci.cloudbees.com/) and
