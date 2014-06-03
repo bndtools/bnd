@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
 
-	${cat;resources/enroute/_plugin.xml}
 	
    <!-- Extension Points -->
    <extension-point id="cnfTemplates"
@@ -599,11 +598,6 @@
 
    <extension point="bndtools.core.launchTemplates">
       <template
-         name="OSGi enRoute Distro"
-         path="enroute/launch/base-debug.bndrun"
-         doc= "enroute/base-debug.xml"
-         icon="enroute/enroute-color-16x16.png"/>
-      <template
          name="Apache Felix 4 with Gogo Shell"
          path="launchTemplates/felix4+shell.bndrun"
          doc="html/felix4+shell.form.xml"
@@ -826,6 +820,7 @@
 
 
 
+	${cat;resources/enroute/_plugin.xml}
 	
 
  </plugin>
