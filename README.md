@@ -32,5 +32,6 @@ on your system.
 [![Travis CI Build Status](https://travis-ci.org/bndtools/bndtools.svg?branch=master)](https://travis-ci.org/bndtools/bndtools)
 
 ## Release
-bndtools is continuously built on [CloudBees](https://bndtools.ci.cloudbees.com/) and
-[Travis CI](https://travis-ci.org/bndtools/bndtools)
+bndtools is continuously built and released on [CloudBees](https://bndtools.ci.cloudbees.com/).
+
+[![Built on DEV@cloud](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](http://www.cloudbees.com/foss/foss-dev.cb)
