@@ -153,6 +153,11 @@ public class ProjectTemplate implements IProjectTemplate {
         boolean first = true;
         for (int i = 0; i < sb.length(); i++) {
             char ch = sb.charAt(i);
+            if (ch == '.' || ch == '/') {
+                sb.replace(i, i + 1, "/");
+                continue;
+            }
+
             if (!Character.isJavaIdentifierPart(ch)) {
                 sb.delete(i, i + i);
                 i--;
@@ -166,11 +171,6 @@ public class ProjectTemplate implements IProjectTemplate {
                     i--;
                     continue;
                 }
-            }
-
-            if (ch == '.' || ch == '/') {
-                sb.replace(i, i + 1, "/");
-                continue;
             }
 
             if (ch == '-') {
