@@ -27,7 +27,7 @@ import aQute.bnd.header.Attrs;
 public class ProjectTemplate implements IProjectTemplate {
     static Pattern LAST_PART = Pattern.compile(".*\\.([^.]+)");
     static Pattern SKIP = Pattern.compile("\\.classpath|\\.project");
-    static Pattern TOP_LEVEL = Pattern.compile("((com|biz|org|net|uk.co|gnu|gov|mil|[a-z][a-z]|info|name)\\.).*", Pattern.CASE_INSENSITIVE);
+    static Pattern TOP_LEVEL = Pattern.compile("^(?:(?:com|biz|org|net|uk.co|gnu|gov|mil|[a-z][a-z]|info|name)\\.)(.*)", Pattern.CASE_INSENSITIVE);
 
     @Override
     public void modifyInitialBndModel(BndEditModel model, String projectName, ProjectPaths projectPaths) {
@@ -99,6 +99,7 @@ public class ProjectTemplate implements IProjectTemplate {
                         if (m.matches()) {
                             pid = m.group(1);
                             stem = m.group(2);
+                            pkg = stem;
                             type = "_example_";
                         } else {
                             m = UNKNOWN.matcher(projectName);
@@ -121,7 +122,8 @@ public class ProjectTemplate implements IProjectTemplate {
 
         String src = projectPaths.getSrc();
         String testsrc = projectPaths.getTestSrc();
-        String pkgPath = pkg.replaceAll("\\.", "/");
+
+        String pkgPath = toBinaryPackage(pkg);
 
         Map<String,String> regex = new LinkedHashMap<String,String>();
         regex.put("_stem_", stem);
@@ -143,7 +145,40 @@ public class ProjectTemplate implements IProjectTemplate {
         regex.put("_src_", src);
         regex.put("_test_", testsrc);
 
-        copy(project, "/enroute/" + type, regex);
+        copy(project, "/enroute/osgi.enroute.template/" + type, regex);
+    }
+
+    private String toBinaryPackage(String pkg) {
+        StringBuilder sb = new StringBuilder(pkg.toLowerCase());
+        boolean first = true;
+        for (int i = 0; i < sb.length(); i++) {
+            char ch = sb.charAt(i);
+            if (!Character.isJavaIdentifierPart(ch)) {
+                sb.delete(i, i + i);
+                i--;
+                continue;
+            }
+
+            if (first) {
+                first = false;
+                if (!Character.isJavaIdentifierStart(ch)) {
+                    sb.delete(i, i + i);
+                    i--;
+                    continue;
+                }
+            }
+
+            if (ch == '.' || ch == '/') {
+                sb.replace(i, i + 1, "/");
+                continue;
+            }
+
+            if (ch == '-') {
+                sb.replace(i, i + 1, "_");
+                continue;
+            }
+        }
+        return sb.toString();
     }
 
     private String toPROJECT(String projectName) {
