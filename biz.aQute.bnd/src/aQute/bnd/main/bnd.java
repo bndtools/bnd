@@ -2514,6 +2514,9 @@ public class bnd extends Processor {
 			workspaceDir = getBase();
 		}
 		ws = Workspace.findWorkspace(workspaceDir);
+		if ( ws == null)
+			return null;
+		
 		ws.setTrace(isTrace());
 		ws.setPedantic(isPedantic());
 		ws.setExceptions(isExceptions());
