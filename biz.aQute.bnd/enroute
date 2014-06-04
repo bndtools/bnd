@@ -1,0 +1,5 @@
+#/bin/sh
+f=`pwd`/templates/enroute.zip
+rm $f
+cd ../../enroute/osgi.enroute.template; zip -r $f . -x ".git/*"
+
