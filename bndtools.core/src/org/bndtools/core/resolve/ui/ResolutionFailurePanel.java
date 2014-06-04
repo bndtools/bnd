@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
 import org.eclipse.core.runtime.IStatus;
@@ -62,7 +63,7 @@ public class ResolutionFailurePanel {
         sectProcessingErrors = toolkit.createSection(composite, Section.TITLE_BAR | Section.EXPANDED);
         sectProcessingErrors.setText("Processing Errors:");
 
-        processingErrorsText = toolkit.createText(sectProcessingErrors, "", SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.READ_ONLY);
+        processingErrorsText = toolkit.createText(sectProcessingErrors, "", SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
         sectProcessingErrors.setClient(processingErrorsText);
 
         ControlDecoration controlDecoration = new ControlDecoration(processingErrorsText, SWT.RIGHT | SWT.TOP);
@@ -117,11 +118,12 @@ public class ResolutionFailurePanel {
             // and only show the bottom one (the resolution result. The previous exception trace was
             // kind of silly
             //
-            processingErrorsText.setText("Unresolved " + resolutionException.getMessage());
-            sectProcessingErrors.setExpanded(false);
+            String diagnostic = formatFailureStatus(resolutionResult.getStatus(), false, "").replaceAll(":", ":\n  ");
+
+            processingErrorsText.setText(diagnostic);
             sectUnresolved.setExpanded(true);
         } else {
-            processingErrorsText.setText(formatFailureStatus(resolutionResult.getStatus()));
+            processingErrorsText.setText(formatFailureStatus(resolutionResult.getStatus(), true, ""));
         }
 
         //
@@ -135,19 +137,21 @@ public class ResolutionFailurePanel {
         unresolvedViewer.expandToLevel(2);
     }
 
-    private static String formatFailureStatus(IStatus status) {
+    private static String formatFailureStatus(IStatus status, boolean exceptions, String indent) {
         StringWriter writer = new StringWriter();
         PrintWriter pw = new PrintWriter(writer);
 
         if (status.isMultiStatus()) {
             IStatus[] children = status.getChildren();
             for (IStatus child : children)
-                pw.print(formatFailureStatus(child));
+                pw.print(formatFailureStatus(child, exceptions, indent + "  "));
         } else {
             pw.println(status.getMessage());
-            Throwable exception = status.getException();
-            if (exception != null)
-                exception.printStackTrace(pw);
+            if (exceptions) {
+                Throwable exception = status.getException();
+                if (exception != null)
+                    exception.printStackTrace(pw);
+            }
         }
         pw.close();
         return writer.toString();
