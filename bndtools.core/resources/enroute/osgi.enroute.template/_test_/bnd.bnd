@@ -9,7 +9,7 @@ Bundle-Description: \
  	the providers can test their conformance. This bundle requires DSTest to run so this\
  	bundle should be included. \
 	\
-	${warning;Please update this Bundle-Description in bnd.bnd}
+	${warning;Please update this Bundle-Description in _project_/bnd.bnd}
 
 
 Private-Package:  \

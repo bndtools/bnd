@@ -17,15 +17,21 @@ bnd-release	=	https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBui
             location            =	"${build}/cache/wrapper"; \
             reindex				=	true, \
 \
+		aQute.bnd.deployer.repository.LocalIndexedRepo; \
+			name=Local; \
+			local=${build}/local;\
+			pretty=true,\
+\
         aQute.bnd.jpm.Repository; \
 	        includeStaged   	=       true; \
 	        name                =       Central; \
 	        location            =       ~/.bnd/shacache; \
 	        index               =       ${build}/repository.json, \
 \
-        aQute.lib.deployer.FileRepo; \
-            name                =       'Release' ; \
-            location            =       ${build}/release
+		aQute.bnd.deployer.repository.LocalIndexedRepo; \
+			name=Release; \
+			local=${build}/release;\
+			pretty=true
 
 
 -releaserepo: 					Release

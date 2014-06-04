@@ -1,10 +1,13 @@
 #
-# _PROJECT_	DEBUG LAUNCH SPECFICATION 
+# EXPORTEABLE LAUNCH SPECFICATION 
 #
 
 -include: bnd.bnd
 
 Bundle-Version:						1.0.0.{tstamp}
+Bundle-Description:	\
+	_PROJECT_ Application
+
 JPM-Command:						<cmd>
 
 -runrequires: \

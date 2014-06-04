@@ -1,5 +1,5 @@
 #
-# _PROJECT_
+# _PROJECT_ APPLICATION
 #
 
 Bundle-Version: 1.0.0.${tstamp}
@@ -7,8 +7,11 @@ Bundle-Description: \
 	This is the _PROJECT_ bundle. It carries the configuration for an application \
 	and provides some basic very much application specific stuff.  \
 	\
-	${warning;Please update this Bundle-Description in bnd.bnd}
+	${warning;Please update this Bundle-Description in _project_/bnd.bnd}
 
+Private-Package:  \
+	_package_
+	
 -includeresource: \
 	{readme.md}, \
 	{configuration=configuration}, \
@@ -16,5 +19,4 @@ Bundle-Description: \
 
 -buildpath:  \
 	osgi.enroute.base.api
-Private-Package:  \
-	_package_
+	

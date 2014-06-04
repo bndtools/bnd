@@ -5,7 +5,7 @@
 Bundle-Description: \
 	Provides a command to the Gogo shell. \
 	\
-	${warning;Please update this Bundle-Description in command.bnd}
+	${warning;Please update this Bundle-Description in _project_/command.bnd}
 	
 
 Private-Package:  \

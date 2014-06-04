@@ -9,8 +9,7 @@ JPMCommand:					_cmd_
 
 
 -runrequires:  \
-	osgi.identity;filter:='(osgi.identity=_example_.provider)',\
-	osgi.identity;filter:='(osgi.identity=org.apache.felix.scr)'
+	osgi.identity;filter:='(osgi.identity=_example_.provider)'
 
 -runbundles:  \
 	_example_.provider;version=latest,\
