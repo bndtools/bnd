@@ -53,8 +53,8 @@
          repo under the version as defined in the bnd.version property. The bnd-maven-plugin-dependencies
          module should be commented out/skipped if using a released bnd.jar version that is available in 
          maven central.
-         -->
         <module>bnd-maven-plugin-dependencies</module>
+         -->
         <module>bnd-maven-plugin</module>
     </modules>
     
