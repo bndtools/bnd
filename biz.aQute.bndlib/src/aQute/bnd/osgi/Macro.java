@@ -894,6 +894,10 @@ public class Macro {
 		if (args.length > 2) {
 			input = args[2];
 		}
+		
+		if ( File.separatorChar == '\\')
+			command = "cmd /c \"" + command + "\"";
+		
 
 		Process process = Runtime.getRuntime().exec(command, null, domain.getBase());
 		if (input != null) {
