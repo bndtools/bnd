@@ -19,6 +19,7 @@ import aQute.bnd.build.model.*;
 import aQute.bnd.osgi.resource.*;
 import aQute.bnd.service.repository.*;
 import aQute.lib.io.*;
+import biz.aQute.resolve.*;
 import biz.aQute.resolve.internal.*;
 
 public class JpmRepoTest extends TestCase {
@@ -97,6 +98,36 @@ public class JpmRepoTest extends TestCase {
             assertNotNull(resource);
         } catch (ResolutionException e) {
             fail("Resolve failed");
+        }
+    }
+
+    public void testUnresolved() throws ResolutionException {
+		Repository repo = ws.getPlugin(Repository.class);
+
+        BndEditModel model = new BndEditModel();
+        model.setRunFw("org.apache.felix.framework");
+
+        List<Requirement> requires = new ArrayList<Requirement>();
+        CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.webconsole", "[4,5)");
+        requires.add(capReq.buildSyntheticRequirement());
+
+        Map<Requirement,Collection<Capability>> shell = repo.findProviders(requires);
+        assertNotNull(shell);
+        assertEquals(1, shell.size());
+        
+        model.setRunRequires(requires);
+        BndrunResolveContext context = new BndrunResolveContext(model, ws, log);
+
+        Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4));
+
+        try {
+            Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+            fail("Resolve did not fail");
+        } catch (ResolutionException e) {
+        	assertTrue(e.getUnresolvedRequirements().size() == 1);
+        	ResolutionException augmented = ResolveProcess.augment(new BndrunResolveContext(model, ws, log), e);
+        	assertTrue(augmented.getUnresolvedRequirements().size() == 2);
+        	
         }
     }
 
