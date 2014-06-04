@@ -55,17 +55,19 @@ public class EnrouteCommand {
 			+ "A workspace cannot be created at the root of a file system. The general layout of the"
 			+ "file system is%n"
 			+ "%n%n" //
-			+ "    ../<base>/%n" //
-			+ "          <ws>/%n"
-			+ "              cnf/%n"
-			+ "                  build.bnd%n"
-			+ "                  ....%n"
-			+ "          ECLIPSE/%n"
-			+ "              <ws>/%n"
-			+ "                  .metadata/%n" + "                      ....%n")
+			+ "    ../wss/%n" //
+			+ "          com.acme.prime/%n"
+			+ "             .metadata/%n" //
+			+ "                 ....%n"
+			+ "             scm/%n"//
+			+ "                 cnf/%n" //
+			+ "                     build.bnd%n"
+			+ "                     ....%n"
+			+ "                 com.acme.prime.runner.api%n" //
+			)
 	@Arguments(arg = "workspace")
 	public interface WorkspaceOptions extends Options {
-		@Description("Create a single workspace for the Eclipse workspace and the bnd workspace. This is not recommended.")
+		@Description("Create a single workspace for the Eclipse workspace and the bnd workspace. This is not recommended because if you fully clean the directory you delete Eclipse metadata.")
 		boolean single();
 
 		@Description("In general a workspace should follow the rules for Bundle Symbolic%n"
@@ -111,24 +113,20 @@ public class EnrouteCommand {
 			return;
 		}
 
-		File eclipse = new File(base, "_ECLIPSE");
-		if (!eclipse.isDirectory()) {
-			if (opts.single())
-				eclipse = base;
-			else
-				eclipse.mkdirs();
-		}
-
-		if (!base.isDirectory()) {
-			bnd.error("Could not create directory for the bnd workspace");
-		} else if (!eclipse.isDirectory()) {
-			bnd.error("Could not create directory for the Eclipse workspace");
-		}
-
-		File eclipseDir = new File(eclipse, name);
-
+		
+		File eclipseDir = workspaceDir;
 		workspaceDir.mkdirs();
-		eclipseDir.mkdirs();
+		
+		if ( !opts.single())
+			workspaceDir = new File(workspaceDir, "scm");
+		
+		workspaceDir.mkdirs();
+		
+		if (!base.isDirectory()) {
+			bnd.error("Could not create directory for the bnd workspace %s", base);
+		} else if (!eclipseDir.isDirectory()) {
+			bnd.error("Could not create directory for the Eclipse workspace %s", eclipseDir);
+		}
 
 		if (!workspaceDir.isDirectory()) {
 			bnd.error("Could not create the workspace directory %s", workspaceDir);
@@ -139,13 +137,6 @@ public class EnrouteCommand {
 			bnd.error(
 					"The workspace directory %s is not empty, specify -u/--update to update or -f/--force to replace",
 					workspaceDir);
-		}
-
-		if (!opts.single()) {
-			if (!eclipseDir.isDirectory()) {
-				bnd.error("Could not create the eclipse directory %s", eclipseDir);
-				return;
-			}
 		}
 
 		InputStream in = getClass().getResourceAsStream("/templates/enroute.zip");
