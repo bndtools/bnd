@@ -1,1 +1,1 @@
-${system;git log -50 --oneline}
+${system-allow-fail;git log -50 --oneline}
