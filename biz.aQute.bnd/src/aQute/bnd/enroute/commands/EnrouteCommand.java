@@ -145,7 +145,7 @@ public class EnrouteCommand {
 			return;
 		}
 
-		Pattern glob = Pattern.compile("[^/]+|cnf/.*");
+		Pattern glob = Pattern.compile("[^/]+|cnf/.*|\\...+/.*");
 
 		copy(workspaceDir, in, glob, opts.force());
 
@@ -168,6 +168,7 @@ public class EnrouteCommand {
 			for (Entry<String,Resource> e : jar.getResources().entrySet()) {
 
 				String path = e.getKey();
+				bnd.trace("path %s", path);
 
 				if (glob != null && !glob.matcher(path).matches())
 					continue;
