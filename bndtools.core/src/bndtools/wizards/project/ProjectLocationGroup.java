@@ -107,6 +107,7 @@ public class ProjectLocationGroup {
         updateUI();
 
         txtLocation.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 IPath oldValue = getLocation();
 
@@ -231,9 +232,19 @@ public class ProjectLocationGroup {
     }
 
     public boolean isLocationInWorkspace() {
-        String location = getLocation().toOSString();
-        IPath projectPath = Path.fromOSString(location);
-        return Platform.getLocation().isPrefixOf(projectPath);
+        File location = new File(getLocation().toOSString());
+        File wslocation = new File(Platform.getLocation().toOSString());
+        return location.getAbsoluteFile().getParentFile().equals(wslocation.getParentFile());
+
+        // Neil: This code used to be
+        //        String location = getLocation().toOSString();
+        //        IPath projectPath = Path.fromOSString(location);
+        //        return Platform.getLocation().isPrefixOf(projectPath);
+        // I replaced because it falsely said a project was in the Eclipse
+        // Ws when it was some subdirectory. The current check actually verifies
+        // that the location's parent is the workspace. I needed the bnd workspace
+        // to be in the Eclipse Workspace's scm directory but then the project
+        // was placed in the EWS.
     }
 
     public IStatus getStatus() {
