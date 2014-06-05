@@ -12,3 +12,5 @@ bin = target/classes
 src = src/main/java
 testsrc = src/test/java
 testbin = target/test-classes
+Import-Package:  \
+	org.osgi.framework;version='[1.7, 2)'
