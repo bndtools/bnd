@@ -55,8 +55,12 @@ public class PropertiesLineReader {
                     if (chars == null)
                         break; // The last line ended with a backslash
                 }
-
-                currentBuffer.append(chars[index]);
+                if (index < chars.length)
+                    //
+                    // protect against an index out of bound exception
+                    // TODO Think we can exit here?
+                    //
+                    currentBuffer.append(chars[index]);
                 index++;
                 continue mainLoop;
             }
