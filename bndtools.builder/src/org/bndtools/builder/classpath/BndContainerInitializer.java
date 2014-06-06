@@ -144,6 +144,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
     }
 
+    @Override
     public void modelChanged(Project model) throws Exception {
         IJavaProject project = Central.getJavaProject(model);
         if (model == null || project == null) {
@@ -180,14 +181,16 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         model.clear();
 
         Collection<Container> buildPath;
+        Collection<Container> testPath;
         Collection<Container> bootClasspath;
         List<Container> containers;
 
         try {
             buildPath = model.getBuildpath();
+            testPath = model.getTestpath();
             bootClasspath = model.getBootclasspath();
 
-            containers = new ArrayList<Container>(buildPath.size() + bootClasspath.size());
+            containers = new ArrayList<Container>(buildPath.size() + testPath.size() + bootClasspath.size());
             containers.addAll(buildPath);
 
             // The first file is always the project directory,
@@ -195,6 +198,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             if (containers.size() > 0) {
                 containers.remove(0);
             }
+            containers.addAll(testPath);
             containers.addAll(bootClasspath);
         } catch (CircularDependencyException e) {
             errors.add("Circular dependency: " + e.getMessage());
