@@ -163,6 +163,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         String browserText = "";
         if (element != null) {
             browserText = "<form>No description available.</form>";
+            String name = element.getAttribute("name");
             String htmlAttr = element.getAttribute("doc");
             if (htmlAttr != null) {
                 String bsn = element.getContributor().getName();
@@ -170,7 +171,7 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
                 if (bundle != null) {
                     URL htmlUrl = bundle.getResource(htmlAttr);
                     if (htmlUrl == null)
-                        browserText = "<no description for " + htmlAttr + ">";
+                        browserText = String.format("<form>No description for %s.</form>", name);
                     else
                         try {
                             byte[] bytes = FileUtils.readFully(htmlUrl.openStream());

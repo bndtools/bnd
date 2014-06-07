@@ -6,7 +6,7 @@
       <template
          id="bundle-hub"
          name="Minimal Maven/M2E Configuration"
-         doc="docs/maven-minimal.xml"
+         doc="templateDocs/maven-minimal.xml"
          paths="templates/maven-minimal"
          priority="0"
          managed="ext/.*,plugins/.*"
