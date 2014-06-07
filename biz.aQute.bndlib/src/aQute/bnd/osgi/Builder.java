@@ -1652,7 +1652,7 @@ public class Builder extends Analyzer {
 		//
 
 		File rover = getBase();
-		while (rover.isDirectory()) {
+		while (rover !=null && rover.isDirectory()) {
 			File headFile = IO.getFile(rover, ".git/HEAD");
 			if (headFile.isFile()) {
 				//
