@@ -1,0 +1,3 @@
+-pluginpath:\
+    ${plugin-dir}/aQute.library.bndrepo/aQute.library.bndrepo.jar,\
+    ${plugin-dir}/biz.aQute.repository/biz.aQute.repository.jar
