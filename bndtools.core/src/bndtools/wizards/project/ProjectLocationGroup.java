@@ -154,6 +154,9 @@ public class ProjectLocationGroup {
 
                 String selected = dialog.open();
                 if (selected != null) {
+                    IPath path = new Path(selected);
+                    if (projectName != null && !projectName.equals(path.lastSegment()))
+                        selected = path.append(projectName).toString();
                     txtLocation.setText(selected);
                 }
             }
@@ -163,11 +166,19 @@ public class ProjectLocationGroup {
     }
 
     private IStatus checkStatus() {
-        // Check for empty location or project name
-        if (!useBndWorkspace && getExternalLocation() == null)
-            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Project location invalid or not specified.", null);
-        if (useBndWorkspace && (projectName == null || projectName.length() == 0))
+        // Check for empty project name
+        if (projectName == null || projectName.length() == 0)
             return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Project name must be specified", null);
+
+        // If external location, ensure path is specified and ends with projectname
+        if (!useBndWorkspace) {
+            IPath loc = getExternalLocation();
+            if (loc == null || loc.isEmpty())
+                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Project location invalid or not specified.", null);
+
+            if (!loc.lastSegment().equals(projectName))
+                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Project location must end with specified project name", null);
+        }
 
         // Check valid name
         IStatus nameStatus = JavaPlugin.getWorkspace().validateName(projectName != null ? projectName : "", IResource.PROJECT);
@@ -219,7 +230,8 @@ public class ProjectLocationGroup {
     }
 
     public IPath getLocation() {
-        return useBndWorkspace ? location : getExternalLocation();
+        IPath path = useBndWorkspace ? location : getExternalLocation();
+        return path;
     }
 
     private IPath getExternalLocation() {
@@ -229,22 +241,6 @@ public class ProjectLocationGroup {
         else
             path = null;
         return path;
-    }
-
-    public boolean isLocationInWorkspace() {
-        File location = new File(getLocation().toOSString());
-        File wslocation = new File(Platform.getLocation().toOSString());
-        return location.getAbsoluteFile().getParentFile().equals(wslocation.getParentFile());
-
-        // Neil: This code used to be
-        //        String location = getLocation().toOSString();
-        //        IPath projectPath = Path.fromOSString(location);
-        //        return Platform.getLocation().isPrefixOf(projectPath);
-        // I replaced because it falsely said a project was in the Eclipse
-        // Ws when it was some subdirectory. The current check actually verifies
-        // that the location's parent is the workspace. I needed the bnd workspace
-        // to be in the Eclipse Workspace's scm directory but then the project
-        // was placed in the EWS.
     }
 
     public IStatus getStatus() {

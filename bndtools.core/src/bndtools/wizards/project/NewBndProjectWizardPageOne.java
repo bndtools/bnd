@@ -12,6 +12,7 @@ package bndtools.wizards.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -61,12 +62,14 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         fValidator = new Validator();
 
         nameGroup.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent event) {
                 locationGroup.setProjectName(nameGroup.getProjectName());
             }
         });
 
         locationGroup.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent event) {
                 IStatus status = locationGroup.getStatus();
                 setPageComplete(status.isOK());
@@ -86,9 +89,16 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     @Override
     public URI getProjectLocationURI() {
-        if (locationGroup.isLocationInWorkspace())
+        IPath location = locationGroup.getLocation();
+        if (isDirectlyInWorkspace(location))
             return null;
-        return URIUtil.toURI(locationGroup.getLocation());
+
+        return URIUtil.toURI(location);
+    }
+
+    private static boolean isDirectlyInWorkspace(IPath location) {
+        File wslocation = Platform.getLocation().toFile();
+        return location.toFile().getAbsoluteFile().getParentFile().equals(wslocation);
     }
 
     @Override
@@ -172,6 +182,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
      */
     private final class Validator implements Observer {
 
+        @Override
         public void update(Observable o, Object arg) {
 
             final IWorkspace workspace = JavaPlugin.getWorkspace();
