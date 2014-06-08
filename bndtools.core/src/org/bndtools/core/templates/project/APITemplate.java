@@ -18,6 +18,7 @@ import aQute.bnd.header.Attrs;
 
 public class APITemplate implements IProjectTemplate {
 
+    @Override
     public void modifyInitialBndModel(BndEditModel model, String projectName, ProjectPaths projectPaths) {
         model.setExportedPackages(Arrays.asList(new ExportedPackage[] {
             new ExportedPackage(projectName, new Attrs())
@@ -33,10 +34,10 @@ public class APITemplate implements IProjectTemplate {
         if (tmp != null)
             buildPath.addAll(tmp);
         buildPath.add(new VersionedClause("biz.aQute.bnd.annotation", new Attrs()));
-        buildPath.add(new VersionedClause("${junit}", new Attrs()));
         model.setBuildPath(buildPath);
     }
 
+    @Override
     public void modifyInitialBndProject(IBndProject project, String projectName, ProjectPaths projectPaths) {
         String src = projectPaths.getSrc();
         String pkgPath = projectName.replaceAll("\\.", "/");
@@ -49,6 +50,7 @@ public class APITemplate implements IProjectTemplate {
         project.addResource(src + "/" + pkgPath + "/packageinfo", new BndProjectResource(APITemplate.class.getResource("packageinfo-template.txt"), null));
     }
 
+    @Override
     public boolean enableTestSourceFolder() {
         return true;
     }

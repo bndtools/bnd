@@ -1,0 +1,9 @@
+{
+ "revisionRefs":[{
+  "artifactId":"biz.aQute.bnd.annotation","baseline":"2.3.0","bsn":"biz.aQute.bnd.annotation","created":1399702160345,"description":"Contains only the annotations for bnd.","groupId":"osgi","md5":"C69A168F8531323B589DF78523AE3071","name":"bnd Annotations Library","phase":"MASTER","qualifier":"20140510-060920","revision":"6359968E37016DC2686378D029BCA7BFB73E0ABC","size":59221,"urls":["https://bndtools.ci.cloudbees.com/job/bnd.next/552/artifact/dist/bundles/biz.aQute.bnd.annotation/biz.aQute.bnd.annotation-2.3.0.jar","http://repo1.maven.org/maven2/biz/aQute/bnd/annotation/2.3.0/annotation-2.3.0.jar"],"version":"2.3.0.20140510-060920"
+ },{
+  "artifactId":"junit","baseline":"4.11.0","bsn":"junit__junit","created":1350330312000,"description":"JUnit is a regression testing framework written by Erich Gamma and Kent Beck.\n        It is used by the developer who implements unit tests in Java.","groupId":"junit","md5":"61CE49B47B6591BC1D3BE1D1A7C83912","name":"JUnit","phase":"MASTER","qualifier":"beta-1","revision":"A66FB6A39A18D173C8C0E27040AA1F38697D7BF5","size":244999,"urls":["http://repo1.maven.org/maven2/junit/junit/4.11-beta-1/junit-4.11-beta-1.jar"],"version":"4.11-beta-1"
+ },{
+  "artifactId":"hamcrest-core","baseline":"1.3.0","bsn":"org.hamcrest__hamcrest-core","created":1341868082000,"description":"This is the core API of hamcrest matcher framework to be used by third-party framework providers. This includes the a foundation set of matcher implementations for common operations.","groupId":"org.hamcrest","md5":"6393363B47DDCBBA82321110C3E07519","name":"Hamcrest Core","phase":"MASTER","revision":"42A25DC3219429F0E5D060061F71ACB49BF010A0","size":45024,"urls":["http://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"],"version":"1.3"
+ }]
+}
