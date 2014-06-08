@@ -80,8 +80,8 @@ bndlib:                   biz.aQute.bndlib;version='[${bndlib-version-base},${bn
 
 # Version of the repository plugin to use consistently throughout the build
 # NB. this must be specified as full M.m.u version (but no qualifier)
-aQute-repository-base:    2.1.0
-aQute-repository-ceiling: 2.2.0
+aQute-repository-base:    2.2.0
+aQute-repository-ceiling: 2.3.0
 aQute-repository:         biz.aQute.repository;version='[${aQute-repository-base},${aQute-repository-ceiling})'
 
 aQute-resolve-base :      0.2.0
