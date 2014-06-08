@@ -19,7 +19,7 @@
          name="JPM4J Configuration"
          doc="templateDocs/JpmConfig.xml"
          paths="templates/cnfs/jpm"
-         priority="0"
+         priority="10"
          managed="ext/.*,plugins/.*"
          ignores="/cache/"
          version="10"

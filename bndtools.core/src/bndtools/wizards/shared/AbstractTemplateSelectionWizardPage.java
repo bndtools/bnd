@@ -5,10 +5,12 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.core.ui.ConfigElementLabelProvider;
+import org.bndtools.utils.eclipse.CategorisedConfigurationElementComparator;
 import org.bndtools.utils.eclipse.CategorisedPrioritisedConfigurationElementTreeContentProvider;
 import org.bndtools.utils.osgi.BundleUtils;
 import org.bndtools.utils.workspace.FileUtils;
@@ -147,6 +149,8 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
 
     private void loadData() {
         elements = loadConfigurationElements();
+        Arrays.sort(elements, new CategorisedConfigurationElementComparator(true));
+
         viewer.setInput(elements);
         viewer.expandAll();
     }

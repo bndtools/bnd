@@ -21,6 +21,7 @@ public class CategorisedPrioritisedConfigurationElementTreeContentProvider imple
         this.flattenSingleCategory = flattenSingleCategory;
     }
 
+    @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         data.clear();
 
@@ -37,7 +38,7 @@ public class CategorisedPrioritisedConfigurationElementTreeContentProvider imple
         }
 
         // Sort within each category
-        PriorityConfigurationElementComparator comparator = new PriorityConfigurationElementComparator(true);
+        CategorisedConfigurationElementComparator comparator = new CategorisedConfigurationElementComparator(true);
         for (Entry<ConfigurationElementCategory,List<IConfigurationElement>> entry : data.entrySet()) {
             List<IConfigurationElement> list = entry.getValue();
             Collections.sort(list, comparator);
@@ -54,6 +55,7 @@ public class CategorisedPrioritisedConfigurationElementTreeContentProvider imple
         list.add(element);
     }
 
+    @Override
     public Object[] getElements(Object inputElement) {
         Object[] result;
 
@@ -67,17 +69,21 @@ public class CategorisedPrioritisedConfigurationElementTreeContentProvider imple
         return result;
     }
 
+    @Override
     public void dispose() {}
 
+    @Override
     public Object[] getChildren(Object parentElement) {
         List<IConfigurationElement> list = data.get(parentElement);
         return list.toArray(new IConfigurationElement[list.size()]);
     }
 
+    @Override
     public Object getParent(Object element) {
         return null;
     }
 
+    @Override
     public boolean hasChildren(Object element) {
         boolean result = false;
         if (element instanceof ConfigurationElementCategory) {
