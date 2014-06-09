@@ -65,6 +65,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 * Maintains the index of what we've downloaded so far.
 	 */
 	private File									indexFile;
+	private boolean									indexRecurse;
 	Index									index;
 	private boolean									offline;
 	private Registry								registry;
@@ -167,6 +168,11 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		 * @return
 		 */
 		String name();
+		
+		/**
+		 * Fetch dependencies automatically
+		 */
+		boolean recurse();
 
 		boolean trace();
 	}
@@ -517,10 +523,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 	public void setOptions(Options options) {
 		try {
-			if (options.location() == null)
-				throw new IllegalArgumentException(
-						"The location property must be set to the location of the cache directory, e.g. ~/.bnd/cache");
-
+			location = options.location();
+			if (location == null)
+				location = "~/.bnd/shacache";
+			
 			this.name = options.name();
 			if (options.settings() != null) {
 				settings = new Settings(options.settings());
@@ -538,10 +544,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				setCredentials(urlc);
 			urlc.setReporter(reporter);
 
-			this.location = options.location();
-			if (location == null)
-				location = "~/.bnd/shacache";
-
 			File cacheDir = IO.getFile(IO.home, location);
 			cacheDir.mkdirs();
 			if (!cacheDir.isDirectory())
@@ -555,6 +557,8 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			if (indexFile.isDirectory())
 				throw new IllegalArgumentException("Index file is a directory instead of a file "
 						+ indexFile.getAbsolutePath());
+			
+			indexRecurse = options.recurse();
 
 			cache = new StoredRevisionCache(cacheDir, settings);
 
@@ -597,6 +601,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	@Override
 	public boolean refresh() throws Exception {
 		index = new Index(indexFile);
+		index.setRecurse(indexRecurse);
 		cache.refresh();
 		notfound.clear();
 		notfoundref.clear();
@@ -1567,10 +1572,11 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		this.registry = registry;
 	}
 
-	private void init() {
+	private void init() throws Exception {
 		if (index == null) {
 			reporter.trace("init " + indexFile);
 			index = new Index(indexFile);
+			index.setRecurse(indexRecurse);
 			index.setReporter(reporter);
 		}
 	}
@@ -1776,7 +1782,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		return rd;
 	}
 
-	private Index getIndex() {
+	private Index getIndex() throws Exception {
 		init();
 		return index;
 	}

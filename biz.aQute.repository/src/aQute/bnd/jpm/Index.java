@@ -20,7 +20,7 @@ public class Index {
 	static public class Repo extends struct {
 		public List<Library.RevisionRef>	revisionRefs	= list();
 		public boolean						learning		= true;
-		public boolean						recurse			= true;
+		public boolean						recurse			= false;
 
 		byte[]								synced;
 
@@ -246,10 +246,10 @@ public class Index {
 		return repo.recurse;
 	}
 
-	public void setRecurse(boolean learning) {
-		dirty |= repo.recurse != learning;
-		repo.recurse = learning;
-
+	public void setRecurse(boolean recurse) throws Exception {
+		init();
+		dirty |= repo.recurse != recurse;
+		repo.recurse = recurse;
 	}
 
 	public boolean isDirty() {
