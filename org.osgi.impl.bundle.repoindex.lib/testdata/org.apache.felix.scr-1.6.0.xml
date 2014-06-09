@@ -67,4 +67,7 @@
   <requirement namespace="osgi.wiring.package">
     <directive name="filter" value="(&amp;(osgi.wiring.package=org.osgi.service.cm)(version&gt;=1.2.0)(!(version&gt;=2.0.0)))"/>
   </requirement>
+  <requirement namespace="osgi.wiring.package">
+    <directive name="filter" value="(&amp;(osgi.wiring.package=org.osgi.service.metatype)(version&gt;=1.1)(!(version&gt;=2.0.0)))"/>
+  </requirement>
 </resource>
