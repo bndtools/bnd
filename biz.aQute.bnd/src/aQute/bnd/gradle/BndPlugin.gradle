@@ -297,18 +297,19 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('echo') {
-        description "Displays project information in project '${project.path}'."
+        description "Displays the bnd project information of project '${project.path}'."
         group 'help'
         doLast {
           println "project.workspace:      ${rootDir}"
           println "project.dir:            ${projectDir}"
           println "project.name:           ${project.name}"
           println "project.dependson:      ${bndProject.dependson.collect{it.name}}"
-          println "project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}"
+          println "project.src:            ${files(sourceSets.main.java.srcDirs).asPath}"
           println "project.output:         ${compileJava.destinationDir}"
           println "project.buildpath:      ${compileJava.classpath.asPath}"
           println "project.allsourcepath:  ${bnd.allSrcDirs.asPath}"
           println "project.testsrc:        ${files(sourceSets.test.java.srcDirs).asPath}"
+          println "project.testoutput:     ${compileTestJava.destinationDir}"
           println "project.testpath:       ${compileTestJava.classpath.asPath}"
           println "project.bootclasspath:  ${compileJava.options.bootClasspath}"
           println "javac:                  ${compileJava.options.forkOptions.executable}"
@@ -322,7 +323,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('bndproperties') {
-        description "Display bnd properties in project '${project.path}'."
+        description "Displays the bnd properties of project '${project.path}'."
         group 'help'
         doLast {
           println()
