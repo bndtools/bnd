@@ -4,7 +4,6 @@ import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -19,7 +18,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
-import bndtools.editor.common.MDSashForm;
 import bndtools.editor.project.AvailableBundlesPart;
 import bndtools.editor.project.RepositorySelectionPart;
 import bndtools.editor.project.RunBundlesPart;
@@ -35,24 +33,20 @@ public class ProjectRunPage extends FormPage {
     private final BndEditModel model;
 
     public static final IFormPageFactory FACTORY_PROJECT = new IFormPageFactory() {
-        @Override
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new ProjectRunPage(editor, model, id, "Run", false);
         }
 
-        @Override
         public boolean supportsMode(Mode mode) {
             return mode == Mode.project;
         }
     };
 
     public static final IFormPageFactory FACTORY_BNDRUN = new IFormPageFactory() {
-        @Override
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new ProjectRunPage(editor, model, id, "Run", true);
         }
 
-        @Override
         public boolean supportsMode(Mode mode) {
             return mode == Mode.bndrun;
         }
@@ -106,12 +100,10 @@ public class ProjectRunPage extends FormPage {
 
         // Create Controls
         final Composite body = form.getBody();
+        gl = new GridLayout(2, true);
+        body.setLayout(gl);
 
-        MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
-        sashForm.setSashWidth(6);
-        tk.adapt(sashForm);
-
-        final Composite left = tk.createComposite(sashForm);
+        final Composite left = tk.createComposite(body);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         left.setLayoutData(gd);
         gl = new GridLayout(1, true);
@@ -119,7 +111,7 @@ public class ProjectRunPage extends FormPage {
         gl.marginWidth = 0;
         left.setLayout(gl);
 
-        final Composite right = tk.createComposite(sashForm);
+        final Composite right = tk.createComposite(body);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         right.setLayoutData(gd);
         gl = new GridLayout(1, true);
@@ -180,13 +172,6 @@ public class ProjectRunPage extends FormPage {
             runBundlesPart.getSection().addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
         }
 
-        sashForm.setWeights(new int[] {
-                1, 1
-        });
-        sashForm.hookResizeListener();
-        FillLayout layout = new FillLayout();
-        layout.marginHeight = 5;
-        layout.marginWidth = 5;
-        body.setLayout(layout);
     }
+
 }
