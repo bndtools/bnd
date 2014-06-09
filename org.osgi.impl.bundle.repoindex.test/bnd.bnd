@@ -23,3 +23,4 @@ Conditional-Package: org.example.tests.utils
 Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
 Private-Package: org.example.tests.osgi,\
     testdata
+Bundle-Version: 0.0.1
