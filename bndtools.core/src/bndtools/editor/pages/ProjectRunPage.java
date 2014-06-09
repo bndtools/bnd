@@ -115,16 +115,12 @@ public class ProjectRunPage extends FormPage {
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         left.setLayoutData(gd);
         gl = new GridLayout(1, true);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
         left.setLayout(gl);
 
         final Composite right = tk.createComposite(sashForm);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         right.setLayoutData(gd);
         gl = new GridLayout(1, true);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
         right.setLayout(gl);
 
         // First column
@@ -184,9 +180,6 @@ public class ProjectRunPage extends FormPage {
                 1, 1
         });
         sashForm.hookResizeListener();
-        FillLayout layout = new FillLayout();
-        layout.marginHeight = 5;
-        layout.marginWidth = 5;
-        body.setLayout(layout);
+        body.setLayout(new FillLayout());
     }
 }
