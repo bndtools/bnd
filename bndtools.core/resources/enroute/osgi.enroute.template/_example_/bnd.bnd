@@ -11,8 +11,7 @@ Bundle-Description: 				\
 	
 -buildpath:  \
 	osgi.enroute.base.api;version=1.0,\
-	biz.aQute.junit, \
-	osgi.logger.provider;version=1.0	
+	biz.aQute.junit
 
 -sub:  \
 	*.bnd

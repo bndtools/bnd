@@ -1,5 +1,5 @@
 #
-# _PROJECT_	LAUNCH SPECFICATION 
+# _PROJECT_	LAUNCH SPECIFICATION 
 #
 
 
@@ -9,12 +9,5 @@ JPMCommand:					_cmd_
 
 
 -runrequires:  \
-	osgi.identity;filter:='(osgi.identity=_example_.provider)'
-
--runbundles:  \
-	_example_.provider;version=latest,\
-	biz.aQute.bnd.annotation;version='[2.3.0,2.3.1)',\
-	org.apache.felix.configadmin;version='[1.8.0,1.8.1)',\
-	org.apache.felix.scr;version='[1.8.2,1.8.3)',\
-	osgi.base.provider;version='[1.0.0,1.0.1)',\
-	osgi.logger.provider;version='[1.0.0,1.0.1)'
+	osgi.identity;filter:='(osgi.identity=_example_.provider)',\
+	osgi.identity;filter:='(osgi.identity=_example_.command)'
