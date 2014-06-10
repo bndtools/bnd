@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 import org.bndtools.utils.jface.ImageCachingLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.graphics.Image;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.osgi.resource.FilterParser;
@@ -29,7 +30,9 @@ public class RequirementLabelProvider extends ImageCachingLabelProvider {
             cell.setText(label.getString());
             cell.setStyleRanges(label.getStyleRanges());
 
-            getImage(R5LabelFormatter.getNamespaceImagePath(requirement.getNamespace()), true);
+            Image icon = getImage(R5LabelFormatter.getNamespaceImagePath(requirement.getNamespace()), true);
+            if (icon != null)
+                cell.setImage(icon);
         }
     }
 
@@ -46,7 +49,7 @@ public class RequirementLabelProvider extends ImageCachingLabelProvider {
     /**
      * This method return a query string (on jpm) based on a filter. This is not exact, but should in general give a
      * list to work from
-     * 
+     *
      * @param req
      *            The requirement searched
      * @return a query string where p: is for package and bsn: is for bundle symbolic name.
