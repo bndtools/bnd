@@ -13,7 +13,7 @@ import aQute.lib.strings.*;
 public class FilterParser {
 	final Map<String,Expression>	cache	= new HashMap<String,FilterParser.Expression>();
 
-	enum Op {
+	public enum Op {
 		GREATER(">"), GREATER_OR_EQUAL(">="), LESS("<"), LESS_OR_EQUAL("<="), EQUAL("=="), NOT_EQUAL("!="), RANGE("..");
 
 		private String	symbol;
@@ -139,9 +139,9 @@ public class FilterParser {
 			}
 			return new RangeExpression(key, low, high);
 		}
-
-		public void toString(StringBuilder sb) {
-			sb.append(key).append("=");
+		
+		public String getRangeString() {
+			StringBuilder sb = new StringBuilder();
 			if (low != null) {
 				if (high == null)
 					sb.append(low.value);
@@ -164,10 +164,23 @@ public class FilterParser {
 				else
 					sb.append("]");
 			}
+			return sb.toString();
+		}
+
+		public void toString(StringBuilder sb) {
+			sb.append(key).append("=").append(getRangeString());
+		}
+		
+		public SimpleExpression getLow() {
+			return low;
+		}
+		
+		public SimpleExpression getHigh() {
+			return high;
 		}
 	}
 
-	static class SimpleExpression extends Expression {
+	public static class SimpleExpression extends Expression {
 		final Op			op;
 		final String		key;
 		final String		value;
@@ -292,6 +305,18 @@ public class FilterParser {
 			return value;
 		}
 
+		public String getKey() {
+			return key;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public Op getOp() {
+			return op;
+		}
+
 	}
 
 	public abstract static class WithRangeExpression extends Expression {
@@ -309,6 +334,13 @@ public class FilterParser {
 			sb.append("; ");
 			range.toString(sb);
 		}
+
+		public RangeExpression getRangeExpression() {
+			return range;
+		}
+		
+		public abstract String printExcludingRange();
+
 	}
 
 	public static class PackageExpression extends WithRangeExpression {
@@ -339,6 +371,11 @@ public class FilterParser {
 
 		public String query() {
 			return "p:" + packageName;
+		}
+		
+		@Override
+		public String printExcludingRange() {
+			return packageName;
 		}
 	}
 
@@ -371,6 +408,11 @@ public class FilterParser {
 		public String query() {
 			return "bsn:" + hostName;
 		}
+		
+		@Override
+		public String printExcludingRange() {
+			return hostName;
+		}
 	}
 
 	public static class BundleExpression extends WithRangeExpression {
@@ -397,6 +439,11 @@ public class FilterParser {
 
 		public String query() {
 			return "bsn:" + bundleName;
+		}
+		
+		@Override
+		public String printExcludingRange() {
+			return bundleName;
 		}
 
 	}
@@ -429,6 +476,11 @@ public class FilterParser {
 
 		public String query() {
 			return "bsn:" + identity;
+		}
+		
+		@Override
+		public String printExcludingRange() {
+			return identity;
 		}
 	}
 
@@ -834,23 +886,39 @@ public class FilterParser {
 		}
 		return exprs;
 	}
+	
+	public static String namespaceToCategory(String namespace) {
+		String result;
+		
+		if ("osgi.wiring.package".equals(namespace)) {
+			result = "Import-Package";
+		} else if ("osgi.wiring.bundle".equals(namespace)) {
+			result = "Require-Bundle";
+		} else if ("osgi.wiring.host".equals(namespace)) {
+			result = "Fragment-Host";
+		} else if ("osgi.identity".equals(namespace)) {
+			result = "ID";
+		} else if ("osgi.content".equals(namespace)) {
+			result = "Content";
+		} else if ("osgi.extender".equals(namespace)) {
+			result = "Extender";
+		} else if ("osgi.service".equals(namespace)) {
+			result = "Service";
+		} else if ("osgi.contract".equals(namespace)) {
+			return "Contract";
+		} else {
+			result = namespace;
+		}
+
+		return result;
+	}
 
 	public static String toString(Requirement r) {
 		try {
 			StringBuilder sb = new StringBuilder();
-			String namespace = r.getNamespace();
-			if ("osgi.wiring.package".equals(namespace)) {
-				sb.append("Import-Package");
-			} else if ("osgi.wiring.bundle".equals(namespace)) {
-				sb.append("Require-Bundle");
-			} else if ("osgi.wiring.host".equals(namespace)) {
-				sb.append("Fragment-Host");
-			} else if ("osgi.identity".equals(namespace)) {
-				sb.append("");
-			} else if ("osgi.content".equals(namespace)) {
-				sb.append("Content");
-			} else
-				sb.append(namespace);
+			String category = namespaceToCategory(r.getNamespace());
+			if (category != null && category.length() > 0)
+				sb.append(namespaceToCategory(category)).append(": ");
 
 			FilterParser fp = new FilterParser();
 			String filter = r.getDirectives().get("filter");
