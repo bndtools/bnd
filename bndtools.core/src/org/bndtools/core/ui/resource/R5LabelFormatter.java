@@ -153,6 +153,8 @@ public class R5LabelFormatter {
                         RangeExpression range = ((WithRangeExpression) exp).getRangeExpression();
                         if (range != null)
                             label.append(" ").append(formatRangeString(range), StyledString.COUNTER_STYLER);
+                    } else {
+                        label.append(exp.toString());
                     }
                 }
             } catch (Exception e) {
