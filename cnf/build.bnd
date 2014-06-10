@@ -66,9 +66,9 @@ java.req.ee:              JavaSE-1.6
 
 # Master Version Settings
 # base-version           = a valid major.minor.micro version
-# base-version-qualifier = DEV|RCx|REL, with x a number
+# base-version-qualifier = DEV|Mx|RCx|REL, with x a number
 base-version:             2.4.0
-base-version-qualifier:   DEV
+base-version-qualifier:   M1
 
 
 # Version of bnd/bndlib to use consistently throughout the build
