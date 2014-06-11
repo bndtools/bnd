@@ -4,7 +4,6 @@ Bundle-Version: 2.3.1.${tstamp}
 
 amdatu-template: templates/cnfs/amdatu
 amdatu-template-resources: \
-	${amdatu-template}=templates/unprocessed/amdatu,\
 	${amdatu-template}=../bndtools.repository.base/templates/unprocessed/bundlehub,\
 	${amdatu-template}=../bndtools.repository.base/templates/unprocessed/common,\
 	${amdatu-template}/buildrepo/=../bndtools.repository.base/templates/repos/buildrepo,\
@@ -12,7 +11,9 @@ amdatu-template-resources: \
 	${amdatu-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest},\
 	${amdatu-template}/localrepo/=../bndtools.repository.base/templates/repos/localrepo,\
 	${amdatu-template}/releaserepo/=../bndtools.repository.base/templates/repos/releaserepo,\
-	${amdatu-template}/plugins/biz.aQute.repository/biz.aQute.repository.jar=${repo;biz.aQute.repository;${aQute-repository-base}}
+	${amdatu-template}/plugins/biz.aQute.repository/biz.aQute.repository.jar=${repo;biz.aQute.repository;${aQute-repository-base}},\
+	${amdatu-template}=templates/unprocessed/amdatu
+	
 
 Include-Resource:\
 	plugin.xml=_plugin.xml,\
