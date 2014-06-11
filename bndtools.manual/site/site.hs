@@ -34,7 +34,7 @@ writerOpts = def
 
 main = hakyll $ do
     -- Copy static resources
-    match ("images/**" .||. "js/**" .||. "CNAME") $ do
+    match ("images/**" .||. "js/**" .||. "fonts/**" .||. "CNAME") $ do
         route idRoute
         compile copyFileCompiler
 

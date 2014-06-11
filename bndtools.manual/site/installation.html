@@ -1,7 +1,24 @@
+<style>
+    .fi-burst-new { font-size: 48px; color: #F04124; }
+</style>
+
 <div class="hero">
     <h1>Install Bndtools</h1>
     <p>Bndtools supports all versions of Eclipse from 3.7 &ldquo;Indigo&rdquo; up to and including 4.3 &ldquo;Kepler&rdquo;. Eclipse 4.4 &ldquo;Luna&rdquo; milestones are not officially supported, but expected to work (please <a href="/community.html">report issues</a> if not).</p>
-    <p>&nbsp;</p>
+
+    <div data-alert class="alert-box info radius">
+        <div class="row">
+            <div class="large-1 columns">
+                <i class="fi-burst-new"></i>
+            </div>
+            <div class="large-11 columns">
+                <h4><a href="#2_4_m1">Try out Bndtools 2.4.0 Milestone 1! &raquo;</a></h4>
+            </div>
+        </div>
+    </div>
+
+    <!--<p>&nbsp;</p>-->
+
     <div class="row">
         <div class="large-6 columns">
             <h2>Via Marketplace</h2>
@@ -72,8 +89,10 @@
         <div class="small-1 columns"><h2>2.</h2></div>
         <div class="small-4 columns"><img src="/images/installation/updatesite02.png" class="thumbnail"/></div>
         <div class="small-7 columns">
-            <p>In the Name field enter Bndtools. In the Location field enter the following URL and click OK:</p>
+            <p>In the Name field enter Bndtools. In the Location field enter one of the the following URLs and click OK. For the latest stable release:</p>
             <pre>http://bndtools-updates.s3.amazonaws.com/</pre>
+            <p>For the current milestone release, 2.4.0 Milestone 1:</p>
+            <pre>http://bndtools-updates.s3.amazonaws.com/2.4.0.M1/</pre>
             
         </div>
     </div>
@@ -94,4 +113,15 @@
             <p>Drive the wizard to completion, following the on-screen instructions.</p>
         </div>
     </div>
+</section>
+
+<hr/>
+
+<section id="2_4_m1">
+    <div class="row">
+        <h1>Installing the Milestone</h1>
+    </div>
+
+    <p>The latest milestone cannot be installed via Eclipse Marketplace &mdash; you must use the <a href="#update-site">update site method</a> shown above. Please ensure you use the milestone update URL which is:</p>
+    <pre>http://bndtools-updates.s3.amazonaws.com/2.4.0.M1/</pre>
 </section>
