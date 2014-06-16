@@ -38,7 +38,7 @@ public class Index {
 
 	private File												indexFile;
 
-	private Map<String,SortedMap<Version,Library.RevisionRef>>	cache;
+	private Map<String,TreeMap<Version,Library.RevisionRef>>	cache;
 
 	private Repo												repo;
 
@@ -52,14 +52,14 @@ public class Index {
 
 	private void init() throws Exception {
 		if (repo == null) {
-			cache = new TreeMap<String,SortedMap<Version,Library.RevisionRef>>();
+			cache = new TreeMap<String,TreeMap<Version,Library.RevisionRef>>();
 
 			if (indexFile.isFile() && indexFile.length() > 100) {
 				Decoder dec = codec.dec();
 				try {
 					repo = dec.from(indexFile).get(new TypeReference<Repo>() {});
 					for (Library.RevisionRef r : repo.revisionRefs) {
-						SortedMap<Version,Library.RevisionRef> map = cache.get(r.bsn);
+						TreeMap<Version,Library.RevisionRef> map = cache.get(r.bsn);
 						if (map == null) {
 							map = new TreeMap<Version,Library.RevisionRef>(Collections.reverseOrder());
 							cache.put(r.bsn, map);
@@ -85,17 +85,17 @@ public class Index {
 	public SortedSet<Version> getVersions(String bsn) throws Exception {
 		init();
 
-		Map<Version,Library.RevisionRef> map = cache.get(bsn);
+		TreeMap<Version,Library.RevisionRef> map = cache.get(bsn);
 		if (map == null)
 			return EMPTY_VERSIONS;
 
-		return (SortedSet<Version>) map.keySet();
+		return map.navigableKeySet();
 	}
 
 	public boolean addRevision(Library.RevisionRef ref) throws Exception {
 		init();
 		Version v = toVersion(ref.baseline, ref.qualifier);
-		SortedMap<Version,Library.RevisionRef> map = cache.get(ref.bsn);
+		TreeMap<Version,Library.RevisionRef> map = cache.get(ref.bsn);
 		if (map == null) {
 			map = new TreeMap<Version,Library.RevisionRef>();
 			cache.put(ref.bsn, map);
