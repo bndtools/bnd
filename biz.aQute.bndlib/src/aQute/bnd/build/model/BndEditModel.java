@@ -938,6 +938,14 @@ public class BndEditModel {
 		return project;
 	}
 
+	public String getGenericString(String name) {
+		return doGetObject(name, stringConverter);
+	}
+
+	public void setGenericString(String name, String value) {
+		doSetObject(name, getGenericString(name), value, stringConverter);
+	}
+
 	/**
 	 * Return a processor for this model. This processor is based on the parent
 	 * project or the bndrun file. It will contain the properties of the project
