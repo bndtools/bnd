@@ -1233,6 +1233,17 @@ public class Clazz {
 					break;
 				}
 
+				/*
+				 * 3/5: opcode, indexbyte1, indexbyte2 or iinc, indexbyte1,
+				 * indexbyte2, countbyte1, countbyte2
+				 */
+				case OpCodes.wide :
+					int opcode = 0xFF & bb.get();
+					bb.getShort(); // at least 3 bytes
+					if (opcode == OpCodes.iinc)
+						bb.getShort();
+					break;
+
 				case OpCodes.tableswitch :
 					// Skip to place divisible by 4
 					while ((bb.position() & 0x3) != 0)

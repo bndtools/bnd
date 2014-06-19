@@ -9,8 +9,29 @@ import org.xml.sax.*;
 import junit.framework.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.lib.io.*;
 
 public class ClazzTest extends TestCase {
+
+	/**
+	 * <pre>
+	 * java.lang.ArrayIndexOutOfBoundsException: 43007 
+	 * [bnd] at aQute.bnd.osgi.Clazz.classConstRef(Clazz.java:1880) 
+	 * [bnd] at aQute.bnd.osgi.Clazz.crawl(Clazz.java:1185)
+	 * </pre>
+	 * This happened on the Jini platform
+	 * @throws Exception 
+	 */
+	
+	public void testJiniPlatformClasses() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( IO.getFile("jar/jsk-platform.jar"));
+		b.setExportPackage("*");
+		Jar build = b.build();
+		assertTrue(b.check());
+	}
+
+	
 
 	/**
 	 * Check that exceptions that are caught are added to the imports. 
