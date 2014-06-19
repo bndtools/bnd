@@ -739,8 +739,15 @@ public class Launcher implements ServiceListener {
 			workingdir = new File(bnd, parms.name);
 		}
 
-		if (workingdir == null)
+		if (workingdir == null) {
 			workingdir = File.createTempFile("osgi.", ".fw");
+			final File wd = workingdir;
+			Runtime.getRuntime().addShutdownHook(new Thread("launcher::delete temp working dir") {
+				public void run() {
+					deleteFiles(wd);
+				}
+			});
+		}
 
 		trace("using working dir: %s", workingdir);
 
@@ -820,6 +827,15 @@ public class Launcher implements ServiceListener {
 		}
 		trace("inited system bundle %s", systemBundle);
 		return systemBundle;
+	}
+
+	protected void deleteFiles(File wd) {
+		if ( wd.isDirectory()) {
+			for ( File sub : wd.listFiles()) {
+				deleteFiles(wd);
+			}
+		}
+		wd.delete();
 	}
 
 	/**
