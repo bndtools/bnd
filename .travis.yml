@@ -5,6 +5,11 @@ jdk:
 env:
   - TERM=dumb
 
-install: ./gradlew --version
+install:
+  - ./gradlew --version
+  - mvn --version
 
-script: ./gradlew --continue
+script:
+  - ./gradlew --continue
+  - mvn -f bnd-maven-plugin-parent/bnd-maven-plugin-dependencies -Dmaven.repo.local=bnd-maven-plugin-parent/target/m2 --batch-mode --quiet initialize
+  - mvn -f bnd-maven-plugin-parent -Dmaven.repo.local=bnd-maven-plugin-parent/target/m2 --batch-mode --quiet install
