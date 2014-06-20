@@ -698,7 +698,7 @@ public class MetatypeTest extends TestCase {
 		assertEquals(id, xpath.evaluate("//OCD/@id", d, XPathConstants.STRING));
 		assertEquals(name, xpath.evaluate("//OCD/@name", d, XPathConstants.STRING));
 		assertEquals(localization == null ? cname : localization,
-				xpath.evaluate("//OCD/@localization", d, XPathConstants.STRING));
+				xpath.evaluate("//@localization", d, XPathConstants.STRING));
 		assertEquals(description == null ? "" : description,
 				xpath.evaluate("//OCD/@description", d, XPathConstants.STRING));
 
