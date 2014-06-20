@@ -231,6 +231,7 @@ public class HttpConnectorTest extends TestCase {
 
 		InputStream stream = connector.connect(new URL(getUrl(true) + "securebundles/dummybundle.jar"));
 		assertNotNull(stream);
+		stream.close();
 	}
 
 	public static void testConnectHTTPSBadCertificate() throws Exception {
@@ -249,9 +250,6 @@ public class HttpConnectorTest extends TestCase {
 		}
 	}
 	
-	// FIXME
-	// run stand-alone this test passes within 0.5 seconds.
-	// run right after testConnectHTTPSBadCertificate it times out, but claims to succeed
 	public static void testConnectWithUserPassHTTPS() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
 		Map<String,String> config = new HashMap<String,String>();
@@ -259,14 +257,9 @@ public class HttpConnectorTest extends TestCase {
 		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
 
-		try {
-			InputStream stream = connector.connect(new URL(getUrl(false) + "securebundles/dummybundle.jar"));
-			assertNotNull(stream);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-		}
+		InputStream stream = connector.connect(new URL(getUrl(false) + "securebundles/dummybundle.jar"));
+		assertNotNull(stream);
+		stream.close();
 	}
 
 	public static void testConnectWithWrongUserPass() throws Exception {
