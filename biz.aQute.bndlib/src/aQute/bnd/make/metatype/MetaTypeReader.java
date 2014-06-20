@@ -310,7 +310,7 @@ public class MetaTypeReader extends WriteResource {
 			this.ocd.addAttribute("name", name);
 			this.ocd.addAttribute("id", id);
 			this.ocd.addAttribute("description", description);
-			this.ocd.addAttribute("localization", localization);
+			this.metadata.addAttribute("localization", localization);
 
 			// do ADs
 			for (Map.Entry<MethodDef,Meta.AD> entry : methods.entrySet())
