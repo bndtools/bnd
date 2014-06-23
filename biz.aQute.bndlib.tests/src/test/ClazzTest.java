@@ -29,6 +29,7 @@ public class ClazzTest extends TestCase {
 		b.setExportPackage("*");
 		Jar build = b.build();
 		assertTrue(b.check());
+		b.close();
 	}
 
 	
