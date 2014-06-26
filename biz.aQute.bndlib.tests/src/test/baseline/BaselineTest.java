@@ -175,7 +175,9 @@ public class BaselineTest extends TestCase {
 
 		RepositoryPlugin repo = mock(RepositoryPlugin.class);
 		ws.addBasicPlugin(repo);
-		when(repo.get(anyString(), any(Version.class), any(Map.class))).thenReturn(
+		@SuppressWarnings("unchecked")
+		Map<String,String> map = any(Map.class);
+		when(repo.get(anyString(), any(Version.class), map)).thenReturn(
 				IO.getFile("testresources/ws/cnf/releaserepo/p3/p3-1.2.0.jar"));
 		System.out.println(repo.get("p3", new Version("1.2.0.b"), new Attrs()));
 
