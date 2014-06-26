@@ -1,5 +1,6 @@
 -dependson = aQute.libg, \
              biz.aQute.bnd, \
+             biz.aQute.bnd.annotation, \
              biz.aQute.bnd.test, \
              biz.aQute.bnd.testextension, \
              biz.aQute.bndlib, \

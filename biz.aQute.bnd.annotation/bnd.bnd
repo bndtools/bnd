@@ -1,4 +1,9 @@
+Bundle-Version: 				2.4.0.${tstamp}
 Bundle-Name:            bnd Annotations Library
 Bundle-Description:     Contains only the annotations for bnd.
 Bundle-DocURL:          http://www.aQute.biz/Code/Bnd
 Export-Package:         aQute.bnd.annotation.*
+
+-buildpath: \
+	ee.j2se;version=${javac.ee},\
+	biz.aQute.bndlib;version=project

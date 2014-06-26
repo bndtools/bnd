@@ -1,7 +1,41 @@
 Bundle-Version: 				2.4.0.${tstamp}
 Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
+-includeresource: \
+ LICENSE, \
+ embedded-repo.jar, \
+ templates=templates
 
--sub: *.bnd
+Private-Package:  \
+    aQute.bnd.*,\
+    aQute.configurable.*,\
+    org.osgi.service.component.annotations.*;-split-package:=first,\
+    aQute.lib.deployer.*;-split-package:=first,\
+    org.osgi.service.coordinator
+
+Export-Package: aQute.bnd.service.*,\
+        aQute.bnd.header, \
+        aQute.bnd.osgi, \
+        aQute.bnd.build, \
+        aQute.bnd.version, \
+        aQute.bnd.maven.support, \
+    org.osgi.service.bindex,\
+    aQute.service.reporter,\
+    aQute.bnd.osgi.resource,\
+    org.osgi.service.repository,\
+    org.osgi.resource, \
+    aQute.bnd.util.*
+
+Import-Package: org.apache.tools.ant.*;resolution:=optional,\
+    junit.framework;resolution:=optional;version='[3.8,4)',\
+    *
+
+Main-Class:                     aQute.bnd.main.bnd
+JPM-Command:                    bnd
+
+-digests: MD5, SHA1
+
+Bundle-Description: This command line utility is the Swiss army knife of OSGi. It provides you with a breadth
+ of tools to understand and manage OSGi based systems. This project basically uses bndlib.
 
 -buildpath: aQute.libg;version=latest,\
 	ee.j2se;version=${javac.ee},\
