@@ -1,9 +1,0 @@
--nojunit:true
--expand: generated/test
-
-doc 			= ${project}/docs
-doc.sources 	= ${doc}/src/en
-doc.tmpl    	= ${doc}/templates
-doc.resources   = ${project}/generated/resources
-
--includeresource: {readme.md}
