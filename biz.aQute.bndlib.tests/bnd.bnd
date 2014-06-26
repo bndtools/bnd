@@ -1,7 +1,9 @@
 -dependson: demo
 -nobundles: true
 
--buildpath: biz.aQute.bndlib;version=project,\
+-buildpath: \
+    biz.aQute.bndlib;version=project,\
+    biz.aQute.bnd.test;version=project,\
 	org.osgi.service.component.annotations;version=6.0.0,\
 	aQute.libg;version=project,\
 	osgi.core;version=@5,\
