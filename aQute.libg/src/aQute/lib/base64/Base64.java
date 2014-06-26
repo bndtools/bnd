@@ -1,6 +1,7 @@
 package aQute.lib.base64;
 
 import java.io.*;
+import java.util.regex.*;
 
 /*
  * Base 64 converter.
@@ -12,6 +13,7 @@ public class Base64 {
 
 	static final String	alphabet	= "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	static byte[]		values		= new byte[128];
+	static Pattern BASE64_P = Pattern.compile("(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?");
 
 	static {
 		for (int i = 0; i < values.length; i++) {
@@ -150,6 +152,10 @@ public class Base64 {
 			for (int i = 0; i < mod; i++)
 				sb.append('=');
 		}
+	}
+
+	public static boolean isBase64(String value) {
+		return BASE64_P.matcher(value).matches();
 	}
 
 }

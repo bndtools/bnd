@@ -3053,6 +3053,40 @@ public class bnd extends Processor {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Set the private key in the settings for this machine
+	 * @param hex
+	 * @param data
+	 * @return
+	 * @throws Exception 
+	 */
+	
+	@Description("Handle the private key for bnd on this machine. If an argument is given, then set this as the "
+			+ "private key of this machine in the ~/.bnd/settings directory. Otherwise generate a new key "
+			+ "pair and show it. This command can be used to let a build server use a particular key.")
+	@Arguments(arg="[secret]")
+	interface PrivateOptions extends Options {
+	}
+	public void _private(PrivateOptions options) throws Exception {
+		List<String> args = options._();
+		if ( args.isEmpty()) {
+			Settings settings = new Settings();
+			settings.generate();
+			out.println("Public   " + tos(true, settings.getPublicKey()));
+			out.println("Private  " + tos(true, settings.getPrivateKey()));
+			return;
+		}
+		
+		String secret = args.remove(0);
+		if ( !Hex.isHex(secret)) {
+			error("Not a hex string " + secret);
+			return;
+		}
+		
+		settings.setSecret(Hex.toByteArray(secret));		
+		
+	}
 
 	private String tos(boolean hex, byte[] data) {
 		return hex ? Hex.toHexString(data) : Base64.encodeBase64(data);
@@ -3703,5 +3737,10 @@ public class bnd extends Processor {
 		Processor defaults = Workspace.getDefaults();
 		out.println( Strings.join("\n", defaults.getProperties().entrySet()));
 	}
+
+
+
+	
+
 
 }
