@@ -39,7 +39,7 @@ public class StaticConfiguration implements Configuration {
 	}
 
 	@Override
-	public void update(Dictionary properties) throws IOException {
+	public void update(Dictionary props) throws IOException {
 		throw new SecurityException("Cannot update configurations");
 	}
 

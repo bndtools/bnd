@@ -32,6 +32,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 	private static final VersionRange	RANGE_ANY				= new VersionRange(Version.LOWEST.toString());
 
+	@SuppressWarnings("deprecation")
 	private FileRepo					storageRepo;
 	private boolean						readOnly;
 	private boolean						pretty					= false;
@@ -41,6 +42,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	// @GuardedBy("newFilesInCoordination")
 	private final List<URI>				newFilesInCoordination	= new LinkedList<URI>();
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public synchronized void setProperties(Map<String,String> map) {
 		super.setProperties(map);
@@ -167,6 +169,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	private void gatherFiles(Set<File> allFiles) throws Exception {
 		if (!storageDir.isDirectory())
 			return;

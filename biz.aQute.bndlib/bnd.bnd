@@ -1,16 +1,8 @@
 -sourcepath:					../aQute.libg/src
 
-Bundle-Version:					2.4.1.${tstamp}
-Bundle-SCM:						git://github.com/bndtools/bnd.git
-Bundle-Vendor: 					aQute SARL http://www.aQute.biz
-Bundle-Copyright:				Copyright © aQute SARL (2000, 2011). All Rights Reserved.
-Bundle-License: 				http://www.opensource.org/licenses/apache2.0.php; \
-									description="Apache Software License 2.0"; \
-									link=http://www.apache.org/licenses/LICENSE-2.0.html
-Bundle-DocURL:          		http://www.aQute.biz/Code/Bnd
+Bundle-Version:					2.4.0.${tstamp}
 Bundle-Name: 					bndlib
 Bundle-Description:				A Swiss Army Knife for OSGi
-Bundle-SymbolicName: 	        biz.aQute.bndlib
 
 Private-Package: 				\
 	aQute.bnd.*, \
@@ -42,8 +34,7 @@ Export-Package:  \
 	org.osgi.service.component.annotations;-split-package:=first
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
-Include-Resource: 				LICENSE, img/=img/, {readme.md}
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+-includeresource: 				LICENSE, img/=img/, {readme.md}
 
 -buildpath: com.springsource.junit,\
 	org.osgi.service.component.annotations;version=6.0.0,\

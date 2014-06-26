@@ -23,8 +23,10 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 		@Override
 		public Enumeration<String> elements() {
-			Enumeration<?> enumeration = Collections.enumeration(manifest.getMainAttributes().values());
-			return (Enumeration<String>) enumeration;
+			@SuppressWarnings("unchecked")
+			Enumeration<String> enumeration = (Enumeration) Collections.enumeration(manifest
+					.getMainAttributes().values());
+			return enumeration;
 		}
 
 		@Override
@@ -197,11 +199,11 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 	}
 
 	public String getSymbolicName() {
-		return ((String) getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME)).trim();
+		return getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME).trim();
 	}
 
 	public Version getVersion() {
-		String v = ((String) getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_VERSION)).trim();
+		String v = getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_VERSION).trim();
 		if (v == null)
 			return new Version("0");
 		return new Version(v);

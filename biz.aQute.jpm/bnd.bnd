@@ -25,11 +25,12 @@ Bundle-Version: 				1.0.2
 
 -buildpath: aQute.libg;version=project,\
 	ee.j2se;version=${javac.ee},\
-	com.springsource.junit,\
-	org.mockito.mockito-all;version=1.9.0,\
 	biz.aQute.bndlib;version=latest,\
 	aQute.jpm.clnt;version=2.1, \
 	lib/WinRun4J.jar;version=file
+-testpath: \
+	com.springsource.junit,\
+	org.mockito.mockito-all;version=1.9.0
 	
 
 -digests: MD5, SHA1

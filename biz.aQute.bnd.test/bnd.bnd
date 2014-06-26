@@ -1,0 +1,13 @@
+Bundle-Version: 				2.4.0.${tstamp}
+Bundle-Name:            bnd Test Library
+Bundle-Description:     Contains only the test functions for bnd.
+Export-Package:         aQute.bnd.test.*
+
+
+-buildpath: \
+	ee.j2se;version=${javac.ee},\
+    aQute.libg;version=project,\
+	biz.aQute.bndlib;version=project,\
+	osgi.core;version=4.3.1,\
+	osgi.cmpn;version=4.3.1,\
+	junit.osgi

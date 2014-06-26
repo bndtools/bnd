@@ -10,7 +10,7 @@ import biz.aQute.resolve.internal.*;
 
 public class BndResolver implements Resolver {
 
-	private final ResolverImpl	resolver;
+	private final Resolver	resolver;
 
 	public BndResolver(ResolverLogger logger) {
 		resolver = new ResolverImpl(new InternalResolverLogger(logger));

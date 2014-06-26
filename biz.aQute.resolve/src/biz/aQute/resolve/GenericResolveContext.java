@@ -1,6 +1,4 @@
 package biz.aQute.resolve;
-import org.osgi.framework.Constants;
-
 import static org.osgi.framework.namespace.BundleNamespace.*;
 import static org.osgi.framework.namespace.PackageNamespace.*;
 
@@ -60,7 +58,7 @@ public class GenericResolveContext extends ResolveContext {
 	protected Resource								inputResource;
 
 	public GenericResolveContext(LogService log) {
-		this(Collections.EMPTY_LIST, Collections.EMPTY_LIST, log);
+		this(Collections.<Capability> emptyList(), Collections.<Requirement> emptyList(), log);
 	}
 
 	public GenericResolveContext(List<Capability> systemCapabilities, List<Requirement> systemRequirements,

@@ -14,14 +14,15 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	biz.aQute.bndlib;version=latest,\
 	org.osgi.impl.bundle.bindex,\
 	org.osgi.impl.bundle.repoindex.lib;version=2.1.2,\
-	junit.osgi,\
 	osgi.cmpn;version=4.3.1,\
 	osgi.r5;version=1.0.1,\
 	javax.xml.stream-1.0.1.jar;version=file,\
-	org.mockito.mockito-all,\
 	ee.j2se;version='[1.6,1.7)',\
 	${jetty.libs},\
 	aQute.jpm.bndrepo;version=1.0
+-testpath: \
+	junit.osgi,\
+	org.mockito.mockito-all
 
 Bnd-Plugins:
 	aQute.bnd.deployer.repository.FixedIndexedRepo,\

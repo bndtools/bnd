@@ -317,9 +317,9 @@ public class Launcher implements ServiceListener {
 		trace("system bundle started ok");
 
 		BundleContext systemContext = systemBundle.getBundleContext();
-		ServiceReference ref = systemContext.getServiceReference(PackageAdmin.class.getName());
+		ServiceReference<PackageAdmin> ref = systemContext.getServiceReference(PackageAdmin.class);
 		if (ref != null) {
-			padmin = (PackageAdmin) systemContext.getService(ref);
+			padmin = systemContext.getService(ref);
 		} else
 			trace("could not get package admin");
 
@@ -796,7 +796,9 @@ public class Launcher implements ServiceListener {
 			Class< ? > clazz = loader.loadClass(implementation);
 			FrameworkFactory factory = (FrameworkFactory) clazz.newInstance();
 			trace("Framework factory %s", factory);
-			systemBundle = factory.newFramework( (Map) p);
+			@SuppressWarnings("unchecked")
+			Map<String,String> configuration = (Map) p;
+			systemBundle = factory.newFramework(configuration);
 			trace("framework instance %s", systemBundle);
 		} else {
 			trace("using embedded mini framework because we were told not to use META-INF/services");
