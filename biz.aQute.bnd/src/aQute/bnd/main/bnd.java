@@ -81,6 +81,8 @@ public class bnd extends Processor {
 	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
 	static Pattern				COMMAND		= Pattern.compile("\\w[\\w\\d]+");
+	static Pattern				EMAIL_P		= Pattern
+													.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",Pattern.CASE_INSENSITIVE);
 
 	@Description("OSGi Bundle Tool")
 	interface bndOptions extends Options {
@@ -1605,10 +1607,10 @@ public class bnd extends Processor {
 		trace("using %s", project);
 		Processor target = project;
 		if (project != null) {
-			Workspace ws  = project.getWorkspace();
-			
+			Workspace ws = project.getWorkspace();
+
 			ws.checkStructure();
-			
+
 			getInfo(project.getWorkspace());
 
 			report(justif, "Workspace", project.getWorkspace());
@@ -1678,13 +1680,13 @@ public class bnd extends Processor {
 
 	/**
 	 * Run enroute commands
-	 * 
 	 */
 
 	@Description("OSGi enRoute commands to maintain bnd workspaces (create workspace, add  project, etc)")
 	public void _enroute(EnrouteOptions opts) throws Exception {
 		new EnrouteCommand(this, opts);
 	}
+
 	/**
 	 * Print out a JAR
 	 */
@@ -2348,9 +2350,8 @@ public class bnd extends Processor {
 		report.addAttribute("coverage-all", all);
 	}
 
-	private void doHtmlReport(@SuppressWarnings("unused")
-	Tag report, File file, Document doc, @SuppressWarnings("unused")
-	XPath xpath) throws Exception {
+	private void doHtmlReport(@SuppressWarnings("unused") Tag report, File file, Document doc,
+			@SuppressWarnings("unused") XPath xpath) throws Exception {
 		String path = file.getAbsolutePath();
 		if (path.endsWith(".xml"))
 			path = path.substring(0, path.length() - 4);
@@ -2510,13 +2511,13 @@ public class bnd extends Processor {
 	}
 
 	public Workspace getWorkspace(File workspaceDir) throws Exception {
-		if ( workspaceDir == null) {
+		if (workspaceDir == null) {
 			workspaceDir = getBase();
 		}
 		ws = Workspace.findWorkspace(workspaceDir);
-		if ( ws == null)
+		if (ws == null)
 			return null;
-		
+
 		ws.setTrace(isTrace());
 		ws.setPedantic(isPedantic());
 		ws.setExceptions(isExceptions());
@@ -2971,13 +2972,32 @@ public class bnd extends Processor {
 		@Description("Sign the strings on the commandline")
 		boolean mac();
 
-		@Description("Show key in hex")
-		boolean hex();
+		@Description("Show key in base64")
+		boolean base64();
+
+		@Description("Override the default \"~/.bnd/settings.json\" location")
+		String location();
+
+		@Description("Generate a new private/public key pair")
+		boolean generate();
 	}
 
 	@Description("Set bnd/jpm global variables")
 	public void _settings(settingOptions opts) throws Exception {
 		try {
+			Settings settings = this.settings;
+
+			if (opts.location() != null) {
+				File f = getFile(opts.location());
+				settings = new Settings(f.getAbsolutePath());
+				trace("getting settings from %s", f);
+			}
+
+			if (opts.generate()) {
+				trace("Generating new key pair");
+				settings.generate();
+			}
+
 			trace("settings %s", opts.clear());
 			List<String> rest = opts._();
 
@@ -2987,11 +3007,11 @@ public class bnd extends Processor {
 			}
 
 			if (opts.publicKey()) {
-				out.println(tos(opts.hex(), settings.getPublicKey()));
+				out.println(tos(!opts.base64(), settings.getPublicKey()));
 				return;
 			}
 			if (opts.secretKey()) {
-				out.println(tos(opts.hex(), settings.getPrivateKey()));
+				out.println(tos(!opts.base64(), settings.getPrivateKey()));
 				return;
 			}
 
@@ -2999,7 +3019,7 @@ public class bnd extends Processor {
 				for (String s : rest) {
 					byte[] data = s.getBytes("UTF-8");
 					byte[] signature = settings.sign(data);
-					out.printf("%s\n", tos(opts.hex(), signature));
+					out.printf("%s\n", tos(!opts.base64(), signature));
 				}
 				return;
 			}
@@ -3053,43 +3073,85 @@ public class bnd extends Processor {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Set the private key in the settings for this machine
+	 * 
 	 * @param hex
 	 * @param data
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	
+
 	@Description("Handle the private key for bnd on this machine. If an argument is given, then set this as the "
 			+ "private key of this machine in the ~/.bnd/settings directory. Otherwise generate a new key "
 			+ "pair and show it. This command can be used to let a build server use a particular key.")
-	@Arguments(arg="[secret]")
+	@Arguments(arg = {})
 	interface PrivateOptions extends Options {
+		@Description("Provide a location for the settings file. This is default ./.bnd/settings.json")
+		String location();
+
+		@Description("Public key")
+		String publicKey();
+
+		@Description("Secret private key")
+		String secretKey();
+
+		@Description("Email address")
+		String email();
 	}
-	public void _private(PrivateOptions options) throws Exception {
+
+	public void _identity(PrivateOptions options) throws Exception {
 		List<String> args = options._();
-		if ( args.isEmpty()) {
-			Settings settings = new Settings();
-			settings.generate();
-			out.println("Public   " + tos(true, settings.getPublicKey()));
-			out.println("Private  " + tos(true, settings.getPrivateKey()));
+
+		Settings settings = this.settings;
+		boolean hasFile = false;
+
+		File f = null;
+		if (options.location() != null) {
+			f = getFile(options.location());
+			settings = new Settings(f.getAbsolutePath());
+			trace("uses " + f);
+		}
+
+		String pub = options.publicKey();
+		String secret = options.secretKey();
+		String email = options.email();
+
+		if (pub == null && secret == null && email == null) {
+			out.printf("--publicKey %s --secretKey %s --email %s%n", Hex.toHexString(settings.getPublicKey()),
+					Hex.toHexString(settings.getPrivateKey()), settings.getEmail());
 			return;
 		}
-		
-		String secret = args.remove(0);
-		if ( !Hex.isHex(secret)) {
-			error("Not a hex string " + secret);
-			return;
+
+		if (secret == null) {
+			error("You must set the  secret key with -s/--secretKey ");
+		} else if (!Hex.isHex(secret)) {
+			error("Not a hex string for the secret key " + secret);
 		}
-		
-		settings.setSecret(Hex.toByteArray(secret));		
-		
+
+		if (pub == null) {
+			error("You must set the public key with -p/--publicKey ");
+		} else if (!Hex.isHex(pub)) {
+			error("Not a hex string for the public key " + pub);
+		}
+
+		if (!EMAIL_P.matcher(email).matches()) {
+			error("Invalid email address: %s", email);
+		}
+
+		if (!isOk())
+			return;
+
+		settings.setEmail(email);
+
+		settings.setKeyPair(Hex.toByteArray(pub), Hex.toByteArray(secret));
+
+		settings.save();
 	}
 
 	private String tos(boolean hex, byte[] data) {
-		return hex ? Hex.toHexString(data) : Base64.encodeBase64(data);
+		return data.length + " : " + (hex ? Hex.toHexString(data) : Base64.encodeBase64(data));
 	}
 
 	private void list(Collection<String> keys, Map<String,String> map) {

@@ -83,6 +83,7 @@ public class Settings implements Map<String,String> {
 	}
 
 	public void generate() throws Exception {
+		check();
 		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
 		SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
 		keyGen.initialize(1024, random);
@@ -100,6 +101,15 @@ public class Settings implements Map<String,String> {
 
 	public void setEmail(String email) {
 		put("email", email);
+	}
+
+	public void setKeyPair(byte[] id, byte[] secret) throws Exception {
+		data.secret = secret;
+		data.id = id;
+		privateKey = null;
+		publicKey = null;
+		initKeys();
+		save();
 	}
 
 	public void setName(String v) {
@@ -142,16 +152,17 @@ public class Settings implements Map<String,String> {
 	 */
 	private void initKeys() throws Exception {
 		check();
-		if (publicKey != null)
+		if (privateKey != null)
 			return;
 
 		if (data.id == null || data.secret == null) {
 			generate();
 		} else {
 			PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(data.secret);
-			X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(data.id);
 			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 			privateKey = keyFactory.generatePrivate(privateKeySpec);
+
+			X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(data.id);
 			publicKey = keyFactory.generatePublic(publicKeySpec);
 		}
 	}
