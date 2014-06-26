@@ -37,11 +37,13 @@ JPM-Command:                    bnd
 Bundle-Description: This command line utility is the Swiss army knife of OSGi. It provides you with a breadth
  of tools to understand and manage OSGi based systems. This project basically uses bndlib.
 
+-dependson: \
+    biz.aQute.junit, \
+    biz.aQute.launcher
+
 -buildpath: aQute.libg;version=latest,\
 	ee.j2se;version=${javac.ee},\
 	biz.aQute.bndlib;version=project,\
-	biz.aQute.junit;version=project,\
-	biz.aQute.launcher;version=project,\
 	org.apache.tools.ant,\
 	org.osgi.service.component.annotations;version=6.0.0,\
 	osgi.cmpn;version=4.3.1,\
