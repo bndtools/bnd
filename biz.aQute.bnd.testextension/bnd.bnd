@@ -1,0 +1,7 @@
+Bundle-Version: 				2.4.0.${tstamp}
+Private-Package: aQute.bnd.ext.test
+Extension-Activator: aQute.bnd.ext.test.TestExtension
+
+-buildpath: \
+	ee.j2se;version=${javac.ee},\
+	biz.aQute.bndlib;version=project
