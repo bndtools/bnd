@@ -1,4 +1,5 @@
 -buildpath: \
+    ee.j2se;version=${javac.ee}, \
 	osgi.core; version=4.2, \
 	osgi.cmpn; version=4.2, \
 	junit.osgi
