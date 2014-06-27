@@ -721,4 +721,13 @@ public class Workspace extends Processor {
 	public boolean isValid() {
 		return getFile(BUILDFILE).isFile();
 	}
+
+	public RepositoryPlugin getRepository(String repo) {
+		for ( RepositoryPlugin r : getRepositories()) {
+			if ( repo.equals(r.getName())) {
+				return r;
+			}
+		}
+		return null;
+	}
 }

@@ -1105,15 +1105,53 @@ public class bnd extends Processor {
 
 		@Description("Release with test build")
 		boolean test();
+
+		@Description("Set the release repository")
+		String repo();
+
+		@Description("Release all bundles in in the workspace")
+		boolean workspace();
+
 	}
 
 	@Description("Release this project")
 	public void _release(releaseOptions options) throws Exception {
-		Project project = getProject(options.project());
-		if (project == null)
-			return;
+		Set<Project> projects = new LinkedHashSet<Project>();
 
-		project.release(options.test());
+		Workspace ws = Workspace.findWorkspace(getBase());
+		if (ws == null) {
+			error("Workspace option was specified but cannot find a workspace from %s", getBase());
+			return;
+		}
+
+		if (options.workspace()) {
+			projects.addAll(ws.getAllProjects());
+		}
+
+		Project project = getProject(options.project());
+		if (project != null) {
+			projects.add(project);
+		}
+
+		if (projects.isEmpty()) {
+			error("Cannot find any projects");
+			return;
+		}
+
+		String repo = options.repo();
+		if (repo != null) {
+			RepositoryPlugin repository = ws.getRepository(repo);
+			if (repository == null) {
+				error("No such release repo %s%nFound:%n%s", repository, Strings.join("\n", ws.getRepositories()));
+			}
+
+		}
+		for (Project p : projects) {
+			if (repo != null) {
+				p.setProperty(Constants.RELEASEREPO, repo);
+			}
+			p.release(options.test());
+		}
 		getInfo(project);
 	}
 
