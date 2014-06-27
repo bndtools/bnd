@@ -1,7 +1,5 @@
 package aQute.bnd.indexer;
 
-import java.util.*;
-
 import aQute.bnd.annotation.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.resource.*;

@@ -7,7 +7,6 @@ import javax.xml.parsers.*;
 import javax.xml.xpath.*;
 
 import org.w3c.dom.*;
-import org.xml.sax.*;
 
 import aQute.jpm.lib.*;
 import aQute.lib.io.*;

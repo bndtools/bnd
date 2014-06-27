@@ -2,10 +2,6 @@ package aQute.bnd.service.url;
 
 import java.net.*;
 
-import aQute.bnd.url.*;
-import aQute.lib.settings.*;
-import aQute.libg.glob.*;
-
 /**
  * This interface is used to sign urls, set options, etc. Anybody that interacts
  * with a URL should allow all the {@link URLConnectionHandler} plugins to

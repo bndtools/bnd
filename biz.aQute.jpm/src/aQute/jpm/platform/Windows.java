@@ -4,7 +4,6 @@ package aQute.jpm.platform;
  * http://support.microsoft.com/kb/814596
  */
 import java.io.*;
-import java.lang.reflect.*;
 import java.util.*;
 
 import org.boris.winrun4j.*;

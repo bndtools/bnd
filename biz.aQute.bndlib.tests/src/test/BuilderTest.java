@@ -5,9 +5,6 @@ import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
 
-import test.CompareTest.B;
-import test.CompareTest.B.C;
-import test.genericinterf.a.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
