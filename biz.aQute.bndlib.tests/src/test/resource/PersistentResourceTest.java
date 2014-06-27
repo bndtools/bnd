@@ -1,4 +1,4 @@
-package aQute.bnd.osgi.resource;
+package test.resource;
 
 import java.util.*;
 
@@ -7,6 +7,7 @@ import junit.framework.*;
 import org.osgi.framework.*;
 import org.osgi.resource.*;
 
+import aQute.bnd.osgi.resource.*;
 import aQute.lib.json.*;
 
 public class PersistentResourceTest extends TestCase {

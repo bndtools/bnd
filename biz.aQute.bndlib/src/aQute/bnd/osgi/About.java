@@ -2,7 +2,6 @@ package aQute.bnd.osgi;
 
 import java.util.*;
 
-import aQute.bnd.header.*;
 import aQute.bnd.version.*;
 
 /**

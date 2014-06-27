@@ -2,8 +2,6 @@ package aQute.service.reporter;
 
 import java.util.*;
 
-import aQute.service.reporter.Reporter.*;
-
 /**
  * A base interface to represent the state of a work in progress.
  */

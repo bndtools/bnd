@@ -6,9 +6,7 @@ import java.util.*;
 
 import javax.net.ssl.*;
 
-import aQute.bnd.service.url.*;
 import aQute.lib.base64.*;
-import aQute.libg.glob.*;
 
 /**
  * Provide Http Basic Authentication. This URL Connection Handler plugin will

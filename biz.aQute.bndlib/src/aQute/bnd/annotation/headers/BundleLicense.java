@@ -2,8 +2,6 @@ package aQute.bnd.annotation.headers;
 
 import java.lang.annotation.*;
 
-import aQute.bnd.annotation.licenses.*;
-
 /**
  * The Bundle-License header provides an optional machine readable form of
  * license information. The purpose of this header is to automate some of the

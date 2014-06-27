@@ -1,6 +1,5 @@
 package aQute.bnd.make.coverage;
 
-import java.io.*;
 import java.util.*;
 
 import aQute.bnd.osgi.*;
