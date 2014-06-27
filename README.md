@@ -65,3 +65,11 @@ Bugs and issues should go to <https://github.com/bndtools/bnd/issues>
 
 Other feedback or specific functionality send to <Peter.Kriens@aQute.biz>
 
+## Contributing
+
+Want to hack on bnd? There are [instructions](CONTRIBUTING.md) to get you
+started.
+
+They are probably not perfect, please let us know if anything feels
+wrong or incomplete.
+
