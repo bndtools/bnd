@@ -2,7 +2,6 @@ package aQute.bnd.build;
 
 import java.io.*;
 import java.lang.ref.*;
-import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
@@ -19,6 +18,7 @@ import aQute.bnd.resource.repository.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.service.extension.*;
+import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.url.*;
 import aQute.bnd.version.*;
@@ -621,6 +621,9 @@ public class Workspace extends Processor {
 		return null;
 	}
 
+	public String _user(String[] args) throws Exception {
+		return _global(args);
+	}
 	/**
 	 * Return the repository signature digests. These digests are a unique id
 	 * for the contents of the repository
@@ -634,7 +637,6 @@ public class Workspace extends Processor {
 				String name = it.next().getName();
 				for (int i = 1; i < args.length; i++) {
 					if (name.equals(args[i])) {
-						it.remove();
 						continue repos;
 					}
 				}
@@ -644,11 +646,13 @@ public class Workspace extends Processor {
 		List<String> digests = new ArrayList<String>();
 		for (RepositoryPlugin repo : repos) {
 			try {
-				// TODO use RepositoryDigest interface when it is widely
-				// implemented
-				Method m = repo.getClass().getMethod("getDigest");
-				byte[] digest = (byte[]) m.invoke(repo);
-				digests.add(Hex.toHexString(digest));
+				if ( repo instanceof RepositoryDigest) {
+					byte[] digest = ((RepositoryDigest) repo).getDigest();
+					digests.add(Hex.toHexString(digest));
+				} else {
+					if (args.length != 1)
+						error("Specified repo %s for ${repodigests} was named but it is not found", repo.getName());
+				}
 			}
 			catch (Exception e) {
 				if (args.length != 1)
