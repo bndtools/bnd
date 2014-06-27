@@ -53,17 +53,10 @@ on your system.
 [![CloudBees Build Status](https://bndtools.ci.cloudbees.com/job/bnd.master/badge/icon)](https://bndtools.ci.cloudbees.com/job/bnd.master/)
 [![Travis CI Build Status](https://travis-ci.org/bndtools/bnd.svg?branch=master)](https://travis-ci.org/bndtools/bnd)
 
-## Testing
-The main tests are in the biz.aQute.bndlib.tests project. These are standard JUnit tests. They
-are all in the src/test directory. Tests are quite extensive and run from the
-Eclipse JUnit screen.
-
 ## Release
 bnd is continuously built and released on [CloudBees](https://bndtools.ci.cloudbees.com/).
 
 [![Built on DEV@cloud](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](http://www.cloudbees.com/foss/foss-dev.cb)
-
-A more comprehensive release process is in the works.
 
 ## Feedback
 Feedback is always welcome, for general discussions use <bndtools-users@googlegroups.com>
