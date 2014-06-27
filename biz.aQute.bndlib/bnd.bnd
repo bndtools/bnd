@@ -36,7 +36,7 @@ Export-Package:  \
 Conditional-Package:	        aQute.service.*, aQute.configurable
 -includeresource: 				LICENSE, img/=img/, {readme.md}
 
--buildpath: com.springsource.junit,\
+-buildpath: \
 	org.osgi.service.component.annotations;version=6.0.0,\
 	osgi.cmpn;version=4.3.1,\
 	aQute.libg;version=project,\
