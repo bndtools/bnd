@@ -125,7 +125,7 @@ public class DiffPluginImpl implements Differ {
 	 * @return
 	 * @throws Exception
 	 */
-	static Pattern META_INF_P = Pattern.compile("META-INF/[^/]+");
+	static Pattern META_INF_P = Pattern.compile("META-INF/([^/]+\\.(MF|SF|DSA|RSA))|(SIG-.*)");
 	
 	private Element resourcesElement(Jar jar) throws Exception {
 		List<Element> resources = new ArrayList<Element>();
