@@ -329,7 +329,15 @@ public class Macro {
 		return filter(args, false);
 	}
 
+	public String _select(String args[]) {
+		return filter(args, false);
+	}
+
 	public String _filterout(String args[]) {
+		return filter(args, true);
+
+	}
+	public String _reject(String args[]) {
 		return filter(args, true);
 
 	}
