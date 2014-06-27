@@ -83,3 +83,5 @@ Import-Package:\
 	org.osgi.service.log,\
 	aQute.bnd.osgi.resource,\
 	*
+
+-fixupmessages: "Export aQute.bnd.deployer.*.impl"
