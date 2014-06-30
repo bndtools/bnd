@@ -1,4 +1,5 @@
-Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
+Test-Cases:  \
+	org.example.tests.ExampleTest
 Bundle-Version: 1.0.0.SNAPSHOT
 
 Private-Package: org.example.tests
