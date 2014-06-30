@@ -9,13 +9,14 @@ Private-Package: org.example.tests
 -buildpath: osgi.cmpn,\
 	junit.osgi,\
 	org.mockito.mockito-all,\
-	osgi.core;version=5.0
+	osgi.core;version=5.0,\
+	biz.aQute.junit
 -runsystempackages: sun.reflect
 
 -outputmask = ${@bsn}-${version;===S;${@version}}.jar
 target-dir = target
 bin = target/classes
-src = src/main/java
+src = src
 testsrc = src/test/java
 testbin = target/test-classes
 
