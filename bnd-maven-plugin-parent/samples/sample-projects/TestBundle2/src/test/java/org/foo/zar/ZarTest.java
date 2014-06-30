@@ -1,10 +1,12 @@
 package org.foo.zar;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.osgi.framework.BundleActivator;
 
-import junit.framework.TestCase;
-
-public class ZarTest extends TestCase {
+public class ZarTest {
+	@Test
 	public void testZar() {
 		Zar z = new Zar();
 		assertTrue(z instanceof BundleActivator);

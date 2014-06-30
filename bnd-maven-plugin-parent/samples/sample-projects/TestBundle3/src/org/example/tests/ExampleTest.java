@@ -1,15 +1,16 @@
 package org.example.tests;
 
-import junit.framework.TestCase;
-
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
-public class ExampleTest extends TestCase {
+public class ExampleTest {
 
     private final BundleContext context = FrameworkUtil.getBundle(this.getClass()).getBundleContext();
 
+    @Test
     public void testExample() throws Exception {
     	Bundle[] bundles = context.getBundles();
     	System.out.println("Available bundles: " + bundles);
