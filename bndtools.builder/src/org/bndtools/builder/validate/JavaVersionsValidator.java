@@ -34,8 +34,8 @@ public class JavaVersionsValidator implements IValidator {
     }
 
     private static final String ECLIPSE_COMPILER_COMPLIANCE = "org.eclipse.jdt.core.compiler.compliance";
-    private static final String ECLIPSE_COMPILER_SOURCE = "org.eclipse.jdt.core.compiler.codegen.targetPlatform";
-    private static final String ECLIPSE_COMPILER_TARGET = "org.eclipse.jdt.core.compiler.source";
+    private static final String ECLIPSE_COMPILER_SOURCE = "org.eclipse.jdt.core.compiler.source";
+    private static final String ECLIPSE_COMPILER_TARGET = "org.eclipse.jdt.core.compiler.codegen.targetPlatform";
 
     private static final String BND_COMPILER_SOURCE = "javac.source";
     private static final String BND_COMPILER_TARGET = "javac.target";
