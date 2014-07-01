@@ -6,13 +6,16 @@ import java.util.List;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.sourcelookup.ISourceContainer;
 import org.eclipse.debug.core.sourcelookup.ISourceContainerType;
 import org.eclipse.debug.core.sourcelookup.ISourceLookupDirector;
+import org.eclipse.debug.core.sourcelookup.containers.ArchiveSourceContainer;
 import org.eclipse.debug.core.sourcelookup.containers.CompositeSourceContainer;
 import org.eclipse.debug.core.sourcelookup.containers.DefaultSourceContainer;
 import org.eclipse.jdt.core.IJavaProject;
@@ -22,6 +25,7 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContai
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
+import bndtools.central.Central;
 import bndtools.launch.util.LaunchUtils;
 
 public class BndDependencySourceContainer extends CompositeSourceContainer {
@@ -72,6 +76,11 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                             IJavaProject targetJavaProj = JavaCore.create(targetProj);
                             result.add(new JavaProjectSourceContainer(targetJavaProj));
                         }
+                    } else if (runbundle.getType() == TYPE.REPO) {
+                        IPath bundlePath = Central.toPath(runbundle.getFile());
+                        IFile bundleFile = ResourcesPlugin.getWorkspace().getRoot().getFile(bundlePath);
+                        ArchiveSourceContainer tempArchiveCont = new ArchiveSourceContainer(bundleFile, false);
+                        result.add(tempArchiveCont);
                     }
                 }
             } catch (Exception e) {
@@ -81,5 +90,4 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
 
         return result.toArray(new ISourceContainer[result.size()]);
     }
-
 }
