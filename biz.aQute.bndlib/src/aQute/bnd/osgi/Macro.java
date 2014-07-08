@@ -7,6 +7,8 @@ import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 
+import javax.script.*;
+
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
@@ -22,12 +24,15 @@ import aQute.lib.io.*;
  * pattern. ${parameter##word} Remove largest prefix pattern.
  */
 public class Macro {
-	final static String	NULLVALUE	= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
-	Processor			domain;
-	Object				targets[];
-	boolean				flattening;
-	String				profile;
-	private boolean		nosystem;
+	final static String		NULLVALUE	= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
+	final static Pattern	NUMERIC_P	= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
+	final static Pattern	PRINTF_P	= Pattern
+												.compile("%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|%)");
+	Processor				domain;
+	Object					targets[];
+	boolean					flattening;
+	String					profile;
+	private boolean			nosystem;
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
@@ -197,7 +202,7 @@ public class Macro {
 		}
 
 		// Prevent recursion, but try to get a profiled variable
-		if (!key.startsWith("[") && !key.equals(Constants.PROFILE)) {
+		if (key != null && !key.startsWith("[") && !key.equals(Constants.PROFILE)) {
 			if (profile == null)
 				profile = domain.get(Constants.PROFILE);
 			if (profile != null) {
@@ -337,6 +342,7 @@ public class Macro {
 		return filter(args, true);
 
 	}
+
 	public String _reject(String args[]) {
 		return filter(args, true);
 
@@ -413,14 +419,26 @@ public class Macro {
 		return Processor.join(result);
 	}
 
+	static String	_sjoinHelp	= "${sjoin;<separator>;<list>...}";
+
+	public String _sjoin(String args[]) throws Exception {
+		verifyCommand(args, _sjoinHelp, null, 2, Integer.MAX_VALUE);
+
+		List<String> result = new ArrayList<String>();
+		for (int i = 2; i < args.length; i++) {
+			Processor.split(args[i], result);
+		}
+		return Processor.join(args[1], result);
+	}
+
 	static String	_ifHelp	= "${if;<condition>;<iftrue> [;<iffalse>] }";
 
 	public String _if(String args[]) {
 		verifyCommand(args, _ifHelp, null, 3, 4);
 		String condition = args[1].trim();
-		if (!condition.equalsIgnoreCase("false"))
-			if (condition.length() != 0)
-				return args[2];
+		if (!condition.equalsIgnoreCase("false") && !condition.equals("0") && !condition.equals("0.0")
+				&& condition.length() != 0)
+			return args[2];
 
 		if (args.length > 3)
 			return args[3];
@@ -498,11 +516,10 @@ public class Macro {
 			domain.warning("Invalid nr of arguments to replace " + Arrays.asList(args));
 			return null;
 		}
-		
+
 		String middle = ", ";
-		if ( args.length > 4)
+		if (args.length > 4)
 			middle = args[4];
-		
 
 		String list[] = args[1].split("\\s*,\\s*");
 		StringBuilder sb = new StringBuilder();
@@ -902,10 +919,9 @@ public class Macro {
 		if (args.length > 2) {
 			input = args[2];
 		}
-		
-		if ( File.separatorChar == '\\')
+
+		if (File.separatorChar == '\\')
 			command = "cmd /c \"" + command + "\"";
-		
 
 		Process process = Runtime.getRuntime().exec(command, null, domain.getBase());
 		if (input != null) {
@@ -1125,7 +1141,7 @@ public class Macro {
 	public final static String	_sizeHelp	= "${size;<collection>;...}, count the number of elements (of all collections combined)";
 
 	public int _size(String args[]) {
-		verifyCommand(args, _sizeHelp, null, 2, 16);
+		verifyCommand(args, _sizeHelp, null, 1, 16);
 		int size = 0;
 		for (int i = 1; i < args.length; i++) {
 			ExtList<String> l = ExtList.from(args[i]);
@@ -1198,4 +1214,670 @@ public class Macro {
 		}
 		return sb.toString();
 	}
+
+	static String	_startswith	= "${startswith;<string>;<prefix>}";
+
+	public String _startswith(String args[]) throws Exception {
+		verifyCommand(args, _startswith, null, 3, 3);
+		if (args[1].startsWith(args[2]))
+			return args[1];
+		else
+			return "";
+	}
+
+	static String	_endswith	= "${endswith;<string>;<suffix>}";
+
+	public String _endswith(String args[]) throws Exception {
+		verifyCommand(args, _endswith, null, 3, 3);
+		if (args[1].endsWith(args[2]))
+			return args[1];
+		else
+			return "";
+	}
+
+	static String	_extension	= "${extension;<string>}";
+
+	public String _extension(String args[]) throws Exception {
+		verifyCommand(args, _extension, null, 2, 2);
+		String name = args[1];
+		int n = name.indexOf('.');
+		if (n < 0)
+			return "";
+		return name.substring(n + 1);
+	}
+
+	static String	_substring	= "${substring;<string>;<start>[;<end>]}";
+
+	public String _substring(String args[]) throws Exception {
+		verifyCommand(args, _substring, null, 3, 4);
+
+		String string = args[1];
+		int start = Integer.parseInt(args[2].equals("") ? "0" : args[2]);
+		int end = string.length();
+
+		if (args.length > 3) {
+			end = Integer.parseInt(args[3]);
+			if (end < 0)
+				end = string.length() + end;
+		}
+
+		if (start < 0)
+			start = string.length() + start;
+		
+		if ( start > end ) {
+			int t = start;
+			start = end;
+			end = t;
+		}
+
+		return string.substring(start, end);
+	}
+
+	static String	_rand	= "${rand;[<min>[;<end>]]}";
+	static Random	random	= new Random();
+
+	public long _rand(String args[]) throws Exception {
+		verifyCommand(args, _rand, null, 2, 3);
+
+		int min = 0;
+		int max = 100;
+		if (args.length > 1) {
+			max = Integer.parseInt(args[1]);
+			if (args.length > 2) {
+				min = Integer.parseInt(args[2]);
+			}
+		}
+		int diff = max - min;
+
+		double d = random.nextDouble() * diff + min;
+		return Math.round(d);
+	}
+
+	static String	_length	= "${length;<string>}";
+
+	public int _length(String args[]) throws Exception {
+		verifyCommand(args, _length, null, 1, 2);
+		if (args.length == 1)
+			return 0;
+
+		return args[1].length();
+	}
+
+	static String	_get	= "${get;<index>;<list>}";
+
+	public String _get(String args[]) throws Exception {
+		verifyCommand(args, _get, null, 3, 3);
+
+		int index = Integer.parseInt(args[1]);
+		List<String> list = toList(args, 2, 3);
+		if (index < 0)
+			index = list.size() + index;
+		return list.get(index);
+	}
+
+	static String	_sublist	= "${sublist;<start>;<end>[;<list>...]}";
+
+	public String _sublist(String args[]) throws Exception {
+		verifyCommand(args, _sublist, null, 4, Integer.MAX_VALUE);
+
+		int start = Integer.parseInt(args[1]);
+		int end = Integer.parseInt(args[2]);
+		ExtList<String> list = toList(args, 3, args.length);
+
+		if (start < 0)
+			start = list.size() + start + 1;
+
+		if (end < 0)
+			end = list.size() + end + 1;
+
+		if (start > end) {
+			int t = start;
+			start = end;
+			end = t;
+		}
+
+		return Processor.join(list.subList(start, end));
+	}
+
+	private ExtList<String> toList(String[] args, int i, int j) {
+		ExtList<String> list = new ExtList<String>();
+		for (; i < j; i++) {
+			Processor.split(args[i], list);
+		}
+		return list;
+	}
+
+	static String	_first	= "${first;<list>[;<list>...]}";
+
+	public String _first(String args[]) throws Exception {
+		verifyCommand(args, _first, null, 1, Integer.MAX_VALUE);
+
+		List<String> list = toList(args, 1, args.length);
+		if (list.isEmpty())
+			return "";
+
+		return list.get(0);
+	}
+
+	static String	_last	= "${last;<list>[;<list>...]}";
+
+	public String _last(String args[]) throws Exception {
+		verifyCommand(args, _last, null, 1, Integer.MAX_VALUE);
+
+		List<String> list = toList(args, 1, args.length);
+		if (list.isEmpty())
+			return "";
+
+		return list.get(list.size() - 1);
+	}
+
+	static String	_max	= "${max;<list>[;<list>...]}";
+
+	public String _max(String args[]) throws Exception {
+		verifyCommand(args, _max, null, 2, Integer.MAX_VALUE);
+
+		List<String> list = toList(args, 1, args.length);
+		String a = null;
+
+		for (String s : list) {
+			if (a == null || a.compareTo(s) < 0)
+				a = s;
+		}
+		if (a == null)
+			return "";
+
+		return a;
+	}
+
+	static String	_min	= "${min;<list>[;<list>...]}";
+
+	public String _min(String args[]) throws Exception {
+		verifyCommand(args, _min, null, 2, Integer.MAX_VALUE);
+
+		List<String> list = toList(args, 1, args.length);
+		String a = null;
+
+		for (String s : list) {
+			if (a == null || a.compareTo(s) > 0)
+				a = s;
+		}
+		if (a == null)
+			return "";
+
+		return a;
+	}
+
+	static String	_nmax	= "${nmax;<list>[;<list>...]}";
+
+	public String _nmax(String args[]) throws Exception {
+		verifyCommand(args, _nmax, null, 2, Integer.MAX_VALUE);
+
+		List<String> list = toList(args, 1, args.length);
+		double d = Double.NaN;
+
+		for (String s : list) {
+			double v = Double.parseDouble(s);
+			if (Double.isNaN(d) || v > d)
+				d = v;
+		}
+		return toString(d);
+	}
+
+	static String	_nmin	= "${nmin;<list>[;<list>...]}";
+
+	public String _nmin(String args[]) throws Exception {
+		verifyCommand(args, _nmin, null, 2, Integer.MAX_VALUE);
+
+		List<String> list = toList(args, 1, args.length);
+		double d = Double.NaN;
+
+		for (String s : list) {
+			double v = Double.parseDouble(s);
+			if (Double.isNaN(d) || v < d)
+				d = v;
+		}
+		return toString(d);
+	}
+
+	static String	_sum	= "${sum;<list>[;<list>...]}";
+
+	public String _sum(String args[]) throws Exception {
+		verifyCommand(args, _sum, null, 2, Integer.MAX_VALUE);
+
+		List<String> list = toList(args, 1, args.length);
+		double d = 0;
+
+		for (String s : list) {
+			double v = Double.parseDouble(s);
+			d += v;
+		}
+		return toString(d);
+	}
+
+	static String	_average	= "${average;<list>[;<list>...]}";
+
+	public String _average(String args[]) throws Exception {
+		verifyCommand(args, _sum, null, 2, Integer.MAX_VALUE);
+
+		List<String> list = toList(args, 1, args.length);
+		if (list.isEmpty())
+			throw new IllegalArgumentException("No members in list to calculate average");
+
+		double d = 0;
+
+		for (String s : list) {
+			double v = Double.parseDouble(s);
+			d += v;
+		}
+		return toString(d / list.size());
+	}
+
+	static String	_reverse	= "${reverse;<list>[;<list>...]}";
+
+	public String _reverse(String args[]) throws Exception {
+		verifyCommand(args, _reverse, null, 2, Integer.MAX_VALUE);
+
+		ExtList<String> list = toList(args, 1, args.length);
+		Collections.reverse(list);
+		return Processor.join(list);
+	}
+
+	static String	_indexof	= "${indexof;<value>;<list>[;<list>...]}";
+
+	public int _indexof(String args[]) throws Exception {
+		verifyCommand(args, _indexof, null, 3, Integer.MAX_VALUE);
+
+		String value = args[1];
+		ExtList<String> list = toList(args, 2, args.length);
+		return list.indexOf(value);
+	}
+
+	static String	_lastindexof	= "${lastindexof;<value>;<list>[;<list>...]}";
+
+	public int _lastindexof(String args[]) throws Exception {
+		verifyCommand(args, _indexof, null, 3, Integer.MAX_VALUE);
+
+		String value = args[1];
+		ExtList<String> list = toList(args, 1, args.length);
+		return list.lastIndexOf(value);
+	}
+
+	static String	_find	= "${find;<target>;<searched>}";
+
+	public int _find(String args[]) throws Exception {
+		verifyCommand(args, _find, null, 3, 3);
+
+		return args[1].indexOf(args[2]);
+	}
+
+	static String	_findlast	= "${findlast;<find>;<target>}";
+
+	public int _findlast(String args[]) throws Exception {
+		verifyCommand(args, _findlast, null, 3, 3);
+
+		return args[2].lastIndexOf(args[1]);
+	}
+
+	static String	_split	= "${split;<regex>[;<target>...]}";
+
+	public String _split(String args[]) throws Exception {
+		verifyCommand(args, _split, null, 2, Integer.MAX_VALUE);
+
+		List<String> collected = new ArrayList<String>();
+		for (int n = 2; n < args.length; n++) {
+			String value = args[n];
+			String[] split = value.split(args[1]);
+			for (String s : split)
+				if (!s.isEmpty())
+					collected.add(s);
+		}
+		return Processor.join(collected);
+	}
+
+	ScriptEngine	engine		= new ScriptEngineManager().getEngineByName("javascript");
+	ScriptContext	context		= null;
+	Bindings		bindings	= null;
+	StringWriter	stdout		= new StringWriter();
+	StringWriter	stderr		= new StringWriter();
+
+	static String	_js			= "${js [;<js expr>...]}";
+
+	public Object _js(String args[]) throws Exception {
+		verifyCommand(args, _js, null, 2, Integer.MAX_VALUE);
+
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 1; i < args.length; i++)
+			sb.append(args[i]).append(';');
+
+		if (context == null) {
+			context = engine.getContext();
+			bindings = context.getBindings(ScriptContext.ENGINE_SCOPE);
+			bindings.put("domain", domain);
+			String javascript = domain.mergeProperties("javascript", ";");
+			if (javascript != null && javascript.length() > 0) {
+				engine.eval(javascript, context);
+			}
+			context.setErrorWriter(stderr);
+			context.setWriter(stdout);
+		}
+		Object eval = engine.eval(sb.toString(), context);
+		StringBuffer buffer = stdout.getBuffer();
+		if (buffer.length() > 0) {
+			domain.error("Executing js: %s: %s", sb, buffer);
+			buffer.setLength(0);
+		}
+
+		if (eval != null) {
+			return toString(eval);
+		}
+
+		String out = stdout.toString();
+		stdout.getBuffer().setLength(0);
+		return out;
+	}
+
+	private String toString(Object eval) {
+		if (eval == null)
+			return "null";
+
+		if (eval instanceof Double || eval instanceof Float) {
+			String v = eval.toString();
+			if (v.endsWith(".0"))
+				return v.substring(0, v.length() - 2);
+		}
+		return eval.toString();
+
+	}
+
+	static String	_toupper	= "${toupper;<target>}";
+
+	public String _toupper(String args[]) throws Exception {
+		verifyCommand(args, _tolower, null, 2, 2);
+
+		return args[1].toUpperCase();
+	}
+
+	static String	_tolower	= "${tolower;<target>}";
+
+	public String _tolower(String args[]) throws Exception {
+		verifyCommand(args, _tolower, null, 2, 2);
+
+		return args[1].toLowerCase();
+	}
+
+	static String	_compare	= "${compare;<astring>;<bstring>}";
+
+	public int _compare(String args[]) throws Exception {
+		verifyCommand(args, _compare, null, 3, 3);
+		int n = args[1].compareTo(args[2]);
+		if (n == 0)
+			return 0;
+
+		return n > 0 ? 1 : -1;
+	}
+
+	static String	_ncompare	= "${ncompare;<anumber>;<bnumber>}";
+
+	public int _ncompare(String args[]) throws Exception {
+		verifyCommand(args, _ncompare, null, 3, 3);
+		double a = Double.parseDouble(args[1]);
+		double b = Double.parseDouble(args[2]);
+		if (a > b)
+			return 1;
+		if (a < b)
+			return -1;
+		return 0;
+	}
+
+	static String	_matches	= "${matches;<target>;<regex>}";
+
+	public boolean _matches(String args[]) throws Exception {
+		verifyCommand(args, _matches, null, 3, 3);
+
+		return args[1].matches(args[2]);
+	}
+
+	static String	_subst	= "${subst;<target>;<regex>;<replace>[;count]}";
+
+	public StringBuffer _subst(String args[]) throws Exception {
+		verifyCommand(args, _subst, null, 4, 5);
+
+		Pattern p = Pattern.compile(args[2]);
+		Matcher matcher = p.matcher(args[1]);
+		String replace = args[3];
+		int count = Integer.MAX_VALUE;
+
+		if (args.length > 4) {
+			count = Integer.parseInt(args[4]);
+		}
+
+		StringBuffer sb = new StringBuffer();
+
+		for (int i = 0; i < count; i++) {
+			if (matcher.find()) {
+				matcher.appendReplacement(sb, replace);
+			} else
+				break;
+		}
+		matcher.appendTail(sb);
+		return sb;
+	}
+
+	static String	_trim	= "${trim;<target>}";
+
+	public String _trim(String args[]) throws Exception {
+		verifyCommand(args, _trim, null, 2, 2);
+
+		return args[1].trim();
+	}
+
+	static String	_format	= "${format;<format>[;args...]}";
+
+	public String _format(String args[]) throws Exception {
+		verifyCommand(args, _format, null, 2, Integer.MAX_VALUE);
+
+		Object[] args2 = new Object[args.length + 10];
+		
+		Matcher m = PRINTF_P.matcher(args[1]);
+		int n = 2;
+		while ( n < args.length && m.find()) {
+			char conversion = m.group(5).charAt(0);
+			switch(conversion) {
+				// d|f|c|s|h|n|x|X|u|o|z|Z|e|E|g|G|p|\n|%)");
+				case 'd':
+				case 'u':
+				case 'o':
+				case 'x':
+				case 'X':
+				case 'z':
+				case 'Z':
+					args2[n-2] = Long.parseLong(args[n]);
+					n++;
+					break;
+					
+				case 'f':
+				case 'e':
+				case 'E':
+				case 'g':
+				case 'G':
+				case 'a':
+				case 'A':
+					args2[n-2] = Double.parseDouble(args[n]);
+					n++;
+					break;
+
+				case 'c':
+					if ( args[n].length() != 1)
+						throw new IllegalArgumentException("Character expected but found '"+args[n]+"'");
+					args2[n-2] = args[n].charAt(0);
+					n++;
+					break;
+					
+				case 'b':
+					String v = args[n].toLowerCase();
+					if ( v == null || v.equals("false") || v.isEmpty() || (NUMERIC_P.matcher(v).matches() && Double.parseDouble(v)==0.0D))
+						args2[n-2] = false;
+					else
+						args2[n-2] = false;
+					n++;
+					break;
+					
+				case 's':
+				case 'h':
+				case 'H':
+				case 'p':
+					args2[n-2] = args[n];
+					n++;
+					break;
+
+				case 't':
+				case 'T':
+					String dt = args[n];
+					
+					if ( NUMERIC_P.matcher(dt).matches()) {
+						args2[n-2]= Long.parseLong(dt);
+					} else {
+						DateFormat df;
+						switch(args[n].length()) {
+							case 6:
+								df = new SimpleDateFormat("yyMMdd");
+								break;
+								
+							case 8:
+								df = new SimpleDateFormat("yyyyMMdd");
+								break;
+								
+							case 12:
+								df = new SimpleDateFormat("yyyyMMddHHmm");
+								break;
+								
+							case 14:
+								df = new SimpleDateFormat("yyyyMMddHHmmss");
+								break;
+							case 19:
+								df = new SimpleDateFormat("yyyyMMddHHmmss.SSSZ");
+								break;
+								
+							default:
+								throw new IllegalArgumentException("Unknown dateformat " + args[n]);
+						}
+						args2[n-2] = df.parse(args[n]);
+					}	
+					break;
+					
+				case 'n':
+				case '%':
+					break;
+			}
+		}
+
+		Formatter f = new Formatter();
+		try {
+			f.format(args[1], args2);
+			return f.toString();
+		}
+		finally {
+			f.close();
+		}
+	}
+
+
+	static String	_isempty	= "${isempty;[<target>...]}";
+
+	public boolean _isempty(String args[]) throws Exception {
+		verifyCommand(args, _isempty, null, 1, Integer.MAX_VALUE);
+
+		for (int i = 1; i < args.length; i++)
+			if (!args[i].trim().isEmpty())
+				return false;
+
+		return true;
+	}
+
+	static String	_isnumber	= "${isnumber[;<target>...]}";
+
+	public boolean _isnumber(String args[]) throws Exception {
+		verifyCommand(args, _isnumber, null, 2, Integer.MAX_VALUE);
+
+		for (int i = 1; i < args.length; i++)
+			if (!NUMERIC_P.matcher(args[i]).matches())
+				return false;
+
+		return true;
+	}
+
+	static String	_is	= "${is;<a>;<b>}";
+
+	public boolean _is(String args[]) throws Exception {
+		verifyCommand(args, _is, null, 3, Integer.MAX_VALUE);
+		String a = args[1];
+
+		for (int i = 2; i < args.length; i++)
+			if (!a.equals(args[i]))
+				return false;
+
+		return true;
+	}
+
+	/**
+	 * Map a value from a list to a new value
+	 */
+	
+	static String	_map	= "${map;<macro>[;<list>...]}";
+	public String _map(String args[]) throws Exception {
+		verifyCommand(args, _map, null, 2, Integer.MAX_VALUE);
+		String macro = args[1];
+		List<String> list = toList(args,2, args.length);
+		List<String> result = new ArrayList<String>();
+		
+		for ( String s : list) {
+			String invoc = process("${" + macro +";" + s +"}");
+			result.add(invoc);
+		}
+
+		return Processor.join(result);
+	}
+
+	/**
+	 * Map a value from a list to a new value, providing the value and the index
+	 */
+	
+	static String	_foreach	= "${foreach;<macro>[;<list>...]}";
+	public String _foreach(String args[]) throws Exception {
+		verifyCommand(args, _foreach, null, 2, Integer.MAX_VALUE);
+		String macro = args[1];
+		List<String> list = toList(args,2, args.length);
+		List<String> result = new ArrayList<String>();
+		
+		int n = 0;
+		for ( String s : list) {
+			String invoc = process("${" + macro +";" + s +";" + n++ +"}");
+			result.add(invoc);
+		}
+
+		return Processor.join(result);
+	}
+
+	/**
+	 * Take a list and convert this to the argumets
+	 */
+	
+	static String	_apply	= "${apply;<macro>[;<list>...]}";
+	public String _apply(String args[]) throws Exception {
+		verifyCommand(args, _apply, null, 2, Integer.MAX_VALUE);
+		String macro = args[1];
+		List<String> list = toList(args,2, args.length);
+		List<String> result = new ArrayList<String>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("${").append(macro);
+		for ( String s : list) {
+			sb.append(";").append(s);
+		}		
+		sb.append("}");
+
+		return process(sb.toString());
+	}
+
 }

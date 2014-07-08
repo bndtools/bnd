@@ -4,7 +4,6 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
-import aQute.bnd.build.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 
@@ -44,17 +43,6 @@ public class MakeBnd implements MakePlugin, Constants {
 				}
 			}
 			builder.getInfo(bchild, bndfile.getName() + ": ");
-			String debug = bchild.getProperty(DEBUG);
-			if (Processor.isTrue(debug)) {
-				if (builder instanceof ProjectBuilder) {
-					ProjectBuilder pb = (ProjectBuilder) builder;
-					File target = pb.getProject().getTarget();
-					String bsn = bchild.getBsn();
-					File output = new File(target, bsn + ".jar");
-					jar.write(output);
-					pb.getProject().getWorkspace().changedFile(output);
-				}
-			}
 			return new JarResource(jar);
 		}
 		return null;

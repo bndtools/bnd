@@ -36,7 +36,7 @@ public class BndEditModel {
 			Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE,
 			aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, aQute.bnd.osgi.Constants.SOURCES,
 			aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.CLASSPATH,
-			aQute.bnd.osgi.Constants.BUILDPATH, aQute.bnd.osgi.Constants.BUILDPACKAGES,
+			aQute.bnd.osgi.Constants.BUILDPATH,
 			aQute.bnd.osgi.Constants.RUNBUNDLES, aQute.bnd.osgi.Constants.RUNPROPERTIES,
 			aQute.bnd.osgi.Constants.SUB,
 			aQute.bnd.osgi.Constants.RUNFRAMEWORK,
@@ -645,10 +645,12 @@ public class BndEditModel {
 		doSetObject(aQute.bnd.osgi.Constants.BUILDPATH, oldValue, paths, headerClauseListFormatter);
 	}
 
+	@Deprecated
 	public List<VersionedClause> getBuildPackages() {
 		return doGetObject(aQute.bnd.osgi.Constants.BUILDPACKAGES, buildPackagesConverter);
 	}
 
+	@Deprecated
 	public void setBuildPackages(List< ? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPackages();
 		doSetObject(aQute.bnd.osgi.Constants.BUILDPACKAGES, oldValue, paths, headerClauseListFormatter);

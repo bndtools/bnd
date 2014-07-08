@@ -96,7 +96,7 @@ public class Builder extends Analyzer {
 			}
 		}
 
-		if (getProperty(NOMANIFEST) == null) {
+		if ( !isTrue(getProperty(NOMANIFEST))) {
 			dot.setManifest(manifest);
 			String manifestName = getProperty(MANIFEST_NAME);
 			if (manifestName != null)

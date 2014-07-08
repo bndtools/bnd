@@ -273,7 +273,7 @@ public class Analyzer extends Processor {
 			//
 			// Add the uses clause to the exports
 
-			boolean api = isTrue(getProperty(EXPERIMENTS)) || true; // brave,
+			boolean api = true; // brave,
 																	// lets see
 
 			doUses(exports, api ? apiUses : uses, imports);
@@ -1810,7 +1810,7 @@ public class Analyzer extends Processor {
 	 * @throws MojoExecutionException
 	 */
 	void doUses(Packages exports, Map<PackageRef,List<PackageRef>> uses, Packages imports) {
-		if ("true".equalsIgnoreCase(getProperty(NOUSES)))
+		if (isTrue(getProperty(NOUSES)))
 			return;
 
 		for (Iterator<PackageRef> i = exports.keySet().iterator(); i.hasNext();) {

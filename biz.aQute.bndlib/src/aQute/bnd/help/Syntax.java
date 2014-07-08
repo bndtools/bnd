@@ -461,7 +461,7 @@ public class Syntax implements Constants {
 					+ ", that are started before the project is run.", RUNBUNDLES
 					+ "=osgi;version=\"[4.1,4.2)\", junit.junit, com.acme.foo;version=project", null,
 					Verifier.SYMBOLICNAME, path_version),
-			new Syntax(RUNPATH, "Additional JARs for the VM path, should include the framework.", RUNPATH
+			new Syntax(RUNPATH, "Additional JARs for the VM path, can include a framework", RUNPATH
 					+ "=org.eclipse.osgi;version=3.5", null, null, path_version),
 			new Syntax(
 					RUNVM,
