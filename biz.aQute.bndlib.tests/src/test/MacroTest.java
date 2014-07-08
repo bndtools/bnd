@@ -10,6 +10,196 @@ import aQute.bnd.osgi.*;
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
 	
+	
+	
+	/**
+	 * List functions
+	 */
+	public void testMacroLists() throws Exception {
+		Processor processor = new Processor();
+		
+		
+		assertEquals("true", processor.getReplacer().process("${apply;isnumber;1,2,3,4}"));
+		assertEquals("10", processor.getReplacer().process("${apply;sum;1,2,3,4}"));
+		assertEquals("false", processor.getReplacer().process("${apply;isnumber;1,2,3,a,4}"));
+		
+		
+		
+		processor.setProperty("double", "${1}${1}");
+		processor.setProperty("mulbyindex", "${js;${1}*${2}}");
+		assertEquals("A,B,C,D,E,F", processor.getReplacer().process("${map;toupper;a, b, c, d, e, f}"));
+		assertEquals("aa,bb,cc,dd,ee,ff", processor.getReplacer().process("${map;double;a, b, c, d, e, f}"));
+		assertEquals( "0,2,6,12,20,30,42,56,72,90", processor.getReplacer().process("${foreach;mulbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+
+		assertEquals("6", processor.getReplacer().process("${size;a, b, c, d, e, f}"));
+		assertEquals("0", processor.getReplacer().process("${size;}"));
+
+		assertEquals("d", processor.getReplacer().process("${get;3;a, b, c, d, e, f}"));
+		assertEquals("d", processor.getReplacer().process("${get;-3;a, b, c, d, e, f}"));
+		assertEquals("f", processor.getReplacer().process("${get;-1;a, b, c, d, e, f}"));
+		
+		assertEquals("b,c", processor.getReplacer().process("${sublist;1;3;a, b, c, d, e, f}"));
+		assertEquals("e,f", processor.getReplacer().process("${sublist;-1;-3;a, b, c, d, e, f}"));
+
+		assertEquals("a", processor.getReplacer().process("${first;a, b, c, d, e, f}"));
+		assertEquals("", processor.getReplacer().process("${first;}"));
+		assertEquals("f", processor.getReplacer().process("${last;a, b, c, d, e, f}"));
+		assertEquals("", processor.getReplacer().process("${last;}"));
+		
+		assertEquals( "5", processor.getReplacer().process("${indexof;6;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals( "-1", processor.getReplacer().process("${indexof;60;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		
+		assertEquals( "9", processor.getReplacer().process("${lastindexof;7;1, 2, 3, 4, 5, 6, 7, 7, 7, 10}"));
+		
+		assertEquals( "10,9,8,7,6,5,4,3,2,1", processor.getReplacer().process("${reverse;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		
+		assertEquals( "55", processor.getReplacer().process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals( "55", processor.getReplacer().process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		
+		assertEquals( "5.5", processor.getReplacer().process("${average;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		
+		assertEquals( "-16", processor.getReplacer().process("${nmin;2, 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+		assertEquals( "-16", processor.getReplacer().process("${nmin;2; 0; -13; 40 ; 55 ; -16; 700; -8; 9; 10}"));
+		
+		assertEquals( "700", processor.getReplacer().process("${nmax;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+		assertEquals( "700", processor.getReplacer().process("${nmax;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
+
+		assertEquals( "-13", processor.getReplacer().process("${min;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
+		assertEquals( "9", processor.getReplacer().process("${max;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+	}	
+	
+	
+	/**
+	 * String functions
+	 */
+	
+	public void testMacroStrings() throws Exception {
+		Processor processor = new Processor();		
+		processor.setProperty("empty", "");
+
+		assertEquals("6", processor.getReplacer().process("${length;abcdef}"));
+		
+		assertEquals("true", processor.getReplacer().process("${is;1.3;1.3;1.3}"));
+		assertEquals("false", processor.getReplacer().process("${is;abc;1.3}"));
+		
+		assertEquals("true", processor.getReplacer().process("${isnumber;1.3}"));
+		assertEquals("false", processor.getReplacer().process("${isnumber;abc}"));
+		
+		
+		assertEquals("true", processor.getReplacer().process("${isempty;${empty}}"));
+		assertEquals("true", processor.getReplacer().process("${isempty;${empty};${empty};${empty};${empty};}"));
+		assertEquals("false", processor.getReplacer().process("${isempty;abc}"));
+		
+		assertEquals("\n000010", processor.getReplacer().process("${format;%n%06d;10}"));
+		assertEquals("000010", processor.getReplacer().process("${format;%1$06d;10}"));
+		assertEquals("2e C8 300 620", processor.getReplacer().process("${format;%x %X %d %o;46;200;300;400;500}"));
+		assertEquals("+00010", processor.getReplacer().process("${format;%+06d;10}"));
+		assertEquals("100,000", processor.getReplacer().process("${format;%,6d;100000}"));
+
+		assertEquals("xyz", processor.getReplacer().process("${trim; \txyz\t  }"));
+		
+		assertEquals("DEFbDEFcdDEFef", processor.getReplacer().process("${subst;abacdaef;a;DEF}"));
+		assertEquals("DEFbacdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;1}"));
+		assertEquals("DEFbDEFcdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;2}"));
+		assertEquals("DEFbDEFcdDEFef", processor.getReplacer().process("${subst;abacdaef;a;DEF;3}"));
+		assertEquals("DEFbDEFcdDEFef", processor.getReplacer().process("${subst;abacdaef;a;DEF;300}"));
+
+		assertEquals("true", processor.getReplacer().process("${matches;aaaabcdef;[a]+bcdef}"));
+		assertEquals("false", processor.getReplacer().process("${matches;bcdef;[a]+bcdef}"));
+		
+		assertEquals("-1", processor.getReplacer().process("${ncompare;2;200}"));
+		assertEquals("1", processor.getReplacer().process("${ncompare;200;1}"));
+		assertEquals("0", processor.getReplacer().process("${ncompare;200;200}"));
+		
+		assertEquals("-1", processor.getReplacer().process("${compare;abc;def}"));
+		assertEquals("1", processor.getReplacer().process("${compare;def;abc}"));
+		assertEquals("0", processor.getReplacer().process("${compare;abc;abc}"));
+		
+		
+		
+		assertEquals("ABCDEF", processor.getReplacer().process("${toupper;abcdef}"));
+		assertEquals("abcdef", processor.getReplacer().process("${tolower;ABCDEF}"));
+
+		assertEquals("ab,efab,ef", processor.getReplacer().process("${split;cd;abcdefabcdef}"));
+		assertEquals("ab,d,fab,d,f", processor.getReplacer().process("${split;[ce];abcdefabcdef}"));
+		
+		assertEquals("3", processor.getReplacer().process("${find;abcdef;def}"));
+		assertEquals("-1", processor.getReplacer().process("${find;abc;defxyz}"));
+		assertEquals("9", processor.getReplacer().process("${findlast;def;abcdefabcdef}"));
+
+		assertEquals("abcdef", processor.getReplacer().process("${startswith;abcdef;abc}"));
+		assertEquals("", processor.getReplacer().process("${startswith;abcdef;xyz}"));
+		
+		assertEquals("abcdef", processor.getReplacer().process("${endswith;abcdef;def}"));
+		assertEquals("", processor.getReplacer().process("${endswith;abcdef;xyz}"));
+		
+		assertEquals("abcdef", processor.getReplacer().process("${endswith;abcdef;def}"));
+		assertEquals("", processor.getReplacer().process("${endswith;abcdef;xyz}"));
+		
+		assertEquals("def", processor.getReplacer().process("${extension;abcdef.def}"));
+		assertEquals("", processor.getReplacer().process("${extension;abcdefxyz}"));
+		
+		assertEquals("abc", processor.getReplacer().process("${substring;abcdef;0;3}"));
+		assertEquals("abc", processor.getReplacer().process("${substring;abcdef;;3}"));
+		assertEquals("def", processor.getReplacer().process("${substring;abcdef;-3}"));
+		assertEquals("de", processor.getReplacer().process("${substring;abcdef;-3;-1}"));
+		assertEquals("def", processor.getReplacer().process("${substring;abcdef;3}"));
+
+		
+		assertEquals("6", processor.getReplacer().process("${length;abcdef}"));
+		assertEquals("0", processor.getReplacer().process("${length;}"));
+		
+	}
+	
+
+	/**
+	 * Test rand
+	 */
+	
+	public void testRan() {
+		Processor processor = new Processor();
+		for ( int i=0; i<1000; i++) {
+			int value = Integer.parseInt(processor.getReplacer().process("${rand;-10;10}"));
+			assertTrue( value >= -10 && value <= 10);
+		}
+	}
+	
+	
+	/**
+	 * Test Javascript stuff
+	 */
+	
+	public void testJSSimple() {
+		Processor processor = new Processor();
+		processor.setProperty("alpha", "25");
+		assertEquals("3",processor.getReplacer().process("${js;1+2;}"));
+		assertEquals("25",processor.getReplacer().process("${js;domain.get('alpha');}"));
+		assertEquals("5",processor.getReplacer().process("${js;domain.get('alpha')/5;}"));
+		
+	}
+
+	/**
+	 * Check if we can initialize
+	 */
+	public void testJSINit() {
+		Processor processor = new Processor();
+		processor.setProperty("javascript", "function top() { return 13; }");
+		assertEquals("16",processor.getReplacer().process("${js;1+2+top()}"));
+	}
+	
+	
+	/**
+	 * See if the initcode is concatenated correctly
+	 */
+	public void testJSINit2() {
+		Processor processor = new Processor();
+		processor.setProperty("javascript", "function top() { return 1; }");
+		processor.setProperty("javascript.1", "function top() { return 2; }");
+		processor.setProperty("javascript.2", "function top() { return 3; }");
+		assertEquals("3",processor.getReplacer().process("${js;top()}"));
+	}
+	
+	
 	/**
 	 * Test control characters
 	 */
@@ -768,6 +958,10 @@ public class MacroTest extends TestCase {
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa,bb,cc,dd,ee,ff}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa,bb,cc;dd,ee,ff}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa;bb;cc;dd;ee,ff}"));
+		
+		assertEquals("aaXbbXccXddXeeXff", m.process("${sjoin;X;aa,bb,cc,dd,ee,ff}"));
+		assertEquals("aa\nbb\ncc\ndd\nee\nff", m.process("${sjoin;\n;aa,bb,cc;dd,ee,ff}"));
+		assertEquals("aa\nbb\ncc\ndd\nee\nff", m.process("${unescape;${sjoin;\\n;aa,bb,cc;dd,ee,ff}}"));
 	}
 
 	public static void testIf() {
