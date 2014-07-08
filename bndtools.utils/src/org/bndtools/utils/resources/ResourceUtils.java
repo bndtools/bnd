@@ -1,5 +1,7 @@
 package org.bndtools.utils.resources;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -76,8 +78,20 @@ public final class ResourceUtils {
             if (uriObj instanceof URL)
                 return ((URL) uriObj).toURI();
 
-            if (uriObj instanceof String)
+            if (uriObj instanceof String) {
+                try {
+                    URL url = new URL((String) uriObj);
+                    return url.toURI();
+                } catch (MalformedURLException mfue) {
+                    // Ignore
+                }
+
+                File f = new File((String) uriObj);
+                if (f.isFile()) {
+                    return f.toURI();
+                }
                 return new URI((String) uriObj);
+            }
 
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Resource content capability has illegal URL attribute", e);
