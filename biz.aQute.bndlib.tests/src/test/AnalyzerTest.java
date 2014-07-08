@@ -405,13 +405,12 @@ public class AnalyzerTest extends BndTestCase {
 		p.put("Import-Package", "!org.osgi.service.component, *");
 		p.put("Private-Package", "test.activator");
 		p.put("Bundle-Activator", "test.activator.Activator");
-		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
+		a.addClasspath(new File("bin"));
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
 		
-		assertEquals(0, a.getErrors().size());
-		assertEquals(0, a.getWarnings().size());
+		assertTrue(a.check());
 		
 		String imports = manifest.getMainAttributes().getValue("Import-Package");
 		System.err.println(imports);
@@ -477,7 +476,7 @@ public class AnalyzerTest extends BndTestCase {
 		Properties p = new Properties();
 		p.put("Private-Package", "test.activator");
 		p.put("Bundle-Activator", "test.activator.AbstractActivator");
-		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
+		a.addClasspath(new File("bin"));
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
@@ -497,7 +496,7 @@ public class AnalyzerTest extends BndTestCase {
 		Properties p = new Properties();
 		p.put("Private-Package", "test.activator");
 		p.put("Bundle-Activator", "test.activator.IActivator");
-		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
+		a.addClasspath(new File("bin"));
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
@@ -517,7 +516,7 @@ public class AnalyzerTest extends BndTestCase {
 		Properties p = new Properties();
 		p.put("Private-Package", "test.activator");
 		p.put("Bundle-Activator", "test.activator.MissingNoArgsConstructorActivator");
-		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
+		a.addClasspath(new File("bin"));
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
@@ -537,7 +536,7 @@ public class AnalyzerTest extends BndTestCase {
 		Properties p = new Properties();
 		p.put("Private-Package", "test.activator");
 		p.put("Bundle-Activator", "test.activator.DefaultVisibilityActivator");
-		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
+		a.addClasspath(new File("bin"));
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
@@ -557,7 +556,7 @@ public class AnalyzerTest extends BndTestCase {
 		Properties p = new Properties();
 		p.put("Private-Package", "test.activator");
 		p.put("Bundle-Activator", "test.activator.NotAnActivator");
-		a.setClasspath(new File[] {new File(AnalyzerTest.class.getClassLoader().getResource("").toURI())});
+		a.addClasspath(new File("bin"));
 		a.setProperties(p);
 		a.build();
 		Manifest manifest = a.getJar().getManifest();
