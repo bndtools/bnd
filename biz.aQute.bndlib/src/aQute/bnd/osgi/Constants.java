@@ -56,12 +56,6 @@ public interface Constants {
 	String							TOOL										= "Tool";
 	String							TESTCASES									= "Test-Cases";
 	String							REPOSITORIES								= "Repositories";
-	/**
-	 * @deprecated Use {@link Constants#TESTCASES}.
-	 */
-	@Deprecated
-	String							TESTSUITES									= "Test-Suites";
-	String							SIGNATURE_TEST								= "-signaturetest";
 
 	String							headers[]									= {
 			BUNDLE_ACTIVATOR, BUNDLE_CONTACTADDRESS, BUNDLE_COPYRIGHT, BUNDLE_DESCRIPTION, BUNDLE_DOCURL,
@@ -69,17 +63,19 @@ public interface Constants {
 			SERVICE_COMPONENT, EXPORT_PACKAGE, IMPORT_PACKAGE, BUNDLE_LOCALIZATION, BUNDLE_MANIFESTVERSION,
 			BUNDLE_NAME, BUNDLE_NATIVECODE, BUNDLE_REQUIREDEXECUTIONENVIRONMENT, BUNDLE_SYMBOLICNAME, BUNDLE_VERSION,
 			FRAGMENT_HOST, PRIVATE_PACKAGE, IGNORE_PACKAGE, INCLUDE_RESOURCE, REQUIRE_BUNDLE, IMPORT_SERVICE,
-			EXPORT_SERVICE, CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES, SIGNATURE_TEST, REQUIRE_CAPABILITY,
-			PROVIDE_CAPABILITY, BUNDLE_ICON, REPOSITORIES, META_PERSISTENCE, BUNDLE_DEVELOPERS, BUNDLE_CONTRIBUTORS
+			EXPORT_SERVICE, CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY,
+			BUNDLE_ICON, REPOSITORIES, META_PERSISTENCE, BUNDLE_DEVELOPERS, BUNDLE_CONTRIBUTORS
 																				};
 
 	String							BASELINE									= "-baseline";
 	String							BASELINEREPO								= "-baselinerepo";
 	String							BUILDPATH									= "-buildpath";
+	@Deprecated
 	String							BUILDPACKAGES								= "-buildpackages";
 	String							BUMPPOLICY									= "-bumppolicy";
 	String							CONDUIT										= "-conduit";
 	String							CONTRACT									= "-contract";
+	@Deprecated
 	String							CACHEDIR									= "-cachedir";
 	String							CONDITIONALPACKAGE							= "-conditionalpackage";
 	String							DIFFIGNORE									= "-diffignore";
@@ -89,7 +85,9 @@ public interface Constants {
 	String							DIGESTS										= "-digests";
 	String							DSANNOTATIONS								= "-dsannotations";
 	String							DONOTCOPY									= "-donotcopy";
+	@Deprecated
 	String							DEBUG										= "-debug";
+	@Deprecated
 	String							EXPERIMENTS									= "-experiments";
 	String							EXPORT_CONTENTS								= "-exportcontents";
 	String							EXTENSION									= "-extension";
@@ -152,13 +150,10 @@ public interface Constants {
 	String							RUNREQUIRE									= "-runrequire";
 
 	String							RUNREQUIRES									= "-runrequires";
-	String							RESOLVE										= "-resolve";
 	String							RUNEE										= "-runee";
 	String							RUNPATH										= "-runpath";
 	String							RUNSTORAGE									= "-runstorage";
 	String							RUNBUILDS									= "-runbuilds";
-	String							RUNPATH_MAIN_DIRECTIVE						= "main:";
-	String							RUNPATH_LAUNCHER_DIRECTIVE					= "launcher:";
 	String							RUNVM										= "-runvm";
 	String							RUNPROGRAMARGS								= "-runprogramargs";
 	String							RUNTRACE									= "-runtrace";
@@ -174,14 +169,12 @@ public interface Constants {
 	String							REPORTNEWER									= "-reportnewer";
 	String							SIGN										= "-sign";
 	String							TESTPACKAGES								= "-testpackages";
-	String							TESTREPORT									= "-testreport";
 	String							TESTPATH									= "-testpath";
 	String							TESTCONTINUOUS								= "-testcontinuous";
 	String							TESTSOURCES									= "-testsources";
 	String							TESTUNRESOLVED								= "-testunresolved";
 	String							UNDERTEST									= "-undertest";
 	String							UPTO										= "-upto";
-	String							VERBOSE										= "-verbose";
 	String							PROVIDER_POLICY								= "-provider-policy";
 	String							CONSUMER_POLICY								= "-consumer-policy";
 	String							WAB											= "-wab";
@@ -197,12 +190,12 @@ public interface Constants {
 			EXPORT_CONTENTS, FAIL_OK, INCLUDE, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES,
 			PEDANTIC, PLUGIN, POM, PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SOURCES,
 			SOURCEPATH, SUB, RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES, RUNSYSTEMCAPABILITIES, RUNPROPERTIES, REPORTNEWER,
-			UNDERTEST, TESTPATH, TESTPACKAGES, TESTREPORT, VERBOSE, NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST,
-			RUNVM, RUNPROGRAMARGS, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION,
-			DIGESTS, DSANNOTATIONS, EXPERIMENTS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT,
-			STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS, UPTO,
-			INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK, TESTUNRESOLVED,
-			RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, RESOLVE
+			UNDERTEST, TESTPATH, TESTPACKAGES, NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM,
+			RUNPROGRAMARGS, WAB, WABLIB, RUNFRAMEWORK, RUNFW, RUNTRACE, TESTCONTINUOUS, SNAPSHOT, NAMESECTION, DIGESTS,
+			DSANNOTATIONS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT, STRICT, DIFFIGNORE,
+			CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS, UPTO, INVALIDFILENAMES,
+			FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK, TESTUNRESOLVED, RUNJDB, RUNENV, RUNEE,
+			EEPROFILE, RUNREQUIRES
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make
@@ -210,7 +203,7 @@ public interface Constants {
 	String[]						BUNDLE_SPECIFIC_HEADERS						= new String[] {
 			INCLUDE_RESOURCE, BUNDLE_ACTIVATOR, BUNDLE_CLASSPATH, BUNDLE_NAME, BUNDLE_NATIVECODE, BUNDLE_SYMBOLICNAME,
 			IMPORT_PACKAGE, EXPORT_PACKAGE, DYNAMICIMPORT_PACKAGE, FRAGMENT_HOST, REQUIRE_BUNDLE, PRIVATE_PACKAGE,
-			PRIVATEPACKAGE, EXPORT_CONTENTS, TESTCASES, NOMANIFEST, SIGNATURE_TEST, WAB, WABLIB, REQUIRE_CAPABILITY,
+			PRIVATEPACKAGE, EXPORT_CONTENTS, TESTCASES, NOMANIFEST, WAB, WABLIB, REQUIRE_CAPABILITY,
 			PROVIDE_CAPABILITY, DSANNOTATIONS, SERVICE_COMPONENT
 																				};
 
@@ -272,9 +265,8 @@ public interface Constants {
 			SPLIT_PACKAGE_DIRECTIVE, NO_IMPORT_DIRECTIVE, IMPORT_DIRECTIVE, RESOLUTION_DIRECTIVE, INCLUDE_DIRECTIVE,
 			USES_DIRECTIVE, EXCLUDE_DIRECTIVE, KEYSTORE_LOCATION_DIRECTIVE, KEYSTORE_PROVIDER_DIRECTIVE,
 			KEYSTORE_PASSWORD_DIRECTIVE, SIGN_PASSWORD_DIRECTIVE, COMMAND_DIRECTIVE, NOANNOTATIONS, LIB_DIRECTIVE,
-			RUNPATH_LAUNCHER_DIRECTIVE, FROM_DIRECTIVE, PRIVATE_DIRECTIVE, LITERAL_ATTRIBUTE, EFFECTIVE_DIRECTIVE,
-			FILTER_DIRECTIVE, FIXUPMESSAGES_RESTRICT_DIRECTIVE, FIXUPMESSAGES_REPLACE_DIRECTIVE,
-			FIXUPMESSAGES_IS_DIRECTIVE
+			FROM_DIRECTIVE, PRIVATE_DIRECTIVE, LITERAL_ATTRIBUTE, EFFECTIVE_DIRECTIVE, FILTER_DIRECTIVE,
+			FIXUPMESSAGES_RESTRICT_DIRECTIVE, FIXUPMESSAGES_REPLACE_DIRECTIVE, FIXUPMESSAGES_IS_DIRECTIVE
 
 																				// TODO
 																				};
@@ -407,4 +399,21 @@ public interface Constants {
 	 */
 	@Deprecated
 	String							COMPILER_TARGET								= "-target";
+	@Deprecated
+	// no references in bnd?
+	String							RESOLVE										= "-resolve";
+	@Deprecated
+	String							TESTSUITES									= "Test-Suites";
+	@Deprecated
+	String							TESTREPORT									= "-testreport";
+	@Deprecated
+	String							VERBOSE										= "-verbose";
+	@Deprecated
+	String							RUNPATH_MAIN_DIRECTIVE						= "main:";
+	@Deprecated
+	String							RUNPATH_LAUNCHER_DIRECTIVE					= "launcher:";
+	/**
+	 * @deprecated Use {@link Constants#TESTCASES}.
+	 */
+	String							SIGNATURE_TEST								= "-signaturetest";
 }
