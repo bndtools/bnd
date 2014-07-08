@@ -18,3 +18,6 @@ JPMCommand:					_cmd_
 -runsystempackages: javax.script
 
 -runtrace: true
+
+-runbundles: ${error;You must resolve the _pid_.bndrun file before you can run it}
+

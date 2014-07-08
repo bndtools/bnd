@@ -11,3 +11,5 @@ JPMCommand:					_cmd_
 -runrequires:  \
 	osgi.identity;filter:='(osgi.identity=_example_.provider)',\
 	osgi.identity;filter:='(osgi.identity=_example_.command)'
+
+-runbundles: ${error;You must first resolve this bndrun file before you can run it}
