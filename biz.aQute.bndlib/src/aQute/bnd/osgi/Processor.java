@@ -1080,6 +1080,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return
 	 */
 	public String getProperty(String key, String deflt) {
+		return getProperty(key,deflt, ",");
+	}
+	public String getProperty(String key, String deflt, String separator) {
 
 		String value = null;
 
@@ -1095,7 +1098,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					String v = getProperty(k, null);
 					if (v != null) {
 						sb.append(del);
-						del = ",";
+						del = separator;
 						sb.append(v);
 					}
 				}
@@ -2372,8 +2375,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 
 	public String mergeProperties(String key) {
+		return mergeProperties(key, ",");
+	}
+
+	public String mergeProperties(String key, String separator) {
 		if (since(About._2_4))
-			return getProperty(key + "|" + key + ".*");
+			return getProperty(key + "|" + key + ".*", null, separator);
 		else
 			return getProperty(key);
 
