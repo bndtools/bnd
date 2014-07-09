@@ -221,6 +221,13 @@ public class Configurable<T> {
 		}
 
 		Object convertArray(Type componentType, Object o) throws Exception {
+			if ( o instanceof String) {
+				String s = (String) o;
+				if ( componentType == Byte.class || componentType == byte.class)
+					return s.getBytes("UTF-8");
+				if ( componentType == Character.class || componentType ==char.class)
+					return s.toCharArray();
+			}
 			Collection< ? > input = toCollection(o);
 			Class< ? > componentClass = getRawClass(componentType);
 			Object array = Array.newInstance(componentClass, input.size());

@@ -20,7 +20,6 @@ import aQute.lib.json.*;
  */
 public class Settings implements Map<String,String> {
 	static JSONCodec	codec	= new JSONCodec();
-
 	private File		where;
 	private PublicKey	publicKey;
 	private PrivateKey	privateKey;
@@ -34,7 +33,8 @@ public class Settings implements Map<String,String> {
 		public Map<String,String>	map		= new HashMap<String,String>();
 	}
 
-	Data	data	= new Data();
+	Data			data	= new Data();
+	private char[]	password;
 
 	public Settings() {
 		this("~/.bnd/settings.json");
@@ -46,11 +46,36 @@ public class Settings implements Map<String,String> {
 	}
 
 	public boolean load() {
+		return load(password);
+
+	}
+
+	@SuppressWarnings("resource")
+	public boolean load(char[] password) {
+		this.password = password;
 		if (this.where.isFile() && this.where.length() > 1) {
 			try {
-				data = codec.dec().from(this.where).get(Data.class);
-				loaded = true;
-				return true;
+				InputStream in = new FileInputStream(this.where);
+				try {
+					if (password != null) {
+						PasswordCryptor cryptor = new PasswordCryptor();
+						in = cryptor.decrypt(password, in);
+					} else {
+						String secret = System.getenv().get("BND_SETTINGS_PASSWORD");
+						System.out.println("found password " + secret);
+						if (secret != null && secret.length() > 0) {
+							PasswordCryptor cryptor = new PasswordCryptor();
+							in = cryptor.decrypt(secret.toCharArray(), in);
+						}
+					}
+
+					data = codec.dec().from(in).get(Data.class);
+					loaded = true;
+					return true;
+				}
+				finally {
+					in.close();
+				}
 			}
 			catch (Exception e) {
 				throw new RuntimeException("Cannot read settings file " + this.where, e);
@@ -70,11 +95,32 @@ public class Settings implements Map<String,String> {
 	}
 
 	public void save() {
+		save(password);
+	}
+
+	@SuppressWarnings("resource")
+	public void save(char[] password) {
 		if (!this.where.getParentFile().isDirectory() && !this.where.getParentFile().mkdirs())
 			throw new RuntimeException("Cannot create directory in " + this.where.getParent());
 
 		try {
-			codec.enc().to(this.where).put(data).flush();
+			OutputStream out = new FileOutputStream(this.where);
+			try {
+				if (password != null) {
+					PasswordCryptor cryptor = new PasswordCryptor();
+					out = cryptor.encrypt(password, out);
+				} else {
+					String secret = System.getenv().get("BND-SETTINGS-PASSWORD");
+					if (secret != null) {
+						PasswordCryptor cryptor = new PasswordCryptor();
+						out = cryptor.encrypt(secret.toCharArray(), out);
+					}
+				}
+				codec.enc().to(out).put(data).flush();
+			}
+			finally {
+				out.close();
+			}
 			assert this.where.isFile();
 		}
 		catch (Exception e) {
@@ -83,6 +129,10 @@ public class Settings implements Map<String,String> {
 	}
 
 	public void generate() throws Exception {
+		generate(password);
+	}
+
+	public void generate(char[] password) throws Exception {
 		check();
 		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
 		SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
@@ -92,7 +142,7 @@ public class Settings implements Map<String,String> {
 		publicKey = pair.getPublic();
 		data.secret = privateKey.getEncoded();
 		data.id = publicKey.getEncoded();
-		save();
+		save(password);
 	}
 
 	public String getEmail() {

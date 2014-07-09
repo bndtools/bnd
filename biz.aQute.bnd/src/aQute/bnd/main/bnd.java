@@ -77,6 +77,7 @@ public class bnd extends Processor {
 	Justif						justif		= new Justif(80, 40, 42, 70);
 	BndMessages					messages	= ReporterMessages.base(this, BndMessages.class);
 	private Workspace			ws;
+	private char[]	password;
 
 	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
@@ -106,6 +107,9 @@ public class bnd extends Processor {
 
 		@Description("Error/Warning ignore patterns")
 		String[] ignore();
+
+		@Description("Provide a settings password")
+		char[] secret();
 
 	}
 
@@ -265,6 +269,11 @@ public class bnd extends Processor {
 				if (help != null) {
 					err.println(help);
 				}
+			}
+			
+			if ( options.secret() != null) {
+				password = options.secret();
+				settings.load(password);
 			}
 		}
 		catch (Throwable t) {
@@ -3018,39 +3027,48 @@ public class bnd extends Processor {
 
 		@Description("Generate a new private/public key pair")
 		boolean generate();
+		
+		@Description("Password for local file")
+		char[] password();
+		
+		
 	}
 
 	@Description("Set bnd/jpm global variables")
 	public void _settings(settingOptions opts) throws Exception {
 		try {
 			Settings settings = this.settings;
+			char[] password = this.password;
 
+			
 			if (opts.location() != null) {
+				
+				password = opts.password();
+
 				File f = getFile(opts.location());
 				settings = new Settings(f.getAbsolutePath());
+				settings.load(password);
 				trace("getting settings from %s", f);
 			}
-
-			if (opts.generate()) {
-				trace("Generating new key pair");
-				settings.generate();
-			}
-
-			trace("settings %s", opts.clear());
-			List<String> rest = opts._();
 
 			if (opts.clear()) {
 				settings.clear();
 				trace("clear %s", settings.entrySet());
 			}
+			
+			if (opts.generate()) {
+				trace("Generating new key pair");
+				settings.generate(password);
+			}
+
+			trace("settings %s", opts.clear());
+			List<String> rest = opts._();
 
 			if (opts.publicKey()) {
 				out.println(tos(!opts.base64(), settings.getPublicKey()));
-				return;
 			}
 			if (opts.secretKey()) {
 				out.println(tos(!opts.base64(), settings.getPrivateKey()));
-				return;
 			}
 
 			if (opts.mac()) {
@@ -3059,9 +3077,8 @@ public class bnd extends Processor {
 					byte[] signature = settings.sign(data);
 					out.printf("%s\n", tos(!opts.base64(), signature));
 				}
-				return;
 			}
-
+			
 			if (rest.isEmpty()) {
 				list(null, settings);
 			} else {
@@ -3103,7 +3120,7 @@ public class bnd extends Processor {
 				}
 				if (set) {
 					trace("saving");
-					settings.save();
+					settings.save(password);
 				}
 			}
 		}
@@ -3121,72 +3138,6 @@ public class bnd extends Processor {
 	 * @throws Exception
 	 */
 
-	@Description("Handle the private key for bnd on this machine. If an argument is given, then set this as the "
-			+ "private key of this machine in the ~/.bnd/settings directory. Otherwise generate a new key "
-			+ "pair and show it. This command can be used to let a build server use a particular key.")
-	@Arguments(arg = {})
-	interface PrivateOptions extends Options {
-		@Description("Provide a location for the settings file. This is default ./.bnd/settings.json")
-		String location();
-
-		@Description("Public key")
-		String publicKey();
-
-		@Description("Secret private key")
-		String secretKey();
-
-		@Description("Email address")
-		String email();
-	}
-
-	public void _identity(PrivateOptions options) throws Exception {
-		List<String> args = options._();
-
-		Settings settings = this.settings;
-		boolean hasFile = false;
-
-		File f = null;
-		if (options.location() != null) {
-			f = getFile(options.location());
-			settings = new Settings(f.getAbsolutePath());
-			trace("uses " + f);
-		}
-
-		String pub = options.publicKey();
-		String secret = options.secretKey();
-		String email = options.email();
-
-		if (pub == null && secret == null && email == null) {
-			out.printf("--publicKey %s --secretKey %s --email %s%n", Hex.toHexString(settings.getPublicKey()),
-					Hex.toHexString(settings.getPrivateKey()), settings.getEmail());
-			return;
-		}
-
-		if (secret == null) {
-			error("You must set the  secret key with -s/--secretKey ");
-		} else if (!Hex.isHex(secret)) {
-			error("Not a hex string for the secret key " + secret);
-		}
-
-		if (pub == null) {
-			error("You must set the public key with -p/--publicKey ");
-		} else if (!Hex.isHex(pub)) {
-			error("Not a hex string for the public key " + pub);
-		}
-
-		if (!EMAIL_P.matcher(email).matches()) {
-			error("Invalid email address: %s", email);
-		}
-
-		if (!isOk())
-			return;
-
-		settings.setEmail(email);
-
-		settings.setKeyPair(Hex.toByteArray(pub), Hex.toByteArray(secret));
-
-		settings.save();
-	}
 
 	private String tos(boolean hex, byte[] data) {
 		return data.length + " : " + (hex ? Hex.toHexString(data) : Base64.encodeBase64(data));
