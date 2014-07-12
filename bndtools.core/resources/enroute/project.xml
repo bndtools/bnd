@@ -10,26 +10,26 @@
 		the chosen project template.
 	</p>
 	<li>
-		<em>*.example</em>
+		*.example
 		— Create an example project with some stub code that demonstrates
 		the key features of OSGi enRoute, like multiple bundles in one project,
 		executable jars,
 		debug configurations, etc. Choose this to play with bndtools/enRoute.
 	</li>
 	<li>
-		<em>*.api</em>
+		*.api
 		— Create an API project. Use this when you have a service API that
 		should be shared
 		with others, i.e. it must be releasable as a separate bundle.
 	</li>
 	<li>
-		<em>*.provider | .adapter</em>
+		*.provider | .adapter
 		— Create a provider project. Use this when you create an
 		implementation
 		of a service specification.
 	</li>
 	<li>
-		<em>*.test</em>
+		*.test
 		— Create an OSGi JUnit test project.
 	</li>
 	<li>
