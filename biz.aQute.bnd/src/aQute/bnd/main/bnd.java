@@ -121,6 +121,7 @@ public class bnd extends Processor {
 		finally {
 			main.close();
 		}
+		System.exit(0);
 	}
 
 	public void start(String args[]) throws Exception {
@@ -314,8 +315,8 @@ public class bnd extends Processor {
 		@Description("Jar file (f option)")
 		String file();
 
-		@Description("Directory (-C option)")
-		String Cdir();
+		@Description("directory")
+		String cdir();
 
 		@Description("Wrap")
 		boolean wrap();
@@ -351,7 +352,7 @@ public class bnd extends Processor {
 		Jar jar = new Jar("dot");
 
 		File dir = getBase().getAbsoluteFile();
-		String sdir = options.Cdir();
+		String sdir = options.cdir();
 		if (sdir != null)
 			dir = getFile(sdir);
 
@@ -450,7 +451,7 @@ public class bnd extends Processor {
 		String file();
 
 		@Description("Directory where to store")
-		String CDir();
+		String cdir();
 	}
 
 	@Description("Extract files from a JAR file, equivalent jar command x[vf] (syntax supported)")
@@ -471,8 +472,8 @@ public class bnd extends Processor {
 			Instructions instructions = new Instructions(opts._());
 			Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
 			File store = getBase();
-			if (opts.CDir() != null)
-				store = getFile(opts.CDir());
+			if (opts.cdir() != null)
+				store = getFile(opts.cdir());
 
 			if (!store.exists() && !store.mkdirs()) {
 				throw new IOException("Could not create directory " + store);
@@ -3264,7 +3265,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("Generate autocompletion file for bash")
-	public void _generate(Options options) throws Exception {
+	public void _bash(Options options) throws Exception {
 		File tmp = File.createTempFile("bnd-completion", ".tmp");
 		tmp.deleteOnExit();
 
@@ -3528,7 +3529,8 @@ public class bnd extends Processor {
 
 	}
 
-	public void _ees(Options options) throws Exception {
+	@Description("Show the Execution Environments of a JAR")
+	public void _ees(EEOptions options) throws Exception {
 		for (String path : options._()) {
 			File f = getFile(path);
 			if (!f.isFile()) {

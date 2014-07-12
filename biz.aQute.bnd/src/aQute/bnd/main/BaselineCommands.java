@@ -191,7 +191,7 @@ public class BaselineCommands {
 	 * package overview -ee j2se-1.6.0 -ee j2se-1.5.0 -ee j2ee-1.4.0 javax.activation-1.1.jar
 	 * </pre>
 	 */
-	@Description("Print out the packages from spec jars and check in which ees they appear. Very specific. For example, schema -ee j2se-1.6.0 -ee j2se-1.5.0 -ee j2ee-1.4.0 javax.activation-1.1.jar")
+	@Description("Print out the packages from spec jars and check in which ees they appear. Very specific. For example, schema ee.j2se-1.6.0 ee.j2se-1.5.0 ee.j2ee-1.4.0")
 	interface schemaOptions extends Options {
 		@Description("Output file")
 		String output(String deflt);

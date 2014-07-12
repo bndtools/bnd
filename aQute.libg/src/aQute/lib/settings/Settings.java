@@ -62,7 +62,6 @@ public class Settings implements Map<String,String> {
 						in = cryptor.decrypt(password, in);
 					} else {
 						String secret = System.getenv().get("BND_SETTINGS_PASSWORD");
-						System.out.println("found password " + secret);
 						if (secret != null && secret.length() > 0) {
 							PasswordCryptor cryptor = new PasswordCryptor();
 							in = cryptor.decrypt(secret.toCharArray(), in);
