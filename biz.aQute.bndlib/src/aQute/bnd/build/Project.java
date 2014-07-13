@@ -1635,6 +1635,29 @@ public class Project extends Processor {
 			IO.close(outStream);
 		}
 	}
+	
+	@SuppressWarnings("resource")
+	public void dist(String runFilePath, boolean keep, File output) throws Exception {
+		prepare();
+
+		Project packageProject;
+		if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
+			packageProject = this;
+		} else {
+			File runFile = new File(getBase(), runFilePath);
+			if (!runFile.isFile())
+				throw new IOException(String.format("Run file %s does not exist (or is not a file).",
+						runFile.getAbsolutePath()));
+			packageProject = new Project(getWorkspace(), getBase(), runFile);
+			packageProject.setParent(this);
+		}
+
+		packageProject.clear();
+		Collection<Container> path = packageProject.getRunbundles();
+		for (Container container : path) {
+			IO.copy(container.getFile(), new File(output, container.getFile().getName()));	
+		}
+	}
 
 	/**
 	 * Release.

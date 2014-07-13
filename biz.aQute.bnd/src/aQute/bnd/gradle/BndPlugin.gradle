@@ -296,6 +296,40 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
+      tasks.addRule('Pattern: dist.<name>: Export the <name>.bndrun file to a distribution.') { taskName ->
+        if (taskName.startsWith('dist.')) {
+          def bndrun = taskName - 'dist.'
+          task(taskName) {
+            description "Export the ${bndrun}.bndrun file to a distribution."
+            dependsOn assemble
+            group 'dist'
+            def runFile = file("${bndrun}.bndrun")
+            def exportDir = new File(distsDir, "dist")
+            doLast {
+              exportDir.deleteDir()
+              exportDir.mkdirs()
+              logger.info "Exporting: ${runFile.absolutePath} to directory ${exportDir.absolutePath}"
+              try {
+                  bndProject.dist(relativePath(runFile), false, exportDir)
+              } catch (Exception e) {
+                throw new GradleException("Export of ${runFile} failed", e)
+              }
+              checkErrors()
+            }
+          }
+        }
+      }
+
+      task('dist') {
+        description "Export all the bndrun files to a distribution."
+        group 'dist'
+        fileTree(projectDir) {
+            include '*.bndrun'
+        }.each {
+          dependsOn tasks.getByPath("dist.${it.name - '.bndrun'}")
+        }
+      }
+
       task('echo') {
         description "Displays the bnd project information of project '${project.path}'."
         group 'help'
