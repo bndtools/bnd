@@ -12,11 +12,11 @@ public abstract class ProjectTester {
 	final List<String>			tests		= new ArrayList<String>();
 	File						reportDir;
 	boolean						continuous	= true;
-	File						cwd;
 
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
 		launcher = project.getProjectLauncher();
+		launcher.setCwd(project.getBase());
 		launcher.addRunVM("-ea");
 		testbundles = project.getTestpath();
 		continuous = project.is(Constants.TESTCONTINUOUS);
@@ -69,11 +69,11 @@ public abstract class ProjectTester {
 	}
 	
 	public File getCwd() {
-		return cwd;
+		return launcher.getCwd();
 	}
 	
 	public void setCwd(File dir) {
-		this.cwd = dir;
+		launcher.setCwd(dir);
 	}
 
 	public boolean prepare() throws Exception {
