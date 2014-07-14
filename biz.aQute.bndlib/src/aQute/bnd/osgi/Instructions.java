@@ -1,8 +1,10 @@
 package aQute.bnd.osgi;
 
+import java.io.*;
 import java.util.*;
 
 import aQute.bnd.header.*;
+import aQute.lib.io.*;
 
 public class Instructions implements Map<Instruction,Attrs> {
 	private LinkedHashMap<Instruction,Attrs>	map;
@@ -214,7 +216,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 		}
 		return null;
 	}
-	
+
 	public Instruction finder(String value) {
 		for (Instruction i : keySet()) {
 			if (i.finds(value)) {
@@ -223,15 +225,61 @@ public class Instructions implements Map<Instruction,Attrs> {
 		}
 		return null;
 	}
-	
+
 	public boolean matches(String value) {
 		if (size() == 0)
 			return true;
 
 		Instruction instr = matcher(value);
-		if (instr==null || instr.isNegated())
+		if (instr == null || instr.isNegated())
 			return false; // we deny this one explicitly
 		return true;
+	}
+
+	/**
+	 * Turn this Instructions into a map of File -> Attrs. You can specify a
+	 * base directory, which will match all files in that directory against the
+	 * specification or you can use literal instructions to get files from
+	 * anywhere.
+	 * 
+	 * @param base
+	 *            The directory to list files from.
+	 * @return The map that links files to attributes
+	 */
+	public Map<File,Attrs> select(File base) {
+
+		Map<File,Attrs> result = new HashMap<File,Attrs>();
+
+		//
+		// We allow literals to be specified so that we can actually include
+		// files from anywhere in the file system
+		//
+
+		for (java.util.Map.Entry<Instruction,Attrs> instr : entrySet()) {
+			if (instr.getKey().isLiteral() && !instr.getKey().isNegated()) {
+				File f = IO.getFile(base, instr.getKey().getLiteral());
+				if (f.isFile())
+					result.put(f, instr.getValue());
+			}
+		}
+
+		//
+		// Iterator over the found files and match them against this
+		//
+
+		if (base != null) {
+			nextFile: for (File f : base.listFiles()) {
+				for (Entry<Instruction,Attrs> instr : entrySet()) {
+					String name = f.getName();
+					if (instr.getKey().matches(name)) {
+						if (!instr.getKey().isNegated())
+							result.put(f, instr.getValue());
+						continue nextFile;
+					}
+				}
+			}
+		}
+		return result;
 	}
 
 }
