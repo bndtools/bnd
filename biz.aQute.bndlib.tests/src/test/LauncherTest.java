@@ -336,12 +336,13 @@ public class LauncherTest extends TestCase {
 		project.clear();
 		project.setProperty(Constants.RUNTRACE, "true");
 		
+		String mandatorynoversion = new File("jar/mandatorynoversion.jar").getAbsolutePath();
 		String runbundles = project.getProperty( Constants.RUNBUNDLES);
-		project.setProperty(Constants.RUNBUNDLES, runbundles+",jar/mandatorynoversion.jar;version=file");
+		project.setProperty(Constants.RUNBUNDLES, runbundles + "," + mandatorynoversion + ";version=file");
 		ProjectTester tester = project.getProjectTester();
 
 		ProjectLauncher l = tester.getProjectLauncher();
-		l.addRunBundle("jar/mandatorynoversion.jar");
+		l.addRunBundle(mandatorynoversion);
 		l.setTimeout(5000, TimeUnit.MILLISECONDS);
 		l.setTrace(true);
 		assertEquals(1, l.launch());
