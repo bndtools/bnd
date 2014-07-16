@@ -403,7 +403,18 @@ public class Launcher implements ServiceListener {
 
 		// Get the resolved status
 		if (padmin != null && padmin.resolveBundles(null) == false) {
-			error("could not resolve the bundles");
+			List<String> failed = new ArrayList<String>();
+			
+			for ( Bundle b : installedBundles.values()) {
+				try {
+					if ( b.getState() == Bundle.INSTALLED) {
+						b.start();
+					}
+				} catch( Exception e) {
+					failed.add( b.getSymbolicName() + "-" + b.getVersion() + "" + e.getMessage() + "\n");
+				}
+			}
+			error("could not resolve the bundles: " + failed);
 			// return LauncherConstants.RESOLVE_ERROR;
 		}
 
