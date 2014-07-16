@@ -13,23 +13,31 @@ public class ObjectHandler extends Handler {
 
 	ObjectHandler(@SuppressWarnings("unused") JSONCodec codec, Class< ? > c) throws Exception {
 		rawClass = c;
-		fields = c.getFields();
+		
+		List<Field> fields = new ArrayList<Field>();
+		for ( Field f : c.getFields()) {
+			if (!Modifier.isStatic(f.getModifiers()))
+				continue;
+			fields.add(f);
+		}
+
+		this.fields = fields.toArray( new Field[fields.size()]); 
 
 		// Sort the fields so the output is canonical
-		Arrays.sort(fields, new Comparator<Field>() {
+		Arrays.sort(this.fields, new Comparator<Field>() {
 			public int compare(Field o1, Field o2) {
 				return o1.getName().compareTo(o2.getName());
 			}
 		});
 
-		types = new Type[fields.length];
-		defaults = new Object[fields.length];
+		types = new Type[this.fields.length];
+		defaults = new Object[this.fields.length];
 
 		Field x = null;
-		for (int i = 0; i < fields.length; i++) {
-			if (fields[i].getName().equals("__extra"))
-				x = fields[i];
-			types[i] = fields[i].getGenericType();
+		for (int i = 0; i < this.fields.length; i++) {
+			if (this.fields[i].getName().equals("__extra"))
+				x = this.fields[i];
+			types[i] = this.fields[i].getGenericType();
 		}
 		if (x != null && Map.class.isAssignableFrom(x.getType()))
 			extra = x;
@@ -39,8 +47,8 @@ public class ObjectHandler extends Handler {
 		try {
 			Object template = c.newInstance();
 
-			for (int i = 0; i < fields.length; i++) {
-				defaults[i] = fields[i].get(template);
+			for (int i = 0; i < this.fields.length; i++) {
+				defaults[i] = this.fields[i].get(template);
 			}
 		}
 		catch (Exception e) {
