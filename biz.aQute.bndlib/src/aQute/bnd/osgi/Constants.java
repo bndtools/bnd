@@ -92,6 +92,7 @@ public interface Constants {
 	String							EXPORT_CONTENTS								= "-exportcontents";
 	String							EXTENSION									= "-extension";
 	String							EEPROFILE									= "-eeprofile";
+	String							EXPORT										= "-export";
 	String							FAIL_OK										= "-failok";
 	String							FIXUPMESSAGES								= "-fixupmessages";
 	String							INCLUDE										= "-include";
@@ -195,7 +196,7 @@ public interface Constants {
 			DSANNOTATIONS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT, STRICT, DIFFIGNORE,
 			CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS, UPTO, INVALIDFILENAMES,
 			FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK, TESTUNRESOLVED, RUNJDB, RUNENV, RUNEE,
-			EEPROFILE, RUNREQUIRES
+			EEPROFILE, RUNREQUIRES, EXPORT
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make

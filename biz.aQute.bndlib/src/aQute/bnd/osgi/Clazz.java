@@ -1104,11 +1104,9 @@ public class Clazz {
 		int exception_count = in.readUnsignedShort();
 		for (int i = 0; i < exception_count; i++) {
 			int index = in.readUnsignedShort();
-			if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
-				ClassConstant cc = (ClassConstant) pool[index];
-				TypeRef clazz = analyzer.getTypeRef(cc.getName());
-				referTo(clazz, access_flags);
-			}
+			ClassConstant cc = (ClassConstant) pool[index];
+			TypeRef clazz = analyzer.getTypeRef(cc.getName());
+			referTo(clazz, access_flags);
 		}
 	}
 

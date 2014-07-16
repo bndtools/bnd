@@ -469,19 +469,62 @@ public class ProjectBuilder extends Builder {
 		error("Could not find -baselinerepo %s", repoName);
 		return null;
 	}
-	
+
 	/**
 	 * Create a report of the settings
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
-	
+
 	public void report(Map<String,Object> table) throws Exception {
 		super.report(table);
 		table.put("Baseline repo", getBaselineRepo());
 		table.put("Release repo", getReleaseRepo());
 	}
-	
+
 	public String toString() {
 		return getBsn();
+	}
+
+	/**
+	 * Return the bndrun files that need to be exported
+	 * 
+	 * @throws Exception
+	 */
+	public List<Run> getExportedRuns() throws Exception {
+		Instructions runspec = new Instructions(getProperty(EXPORT));
+		List<Run> runs = new ArrayList<Run>();
+
+		Map<File,Attrs> files = runspec.select(getBase());
+
+		for (Entry<File,Attrs> e : files.entrySet()) {
+			Run run = new Run(project.getWorkspace(), getBase(), e.getKey());
+			for (Entry<String,String> ee : e.getValue().entrySet()) {
+				run.setProperty(ee.getKey(), ee.getValue());
+			}
+			runs.add(run);
+		}
+
+		return runs;
+	}
+
+	/**
+	 * Add some extra stuff to the builds() method like exporting.
+	 */
+
+	public Jar[] builds() throws Exception {
+		Jar[] jars = super.builds();
+		if (isOk()) {
+			for (Run export : getExportedRuns()) {
+				if ( export.getProperty(BUNDLE_SYMBOLICNAME) == null) {
+					export.setProperty(BUNDLE_SYMBOLICNAME, getBsn() + ".run");
+				}
+				Jar pack = export.pack(getProperty(PROFILE));
+				getInfo(export);
+				if ( pack != null)
+					jars = concat(Jar.class,jars, pack);
+			}
+		}
+		return jars;
 	}
 }

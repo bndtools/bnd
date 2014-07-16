@@ -1080,8 +1080,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return
 	 */
 	public String getProperty(String key, String deflt) {
-		return getProperty(key,deflt, ",");
+		return getProperty(key, deflt, ",");
 	}
+
 	public String getProperty(String key, String deflt, String separator) {
 
 		String value = null;
@@ -2386,4 +2387,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	}
 
+	/**
+	 * Add an element to an array, creating a new one if necessary
+	 */
+
+	public <T> T[] concat(Class<T> type, T[] prefix, T suffix) {
+		@SuppressWarnings("unchecked")
+		T[] result = (T[]) Array.newInstance(type, (prefix != null ? prefix.length : 0) + 1);
+		if ( result.length > 1) {
+			System.arraycopy(prefix, 0, result, 0, result.length-1);
+		}
+		result[result.length - 1] = suffix;
+		return result;
+	}
 }

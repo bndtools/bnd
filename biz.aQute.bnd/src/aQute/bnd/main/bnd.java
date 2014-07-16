@@ -77,6 +77,7 @@ public class bnd extends Processor {
 	Justif						justif		= new Justif(80, 40, 42, 70);
 	BndMessages					messages	= ReporterMessages.base(this, BndMessages.class);
 	private Workspace			ws;
+	private char[]	password;
 
 	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
@@ -107,6 +108,9 @@ public class bnd extends Processor {
 		@Description("Error/Warning ignore patterns")
 		String[] ignore();
 
+		@Description("Provide a settings password")
+		char[] secret();
+
 	}
 
 	public static void main(String args[]) throws Exception {
@@ -117,6 +121,7 @@ public class bnd extends Processor {
 		finally {
 			main.close();
 		}
+		System.exit(0);
 	}
 
 	public void start(String args[]) throws Exception {
@@ -266,6 +271,11 @@ public class bnd extends Processor {
 					err.println(help);
 				}
 			}
+			
+			if ( options.secret() != null) {
+				password = options.secret();
+				settings.load(password);
+			}
 		}
 		catch (Throwable t) {
 			if (t instanceof InvocationTargetException)
@@ -305,8 +315,8 @@ public class bnd extends Processor {
 		@Description("Jar file (f option)")
 		String file();
 
-		@Description("Directory (-C option)")
-		String Cdir();
+		@Description("directory")
+		String cdir();
 
 		@Description("Wrap")
 		boolean wrap();
@@ -342,7 +352,7 @@ public class bnd extends Processor {
 		Jar jar = new Jar("dot");
 
 		File dir = getBase().getAbsoluteFile();
-		String sdir = options.Cdir();
+		String sdir = options.cdir();
 		if (sdir != null)
 			dir = getFile(sdir);
 
@@ -441,7 +451,7 @@ public class bnd extends Processor {
 		String file();
 
 		@Description("Directory where to store")
-		String CDir();
+		String cdir();
 	}
 
 	@Description("Extract files from a JAR file, equivalent jar command x[vf] (syntax supported)")
@@ -462,8 +472,8 @@ public class bnd extends Processor {
 			Instructions instructions = new Instructions(opts._());
 			Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
 			File store = getBase();
-			if (opts.CDir() != null)
-				store = getFile(opts.CDir());
+			if (opts.cdir() != null)
+				store = getFile(opts.cdir());
 
 			if (!store.exists() && !store.mkdirs()) {
 				throw new IOException("Could not create directory " + store);
@@ -3018,39 +3028,48 @@ public class bnd extends Processor {
 
 		@Description("Generate a new private/public key pair")
 		boolean generate();
+		
+		@Description("Password for local file")
+		char[] password();
+		
+		
 	}
 
 	@Description("Set bnd/jpm global variables")
 	public void _settings(settingOptions opts) throws Exception {
 		try {
 			Settings settings = this.settings;
+			char[] password = this.password;
 
+			
 			if (opts.location() != null) {
+				
+				password = opts.password();
+
 				File f = getFile(opts.location());
 				settings = new Settings(f.getAbsolutePath());
+				settings.load(password);
 				trace("getting settings from %s", f);
 			}
-
-			if (opts.generate()) {
-				trace("Generating new key pair");
-				settings.generate();
-			}
-
-			trace("settings %s", opts.clear());
-			List<String> rest = opts._();
 
 			if (opts.clear()) {
 				settings.clear();
 				trace("clear %s", settings.entrySet());
 			}
+			
+			if (opts.generate()) {
+				trace("Generating new key pair");
+				settings.generate(password);
+			}
+
+			trace("settings %s", opts.clear());
+			List<String> rest = opts._();
 
 			if (opts.publicKey()) {
 				out.println(tos(!opts.base64(), settings.getPublicKey()));
-				return;
 			}
 			if (opts.secretKey()) {
 				out.println(tos(!opts.base64(), settings.getPrivateKey()));
-				return;
 			}
 
 			if (opts.mac()) {
@@ -3059,9 +3078,8 @@ public class bnd extends Processor {
 					byte[] signature = settings.sign(data);
 					out.printf("%s\n", tos(!opts.base64(), signature));
 				}
-				return;
 			}
-
+			
 			if (rest.isEmpty()) {
 				list(null, settings);
 			} else {
@@ -3103,7 +3121,7 @@ public class bnd extends Processor {
 				}
 				if (set) {
 					trace("saving");
-					settings.save();
+					settings.save(password);
 				}
 			}
 		}
@@ -3121,72 +3139,6 @@ public class bnd extends Processor {
 	 * @throws Exception
 	 */
 
-	@Description("Handle the private key for bnd on this machine. If an argument is given, then set this as the "
-			+ "private key of this machine in the ~/.bnd/settings directory. Otherwise generate a new key "
-			+ "pair and show it. This command can be used to let a build server use a particular key.")
-	@Arguments(arg = {})
-	interface PrivateOptions extends Options {
-		@Description("Provide a location for the settings file. This is default ./.bnd/settings.json")
-		String location();
-
-		@Description("Public key")
-		String publicKey();
-
-		@Description("Secret private key")
-		String secretKey();
-
-		@Description("Email address")
-		String email();
-	}
-
-	public void _identity(PrivateOptions options) throws Exception {
-		List<String> args = options._();
-
-		Settings settings = this.settings;
-		boolean hasFile = false;
-
-		File f = null;
-		if (options.location() != null) {
-			f = getFile(options.location());
-			settings = new Settings(f.getAbsolutePath());
-			trace("uses " + f);
-		}
-
-		String pub = options.publicKey();
-		String secret = options.secretKey();
-		String email = options.email();
-
-		if (pub == null && secret == null && email == null) {
-			out.printf("--publicKey %s --secretKey %s --email %s%n", Hex.toHexString(settings.getPublicKey()),
-					Hex.toHexString(settings.getPrivateKey()), settings.getEmail());
-			return;
-		}
-
-		if (secret == null) {
-			error("You must set the  secret key with -s/--secretKey ");
-		} else if (!Hex.isHex(secret)) {
-			error("Not a hex string for the secret key " + secret);
-		}
-
-		if (pub == null) {
-			error("You must set the public key with -p/--publicKey ");
-		} else if (!Hex.isHex(pub)) {
-			error("Not a hex string for the public key " + pub);
-		}
-
-		if (!EMAIL_P.matcher(email).matches()) {
-			error("Invalid email address: %s", email);
-		}
-
-		if (!isOk())
-			return;
-
-		settings.setEmail(email);
-
-		settings.setKeyPair(Hex.toByteArray(pub), Hex.toByteArray(secret));
-
-		settings.save();
-	}
 
 	private String tos(boolean hex, byte[] data) {
 		return data.length + " : " + (hex ? Hex.toHexString(data) : Base64.encodeBase64(data));
@@ -3313,7 +3265,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("Generate autocompletion file for bash")
-	public void _generate(Options options) throws Exception {
+	public void _bash(Options options) throws Exception {
 		File tmp = File.createTempFile("bnd-completion", ".tmp");
 		tmp.deleteOnExit();
 
@@ -3577,7 +3529,8 @@ public class bnd extends Processor {
 
 	}
 
-	public void _ees(Options options) throws Exception {
+	@Description("Show the Execution Environments of a JAR")
+	public void _ees(EEOptions options) throws Exception {
 		for (String path : options._()) {
 			File f = getFile(path);
 			if (!f.isFile()) {
