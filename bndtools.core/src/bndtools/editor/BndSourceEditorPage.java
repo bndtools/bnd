@@ -17,6 +17,7 @@ import java.io.IOException;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -113,7 +114,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
         super.initializeEditor();
         setDocumentProvider(new BndSourceDocumentProvider());
         setRulerContextMenuId("#BndSourceRulerContext");
-        setSourceViewerConfiguration(new BndSourceViewerConfiguration(getSharedColors()));
+        setSourceViewerConfiguration(new BndSourceViewerConfiguration(JavaUI.getColorManager()));
     }
 
     public boolean isActive() {

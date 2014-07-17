@@ -4,6 +4,8 @@ import java.util.*;
 
 import org.bndtools.core.editors.BndMarkerAnnotationHover;
 import org.bndtools.core.editors.BndMarkerQuickAssistProcessor;
+import org.eclipse.jdt.ui.text.IColorManager;
+import org.eclipse.jdt.ui.text.IJavaColorConstants;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.jface.text.presentation.*;
@@ -12,7 +14,6 @@ import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.rules.*;
 import org.eclipse.jface.text.source.*;
 import org.eclipse.swt.*;
-import org.eclipse.swt.graphics.*;
 
 public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
 
@@ -30,14 +31,14 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
     BndScanner scanner;
     MultiLineCommentScanner multiLineCommentScanner;
 
-    public BndSourceViewerConfiguration(ISharedTextColors colors) {
-        T_DEFAULT = new Token(new TextAttribute(colors.getColor(new RGB(0, 0, 0))));
-        T_MACRO = new Token(new TextAttribute(colors.getColor(new RGB(0, 255, 0)), null, SWT.BOLD));
-        T_ERROR = new Token(new TextAttribute(colors.getColor(new RGB(255, 0, 0)), null, SWT.BOLD));
-        T_COMMENT = new Token(new TextAttribute(colors.getColor(new RGB(128, 0, 0))));
-        T_INSTRUCTION = new Token(new TextAttribute(colors.getColor(new RGB(0, 0, 255)), null, SWT.BOLD));
-        T_OPTION = new Token(new TextAttribute(colors.getColor(new RGB(0, 0, 255))));
-        T_DIRECTIVE = new Token(new TextAttribute(colors.getColor(new RGB(60, 60, 255)), null, SWT.BOLD));
+    public BndSourceViewerConfiguration(IColorManager colorManager) {
+        T_DEFAULT = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_DEFAULT)));
+        T_MACRO = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.TASK_TAG), null, SWT.BOLD));
+        T_ERROR = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_KEYWORD), null, SWT.BOLD));
+        T_COMMENT = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_SINGLE_LINE_COMMENT)));
+        T_INSTRUCTION = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVADOC_KEYWORD), null, SWT.BOLD));
+        T_OPTION = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVADOC_LINK), null, SWT.BOLD));
+        T_DIRECTIVE = new Token(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVADOC_KEYWORD), null, SWT.BOLD));
     }
 
     @Override
