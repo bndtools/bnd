@@ -48,7 +48,7 @@ public class GenericResolveContext extends ResolveContext {
 
 	protected final Comparator<Capability>			capabilityComparator		= new CapabilityComparator();
 
-	protected Set<String>							effectiveSet;
+	protected Map<String, Set<String>>				effectiveSet;
 
 	protected final List<ResolverHook>				resolverHooks				= new ArrayList<ResolverHook>();
 	protected final List<ResolutionCallback>		callbacks					= new LinkedList<ResolutionCallback>();
@@ -244,7 +244,8 @@ public class GenericResolveContext extends ResolveContext {
 		if (effective == null || Namespace.EFFECTIVE_RESOLVE.equals(effective))
 			return true;
 
-		if (effectiveSet != null && effectiveSet.contains(effective))
+		if (effectiveSet != null && effectiveSet.containsKey(effective) && 
+				!effectiveSet.get(effective).contains(requirement.getNamespace()))
 			return true;
 
 		return false;
@@ -529,7 +530,12 @@ public class GenericResolveContext extends ResolveContext {
 	}
 
 	public void addEffectiveDirective(String effectiveDirective) {
-		this.effectiveSet.add(effectiveDirective);
+		this.effectiveSet.put(effectiveDirective, new HashSet<String>());
+	}
+
+	public void addEffectiveDirective(String effectiveDirective, Set<String> excludedNamespaces) {
+		this.effectiveSet.put(effectiveDirective, 
+				excludedNamespaces != null ? excludedNamespaces : new HashSet<String>());
 	}
 
 	protected void postProcessProviders(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
