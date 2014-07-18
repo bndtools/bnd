@@ -2,4 +2,4 @@
 -runee: JavaSE-1.7
 -runsystemcapabilities: ${native_capability}
 
--resolve.effective: active
+-resolve.effective: active;skip:="osgi.service"
