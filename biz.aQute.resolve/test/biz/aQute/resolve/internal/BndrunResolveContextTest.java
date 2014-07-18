@@ -54,6 +54,28 @@ public class BndrunResolveContextTest extends TestCase {
         assertTrue(context.isEffective(noEffectiveDirectiveReq));
     }
 
+    public static void testEffective3() {
+    	BndEditModel model = new BndEditModel();
+    	model.genericSet(BndrunResolveContext.RUN_EFFECTIVE_INSTRUCTION, "active;skip:=\"filtered.ns,another.filtered.ns\", arbitrary");
+    	
+    	BndrunResolveContext context = new BndrunResolveContext(model, new MockRegistry(), log);
+    	
+    	Requirement resolveReq = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, Namespace.EFFECTIVE_RESOLVE).buildSyntheticRequirement();
+    	Requirement activeReq = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, Namespace.EFFECTIVE_ACTIVE).buildSyntheticRequirement();
+    	Requirement filteredActiveReq = new CapReqBuilder("filtered.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, Namespace.EFFECTIVE_ACTIVE).buildSyntheticRequirement();
+    	Requirement anotherFilteredActiveReq = new CapReqBuilder("another.filtered.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, Namespace.EFFECTIVE_ACTIVE).buildSyntheticRequirement();
+    	Requirement arbitrary1Req = new CapReqBuilder("dummy.ns").addDirective(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE, "arbitrary").buildSyntheticRequirement();
+    	
+    	Requirement noEffectiveDirectiveReq = new CapReqBuilder("dummy.ns").buildSyntheticRequirement();
+    	
+    	assertTrue(context.isEffective(resolveReq));
+    	assertTrue(context.isEffective(activeReq));
+    	assertTrue(context.isEffective(arbitrary1Req));
+    	assertFalse(context.isEffective(filteredActiveReq));
+    	assertFalse(context.isEffective(anotherFilteredActiveReq));
+    	assertTrue(context.isEffective(noEffectiveDirectiveReq));
+    }
+
     public static void testEmptyInitialWirings() {
         assertEquals(0, new BndrunResolveContext(new BndEditModel(), new MockRegistry(), log).getWirings().size());
     }

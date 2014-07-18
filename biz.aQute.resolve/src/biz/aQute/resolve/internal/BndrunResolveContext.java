@@ -82,9 +82,13 @@ public class BndrunResolveContext extends GenericResolveContext {
 		if (effective == null)
 			effectiveSet = null;
 		else {
-			effectiveSet = new HashSet<String>();
-			for (Entry<String,Attrs> entry : new Parameters(effective).entrySet())
-				effectiveSet.add(entry.getKey());
+			effectiveSet = new HashMap<String, Set<String>>();
+			for (Entry<String,Attrs> entry : new Parameters(effective).entrySet()) {
+				String skip = entry.getValue().get("skip:");
+				Set<String> toSkip = skip == null ? new HashSet<String>() : 
+					new HashSet<String>(Arrays.asList(skip.split(",")));
+				effectiveSet.put(entry.getKey(), toSkip);
+			}
 		}
 	}
 
