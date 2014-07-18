@@ -407,8 +407,18 @@ public class NewBuilder extends IncrementalProjectBuilder {
         for (IProject depProject : dependsOn) {
             delta = getDelta(depProject);
             if (delta != null) {
-                IResourceDeltaVisitor depVisitor = new ProjectDeltaVisitor(depProject, changedFiles);
+                ProjectDeltaVisitor depVisitor = new ProjectDeltaVisitor(depProject, changedFiles);
                 delta.accept(depVisitor);
+                //
+                // If the visitor detected a project that we depend on
+                // and that has a change in its output folder then we
+                // must rebuild. no use checking any further
+                //
+                if (depVisitor.force) {
+                    log(LOG_FULL, "Project %s, which we depend on has changed its output, forcing rebuild", depProject);
+                    force = true;
+                    break;
+                }
                 log(LOG_FULL, "%d files in dependency project '%s' changed or removed: %s", changedFiles.size(), depProject.getName(), changedFiles);
             } else {
                 log(LOG_BASIC, "no info available on changes from project '%s'", depProject.getName());
@@ -458,6 +468,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
         }
 
         // Remove files not in scope
+
         if (!force && !changedFiles.isEmpty() && !model.isNoBundles()) {
             for (Iterator<File> itr = changedFiles.iterator(); itr.hasNext();) {
                 File changeFile = itr.next();
@@ -901,15 +912,21 @@ public class NewBuilder extends IncrementalProjectBuilder {
         final Project model;
         final Set<File> changedFiles;
         final IPath targetDirFullPath;
+        final IPath bin;
+
+        boolean force = false;
 
         ProjectDeltaVisitor(final IProject project, final Set<File> changedFiles) throws Exception {
             this.changedFiles = changedFiles;
             this.model = Central.getProject(project.getLocation().toFile());
             if (this.model == null) {
                 this.targetDirFullPath = null;
+                this.bin = null;
                 return;
             }
+
             this.targetDirFullPath = project.getFullPath().append(calculateTargetDirPath(model));
+            this.bin = targetDirFullPath.removeLastSegments(1).append(model.getOutput().getName());
         }
 
         @Override
@@ -926,6 +943,19 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
             if (resource.getType() == IResource.FOLDER) {
                 IPath folderPath = resource.getFullPath();
+
+                // #860
+
+                if (folderPath.equals(bin)) {
+                    //
+                    // Any changes in bin should result in a rebuild of any dependent
+                    // project.
+                    // TODO We could of course optimize to see if this represents
+                    // an exported package?
+                    //
+                    force = true;
+                    return false;
+                }
                 // ignore ALL files in target dir
                 return !folderPath.equals(targetDirFullPath);
             }
