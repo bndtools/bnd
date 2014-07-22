@@ -25,6 +25,21 @@ public class AnalyzerTest extends BndTestCase {
 	static File	cwd	= new File(System.getProperty("user.dir"));
 
 	/**
+	 * #525 Test if exceptions are imported
+	 */
+	
+	public void testExceptionImports() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( new File("bin"));
+		b.addClasspath( new File("jar/osgi.jar"));
+		b.setExportPackage("test.exceptionimport");
+		b.build();
+		assertTrue(b.check());
+		
+		assertNotNull( b.getImports().containsFQN("org.osgi.framework"));
+		
+	}
+	/**
 	 * Verify that the OSGi and the bnd Version annotation both work
 	 */
 	
