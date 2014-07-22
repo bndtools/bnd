@@ -331,7 +331,7 @@ public class Configurable<T> {
 		for ( String p : parts) {
 			p = p.replaceAll("^\\s*","");
 			p = p.replaceAll("(?!<\\\\)\\s*$","");
-			p = p.replaceAll("\\\\([\\s,\\\\])", "$1");
+			p = p.replaceAll("\\\\([\\s,\\\\|])", "$1");
 			tokens.add(p);
 		}
 		return tokens;
