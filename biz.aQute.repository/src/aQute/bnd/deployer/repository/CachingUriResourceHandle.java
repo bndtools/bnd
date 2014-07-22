@@ -82,7 +82,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		this.sha = sha;
 
 		if (!uri.isAbsolute())
-			throw new IllegalArgumentException("Relative URIs are not permitted.");
+			throw new IllegalArgumentException("Relative URIs are not permitted " + uri);
 		
 		if (FILE_SCHEME.equals(uri.getScheme())) {
 			this.localFile = new File(uri.getPath());
