@@ -41,8 +41,8 @@ public class BuilderTest extends BndTestCase {
 					long t = r.lastModified();
 					Date date = new Date(t);
 					System.out.println(date + " " + t);
-					// TODO we need to adapt the timestamp handling 
-					// assertTrue(t ==1142552022000L); 
+					// TODO we need to adapt the timestamp handling
+					// assertTrue(t ==1142552022000L);
 				}
 				finally {
 					ajr.close();
@@ -73,7 +73,7 @@ public class BuilderTest extends BndTestCase {
 		b.setProperty("Require-Bundle", "com.abc");
 		b.build();
 		assertTrue(b.check());
-		
+
 		Verifier v = new Verifier(b.getJar());
 		v.verify();
 		assertTrue(v.check());
@@ -83,7 +83,6 @@ public class BuilderTest extends BndTestCase {
 	 * #479 I have now tested this locally. Apparently the fix doesn't change
 	 * the reported behavior. In my test bundle, I have removed all imports. Bnd
 	 * builds this with no errors reported. I add: DynamicImport-Package: dummy
-	 * 
 	 */
 
 	public void testMissingImportsWithDynamicImport() throws Exception {
@@ -105,7 +104,6 @@ public class BuilderTest extends BndTestCase {
 	 * #479 I have now tested this locally. Apparently the fix doesn't change
 	 * the reported behavior. In my test bundle, I have removed all imports. Bnd
 	 * builds this with no errors reported. I add: DynamicImport-Package: dummy
-	 * 
 	 */
 
 	public void testMissingImportsWithoutDynamicImport() throws Exception {
@@ -121,6 +119,7 @@ public class BuilderTest extends BndTestCase {
 		v.verify();
 		assertTrue(v.check("Unresolved references to \\[javax.swing\\] by class\\(es\\)"));
 	}
+
 	/**
 	 * <pre>
 	 * [2013-12-11 15:55:14] BJ Hargrave: init:
@@ -138,13 +137,13 @@ public class BuilderTest extends BndTestCase {
 		Builder a = new Builder();
 		a.addClasspath(new File("bin"));
 		a.setExportPackage("test.component");
-		a.setProperty("testcases","${sort;${classes;extending;junit.framework.TestCase;concrete}}");
+		a.setProperty("testcases", "${sort;${classes;extending;junit.framework.TestCase;concrete}}");
 		a.setProperty("Test-Cases", "${testcases}");
 		Jar jar = a.build();
 		assertTrue(a.check());
 		Manifest m = jar.getManifest();
-		Parameters p = new Parameters( m.getMainAttributes().getValue("Test-Cases"));
-		assertTrue( p.size()>= 4);
+		Parameters p = new Parameters(m.getMainAttributes().getValue("Test-Cases"));
+		assertTrue(p.size() >= 4);
 	}
 
 	/**
@@ -172,9 +171,9 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	/**
-	 * If a package-info.java + packageinfo are present then
-	 * normally package-info takes precedence if it sets a Version.
-	 * This test sees that if no version is sets, packageinfo is used.
+	 * If a package-info.java + packageinfo are present then normally
+	 * package-info takes precedence if it sets a Version. This test sees that
+	 * if no version is sets, packageinfo is used.
 	 */
 	public void testPackageInfo_no_version() throws Exception {
 		Builder b = new Builder();
@@ -183,7 +182,7 @@ public class BuilderTest extends BndTestCase {
 			b.setExportPackage("test.packageinfo.both_no_version");
 			Jar build = b.build();
 			assertTrue(b.check());
-			
+
 			Attrs imports = b.getExports().getByFQN("test.packageinfo.both_no_version");
 			assertEquals("1.2.3", imports.getVersion());
 		}
@@ -192,6 +191,7 @@ public class BuilderTest extends BndTestCase {
 		}
 
 	}
+
 	/**
 	 * An old osgi 3.0.0 jar had an old packageinfo in it. This included some
 	 * never well developed syntax which now clashes with the proprty syntax.
@@ -258,6 +258,10 @@ public class BuilderTest extends BndTestCase {
 			long lm1 = result.lastModified();
 			assertTrue("Last modified date of bundle > 0", lm1 > 0);
 
+			if (isWindows())
+				Thread.sleep(1000); // windows has a very low resolution
+									// sometimes
+
 			IO.getFile("bin/a1/a/B.class").delete();
 			classpath.remove("a/B.class");
 			classpath.updateModified(System.currentTimeMillis(), "Removed file B");
@@ -265,9 +269,18 @@ public class BuilderTest extends BndTestCase {
 			long lm2 = result.lastModified();
 			assertTrue("Last modified date of bundle has increased after deleting class from package", lm2 > lm1);
 
+			if (isWindows())
+				Thread.sleep(1000); // windows has a very low resolution
+									// sometimes
+
 			IO.getFile("bin/a1/a/A.class").delete();
 			classpath.remove("a/A.class");
 			classpath.updateModified(System.currentTimeMillis(), "Removed file A");
+
+			if (isWindows())
+				Thread.sleep(1000); // windows has a very low resolution
+									// sometimes
+
 			result = b.build();
 			long lm3 = result.lastModified();
 			assertTrue("Last modified date of bundle has increased after deleting last class from package", lm3 > lm2);
@@ -291,6 +304,10 @@ public class BuilderTest extends BndTestCase {
 			}
 			catch (Exception e) {}
 		}
+	}
+
+	private static boolean isWindows() {
+		return File.separatorChar == '\\';
 	}
 
 	/**
@@ -402,7 +419,8 @@ public class BuilderTest extends BndTestCase {
 		b.setIncludeResource("p;literal='x'");
 
 		b.build();
-		assertTrue(b.check("on the class path: \\[com.example\\]", "Bundle-Activator com.example.Activator is being imported"));
+		assertTrue(b.check("on the class path: \\[com.example\\]",
+				"Bundle-Activator com.example.Activator is being imported"));
 	}
 
 	/**
@@ -1515,7 +1533,6 @@ public class BuilderTest extends BndTestCase {
 		assertEquals("1", export.get("version"));
 		assertEquals("true", export.get("x"));
 	}
-
 
 	/**
 	 * Check Conditional package. First import a subpackage then let the
