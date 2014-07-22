@@ -10,4 +10,9 @@ public class EEConverter implements Converter<EE,String> {
 		return EE.parse(input);
 	}
 
+	@Override
+	public EE error(String msg) {
+		return EE.UNKNOWN;
+	}
+
 }

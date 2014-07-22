@@ -19,6 +19,18 @@ public class BndModelTest  extends TestCase {
 	static final String BND_BUILDPATH_EXPECTED = "-buildpath:  \\\n" +
 												 "\tosgi.core\n";
 
+	
+	public void testBadInput() throws UnsupportedEncodingException, IOException {
+		BndEditModel		model = new BndEditModel();
+		
+		model.loadFrom( new ByteArrayInputStream("-runproperties: bad=really=bad".getBytes("UTF-8")));
+		
+		Map<String,String> runProperties = model.getRunProperties();
+		
+		assertNotNull(runProperties);
+		assertTrue( runProperties.containsKey("ERROR"));
+	}
+	
 	public void testSetBuildPath() throws Exception {
 
 		BndEditModel model = new BndEditModel();

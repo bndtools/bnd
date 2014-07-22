@@ -18,7 +18,8 @@ public enum EE {
     JavaSE_1_6("JavaSE-1.6", "JavaSE", new Version("1.6"), JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, OSGI_Minimum_1_0, OSGI_Minimum_1_1, OSGI_Minimum_1_2),
     JavaSE_1_7("JavaSE-1.7", "JavaSE", new Version("1.7"), JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, OSGI_Minimum_1_0, OSGI_Minimum_1_1, OSGI_Minimum_1_2),
     JavaSE_1_8("JavaSE-1.8", "JavaSE", new Version("1.8"), JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, JavaSE_1_7, OSGI_Minimum_1_0, OSGI_Minimum_1_1, OSGI_Minimum_1_2),
-    JavaSE_1_9("JavaSE-1.9", "JavaSE", new Version("1.9"), JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, JavaSE_1_7, JavaSE_1_8, OSGI_Minimum_1_0, OSGI_Minimum_1_1, OSGI_Minimum_1_2);
+    JavaSE_1_9("JavaSE-1.9", "JavaSE", new Version("1.9"), JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, JavaSE_1_7, JavaSE_1_8, OSGI_Minimum_1_0, OSGI_Minimum_1_1, OSGI_Minimum_1_2), 
+    UNKNOWN("Unknown","unknown", new Version(0));
 
     private final String eeName;
     private final String capabilityName;

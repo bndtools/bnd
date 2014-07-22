@@ -15,4 +15,9 @@ public class MapFormatter implements Converter<String,Map<String,String>> {
 	public String convert(Map<String,String> input) throws IllegalArgumentException {
 		return entrySetFormatter.convert(input.entrySet());
 	}
+
+	@Override
+	public String error(String msg) {
+		return msg;
+	}
 }

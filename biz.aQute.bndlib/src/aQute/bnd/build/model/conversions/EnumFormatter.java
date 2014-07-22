@@ -50,4 +50,9 @@ public class EnumFormatter<E extends Enum<E>> implements Converter<String,E> {
 		return result;
 	}
 
+	@Override
+	public String error(String msg) {
+		return msg;
+	}
+
 }

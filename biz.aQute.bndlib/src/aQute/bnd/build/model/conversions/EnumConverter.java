@@ -24,4 +24,9 @@ public class EnumConverter<E extends Enum<E>> implements Converter<E,String> {
 		return Enum.valueOf(enumType, input);
 	}
 
+	@Override
+	public E error(String msg) {
+		return null;
+	}
+
 }

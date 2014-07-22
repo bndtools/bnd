@@ -15,10 +15,10 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
 	public HeaderClause(String name, Attrs attribs) {
 		assert name != null;
-		assert attribs != null;
+		
 
 		this.name = name;
-		this.attribs = attribs;
+		this.attribs = attribs == null ? new Attrs() : attribs;
 	}
 
 	public void setName(String name) {

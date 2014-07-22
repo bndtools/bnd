@@ -23,4 +23,9 @@ public class PropertiesEntryFormatter implements Converter<String,Entry<String,S
 		}
 		return buffer.toString();
 	}
+
+	@Override
+	public String error(String msg) {
+		return msg;
+	}
 }

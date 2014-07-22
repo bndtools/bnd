@@ -38,4 +38,8 @@ public class ExportedPackage extends HeaderClause {
 	public ExportedPackage clone() {
 		return new ExportedPackage(this.name, new Attrs(this.attribs));
 	}
+
+	public static ExportedPackage error(String msg) {
+		return new ExportedPackage(msg, null);
+	}
 }

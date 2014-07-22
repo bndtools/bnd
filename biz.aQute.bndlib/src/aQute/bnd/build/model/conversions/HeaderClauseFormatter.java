@@ -8,4 +8,9 @@ public class HeaderClauseFormatter implements Converter<String,HeaderClause> {
 		input.formatTo(buffer);
 		return buffer.toString();
 	}
+
+	@Override
+	public String error(String msg) {
+		return msg;
+	}
 }

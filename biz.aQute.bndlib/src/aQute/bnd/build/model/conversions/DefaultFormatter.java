@@ -6,4 +6,9 @@ public class DefaultFormatter implements Converter<String,Object> {
 		return input == null ? null : input.toString();
 	}
 
+	@Override
+	public String error(String msg) {
+		return msg;
+	}
+
 }
