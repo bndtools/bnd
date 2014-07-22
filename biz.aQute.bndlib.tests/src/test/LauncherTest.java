@@ -325,7 +325,7 @@ public class LauncherTest extends TestCase {
 		project.clear();
 
 		ProjectLauncher l = project.getProjectLauncher();
-		l.setTimeout(5000, TimeUnit.MILLISECONDS);
+		l.setTimeout(15000, TimeUnit.MILLISECONDS);
 		l.setTrace(true);
 		l.getRunProperties().put("test.cmd", cmd);
 		assertEquals(rv, l.launch());
