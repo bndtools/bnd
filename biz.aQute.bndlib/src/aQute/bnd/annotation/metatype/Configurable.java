@@ -269,7 +269,7 @@ public class Configurable<T> {
 
 			if (o instanceof String) {
 				String s = (String) o;
-				if (!SPLITTER_P.matcher(s).find())
+				if (SPLITTER_P.matcher(s).find())
 					return Arrays.asList(s.split("\\|"));
 				else 
 					return unescape(s);
