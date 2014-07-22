@@ -250,7 +250,7 @@ public class FileRepoTest extends TestCase {
 		try {
 			Map<String,String> props = new HashMap<String,String>();
 			props.put(FileRepo.LOCATION, root.getAbsolutePath());
-			props.put(FileRepo.CMD_INIT, "echo init $0 $1 $2 $3>>report");
+			props.put(FileRepo.CMD_INIT, "echo init $0 $1 $2 $3>report");
 			props.put(FileRepo.CMD_OPEN, "echo open $0 $1 $2 $3 >>report");
 			props.put(FileRepo.CMD_BEFORE_GET, "echo beforeGet $0 $1 $2 $3 >>report");
 			props.put(FileRepo.CMD_BEFORE_PUT, "echo beforePut $0 $1 $2 $3>>report");
@@ -288,9 +288,9 @@ public class FileRepoTest extends TestCase {
 			}
 			repo.close();
 			String s = collect(new File(root, "report"));
+			System.out.println(s);
 			s = s.replaceAll("\\\\", "/");
 			s = s.replaceAll(root.getAbsolutePath().replaceAll("\\\\", "/"), "@");
-			System.out.println(s);
 
 			String parts[] = s.split("\r?\n");
 			assertEquals(8, parts.length);

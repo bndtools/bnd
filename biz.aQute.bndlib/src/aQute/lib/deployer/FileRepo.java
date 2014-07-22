@@ -259,7 +259,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			reporter.setExceptions(trace);
 			this.reporter = reporter;
 		}
-
+		reporter.trace("init");
 		if (!root.isDirectory()) {
 			root.mkdirs();
 			if (!root.isDirectory())
