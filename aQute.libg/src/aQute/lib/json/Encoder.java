@@ -13,9 +13,10 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	boolean			writeDefaults;
 	String			encoding	= "UTF-8";
 	boolean			deflate;
-	String				tabs		= null;
+	String			tabs		= null;
 	String			indent		= "";
-
+	boolean keepOpen = false;
+	
 	Encoder(JSONCodec codec) {
 		this.codec = codec;
 	}
@@ -26,6 +27,8 @@ public class Encoder implements Appendable, Closeable, Flushable {
 
 		codec.encode(this, object, null, new IdentityHashMap<Object,Type>());
 		flush();
+		if ( !keepOpen)
+			close();
 		return this;
 	}
 
@@ -145,5 +148,10 @@ public class Encoder implements Appendable, Closeable, Flushable {
 			indent += tabs;
 			app.append(indent);
 		}
+	}
+
+	public Encoder keepOpen() {
+		keepOpen = true;
+		return this;
 	}
 }
