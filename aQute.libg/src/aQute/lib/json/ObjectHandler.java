@@ -16,7 +16,7 @@ public class ObjectHandler extends Handler {
 		
 		List<Field> fields = new ArrayList<Field>();
 		for ( Field f : c.getFields()) {
-			if (!Modifier.isStatic(f.getModifiers()))
+			if (Modifier.isStatic(f.getModifiers()))
 				continue;
 			fields.add(f);
 		}
