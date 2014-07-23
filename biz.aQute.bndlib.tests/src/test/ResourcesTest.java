@@ -18,14 +18,14 @@ public class ResourcesTest extends TestCase {
 	
 	public void testCommand() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource", "xkeystore; requires='testresources/keystore';cmd='file ${@requires}', ");
+		b.setProperty("Include-Resource", "xkeystore; requires='testresources/keystore';cmd='echo ${@requires}', ");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		assertTrue(b.check());
 		Resource r = jar.getResource("xkeystore");
 		assertNotNull(r);
 		String s = IO.collect(r.openInputStream());
-		assertEquals("testresources/keystore: Java KeyStore\n", s);
+		assertEquals("testresources/keystore\n", s);
 	}
 	/**
 	 * Test the Include-Resource facility to generate resources on the fly. This
