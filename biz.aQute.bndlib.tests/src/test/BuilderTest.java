@@ -245,7 +245,7 @@ public class BuilderTest extends BndTestCase {
 			b.addClasspath(new File("jar/osgi-3.0.0.jar"));
 			b.setExportPackage("*");
 			Jar build = b.build();
-			assertTrue(b.check());
+			assertTrue(b.check("Version for package org.osgi.util.measurement is set to different values in the source ", "Version for package org.osgi.util.tracker is set to different values in the source"));
 		}
 		finally {
 			b.close();
