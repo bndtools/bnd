@@ -491,6 +491,21 @@ class JavaElement {
 				signature = matcher.group(1);
 			} else
 				signature = toString(m.getPrototype());
+
+			//
+			// Java default methods are concrete implementations of methods
+			// on an interface. 
+			//
+			
+			if ( clazz.isInterface() && !m.isAbstract()) {
+				
+				//
+				// We have a Java 8 default method!
+				// Such a method is always a minor update
+				//
+				
+				add = MINOR;
+			}
 			
 			Element member = new Element(Type.METHOD, m.getName() + signature, children, add, remove,
 					null);

@@ -40,6 +40,33 @@ public class BaselineTest extends TestCase {
 		workspace = null;
 	}
 
+	public void testJava8DefaultMethods() throws Exception {
+		Builder older = new Builder();
+		older.addClasspath( new File("java8/older/bin"));
+		older.setExportPackage("*");
+		Jar o = older.build();
+		assertTrue(older.check());
+		
+		Builder newer = new Builder();
+		newer.addClasspath( new File("java8/newer/bin"));
+		newer.setExportPackage("*");
+		Jar n = newer.build();
+		assertTrue(newer.check());
+		
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(older, differ);
+
+		Set<Info> infoSet = baseline.baseline(n,o, null);
+
+		for ( Info info : infoSet ) {
+			System.out.printf("%-20s %s %s%n", info.packageName, info.mismatch, info.suggestedVersion);
+		}
+		
+	}
+	
+	
+	
+	
 	/**
 	 * Check if we can ignore resources in the baseline. First build two jars
 	 * that are identical except for the b/b resource. Then do baseline on them.
