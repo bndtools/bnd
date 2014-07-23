@@ -57,9 +57,11 @@ public class BaselineTest extends TestCase {
 		Baseline baseline = new Baseline(older, differ);
 
 		Set<Info> infoSet = baseline.baseline(n,o, null);
-
+		assertEquals(1, infoSet.size());
 		for ( Info info : infoSet ) {
-			System.out.printf("%-20s %s %s%n", info.packageName, info.mismatch, info.suggestedVersion);
+			assertTrue(info.mismatch);
+			assertEquals( new Version(0,1,0), info.suggestedVersion);
+			assertEquals(info.packageName, "api_default_methods");
 		}
 		
 	}
