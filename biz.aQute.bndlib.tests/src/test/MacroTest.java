@@ -681,19 +681,19 @@ public class MacroTest extends TestCase {
 	public static void testWc() {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
-		String a = macro.process("${lsr;" + new File("src" + File.separator + "test").getAbsolutePath() + ";*.java}");
+		String a = macro.process("${lsr;src/test;*.java}");
 		assertTrue(a.contains("MacroTest.java"));
 		assertTrue(a.contains("ManifestTest.java"));
 		assertFalse(a.contains("bnd.info"));
 		assertFalse(a.contains("com.acme"));
-		assertFalse(a.contains("src" + File.separator + "test" + File.separator + "MacroTest.java"));
-		assertFalse(a.contains("src" + File.separator + "test" + File.separator + "ManifestTest.java"));
+		assertFalse(a.contains("src/test/MacroTest.java"));
+		assertFalse(a.contains("src/test/ManifestTest.java"));
 
-		String b = macro.process("${lsa;" + new File("src" + File.separator + "test").getAbsolutePath() + ";*.java}");
-		assertTrue(b.contains("src" + File.separator + "test" + File.separator + "MacroTest.java"));
-		assertTrue(b.contains("src" + File.separator + "test" + File.separator + "ManifestTest.java"));
+		String b = macro.process("${lsa;src/test;*.java}");
+		assertTrue(b.contains("src/test/MacroTest.java"));
+		assertTrue(b.contains("src/test/ManifestTest.java"));
 	}
-
+	
 	/**
 	 * Check the uniq command
 	 */

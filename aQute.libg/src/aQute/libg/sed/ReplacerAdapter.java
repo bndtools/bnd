@@ -766,7 +766,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 		ExtList<String> result = new ExtList<String>();
 		for (File file : files)
-			result.add(relative ? file.getName() : file.getAbsolutePath());
+			result.add(relative ? file.getName() : file.getAbsolutePath().replace(File.separatorChar, '/'));
 
 		return result.join(",");
 	}
