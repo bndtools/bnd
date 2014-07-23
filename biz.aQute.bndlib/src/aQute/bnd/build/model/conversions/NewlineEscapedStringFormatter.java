@@ -30,4 +30,9 @@ public class NewlineEscapedStringFormatter implements Converter<String,String> {
 		return result.toString();
 	}
 
+	@Override
+	public String error(String msg) {
+		return msg;
+	}
+
 }

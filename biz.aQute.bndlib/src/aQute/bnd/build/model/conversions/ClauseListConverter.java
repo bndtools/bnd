@@ -31,4 +31,11 @@ public class ClauseListConverter<R> implements Converter<List<R>,String> {
 		return result;
 	}
 
+	@Override
+	public List<R> error(String msg) {
+		List<R> l = new ArrayList<R>();
+		l.add(itemConverter.error(msg));
+		return l;
+	}
+
 }

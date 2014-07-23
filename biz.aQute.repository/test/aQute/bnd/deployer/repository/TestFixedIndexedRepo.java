@@ -12,16 +12,18 @@ import aQute.lib.io.*;
 
 public class TestFixedIndexedRepo extends TestCase {
 
-	static File tmp;
+	static File	tmp;
+
 	public void setUp() {
 		tmp = IO.getFile("tmp");
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
+
 	public void tearDown() {
 		IO.delete(tmp);
 	}
-	
+
 	private static int countBundles(RepositoryPlugin repo) throws Exception {
 		int count = 0;
 
@@ -43,7 +45,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		props.put("name", "index1");
 		props.put("locations", new File("testdata/index1.xml").toURI().toString());
 		props.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
-		
+
 		repo.setProperties(props);
 		repo.setReporter(reporter);
 
@@ -121,8 +123,7 @@ public class TestFixedIndexedRepo extends TestCase {
 
 		List<String> bsns = repo.list(null);
 
-		assertEquals("Should not be any errors", 0, reporter.getErrors().size());
-		assertTrue("Should be some ambiguity warnings", reporter.getWarnings().size() > 0);
+		assertTrue(reporter.check("Content provider 'OBR'", "Content provider 'R5'", "No content provider matches"));
 
 		assertEquals(0, bsns.size());
 	}
@@ -142,7 +143,7 @@ public class TestFixedIndexedRepo extends TestCase {
 			}
 		};
 		config = new HashMap<String,String>();
-		config.put("locations", new File("testdata/xmlWithDtdRef.xml").toURI().toString());
+		config.put("locations", new File("testdata/xmlWithDtdRef.xml").getAbsoluteFile().toURI().toString());
 		config.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(config);
 		repo.setReporter(reporter);
@@ -155,15 +156,21 @@ public class TestFixedIndexedRepo extends TestCase {
 			}
 		};
 		config = new HashMap<String,String>();
-		config.put("locations", new File("testdata/xmlWithDtdRef.xml").toURI().toString());
+		config.put("locations", new File("testdata/xmlWithDtdRef.xml").getAbsoluteFile().toURI().toString());
 		config.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 		repo.list(null);
 
 		assertEquals("Should not make any HTTP connection.", 0, accessCount.get());
-		assertEquals("Should not be any errors", 0, reporter.getErrors().size());
+
 		assertTrue("Should be some ambiguity warnings", reporter.getWarnings().size() > 0);
+		assertTrue(reporter.check("Content provider 'OBR' was unable to determine",
+				"No content provider matches the specified index unambiguously. Selected 'OBR' arbitrarily.",
+				"Content provider 'R5' was unable to determine compatibility with index at URL ",
+				"No content provider matches the specified index unambiguously. Selected 'R5' arbitrarily"));
+
+		assertEquals("Should not be any errors", 0, reporter.getErrors().size());
 	}
 
 }

@@ -731,7 +731,7 @@ public class Macro {
 
 		List<String> result = new ArrayList<String>();
 		for (File file : files)
-			result.add(relative ? file.getName() : file.getAbsolutePath());
+			result.add(relative ? file.getName() : file.getAbsolutePath().replace(File.separatorChar, '/'));
 
 		return Processor.join(result, ",");
 	}
@@ -931,8 +931,6 @@ public class Macro {
 
 		String s = IO.collect(process.getInputStream(), "UTF-8");
 		int exitValue = process.waitFor();
-		if (exitValue != 0)
-			return exitValue + "";
 
 		if (exitValue != 0) {
 			if (!allowFail) {
@@ -941,6 +939,7 @@ public class Macro {
 				domain.warning("System command " + command + " failed with exit code " + exitValue + " (allowed)");
 
 			}
+			return null;
 		}
 
 		return s.trim();
@@ -954,11 +953,12 @@ public class Macro {
 		String result = "";
 		try {
 			result = system_internal(true, args);
+			return result == null ? "" : result;
 		}
 		catch (Throwable t) {
 			/* ignore */
+			return "";
 		}
-		return result;
 	}
 
 	public String _env(String args[]) {

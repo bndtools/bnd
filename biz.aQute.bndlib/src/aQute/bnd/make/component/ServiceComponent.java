@@ -234,9 +234,11 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 			// We have a definition, so make an XML resources
 			Resource resource = createComponentResource(name, impl, info);
-			analyzer.getJar().putResource("OSGI-INF/" + name + ".xml", resource);
+			
+			String pathSegment = analyzer.validResourcePath(name, "Invalid component name");
+			analyzer.getJar().putResource("OSGI-INF/" + pathSegment + ".xml", resource);
 
-			components.put("OSGI-INF/" + name + ".xml", EMPTY);
+			components.put("OSGI-INF/" + pathSegment + ".xml", EMPTY);
 
 		}
 

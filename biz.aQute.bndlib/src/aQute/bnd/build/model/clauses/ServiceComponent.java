@@ -246,4 +246,8 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 	protected boolean newlinesBetweenAttributes() {
 		return true;
 	}
+
+	public static ServiceComponent error(String msg) {
+		return new ServiceComponent(msg, null);
+	}
 }

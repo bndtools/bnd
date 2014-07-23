@@ -36,8 +36,8 @@ public class BndEditModel {
 			Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE,
 			aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, aQute.bnd.osgi.Constants.SOURCES,
 			aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.CLASSPATH,
-			aQute.bnd.osgi.Constants.BUILDPATH,
-			aQute.bnd.osgi.Constants.RUNBUNDLES, aQute.bnd.osgi.Constants.RUNPROPERTIES,
+			aQute.bnd.osgi.Constants.BUILDPATH, aQute.bnd.osgi.Constants.RUNBUNDLES,
+			aQute.bnd.osgi.Constants.RUNPROPERTIES,
 			aQute.bnd.osgi.Constants.SUB,
 			aQute.bnd.osgi.Constants.RUNFRAMEWORK,
 			aQute.bnd.osgi.Constants.RUNFW,
@@ -80,6 +80,12 @@ public class BndEditModel {
 																														input.getFirst(),
 																														input.getSecond());
 																											}
+
+																											@Override
+																											public VersionedClause error(
+																													String msg) {
+																												return null;
+																											}
 																										});
 	private Converter<List<VersionedClause>,String>					buildPackagesConverter		= new ClauseListConverter<VersionedClause>(
 																										new Converter<VersionedClause,Pair<String,Attrs>>() {
@@ -92,6 +98,11 @@ public class BndEditModel {
 																														input.getFirst(),
 																														input.getSecond());
 																											}
+																											@Override
+																											public VersionedClause error(
+																													String msg) {
+																												return VersionedClause.error(msg);
+																											}
 																										});
 	private Converter<List<VersionedClause>,String>					clauseListConverter			= new ClauseListConverter<VersionedClause>(
 																										new VersionedClauseConverter());
@@ -102,6 +113,12 @@ public class BndEditModel {
 																											throws IllegalArgumentException {
 																										return Boolean
 																												.valueOf(string);
+																									}
+
+																									@Override
+																									public Boolean error(
+																											String msg) {
+																										return Boolean.FALSE;
 																									}
 																								};
 	private Converter<List<String>,String>							listConverter				= SimpleListConverter
@@ -117,6 +134,12 @@ public class BndEditModel {
 																														input.getFirst(),
 																														input.getSecond());
 																											}
+
+																											@Override
+																											public ExportedPackage error(
+																													String msg) {
+																												return ExportedPackage.error(msg);
+																											}
 																										});
 	private Converter<List<ServiceComponent>,String>				serviceComponentConverter	= new ClauseListConverter<ServiceComponent>(
 																										new Converter<ServiceComponent,Pair<String,Attrs>>() {
@@ -129,6 +152,12 @@ public class BndEditModel {
 																														input.getFirst(),
 																														input.getSecond());
 																											}
+
+																											@Override
+																											public ServiceComponent error(
+																													String msg) {
+																												return ServiceComponent.error(msg);
+																											}
 																										});
 	private Converter<List<ImportPattern>,String>					importPatternConverter		= new ClauseListConverter<ImportPattern>(
 																										new Converter<ImportPattern,Pair<String,Attrs>>() {
@@ -140,6 +169,12 @@ public class BndEditModel {
 																												return new ImportPattern(
 																														input.getFirst(),
 																														input.getSecond());
+																											}
+
+																											@Override
+																											public ImportPattern error(
+																													String msg) {
+																												return ImportPattern.error(msg);
 																											}
 																										});
 
@@ -335,9 +370,9 @@ public class BndEditModel {
 			// value
 			//
 			String value = cleanup(stringValue);
-			if ( value == null)
+			if (value == null)
 				value = "";
-			
+
 			if (propertyName != null)
 				properties.setProperty(propertyName, value);
 
@@ -825,23 +860,27 @@ public class BndEditModel {
 	}
 
 	private <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
+		try {
+			R result;
+			if (objectProperties.containsKey(name)) {
+				@SuppressWarnings("unchecked")
+				R temp = (R) objectProperties.get(name);
+				result = temp;
+			} else if (changesToSave.containsKey(name)) {
+				result = converter.convert(changesToSave.get(name));
+				objectProperties.put(name, result);
+			} else if (properties.containsKey(name)) {
+				result = converter.convert(properties.getProperty(name));
+				objectProperties.put(name, result);
+			} else {
+				result = converter.convert(null);
+			}
 
-		R result;
-		if (objectProperties.containsKey(name)) {
-			@SuppressWarnings("unchecked")
-			R temp = (R) objectProperties.get(name);
-			result = temp;
-		} else if (changesToSave.containsKey(name)) {
-			result = converter.convert(changesToSave.get(name));
-			objectProperties.put(name, result);
-		} else if (properties.containsKey(name)) {
-			result = converter.convert(properties.getProperty(name));
-			objectProperties.put(name, result);
-		} else {
-			result = converter.convert(null);
+			return result;
 		}
-
-		return result;
+		catch (Exception e) {
+			return converter.error(e.getMessage());
+		}
 	}
 
 	private <T> void doSetObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {

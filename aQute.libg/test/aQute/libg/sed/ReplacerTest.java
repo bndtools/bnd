@@ -271,15 +271,15 @@ public class ReplacerTest extends TestCase {
 	 */
 
 	public static void testWc() {
-		String pckg = ReplacerTest.class.getPackage().getName().replaceAll("\\.", File.separator);
+		String pckg = ReplacerTest.class.getPackage().getName().replace('.', '/');
 
 		Processor p = new Processor();
-		String a = p.process("${lsr;" + new File("test" + File.separator + pckg).getAbsolutePath() + ";*.java}");
+		String a = p.process("${lsr;test/" + pckg + ";*.java}");
 		assertTrue(a.contains("ReplacerTest.java"));
-		assertFalse(a.contains("test" + File.separator + pckg + File.separator + "ReplacerTest.java"));
+		assertFalse(a.contains("test/"+ pckg + "/ReplacerTest.java"));
 
-		String b = p.process("${lsa;" + new File("test" + File.separator + pckg).getAbsolutePath() + ";*.java}");
-		assertTrue(b.contains("test" + File.separator + pckg + File.separator + "ReplacerTest.java"));
+		String b = p.process("${lsa;test/" + pckg + ";*.java}");
+		assertTrue(b.contains("test/" + pckg + "/ReplacerTest.java"));
 		p.check();
 	}
 

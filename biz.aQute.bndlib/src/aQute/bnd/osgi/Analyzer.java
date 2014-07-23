@@ -1231,7 +1231,7 @@ public class Analyzer extends Processor {
 				Jar current = new Jar(classpath[i]);
 				list.add(current);
 			} else {
-				error("Missing file on classpath: %s", classpath[i]);
+				error("Missing file on classpath: %s", classpath[i].getAbsolutePath().replace(File.separatorChar, '/'));
 			}
 		}
 		for (Iterator<Jar> i = list.iterator(); i.hasNext();) {
@@ -1725,6 +1725,23 @@ public class Analyzer extends Processor {
 						if (!key.endsWith(":")) {
 							if (!attributes.containsKey(key))
 								attributes.put(key, entry.getValue());
+							else {
+								// we have the attribute from the classpath
+								// and we have set it.
+								if (key.equals(Constants.VERSION_ATTRIBUTE)
+										&& !attributes.get(key).equals(exporterAttributes.get(key))) {
+									if (since(About._2_4)) {
+										SetLocation location = warning(
+												"Version for package %s is set to different values in the source (%s) and in the manifest (%s). The version in the manifest is not "
+												+ "picked up by an other sibling bundles in this project or projects that directly depend on this project",
+												packageName, attributes.get(key), exporterAttributes.get(key));
+										if ( getPropertiesFile() != null)
+											location.file(getPropertiesFile().getAbsolutePath());
+										location.header(EXPORT_PACKAGE);
+										location.context(packageName);
+									}
+								}
+							}
 						}
 					}
 				}
@@ -3054,5 +3071,28 @@ public class Analyzer extends Processor {
 		sb.append("(!(version>=").append(high.getWithoutQualifier()).append(")))");
 
 		return sb.toString();
+	}
+
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public String validResourcePath(String name, String reportIfWrong) {
+		boolean changed = false;
+		StringBuilder sb = new StringBuilder(name);
+		for ( int i=0; i<sb.length(); i++) {
+			char c = sb.charAt(i);
+			if ( c == '-' || c== '.' || c=='_' || c =='$' || Character.isLetterOrDigit(c))
+				continue;
+			sb.replace(i, i+1, "-");
+			changed = true;
+		}
+		if ( changed ) {
+			if ( reportIfWrong != null)
+				warning("%s: %s", reportIfWrong, name);
+			return sb.toString();
+		}
+		return name;
 	}
 }

@@ -12,4 +12,9 @@ public class HeaderClauseConverter implements Converter<HeaderClause,Pair<String
 		return new HeaderClause(input.getFirst(), input.getSecond());
 	}
 
+	@Override
+	public HeaderClause error(String msg) {
+		return new HeaderClause(msg, null);
+	}
+
 }

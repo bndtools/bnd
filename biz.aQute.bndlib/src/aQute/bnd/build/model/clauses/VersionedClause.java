@@ -24,4 +24,10 @@ public class VersionedClause extends HeaderClause implements Cloneable {
 		clone.attribs = new Attrs(this.attribs);
 		return clone;
 	}
+
+	public static VersionedClause error(String msg) {
+		Attrs a = new Attrs();
+		a.put("PARSE ERROR", msg);
+		return new VersionedClause("ERROR", a);
+	}
 }

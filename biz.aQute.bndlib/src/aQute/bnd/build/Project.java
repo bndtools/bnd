@@ -2166,7 +2166,6 @@ public class Project extends Processor {
 
 			if (manifest != null) {
 				String launcher = manifest.getMainAttributes().getValue(header);
-				System.out.println("Plugin found " + launcher+ " " + manifest.getMainAttributes().getValue("Bundle-Version"));
 				if (launcher != null) {
 					Class< ? > clz = getClass(launcher, c.getFile());
 					if (clz != null) {

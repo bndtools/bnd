@@ -44,16 +44,29 @@ public class XMLType {
 			if (line.length() > 0) {
 				String parts[] = line.split("\\s*,\\s*");
 				for (int i = 0; i < parts.length; i++) {
-					int n = parts[i].lastIndexOf('.');
-					if (n > 0) {
-						refers.add(parts[i].subSequence(0, n).toString());
-					}
+					String pack = toPackage(parts[i]);
+					if (pack != null)
+						refers.add( pack );
 				}
 			}
 			line = br.readLine();
 		}
 		br.close();
 		return refers;
+	}
+
+	static String toPackage(String fqn) {
+		int n = fqn.lastIndexOf('.');
+		if ( n < 0 || n + 1 >= fqn.length())
+			return null;
+
+		char c = fqn.charAt(n+1);
+		if ( Character.isJavaIdentifierStart(c) && Character.isUpperCase(c) ) {
+			String other = fqn.substring(0, n);
+			return toPackage(other);
+		}
+		
+		return fqn;
 	}
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {

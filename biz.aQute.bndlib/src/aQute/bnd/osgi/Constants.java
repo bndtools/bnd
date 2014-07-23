@@ -132,6 +132,7 @@ public interface Constants {
 	String							RELEASEREPO									= "-releaserepo";
 	String							REMOVEHEADERS								= "-removeheaders";
 	String							RESOURCEONLY								= "-resourceonly";
+	String							SIGNATURE_TEST								= "-signaturetest";
 	String							SOURCES										= "-sources";
 	String							SOURCEPATH									= "-sourcepath";
 	String							STRICT										= "-strict";
@@ -205,7 +206,7 @@ public interface Constants {
 			INCLUDE_RESOURCE, BUNDLE_ACTIVATOR, BUNDLE_CLASSPATH, BUNDLE_NAME, BUNDLE_NATIVECODE, BUNDLE_SYMBOLICNAME,
 			IMPORT_PACKAGE, EXPORT_PACKAGE, DYNAMICIMPORT_PACKAGE, FRAGMENT_HOST, REQUIRE_BUNDLE, PRIVATE_PACKAGE,
 			PRIVATEPACKAGE, EXPORT_CONTENTS, TESTCASES, NOMANIFEST, WAB, WABLIB, REQUIRE_CAPABILITY,
-			PROVIDE_CAPABILITY, DSANNOTATIONS, SERVICE_COMPONENT
+			PROVIDE_CAPABILITY, DSANNOTATIONS, SERVICE_COMPONENT, SIGNATURE_TEST
 																				};
 
 	char							DUPLICATE_MARKER							= '~';
@@ -413,8 +414,4 @@ public interface Constants {
 	String							RUNPATH_MAIN_DIRECTIVE						= "main:";
 	@Deprecated
 	String							RUNPATH_LAUNCHER_DIRECTIVE					= "launcher:";
-	/**
-	 * @deprecated Use {@link Constants#TESTCASES}.
-	 */
-	String							SIGNATURE_TEST								= "-signaturetest";
 }

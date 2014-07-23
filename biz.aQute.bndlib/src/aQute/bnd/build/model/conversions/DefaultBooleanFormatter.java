@@ -23,4 +23,10 @@ public class DefaultBooleanFormatter implements Converter<String,Boolean> {
 		return result;
 	}
 
+	@Override
+	public String error(String msg) {
+		return msg;
+	}
+	
+
 }

@@ -28,6 +28,12 @@ public class RequirementListConverter extends ClauseListConverter<Requirement> {
 				}
 				return builder.buildSyntheticRequirement();
 			}
+
+			@Override
+			public Requirement error(String msg) {
+				CapReqBuilder builder = new CapReqBuilder(msg);
+				return builder.buildSyntheticRequirement();
+			}
 		});
 	}
 

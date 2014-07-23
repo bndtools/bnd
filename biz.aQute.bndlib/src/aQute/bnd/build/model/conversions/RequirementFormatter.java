@@ -22,4 +22,9 @@ public class RequirementFormatter implements Converter<String,Requirement> {
 		return builder.toString();
 	}
 
+	@Override
+	public String error(String msg) {
+		return msg;
+	}
+
 }

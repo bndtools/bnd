@@ -10,4 +10,9 @@ public class VersionedClauseConverter implements Converter<VersionedClause,Pair<
 			return null;
 		return new VersionedClause(input.getFirst(), input.getSecond());
 	}
+
+	@Override
+	public VersionedClause error(String msg) {
+		return VersionedClause.error(msg);
+	}
 }

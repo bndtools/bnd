@@ -139,6 +139,9 @@ public class DiffPluginImpl implements Differ {
 			if ( META_INF_P.matcher(entry.getKey()).matches())
 				continue;
 			
+			if ( localIgnore != null && localIgnore.matches(entry.getKey()))
+				continue;
+			
 			InputStream in = entry.getValue().openInputStream();
 			try {
 				Digester<SHA1> digester = SHA1.getDigester();

@@ -92,7 +92,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			for (ResourceDescriptorImpl rd : descriptors) {
 				format.format(del);
 				format.flush();
-				codec.enc().to(format.out()).put(rd);
+				codec.enc().to(format.out()).keepOpen().put(rd);
 				del = ",\n";
 			}
 			format.format("\n]}\n");

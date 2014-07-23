@@ -55,4 +55,9 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 		}
 		return result;
 	}
+
+	@Override
+	public String error(String msg) {
+		return msg;
+	}
 }

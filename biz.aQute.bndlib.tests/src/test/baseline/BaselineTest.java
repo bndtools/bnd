@@ -10,6 +10,7 @@ import java.util.regex.*;
 import junit.framework.*;
 import aQute.bnd.build.*;
 import aQute.bnd.differ.*;
+import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
@@ -22,32 +23,77 @@ import aQute.libg.reporter.*;
 
 @SuppressWarnings("resource")
 public class BaselineTest extends TestCase {
-	private static void reallyClean(Workspace ws) throws Exception {
-		String wsName = ws.getBase().getName();
-		for (Project project : ws.getAllProjects()) {
-			if (("p2".equals(project.getName()) && "ws".equals(wsName))) {
-				File output = project.getSrcOutput().getAbsoluteFile();
-				if (output.isDirectory() && output.getParentFile() != null) {
-					IO.delete(output);
-				}
-			} else {
-				project.clean();
+	File		tmp	= new File("tmp").getAbsoluteFile();
+	Workspace	workspace;
 
-				File target = project.getTargetDir();
-				if (target.isDirectory() && target.getParentFile() != null) {
-					IO.delete(target);
-				}
-				File output = project.getSrcOutput().getAbsoluteFile();
-				if (output.isDirectory() && output.getParentFile() != null) {
-					IO.delete(output);
-				}
-			}
-		}
-		IO.delete(ws.getFile("cnf/cache"));
+	public Workspace getWorkspace() throws Exception {
+		if (workspace != null)
+			return workspace;
+
+		IO.delete(tmp);
+		IO.copy(new File("testresources/ws"), tmp);
+		return workspace = new Workspace(tmp);
 	}
 
 	public void tearDown() throws Exception {
-		reallyClean(new Workspace(new File("testresources/ws")));
+		IO.delete(tmp);
+		workspace = null;
+	}
+
+	public void testJava8DefaultMethods() throws Exception {
+		Builder older = new Builder();
+		older.addClasspath( new File("java8/older/bin"));
+		older.setExportPackage("*");
+		Jar o = older.build();
+		assertTrue(older.check());
+		
+		Builder newer = new Builder();
+		newer.addClasspath( new File("java8/newer/bin"));
+		newer.setExportPackage("*");
+		Jar n = newer.build();
+		assertTrue(newer.check());
+		
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(older, differ);
+
+		Set<Info> infoSet = baseline.baseline(n,o, null);
+
+		for ( Info info : infoSet ) {
+			System.out.printf("%-20s %s %s%n", info.packageName, info.mismatch, info.suggestedVersion);
+		}
+		
+	}
+	
+	
+	
+	
+	/**
+	 * Check if we can ignore resources in the baseline. First build two jars
+	 * that are identical except for the b/b resource. Then do baseline on them.
+	 */
+	public void testIgnoreResourceDiff() throws Exception {
+		Processor processor = new Processor();
+		DiffPluginImpl differ = new DiffPluginImpl();
+		differ.setIgnore("b/b");
+		Baseline baseline = new Baseline(processor, differ);
+
+		Builder a = new Builder();
+		a.setProperty("-includeresource", "a/a;literal='aa',b/b;literal='bb'");
+		a.setProperty("-resourceonly", "true");
+		Jar aj = a.build();
+
+		Builder b = new Builder();
+		b.setProperty("-includeresource", "a/a;literal='aa',b/b;literal='bbb'");
+		b.setProperty("-resourceonly", "true");
+		Jar bj = b.build();
+
+		Set<Info> infoSet = baseline.baseline(aj, bj, null);
+
+		BundleInfo binfo = baseline.getBundleInfo();
+		assertFalse(binfo.mismatch);
+
+		a.close();
+		b.close();
 	}
 
 	public static void testBaslineJar() throws Exception {
@@ -166,15 +212,13 @@ public class BaselineTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testRepository() throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
-
+	public void testRepository() throws Exception {
 		Jar v1_2_0_a = mock(Jar.class);
 		when(v1_2_0_a.getVersion()).thenReturn("1.2.0.b");
 		when(v1_2_0_a.getBsn()).thenReturn("p3");
 
 		RepositoryPlugin repo = mock(RepositoryPlugin.class);
-		ws.addBasicPlugin(repo);
+		getWorkspace().addBasicPlugin(repo);
 		@SuppressWarnings("unchecked")
 		Map<String,String> map = any(Map.class);
 		when(repo.get(anyString(), any(Version.class), map)).thenReturn(
@@ -187,7 +231,7 @@ public class BaselineTest extends TestCase {
 				new SortedList<Version>(new Version("1.1.0.a"), new Version("1.1.0.b"), new Version("1.2.0.a"),
 						new Version("1.2.0.b")));
 
-		Project p3 = ws.getProject("p3");
+		Project p3 = getWorkspace().getProject("p3");
 		p3.setBundleVersion("1.3.0");
 		ProjectBuilder builder = (ProjectBuilder) p3.getBuilder(null).getSubBuilder();
 		builder.setProperty(Constants.BASELINE, "*");
@@ -247,18 +291,16 @@ public class BaselineTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testNothingInRepo() throws Exception {
+	public void testNothingInRepo() throws Exception {
 		File tmp = new File("tmp");
 		tmp.mkdirs();
 		try {
-			IO.copy(new File("testresources/ws"), tmp);
-			Workspace ws = new Workspace(tmp);
 			RepositoryPlugin repo = mock(RepositoryPlugin.class);
 			when(repo.canWrite()).thenReturn(true);
 			when(repo.getName()).thenReturn("Baseline");
 			when(repo.versions("p3")).thenReturn(new TreeSet<Version>());
-			ws.addBasicPlugin(repo);
-			Project p3 = ws.getProject("p3");
+			getWorkspace().addBasicPlugin(repo);
+			Project p3 = getWorkspace().getProject("p3");
 			p3.setProperty(Constants.BASELINE, "*");
 			p3.setProperty(Constants.BASELINEREPO, "Baseline");
 			p3.setBundleVersion("0");
@@ -279,7 +321,7 @@ public class BaselineTest extends TestCase {
 	}
 
 	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)
-	public static void testProviderTypeBump() throws Exception {
+	public void testProviderTypeBump() throws Exception {
 		Processor processor = new Processor();
 
 		DiffPluginImpl differ = new DiffPluginImpl();

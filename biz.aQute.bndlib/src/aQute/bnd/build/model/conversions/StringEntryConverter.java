@@ -10,4 +10,9 @@ public class StringEntryConverter implements Converter<String,Entry<String, ? >>
 		return input.getKey();
 	}
 
+	@Override
+	public String error(String msg) {
+		return msg;
+	}
+
 }

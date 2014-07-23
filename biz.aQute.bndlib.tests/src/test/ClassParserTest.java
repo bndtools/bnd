@@ -86,7 +86,6 @@ public class ClassParserTest extends TestCase {
 	 * Groovy releases. I first discovered this problem using v1.8.7, but saw
 	 * the same results with v1.8.9. The problem was apparently fixed in v2.1,
 	 * using a groovy-all-2.1.0 a correct manifest file is created.
-	 * 
 	 */
 	public static void testCodehauseGROOVY_6169() throws Exception {
 		Clazz c = new Clazz(a, "foo", new FileResource(new File("jar/BugReproLoggerGroovy189.jclass")));
@@ -331,16 +330,21 @@ public class ClassParserTest extends TestCase {
 	 */
 	public static void testEcj() throws Exception {
 		Builder builder = new Builder();
-		builder.setClasspath(new File[] {
-			new File("jar/ecj_3.2.2.jar")
-		});
-		builder.setProperty(Analyzer.EXPORT_PACKAGE, "org.eclipse.*");
-		builder.build();
-		System.err.println(builder.getErrors());
-		assertEquals(0, builder.getErrors().size());
-		assertEquals(0, builder.getWarnings().size());
-		System.err.println(builder.getErrors());
-		System.err.println(builder.getWarnings());
+		try {
+			builder.setClasspath(new File[] {
+				new File("jar/ecj_3.2.2.jar")
+			});
+			builder.setProperty(Analyzer.EXPORT_PACKAGE, "org.eclipse.*");
+			builder.build();
+			System.err.println(builder.getErrors());
+			assertEquals(0, builder.getErrors().size());
+			assertEquals(0, builder.getWarnings().size());
+			System.err.println(builder.getErrors());
+			System.err.println(builder.getWarnings());
+		}
+		finally {
+			builder.close();
+		}
 	}
 
 	/**

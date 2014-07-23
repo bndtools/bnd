@@ -12,4 +12,11 @@ public class PropertiesConverter implements Converter<Map<String,String>,String>
 		return OSGiHeader.parseProperties(input);
 	}
 
+	@Override
+	public Map<String,String> error(String msg) {
+		HashMap<String,String> result = new HashMap<String,String>();
+		result.put("ERROR", msg);
+		return result;
+	}
+
 }

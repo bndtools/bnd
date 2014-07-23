@@ -13,6 +13,7 @@ import java.util.zip.*;
 import aQute.bnd.version.*;
 import aQute.lib.base64.*;
 import aQute.lib.io.*;
+import aQute.lib.zip.*;
 import aQute.service.reporter.*;
 
 public class Jar implements Closeable {
@@ -327,7 +328,7 @@ public class Jar implements Closeable {
 			return;
 
 		JarEntry ze = new JarEntry(manifestName);
-		ze.setTime(lastModified);
+		ZipUtil.setModifiedTime(ze,lastModified);
 		jout.putNextEntry(ze);
 		writeManifest(jout);
 		jout.closeEntry();
@@ -552,7 +553,7 @@ public class Jar implements Closeable {
 			if (lastModified == 0L) {
 				lastModified = System.currentTimeMillis();
 			}
-			ze.setTime(lastModified);
+			ZipUtil.setModifiedTime(ze,lastModified);
 			if (resource.getExtra() != null)
 				ze.setExtra(resource.getExtra().getBytes("UTF-8"));
 			jout.putNextEntry(ze);

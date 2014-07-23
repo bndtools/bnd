@@ -14,19 +14,22 @@ import org.osgi.framework.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
+import aQute.bnd.annotation.component.*;
+import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.io.*;
 
-@SuppressWarnings({"resource", "rawtypes"}
-)
+@SuppressWarnings({
+		"resource", "rawtypes"
+})
 public class ComponentTest extends TestCase {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+	static final int					BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
 
-	static final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
-	static final XPathFactory				xpathf	= XPathFactory.newInstance();
-	static final XPath						xpath	= xpathf.newXPath();
-	static DocumentBuilder					db;
+	static final DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
+	static final XPathFactory			xpathf		= XPathFactory.newInstance();
+	static final XPath					xpath		= xpathf.newXPath();
+	static DocumentBuilder				db;
 
 	static {
 		try {
@@ -66,26 +69,68 @@ public class ComponentTest extends TestCase {
 		}
 	}
 
-
 	public static class ReferenceOrder {
-		
+
 		void setA(ServiceReference sr) {}
+
 		void unsetA(ServiceReference sr) {}
-		
+
 		void setZ(ServiceReference sr) {}
+
 		void unsetZ(ServiceReference sr) {}
 	}
 
 	/**
-	 * 112.5.7 says refeence order is used to order binding services, so from headers we preserve order.
+	 * Whitespace in Component name causes Component initialization to fail #548
+	 */
+
+	@Component(name = "Hello World Bnd ^ % / \\ $")
+	static class BrokenNameDS {
+
+	}
+
+	@Component(name = "Hello World")
+	static class BrokenNameBnd {
+
+	}
+
+	public void testBrokenName() throws Exception {
+		Builder b = new Builder();
+		try {
+			b.addClasspath(new File("bin"));
+			b.setProperty("Service-Component", "*Broken*");
+			b.setPrivatePackage("test.component");
+			Jar build = b.build();
+			assertTrue(b.check("Invalid component name"));
+			
+			Domain m = Domain.domain(build.getManifest());
+			
+			Parameters parameters = m.getParameters("Service-Component");
+			assertEquals( 2, parameters.size());
+			
+			System.out.println(parameters);
+			assertTrue( parameters.keySet().contains("OSGI-INF/Hello-World-Bnd---------$.xml"));
+			assertTrue( parameters.keySet().contains("OSGI-INF/Hello-World.xml"));
+		}
+		finally {
+			b.close();
+		}
+	}
+
+	/**
+	 * 112.5.7 says refeence order is used to order binding services, so from
+	 * headers we preserve order.
+	 * 
 	 * @throws Exception
 	 */
 	public static void testHeaderReferenceOrder() throws Exception {
-		Document doc = setup(ReferenceOrder.class.getName() + ";version:=1.1;z=org.osgi.service.http.HttpService?;a=org.osgi.service.http.HttpService?", ReferenceOrder.class.getName());
+		Document doc = setup(ReferenceOrder.class.getName()
+				+ ";version:=1.1;z=org.osgi.service.http.HttpService?;a=org.osgi.service.http.HttpService?",
+				ReferenceOrder.class.getName());
 		assertAttribute(doc, "z", "scr:component/reference[1]/@name");
 		assertAttribute(doc, "a", "scr:component/reference[2]/@name");
 	}
-	
+
 	/**
 	 * Test to see if we ignore scala.ScalaObject as interface
 	 * 
@@ -132,7 +177,6 @@ public class ComponentTest extends TestCase {
 		assertTrue(imports.contains("org.osgi.framework"));
 	}
 
-	
 	/**
 	 * A non-FQN entry but we demand no annotations, should generate an error
 	 * and no component
@@ -156,7 +200,6 @@ public class ComponentTest extends TestCase {
 		assertNull(component);
 	}
 
-
 	public static void assertAttribute(Document doc, String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, doc, XPathConstants.STRING);
@@ -177,7 +220,8 @@ public class ComponentTest extends TestCase {
 	}
 
 	public static void testV1_1Directives() throws Exception {
-		Element component = setup("test.activator.Activator11;factory:=blabla;immediate:=true;enabled:=false;configuration-policy:=optional;activate:=start;deactivate:=stop;modified:=modded",
+		Element component = setup(
+				"test.activator.Activator11;factory:=blabla;immediate:=true;enabled:=false;configuration-policy:=optional;activate:=start;deactivate:=stop;modified:=modded",
 				"test.activator.Activator11").getDocumentElement();
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 		assertEquals("blabla", component.getAttribute("factory"));
@@ -198,19 +242,19 @@ public class ComponentTest extends TestCase {
 		Element component = setup("test.activator.Activator;activate:='start';deactivate:='stop'");
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 
-		//activate/deactivate with  BundleContext args
+		// activate/deactivate with BundleContext args
 		component = setup("test.activator.Activator2", "test.activator.Activator2").getDocumentElement();
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 
-		//deactivate with a int reason
+		// deactivate with a int reason
 		component = setup("test.activator.Activator3", "test.activator.Activator3").getDocumentElement();
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 
-		//package access activate/deactivate with ComponentContext args
+		// package access activate/deactivate with ComponentContext args
 		component = setup("test.activator.ActivatorPackage", "test.activator.ActivatorPackage").getDocumentElement();
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 
-		//private access activate/deactivate with ComponentContext args
+		// private access activate/deactivate with ComponentContext args
 		component = setup("test.activator.ActivatorPrivate", "test.activator.ActivatorPrivate").getDocumentElement();
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 
@@ -247,12 +291,11 @@ public class ComponentTest extends TestCase {
 
 		String path = "OSGI-INF/" + className + ".xml";
 		print(b.getJar().getResource(path), System.err);
-		Document doc = db.parse(new InputSource(b.getJar().getResource(path)
-				.openInputStream()));
+		Document doc = db.parse(new InputSource(b.getJar().getResource(path).openInputStream()));
 
 		return doc;
 	}
-	
+
 	static Element setup(String header) throws Exception {
 		return setup(header, "test.activator.Activator").getDocumentElement();
 	}
@@ -275,8 +318,9 @@ public class ComponentTest extends TestCase {
 
 	/*
 	 * public void testWildcards() throws Exception { Builder b = new Builder();
-	 * b .setProperty(Analyzer.SERVICE_COMPONENT, "testresources/component/*.xml");
-	 * b.setProperty("-resourceonly", "true"); b.setProperty("Include-Resource",
+	 * b .setProperty(Analyzer.SERVICE_COMPONENT,
+	 * "testresources/component/*.xml"); b.setProperty("-resourceonly", "true");
+	 * b.setProperty("Include-Resource",
 	 * "testresources/component=testresources/component"); Jar jar = b.build();
 	 * System.err.println(b.getErrors()); System.err.println(b.getWarnings());
 	 * assertEquals(0, b.getErrors().size()); assertEquals(0,
@@ -381,24 +425,19 @@ public class ComponentTest extends TestCase {
 	 * @throws Exception
 	 */
 	public static void testDirectives() throws Exception {
-		Document doc =
-			setup("test.activator.Activator;http=org.osgi.service.http.HttpService;dynamic:=http;optional:=http;provide:=test.activator.Activator; multiple:=http", "test.activator.Activator");
+		Document doc = setup(
+				"test.activator.Activator;http=org.osgi.service.http.HttpService;dynamic:=http;optional:=http;provide:=test.activator.Activator; multiple:=http",
+				"test.activator.Activator");
 
-		assertEquals("test.activator.Activator", xpath.evaluate(
-				"/component/implementation/@class", doc));
-		assertEquals("org.osgi.service.http.HttpService", xpath.evaluate(
-				"/component/reference[@name='http']/@interface", doc));
+		assertEquals("test.activator.Activator", xpath.evaluate("/component/implementation/@class", doc));
+		assertEquals("org.osgi.service.http.HttpService",
+				xpath.evaluate("/component/reference[@name='http']/@interface", doc));
 		// there are no bind/unbind methods...
-		assertEquals("", xpath.evaluate(
-				 "/component/reference[@name='http']/@bind", doc));
-		assertEquals("", xpath.evaluate(
-				 "/component/reference[@name='http']/@unbind", doc));
-		assertEquals("0..n", xpath.evaluate(
-				"/component/reference[@name='http']/@cardinality", doc));
-		assertEquals("dynamic", xpath.evaluate(
-				"/component/reference[@name='http']/@policy", doc));
-		assertEquals("test.activator.Activator", xpath.evaluate(
-				"/component/service/provide/@interface", doc));
+		assertEquals("", xpath.evaluate("/component/reference[@name='http']/@bind", doc));
+		assertEquals("", xpath.evaluate("/component/reference[@name='http']/@unbind", doc));
+		assertEquals("0..n", xpath.evaluate("/component/reference[@name='http']/@cardinality", doc));
+		assertEquals("dynamic", xpath.evaluate("/component/reference[@name='http']/@policy", doc));
+		assertEquals("test.activator.Activator", xpath.evaluate("/component/service/provide/@interface", doc));
 	}
 
 	/**
@@ -410,9 +449,12 @@ public class ComponentTest extends TestCase {
 		java.util.Properties p = new Properties();
 		p.put(Analyzer.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
 		p.put(Analyzer.IMPORT_PACKAGE, "*");
-		p.put(Analyzer.SERVICE_COMPONENT, "test.activator.Activator;http=\"org.osgi.service.http.HttpService(|p=1)(p=2))\"");
+		p.put(Analyzer.SERVICE_COMPONENT,
+				"test.activator.Activator;http=\"org.osgi.service.http.HttpService(|p=1)(p=2))\"");
 		Builder b = new Builder();
-		b.setClasspath(new File[] { new File("bin"), new File("jar/osgi.jar") });
+		b.setClasspath(new File[] {
+				new File("bin"), new File("jar/osgi.jar")
+		});
 		b.setProperties(p);
 		b.build();
 		System.err.println(b.getErrors());
@@ -435,7 +477,7 @@ public class ComponentTest extends TestCase {
 
 		Element reference = (Element) component.getElementsByTagName("reference").item(0);
 		assertEquals("org.osgi.service.http.HttpService", reference.getAttribute("interface"));
-		//we actually check for the methods and don't add them blindly
+		// we actually check for the methods and don't add them blindly
 		assertEquals("", reference.getAttribute("bind"));
 		assertEquals("", reference.getAttribute("unbind"));
 		assertEquals("(|(p=1)(p=2))", reference.getAttribute("target"));
@@ -493,5 +535,5 @@ public class ComponentTest extends TestCase {
 		assertEquals("0..1", reference.getAttribute("cardinality"));
 		assertEquals("", reference.getAttribute("policy"));
 	}
-	
+
 }
