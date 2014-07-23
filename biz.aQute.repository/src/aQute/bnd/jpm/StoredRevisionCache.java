@@ -96,7 +96,6 @@ public class StoredRevisionCache {
 				continue;
 
 			try {
-				System.out.println("Download " + url);
 				HttpURLConnection connection = getConnection(url);
 
 				MessageDigest digest = MessageDigest.getInstance("SHA1");
