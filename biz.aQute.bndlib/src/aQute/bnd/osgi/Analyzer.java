@@ -3055,4 +3055,27 @@ public class Analyzer extends Processor {
 
 		return sb.toString();
 	}
+
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public String validResourcePath(String name, String reportIfWrong) {
+		boolean changed = false;
+		StringBuilder sb = new StringBuilder(name);
+		for ( int i=0; i<sb.length(); i++) {
+			char c = sb.charAt(i);
+			if ( c == '-' || c== '.' || c=='_' || c =='$' || Character.isLetterOrDigit(c))
+				continue;
+			sb.replace(i, i+1, "-");
+			changed = true;
+		}
+		if ( changed ) {
+			if ( reportIfWrong != null)
+				warning("%s: %s", reportIfWrong, name);
+			return sb.toString();
+		}
+		return name;
+	}
 }

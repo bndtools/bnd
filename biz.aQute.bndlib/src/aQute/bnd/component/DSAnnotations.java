@@ -33,7 +33,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 					if (definition != null) {
 						definition.sortReferences();
 						definition.prepare(analyzer);
-						String name = "OSGI-INF/" + definition.name + ".xml";
+						String name = "OSGI-INF/" + analyzer.validResourcePath(definition.name, "Invalid component name") + ".xml";
 						names.add(name);
 						analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
 					}
