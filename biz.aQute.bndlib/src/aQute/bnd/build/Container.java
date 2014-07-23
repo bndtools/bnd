@@ -136,7 +136,7 @@ public class Container {
 	public String toString() {
 		if (getError() != null)
 			return "/error/" + getError();
-		return getFile().getAbsolutePath();
+		return getFile().getAbsolutePath().replace(File.separatorChar, '/');
 	}
 
 	public Map<String,String> getAttributes() {
