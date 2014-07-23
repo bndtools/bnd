@@ -957,6 +957,7 @@ public class Macro {
 		}
 		catch (Throwable t) {
 			/* ignore */
+			return "";
 		}
 		return result;
 	}
