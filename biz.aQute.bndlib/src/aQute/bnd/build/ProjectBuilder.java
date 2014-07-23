@@ -103,7 +103,7 @@ public class ProjectBuilder extends Builder {
 	public void doBaseline(Jar dot) throws Exception {
 
 		String diffignore = project.getProperty(Constants.DIFFIGNORE);
-		trace("ignore headers %s", diffignore);
+		trace("ignore headers & paths %s", diffignore);
 		differ.setIgnore(diffignore);
 
 		Jar fromRepo = getBaselineJar();
