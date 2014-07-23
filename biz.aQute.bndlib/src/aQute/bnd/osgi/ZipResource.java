@@ -5,16 +5,18 @@ import java.util.*;
 import java.util.regex.*;
 import java.util.zip.*;
 
+import aQute.lib.zip.*;
+
 public class ZipResource implements Resource {
 	ZipFile		zip;
 	ZipEntry	entry;
 	long		lastModified;
 	String		extra;
 
-	ZipResource(ZipFile zip, ZipEntry entry, long lastModified) throws UnsupportedEncodingException {
+	ZipResource(ZipFile zip, ZipEntry entry) throws UnsupportedEncodingException {
 		this.zip = zip;
 		this.entry = entry;
-		this.lastModified = lastModified;
+		this.lastModified = -11L;
 		byte[] data = entry.getExtra();
 		if (data != null)
 			this.extra = new String(data, "UTF-8");
@@ -45,10 +47,8 @@ public class ZipResource implements Resource {
 						continue nextEntry;
 				}
 				if (!entry.isDirectory()) {
-					long time = entry.getTime();
-					if (time <= 0)
-						time = file.lastModified();
-					jar.putResource(entry.getName(), new ZipResource(zip, entry, time), true);
+
+					jar.putResource(entry.getName(), new ZipResource(zip, entry), true);
 				}
 			}
 			return zip;
@@ -67,7 +67,15 @@ public class ZipResource implements Resource {
 	}
 
 	public long lastModified() {
-		return lastModified;
+		try {
+			if (lastModified == -11L) {
+				lastModified = ZipUtil.getModifiedTime(entry);
+			}
+			return lastModified;
+		}
+		catch (IOException e) {
+			return lastModified = -1;
+		}
 	}
 
 	public String getExtra() {

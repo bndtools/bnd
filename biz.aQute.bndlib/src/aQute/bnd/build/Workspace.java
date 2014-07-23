@@ -26,6 +26,7 @@ import aQute.lib.deployer.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.settings.*;
+import aQute.lib.zip.*;
 import aQute.service.reporter.*;
 
 public class Workspace extends Processor {
@@ -395,7 +396,8 @@ public class Workspace extends Processor {
 				while (jentry != null) {
 					if (!jentry.isDirectory()) {
 						File dest = Processor.getFile(dir, jentry.getName());
-						if (!dest.isFile() || dest.lastModified() < jentry.getTime() || jentry.getTime() <= 0) {
+						long modifiedTime = ZipUtil.getModifiedTime(jentry);
+						if (!dest.isFile() || dest.lastModified() < modifiedTime || modifiedTime <= 0) {
 							File dp = dest.getParentFile();
 							if (!dp.exists() && !dp.mkdirs()) {
 								throw new IOException("Could not create directory " + dp);

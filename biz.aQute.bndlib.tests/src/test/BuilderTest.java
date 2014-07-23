@@ -42,7 +42,7 @@ public class BuilderTest extends BndTestCase {
 					Date date = new Date(t);
 					System.out.println(date + " " + t);
 					// TODO we need to adapt the timestamp handling
-					// assertTrue(t ==1142552022000L);
+					assertTrue(t ==1142552022000L);
 				}
 				finally {
 					ajr.close();
