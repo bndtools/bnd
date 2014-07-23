@@ -2389,7 +2389,6 @@ public class BuilderTest extends BndTestCase {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
-			String cwd = new File(".").getCanonicalPath();
 			File cp[] = new File[] {
 				IO.getFile("jar/idonotexist.jar")
 			};
@@ -2397,7 +2396,7 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setProperties(p);
 			bmaker.setClasspath(cp);
 			bmaker.build();
-			assertTrue(bmaker.check("The JAR is empty", "Missing file on classpath: " + cwd + "/jar/idonotexist.jar"));
+			assertTrue(bmaker.check("The JAR is empty", "Missing file on classpath: .*/jar/idonotexist.jar"));
 		}
 		finally {
 			bmaker.close();
