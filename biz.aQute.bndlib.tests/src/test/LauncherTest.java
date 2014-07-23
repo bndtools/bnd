@@ -12,26 +12,35 @@ import aQute.lib.io.*;
 
 public class LauncherTest extends TestCase {
 
-	
-//	public static void testLocalLaunch() throws Exception {
-//		Project project = getProject();
-//		ProjectLauncher l = project.getProjectLauncher();
-//		l.setTrace(true);
-//		l.getRunProperties().put("test.cmd", "exit");
-//		//assertTrue(project.check());
-//		assertEquals(42, l.start(null));
-//	}
+	private static Workspace	workspace;
+	private static Project		project;
 
+	public void tearDown() {
+		if (project != null) {
+			project.close();
+			workspace.close();
+		}
+	}
+
+	// public static void testLocalLaunch() throws Exception {
+	// Project project = getProject();
+	// ProjectLauncher l = project.getProjectLauncher();
+	// l.setTrace(true);
+	// l.getRunProperties().put("test.cmd", "exit");
+	// //assertTrue(project.check());
+	// assertEquals(42, l.start(null));
+	// }
 
 	public static void testNoReferences() throws Exception {
 		Project project = getProject();
-		project.setProperty("-runnoreferences", true+"");
+		project.setProperty("-runnoreferences", true + "");
 
 		ProjectLauncher l = project.getProjectLauncher();
 		l.setTrace(true);
 		l.getRunProperties().put("test.cmd", "noreference");
 		assertEquals(15, l.launch());
 	}
+
 	/**
 	 * Try launching a workspace with spaces
 	 */
@@ -48,10 +57,16 @@ public class LauncherTest extends TestCase {
 			Workspace ws = Workspace.getWorkspace(f);
 			Project p = ws.getProject("demo");
 			p.build();
-			ProjectLauncher l = p.getProjectLauncher();
-			l.setTrace(true);
-			l.getRunProperties().put("test.cmd", "exit");
-			assertEquals(42, l.launch());
+			try {
+				ProjectLauncher l = p.getProjectLauncher();
+				l.setTrace(true);
+				l.getRunProperties().put("test.cmd", "exit");
+				assertEquals(42, l.launch());
+			}
+			finally {
+				p.close();
+				ws.close();
+			}
 		}
 		finally {
 			IO.delete(f);
@@ -87,6 +102,7 @@ public class LauncherTest extends TestCase {
 		l.getRunProperties().put("test.cmd", "env");
 		assertEquals(84, l.launch());
 	}
+
 	/**
 	 * Tests if the properties are cleaned up. This requires some knowledge of
 	 * the launcher unfortunately. It is also not sure if the file is not just
@@ -145,10 +161,9 @@ public class LauncherTest extends TestCase {
 		ProjectLauncher l = project.getProjectLauncher();
 		l.setTrace(true);
 		l.getRunProperties().put("test.cmd", "exit");
-		//assertTrue(project.check());
+		// assertTrue(project.check());
 		assertEquals(42, l.launch());
 	}
-
 
 	/**
 	 * Test the packager
@@ -241,13 +256,13 @@ public class LauncherTest extends TestCase {
 	 * @throws Exception
 	 */
 	static Project getProject() throws Exception {
-		Workspace workspace = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile());
+		workspace = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile());
 		workspace.clear();
-		Project project = workspace.getProject("demo");
+		project = workspace.getProject("demo");
 		project.clear();
 		project.forceRefresh();
 		assertTrue(project.check());
-		//(project.getWorkspace().check());
+		// (project.getWorkspace().check());
 		return project;
 	}
 
@@ -330,14 +345,14 @@ public class LauncherTest extends TestCase {
 		l.getRunProperties().put("test.cmd", cmd);
 		assertEquals(rv, l.launch());
 	}
-	
+
 	public void testUnresolved() throws Exception {
 		Project project = getProject();
 		project.clear();
 		project.setProperty(Constants.RUNTRACE, "true");
-		
+
 		String mandatorynoversion = new File("jar/mandatorynoversion.jar").getAbsolutePath();
-		String runbundles = project.getProperty( Constants.RUNBUNDLES);
+		String runbundles = project.getProperty(Constants.RUNBUNDLES);
 		project.setProperty(Constants.RUNBUNDLES, runbundles + "," + mandatorynoversion + ";version=file");
 		ProjectTester tester = project.getProjectTester();
 

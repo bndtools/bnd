@@ -734,4 +734,10 @@ public class Workspace extends Processor {
 		}
 		return null;
 	}
+
+
+	public void close() {
+		cache.remove(getPropertiesFile().getParentFile().getParentFile());
+	}
+
 }

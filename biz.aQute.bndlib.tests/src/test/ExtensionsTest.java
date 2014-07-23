@@ -17,6 +17,7 @@ public class ExtensionsTest extends TestCase {
 	}
 	
 	public void tearDown() throws Exception {
+		ws.close();
 		IO.delete(tmp);
 	}
 	

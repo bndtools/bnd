@@ -16,4 +16,8 @@ public class Run extends Project {
 	public String toString() {
 		return getPropertiesFile().getName();
 	}
+	
+	public void close() {
+		super.close();
+	}
 }

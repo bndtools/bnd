@@ -516,13 +516,16 @@ public class ProjectBuilder extends Builder {
 		Jar[] jars = super.builds();
 		if (isOk()) {
 			for (Run export : getExportedRuns()) {
+				addClose(export);
 				if ( export.getProperty(BUNDLE_SYMBOLICNAME) == null) {
 					export.setProperty(BUNDLE_SYMBOLICNAME, getBsn() + ".run");
 				}
 				Jar pack = export.pack(getProperty(PROFILE));
 				getInfo(export);
-				if ( pack != null)
+				if ( pack != null) {
 					jars = concat(Jar.class,jars, pack);
+					addClose(pack);
+				}
 			}
 		}
 		return jars;

@@ -765,6 +765,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				// Who cares?
 			}
 		}
+		if (pluginLoader != null)
+			pluginLoader.closex();
+
 		toBeClosed.clear();
 	}
 
@@ -1525,10 +1528,56 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		trace = x;
 	}
 
-	public static class CL extends URLClassLoader {
+	 public static class CL extends URLClassLoader {
 
 		CL() {
 			super(new URL[0], Processor.class.getClassLoader());
+		}
+
+		void closex() {
+			Class<URLClassLoader> clazz = URLClassLoader.class;
+			
+			try {
+				//
+				// Java 7 is a good boy, it has a close method
+				//
+				clazz.getMethod("close").invoke(this);
+				return;
+			}
+			catch (Exception e) {
+				// ignore
+			}
+
+			//
+			// On Java 6, we're screwed and have to much around
+			// This is best effort, likely fails on non-SUN vms
+			// :-(
+			//
+			
+			try {
+				Field ucpField = clazz.getDeclaredField("ucp");
+				ucpField.setAccessible(true);
+				Object cp = ucpField.get(this);
+				Field loadersField = cp.getClass().getDeclaredField("loaders");
+				loadersField.setAccessible(true);
+				Collection<?> loaders = (Collection<?>) loadersField.get(cp);
+				for (Object loader : loaders) {
+					try {
+						Field loaderField = loader.getClass().getDeclaredField(
+								"jar");
+						loaderField.setAccessible(true);
+						JarFile jarFile = (JarFile) loaderField.get(loader);
+						jarFile.close();
+					}
+					catch (Throwable t) {
+						// if we got this far, this is probably not a JAR loader
+						// so skip it
+					}
+				}
+			}
+			catch (Throwable t) {
+				// probably not a SUN VM
+			}
 		}
 
 		void add(URL url) {
@@ -2394,8 +2443,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public <T> T[] concat(Class<T> type, T[] prefix, T suffix) {
 		@SuppressWarnings("unchecked")
 		T[] result = (T[]) Array.newInstance(type, (prefix != null ? prefix.length : 0) + 1);
-		if ( result.length > 1) {
-			System.arraycopy(prefix, 0, result, 0, result.length-1);
+		if (result.length > 1) {
+			System.arraycopy(prefix, 0, result, 0, result.length - 1);
 		}
 		result[result.length - 1] = suffix;
 		return result;
