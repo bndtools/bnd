@@ -17,7 +17,7 @@ import bndtools.bndplugins.repo.git.GitOBRRepo;
 
 public class TestGitOBRRepo extends TestCase {
 
-    private File checkoutDir = new File("generated/test-gitcheckout-tmp");
+    private final File checkoutDir = IO.getFile("generated/test-gitcheckout-tmp");
 
     @Override
     protected void setUp() throws Exception {
@@ -34,21 +34,21 @@ public class TestGitOBRRepo extends TestCase {
         GitOBRRepo repo = getOBRRepo();
         File bundleFile = repo.get("osgi.core", new Version("4.2.0"), null);
         assertNotNull("Repository returned null", bundleFile);
-        assertEquals(new File(checkoutDir, "jars/osgi.core/osgi.core-4.2.0.jar").getAbsoluteFile(), bundleFile);
+        assertEquals(IO.getFile(checkoutDir, "jars/osgi.core/osgi.core-4.2.0.jar").getAbsoluteFile(), bundleFile);
         removeOBRRepo();
     }
 
     public void testGitRepoPut() throws Exception {
         GitOBRRepo repo = getOBRRepo();
-        repo.put(new BufferedInputStream(new FileInputStream("testdata/eclipse2/ploogins/javax.servlet_2.5.0.v200806031605.jar")), new RepositoryPlugin.PutOptions());
+        repo.put(new BufferedInputStream(new FileInputStream(IO.getFile("testdata/eclipse2/ploogins/javax.servlet_2.5.0.v200806031605.jar"))), new RepositoryPlugin.PutOptions());
         File bundleFile = repo.get("javax.servlet", new Version("2.5"), null);
         assertNotNull("Repository returned null", bundleFile);
-        assertEquals(new File(checkoutDir, "jars/javax.servlet/javax.servlet-2.5.0.jar").getAbsoluteFile(), bundleFile);
+        assertEquals(IO.getFile(checkoutDir, "jars/javax.servlet/javax.servlet-2.5.0.jar"), bundleFile);
         removeOBRRepo();
     }
 
     private static File getOBRRepoDstDir() {
-        return new File("testdata/tmp/testrepo.git");
+        return IO.getFile("testdata/tmp/testrepo.git");
     }
 
     private static void removeOBRRepo() throws IOException {
@@ -56,7 +56,7 @@ public class TestGitOBRRepo extends TestCase {
     }
 
     private GitOBRRepo getOBRRepo() throws IOException {
-        File srcDir = new File("testdata/testrepo.git");
+        File srcDir = IO.getFile("testdata/testrepo.git");
         File dstDir = getOBRRepoDstDir();
         IO.copy(srcDir, dstDir);
 
