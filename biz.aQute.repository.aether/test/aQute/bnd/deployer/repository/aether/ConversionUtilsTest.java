@@ -1,32 +1,30 @@
 package aQute.bnd.deployer.repository.aether;
 
-import java.io.File;
+import junit.framework.*;
 
-import junit.framework.TestCase;
+import org.eclipse.aether.artifact.*;
 
-import org.eclipse.aether.artifact.Artifact;
-
-import aQute.bnd.deployer.repository.aether.ConversionUtils;
-import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 public class ConversionUtilsTest extends TestCase {
 
 	public void testGuessGroupId() throws Exception {
-		Jar jar = new Jar(new File("testdata/1.jar"));
+		Jar jar = new Jar(IO.getFile("testdata/1.jar"));
 		Artifact artifact = ConversionUtils.fromBundleJar(jar);
 		assertEquals("org.example", artifact.getGroupId());
 		assertEquals("api", artifact.getArtifactId());
 	}
 
 	public void testBsnMappingWithGroupId() throws Exception {
-		Jar jar = new Jar(new File("testdata/2.jar"));
+		Jar jar = new Jar(IO.getFile("testdata/2.jar"));
 		Artifact artifact = ConversionUtils.fromBundleJar(jar);
 		assertEquals("org.bndtools", artifact.getGroupId());
 		assertEquals("example.foo", artifact.getArtifactId());
 	}
 
 	public void testBsnMappingWithGroupIdNotPrefix() throws Exception {
-		Jar jar = new Jar(new File("testdata/3.jar"));
+		Jar jar = new Jar(IO.getFile("testdata/3.jar"));
 		Artifact artifact = ConversionUtils.fromBundleJar(jar);
 		assertEquals("com.paremus", artifact.getGroupId());
 		assertEquals("org.bndtools.example.foo", artifact.getArtifactId());
