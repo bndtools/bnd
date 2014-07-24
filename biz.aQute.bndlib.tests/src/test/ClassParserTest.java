@@ -73,6 +73,34 @@ class Implemented implements Plugin {
 public class ClassParserTest extends TestCase {
 	static Analyzer	a	= new Analyzer();
 
+	
+	/**
+	 * Java Type & Parameter annotations 
+	 * @throws Exception 
+	 */
+	
+	public void testJavaTypeAnnotations() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( IO.getFile("java8/type_annotations/bin"));
+		b.setExportPackage("reference.*");
+		Jar build = b.build();
+		assertTrue( b.check());
+		assertTrue(b.getImports().containsFQN("runtime.annotations"));
+		assertTrue(b.getImports().containsFQN("runtime.annotations.repeated"));
+		assertFalse(b.getImports().containsFQN("invisible.annotations"));
+		assertFalse(b.getImports().containsFQN("invisible.annotations.repeated"));
+		assertEquals("reference.runtime.annotations.Foo,reference.runtime.annotations.ReferenceRuntime", b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeTypeAnnotation}}"));
+		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer().process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleParameterAnnotation}}"));
+		assertEquals("reference.runtime.annotations.ReferenceRuntime", b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeParameterAnnotation}}"));
+		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer().process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleTypeAnnotation}}"));
+		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer().process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleRepeatedAnnotation}}"));
+		assertEquals("reference.runtime.annotations.ReferenceRuntime", b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeRepeatedAnnotation}}"));
+		b.close();
+	}
+	
+	
+	
+	
 	/**
 	 * https://jira.codehaus.org/browse/GROOVY-6169 There are several components
 	 * involved here, but the symptoms point to the Groovy compiler. Gradle uses
