@@ -152,7 +152,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
 			File result = handle.request();
-			assertEquals(cached, result);
+			assertEquals(cached, result.getAbsoluteFile());
 			assertEquals(EXPECTED_SHA, IO.collect(shaFile));
 
 			/* cleanup */
