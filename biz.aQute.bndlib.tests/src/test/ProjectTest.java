@@ -77,6 +77,7 @@ public class ProjectTest extends TestCase {
 		top.addClasspath(top.getOutput());
 
 		top.setProperty("a", "${repo;org.apache.felix.configadmin;latest}");
+		System.out.println( "a= '" + top.getProperty("a") + "'");
 		assertTrue(top.getProperty("a").endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.2.0.jar"));
 
 		top.setProperty("a", "${repo;IdoNotExist;latest}");
