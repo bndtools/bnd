@@ -90,7 +90,7 @@ public class MacroTest extends TestCase {
 		assertEquals("true", processor.getReplacer().process("${isempty;${empty};${empty};${empty};${empty};}"));
 		assertEquals("false", processor.getReplacer().process("${isempty;abc}"));
 		
-		assertEquals("\n000010", processor.getReplacer().process("${format;%n%06d;10}"));
+		assertEquals("\n000010", processor.getReplacer().process("${format;\n%06d;10}"));
 		assertEquals("000010", processor.getReplacer().process("${format;%1$06d;10}"));
 		assertEquals("2e C8 300 620", processor.getReplacer().process("${format;%x %X %d %o;46;200;300;400;500}"));
 		assertEquals("+00010", processor.getReplacer().process("${format;%+06d;10}"));
