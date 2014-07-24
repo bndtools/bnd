@@ -25,7 +25,7 @@ public class PreprocessTest extends TestCase {
 		
 		assertNotNull( resource);
 		
-		File f = new File("src/test/tb1.jar");
+		File f = IO.getFile("src/test/tb1.jar");
 		SHA1 d1 = SHA1.digest(f);
 		SHA1 d2 = SHA1.digest(resource.openInputStream());
 		assertEquals(d1, d2);

@@ -1238,9 +1238,12 @@ public class Builder extends Analyzer {
 
 		for (Builder builder : builders) {
 			try {
+				startBuild(builder);
 				Jar jar = builder.build();
 				jar.setName(builder.getBsn());
+				
 				result.add(jar);
+				doneBuild(builder);
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -1250,6 +1253,22 @@ public class Builder extends Analyzer {
 				getInfo(builder, builder.getBsn() + ": ");
 		}
 		return result.toArray(new Jar[result.size()]);
+	}
+
+
+	/**
+	 * Called when we start to build a builder
+	 */
+	protected void startBuild(Builder builder) {
+		
+	}
+	
+	/**
+	 * Called when we 're done with a builder
+	 */
+	protected void doneBuild(Builder builder) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	/**

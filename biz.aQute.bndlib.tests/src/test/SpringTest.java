@@ -40,7 +40,7 @@ public class SpringTest extends TestCase {
 	 *             "META-INF/spring/one.xml=src/test/spring-test1.xml");
 	 *             b.setProperty(Analyzer.IMPORT_PACKAGE, "*");
 	 *             b.setProperty(Analyzer.EXPORT_PACKAGE, "*");
-	 *             b.setClasspath(new File[] { new File("jar/asm.jar") }); Jar
+	 *             b.setClasspath(new File[] { IO.getFile("jar/asm.jar") }); Jar
 	 *             jar = b.build(); checkMessages(b,0,0); test(jar); }
 	 */
 

@@ -12,6 +12,7 @@ import aQute.bnd.annotation.component.*;
 import aQute.bnd.make.component.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.lib.io.*;
 
 public class AnnotationsTest extends TestCase {
 
@@ -47,7 +48,7 @@ public class AnnotationsTest extends TestCase {
 
 	public static void testComponentReader() throws Exception {
 		Analyzer analyzer = new Analyzer();
-		File f = new File("bin/test/AnnotationsTest$MyComponent.class");
+		File f = IO.getFile("bin/test/AnnotationsTest$MyComponent.class");
 		Clazz c = new Clazz(analyzer, "test.AnnotationsTest.MyComponent", new FileResource(f));
 		Map<String,String> map = ComponentAnnotationReader.getDefinition(c);
 		System.err.println(map);

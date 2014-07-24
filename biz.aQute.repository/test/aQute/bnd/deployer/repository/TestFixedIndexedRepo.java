@@ -43,7 +43,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("name", "index1");
-		props.put("locations", new File("testdata/index1.xml").toURI().toString());
+		props.put("locations", IO.getFile("testdata/index1.xml").toURI().toString());
 		props.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 
 		repo.setProperties(props);
@@ -64,7 +64,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("name", "index2");
-		props.put("locations", new File("testdata/index2.xml").toURI().toString());
+		props.put("locations", IO.getFile("testdata/index2.xml").toURI().toString());
 		props.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(props);
 		repo.setReporter(reporter);
@@ -79,7 +79,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
 		props.put("name", "index2");
-		props.put("locations", new File("testdata/index2.xml.gz").toURI().toString());
+		props.put("locations", IO.getFile("testdata/index2.xml.gz").toURI().toString());
 		props.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(props);
 		repo.setReporter(reporter);
@@ -95,7 +95,7 @@ public class TestFixedIndexedRepo extends TestCase {
 
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("name", "obr");
-		config.put("locations", new File("testdata/fullobr.xml").toURI().toString());
+		config.put("locations", IO.getFile("testdata/fullobr.xml").toURI().toString());
 		config.put("type", "OBR");
 		config.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(config);
@@ -116,7 +116,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		Processor reporter = new Processor();
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
-		config.put("locations", new File("testdata/ambiguous.xml").toURI().toString());
+		config.put("locations", IO.getFile("testdata/ambiguous.xml").toURI().toString());
 		config.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(config);
 		repo.setReporter(reporter);
@@ -143,7 +143,7 @@ public class TestFixedIndexedRepo extends TestCase {
 			}
 		};
 		config = new HashMap<String,String>();
-		config.put("locations", new File("testdata/xmlWithDtdRef.xml").getAbsoluteFile().toURI().toString());
+		config.put("locations", IO.getFile("testdata/xmlWithDtdRef.xml").getAbsoluteFile().toURI().toString());
 		config.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(config);
 		repo.setReporter(reporter);
@@ -156,7 +156,7 @@ public class TestFixedIndexedRepo extends TestCase {
 			}
 		};
 		config = new HashMap<String,String>();
-		config.put("locations", new File("testdata/xmlWithDtdRef.xml").getAbsoluteFile().toURI().toString());
+		config.put("locations", IO.getFile("testdata/xmlWithDtdRef.xml").getAbsoluteFile().toURI().toString());
 		config.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
 		repo.setProperties(config);
 		repo.setReporter(reporter);

@@ -249,7 +249,7 @@ public class MavenTest extends TestCase {
 
 	public static void testPomParser() throws Exception {
 		PomParser parser = new PomParser();
-		Properties p = parser.getProperties(new File("testresources/ws/maven1/pom.xml"));
+		Properties p = parser.getProperties(IO.getFile("testresources/ws/maven1/pom.xml"));
 		p.store(System.err, "testing");
 		assertEquals("Apache Felix Metatype Service", p.get("pom.name"));
 		assertEquals("org.apache.felix", p.get("pom.groupId")); // is from
@@ -279,7 +279,7 @@ public class MavenTest extends TestCase {
 	// graph.addRepository( new URL("http://repo1.maven.org/maven2/"));
 	// graph.addRepository( new
 	// URL("http://repository.springsource.com/maven/bundles/external"));
-	// // graph.root.add( new File("testresources/poms/pom-1.xml").toURI().toURL());
+	// // graph.root.add( IO.getFile("testresources/poms/pom-1.xml").toURI().toURL());
 	//
 	// }
 

@@ -9,6 +9,7 @@ import test.lib.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.lib.io.*;
 
 public class TestCompressedObrRepo extends TestCase {
 
@@ -21,7 +22,7 @@ public class TestCompressedObrRepo extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		httpd = new NanoHTTPD(0, new File("testdata/http"));
+		httpd = new NanoHTTPD(0, IO.getFile("testdata/http"));
 		httpdPort = httpd .getPort();
 
 		Sed.file2GzFile(obrSrc, "__httpdPort__", Integer.toString(httpdPort), obrDst);

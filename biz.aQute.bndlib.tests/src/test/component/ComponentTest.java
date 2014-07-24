@@ -97,7 +97,7 @@ public class ComponentTest extends TestCase {
 	public void testBrokenName() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("bin"));
+			b.addClasspath(IO.getFile("bin"));
 			b.setProperty("Service-Component", "*Broken*");
 			b.setPrivatePackage("test.component");
 			Jar build = b.build();
@@ -138,7 +138,7 @@ public class ComponentTest extends TestCase {
 	 */
 	public static void testScalaObject() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/com.test.scala.jar"));
+		b.addClasspath(IO.getFile("jar/com.test.scala.jar"));
 		b.setProperty("Service-Component", "*");
 		b.setProperty("Export-Package", "com.test.scala.*");
 		Jar jar = b.build();
@@ -161,11 +161,11 @@ public class ComponentTest extends TestCase {
 	public static void testProvideFromSuperClass() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
-			new File("bin")
+			IO.getFile("bin")
 		});
 		b.setProperty("Service-Component", "*InheritedActivator");
 		b.setProperty("Private-Package", "test.activator.inherits");
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
@@ -274,7 +274,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setProperty(Analyzer.SERVICE_COMPONENT, header);
 		b.setClasspath(new File[] {
-				new File("bin"), new File("jar/osgi.jar")
+				IO.getFile("bin"), IO.getFile("jar/osgi.jar")
 		});
 		b.setProperty("Private-Package", "test.activator, org.osgi.service.http.*");
 		b.build();
@@ -331,7 +331,7 @@ public class ComponentTest extends TestCase {
 		b.setProperty(Analyzer.SERVICE_COMPONENT,
 				"silly.name;implementation:=test.activator.Activator;provide:=java.io.Serialization;servicefactory:=true");
 		b.setClasspath(new File[] {
-				new File("bin"), new File("jar/osgi.jar")
+				IO.getFile("bin"), IO.getFile("jar/osgi.jar")
 		});
 		b.setProperty("Private-Package", "test.activator");
 		b.build();
@@ -362,7 +362,7 @@ public class ComponentTest extends TestCase {
 		p.put(Analyzer.SERVICE_COMPONENT, "test.activator.Activator;properties:=\"a=3|4,b=1|2|3\"");
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
-				new File("bin"), new File("jar/osgi.jar")
+				IO.getFile("bin"), IO.getFile("jar/osgi.jar")
 		});
 		b.setProperties(p);
 		b.build();
@@ -407,7 +407,7 @@ public class ComponentTest extends TestCase {
 		p.put(Analyzer.SERVICE_COMPONENT, "test.activator.Activator;provides:=true");
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
-				new File("bin"), new File("jar/osgi.jar")
+				IO.getFile("bin"), IO.getFile("jar/osgi.jar")
 		});
 		b.setProperties(p);
 		b.build();
@@ -453,7 +453,7 @@ public class ComponentTest extends TestCase {
 				"test.activator.Activator;http=\"org.osgi.service.http.HttpService(|p=1)(p=2))\"");
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
-				new File("bin"), new File("jar/osgi.jar")
+				IO.getFile("bin"), IO.getFile("jar/osgi.jar")
 		});
 		b.setProperties(p);
 		b.build();

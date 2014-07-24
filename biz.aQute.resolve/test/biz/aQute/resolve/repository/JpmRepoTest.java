@@ -32,7 +32,7 @@ public class JpmRepoTest extends TestCase {
 		tmp.mkdirs();
 		IO.delete(tmp);
 		tmp.mkdirs();
-		IO.copy(new File("testdata/ws"), tmp);
+		IO.copy(IO.getFile("testdata/ws"), tmp);
 		ws = new Workspace(tmp);
 		assertTrue(ws.check());
 	}

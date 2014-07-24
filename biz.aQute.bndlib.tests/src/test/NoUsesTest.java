@@ -6,6 +6,7 @@ import java.util.*;
 import junit.framework.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 public class NoUsesTest extends TestCase {
 
@@ -101,7 +102,7 @@ public class NoUsesTest extends TestCase {
 
 	static String findUses(Builder bmaker, String pack, String ... ignore) throws Exception {
 		File cp[] = {
-				new File("bin"), new File("jar/osgi.jar")
+				new File("bin"), IO.getFile("jar/osgi.jar")
 		};
 		bmaker.setClasspath(cp);
 		Jar jar = bmaker.build();

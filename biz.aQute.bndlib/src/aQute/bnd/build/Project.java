@@ -65,6 +65,9 @@ public class Project extends Processor {
 	boolean						delayRunDependencies	= false;
 	final ProjectMessages		msgs					= ReporterMessages.base(this, ProjectMessages.class);
 	private Properties			ide;
+	final Packages				exportedPackages		= new Packages();
+	final Packages				importedPackages		= new Packages();
+	final Packages				containedPackages		= new Packages();
 
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
@@ -2700,5 +2703,32 @@ public class Project extends Processor {
 			throw new IllegalArgumentException("Bsn " + bsn + " does not exist in project " + getName());
 		}
 		return version;
+	}
+
+	/**
+	 * Get the exported packages form all builders calculated from the last
+	 * build
+	 */
+
+	public Packages getExports() {
+		return exportedPackages;
+	}
+
+	/**
+	 * Get the imported packages from all builders calculated from the last
+	 * build
+	 */
+
+	public Packages getImports() {
+		return importedPackages;
+	}
+
+	/**
+	 * Get the contained packages calculated from all builders from the last
+	 * build
+	 */
+
+	public Packages getContained() {
+		return containedPackages;
 	}
 }

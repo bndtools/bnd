@@ -2,7 +2,6 @@ package biz.aQute.resolve.internal;
 
 import static test.lib.Utils.*;
 
-import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
@@ -16,6 +15,7 @@ import org.osgi.service.resolver.*;
 
 import test.lib.*;
 import aQute.bnd.build.model.*;
+import aQute.lib.io.*;
 import biz.aQute.resolve.*;
 
 public class GenericResolveContextResolveTest extends TestCase {
@@ -24,7 +24,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 
 	public static void testSimpleResolve() {
 
-		Repository repository = createRepo(new File("testdata/repo3.index.xml"));
+		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"));
 
 		Resource framework = GenericResolveContext.getFrameworkResource(Arrays.asList(repository), "org.apache.felix.framework", null);
 

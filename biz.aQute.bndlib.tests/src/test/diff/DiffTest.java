@@ -20,8 +20,8 @@ public class DiffTest extends TestCase {
 	
 	public void testBaselineDiffs() throws Exception {
 		
-		Tree newerTree = make(new File("testresources/baseline/test1.jar"));
-		Tree olderTree = make(new File("testresources/baseline/test2.jar"));
+		Tree newerTree = make(IO.getFile("testresources/baseline/test1.jar"));
+		Tree olderTree = make(IO.getFile("testresources/baseline/test2.jar"));
 		Diff diff = newerTree.diff(olderTree);
 		
 		assertEquals( Delta.MAJOR, diff.getDelta());
@@ -48,9 +48,9 @@ public class DiffTest extends TestCase {
 	 */
 	
 	public void testAPI() throws Exception {
-		Jar older = new Jar(new File("testresources/demo.jar"));
+		Jar older = new Jar(IO.getFile("testresources/demo.jar"));
 		Builder b = new Builder();
-		b.addClasspath(new File("bin"));
+		b.addClasspath(IO.getFile("bin"));
 		b.setExportPackage("test.api");
 		b.build();
 		assertTrue(b.check());
@@ -85,7 +85,7 @@ public class DiffTest extends TestCase {
 	
 	public void testInheritanceII() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("bin"));
+		b.addClasspath(IO.getFile("bin"));
 		b.setProperty(Constants.EXPORT_PACKAGE, "test.diff.inherit");
 		b.build();
 		Tree newer = differ.tree(b);
@@ -135,7 +135,7 @@ public class DiffTest extends TestCase {
 	}
 
 	public static void testAwtGeom() throws Exception {
-		Tree newer = differ.tree(new File("../cnf/repo/ee.j2se/ee.j2se-1.5.0.jar"));
+		Tree newer = differ.tree(IO.getFile("../cnf/repo/ee.j2se/ee.j2se-1.5.0.jar"));
 		Tree gp = newer.get("<api>").get("java.awt.geom").get("java.awt.geom.GeneralPath");
 		assertNotNull(gp);
 		show(gp, 0);
@@ -168,7 +168,7 @@ public class DiffTest extends TestCase {
 
 	public static void testInheritance() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("bin"));
+		b.addClasspath(IO.getFile("bin"));
 		b.setProperty(Constants.EXPORT_PACKAGE, "test.diff");
 		b.build();
 		Tree newer = differ.tree(b);
@@ -208,8 +208,8 @@ public class DiffTest extends TestCase {
 
 		DiffPluginImpl differ = new DiffPluginImpl();
 		differ.setIgnore("Bundle-Copyright,Bundle-Description,Bundle-License,Bundle-Name,bundle-manifestversion,Export-Package,Import-Package,Bundle-Vendor,Bundle-Version");
-		Tree newer = differ.tree(new Jar(new File("jar/osgi.core-4.3.0.jar")));
-		Tree older = differ.tree(new Jar(new File("jar/osgi.core.jar"))); // 4.2
+		Tree newer = differ.tree(new Jar(IO.getFile("jar/osgi.core-4.3.0.jar")));
+		Tree older = differ.tree(new Jar(IO.getFile("jar/osgi.core.jar"))); // 4.2
 		Diff diff = newer.get("<manifest>").diff(older.get("<manifest>"));
 
 		show(diff, 0);

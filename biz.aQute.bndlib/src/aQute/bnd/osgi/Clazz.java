@@ -42,22 +42,24 @@ public class Clazz {
 		J2SE6(50, "JavaSE-1.6", "(&(osgi.ee=JavaSE)(version=1.6))"), //
 		OpenJDK7(51, "JavaSE-1.7", "(&(osgi.ee=JavaSE)(version=1.7))"), //
 		OpenJDK8(52, "JavaSE-1.8", "(&(osgi.ee=JavaSE)(version=1.8))") {
-			
-			Map<String,Set<String>> profiles;
+
+			Map<String,Set<String>>	profiles;
+
 			public Map<String,Set<String>> getProfiles() throws IOException {
-				if ( profiles == null) {
+				if (profiles == null) {
 					Properties p = new Properties();
-					InputStream in = Clazz.class.getResourceAsStream("profiles-"+this+".properties");
+					InputStream in = Clazz.class.getResourceAsStream("profiles-" + this + ".properties");
 					try {
 						p.load(in);
-					} finally {
+					}
+					finally {
 						in.close();
 					}
-					profiles=new HashMap<String,Set<String>>();
-					for ( Map.Entry<Object,Object> prop : p.entrySet()) {
+					profiles = new HashMap<String,Set<String>>();
+					for (Map.Entry<Object,Object> prop : p.entrySet()) {
 						String list = (String) prop.getValue();
 						Set<String> set = new HashSet<String>();
-						for ( String s : list.split("\\s*,\\s*")) {
+						for (String s : list.split("\\s*,\\s*")) {
 							set.add(s);
 						}
 						profiles.put((String) prop.getKey(), set);
@@ -102,8 +104,7 @@ public class Clazz {
 			return major >= J2SE5.major;
 		}
 
-		public static JAVA getJava(int major, @SuppressWarnings("unused")
-		int minor) {
+		public static JAVA getJava(int major, @SuppressWarnings("unused") int minor) {
 			for (JAVA j : JAVA.values()) {
 				if (j.major == major)
 					return j;
@@ -125,8 +126,7 @@ public class Clazz {
 	}
 
 	public static enum QUERY {
-		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATED, RUNTIMEANNOTATIONS, CLASSANNOTATIONS,
-		DEFAULT_CONSTRUCTOR;
+		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATED, RUNTIMEANNOTATIONS, CLASSANNOTATIONS, DEFAULT_CONSTRUCTOR;
 
 	}
 
@@ -465,7 +465,6 @@ public class Clazz {
 
 	private boolean							detectLdc;
 
-
 	public Clazz(Analyzer analyzer, String path, Resource resource) {
 		this.path = path;
 		this.resource = resource;
@@ -718,7 +717,7 @@ public class Clazz {
 			// however, jDK8 has a bug that leaves an orphan ClassConstnat
 			// so if we have those, we need to also crawl the byte codes.
 			// if (major >= JAVA.OpenJDK7.major)
-			
+
 			crawl |= detectLdc;
 
 			//
@@ -740,7 +739,7 @@ public class Clazz {
 				referTo(descriptor_index, access_flags);
 
 				if ("<init>".equals(name)) {
-					if(Modifier.isPublic(access_flags) && "()V".equals(descriptor)) {
+					if (Modifier.isPublic(access_flags) && "()V".equals(descriptor)) {
 						hasDefaultConstructor = true;
 					}
 					doAttributes(in, ElementType.CONSTRUCTOR, crawl, access_flags);
@@ -781,9 +780,7 @@ public class Clazz {
 			pool[poolIndex] = intPool[poolIndex];
 	}
 
-	protected void pool(@SuppressWarnings("unused")
-	Object[] pool, @SuppressWarnings("unused")
-	int[] intPool) {}
+	protected void pool(@SuppressWarnings("unused") Object[] pool, @SuppressWarnings("unused") int[] intPool) {}
 
 	/**
 	 * @param in
@@ -936,12 +933,16 @@ public class Clazz {
 				cd.deprecated();
 		} else if ("RuntimeVisibleAnnotations".equals(attributeName))
 			doAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
-		else if ("RuntimeVisibleParameterAnnotations".equals(attributeName))
-			doParameterAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
 		else if ("RuntimeInvisibleAnnotations".equals(attributeName))
 			doAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+		else if ("RuntimeVisibleParameterAnnotations".equals(attributeName))
+			doParameterAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
 		else if ("RuntimeInvisibleParameterAnnotations".equals(attributeName))
 			doParameterAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+		else if ("RuntimeVisibleTypeAnnotations".equals(attributeName))
+			doTypeAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
+		else if ("RuntimeInvisibleTypeAnnotations".equals(attributeName))
+			doTypeAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
 		else if ("InnerClasses".equals(attributeName))
 			doInnerClasses(in);
 		else if ("EnclosingMethod".equals(attributeName))
@@ -957,8 +958,8 @@ public class Clazz {
 		else if ("AnnotationDefault".equals(attributeName)) {
 			Object value = doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
 			if (last instanceof MethodDef) {
-				((MethodDef)last).constant = value;
-				cd.annotationDefault((MethodDef)last);
+				((MethodDef) last).constant = value;
+				cd.annotationDefault((MethodDef) last);
 			}
 		} else if ("Exceptions".equals(attributeName))
 			doExceptions(in, access_flags);
@@ -1142,7 +1143,7 @@ public class Clazz {
 		in.readFully(code);
 		crawl(code);
 		int exception_table_length = in.readUnsignedShort();
-		for ( int i =0; i<exception_table_length; i++) {
+		for (int i = 0; i < exception_table_length; i++) {
 			int start_pc = in.readUnsignedShort();
 			int end_pc = in.readUnsignedShort();
 			int handler_pc = in.readUnsignedShort();
@@ -1295,6 +1296,162 @@ public class Clazz {
 		}
 	}
 
+	private void doTypeAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy, int access_flags)
+			throws Exception {
+		int num_annotations = in.readUnsignedShort();
+		for (int p = 0; p < num_annotations; p++) {
+
+			// type_annotation {
+			// u1 target_type;
+			// union {
+			// type_parameter_target;
+			// supertype_target;
+			// type_parameter_bound_target;
+			// empty_target;
+			// method_formal_parameter_target;
+			// throws_target;
+			// localvar_target;
+			// catch_target;
+			// offset_target;
+			// type_argument_target;
+			// } target_info;
+			// type_path target_path;
+			// u2 type_index;
+			// u2 num_element_value_pairs;
+			// { u2 element_name_index;
+			// element_value value;
+			// } element_value_pairs[num_element_value_pairs];
+			// }
+
+			// Table 4.7.20-A. Interpretation of target_type values (Part 1)
+
+			int target_type = in.readUnsignedByte();
+			switch (target_type) {
+				case 0x00 : // type parameter declaration of generic class or
+							// interface
+				case 0x01 : // type parameter declaration of generic method or
+							// constructor
+					//
+					// type_parameter_target {
+					// u1 type_parameter_index;
+					// }
+					in.skipBytes(1);
+					break;
+
+				case 0x10 : // type in extends clause of class or interface
+							// declaration (including the direct superclass of
+							// an anonymous class declaration), or in implements
+							// clause of interface declaration
+					// supertype_target {
+					// u2 supertype_index;
+					// }
+
+					in.skipBytes(2);
+					break;
+
+				case 0x11 : // type in bound of type parameter declaration of
+							// generic class or interface
+				case 0x12 : // type in bound of type parameter declaration of
+							// generic method or constructor
+					// type_parameter_bound_target {
+					// u1 type_parameter_index;
+					// u1 bound_index;
+					// }
+					in.skipBytes(2);
+					break;
+
+				case 0x13 : // type in field declaration
+				case 0x14 : // return type of method, or type of newly
+							// constructed object
+				case 0x15 : // receiver type of method or constructor
+					break;
+
+				case 0x16 : // type in formal parameter declaration of method,
+							// constructor, or lambda expression
+					// formal_parameter_target {
+					// u1 formal_parameter_index;
+					// }
+					in.skipBytes(1);
+					break;
+
+				case 0x17 : // type in throws clause of method or constructor
+					// throws_target {
+					// u2 throws_type_index;
+					// }
+					in.skipBytes(2);
+					break;
+
+				case 0x40 : // type in local variable declaration
+				case 0x41 : // type in resource variable declaration
+					// localvar_target {
+					// u2 table_length;
+					// { u2 start_pc;
+					// u2 length;
+					// u2 index;
+					// } table[table_length];
+					// }
+					int table_length = in.readUnsignedShort();
+					in.skipBytes(table_length * 6);
+					break;
+
+				case 0x42 : // type in exception parameter declaration
+					// catch_target {
+					// u2 exception_table_index;
+					// }
+					in.skipBytes(2);
+					break;
+
+				case 0x43 : // type in instanceof expression
+				case 0x44 : // type in new expression
+				case 0x45 : // type in method reference expression using ::new
+				case 0x46 : // type in method reference expression using
+							// ::Identifier
+					// offset_target {
+					// u2 offset;
+					// }
+					in.skipBytes(2);
+					break;
+
+				case 0x47 : // type in cast expression
+				case 0x48 : // type argument for generic constructor in new
+							// expression or explicit constructor invocation
+							// statement
+
+				case 0x49 : // type argument for generic method in method
+							// invocation expression
+				case 0x4A : // type argument for generic constructor in method
+							// reference expression using ::new
+				case 0x4B : // type argument for generic method in method
+							// reference expression using ::Identifier
+					// type_argument_target {
+					// u2 offset;
+					// u1 type_argument_index;
+					// }
+					in.skipBytes(3);
+					break;
+
+			}
+
+			// The value of the target_path item denotes precisely which part of
+			// the type indicated by target_info is annotated. The format of the
+			// type_path structure is specified in §4.7.20.2.
+			//
+			// type_path {
+			// u1 path_length;
+			// { u1 type_path_kind;
+			// u1 type_argument_index;
+			// } path[path_length];
+			// }
+
+			int path_length = in.readUnsignedByte();
+			in.skipBytes(path_length * 2);
+
+			//
+			// Rest is identical to the normal annotations
+			doAnnotation(in, member, policy, false, access_flags);
+		}
+	}
+
 	private void doAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy, int access_flags)
 			throws Exception {
 		int num_annotations = in.readUnsignedShort(); // # of annotations
@@ -1307,6 +1464,15 @@ public class Clazz {
 			}
 		}
 	}
+
+	// annotation {
+	// u2 type_index;
+	// u2 num_element_value_pairs; {
+	// u2 element_name_index;
+	// element_value value;
+	// }
+	// element_value_pairs[num_element_value_pairs];
+	// }
 
 	private Annotation doAnnotation(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect,
 			int access_flags) throws IOException {

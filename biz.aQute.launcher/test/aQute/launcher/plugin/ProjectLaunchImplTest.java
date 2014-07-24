@@ -25,11 +25,11 @@ public class ProjectLaunchImplTest extends TestCase {
 	}
 
 	public void tearDown() throws Exception {
-		reallyClean(new Workspace(new File("test/ws")));
+		reallyClean(new Workspace(IO.getFile("test/ws")));
 	}
 
 	public static void testParseSystemCapabilities() throws Exception {
-		Workspace ws = Workspace.getWorkspace(new File("test/ws"));
+		Workspace ws = Workspace.getWorkspace(IO.getFile("test/ws"));
 		Project project = ws.getProject("p1");
 		String systemCaps = null;
 

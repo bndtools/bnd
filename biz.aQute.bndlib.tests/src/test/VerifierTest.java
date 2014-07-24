@@ -7,6 +7,7 @@ import java.util.jar.*;
 import junit.framework.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class VerifierTest extends TestCase {
@@ -87,7 +88,7 @@ public class VerifierTest extends TestCase {
 
 	public void testInvalidFilterOnRequirement() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setExportPackage("org.osgi.framework");
 		b.setProperty(
 				"Require-Capability",
@@ -112,7 +113,7 @@ public class VerifierTest extends TestCase {
 	 */
 	public void testStrict() throws Exception {
 		Builder bmaker = new Builder();
-		bmaker.addClasspath(new File("jar/osgi.jar"));
+		bmaker.addClasspath(IO.getFile("jar/osgi.jar"));
 		bmaker.addClasspath(new File("bin"));
 		bmaker.setProperty(
 				"Export-Package",
@@ -350,7 +351,7 @@ public class VerifierTest extends TestCase {
 
 	public static void testSimple() throws Exception {
 		Builder bmaker = new Builder();
-		bmaker.addClasspath(new File("jar/mina.jar"));
+		bmaker.addClasspath(IO.getFile("jar/mina.jar"));
 		bmaker.set("Export-Package", "org.apache.mina.*;version=1");
 		bmaker.set("DynamicImport-Package", "org.slf4j");
 		Jar jar = bmaker.build();

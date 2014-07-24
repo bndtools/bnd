@@ -31,7 +31,7 @@ public class AnalyzerTest extends BndTestCase {
 	public void testExceptionImports() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setExportPackage("test.exceptionimport");
 		b.build();
 		assertTrue(b.check());
@@ -141,7 +141,7 @@ public class AnalyzerTest extends BndTestCase {
 	public static void testRemoveheadersAsWhiteList() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/asm.jar"));
+			b.addClasspath(IO.getFile("jar/asm.jar"));
 			b.setExportPackage("*");
 			b.setImportPackage("something");
 			b.set("Foo", "Foo");
@@ -171,7 +171,7 @@ public class AnalyzerTest extends BndTestCase {
 	public static void testExportReferencesToPrivatePackages() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.addClasspath(new File("bin"));
 			b.setExportPackage("test.referApi"); // refers to Event Admin
 			b.setConditionalPackage("org.osgi.service.*");
@@ -213,7 +213,7 @@ public class AnalyzerTest extends BndTestCase {
 		Builder b = new Builder();
 		try {
 			b.set("Export-Package", "thinlet;version=1.0");
-			b.addClasspath(new File("jar/thinlet.jar"));
+			b.addClasspath(IO.getFile("jar/thinlet.jar"));
 			b.build();
 			assertTrue(b.check());
 			assertEquals("version=\"1.0\"", b.getExports().getByFQN("thinlet").toString());
@@ -234,10 +234,10 @@ public class AnalyzerTest extends BndTestCase {
 	public static void testGenerateManifest() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		try {
-			Jar bin = new Jar(new File("jar/osgi.jar"));
+			Jar bin = new Jar(IO.getFile("jar/osgi.jar"));
 			bin.setManifest(new Manifest());
 			analyzer.setJar(bin);
-			analyzer.addClasspath(new File("jar/spring.jar"));
+			analyzer.addClasspath(IO.getFile("jar/spring.jar"));
 			analyzer.setProperty("Bundle-SymbolicName", "org.osgi.core");
 			analyzer.setProperty("Export-Package", "org.osgi.framework,org.osgi.service.event");
 			analyzer.setProperty("Bundle-Version", "1.0.0.x");
@@ -266,7 +266,7 @@ public class AnalyzerTest extends BndTestCase {
 	public static void testExportContentsDirectory() throws Exception {
 		Builder b = new Builder();
 		try {
-			File embedded = new File("bin/test/refer").getCanonicalFile();
+			File embedded = IO.getFile("bin/test/refer").getCanonicalFile();
 			assertTrue(embedded.isDirectory()); // sanity check
 			b.setProperty("Bundle-ClassPath", ".,jars/some.jar");
 			b.setProperty("-includeresource", "jars/some.jar/test/refer=" + embedded.getAbsolutePath());
@@ -290,7 +290,7 @@ public class AnalyzerTest extends BndTestCase {
 		Builder b = new Builder();
 		try {
 			b.setTrace(true);
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty("Export-Package", "org.osgi.service.event");
 			Jar jar = b.build();
 			assertTrue(b.check());
@@ -302,7 +302,7 @@ public class AnalyzerTest extends BndTestCase {
 			assertTrue(exports.contains("uses:=\"org.osgi.framework\""));
 
 			b = new Builder();
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty("Import-Package", "");
 			b.setProperty("Export-Package", "org.osgi.service.event");
 			b.setPedantic(true);
@@ -328,7 +328,7 @@ public class AnalyzerTest extends BndTestCase {
 	public static void testRequire() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty("Private-Package", "org.osgi.framework");
 			b.setProperty("-require-bnd", "10000");
 			b.build();
@@ -345,7 +345,7 @@ public class AnalyzerTest extends BndTestCase {
 	public static void testComponentImportReference() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty("Private-Package", "org.osgi.framework");
 			b.setProperty("Import-Package", "not.here,*");
 			b.setProperty("Service-Component", "org.osgi.framework.Bundle;ref=not.here.Reference");
@@ -364,7 +364,7 @@ public class AnalyzerTest extends BndTestCase {
 		Builder a = new Builder();
 		try {
 			a.setProperty("Export-Package", "org.osgi.service.io");
-			a.addClasspath(new File("jar/osgi.jar"));
+			a.addClasspath(IO.getFile("jar/osgi.jar"));
 			a.build();
 			System.err.println(a.getErrors());
 			System.err.println(a.getWarnings());
@@ -397,7 +397,7 @@ public class AnalyzerTest extends BndTestCase {
 	public static void testClassQuery() throws Exception {
 		Analyzer a = new Analyzer();
 		try {
-			a.setJar(new File("jar/osgi.jar"));
+			a.setJar(IO.getFile("jar/osgi.jar"));
 			a.analyze();
 
 			String result = a._classes("cmd", "named", "org.osgi.service.http.*", "abstract");
@@ -421,7 +421,7 @@ public class AnalyzerTest extends BndTestCase {
 		try {
 			a.setProperty("Bundle-Blueprint", "  <<EMPTY>> ");
 			a.setProperty("Export-Package", "org.osgi.framework");
-			a.addClasspath(new File("jar/osgi.jar"));
+			a.addClasspath(IO.getFile("jar/osgi.jar"));
 			a.build();
 			Manifest manifest = a.getJar().getManifest();
 			System.err.println(a.getErrors());
@@ -446,7 +446,7 @@ public class AnalyzerTest extends BndTestCase {
 		Builder a = new Builder();
 		try {
 			a.setProperty("Export-Package", "org.osgi.service.event, org.osgi.service.io");
-			a.addClasspath(new File("jar/osgi.jar"));
+			a.addClasspath(IO.getFile("jar/osgi.jar"));
 			a.setProperty("@org@osgi@service@event@Specification-Title", "spec title");
 			a.setProperty("@org@osgi@service@io@Specification-Title", "spec title io");
 			a.setProperty("@org@osgi@service@event@Specification-Version", "1.1");
@@ -484,7 +484,7 @@ public class AnalyzerTest extends BndTestCase {
 			p.put("Import-Package", "*");
 			p.put("Private-Package", "org.apache.mina.management.*");
 			a.setClasspath(new Jar[] {
-				new Jar(new File("jar/mandatorynoversion.jar"))
+				new Jar(IO.getFile("jar/mandatorynoversion.jar"))
 			});
 			a.setProperties(p);
 			Jar jar = a.build();
@@ -542,7 +542,7 @@ public class AnalyzerTest extends BndTestCase {
 			p.put("Private-Package", "org.objectweb.*");
 			p.put("Bundle-Activator", "org.osgi.framework.BundleActivator");
 			a.setClasspath(new Jar[] {
-					new Jar(new File("jar/asm.jar")), new Jar(new File("jar/osgi.jar"))
+					new Jar(IO.getFile("jar/asm.jar")), new Jar(IO.getFile("jar/osgi.jar"))
 			});
 			a.setProperties(p);
 			a.build();
@@ -569,7 +569,7 @@ public class AnalyzerTest extends BndTestCase {
 			p.put("Private-Package", "org.objectweb.*");
 			p.put("Bundle-Activator", "org.osgi.framework.BundleActivator");
 			a.setClasspath(new Jar[] {
-					new Jar(new File("jar/asm.jar")), new Jar(new File("jar/osgi.jar"))
+					new Jar(IO.getFile("jar/asm.jar")), new Jar(IO.getFile("jar/osgi.jar"))
 			});
 			a.setProperties(p);
 			a.build();
@@ -726,11 +726,11 @@ public class AnalyzerTest extends BndTestCase {
 	public static void testRemoveheaders() throws Exception {
 		Analyzer a = new Analyzer();
 		try {
-			a.setJar(new File("jar/asm.jar"));
+			a.setJar(IO.getFile("jar/asm.jar"));
 			Manifest m = a.calcManifest();
 			assertNotNull(m.getMainAttributes().getValue("Implementation-Title"));
 			a = new Analyzer();
-			a.setJar(new File("jar/asm.jar"));
+			a.setJar(IO.getFile("jar/asm.jar"));
 			a.setProperty("-removeheaders", "Implementation-Title");
 			m = a.calcManifest();
 			assertNull(m.getMainAttributes().getValue("Implementation-Title"));
@@ -750,7 +750,7 @@ public class AnalyzerTest extends BndTestCase {
 		Jar jar = new Jar("dot");
 		Analyzer an = new Analyzer();
 		try {
-			jar.putResource("target/aopalliance.jar", new FileResource(new File("jar/asm.jar")));
+			jar.putResource("target/aopalliance.jar", new FileResource(IO.getFile("jar/asm.jar")));
 			an.setJar(jar);
 			an.setProperty("Export-Package", "target");
 			Manifest manifest = an.calcManifest();
@@ -792,7 +792,7 @@ public class AnalyzerTest extends BndTestCase {
 
 		Analyzer analyzer = new Analyzer();
 		try {
-			analyzer.setJar(new File("jar/asm.jar"));
+			analyzer.setJar(IO.getFile("jar/asm.jar"));
 			analyzer.setProperties(base);
 			analyzer.calcManifest().write(System.err);
 			assertTrue(analyzer.check());
@@ -821,7 +821,7 @@ public class AnalyzerTest extends BndTestCase {
 		base.put(Analyzer.EXPORT_PACKAGE, "org.objectweb.asm;name=short, org.objectweb.asm.signature;name=long");
 		Analyzer h = new Analyzer();
 		try {
-			h.setJar(new File("jar/asm.jar"));
+			h.setJar(IO.getFile("jar/asm.jar"));
 			h.setProperties(base);
 			h.calcManifest().write(System.err);
 			assertTrue(h.check());
@@ -843,7 +843,7 @@ public class AnalyzerTest extends BndTestCase {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
-		File tmp = new File("jar/ds.jar");
+		File tmp = IO.getFile("jar/ds.jar");
 		Analyzer analyzer = new Analyzer();
 		try {
 			analyzer.setJar(tmp);
@@ -868,7 +868,7 @@ public class AnalyzerTest extends BndTestCase {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "!org.osgi.*, *");
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
-		File tmp = new File("jar/ds.jar");
+		File tmp = IO.getFile("jar/ds.jar");
 		Analyzer h = new Analyzer();
 		try {
 			h.setJar(tmp);
@@ -895,7 +895,7 @@ public class AnalyzerTest extends BndTestCase {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "!*");
-		File tmp = new File("jar/ds.jar");
+		File tmp = IO.getFile("jar/ds.jar");
 		Analyzer h = new Analyzer();
 		try {
 			h.setJar(tmp);
@@ -920,8 +920,8 @@ public class AnalyzerTest extends BndTestCase {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
-		File tmp = new File("jar/ds.jar");
-		File osgi = new File("jar/osgi.jar");
+		File tmp = IO.getFile("jar/ds.jar");
+		File osgi = IO.getFile("jar/osgi.jar");
 		Analyzer h = new Analyzer();
 		try {
 			h.setJar(tmp);
@@ -954,7 +954,7 @@ public class AnalyzerTest extends BndTestCase {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*, =com.foo, com.foo.bar.*");
 		base.put(Analyzer.EXPORT_PACKAGE, "*, com.bar, baz.*");
-		File tmp = new File("jar/ds.jar");
+		File tmp = IO.getFile("jar/ds.jar");
 		Analyzer h = new Analyzer();
 		try {
 			h.setJar(tmp);

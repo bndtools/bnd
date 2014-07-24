@@ -7,6 +7,7 @@ import java.util.jar.*;
 import junit.framework.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.signing.*;
+import aQute.lib.io.*;
 import aQute.libg.generics.*;
 
 @SuppressWarnings("resource")
@@ -41,7 +42,7 @@ public class JarSignerTest extends TestCase {
 		properties.put("storepass", "notvalid");
 		signer.setProperties(properties);
 
-		Jar jar = new Jar(new File("testresources/test.jar"));
+		Jar jar = new Jar(IO.getFile("testresources/test.jar"));
 		Builder b = new Builder();
 		b.setTrace(true);
 		b.setJar(jar);
@@ -61,7 +62,7 @@ public class JarSignerTest extends TestCase {
 		properties.put("digestalg", "SHA1");
 		signer.setProperties(properties);
 
-		Jar jar = new Jar(new File("testresources/test.jar"));
+		Jar jar = new Jar(IO.getFile("testresources/test.jar"));
 		Set<String> names = new HashSet<String>(jar.getResources().keySet());
 		names.remove("META-INF/MANIFEST.MF");
 		Builder b = new Builder();

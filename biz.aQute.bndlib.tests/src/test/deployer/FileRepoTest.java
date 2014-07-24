@@ -20,15 +20,15 @@ import aQute.lib.deployer.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.map.*;
-@SuppressWarnings("resource")
 
+@SuppressWarnings("resource")
 public class FileRepoTest extends TestCase {
 
-	private  FileRepo	testRepo;
-	private  FileRepo	nonExistentRepo;
-	private  FileRepo	indexedRepo;
+	private FileRepo	testRepo;
+	private FileRepo	nonExistentRepo;
+	private FileRepo	indexedRepo;
 
-	private  String hashToString(byte[] hash) {
+	private String hashToString(byte[] hash) {
 		Formatter formatter = new Formatter();
 		for (byte b : hash) {
 			formatter.format("%02x", b);
@@ -36,7 +36,7 @@ public class FileRepoTest extends TestCase {
 		return formatter.toString();
 	}
 
-	private  byte[] calculateHash(MessageDigest algorithm, File file) throws Exception {
+	private byte[] calculateHash(MessageDigest algorithm, File file) throws Exception {
 		algorithm.reset();
 		copy(file, algorithm);
 		return algorithm.digest();
@@ -44,37 +44,37 @@ public class FileRepoTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		File testRepoDir = new File("src/test/repo");
+		File testRepoDir = IO.getFile("src/test/repo");
 		assertTrue(testRepoDir.isDirectory());
 		testRepo = createRepo(testRepoDir);
 
-		File nonExistentDir = new File("invalidrepo");
+		File nonExistentDir = IO.getFile("invalidrepo");
 		nonExistentDir.mkdir();
 		nonExistentDir.setReadOnly();
 		nonExistentRepo = createRepo(nonExistentDir);
-		
-		File tmp = new File("tmp");
+
+		File tmp = IO.getFile("tmp");
 		tmp.mkdir();
-		
+
 		indexedRepo = createRepo(tmp, MAP.$("index", "true"));
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
-		File nonExistentDir = new File("invalidrepo");
+		File nonExistentDir = IO.getFile("invalidrepo");
 		delete(nonExistentDir);
-		File tmp = new File("tmp");
+		File tmp = IO.getFile("tmp");
 		IO.delete(tmp);
 
 	}
-	
 
-	private  FileRepo createRepo(File root) {
+	private FileRepo createRepo(File root) {
 		return createRepo(root, new HashMap<String,String>());
 	}
-	private  FileRepo createRepo(File root, Map<String,String> props) {
+
+	private FileRepo createRepo(File root, Map<String,String> props) {
 		FileRepo repo = new FileRepo();
-		
+
 		props.put("location", root.getAbsolutePath());
 		repo.setProperties(props);
 
@@ -85,72 +85,73 @@ public class FileRepoTest extends TestCase {
 	 * Test a repo with an index
 	 */
 	public void testIndex() throws Exception {
-		
+
 		//
 		// Check if the index property works
-		// by verifying the diff between the 
+		// by verifying the diff between the
 		// testRepo and the indexed Repo
 		//
-		
-		assertNull( testRepo.getResources());
-		assertNotNull( indexedRepo.getResources());
+
+		assertNull(testRepo.getResources());
+		assertNotNull(indexedRepo.getResources());
 
 		//
 		// Check that we can actually put a resource
 		//
-		
-		PutResult put = indexedRepo.put(new File("jar/osgi.jar").toURI().toURL().openStream(), null);
+
+		PutResult put = indexedRepo.put(IO.getFile("jar/osgi.jar").toURI().toURL().openStream(), null);
 		assertNotNull(put);
-		
+
 		// Can we get it?
-		
+
 		ResourceDescriptor desc = indexedRepo.getDescriptor("osgi", new Version("4.0"));
 		assertNotNull(desc);
-		
+
 		// Got the same file?
-		
-		assertTrue( Arrays.equals(put.digest, desc.id));
-		
+
+		assertTrue(Arrays.equals(put.digest, desc.id));
+
 		//
 		// Check if the description was copied
 		//
-		
-		assertEquals( "OSGi Service Platform Release 4 Interfaces and Classes for use in compiling bundles.", desc.description);
+
+		assertEquals("OSGi Service Platform Release 4 Interfaces and Classes for use in compiling bundles.",
+				desc.description);
 
 		//
 		// We must be able to access by its sha1
 		//
-		
+
 		ResourceDescriptor resource = indexedRepo.getResource(put.digest);
-		assertTrue( Arrays.equals(resource.id, desc.id));
+		assertTrue(Arrays.equals(resource.id, desc.id));
 
 		//
 		// Check if we now have a set of resources
 		//
 		SortedSet<ResourceDescriptor> resources = indexedRepo.getResources();
-		assertEquals( 1, resources.size());
-		ResourceDescriptor rd  = resources.iterator().next();
-		assertTrue( Arrays.equals(rd.id, put.digest));
+		assertEquals(1, resources.size());
+		ResourceDescriptor rd = resources.iterator().next();
+		assertTrue(Arrays.equals(rd.id, put.digest));
 
-		// 
+		//
 		// Check if the bsn brings us back
 		//
 		File file = indexedRepo.get(desc.bsn, desc.version, null);
-		assertNotNull(file);		
-		assertTrue( Arrays.equals(put.digest, SHA1.digest(file).digest()));
+		assertNotNull(file);
+		assertTrue(Arrays.equals(put.digest, SHA1.digest(file).digest()));
 		byte[] digest = SHA256.digest(file).digest();
-		assertTrue( Arrays.equals(rd.sha256, digest));
-		
+		assertTrue(Arrays.equals(rd.sha256, digest));
+
 		//
 		// Delete and see if it is really gone
 		//
 		indexedRepo.delete(desc.bsn, desc.version);
 		resources = indexedRepo.getResources();
-		assertEquals( 0, resources.size());
-		
+		assertEquals(0, resources.size());
+
 		file = indexedRepo.get(desc.bsn, desc.version, null);
 		assertNull(file);
-		
+
 		resource = indexedRepo.getResource(put.digest);
 		assertNull(resource);
 	}
@@ -166,18 +167,18 @@ public class FileRepoTest extends TestCase {
 		assertTrue(list.contains("osgi"));
 	}
 
-	public  void testListNonExistentRepo() throws Exception {
+	public void testListNonExistentRepo() throws Exception {
 		// Listing should succeed and return non-null empty list
 		List<String> list = nonExistentRepo.list(null);
 		assertNotNull(list);
 		assertEquals(0, list.size());
 	}
 
-	public  void testBundleNotModifiedOnPut() throws Exception {
+	public void testBundleNotModifiedOnPut() throws Exception {
 		MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
 		File dstBundle = null;
 		try {
-			File srcBundle = new File("testresources/test.jar");
+			File srcBundle = IO.getFile("testresources/test.jar");
 			byte[] srcSha = calculateHash(sha1, srcBundle);
 
 			PutOptions options = new RepositoryPlugin.PutOptions();
@@ -197,13 +198,13 @@ public class FileRepoTest extends TestCase {
 		}
 	}
 
-	public  void testDownloadListenerCallback() throws Exception {
-		File tmp = new File("tmp");
+	public void testDownloadListenerCallback() throws Exception {
+		File tmp = IO.getFile("tmp");
 		try {
 			FileRepo repo = new FileRepo("tmp", tmp, true);
-			File srcBundle = new File("testresources/test.jar");
+			File srcBundle = IO.getFile("testresources/test.jar");
 
-			PutResult r = repo.put(IO.stream(new File("testresources/test.jar")), null);
+			PutResult r = repo.put(IO.stream(IO.getFile("testresources/test.jar")), null);
 
 			assertNotNull(r);
 			assertNotNull(r.artifact);
@@ -227,9 +228,9 @@ public class FileRepoTest extends TestCase {
 		}
 	}
 
-	public  void testDeployToNonexistentRepoFails() throws Exception {
+	public void testDeployToNonexistentRepoFails() throws Exception {
 
-		if(System.getProperty("os.name").toLowerCase().indexOf("win") >= 0 ) {
+		if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
 			// File#setReadonly() is broken on windows
 			return;
 		}
@@ -298,8 +299,7 @@ public class FileRepoTest extends TestCase {
 			assertEquals(parts[1], "open @");
 			assertEquals(parts[2], "refresh @");
 			assertTrue(parts[3].matches("beforePut @ @/.*"));
-			assertEquals(parts[4],
-					"afterPut @ @/osgi/osgi-4.0.0.jar D37A1C9D5A9D3774F057B5452B7E47B6D1BB12D0");
+			assertEquals(parts[4], "afterPut @ @/osgi/osgi-4.0.0.jar D37A1C9D5A9D3774F057B5452B7E47B6D1BB12D0");
 			assertTrue(parts[5].matches("beforePut @ @/.*"));
 			assertTrue(parts[6].matches("abortPut @ @/.*"));
 			assertEquals(parts[7], "close @");

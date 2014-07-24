@@ -780,7 +780,7 @@ public class NanoHTTPD {
 				res = new Response(HTTP_FORBIDDEN, MIME_PLAINTEXT, "FORBIDDEN: Won't serve ../ for security reasons.");
 		}
 
-		File f = new File(homeDir, uri);
+		File f = IO.getFile(homeDir, uri);
 		if (res == null && !f.exists())
 			res = new Response(HTTP_NOTFOUND, MIME_PLAINTEXT, "Error 404, file not found.");
 
@@ -798,9 +798,9 @@ public class NanoHTTPD {
 			if (res == null) {
 				// First try index.html and index.htm
 				if (new File(f, "index.html").exists())
-					f = new File(homeDir, uri + "/index.html");
+					f = IO.getFile(homeDir, uri + "/index.html");
 				else if (new File(f, "index.htm").exists())
-					f = new File(homeDir, uri + "/index.htm");
+					f = IO.getFile(homeDir, uri + "/index.htm");
 				// No index file, list the directory if it is readable
 				else if (allowDirectoryListing && f.canRead()) {
 					String[] files = f.list();

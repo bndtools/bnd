@@ -4,9 +4,10 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
+import junit.framework.*;
+
 import org.xml.sax.*;
 
-import junit.framework.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.lib.io.*;

@@ -22,7 +22,7 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
-		outputDir = new File("generated/testoutput");
+		outputDir = IO.getFile("generated/testoutput");
 		IO.deleteWithException(outputDir);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			throw new IOException("Could not create directory " + outputDir);
@@ -64,14 +64,14 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 		File deployedFile = new File(r.artifact);
 
 		assertEquals(
-				new File(
+				IO.getFile(
 						"generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
 						.getAbsolutePath(), deployedFile.getAbsolutePath());
 
-		File r5IndexFile = new File("generated/testoutput/index.xml.gz");
+		File r5IndexFile = IO.getFile("generated/testoutput/index.xml.gz");
 		assertTrue(r5IndexFile.exists());
 
-		File obrIndexFile = new File("generated/testoutput/repository.xml");
+		File obrIndexFile = IO.getFile("generated/testoutput/repository.xml");
 		assertTrue(obrIndexFile.exists());
 
 		AbstractIndexedRepo checkRepo;
@@ -94,19 +94,19 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("locations",
-				new File("testdata/fullobr.xml").toURI() + "," + new File("testdata/minir5.xml").toURI());
+				IO.getFile("testdata/fullobr.xml").toURI() + "," + IO.getFile("testdata/minir5.xml").toURI());
 		repo.setProperties(config);
 
 		File[] files;
 
 		files = repo.get("name.njbartlett.osgi.emf.minimal", "[2.6,2.7)");
 		assertEquals(1, files.length);
-		assertEquals(new File("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar").getAbsoluteFile(),
+		assertEquals(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar").getAbsoluteFile(),
 				files[0]);
 
 		files = repo.get("dummybundle", null);
 		assertEquals(1, files.length);
-		assertEquals(new File("testdata/bundles/dummybundle.jar").getAbsoluteFile(), files[0]);
+		assertEquals(IO.getFile("testdata/bundles/dummybundle.jar").getAbsoluteFile(), files[0]);
 	}
 
 	// UTILS

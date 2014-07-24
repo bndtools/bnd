@@ -27,7 +27,7 @@ public class BuilderTest extends BndTestCase {
 			long time = System.currentTimeMillis();
 
 			Builder b = new Builder();
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setExportPackage("org.osgi.framework");
 			Jar build = b.build();
 			try {
@@ -242,7 +242,7 @@ public class BuilderTest extends BndTestCase {
 	public void testVeryOldPackageInfo() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi-3.0.0.jar"));
+			b.addClasspath(IO.getFile("jar/osgi-3.0.0.jar"));
 			b.setExportPackage("*");
 			Jar build = b.build();
 			assertTrue(b.check("Version for package org.osgi.util.measurement is set to different values in the source ", "Version for package org.osgi.util.tracker is set to different values in the source"));
@@ -292,9 +292,9 @@ public class BuilderTest extends BndTestCase {
 		try {
 			Builder b = new Builder();
 			try {
-				new File("bin/a1/a").mkdirs();
-				IO.copy(IO.getFile("bin/a/A.class"), new File("bin/a1/a/A.class"));
-				IO.copy(IO.getFile("bin/a/B.class"), new File("bin/a1/a/B.class"));
+				IO.getFile("bin/a1/a").mkdirs();
+				IO.copy(IO.getFile("bin/a/A.class"), IO.getFile("bin/a1/a/A.class"));
+				IO.copy(IO.getFile("bin/a/B.class"), IO.getFile("bin/a1/a/B.class"));
 				Jar classpath = new Jar(IO.getFile("bin/a1"));
 				b.addClasspath(classpath);
 				b.setPrivatePackage("a");
@@ -482,7 +482,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testPrivatePackageNonExistent() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setBundleActivator("com.example.Activator");
 			b.setPrivatePackage("com.example");
 			b.setIncludeResource("p;literal='x'");
@@ -503,7 +503,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testEEMacro() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/ifc112.jar"));
+			b.addClasspath(IO.getFile("jar/ifc112.jar"));
 			b.setPrivatePackage("netscape.util.*");
 			b.setBundleRequiredExecutionEnvironment("${ee}");
 			Jar jar = b.build();
@@ -536,7 +536,7 @@ public class BuilderTest extends BndTestCase {
 		for (int i = 0; i < packages.length; i++) {
 			Builder b = new Builder();
 			try {
-				b.addClasspath(new File("compilerversions/compilerversions.jar"));
+				b.addClasspath(IO.getFile("compilerversions/compilerversions.jar"));
 				b.setPrivatePackage(packages[i]);
 				b.setBundleRequiredExecutionEnvironment("${ee}");
 				Jar jar = b.build();
@@ -605,7 +605,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testNamesection() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty(Constants.NAMESECTION,
 					"org/osgi/service/event/*;MD5='${md5;${@}}';SHA1='${sha1;${@}}';MD5H='${md5;${@};hex}'");
 			b.setProperty(Constants.PRIVATEPACKAGE, "org.osgi.service.event");
@@ -635,7 +635,7 @@ public class BuilderTest extends BndTestCase {
 
 	// public void testDigests() throws Exception {
 	// Builder b = new Builder();
-	// b.addClasspath(new File("jar/osgi.jar"));
+	// b.addClasspath(IO.getFile("jar/osgi.jar"));
 	// b.setProperty(Constants.DIGESTS, "MD5, SHA1");
 	// b.setProperty(Constants.PRIVATE_PACKAGE, "*");
 	// Jar build = b.build();
@@ -694,7 +694,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testXDirectives() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty("Export-Package", "org.osgi.framework;x-foo:=true;bar:=false");
 			Jar jar = b.build();
 			assertTrue(b.check("bar:"));
@@ -804,8 +804,8 @@ public class BuilderTest extends BndTestCase {
 	public static void testMultiplePackageInfo() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
-			b.addClasspath(new File("jar/osgi.core.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.core.jar"));
 			b.setProperty(Constants.PRIVATEPACKAGE, "org.osgi.service.packageadmin;-split-package:=first");
 			b.build();
 			assertTrue(b.check());
@@ -823,8 +823,8 @@ public class BuilderTest extends BndTestCase {
 	public static void testFromOSGiDirective() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
-			b.addClasspath(new File("jar/org.eclipse.osgi-3.5.0.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/org.eclipse.osgi-3.5.0.jar"));
 			b.setProperty("Export-Package", "org.osgi.framework;from:=osgi");
 			b.build();
 			assertTrue(b.check());
@@ -840,8 +840,8 @@ public class BuilderTest extends BndTestCase {
 	public static void testFromEclipseDirective() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
-			b.addClasspath(new File("jar/org.eclipse.osgi-3.5.0.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/org.eclipse.osgi-3.5.0.jar"));
 			b.setProperty("Export-Package", "org.osgi.framework;from:=org.eclipse.osgi-3.5.0");
 			b.build();
 			assertTrue(b.check());
@@ -859,7 +859,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testProvidedVersion() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.addClasspath(new File("bin"));
 			b.setProperty(Constants.EXPORT_PACKAGE, "org.osgi.service.event;provide:=true");
 			b.setProperty("Private-Package", "test.refer");
@@ -877,7 +877,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testUnProvidedVersion() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.addClasspath(new File("bin"));
 			b.setProperty(Constants.EXPORT_PACKAGE, "org.osgi.service.event;provide:=false");
 			b.setProperty("Private-Package", "test.refer");
@@ -899,7 +899,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testExportedVersionsNotPickedUp() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/jsr311-api-1.1.1.jar"));
+			b.addClasspath(IO.getFile("jar/jsr311-api-1.1.1.jar"));
 			b.setProperty("Export-Package", "javax.ws.rs.core");
 			Jar jar = b.build();
 			assertTrue(b.check());
@@ -922,16 +922,16 @@ public class BuilderTest extends BndTestCase {
 		manifest.getMainAttributes().putValue("Export-Package", "org.osgi.service.event;version=100");
 
 		// Remove packageinfo
-		Jar manifestOnly = new Jar(new File("jar/osgi.jar"));
+		Jar manifestOnly = new Jar(IO.getFile("jar/osgi.jar"));
 		try {
 			manifestOnly.remove("org/osgi/service/event/packageinfo");
 			manifestOnly.setManifest(manifest);
 
 			// Remove manifest
-			Jar packageInfoOnly = new Jar(new File("jar/osgi.jar"));
+			Jar packageInfoOnly = new Jar(IO.getFile("jar/osgi.jar"));
 			packageInfoOnly.setManifest(new Manifest());
 
-			Jar both = new Jar(new File("jar/osgi.jar"));
+			Jar both = new Jar(IO.getFile("jar/osgi.jar"));
 			both.setManifest(manifest);
 
 			// Only version in manifest
@@ -1042,7 +1042,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			b.setProperty("Export-Package", "org.osgi.util.measurement, org.osgi.service.http;-noimport:=true");
 			b.setProperty("Private-Package", "org.osgi.framework, test.refer");
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.addClasspath(new File("bin"));
 			Jar jar = b.build();
 			assertTrue(b.check());
@@ -1079,7 +1079,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			b.setProperty("Export-Package", "org.osgi.util.measurement;-noimport:=true, org.osgi.service.http");
 			b.setProperty("Private-Package", "org.osgi.framework, test.refer");
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.addClasspath(new File("bin"));
 			Jar jar = b.build();
 			assertTrue(b.check());
@@ -1118,7 +1118,7 @@ public class BuilderTest extends BndTestCase {
 					"Export-Package",
 					"org.osgi.service.event, org.osgi.service.packageadmin, org.osgi.util.measurement, org.osgi.service.http;-noimport:=true");
 			b.setProperty("Private-Package", "org.osgi.framework, test.refer");
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.addClasspath(new File("bin"));
 			Jar jar = b.build();
 			assertTrue(b.check("has 1,  private references"));
@@ -1160,7 +1160,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			b.setProperty("-wab", "");
 			b.setProperty("Private-Package", "org.osgi.service.event");
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			Jar jar = b.build();
 			assertTrue(b.check());
 
@@ -1181,7 +1181,7 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("-wab", "jar/osgi.jar");
 			b.setProperty("-includeresource", "OSGI-INF/xml/x.xml;literal=\"text\"");
 			b.setProperty("Private-Package", "org.osgi.framework");
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			Jar jar = b.build();
 			assertTrue(b.check());
 
@@ -1207,7 +1207,7 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("T2", "1");
 			b.setProperty("T1_2", "1");
 			b.setProperty("-removeheaders", "!T1_2,T1*");
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			Jar jar = b.build();
 			assertTrue(b.check());
 
@@ -1284,7 +1284,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			b.setProperty("Export-Package", "aQute.bnd.*");
 			b.addClasspath(new File("bin"));
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 
 			List<File> project = Arrays.asList(b.getFile("bin/aQute/bnd/build/Project.class"));
 			assertTrue(b.isInScope(project));
@@ -1373,7 +1373,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testSplitWhenPrivateOverlapsExport() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty("Private-Package", "org.osgi.service.*");
 			b.setProperty("Export-Package", "org.osgi.service.event");
 			b.build();
@@ -1403,7 +1403,7 @@ public class BuilderTest extends BndTestCase {
 			proc.setProperty("cmpn.packages", "${replace;${cmpn.specs};.+;$0.*}");
 			proc.setProperty("mobile.specs", "org.osgi.service.wireadmin, org.osgi.service.log, org.osgi.service.cu");
 			proc.setProperty("mobile.packages", "${replace;${mobile.specs};.+;$0.*}");
-			builder.addClasspath(new File("jar/osgi.jar"));
+			builder.addClasspath(IO.getFile("jar/osgi.jar"));
 
 			Jar jar = builder.build();
 			// The total set is not uniqued so we're having an unused pattern
@@ -1434,7 +1434,7 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("res", "${if;${exporters;${@package}};mandatory;optional}");
 			b.setProperty("Import-Package", "*;resolution:=\\${res}");
 			b.setProperty("Export-Package", "org.osgi.service.io, org.osgi.service.log");
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.build();
 			assertTrue(b.check());
 
@@ -1464,9 +1464,9 @@ public class BuilderTest extends BndTestCase {
 	public static void testClassnames() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
-			b.addClasspath(new File("jar/ds.jar"));
-			b.addClasspath(new File("jar/ifc112.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/ds.jar"));
+			b.addClasspath(IO.getFile("jar/ifc112.jar"));
 			b.setProperty("Export-Package", "*");
 			b.setProperty("C1", "${classes;implementing;org.osgi.service.component.*}");
 			b.setProperty("C2", "${classes;extending;org.xml.sax.helpers.*}");
@@ -1527,7 +1527,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testImportMicroNotTruncated() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty("Import-Package", "org.osgi.service.event;version=${@}");
 			b.build();
 			assertTrue(b.check("The JAR is empty"));
@@ -1542,7 +1542,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testImportMicroTruncated() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/osgi.jar"));
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty("Import-Package", "org.osgi.service.event");
 			b.build();
 			assertTrue(b.check("The JAR is empty"));
@@ -1558,7 +1558,7 @@ public class BuilderTest extends BndTestCase {
 
 	public static void testMultipleExport2() throws Exception {
 		File cp[] = {
-			new File("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -1593,15 +1593,15 @@ public class BuilderTest extends BndTestCase {
 
 		// The file name for the properties is not bnd.bnd, so the
 		// name of the properties file is the default bsn
-		m = setup(null, new File("src/test/com.acme/defaultbsn.bnd")).getMainAttributes();
+		m = setup(null, IO.getFile("src/test/com.acme/defaultbsn.bnd")).getMainAttributes();
 		assertEquals("com.acme.defaultbsn", m.getValue("Bundle-SymbolicName"));
 
 		// If the file is called bnd.bnd, then we take the parent directory
-		m = setup(null, new File("src/test/com.acme/bnd.bnd")).getMainAttributes();
+		m = setup(null, IO.getFile("src/test/com.acme/bnd.bnd")).getMainAttributes();
 		assertEquals("com.acme", m.getValue("Bundle-SymbolicName"));
 
 		// If the file is called bnd.bnd, then we take the parent directory
-		m = setup(null, new File("src/test/com.acme/setsbsn.bnd")).getMainAttributes();
+		m = setup(null, IO.getFile("src/test/com.acme/setsbsn.bnd")).getMainAttributes();
 		assertEquals("is.a.set.bsn", m.getValue("Bundle-SymbolicName"));
 
 		// This sets the bsn, se we should see it back
@@ -1612,7 +1612,7 @@ public class BuilderTest extends BndTestCase {
 
 	public static Manifest setup(Properties p, File f) throws Exception {
 		File cp[] = {
-			new File("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		if (f != null)
@@ -1628,7 +1628,7 @@ public class BuilderTest extends BndTestCase {
 
 	public static void testDuplicateExport() throws Exception {
 		File cp[] = {
-			new File("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -1651,7 +1651,7 @@ public class BuilderTest extends BndTestCase {
 
 	public static void testNoExport() throws Exception {
 		File cp[] = {
-			new File("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -1675,7 +1675,7 @@ public class BuilderTest extends BndTestCase {
 
 	public static void testHardcodedImport() throws Exception {
 		File cp[] = {
-			new File("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -1723,7 +1723,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public static void testSplitOnExportAndPrivate() throws Exception {
 		File cp[] = {
-			new File("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -1790,7 +1790,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public static void testMETAINF() throws Exception {
 		File cp[] = {
-				new File("src"), new File("jar/asm.jar")
+				new File("src"), IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -1925,7 +1925,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			analyzer.setProperties(base);
 			analyzer.setClasspath(new File[] {
-				new File("jar/osgi.jar")
+				IO.getFile("jar/osgi.jar")
 			});
 			analyzer.build();
 			assertTrue(analyzer.check("private references"));
@@ -1948,7 +1948,7 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-					new File("jar/asm.jar"), new File("jar/asm.jar")
+					IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -1968,7 +1968,7 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-					new File("jar/asm.jar"), new File("jar/asm.jar")
+					IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -1989,7 +1989,7 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-					new File("jar/asm.jar"), new File("jar/asm.jar")
+					IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -2009,7 +2009,7 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-					new File("jar/asm.jar"), new File("jar/asm.jar")
+					IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -2032,7 +2032,7 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-				new File("jar/asm.jar")
+				IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -2083,7 +2083,7 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-				new File("jar/asm.jar")
+				IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -2107,7 +2107,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public static void testConditional() throws Exception {
 		File cp[] = {
-				new File("jar/osgi.jar"), new File("jar/ds.jar")
+				IO.getFile("jar/osgi.jar"), IO.getFile("jar/ds.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -2142,7 +2142,7 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-				new File("jar/asm.jar")
+				IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -2190,7 +2190,7 @@ public class BuilderTest extends BndTestCase {
 
 	static void assertVersionEquals(String input, String output) throws Exception {
 		File cp[] = {
-			new File("jar/osgi.jar")
+			IO.getFile("jar/osgi.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -2214,7 +2214,7 @@ public class BuilderTest extends BndTestCase {
 	public static void testImportExportBadVersion() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.addClasspath(new File("jar/ds.jar"));
+			b.addClasspath(IO.getFile("jar/ds.jar"));
 			b.set(Analyzer.BUNDLE_VERSION, "0.9.5-@#SNAPSHOT");
 			b.set(Analyzer.EXPORT_PACKAGE, "*;version=0.9.5-@#SNAPSHOT");
 			b.set(Analyzer.IMPORT_PACKAGE, "*;version=0.9.5-@#SNAPSHOT");
@@ -2409,7 +2409,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			Properties p = new Properties();
 			File cp[] = new File[] {
-				new File("jar/asm.jar")
+				IO.getFile("jar/asm.jar")
 			};
 
 			p.put("Export-Package", "!org.objectweb.asm,*");
@@ -2434,7 +2434,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			Properties p = new Properties();
 			File cp[] = new File[] {
-				new File("jar/ro.jar")
+				IO.getFile("jar/ro.jar")
 			};
 
 			p.put("Export-Package", "*");
@@ -2580,7 +2580,7 @@ public class BuilderTest extends BndTestCase {
 
 	public static void testEasymock() throws Exception {
 		File cp[] = {
-			new File("jar/easymock.jar")
+			IO.getFile("jar/easymock.jar")
 		};
 		Builder bmaker = new Builder();
 		try {

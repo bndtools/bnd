@@ -73,6 +73,34 @@ class Implemented implements Plugin {
 public class ClassParserTest extends TestCase {
 	static Analyzer	a	= new Analyzer();
 
+	
+	/**
+	 * Java Type & Parameter annotations 
+	 * @throws Exception 
+	 */
+	
+	public void testJavaTypeAnnotations() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath( IO.getFile("java8/type_annotations/bin"));
+		b.setExportPackage("reference.*");
+		Jar build = b.build();
+		assertTrue( b.check());
+		assertTrue(b.getImports().containsFQN("runtime.annotations"));
+		assertTrue(b.getImports().containsFQN("runtime.annotations.repeated"));
+		assertFalse(b.getImports().containsFQN("invisible.annotations"));
+		assertFalse(b.getImports().containsFQN("invisible.annotations.repeated"));
+		assertEquals("reference.runtime.annotations.Foo,reference.runtime.annotations.ReferenceRuntime", b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeTypeAnnotation}}"));
+		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer().process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleParameterAnnotation}}"));
+		assertEquals("reference.runtime.annotations.ReferenceRuntime", b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeParameterAnnotation}}"));
+		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer().process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleTypeAnnotation}}"));
+		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer().process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleRepeatedAnnotation}}"));
+		assertEquals("reference.runtime.annotations.ReferenceRuntime", b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeRepeatedAnnotation}}"));
+		b.close();
+	}
+	
+	
+	
+	
 	/**
 	 * https://jira.codehaus.org/browse/GROOVY-6169 There are several components
 	 * involved here, but the symptoms point to the Groovy compiler. Gradle uses
@@ -88,7 +116,7 @@ public class ClassParserTest extends TestCase {
 	 * using a groovy-all-2.1.0 a correct manifest file is created.
 	 */
 	public static void testCodehauseGROOVY_6169() throws Exception {
-		Clazz c = new Clazz(a, "foo", new FileResource(new File("jar/BugReproLoggerGroovy189.jclass")));
+		Clazz c = new Clazz(a, "foo", new FileResource(IO.getFile("jar/BugReproLoggerGroovy189.jclass")));
 		c.parseClassFile();
 		assertTrue(c.getReferred().contains(a.getPackageRef("org.slf4j")));
 	}
@@ -194,8 +222,8 @@ public class ClassParserTest extends TestCase {
 	 */
 	public static void testUnacceptableReference() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/nl.fuji.general.jar"));
-		b.addClasspath(new File("jar/spring.jar"));
+		b.addClasspath(IO.getFile("jar/nl.fuji.general.jar"));
+		b.addClasspath(IO.getFile("jar/spring.jar"));
 		b.setProperty("Export-Package", "nl.fuji.log");
 		b.build();
 		assertFalse(b.getImports().getByFQN("org.aopalliance.aop") != null);
@@ -232,14 +260,14 @@ public class ClassParserTest extends TestCase {
 	}
 
 	public static void testGenericsSignature2() throws Exception {
-		Clazz c = new Clazz(a, "genericstest", new FileResource(new File("src/test/generics.clazz")));
+		Clazz c = new Clazz(a, "genericstest", new FileResource(IO.getFile("src/test/generics.clazz")));
 		c.parseClassFile();
 		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing/table")));
 		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing")));
 	}
 
 	public static void testGenericsSignature() throws Exception {
-		Clazz c = new Clazz(a, "genericstest", new FileResource(new File("src/test/generics.clazz")));
+		Clazz c = new Clazz(a, "genericstest", new FileResource(IO.getFile("src/test/generics.clazz")));
 		c.parseClassFile();
 		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing/table")));
 		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing")));
@@ -267,7 +295,7 @@ public class ClassParserTest extends TestCase {
 
 	public static void testJQuantlib() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("testresources/jquantlib-0.1.2.jar"));
+		b.addClasspath(IO.getFile("testresources/jquantlib-0.1.2.jar"));
 		b.setProperty("Export-Package", "*");
 		b.build();
 	}
@@ -332,7 +360,7 @@ public class ClassParserTest extends TestCase {
 		Builder builder = new Builder();
 		try {
 			builder.setClasspath(new File[] {
-				new File("jar/ecj_3.2.2.jar")
+				IO.getFile("jar/ecj_3.2.2.jar")
 			});
 			builder.setProperty(Analyzer.EXPORT_PACKAGE, "org.eclipse.*");
 			builder.build();
