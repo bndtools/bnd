@@ -530,4 +530,24 @@ public class ProjectBuilder extends Builder {
 		}
 		return jars;
 	}
+
+
+	/**
+	 * Called when we start to build a builder
+	 */
+	protected void startBuild(Builder builder) {
+		project.exportedPackages.clear();
+		project.importedPackages.clear();
+		project.containedPackages.clear();
+	}
+	
+	/**
+	 * Called when we 're done with a builder. In this case
+	 * we retrieve package information from 
+	 */
+	protected void doneBuild(Builder builder) {
+		project.exportedPackages.putAll(builder.getExports());
+		project.importedPackages.putAll(builder.getImports());
+		project.containedPackages.putAll(builder.getContained());
+	}
 }
