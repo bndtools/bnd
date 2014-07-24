@@ -43,7 +43,7 @@ public class WorkspaceRepositoryTest extends TestCase {
 		
 	}
 	public void setUp() throws Exception {
-		workspace = new Workspace(new File("testresources/ws-repo-test"));
+		workspace = new Workspace(IO.getFile("testresources/ws-repo-test"));
 		repo = new WorkspaceRepository(workspace);
 	}
 

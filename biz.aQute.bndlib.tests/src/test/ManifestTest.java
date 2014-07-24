@@ -16,7 +16,7 @@ public class ManifestTest extends TestCase {
 	public static void testNameSection() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Export-Package", "org.osgi.framework");
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 
 		Jar jar = b.build();
 		jar.calcChecksums(null);
@@ -132,7 +132,7 @@ public class ManifestTest extends TestCase {
 		Builder b = new Builder();
 		b.setProperty("-nomanifest", "true");
 		b.setProperty("Export-Package", "org.osgi.service.event.*");
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		Jar jar = b.build();
 		assertNull(jar.getResource("META-INF/MANIFEST.MF"));
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -150,7 +150,7 @@ public class ManifestTest extends TestCase {
 		b.setProperty("Subsystem-Wibble", "hullo");
 		b.setProperty("Export-Package", "org.osgi.service.event.*");
 
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		Jar jar = b.build();
 		
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();

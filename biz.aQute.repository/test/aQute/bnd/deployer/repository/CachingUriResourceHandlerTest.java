@@ -17,12 +17,12 @@ public class CachingUriResourceHandlerTest extends TestCase {
 
 	public static void testLoadFromCache() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File(
+				new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile(
 						"testdata/httpcache/1"), new DefaultURLConnector(), (String) null);
 		File result = handle.request();
 
 		assertEquals(
-				new File("testdata/httpcache/1/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar")
+				IO.getFile("testdata/httpcache/1/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar")
 						.getAbsolutePath(),
 				result.getAbsolutePath());
 	}
@@ -50,7 +50,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 			if (cacheFiles.size() == 2) {
 				assert(cacheFiles.contains(".gitignore"));
 			}
-			new File(testDirName + "/" + uriCacheDir).delete();
+			IO.getFile(testDirName + "/" + uriCacheDir).delete();
 		}
 	}
 
@@ -62,11 +62,11 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 				uri, cacheDir, new DefaultURLConnector(), (String) null);
 
-		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
+		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
 			File result = handle.request();
 			assertEquals(
-					new File("testdata/httpcache/3/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar")
+					IO.getFile("testdata/httpcache/3/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar")
 							.getAbsolutePath(),
 					result.getAbsolutePath());
 
@@ -84,7 +84,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 			if (cacheFiles.size() == 2) {
 				assert(cacheFiles.contains(".gitignore"));
 			}
-			new File(testDirName + "/" + uriCacheDir).delete();
+			IO.getFile(testDirName + "/" + uriCacheDir).delete();
 		}
 		finally {
 			httpd.stop();
@@ -92,13 +92,13 @@ public class CachingUriResourceHandlerTest extends TestCase {
 	}
 
 	public static void testUseCached() throws Exception {
-		File cached = new File("testdata/httpcache/4/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
+		File cached = IO.getFile("testdata/httpcache/4/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		long cacheTimestamp = cached.lastModified();
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File("testdata/httpcache/4"), new DefaultURLConnector(), EXPECTED_SHA);
+				new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/4"), new DefaultURLConnector(), EXPECTED_SHA);
 
-		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
+		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
 			File result = handle.request();
 			assertEquals(cached, result);
@@ -110,7 +110,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 	}
 
 	public static void testReplaceCache() throws Exception {
-		File cached = new File("testdata/httpcache/5/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
+		File cached = IO.getFile("testdata/httpcache/5/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		long cacheTimestamp = cached.lastModified();
 
 		// Clear the SHA so the file appears modified
@@ -118,9 +118,9 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		IO.copy(IO.stream("00000000"), shaFile);
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), new File("testdata/httpcache/5"), new DefaultURLConnector(), EXPECTED_SHA);
+				new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/5"), new DefaultURLConnector(), EXPECTED_SHA);
 
-		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
+		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
 			File result = handle.request();
 			assertEquals(cached, result);
@@ -141,7 +141,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		URI uri = new URI(baseUri + "/" + jarName);
 		String uriCacheDir = URLEncoder.encode(baseUri.toURL().toExternalForm(), "UTF-8");
 
-		File cached = new File(testDirName + "/" + uriCacheDir + "/" + jarName);
+		File cached = IO.getFile(testDirName + "/" + uriCacheDir + "/" + jarName);
 		cached.delete();
 
 		File shaFile = new File(cached.getAbsolutePath() + AbstractIndexedRepo.REPO_INDEX_SHA_EXTENSION);
@@ -149,7 +149,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 				uri, cacheDir, new DefaultURLConnector(), EXPECTED_SHA);
-		NanoHTTPD httpd = new NanoHTTPD(18083, new File("testdata/http"));
+		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
 			File result = handle.request();
 			assertEquals(cached, result);
@@ -162,7 +162,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 			if (cacheFiles.size() == 2) {
 				assert(cacheFiles.contains(".gitignore"));
 			}
-			IO.delete(new File(testDirName + "/" + uriCacheDir));
+			IO.delete(IO.getFile(testDirName + "/" + uriCacheDir));
 		}
 		finally {
 			httpd.stop();
@@ -170,8 +170,8 @@ public class CachingUriResourceHandlerTest extends TestCase {
 	}
 	
 	public static void testUseCacheWhenRemoteUnavailable() throws Exception {
-		File cached = new File("testdata/httpcache/7/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
-		CachingUriResourceHandle handle = new CachingUriResourceHandle(new URI("http://localhost:18083/bundles/dummybundle.jar"), new File("testdata/httpcache/7"), new DefaultURLConnector(), (String) null);
+		File cached = IO.getFile("testdata/httpcache/7/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
+		CachingUriResourceHandle handle = new CachingUriResourceHandle(new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/7"), new DefaultURLConnector(), (String) null);
 
 		// whoops where's the server...
 

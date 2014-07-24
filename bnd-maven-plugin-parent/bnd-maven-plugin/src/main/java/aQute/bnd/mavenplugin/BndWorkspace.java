@@ -39,7 +39,7 @@ public class BndWorkspace {
 				if (sessionRoot.exists() && sessionRoot.isDirectory())
 					workspace = new Workspace(sessionRoot.getParentFile());
 				else {
-					File upFolder = new File("../cnf").getCanonicalFile();
+					File upFolder = IO.getFile("../cnf").getCanonicalFile();
 					if (upFolder.exists() && upFolder.isDirectory())
 						workspace = new Workspace(upFolder.getParentFile());
 				}

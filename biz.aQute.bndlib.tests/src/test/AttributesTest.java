@@ -7,6 +7,7 @@ import java.util.jar.*;
 import junit.framework.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class AttributesTest extends TestCase {
@@ -25,7 +26,7 @@ public class AttributesTest extends TestCase {
 		javax.setManifest(m);
 
 		Jar cp[] = {
-				javax, new Jar(new File("jar/osgi.jar"))
+				javax, new Jar(IO.getFile("jar/osgi.jar"))
 		};
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
@@ -68,7 +69,7 @@ public class AttributesTest extends TestCase {
 		javax.setManifest(m);
 
 		Jar cp[] = {
-				javax, new Jar(new File("jar/osgi.jar"))
+				javax, new Jar(IO.getFile("jar/osgi.jar"))
 		};
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
@@ -97,7 +98,7 @@ public class AttributesTest extends TestCase {
 	 */
 	public static void testOverrideAttribute() throws Exception {
 		File cp[] = {
-			new File("jar/osgi.jar")
+			IO.getFile("jar/osgi.jar")
 		};
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
@@ -125,7 +126,7 @@ public class AttributesTest extends TestCase {
 	 */
 	public static void testSimple() throws Exception {
 		File cp[] = {
-			new File("jar/osgi.jar")
+			IO.getFile("jar/osgi.jar")
 		};
 		Builder bmaker = new Builder();
 		Properties p = new Properties();

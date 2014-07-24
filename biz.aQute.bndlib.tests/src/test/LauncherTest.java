@@ -267,7 +267,7 @@ public class LauncherTest extends TestCase {
 	}
 
 	static Project getProjectFromWorkspaceWithSpace() throws Exception {
-		Workspace workspace = Workspace.getWorkspace(new File("testresources/a space"));
+		Workspace workspace = Workspace.getWorkspace(IO.getFile("testresources/a space"));
 		Project project = workspace.getProject("test");
 		return project;
 	}
@@ -351,7 +351,7 @@ public class LauncherTest extends TestCase {
 		project.clear();
 		project.setProperty(Constants.RUNTRACE, "true");
 
-		String mandatorynoversion = new File("jar/mandatorynoversion.jar").getAbsolutePath();
+		String mandatorynoversion = IO.getFile("jar/mandatorynoversion.jar").getAbsolutePath();
 		String runbundles = project.getProperty(Constants.RUNBUNDLES);
 		project.setProperty(Constants.RUNBUNDLES, runbundles + "," + mandatorynoversion + ";version=file");
 		ProjectTester tester = project.getProjectTester();

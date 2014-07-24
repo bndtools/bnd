@@ -5,6 +5,7 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class MergeTest extends TestCase {
@@ -47,7 +48,7 @@ public class MergeTest extends TestCase {
 		Builder b = new Builder();
 		try {
 			b.setClasspath(new File[] {
-					new File("src/test/split/split-a.jar"), new File("src/test/split/split-b.jar")
+					IO.getFile("src/test/split/split-a.jar"), IO.getFile("src/test/split/split-b.jar")
 			});
 			Properties p = new Properties();
 			if (type != null)

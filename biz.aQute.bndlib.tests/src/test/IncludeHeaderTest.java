@@ -5,6 +5,7 @@ import java.util.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 @SuppressWarnings("resource")
 
 public class IncludeHeaderTest extends TestCase {
@@ -33,12 +34,12 @@ public class IncludeHeaderTest extends TestCase {
 
 	public static void testTopBottom() throws Exception {
 		Analyzer analyzer = new Analyzer();
-		analyzer.setProperties(new File("src/test/include.bnd/top.bnd"));
+		analyzer.setProperties(IO.getFile("src/test/include.bnd/top.bnd"));
 		assertEquals("0.0.257", analyzer.getProperty("Bundle-Version"));
 	}
 
 	public static void testPrecedence() throws Exception {
-		File base = new File("src/test");
+		File base = IO.getFile("src/test");
 		String a = "a=a.props\n";
 		String b = "a=b.props\n";
 		File aa = new File(base, "a.props");
@@ -90,7 +91,7 @@ public class IncludeHeaderTest extends TestCase {
 
 	public static void testAbsentIncludes() throws IOException {
 		Analyzer analyzer = new Analyzer();
-		analyzer.setBase(new File("src/test"));
+		analyzer.setBase(IO.getFile("src/test"));
 		Properties p = new Properties();
 		p.put("-include", "-iamnotthere.txt");
 		analyzer.setProperties(p);
@@ -108,7 +109,7 @@ public class IncludeHeaderTest extends TestCase {
 			fw.write("b: ${a}\n\r".getBytes());
 			fw.close();
 			Analyzer analyzer = new Analyzer();
-			analyzer.setBase(new File("src/test"));
+			analyzer.setBase(IO.getFile("src/test"));
 			Properties p = new Properties();
 			p.put("a", "1");
 			p.put("-include", "-iamnotthere.txt, ${user.home}/includeheadertest.txt");
@@ -126,7 +127,7 @@ public class IncludeHeaderTest extends TestCase {
 
 	public static void testIncludeHeader() throws IOException {
 		Analyzer analyzer = new Analyzer();
-		analyzer.setBase(new File("src/test"));
+		analyzer.setBase(IO.getFile("src/test"));
 		Properties p = new Properties();
 		p.put("a", "1");
 		p.put("-include", "includeheadertest.mf, includeheadertest.prop");

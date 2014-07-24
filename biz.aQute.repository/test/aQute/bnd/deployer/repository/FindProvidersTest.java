@@ -1,6 +1,5 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
@@ -9,13 +8,14 @@ import org.osgi.framework.*;
 import org.osgi.resource.*;
 
 import aQute.bnd.osgi.resource.*;
+import aQute.lib.io.*;
 
 public class FindProvidersTest extends TestCase {
 
 	public static void testPackageQuery() throws Exception {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
-		props.put("locations", new File("testdata/minir5.xml").toURI().toString());
+		props.put("locations", IO.getFile("testdata/minir5.xml").toURI().toString());
 		repo.setProperties(props);
 		
 		Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", "[1,2)").buildSyntheticRequirement();
@@ -34,7 +34,7 @@ public class FindProvidersTest extends TestCase {
 	public static void testTypedCapabilityAttribute() {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
-		props.put("locations", new File("testdata/minir5.xml").toURI().toString());
+		props.put("locations", IO.getFile("testdata/minir5.xml").toURI().toString());
 		repo.setProperties(props);
 		
 		Requirement req = CapReqBuilder.createPackageRequirement("org.example.a", "[1,2)").buildSyntheticRequirement();
@@ -46,7 +46,7 @@ public class FindProvidersTest extends TestCase {
 	public static void testReadGZippedStream() throws Exception {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
-		props.put("locations", new File("testdata/big_index.xml.gz").toURI().toString());
+		props.put("locations", IO.getFile("testdata/big_index.xml.gz").toURI().toString());
 		repo.setProperties(props);
 		
 		Requirement req = new CapReqBuilder("osgi.identity").addDirective("filter", "(&(osgi.identity=osgi.cmpn)(version>=4.2.0)(!(version>=4.2.1)))").buildSyntheticRequirement();
@@ -63,13 +63,13 @@ public class FindProvidersTest extends TestCase {
 		assertNotNull(contentCaps);
 		assertEquals(1, contentCaps.size());
 		Capability contentCap = contentCaps.iterator().next();
-		assertEquals(new File("testdata/osgi.cmpn/osgi.cmpn-4.2.0.jar").getAbsoluteFile().toURI(), contentCap.getAttributes().get("url"));
+		assertEquals(IO.getFile("testdata/osgi.cmpn/osgi.cmpn-4.2.0.jar").getAbsoluteFile().toURI(), contentCap.getAttributes().get("url"));
 	}
 
 	public static void testMultipleMatches() throws Exception {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
-		props.put("locations", new File("testdata/big_index.xml").toURI().toString());
+		props.put("locations", IO.getFile("testdata/big_index.xml").toURI().toString());
 		repo.setProperties(props);
 		
 		Requirement req = CapReqBuilder.createPackageRequirement("aQute.bnd.annotation", "[1.43,2)").buildSyntheticRequirement();

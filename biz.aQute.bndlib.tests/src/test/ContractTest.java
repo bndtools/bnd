@@ -6,6 +6,7 @@ import java.util.*;
 import junit.framework.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 public class ContractTest extends TestCase {
 
@@ -184,7 +185,7 @@ public class ContractTest extends TestCase {
 
 	private Builder newBuilder() throws IOException {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.addClasspath(new File("bin"));
 
 		return b;

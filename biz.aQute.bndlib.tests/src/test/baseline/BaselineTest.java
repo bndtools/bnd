@@ -31,7 +31,7 @@ public class BaselineTest extends TestCase {
 			return workspace;
 
 		IO.delete(tmp);
-		IO.copy(new File("testresources/ws"), tmp);
+		IO.copy(IO.getFile("testresources/ws"), tmp);
 		return workspace = new Workspace(tmp);
 	}
 
@@ -42,13 +42,13 @@ public class BaselineTest extends TestCase {
 
 	public void testJava8DefaultMethods() throws Exception {
 		Builder older = new Builder();
-		older.addClasspath( new File("java8/older/bin"));
+		older.addClasspath( IO.getFile("java8/older/bin"));
 		older.setExportPackage("*");
 		Jar o = older.build();
 		assertTrue(older.check());
 		
 		Builder newer = new Builder();
-		newer.addClasspath( new File("java8/newer/bin"));
+		newer.addClasspath( IO.getFile("java8/newer/bin"));
 		newer.setExportPackage("*");
 		Jar n = newer.build();
 		assertTrue(newer.check());
@@ -99,7 +99,7 @@ public class BaselineTest extends TestCase {
 	}
 
 	public static void testBaslineJar() throws Exception {
-		// Workspace ws = new Workspace(new File("testresources/ws"));
+		// Workspace ws = new Workspace(IO.getFile("testresources/ws"));
 		//
 		// Project p3 = ws.getProject("p3");
 		//
@@ -329,8 +329,8 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(new File("testresources/api-orig.jar"));
-		Jar newer = new Jar(new File("testresources/api-providerbump.jar"));
+		Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
+		Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));
 
 		Set<Info> infoSet = baseline.baseline(newer, older, null);
 		System.out.println(differ.tree(newer).get("<api>"));
@@ -350,8 +350,8 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(new File("testresources/api-orig.jar"));
-		Jar newer = new Jar(new File("testresources/api-consumerbump.jar"));
+		Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
+		Jar newer = new Jar(IO.getFile("testresources/api-consumerbump.jar"));
 
 		Set<Info> infoSet = baseline.baseline(newer, older, null);
 

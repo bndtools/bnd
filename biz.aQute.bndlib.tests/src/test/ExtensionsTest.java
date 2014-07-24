@@ -2,9 +2,9 @@ package test;
 
 import java.io.*;
 
+import junit.framework.*;
 import aQute.bnd.build.*;
 import aQute.lib.io.*;
-import junit.framework.*;
 
 public class ExtensionsTest extends TestCase {
 

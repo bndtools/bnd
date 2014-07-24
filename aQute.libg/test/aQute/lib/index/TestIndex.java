@@ -8,7 +8,7 @@ import junit.framework.*;
 public class TestIndex extends TestCase {
 
 	public void testPersistence() throws Exception {
-		File test = new File("tmp/test.tmp");
+		File test = IO.getFile("tmp/test.tmp");
 		test.delete();
 		test.getParentFile().mkdirs();
 		Index index = new Index(test, 2000);
@@ -51,7 +51,7 @@ public class TestIndex extends TestCase {
 	}
 
 	public void testBasic() throws Exception {
-		File test = new File("tmp/test.tmp");
+		File test = IO.getFile("tmp/test.tmp");
 		test.delete();
 		test.getParentFile().mkdirs();
 		Index index = new Index(test, 2000);
@@ -85,7 +85,7 @@ public class TestIndex extends TestCase {
 	}
 
 	// public void testMany() throws Exception {
-	// File test = new File("tmp/test.tmp");
+	// File test = IO.getFile("tmp/test.tmp");
 	// test.delete();
 	// Index index = new Index(test, 1000);
 	// for ( int i = 1; i<127; i++)

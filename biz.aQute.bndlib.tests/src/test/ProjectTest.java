@@ -32,7 +32,7 @@ public class ProjectTest extends TestCase {
 	 */
 	
 	public void testMulti() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("multipath");
 		assertNotNull(project);
 		
@@ -59,7 +59,7 @@ public class ProjectTest extends TestCase {
 	 * @throws Exception
 	 */
 	public void testErrorOnVersionIsProjectInRunbundles() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles", "p2;version=project,p3;version=latest");
 		top.getRunbundles();
@@ -72,7 +72,7 @@ public class ProjectTest extends TestCase {
 	 */
 
 	public  void testRepoMacro2() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p2");
 		top.addClasspath(top.getOutput());
 
@@ -96,7 +96,7 @@ public class ProjectTest extends TestCase {
 
 		Workspace ws = getWorkspace("testresources/ws");
 		Project project = ws.getProject("p6");
-		File bnd = new File("testresources/ws/p6/bnd.bnd");
+		File bnd = IO.getFile("testresources/ws/p6/bnd.bnd");
 		assertTrue(bnd.exists());
 
 		project.clean();
@@ -141,7 +141,7 @@ public class ProjectTest extends TestCase {
 	 */
 
 	public  void testProjectReferringToItself() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("bug194");
 		top.addClasspath(top.getOutput());
 		assertTrue(top.check("Circular dependency context"));
@@ -153,7 +153,7 @@ public class ProjectTest extends TestCase {
 	 */
 
 	public  void testAddDirToClasspath() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
 		top.addClasspath(top.getOutput());
 		assertTrue(top.check());
@@ -163,7 +163,7 @@ public class ProjectTest extends TestCase {
 	 * Test bnd.bnd of project `foo`: `-runbundles: foo;version=latest`
 	 */
 	public  void testRunBundlesContainsSelf() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles", "p1;version=latest");
 		top.setChanged();
@@ -179,7 +179,7 @@ public class ProjectTest extends TestCase {
 	 */
 
 	public  void testSameBsnRunBundles() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles",
 				"org.apache.felix.configadmin;version='[1.0.1,1.0.1]',org.apache.felix.configadmin;version='[1.1.0,1.1.0]'");
@@ -194,7 +194,7 @@ public class ProjectTest extends TestCase {
 	 */
 
 	public  void testRunbundleDuplicates() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
 		top.setPedantic(true);
 		top.clear();
@@ -210,7 +210,7 @@ public class ProjectTest extends TestCase {
 	 */
 
 	public  void testIsStale() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		ws.setOffline(false);
 		Project top = ws.getProject("p-stale");
 		assertNotNull(top);
@@ -258,7 +258,7 @@ public class ProjectTest extends TestCase {
 	 * @throws Exception
 	 */
 	public  void testMultipleRepos() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p1");
 		project.setPedantic(true);
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.EXACT, null));
@@ -313,7 +313,7 @@ public class ProjectTest extends TestCase {
 	 */
 
 	public  void testSub() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p4-sub");
 		File[] files = project.build();
 		Arrays.sort(files);
@@ -338,9 +338,9 @@ public class ProjectTest extends TestCase {
 	}
 
 	public  void testOutofDate() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p3");
-		File bnd = new File("testresources/ws/p3/bnd.bnd");
+		File bnd = IO.getFile("testresources/ws/p3/bnd.bnd");
 		assertTrue(bnd.exists());
 
 		project.clean();
@@ -376,7 +376,7 @@ public class ProjectTest extends TestCase {
 	}
 
 	public  void testRepoMacro() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p2");
 		System.err.println(project.getPlugins(FileRepo.class));
 		String s = project.getReplacer().process(("${repo;libtest}"));
@@ -455,7 +455,7 @@ public class ProjectTest extends TestCase {
 	}
 
 	public  void testRunBuilds() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 
 		// Running a .bnd includes built bundles by default
 		Project p1 = ws.getProject("p1");
@@ -466,11 +466,11 @@ public class ProjectTest extends TestCase {
 		assertFalse(p2.getRunBuilds());
 
 		// Running a .bndrun DOES NOT include built bundles by default
-		Project p1a = new Project(ws, new File("testresources/ws/p1"), new File("testresources/ws/p1/p1a.bndrun"));
+		Project p1a = new Project(ws, IO.getFile("testresources/ws/p1"), IO.getFile("testresources/ws/p1/p1a.bndrun"));
 		assertFalse(p1a.getRunBuilds());
 
 		// ... unless we override the default by specifying -runbuilds: true
-		Project p1b = new Project(ws, new File("testresources/ws/p1"), new File("testresources/ws/p1/p1b.bndrun"));
+		Project p1b = new Project(ws, IO.getFile("testresources/ws/p1"), IO.getFile("testresources/ws/p1/p1b.bndrun"));
 		assertTrue(p1b.getRunBuilds());
 	}
 
@@ -570,7 +570,7 @@ public class ProjectTest extends TestCase {
 	 * Check that the output property can be used to name the output binary.
 	 */
 	public  void testGetOutputFile() throws Exception {
-		Workspace ws = getWorkspace(new File("testresources/ws"));
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
 
 		//
@@ -628,7 +628,7 @@ public class ProjectTest extends TestCase {
 	}
 
 	private  Project testBuildAll(String dependsOn, int count) throws Exception {
-		Workspace ws = new Workspace(new File("testresources/ws"));
+		Workspace ws = new Workspace(IO.getFile("testresources/ws"));
 		Project all = ws.getProject("build-all");
 		all.setProperty("-dependson", dependsOn);
 		all.prepare();

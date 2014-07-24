@@ -6,6 +6,7 @@ import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
@@ -806,7 +807,7 @@ public class MacroTest extends TestCase {
 		p.setProperty("Export-Package", "org.objectweb.*;version=1.5-SNAPSHOT");
 		builder.setProperties(p);
 		builder.setClasspath(new File[] {
-			new File("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		});
 		Jar jar = builder.build();
 		Manifest manifest = jar.getManifest();
@@ -853,7 +854,7 @@ public class MacroTest extends TestCase {
 
 	public static void testFindPath() throws IOException {
 		Analyzer analyzer = new Analyzer();
-		analyzer.setJar(new File("jar/asm.jar"));
+		analyzer.setJar(IO.getFile("jar/asm.jar"));
 		Macro m = new Macro(analyzer);
 
 		assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("FieldVisitor.xyz,") >= 0);
@@ -983,8 +984,8 @@ public class MacroTest extends TestCase {
 
 	public static void testFilterout() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/osgi.jar"));
-		b.addClasspath(new File("jar/ds.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/ds.jar"));
 		b.setProperty("Export-Package", "org.eclipse.*, org.osgi.*");
 		b.setProperty("fwusers", "${classes;importing;org.osgi.framework}");
 		b.setProperty("foo", "${filterout;${fwusers};org\\.osgi\\..*}");

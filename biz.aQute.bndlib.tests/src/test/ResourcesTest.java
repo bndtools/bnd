@@ -383,7 +383,7 @@ public class ResourcesTest extends TestCase {
 	}
 
 	public void testEmptyDirs2() throws Exception {
-		File tstDir = new File("testresources/ws/p2/Resources/empty");
+		File tstDir = IO.getFile("testresources/ws/p2/Resources/empty");
 		tstDir.mkdirs();
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources");

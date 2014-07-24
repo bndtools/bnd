@@ -1,11 +1,11 @@
 package test;
 
-import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class ClasspathTest extends TestCase {
@@ -54,7 +54,7 @@ public class ClasspathTest extends TestCase {
 	 */
 	public static void testSimple() throws Exception {
 		Properties p = new Properties();
-		p.put("-classpath", new File("jar/osgi.jar").toURI().toURL().toString());
+		p.put("-classpath", IO.getFile("jar/osgi.jar").toURI().toURL().toString());
 		p.put("Export-Package", "org.osgi.service.event");
 		p.put("Private-Package", "test.refer");
 

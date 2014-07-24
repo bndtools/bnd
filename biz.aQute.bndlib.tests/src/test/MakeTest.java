@@ -1,10 +1,10 @@
 package test;
 
-import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 /**
  * Tests the make functionality.
@@ -23,7 +23,7 @@ public class MakeTest extends TestCase {
 		b.setProperty("Include-Resource", "jar/asm.jar.md5");
 		b.setProperty("-make", "(*).md5;type=md5;file=$1");
 		b.setProperty("-plugin", "test.make.MD5");
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		Jar jar = b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());

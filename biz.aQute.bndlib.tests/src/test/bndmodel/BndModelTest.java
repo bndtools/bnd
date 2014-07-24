@@ -60,7 +60,7 @@ public class BndModelTest  extends TestCase {
 		
 		BndEditModel model = new BndEditModel();
 		model.setRunFw("${fw}"); // set changes
-		File f = new File("testresources/bndmodel/test-01.bndrun");
+		File f = IO.getFile("testresources/bndmodel/test-01.bndrun");
 		model.setBndResource(f);
 		
 		Processor p = model.getProperties();

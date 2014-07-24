@@ -7,6 +7,7 @@ import java.util.jar.*;
 import junit.framework.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class PropertiesTest extends TestCase {
@@ -88,7 +89,7 @@ public class PropertiesTest extends TestCase {
 		// Now test if we can make the round trip
 		Builder b = new Builder();
 		b.setProperties(p);
-		b.addClasspath(new File("jar/asm.jar"));
+		b.addClasspath(IO.getFile("jar/asm.jar"));
 		Jar jar = b.build();
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -103,7 +104,7 @@ public class PropertiesTest extends TestCase {
 	public static void testBadProperties() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setPedantic(true);
-		analyzer.setProperties(new File("src/test/badproperties.prop"));
+		analyzer.setProperties(IO.getFile("src/test/badproperties.prop"));
 		String s = analyzer.getProperty(Analyzer.IMPORT_PACKAGE);
 		Parameters map = analyzer.parseHeader(s);
 		assertEquals(2, map.size());
@@ -117,7 +118,7 @@ public class PropertiesTest extends TestCase {
 
 	public static void testProperties() throws Exception {
 		Analyzer analyzer = new Analyzer();
-		analyzer.setProperties(new File("src/test/variables.mf"));
+		analyzer.setProperties(IO.getFile("src/test/variables.mf"));
 
 		assertEquals("aQute.test", analyzer.getProperty("Header"));
 		System.err.println("property " + analyzer.getProperty("Header"));

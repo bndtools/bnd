@@ -17,7 +17,7 @@ public class TestLocalObrGeneration extends TestCase {
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
-		outputDir = new File("generated/testoutput");
+		outputDir = IO.getFile("generated/testoutput");
 		IO.delete(outputDir);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			throw new IOException("Could not create directory " + outputDir);

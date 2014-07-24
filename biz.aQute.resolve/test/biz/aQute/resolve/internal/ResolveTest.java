@@ -2,7 +2,6 @@ package biz.aQute.resolve.internal;
 
 import static test.lib.Utils.*;
 
-import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
@@ -16,6 +15,7 @@ import org.osgi.service.resolver.*;
 import test.lib.*;
 import aQute.bnd.build.model.*;
 import aQute.bnd.osgi.resource.*;
+import aQute.lib.io.*;
 import biz.aQute.resolve.*;
 
 public class ResolveTest extends TestCase {
@@ -25,7 +25,7 @@ public class ResolveTest extends TestCase {
     public static void testSimpleResolve() {
 
         MockRegistry registry = new MockRegistry();
-        registry.addPlugin(createRepo(new File("testdata/repo3.index.xml")));
+        registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
 
         BndEditModel model = new BndEditModel();
 

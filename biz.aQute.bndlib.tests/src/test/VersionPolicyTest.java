@@ -7,6 +7,7 @@ import java.util.jar.*;
 import junit.framework.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class VersionPolicyTest extends TestCase {
@@ -51,7 +52,7 @@ public class VersionPolicyTest extends TestCase {
 	 */
 	public static void testImportProvided() throws Exception {
 		Builder a = new Builder();
-		a.addClasspath(new File("jar/osgi.jar"));
+		a.addClasspath(IO.getFile("jar/osgi.jar"));
 		a.addClasspath(new File("bin"));
 		a.setProperty("Private-Package", "test.refer");
 		a.setProperty("Import-Package", "org.osgi.service.event;provide:=true,*");
@@ -71,7 +72,7 @@ public class VersionPolicyTest extends TestCase {
 	 */
 	public static void testExportProvided() throws Exception {
 		Builder a = new Builder();
-		a.addClasspath(new File("jar/osgi.jar"));
+		a.addClasspath(IO.getFile("jar/osgi.jar"));
 		a.addClasspath(new File("bin"));
 		a.setProperty("Private-Package", "test.refer");
 		a.setProperty("Export-Package", "org.osgi.service.http;provide:=true");
@@ -183,7 +184,7 @@ public class VersionPolicyTest extends TestCase {
 	 */
 	public static void testHardcodedImports() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setProperty("-versionpolicy", "${range;[==,+)}");
 		b.setProperty("Private-Package", "org.objectweb.asm");
 		b.setProperty("Import-Package", "org.osgi.framework,org.objectweb.asm,abc;version=2.0.0,*");
@@ -206,7 +207,7 @@ public class VersionPolicyTest extends TestCase {
 	 */
 	public static void testExportsSpecifiesVersion() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "org.osgi.service.event");
 		b.setProperty("Private-Package", "test.refer");
@@ -222,7 +223,7 @@ public class VersionPolicyTest extends TestCase {
 	 */
 	public static void testImportOverridesDiscoveredVersion() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "org.osgi.service.event");
 		b.setProperty("Private-Package", "test.refer");
@@ -238,7 +239,7 @@ public class VersionPolicyTest extends TestCase {
 	 */
 	public static void testVersionPolicyImportedExportsDefaultPolicy() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "org.osgi.service.event");
 		b.setProperty("Private-Package", "test.refer");
@@ -253,7 +254,7 @@ public class VersionPolicyTest extends TestCase {
 	 */
 	public static void testImportMicroTruncated() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setProperty("Import-Package", "org.osgi.service.event");
 		b.build();
 		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
@@ -266,7 +267,7 @@ public class VersionPolicyTest extends TestCase {
 	 */
 	public static void testImportMicroNotTruncated() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setProperty("Import-Package",
 				"org.osgi.service.event;version=${@}, org.osgi.service.log;version=\"${range;[==,=+)}\"");
 		b.build();

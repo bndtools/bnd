@@ -5,6 +5,7 @@ import java.util.jar.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class CorruptManifest extends TestCase {
@@ -20,7 +21,7 @@ public class CorruptManifest extends TestCase {
 		b.setProperty("NL5", ltext);
 		b.setProperty("Export-Package", "*");
 		b.setClasspath(new File[] {
-			new File("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		});
 		Jar jar = b.build();
 		Manifest manifest = jar.getManifest();

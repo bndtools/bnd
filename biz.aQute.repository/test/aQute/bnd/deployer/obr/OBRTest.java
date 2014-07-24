@@ -11,6 +11,7 @@ import aQute.bnd.deployer.repository.providers.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.lib.io.*;
 
 public class OBRTest extends TestCase {
 
@@ -23,7 +24,7 @@ public class OBRTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		httpd = new NanoHTTPD(0, new File("testdata/http"));
+		httpd = new NanoHTTPD(0, IO.getFile("testdata/http"));
 		httpdPort = httpd.getPort();
 
 		Sed.file2File(obrSrc, "__httpdPort__", Integer.toString(httpdPort), obrDst);
@@ -62,13 +63,13 @@ public class OBRTest extends TestCase {
 		OBR obr2 = new OBR();
 
 		Map<String,String> props = new HashMap<String,String>();
-		props.put("location", new File("testdata/fullobr.xml").toURI().toString());
+		props.put("location", IO.getFile("testdata/fullobr.xml").toURI().toString());
 		obr2.setProperties(props);
 		obr2.setCacheDirectory(obr.getCacheDirectory());
 
 		Collection<URI> indexes = obr2.getIndexLocations();
 		assertEquals(1, indexes.size());
-		assertEquals(new File("testdata/fullobr.xml").toURI().toString(), indexes.iterator().next().toString());
+		assertEquals(IO.getFile("testdata/fullobr.xml").toURI().toString(), indexes.iterator().next().toString());
 
 		assertEquals(obr.getCacheDirectory(), obr2.getCacheDirectory());
 	}
@@ -77,7 +78,7 @@ public class OBRTest extends TestCase {
 		OBR obr2 = new OBR();
 
 		Map<String,String> props = new HashMap<String,String>();
-		props.put("location", new File("testdata/fullobr.xml").toURI().toString());
+		props.put("location", IO.getFile("testdata/fullobr.xml").toURI().toString());
 		obr2.setProperties(props);
 	}
 

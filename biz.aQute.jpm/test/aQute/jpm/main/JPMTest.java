@@ -118,7 +118,7 @@ public class JPMTest extends TestCase {
 	 * JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
 	 * settings.put("jpm.cache.local", "/tmp/localCache"); settings.save();
 	 * String[] args = {"-s", "/tmp/settings","-u"}; Main main = new Main(mock);
-	 * main.run(args); verify(mock).setHomeDir(new File("/tmp/localCache")); }
+	 * main.run(args); verify(mock).setHomeDir(IO.getFile("/tmp/localCache")); }
 	 * public void test_userMode_global_noConfig() throws Exception {
 	 * JustAnotherPackageManager mock = mock(JustAnotherPackageManager.class);
 	 * String[] args = {"-s", "/tmp/settings", "-g"}; Main main = new
@@ -150,7 +150,7 @@ public class JPMTest extends TestCase {
 	 * "repo/service.jar")); main.run(args); File exec = new
 	 * File("/tmp/filemap"); assertTrue(exec.exists()); exec = null; String[]
 	 * args2 = {"-s", "/tmp/settings", "remove", "filemap"}; main.run(args2);
-	 * exec = new File("/tmp/filemap"); assertFalse(exec.exists()); }
+	 * exec = IO.getFile("/tmp/filemap"); assertFalse(exec.exists()); }
 	 */
 
 	public void testMain() throws Exception {

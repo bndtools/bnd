@@ -1,7 +1,7 @@
 package test;
 
-import aQute.bnd.osgi.*;
 import junit.framework.*;
+import aQute.bnd.osgi.*;
 
 public class XmlParseTest extends TestCase {
 	public void testSimple() throws Exception {

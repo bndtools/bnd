@@ -116,7 +116,7 @@ public class ClassParserTest extends TestCase {
 	 * using a groovy-all-2.1.0 a correct manifest file is created.
 	 */
 	public static void testCodehauseGROOVY_6169() throws Exception {
-		Clazz c = new Clazz(a, "foo", new FileResource(new File("jar/BugReproLoggerGroovy189.jclass")));
+		Clazz c = new Clazz(a, "foo", new FileResource(IO.getFile("jar/BugReproLoggerGroovy189.jclass")));
 		c.parseClassFile();
 		assertTrue(c.getReferred().contains(a.getPackageRef("org.slf4j")));
 	}
@@ -222,8 +222,8 @@ public class ClassParserTest extends TestCase {
 	 */
 	public static void testUnacceptableReference() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("jar/nl.fuji.general.jar"));
-		b.addClasspath(new File("jar/spring.jar"));
+		b.addClasspath(IO.getFile("jar/nl.fuji.general.jar"));
+		b.addClasspath(IO.getFile("jar/spring.jar"));
 		b.setProperty("Export-Package", "nl.fuji.log");
 		b.build();
 		assertFalse(b.getImports().getByFQN("org.aopalliance.aop") != null);
@@ -260,14 +260,14 @@ public class ClassParserTest extends TestCase {
 	}
 
 	public static void testGenericsSignature2() throws Exception {
-		Clazz c = new Clazz(a, "genericstest", new FileResource(new File("src/test/generics.clazz")));
+		Clazz c = new Clazz(a, "genericstest", new FileResource(IO.getFile("src/test/generics.clazz")));
 		c.parseClassFile();
 		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing/table")));
 		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing")));
 	}
 
 	public static void testGenericsSignature() throws Exception {
-		Clazz c = new Clazz(a, "genericstest", new FileResource(new File("src/test/generics.clazz")));
+		Clazz c = new Clazz(a, "genericstest", new FileResource(IO.getFile("src/test/generics.clazz")));
 		c.parseClassFile();
 		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing/table")));
 		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing")));
@@ -295,7 +295,7 @@ public class ClassParserTest extends TestCase {
 
 	public static void testJQuantlib() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath(new File("testresources/jquantlib-0.1.2.jar"));
+		b.addClasspath(IO.getFile("testresources/jquantlib-0.1.2.jar"));
 		b.setProperty("Export-Package", "*");
 		b.build();
 	}
@@ -360,7 +360,7 @@ public class ClassParserTest extends TestCase {
 		Builder builder = new Builder();
 		try {
 			builder.setClasspath(new File[] {
-				new File("jar/ecj_3.2.2.jar")
+				IO.getFile("jar/ecj_3.2.2.jar")
 			});
 			builder.setProperty(Analyzer.EXPORT_PACKAGE, "org.eclipse.*");
 			builder.build();

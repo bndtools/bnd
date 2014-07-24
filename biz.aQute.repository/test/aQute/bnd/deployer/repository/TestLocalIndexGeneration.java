@@ -21,7 +21,7 @@ public class TestLocalIndexGeneration extends TestCase {
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
-		outputDir = new File("generated/testoutput");
+		outputDir = IO.getFile("generated/testoutput");
 		IO.delete(outputDir);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			throw new IOException("Could not create directory " + outputDir);
@@ -84,7 +84,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		newJar.putResource("testOverwrite/dummybundle.jar", new JarResource(dummyJar));
 		newJar.write("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar");
 		r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar")), new RepositoryPlugin.PutOptions());
-		IO.delete(new File("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar"));
+		IO.delete(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar"));
 		assertNull(r.artifact);
 	}
 

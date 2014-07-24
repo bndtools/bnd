@@ -6,6 +6,7 @@ import java.util.zip.*;
 
 import junit.framework.*;
 import aQute.bnd.osgi.*;
+import aQute.lib.io.*;
 @SuppressWarnings("resource")
 
 public class JarTest extends TestCase {
@@ -14,7 +15,7 @@ public class JarTest extends TestCase {
 		Jar jar = new Jar("dot");
 		jar.setManifest(new Manifest());
 		jar.setDoNotTouchManifest();
-		jar.putResource("a/b", new FileResource(new File("testresources/bnd.jar")));
+		jar.putResource("a/b", new FileResource(IO.getFile("testresources/bnd.jar")));
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		jar.write(bout);
@@ -30,7 +31,7 @@ public class JarTest extends TestCase {
 		Jar jar = new Jar("dot");
 		jar.setManifest(new Manifest());
 		jar.setDoNotTouchManifest();
-		jar.putResource("a/b", new FileResource(new File("testresources/bnd.jar")));
+		jar.putResource("a/b", new FileResource(IO.getFile("testresources/bnd.jar")));
 		jar.putResource("META-INF/MANIFEST.MF", new EmbeddedResource("Manifest-Version: 1\r\nX: 1\r\n\r\n".getBytes(),
 				0));
 
@@ -64,7 +65,7 @@ public class JarTest extends TestCase {
 	}
 
 	public static void testSimple() throws ZipException, IOException {
-		File file = new File("jar/asm.jar");
+		File file = IO.getFile("jar/asm.jar");
 		Jar jar = new Jar("asm.jar", file);
 		long jarTime = jar.lastModified();
 		long fileTime = file.lastModified();

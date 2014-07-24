@@ -12,6 +12,7 @@ import org.osgi.resource.*;
 
 import aQute.bnd.deployer.repository.*;
 import aQute.bnd.deployer.repository.api.*;
+import aQute.lib.io.*;
 
 public class TestObrCapReqParsing extends TestCase {
 
@@ -46,7 +47,7 @@ public class TestObrCapReqParsing extends TestCase {
 		// Check content
 		List<Capability> contentCaps = resource.getCapabilities("osgi.content");
 		assertEquals(1, contentCaps.size());
-		assertEquals(new File("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.7.0.jar").getAbsoluteFile().toURI(), contentCaps.get(0).getAttributes().get("url"));
+		assertEquals(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.7.0.jar").getAbsoluteFile().toURI(), contentCaps.get(0).getAttributes().get("url"));
 		
 		// Check bundle
 		List<Capability> bundleCaps = resource.getCapabilities("osgi.wiring.bundle");

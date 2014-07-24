@@ -119,7 +119,7 @@ public class CalltreeTest extends TestCase {
 	//
 	// public void testCatalog() throws Exception {
 	// Builder b = new Builder();
-	// b.addClasspath(new File("jar/osgi.jar"));
+	// b.addClasspath(IO.getFile("jar/osgi.jar"));
 	// b.setProperty("Private-Package", "org.osgi.framework");
 	// b.build();
 	// Collection<Clazz> target = b.getClassspace().values();
@@ -148,7 +148,7 @@ public class CalltreeTest extends TestCase {
 	//
 	// public void testResource() throws Exception {
 	// Builder b = new Builder();
-	// b.addClasspath(new File("jar/osgi.jar"));
+	// b.addClasspath(IO.getFile("jar/osgi.jar"));
 	// b.setProperty("Private-Package", "org.osgi.framework");
 	// b.build();
 	// Collection<Clazz> target = b.getClassspace().values();
