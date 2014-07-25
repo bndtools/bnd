@@ -21,9 +21,14 @@ public class MvnVersion implements Comparable<MvnVersion> {
 		} else {
 			String qualifier = versionStr.substring(dashIndex + 1);
 
-			Version v = Version.parseVersion(versionStr.substring(0, dashIndex));
-			Version osgiVersion = new Version(v.getMajor(), v.getMinor(), v.getMicro(), qualifier);
-			result = new MvnVersion(osgiVersion);
+			try {
+				Version v = Version.parseVersion(versionStr.substring(0, dashIndex));
+				Version osgiVersion = new Version(v.getMajor(), v.getMinor(), v.getMicro(), qualifier);
+				result = new MvnVersion(osgiVersion);
+			}
+			catch(IllegalArgumentException e) { // bad format
+				result = null;
+			}
 		}
 		return result;
 	}

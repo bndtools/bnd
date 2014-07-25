@@ -48,4 +48,9 @@ public class ConversionUtilsTest extends TestCase {
 		}
 	}
 
+	public void testGroupAndArtifactForBsn() throws Exception {
+		String[] coords = ConversionUtils.getGroupAndArtifactForBsn("com.example.group:example-api");
+		assertEquals("com.example.group", coords[0]);
+		assertEquals("example-api", coords[1]);
+	}
 }

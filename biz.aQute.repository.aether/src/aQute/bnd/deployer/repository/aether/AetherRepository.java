@@ -213,16 +213,6 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 		initialised = true;
 	}
 	
-	public String[] getGroupAndArtifactForBsn(String bsn) {
-		int dotIndex = bsn.lastIndexOf('.');
-		if (dotIndex < 0)
-			throw new IllegalArgumentException("Cannot split bsn into group and artifact IDs: " + bsn);
-		String groupId = bsn.substring(0, dotIndex);
-		String artifactId = bsn.substring(dotIndex + 1);
-
-		return new String[] { groupId, artifactId };
-	}
-
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		init();
@@ -308,10 +298,21 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 		if (indexedRepo != null)
 			return indexedRepo.versions(ConversionUtils.maybeMavenCoordsToBsn(bsn));
 
+		Artifact artifact = null;
+
+		try {
+			artifact = new DefaultArtifact(bsn + ":[0,)");
+		}
+		catch (Exception e) {
+			// ignore non-GAV style dependencies
+		}
+
+		if (artifact == null)
+			return null;
+
 		// Setup the Aether repo session and create the range request
 		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 		session.setLocalRepositoryManager(repoSystem.newLocalRepositoryManager(session, localRepo));
-		Artifact artifact = new DefaultArtifact(bsn + ":[0,)");
 
 		VersionRangeRequest rangeRequest = new VersionRangeRequest();
 		rangeRequest.setArtifact(artifact);
@@ -324,7 +325,9 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 		SortedSet<Version> versions = new TreeSet<Version>();
 		for (org.eclipse.aether.version.Version version : rangeResult.getVersions()) {
 			MvnVersion parsed = MvnVersion.parseString(version.toString());
-			versions.add(parsed.getOSGiVersion());
+
+			if (parsed != null)
+				versions.add(parsed.getOSGiVersion());
 		}
 		return versions;
 	}
@@ -342,7 +345,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			// Setup the Aether repo session and request
 			DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 			session.setLocalRepositoryManager(repoSystem.newLocalRepositoryManager(session, localRepo));
-			String[] coords = getGroupAndArtifactForBsn(bsn);
+			String[] coords = ConversionUtils.getGroupAndArtifactForBsn(bsn);
 			
 			MvnVersion mvnVersion = new MvnVersion(version);
 			Artifact artifact = new DefaultArtifact(coords[0], coords[1], "jar", mvnVersion.toString());
