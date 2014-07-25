@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.bndtools.builder.NewBuilder;
-import org.bndtools.builder.decorator.ExportedPackageDecoratorJob;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaProject;
@@ -23,7 +22,7 @@ import bndtools.central.Central;
 
 /**
  * A decorator for {@link IPackageFragment}s that adds an icon if the package is exported by the bundle manifest.
- * 
+ *
  * @author duckAsteroid
  */
 public class PackageDecorator extends LabelProvider implements ILightweightLabelDecorator {
@@ -31,6 +30,7 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
     private final ImageDescriptor exportedIcon = AbstractUIPlugin.imageDescriptorFromPlugin(NewBuilder.PLUGIN_ID, "icons/plus-decorator.png");
     private final ImageDescriptor excludedIcon = AbstractUIPlugin.imageDescriptorFromPlugin(NewBuilder.PLUGIN_ID, "icons/excluded_ovr.gif");
 
+    @Override
     public void decorate(Object element, IDecoration decoration) {
         if (element instanceof IPackageFragment) {
 
@@ -78,7 +78,11 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
                 }
             } finally {
                 if (schedule) {
-                    ExportedPackageDecoratorJob.scheduleForProject(project);
+                    //
+                    // We no schedule this just for every build
+                    // which should run whenever there is a potential change
+                    //
+                    //                    ExportedPackageDecoratorJob.scheduleForProject(project);
                 }
             }
         }

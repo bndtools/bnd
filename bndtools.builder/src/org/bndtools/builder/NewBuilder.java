@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.api.BndtoolsConstants;
@@ -25,8 +27,9 @@ import org.bndtools.build.api.BuildErrorDetailsHandlers;
 import org.bndtools.build.api.DefaultBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
 import org.bndtools.builder.classpath.BndContainerInitializer;
-import org.bndtools.builder.decorator.ExportedPackageDecoratorJob;
 import org.bndtools.utils.Predicate;
+import org.bndtools.utils.swt.SWTConcurrencyUtil;
+import org.bndtools.utils.workspace.FileUtils;
 import org.bndtools.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -54,12 +57,18 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.service.RepositoryListenerPlugin;
+import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Report.Location;
 import bndtools.central.Central;
@@ -623,9 +632,6 @@ public class NewBuilder extends IncrementalProjectBuilder {
             }
         }
 
-        // Update the exported packages for the project
-        ExportedPackageDecoratorJob.scheduleForProject(getProject());
-
         // Load Eclipse classpath containers
         model.clearClasspath();
         EclipseClasspathPreference classpathPref = EclipseClasspathPreference.parse(projectPrefs.getString(EclipseClasspathPreference.PREFERENCE_KEY));
@@ -652,7 +658,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
                 nrFilesBuilt += built.length;
                 log(LOG_BASIC, "Build took %s secs", (System.currentTimeMillis() - now) / 1000);
-
+                decorate();
             } else {
                 log(LOG_BASIC, "NOT REBUILDING: force=%b;stale=%b", force, stale);
                 built = new File[0];
@@ -1021,58 +1027,58 @@ public class NewBuilder extends IncrementalProjectBuilder {
     /*
      * We can now decorate based on the build we just did.
      */
-    //    private void decorate() throws Exception {
-    //
-    //        //
-    //        // Calculate the source path resources
-    //        //
-    //
-    //        File projectBaseFile = getProject().getLocation().toFile().getAbsoluteFile();
-    //        Collection<File> modelSourcePaths = model.getSourcePath();
-    //        Collection<IResource> modelSourcePathsResources = null;
-    //        if (modelSourcePaths != null && !modelSourcePaths.isEmpty()) {
-    //            modelSourcePathsResources = new HashSet<IResource>();
-    //            for (File modelSourcePath : modelSourcePaths) {
-    //                if (projectBaseFile.equals(modelSourcePath.getAbsoluteFile())) {
-    //                    continue;
-    //                }
-    //                IResource modelSourcePathResource = FileUtils.toProjectResource(getProject(), modelSourcePath);
-    //                if (modelSourcePathResource != null) {
-    //                    modelSourcePathsResources.add(modelSourcePathResource);
-    //                }
-    //            }
-    //        }
-    //
-    //        //
-    //        // Gobble up the information for exports and contained
-    //        //
-    //
-    //        Map<String,SortedSet<Version>> allExports = new HashMap<String,SortedSet<Version>>();
-    //        Set<String> allContained = new HashSet<String>();
-    //
-    //        //
-    //        // First the exports
-    //        //
-    //
-    //        for (Map.Entry<PackageRef,Attrs> entry : model.getExports().entrySet()) {
-    //            String v = entry.getValue().getVersion();
-    //            Version version = v == null ? Version.emptyVersion : new Version(v);
-    //            allExports.put(entry.getKey().getFQN(), new SortedList<Version>(version));
-    //        }
-    //
-    //        for (Map.Entry<PackageRef,Attrs> entry : model.getContained().entrySet()) {
-    //            allContained.add(entry.getKey().getFQN());
-    //        }
-    //
-    //        Central.setProjectPackageModel(getProject(), allExports, allContained, modelSourcePathsResources);
-    //
-    //        Display display = PlatformUI.getWorkbench().getDisplay();
-    //        SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {
-    //            @Override
-    //            public void run() {
-    //                PlatformUI.getWorkbench().getDecoratorManager().update("bndtools.packageDecorator");
-    //            }
-    //        });
-    //    }
+    private void decorate() throws Exception {
+
+        //
+        // Calculate the source path resources
+        //
+
+        File projectBaseFile = getProject().getLocation().toFile().getAbsoluteFile();
+        Collection<File> modelSourcePaths = model.getSourcePath();
+        Collection<IResource> modelSourcePathsResources = null;
+        if (modelSourcePaths != null && !modelSourcePaths.isEmpty()) {
+            modelSourcePathsResources = new HashSet<IResource>();
+            for (File modelSourcePath : modelSourcePaths) {
+                if (projectBaseFile.equals(modelSourcePath.getAbsoluteFile())) {
+                    continue;
+                }
+                IResource modelSourcePathResource = FileUtils.toProjectResource(getProject(), modelSourcePath);
+                if (modelSourcePathResource != null) {
+                    modelSourcePathsResources.add(modelSourcePathResource);
+                }
+            }
+        }
+
+        //
+        // Gobble up the information for exports and contained
+        //
+
+        Map<String,SortedSet<Version>> allExports = new HashMap<String,SortedSet<Version>>();
+        Set<String> allContained = new HashSet<String>();
+
+        //
+        // First the exports
+        //
+
+        for (Map.Entry<PackageRef,Attrs> entry : model.getExports().entrySet()) {
+            String v = entry.getValue().getVersion();
+            Version version = v == null ? Version.emptyVersion : new Version(v);
+            allExports.put(entry.getKey().getFQN(), new SortedList<Version>(version));
+        }
+
+        for (Map.Entry<PackageRef,Attrs> entry : model.getContained().entrySet()) {
+            allContained.add(entry.getKey().getFQN());
+        }
+
+        Central.setProjectPackageModel(getProject(), allExports, allContained, modelSourcePathsResources);
+
+        Display display = PlatformUI.getWorkbench().getDisplay();
+        SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {
+            @Override
+            public void run() {
+                PlatformUI.getWorkbench().getDecoratorManager().update("bndtools.packageDecorator");
+            }
+        });
+    }
 
 }
