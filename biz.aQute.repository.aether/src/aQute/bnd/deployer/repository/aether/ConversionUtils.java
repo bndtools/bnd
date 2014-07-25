@@ -68,4 +68,14 @@ final class ConversionUtils {
 		return String.format("%s.%s", coords.substring(0, colonPos), coords.substring(artifactIdStart));
 	}
 
+	public static String[] getGroupAndArtifactForBsn(String bsn) {
+		int dotIndex = bsn.lastIndexOf(':');
+		if (dotIndex < 0)
+			throw new IllegalArgumentException("Cannot split bsn into group and artifact IDs: " + bsn);
+		String groupId = bsn.substring(0, dotIndex);
+		String artifactId = bsn.substring(dotIndex + 1);
+
+		return new String[] { groupId, artifactId };
+	}
+
 }
