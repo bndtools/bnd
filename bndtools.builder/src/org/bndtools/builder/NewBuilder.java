@@ -89,6 +89,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
     private int logLevel = LOG_NONE;
     private ScopedPreferenceStore projectPrefs;
 
+    private int nrFilesBuilt = 0;
+
     @Override
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
         BndPreferences prefs = new BndPreferences();
@@ -100,12 +102,16 @@ public class NewBuilder extends IncrementalProjectBuilder {
         validationResults = new MultiStatus(PLUGIN_ID, 0, "Validation errors in bnd project", null);
         buildLog = new ArrayList<String>(5);
 
+        nrFilesBuilt = 0;
+
         try {
             // Prepare build listeners and build error handlers
             listeners = new BuildListeners();
 
             // Get the initial project
             IProject myProject = getProject();
+            reportDelta(myProject);
+
             listeners.fireBuildStarting(myProject);
             Project model = null;
             try {
@@ -190,7 +196,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
             listeners.release();
             if (!buildLog.isEmpty() && logLevel > 0) {
                 StringBuilder builder = new StringBuilder();
-                builder.append(String.format("BUILD LOG for project %s (%d entries):", getProject(), buildLog.size()));
+                builder.append(String.format("BUILD LOG %2s %s", (nrFilesBuilt > 0 ? nrFilesBuilt : ""), getProject()));
                 for (String message : buildLog) {
                     builder.append("\n -> ").append(message);
                 }
@@ -200,6 +206,27 @@ public class NewBuilder extends IncrementalProjectBuilder {
             model = null;
             subBuilders = null;
         }
+    }
+
+    /*
+     * Report the full delta in the log
+     */
+    private void reportDelta(IProject project) throws CoreException {
+        IResourceDelta delta = getDelta(project);
+        if (delta == null) {
+            log(LOG_FULL, "No delta, is null");
+            return;
+        }
+
+        delta.accept(new IResourceDeltaVisitor() {
+
+            @Override
+            public boolean visit(IResourceDelta delta) throws CoreException {
+                log(LOG_FULL, delta.toString() + " " + delta.getResource().getModificationStamp() + " " + delta.getKind());
+                return true;
+            }
+        });
+
     }
 
     @Override
@@ -392,38 +419,55 @@ public class NewBuilder extends IncrementalProjectBuilder {
         boolean force = forceBuild;
         IResourceDelta delta;
 
-        IResourceDeltaVisitor deltaVisitor = new ProjectDeltaVisitor(getProject(), changedFiles);
+        ProjectDeltaVisitor deltaVisitor = new ProjectDeltaVisitor(getProject(), changedFiles);
 
         // Get delta on local project
         delta = getDelta(getProject());
         if (delta != null) {
-            log(LOG_FULL, "%d files in local project (outside target) changed or removed: %s", changedFiles.size(), changedFiles);
             delta.accept(deltaVisitor);
+
+            log(LOG_FULL, "%d files in local project (outside target) changed or removed: %s, forced=%s", changedFiles.size(), changedFiles, deltaVisitor.force);
+
+            if (deltaVisitor.force || changedFiles.size() > 0) {
+                log(LOG_FULL, "Project changed: files=%s, force = %s", changedFiles, deltaVisitor.force);
+                force = true;
+            }
         } else {
-            log(LOG_BASIC, "no info on local changes available");
+            log(LOG_BASIC, "no info on local changes, doing a full build");
+            force = true;
         }
 
-        // Get deltas on dependency projects
-        for (IProject depProject : dependsOn) {
-            delta = getDelta(depProject);
-            if (delta != null) {
-                ProjectDeltaVisitor depVisitor = new ProjectDeltaVisitor(depProject, changedFiles);
-                delta.accept(depVisitor);
-                //
-                // If the visitor detected a project that we depend on
-                // and that has a change in its output folder then we
-                // must rebuild. no use checking any further
-                //
-                if (depVisitor.force) {
-                    log(LOG_FULL, "Project %s, which we depend on has changed its output, forcing rebuild", depProject);
-                    force = true;
-                    break;
+        if (!force) {
+            // Get deltas on dependency projects
+            for (IProject depProject : dependsOn) {
+                delta = getDelta(depProject);
+                if (delta != null) {
+                    Set<File> changedByProject = new HashSet<File>();
+                    ProjectDeltaVisitor depVisitor = new ProjectDeltaVisitor(depProject, changedByProject);
+                    delta.accept(depVisitor);
+
+                    changedFiles.addAll(changedByProject);
+
+                    //
+                    // If the visitor detected a project that we depend on
+                    // and that has a change in its output folder then we
+                    // must rebuild. no use checking any further
+                    //
+
+                    if (depVisitor.force) {
+                        log(LOG_FULL, "Project %s, which we depend on has changed its output, forcing rebuild, files changed are %s", depProject, changedByProject);
+                        force = true;
+                        break;
+                    }
+
+                    log(LOG_FULL, "%d files in dependency project '%s' changed or removed: %s", changedFiles.size(), depProject.getName(), changedByProject);
+
+                } else {
+                    log(LOG_BASIC, "no info available on changes from project '%s'", depProject.getName());
                 }
-                log(LOG_FULL, "%d files in dependency project '%s' changed or removed: %s", changedFiles.size(), depProject.getName(), changedFiles);
-            } else {
-                log(LOG_BASIC, "no info available on changes from project '%s'", depProject.getName());
             }
-        }
+        } else
+            log(LOG_FULL, "Ignoring project dependencies because we already decided to build");
 
         // Process the sub-builders to determine whether a rebuild, force
         // rebuild, or nothing is required.
@@ -601,9 +645,14 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
             if (force || stale) {
                 log(LOG_BASIC, "REBUILDING: force=%b; stale=%b", force, stale);
+                long now = System.currentTimeMillis();
                 built = model.buildLocal(false);
                 if (built == null)
                     built = new File[0]; // shouldn't happen but just in case
+
+                nrFilesBuilt += built.length;
+                log(LOG_BASIC, "Build took %s secs", (System.currentTimeMillis() - now) / 1000);
+
             } else {
                 log(LOG_BASIC, "NOT REBUILDING: force=%b;stale=%b", force, stale);
                 built = new File[0];
@@ -891,16 +940,16 @@ public class NewBuilder extends IncrementalProjectBuilder {
         return severity;
     }
 
-    private void addClasspathMarker(IStatus status) throws CoreException {
-        if (status.isMultiStatus()) {
-            for (IStatus child : status.getChildren()) {
-                addClasspathMarker(child);
-            }
-            return;
-        }
-
-        addClasspathMarker(status.getMessage(), iStatusSeverityToIMarkerSeverity(status));
-    }
+    //    private void addClasspathMarker(IStatus status) throws CoreException {
+    //        if (status.isMultiStatus()) {
+    //            for (IStatus child : status.getChildren()) {
+    //                addClasspathMarker(child);
+    //            }
+    //            return;
+    //        }
+    //
+    //        addClasspathMarker(status.getMessage(), iStatusSeverityToIMarkerSeverity(status));
+    //    }
 
     private void log(int level, String message, Object... args) {
         if (logLevel >= level)
@@ -968,4 +1017,62 @@ public class NewBuilder extends IncrementalProjectBuilder {
             return false;
         }
     }
+
+    /*
+     * We can now decorate based on the build we just did.
+     */
+    //    private void decorate() throws Exception {
+    //
+    //        //
+    //        // Calculate the source path resources
+    //        //
+    //
+    //        File projectBaseFile = getProject().getLocation().toFile().getAbsoluteFile();
+    //        Collection<File> modelSourcePaths = model.getSourcePath();
+    //        Collection<IResource> modelSourcePathsResources = null;
+    //        if (modelSourcePaths != null && !modelSourcePaths.isEmpty()) {
+    //            modelSourcePathsResources = new HashSet<IResource>();
+    //            for (File modelSourcePath : modelSourcePaths) {
+    //                if (projectBaseFile.equals(modelSourcePath.getAbsoluteFile())) {
+    //                    continue;
+    //                }
+    //                IResource modelSourcePathResource = FileUtils.toProjectResource(getProject(), modelSourcePath);
+    //                if (modelSourcePathResource != null) {
+    //                    modelSourcePathsResources.add(modelSourcePathResource);
+    //                }
+    //            }
+    //        }
+    //
+    //        //
+    //        // Gobble up the information for exports and contained
+    //        //
+    //
+    //        Map<String,SortedSet<Version>> allExports = new HashMap<String,SortedSet<Version>>();
+    //        Set<String> allContained = new HashSet<String>();
+    //
+    //        //
+    //        // First the exports
+    //        //
+    //
+    //        for (Map.Entry<PackageRef,Attrs> entry : model.getExports().entrySet()) {
+    //            String v = entry.getValue().getVersion();
+    //            Version version = v == null ? Version.emptyVersion : new Version(v);
+    //            allExports.put(entry.getKey().getFQN(), new SortedList<Version>(version));
+    //        }
+    //
+    //        for (Map.Entry<PackageRef,Attrs> entry : model.getContained().entrySet()) {
+    //            allContained.add(entry.getKey().getFQN());
+    //        }
+    //
+    //        Central.setProjectPackageModel(getProject(), allExports, allContained, modelSourcePathsResources);
+    //
+    //        Display display = PlatformUI.getWorkbench().getDisplay();
+    //        SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {
+    //            @Override
+    //            public void run() {
+    //                PlatformUI.getWorkbench().getDecoratorManager().update("bndtools.packageDecorator");
+    //            }
+    //        });
+    //    }
+
 }
