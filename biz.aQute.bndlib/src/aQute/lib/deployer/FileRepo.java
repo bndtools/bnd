@@ -813,8 +813,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 */
 	void exec(String line, Object... args) {
 		if (line == null) {
+			
+			if ( reporter != null)
+				reporter.trace("Line is empty, args=  ", Arrays.toString(args == null ? new Object[0] : args));
+			
 			return;
 		}
+
+		reporter.trace("exec %s", line);
 
 		try {
 			if (args != null) {

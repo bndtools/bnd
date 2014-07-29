@@ -245,20 +245,22 @@ public class FileRepoTest extends TestCase {
 	}
 
 	public void testCommands() throws Exception {
+		
 		FileRepo repo = new FileRepo();
 		File root = new File("tmp");
 		delete(root);
+
 		try {
 			Map<String,String> props = new HashMap<String,String>();
 			props.put(FileRepo.LOCATION, root.getAbsolutePath());
-			props.put(FileRepo.CMD_INIT, "echo init $0 $1 $2 $3>report");
+			props.put(FileRepo.CMD_INIT, "echo init $0 $1 $2 $3 >>report");
 			props.put(FileRepo.CMD_OPEN, "echo open $0 $1 $2 $3 >>report");
 			props.put(FileRepo.CMD_BEFORE_GET, "echo beforeGet $0 $1 $2 $3 >>report");
-			props.put(FileRepo.CMD_BEFORE_PUT, "echo beforePut $0 $1 $2 $3>>report");
-			props.put(FileRepo.CMD_AFTER_PUT, "echo afterPut $0 $1 $2 $3>>report");
-			props.put(FileRepo.CMD_ABORT_PUT, "echo abortPut $0 $1 $2 $3>>report");
-			props.put(FileRepo.CMD_REFRESH, "echo refresh  $0 $1 $2 $3>>report");
-			props.put(FileRepo.CMD_CLOSE, "echo close  $0 $1 $2 $3>>report");
+			props.put(FileRepo.CMD_BEFORE_PUT, "echo beforePut $0 $1 $2 $3 >>report");
+			props.put(FileRepo.CMD_AFTER_PUT, "echo afterPut $0 $1 $2 $3 >>report");
+			props.put(FileRepo.CMD_ABORT_PUT, "echo abortPut $0 $1 $2 $3 >>report");
+			props.put(FileRepo.CMD_REFRESH, "echo refresh  $0 $1 $2 $3 >>report");
+			props.put(FileRepo.CMD_CLOSE, "echo close  $0 $1 $2 $3 >>report");
 			props.put(FileRepo.CMD_PATH, "/xxx,$@,/yyy");
 			props.put(FileRepo.TRACE, true + "");
 			repo.setProperties(props);
