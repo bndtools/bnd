@@ -201,7 +201,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('release') {
-        description 'Release this project to the release repository.'
+        description 'Release the project to the release repository.'
         dependsOn assemble
         group 'release'
         enabled !bnd('-releaserepo', 'unset').empty
@@ -323,7 +323,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('bndproperties') {
-        description "Displays the bnd properties of project '${project.path}'."
+        description 'Display the bnd properties.'
         group 'help'
         doLast {
           println()
