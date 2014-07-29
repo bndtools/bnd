@@ -31,11 +31,11 @@ public class ReporterLogService implements LogService {
 
 		if (reporter != null) {
 			if (level <= LOG_ERROR)
-				reporter.error(message);
+				reporter.error("%s",message);
 			else if (level == LOG_WARNING)
-				reporter.warning(message);
+				reporter.warning("%s",message);
 			else if (level == LOG_INFO || level == LOG_DEBUG)
-				reporter.trace(message);
+				reporter.trace("%s",message);
 		}
 	}
 
