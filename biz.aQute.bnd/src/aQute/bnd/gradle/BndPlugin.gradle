@@ -354,13 +354,11 @@ public class BndPlugin implements Plugin<Project> {
     bndProject.warnings.each {
       project.logger.warn "Warning: ${it}"
     }
-    bndProject.warnings.clear()
     bndProject.errors.each {
       project.logger.error "Error  : ${it}"
       errorCount++
     }
-    bndProject.errors.clear()
-    if (!bndProject.isFailOk() && (errorCount > 0)) {
+    if (!bndProject.isOk()) {
       def str = 'even though no errors were reported'
       if (errorCount == 1) {
         str = 'one error was reported'
@@ -369,6 +367,8 @@ public class BndPlugin implements Plugin<Project> {
       }
       throw new GradleException("Project ${bndProject.name} is invalid, ${str}")
     }
+    bndProject.warnings.clear()
+    bndProject.errors.clear()
   }
 
   private boolean parseBoolean(String value) {
