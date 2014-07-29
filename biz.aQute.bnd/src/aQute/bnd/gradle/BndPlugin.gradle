@@ -183,6 +183,7 @@ public class BndPlugin implements Plugin<Project> {
           }
           outputs.files bndProject.deliverables.collect { it.file }, new File(buildDir, 'buildfiles')
           doLast {
+            buildDir.mkdirs()
             def built
             try {
               built = bndProject.build()
