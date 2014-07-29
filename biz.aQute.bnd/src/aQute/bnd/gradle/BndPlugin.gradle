@@ -255,9 +255,8 @@ public class BndPlugin implements Plugin<Project> {
         group 'verification'
       }
 
-      clean {
-        /* Also clean compiler output */
-        dependsOn cleanCompileJava, cleanCompileTestJava
+      clean.doLast {
+        bndProject.clean()
       }
 
       javadoc {
