@@ -226,7 +226,6 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       test {
-        dependsOn testClasses
         enabled !(parseBoolean(bnd('-nojunit', 'false')) || parseBoolean(bnd('no.junit', 'false')))
         if (enabled) {
           classpath = files(compileTestJava.destinationDir, compileTestJava.classpath)
