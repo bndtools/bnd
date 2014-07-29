@@ -255,7 +255,8 @@ public class BndPlugin implements Plugin<Project> {
         group 'verification'
       }
 
-      task ('clean', overwrite: true) {
+      clean {
+        deleteAllActions() // Replace the standard task actions
         doLast {
           bndProject.clean()
         }
