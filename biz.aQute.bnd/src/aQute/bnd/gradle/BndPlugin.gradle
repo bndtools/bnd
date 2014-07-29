@@ -35,6 +35,11 @@ public class BndPlugin implements Plugin<Project> {
       if (bndProject == null) {
         throw new GradleException("Unable to load bnd project ${name} from workspace ${rootDir}")
       }
+
+      /* Declare that we're in the offline build */
+      bndProject.setProperty('in.ant', 'true')
+      bndProject.setProperty('environment', 'gradle')
+
       bndProject.prepare();
       if (!bndProject.isValid()) {
         checkErrors()
