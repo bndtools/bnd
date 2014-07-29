@@ -202,7 +202,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('release') {
-        description 'Release this project to the release repository.'
+        description 'Release the project to the release repository.'
         dependsOn assemble
         group 'release'
         enabled !bnd(Constants.RELEASEREPO, 'unset').empty
@@ -221,7 +221,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('releaseNeeded') {
-        description 'Release this project and all projects it depends on to the release repository.'
+        description 'Release the project and all projects it depends on to the release repository.'
         dependsOn release
         group 'release'
       }
@@ -250,7 +250,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('checkNeeded') {
-        description 'Runs all checks on this project and all projects it depends on.'
+        description 'Runs all checks on the project and all projects it depends on.'
         dependsOn check
         group 'verification'
       }
@@ -288,7 +288,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('export') {
-        description "Export all the bndrun files to runnable jars."
+        description 'Export all the bndrun files to runnable jars.'
         group 'export'
         fileTree(projectDir) {
             include '*.bndrun'
@@ -298,7 +298,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('echo') {
-        description "Displays the bnd project information of project '${project.path}'."
+        description 'Displays the bnd project information.'
         group 'help'
         doLast {
           println "project.workspace:      ${rootDir}"
@@ -324,7 +324,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('bndproperties') {
-        description "Displays the bnd properties of project '${project.path}'."
+        description 'Displays the bnd properties.'
         group 'help'
         doLast {
           println()
