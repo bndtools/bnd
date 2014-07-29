@@ -215,7 +215,6 @@ public class BndPlugin implements Plugin<Project> {
               throw new GradleException("Project ${bndProject.name} failed to release", e)
             }
             checkErrors()
-            logger.info 'Bundles released to the release repository.'
           }
         }
       }
