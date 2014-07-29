@@ -12,6 +12,7 @@
  * properties will be refreshed just before compiling the project.
  */
 import aQute.bnd.build.Workspace
+import aQute.bnd.osgi.Constants
 
 public class BndPlugin implements Plugin<Project> {
   private Project project
@@ -181,7 +182,7 @@ public class BndPlugin implements Plugin<Project> {
             exclude sourceSets.test.output.files.collect { relativePath(it) }
             exclude relativePath(buildDir)
           }
-          outputs.files bndProject.deliverables.collect { it.file }, new File(buildDir, 'buildfiles')
+          outputs.files bndProject.deliverables.collect { it.file }, new File(buildDir, Constants.BUILDFILES)
           doLast {
             def built
             try {
@@ -204,7 +205,7 @@ public class BndPlugin implements Plugin<Project> {
         description 'Release this project to the release repository.'
         dependsOn assemble
         group 'release'
-        enabled !bnd('-releaserepo', 'unset').empty
+        enabled !bnd(Constants.RELEASEREPO, 'unset').empty
         if (enabled) {
           inputs.files bndProject.deliverables.collect { it.file }
           doLast {
@@ -227,7 +228,7 @@ public class BndPlugin implements Plugin<Project> {
 
       test {
         dependsOn testClasses
-        enabled !(parseBoolean(bnd('-nojunit', 'false')) || parseBoolean(bnd('no.junit', 'false')))
+        enabled !(parseBoolean(bnd(Constants.NOJUNIT, 'false')) || parseBoolean(bnd('no.junit', 'false')))
         if (enabled) {
           classpath = files(compileTestJava.destinationDir, compileTestJava.classpath)
         }
@@ -235,7 +236,7 @@ public class BndPlugin implements Plugin<Project> {
 
       check {
         dependsOn assemble
-        enabled !(parseBoolean(bnd('-nojunitosgi', 'false')) || bndUnprocessed('Test-Cases', '').empty)
+        enabled !(parseBoolean(bnd(Constants.NOJUNITOSGI, 'false')) || bndUnprocessed(Constants.TESTCASES, '').empty)
         if (enabled) {
           doLast {
             try {
