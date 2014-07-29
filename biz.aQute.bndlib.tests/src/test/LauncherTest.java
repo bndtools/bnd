@@ -14,7 +14,7 @@ public class LauncherTest extends TestCase {
 
 	private static Workspace	workspace;
 	private static Project		project;
-
+	
 	public void tearDown() {
 		if (project != null) {
 			project.close();
@@ -358,7 +358,7 @@ public class LauncherTest extends TestCase {
 
 		ProjectLauncher l = tester.getProjectLauncher();
 		l.addRunBundle(mandatorynoversion);
-		l.setTimeout(5000, TimeUnit.MILLISECONDS);
+		l.setTimeout(25000, TimeUnit.MILLISECONDS);
 		l.setTrace(true);
 		assertEquals(1, l.launch());
 	}
