@@ -123,7 +123,7 @@ public class VerifierTest extends TestCase {
 		bmaker.setProperty("-strict", "true");
 		Jar jar = bmaker.build();
 		assertTrue(bmaker
-				.check("Version for package org.osgi.framework is set to different values in the source",
+				.check(
 						"Import Package clauses without version range \\(excluding javax\\.\\*\\):",
 						"Import Package bar has an invalid version range syntax \\[1,x2\\)",
 						"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",

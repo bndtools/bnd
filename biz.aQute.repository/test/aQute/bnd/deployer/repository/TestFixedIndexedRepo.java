@@ -173,4 +173,25 @@ public class TestFixedIndexedRepo extends TestCase {
 		assertEquals("Should not be any errors", 0, reporter.getErrors().size());
 	}
 
+	/**
+	 * There was a bug in the deployer's fake log service that called the
+	 * reporter with a string that could wrongly contain formatting tokens (%),
+	 * making it blow up. This checks if we can use spaces in the name.
+	 */
+
+	public static void testSpaceInName() throws Exception {
+
+		FixedIndexedRepo repo;
+		Map<String,String> config;
+		Processor reporter = new Processor();
+
+		repo = new FixedIndexedRepo();
+		config = new HashMap<String,String>();
+		config.put("locations", IO.getFile("testdata/with spaces .xml").getAbsoluteFile().toURI().toString());
+		config.put(FixedIndexedRepo.PROP_CACHE, tmp.getAbsolutePath());
+		repo.setProperties(config);
+		repo.setReporter(reporter);
+		repo.list(null);
+		assertTrue(reporter.check("Content provider '.*' was unable", "No content provider"));
+	}
 }
