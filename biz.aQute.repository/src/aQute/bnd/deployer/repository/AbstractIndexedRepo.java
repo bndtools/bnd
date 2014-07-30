@@ -54,7 +54,12 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	
 	private final BundleIndexer								obrIndexer						= new BundleIndexerImpl();
-	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new HashMap<String,IRepositoryContentProvider>(5);
+	
+	/**
+	 * Make sure the content providers are always processed in the same order.
+	 */
+	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new TreeMap<String,IRepositoryContentProvider>();
+	
 	protected final List<IRepositoryContentProvider>		generatingProviders				= new LinkedList<IRepositoryContentProvider>();
 
 	protected Registry											registry;
