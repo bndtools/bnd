@@ -69,6 +69,7 @@ public interface Constants {
 
 	String							BASELINE									= "-baseline";
 	String							BASELINEREPO								= "-baselinerepo";
+	String							BNDDRIVER									= "-bnd-driver";
 	String							BUILDPATH									= "-buildpath";
 	@Deprecated
 	String							BUILDPACKAGES								= "-buildpackages";
