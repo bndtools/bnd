@@ -42,6 +42,7 @@ import org.osgi.framework.Version;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
 
@@ -77,6 +78,7 @@ public class Central implements IStartupParticipant {
         bundleContext = FrameworkUtil.getBundle(Central.class).getBundleContext();
     }
 
+    @Override
     public void start() {
         synchronized (Central.class) {
             instance = this;
@@ -86,6 +88,7 @@ public class Central implements IStartupParticipant {
         repoListenerTracker.open();
     }
 
+    @Override
     public void stop() {
         repoListenerTracker.close();
 
@@ -138,6 +141,7 @@ public class Central implements IStartupParticipant {
         try {
             final Set<Project> changed = new HashSet<Project>();
             rootDelta.accept(new IResourceDeltaVisitor() {
+                @Override
                 public boolean visit(IResourceDelta delta) throws CoreException {
                     try {
 
@@ -243,6 +247,7 @@ public class Central implements IStartupParticipant {
 
         try {
             newWorkspace = Workspace.getWorkspace(getWorkspaceDirectory());
+            newWorkspace.setProperty(Constants.BNDDRIVER, "eclipse");
 
             newWorkspace.addBasicPlugin(new WorkspaceListener(newWorkspace));
             newWorkspace.addBasicPlugin(instance.repoListenerTracker);
@@ -300,6 +305,7 @@ public class Central implements IStartupParticipant {
     private static void addCnfChangeListener(final Workspace workspace) {
         ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
 
+            @Override
             public void resourceChanged(IResourceChangeEvent event) {
                 if (event.getType() != IResourceChangeEvent.POST_CHANGE)
                     return;
@@ -317,6 +323,7 @@ public class Central implements IStartupParticipant {
         final AtomicBoolean result = new AtomicBoolean(false);
         try {
             delta.accept(new IResourceDeltaVisitor() {
+                @Override
                 public boolean visit(IResourceDelta delta) throws CoreException {
                     try {
 
