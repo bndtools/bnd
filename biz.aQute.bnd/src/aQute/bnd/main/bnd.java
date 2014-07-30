@@ -2569,6 +2569,7 @@ public class bnd extends Processor {
 		ws.setTrace(isTrace());
 		ws.setPedantic(isPedantic());
 		ws.setExceptions(isExceptions());
+		ws.setProperty(Constants.BNDDRIVER, "bnd");
 		return ws;
 	}
 
