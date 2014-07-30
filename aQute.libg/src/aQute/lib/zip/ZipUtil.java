@@ -15,7 +15,7 @@ public class ZipUtil {
 	public static long getModifiedTime(ZipEntry entry) throws IOException {
 		long time = entry.getTime();
 		time += tz.getOffset(time);
-		return time;
+		return Math.min(time, System.currentTimeMillis()-1);
 	}
 ////	
 //		
