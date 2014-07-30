@@ -352,6 +352,7 @@ public class BndPlugin implements Plugin<Project> {
 
   private void checkErrors() {
     bndProject.getInfo(bndProject.workspace, "${bndProject.workspace.base.name} :")
+    def boolean failed = !bndProject.isOk()
     def int errorCount = 0
     bndProject.warnings.each {
       project.logger.warn "Warning: ${it}"
@@ -362,7 +363,7 @@ public class BndPlugin implements Plugin<Project> {
       errorCount++
     }
     bndProject.errors.clear()
-    if (!bndProject.isFailOk() && (errorCount > 0)) {
+    if (failed) {
       def str = 'even though no errors were reported'
       if (errorCount == 1) {
         str = 'one error was reported'
