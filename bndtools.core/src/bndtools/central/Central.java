@@ -246,8 +246,8 @@ public class Central implements IStartupParticipant {
         Workspace newWorkspace = null;
 
         try {
+            Workspace.setDriver(Constants.BNDDRIVER_ECLIPSE);
             newWorkspace = Workspace.getWorkspace(getWorkspaceDirectory());
-            newWorkspace.setProperty(Constants.BNDDRIVER, "eclipse");
 
             newWorkspace.addBasicPlugin(new WorkspaceListener(newWorkspace));
             newWorkspace.addBasicPlugin(instance.repoListenerTracker);
