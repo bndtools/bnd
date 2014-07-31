@@ -437,13 +437,27 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 	 * @return
 	 */
 	private static URI findDefaultVirtualIndexUri(URI hostedUri) {
-		String uriStr = hostedUri.toString();
-		if (uriStr.endsWith("/"))
-			uriStr = uriStr.substring(0, uriStr.length() - 1);
-		
-		return URI.create(uriStr + "-obr/" + META_OBR);
-	}
+		StringBuilder sb = new StringBuilder();
+		sb.append(hostedUri.getScheme());
+		sb.append("://");
+		sb.append(hostedUri.getHost());
+
+		if (hostedUri.getPort() > 0)
+			sb.append(":" + hostedUri.getPort());
+
+		String path = hostedUri.getPath();
+
+		if (path != null && path.endsWith("/"))
+			path = path.substring(0, path.length() - 1);
+
+		if (path == null || path.length() == 0)
+			sb.append("/");
+		else
+			sb.append(path);
 	
+		return URI.create(sb.toString() + "-obr/" + META_OBR);
+	}
+
 	@Override
 	public List<URI> getIndexLocations() throws Exception {
 		init();
