@@ -50,7 +50,7 @@ public class BndPlugin implements Plugin<Project> {
       plugins.apply 'java'
 
       if (project.hasProperty('bnd_defaultTask')) {
-        defaultTasks = [bnd_defaultTask]
+        defaultTasks = bnd_defaultTask.trim().split(/\s*,\s*/)
       }
 
       /* We use the same directory for java and resources. */
