@@ -215,4 +215,18 @@ public class Parameters implements Map<String,Attrs> {
 	public Map<String, ? extends Map<String,String>> asMapMap() {
 		return this;
 	}
+
+	/**
+	 * Merge all attributes of the given parameters with this
+	 */
+	public void mergeWith(Parameters other, boolean override) {
+		for ( Map.Entry<String,Attrs> e : other.entrySet()) {
+			Attrs existing = get(e.getKey());
+			if ( existing == null) {
+				put(e.getKey(), new Attrs(e.getValue()));
+			}
+			else
+				existing.mergeWith(e.getValue(), override);
+		}
+	}
 }

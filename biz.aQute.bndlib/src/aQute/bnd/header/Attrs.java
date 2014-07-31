@@ -524,5 +524,17 @@ public class Attrs implements Map<String,String> {
 		result.add(builder.toString());
 		return result;
 	}
+	
+	/**
+	 * Merge the attributes
+	 */
+
+	public void mergeWith(Attrs other, boolean override) {
+		for ( Map.Entry<String,String> e: other.entrySet()) {
+			String local = get( e.getKey());
+			if ( override || local == null )
+				put(e.getKey(), e.getValue());
+		}		
+	}
 
 }
