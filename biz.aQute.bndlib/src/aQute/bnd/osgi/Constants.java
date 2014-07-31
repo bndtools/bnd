@@ -69,7 +69,18 @@ public interface Constants {
 
 	String							BASELINE									= "-baseline";
 	String							BASELINEREPO								= "-baselinerepo";
+
 	String							BNDDRIVER									= "-bnd-driver";
+	String							BNDDRIVER_BND								= "bnd";
+	String							BNDDRIVER_GRADLE							= "gradle";
+	String							BNDDRIVER_GRADLE_NATIVE						= "gradle_native";
+	String							BNDDRIVER_ANT								= "ant";
+	String							BNDDRIVER_ECLIPSE							= "eclipse";
+	String							BNDDRIVER_MAVEN								= "maven";
+	String							BNDDRIVER_INTELLIJ							= "intellij";
+	String							BNDDRIVER_SBT								= "sbt";
+	String							BNDDRIVER_OSMORC							= "osmorc";
+
 	String							BUILDPATH									= "-buildpath";
 	@Deprecated
 	String							BUILDPACKAGES								= "-buildpackages";
@@ -96,6 +107,14 @@ public interface Constants {
 	String							EXPORT										= "-export";
 	String							FAIL_OK										= "-failok";
 	String							FIXUPMESSAGES								= "-fixupmessages";
+
+	String							GESTALT										= "-gestalt";
+	String							GESTALT_INTERACTIVE							= "interactive";
+	String							GESTALT_BATCH								= "batch";
+	String							GESTALT_CI									= "ci";
+	String							GESTALT_OFFLINE								= "offline";
+	String							GESTALT_SHELL								= "shell";
+
 	String							INCLUDE										= "-include";
 	String							INCLUDERESOURCE								= "-includeresource";
 	String							INVALIDFILENAMES							= "-invalidfilenames";
@@ -198,7 +217,7 @@ public interface Constants {
 			DSANNOTATIONS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT, STRICT, DIFFIGNORE,
 			CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS, UPTO, INVALIDFILENAMES,
 			FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK, TESTUNRESOLVED, RUNJDB, RUNENV, RUNEE,
-			EEPROFILE, RUNREQUIRES, EXPORT
+			EEPROFILE, RUNREQUIRES, EXPORT, GESTALT, BNDDRIVER
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make
@@ -269,7 +288,9 @@ public interface Constants {
 			USES_DIRECTIVE, EXCLUDE_DIRECTIVE, KEYSTORE_LOCATION_DIRECTIVE, KEYSTORE_PROVIDER_DIRECTIVE,
 			KEYSTORE_PASSWORD_DIRECTIVE, SIGN_PASSWORD_DIRECTIVE, COMMAND_DIRECTIVE, NOANNOTATIONS, LIB_DIRECTIVE,
 			FROM_DIRECTIVE, PRIVATE_DIRECTIVE, LITERAL_ATTRIBUTE, EFFECTIVE_DIRECTIVE, FILTER_DIRECTIVE,
-			FIXUPMESSAGES_RESTRICT_DIRECTIVE, FIXUPMESSAGES_REPLACE_DIRECTIVE, FIXUPMESSAGES_IS_DIRECTIVE
+			FIXUPMESSAGES_RESTRICT_DIRECTIVE, FIXUPMESSAGES_REPLACE_DIRECTIVE, FIXUPMESSAGES_IS_DIRECTIVE,
+			BNDDRIVER_GRADLE, BNDDRIVER_GRADLE_NATIVE, BNDDRIVER_ANT, BNDDRIVER_ECLIPSE, BNDDRIVER_MAVEN,
+			BNDDRIVER_INTELLIJ, BNDDRIVER_SBT, BNDDRIVER_OSMORC
 
 																				// TODO
 																				};
@@ -415,4 +436,5 @@ public interface Constants {
 	String							RUNPATH_MAIN_DIRECTIVE						= "main:";
 	@Deprecated
 	String							RUNPATH_LAUNCHER_DIRECTIVE					= "launcher:";
+
 }

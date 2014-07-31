@@ -46,6 +46,17 @@ public class Workspace extends Processor {
 	private boolean								offline			= true;
 	Settings									settings		= new Settings();
 	WorkspaceRepository							workspaceRepo	= new WorkspaceRepository(this);
+	static String								overallDriver	= "unset";
+	static Parameters							overallGestalt	= new Parameters();
+	/**
+	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
+	 */
+	final ThreadLocal<Reporter>					signalBusy		= new ThreadLocal<Reporter>();
+	ResourceRepositoryImpl						resourceRepositoryImpl;
+
+	private Parameters							gestalt;
+
+	private String	driver;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -104,10 +115,9 @@ public class Workspace extends Processor {
 	public static Workspace findWorkspace(File base) throws Exception {
 		File rover = base;
 		while (rover != null) {
-			File file = IO.getFile(rover,"cnf/build.bnd");
-			if ( file.isFile())
+			File file = IO.getFile(rover, "cnf/build.bnd");
+			if (file.isFile())
 				return getWorkspace(rover);
-			
 
 			rover = rover.getParentFile();
 		}
@@ -300,12 +310,6 @@ public class Workspace extends Processor {
 			}
 	}
 
-	/**
-	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
-	 */
-	final ThreadLocal<Reporter>		signalBusy	= new ThreadLocal<Reporter>();
-	private ResourceRepositoryImpl	resourceRepositoryImpl;
-
 	public void signal(Reporter reporter) {
 		if (signalBusy.get() != null)
 			return;
@@ -348,7 +352,7 @@ public class Workspace extends Processor {
 		boolean		inited;
 
 		CachedFileRepo() {
-			super("cache", getFile(buildDir, CACHEDIR ), false);
+			super("cache", getFile(buildDir, CACHEDIR), false);
 		}
 
 		@Override
@@ -626,6 +630,7 @@ public class Workspace extends Processor {
 	public String _user(String[] args) throws Exception {
 		return _global(args);
 	}
+
 	/**
 	 * Return the repository signature digests. These digests are a unique id
 	 * for the contents of the repository
@@ -648,7 +653,7 @@ public class Workspace extends Processor {
 		List<String> digests = new ArrayList<String>();
 		for (RepositoryPlugin repo : repos) {
 			try {
-				if ( repo instanceof RepositoryDigest) {
+				if (repo instanceof RepositoryDigest) {
 					byte[] digest = ((RepositoryDigest) repo).getDigest();
 					digests.add(Hex.toHexString(digest));
 				} else {
@@ -703,19 +708,19 @@ public class Workspace extends Processor {
 	/**
 	 * Return the workspace repo
 	 */
-	
+
 	public WorkspaceRepository getWorkspaceRepository() {
 		return workspaceRepo;
 	}
 
 	public void checkStructure() {
-		if ( !buildDir.isDirectory())
-			error ("No directory for cnf %s" , buildDir);
+		if (!buildDir.isDirectory())
+			error("No directory for cnf %s", buildDir);
 		else {
-			File build = IO.getFile(buildDir,"build.bnd");
-			if ( build.isFile()) {
-				error ("No build.bnd file in %s" , buildDir);
-			}			
+			File build = IO.getFile(buildDir, "build.bnd");
+			if (build.isFile()) {
+				error("No build.bnd file in %s", buildDir);
+			}
 		}
 	}
 
@@ -723,23 +728,139 @@ public class Workspace extends Processor {
 		return buildDir;
 	}
 
-
 	public boolean isValid() {
 		return getFile(BUILDFILE).isFile();
 	}
 
 	public RepositoryPlugin getRepository(String repo) {
-		for ( RepositoryPlugin r : getRepositories()) {
-			if ( repo.equals(r.getName())) {
+		for (RepositoryPlugin r : getRepositories()) {
+			if (repo.equals(r.getName())) {
 				return r;
 			}
 		}
 		return null;
 	}
 
-
 	public void close() {
 		cache.remove(getPropertiesFile().getParentFile().getParentFile());
 	}
 
+	/**
+	 * Get the bnddriver, can be null if not set. The overallDriver is the
+	 * environment that runs this bnd.
+	 */
+	public String getDriver() {
+		if (driver == null) {
+			driver = getProperty(Constants.BNDDRIVER, null);
+			if ( driver != null)
+				driver = driver.trim();
+		}
+
+		if (driver != null)
+			return driver;
+		
+		return overallDriver;
+	}
+
+	/**
+	 * Set the driver of this environment
+	 */
+	public static void setDriver(String driver) {
+		overallDriver = driver;
+	}
+
+	/**
+	 * Macro to return the driver. Without any arguments, we return the name of
+	 * the driver. If there are arguments, we check each of the arguments
+	 * against the name of the driver. If it matches, we return the driver name.
+	 * If none of the args match the driver name we return an empty string
+	 * (which is false).
+	 */
+
+	public String _driver(String args[]) {
+		if (args.length == 1) {
+			return getDriver();
+		}
+		String driver = getDriver();
+		if (driver == null)
+			driver = getProperty(Constants.BNDDRIVER);
+
+		if (driver != null) {
+			for (int i = 1; i < args.length; i++) {
+				if (args[i].equalsIgnoreCase(driver))
+					return driver;
+			}
+		}
+		return "";
+	}
+
+	/**
+	 * Add a gestalt to all workspaces. The gestalt is a set of parts describing
+	 * the environment. Each part has a name and optionally attributes. This
+	 * method adds a gestalt to the VM. Per workspace it is possible to augment
+	 * this.
+	 */
+
+	public static void addGestalt(String part, Attrs attrs) {
+		Attrs already = overallGestalt.get(part);
+		if (attrs == null)
+			attrs = new Attrs();
+
+		if (already != null) {
+			already.putAll(attrs);
+		} else
+			already = attrs;
+
+		overallGestalt.put(part, already);
+	}
+
+	/**
+	 * Get the attrs for a gestalt part
+	 */
+	public Attrs getGestalt(String part) {
+		return getGestalt().get(part);
+	}
+
+	/**
+	 * Get the attrs for a gestalt part
+	 */
+	public Parameters getGestalt() {
+		if (gestalt == null) {
+			gestalt = new Parameters(getProperty(Constants.GESTALT));
+			gestalt.mergeWith(overallGestalt, false);
+		}
+		return gestalt;
+	}
+
+	/**
+	 * The macro to access the gestalt
+	 * <p>
+	 * {@code $ gestalt;part[;key[;value]]}}
+	 */
+
+	public String _gestalt(String args[]) {
+		if (args.length >= 2) {
+			Attrs attrs = getGestalt(args[1]);
+			if (attrs == null)
+				return "";
+
+			if (args.length == 2)
+				return args[1];
+
+			String s = attrs.get(args[2]);
+			if (args.length == 3) {
+				if (s == null)
+					s = "";
+				return s;
+			}
+
+			if (args.length == 4) {
+				if (args[3].equals(s))
+					return s;
+				else
+					return "";
+			}
+		}
+		throw new IllegalArgumentException("${gestalt;<part>[;key[;<value>]]} has too many arguments");
+	}
 }

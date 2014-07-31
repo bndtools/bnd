@@ -6,6 +6,8 @@ import java.util.*;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.taskdefs.*;
 
+import aQute.bnd.build.*;
+import aQute.bnd.osgi.*;
 import aQute.libg.reporter.*;
 import aQute.service.reporter.*;
 
@@ -24,6 +26,10 @@ public class BaseTask extends Task implements Reporter {
 	boolean					exceptions;
 
 
+	static {
+		Workspace.setDriver(Constants.BNDDRIVER_ANT);
+		Workspace.addGestalt(Constants.GESTALT_BATCH, null);
+	}
 	protected boolean report() {
 		return report(this);
 	}
