@@ -35,6 +35,7 @@ import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RemoteRepository.Builder;
 import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResult;
@@ -379,10 +380,15 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 				}
 			});
 			
-			// Resolve the version
-			ArtifactResult artifactResult = repoSystem.resolveArtifact(session, request);
-			artifact = artifactResult.getArtifact();
-			file = artifact.getFile();
+			try {
+				// Resolve the version
+				ArtifactResult artifactResult = repoSystem.resolveArtifact(session, request);
+				artifact = artifactResult.getArtifact();
+				file = artifact.getFile();
+			}
+			catch (ArtifactResolutionException ex) {
+				// could not download artifact, simply return null
+			}
 			
 			return file;
 		} finally {
