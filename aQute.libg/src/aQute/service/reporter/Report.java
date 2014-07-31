@@ -17,13 +17,12 @@ public interface Report {
 		public String	context;
 		public String	reference;
 		public String	methodName;
-		/** 
+		/**
 		 * @see SetLocation#details(Object)
 		 */
-		public Object   details;
-		public int	length;
+		public Object	details;
+		public int		length;
 	}
-
 
 	/**
 	 * Return the warnings. This list must not be changed and may be immutable.
@@ -49,10 +48,12 @@ public interface Report {
 	Location getLocation(String msg);
 
 	/**
-	 * Check if this report has any errors.
+	 * Check if this report has any relevant errors that should make the run
+	 * associated with this report invalid. I.e. if this returns false then
+	 * the run should be disregarded.
 	 * 
-	 * @return true if errors is empty
+	 * @return true if this run should be disregarded due to errors
 	 */
-	
+
 	boolean isOk();
 }

@@ -299,7 +299,12 @@ public abstract class Domain implements Iterable<String> {
 	public void setFailOk(boolean b) {
 		set(FAIL_OK, b + "");
 	}
-
+	
+	/**
+	 * Indicates that this run should ignore errors and succeed anyway
+	 * 
+	 * @return true if this processor should return errors
+	 */
 	public boolean isFailOk() {
 		return Processor.isTrue(get(FAIL_OK));
 	}
