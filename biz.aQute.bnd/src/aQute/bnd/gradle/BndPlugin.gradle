@@ -82,9 +82,9 @@ public class BndPlugin implements Plugin<Project> {
         bootclasspath = files(bndProject.getBundle('ee.j2se', '1.5', null, ['strategy':'lowest']).file)
       }
       targetCompatibility = javacTarget
-      def javac = bnd('javac', 'javac')
+      def javac = bnd('javac')
       def javacProfile = bnd('javac.profile', '')
-      def javacDebug = parseBoolean(bnd('javac.debug', 'false'))
+      def javacDebug = parseBoolean(bnd('javac.debug'))
       def javacDeprecation = parseBoolean(bnd('javac.deprecation', 'true'))
       def javacEncoding = bnd('javac.encoding', 'UTF-8')
       def compileOptions = {
@@ -409,6 +409,9 @@ class BndProperties {
     def value = get(name)
     if (value == null) {
       value = defaultValue
+      if (value instanceof String) {
+        value = value.trim()
+      }
     }
     return value
   }
