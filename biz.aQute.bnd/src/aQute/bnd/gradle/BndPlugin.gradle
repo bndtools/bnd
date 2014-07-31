@@ -22,7 +22,7 @@ public class BndPlugin implements Plugin<Project> {
   void apply(Project p) {
     p.configure(p) { project ->
       this.project = project
-      if (!project.hasProperty('bndWorkspace')) {
+      if (!rootProject.hasProperty('bndWorkspace')) {
         rootProject.ext.bndWorkspace = Workspace.getWorkspace(rootDir)
         if (bndWorkspace == null) {
           throw new GradleException("Unable to load bnd workspace ${rootDir}")
@@ -30,7 +30,16 @@ public class BndPlugin implements Plugin<Project> {
         bndWorkspace.allProjects.each {
           it.setDelayRunDependencies(true)
         }
-        bndWorkspace.setProperty(Constants.BNDDRIVER, 'gradle')
+      }
+      if (!rootProject.hasProperty('bndWorkspaceInitialized')) {
+        bndWorkspace.driver = Constants.BNDDRIVER_GRADLE
+        bndWorkspace.addGestalt(Constants.GESTALT_BATCH, null)
+        if (rootProject.hasProperty('bnd_gestalt')) {
+          rootProject.bnd_gestalt.trim().split(/\s*,\s*/).each {
+            bndWorkspace.addGestalt(it, null)
+          }
+        }
+        rootProject.ext.bndWorkspaceInitialized = true
       }
       this.bndProject = bndWorkspace.getProject(name)
       if (bndProject == null) {

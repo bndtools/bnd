@@ -47,7 +47,6 @@ if (workspace == null) {
 workspace.allProjects.each {
   it.setDelayRunDependencies(true)
 }
-workspace.setProperty(Constants.BNDDRIVER, 'gradle')
 
 /* Add cnf project to the graph */
 include bnd_cnf
