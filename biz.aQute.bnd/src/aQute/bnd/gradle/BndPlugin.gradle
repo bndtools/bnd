@@ -409,6 +409,9 @@ class BndProperties {
     def value = get(name)
     if (value == null) {
       value = defaultValue
+      if (value instanceof String) {
+        value = value.trim()
+      }
     }
     return value
   }
