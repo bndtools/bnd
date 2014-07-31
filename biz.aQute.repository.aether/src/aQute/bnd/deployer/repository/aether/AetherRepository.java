@@ -348,7 +348,17 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			String[] coords = ConversionUtils.getGroupAndArtifactForBsn(bsn);
 			
 			MvnVersion mvnVersion = new MvnVersion(version);
-			Artifact artifact = new DefaultArtifact(coords[0], coords[1], "jar", mvnVersion.toString());
+
+			String versionStr = null;
+
+			if ("exact".equals(properties.get("strategy"))) {
+				versionStr = properties.get("version");
+			}
+			else {
+				versionStr = mvnVersion.toString();
+			}
+
+			Artifact artifact = new DefaultArtifact(coords[0], coords[1], "jar", versionStr);
 			ArtifactRequest request = new ArtifactRequest();
 			request.setArtifact(artifact);
 			request.setRepositories(Collections.singletonList(remoteRepo));
