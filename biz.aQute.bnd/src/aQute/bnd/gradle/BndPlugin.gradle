@@ -312,6 +312,11 @@ public class BndPlugin implements Plugin<Project> {
         description 'Displays the bnd project information.'
         group 'help'
         doLast {
+          println()
+          println '------------------------------------------------------------'
+          println "Project ${project.name}"
+          println '------------------------------------------------------------'
+          println()
           println "project.workspace:      ${rootDir}"
           println "project.dir:            ${projectDir}"
           println "project.name:           ${project.name}"
