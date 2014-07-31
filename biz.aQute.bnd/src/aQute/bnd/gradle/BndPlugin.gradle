@@ -33,6 +33,12 @@ public class BndPlugin implements Plugin<Project> {
       }
       if (!rootProject.hasProperty('bndWorkspaceInitialized')) {
         bndWorkspace.driver = Constants.BNDDRIVER_GRADLE
+        bndWorkspace.addGestalt(Constants.GESTALT_BATCH, null)
+        if (rootProject.hasProperty('bnd_gestalt')) {
+          rootProject.bnd_gestalt.trim().split(/\s*,\s*/).each {
+            bndWorkspace.addGestalt(it, null)
+          }
+        }
         rootProject.ext.bndWorkspaceInitialized = true
       }
       this.bndProject = bndWorkspace.getProject(name)
