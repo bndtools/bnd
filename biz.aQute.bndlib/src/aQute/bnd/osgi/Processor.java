@@ -700,6 +700,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return plugin;
 	}
 
+	/**
+	 * Indicates that this run should ignore errors and succeed anyway
+	 * 
+	 * @return true if this processor should return errors
+	 */
 	@Override
 	public boolean isFailOk() {
 		String v = getProperty(Analyzer.FAIL_OK, null);

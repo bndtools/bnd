@@ -114,6 +114,10 @@ public class bnd extends Processor {
 	}
 
 	public static void main(String args[]) throws Exception {
+		Workspace.setDriver(Constants.BNDDRIVER_BND);
+		Workspace.addGestalt(Constants.GESTALT_SHELL, null);
+		Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, null);
+		
 		bnd main = new bnd();
 		try {
 			main.start(args);
