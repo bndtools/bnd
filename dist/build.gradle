@@ -44,7 +44,7 @@ task('index') {
   outputs.files obr_uncompressed, obr_compressed, r5_uncompressed, r5_compressed
 
   doLast {
-    def bundlesToIndex = bundles.collect { it.absolutePath }
+    def bundlesToIndex = bundles*.absolutePath
     /* OBR uncompressed. */
     javaexec {
       classpath cnf.file('gradle/dependencies/org.osgi.impl.bundle.bindex.jar')

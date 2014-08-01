@@ -76,7 +76,7 @@ public class BndPlugin implements Plugin<Project> {
       bnd.ext.allSrcDirs = files(bndProject.allsourcepath)
       sourceCompatibility = bnd('javac.source', sourceCompatibility)
       def javacTarget = bnd('javac.target', targetCompatibility)
-      def bootclasspath = files(bndProject.bootclasspath.collect { it.file })
+      def bootclasspath = files(bndProject.bootclasspath*.file)
       if (javacTarget == 'jsr14') {
         javacTarget = '1.5'
         bootclasspath = files(bndProject.getBundle('ee.j2se', '1.5', null, ['strategy':'lowest']).file)
@@ -110,7 +110,7 @@ public class BndPlugin implements Plugin<Project> {
 
       compileJava {
         configure compileOptions
-        classpath = files(bndProject.buildpath.collect { it.file } - destinationDir)
+        classpath = files(bndProject.buildpath*.file - destinationDir)
         if (logger.isEnabled(LogLevel.INFO)) {
           doFirst {
             logger.info "Compile ${sourceSets.main.java.srcDirs} to ${destinationDir}"
@@ -132,14 +132,14 @@ public class BndPlugin implements Plugin<Project> {
             bndProject.propertiesChanged()
             bndProject.clear()
             bndProject.prepare()
-            classpath = files(bndProject.buildpath.collect { it.file } - destinationDir)
+            classpath = files(bndProject.buildpath*.file - destinationDir)
           }
         }
       }
 
       compileTestJava {
         configure compileOptions
-        classpath = files(bndProject.testpath.collect { it.file } - destinationDir, compileJava.destinationDir, compileJava.classpath)
+        classpath = files(bndProject.testpath*.file - destinationDir, compileJava.destinationDir, compileJava.classpath)
         if (preCompileRefresh) {
           doFirst {
             logger.info 'Refreshing the bnd Project before compilation.'
@@ -147,7 +147,7 @@ public class BndPlugin implements Plugin<Project> {
             bndProject.propertiesChanged()
             bndProject.clear()
             bndProject.prepare()
-            classpath = files(bndProject.testpath.collect { it.file } - destinationDir, compileJava.destinationDir, compileJava.classpath)
+            classpath = files(bndProject.testpath*.file - destinationDir, compileJava.destinationDir, compileJava.classpath)
           }
         }
       }
@@ -192,7 +192,7 @@ public class BndPlugin implements Plugin<Project> {
             exclude sourceSets.test.output.files.collect { relativePath(it) }
             exclude relativePath(buildDir)
           }
-          outputs.files bndProject.deliverables.collect { it.file }, new File(buildDir, Constants.BUILDFILES)
+          outputs.files bndProject.deliverables*.file, new File(buildDir, Constants.BUILDFILES)
           doLast {
             def built
             try {
@@ -217,7 +217,7 @@ public class BndPlugin implements Plugin<Project> {
         group 'release'
         enabled !bnd(Constants.RELEASEREPO, 'unset').empty
         if (enabled) {
-          inputs.files bndProject.deliverables.collect { it.file }
+          inputs.files bndProject.deliverables*.file
           doLast {
             try {
               bndProject.release()
@@ -312,7 +312,6 @@ public class BndPlugin implements Plugin<Project> {
         description 'Displays the bnd project information.'
         group 'help'
         doLast {
-          println()
           println '------------------------------------------------------------'
           println "Project ${project.name}"
           println '------------------------------------------------------------'
@@ -320,7 +319,7 @@ public class BndPlugin implements Plugin<Project> {
           println "project.workspace:      ${rootDir}"
           println "project.dir:            ${projectDir}"
           println "project.name:           ${project.name}"
-          println "project.dependson:      ${bndProject.dependson.collect{it.name}}"
+          println "project.dependson:      ${bndProject.dependson*.name}"
           println "project.src:            ${files(sourceSets.main.java.srcDirs).asPath}"
           println "project.output:         ${compileJava.destinationDir}"
           println "project.buildpath:      ${compileJava.classpath.asPath}"
@@ -336,6 +335,7 @@ public class BndPlugin implements Plugin<Project> {
             println "javac.profile:          ${javacProfile}"
           }
           println "target:                 ${buildDir}"
+          println()
         }
       }
 
@@ -343,7 +343,6 @@ public class BndPlugin implements Plugin<Project> {
         description 'Displays the bnd properties.'
         group 'help'
         doLast {
-          println()
           println '------------------------------------------------------------'
           println "Project ${project.name}"
           println '------------------------------------------------------------'
@@ -353,6 +352,7 @@ public class BndPlugin implements Plugin<Project> {
           }).each {
             println "${it}: ${bnd(it, '')}"
           }
+          println()
         }
       }
 
