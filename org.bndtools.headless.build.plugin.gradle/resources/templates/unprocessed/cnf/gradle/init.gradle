@@ -15,7 +15,7 @@ buildscript {
     if (bndURI.scheme != 'file') {
       /* If not a local file, copy to a local file in cnf/cache */
       def cnfCache = mkdir("${rootDir}/${bnd_cnf}/cache")
-      def bndJarFile = new File(cnfCache, bndURI.path.tokenize('/')[-1])
+      def bndJarFile = new File(cnfCache, 'biz.aQute.bnd.jar')
       if (!bndJarFile.exists()) {
         println "Downloading ${bndURI} to ${bndJarFile} ..."
         bndURI.toURL().withInputStream { is ->
