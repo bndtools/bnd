@@ -312,7 +312,6 @@ public class BndPlugin implements Plugin<Project> {
         description 'Displays the bnd project information.'
         group 'help'
         doLast {
-          println()
           println '------------------------------------------------------------'
           println "Project ${project.name}"
           println '------------------------------------------------------------'
@@ -336,6 +335,7 @@ public class BndPlugin implements Plugin<Project> {
             println "javac.profile:          ${javacProfile}"
           }
           println "target:                 ${buildDir}"
+          println()
         }
       }
 
@@ -343,7 +343,6 @@ public class BndPlugin implements Plugin<Project> {
         description 'Displays the bnd properties.'
         group 'help'
         doLast {
-          println()
           println '------------------------------------------------------------'
           println "Project ${project.name}"
           println '------------------------------------------------------------'
@@ -353,6 +352,7 @@ public class BndPlugin implements Plugin<Project> {
           }).each {
             println "${it}: ${bnd(it, '')}"
           }
+          println()
         }
       }
 
