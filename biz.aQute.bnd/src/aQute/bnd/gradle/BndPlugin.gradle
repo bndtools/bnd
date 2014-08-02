@@ -230,7 +230,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('releaseNeeded') {
-        description 'Release the project and all projects it depends on to the release repository.'
+        description 'Release the project and all projects it depends on.'
         dependsOn release
         group 'release'
       }
