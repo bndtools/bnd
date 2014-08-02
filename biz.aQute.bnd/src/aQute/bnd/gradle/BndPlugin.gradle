@@ -265,10 +265,17 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       clean {
+        description 'Cleans the build and compiler output directories of the project.'
         deleteAllActions() // Replace the standard task actions
         doLast {
           bndProject.clean()
         }
+      }
+
+      task('cleanNeeded') {
+        description 'Cleans the project and all projects it depends on.'
+        dependsOn clean
+        group 'build'
       }
 
       javadoc {
@@ -360,6 +367,7 @@ public class BndPlugin implements Plugin<Project> {
         dependencies.add('compile', rootProject.project(it.name))
         checkNeeded.dependsOn(":${it.name}:checkNeeded")
         releaseNeeded.dependsOn(":${it.name}:releaseNeeded")
+        cleanNeeded.dependsOn(":${it.name}:cleanNeeded")
       }
     }
   }
