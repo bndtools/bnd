@@ -143,6 +143,7 @@ public class ProjectTest extends TestCase {
 	public  void testProjectReferringToItself() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("bug194");
+		top.setDelayRunDependencies(false);
 		top.addClasspath(top.getOutput());
 		assertTrue(top.check("Circular dependency context"));
 	}
@@ -165,6 +166,7 @@ public class ProjectTest extends TestCase {
 	public  void testRunBundlesContainsSelf() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
+		top.setDelayRunDependencies(false);
 		top.setProperty("-runbundles", "p1;version=latest");
 		top.setChanged();
 		top.isStale();
