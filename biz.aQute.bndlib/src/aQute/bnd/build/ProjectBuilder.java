@@ -513,6 +513,10 @@ public class ProjectBuilder extends Builder {
 	 */
 
 	public Jar[] builds() throws Exception {
+		project.exportedPackages.clear();
+		project.importedPackages.clear();
+		project.containedPackages.clear();
+		
 		Jar[] jars = super.builds();
 		if (isOk()) {
 			for (Run export : getExportedRuns()) {
@@ -536,9 +540,6 @@ public class ProjectBuilder extends Builder {
 	 * Called when we start to build a builder
 	 */
 	protected void startBuild(Builder builder) {
-		project.exportedPackages.clear();
-		project.importedPackages.clear();
-		project.containedPackages.clear();
 	}
 	
 	/**
