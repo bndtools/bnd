@@ -42,11 +42,6 @@ if (workspace == null) {
   throw new GradleException("Unable to load workspace ${rootDir}/${bnd_cnf}")
 }
 
-/* Delay run dependency evaluations since they may not yet be built */
-workspace.allProjects.each {
-  it.setDelayRunDependencies(true)
-}
-
 /* Add cnf project to the graph */
 include bnd_cnf
 
