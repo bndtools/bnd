@@ -212,7 +212,7 @@ public class BndPlugin implements Plugin<Project> {
         description 'Release the project to the release repository.'
         dependsOn assemble
         group 'release'
-        enabled !bnd(Constants.RELEASEREPO, 'unset').empty
+        enabled !bndProject.noBundles && !bnd(Constants.RELEASEREPO, 'unset').empty
         if (enabled) {
           inputs.files bndProject.deliverables*.file
           doLast {
