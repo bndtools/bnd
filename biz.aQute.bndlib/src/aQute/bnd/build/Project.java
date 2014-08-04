@@ -62,7 +62,7 @@ public class Project extends Processor {
 	int							revision;
 	File						files[];
 	static List<Project>		trail					= new ArrayList<Project>();
-	boolean						delayRunDependencies	= false;
+	boolean						delayRunDependencies	= true;
 	final ProjectMessages		msgs					= ReporterMessages.base(this, ProjectMessages.class);
 	private Properties			ide;
 	final Packages				exportedPackages		= new Packages();
