@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -35,6 +36,7 @@ import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RemoteRepository.Builder;
 import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResult;
@@ -205,7 +207,11 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 					config.put(FixedIndexedRepo.PROP_LOCATIONS, indexUri.toString());
 					indexedRepo.setProperties(config);
 				}
-			} finally {
+			}
+			catch (UnknownHostException e) {
+				return;
+			}
+			finally {
 				connection.disconnect();
 			}
 		}
@@ -348,7 +354,17 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			String[] coords = ConversionUtils.getGroupAndArtifactForBsn(bsn);
 			
 			MvnVersion mvnVersion = new MvnVersion(version);
-			Artifact artifact = new DefaultArtifact(coords[0], coords[1], "jar", mvnVersion.toString());
+
+			String versionStr = null;
+
+			if ("exact".equals(properties.get("strategy"))) {
+				versionStr = properties.get("version");
+			}
+			else {
+				versionStr = mvnVersion.toString();
+			}
+
+			Artifact artifact = new DefaultArtifact(coords[0], coords[1], "jar", versionStr);
 			ArtifactRequest request = new ArtifactRequest();
 			request.setArtifact(artifact);
 			request.setRepositories(Collections.singletonList(remoteRepo));
@@ -369,10 +385,15 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 				}
 			});
 			
-			// Resolve the version
-			ArtifactResult artifactResult = repoSystem.resolveArtifact(session, request);
-			artifact = artifactResult.getArtifact();
-			file = artifact.getFile();
+			try {
+				// Resolve the version
+				ArtifactResult artifactResult = repoSystem.resolveArtifact(session, request);
+				artifact = artifactResult.getArtifact();
+				file = artifact.getFile();
+			}
+			catch (ArtifactResolutionException ex) {
+				// could not download artifact, simply return null
+			}
 			
 			return file;
 		} finally {
@@ -421,13 +442,27 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 	 * @return
 	 */
 	private static URI findDefaultVirtualIndexUri(URI hostedUri) {
-		String uriStr = hostedUri.toString();
-		if (uriStr.endsWith("/"))
-			uriStr = uriStr.substring(0, uriStr.length() - 1);
-		
-		return URI.create(uriStr + "-obr/" + META_OBR);
-	}
+		StringBuilder sb = new StringBuilder();
+		sb.append(hostedUri.getScheme());
+		sb.append("://");
+		sb.append(hostedUri.getHost());
+
+		if (hostedUri.getPort() > 0)
+			sb.append(":" + hostedUri.getPort());
+
+		String path = hostedUri.getPath();
+
+		if (path != null && path.endsWith("/"))
+			path = path.substring(0, path.length() - 1);
+
+		if (path == null || path.length() == 0)
+			sb.append("/");
+		else
+			sb.append(path);
 	
+		return URI.create(sb.toString() + "-obr/" + META_OBR);
+	}
+
 	@Override
 	public List<URI> getIndexLocations() throws Exception {
 		init();
