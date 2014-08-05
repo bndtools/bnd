@@ -16,6 +16,7 @@ import org.bndtools.utils.osgi.BundleUtils;
 import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -88,6 +89,8 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         txtDescription.setBackground(tree.getBackground());
         formText.setBackground(tree.getBackground());
         formText.setForeground(tree.getForeground());
+        formText.setFont("fixed", JFaceResources.getTextFont());
+        formText.setFont("italic", JFaceResources.getFontRegistry().getItalic(""));
 
         GridData gd_cmpDescription = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd_cmpDescription.heightHint = 100;
