@@ -13,7 +13,7 @@ public class JpmPreferences {
     public static final int PREF_BROWSER_EXTERNAL = 2;
 
     public static final String[] PREF_BROWSER_SELECTION_CHOICES = new String[] {
-            "Internal WebKit", "Internal Mozilla (requires XULrunner)", "External"
+            "Internal WebKit", "Internal Mozilla (requires XULRunner)", "External"
     };
 
     private final IPreferenceStore store;
