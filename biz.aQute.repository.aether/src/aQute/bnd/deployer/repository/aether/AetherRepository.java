@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -206,7 +207,11 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 					config.put(FixedIndexedRepo.PROP_LOCATIONS, indexUri.toString());
 					indexedRepo.setProperties(config);
 				}
-			} finally {
+			}
+			catch (UnknownHostException e) {
+				return;
+			}
+			finally {
 				connection.disconnect();
 			}
 		}
