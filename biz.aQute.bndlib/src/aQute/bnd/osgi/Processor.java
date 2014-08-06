@@ -911,8 +911,28 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				}
 				try {
 					File file = getFile(ubase, value).getAbsoluteFile();
-					if (!file.isFile() && fileMustExist) {
-						error("Included file " + file + (file.exists() ? " does not exist" : " is directory"));
+					if (!file.isFile()) {
+						try {
+							URL url = new URL(value);
+							int n = value.lastIndexOf('.');
+							String ext= ".jar";
+							if ( n >= 0)
+								ext = value.substring(n);
+							
+							File tmp = File.createTempFile("url", ext);
+							try {
+								IO.copy(url.openStream(), tmp);
+								doIncludeFile(tmp, overwrite, p);
+							}
+							finally {
+								tmp.delete();
+							}
+						}
+						catch (Exception mue) {
+							// ignore
+						}
+						if (fileMustExist)
+							error("Included file " + file + (file.exists() ? " does not exist" : " is directory"));
 					} else
 						doIncludeFile(file, overwrite, p);
 				}

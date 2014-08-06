@@ -6,9 +6,36 @@ import java.util.*;
 import junit.framework.*;
 import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
-@SuppressWarnings("resource")
 
+@SuppressWarnings("resource")
 public class IncludeHeaderTest extends TestCase {
+
+	/**
+	 * Test url includes props: a\ b\ c\ d last-props: end
+	 */
+	public static void testUrlIncludes() throws IOException {
+		Analyzer a = new Analyzer();
+		Properties p = new Properties();
+		p.setProperty("a", "1");
+		p.setProperty("-include", "file:src/test/includeheadertest.prop");
+		a.setProperties(p);
+		assertEquals("1", a.getProperty("a"));
+		assertEquals("end", a.getProperty("last-props"));
+		assertEquals("abcd", a.getProperty("props"));
+	}
+
+	/**
+	 * Test url includes 
+	 */
+	public static void testUrlIncludes2() throws IOException {
+		Analyzer a = new Analyzer();
+		Properties p = new Properties();
+		p.setProperty("a", "1");
+		p.setProperty("-include", "jar:file:jar/osgi.jar/!/META-INF/MANIFEST.MF");
+		a.setProperties(p);
+		assertEquals("1", a.getProperty("a"));
+		assertEquals("osgi", a.getProperty("Bundle-SymbolicName"));
+	}
 
 	// public void testMavenInclude() throws Exception {
 	// String b = "pom.modelVersion=b\n";
