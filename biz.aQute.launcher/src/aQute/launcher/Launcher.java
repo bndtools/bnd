@@ -845,7 +845,7 @@ public class Launcher implements ServiceListener {
 	protected void deleteFiles(File wd) {
 		if ( wd.isDirectory()) {
 			for ( File sub : wd.listFiles()) {
-				deleteFiles(wd);
+				deleteFiles(sub);
 			}
 		}
 		wd.delete();
