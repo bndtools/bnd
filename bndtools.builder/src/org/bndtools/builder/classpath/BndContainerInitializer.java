@@ -33,6 +33,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.ClasspathContainerInitializer;
 import org.eclipse.jdt.core.IAccessRule;
+import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -249,6 +250,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     errors.add(String.format("Failed to convert file %s to Eclipse path: %s: %s", file, e.getClass().getName(), e.getMessage()));
                 }
                 if (p != null) {
+                    IClasspathAttribute[] extraAttrs = calculateExtraClasspathAttrs(c);
+
                     if (c.getType() == Container.TYPE.PROJECT) {
                         IResource resource = ResourcesPlugin.getWorkspace().getRoot().getFile(p);
                         List<IAccessRule> rules = projectAccessRules.get(c.getProject());
@@ -257,10 +260,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                             rules.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
                             accessRules = rules.toArray(new IAccessRule[rules.size()]);
                         }
-                        cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, null, true);
+                        cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, extraAttrs, true);
                     } else {
                         IAccessRule[] accessRules = calculateRepoBundleAccessRules(c);
-                        cpe = JavaCore.newLibraryEntry(p, null, null, accessRules, null, false);
+                        cpe = JavaCore.newLibraryEntry(p, null, null, accessRules, extraAttrs, false);
                     }
                     result.add(cpe);
                 }
@@ -277,6 +280,19 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     // TODO: this is a workaround for bug #89 in bnd
     static boolean isProjectContainer(Container container) {
         return container.getType() == TYPE.PROJECT && !container.getFile().isFile();
+    }
+
+    static IClasspathAttribute[] calculateExtraClasspathAttrs(Container c) {
+        List<IClasspathAttribute> attrs = new ArrayList<IClasspathAttribute>();
+        attrs.add(JavaCore.newClasspathAttribute("bsn", c.getBundleSymbolicName()));
+
+        String version = c.getAttributes().get("version");
+
+        if (version != null) {
+            attrs.add(JavaCore.newClasspathAttribute("version", version));
+        }
+
+        return attrs.toArray(new IClasspathAttribute[0]);
     }
 
     static IAccessRule[] calculateRepoBundleAccessRules(Container c) {

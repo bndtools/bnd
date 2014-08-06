@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.jar.JarInputStream;
@@ -24,6 +26,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -111,7 +114,13 @@ public class BndContainerSourceManager {
                 }
             } else {
                 // If there is no saved source attachment, then try and find a source bundle
-                File sourceBundle = getSourceBundle(entry.getPath());
+                Map<String,String> extraProps = new HashMap<String,String>();
+
+                for (IClasspathAttribute attr : entry.getExtraAttributes()) {
+                    extraProps.put(attr.getName(), attr.getValue());
+                }
+
+                File sourceBundle = getSourceBundle(entry.getPath(), extraProps);
                 if (sourceBundle != null) {
                     srcPath = new Path(sourceBundle.getAbsolutePath());
                 }
@@ -127,7 +136,7 @@ public class BndContainerSourceManager {
         return configuredClassPathEntries;
     }
 
-    private static File getSourceBundle(IPath path) {
+    private static File getSourceBundle(IPath path, Map<String,String> props) {
         Workspace bndWorkspace;
 
         try {
@@ -163,6 +172,10 @@ public class BndContainerSourceManager {
             String bsn = bsnAttrs.getKey();
             String version = domain.getBundleVersion();
 
+            if (version == null) {
+                version = props.get("version");
+            }
+
             for (RepositoryPlugin repo : RepositoryUtils.listRepositories(true)) {
                 if (repo == null) {
                     continue;
@@ -170,7 +183,7 @@ public class BndContainerSourceManager {
                 if (repo instanceof WorkspaceRepository) {
                     continue;
                 }
-                File sourceBundle = repo.get(bsn + ".source", new Version(version), null);
+                File sourceBundle = repo.get(bsn + ".source", new Version(version), props);
                 if (sourceBundle != null) {
                     return sourceBundle;
                 }
