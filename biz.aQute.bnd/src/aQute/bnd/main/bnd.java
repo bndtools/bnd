@@ -77,13 +77,15 @@ public class bnd extends Processor {
 	Justif						justif		= new Justif(80, 40, 42, 70);
 	BndMessages					messages	= ReporterMessages.base(this, BndMessages.class);
 	private Workspace			ws;
-	private char[]	password;
+	private char[]				password;
 
 	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
 	static Pattern				COMMAND		= Pattern.compile("\\w[\\w\\d]+");
 	static Pattern				EMAIL_P		= Pattern
-													.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",Pattern.CASE_INSENSITIVE);
+													.compile(
+															"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
+															Pattern.CASE_INSENSITIVE);
 
 	@Description("OSGi Bundle Tool")
 	interface bndOptions extends Options {
@@ -117,7 +119,7 @@ public class bnd extends Processor {
 		Workspace.setDriver(Constants.BNDDRIVER_BND);
 		Workspace.addGestalt(Constants.GESTALT_SHELL, null);
 		Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, null);
-		
+
 		bnd main = new bnd();
 		try {
 			main.start(args);
@@ -275,8 +277,8 @@ public class bnd extends Processor {
 					err.println(help);
 				}
 			}
-			
-			if ( options.secret() != null) {
+
+			if (options.secret() != null) {
 				password = options.secret();
 				settings.load(password);
 			}
@@ -570,24 +572,7 @@ public class bnd extends Processor {
 	public void _do(dooptions options) throws Exception {
 		for (String path : options._()) {
 			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
-				Builder b = new Builder();
-				b.setTrace(isTrace());
-				b.setPedantic(isPedantic());
-
-				File f = getFile(path);
-				b.setProperties(f);
-				b.build();
-
-				File out = b.getOutputFile(options.output());
-				getInfo(b, f.getName() + ": ");
-				if (isOk()) {
-					b.save(out, options.force());
-				}
-				getInfo(b, f.getName() + ": "); // pickup any save errors
-				if (!isOk()) {
-					out.delete();
-				}
-				b.close();
+				build(options.output(), options.force(), path);
 			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION) || path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
 				Jar jar = getJar(path);
 				doPrint(jar, MANIFEST, null);
@@ -595,6 +580,41 @@ public class bnd extends Processor {
 				doRun(Arrays.asList(path), false, null);
 			} else
 				messages.UnrecognizedFileType_(path);
+		}
+	}
+
+	public void build(String dest, boolean force, String path) throws IOException, Exception {
+		Builder b = new Builder();
+		try {
+
+			File f = getFile(path);
+			if (!f.isFile()) {
+				error("No such file %s", f);
+				return;
+			}
+
+			b.setTrace(isTrace());
+			b.setPedantic(isPedantic());
+			b.setProperties(f);
+
+			List<Builder> subs = b.getSubBuilders();
+
+			for (Builder bb : subs) {
+				trace("building %s", bb.getPropertiesFile());
+				bb.build();
+				File out = bb.getOutputFile(dest);
+				getInfo(bb, bb.getBsn() + ": ");
+				if (isOk()) {
+					bb.save(out, force);
+				}
+				getInfo(bb, bb.getBsn() + ": "); // pickup any save errors
+				if (!isOk()) {
+					out.delete();
+				}
+			}
+		}
+		finally {
+			b.close();
 		}
 	}
 
@@ -3032,11 +3052,10 @@ public class bnd extends Processor {
 
 		@Description("Generate a new private/public key pair")
 		boolean generate();
-		
+
 		@Description("Password for local file")
 		char[] password();
-		
-		
+
 	}
 
 	@Description("Set bnd/jpm global variables")
@@ -3045,9 +3064,8 @@ public class bnd extends Processor {
 			Settings settings = this.settings;
 			char[] password = this.password;
 
-			
 			if (opts.location() != null) {
-				
+
 				password = opts.password();
 
 				File f = getFile(opts.location());
@@ -3060,7 +3078,7 @@ public class bnd extends Processor {
 				settings.clear();
 				trace("clear %s", settings.entrySet());
 			}
-			
+
 			if (opts.generate()) {
 				trace("Generating new key pair");
 				settings.generate(password);
@@ -3083,7 +3101,7 @@ public class bnd extends Processor {
 					out.printf("%s\n", tos(!opts.base64(), signature));
 				}
 			}
-			
+
 			if (rest.isEmpty()) {
 				list(null, settings);
 			} else {
@@ -3142,7 +3160,6 @@ public class bnd extends Processor {
 	 * @return
 	 * @throws Exception
 	 */
-
 
 	private String tos(boolean hex, byte[] data) {
 		return data.length + " : " + (hex ? Hex.toHexString(data) : Base64.encodeBase64(data));
@@ -3634,8 +3651,8 @@ public class bnd extends Processor {
 	 */
 
 	public void _sync(projectOptions options) throws Exception {
-		Workspace ws = getWorkspace((File)null);
-		
+		Workspace ws = getWorkspace((File) null);
+
 		if (ws == null) {
 			error("Cannot find workspace, either reside in a project directory, point to a project with --project, or reside in the workspace directory");
 			return;
@@ -3760,44 +3777,138 @@ public class bnd extends Processor {
 		}
 
 	}
-	
+
 	/**
 	 * start a local framework
 	 */
-	
+
 	interface BootstrapOptions extends Options {
-		
+
 	}
-	
+
 	public void _bootstrap(BootstrapOptions options) throws Exception {
 		Workspace ws = getWorkspace(getBase());
 		File buildDir = ws.getBuildDir();
 		File bndFile = IO.getFile(buildDir, "bnd.bnd");
-		if ( !bndFile.isFile()) {
+		if (!bndFile.isFile()) {
 			error("No bnd.bnd file found in cnf directory %s", bndFile);
 			return;
 		}
-		
+
 		Run run = new Run(ws, buildDir, bndFile);
-		
+
 		run.runLocal();
-		
+
 		getInfo(run);
 	}
-
 
 	/**
 	 * Show all the defaults in bnd
 	 */
-	
+
 	public void _defaults(Options o) {
 		Processor defaults = Workspace.getDefaults();
-		out.println( Strings.join("\n", defaults.getProperties().entrySet()));
+		out.println(Strings.join("\n", defaults.getProperties().entrySet()));
 	}
 
+	/*
+	 * Cop a bundle, potentially stripping it
+	 */
 
+	@Arguments(arg = {
+			"src...", "dest"
+	})
+	interface CopyOptions extends Options {
 
-	
+		@Description("Remove all metadata manifest")
+		boolean strip();
 
+		@Description("Remove OSGi metadata from the manifest")
+		boolean specific();
 
+		@Description("Remove OSGI-OPT")
+		boolean optional();
+	}
+
+	public void _copy(CopyOptions options) throws Exception {
+		List<String> files = options._();
+		if (files.size() < 2) {
+			error("Need at least a source and a destination");
+			return;
+		}
+		String output = files.remove(files.size() - 1);
+		File dest = new File(getBase(), output);
+
+		if (files.size() > 1) {
+			if (dest.isFile()) {
+				error("Multiple files require that the output is a directory");
+				return;
+			}
+			dest.mkdir();
+		}
+
+		for (String f : files) {
+
+			Jar jar = getJar(f);
+			if (jar == null) {
+				error("No such JAR %s", f);
+				continue;
+			}
+
+			if (options.strip()) {
+				Manifest m = new Manifest();
+				jar.setManifest(m);
+			}
+
+			if (options.specific()) {
+				Manifest m = new Manifest();
+				if (jar.getManifest() != null) {
+					for (Entry<Object,Object> e : jar.getManifest().getMainAttributes().entrySet()) {
+						String header = e.getKey().toString().toLowerCase();
+						if (header.startsWith("bundle-"))
+							continue;
+
+						if (!isIn(Constants.BUNDLE_SPECIFIC_HEADERS, header))
+							m.getMainAttributes().put(e.getKey(), e.getValue());
+					}
+				}
+				jar.setManifest(m);
+			}
+
+			if (options.optional()) {
+				jar.getDirectories().remove("OSGI-OPT");
+			}
+
+			String name = getJarFileNameFrom(jar.getName());
+
+			File out = dest.isDirectory() ? getFile(dest, name) : dest;
+			File tmp = new File("tmp");
+			jar.write(tmp);
+			jar.close();
+
+			if (!tmp.renameTo(out))
+				error("Could not rename file %s to %s", tmp, out);
+		}
+
+	}
+
+	private boolean isIn(String[] bundleSpecificHeaders, String key) {
+		for (int i = 0; i < bundleSpecificHeaders.length; i++) {
+			if (key.equalsIgnoreCase(bundleSpecificHeaders[i]))
+				return true;
+		}
+		return false;
+	}
+
+	private String getJarFileNameFrom(String name) {
+		String out = name;
+		int n = out.lastIndexOf('/');
+		if (n >= 0) {
+			out = out.substring(n + 1);
+		}
+		if (out.endsWith(".jar"))
+			return out;
+
+		return out + ".jar";
+	}
 }
