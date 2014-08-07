@@ -14,9 +14,9 @@ Private-Package: aQute.junit.*,\
 	junit.*,\
 	org.junit.*
 	
-Export-Package: junit.*; version=3.8;-nouses=true,\
+Export-Package: junit.*; version=3.8.2;-nouses=true,\
 				org.junit.*;version=4.11, \
-				org.hamcrest.*;version=1.1.0
+				org.hamcrest.*;version=4.11.0
 
 # The dependency on aQute packages is only for the 
 # master side. When launched, those dependencies

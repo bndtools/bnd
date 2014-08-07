@@ -782,6 +782,31 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		return base.getAbsolutePath();
 	}
+	
+	public String _propertiesname(String[]args) {
+		if ( args.length > 1) {
+			error("propertiesname does not take arguments");
+			return null;
+		}
+		
+		File pf = getPropertiesFile();
+		if ( pf == null)
+			return "";
+		
+		return pf.getName();
+	}
+
+	public String _propertiesdir(String[]args) {
+		if ( args.length > 1) {
+			error("propertiesdir does not take arguments");
+			return null;
+		}
+		File pf = getPropertiesFile();
+		if ( pf == null)
+			return "";
+		
+		return pf.getParentFile().getAbsolutePath();
+	}
 
 	/**
 	 * Property handling ...
@@ -886,8 +911,28 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				}
 				try {
 					File file = getFile(ubase, value).getAbsoluteFile();
-					if (!file.isFile() && fileMustExist) {
-						error("Included file " + file + (file.exists() ? " does not exist" : " is directory"));
+					if (!file.isFile()) {
+						try {
+							URL url = new URL(value);
+							int n = value.lastIndexOf('.');
+							String ext= ".jar";
+							if ( n >= 0)
+								ext = value.substring(n);
+							
+							File tmp = File.createTempFile("url", ext);
+							try {
+								IO.copy(url.openStream(), tmp);
+								doIncludeFile(tmp, overwrite, p);
+							}
+							finally {
+								tmp.delete();
+							}
+						}
+						catch (Exception mue) {
+							// ignore
+						}
+						if (fileMustExist)
+							error("Included file " + file + (file.exists() ? " does not exist" : " is directory"));
 					} else
 						doIncludeFile(file, overwrite, p);
 				}
@@ -2454,4 +2499,59 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		result[result.length - 1] = suffix;
 		return result;
 	}
+
+	/**
+	 * Try to get a Jar from a file name/path or a url, or in last resort from
+	 * the classpath name part of their files.
+	 * 
+	 * @param name
+	 *            URL or filename relative to the base
+	 * @param from
+	 *            Message identifying the caller for errors
+	 * @return null or a Jar with the contents for the name
+	 */
+	public Jar getJarFromName(String name, String from) {
+		File file = new File(name);
+		if (!file.isAbsolute())
+			file = new File(getBase(), name);
+
+		if (file.exists())
+			try {
+				Jar jar = new Jar(file);
+				addClose(jar);
+				return jar;
+			}
+			catch (Exception e) {
+				error("Exception in parsing jar file for " + from + ": " + name + " " + e);
+			}
+		// It is not a file ...
+		try {
+			// Lets try a URL
+			URL url = new URL(name);
+			Jar jar = new Jar(fileName(url.getPath()));
+			addClose(jar);
+			URLConnection connection = url.openConnection();
+			InputStream in = connection.getInputStream();
+			long lastModified = connection.getLastModified();
+			if (lastModified == 0)
+				// We assume the worst :-(
+				lastModified = System.currentTimeMillis();
+			EmbeddedResource.build(jar, in, lastModified);
+			in.close();
+			return jar;
+		}
+		catch (IOException ee) {
+			// ignore
+		}
+		return null;
+	}
+	
+	private String fileName(String path) {
+		int n = path.lastIndexOf('/');
+		if (n > 0)
+			return path.substring(n + 1);
+		return path;
+	}
+
+
 }

@@ -1306,56 +1306,17 @@ public class Analyzer extends Processor {
 	 *            Message identifying the caller for errors
 	 * @return null or a Jar with the contents for the name
 	 */
-	Jar getJarFromName(String name, String from) {
-		File file = new File(name);
-		if (!file.isAbsolute())
-			file = new File(getBase(), name);
-
-		if (file.exists())
-			try {
-				Jar jar = new Jar(file);
-				addClose(jar);
-				return jar;
-			}
-			catch (Exception e) {
-				error("Exception in parsing jar file for " + from + ": " + name + " " + e);
-			}
-		// It is not a file ...
-		try {
-			// Lets try a URL
-			URL url = new URL(name);
-			Jar jar = new Jar(fileName(url.getPath()));
-			addClose(jar);
-			URLConnection connection = url.openConnection();
-			InputStream in = connection.getInputStream();
-			long lastModified = connection.getLastModified();
-			if (lastModified == 0)
-				// We assume the worst :-(
-				lastModified = System.currentTimeMillis();
-			EmbeddedResource.build(jar, in, lastModified);
-			in.close();
-			return jar;
-		}
-		catch (IOException ee) {
-			// Check if we have files on the classpath
-			// that have the right name, allows us to specify those
-			// names instead of the full path.
+	public Jar getJarFromName(String name, String from) {
+		Jar j = super.getJarFromName(name, from);
+		if (j == null) {
 			for (Iterator<Jar> cp = getClasspath().iterator(); cp.hasNext();) {
 				Jar entry = cp.next();
 				if (entry.getSource() != null && entry.getSource().getName().equals(name)) {
 					return entry;
 				}
 			}
-			// error("Can not find jar file for " + from + ": " + name);
 		}
-		return null;
-	}
-
-	private String fileName(String path) {
-		int n = path.lastIndexOf('/');
-		if (n > 0)
-			return path.substring(n + 1);
-		return path;
+		return j;
 	}
 
 	/**
@@ -2823,6 +2784,15 @@ public class Analyzer extends Processor {
 		if (source != null) {
 			String outputName = source.getName();
 			return new File(outputDir, outputName);
+		}
+
+		if (getPropertiesFile() != null) {
+			String nm = getPropertiesFile().getName();
+			if (nm.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
+				nm = nm.substring(0, nm.length()-Constants.DEFAULT_BND_EXTENSION.length()) + Constants.DEFAULT_JAR_EXTENSION;
+				trace("name is " + nm);
+				return new File(outputDir, nm);
+			}
 		}
 
 		error("Cannot establish an output name from %s, nor bsn, nor source file name, using Untitled", output);

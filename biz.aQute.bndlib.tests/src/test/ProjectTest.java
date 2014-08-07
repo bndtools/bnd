@@ -307,9 +307,9 @@ public class ProjectTest extends TestCase {
 			assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
 		}
 		
-		assertEquals( 4, project.getExports().size());
-		assertEquals( 3, project.getImports().size());
-		assertEquals( 4, project.getContained().size());
+		assertEquals( 12, project.getExports().size());
+		assertEquals( 9, project.getImports().size());
+		assertEquals( 12, project.getContained().size());
 		project.close();
 	}
 
