@@ -347,28 +347,47 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			return indexedRepo.get(ConversionUtils.maybeMavenCoordsToBsn(bsn), version, properties, listeners);
 		
 		File file = null;
+		boolean getSource = false;
 		try {
 			// Setup the Aether repo session and request
 			DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 			session.setLocalRepositoryManager(repoSystem.newLocalRepositoryManager(session, localRepo));
+
+			if (bsn.endsWith(".source")) {
+				String originalBsn = properties.get("bsn");
+
+				if (originalBsn != null) {
+					bsn = originalBsn;
+					getSource = true;
+				}
+			}
+
 			String[] coords = ConversionUtils.getGroupAndArtifactForBsn(bsn);
-			
+
 			MvnVersion mvnVersion = new MvnVersion(version);
 
 			String versionStr = null;
 
-			if ("exact".equals(properties.get("strategy"))) {
+			if ("exact".equals(properties.get("strategy")) || getSource) {
 				versionStr = properties.get("version");
 			}
 			else {
 				versionStr = mvnVersion.toString();
 			}
 
-			Artifact artifact = new DefaultArtifact(coords[0], coords[1], "jar", versionStr);
+			Artifact artifact = null;
+
+			if (getSource) {
+				artifact = new DefaultArtifact(coords[0], coords[1], "sources", "jar", versionStr);
+			}
+			else {
+				artifact = new DefaultArtifact(coords[0], coords[1], "jar", versionStr);
+			}
+
 			ArtifactRequest request = new ArtifactRequest();
 			request.setArtifact(artifact);
 			request.setRepositories(Collections.singletonList(remoteRepo));
-			
+
 			// Log the transfer
 			session.setTransferListener(new AbstractTransferListener() {
 				@Override

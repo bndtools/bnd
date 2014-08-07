@@ -54,6 +54,23 @@ public class AetherRepsitoryTests extends TestCase {
 		httpd.stop();
 	}
 
+	public void testVersionsBadBsn() throws Exception {
+		RepositoryPlugin repo = createRepo();
+		SortedSet<Version> versions = repo.versions("foo.bar.foobar");
+
+		assertNull(versions);
+	}
+
+	public void testVersionsGAVStyle() throws Exception {
+		RepositoryPlugin repo = createRepo();
+		SortedSet<Version> versions = repo.versions("javax.servlet:servlet-api");
+
+		assertNotNull(versions);
+		assertTrue(versions.size() == 2);
+		assertEquals("2.4.0", versions.first().toString());
+		assertEquals("2.5.0", versions.last().toString());
+	}
+
 	public void testStrategyExactVersion() throws Exception {
 		RepositoryPlugin repo = createRepo();
 
@@ -79,20 +96,16 @@ public class AetherRepsitoryTests extends TestCase {
 		assertNull(file);
 	}
 
-	public void testVersionsBadBsn() throws Exception {
+	public void testSourceLookup() throws Exception {
 		RepositoryPlugin repo = createRepo();
-		SortedSet<Version> versions = repo.versions("foo.bar.foobar");
 
-		assertNull(versions);
-	}
+		Map<String, String> attrs = new HashMap<String, String>();
+		attrs.put("version", "2.5");
+		attrs.put("bsn", "javax.servlet:servlet-api");
 
-	public void testVersionsGAVStyle() throws Exception {
-		RepositoryPlugin repo = createRepo();
-		SortedSet<Version> versions = repo.versions("javax.servlet:servlet-api");
+		File file = repo.get("servlet-api.source", new Version(2, 5, 0), attrs , listener);
 
-		assertNotNull(versions);
-		assertTrue(versions.size() == 2);
-		assertEquals("2.4.0", versions.first().toString());
-		assertEquals("2.5.0", versions.last().toString());
+		assertTrue(file.exists());
+		assertEquals("servlet-api-2.5-sources.jar", file.getName());
 	}
 }
