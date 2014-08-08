@@ -20,7 +20,7 @@ import aQute.lib.json.*;
  */
 public class Settings implements Map<String,String> {
 	static JSONCodec	codec	= new JSONCodec();
-	private File		where;
+	private final File		where;
 	private PublicKey	publicKey;
 	private PrivateKey	privateKey;
 	private boolean		loaded;
@@ -308,4 +308,7 @@ public class Settings implements Map<String,String> {
 		return dirty;
 	}
 
+	public String toString() {
+		return "Settings["+where+"]"; 
+	}
 }

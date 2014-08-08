@@ -11,6 +11,7 @@ import java.util.regex.*;
  http://repository.springsource.com/maven/bundles/external/org/apache/coyote/com.springsource.org.apache.coyote/6.0.24/com.springsource.org.apache.coyote-6.0.24.pom
  */
 public class Maven {
+
 	final File						userHome	= new File(System.getProperty("user.home"));
 	final Map<String,MavenEntry>	entries		= new ConcurrentHashMap<String,MavenEntry>();
 	final static String[]			ALGORITHMS	= {
@@ -86,4 +87,8 @@ public class Maven {
 		this.repository = new File(dir, "repository");
 	}
 
+	@Override
+	public String toString() {
+		return "Maven [" + (m2 != null ? "m2=" + m2 : "") + "]";
+	}
 }
