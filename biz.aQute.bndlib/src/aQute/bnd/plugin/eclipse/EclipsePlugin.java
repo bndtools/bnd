@@ -12,7 +12,7 @@ import aQute.lib.io.*;
  * created. You can either store a template under cnf/ant/project.xml or a
  * default is taken.
  */
-@Plugin(name="eclipse")
+@BndPlugin(name="eclipse")
 public class EclipsePlugin extends LifeCyclePlugin {
 	@Override
 	public void created(Project p) throws IOException {

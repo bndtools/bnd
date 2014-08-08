@@ -8,6 +8,7 @@ import java.util.regex.*;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.*;
 
+import aQute.bnd.annotation.plugin.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -21,6 +22,7 @@ import aQute.bnd.service.*;
  * 
  * @author aqute
  */
+@BndPlugin(name="spring")
 public class SpringComponent implements AnalyzerPlugin {
 	static Transformer	transformer;
 	static Pattern		SPRING_SOURCE	= Pattern.compile("META-INF/spring/.*\\.xml");

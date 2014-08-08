@@ -47,7 +47,7 @@ import aQute.service.reporter.*;
  * managed with bnd).
  */
 
-@aQute.bnd.annotation.plugin.Plugin(name="repo.file", parameters=FileRepo.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name="filerepo", parameters=FileRepo.Config.class)
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
 
 	interface Config  {

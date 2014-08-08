@@ -32,7 +32,7 @@ import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.service.reporter.*;
 
-@aQute.bnd.annotation.plugin.Plugin(name="aether", parameters=AetherRepository.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name="aether", parameters=AetherRepository.Config.class)
 public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugin, IndexProvider {
 
 	interface Config {

@@ -18,7 +18,7 @@ import aQute.lib.base64.*;
  * <li>user — The user id
  * </ul>
  */
-@aQute.bnd.annotation.plugin.Plugin(name="url.basic.authentication", parameters=BasicAuthentication.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name="url.basic.authentication", parameters=BasicAuthentication.Config.class)
 public class BasicAuthentication extends DefaultURLConnectionHandler {
 
 	interface Config extends DefaultURLConnectionHandler.Config {

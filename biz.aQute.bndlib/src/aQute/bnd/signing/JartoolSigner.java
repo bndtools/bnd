@@ -17,7 +17,7 @@ import aQute.service.reporter.*;
  * @author aqute
  */
 
-@aQute.bnd.annotation.plugin.Plugin(name="signer", parameters=JartoolSigner.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name="signer", parameters=JartoolSigner.Config.class)
 public class JartoolSigner implements Plugin, SignerPlugin {
 	
 	@interface Config {

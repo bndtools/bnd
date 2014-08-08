@@ -12,7 +12,6 @@ import aQute.bnd.service.url.*;
 import aQute.service.reporter.*;
 
 
-@aQute.bnd.annotation.plugin.Plugin(name="urlconnector", parameters=DefaultURLConnector.Config.class)
 public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin {
 
 	@interface Config {

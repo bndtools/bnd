@@ -12,7 +12,7 @@ import aQute.lib.io.*;
  * This plugin provides life cycle support for maven projects
  */
 
-@Plugin(name="maven")
+@BndPlugin(name="maven")
 public class MavenPlugin extends LifeCyclePlugin {
 
 	@Override
@@ -50,10 +50,9 @@ public class MavenPlugin extends LifeCyclePlugin {
 	}
 
 	@Override
-	protected String getPluginSetup() throws Exception {
-		String s = super.getPluginSetup();
-
-		Formatter f = new Formatter(s);
+	public String augmentSetup(String setup, String alias, Map<String,String> parameters) throws Exception {
+		Formatter f = new Formatter();
+		f.format("%s", setup);
 		try {
 			f.format("\n#\n# Change disk layout to fit maven\n#\n\n");
 			f.format("-outputmask = ${@bsn}-${version;===S;${@version}}.jar\n");

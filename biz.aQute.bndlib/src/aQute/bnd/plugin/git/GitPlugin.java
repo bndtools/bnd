@@ -12,7 +12,7 @@ import aQute.lib.io.*;
 /**
  * Adds .gitignore files to projects when created.
  */
-@Plugin(name="git")
+@BndPlugin(name="git")
 public class GitPlugin extends LifeCyclePlugin {
 
 	@Override

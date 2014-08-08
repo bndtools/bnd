@@ -10,6 +10,7 @@ Private-Package:  \
     aQute.configurable.*,\
     org.osgi.service.component.annotations.*;-split-package:=first,\
     aQute.lib.deployer.*;-split-package:=first,\
+    aQute.lib.spring.*;-split-package:=first,\
     org.osgi.service.coordinator
 
 Export-Package: aQute.bnd.service.*,\

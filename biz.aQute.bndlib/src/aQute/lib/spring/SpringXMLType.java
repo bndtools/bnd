@@ -2,6 +2,7 @@ package aQute.lib.spring;
 
 import java.util.*;
 
+import aQute.bnd.annotation.plugin.*;
 import aQute.bnd.osgi.*;
 
 /**
@@ -12,6 +13,7 @@ import aQute.bnd.osgi.*;
  * 
  * @author aqute
  */
+@BndPlugin(name="blueprint")
 public class SpringXMLType extends XMLTypeProcessor {
 
 	@Override

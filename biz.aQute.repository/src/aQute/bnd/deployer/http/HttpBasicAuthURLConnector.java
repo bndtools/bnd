@@ -15,7 +15,7 @@ import aQute.lib.io.*;
 import aQute.libg.glob.*;
 import aQute.service.reporter.*;
 
-@aQute.bnd.annotation.plugin.Plugin(name="urlconnector", parameters=HttpBasicAuthURLConnector.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name="urlconnector", parameters=HttpBasicAuthURLConnector.Config.class)
 public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 
 	@interface Config {

@@ -6,7 +6,7 @@ import java.lang.annotation.*;
 @Target({
 		ElementType.TYPE
 })
-public @interface Plugin {
+public @interface BndPlugin {
 	
 	String name();
 	Class<?> parameters() default Object.class; 

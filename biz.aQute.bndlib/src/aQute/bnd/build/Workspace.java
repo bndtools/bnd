@@ -8,17 +8,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
 import java.util.jar.*;
+import java.util.regex.*;
 
 import javax.naming.*;
 
+import aQute.bnd.annotation.plugin.*;
 import aQute.bnd.header.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.osgi.*;
-import aQute.bnd.plugin.ant.*;
-import aQute.bnd.plugin.eclipse.*;
-import aQute.bnd.plugin.git.*;
-import aQute.bnd.plugin.gradle.*;
-import aQute.bnd.plugin.maven.*;
 import aQute.bnd.resource.repository.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
@@ -32,6 +29,7 @@ import aQute.lib.deployer.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.settings.*;
+import aQute.lib.strings.*;
 import aQute.lib.zip.*;
 import aQute.service.reporter.*;
 
@@ -887,20 +885,8 @@ public class Workspace extends Processor {
 	 * Create a project in this workspace
 	 */
 
-	public interface LifecycleOptions {
-		boolean ant();
-
-		boolean git();
-
-		boolean gradle();
-
-		boolean eclipse();
-
-		boolean maven();
-
-	}
-
-	public Project createProject(LifecycleOptions options, String name) throws Exception {
+	public Project createProject(String name) throws Exception {
+		
 		if (!Verifier.SYMBOLICNAME.matcher(name).matches()) {
 			error("A project name is a Bundle Symbolic Name, this must therefore consist of only letters, digits and dots");
 			return null;
@@ -935,7 +921,7 @@ public class Workspace extends Processor {
 	 * @param wsdir
 	 * @throws Exception
 	 */
-	public static Workspace createWorkspace(LifecycleOptions opts, File wsdir) throws Exception {
+	public static Workspace createWorkspace(File wsdir) throws Exception {
 		if (wsdir.exists())
 			return null;
 
@@ -947,79 +933,105 @@ public class Workspace extends Processor {
 		ext.mkdir();
 		Workspace ws = getWorkspace(wsdir);
 
-		ws.create(opts);
-
 		return ws;
-	}
-
-	private void create(LifecycleOptions opts) throws Exception {
-		if (opts.git()) {
-			new GitPlugin().add(this);
-		}
-		if (opts.ant()) {
-			new AntPlugin().add(this);
-		}
-		if (opts.gradle()) {
-			new GradlePlugin().add(this);
-		}
-		if (opts.eclipse()) {
-			new EclipsePlugin().add(this);
-		}
-		if (opts.maven()) {
-			new MavenPlugin().add(this);
-		}
-		refresh();
 	}
 
 	/**
 	 * Add a plugin
 	 * 
-	 * @param pname
-	 * @throws Exception 
+	 * @param plugin
+	 * @throws Exception
 	 */
 
-	public void addPlugin(String pname) throws Exception {
-		for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class)) {
-			if (l.getName().equals(pname)) {
-				error("The %s plugin is already added", pname);
+	public boolean addPlugin(Class< ? > plugin, String alias, Map<String,String> parameters, boolean force)
+			throws Exception {
+		BndPlugin ann = plugin.getAnnotation(BndPlugin.class);
+
+		if (alias == null) {
+			if (ann != null)
+				alias = ann.name();
+			else {
+				alias = Strings.getLastSegment(plugin.getName()).toLowerCase();
+				if (alias.endsWith("plugin")) {
+					alias = alias.substring(0, alias.length() - "plugin".length());
+				}
 			}
 		}
-		if (isOk()) {
 
-			if (pname.equals("ant")) {
-				new AntPlugin().add(this);
-			} else if (pname.equals("git")) {
-				new GitPlugin().add(this);
-			} else if (pname.equals("gradle")) {
-				new GradlePlugin().add(this);
-			} else if (pname.equals("maven")) {
-				new MavenPlugin().add(this);
-			} else if (pname.equals("eclipse")) {
-				new EclipsePlugin().add(this);
-			} else {
-				try {
-					@SuppressWarnings("unchecked")
-					Class< ? extends LifeCyclePlugin> c = (Class< ? extends LifeCyclePlugin>) getLoader().loadClass(
-							pname);
-					LifeCyclePlugin newInstance = c.newInstance();
-					newInstance.add(this);
-				}
-				catch (Exception e) {
-					//
-				}
-				error("Cannot find the plugin " + pname);
+		if ( !Verifier.isBsn(alias)) {
+			error("Not a valid plugin name %s", alias);
+		}
+			
+		File ext = getFile(Workspace.CNFDIR + "/" + Workspace.EXT);
+		ext.mkdirs();
+
+		File f = new File(ext, alias + ".bnd");
+
+		if (!force) {
+			if (f.exists()) {
+				error("Plugin %s already exists", alias);
+				return false;
 			}
-			refresh();
+		} else {
+			IO.delete(f);
 		}
 
+		Object l = plugin.newInstance();
+
+		Formatter setup = new Formatter();
+		try {
+			setup.format("#\n" //
+					+ "# Plugin %s setup\n" //
+					+ "#\n", alias);
+			setup.format("-plugin.%s = %s", alias, plugin.getName());
+
+			for (Map.Entry<String,String> e : parameters.entrySet()) {
+				setup.format("; \\\n \t%s = '%s'", e.getKey(), escaped(e.getValue()));
+			}
+			setup.format("\n\n");
+			
+			String out = setup.toString();
+			if ( l instanceof LifeCyclePlugin ) {
+				out = ((LifeCyclePlugin) l).augmentSetup(out, alias, parameters);
+			}
+
+			trace("setup %s", out);
+			IO.store(out, f);
+		}
+		finally {
+			setup.close();
+		}
+
+		refresh();
+		
+		for ( LifeCyclePlugin lp : getPlugins(LifeCyclePlugin.class)) {
+			lp.addedPlugin(this, plugin.getName(), alias, parameters);
+		}
+		return true;
 	}
 
-	public void removePlugin(String pname) {
-		for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class)) {
-			if (l.getName().equals(pname)) {
-				l.remove(this);;
-			}
-		}
+	static Pattern ESCAPE_P = Pattern.compile("(\"|')(.*)\1");
+	private Object escaped(String value) {
+		Matcher matcher = ESCAPE_P.matcher(value);
+		if ( matcher.matches())
+			value = matcher.group(2);
+		
+		return value.replaceAll("'", "\\'");
 	}
+
+	public boolean removePlugin(String alias) {
+		File ext = getFile(Workspace.CNFDIR + "/" + Workspace.EXT);
+		File f = new File(ext, alias + ".bnd");
+		if ( !f.exists()) {
+			error("No such plugin %s", alias);
+			return false;
+		}
+		
+		IO.delete(f);
+		
+		refresh();	
+		return true;
+	}
+
 
 }

@@ -39,7 +39,6 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
-import aQute.bnd.service.lifecycle.*;
 import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
@@ -65,7 +64,7 @@ import aQute.libg.sed.*;
 import aQute.service.reporter.*;
 
 /**
- * Utility to make bundles. Should be areplace for jar and much more.
+ * Utility to make bundles.
  * 
  * @version $Revision: 1.14 $
  */
@@ -79,7 +78,6 @@ public class bnd extends Processor {
 	BndMessages						messages	= ReporterMessages.base(this, BndMessages.class);
 	private Workspace				ws;
 	private char[]					password;
-	private Map<String,Class< ? >>	annotatedPlugins;
 
 	static Pattern					JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
@@ -3954,29 +3952,17 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Create a project
+	 * Add a project, workspace, or plugin
 	 */
 
 	@Arguments(arg = {
 			"what", "name..."
 	})
-	interface AddOptions extends Options, Workspace.LifecycleOptions {
-		@Override
-		boolean ant();
-
-		@Override
-		boolean git();
-
-		@Override
-		boolean gradle();
-
-		@Override
-		boolean eclipse();
-
-		@Override
-		boolean maven();
+	interface AddOptions extends Options {
+		
 	}
 
+	@Description("Add a workspace, or a project or a plugin to the workspace")
 	public void _add(AddOptions opts) throws Exception {
 		List<String> args = opts._();
 
@@ -3990,7 +3976,7 @@ public class bnd extends Processor {
 			}
 
 			for (String pname : args) {
-				ws.createProject((Workspace.LifecycleOptions) opts, pname);
+				ws.createProject(pname);
 			}
 
 			getInfo(ws);
@@ -4000,7 +3986,7 @@ public class bnd extends Processor {
 		if ("workspace".equals(what)) {
 			for (String pname : args) {
 				File wsdir = getFile(pname);
-				Workspace ws = Workspace.createWorkspace(opts, wsdir);
+				Workspace ws = Workspace.createWorkspace(wsdir);
 				if (ws == null) {
 					error("Could not create workspace");
 				} else
@@ -4009,57 +3995,23 @@ public class bnd extends Processor {
 			return;
 		}
 
-		if ("plugin".equals(what)) {
-			Workspace ws = Workspace.findWorkspace(getBase());
-			if (ws == null) {
-				error("Cannot find a workspace from %s", getBase());
-				return;
-			}
-			Map< String , Class<?> > plugins = getAnnotatedPlugins();
-			for (String pname : args) {
-				ws.addPlugin(pname);
-				getInfo(ws);
-			}
-			for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class)) {
-
-			}
-			ws.refresh();
+		if ("plugin".equals(what)) {			
+			CommandLine cl = new CommandLine(this);
+			String help = cl.execute(new Plugins(this), "add", new ExtList<String>(args));
+			if ( help != null)
+				out.println(help);
 			return;
 		}
 
 	}
 
-	private Map<String,Class< ? >> getAnnotatedPlugins() throws IOException {
-		if (annotatedPlugins == null) {
-			annotatedPlugins = new HashMap<String,Class<?>>();
-			
-			Properties p = new Properties();
-			p.load(bnd.class.getClassLoader().getResourceAsStream("bnd.info"));
-			
-			Parameters classes = new Parameters(p.getProperty("plugins"));
-			for ( String cname : classes.keySet() ) {
-				try {
-					Class<?> c = getClass().getClassLoader().loadClass(cname);
-					aQute.bnd.annotation.plugin.Plugin annotation = c.getAnnotation(aQute.bnd.annotation.plugin.Plugin.class);
-					if ( annotation != null) {
-						annotatedPlugins.put(annotation.name(), c);
-					}
-					
-				} catch ( Exception ex) {
-					error("Cannot find plugin %s", cname);
-				}
-			}
-			
-		}
-		return annotatedPlugins;
-	}
-
 	@Arguments(arg = {
 			"what", "name..."
 	})
-	interface RemoveOptions extends Options, Workspace.LifecycleOptions {}
+	interface RemoveOptions extends Options {}
 
-	public void _remove(AddOptions opts) throws Exception {
+	@Description("Remove a project or a plugin from the workspace")
+	public void _remove(RemoveOptions opts) throws Exception {
 		List<String> args = opts._();
 
 		String what = args.remove(0);
@@ -4085,15 +4037,14 @@ public class bnd extends Processor {
 
 		if ("workspace".equals(what)) {
 			error("To delete a workspace, delete the directory");
+			return;
 		}
 
-		if ("plugin".equals(what)) {
-
-			for (String pname : args) {
-				ws.removePlugin(pname);
-				getInfo(ws);
-			}
-			ws.refresh();
+		if ("plugin".equals(what)) {			
+			CommandLine cl = new CommandLine(this);
+			String help = cl.execute(new Plugins(this), "remove", new ExtList<String>(args));
+			if ( help != null)
+				out.println(help);
 			return;
 		}
 	}

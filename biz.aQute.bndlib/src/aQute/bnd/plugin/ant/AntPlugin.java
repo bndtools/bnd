@@ -12,7 +12,7 @@ import aQute.lib.io.*;
  * created. You can either store a template under cnf/ant/project.xml or a
  * default is taken.
  */
-@Plugin(name="ant")
+@BndPlugin(name="ant")
 public class AntPlugin extends LifeCyclePlugin {
 	static String	DEFAULT	= "<?xml version='1.0' encoding='UTF-8'?>\n" + //
 									"<project name='project' default='build'>\n" + //

@@ -15,7 +15,7 @@ import aQute.lib.io.*;
  * 'trusted' property on this plugin must contain a list of issuer certificates
  * that are trusted. If none are specified the verification is NOT done.
  */
-@aQute.bnd.annotation.plugin.Plugin(name="url.https.verification", parameters=HttpsVerification.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name="url.https.verification", parameters=HttpsVerification.Config.class)
 public class HttpsVerification extends DefaultURLConnectionHandler {
 	private SSLSocketFactory			factory;
 	private HostnameVerifier			verifier;

@@ -32,7 +32,7 @@ import aQute.lib.settings.*;
  * </ul>
  * T
  */
-@aQute.bnd.annotation.plugin.Plugin(name="url.bnd.authentication", parameters=BndAuthentication.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name="url.bnd.authentication", parameters=BndAuthentication.Config.class)
 public class BndAuthentication extends DefaultURLConnectionHandler {
 	
 	interface Config extends DefaultURLConnectionHandler.Config {
