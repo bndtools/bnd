@@ -60,5 +60,13 @@ public class Strings {
 	public static String join(String[] strings) {
 		return join(",",strings);
 	}
+
+	public static String getLastSegment(String name, char c) {
+		return name.substring(name.indexOf(c)+1);
+	}
+	
+	public static String getLastSegment(String name) {
+		return getLastSegment(name, '.');
+	}
 	
 }
