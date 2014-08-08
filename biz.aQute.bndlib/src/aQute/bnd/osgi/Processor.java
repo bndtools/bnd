@@ -409,15 +409,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		// and not if it is in our parent. We inherit from our parent
 		// through the previous block.
 
-		if (properties.containsKey(PLUGIN)) {
-			String spe = getProperty(PLUGIN);
-			if (spe.equals(NONE))
-				return new LinkedHashSet<Object>();
+		String spe = getProperty(PLUGIN);
+		if (NONE.equals(spe))
+			return new LinkedHashSet<Object>();
 
-			spe = mergeProperties(PLUGIN);
-			String pluginPath = mergeProperties(PLUGINPATH);
-			loadPlugins(plugins, spe, pluginPath);
-		}
+		spe = mergeProperties(PLUGIN);
+		String pluginPath = mergeProperties(PLUGINPATH);
+		loadPlugins(plugins, spe, pluginPath);
 
 		addExtensions(plugins);
 
@@ -2552,6 +2550,5 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return path.substring(n + 1);
 		return path;
 	}
-
 
 }

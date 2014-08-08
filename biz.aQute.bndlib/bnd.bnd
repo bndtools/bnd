@@ -12,6 +12,7 @@ Private-Package: 				\
 Export-Package:  \
 	aQute.bnd.annotation.*,\
 	aQute.bnd.osgi,\
+	aQute.bnd.service.lifecycle,\
 	aQute.bnd.osgi.resource,\
 	aQute.bnd.build,\
 	aQute.bnd.differ,\

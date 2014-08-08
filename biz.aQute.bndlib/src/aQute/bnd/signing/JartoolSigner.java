@@ -16,7 +16,19 @@ import aQute.service.reporter.*;
  * 
  * @author aqute
  */
+
+@aQute.bnd.annotation.plugin.Plugin(name="signer", parameters=JartoolSigner.Config.class)
 public class JartoolSigner implements Plugin, SignerPlugin {
+	
+	@interface Config {
+		String keystore();
+		String	storetype() default "JKS";
+		String	path() default "jarsigner";
+		String	storepass() default "";
+		String	keypass() default "";
+		String	sigFile() default "";
+		String	digestalg() default "";
+	}
 	String	keystore;
 	String	storetype;
 	String	path	= "jarsigner";

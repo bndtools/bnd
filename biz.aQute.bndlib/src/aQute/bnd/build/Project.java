@@ -2731,4 +2731,9 @@ public class Project extends Processor {
 	public Packages getContained() {
 		return containedPackages;
 	}
+
+	public void remove() throws Exception {
+		getWorkspace().removeProject(this);
+		IO.delete(getBase());
+	}
 }

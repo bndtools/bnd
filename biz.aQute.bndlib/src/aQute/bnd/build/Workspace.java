@@ -14,10 +14,16 @@ import javax.naming.*;
 import aQute.bnd.header.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.plugin.ant.*;
+import aQute.bnd.plugin.eclipse.*;
+import aQute.bnd.plugin.git.*;
+import aQute.bnd.plugin.gradle.*;
+import aQute.bnd.plugin.maven.*;
 import aQute.bnd.resource.repository.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
 import aQute.bnd.service.extension.*;
+import aQute.bnd.service.lifecycle.*;
 import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.url.*;
@@ -30,6 +36,8 @@ import aQute.lib.zip.*;
 import aQute.service.reporter.*;
 
 public class Workspace extends Processor {
+	public static final String					EXT				= "ext";
+
 	static final int							BUFFER_SIZE		= IOConstants.PAGE_SIZE * 16;
 
 	public static final String					BUILDFILE		= "build.bnd";
@@ -56,7 +64,7 @@ public class Workspace extends Processor {
 
 	private Parameters							gestalt;
 
-	private String	driver;
+	private String								driver;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -97,7 +105,7 @@ public class Workspace extends Processor {
 	}
 
 	public static Workspace getWorkspace(File parent) throws Exception {
-		return getWorkspace(parent, BNDDIR);
+		return getWorkspace(parent, CNFDIR);
 	}
 
 	public static Workspace getWorkspaceWithoutException(File parent) throws Exception {
@@ -213,6 +221,12 @@ public class Workspace extends Processor {
 		}
 	}
 
+	void removeProject(Project p) throws Exception {
+		synchronized (models) {
+			models.remove(p.getName());
+		}
+	}
+
 	public boolean isPresent(String name) {
 		return models.containsKey(name);
 	}
@@ -234,7 +248,7 @@ public class Workspace extends Processor {
 
 	@Override
 	public void propertiesChanged() {
-		File extDir = new File(this.buildDir, "ext");
+		File extDir = new File(this.buildDir, EXT);
 		File[] extensions = extDir.listFiles();
 		if (extensions != null) {
 			for (File extension : extensions) {
@@ -752,13 +766,13 @@ public class Workspace extends Processor {
 	public String getDriver() {
 		if (driver == null) {
 			driver = getProperty(Constants.BNDDRIVER, null);
-			if ( driver != null)
+			if (driver != null)
 				driver = driver.trim();
 		}
 
 		if (driver != null)
 			return driver;
-		
+
 		return overallDriver;
 	}
 
@@ -835,7 +849,7 @@ public class Workspace extends Processor {
 	/**
 	 * The macro to access the gestalt
 	 * <p>
-	 * {@code $ gestalt;part[;key[;value]]}}
+	 * {@code $ gestalt;part[;key[;value]]}
 	 */
 
 	public String _gestalt(String args[]) {
@@ -863,4 +877,149 @@ public class Workspace extends Processor {
 		}
 		throw new IllegalArgumentException("${gestalt;<part>[;key[;<value>]]} has too many arguments");
 	}
+
+	@Override
+	public String toString() {
+		return "Workspace [" + getBase().getName() + "]";
+	}
+
+	/**
+	 * Create a project in this workspace
+	 */
+
+	public interface LifecycleOptions {
+		boolean ant();
+
+		boolean git();
+
+		boolean gradle();
+
+		boolean eclipse();
+
+		boolean maven();
+
+	}
+
+	public Project createProject(LifecycleOptions options, String name) throws Exception {
+		if (!Verifier.SYMBOLICNAME.matcher(name).matches()) {
+			error("A project name is a Bundle Symbolic Name, this must therefore consist of only letters, digits and dots");
+			return null;
+		}
+
+		File pdir = getFile(name);
+		pdir.mkdirs();
+
+		IO.store("#\n#   " + name.toUpperCase().replace('.', ' ') + "\n#\n", getFile(pdir, Project.BNDFILE));
+		Project p = new Project(this, pdir);
+
+		p.getTarget().mkdirs();
+		p.getOutput().mkdirs();
+		p.getTestOutput().mkdirs();
+		p.getSrc().mkdirs();
+		p.getTestSrc().mkdirs();
+
+		for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class))
+			l.created(p);
+
+		if (!p.isValid()) {
+			error("project %s is not valid", p);
+		}
+
+		return p;
+	}
+
+	/**
+	 * Create a new Workspace
+	 * 
+	 * @param opts
+	 * @param wsdir
+	 * @throws Exception
+	 */
+	public static Workspace createWorkspace(LifecycleOptions opts, File wsdir) throws Exception {
+		if (wsdir.exists())
+			return null;
+
+		wsdir.mkdirs();
+		File cnf = IO.getFile(wsdir, CNFDIR);
+		cnf.mkdir();
+		IO.store("", new File(cnf, BUILDFILE));
+		File ext = new File(cnf, EXT);
+		ext.mkdir();
+		Workspace ws = getWorkspace(wsdir);
+
+		ws.create(opts);
+
+		return ws;
+	}
+
+	private void create(LifecycleOptions opts) throws Exception {
+		if (opts.git()) {
+			new GitPlugin().add(this);
+		}
+		if (opts.ant()) {
+			new AntPlugin().add(this);
+		}
+		if (opts.gradle()) {
+			new GradlePlugin().add(this);
+		}
+		if (opts.eclipse()) {
+			new EclipsePlugin().add(this);
+		}
+		if (opts.maven()) {
+			new MavenPlugin().add(this);
+		}
+		refresh();
+	}
+
+	/**
+	 * Add a plugin
+	 * 
+	 * @param pname
+	 * @throws Exception 
+	 */
+
+	public void addPlugin(String pname) throws Exception {
+		for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class)) {
+			if (l.getName().equals(pname)) {
+				error("The %s plugin is already added", pname);
+			}
+		}
+		if (isOk()) {
+
+			if (pname.equals("ant")) {
+				new AntPlugin().add(this);
+			} else if (pname.equals("git")) {
+				new GitPlugin().add(this);
+			} else if (pname.equals("gradle")) {
+				new GradlePlugin().add(this);
+			} else if (pname.equals("maven")) {
+				new MavenPlugin().add(this);
+			} else if (pname.equals("eclipse")) {
+				new EclipsePlugin().add(this);
+			} else {
+				try {
+					@SuppressWarnings("unchecked")
+					Class< ? extends LifeCyclePlugin> c = (Class< ? extends LifeCyclePlugin>) getLoader().loadClass(
+							pname);
+					LifeCyclePlugin newInstance = c.newInstance();
+					newInstance.add(this);
+				}
+				catch (Exception e) {
+					//
+				}
+				error("Cannot find the plugin " + pname);
+			}
+			refresh();
+		}
+
+	}
+
+	public void removePlugin(String pname) {
+		for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class)) {
+			if (l.getName().equals(pname)) {
+				l.remove(this);;
+			}
+		}
+	}
+
 }

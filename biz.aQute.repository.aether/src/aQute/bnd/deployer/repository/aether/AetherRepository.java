@@ -1,70 +1,48 @@
 package aQute.bnd.deployer.repository.aether;
 
-import static aQute.bnd.deployer.repository.RepoConstants.DEFAULT_CACHE_DIR;
+import static aQute.bnd.deployer.repository.RepoConstants.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.io.*;
+import java.net.*;
+import java.security.*;
+import java.util.*;
 
-import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
-import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
-import org.eclipse.aether.deployment.DeployRequest;
-import org.eclipse.aether.impl.ArtifactDescriptorReader;
-import org.eclipse.aether.impl.DefaultServiceLocator;
+import org.apache.maven.repository.internal.*;
+import org.eclipse.aether.*;
+import org.eclipse.aether.artifact.*;
+import org.eclipse.aether.connector.basic.*;
+import org.eclipse.aether.deployment.*;
+import org.eclipse.aether.impl.*;
 import org.eclipse.aether.impl.DefaultServiceLocator.ErrorHandler;
-import org.eclipse.aether.repository.LocalRepository;
-import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.*;
 import org.eclipse.aether.repository.RemoteRepository.Builder;
-import org.eclipse.aether.resolution.ArtifactRequest;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
-import org.eclipse.aether.resolution.ArtifactResult;
-import org.eclipse.aether.resolution.VersionRangeRequest;
-import org.eclipse.aether.resolution.VersionRangeResult;
-import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
-import org.eclipse.aether.spi.connector.transport.TransporterFactory;
-import org.eclipse.aether.transfer.AbstractTransferListener;
-import org.eclipse.aether.transfer.TransferCancelledException;
-import org.eclipse.aether.transfer.TransferEvent;
+import org.eclipse.aether.resolution.*;
+import org.eclipse.aether.spi.connector.*;
+import org.eclipse.aether.spi.connector.transport.*;
+import org.eclipse.aether.transfer.*;
 import org.eclipse.aether.transfer.TransferEvent.RequestType;
-import org.eclipse.aether.transfer.TransferResource;
-import org.eclipse.aether.transport.file.FileTransporterFactory;
-import org.eclipse.aether.transport.http.HttpTransporterFactory;
-import org.eclipse.aether.util.repository.AuthenticationBuilder;
+import org.eclipse.aether.transport.file.*;
+import org.eclipse.aether.transport.http.*;
+import org.eclipse.aether.util.repository.*;
 
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.service.IndexProvider;
-import aQute.bnd.service.Plugin;
-import aQute.bnd.service.Registry;
-import aQute.bnd.service.RegistryPlugin;
-import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.ResolutionPhase;
-import aQute.bnd.version.Version;
-import aQute.lib.io.IO;
-import aQute.service.reporter.Reporter;
+import aQute.bnd.deployer.repository.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.service.*;
+import aQute.bnd.version.*;
+import aQute.lib.io.*;
+import aQute.service.reporter.*;
 
+@aQute.bnd.annotation.plugin.Plugin(name="aether", parameters=AetherRepository.Config.class)
 public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugin, IndexProvider {
 
+	interface Config {
+		String name();
+		URI url();
+		URI indexUrl();
+		String username();
+		String password();
+		String cache();
+	}
 	public static final String PROP_NAME = "name";
 	public static final String PROP_MAIN_URL = "url";
 	public static final String PROP_INDEX_URL = "indexUrl";

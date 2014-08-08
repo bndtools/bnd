@@ -15,8 +15,13 @@ import aQute.lib.io.*;
 import aQute.libg.glob.*;
 import aQute.service.reporter.*;
 
+@aQute.bnd.annotation.plugin.Plugin(name="urlconnector", parameters=HttpBasicAuthURLConnector.Config.class)
 public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 
+	@interface Config {
+		String configs();
+		boolean disableServerVerify() default false;
+	}
 	private static final String	PREFIX_PATTERN			= "pattern.";
 	private static final String	PREFIX_USER				= "uid.";
 	private static final String	PREFIX_PASSWORD			= "pwd.";

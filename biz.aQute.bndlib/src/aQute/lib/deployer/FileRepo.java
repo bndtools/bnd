@@ -46,8 +46,28 @@ import aQute.service.reporter.*;
  * (that is, machine local) settings from the ~/.bnd/settings.json file (can be
  * managed with bnd).
  */
+
+@aQute.bnd.annotation.plugin.Plugin(name="repo.file", parameters=FileRepo.Config.class)
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
 
+	interface Config  {
+		String name();
+		String location();
+		boolean readonly();
+		boolean trace();
+		boolean index();
+		String cmd_path();
+		String cmd_shell();
+		String cmd_init();
+		String cmd_open();
+		String cmd_after_put();
+		String cmd_before_put();
+		String cmd_abort_put();
+		String cmd_before_get();
+		String cmd_after_action();
+		String cmd_refresh();
+		String cmd_close();
+	}
 	/**
 	 * If set, will trace to stdout. Works only if no reporter is set.
 	 */

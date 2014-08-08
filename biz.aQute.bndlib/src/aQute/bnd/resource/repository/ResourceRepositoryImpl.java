@@ -542,4 +542,10 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		return dir;
 	}
 
+	@Override
+	public String toString() {
+		return "ResourceRepositoryImpl ["+ (cache != null ? "cache=" + cache + ", " : "")
+				+ (indexFile != null ? "indexFile=" + indexFile + ", " : "") + "]";
+	}
+
 }

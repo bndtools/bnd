@@ -18,8 +18,14 @@ import aQute.lib.base64.*;
  * <li>user — The user id
  * </ul>
  */
+@aQute.bnd.annotation.plugin.Plugin(name="url.basic.authentication", parameters=BasicAuthentication.Config.class)
 public class BasicAuthentication extends DefaultURLConnectionHandler {
 
+	interface Config extends DefaultURLConnectionHandler.Config {
+		String user();
+		String _password();
+	}
+	
 	private static final String	USER					= "user";
 	private static final String	PASSWORD				= ".password";
 	private static final String	HEADER_AUTHORIZATION	= "Authorization";

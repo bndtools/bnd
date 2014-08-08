@@ -39,6 +39,7 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
+import aQute.bnd.service.lifecycle.*;
 import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
@@ -69,23 +70,24 @@ import aQute.service.reporter.*;
  * @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
-	static Pattern				ASSIGNMENT	= Pattern.compile( //
-													"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
-	Settings					settings	= new Settings();
-	final PrintStream			err			= System.err;
-	final public PrintStream	out			= System.out;
-	Justif						justif		= new Justif(80, 40, 42, 70);
-	BndMessages					messages	= ReporterMessages.base(this, BndMessages.class);
-	private Workspace			ws;
-	private char[]				password;
+	static Pattern					ASSIGNMENT	= Pattern.compile( //
+														"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
+	Settings						settings	= new Settings();
+	final PrintStream				err			= System.err;
+	final public PrintStream		out			= System.out;
+	Justif							justif		= new Justif(80, 40, 42, 70);
+	BndMessages						messages	= ReporterMessages.base(this, BndMessages.class);
+	private Workspace				ws;
+	private char[]					password;
+	private Map<String,Class< ? >>	annotatedPlugins;
 
-	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
+	static Pattern					JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
-	static Pattern				COMMAND		= Pattern.compile("\\w[\\w\\d]+");
-	static Pattern				EMAIL_P		= Pattern
-													.compile(
-															"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
-															Pattern.CASE_INSENSITIVE);
+	static Pattern					COMMAND		= Pattern.compile("\\w[\\w\\d]+");
+	static Pattern					EMAIL_P		= Pattern
+														.compile(
+																"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
+																Pattern.CASE_INSENSITIVE);
 
 	@Description("OSGi Bundle Tool")
 	interface bndOptions extends Options {
@@ -721,6 +723,34 @@ public class bnd extends Processor {
 		err.println(project.getProperty(BUNDLE_VERSION, "No version found"));
 	}
 
+	interface PerProject {
+		void doit(Project p) throws Exception;
+	}
+
+	public void perProject(projectOptions opts, PerProject run) throws Exception {
+		Collection<Project> list;
+
+		Project project = getProject(opts.project());
+		if (project == null) {
+			Workspace ws = Workspace.findWorkspace(getBase());
+			if (!ws.isValid()) {
+				messages.NoValidWorkspace(getBase());
+			}
+			list = ws.getAllProjects();
+			if (list.isEmpty()) {
+				out.println("No projects");
+			}
+			return;
+		} else {
+			list = Arrays.asList(project);
+		}
+
+		for (Project p : list) {
+			run.doit(p);
+			getInfo(p, p + ": ");
+		}
+	}
+
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
 	@Arguments(arg = {})
 	interface buildoptions extends projectOptions {
@@ -733,24 +763,37 @@ public class bnd extends Processor {
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
-	public void _build(buildoptions opts) throws Exception {
-		Project project = getProject(opts.project());
-		if (project == null) {
-			messages.NoProject();
-			return;
-		}
-		project.build(opts.test());
-		getInfo(project);
+	public void _build(final buildoptions opts) throws Exception {
+
+		perProject(opts, new PerProject() {
+			public void doit(Project p) throws Exception {
+				p.build(opts.test());
+			}
+		});
+	}
+
+	@Arguments(arg = {})
+	interface CompileOptions extends projectOptions {
+
+		@Description("Compile for test")
+		boolean test();
+
+	}
+
+	@Description("Compile a project or the workspace")
+	public void _compile(final CompileOptions opts) throws Exception {
+		perProject(opts, new PerProject() {
+			public void doit(Project p) throws Exception {
+				p.compile(opts.test());
+			}
+		});
 	}
 
 	@Description("Test a project according to an OSGi test")
 	@Arguments(arg = {
 		"testclass[:method]..."
 	})
-	interface testOptions extends Options {
-		@Description("Path to another project than the current project")
-		String project();
-
+	interface testOptions extends projectOptions {
 		@Description("Verify all the dependencies before launching (runpath, runbundles, testpath)")
 		boolean verify();
 
@@ -765,54 +808,52 @@ public class bnd extends Processor {
 	}
 
 	@Description("Test a project according to an OSGi test")
-	public void _test(testOptions opts) throws Exception {
-		Project project = getProject(opts.project());
-		if (project == null) {
-			messages.NoProject();
-			return;
-		}
+	public void _test(final testOptions opts) throws Exception {
 
-		// if (!verifyDependencies(project, opts.verify(), true))
-		// return;
-		//
-		List<String> testNames = opts._();
-		if (!testNames.isEmpty())
-			project.setProperty(TESTCASES, "");
+		perProject(opts, new PerProject() {
 
-		if (project.is(NOJUNITOSGI) && !opts.force()) {
-			warning("%s is set to true on this bundle. Use -f/--force to try this test anyway", NOJUNITOSGI);
-			return;
-		}
+			@Override
+			public void doit(Project project) throws Exception {
+				List<String> testNames = opts._();
+				if (!testNames.isEmpty())
+					project.setProperty(TESTCASES, "");
 
-		if (project.getProperty(TESTCASES) == null)
-			if (opts.force())
-				project.setProperty(TESTCASES, "");
-			else {
-				warning("No %s set on this bundle. Use -f/--force to try this test anyway (this works if another bundle provides the testcases)",
-						TESTCASES);
-				return;
+				if (project.is(NOJUNITOSGI) && !opts.force()) {
+					warning("%s is set to true on this bundle. Use -f/--force to try this test anyway", NOJUNITOSGI);
+					return;
+				}
+
+				if (project.getProperty(TESTCASES) == null)
+					if (opts.force())
+						project.setProperty(TESTCASES, "");
+					else {
+						warning("No %s set on this bundle. Use -f/--force to try this test anyway (this works if another bundle provides the testcases)",
+								TESTCASES);
+						return;
+					}
+
+				if (opts.continuous())
+					project.setProperty(TESTCONTINUOUS, "true");
+
+				if (opts.trace() || isTrace())
+					project.setProperty(RUNTRACE, "true");
+
+				project.test(testNames);
 			}
+		});
 
-		if (opts.continuous())
-			project.setProperty(TESTCONTINUOUS, "true");
-
-		if (opts.trace() || isTrace())
-			project.setProperty(RUNTRACE, "true");
-
-		project.test(testNames);
-		getInfo(project);
 	}
 
 	@Description("Test a project with plain JUnit")
 	public void _junit(testOptions opts) throws Exception {
-		Project project = getProject(opts.project());
-		if (project == null) {
-			messages.NoProject();
-			return;
-		}
 
-		project.junit();
-		getInfo(project);
+		perProject(opts, new PerProject() {
+
+			@Override
+			public void doit(Project p) throws Exception {
+				p.junit();
+			}
+		});
 	}
 
 	private boolean verifyDependencies(Project project, boolean implies, boolean test) throws Exception {
@@ -3911,4 +3952,150 @@ public class bnd extends Processor {
 
 		return out + ".jar";
 	}
+
+	/**
+	 * Create a project
+	 */
+
+	@Arguments(arg = {
+			"what", "name..."
+	})
+	interface AddOptions extends Options, Workspace.LifecycleOptions {
+		@Override
+		boolean ant();
+
+		@Override
+		boolean git();
+
+		@Override
+		boolean gradle();
+
+		@Override
+		boolean eclipse();
+
+		@Override
+		boolean maven();
+	}
+
+	public void _add(AddOptions opts) throws Exception {
+		List<String> args = opts._();
+
+		String what = args.remove(0);
+
+		if ("project".equals(what)) {
+			Workspace ws = Workspace.findWorkspace(getBase());
+			if (ws == null) {
+				error("No workspace found from %s", getBase());
+				return;
+			}
+
+			for (String pname : args) {
+				ws.createProject((Workspace.LifecycleOptions) opts, pname);
+			}
+
+			getInfo(ws);
+			return;
+		}
+
+		if ("workspace".equals(what)) {
+			for (String pname : args) {
+				File wsdir = getFile(pname);
+				Workspace ws = Workspace.createWorkspace(opts, wsdir);
+				if (ws == null) {
+					error("Could not create workspace");
+				} else
+					getInfo(ws);
+			}
+			return;
+		}
+
+		if ("plugin".equals(what)) {
+			Workspace ws = Workspace.findWorkspace(getBase());
+			if (ws == null) {
+				error("Cannot find a workspace from %s", getBase());
+				return;
+			}
+			Map< String , Class<?> > plugins = getAnnotatedPlugins();
+			for (String pname : args) {
+				ws.addPlugin(pname);
+				getInfo(ws);
+			}
+			for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class)) {
+
+			}
+			ws.refresh();
+			return;
+		}
+
+	}
+
+	private Map<String,Class< ? >> getAnnotatedPlugins() throws IOException {
+		if (annotatedPlugins == null) {
+			annotatedPlugins = new HashMap<String,Class<?>>();
+			
+			Properties p = new Properties();
+			p.load(bnd.class.getClassLoader().getResourceAsStream("bnd.info"));
+			
+			Parameters classes = new Parameters(p.getProperty("plugins"));
+			for ( String cname : classes.keySet() ) {
+				try {
+					Class<?> c = getClass().getClassLoader().loadClass(cname);
+					aQute.bnd.annotation.plugin.Plugin annotation = c.getAnnotation(aQute.bnd.annotation.plugin.Plugin.class);
+					if ( annotation != null) {
+						annotatedPlugins.put(annotation.name(), c);
+					}
+					
+				} catch ( Exception ex) {
+					error("Cannot find plugin %s", cname);
+				}
+			}
+			
+		}
+		return annotatedPlugins;
+	}
+
+	@Arguments(arg = {
+			"what", "name..."
+	})
+	interface RemoveOptions extends Options, Workspace.LifecycleOptions {}
+
+	public void _remove(AddOptions opts) throws Exception {
+		List<String> args = opts._();
+
+		String what = args.remove(0);
+
+		Workspace ws = Workspace.findWorkspace(getBase());
+		if (ws == null) {
+			error("No workspace found from %s", getBase());
+			return;
+		}
+
+		if ("project".equals(what)) {
+			for (String pname : args) {
+				Project project = ws.getProject(pname);
+				if (project == null) {
+					error("No such project " + pname);
+				} else
+					project.remove();
+			}
+
+			getInfo(ws);
+			return;
+		}
+
+		if ("workspace".equals(what)) {
+			error("To delete a workspace, delete the directory");
+		}
+
+		if ("plugin".equals(what)) {
+
+			for (String pname : args) {
+				ws.removePlugin(pname);
+				getInfo(ws);
+			}
+			ws.refresh();
+			return;
+		}
+	}
+
 }

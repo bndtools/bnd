@@ -15,6 +15,11 @@ import aQute.service.reporter.*;
  * {@link #matches(URLConnection)} method to verify the plugin is applicable.
  */
 public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin, RegistryPlugin, Reporter {
+	
+	
+	interface Config {
+		String match();
+	}
 	private final Set<Glob>	matchers	= new HashSet<Glob>();
 	private Reporter		reporter;
 	protected Registry		registry	= null;

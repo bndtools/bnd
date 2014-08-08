@@ -29,4 +29,6 @@ public interface BndMessages extends Messages {
 
 	ERROR NoRunFile(File f);
 
+	void NoValidWorkspace(File f);
+
 }

@@ -1,0 +1,6 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>${replace;${project};(.*)\.[^.];$1}</groupId>
+  <artifactId>${replace;${project};.*\.([^.]);$1}</artifactId>
+  <version>1.0.0</version>
+</project>

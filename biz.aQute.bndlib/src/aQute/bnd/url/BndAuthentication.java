@@ -32,7 +32,16 @@ import aQute.lib.settings.*;
  * </ul>
  * T
  */
+@aQute.bnd.annotation.plugin.Plugin(name="url.bnd.authentication", parameters=BndAuthentication.Config.class)
 public class BndAuthentication extends DefaultURLConnectionHandler {
+	
+	interface Config extends DefaultURLConnectionHandler.Config {
+		String machine();
+		byte[] privateKey();
+		byte[] publicKey();
+		String email();
+	}
+	
 	private static final String		MACHINE					= "machine";
 	private static final String		PRIVATE_KEY				= "privateKey";
 	private static final String		PUBLIC_KEY				= "publicKey";
