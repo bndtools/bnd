@@ -395,7 +395,7 @@ public class MavenCommand extends Processor {
 		Command command = new Command();
 		command.setTrace();
 
-		command.add(getProperty("gpgp", "gpg"));
+		command.add(getProperty("gpg", "gpg"));
 		if (passphrase != null)
 			command.add("--passphrase", passphrase);
 		command.add("-ab", "--sign"); // not the -b!!
