@@ -21,9 +21,23 @@ public class MavenPlugin extends LifeCyclePlugin {
 
 		copy("pom.xml", "pom.xml", p);
 
-		String rootPom = IO.collect(workspace.getFile("pom.xml"));
-		rootPom.replaceAll("<!-- DO NOT EDIT MANAGED BY BND MAVEN LIFECYCLE PLUGIN -->\n*", "$0\n\t\t<module>" + p
-				+ "</module>\n");
+		File root = workspace.getFile("pom.xml");
+		
+		doRoot(p, root);
+		
+		String rootPom = IO.collect(root);
+		if ( !rootPom.contains(getTag(p))) {
+			rootPom = rootPom.replaceAll("<!-- DO NOT EDIT MANAGED BY BND MAVEN LIFECYCLE PLUGIN -->\n", 
+					"$0\n\t\t"+ getTag(p) + "\n");
+			IO.store(rootPom, root);
+		}
+	}
+
+	private void doRoot(Project p, File root) throws IOException {
+		if( !root.isFile()) {
+			IO.delete(root);
+			copy("rootpom.xml", "../pom.xml", p);
+		}
 	}
 
 	private void copy(String source, String dest, Project p) throws IOException {
@@ -68,6 +82,22 @@ public class MavenPlugin extends LifeCyclePlugin {
 		}
 	}
 
+	@Override
+	public void delete(Project p) throws IOException {
+		File root = p.getWorkspace().getFile("pom.xml");
+		String rootPom = IO.collect(root);
+		if ( rootPom.contains(getTag(p))) {
+			rootPom = rootPom.replaceAll("\n\\s*" + getTag(p) + "\\s*", "\n");
+			IO.store(rootPom, root);
+		}
+		
+	}
+
+	private String getTag(Project p) {
+		return "<module>"+p+"</module>";
+	}
+	
+	
 	@Override
 	public String toString() {
 		return "MavenPlugin";

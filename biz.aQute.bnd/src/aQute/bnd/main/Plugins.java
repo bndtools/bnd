@@ -19,9 +19,9 @@ public class Plugins {
 	private final Workspace			ws;
 	private final bnd				bnd;
 
-	Plugins(bnd bnd) throws Exception {
+	Plugins(bnd bnd, Workspace ws) throws Exception {
 		this.bnd = bnd;
-		this.ws = bnd.getWorkspace(bnd.getBase());
+		this.ws = ws;
 	}
 
 	interface PluginAddOptions extends Options {
@@ -74,7 +74,6 @@ public class Plugins {
 
 			ws.addPlugin(plugin, alias, parameters, opts.force());
 		}
-		return;
 	}
 
 	@Arguments(arg = "alias...")

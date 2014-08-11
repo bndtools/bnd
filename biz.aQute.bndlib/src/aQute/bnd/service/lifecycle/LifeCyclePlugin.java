@@ -10,6 +10,13 @@ import aQute.bnd.build.*;
  */
 public abstract class LifeCyclePlugin {
 
+	/**
+	 * Called when the plugin is setup. This plugin will be added to the setup
+	 * but the workspace is not yet refreshed.
+	 * @throws Exception 
+	 */
+	public void init(Workspace ws) throws Exception {
+	}
 	public void opened(Project project) throws Exception {}
 
 	public void close(Project project) throws Exception {}

@@ -284,7 +284,7 @@ public class bnd extends Processor {
 			}
 		}
 		catch (Throwable t) {
-			if (t instanceof InvocationTargetException)
+			while (t instanceof InvocationTargetException)
 				t = t.getCause();
 			exception(t, "%s", t.getMessage());
 		}
@@ -3986,20 +3986,27 @@ public class bnd extends Processor {
 		if ("workspace".equals(what)) {
 			for (String pname : args) {
 				File wsdir = getFile(pname);
-				Workspace ws = Workspace.createWorkspace(wsdir);
+				ws = Workspace.createWorkspace(wsdir);
 				if (ws == null) {
 					error("Could not create workspace");
-				} else
-					getInfo(ws);
+				} 
 			}
+			getInfo(ws);
 			return;
 		}
 
 		if ("plugin".equals(what)) {			
+			Workspace ws = getWorkspace(getBase());
+			if (ws == null) {
+				error("No workspace found from %s", getBase());
+				return;
+			}
+
 			CommandLine cl = new CommandLine(this);
-			String help = cl.execute(new Plugins(this), "add", new ExtList<String>(args));
+			String help = cl.execute(new Plugins(this,ws), "add", new ExtList<String>(args));
 			if ( help != null)
 				out.println(help);
+			getInfo(ws);
 			return;
 		}
 
@@ -4042,7 +4049,7 @@ public class bnd extends Processor {
 
 		if ("plugin".equals(what)) {			
 			CommandLine cl = new CommandLine(this);
-			String help = cl.execute(new Plugins(this), "remove", new ExtList<String>(args));
+			String help = cl.execute(new Plugins(this, ws), "remove", new ExtList<String>(args));
 			if ( help != null)
 				out.println(help);
 			return;
