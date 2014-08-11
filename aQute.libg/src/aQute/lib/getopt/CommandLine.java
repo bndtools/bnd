@@ -27,6 +27,7 @@ public class CommandLine {
 	Reporter			reporter;
 	Justif				justif		= new Justif(80,30,32,70);
 	CommandLineMessages	msg;
+	private Object	result;
 
 	class Option {
 		public char shortcut;
@@ -63,6 +64,7 @@ public class CommandLine {
 			return sb.toString();
 		}
 
+		
 		//
 		// Find the appropriate method
 		//
@@ -135,7 +137,7 @@ public class CommandLine {
 		}
 		if (reporter.getErrors().size() == 0) {
 			m.setAccessible(true);
-			m.invoke(target, options);
+			result = m.invoke(target, options);
 			return null;
 		}
 		return help(target, cmd, optionClass);
@@ -593,4 +595,7 @@ public class CommandLine {
 		return "<" + lastPart(clazz.getName().toLowerCase()) + ">";
 	}
 
+	public Object getResult() {
+		return result;
+	}
 }
