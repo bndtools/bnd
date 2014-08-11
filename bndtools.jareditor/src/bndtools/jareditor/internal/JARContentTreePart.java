@@ -21,7 +21,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -41,8 +40,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IURIEditorInput;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -209,16 +207,7 @@ public class JARContentTreePart extends AbstractFormPart {
 
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             entryMap = new TreeMap<String,ZipTreeNode>();
-            URI uri = null;
-            if (newInput instanceof IFileEditorInput) {
-                IFile file = ((IFileEditorInput) newInput).getFile();
-                uri = file.getLocationURI();
-                if (!uri.getScheme().equals("file")) {
-                    uri = file.getLocation().toFile().toURI();
-                }
-            } else if (newInput instanceof IURIEditorInput) {
-                uri = ((IURIEditorInput) newInput).getURI();
-            }
+            final URI uri = URIHelper.retrieveFileURI((IEditorInput) newInput);
 
             if (uri != null) {
                 JarFile jarFile = null;

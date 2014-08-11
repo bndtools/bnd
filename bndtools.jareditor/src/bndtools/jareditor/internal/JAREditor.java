@@ -30,23 +30,26 @@ import bndtools.jareditor.internal.utils.SWTConcurrencyUtil;
 public class JAREditor extends FormEditor implements IResourceChangeListener {
 
     JARContentPage contentPage = new JARContentPage(this, "contentPage", "Content");
-    JARPrintPage printPage = new JARPrintPage(this, "printPage", "Print");
+    JARPrintPage   printPage   = new JARPrintPage(this, "printPage", "Print");
 
     @Override
     protected void addPages() {
         try {
             addPage(contentPage);
             addPage(printPage);
-        } catch (PartInitException e) {
+        }
+        catch (PartInitException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void doSave(IProgressMonitor monitor) {}
+    public void doSave(final IProgressMonitor monitor) {
+    }
 
     @Override
-    public void doSaveAs() {}
+    public void doSaveAs() {
+    }
 
     @Override
     public boolean isSaveAsAllowed() {
@@ -54,7 +57,7 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
     }
 
     @Override
-    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+    public void init(final IEditorSite site, final IEditorInput input) throws PartInitException {
         super.init(site, input);
 
         IResource resource = ResourceUtil.getResource(input);
@@ -64,12 +67,13 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
     }
 
     @Override
-    protected void setInput(IEditorInput input) {
+    protected void setInput(final IEditorInput input) {
         super.setInput(input);
         String name = "unknown";
         if (input instanceof IFileEditorInput) {
             name = ((IFileEditorInput) input).getFile().getName();
-        } else if (input instanceof IURIEditorInput) {
+        }
+        else if (input instanceof IURIEditorInput) {
             name = ((IURIEditorInput) input).getName();
         }
         setPartName(name);
@@ -79,25 +83,27 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
         });
     }
 
-    protected void updateContent(@SuppressWarnings("unused") final IEditorInput input) {
+    protected void updateContent(final IEditorInput input) {
         Runnable update = new Runnable() {
+            @Override
             public void run() {
                 Control c = (contentPage == null) ? null : contentPage.getPartControl();
-                if (c != null && !c.isDisposed()) {
+                if ( (c != null) && !c.isDisposed()) {
                     String[] selectedPath = contentPage.getSelectedPath();
                     contentPage.getManagedForm().refresh();
                     contentPage.setSelectedPath(selectedPath);
                 }
 
                 c = (printPage == null) ? null : printPage.getPartControl();
-                if (c != null && !c.isDisposed()) {
+                if ( (c != null) && !c.isDisposed()) {
                     printPage.refresh();
                 }
             }
         };
         try {
             SWTConcurrencyUtil.execForDisplay(contentPage.getPartControl().getDisplay(), update);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -113,21 +119,25 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
         }
     }
 
-    public void resourceChanged(IResourceChangeEvent event) {
+    @Override
+    public void resourceChanged(final IResourceChangeEvent event) {
         IResource myResource = ResourceUtil.getResource(getEditorInput());
 
         IResourceDelta delta = event.getDelta();
-        if (delta == null)
+        if (delta == null) {
             return;
+        }
 
         IPath fullPath = myResource.getFullPath();
         delta = delta.findMember(fullPath);
-        if (delta == null)
+        if (delta == null) {
             return;
+        }
 
         if (delta.getKind() == IResourceDelta.REMOVED) {
             close(false);
-        } else if (delta.getKind() == IResourceDelta.CHANGED) {
+        }
+        else if (delta.getKind() == IResourceDelta.CHANGED) {
             updateContent(getEditorInput());
         }
     }

@@ -34,8 +34,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.IPartSelectionListener;
@@ -179,15 +177,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         if (zipEntry != null && !zipEntry.isDirectory()) {
             IEditorInput input = editor.getEditorInput();
             final Display display = text.getDisplay();
-            final URI uri;
-
-            if (input instanceof IFileEditorInput) {
-                uri = ((IFileEditorInput) input).getFile().getLocationURI();
-            } else if (input instanceof IURIEditorInput) {
-                uri = ((IURIEditorInput) input).getURI();
-            } else {
-                uri = null;
-            }
+            final URI uri = URIHelper.retrieveFileURI(input);
 
             if (uri != null) {
                 displayJob = new Job("Load zip content") {
