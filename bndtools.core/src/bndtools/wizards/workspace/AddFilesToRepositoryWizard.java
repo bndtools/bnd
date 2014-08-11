@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.jar.Attributes;
 
 import org.bndtools.utils.osgi.BundleUtils;
+import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.wizard.Wizard;
 
 import aQute.bnd.osgi.Constants;
@@ -49,6 +51,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
         if (repository == null) {
             addPage(repoSelectionPage);
             repoSelectionPage.addPropertyChangeListener(LocalRepositorySelectionPage.PROP_SELECTED_REPO, new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     repository = (RepositoryPlugin) evt.getNewValue();
                 }
@@ -59,11 +62,25 @@ public class AddFilesToRepositoryWizard extends Wizard {
 
     @Override
     public boolean performFinish() {
+        WorkspaceJob job = new WorkspaceJob("Adding files to repository") {
+            @Override
+            public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+                return performFinishAddFiles(monitor);
+            }
+        };
+        job.schedule();
+        return true;
+    }
+
+    private IStatus performFinishAddFiles(IProgressMonitor monitor) {
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Failed to install one or more bundles", null);
 
         List<File> files = fileSelectionPage.getFiles();
         selectedBundles = new LinkedList<Pair<String,String>>();
+        monitor.beginTask("Processing files", files.size());
         for (File file : files) {
+            monitor.subTask(file.getName());
+
             Jar jar = null;
             try {
                 jar = new Jar(file);
@@ -96,14 +113,9 @@ public class AddFilesToRepositoryWizard extends Wizard {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to add JAR to repository: {0}", file.getPath()), e));
                 continue;
             }
-
+            monitor.worked(1);
         }
-
-        if (status.isOK()) {
-            return true;
-        }
-        ErrorDialog.openError(getShell(), "Error", null, status);
-        return false;
+        return status;
     }
 
     public List<Pair<String,String>> getSelectedBundles() {
