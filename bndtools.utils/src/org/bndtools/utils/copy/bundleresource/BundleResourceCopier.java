@@ -25,7 +25,7 @@ public class BundleResourceCopier {
 	}
 
 	private void addOrRemoveDirectoryRecursive(File dstDir, String bundleDir, String relativePath, boolean add) throws IOException {
-		String resourcePath = new File(bundleDir, relativePath).getPath();
+		String resourcePath = formatBundleEntryPath(new File(bundleDir, relativePath).getPath());
 		Enumeration<String> resourcePathEntries = bundle.getEntryPaths(resourcePath);
 		if (resourcePathEntries != null) {
 			while (resourcePathEntries.hasMoreElements()) {
@@ -71,7 +71,7 @@ public class BundleResourceCopier {
 		File dstFile = new File(dstDir, relativePath);
 
 		if (add) {
-			String resourcePath = new File(bundleDir, relativePath).getPath();
+			String resourcePath = formatBundleEntryPath(new File(bundleDir, relativePath).getPath());
 			URL resourceUrl = bundle.getEntry(resourcePath);
 			if (resourceUrl == null) {
 				throw new IOException("Resource " + resourcePath + " not found in bundle " + bundle.getSymbolicName());
@@ -186,5 +186,14 @@ public class BundleResourceCopier {
 		for (String templatePath : relativePaths) {
 			addOrRemoveDirectory(dstDir, bundleDir, templatePath, add);
 		}
+	}
+	
+	private String formatBundleEntryPath(String path) {
+		// Bundle.getEntry* doesn't grok backslashes
+		if (File.separatorChar != '\\') {
+			return path;
+		}
+		
+		return path.replace('\\', '/');
 	}
 }
