@@ -203,7 +203,7 @@ public class Tag {
 	 */
 	public Tag print(int indent, PrintWriter pw) {
 		if (indent >= 0) {
-			pw.print("\n");
+			pw.println();
 			spaces(pw, indent);
 		}
 		pw.print('<');
@@ -238,7 +238,7 @@ public class Tag {
 				}
 			}
 			if (indent >= 0) {
-				pw.print("\n");
+				pw.println();
 				spaces(pw, indent);
 			}
 			pw.print("</");
@@ -260,7 +260,7 @@ public class Tag {
 			char c = s.charAt(i);
 			if (i == 0 || (Character.isWhitespace(c) && pos > width - 3)) {
 				if (left >= 0 && width > 0) {
-					pw.print("\n");
+					pw.println();
 					spaces(pw, left);
 				}
 				pos = 0;
