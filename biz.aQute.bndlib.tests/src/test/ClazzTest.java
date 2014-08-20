@@ -149,4 +149,12 @@ public class ClazzTest extends TestCase {
 		assertEquals("URL", Clazz.unCamel("URL"));
 		assertEquals("A nice party", Clazz.unCamel("aNiceParty"));
 	}
+
+	public static void testAnalyzerCrawlInvokeInterfaceAIOOBException() throws Exception {
+		Analyzer a = new Analyzer();
+		Clazz c = new Clazz(a, "", null);
+		c.parseClassFile(new FileInputStream("jar/AnalyzerCrawlInvokerInterfaceAIOOBTest.jclass"), new ClassDataCollector() {});
+		Set<PackageRef> referred = c.getReferred();
+		System.out.println(referred);
+	}
 }

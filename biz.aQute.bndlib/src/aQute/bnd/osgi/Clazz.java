@@ -1212,6 +1212,8 @@ public class Clazz {
 					int mref = 0xFFFF & bb.getShort();
 					if (cd != null)
 						getMethodDef(0, mref);
+					bb.get(); // read past the 'count' operand
+					bb.get(); // read past the reserved space for future operand
 					break;
 				}
 
