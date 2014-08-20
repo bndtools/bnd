@@ -60,6 +60,7 @@ import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.editor.contents.PackageInfoDialog;
+import bndtools.editor.contents.PackageInfoDialog.FileVersionTuple;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import bndtools.internal.pkgselection.IPackageFilter;
 import bndtools.internal.pkgselection.JavaSearchScopePackageLister;
@@ -126,20 +127,20 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 
     @Override
     protected void doAddClauses(Collection< ? extends ExportedPackage> pkgs, int index, boolean select) {
-        Map<String,File> missingPkgInfoDirs;
+        List<FileVersionTuple> missingPkgInfoDirs;
         try {
-            missingPkgInfoDirs = findSourcePackagesWithoutPackageInfo(pkgs);
+            missingPkgInfoDirs = new ArrayList<FileVersionTuple>(findSourcePackagesWithoutPackageInfo(pkgs));
         } catch (Exception e) {
             ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error finding source package for exported 1packages.", e));
-            missingPkgInfoDirs = Collections.emptyMap();
+            missingPkgInfoDirs = Collections.emptyList();
         }
-        Collection<File> generatePkgInfoDirs = new ArrayList<File>(missingPkgInfoDirs.size());
+        List<FileVersionTuple> generatePkgInfoDirs = new ArrayList<FileVersionTuple>(missingPkgInfoDirs.size());
 
         BndPreferences prefs = new BndPreferences();
         boolean noAskPackageInfo = prefs.getNoAskPackageInfo();
 
         if (noAskPackageInfo || missingPkgInfoDirs.isEmpty()) {
-            generatePkgInfoDirs.addAll(missingPkgInfoDirs.values());
+            generatePkgInfoDirs.addAll(missingPkgInfoDirs);
         } else {
             PackageInfoDialog dlg = new PackageInfoDialog(getSection().getShell(), missingPkgInfoDirs);
             if (dlg.open() == Window.CANCEL)
@@ -158,8 +159,8 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         super.doAddClauses(pkgs, index, select);
     }
 
-    private Map<String,File> findSourcePackagesWithoutPackageInfo(Collection< ? extends ExportedPackage> pkgs) throws Exception {
-        Map<String,File> result = new HashMap<String,File>();
+    private Collection<FileVersionTuple> findSourcePackagesWithoutPackageInfo(Collection< ? extends ExportedPackage> pkgs) throws Exception {
+        Map<String,FileVersionTuple> result = new HashMap<String,FileVersionTuple>();
 
         Collection<File> sourceDirs = getProject().getSourcePath();
         for (File sourceDir : sourceDirs) {
@@ -169,27 +170,27 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
                     if (pkgDir.isDirectory()) {
                         File pkgInfo = new File(pkgDir, PACKAGEINFO);
                         if (!pkgInfo.exists())
-                            result.put(pkg.getName(), pkgDir);
+                            result.put(pkg.getName(), new FileVersionTuple(pkg.getName(), pkgDir));
                     }
                 }
             }
         }
 
-        return result;
+        return result.values();
     }
 
-    private static void generatePackageInfos(final Collection< ? extends File> pkgDirs) throws CoreException {
+    private static void generatePackageInfos(final Collection< ? extends FileVersionTuple> pkgs) throws CoreException {
         final IWorkspaceRunnable wsOperation = new IWorkspaceRunnable() {
             public void run(IProgressMonitor monitor) throws CoreException {
-                SubMonitor progress = SubMonitor.convert(monitor, pkgDirs.size());
+                SubMonitor progress = SubMonitor.convert(monitor, pkgs.size());
                 MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Errors occurred while creating packageinfo files.", null);
-                for (File pkgDir : pkgDirs) {
-                    IContainer[] locations = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(pkgDir.toURI());
+                for (FileVersionTuple pkg : pkgs) {
+                    IContainer[] locations = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(pkg.getFile().toURI());
                     if (locations != null && locations.length > 0) {
                         IFile pkgInfoFile = locations[0].getFile(new Path(PACKAGEINFO));
 
                         try {
-                            ByteArrayInputStream input = new ByteArrayInputStream("version 1.0".getBytes("UTF-8"));
+                            ByteArrayInputStream input = new ByteArrayInputStream(pkg.formatVersionSpec().getBytes("UTF-8"));
                             pkgInfoFile.create(input, false, progress.newChild(1, 0));
                         } catch (CoreException e) {
                             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating file " + pkgInfoFile.getFullPath(), e));

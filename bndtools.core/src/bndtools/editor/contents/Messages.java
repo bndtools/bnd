@@ -23,6 +23,8 @@ public class Messages extends NLS {
     public static String PackageInfoDialog_btnCheckAll_text;
     public static String PackageInfoDialog_btnUncheckAll_text;
     public static String PackageInfoDialog_btnUncheckAll_text_1;
+    public static String PackageInfoDialog_VersionInvalid;
+    public static String PackageInfoDialog_VersionMissing;
     public static String TestSuitesPart_add;
     public static String TestSuitesPart_remove;
     public static String TestSuitesPart_section_junit_tests;
