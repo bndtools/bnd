@@ -11,6 +11,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
+import org.eclipse.jdt.internal.ui.wizards.dialogfields.ComboDialogField;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.DialogField;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.LayoutUtil;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.SelectionButtonDialogFieldGroup;
@@ -26,18 +27,20 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.PlatformUI;
 
 public class NewDSComponentWizardPage extends NewTypeWizardPage {
 
     static enum ActivateSignature {
-        NoActivate("No activate/deactivate methods"), NoArg("Activate without arguments"), ConfigMap("Activate with configuration map"), ComponentContext("Activate with ComponentContext"), BundleContext("Activate with BundleContext");
+        NoActivate       (Messages.NewDSComponentWizardPage_LC_labelNoActivate),
+        NoArg            (Messages.NewDSComponentWizardPage_LC_labelNoArg),
+        ConfigMap        (Messages.NewDSComponentWizardPage_LC_labelConfigMap),
+        ComponentContext (Messages.NewDSComponentWizardPage_LC_labelComponentContext),
+        BundleContext    (Messages.NewDSComponentWizardPage_LC_labelBundleContext);
 
         String label;
 
@@ -50,9 +53,11 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
 
     private final static String SETTINGS_CREATECONSTR = "create_constructor"; //$NON-NLS-1$
     private final static String SETTINGS_CREATEUNIMPLEMENTED = "create_unimplemented"; //$NON-NLS-1$
+    
+    private final ComboDialogField fLifecycleMethodDialogField;
+    private ComboViewer vwrActivateStub;
 
     private final SelectionButtonDialogFieldGroup fMethodStubsButtons;
-    private ComboViewer vwrActivateStub;
 
     private ActivateSignature activateSignature = ActivateSignature.NoActivate;
     private IStatus activateSignatureStatus = Status.OK_STATUS;
@@ -61,14 +66,17 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
 
     public NewDSComponentWizardPage() {
         super(CLASS_TYPE, PAGE_NAME);
-        setTitle("Declarative Services Component Class");
-        setDescription("Create a new Declarative Services component class.");
+        setTitle(Messages.NewDSComponentWizardPage_title);
+        setDescription(Messages.NewDSComponentWizardPage_description);
 
         String[] buttonNames3 = new String[] {
                 NewWizardMessages.NewClassWizardPage_methods_constructors, NewWizardMessages.NewClassWizardPage_methods_inherited
         };
         fMethodStubsButtons = new SelectionButtonDialogFieldGroup(SWT.CHECK, buttonNames3, 1);
         fMethodStubsButtons.setLabelText(NewWizardMessages.NewClassWizardPage_methods_label);
+        
+        fLifecycleMethodDialogField = new ComboDialogField(SWT.READ_ONLY);
+        fLifecycleMethodDialogField.setLabelText(Messages.NewDSComponentWizardPage_LC_label);
     }
 
     @Override
@@ -161,12 +169,10 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
     }
 
     protected void createLifecycleMethodStubControls(Composite composite, int nColumns) {
-        // Create stubs for lifecycle methods (activate and deactivate)
-        Label lblLifecycleMethods = new Label(composite, SWT.NONE);
-        lblLifecycleMethods.setText("Lifecycle Methods:");
-        LayoutUtil.setHorizontalSpan(lblLifecycleMethods, 1);
-
-        Combo cmbActivateStub = new Combo(composite, SWT.READ_ONLY);
+        fLifecycleMethodDialogField.doFillIntoGrid(composite, nColumns - 1);
+        DialogField.createEmptySpace(composite);
+        
+        Combo cmbActivateStub = fLifecycleMethodDialogField.getComboControl(composite);
         vwrActivateStub = new ComboViewer(cmbActivateStub);
         vwrActivateStub.setContentProvider(ArrayContentProvider.getInstance());
         vwrActivateStub.setLabelProvider(new LabelProvider() {
@@ -189,10 +195,6 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
                 handleFieldChanged("activateSignature");
             }
         });
-        //        LayoutUtil.setHorizontalSpan(cmbActivateStub, nColumns - 1);
-        GridData gd = new GridData(SWT.LEFT, SWT.FILL, false, false, nColumns - 1, 1);
-        gd.horizontalIndent = -4; // counteract the weird additional space added to combos
-        cmbActivateStub.setLayoutData(gd);
     }
 
     protected IStatus activateSignatureChanged() {
