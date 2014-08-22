@@ -1089,7 +1089,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			f.format("Number of revs %s\n", index.getRevisionRefs().size());
 			f.format("Dirty          %s\n", index.isDirty());
 
-			return f.toString();
+			return f.toString().trim();
 		}
 		finally {
 			f.close();
@@ -1108,7 +1108,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				else
 					sb.format("No description\n");
 				j.wrap((StringBuilder) sb.out());
-				return sb.toString();
+				return sb.toString().trim();
 			}
 			finally {
 				sb.close();
@@ -1137,7 +1137,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 			if (r.description != null)
 				sb.format("%s\n\n", r.description.replaceAll("#\\s*", ""));
-			
+
 			sb.format("Size: %s\n", size(r.size, 0));
 			sb.format("SHA-1: %s\n", Hex.toHexString(r.revision));
 			sb.format("Age: %s\n", age(r.created));
@@ -1154,7 +1154,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 				Runnable update = getUpdateAction(p, r);
 				if (update != null) {
-					sb.format(DOWN_ARROW + " This version can be updated to " + update);
+					sb.format("%c This version can be updated to %s\n", DOWN_ARROW, update);
 				}
 			}
 
@@ -1162,10 +1162,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			if (sources.isFile())
 				sb.format("Has sources: %s\n", sources.getAbsolutePath());
 			else
-				sb.format("No sources");
+				sb.format("No sources\n");
 
 			j.wrap((StringBuilder) sb.out());
-			return sb.toString();
+			return sb.toString().trim();
 		}
 		finally {
 			sb.close();
