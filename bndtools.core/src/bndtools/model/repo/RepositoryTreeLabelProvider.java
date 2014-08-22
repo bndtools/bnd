@@ -28,6 +28,7 @@ import bndtools.Plugin;
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
     private static final ILogger logger = Logger.getLogger(RepositoryTreeLabelProvider.class);
 
+    final Image arrowImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_down.png").createImage();
     final Image localRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database.png").createImage();
     final Image remoteRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database_link.png").createImage();
     final Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick.png").createImage();
@@ -93,7 +94,14 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         } else if (element instanceof RepositoryBundleVersion) {
             if (index == 0) {
                 RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
-                StyledString styledString = new StyledString(bundleVersion.getText(), StyledString.COUNTER_STYLER);
+                String versionText = bundleVersion.getText();
+                
+                if (versionText.contains(" \u21E9")) {
+                    versionText = versionText.replaceAll(" \u21E9", "");
+                    cell.setImage(arrowImg);
+                }
+
+                StyledString styledString = new StyledString(versionText, StyledString.COUNTER_STYLER);
                 cell.setText(styledString.getString());
                 cell.setStyleRanges(styledString.getStyleRanges());
             }
@@ -140,6 +148,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     @Override
     public void dispose() {
         super.dispose();
+        arrowImg.dispose();
         localRepoImg.dispose();
         remoteRepoImg.dispose();
         bundleImg.dispose();
