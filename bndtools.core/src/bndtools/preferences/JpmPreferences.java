@@ -11,16 +11,17 @@ public class JpmPreferences {
     public static final int PREF_BROWSER_WEBKIT = 0;
     public static final int PREF_BROWSER_MOZILLA = 1;
     public static final int PREF_BROWSER_EXTERNAL = 2;
+    public static final int PREF_BROWSER_PLATFORM_DEFAULT = 3;
 
     public static final String[] PREF_BROWSER_SELECTION_CHOICES = new String[] {
-            "Internal WebKit", "Internal Mozilla (requires XULRunner)", "External"
+            "Internal WebKit", "Internal Mozilla (requires XULRunner)", "External", "Platform Default"
     };
 
     private final IPreferenceStore store;
 
     public JpmPreferences() {
         store = Plugin.getDefault().getPreferenceStore();
-        store.setDefault(PREF_BROWSER_SELECTION, 0);
+        store.setDefault(PREF_BROWSER_SELECTION, PREF_BROWSER_PLATFORM_DEFAULT);
     }
 
     public int getBrowserSelection() {

@@ -85,7 +85,10 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
             //            linkToPrefs.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
             stack.topControl = composite;
         } else {
-            if (prefs.getBrowserSelection() == JpmPreferences.PREF_BROWSER_WEBKIT) {
+            if (prefs.getBrowserSelection() == JpmPreferences.PREF_BROWSER_PLATFORM_DEFAULT) {
+                browser = new Browser(parent, SWT.NONE);
+                stack.topControl = browser;
+            } else if (prefs.getBrowserSelection() == JpmPreferences.PREF_BROWSER_WEBKIT) {
                 browser = new Browser(parent, SWT.WEBKIT);
                 stack.topControl = browser;
             } else if (prefs.getBrowserSelection() == JpmPreferences.PREF_BROWSER_MOZILLA) {
