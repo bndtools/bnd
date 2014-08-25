@@ -1638,7 +1638,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		@Override
-		public Class< ? > loadClass(String name) throws NoClassDefFoundError {
+		public Class< ? > loadClass(String name) throws ClassNotFoundException {
 			try {
 				Class< ? > c = super.loadClass(name);
 				return c;
@@ -1652,7 +1652,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				sb.append(Arrays.toString(getURLs()));
 				sb.append(" exception:");
 				sb.append(t);
-				throw new NoClassDefFoundError(sb.toString());
+				throw new ClassNotFoundException(sb.toString(), t);
 			}
 		}
 	}
