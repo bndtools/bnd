@@ -8,7 +8,6 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.wizards.NewElementWizard;
-import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
 
 public class NewDSComponentWizard extends NewElementWizard {
 
@@ -18,7 +17,7 @@ public class NewDSComponentWizard extends NewElementWizard {
     public NewDSComponentWizard(NewDSComponentWizardPage page, boolean openEditorOnFinish) {
         setDefaultPageImageDescriptor(JavaPluginImages.DESC_WIZBAN_NEWCLASS);
         setDialogSettings(JavaPlugin.getDefault().getDialogSettings());
-        setWindowTitle(NewWizardMessages.NewClassCreationWizard_title);
+        setWindowTitle(Messages.NewDSComponentWizard_title);
 
         fPage = page;
         fOpenEditorOnFinish = openEditorOnFinish;
