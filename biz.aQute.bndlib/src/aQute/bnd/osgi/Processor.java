@@ -930,7 +930,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 							// ignore
 						}
 						if (fileMustExist)
-							error("Included file " + file + (file.exists() ? " does not exist" : " is directory"));
+							error("Included file " + file + (file.isDirectory() ? " is directory" : " does not exist" ));
 					} else
 						doIncludeFile(file, overwrite, p);
 				}
