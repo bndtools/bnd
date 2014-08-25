@@ -10,18 +10,14 @@
  *******************************************************************************/
 package bndtools.jareditor.internal;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -41,8 +37,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IURIEditorInput;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -51,15 +46,15 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class JARContentTreePart extends AbstractFormPart {
 
-    protected final IManagedForm managedForm;
+    protected final IManagedForm         managedForm;
 
-    private final Tree tree;
-    private final TreeViewer viewer;
+    private final Tree                   tree;
+    private final TreeViewer             viewer;
     private final JARTreeContentProvider contentProvider = new JARTreeContentProvider();
 
-    private String[] selectedPath = null;
+    private String[]                     selectedPath    = null;
 
-    public JARContentTreePart(Composite parent, IManagedForm managedForm) {
+    public JARContentTreePart(final Composite parent, final IManagedForm managedForm) {
         this.managedForm = managedForm;
 
         FormToolkit toolkit = managedForm.getToolkit();
@@ -77,7 +72,8 @@ public class JARContentTreePart extends AbstractFormPart {
 
         managedForm.addPart(this);
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            public void selectionChanged(SelectionChangedEvent event) {
+            @Override
+            public void selectionChanged(final SelectionChangedEvent event) {
                 JARContentTreePart.this.managedForm.fireSelectionChanged(JARContentTreePart.this, event.getSelection());
             }
         });
@@ -87,7 +83,7 @@ public class JARContentTreePart extends AbstractFormPart {
     }
 
     @Override
-    public void initialize(IManagedForm form) {
+    public void initialize(final IManagedForm form) {
         super.initialize(form);
     }
 
@@ -108,50 +104,57 @@ public class JARContentTreePart extends AbstractFormPart {
     private void refreshSelectedPath() {
         if (selectedPath != null) {
             TreePath treePath = contentProvider.findPath(selectedPath);
-            if (treePath != null)
+            if (treePath != null) {
                 viewer.setSelection(new TreeSelection(treePath), true);
-            else
+            }
+            else {
                 viewer.setSelection(TreeSelection.EMPTY);
+            }
         }
     }
 
     @Override
-    public boolean setFormInput(Object input) {
+    public boolean setFormInput(final Object input) {
         viewer.setInput(input);
         return false;
     }
 
-    void setSelectedPath(String[] path) {
+    void setSelectedPath(final String[] path) {
         selectedPath = path;
-        if (viewer != null && viewer.getInput() != null)
+        if ( (viewer != null) && (viewer.getInput() != null)) {
             refreshSelectedPath();
+        }
     }
 
     String[] getSelectedPath() {
         String[] result;
-        if (viewer.getSelection().isEmpty())
+        if (viewer.getSelection().isEmpty()) {
             result = null;
+        }
         else {
             TreeSelection selection = (TreeSelection) viewer.getSelection();
             TreePath treePath = selection.getPaths()[0];
             result = new String[treePath.getSegmentCount()];
-            for (int i = 0; i < result.length; i++)
+            for (int i = 0; i < result.length; i++) {
                 result[i] = treePath.getSegment(i).toString();
+            }
         }
         return result;
     }
 
     private static class JARTreeLabelProvider extends StyledCellLabelProvider {
 
-        private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
-        private final Image fileImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID, "/icons/file_obj.gif").createImage();
+        private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID,
+                                                                                   "/icons/fldr_obj.gif").createImage();
+        private final Image fileImg   = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID,
+                                                                                   "/icons/file_obj.gif").createImage();
 
         public JARTreeLabelProvider() {
             super();
         }
 
         @Override
-        public void update(ViewerCell cell) {
+        public void update(final ViewerCell cell) {
             ZipTreeNode node = (ZipTreeNode) cell.getElement();
 
             String name = node.toString();
@@ -160,11 +163,13 @@ public class JARContentTreePart extends AbstractFormPart {
 
             if (name.endsWith("/")) {
                 cell.setImage(folderImg);
-            } else {
+            }
+            else {
                 cell.setImage(fileImg);
                 ZipEntry entry = node.getZipEntry();
                 if (entry != null) {
-                    label.append(String.format(" [sz: %,d; crc: %d]", entry.getSize(), entry.getCrc()), StyledString.QUALIFIER_STYLER);
+                    label.append(String.format(" [sz: %,d; crc: %d]", entry.getSize(), entry.getCrc()),
+                                 StyledString.QUALIFIER_STYLER);
                 }
             }
 
@@ -188,74 +193,81 @@ public class JARContentTreePart extends AbstractFormPart {
             super();
         }
 
-        public Object[] getChildren(Object parentElement) {
+        @Override
+        public Object[] getChildren(final Object parentElement) {
             ZipTreeNode parentNode = (ZipTreeNode) parentElement;
             return parentNode.getChildren().toArray();
         }
 
-        public Object getParent(Object element) {
+        @Override
+        public Object getParent(final Object element) {
             return ((ZipTreeNode) element).getParent();
         }
 
-        public boolean hasChildren(Object element) {
+        @Override
+        public boolean hasChildren(final Object element) {
             return ((ZipTreeNode) element).hasChildren();
         }
 
-        public Object[] getElements(Object inputElement) {
+        @Override
+        public Object[] getElements(final Object inputElement) {
             return entryMap.values().toArray();
         }
 
-        public void dispose() {}
+        @Override
+        public void dispose() {
+        }
 
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        @Override
+        public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
             entryMap = new TreeMap<String,ZipTreeNode>();
-            URI uri = null;
-            if (newInput instanceof IFileEditorInput) {
-                IFile file = ((IFileEditorInput) newInput).getFile();
-                uri = file.getLocationURI();
-                if (!uri.getScheme().equals("file")) {
-                    uri = file.getLocation().toFile().toURI();
-                }
-            } else if (newInput instanceof IURIEditorInput) {
-                uri = ((IURIEditorInput) newInput).getURI();
-            }
-
+            final URI uri = URIHelper.retrieveFileURI((IEditorInput) newInput);
             if (uri != null) {
-                JarFile jarFile = null;
+                ZipInputStream zis = null;
                 try {
-                    File ioFile = new File(uri);
-                    jarFile = new JarFile(ioFile);
-
-                    Enumeration<JarEntry> entries = jarFile.entries();
-                    while (entries.hasMoreElements()) {
-                        ZipTreeNode.addEntry(entryMap, entries.nextElement());
+                    zis = new ZipInputStream(uri.toURL().openStream());
+                    ZipEntry entry;
+                    while ( (entry = zis.getNextEntry()) != null) {
+                        ZipTreeNode.addEntry(entryMap, entry);
                     }
-                } catch (IOException e) {
-                    Status status = new Status(IStatus.ERROR, PluginConstants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
+                    zis.close();
+                }
+                catch (IOException e) {
+                    Status status = new Status(IStatus.ERROR,
+                                               PluginConstants.PLUGIN_ID,
+                                               0,
+                                               "I/O error reading JAR file contents",
+                                               e);
                     ErrorDialog.openError(managedForm.getForm().getShell(), "Error", null, status);
-                } finally {
-                    try {
-                        if (jarFile != null) {
-                            jarFile.close();
+                }
+                finally {
+                    if (zis != null) {
+                        try {
+                            zis.close();
                         }
-                    } catch (IOException e) {}
+                        catch (IOException e) {
+                            // nothing to do
+                        }
+                    }
                 }
             }
         }
 
-        public TreePath findPath(String[] path) {
-            if (path == null || path.length == 0)
+        public TreePath findPath(final String[] path) {
+            if ( (path == null) || (path.length == 0)) {
                 return null;
+            }
 
             TreePath result = TreePath.EMPTY;
             ZipTreeNode current = entryMap.get(path[0]);
-            if (current == null)
+            if (current == null) {
                 return null;
+            }
             result = result.createChildPath(current);
 
             segments: for (int i = 1; i < path.length; i++) {
                 Collection<ZipTreeNode> children = current.getChildren();
-                for (ZipTreeNode child : children) {
+                for (ZipTreeNode child: children) {
                     if (path[i].equals(child.toString())) {
                         current = child;
                         result = result.createChildPath(child);

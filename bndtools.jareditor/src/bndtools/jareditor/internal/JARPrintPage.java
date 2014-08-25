@@ -12,9 +12,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 
@@ -51,13 +48,7 @@ public class JARPrintPage extends FormPage {
     public void refresh() {
         URI uri = null;
         try {
-            IEditorInput input = getEditorInput();
-            if (input instanceof IFileEditorInput) {
-                uri = ((IFileEditorInput) input).getFile().getLocationURI();
-            } else if (input instanceof IURIEditorInput) {
-                uri = ((IURIEditorInput) input).getURI();
-            }
-
+            uri = URIHelper.retrieveFileURI(getEditorInput());
             if (uri != null) {
                 text.setText(print(new File(uri)));
             }
