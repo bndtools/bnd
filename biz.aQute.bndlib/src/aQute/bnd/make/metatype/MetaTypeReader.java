@@ -67,6 +67,9 @@ public class MetaTypeReader extends WriteResource {
 
 	private void addMethod(MethodDef method, Meta.AD ad) throws Exception {
 
+		if ( method.isStatic())
+			return;
+		
 		// Set all the defaults.
 
 		String rtype = method.getGenericReturnType();

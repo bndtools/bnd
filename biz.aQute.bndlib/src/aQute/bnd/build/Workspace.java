@@ -220,8 +220,14 @@ public class Workspace extends Processor {
 	}
 
 	void removeProject(Project p) throws Exception {
+		if (p.isCnf())
+			return;
+		
 		synchronized (models) {
 			models.remove(p.getName());
+		}
+		for ( LifeCyclePlugin lp : getPlugins(LifeCyclePlugin.class)) {
+			lp.delete(p);
 		}
 	}
 
@@ -929,6 +935,7 @@ public class Workspace extends Processor {
 		File cnf = IO.getFile(wsdir, CNFDIR);
 		cnf.mkdir();
 		IO.store("", new File(cnf, BUILDFILE));
+		IO.store("-nobundles: true\n", new File(cnf, Project.BNDFILE));
 		File ext = new File(cnf, EXT);
 		ext.mkdir();
 		Workspace ws = getWorkspace(wsdir);
@@ -993,6 +1000,7 @@ public class Workspace extends Processor {
 			String out = setup.toString();
 			if ( l instanceof LifeCyclePlugin ) {
 				out = ((LifeCyclePlugin) l).augmentSetup(out, alias, parameters);
+				((LifeCyclePlugin) l).init(this);
 			}
 
 			trace("setup %s", out);

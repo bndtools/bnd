@@ -23,6 +23,10 @@ public class EclipsePlugin extends LifeCyclePlugin {
 	}
 
 	private void copy(String source, String dest, Project p) throws IOException {
+		File d = p.getFile(dest);
+		if ( d.isFile()) {
+			return;
+		}
 
 		File f = p.getWorkspace().getFile("eclipse/" + source + ".tmpl");
 		InputStream in;
@@ -40,7 +44,6 @@ public class EclipsePlugin extends LifeCyclePlugin {
 		String s = IO.collect(in);
 		String process = p.getReplacer().process(s);
 		
-		File d = p.getFile(dest);
 		d.getParentFile().mkdirs();
 		IO.store( process, d);
 	}
@@ -49,4 +52,17 @@ public class EclipsePlugin extends LifeCyclePlugin {
 	public String toString() {
 		return "EclipsePlugin";
 	}
+
+	@Override 
+	public void init(Workspace ws) throws Exception {
+		
+		Project p = new Project(ws,ws.getFile("cnf"));
+		created(p);
+		
+		for ( Project pp : ws.getAllProjects()) {
+			created(pp);
+		}
+	}
+	
+
 }

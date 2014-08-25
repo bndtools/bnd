@@ -14,8 +14,8 @@ public class OSInformation {
 
 	static private String	regexQualifierNotAllowedChars	= "[^\\p{Alnum}-_]";
 	static private Pattern	digitPattern					= Pattern.compile("(\\d+).*");
-	
-	final static  String[][] processorFamilies = {
+
+	final static String[][]	processorFamilies				= {
 		new String[] {"x86-64", "amd64", "em64t", "x86_64"},
 		new String[] {"x86", "pentium", "i386", "i486", "i586", "i686"},
 		new String[] {"68k"},
@@ -34,13 +34,13 @@ public class OSInformation {
 		new String[] {"Sparcv9"},
 		new String[] {"S390"},
 		new String[] {"V850e"},
-	};
-	static String[] osarch =getProcessorAliases( System.getProperty("os.arch"));
-	
-	public static String[] getProcessorAliases( String osArch) {
-		for ( String[] pnames : processorFamilies) {
-			for ( String pname : pnames) 
-				if ( pname.equalsIgnoreCase(osArch))
+															};
+	static String[]			osarch							= getProcessorAliases(System.getProperty("os.arch"));
+
+	public static String[] getProcessorAliases(String osArch) {
+		for (String[] pnames : processorFamilies) {
+			for (String pname : pnames)
+				if (pname.equalsIgnoreCase(osArch))
 					return pnames;
 		}
 		return null;
@@ -112,7 +112,7 @@ public class OSInformation {
 
 		if (s.length() != 0) {
 			String qualifier = s.replaceAll(regexQualifierNotAllowedChars, "_");
-			osversion = new Version(osversion.getMajor(), osversion.getMinor(),osversion.getMicro(),  qualifier);
+			osversion = new Version(osversion.getMajor(), osversion.getMinor(), osversion.getMicro(), qualifier);
 		}
 	}
 
@@ -131,7 +131,10 @@ public class OSInformation {
 		}
 
 		if (sysPropOsName.startsWith("Windows")) {
-			if (sysPropOsVersion.startsWith("6.2")) {
+			if (sysPropOsVersion.startsWith("6.3")) {
+				osversion = new Version(6, 3, 0);
+				osnames = "Windows8.1,Windows 8.1,Win32";
+			} else if (sysPropOsVersion.startsWith("6.2")) {
 				osversion = new Version(6, 2, 0);
 				osnames = "Windows8,Windows 8,Win32";
 			} else if (sysPropOsVersion.startsWith("6.1")) {
@@ -146,7 +149,7 @@ public class OSInformation {
 			} else {
 				throw new IllegalArgumentException(
 						String.format(
-								"Unrecognised or unsupported Windows version while processing ${native_capability} macro: %s version %s. Supported: XP, Vista, Win7, Win8.",
+								"Unrecognised or unsupported Windows version while processing ${native_capability} macro: %s version %s. Supported: XP, Vista, Win7, Win8., Win8.1",
 								sysPropOsName, sysPropOsVersion));
 			}
 

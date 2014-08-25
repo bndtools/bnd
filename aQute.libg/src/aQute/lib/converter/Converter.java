@@ -488,6 +488,15 @@ public class Converter {
 				if (o == null)
 					o = properties.get(mangleMethodName(method.getName()));
 
+
+				if ( o == null) {
+					if ( args!=null && args.length == 1 ) {
+						o = args[0];
+					} else {
+						o = method.getDefaultValue();
+					}
+				}
+
 				return convert(method.getGenericReturnType(), o);
 			}
 
