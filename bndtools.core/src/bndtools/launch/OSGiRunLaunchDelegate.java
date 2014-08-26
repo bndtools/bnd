@@ -263,11 +263,6 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                         });
                     }
 
-                    // Was the target path included in the delta? This might
-                    // mean that sub-bundles have changed
-                    boolean targetPathChanged = event.getDelta().findMember(targetPath) != null;
-                    update.compareAndSet(false, targetPathChanged);
-
                     if (update.get()) {
                         project.forceRefresh();
                         project.setChanged();
