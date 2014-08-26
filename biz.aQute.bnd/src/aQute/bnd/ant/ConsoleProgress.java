@@ -5,7 +5,7 @@ import aQute.bnd.service.progress.*;
 public class ConsoleProgress implements ProgressPlugin {
 
 	public Task startTask(String name, int size) {
-		System.out.printf(name);
+		System.out.print(name);
 		return new Task() {
 			public void worked(int units) {
 				// TODO
