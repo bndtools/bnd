@@ -27,6 +27,7 @@ public class FileRepoTest extends TestCase {
 	private FileRepo	testRepo;
 	private FileRepo	nonExistentRepo;
 	private FileRepo	indexedRepo;
+	private File		tmp;
 
 	private String hashToString(byte[] hash) {
 		Formatter formatter = new Formatter();
@@ -53,7 +54,7 @@ public class FileRepoTest extends TestCase {
 		nonExistentDir.setReadOnly();
 		nonExistentRepo = createRepo(nonExistentDir);
 
-		File tmp = IO.getFile("tmp");
+		tmp = IO.getFile("tmp" + getName());
 		tmp.mkdir();
 
 		indexedRepo = createRepo(tmp, MAP.$("index", "true"));
@@ -63,7 +64,6 @@ public class FileRepoTest extends TestCase {
 	protected void tearDown() throws Exception {
 		File nonExistentDir = IO.getFile("invalidrepo");
 		delete(nonExistentDir);
-		File tmp = IO.getFile("tmp");
 		IO.delete(tmp);
 
 	}
@@ -199,7 +199,6 @@ public class FileRepoTest extends TestCase {
 	}
 
 	public void testDownloadListenerCallback() throws Exception {
-		File tmp = IO.getFile("tmp");
 		try {
 			FileRepo repo = new FileRepo("tmp", tmp, true);
 			File srcBundle = IO.getFile("testresources/test.jar");
@@ -247,7 +246,7 @@ public class FileRepoTest extends TestCase {
 	public void testCommands() throws Exception {
 		
 		FileRepo repo = new FileRepo();
-		File root = new File("tmp");
+		File root = tmp;
 		delete(root);
 
 		try {
