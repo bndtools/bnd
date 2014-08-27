@@ -17,7 +17,7 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	osgi.cmpn;version=4.3.1,\
 	osgi.r5;version=1.0.1,\
 	javax.xml.stream-1.0.1.jar;version=file,\
-	ee.j2se;version='[1.6,1.7)',\
+	ee.j2se;version=${javac.ee},\
 	${jetty.libs},\
 	aQute.jpm.bndrepo;version=1.0
 -testpath: \
