@@ -1,14 +1,16 @@
+javac.source = 1.5
+javac.target = 1.5
+javac.ee = '[1.5,1.6)'
+
 -buildpath: com.springsource.org.junit;version='[4.11,5)',\
 	osgi.cmpn;version=4.3.1,\
 	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.3.1,\
-	ee.j2se;version=1.5
+	ee.j2se;version=${javac.ee}
 	
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
-javac.source = 1.5
-javac.target = 1.5
 
 Private-Package: aQute.junit.*,\
 	junit.*,\

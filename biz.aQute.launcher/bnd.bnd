@@ -1,7 +1,11 @@
+javac.source = 1.5
+javac.target = 1.5
+javac.ee = '[1.5,1.6)'
+
 -buildpath: biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.3.1,\
-	ee.j2se;version=1.5
+	ee.j2se;version=${javac.ee}
 #	ee.minimum;version=1.2.1
 -testpath: \
 	junit.osgi;version=3.8.2
@@ -12,7 +16,5 @@ Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 Private-Package: aQute.launcher.*
 	
 Bundle-Version: 1.4.0.${tstamp}
-javac.source = 1.5
-javac.target = 1.5
 
 Premain-Class: aQute.launcher.agent.LauncherAgent
