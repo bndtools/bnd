@@ -88,7 +88,6 @@ public class BundleTree extends Composite {
 		sashForm = new SashForm(this, SWT.VERTICAL);
 		sashForm.setLayout(createGridLayout());
         sashForm.setLayoutData(createFillGridData());
-		sashForm.setSashWidth(10);
 
 		createInfoViewer(sashForm);
 
@@ -185,11 +184,12 @@ public class BundleTree extends Composite {
 
 	private void createButtons(Composite parent) {
 
-	    GridLayout gridLayout = createGridLayout();
-	    gridLayout.numColumns = 2;
+	    GridLayout gridLayout = new GridLayout(3, false);
+	    gridLayout.marginWidth = 0;
 
 	    Composite composite = new Composite(parent, SWT.NONE);
 	    composite.setLayout(gridLayout);
+	    
 	    GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
 	    gridData.grabExcessHorizontalSpace = true;
 	    composite.setLayoutData(gridData);
@@ -223,23 +223,19 @@ public class BundleTree extends Composite {
 				}
 			}
 		});
+		
+        gridData = new GridData(SWT.END, SWT.CENTER, true, true);
 
-		Composite dropdown = new Composite(composite, SWT.NONE);
-		gridLayout = createGridLayout();
-		gridLayout.numColumns = 2;
-		dropdown.setLayout(gridLayout);
-        gridData = createFillGridData();
-        gridData.grabExcessVerticalSpace = false;
-        gridData.horizontalAlignment = SWT.RIGHT;
-        gridData.grabExcessHorizontalSpace = true;
-	    dropdown.setLayoutData(gridData);
-
-	    Label label = new Label(dropdown, SWT.NONE);
+	    Label label = new Label(composite, SWT.NONE);
 	    label.setText(Messages.releaseOption);
+	    label.setLayoutData(gridData);
 
-		options = new Combo(dropdown, SWT.DROP_DOWN | SWT.READ_ONLY);
-		String items[] = { Messages.updateVersionsAndRelease, Messages.updateVersions, Messages.release };
-		options.setItems(items);
+		options = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
+		options.setItems(new String[] {
+		        Messages.updateVersionsAndRelease,
+		        Messages.updateVersions,
+		        Messages.release
+		});
 		options.add(Messages.comboSelectText, 0);
 		options.select(0);
 
@@ -416,6 +412,7 @@ public class BundleTree extends Composite {
 	public ReleaseOption getReleaseOption() {
 	    return ReleaseOption.parse(options.getText());
 	}
+
     private static GridLayout createGridLayout() {
         GridLayout gridLayout = new GridLayout();
         gridLayout.numColumns = 1;

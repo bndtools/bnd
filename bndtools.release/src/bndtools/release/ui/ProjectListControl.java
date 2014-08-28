@@ -20,7 +20,6 @@ import org.bndtools.utils.swt.FilterPanelPart;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.ColumnPixelData;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
@@ -35,11 +34,15 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -48,7 +51,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
@@ -83,17 +85,20 @@ public class ProjectListControl {
         this.selectionListener = selectionListener;
         this.releaseRepos = releaseRepos;
 
-        COLOR_VERSION_UPDATE_REQUIRED = new Color(Display.getCurrent(), 250, 85, 125);
-        COLOR_RELEASE_REQUIRED = new Color(Display.getCurrent(), 100, 250, 100);
+        COLOR_VERSION_UPDATE_REQUIRED = new Color(Display.getCurrent(), 247, 200, 200);
+        COLOR_RELEASE_REQUIRED = new Color(Display.getCurrent(), 206, 255, 206);
     }
 
     public void createControl(final Composite parent) {
 
         createFilter(parent);
+        
+        GridLayout gridLayout = new GridLayout(1, false);
+        gridLayout.marginWidth = 0;
 
         // Create the composite
         Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(1, false));
+        composite.setLayout(gridLayout);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         createTableLayout(composite);
@@ -104,7 +109,7 @@ public class ProjectListControl {
 
         Composite composite = new Composite(parent, SWT.NONE);
         GridLayout gridLayout = new GridLayout(2, false);
-        gridLayout.marginHeight = 0;
+        gridLayout.marginHeight = gridLayout.marginWidth = 0;
         gridLayout.horizontalSpacing = 0;
         gridLayout.verticalSpacing = 0;
 
@@ -194,20 +199,20 @@ public class ProjectListControl {
         // Project
         TableViewerColumn tableViewerColumn = new TableViewerColumn(tableViewer, SWT.LEFT);
         TableColumn tableCol = tableViewerColumn.getColumn();
-        layout.setColumnData(tableCol, new ColumnWeightData(20, 100, true));
+        layout.setColumnData(tableCol, new ColumnWeightData(60, 100, true));
         tableCol.setText(Messages.project1);
 
         // Repository
         tableViewerColumn = new TableViewerColumn(tableViewer, SWT.LEFT);
         tableCol = tableViewerColumn.getColumn();
-        layout.setColumnData(tableCol, new ColumnWeightData(15, 80, true));
+        layout.setColumnData(tableCol, new ColumnWeightData(26, 80, true));
         tableCol.setText(Messages.repository);
         tableViewerColumn.setEditingSupport(new InlineComboEditingSupport(tableViewer));
 
         // Bundles
         tableViewerColumn = new TableViewerColumn(tableViewer, SWT.CENTER);
         tableCol = tableViewerColumn.getColumn();
-        layout.setColumnData(tableCol, new ColumnPixelData(35, true, true));
+        layout.setColumnData(tableCol, new ColumnWeightData(14, 35, true));
         tableCol.setText(Messages.bundles);
 
         contentProvider = new ContentProvider();
@@ -225,12 +230,42 @@ public class ProjectListControl {
                 return diff.isRelease();
             }
         });
+        
+        projects.pack();
 
         TableSortingEnabler.applyTableColumnSorting(tableViewer);
     }
+    
+    private Image createSmallIcon(Display display) {
+        Point[] iconSizes = display.getIconSizes();
+        Point chosen = null;
+        
+        if (iconSizes.length == 0) {
+            chosen = new Point(16, 16);
+        } else {
+            chosen = iconSizes[0];
+        }
+
+        return new Image(display, chosen.x, chosen.y);
+    }
+    
+    private Image createSolidIcon(Display display, Color color)
+    {
+        Image img = createSmallIcon(display);
+
+        GC gc = new GC(img);
+        gc.setBackground(color);
+        gc.fillRectangle(img.getBounds());
+        gc.dispose();
+        
+        return img;
+    }
 
     private void createLegend(Composite parent) {
-
+        
+        final Image updateRequiredImage = createSolidIcon(parent.getDisplay(), COLOR_VERSION_UPDATE_REQUIRED);
+        final Image releaseRequiredImage = createSolidIcon(parent.getDisplay(), COLOR_RELEASE_REQUIRED);
+        
         Composite composite = new Composite(parent, SWT.NONE);
         GridLayout gridLayout = new GridLayout(2, false);
         gridLayout.verticalSpacing = 2;
@@ -242,21 +277,27 @@ public class ProjectListControl {
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
         gridData.grabExcessHorizontalSpace = true;
         composite.setLayoutData(gridData);
+        
+        Label l = new Label(composite, SWT.BORDER);
+        l.setImage(updateRequiredImage);
+        l.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                updateRequiredImage.dispose();
+            }
+        });
 
-        Text t = new Text(composite, SWT.BORDER | SWT.MULTI);
-        t.setSize(5, 5);
-        t.setBackground(COLOR_VERSION_UPDATE_REQUIRED);
-        t.setEditable(false);
-        t.setText(" ");
-
-        Label l = new Label(composite, SWT.NONE);
+        l = new Label(composite, SWT.NONE);
         l.setText(Messages.versionUpdateRequired);
-
-        t = new Text(composite, SWT.BORDER | SWT.MULTI);
-        t.setSize(5, 5);
-        t.setBackground(COLOR_RELEASE_REQUIRED);
-        t.setEditable(false);
-        t.setText(" ");
+        
+        l = new Label(composite, SWT.BORDER);
+        l.setImage(releaseRequiredImage);
+        l.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                releaseRequiredImage.dispose();
+            }
+        });
 
         l = new Label(composite, SWT.NONE);
         l.setText(Messages.releaseRequired);
