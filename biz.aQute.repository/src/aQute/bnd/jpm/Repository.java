@@ -1303,7 +1303,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 * @throws Exception
 	 */
 	Runnable getUpdateAction(Program program, String bsn) throws Exception {
-		final Set<Runnable> update = new TreeSet<Runnable>();
+		final List<Runnable> update = new ArrayList<Runnable>();
 		for (Version v : index.getVersions(bsn)) {
 			RevisionRef resource = index.getRevisionRef(bsn, v);
 			Runnable updateAction = getUpdateAction(program, resource);
