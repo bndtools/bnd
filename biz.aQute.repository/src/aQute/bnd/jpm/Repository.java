@@ -1276,7 +1276,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 */
 
 	void updateAll() throws Exception {
-		for (String bsn : index.getBsns()) {
+		for (String bsn : new ArrayList<String>(index.getBsns())) {
 			update(bsn);
 		}
 	}
