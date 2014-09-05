@@ -35,3 +35,11 @@ on your system.
 bndtools is continuously built and released on [CloudBees](https://bndtools.ci.cloudbees.com/).
 
 [![Built on DEV@cloud](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](http://www.cloudbees.com/foss/foss-dev.cb)
+
+## Contributing
+
+Want to hack on bndtools? There are [instructions](CONTRIBUTING.md) to get you
+started.
+
+They are probably not perfect, please let us know if anything feels
+wrong or incomplete.
