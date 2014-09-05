@@ -48,22 +48,45 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 		this.projectDiffs = projectDiffs;
 		this.showMessage = showMessage;
 	}
+	
+	@Override
+	protected void configureShell(Shell newShell) {
+	    super.configureShell(newShell);
+	    newShell.setText(Messages.releaseDialogTitle);
+	    newShell.setImage(Activator.getImageDescriptor("icons/lorry.png").createImage());
 
+	    int width = 640, height = 480;
+	    int top = -1, left = -1;
+	    
+	    Shell parent = (Shell) newShell.getParent();
+	    
+	    if (parent != null) {
+	        Point parentSize = parent.getSize();
+	        Point parentLocation = parent.getLocation();
+	        
+            width = Math.max(Double.valueOf(parentSize.x * 0.8).intValue(), 640);
+            height = Math.max(Double.valueOf(parentSize.y * 0.8).intValue(), 480);
+            
+            top = parentLocation.y + ((parentSize.y - height) / 2);
+            left = parentLocation.x + ((parentSize.x - width) / 2);
+	    }
+	    
+	    newShell.setSize(width, height);
+
+	    if (top != -1 && left != -1) {
+	        newShell.setLocation(left, top);
+	    }
+	}
+	
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite composite = (Composite) super.createDialogArea(parent);
 
 		GridData gridData = createFillGridData();
 
-		/* take 80% of the application window or 800x500 if that's bigger */
-		Point size = getParentShell().getSize();
-		gridData.widthHint = Math.max(Double.valueOf(size.x * 0.8).intValue(), 800);
-		gridData.heightHint = Math.max(Double.valueOf(size.y * 0.8).intValue(), 500);
-
 	    sashForm = new SashForm(composite, SWT.HORIZONTAL);
 	    sashForm.setLayout(createGridLayout());
 	    sashForm.setLayoutData(gridData);
-	    sashForm.setSashWidth(10);
 
 	    Composite left = new Composite(sashForm, SWT.NONE);
 	    left.setLayout(createGridLayout());
@@ -83,6 +106,8 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 		projectListControl.setInput(projectDiffs);
 
         sashForm.setWeights(new int[] { 40, 60 });
+        
+        sashForm.pack();
 
 		return sashForm;
 	}
