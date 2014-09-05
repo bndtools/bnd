@@ -183,7 +183,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				Writer report = getReportWriter(reportDir, bundle);
 				try {
 					trace("test will run");
-					result += test(bundle, (String) bundle.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES), report);
+					result += test(bundle, bundle.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES), report);
 					trace("test ran");
 					if (queue.isEmpty() && !continuous) {
 						trace("queue " + queue);
@@ -204,7 +204,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	void checkBundle(List<Bundle> queue, Bundle bundle) {
 		if (bundle.getState() == Bundle.ACTIVE) {
-			String testcases = (String) bundle.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES);
+			String testcases = bundle.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES);
 			if (testcases != null) {
 				trace("found active bundle with test cases %s : %s", bundle, testcases);
 				synchronized (queue) {
@@ -549,9 +549,9 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	public void trace(String msg, Object... objects) {
-		//if (trace) {
+		if (trace) {
 			message("# ", msg, objects);
-		//}
+		}
 	}
 
 	private void message(String prefix, String string, Object[] objects) {
