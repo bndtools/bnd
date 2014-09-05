@@ -86,8 +86,8 @@ public class R5LabelFormatter {
             if (versionAttributeName != null) {
                 Object version = cap.getAttributes().get(versionAttributeName);
                 if (version != null) {
-                    label.append("," + versionAttributeName, StyledString.QUALIFIER_STYLER);
-                    label.append(version.toString(), UIConstants.BOLD_COUNTER_STYLER);
+                    label.append(", " + versionAttributeName, StyledString.QUALIFIER_STYLER);
+                    label.append(" " + version.toString(), UIConstants.BOLD_COUNTER_STYLER);
                 }
             }
         } else {
@@ -101,7 +101,7 @@ public class R5LabelFormatter {
             String key = entry.getKey();
             if (!key.equals(ns) && !key.equals(versionAttributeName)) {
                 if (!first)
-                    label.append(",", StyledString.QUALIFIER_STYLER);
+                    label.append(", ", StyledString.QUALIFIER_STYLER);
                 first = false;
                 label.append(key + "=", StyledString.QUALIFIER_STYLER);
                 label.append(entry.getValue() != null ? entry.getValue().toString() : "<null>", StyledString.QUALIFIER_STYLER);
