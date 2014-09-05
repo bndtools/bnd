@@ -1,10 +1,5 @@
 # Contributing to bnd
 
-*The following is a newly proposed development process. We plan to move the bnd
-project to use the triangular workflow and the developer certificate of origin
-in about 4 weeks. If you have any comments on this proposed process change,
-please add them to the [Request for Comments](https://github.com/bndtools/bnd/issues/536).*
-
 Want to hack on bnd? Here are instructions to get you
 started. They are probably not perfect, please let us know if anything
 feels wrong or incomplete.
@@ -23,7 +18,7 @@ This information will help us review and fix your issue faster.
 The only thing you need to build bnd is Java. We use Java 7 but most
 projects only require Java 6. We use Gradle to build and The repo 
 includes `gradlew` but you can use your system `gradle` but we require 
-at least version 1.12.
+at least version 2.0.
 
 `gradle`              - Assembles, tests and releases the projects into dist/bundles  
 `gradle :dist:build`  - Assembles and tests the projects  
