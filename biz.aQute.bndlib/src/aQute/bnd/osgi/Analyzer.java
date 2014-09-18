@@ -1063,6 +1063,9 @@ public class Analyzer extends Processor {
 				continue;
 			if (directory.equals("/"))
 				continue;
+			Map<String, Resource> resources = map.get(directory);
+			if (resources == null || resources.isEmpty())
+				continue;
 
 			if (directory.endsWith("/"))
 				directory = directory.substring(0, directory.length() - 1);
