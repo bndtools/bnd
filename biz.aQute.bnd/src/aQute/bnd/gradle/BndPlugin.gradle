@@ -279,22 +279,24 @@ public class BndPlugin implements Plugin<Project> {
         classpath = compileJava.classpath
       }
 
-      tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file to a runnable jar.') { taskName ->
+      tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file to an executable jar.') { taskName ->
         if (taskName.startsWith('export.')) {
           def bndrun = taskName - 'export.'
           task(taskName) {
-            description "Export the ${bndrun}.bndrun file to a runnable jar."
+            description "Export the ${bndrun}.bndrun file to an executable jar."
             dependsOn assemble
             group 'export'
             def runFile = file("${bndrun}.bndrun")
-            def exportFile = new File(distsDir, "${bndrun}.jar")
+            def executableJar = new File(distsDir, "executable/${bndrun}.jar")
+            doFirst {
+              project.mkdir(executableJar.parent)
+            }
             doLast {
-              distsDir.mkdirs()
-              logger.info "Exporting: ${runFile.absolutePath} to ${exportFile.absolutePath}"
+              logger.info "Exporting ${runFile.absolutePath} to ${executableJar.absolutePath}"
               try {
-                bndProject.export(relativePath(runFile), false, exportFile)
+                bndProject.export(relativePath(runFile), false, executableJar)
               } catch (Exception e) {
-                throw new GradleException("Export of ${runFile} failed", e)
+                throw new GradleException("Export of ${runFile.absolutePath} to an executable jar failed", e)
               }
               checkErrors()
             }
