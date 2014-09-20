@@ -314,6 +314,42 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
+      tasks.addRule('Pattern: runbundles.<name>: Create a distribution of the runbundles in <name>.bndrun file.') { taskName ->
+        if (taskName.startsWith('runbundles.')) {
+          def bndrun = taskName - 'runbundles.'
+          task(taskName) {
+            description "Create a distribution of the runbundles in the ${bndrun}.bndrun file."
+            dependsOn assemble
+            group 'export'
+            def runFile = file("${bndrun}.bndrun")
+            def runbundlesDir = new File(distsDir, "runbundles/${bndrun}")
+            doFirst {
+              project.delete(runbundlesDir)
+              project.mkdir(runbundlesDir)
+            }
+            doLast {
+              logger.info "Creating a distribution of the runbundles in ${runFile.absolutePath} in directory ${runbundlesDir.absolutePath}"
+              try {
+                  bndProject.exportRunbundles(relativePath(runFile), runbundlesDir)
+              } catch (Exception e) {
+                throw new GradleException("Creating a distribution of the runbundles in ${runFile.absolutePath} failed", e)
+              }
+              checkErrors()
+            }
+          }
+        }
+      }
+
+      task('runbundles') {
+        description "Create a distribution of the runbundles in each of the bndrun files."
+        group 'export'
+        fileTree(projectDir) {
+            include '*.bndrun'
+        }.each {
+          dependsOn tasks.getByPath("runbundles.${it.name - '.bndrun'}")
+        }
+      }
+
       task('echo') {
         description 'Displays the bnd project information.'
         group 'help'

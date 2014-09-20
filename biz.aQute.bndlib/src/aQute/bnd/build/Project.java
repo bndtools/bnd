@@ -1638,6 +1638,33 @@ public class Project extends Processor {
 			IO.close(outStream);
 		}
 	}
+	
+	/**
+	 * @since 2.4
+	 */
+	@SuppressWarnings("resource")
+	public void exportRunbundles(String runFilePath, File outputDir) throws Exception {
+		prepare();
+
+		Project packageProject;
+		if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
+			packageProject = this;
+		} else {
+			File runFile = new File(getBase(), runFilePath);
+			if (!runFile.isFile())
+				throw new IOException(String.format("Run file %s does not exist (or is not a file).",
+						runFile.getAbsolutePath()));
+			packageProject = new Project(getWorkspace(), getBase(), runFile);
+			packageProject.setParent(this);
+		}
+
+		packageProject.clear();
+		Collection<Container> runbundles = packageProject.getRunbundles();
+		for (Container container : runbundles) {
+			File bundle = container.getFile();
+			IO.copy(bundle, new File(outputDir, bundle.getName()));
+		}
+	}
 
 	/**
 	 * Release.
