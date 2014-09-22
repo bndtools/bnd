@@ -68,8 +68,8 @@ public class ResolveOperation implements IRunnableWithProgress {
             //
 
             File resource = model.getBndResource();
-            Project project = Central.getProject(resource.getParentFile());
             if (model.isProjectFile()) {
+                Project project = Central.getProject(resource.getParentFile());
                 //
                 // run's in projects are based on the project
                 // and implicitly the ws
