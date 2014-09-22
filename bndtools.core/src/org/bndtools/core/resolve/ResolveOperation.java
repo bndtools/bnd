@@ -79,7 +79,7 @@ public class ResolveOperation implements IRunnableWithProgress {
                 //
                 // run's in bndrun files are the bndrun + workspace
                 //
-                Run run = new Run(project.getWorkspace(), project.getBase(), resource);
+                Run run = new Run(Central.getWorkspace(), resource.getParentFile(), resource);
                 model.setProject(run);
             }
 
