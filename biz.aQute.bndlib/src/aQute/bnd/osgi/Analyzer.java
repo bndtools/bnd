@@ -1026,8 +1026,18 @@ public class Analyzer extends Processor {
 				value = projectName;
 			} else if (value.endsWith(".bnd")) {
 				value = value.substring(0, value.length() - 4);
-				if (!value.startsWith(getBase().getName()))
-					value = projectName + "." + value;
+				
+				//
+				// This basically unknown feature allowed you to 
+				// define a sub-bundle that specified a name that used the
+				// project name as a prefix, the project prefix would then
+				// be skipped. This caused several problems in practice
+				// and we actually did not take this into account in other
+				// places.
+				//
+				
+				//if (!value.startsWith(getBase().getName()))
+				value = projectName + "." + value;
 			}
 		}
 
