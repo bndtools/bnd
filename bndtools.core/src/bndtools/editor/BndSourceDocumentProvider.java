@@ -10,4 +10,10 @@ public class BndSourceDocumentProvider extends TextFileDocumentProvider {
     protected IAnnotationModel createAnnotationModel(IFile file) {
         return new BndResourceMarkerAnnotationModel(file);
     }
+
+    @Override
+    public String getDefaultEncoding() {
+        return "UTF-8";
+    }
+
 }
