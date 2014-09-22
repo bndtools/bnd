@@ -240,12 +240,14 @@ public class MavenEntry implements Closeable {
 	private void saveProperties() throws IOException {
 		if (propertiesChanged) {
 			FileOutputStream fout = new FileOutputStream(propertiesFile);
+			OutputStreamWriter osw = new OutputStreamWriter(fout);
 			try {
-				properties.store(fout, "");
+				properties.store(osw, "");
 			}
 			finally {
 				properties = null;
 				propertiesChanged = false;
+				osw.close();
 				fout.close();
 			}
 		}

@@ -1211,6 +1211,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 	}
 
+	/**
+	 * Load Properties from disk. The default encoding is ISO-8859-1 but nowadays all files 
+	 * are encoded with UTF-8. So we try to load it first as UTF-8 and if this fails we fail
+	 * back to ISO-8859-1
+	 * 
+	 * @param in The stream to load from
+	 * @param name The name of the file for doc reasons
+	 * @return a Properties
+	 * @throws IOException
+	 */
 	Properties loadProperties(InputStream in, String name) throws IOException {
 		int n = name.lastIndexOf('/');
 		if (n > 0)
@@ -1219,8 +1229,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			name = ".";
 
 		try {
+			byte[] bin = IO.read(in);
+			InputStreamReader ir = new InputStreamReader(new ByteArrayInputStream(bin), "UTF-8");
 			Properties p = new Properties();
-			p.load(in);
+			try {
+				p.load(ir);
+			} catch( Exception e) {
+				p = new Properties();
+				p.load(new ByteArrayInputStream(bin));
+			}
 			return replaceAll(p, "\\$\\{\\.\\}", name);
 		}
 		catch (Exception e) {

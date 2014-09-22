@@ -2716,8 +2716,15 @@ public class bnd extends Processor {
 				try {
 					if (opts.xml())
 						p.storeToXML(fout, "converted from " + from);
-					else
-						p.store(fout, "converted from " + from);
+					else {
+						OutputStreamWriter osw = new OutputStreamWriter(fout, "UTF-8");
+						try {
+							p.store(fout, "converted from " + from);
+						}
+						finally {
+							osw.close();
+						}
+					}
 				}
 				finally {
 					fout.close();
