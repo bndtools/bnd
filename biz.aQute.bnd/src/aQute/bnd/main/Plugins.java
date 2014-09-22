@@ -9,6 +9,7 @@ import aQute.bnd.annotation.plugin.*;
 import aQute.bnd.build.*;
 import aQute.bnd.header.*;
 import aQute.lib.getopt.*;
+import aQute.lib.utf8properties.*;
 
 /**
  * Combines plugin management commands
@@ -135,7 +136,7 @@ public class Plugins {
 			annotatedPlugins = new TreeMap<String,Class< ? >>();
 
 			InputStream in = bnd.class.getResourceAsStream("bnd.info");
-			Properties p = new Properties();
+			Properties p = new UTF8Properties();
 			p.load(in);
 			Parameters classes = new Parameters(p.getProperty("plugins"));
 			for (String cname : classes.keySet()) {

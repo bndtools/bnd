@@ -12,6 +12,7 @@ import javax.script.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
+import aQute.lib.utf8properties.*;
 
 /**
  * Provide a macro processor. This processor can replace variables in strings
@@ -1109,7 +1110,7 @@ public class Macro {
 		// do not report unknown macros while flattening
 		flattening = true;
 		try {
-			Properties flattened = new Properties();
+			Properties flattened = new UTF8Properties();
 			Properties source = domain.getProperties();
 			for (Enumeration< ? > e = source.propertyNames(); e.hasMoreElements();) {
 				String key = (String) e.nextElement();

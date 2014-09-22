@@ -16,6 +16,7 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.lib.settings.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.command.*;
 
 public class MavenCommand extends Processor {
@@ -136,7 +137,7 @@ public class MavenCommand extends Processor {
 	 */
 	private void bundle(String args[], int i) throws Exception {
 		List<String> developers = new ArrayList<String>();
-		Properties properties = new Properties();
+		Properties properties = new UTF8Properties();
 
 		String scm = null;
 		String passphrase = null;
@@ -429,7 +430,7 @@ public class MavenCommand extends Processor {
 		command.add(source.getAbsolutePath());
 
 		Attributes attr = m.getMainAttributes();
-		Properties pp = new Properties(p);
+		Properties pp = new UTF8Properties(p);
 		set(pp, "-doctitle", description(attr));
 		set(pp, "-header", description(attr));
 		set(pp, "-windowtitle", name(attr));

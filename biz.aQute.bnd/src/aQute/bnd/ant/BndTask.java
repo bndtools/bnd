@@ -12,6 +12,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.eclipse.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.qtokens.*;
 
 /**
@@ -216,7 +217,7 @@ public class BndTask extends BaseTask {
 				// get them and merge them with the project
 				// properties, if the inherit flag is specified
 				if (inherit) {
-					Properties projectProperties = new Properties();
+					Properties projectProperties = new UTF8Properties();
 					projectProperties.putAll((Map< ? , ? >) getProject().getProperties());
 					projectProperties.putAll(builder.getProperties());
 					builder.setProperties(projectProperties);

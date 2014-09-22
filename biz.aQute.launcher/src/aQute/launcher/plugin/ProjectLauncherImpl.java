@@ -13,6 +13,7 @@ import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.launcher.constants.*;
 import aQute.launcher.pre.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.cryptography.*;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
@@ -52,7 +53,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		LauncherConstants lc = getConstants(getRunBundles(), false);
 		
 		Method mainMethod = main.getMethod("main", args.getClass(), Properties.class);
-		Object o = mainMethod.invoke(null, (Object) args, lc.getProperties());
+		Object o = mainMethod.invoke(null, (Object) args, lc.getProperties(new UTF8Properties()));
 		if ( o == null)
 			return 0;
 		
@@ -103,7 +104,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		LauncherConstants lc = getConstants(getRunBundles(), false);
 		OutputStream out = new FileOutputStream(propertiesFile);
 		try {
-			lc.getProperties().store(out, "Launching " + project);
+			lc.getProperties(new UTF8Properties()).store(out, "Launching " + project);
 		}
 		finally {
 			out.close();
@@ -268,7 +269,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.embedded = !useShas;
 		lc.storageDir = null; // cannot use local info
 
-		final Properties p = lc.getProperties();
+		final Properties p = lc.getProperties(new UTF8Properties());
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		p.store(bout, "");

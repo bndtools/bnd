@@ -53,6 +53,7 @@ import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 import aQute.lib.strings.*;
 import aQute.lib.tag.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.classdump.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.forker.*;
@@ -2706,7 +2707,7 @@ public class bnd extends Processor {
 		if (opts.m2p()) {
 			FileInputStream in = new FileInputStream(from);
 			try {
-				Properties p = new Properties();
+				Properties p = new UTF8Properties();
 				Manifest m = new Manifest(in);
 				Attributes attrs = m.getMainAttributes();
 				for (Map.Entry<Object,Object> i : attrs.entrySet()) {

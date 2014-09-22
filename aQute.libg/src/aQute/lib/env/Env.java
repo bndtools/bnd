@@ -10,6 +10,7 @@ import java.util.regex.*;
 import aQute.lib.converter.*;
 import aQute.lib.io.*;
 import aQute.lib.properties.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.reporter.*;
 import aQute.libg.sed.*;
 
@@ -21,7 +22,7 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 	boolean					prepared;
 
 	public Env() {
-		this(new Properties(), null, null);
+		this(new UTF8Properties(), null, null);
 	}
 
 	public Env(Properties properties, Env parent, File base) {
@@ -36,7 +37,7 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 	}
 
 	public Env(Env env) {
-		this(new Properties(env.properties), env, null);
+		this(new UTF8Properties(env.properties), env, null);
 	}
 
 	public String process(String line) {

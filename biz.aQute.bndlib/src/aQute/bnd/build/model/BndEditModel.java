@@ -15,6 +15,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.properties.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.tuple.*;
 
 /**
@@ -63,7 +64,7 @@ public class BndEditModel {
 
 	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
 																										this);
-	private final Properties										properties					= new Properties();
+	private final Properties										properties					= new UTF8Properties();
 	private final Map<String,Object>								objectProperties			= new HashMap<String,Object>();
 	private final Map<String,String>								changesToSave				= new TreeMap<String,String>();
 	private Project													project;

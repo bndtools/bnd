@@ -20,6 +20,7 @@ import aQute.bnd.deployer.repository.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.resource.*;
 import aQute.bnd.service.resolve.hook.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.filters.*;
 import aQute.libg.filters.Filter;
 import biz.aQute.resolve.internal.*;
@@ -678,7 +679,7 @@ public class GenericResolveContext extends ResolveContext {
 		InputStream stream = FrameworkResourceRepository.class.getResourceAsStream(ee.name() + ".properties");
 		if (stream != null) {
 			try {
-				Properties properties = new Properties();
+				Properties properties = new UTF8Properties();
 				properties.load(stream);
 
 				Parameters params = new Parameters(properties.getProperty("org.osgi.framework.system.packages", ""));

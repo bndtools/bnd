@@ -77,17 +77,12 @@ public class Launcher implements ServiceListener {
 					if (in == null) {
 						printUsage();
 						errorAndExit("Launch file not specified, and no embedded properties found.");
+						return;
 					}
 				}
 
 				Properties properties = new Properties();
-				try {
-					properties.load(in);
-				}
-				finally {
-					if (in != null)
-						in.close();
-				}
+				load(in, properties);
 				Launcher target = new Launcher(properties, propertiesFile);
 				exitcode = target.run(args);
 			}
@@ -106,23 +101,36 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
+	static void load(final InputStream in, Properties properties) throws UnsupportedEncodingException,
+			IOException {
+		InputStreamReader ir = new InputStreamReader(in, "UTF-8");
+		try {
+			properties.load(ir);
+		}
+		finally {
+			ir.close();
+			in.close();
+		}
+	}
+
 	private static String getVersion() {
 		try {
 			Enumeration<URL> manifests = Launcher.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
 			StringBuilder sb = new StringBuilder();
 			String del = "";
-			for ( Enumeration<URL> u=manifests; u.hasMoreElements(); ) {
+			for (Enumeration<URL> u = manifests; u.hasMoreElements();) {
 				URL url = u.nextElement();
 				InputStream in = url.openStream();
 				try {
 					Manifest m = new Manifest(in);
-					String bsn =m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME); 
-					String version =m.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
-					if ( bsn != null && version != null) {
+					String bsn = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+					String version = m.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
+					if (bsn != null && version != null) {
 						sb.append(del).append(bsn).append(";version=").append(version);
 						del = ", ";
 					}
-				} finally {
+				}
+				finally {
 					in.close();
 				}
 			}
@@ -181,12 +189,7 @@ public class Launcher implements ServiceListener {
 						try {
 							FileInputStream in = new FileInputStream(propertiesFile);
 							Properties properties = new Properties();
-							try {
-								properties.load(in);
-							}
-							finally {
-								in.close();
-							}
+							load(in, properties);
 							parms = new LauncherConstants(properties);
 							update(now);
 						}
