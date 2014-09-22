@@ -151,6 +151,7 @@ public class StoredRevisionCache {
 				System.out.println(url);
 
 			}
+			urlc.setConnectTimeout(30000);
 			HttpURLConnection connection = (HttpURLConnection) urlc;
 			authenticate(connection);
 			if (connection.getResponseCode() / 100 == 2)
