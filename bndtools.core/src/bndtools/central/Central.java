@@ -318,7 +318,7 @@ public class Central implements IStartupParticipant {
         });
     }
 
-    public static boolean isCnfChanged(IResourceDelta delta) {
+    private static boolean isCnfChanged(IResourceDelta delta) {
 
         final AtomicBoolean result = new AtomicBoolean(false);
         try {
@@ -525,5 +525,9 @@ public class Central implements IStartupParticipant {
 
         Workspace ws = getWorkspace();
         return ws.getProject(projectDir.getName());
+    }
+
+    public static Project getProject(IProject p) throws Exception {
+        return getProject(p.getLocation().toFile());
     }
 }
