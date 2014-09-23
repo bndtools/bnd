@@ -15,20 +15,21 @@ public class MvnVersion implements Comparable<MvnVersion> {
 	public static final MvnVersion parseString(String versionStr) {
 		MvnVersion result;
 		
-		int dashIndex = versionStr.indexOf('-');
-		if (dashIndex < 0) {
-			result = new MvnVersion(Version.parseVersion(versionStr));
-		} else {
-			String qualifier = versionStr.substring(dashIndex + 1);
+		try {
+			int dashIndex = versionStr.indexOf('-');
+			if (dashIndex < 0) {
+				result = new MvnVersion(Version.parseVersion(versionStr));
+			} else {
+				String qualifier = versionStr.substring(dashIndex + 1);
 
-			try {
-				Version v = Version.parseVersion(versionStr.substring(0, dashIndex));
-				Version osgiVersion = new Version(v.getMajor(), v.getMinor(), v.getMicro(), qualifier);
+				Version v = Version.parseVersion(versionStr.substring(0,
+						dashIndex));
+				Version osgiVersion = new Version(v.getMajor(), v.getMinor(),
+						v.getMicro(), qualifier);
 				result = new MvnVersion(osgiVersion);
 			}
-			catch(IllegalArgumentException e) { // bad format
-				result = null;
-			}
+		} catch (IllegalArgumentException e) { // bad format
+			result = null;
 		}
 		return result;
 	}
