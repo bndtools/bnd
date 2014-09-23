@@ -1,10 +1,12 @@
 package biz.aQute.resolve;
+
 import static org.osgi.framework.namespace.BundleNamespace.*;
 import static org.osgi.framework.namespace.PackageNamespace.*;
 
 import java.io.*;
 import java.text.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 
 import org.osgi.framework.*;
@@ -25,6 +27,11 @@ import aQute.libg.filters.*;
 import aQute.libg.filters.Filter;
 import biz.aQute.resolve.internal.*;
 
+/**
+ * This is the Resolve Context as outlined in the Resolver specfication. It
+ * manages the access to the repository and orders the capabilities. It also
+ * provides the capabilities of the environment.
+ */
 public class GenericResolveContext extends ResolveContext {
 
 	protected static final String					CONTRACT_OSGI_FRAMEWORK		= "OSGiFramework";
@@ -49,7 +56,7 @@ public class GenericResolveContext extends ResolveContext {
 
 	protected final Comparator<Capability>			capabilityComparator		= new CapabilityComparator();
 
-	protected Map<String, Set<String>>				effectiveSet;
+	protected Map<String,Set<String>>				effectiveSet;
 
 	protected final List<ResolverHook>				resolverHooks				= new ArrayList<ResolverHook>();
 	protected final List<ResolutionCallback>		callbacks					= new LinkedList<ResolutionCallback>();
@@ -57,16 +64,24 @@ public class GenericResolveContext extends ResolveContext {
 	protected boolean								initialised					= false;
 	protected Resource								systemResource;
 	protected Resource								inputResource;
+	protected Set<Resource>							blacklistedResources		= new HashSet<Resource>();
 
 	public GenericResolveContext(LogService log) {
 		this(Collections.<Capability> emptyList(), Collections.<Requirement> emptyList(), log);
 	}
 
+	/**
+	 * @param systemCapabilities
+	 * @param systemRequirements
+	 * @param blacklist
+	 * @param log
+	 */
 	public GenericResolveContext(List<Capability> systemCapabilities, List<Requirement> systemRequirements,
 			LogService log) {
 		this.systemCapabilities = systemCapabilities;
 		this.systemRequirements = systemRequirements;
 		this.log = log;
+
 		systemCapabilityIndex = new CapabilityIndex();
 	}
 
@@ -79,6 +94,7 @@ public class GenericResolveContext extends ResolveContext {
 
 			getSystemResource();
 			getInputResource();
+
 			initialised = true;
 		}
 		catch (Exception e) {
@@ -157,8 +173,7 @@ public class GenericResolveContext extends ResolveContext {
 				ArrayList<Capability> repoCapabilities = new ArrayList<Capability>();
 				for (Repository repo : repositories) {
 					repoCapabilities.clear();
-					Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections
-							.singleton(requirement));
+					Map<Requirement,Collection<Capability>> providers = findProviders(repo, requirement);
 					Collection<Capability> capabilities = providers.get(requirement);
 					if (capabilities != null && !capabilities.isEmpty()) {
 						repoCapabilities.ensureCapacity(capabilities.size());
@@ -190,6 +205,33 @@ public class GenericResolveContext extends ResolveContext {
 
 		return result;
 
+	}
+
+	/**
+	 * Return any capabilities from the given repo. This method will filter the
+	 * blacklist.
+	 * 
+	 * @param repo
+	 *            The repo to fetch requirements from
+	 * @param requirement
+	 *            the requirement
+	 * @return a list of caps for the asked requirement minus and capabilities
+	 *         that are skipped.
+	 */
+	protected Map<Requirement,Collection<Capability>> findProviders(Repository repo, Requirement requirement) {
+		Map<Requirement,Collection<Capability>> map = repo.findProviders(Collections.singleton(requirement));
+		if (map.isEmpty())
+			return map;
+
+		Collection<Capability> caps = map.get(requirement);
+
+		for (Iterator<Capability> c = caps.iterator(); c.hasNext();) {
+			Capability capability = c.next();
+
+			if (blacklistedResources.contains(capability.getResource()))
+				c.remove();
+		}
+		return map;
 	}
 
 	private void setResourcePriority(int priority, Resource resource) {
@@ -245,8 +287,8 @@ public class GenericResolveContext extends ResolveContext {
 		if (effective == null || Namespace.EFFECTIVE_RESOLVE.equals(effective))
 			return true;
 
-		if (effectiveSet != null && effectiveSet.containsKey(effective) && 
-				!effectiveSet.get(effective).contains(requirement.getNamespace()))
+		if (effectiveSet != null && effectiveSet.containsKey(effective)
+				&& !effectiveSet.get(effective).contains(requirement.getNamespace()))
 			return true;
 
 		return false;
@@ -535,8 +577,8 @@ public class GenericResolveContext extends ResolveContext {
 	}
 
 	public void addEffectiveDirective(String effectiveDirective, Set<String> excludedNamespaces) {
-		this.effectiveSet.put(effectiveDirective, 
-				excludedNamespaces != null ? excludedNamespaces : new HashSet<String>());
+		this.effectiveSet.put(effectiveDirective, excludedNamespaces != null ? excludedNamespaces
+				: new HashSet<String>());
 	}
 
 	protected void postProcessProviders(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
@@ -581,7 +623,7 @@ public class GenericResolveContext extends ResolveContext {
 		return GenericResolveContext.resourceIdentityEquals(resource, systemResource);
 	}
 
-	public static Resource getFrameworkResource(List<Repository> repos, String bsn, String version) {
+	public Resource getFrameworkResource(List<Repository> repos, String bsn, String version) {
 
 		Requirement frameworkRequirement = GenericResolveContext.createIdentityRequirement(bsn, version);
 		if (frameworkRequirement == null) {
@@ -590,8 +632,7 @@ public class GenericResolveContext extends ResolveContext {
 		Version current = null;
 		Resource result = null;
 		for (Repository repo : repos) {
-			Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections
-					.singletonList(frameworkRequirement));
+			Map<Requirement,Collection<Capability>> providers = findProviders(repo,frameworkRequirement);
 			Collection<Capability> frameworkCaps = providers.get(frameworkRequirement);
 			if (frameworkCaps != null) {
 				for (Capability frameworkCap : frameworkCaps) {
@@ -609,11 +650,17 @@ public class GenericResolveContext extends ResolveContext {
 									resBuilder.addRequirement(req);
 								}
 								// Add system.bundle alias
-						        Version frameworkVersion = Utils.findIdentityVersion(result);
-						        resBuilder.addCapability(new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE).addAttribute(BundleNamespace.BUNDLE_NAMESPACE, Constants.SYSTEM_BUNDLE_SYMBOLICNAME)
-						                .addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, frameworkVersion).setResource(result).buildCapability());
-						        resBuilder.addCapability(new CapReqBuilder(HostNamespace.HOST_NAMESPACE).addAttribute(HostNamespace.HOST_NAMESPACE, Constants.SYSTEM_BUNDLE_SYMBOLICNAME)
-						                .addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, frameworkVersion).setResource(result).buildCapability());
+								Version frameworkVersion = Utils.findIdentityVersion(result);
+								resBuilder.addCapability(new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE)
+										.addAttribute(BundleNamespace.BUNDLE_NAMESPACE,
+												Constants.SYSTEM_BUNDLE_SYMBOLICNAME)
+										.addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE,
+												frameworkVersion).setResource(result).buildCapability());
+								resBuilder.addCapability(new CapReqBuilder(HostNamespace.HOST_NAMESPACE)
+										.addAttribute(HostNamespace.HOST_NAMESPACE,
+												Constants.SYSTEM_BUNDLE_SYMBOLICNAME)
+										.addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE,
+												frameworkVersion).setResource(result).buildCapability());
 								result = resBuilder.build();
 								current = foundVersion;
 							}
@@ -783,4 +830,21 @@ public class GenericResolveContext extends ResolveContext {
 		}
 		return getVersion(cap, IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 	}
+
+	/**
+	 * If the blacklist is set, we have a list of requirements of resources that
+	 * should not be included (blacklist). We try to find those resources and
+	 * add them to the blacklistedResources
+	 */
+	protected void setBlackList(Collection<Requirement> reject) {
+		for (Repository repo : repositories) {
+			Map<Requirement,Collection<Capability>> caps = repo.findProviders(reject);
+			for (Entry<Requirement,Collection<Capability>> entry : caps.entrySet()) {
+				for (Capability cap : entry.getValue()) {
+					blacklistedResources.add(cap.getResource());
+				}
+			}
+		}
+	}
+
 }

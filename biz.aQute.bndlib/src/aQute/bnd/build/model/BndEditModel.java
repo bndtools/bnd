@@ -860,6 +860,15 @@ public class BndEditModel {
 		doSetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
 	}
 
+	public List<Requirement> getRunBlacklist() {
+		return doGetObject(aQute.bnd.osgi.Constants.RUNBLACKLIST, requirementListConverter);
+	}
+
+	public void setRunBlacklist(List<Requirement> requires) {
+		List<Requirement> oldValue = getRunBlacklist();
+		doSetObject(aQute.bnd.osgi.Constants.RUNBLACKLIST, oldValue, requires, requirementListFormatter);
+	}
+
 	private <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
 		try {
 			R result;

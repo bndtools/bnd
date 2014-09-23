@@ -22,6 +22,73 @@ public class BndrunResolveContextTest extends TestCase {
 
     private static final LogService log = new NullLogService();
 
+    /**
+     * Simple test that resolves a requirement
+     */
+    public static void testSimple() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), "Repository1"));
+        
+        BndrunResolveContext context = new BndrunResolveContext(new BndEditModel(), registry, log);
+
+        
+        Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=org.apache.felix.gogo.api)").buildSyntheticRequirement();
+        List<Capability> providers = context.findProviders(req);
+        assertEquals(1, providers.size());
+        Resource resource = providers.get(0).getResource();
+        assertEquals(IO.getFile("testdata/repo1/org.apache.felix.gogo.runtime-0.10.0.jar").toURI(), findContentURI(resource));
+    }
+
+    /**
+     * Test the blacklist. We reject any resources that matches a specific requirements
+     */
+    
+    public static void testSimpleBlacklist() {
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), "Repository1"));
+        
+        BndEditModel model = new BndEditModel();
+        Requirement blacklist = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=org.apache.felix.gogo.api)").buildSyntheticRequirement();
+        model.setRunBlacklist( Arrays.asList(blacklist));
+        
+        BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+
+
+        //
+        // This one is ok in testSimple
+        // but should fail because we blacklisted it
+        //
+        
+        Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=org.apache.felix.gogo.api)").buildSyntheticRequirement();
+        List<Capability> providers = context.findProviders(req);
+        assertEquals(0, providers.size());
+    }
+
+    /**
+     * See if we can reject the 4.0.2 framework, which should normally be selected because it is the highest (this is tested later).
+     */
+    public static void testBlacklistFramework() {
+
+        MockRegistry registry = new MockRegistry();
+        registry.addPlugin(createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml")));
+        registry.addPlugin(createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.2.index.xml")));
+
+
+        BndEditModel model = new BndEditModel();
+        model.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
+        Requirement blacklist = new CapReqBuilder("osgi.identity").addDirective("filter", "(&(osgi.identity=org.apache.felix.framework)(version>=4.0.1))").buildSyntheticRequirement();
+        model.setRunBlacklist( Arrays.asList(blacklist));
+        
+        BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+
+        Collection<Resource> resources = context.getMandatoryResources();
+        assertEquals(1, resources.size());
+        Resource fwkResource = resources.iterator().next();
+        assertEquals(IO.getFile("testdata/org.apache.felix.framework-4.0.0.jar").toURI(), findContentURI(fwkResource));
+    }
+
+    
+    
     public static void testEffective() {
         BndrunResolveContext context = new BndrunResolveContext(new BndEditModel(), new MockRegistry(), log);
 
