@@ -1022,10 +1022,17 @@ public class BndEditModel {
 			result = new Processor();
 		else
 			result = new Processor(parent);
-		result.getProperties().putAll(properties);
+		
+		StringBuilder sb = new StringBuilder();
+		
 		for (Entry<String,String> e : changesToSave.entrySet()) {
-			result.setProperty(e.getKey(), cleanup(e.getValue()));
+			sb.append(e.getKey()).append( ": ").append( e.getValue()).append("\n\n");
 		}
+		UTF8Properties p = new UTF8Properties();
+		p.load( new StringReader(sb.toString()));
+		
+		result.getProperties().putAll(properties);
+		result.getProperties().putAll(p);
 		return result;
 	}
 
@@ -1034,5 +1041,13 @@ public class BndEditModel {
 			return null;
 
 		return value.replaceAll("\\\\\n", "");
+	}
+
+	/**
+	 * Return the saved changes in document format.
+	 */
+
+	public Map<String,String> getDocumentChanges() {
+		return changesToSave;
 	}
 }

@@ -19,7 +19,38 @@ public class BndModelTest  extends TestCase {
 	static final String BND_BUILDPATH_EXPECTED = "-buildpath:  \\\n" +
 												 "\tosgi.core\n";
 
+	/**
+	 * 
+	 * Test escaping of backslashes.
+	 * @throws Exception 
+	 */
 	
+	public void testEscapingBackslashes() throws Exception {
+		String longstring = "abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890";
+		String formattedLongstring = "abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs \\\n"
+	+ "	tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 \\\n"
+	+ "	abc def ghi jkl mno pqrs tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs \\\n"
+	+ "	tuv wxy z01 234 567 890 abc def ghi jkl mno pqrs tuv wxy z01 234 567 890";
+		
+		BndEditModel		model = new BndEditModel();
+		model.setBundleName("abc \\ def");
+		model.setBundleDescription(longstring);
+		model.setBundleActivator("\u1234 \n");
+		
+		
+		assertEquals( "abc \\ def", model.getBundleName());
+		assertEquals( "abc \\\\ def", model.getDocumentChanges().get(Constants.BUNDLE_NAME));
+		assertEquals( "abc \\ def", model.getProperties().get(Constants.BUNDLE_NAME));
+		
+		assertEquals( longstring, model.getBundleDescription());
+		assertEquals( formattedLongstring, model.getDocumentChanges().get(Constants.BUNDLE_DESCRIPTION));
+		assertEquals( longstring, model.getProperties().get(Constants.BUNDLE_DESCRIPTION));
+		
+		assertEquals( "\u1234 \n", model.getBundleActivator());
+		assertEquals( "\u1234 \\n\\\n\t", model.getDocumentChanges().get(Constants.BUNDLE_ACTIVATOR));
+		assertEquals( "\u1234 \n", model.getProperties().get(Constants.BUNDLE_ACTIVATOR));
+		
+	}
 	public void testBadInput() throws UnsupportedEncodingException, IOException {
 		BndEditModel		model = new BndEditModel();
 		
