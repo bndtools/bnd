@@ -21,14 +21,12 @@ import aQute.lib.io.*;
  * Properties class skips backslashes that have no correct next character. This
  * is not a real problem if it was not for bndtools where it turned out to be
  * real tricky to get the UI to understand this since text widgets read from the
- * properties (backslash removed) while the main text is just, well, the main text
- * and has the backslash present. Since we strife to fidelity, we actually fixup
- * the 
- * 
+ * properties (backslash removed) while the main text is just, well, the main
+ * text and has the backslash present. Since we strife to fidelity, we actually
+ * fixup the
  * <p>
- * 
- * This class can (and probably
- * should) be used anywhere a Properties class is used.
+ * This class can (and probably should) be used anywhere a Properties class is
+ * used.
  */
 public class UTF8Properties extends Properties {
 	private static final long	serialVersionUID	= 1L;
@@ -45,24 +43,28 @@ public class UTF8Properties extends Properties {
 	public void load(InputStream in) throws IOException {
 
 		byte[] buffer = IO.read(in);
-
 		try {
-			convert(buffer, UTF8);
-			return;
-		}
-		catch (CharacterCodingException e) {
-			// Ok, not good, fallback to old encoding
-		}
+			try {
+				convert(buffer, UTF8);
+				return;
+			}
+			catch (CharacterCodingException e) {
+				// Ok, not good, fallback to old encoding
+			}
 
-		try {
-			convert(buffer, ISO8859_1);
-			return;
-		}
-		catch (CharacterCodingException e) {
-			// Ok, not good, fallback to platform encoding
-		}
+			try {
+				convert(buffer, ISO8859_1);
+				return;
+			}
+			catch (CharacterCodingException e) {
+				// Ok, not good, fallback to platform encoding
+			}
 
-		super.load(in);
+			super.load(new ByteArrayInputStream(buffer));
+		}
+		finally {
+			//System.out.println("UTF8Props: " + this);
+		}
 	}
 
 	private void convert(byte[] buffer, Charset charset) throws IOException {
@@ -72,7 +74,8 @@ public class UTF8Properties extends Properties {
 		CharBuffer cb = CharBuffer.allocate(buffer.length * 4);
 		CoderResult result = decoder.decode(bb, cb, true);
 		if (!result.isError()) {
-			String s = new String(cb.array());
+			
+			String s = new String(cb.array(), 0, cb.position());
 			s = doBackslashEncoding(s);
 
 			super.load(new StringReader(s));
@@ -82,18 +85,18 @@ public class UTF8Properties extends Properties {
 	}
 
 	private String doBackslashEncoding(String s) {
-		if (s.indexOf('\\') >= 0) {
-			s = s.replaceAll("\\\\(?!u|\\r|\\n|n|r|t|\\\\)", "\\\\\\\\");
-		}
+//		if (s.indexOf('\\') >= 0) {
+//			s = s.replaceAll("\\\\(?!u|\\r|\\n|n|r|t|\\\\)", "\\\\\\\\");
+//		}
 		return s;
 	}
 
 	@Override
-	public void load(Reader r ) throws IOException {
+	public void load(Reader r) throws IOException {
 		String s = doBackslashEncoding(IO.collect(r));
 		super.load(new StringReader(s));
 	}
-	
+
 	@Override
 	public void store(OutputStream out, String msg) throws IOException {
 		OutputStreamWriter osw = new OutputStreamWriter(out, UTF8);
