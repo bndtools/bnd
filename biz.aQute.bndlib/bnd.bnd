@@ -32,19 +32,20 @@ Export-Package:  \
 	aQute.bnd.testing;-noimport:=true,\
 	org.osgi.service.repository,\
 	org.osgi.resource,\
-	org.osgi.service.component.annotations;-split-package:=first
+	org.osgi.service.component.annotations;-split-package:=first,\
+    org.osgi.service.metatype.annotations;-split-package:=first
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 -includeresource: 				LICENSE, img/=img/, {readme.md}
 
 -buildpath:  \
 	org.osgi.service.component.annotations;version=6.0.0,\
+	org.osgi.service.metatype.annotations;version=6.0.0,\
 	osgi.cmpn;version=4.3.1,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.3.1,\
 	osgi.r5;version=1.0.1,\
-	ee.j2se;version=${javac.ee},\
-	org.osgi.service.metatype.annotations;version=6.0.0
+	ee.j2se;version=${javac.ee}
 
 Import-Package: junit.framework;resolution:=optional,\
 	org.osgi.resource;resolution:=optional,\
