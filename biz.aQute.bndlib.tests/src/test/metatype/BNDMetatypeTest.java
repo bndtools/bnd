@@ -20,7 +20,7 @@ import aQute.lib.io.*;
 import aQute.libg.generics.*;
 
 @SuppressWarnings("resource")
-public class MetatypeTest extends TestCase {
+public class BNDMetatypeTest extends TestCase {
 	static DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpathf	= XPathFactory.newInstance();
 	static XPath					xpath	= xpathf.newXPath();
@@ -252,7 +252,7 @@ public class MetatypeTest extends TestCase {
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$Naming.xml");
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$Naming.xml");
 		IO.copy(r.openInputStream(), System.err);
 		Document d = db.parse(r.openInputStream(), "UTF-8");
 		assertEquals("http://www.osgi.org/xmlns/metatype/v1.1.0", d.getDocumentElement().getNamespaceURI());
@@ -616,7 +616,7 @@ public class MetatypeTest extends TestCase {
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$Enums.xml");
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$Enums.xml");
 		IO.copy(r.openInputStream(), System.err);
 
 		Document d = db.parse(r.openInputStream());
@@ -669,23 +669,23 @@ public class MetatypeTest extends TestCase {
 		assertEquals(0, b.getWarnings().size());
 		System.err.println(b.getJar().getResources().keySet());
 
-		assertOCD(b, "test.metatype.MetatypeTest$OCDEmpty", "test.metatype.MetatypeTest$OCDEmpty",
-				"Metatype test OCDEmpty", null, "test.metatype.MetatypeTest$OCDEmpty", false, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDName", "test.metatype.MetatypeTest$OCDName", "name", null,
-				"test.metatype.MetatypeTest$OCDName", false, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDDescription", "test.metatype.MetatypeTest$OCDDescription",
-				"Metatype test OCDDescription", "description", "test.metatype.MetatypeTest$OCDDescription", false, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDDesignatePidOnly",
-				"test.metatype.MetatypeTest$OCDDesignatePidOnly", "Metatype test OCDDesignate pid only", null,
-				"test.metatype.MetatypeTest$OCDDesignatePidOnly", false, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDDesignatePidFactory",
-				"test.metatype.MetatypeTest$OCDDesignatePidFactory", "Metatype test OCDDesignate pid factory", null,
-				"test.metatype.MetatypeTest$OCDDesignatePidFactory", true, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDId", "id", "Metatype test OCDId", null, "id", false, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDIdWithPid", "id", "Metatype test OCDId with pid", null, "id",
+		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDEmpty", "test.metatype.BNDMetatypeTest$OCDEmpty",
+				"BNDMetatype test OCDEmpty", null, "test.metatype.BNDMetatypeTest$OCDEmpty", false, null);
+		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDName", "test.metatype.BNDMetatypeTest$OCDName", "name", null,
+				"test.metatype.BNDMetatypeTest$OCDName", false, null);
+		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDDescription", "test.metatype.BNDMetatypeTest$OCDDescription",
+				"BNDMetatype test OCDDescription", "description", "test.metatype.BNDMetatypeTest$OCDDescription", false, null);
+		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDDesignatePidOnly",
+				"test.metatype.BNDMetatypeTest$OCDDesignatePidOnly", "BNDMetatype test OCDDesignate pid only", null,
+				"test.metatype.BNDMetatypeTest$OCDDesignatePidOnly", false, null);
+		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDDesignatePidFactory",
+				"test.metatype.BNDMetatypeTest$OCDDesignatePidFactory", "BNDMetatype test OCDDesignate pid factory", null,
+				"test.metatype.BNDMetatypeTest$OCDDesignatePidFactory", true, null);
+		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDId", "id", "BNDMetatype test OCDId", null, "id", false, null);
+		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDIdWithPid", "id", "BNDMetatype test OCDId with pid", null, "id",
 				false, null);
-		assertOCD(b, "test.metatype.MetatypeTest$OCDLocalization", "test.metatype.MetatypeTest$OCDLocalization",
-				"Metatype test OCDLocalization", null, "test.metatype.MetatypeTest$OCDLocalization", false,
+		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDLocalization", "test.metatype.BNDMetatypeTest$OCDLocalization",
+				"BNDMetatype test OCDLocalization", null, "test.metatype.BNDMetatypeTest$OCDLocalization", false,
 				"localization");
 	}
 
@@ -788,7 +788,7 @@ public class MetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$TestAD.xml");
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestAD.xml");
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 		System.err.println(b.getJar().getResources().keySet());
@@ -855,7 +855,7 @@ public class MetatypeTest extends TestCase {
 		b.setProperty("-metatype", "*");
 		b.setProperty("-metatype-inherit", "true");
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$TestADWithInheritanceChild.xml");
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestADWithInheritanceChild.xml");
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 		System.err.println(b.getJar().getResources().keySet());
@@ -993,7 +993,7 @@ public class MetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$TestReturnTypes.xml");
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestReturnTypes.xml");
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 		System.err.println(b.getJar().getResources().keySet());
@@ -1112,7 +1112,7 @@ public class MetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.MetatypeTest$TestSimple.xml");
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestSimple.xml");
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 		System.err.println(b.getJar().getResources().keySet());
@@ -1123,9 +1123,9 @@ public class MetatypeTest extends TestCase {
 
 		assertEquals("TestSimple", xpath.evaluate("//OCD/@name", d));
 		assertEquals("simple", xpath.evaluate("//OCD/@description", d));
-		assertEquals("test.metatype.MetatypeTest$TestSimple", xpath.evaluate("//OCD/@id", d));
-		assertEquals("test.metatype.MetatypeTest$TestSimple", xpath.evaluate("//Designate/@pid", d));
-		assertEquals("test.metatype.MetatypeTest$TestSimple", xpath.evaluate("//Object/@ocdref", d));
+		assertEquals("test.metatype.BNDMetatypeTest$TestSimple", xpath.evaluate("//OCD/@id", d));
+		assertEquals("test.metatype.BNDMetatypeTest$TestSimple", xpath.evaluate("//Designate/@pid", d));
+		assertEquals("test.metatype.BNDMetatypeTest$TestSimple", xpath.evaluate("//Object/@ocdref", d));
 		assertEquals("simple", xpath.evaluate("//OCD/AD[@id='simple']/@id", d));
 		assertEquals("Simple", xpath.evaluate("//OCD/AD[@id='simple']/@name", d));
 		assertEquals("String", xpath.evaluate("//OCD/AD[@id='simple']/@type", d));

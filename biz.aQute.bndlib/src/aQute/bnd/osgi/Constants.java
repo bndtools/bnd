@@ -122,6 +122,7 @@ public interface Constants {
 
 	String							MAKE										= "-make";
 	String							METATYPE									= "-metatype";
+	String							METATYPE_ANNOTATIONS						= "-metatypeannotations";
 	String							MANIFEST									= "-manifest";
 	String							PROFILE										= "-profile";
 	String							SAVEMANIFEST								= "-savemanifest";

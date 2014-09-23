@@ -5,6 +5,7 @@
     biz.aQute.bndlib;version=project,\
     biz.aQute.bnd.test;version=project,\
 	org.osgi.service.component.annotations;version=6.0.0,\
+	org.osgi.service.metatype.annotations;version=6.0.0,\
 	aQute.libg;version=project,\
 	osgi.core;version=@5,\
 	osgi.cmpn;version=@4.3.1,\

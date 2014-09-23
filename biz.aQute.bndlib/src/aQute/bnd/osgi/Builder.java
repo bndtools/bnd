@@ -14,6 +14,7 @@ import aQute.bnd.make.*;
 import aQute.bnd.make.component.*;
 import aQute.bnd.make.metatype.*;
 import aQute.bnd.maven.*;
+import aQute.bnd.metatype.*;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
@@ -1539,6 +1540,7 @@ public class Builder extends Analyzer {
 	static ServiceComponent	serviceComponent	= new ServiceComponent();
 	static DSAnnotations	dsAnnotations		= new DSAnnotations();
 	static MetatypePlugin	metatypePlugin		= new MetatypePlugin();
+	static MetatypeAnnotations	metatypeAnnotations		= new MetatypeAnnotations();
 
 	@Override
 	protected void setTypeSpecificPlugins(Set<Object> list) {
@@ -1547,6 +1549,7 @@ public class Builder extends Analyzer {
 		list.add(serviceComponent);
 		list.add(dsAnnotations);
 		list.add(metatypePlugin);
+		list.add(metatypeAnnotations);
 		super.setTypeSpecificPlugins(list);
 	}
 

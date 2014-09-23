@@ -7,7 +7,7 @@ public class MetatypeTests {
 	public static Test suite() {
 		TestSuite suite = new TestSuite(MetatypeTests.class.getName());
 		// $JUnit-BEGIN$
-		suite.addTestSuite(test.metatype.MetatypeTest.class);
+		suite.addTestSuite(test.metatype.BNDMetatypeTest.class);
 		// $JUnit-END$
 		return suite;
 	}
