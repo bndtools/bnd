@@ -25,14 +25,20 @@ import aQute.lib.persistentmap.*;
 public class InfoRepositoryWrapper implements Repository {
 	final RepoIndex								repoIndexer;
 	final PersistentMap<PersistentResource>		persistent;
-	final Collection< ? extends InfoRepository>	repos;				;
+	final Collection< ? extends InfoRepository>	repos;							;
 	long										lastTime	= 0;
+	private Properties							augments	= new Properties();
 
 	// private boolean inited;
 
 	public InfoRepositoryWrapper(File dir, Collection< ? extends InfoRepository> repos) throws Exception {
 		this.repoIndexer = new RepoIndex();
-		this.repoIndexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
+		
+		KnownBundleAnalyzer knownBundleAnalyzer = new KnownBundleAnalyzer();
+		this.augments = new Properties();
+		knownBundleAnalyzer.setKnownBundlesExtra(this.augments);
+		
+		this.repoIndexer.addAnalyzer(knownBundleAnalyzer, FrameworkUtil.createFilter("(name=*)"));
 		this.repos = repos;
 		this.persistent = new PersistentMap<PersistentResource>(dir, PersistentResource.class);
 	}
@@ -200,6 +206,10 @@ public class InfoRepositoryWrapper implements Repository {
 
 	public void close() throws IOException {
 		persistent.close();
+	}
+
+	public void addAugment(Properties properties) {
+		augments.putAll(properties);
 	}
 
 }
