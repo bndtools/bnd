@@ -17,6 +17,7 @@ import aQute.lib.collections.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.strings.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.generics.*;
 import aQute.service.reporter.*;
@@ -82,11 +83,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public Processor() {
-		properties = new Properties();
+		properties = new UTF8Properties();
 	}
 
 	public Processor(Properties parent) {
-		properties = new Properties(parent);
+		properties = new UTF8Properties(parent);
 	}
 
 	public Processor(Processor child) {
@@ -96,7 +97,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void setParent(Processor processor) {
 		this.parent = processor;
-		Properties ext = new Properties(processor.properties);
+		Properties ext = new UTF8Properties(processor.properties);
 		ext.putAll(this.properties);
 		this.properties = ext;
 	}
@@ -780,29 +781,29 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		return base.getAbsolutePath();
 	}
-	
-	public String _propertiesname(String[]args) {
-		if ( args.length > 1) {
+
+	public String _propertiesname(String[] args) {
+		if (args.length > 1) {
 			error("propertiesname does not take arguments");
 			return null;
 		}
-		
+
 		File pf = getPropertiesFile();
-		if ( pf == null)
+		if (pf == null)
 			return "";
-		
+
 		return pf.getName();
 	}
 
-	public String _propertiesdir(String[]args) {
-		if ( args.length > 1) {
+	public String _propertiesdir(String[] args) {
+		if (args.length > 1) {
 			error("propertiesdir does not take arguments");
 			return null;
 		}
 		File pf = getPropertiesFile();
-		if ( pf == null)
+		if (pf == null)
 			return "";
-		
+
 		return pf.getParentFile().getAbsolutePath();
 	}
 
@@ -913,10 +914,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 						try {
 							URL url = new URL(value);
 							int n = value.lastIndexOf('.');
-							String ext= ".jar";
-							if ( n >= 0)
+							String ext = ".jar";
+							if (n >= 0)
 								ext = value.substring(n);
-							
+
 							File tmp = File.createTempFile("url", ext);
 							try {
 								IO.copy(url.openStream(), tmp);
@@ -930,7 +931,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 							// ignore
 						}
 						if (fileMustExist)
-							error("Included file " + file + (file.isDirectory() ? " is directory" : " does not exist" ));
+							error("Included file " + file + (file.isDirectory() ? " is directory" : " does not exist"));
 					} else
 						doIncludeFile(file, overwrite, p);
 				}
@@ -1211,6 +1212,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 	}
 
+	/**
+	 * Load Properties from disk. The default encoding is ISO-8859-1 but
+	 * nowadays all files are encoded with UTF-8. So we try to load it first as
+	 * UTF-8 and if this fails we fail back to ISO-8859-1
+	 * 
+	 * @param in
+	 *            The stream to load from
+	 * @param name
+	 *            The name of the file for doc reasons
+	 * @return a Properties
+	 * @throws IOException
+	 */
 	Properties loadProperties(InputStream in, String name) throws IOException {
 		int n = name.lastIndexOf('/');
 		if (n > 0)
@@ -1219,13 +1232,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			name = ".";
 
 		try {
-			Properties p = new Properties();
+			Properties p = new UTF8Properties();
 			p.load(in);
 			return replaceAll(p, "\\$\\{\\.\\}", name);
 		}
 		catch (Exception e) {
 			error("Error during loading properties file: " + name + ", error:" + e);
-			return new Properties();
+			return new UTF8Properties();
 		}
 	}
 
@@ -1236,7 +1249,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 
 	public static Properties replaceAll(Properties p, String pattern, String replacement) {
-		Properties result = new Properties();
+		Properties result = new UTF8Properties();
 		for (Iterator<Map.Entry<Object,Object>> i = p.entrySet().iterator(); i.hasNext();) {
 			Map.Entry<Object,Object> entry = i.next();
 			String key = (String) entry.getKey();
@@ -1423,7 +1436,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	public static Properties getManifestAsProperties(InputStream in) throws IOException {
-		Properties p = new Properties();
+		Properties p = new UTF8Properties();
 		Manifest manifest = new Manifest(in);
 		for (Iterator<Object> it = manifest.getMainAttributes().keySet().iterator(); it.hasNext();) {
 			Attributes.Name key = (Attributes.Name) it.next();
@@ -1576,7 +1589,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		trace = x;
 	}
 
-	 public static class CL extends URLClassLoader {
+	public static class CL extends URLClassLoader {
 
 		CL() {
 			super(new URL[0], Processor.class.getClassLoader());
@@ -1584,7 +1597,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		void closex() {
 			Class<URLClassLoader> clazz = URLClassLoader.class;
-			
+
 			try {
 				//
 				// Java 7 is a good boy, it has a close method
@@ -1601,18 +1614,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			// This is best effort, likely fails on non-SUN vms
 			// :-(
 			//
-			
+
 			try {
 				Field ucpField = clazz.getDeclaredField("ucp");
 				ucpField.setAccessible(true);
 				Object cp = ucpField.get(this);
 				Field loadersField = cp.getClass().getDeclaredField("loaders");
 				loadersField.setAccessible(true);
-				Collection<?> loaders = (Collection<?>) loadersField.get(cp);
+				Collection< ? > loaders = (Collection< ? >) loadersField.get(cp);
 				for (Object loader : loaders) {
 					try {
-						Field loaderField = loader.getClass().getDeclaredField(
-								"jar");
+						Field loaderField = loader.getClass().getDeclaredField("jar");
 						loaderField.setAccessible(true);
 						JarFile jarFile = (JarFile) loaderField.get(loader);
 						jarFile.close();
@@ -2543,7 +2555,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 		return null;
 	}
-	
+
 	private String fileName(String path) {
 		int n = path.lastIndexOf('/');
 		if (n > 0)

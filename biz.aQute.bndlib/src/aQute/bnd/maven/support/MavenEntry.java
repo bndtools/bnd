@@ -8,6 +8,7 @@ import java.util.concurrent.*;
 
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.filelock.*;
 
 /**
@@ -206,7 +207,7 @@ public class MavenEntry implements Closeable {
 	 */
 	protected Properties getProperties() {
 		if (properties == null) {
-			properties = new Properties();
+			properties = new UTF8Properties();
 			File props = new File(dir, "bnd.properties");
 			if (props.exists()) {
 				FileInputStream in = null;
@@ -240,12 +241,14 @@ public class MavenEntry implements Closeable {
 	private void saveProperties() throws IOException {
 		if (propertiesChanged) {
 			FileOutputStream fout = new FileOutputStream(propertiesFile);
+			OutputStreamWriter osw = new OutputStreamWriter(fout);
 			try {
-				properties.store(fout, "");
+				properties.store(osw, "");
 			}
 			finally {
 				properties = null;
 				propertiesChanged = false;
+				osw.close();
 				fout.close();
 			}
 		}

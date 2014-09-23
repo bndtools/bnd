@@ -10,6 +10,7 @@ import org.w3c.dom.*;
 
 import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
+import aQute.lib.utf8properties.*;
 
 /**
  * Provides a way to parse a maven pom as properties. This provides most of the
@@ -53,7 +54,7 @@ public class PomParser extends Processor {
 		XPath xpath = xpathf.newXPath();
 		pom = pom.getAbsoluteFile();
 		Document doc = db.parse(pom);
-		Properties p = new Properties();
+		Properties p = new UTF8Properties();
 
 		// Check if there is a parent pom
 		String relativePath = xpath.evaluate("project/parent/relativePath", doc);

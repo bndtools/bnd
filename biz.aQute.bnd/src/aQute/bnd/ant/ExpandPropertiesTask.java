@@ -6,6 +6,7 @@ import java.util.*;
 import org.apache.tools.ant.*;
 
 import aQute.bnd.osgi.*;
+import aQute.lib.utf8properties.*;
 
 public class ExpandPropertiesTask extends BaseTask {
 	File	propertyFile;
@@ -15,7 +16,7 @@ public class ExpandPropertiesTask extends BaseTask {
 	public void execute() throws BuildException {
 		try {
 			if (propertyFile.exists()) {
-				Properties properties = new Properties();
+				Properties properties = new UTF8Properties();
 				properties.putAll((Map< ? , ? >) getProject().getProperties());
 
 				Processor processor = new Processor(properties);

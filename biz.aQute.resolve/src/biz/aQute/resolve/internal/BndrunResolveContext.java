@@ -61,6 +61,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 			loadSystemPackagesExtra();
 			loadSystemCapabilitiesExtra();
 			loadRepositories();
+			constructBlacklist();
 			loadEffectiveSet();
 			findFramework();
 			constructInputRequirements();
@@ -157,8 +158,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 
 		// Iterate over repos looking for matches
 		for (Repository repo : repositories) {
-			Map<Requirement,Collection<Capability>> providers = repo.findProviders(Collections
-					.singletonList(frameworkReq));
+			Map<Requirement,Collection<Capability>> providers = findProviders(repo, frameworkReq);
 			Collection<Capability> frameworkCaps = providers.get(frameworkReq);
 			if (frameworkCaps != null) {
 				for (Capability frameworkCap : frameworkCaps) {
@@ -245,6 +245,14 @@ public class BndrunResolveContext extends GenericResolveContext {
 			}
 
 			inputResource = resBuilder.build();
+		}
+	}
+
+	private void constructBlacklist() {
+		Parameters blacklist = new Parameters(properties.mergeProperties(Constants.RUNBLACKLIST));
+		if (blacklist != null && !blacklist.isEmpty()) {
+			List<Requirement> reject = CapReqBuilder.getRequirementsFrom(blacklist);
+			setBlackList(reject);
 		}
 	}
 

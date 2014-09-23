@@ -12,6 +12,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.url.*;
 import aQute.lib.base64.*;
 import aQute.lib.io.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.glob.*;
 import aQute.service.reporter.*;
 
@@ -75,7 +76,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 
 				File file = new File(configFileName);
 				if (file.exists()) {
-					Properties props = new Properties();
+					Properties props = new UTF8Properties();
 					InputStream stream = null;
 					try {
 						stream = new FileInputStream(file);

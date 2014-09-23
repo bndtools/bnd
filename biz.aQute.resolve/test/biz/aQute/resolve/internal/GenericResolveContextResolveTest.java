@@ -25,8 +25,8 @@ public class GenericResolveContextResolveTest extends TestCase {
 	public static void testSimpleResolve() {
 
 		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"));
-
-		Resource framework = GenericResolveContext.getFrameworkResource(Arrays.asList(repository), "org.apache.felix.framework", null);
+		GenericResolveContext grc = new GenericResolveContext(log);
+		Resource framework = grc.getFrameworkResource(Arrays.asList(repository), "org.apache.felix.framework", null);
 
 		List<Requirement> systemRequirements = new ArrayList<Requirement>();
 		List<Capability> systemCapabilities = new ArrayList<Capability>();

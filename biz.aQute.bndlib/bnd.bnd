@@ -10,26 +10,26 @@ Private-Package: 				\
 	aQute.libg.*;-split-package:=first
 
 Export-Package:  \
-	aQute.bnd.annotation.*,\
-	aQute.bnd.osgi,\
-	aQute.bnd.service.lifecycle,\
-	aQute.bnd.osgi.resource,\
-	aQute.bnd.build,\
-	aQute.bnd.differ,\
-	aQute.bnd.service.*,\
-	aQute.bnd.help.*,\
-	aQute.bnd.header,\
-	aQute.bnd.version,\
-	aQute.bnd.filerepo,\
-	aQute.bnd.properties,\
-	aQute.bnd.build.model,\
-	aQute.bnd.build.model.clauses,\
-	aQute.service.reporter,\
-	aQute.bnd.maven.support,\
-	aQute.bnd.url,\
-	aQute.bnd.util.dto,\
-	aQute.bnd.component.error,\
-	aQute.bnd.testing,\
+	aQute.bnd.annotation.*;-noimport:=true,\
+	aQute.bnd.osgi;-noimport:=true,\
+	aQute.bnd.service.lifecycle;-noimport:=true,\
+	aQute.bnd.osgi.resource;-noimport:=true,\
+	aQute.bnd.build;-noimport:=true,\
+	aQute.bnd.differ;-noimport:=true,\
+	aQute.bnd.service.*;-noimport:=true,\
+	aQute.bnd.help.*;-noimport:=true,\
+	aQute.bnd.header;-noimport:=true,\
+	aQute.bnd.version;-noimport:=true,\
+	aQute.bnd.filerepo;-noimport:=true,\
+	aQute.bnd.properties;-noimport:=true,\
+	aQute.bnd.build.model;-noimport:=true,\
+	aQute.bnd.build.model.clauses;-noimport:=true,\
+	aQute.service.reporter;-noimport:=true,\
+	aQute.bnd.maven.support;-noimport:=true,\
+	aQute.bnd.url;-noimport:=true,\
+	aQute.bnd.util.dto;-noimport:=true,\
+	aQute.bnd.component.error;-noimport:=true,\
+	aQute.bnd.testing;-noimport:=true,\
 	org.osgi.service.repository,\
 	org.osgi.resource,\
 	org.osgi.service.component.annotations;-split-package:=first

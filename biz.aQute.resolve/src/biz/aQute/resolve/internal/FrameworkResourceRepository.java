@@ -27,6 +27,7 @@ import aQute.bnd.deployer.repository.CapabilityIndex;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.lib.utf8properties.*;
 
 public class FrameworkResourceRepository implements Repository {
 
@@ -113,7 +114,7 @@ public class FrameworkResourceRepository implements Repository {
         InputStream stream = FrameworkResourceRepository.class.getResourceAsStream(ee.name() + ".properties");
         if (stream != null) {
             try {
-                Properties properties = new Properties();
+                Properties properties = new UTF8Properties();
                 properties.load(stream);
 
                 Parameters params = new Parameters(properties.getProperty("org.osgi.framework.system.packages", ""));

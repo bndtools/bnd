@@ -10,6 +10,7 @@ import java.util.regex.*;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.lib.utf8properties.*;
 import aQute.libg.generics.*;
 
 public class Clazz {
@@ -47,7 +48,7 @@ public class Clazz {
 
 			public Map<String,Set<String>> getProfiles() throws IOException {
 				if (profiles == null) {
-					Properties p = new Properties();
+					Properties p = new UTF8Properties();
 					InputStream in = Clazz.class.getResourceAsStream("profiles-" + this + ".properties");
 					try {
 						p.load(in);

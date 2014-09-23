@@ -43,4 +43,4 @@ Export-Package: \
 	test.api
 
 	
--export: x.bndrun
+#-export: x.bndrun

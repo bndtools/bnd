@@ -67,8 +67,7 @@ public class LauncherConstants {
 	 * 
 	 * @return
 	 */
-	public Properties getProperties() {
-		Properties p = new Properties();
+	public Properties getProperties(Properties p) {
 		p.setProperty(LAUNCH_NOREFERENCES, noreferences + "");
 		p.setProperty(LAUNCH_SERVICES, services + "");
 		if (storageDir != null)

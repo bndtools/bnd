@@ -10,6 +10,7 @@ import java.util.jar.*;
 import aQute.bnd.header.*;
 import aQute.bnd.version.*;
 import aQute.lib.converter.*;
+import aQute.lib.utf8properties.*;
 import aQute.service.reporter.*;
 
 /**
@@ -18,7 +19,7 @@ import aQute.service.reporter.*;
  * provides convenient methods to access these properties via semantic methods.
  */
 public abstract class Domain implements Iterable<String> {
-	final Properties	translation	= new Properties();
+	final Properties	translation	= new UTF8Properties();
 
 	public abstract String get(String key);
 

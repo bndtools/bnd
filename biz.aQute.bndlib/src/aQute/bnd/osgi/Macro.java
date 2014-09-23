@@ -12,6 +12,7 @@ import javax.script.*;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.io.*;
+import aQute.lib.utf8properties.*;
 
 /**
  * Provide a macro processor. This processor can replace variables in strings
@@ -33,6 +34,11 @@ public class Macro {
 	boolean					flattening;
 	String					profile;
 	private boolean			nosystem;
+	ScriptEngine			engine		= null;
+	ScriptContext			context		= null;
+	Bindings				bindings	= null;
+	StringWriter			stdout		= new StringWriter();
+	StringWriter			stderr		= new StringWriter();
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
@@ -1104,7 +1110,7 @@ public class Macro {
 		// do not report unknown macros while flattening
 		flattening = true;
 		try {
-			Properties flattened = new Properties();
+			Properties flattened = new UTF8Properties();
 			Properties source = domain.getProperties();
 			for (Enumeration< ? > e = source.propertyNames(); e.hasMoreElements();) {
 				String key = (String) e.nextElement();
@@ -1263,8 +1269,8 @@ public class Macro {
 
 		if (start < 0)
 			start = string.length() + start;
-		
-		if ( start > end ) {
+
+		if (start > end) {
 			int t = start;
 			start = end;
 			end = t;
@@ -1534,13 +1540,7 @@ public class Macro {
 		return Processor.join(collected);
 	}
 
-	ScriptEngine	engine		= new ScriptEngineManager().getEngineByName("javascript");
-	ScriptContext	context		= null;
-	Bindings		bindings	= null;
-	StringWriter	stdout		= new StringWriter();
-	StringWriter	stderr		= new StringWriter();
-
-	static String	_js			= "${js [;<js expr>...]}";
+	static String	_js	= "${js [;<js expr>...]}";
 
 	public Object _js(String args[]) throws Exception {
 		verifyCommand(args, _js, null, 2, Integer.MAX_VALUE);
@@ -1551,6 +1551,10 @@ public class Macro {
 			sb.append(args[i]).append(';');
 
 		if (context == null) {
+			synchronized (this) {
+				if (engine == null)
+					engine = new ScriptEngineManager().getEngineByName("javascript");
+			}
 			context = engine.getContext();
 			bindings = context.getBindings(ScriptContext.ENGINE_SCOPE);
 			bindings.put("domain", domain);
@@ -1678,96 +1682,96 @@ public class Macro {
 		verifyCommand(args, _format, null, 2, Integer.MAX_VALUE);
 
 		Object[] args2 = new Object[args.length + 10];
-		
+
 		Matcher m = PRINTF_P.matcher(args[1]);
 		int n = 2;
-		while ( n < args.length && m.find()) {
+		while (n < args.length && m.find()) {
 			char conversion = m.group(5).charAt(0);
-			switch(conversion) {
-				// d|f|c|s|h|n|x|X|u|o|z|Z|e|E|g|G|p|\n|%)");
-				case 'd':
-				case 'u':
-				case 'o':
-				case 'x':
-				case 'X':
-				case 'z':
-				case 'Z':
-					args2[n-2] = Long.parseLong(args[n]);
-					n++;
-					break;
-					
-				case 'f':
-				case 'e':
-				case 'E':
-				case 'g':
-				case 'G':
-				case 'a':
-				case 'A':
-					args2[n-2] = Double.parseDouble(args[n]);
+			switch (conversion) {
+			// d|f|c|s|h|n|x|X|u|o|z|Z|e|E|g|G|p|\n|%)");
+				case 'd' :
+				case 'u' :
+				case 'o' :
+				case 'x' :
+				case 'X' :
+				case 'z' :
+				case 'Z' :
+					args2[n - 2] = Long.parseLong(args[n]);
 					n++;
 					break;
 
-				case 'c':
-					if ( args[n].length() != 1)
-						throw new IllegalArgumentException("Character expected but found '"+args[n]+"'");
-					args2[n-2] = args[n].charAt(0);
+				case 'f' :
+				case 'e' :
+				case 'E' :
+				case 'g' :
+				case 'G' :
+				case 'a' :
+				case 'A' :
+					args2[n - 2] = Double.parseDouble(args[n]);
 					n++;
 					break;
-					
-				case 'b':
+
+				case 'c' :
+					if (args[n].length() != 1)
+						throw new IllegalArgumentException("Character expected but found '" + args[n] + "'");
+					args2[n - 2] = args[n].charAt(0);
+					n++;
+					break;
+
+				case 'b' :
 					String v = args[n].toLowerCase();
 					if ( v == null || v.equals("false") || v.isEmpty() || (NUMERIC_P.matcher(v).matches() && Double.parseDouble(v)==0.0D))
-						args2[n-2] = false;
+						args2[n - 2] = false;
 					else
-						args2[n-2] = false;
-					n++;
-					break;
-					
-				case 's':
-				case 'h':
-				case 'H':
-				case 'p':
-					args2[n-2] = args[n];
+						args2[n - 2] = false;
 					n++;
 					break;
 
-				case 't':
-				case 'T':
+				case 's' :
+				case 'h' :
+				case 'H' :
+				case 'p' :
+					args2[n - 2] = args[n];
+					n++;
+					break;
+
+				case 't' :
+				case 'T' :
 					String dt = args[n];
-					
-					if ( NUMERIC_P.matcher(dt).matches()) {
-						args2[n-2]= Long.parseLong(dt);
+
+					if (NUMERIC_P.matcher(dt).matches()) {
+						args2[n - 2] = Long.parseLong(dt);
 					} else {
 						DateFormat df;
-						switch(args[n].length()) {
-							case 6:
+						switch (args[n].length()) {
+							case 6 :
 								df = new SimpleDateFormat("yyMMdd");
 								break;
-								
-							case 8:
+
+							case 8 :
 								df = new SimpleDateFormat("yyyyMMdd");
 								break;
-								
-							case 12:
+
+							case 12 :
 								df = new SimpleDateFormat("yyyyMMddHHmm");
 								break;
-								
-							case 14:
+
+							case 14 :
 								df = new SimpleDateFormat("yyyyMMddHHmmss");
 								break;
-							case 19:
+							case 19 :
 								df = new SimpleDateFormat("yyyyMMddHHmmss.SSSZ");
 								break;
-								
-							default:
+
+							default :
 								throw new IllegalArgumentException("Unknown dateformat " + args[n]);
 						}
-						args2[n-2] = df.parse(args[n]);
-					}	
+						args2[n - 2] = df.parse(args[n]);
+					}
 					break;
-					
-				case 'n':
-				case '%':
+
+				case 'n' :
+				case '%' :
 					break;
 			}
 		}
@@ -1823,16 +1827,16 @@ public class Macro {
 	/**
 	 * Map a value from a list to a new value
 	 */
-	
+
 	static String	_map	= "${map;<macro>[;<list>...]}";
 	public String _map(String args[]) throws Exception {
 		verifyCommand(args, _map, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
-		List<String> list = toList(args,2, args.length);
+		List<String> list = toList(args, 2, args.length);
 		List<String> result = new ArrayList<String>();
-		
-		for ( String s : list) {
-			String invoc = process("${" + macro +";" + s +"}");
+
+		for (String s : list) {
+			String invoc = process("${" + macro + ";" + s + "}");
 			result.add(invoc);
 		}
 
@@ -1842,17 +1846,17 @@ public class Macro {
 	/**
 	 * Map a value from a list to a new value, providing the value and the index
 	 */
-	
+
 	static String	_foreach	= "${foreach;<macro>[;<list>...]}";
 	public String _foreach(String args[]) throws Exception {
 		verifyCommand(args, _foreach, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
-		List<String> list = toList(args,2, args.length);
+		List<String> list = toList(args, 2, args.length);
 		List<String> result = new ArrayList<String>();
-		
+
 		int n = 0;
-		for ( String s : list) {
-			String invoc = process("${" + macro +";" + s +";" + n++ +"}");
+		for (String s : list) {
+			String invoc = process("${" + macro + ";" + s + ";" + n++ + "}");
 			result.add(invoc);
 		}
 
@@ -1862,19 +1866,19 @@ public class Macro {
 	/**
 	 * Take a list and convert this to the argumets
 	 */
-	
+
 	static String	_apply	= "${apply;<macro>[;<list>...]}";
 	public String _apply(String args[]) throws Exception {
 		verifyCommand(args, _apply, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
-		List<String> list = toList(args,2, args.length);
+		List<String> list = toList(args, 2, args.length);
 		List<String> result = new ArrayList<String>();
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("${").append(macro);
-		for ( String s : list) {
+		for (String s : list) {
 			sb.append(";").append(s);
-		}		
+		}
 		sb.append("}");
 
 		return process(sb.toString());

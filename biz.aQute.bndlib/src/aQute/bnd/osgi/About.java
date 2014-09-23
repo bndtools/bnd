@@ -41,6 +41,17 @@ public class About {
 	public static Version				_2_4		= new Version(2, 4, 0);
 
 	public static String[]				CHANGES_2_4	= {
+			"Laucher moved to Java 6",
+			"Always read bnd files with UTF-8 with a fallback to ISO-8859-1",
+			"Full Java 8 support",
+			"Added life cycle plugin that can interact with workspace/project creation/deletion",
+			"Allow includes in bnd files to specify a URL",
+			"Support for Gradle plugin",
+			"Support Travis builds",
+			"Added support for gestalt, allows build tools to communicate out what the environment they run in supports. See -bnd-driver",
+			"Full window testing, removed many window bugs",
+			"Removed (rather unknown) feature that did not prefix a sub-bundle when the sub-bundle file name "
+					+ "started with the project name. The reason was that it caused too much confusion. See bndtools#903",
 			"Provide an identity command in bnd that can be used to authorize other systems",
 			"Most paths can now be set with their primary key (e.g. -runbundles) but are appended with "
 					+ "secondary keys (anything that begins with the primary key  + .*, e.g. '-runbundles.5'). "

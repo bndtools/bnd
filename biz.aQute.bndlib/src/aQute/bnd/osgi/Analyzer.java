@@ -47,6 +47,7 @@ import aQute.lib.collections.*;
 import aQute.lib.filter.*;
 import aQute.lib.hex.*;
 import aQute.lib.io.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.cryptography.*;
 import aQute.libg.generics.*;
 import aQute.libg.reporter.*;
@@ -101,12 +102,12 @@ public class Analyzer extends Processor {
 		Analyzer analyzer = new Analyzer();
 		try {
 			analyzer.setJar(dirOrJar);
-			Properties properties = new Properties();
+			Properties properties = new UTF8Properties();
 			properties.put(IMPORT_PACKAGE, "*");
 			properties.put(EXPORT_PACKAGE, "*");
 			analyzer.setProperties(properties);
 			Manifest m = analyzer.calcManifest();
-			Properties result = new Properties();
+			Properties result = new UTF8Properties();
 			for (Iterator<Object> i = m.getMainAttributes().keySet().iterator(); i.hasNext();) {
 				Attributes.Name name = (Attributes.Name) i.next();
 				result.put(name.toString(), m.getMainAttributes().getValue(name));
@@ -395,7 +396,7 @@ public class Analyzer extends Processor {
 
 	Attrs parsePackageinfo(PackageRef packageRef, Resource r) throws Exception {
 
-		Properties p = new Properties();
+		Properties p = new UTF8Properties();
 		try {
 			InputStream in = r.openInputStream();
 			try {
@@ -1026,8 +1027,18 @@ public class Analyzer extends Processor {
 				value = projectName;
 			} else if (value.endsWith(".bnd")) {
 				value = value.substring(0, value.length() - 4);
-				if (!value.startsWith(getBase().getName()))
-					value = projectName + "." + value;
+				
+				//
+				// This basically unknown feature allowed you to 
+				// define a sub-bundle that specified a name that used the
+				// project name as a prefix, the project prefix would then
+				// be skipped. This caused several problems in practice
+				// and we actually did not take this into account in other
+				// places.
+				//
+				
+				//if (!value.startsWith(getBase().getName()))
+				value = projectName + "." + value;
 			}
 		}
 
@@ -1164,7 +1175,7 @@ public class Analyzer extends Processor {
 	public String getBndInfo(String key, String defaultValue) {
 		if (bndInfo == null) {
 			try {
-				Properties bndInfoLocal = new Properties();
+				Properties bndInfoLocal = new UTF8Properties();
 				URL url = Analyzer.class.getResource("bnd.info");
 				if (url != null) {
 					InputStream in = url.openStream();

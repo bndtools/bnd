@@ -9,13 +9,14 @@ import aQute.bnd.indexer.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.resource.*;
 import aQute.bnd.version.*;
+import aQute.lib.utf8properties.*;
 
 public class KnownBundleAnalyzer implements ResourceAnalyzer {
 
 	Processor p = new Processor();
 
 	public KnownBundleAnalyzer() {
-		Properties properties = new Properties();
+		Properties properties = new UTF8Properties();
 		InputStream stream = KnownBundleAnalyzer.class.getResourceAsStream("known-bundles.properties");
 		if (stream != null) {
 			try {

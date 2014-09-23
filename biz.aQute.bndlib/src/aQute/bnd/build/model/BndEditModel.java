@@ -15,6 +15,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.properties.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.tuple.*;
 
 /**
@@ -63,7 +64,7 @@ public class BndEditModel {
 
 	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
 																										this);
-	private final Properties										properties					= new Properties();
+	private final Properties										properties					= new UTF8Properties();
 	private final Map<String,Object>								objectProperties			= new HashMap<String,Object>();
 	private final Map<String,String>								changesToSave				= new TreeMap<String,String>();
 	private Project													project;
@@ -859,6 +860,15 @@ public class BndEditModel {
 		doSetObject(aQute.bnd.osgi.Constants.RUNREQUIRES, oldValue, requires, requirementListFormatter);
 	}
 
+	public List<Requirement> getRunBlacklist() {
+		return doGetObject(aQute.bnd.osgi.Constants.RUNBLACKLIST, requirementListConverter);
+	}
+
+	public void setRunBlacklist(List<Requirement> requires) {
+		List<Requirement> oldValue = getRunBlacklist();
+		doSetObject(aQute.bnd.osgi.Constants.RUNBLACKLIST, oldValue, requires, requirementListFormatter);
+	}
+
 	private <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
 		try {
 			R result;
@@ -1012,10 +1022,17 @@ public class BndEditModel {
 			result = new Processor();
 		else
 			result = new Processor(parent);
-		result.getProperties().putAll(properties);
+		
+		StringBuilder sb = new StringBuilder();
+		
 		for (Entry<String,String> e : changesToSave.entrySet()) {
-			result.setProperty(e.getKey(), cleanup(e.getValue()));
+			sb.append(e.getKey()).append( ": ").append( e.getValue()).append("\n\n");
 		}
+		UTF8Properties p = new UTF8Properties();
+		p.load( new StringReader(sb.toString()));
+		
+		result.getProperties().putAll(properties);
+		result.getProperties().putAll(p);
 		return result;
 	}
 
@@ -1024,5 +1041,13 @@ public class BndEditModel {
 			return null;
 
 		return value.replaceAll("\\\\\n", "");
+	}
+
+	/**
+	 * Return the saved changes in document format.
+	 */
+
+	public Map<String,String> getDocumentChanges() {
+		return changesToSave;
 	}
 }

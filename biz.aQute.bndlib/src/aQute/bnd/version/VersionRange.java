@@ -66,6 +66,17 @@ public class VersionRange {
 		high = upper;
 	}
 
+	public VersionRange(String low, String higher) {
+		this(new Version(low), new Version(higher));
+	}
+
+	public VersionRange(Version low, Version higher) {
+		this.low = low;
+		this.high = higher;
+		start = '[';
+		end = this.low.equals(this.high) ? ']' : ')';
+	}
+
 	public boolean isRange() {
 		return high != low;
 	}

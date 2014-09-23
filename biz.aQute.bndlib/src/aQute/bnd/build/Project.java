@@ -22,6 +22,7 @@ import aQute.lib.collections.*;
 import aQute.lib.converter.*;
 import aQute.lib.io.*;
 import aQute.lib.strings.*;
+import aQute.lib.utf8properties.*;
 import aQute.libg.command.*;
 import aQute.libg.generics.*;
 import aQute.libg.glob.*;
@@ -1970,7 +1971,7 @@ public class Project extends Processor {
 			return;
 		}
 
-		Properties p = new Properties(getProperties());
+		Properties p = new UTF8Properties(getProperties());
 
 		for (int i = 0; i < args.length; i++)
 			p.setProperty("" + i, Converter.cnv(String.class, args[i]));
@@ -2652,7 +2653,7 @@ public class Project extends Processor {
 			return null;
 		}
 		if (ide == null) {
-			ide = new Properties();
+			ide = new UTF8Properties();
 			File file = getFile(".settings/org.eclipse.jdt.core.prefs");
 			if (!file.isFile()) {
 				error("The ${ide;<>} macro requires a .settings/org.eclipse.jdt.core.prefs file in the project");

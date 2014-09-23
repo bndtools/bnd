@@ -7,6 +7,7 @@ import org.osgi.service.indexer.*;
 import org.osgi.service.indexer.impl.*;
 
 import aQute.bnd.service.*;
+import aQute.lib.utf8properties.*;
 import aQute.service.reporter.*;
 
 public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements ResourceAnalyzer, Plugin {
@@ -16,7 +17,7 @@ public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements Re
 	Reporter	reporter;
 
 	public KnownBundleAnalyzerPlugin() {
-		super(new Properties());
+		super(new UTF8Properties());
 	}
 
 	public void setProperties(Map<String,String> config) {
@@ -30,7 +31,7 @@ public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements Re
 		FileInputStream stream = null;
 		try {
 			stream = new FileInputStream(file);
-			Properties props = new Properties();
+			Properties props = new UTF8Properties();
 			props.load(stream);
 			setKnownBundlesExtra(props);
 		} catch (IOException e) {

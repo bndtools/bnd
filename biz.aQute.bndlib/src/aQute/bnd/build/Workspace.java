@@ -30,6 +30,7 @@ import aQute.lib.hex.*;
 import aQute.lib.io.*;
 import aQute.lib.settings.*;
 import aQute.lib.strings.*;
+import aQute.lib.utf8properties.*;
 import aQute.lib.zip.*;
 import aQute.service.reporter.*;
 
@@ -83,7 +84,7 @@ public class Workspace extends Processor {
 		if (defaults != null)
 			return defaults;
 
-		Properties props = new Properties();
+		Properties props = new UTF8Properties();
 		InputStream propStream = Workspace.class.getResourceAsStream("defaults.bnd");
 		if (propStream != null) {
 			try {

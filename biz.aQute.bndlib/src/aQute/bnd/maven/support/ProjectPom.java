@@ -10,11 +10,12 @@ import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
 import aQute.lib.io.*;
+import aQute.lib.utf8properties.*;
 
 public class ProjectPom extends Pom {
 
 	final List<URI>		repositories	= new ArrayList<URI>();
-	final Properties	properties		= new Properties();
+	final Properties	properties		= new UTF8Properties();
 	String				packaging;
 	String				url;
 
