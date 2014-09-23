@@ -390,6 +390,24 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			}
 			
 		});
+		if ( target.length == 3 ) {
+			String bsn = (String) target[1];
+			String version = (String) target[2];
+			
+			@SuppressWarnings("deprecation")
+			final File f = storageRepo.get(bsn, new VersionRange(version, version),0);
+			if ( f != null) {
+				map.put("Delete", new Runnable() {
+
+					public void run() {
+						f.delete();
+						regenerateAllIndexes();
+					}
+					
+				});
+			}
+			
+		}
 		return map;
 	}
 
