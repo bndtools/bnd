@@ -21,7 +21,7 @@ public class UTF8PropertiesTest extends TestCase {
 	
 	public void testBackslashEncodingWithReader() throws IOException {
 		Properties p = new UTF8Properties();
-		p.load( new StringReader("x=abc \\ def\n"));
+		p.load( new StringReader("x=abc \\\\ def\n"));
 		assertEquals("abc \\ def", p.get("x"));
 	}
 	public void testISO8859Encoding() throws IOException {
@@ -39,7 +39,7 @@ public class UTF8PropertiesTest extends TestCase {
 	public void testShowUTF8PropertiesDoNotSkipBackslash() throws IOException {
 		Properties p = new UTF8Properties();
 		p.load( new ByteArrayInputStream("x=abc \\ def\n".getBytes("UTF-8")));
-		assertEquals("abc \\ def", p.get("x"));
+		assertEquals("abc  def", p.get("x"));
 	}
 	
 	public void testShowPropertiesSkipBackslash() throws IOException {
