@@ -7,7 +7,8 @@ Bundle-Description:				A Swiss Army Knife for OSGi
 Private-Package: 				\
 	aQute.bnd.*, \
 	aQute.lib.*;-split-package:=first, \
-	aQute.libg.*;-split-package:=first
+	aQute.libg.*;-split-package:=first,\
+    org.osgi.service.*.annotations.*;-split-package:=first
 
 Export-Package:  \
 	aQute.bnd.annotation.*;-noimport:=true,\
@@ -31,9 +32,7 @@ Export-Package:  \
 	aQute.bnd.component.error;-noimport:=true,\
 	aQute.bnd.testing;-noimport:=true,\
 	org.osgi.service.repository,\
-	org.osgi.resource,\
-	org.osgi.service.component.annotations;-split-package:=first,\
-    org.osgi.service.metatype.annotations;-split-package:=first
+	org.osgi.resource
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 -includeresource: 				LICENSE, img/=img/, {readme.md}
