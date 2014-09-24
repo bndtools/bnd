@@ -1,8 +1,12 @@
 package aQute.bnd.deployer.repository.aether;
 
+import java.util.regex.*;
+
 import aQute.bnd.version.*;
 
 public class MvnVersion implements Comparable<MvnVersion> {
+	
+	private static final Pattern QUALIFIER = Pattern.compile("[-.]?([^0-9.].*)$");
 	
 	private static final String	QUALIFIER_SNAPSHOT	= "SNAPSHOT";
 
@@ -16,14 +20,14 @@ public class MvnVersion implements Comparable<MvnVersion> {
 		MvnVersion result;
 		
 		try {
-			int dashIndex = versionStr.indexOf('-');
-			if (dashIndex < 0) {
+			Matcher m = QUALIFIER.matcher(versionStr);
+			if (!m.find()) {
 				result = new MvnVersion(Version.parseVersion(versionStr));
 			} else {
-				String qualifier = versionStr.substring(dashIndex + 1);
+				String qualifier = m.group(1);
 
 				Version v = Version.parseVersion(versionStr.substring(0,
-						dashIndex));
+						m.start()));
 				Version osgiVersion = new Version(v.getMajor(), v.getMinor(),
 						v.getMicro(), qualifier);
 				result = new MvnVersion(osgiVersion);
