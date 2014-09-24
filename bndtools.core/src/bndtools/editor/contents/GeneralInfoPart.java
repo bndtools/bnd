@@ -159,7 +159,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
         toolkit.createLabel(composite, "Declarative Services:");
         cmbComponents = new Combo(composite, SWT.READ_ONLY);
-        cmbComponents.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
         // Content Proposal for the Activator field
         ContentProposalAdapter activatorProposalAdapter = null;
@@ -174,6 +173,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         // Decorator for the Activator field
         ControlDecoration decorActivator = new ControlDecoration(txtActivator, SWT.LEFT | SWT.CENTER, composite);
         decorActivator.setImage(contentAssistDecoration.getImage());
+        decorActivator.setMarginWidth(3);
         if (assistKeyStroke == null) {
             decorActivator.setDescriptionText("Content Assist is available. Start typing to activate");
         } else {
@@ -185,6 +185,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         // Decorator for the Components combo
         ControlDecoration decorComponents = new ControlDecoration(cmbComponents, SWT.LEFT | SWT.CENTER, composite);
         decorComponents.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        decorComponents.setMarginWidth(3);
         decorComponents.setDescriptionText("Use Java annotations to detect Declarative Service Components.");
         decorComponents.setShowOnlyOnFocus(false);
         decorComponents.setShowHover(true);
@@ -272,18 +273,15 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
         // Layout
         GridLayout layout = new GridLayout(2, false);
-        layout.horizontalSpacing = 10;
+        layout.horizontalSpacing = 15;
 
         composite.setLayout(layout);
 
-        GridData gd;
-        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-        gd.horizontalIndent = 5;
-        txtVersion.setLayoutData(gd);
+        GridData gd = new GridData(SWT.FILL, SWT.TOP, true, false);
 
-        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-        gd.horizontalIndent = 5;
+        txtVersion.setLayoutData(gd);
         txtActivator.setLayoutData(gd);
+        cmbComponents.setLayoutData(gd);
     }
 
     protected void addDirtyProperty(final String property) {
