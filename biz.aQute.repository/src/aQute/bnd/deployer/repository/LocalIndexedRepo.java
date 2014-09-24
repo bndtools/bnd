@@ -383,7 +383,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 	public Map<String,Runnable> actions(Object... target) throws Exception {
 		Map<String,Runnable> map = new HashMap<String,Runnable>();
-		map.put("Reindex", new Runnable() {
+		map.put("Refresh", new Runnable() {
 
 			public void run() {
 				regenerateAllIndexes();
@@ -400,8 +400,20 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				map.put("Delete", new Runnable() {
 
 					public void run() {
-						f.delete();
+						deleteEntry(f);						
 						regenerateAllIndexes();
+					}
+
+					private void deleteEntry(final File f) {
+						File parent = f.getParentFile();
+						f.delete();
+						File[] listFiles = parent.listFiles();
+						if ( listFiles.length == 1 && listFiles[0].getName().endsWith("-latest.jar"))
+							listFiles[0].delete();
+						
+						listFiles = parent.listFiles();
+						if ( listFiles.length == 0) 
+							IO.delete(parent);
 					}
 					
 				});
