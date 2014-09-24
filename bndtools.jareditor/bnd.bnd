@@ -1,6 +1,6 @@
 Bundle-SymbolicName: bndtools.jareditor;singleton:=true
 Bundle-Vendor: Bndtools
-Bundle-Version: 2.3.1.${tstamp}
+Bundle-Version: 2.4.0.${tstamp}
 Bundle-RequiredExecutionEnvironment: ${java.req.ee}
 Include-Resource: resources
 
@@ -31,17 +31,9 @@ Private-Package: bndtools.jareditor.internal,\
 	
 Conditional-Package: \
 	aQute.libg.*,\
-	aQute.lib.*,\
-	aQute.bnd.*
+	aQute.lib.*
 
 Import-Package: org.eclipse.ui*;texteditor=!;ui.workbench=!,\
-	javax.naming;resolution:=optional,\
-	javax.net.ssl;resolution:=optional,\
-	javax.xml.namespace;resolution:=optional,\
-	javax.xml.parsers;resolution:=optional,\
-	javax.xml.xpath;resolution:=optional,\
-	org.osgi.service.component.annotations;resolution:=optional,\
-	org.w3c.dom;resolution:=optional,\
 	*
 
 Bundle-Activator: bndtools.jareditor.internal.Plugin
