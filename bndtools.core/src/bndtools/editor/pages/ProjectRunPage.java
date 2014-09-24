@@ -37,7 +37,12 @@ public class ProjectRunPage extends FormPage {
     public static final IFormPageFactory FACTORY_PROJECT = new IFormPageFactory() {
         @Override
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
-            return new ProjectRunPage(editor, model, id, "Run", false);
+            //
+            // Re-enabling Resolve see: https://github.com/bndtools/bndtools/issues/651
+            // There might be some issues around this
+            // but we have to figure them out
+            //
+            return new ProjectRunPage(editor, model, id, "Run", true);
         }
 
         @Override
