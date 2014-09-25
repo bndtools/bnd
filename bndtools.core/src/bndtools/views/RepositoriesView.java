@@ -486,7 +486,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                                             } catch (Exception e) {
                                                 throw new RuntimeException(e);
                                             }
-                                            viewer.refresh(act);
+                                            viewer.refresh();
                                         }
                                     };
                                     a.setEnabled(enabled);
