@@ -1,4 +1,4 @@
-package _package_.provider;
+package _package_;
 
 
 

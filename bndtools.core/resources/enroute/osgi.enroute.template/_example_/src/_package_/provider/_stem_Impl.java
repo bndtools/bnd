@@ -15,7 +15,6 @@ import _package_.api._stem_;
  */
 @Component(immediate=true, name="_pid_")
 public class _stem_Impl implements _stem_ {
-	final static Logger log = LoggerFactory.getLogger(_stem_Impl.class);
 	private String name;
 
 	@Activate

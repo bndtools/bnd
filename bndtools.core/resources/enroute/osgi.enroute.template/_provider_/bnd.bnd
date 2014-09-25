@@ -25,7 +25,4 @@ Private-Package:  \
 
 
 -runrequires:  \
-	osgi.identity;filter:='(osgi.identity=_project_)',\
-	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
-	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
-	osgi.identity;filter:='(osgi.identity=osgi.base.debug.provider)'
+	osgi.identity;filter:='(osgi.identity=_project_)'
