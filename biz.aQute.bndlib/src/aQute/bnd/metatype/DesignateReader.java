@@ -1,14 +1,11 @@
 package aQute.bnd.metatype;
 
 import java.util.*;
-import java.util.regex.*;
 
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.*;
 
 import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.Clazz.MethodDef;
-import aQute.bnd.osgi.Descriptors.TypeRef;
 
 public class DesignateReader extends ClassDataCollector {
 	

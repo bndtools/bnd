@@ -8,7 +8,7 @@ Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
 Private-Package:  \
     aQute.bnd.*,\
     aQute.configurable.*,\
-    org.osgi.service.component.annotations.*;-split-package:=first,\
+    org.osgi.service.*.annotations.*;-split-package:=first,\
     aQute.lib.deployer.*;-split-package:=first,\
     aQute.lib.spring.*;-split-package:=first,\
     org.osgi.service.coordinator
@@ -47,6 +47,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	biz.aQute.bndlib;version=project,\
 	org.apache.tools.ant,\
 	org.osgi.service.component.annotations;version=6.0.0,\
+	org.osgi.service.metatype.annotations;version=6.0.0,\
 	osgi.cmpn;version=4.3.1,\
 	osgi.core;version=4.3.1,\
 	org.osgi.impl.bundle.bindex,\

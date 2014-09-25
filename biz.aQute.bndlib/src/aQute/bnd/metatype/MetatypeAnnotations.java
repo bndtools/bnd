@@ -2,11 +2,9 @@ package aQute.bnd.metatype;
 
 import java.util.*;
 
-import aQute.bnd.component.*;
 import aQute.bnd.component.TagResource;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
-import aQute.bnd.properties.*;
 import aQute.bnd.service.*;
 
 /**
