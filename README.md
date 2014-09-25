@@ -36,6 +36,11 @@ bndtools is continuously built and released on [CloudBees](https://bndtools.ci.c
 
 [![Built on DEV@cloud](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](http://www.cloudbees.com/foss/foss-dev.cb)
 
+## Feedback
+Feedback is always welcome, for general discussions use the <bndtools-users@googlegroups.com> list. We also have the <bndtools-dev@googlegroups.com> list for discussions on the development of bndtools.
+
+Bugs and issues should go to <https://github.com/bndtools/bndtools/issues>
+
 ## Contributing
 
 Want to hack on bndtools? There are [instructions](CONTRIBUTING.md) to get you
