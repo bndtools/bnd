@@ -11,27 +11,28 @@ bnd-release	=	https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBui
         ${build}/cache/biz.aQute.repository.jar;url=${bnd-release}/biz.aQute.repository/biz.aQute.repository-latest.jar
 
 
--plugin:  \
-\
-        aQute.bnd.deployer.repository.wrapper.Plugin; \
+-plugin.enroute.wrapper: aQute.bnd.deployer.repository.wrapper.Plugin; \
             location            =	"${build}/cache/wrapper"; \
-            reindex				=	true, \
-\
-		aQute.bnd.deployer.repository.LocalIndexedRepo; \
-			name=Local; \
-			local=${build}/local;\
-			pretty=true,\
-\
-        aQute.bnd.jpm.Repository; \
-	        includeStaged   	=       true; \
-	        name                =       Central; \
-	        location            =       ~/.bnd/shacache; \
-	        index               =       ${build}/repository.json, \
-\
-		aQute.bnd.deployer.repository.LocalIndexedRepo; \
-			name=Release; \
-			local=${build}/release;\
-			pretty=true
+            reindex				=	true
+            
+-plugin.enroute.localrepo= \
+	aQute.bnd.deployer.repository.LocalIndexedRepo; \
+		name=Local; \
+		local=${build}/local;\
+		pretty=true
+			
+-plugin.enroute.centralrepo = \
+	aQute.bnd.jpm.Repository; \
+	        includeStage	=       true; \
+	        nam		=       Central; \
+	        location	=       ~/.bnd/shacache; \
+	        index		=       ${build}/repository.json
+
+-plugin.enroute.releaserepo = \
+	aQute.bnd.deployer.repository.LocalIndexedRepo; \
+		name=Release; \
+		local=${build}/release;\
+		pretty=true
 
 
 -releaserepo: 					Release
@@ -54,6 +55,13 @@ Service-Component: 				*
 
 test-cases: 					${classes;NAMED;*Test}
 
+#
+# Make sure active dependencies added by bindex are used for resolving
+#
+-resolve.effective = resolve, active
+
+
+
 debug-bundles: \
 	osgi.identity;filter:='(osgi.identity=aQute.xray.plugin)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.metatype)',\
@@ -62,5 +70,4 @@ debug-bundles: \
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)', \
 	osgi.identity;filter:='(osgi.identity=osgi.base.debug.provider)'
-	
 	

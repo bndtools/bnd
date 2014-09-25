@@ -1,0 +1,11 @@
+#!/bin/sh
+export BND=../../bnd/biz.aQute.bnd
+export BNDTOOLS=../../bndtools
+git clean -fdx
+cp -rf .gradle-wrapper .gitignore .travis.yml * $BNDTOOLS/bndtools.core/resources/enroute/osgi.enroute.template 
+rm $BNDTOOLS/bndtools.core/resources/enroute/osgi.enroute.template/makezip
+zip -r enroute.zip .gradle-wrapper .gitignore .travis.yml *
+zip enroute.zip -d makezip
+cp enroute.zip $BND/templates
+
+
