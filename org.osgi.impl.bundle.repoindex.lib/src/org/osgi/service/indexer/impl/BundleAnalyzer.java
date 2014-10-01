@@ -202,10 +202,10 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 
 			String urlTemplate = state.getUrlTemplate();
 			if (urlTemplate != null) {
-				result = urlTemplate.replaceAll("%s", Util.getSymbolicName(resource).getName());
-				result = result.replaceAll("%f", fileName);
-				result = result.replaceAll("%p", dir);
-				result = result.replaceAll("%v", "" + Util.getVersion(resource));
+				String bsn = (urlTemplate.indexOf("%s") == -1) ? "" : Util.getSymbolicName(resource).getName();
+				Version version = (urlTemplate.indexOf("%v") == -1) ? Version.emptyVersion : Util.getVersion(resource);
+				urlTemplate = urlTemplate.replaceAll("%s", "%1\\$s").replaceAll("%f", "%2\\$s").replaceAll("%p", "%3\\$s").replaceAll("%v", "%4\\$s");
+				result = String.format(urlTemplate, bsn, fileName, dir, version);
 			} else {
 				result = dir + fileName;
 			}
