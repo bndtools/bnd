@@ -279,22 +279,24 @@ public class BndPlugin implements Plugin<Project> {
         classpath = compileJava.classpath
       }
 
-      tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file to a runnable jar.') { taskName ->
+      tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file to an executable jar.') { taskName ->
         if (taskName.startsWith('export.')) {
           def bndrun = taskName - 'export.'
           task(taskName) {
-            description "Export the ${bndrun}.bndrun file to a runnable jar."
+            description "Export the ${bndrun}.bndrun file to an executable jar."
             dependsOn assemble
             group 'export'
             def runFile = file("${bndrun}.bndrun")
-            def exportFile = new File(distsDir, "${bndrun}.jar")
+            def executableJar = new File(distsDir, "executable/${bndrun}.jar")
+            doFirst {
+              project.mkdir(executableJar.parent)
+            }
             doLast {
-              distsDir.mkdirs()
-              logger.info "Exporting: ${runFile.absolutePath} to ${exportFile.absolutePath}"
+              logger.info "Exporting ${runFile.absolutePath} to ${executableJar.absolutePath}"
               try {
-                bndProject.export(relativePath(runFile), false, exportFile)
+                bndProject.export(relativePath(runFile), false, executableJar)
               } catch (Exception e) {
-                throw new GradleException("Export of ${runFile} failed", e)
+                throw new GradleException("Export of ${runFile.absolutePath} to an executable jar failed", e)
               }
               checkErrors()
             }
@@ -309,6 +311,42 @@ public class BndPlugin implements Plugin<Project> {
             include '*.bndrun'
         }.each {
           dependsOn tasks.getByPath("export.${it.name - '.bndrun'}")
+        }
+      }
+
+      tasks.addRule('Pattern: runbundles.<name>: Create a distribution of the runbundles in <name>.bndrun file.') { taskName ->
+        if (taskName.startsWith('runbundles.')) {
+          def bndrun = taskName - 'runbundles.'
+          task(taskName) {
+            description "Create a distribution of the runbundles in the ${bndrun}.bndrun file."
+            dependsOn assemble
+            group 'export'
+            def runFile = file("${bndrun}.bndrun")
+            def runbundlesDir = new File(distsDir, "runbundles/${bndrun}")
+            doFirst {
+              project.delete(runbundlesDir)
+              project.mkdir(runbundlesDir)
+            }
+            doLast {
+              logger.info "Creating a distribution of the runbundles in ${runFile.absolutePath} in directory ${runbundlesDir.absolutePath}"
+              try {
+                  bndProject.exportRunbundles(relativePath(runFile), runbundlesDir)
+              } catch (Exception e) {
+                throw new GradleException("Creating a distribution of the runbundles in ${runFile.absolutePath} failed", e)
+              }
+              checkErrors()
+            }
+          }
+        }
+      }
+
+      task('runbundles') {
+        description "Create a distribution of the runbundles in each of the bndrun files."
+        group 'export'
+        fileTree(projectDir) {
+            include '*.bndrun'
+        }.each {
+          dependsOn tasks.getByPath("runbundles.${it.name - '.bndrun'}")
         }
       }
 
