@@ -18,6 +18,9 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS));
 		if (header.size() == 0)
 			return false;
+		
+		Set<String> ocdIds = new HashSet<String>();
+		Set<String> pids = new HashSet<String>();
 
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace().values();
@@ -31,6 +34,14 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 					OCDDef definition = OCDReader.getOCDDef(c, analyzer);
 					if (definition != null) {
 						definition.prepare(analyzer);
+						if (!ocdIds.add(definition.id)) {
+							analyzer.error("Duplicate OCD id %s from class %s; known ids %s", definition.id, c.getFQN(), ocdIds);
+						}
+						for (DesignateDef dDef: definition.designates) {
+							if (dDef.pid != null && !pids.add(dDef.pid)) {
+								analyzer.error("Duplicate pid %s from class %s", dDef.pid, c.getFQN());
+							}
+						}
 						classToOCDMap.put(c.getClassName().getBinary(), definition);
 						String name = "OSGI-INF/metatype/" + analyzer.validResourcePath(definition.id, "Invalid resource name") + ".xml";
 						analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
