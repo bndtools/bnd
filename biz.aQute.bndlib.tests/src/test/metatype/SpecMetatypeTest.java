@@ -1,7 +1,6 @@
 package test.metatype;
 
 import java.io.*;
-import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
@@ -18,7 +17,6 @@ import org.w3c.dom.*;
 
 import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
-import aQute.libg.generics.*;
 
 @SuppressWarnings("resource")
 public class SpecMetatypeTest extends TestCase {
@@ -271,16 +269,16 @@ public class SpecMetatypeTest extends TestCase {
 //		assertEqualList(source, trt.myList());
 	}
 
-	private static void assertEqualList(List< ? > a, Collection< ? > b) {
-		if (a.size() == b.size()) {
-			for (Object x : a) {
-				if (!b.contains(x))
-					throw new AssertionFailedError("expected:<" + a + "> but was: <" + b + ">");
-			}
-			return;
-		}
-		throw new AssertionFailedError("expected:<" + a + "> but was: <" + b + ">");
-	}
+//	private static void assertEqualList(List< ? > a, Collection< ? > b) {
+//		if (a.size() == b.size()) {
+//			for (Object x : a) {
+//				if (!b.contains(x))
+//					throw new AssertionFailedError("expected:<" + a + "> but was: <" + b + ">");
+//			}
+//			return;
+//		}
+//		throw new AssertionFailedError("expected:<" + a + "> but was: <" + b + ">");
+//	}
 
 	/**
 	 * Test the special conversions.
@@ -624,6 +622,7 @@ public class SpecMetatypeTest extends TestCase {
 //		assertAD(d, "fromSuperTwo", "From super two", null, null, null, 0, "String", null, null, null);
 	}
 
+	@SuppressWarnings("null")
 	static void assertAD(Document d,
 	String id, String name, String min, String max, String deflt, int cardinality, String type, String description,
 			String[] optionLabels, 

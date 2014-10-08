@@ -13,6 +13,7 @@ public class OCDReader extends ClassDataCollector {
 	
 	private Analyzer	analyzer;
 	private Clazz	clazz;
+	@SuppressWarnings("unused")
 	private boolean	inherit;
 	
 	private TypeRef name;
