@@ -9,6 +9,8 @@ import org.osgi.resource.*;
 
 import aQute.bnd.util.dto.*;
 import aQute.lib.collections.*;
+import aQute.lib.converter.*;
+import aQute.lib.hex.*;
 
 /**
  * This class provides an efficient way to store a resource through JSON
@@ -37,7 +39,6 @@ public class PersistentResource extends DTO implements Resource {
 		public int		directives;
 	}
 
-
 	public enum DataType {
 		STRING, LONG, DOUBLE, VERSION;
 	}
@@ -65,34 +66,43 @@ public class PersistentResource extends DTO implements Resource {
 					}
 					converted = cnv;
 				} else
-					converted = convert(t, (String) value);
+					converted = convert(t, value);
 			}
 			return converted;
 		}
 
-		private Object convert(DataType t, String value) {
-			switch (t) {
-				case DOUBLE :
-					return Double.valueOf(value);
+		private Object convert(DataType t, Object value) {
+			try {
+				switch (t) {
+					case DOUBLE :
+						return Converter.cnv(Double.class, value);
 
-				case LONG :
-					return Long.valueOf(value);
+					case LONG :
+						return Converter.cnv(Long.class, value);
 
-				case STRING :
-					return value;
+					case STRING :
+						return Converter.cnv(String.class, value);
 
-				case VERSION :
-					return Version.parseVersion(value);
+					case VERSION :
+						if (value instanceof String)
+							return Version.parseVersion((String) value);
 
-				default :
-					return null;
+						return Converter.cnv(Version.class, value);
 
+					default :
+						return null;
+
+				}
 			}
+			catch (Exception e) {
+				return null;
+			}
+
 		}
 	}
 
 	public PersistentResource() {}
-	
+
 	public PersistentResource(Resource resource) {
 
 		MultiMap<String,Capability> capMap = new MultiMap<String,Capability>();
@@ -136,45 +146,43 @@ public class PersistentResource extends DTO implements Resource {
 		Arrays.sort(namespaces);
 	}
 
-
 	public Resource getResource() {
 		if (resource == null) {
 			ResourceBuilder rb = new ResourceBuilder();
 
 			for (Namespace ns : namespaces) {
-				if ( ns.capabilities != null)
-				for (RCData rcdata : ns.capabilities) {
+				if (ns.capabilities != null)
+					for (RCData rcdata : ns.capabilities) {
 
-					CapReqBuilder capb = new CapReqBuilder(ns.name);
+						CapReqBuilder capb = new CapReqBuilder(ns.name);
 
-					for (Attr attrs : rcdata.properties) {
-						if (attrs.directive)
-							capb.addDirective(attrs.key, (String) attrs.value);
-						else
-							capb.addAttribute(attrs.key, attrs.getValue());
+						for (Attr attrs : rcdata.properties) {
+							if (attrs.directive)
+								capb.addDirective(attrs.key, (String) attrs.value);
+							else
+								capb.addAttribute(attrs.key, attrs.getValue());
+						}
+						rb.addCapability(capb);
 					}
-					rb.addCapability(capb);
-				}
-				if ( ns.requirements != null)
-				for (RCData rcdata : ns.requirements) {
+				if (ns.requirements != null)
+					for (RCData rcdata : ns.requirements) {
 
-					CapReqBuilder reqb = new CapReqBuilder(ns.name);
+						CapReqBuilder reqb = new CapReqBuilder(ns.name);
 
-					for (Attr attrs : rcdata.properties) {
-						if (attrs.directive)
-							reqb.addDirective(attrs.key, (String) attrs.value);
-						else
-							reqb.addAttribute(attrs.key, attrs.getValue());
+						for (Attr attrs : rcdata.properties) {
+							if (attrs.directive)
+								reqb.addDirective(attrs.key, (String) attrs.value);
+							else
+								reqb.addAttribute(attrs.key, attrs.getValue());
+						}
+						rb.addRequirement(reqb);
 					}
-					rb.addRequirement(reqb);
-				}
 			}
 
 			resource = rb.build();
 		}
 		return resource;
 	}
-
 
 	private static int getType(Object value) {
 		if (value == null || value instanceof String)
@@ -203,7 +211,7 @@ public class PersistentResource extends DTO implements Resource {
 			return attr;
 		}
 
-		attr.value = value + "";
+		attr.value = value;
 
 		if (value instanceof Collection) {
 			if (((Collection< ? >) value).size() > 0) {
@@ -250,32 +258,35 @@ public class PersistentResource extends DTO implements Resource {
 	}
 
 	public String toString() {
-		return "P-" + getResource();
+		try {
+			return "P-" + getResource();
+		}
+		catch (Exception e) {
+			return "P-" + Hex.toHexString(sha);
+		}
 	}
-
-
 
 	@Deprecated
-	public List<Capability> getCapabilities(String ns ) {
+	public List<Capability> getCapabilities(String ns) {
 		return null;
 	}
+
 	@Deprecated
-	public List<Requirement> getRequirements(String ns ) {
+	public List<Requirement> getRequirements(String ns) {
 		return null;
 	}
-	
+
 	@Deprecated
 	public static RCData getData(Map<String,Object> attributes, Map<String,String> directives) {
 		return null;
 	}
 
 	@Deprecated
-	public PersistentResource(byte[] digest, List<Capability> caps, List<Requirement> reqs){}
+	public PersistentResource(byte[] digest, List<Capability> caps, List<Requirement> reqs) {}
 
 	@Deprecated
 	public class RC implements Requirement, Capability {
-		public RC(RCData data, String ns) {
-		}
+		public RC(RCData data, String ns) {}
 
 		public String getNamespace() {
 			return null;

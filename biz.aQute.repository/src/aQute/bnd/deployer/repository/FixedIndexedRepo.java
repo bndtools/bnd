@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import aQute.bnd.service.*;
 import static aQute.bnd.deployer.repository.RepoConstants.*;
 
 /**
@@ -28,7 +29,7 @@ import static aQute.bnd.deployer.repository.RepoConstants.*;
  * 
  * @author Neil Bartlett
  */
-public class FixedIndexedRepo extends AbstractIndexedRepo {
+public class FixedIndexedRepo extends AbstractIndexedRepo implements Actionable {
 
 	private static final String	EMPTY_LOCATION	= "";
 
@@ -99,6 +100,39 @@ public class FixedIndexedRepo extends AbstractIndexedRepo {
 
 	public File getRoot() {
 		return cacheDir;
+	}
+	/**
+	 * Provide a menu to refresh. The target is Repository [, Symbolic Name (String) [, version (Version)]].
+	 */
+
+	@Override
+	public Map<String,Runnable> actions(Object... target) throws Exception {
+		Map<String,Runnable> map = new HashMap<String,Runnable>();
+		map.put("Refresh", new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					refresh();
+				}
+				catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}});
+		
+		return map;
+	}
+
+	@Override
+	public String tooltip(Object... target) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String title(Object... target) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

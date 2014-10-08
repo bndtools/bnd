@@ -92,11 +92,9 @@ public class StoredRevisionCache {
 		for (URI url : urls) {
 
 			// Fixup for older bug that put the file url in the urls :-(
-			if (url.getScheme().equals("file"))
-				continue;
 
 			try {
-				HttpURLConnection connection = getConnection(url);
+				URLConnection connection = getConnection(url);
 
 				MessageDigest digest = MessageDigest.getInstance("SHA1");
 				DigestInputStream din = new DigestInputStream(connection.getInputStream(), digest);
@@ -143,14 +141,27 @@ public class StoredRevisionCache {
 			path.setLastModified(modified);
 	}
 
-	private HttpURLConnection getConnection(URI url) throws Exception {
+	private URLConnection getConnection(URI url) throws Exception {
 		int count = 4;
 		while (count-- > 0) {
-			URLConnection urlc = url.toURL().openConnection();
-			if (!(urlc instanceof HttpURLConnection)) {
-				System.out.println(url);
 
+			if (url.getScheme().equalsIgnoreCase("file")) {
+				String s = url.toString();
+
+				File f = IO.getFile(s.substring("FILE:".length()));
+				url = f.toURI();
 			}
+
+			URLConnection urlc = url.toURL().openConnection();
+
+			//
+			// For testing, fixup file paths to make them relative
+			//
+
+			if (!(urlc instanceof HttpURLConnection)) {
+				return urlc;
+			}
+
 			urlc.setConnectTimeout(30000);
 			HttpURLConnection connection = (HttpURLConnection) urlc;
 			authenticate(connection);

@@ -2720,7 +2720,7 @@ public class bnd extends Processor {
 					else {
 						OutputStreamWriter osw = new OutputStreamWriter(fout, "UTF-8");
 						try {
-							p.store(fout, "converted from " + from);
+							p.store(osw, "converted from " + from);
 						}
 						finally {
 							osw.close();

@@ -6,6 +6,8 @@ import java.util.*;
 import org.osgi.resource.*;
 import org.osgi.service.repository.*;
 
+import aQute.bnd.build.*;
+import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.resource.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.repository.*;
@@ -27,6 +29,8 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 		String location();
 
 		boolean reindex();
+
+		String augments();
 	}
 
 	public void setRegistry(Registry registry) {
@@ -47,13 +51,56 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 		this.reporter = reporter;
 	}
 
+	/**
+	 * This is called when all initialization is done for the plugins, now we
+	 * can obtain a list of appropriate repos.
+	 */
 	public void done() throws Exception {
 		try {
+			
+			//
+			// Get the list if repos registered, repos that we can handle
+			//
+			
 			List<InfoRepository> irs = new ArrayList<InfoRepository>();
 			for (InfoRepository ir : registry.getPlugins(InfoRepository.class)) {
 				irs.add(ir);
 			}
+
 			this.wrapper = new InfoRepositoryWrapper(dir, irs);
+			
+			
+			// An augment file was specified, this specifies extra
+			// reqs and caps for the analyzed files
+			//
+
+			if (config.augments() != null) {
+
+				//
+				Workspace workspace = registry.getPlugin(Workspace.class);
+				File f = IO.getFile(workspace.getBuildDir(), config.augments());
+				if (!f.isFile()) {
+					if (reporter != null)
+						reporter.error("No augment file found at %s", f);
+					return;
+				}
+
+				//
+				// We read this in a processor that extends the workspace so we
+				// can use workspace properties
+				//
+
+				Processor p = new Processor(workspace);
+				p.loadProperties(f);
+
+				//
+				// And then add it to the indexer to use.
+				//
+
+				this.wrapper.addAugment(p.getFlattenedProperties());
+				p.close();
+			}
+			
 		}
 		catch (Exception e) {
 			e.printStackTrace();
