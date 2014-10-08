@@ -142,7 +142,7 @@ public class Filter {
 						break label;
 				}
 			}
-			String attr = tail.substring(0, ix).toLowerCase();
+			String attr = tail.substring(0, ix);
 			tail = tail.substring(ix);
 			return getProp(attr);
 		}
