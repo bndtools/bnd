@@ -128,11 +128,14 @@ public class Index {
 			save = true;
 		}
 		// Another fixup, have file urls in the refs :-(
-		for (Iterator<URI> i = ref.urls.iterator(); i.hasNext();) {
-			URI uri = i.next();
-			if (uri.getScheme().equalsIgnoreCase("file")) {
-				i.remove();
-				save = true;
+
+		if (Boolean.getBoolean("jpm4j.in.test") == false) {
+			for (Iterator<URI> i = ref.urls.iterator(); i.hasNext();) {
+				URI uri = i.next();
+				if (uri.getScheme().equalsIgnoreCase("file")) {
+					i.remove();
+					save = true;
+				}
 			}
 		}
 		if (save)

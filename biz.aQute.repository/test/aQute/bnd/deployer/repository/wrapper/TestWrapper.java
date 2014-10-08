@@ -18,6 +18,7 @@ public class TestWrapper extends TestCase {
 	File	tmp	= new File("tmp");
 
 	public void setUp() throws Exception {
+		System.setProperty("jpm4j.in.test", "true");
 		tmp.mkdirs();
 		IO.delete(tmp);
 		tmp.mkdirs();
@@ -26,6 +27,52 @@ public class TestWrapper extends TestCase {
 
 	public void tearDown() throws Exception {
 		IO.delete(tmp);
+	}
+
+	/**
+	 * Could not find an Import-Service capability // This turned out to be
+	 * caused by a toLowerCase in the filter :-(
+	 */
+
+	public void testImportService() throws Exception {
+		InfoRepositoryWrapper iw = getRepo();
+
+		Requirement cr = new CapReqBuilder("osgi.service").filter("(objectClass=org.slf4j.Logger)")
+				.addDirective("effective", "active").buildSyntheticRequirement();
+
+		Map<Requirement,Collection<Capability>> provider = iw.findProviders(Collections.singleton(cr));
+		assertNotNull(provider);
+		assertEquals(1, provider.size());
+		Capability cap = provider.values().iterator().next().iterator().next();
+		Resource resource = cap.getResource();
+		assertNotNull(resource);
+		List<Capability> capabilities = resource.getCapabilities("osgi.identity");
+		assertEquals(1, capabilities.size());
+		Capability identity = capabilities.iterator().next();
+		assertEquals("osgi.logger.provider", identity.getAttributes().get("osgi.identity"));
+	}
+
+	private InfoRepositoryWrapper getRepo() throws Exception {
+		Repository repo = new Repository();
+		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "testdata/ws/cnf/jpm4j.json"));
+		InfoRepositoryWrapper iw = new InfoRepositoryWrapper(tmp, Collections.singleton(repo));
+		return iw;
+	}
+
+	/**
+	 * Attributes do not properly encode lists (they are encoded as "[a,b]",
+	 * e.g. there is a toString somewhere // This turned out to be caused by the
+	 * PersistentResource.getAttr conversion/type guessing. We always turned an
+	 * object into a string; so lists became strings.
+	 */
+	public void testListsBecomeStrings() throws Exception {
+		InfoRepositoryWrapper iw = getRepo();
+
+		Requirement cr = new CapReqBuilder("osgi.service").filter("(objectClass=osgi.enroute.logger.api.LoggerAdmin)")
+				.addDirective("effective", "active").buildSyntheticRequirement();
+
+		Map<Requirement,Collection<Capability>> provider = iw.findProviders(Collections.singleton(cr));
+		assertEquals(1, provider.size());
 	}
 
 	public void testbasic() throws Exception {
@@ -72,11 +119,10 @@ public class TestWrapper extends TestCase {
 		augments.load(new StringReader("biz.aQute.jpm.daemon: cap=test;test=1\n"));
 		iw.addAugment(augments);
 
-		
 		//
 		// Get the test and identity capability
 		//
-		
+
 		Requirement testreq = new CapReqBuilder("test").filter("(test=1)").buildSyntheticRequirement();
 
 		Requirement identity = new CapReqBuilder("osgi.identity").filter("(osgi.identity=biz.aQute.jpm.daemon)")
@@ -90,7 +136,7 @@ public class TestWrapper extends TestCase {
 		//
 		// Test if they come from the same resource
 		//
-		
+
 		Capability testcap = result.get(testreq).iterator().next();
 		Capability identitycap = result.get(identity).iterator().next();
 		assertNotNull(testcap);
