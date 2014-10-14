@@ -95,7 +95,7 @@ public class MacroTest extends TestCase {
 		assertEquals("000010", processor.getReplacer().process("${format;%1$06d;10}"));
 		assertEquals("2e C8 300 620", processor.getReplacer().process("${format;%x %X %d %o;46;200;300;400;500}"));
 		assertEquals("+00010", processor.getReplacer().process("${format;%+06d;10}"));
-		assertEquals("100,000", processor.getReplacer().process("${format;%,6d;100000}"));
+		assertEquals(String.format("%,6d", 100000), processor.getReplacer().process("${format;%,6d;100000}"));
 
 		assertEquals("xyz", processor.getReplacer().process("${trim; \txyz\t  }"));
 		
