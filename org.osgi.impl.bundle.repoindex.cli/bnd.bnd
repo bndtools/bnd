@@ -3,10 +3,9 @@
 	org.osgi.impl.bundle.repoindex.api;version=project,\
 	org.osgi.impl.bundle.repoindex.lib;version=project,\
 	ee.j2se;version=${javac.ee},\
-	osgi.cmpn;version=${osgi.cmpn.ver},\
-	de.kalpatec.pojosr.framework;version=${pojosr.ver},\
-	org.kohsuke.args4j;version=${args4j.ver},\
-	${junit}
+	osgi.cmpn;version=4.3.1,\
+	de.kalpatec.pojosr.framework;version=0.1.8,\
+	org.kohsuke.args4j;version=2.0.26
 
 # Define Contents
 bindex-pkgs:\
@@ -43,7 +42,7 @@ Private-Package: \
 	${osgi-pkgs}
 
 # Main headers
-Bundle-Version: ${baseversion}.${tstamp}
+Bundle-Version: 2.1.4.${tstamp}
 Bundle-Name: BIndex2: Repository Index Generator (Standalone)
 Main-Class: org.osgi.impl.bundle.bindex.cli.Index
 Bundle-Activator: org.osgi.service.indexer.osgi.Activator

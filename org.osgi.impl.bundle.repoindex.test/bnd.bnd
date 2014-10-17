@@ -1,11 +1,11 @@
 -buildpath:\
+  org.osgi.impl.bundle.repoindex.api;version=project,\
   org.osgi.impl.bundle.repoindex.lib;version=project,\
-  org.osgi.impl.bundle.repoindex.lib;version=snapshot,\
   ee.j2se;version=${javac.ee},\
-  osgi.core;version=${osgi.core.ver},\
-  osgi.cmpn;version=${osgi.cmpn.ver},\
-  org.mockito.mockito-all;version=${mockito.ver},\
-  ${junit}
+  osgi.core;version=4.3.1,\
+  osgi.cmpn;version=4.3.1,\
+  org.mockito.mockito-all;version=1.9,\
+  com.springsource.org.junit;version=4.10.0
 
 # This is required to ensure the cli JAR is built before
 # running the integration tests
@@ -13,9 +13,9 @@
 
 Conditional-Package: org.example.tests.utils
 
--runpath: org.mockito.mockito-all;version=${mockito.ver}
+-runpath: org.mockito.mockito-all;version=1.9
 -runbundles: org.osgi.impl.bundle.repoindex.lib;version=latest,\
-  osgi.cmpn;version=${osgi.cmpn.ver}
+  osgi.cmpn;version=4.3.1
   
 -runvm: -ea
 -runfw: org.apache.felix.framework;version=4.0
@@ -23,4 +23,5 @@ Conditional-Package: org.example.tests.utils
 Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
 Private-Package: org.example.tests.osgi,\
     testdata
-Bundle-Version: 0.0.1
+
+-releaserepo:
