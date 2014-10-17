@@ -1,0 +1,38 @@
+-buildpath: \
+	org.osgi.impl.bundle.repoindex.api;version=project,\
+	org.osgi.impl.bundle.repoindex.lib;version=project,\
+	ee.j2se;version=${javac.ee},\
+	osgi.cmpn;version=4.3.1,\
+	de.kalpatec.pojosr.framework;version=0.1.8,\
+	org.apache.tools.ant
+
+bindex-pkgs:\
+	org.osgi.service.indexer.impl,\
+	org.osgi.service.indexer.impl.types,\
+	org.osgi.service.indexer.impl.util,\
+	org.osgi.service.indexer.osgi
+pojosr-pkgs: de.kalpatec.pojosr.*
+osgi-pkgs:\
+	org.osgi.framework,\
+	org.osgi.framework.hooks.bundle,\
+	org.osgi.framework.hooks.resolver,\
+	org.osgi.framework.hooks.service,\
+	org.osgi.framework.hooks.weaving,\
+	org.osgi.framework.launch,\
+	org.osgi.framework.startlevel,\
+	org.osgi.framework.wiring,\
+	org.osgi.service.packageadmin,\
+	org.osgi.service.startlevel,\
+	org.osgi.service.url,\
+	org.osgi.util.tracker;-split-package:=first
+Private-Package: \
+	org.osgi.impl.bundle.repoindex.ant,\
+	org.osgi.service.indexer,\
+	org.osgi.service.log,\
+	${bindex-pkgs},\
+	${pojosr-pkgs},\
+	${osgi-pkgs}
+Include-Resource: taskdef.properties
+Bundle-Activator: org.osgi.service.indexer.osgi.Activator
+
+Bundle-Version: 2.1.4.${tstamp}

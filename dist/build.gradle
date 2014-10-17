@@ -27,6 +27,10 @@ task('index') {
   dependsOn releaseNeeded
   group 'release'
 
+  /* indexers */
+  def bindexJar = file('bindex/org.osgi.impl.bundle.bindex.jar')
+  def repoindexJar = bnd.project.getBundle('org.osgi.impl.bundle.repoindex.cli', 'latest', null, ['strategy':'highest']).file
+
   /* Bundles to index. */
   def bundles = fileTree(releaserepo) {
     include '**/*.jar'
@@ -47,8 +51,8 @@ task('index') {
     def bundlesToIndex = bundles*.absolutePath
     /* OBR uncompressed. */
     javaexec {
-      classpath cnf.file('gradle/dependencies/org.osgi.impl.bundle.bindex.jar')
-      main = 'org.osgi.impl.bundle.bindex.cli.Index'
+      main = '-jar' // first arg must be the jar
+      args bindexJar
       args '-r', obr_uncompressed
       args '-d', releaserepo.toURI()
       args '-n', 'bnd'
@@ -58,8 +62,8 @@ task('index') {
 
     /* OBR compressed. */
     javaexec {
-      classpath cnf.file('gradle/dependencies/org.osgi.impl.bundle.bindex.jar')
-      main = 'org.osgi.impl.bundle.bindex.cli.Index'
+      main = '-jar' // first arg must be the jar
+      args bindexJar
       args '-r', obr_compressed
       args '-d', releaserepo.toURI()
       args '-n', 'bnd'
@@ -69,8 +73,8 @@ task('index') {
 
     /* R5 uncompressed. */
     javaexec {
-      classpath cnf.file('gradle/dependencies/org.osgi.impl.bundle.repoindex.cli.jar')
-      main = 'org.osgi.impl.bundle.bindex.cli.Index'
+      main = '-jar' // first arg must be the jar
+      args repoindexJar
       args '--pretty'
       args '-r', r5_uncompressed
       args '-d', releaserepo
@@ -81,8 +85,8 @@ task('index') {
 
     /* R5 compressed. */
     javaexec {
-      classpath cnf.file('gradle/dependencies/org.osgi.impl.bundle.repoindex.cli.jar')
-      main = 'org.osgi.impl.bundle.bindex.cli.Index'
+      main = '-jar' // first arg must be the jar
+      args repoindexJar
       args '-r', r5_compressed
       args '-d', releaserepo
       args '-n', 'bnd'
@@ -95,5 +99,6 @@ task('index') {
 clean {
   doLast {
     project.delete(releaserepo)
+    project.mkdir(releaserepo)
   }
 }
