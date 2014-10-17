@@ -29,7 +29,7 @@ public class TestStandaloneLibrary extends TestCase {
 		File tempFile = copyToTempFile(tempDir, "testdata/01-bsn+version.jar");
 
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURL().toString());
+		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(Collections.singleton(tempFile), writer, config);
 
 		assertEquals(readStream(TestStandaloneLibrary.class.getResourceAsStream("/testdata/fragment-basic.txt")), writer.toString().trim());
@@ -46,7 +46,7 @@ public class TestStandaloneLibrary extends TestCase {
 		File tempFile = copyToTempFile(tempDir, "testdata/org.eclipse.equinox.ds-1.4.0.jar");
 
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURL().toString());
+		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(Collections.singleton(tempFile), writer, config);
 
 		assertEquals(readStream(TestStandaloneLibrary.class.getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0.fragment.txt")), writer.toString().trim());
@@ -69,7 +69,7 @@ public class TestStandaloneLibrary extends TestCase {
 		File tempFile = copyToTempFile(tempDir, "testdata/org.eclipse.equinox.ds-1.4.0.jar");
 
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURL().toString());
+		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(Collections.singleton(tempFile), writer, config);
 
 		assertEquals(readStream(TestStandaloneLibrary.class.getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0.extra-fragment.txt")), writer.toString().trim());
@@ -85,7 +85,7 @@ public class TestStandaloneLibrary extends TestCase {
 		File tempFile = copyToTempFile(tempDir, "testdata/jcip-annotations.jar");
 
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURL().toString());
+		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(Collections.singleton(tempFile), writer, config);
 
 		assertEquals(readStream(TestStandaloneLibrary.class.getResourceAsStream("/testdata/plainjar.fragment.txt")), writer.toString().trim());

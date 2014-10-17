@@ -59,7 +59,7 @@ public class TestOSGiServices extends TestCase {
 		StringWriter writer = new StringWriter();
 
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURL().toString());
+		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(Collections.singleton(copyToTempFile(tempDir, "testdata/01-bsn+version.jar")), writer, config);
 
 		assertEquals(readStream(TestOSGiServices.class.getResourceAsStream("/testdata/fragment-basic.txt")), writer.toString().trim());
@@ -76,7 +76,7 @@ public class TestOSGiServices extends TestCase {
 		StringWriter writer = new StringWriter();
 
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURL().toString());
+		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(Collections.singleton(copyToTempFile(tempDir, "testdata/01-bsn+version.jar")), writer, config);
 
 		assertEquals(readStream(TestOSGiServices.class.getResourceAsStream("/testdata/fragment-wibble.txt")), writer.toString().trim());
@@ -101,7 +101,7 @@ public class TestOSGiServices extends TestCase {
 		files.add(copyToTempFile(tempDir, "testdata/02-localization.jar"));
 
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURL().toString());
+		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(files, writer, config);
 
 		assertEquals(readStream(TestOSGiServices.class.getResourceAsStream("/testdata/fragment-wibble-filtered.txt")), writer.toString().trim());
@@ -131,7 +131,7 @@ public class TestOSGiServices extends TestCase {
 		StringWriter writer = new StringWriter();
 		Set<File> files = Collections.singleton(copyToTempFile(tempDir, "testdata/01-bsn+version.jar"));
 		Map<String, String> config = new HashMap<String, String>();
-		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURL().toString());
+		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(files, writer, config);
 
 		// Verify log output

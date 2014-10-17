@@ -422,6 +422,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	}
 
 	private void doBREE(Resource resource, List<? super Requirement> reqs) throws Exception {
+		@SuppressWarnings("deprecation")
 		String breeStr = resource.getManifest().getMainAttributes().getValue(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT);
 		Map<String, Map<String, String>> brees = OSGiHeader.parseHeader(breeStr);
 
