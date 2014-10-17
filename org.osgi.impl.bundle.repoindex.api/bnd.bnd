@@ -1,0 +1,6 @@
+Bundle-Version: 2.0.0.${tstamp}
+Export-Package: org.osgi.service.indexer
+-buildpath: \
+	ee.j2se;version=${javac.ee},\
+	biz.aQute.bnd.annotation,\
+	${junit}

@@ -1,0 +1,12 @@
+* Effective directive
+* Tests for config settings:
+	* repo name
+	* stylesheet
+	* root URL
+	* URL template
+	* licence URL
+* Import attributes and mandatory attributes
+* Visibility: re-export on require-bundle
+* DynamicImport-Package
+* DS
+* Blueprint
