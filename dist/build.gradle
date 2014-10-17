@@ -99,5 +99,6 @@ task('index') {
 clean {
   doLast {
     project.delete(releaserepo)
+    project.mkdir(releaserepo)
   }
 }
