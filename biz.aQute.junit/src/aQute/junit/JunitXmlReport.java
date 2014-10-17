@@ -83,7 +83,7 @@ public class JunitXmlReport implements TestReporter {
 			bundles.addContent(bundle);
 		}
 		if (targetBundle != null) {
-			String header = (String) targetBundle.getHeaders().get(aQute.bnd.osgi.Constants.BND_ADDXMLTOTEST);
+			String header = targetBundle.getHeaders().get(aQute.bnd.osgi.Constants.BND_ADDXMLTOTEST);
 			if (header != null) {
 				StringTokenizer st = new StringTokenizer(header, " ,");
 
@@ -190,14 +190,9 @@ public class JunitXmlReport implements TestReporter {
 	private String getTrace(Throwable t) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
-		pw.println(t.toString());
-
-		StackTraceElement ste[] = t.getStackTrace();
-		for (int i = 0; i < ste.length; i++) {
-			pw.println("at " + ste[i].toString().trim());
-		}
+		t.printStackTrace(pw);
 		pw.close();
-		return sw.toString();
+		return sw.toString().replace('\t', ' ');
 	}
 
 	// <testcase classname="test.AnalyzerTest" name="testFindClass"
