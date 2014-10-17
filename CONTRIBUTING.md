@@ -1,10 +1,5 @@
 # Contributing to bndtools
 
-*The following is a newly proposed development process. We plan to move the bndtools
-project to use the triangular workflow and the developer certificate of origin
-in about 4 weeks. If you have any comments on this proposed process change,
-please add them to the [Request for Comments](https://github.com/bndtools/bndtools/issues/905).*
-
 Want to hack on bndtools? Here are instructions to get you
 started. They are probably not perfect, please let us know if anything
 feels wrong or incomplete.
