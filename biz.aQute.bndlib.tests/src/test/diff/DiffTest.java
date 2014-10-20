@@ -134,6 +134,27 @@ public class DiffTest extends TestCase {
 		assertTrue(diff.getDelta() == Delta.UNCHANGED);
 	}
 
+	/**
+	 * Test the scenario where nested annotations can generate false positive in
+	 * diffs
+	 * <p>
+	 * The trigger is a class-level annotations of the form
+	 * 
+	 * <pre>
+	 * {@literal @}Properties(value = { {@literal @}Property(name = "some.key", value = "some.value") })
+	 * </pre>
+	 * 
+	 * @throws Exception
+	 */
+	public void testNestedExportedAnnotations() throws Exception {
+
+		File input = IO.getFile("testresources/exported-annotations.jar");
+		Tree one = differ.tree(input);
+		Tree two = differ.tree(input);
+		Diff diff = one.diff(two);
+		assertTrue(diff.getDelta() == Delta.UNCHANGED);
+	}
+
 	public static void testAwtGeom() throws Exception {
 		Tree newer = differ.tree(IO.getFile("../cnf/repo/ee.j2se/ee.j2se-1.5.0.jar"));
 		Tree gp = newer.get("<api>").get("java.awt.geom").get("java.awt.geom.GeneralPath");
