@@ -10,14 +10,5 @@ JPMCommand:					_cmd_
 
 -runfw:						org.eclipse.osgi
 
--runproperties: 			osgi.console.enable.builtin=false, osgi.console=
-
 -runrequires:  \
-	osgi.identity;filter:='(osgi.identity=_project_)'
-
--runsystempackages: javax.script
-
--runtrace: true
-
--runbundles: ${error;You must resolve the _pid_.bndrun file before you can run it}
-
+	osgi.identity;filter:='(osgi.identity=_application_)'

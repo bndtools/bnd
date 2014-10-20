@@ -10,9 +10,6 @@ Bundle-Description: 				\
 	\
 	${warning;Please update this Bundle-Description in _project_/bnd.bnd}
 
-Export-Package:  \
-	_package_.api;provide:=true
-
 Private-Package:  \
 	_package_
 	
