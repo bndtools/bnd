@@ -6,4 +6,6 @@
         index=${workspace}/cnf/jpm4j.json, \
 \
 	aQute.bnd.deployer.repository.wrapper.Plugin; \
-		location="cache/wrapper"
+		location="cache/wrapper"; \
+		augments=augments.properties; \
+		reset.cache=true
