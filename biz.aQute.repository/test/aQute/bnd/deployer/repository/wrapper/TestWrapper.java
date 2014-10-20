@@ -7,8 +7,10 @@ import junit.framework.*;
 
 import org.osgi.resource.*;
 
+import aQute.bnd.build.*;
 import aQute.bnd.jpm.*;
 import aQute.bnd.osgi.resource.*;
+import aQute.bnd.service.repository.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.lib.utf8properties.*;
@@ -144,6 +146,54 @@ public class TestWrapper extends TestCase {
 		assertEquals(testcap.getResource(), identitycap.getResource());
 
 		iw.close();
+	}
+
+	/**
+	 * Test the augments facility. This allows us to add caps/reqs to bundles
+	 * with a file from the workspace.
+	 */
+
+	public void testAugment2() throws Exception {
+		
+		File cache = new File("cache");
+		IO.deleteWithException(cache);
+		
+		Workspace ws = Workspace.getWorkspace( IO.getFile("testdata/ws"));
+		
+		assertNotNull( ws );
+		
+		Repository repo = ws.getPlugin(Repository.class);
+		assertNotNull( repo );
+		
+		assertNotNull(repo.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
+
+		org.osgi.service.repository.Repository osgi = ws.getPlugin(org.osgi.service.repository.Repository.class);
+		
+		//
+		// Get the test and identity capability
+		//
+		
+
+		Requirement testreq = new CapReqBuilder("test").filter("(test=1)").buildSyntheticRequirement();
+
+		Requirement identity = new CapReqBuilder("osgi.identity").filter("(osgi.identity=biz.aQute.jpm.daemon)")
+				.buildSyntheticRequirement();
+
+		Map<Requirement,Collection<Capability>> result = osgi.findProviders(Arrays.asList(testreq, identity));
+
+		assertNotNull(result);
+		assertEquals(2, result.size());
+
+		//
+		// Test if they come from the same resource
+		//
+
+		Capability testcap = result.get(testreq).iterator().next();
+		Capability identitycap = result.get(identity).iterator().next();
+		assertNotNull(testcap);
+		assertNotNull(identitycap);
+		assertEquals(testcap.getResource(), identitycap.getResource());
+
 	}
 
 }

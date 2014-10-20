@@ -1,0 +1,12 @@
+
+Import-Package: provider;version=1
+
+
+
+-runpath: provider
+
+-runrequires:  \
+	osgi.identity;filter:='(osgi.identity=requirer)'
+
+-resourceonly: true
+-includeresource: foo;literal='foo'

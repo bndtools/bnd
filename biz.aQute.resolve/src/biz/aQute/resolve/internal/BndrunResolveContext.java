@@ -11,6 +11,7 @@ import org.osgi.resource.Resource;
 import org.osgi.service.log.*;
 import org.osgi.service.repository.*;
 
+import aQute.bnd.build.*;
 import aQute.bnd.build.model.*;
 import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.header.*;
@@ -32,8 +33,8 @@ public class BndrunResolveContext extends GenericResolveContext {
 
 	private EE							ee;
 
-	private List<ExportedPackage>		sysPkgsExtra;
-	private Parameters					sysCapsExtraParams;
+	private List<ExportedPackage>		sysPkgsExtra = new ArrayList<ExportedPackage>();
+	private Parameters					sysCapsExtraParams = new Parameters();
 	private Parameters					resolvePrefs;
 
 	private Version						frameworkResourceVersion	= null;
@@ -60,6 +61,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 			loadEE();
 			loadSystemPackagesExtra();
 			loadSystemCapabilitiesExtra();
+			loadpaths();
 			loadRepositories();
 			constructBlacklist();
 			loadEffectiveSet();
@@ -71,6 +73,59 @@ public class BndrunResolveContext extends GenericResolveContext {
 			throw new RuntimeException(e);
 		}
 		super.init();
+	}
+
+	/**
+	 * Load the capabilities and packages from the -testpath and -runpath since
+	 * we make those available. Testpath is only added whent he Test-Cases header
+	 * is set in the lowest properties file.
+	 */
+	private void loadpaths() throws Exception {
+		loadpath(Constants.RUNPATH, "-runpath");
+		if ( properties.get(Constants.TESTCASES) != null && !properties.is(Constants.NOJUNITOSGI))
+			loadpath(Constants.TESTPATH, "-testpath");
+	}
+
+	/**
+	 * Read the bundles from a path (test/run) and copy their exported packages to the
+	 * packages extra list and their capabilities to the capabilities extra list just
+	 * like the launcher does. This only works when we have access to a project
+	 * or bndrun file parented by a project. 
+	 */
+	private void loadpath(String path, String source ) throws Exception {
+		Processor parent = properties.getParent();
+		if ( parent == null || ! (parent instanceof Project))
+			return;
+
+		//
+		// Get the full contents of the path
+		//
+		
+		Project p = (Project) parent;
+		String header = properties.mergeProperties(path);
+		
+		//
+		// Now, from this path, get the bundles
+		//
+		
+		List<Container> bundles = p.getBundles(Strategy.HIGHEST, header, source);
+		for ( Container c : bundles ) {
+			
+			if ( c.getAttributes() != null && Processor.isTrue(c.getAttributes().get("-skip:")))
+					continue;
+			
+			//
+			// If the container is ok, we add the exported packages and the capabilities
+			// to the frameworks' extra packages/caps.
+			//
+			
+			if ( c.getError() == null) {
+				Domain domain = Domain.domain(c.getManifest());
+				this.sysCapsExtraParams.putAll(domain.getProvideCapability());
+				this.sysPkgsExtra.addAll( toExportedPackages( domain.getExportPackage()));
+			} else
+				p.warning("The %s contains an error %s for bundle %s", source, c.getError(), c.getBundleSymbolicName());
+		}
 	}
 
 	private void loadEE() {
@@ -110,7 +165,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 
 	private void loadSystemCapabilitiesExtra() {
 		String header = properties.mergeProperties(Constants.RUNSYSTEMCAPABILITIES);
-		sysCapsExtraParams = header == null ? null : new Parameters(header);
+		sysCapsExtraParams.putAll( new Parameters(header));
 	}
 
 	private void loadRepositories() throws IOException {

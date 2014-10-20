@@ -31,6 +31,8 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 		boolean reindex();
 
 		String augments();
+
+		boolean reset_cache();
 	}
 
 	public void setRegistry(Registry registry) {
@@ -57,50 +59,62 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 	 */
 	public void done() throws Exception {
 		try {
-			
+
 			//
 			// Get the list if repos registered, repos that we can handle
 			//
-			
+
 			List<InfoRepository> irs = new ArrayList<InfoRepository>();
 			for (InfoRepository ir : registry.getPlugins(InfoRepository.class)) {
 				irs.add(ir);
 			}
 
 			this.wrapper = new InfoRepositoryWrapper(dir, irs);
-			
-			
+
+			if (config.reindex())
+				this.wrapper.clear();
+
 			// An augment file was specified, this specifies extra
 			// reqs and caps for the analyzed files
 			//
 
 			if (config.augments() != null) {
 
-				//
 				Workspace workspace = registry.getPlugin(Workspace.class);
-				File f = IO.getFile(workspace.getBuildDir(), config.augments());
-				if (!f.isFile()) {
-					if (reporter != null)
-						reporter.error("No augment file found at %s", f);
-					return;
-				}
-
-				//
-				// We read this in a processor that extends the workspace so we
-				// can use workspace properties
-				//
-
 				Processor p = new Processor(workspace);
-				p.loadProperties(f);
+				try {
+					
+					if (!config.augments().equals("WORKSPACE")) {
+						File f = IO.getFile(workspace.getBuildDir(), config.augments());
+						if (!f.isFile()) {
+							if (reporter != null)
+								reporter.error("No augment file found at %s", f);
+							return;
+						}
 
-				//
-				// And then add it to the indexer to use.
-				//
+						//
+						// We read this in a processor that extends the
+						// workspace so
+						// we
+						// can use workspace properties
+						//
 
-				this.wrapper.addAugment(p.getFlattenedProperties());
-				p.close();
+						p.setProperties(f);
+						this.wrapper.clear(f.lastModified());
+					}
+
+					//
+					// And then add it to the indexer to use.
+					//
+
+					this.wrapper.addAugment(p.getFlattenedProperties());
+					this.wrapper.clear(workspace.getPropertiesFile().lastModified());
+				}
+				finally {
+					p.close();
+				}
 			}
-			
+
 		}
 		catch (Exception e) {
 			e.printStackTrace();

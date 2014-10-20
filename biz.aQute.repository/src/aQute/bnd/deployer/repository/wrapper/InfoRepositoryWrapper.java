@@ -212,4 +212,16 @@ public class InfoRepositoryWrapper implements Repository {
 		augments.putAll(properties);
 	}
 
+	public void clear() {
+		this.persistent.clear();
+	}
+
+	/**
+	 * Clear all files that were indexed before this date
+	 * @param lastModified
+	 */
+	public void clear(long whenOlder) {
+		persistent.clear(whenOlder);
+	}
+
 }

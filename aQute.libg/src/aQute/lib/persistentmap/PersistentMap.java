@@ -278,4 +278,27 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 		return "PersistentMap[" + dir + "] " + super.toString();
 	}
 
+	public void clear(long whenOlder) {
+		init();
+		try {
+			FileLock lock = lock();
+			try {
+				for ( File f : data.listFiles()) {
+					if ( f.lastModified() < whenOlder )
+						IO.deleteWithException(f);
+				}
+				cache.clear();
+			}
+			finally {
+				unlock(lock);
+			}
+		}
+		catch (RuntimeException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 }
