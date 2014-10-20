@@ -1,0 +1,6 @@
+
+Export-Package: provider;version=1
+
+-resourceonly: true
+-includeresource: foo;literal='foo'
+
