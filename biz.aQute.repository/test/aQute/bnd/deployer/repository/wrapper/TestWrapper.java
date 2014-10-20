@@ -10,7 +10,6 @@ import org.osgi.resource.*;
 import aQute.bnd.build.*;
 import aQute.bnd.jpm.*;
 import aQute.bnd.osgi.resource.*;
-import aQute.bnd.service.repository.*;
 import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.lib.utf8properties.*;
