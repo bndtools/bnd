@@ -88,7 +88,7 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 						File f = IO.getFile(workspace.getBuildDir(), config.augments());
 						if (!f.isFile()) {
 							if (reporter != null)
-								reporter.error("No augment file found at %s", f);
+								reporter.error("No augment file found at %s", f.getAbsolutePath());
 							return;
 						}
 
