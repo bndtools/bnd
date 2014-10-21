@@ -82,7 +82,7 @@ Bundle-SCM:             https://github.com/bndtools/bnd.git
 -releaserepo:  Release
 -baselinerepo: Main
 
--removeheader:          Include-Resource
+-removeheaders:         Include-Resource
 
 -runpath:\
 	org.eclipse.osgi;version=3.5,\
