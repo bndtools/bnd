@@ -1,0 +1,26 @@
+apply plugin: 'groovy'
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+}
+
+sourceSets {
+    main {
+        groovy.srcDirs = java.srcDirs
+    }
+    test {
+        groovy.srcDirs = java.srcDirs
+    }
+}
+
+task groovydocJar(type: Jar) {
+  dependsOn groovydoc
+  classifier = 'javadoc'
+  from groovydoc.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+  from sourceSets.main.allSource
+  classifier = 'sources'
+}
