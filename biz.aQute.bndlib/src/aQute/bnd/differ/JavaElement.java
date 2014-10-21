@@ -311,9 +311,33 @@ class JavaElement {
 				return null;
 			}
 
+			/**
+			 * Deprecated annotations and Provider/Consumer Type (both bnd and
+			 * OSGi) are treated special. Other annotations are turned into a
+			 * tree. Starting with ANNOTATED, and then properties. A property is
+			 * a PROPERTY property or an ANNOTATED property if it is an
+			 * annotation. If it is an array, the key is suffixed with the
+			 * index.
+			 * 
+			 * <pre>
+			 * public @interface Outer {
+			 *   Inner[] value();
+			 * }
+			 * public @interface Inner {
+			 *   String[] value();
+			 * }
+			 * @Outer( { @Inner("1","2"}) }
+			 * class Xyz {}
+			 * 
+			 *     ANNOTATED Outer (CHANGED/CHANGED)
+			 *      ANNOTATED Inner (CHANGED/CHANGED)
+			 *       PROPERTY value.0=1 (CHANGED/CHANGED)
+			 *       PROPERTY value.1=2 (CHANGED/CHANGED)
+			 * 
+			 * </pre>
+			 */
 			@Override
 			public void annotation(Annotation annotation) {
-				Collection<Element> properties = Create.set();
 				if (Deprecated.class.getName().equals(annotation.getName().getFQN())) {
 					if (memberEnd)
 						clazz.setDeprecated(true);
@@ -322,44 +346,66 @@ class JavaElement {
 					return;
 				}
 
-				for (String key : annotation.keySet()) {
-					StringBuilder sb = new StringBuilder();
-					sb.append(key);
-					sb.append('=');
-					toString(sb, annotation.get(key));
-
-					properties.add(new Element(Type.PROPERTY, sb.toString(), null, CHANGED, CHANGED, null));
-				}
-
+				Element e = annotatedToElement(annotation);
 				if (memberEnd) {
-					members.add(new Element(Type.ANNOTATED, annotation.getName().getFQN(), properties, CHANGED,
-							CHANGED, null));
-					
+					members.add(e);
+
 					//
-					// Check for the provider/consumer. We use strings because these are not officially
+					// Check for the provider/consumer. We use strings because
+					// these are not officially
 					// released yet
 					//
 					String name = annotation.getName().getFQN();
-					if (ProviderType.class.getName().equals(name) || "org.osgi.annotation.versioning.ProviderType".equals(name)) {
+					if (ProviderType.class.getName().equals(name)
+							|| "org.osgi.annotation.versioning.ProviderType".equals(name)) {
 						provider.set(true);
-					} else if (ConsumerType.class.getName().equals(name) || "org.osgi.annotation.versioning.ConsumerType".equals(name)) {
+					} else if (ConsumerType.class.getName().equals(name)
+							|| "org.osgi.annotation.versioning.ConsumerType".equals(name)) {
 						provider.set(false);
 					}
 				} else if (last != null)
-					annotations.add(last, new Element(Type.ANNOTATED, annotation.getName().getFQN(), properties,
-							CHANGED, CHANGED, null));
+					annotations.add(last, e);
 			}
 
-			private void toString(StringBuilder sb, Object object) {
+			/*
+			 * Return an ANNOTATED element for this annotation. An ANNOTATED
+			 * element contains either PROPERTY children or ANNOTATED children.
+			 */
+			private Element annotatedToElement(Annotation annotation) {
+				Collection<Element> properties = Create.set();
+				for (String key : annotation.keySet()) {
+					addAnnotationMember(properties, key, annotation.get(key));
+				}
+				return new Element(Type.ANNOTATED, annotation.getName().getFQN(), properties, CHANGED, CHANGED, null);
+			}
 
-				if (object.getClass().isArray()) {
-					sb.append('[');
-					int l = Array.getLength(object);
-					for (int i = 0; i < l; i++)
-						toString(sb, Array.get(object, i));
-					sb.append(']');
-				} else
-					sb.append(object);
+			/*
+			 * This method detects 3 cases: An Annotation, which means it
+			 * creates a new child ANNOTATED element, an array, which means it
+			 * will repeat recursively but suffixes the key with the index, or a
+			 * simple value which is turned into a string.
+			 */
+			private void addAnnotationMember(Collection<Element> properties, String key, Object member) {
+				if (member instanceof Annotation) {
+					properties.add(annotatedToElement((Annotation) member));
+				} else if (member.getClass().isArray()) {
+					int l = Array.getLength(member);
+					for (int i = 0; i < l; i++) {
+						addAnnotationMember(properties, key + "." + i, Array.get(member, i));
+					}
+				} else {
+					StringBuilder sb = new StringBuilder();
+					sb.append(key);
+					sb.append('=');
+					if ( member instanceof String) {
+						sb.append("'");
+						sb.append(member);
+						sb.append("'");
+					} else
+						sb.append(member);
+						
+					properties.add(new Element(Type.PROPERTY, sb.toString(), null, CHANGED, CHANGED, null));
+				}
 			}
 
 			@Override
