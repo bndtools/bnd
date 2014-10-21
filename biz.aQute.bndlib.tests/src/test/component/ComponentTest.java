@@ -371,16 +371,34 @@ public class ComponentTest extends TestCase {
 
 		Jar jar = b.getJar();
 
-		Document doc = db.parse(new InputSource(jar.getResource("OSGI-INF/test.activator.Activator.xml")
+		Resource resource = jar.getResource("OSGI-INF/test.activator.Activator.xml");
+		IO.copy(resource.openInputStream(), System.out);
+		
+		Document doc = db.parse(new InputSource(resource
 				.openInputStream()));
 
 		NodeList l = doc.getElementsByTagName("property");
 		assertEquals(2, l.getLength());
-		Node n = l.item(0);
-		System.err.println(n.getFirstChild().getNodeValue());
-		assertEquals("3\n4", l.item(1).getFirstChild().getNodeValue().trim());
-		assertEquals("1\n2\n3", l.item(0).getFirstChild().getNodeValue().trim());
 
+		boolean aset=false, bset=false;
+		
+		for ( int i=0; i<2; i++) {
+			Node child = l.item(i);
+			NamedNodeMap attributes = child.getAttributes();
+			Node namedItem = attributes.getNamedItem("name");
+			String name = namedItem.getNodeValue();
+			String text = child.getFirstChild().getNodeValue().trim();
+			if ( name.equals("a")) {
+				aset=true;
+				assertEquals("3\n4", text);
+			}
+			if (name.equals("b")) {
+				bset=true;
+				assertEquals("1\n2\n3", text);
+			}
+		}
+		assertTrue(aset);
+		assertTrue(bset);
 		assertEquals("test.activator.Activator", doc.getElementsByTagName("implementation").item(0).getAttributes()
 				.getNamedItem("class").getNodeValue());
 		// assertEquals("test.activator.Activator", xp.evaluate(
