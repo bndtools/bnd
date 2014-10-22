@@ -315,17 +315,17 @@ public class Builder extends Analyzer {
 		Jar jar = new Jar("conditional-import");
 		addClose(jar);
 		for (PackageRef pref : referred) {
-			for (Jar cpe : getClasspath()) {
+			List<Jar> classpath = getClasspath();
+			int splitcount = 0;
+			for (Jar cpe : classpath) {
 				Map<String,Resource> map = cpe.getDirectories().get(pref.getPath());
 				if (map != null) {
 					copy(jar, cpe, pref.getPath(), false);
-					// Now use copy so that bnd.info is processed, next line
-					// should be
-					// removed in the future TODO
-					// jar.addDirectory(map, false);
-					break;
+					splitcount ++;
 				}
 			}
+			if (splitcount > 1)
+				warning("%s", diagnostic(pref.getPath(), classpath));
 		}
 		if (jar.getDirectories().size() == 0) {
 			trace("extra dirs %s", jar.getDirectories());
