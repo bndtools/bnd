@@ -61,6 +61,7 @@ public class ProjectTemplate implements IProjectTemplate {
     static Pattern PROVIDER = Pattern.compile("(.*\\.([^.]+))\\.(provider|adapter)");
     static Pattern TEST = Pattern.compile("(.*\\.([^.]+))\\.test");
     static Pattern APPLICATION = Pattern.compile("(.*\\.([^.]+))\\.(app|webapp|application)");
+    static Pattern WEBRESOURCE = Pattern.compile("(.*\\.([^.]+))\\.(resource|webresource)");
     static Pattern EXAMPLE = Pattern.compile("(.*\\.([^.]+))\\.example");
     static Pattern TUTORIAL_BASE = Pattern.compile("tutorial.base");
     static Pattern UNKNOWN = Pattern.compile(".*\\.([^.]+)");
@@ -102,22 +103,29 @@ public class ProjectTemplate implements IProjectTemplate {
                             stem = m.group(2);
                             type = "_application_";
                         } else {
-                            m = EXAMPLE.matcher(projectName);
+                            m = WEBRESOURCE.matcher(projectName);
                             if (m.matches()) {
                                 pid = m.group(1);
                                 stem = m.group(2);
-                                pkg = stem;
-                                type = "_example_";
+                                type = "_webresource_";
                             } else {
-                                m = UNKNOWN.matcher(projectName);
+                                m = EXAMPLE.matcher(projectName);
                                 if (m.matches()) {
-                                    stem = m.group(1);
-                                    pid = projectName;
+                                    pid = m.group(1);
+                                    stem = m.group(2);
+                                    pkg = stem;
                                     type = "_example_";
                                 } else {
-                                    stem = projectName;
-                                    pid = projectName;
-                                    type = "_example_";
+                                    m = UNKNOWN.matcher(projectName);
+                                    if (m.matches()) {
+                                        stem = m.group(1);
+                                        pid = projectName;
+                                        type = "_example_";
+                                    } else {
+                                        stem = projectName;
+                                        pid = projectName;
+                                        type = "_example_";
+                                    }
                                 }
                             }
                         }
@@ -145,6 +153,7 @@ public class ProjectTemplate implements IProjectTemplate {
         regex.put("_tutorialbase_", projectName);
         regex.put("_test_", projectName);
         regex.put("_application_", projectName);
+        regex.put("_webresource_", projectName);
         regex.put("_unknown_", projectName);
         regex.put("_cmd_", toCmd(stem));
         regex.put("_project_", projectName);

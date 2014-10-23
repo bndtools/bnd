@@ -13,7 +13,8 @@ bnd-release	=	https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBui
 
 -plugin.enroute.wrapper: aQute.bnd.deployer.repository.wrapper.Plugin; \
             location            =	"${build}/cache/wrapper"; \
-            reindex				=	true
+            reindex				=	true; \
+            augments			=   WORKSPACE
             
 -plugin.enroute.localrepo= \
 	aQute.bnd.deployer.repository.LocalIndexedRepo; \
@@ -24,9 +25,11 @@ bnd-release	=	https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBui
 -plugin.enroute.centralrepo = \
 	aQute.bnd.jpm.Repository; \
 	        includeStage	=       true; \
-	        nam		=       Central; \
+	        name		=       Central; \
 	        location	=       ~/.bnd/shacache; \
-	        index		=       ${build}/repository.json
+	        index		=       ${build}/repository.json; \
+	        depository.group	=		OSGi; \
+    		depository.name		=		enRoute.rt
 
 -plugin.enroute.releaserepo = \
 	aQute.bnd.deployer.repository.LocalIndexedRepo; \
@@ -45,12 +48,55 @@ Service-Component: 				*
 
 -runfw:							org.eclipse.osgi;version=@3.9.1
 -runproperties: 				\
-								osgi.console.enable.builtin=false, \
-								osgi.console=, \
-								org.osgi.service.http.port=8080
+	org.apache.felix.http.jettyEnabled=true, \
+	org.apache.felix.http.whiteboardEnabled=true,\
+	osgi.console.enable.builtin=false, \
+	osgi.console=, \
+	org.osgi.service.http.port=8080
 
 -runsystempackages.eqnx:		javax.script
 -runsystemcapabilities.dflt: 	${native_capability}
+
+#
+# Required for testing, these packages are added
+# to the path by aQute.junit
+#
+
+_a = ${if;${def;-osgitest};junit-packages;undefined}
+-runsystempackages.junit: ${def; ${_a}}
+
+
+junit-packages: \
+	junit.extensions; \
+	junit.framework; \
+	junit.runner; \
+	junit.textui;										version=3.8.2, \
+	org.hamcrest;\
+	org.hamcrest.core; \
+	org.hamcrest.internal;								version=4.11, \
+	org.junit;org.junit.experimental; \
+	org.junit.experimental.categories; \
+	org.junit.experimental.max; \
+  	org.junit.experimental.results; \
+  	org.junit.experimental.runners; \
+  	org.junit.experimental.theories; \
+  	org.junit.experimental.theories.internal; \
+  	org.junit.experimental.theories.suppliers; \
+	org.junit.internal; \
+	org.junit.internal.builders; \
+	org.junit.internal.matchers; \
+	org.junit.internal.requests; \
+	org.junit.internal.runners; \
+	org.junit.internal.runners.model; \
+	org.junit.internal.runners.rules; \
+	org.junit.internal.runners.statements; \
+	org.junit.matchers; \
+	org.junit.rules; \
+	org.junit.runner; \
+	org.junit.runner.manipulation; \
+	org.junit.runner.notification; \
+	org.junit.runners; \
+	org.junit.runners.model; version=4.11
 
 
 test-cases: 					${classes;NAMED;*Test}
@@ -69,5 +115,10 @@ debug-bundles: \
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.log)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)', \
-	osgi.identity;filter:='(osgi.identity=osgi.base.debug.provider)'
+	osgi.identity;filter:='(osgi.identity=osgi.enroute.base.debug.provider)'
+	
+	
+# 
+org.apache.felix.http.bundle: 			cap=osgi.enroute.whiteboard;osgi.enroute.whiteboard=osgi.enroute.servlet;version:Version=1.0.0;effective:=active
+org.knopflerfish.bundle.useradmin: 		cap=osgi.service;objectClass=org.osgi.service.useradmin.UserAdmin;effective:=active
 	
