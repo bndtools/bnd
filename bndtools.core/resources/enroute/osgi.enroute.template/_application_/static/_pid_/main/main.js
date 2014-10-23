@@ -25,10 +25,10 @@
 	
 	var mainProvider = function($scope, $http) {
 		
-		$scope.signup = function() {
+		$scope.upper = function() {
 			var name = prompt("Under what name?");
 			if ( name ) {
-				$http.post('/rest/signup', { name: name, time: new Date().getTime() }).then(
+				$http.get('/rest/upper/'+name).then(
 						function(d) {
 							$scope.alerts.push( { type: 'success', msg: d.data });
 						}, function(d) {

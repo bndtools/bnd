@@ -24,5 +24,10 @@ Test-Cases: ${test-cases}
 	osgi.enroute.base.api;version=1.0,\
 	biz.aQute.junit
 	
+-testpath: \
+	biz.aQute.junit
+
 -runbundles: \
-	_test_
+	${error;Resolve first}
+-runrequires:  \
+	osgi.identity;filter:='(osgi.identity=_test_)'

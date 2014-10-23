@@ -5,7 +5,8 @@
 Bundle-Version: 1.0.0.${tstamp}
 Bundle-Description: \
 	This is the _PROJECT_ bundle. It carries the configuration for an application \
-	and provides some basic very much application specific stuff.  \
+	and provides some basic very much application specific stuff.  It provides a button \
+	that calls a REST function that turns a text into upper case. \
 	\
 	${warning;Please update this Bundle-Description in _project_/bnd.bnd}
 

@@ -12,3 +12,6 @@ JPMCommand:					_cmd_
 
 -runrequires:  \
 	osgi.identity;filter:='(osgi.identity=_application_)'
+
+-runbundles: \
+	${error;Resolve first}

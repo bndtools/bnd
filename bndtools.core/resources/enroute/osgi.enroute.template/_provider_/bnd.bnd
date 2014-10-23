@@ -22,3 +22,6 @@ Private-Package:  \
 
 -runrequires:  \
 	osgi.identity;filter:='(osgi.identity=_project_)'
+	
+-runbundles: \
+	${error;Resolve first}

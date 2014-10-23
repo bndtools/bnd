@@ -1,1 +1,24 @@
-apply from: rootProject.file("${bnd_cnf}/gradle/master.gradle")
+/*
+ * Master Gradle build script
+ *
+ * Depends on bndWorkspace and bndURI properties set by settings.gradle.
+ */
+
+/* Add bnd as a script dependency */
+buildscript {
+  dependencies {
+    classpath files(bndURI)
+  }
+}
+
+/* Configure the subprojects */
+subprojects {
+  def bndProject = bndWorkspace.getProject(name)
+  if (bndProject != null) {
+    plugins.apply 'biz.aQute.bnd'
+  }
+}
+
+task wrapper(type: Wrapper) {
+  jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
+}
