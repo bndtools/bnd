@@ -32,7 +32,7 @@
 				<li ng-class="{active: page() == '/'}"><a href="#">Home</a></li>
 				<li ng-class="{active: page() == '/about'}"><a href="#/about">About</a></li>
 			</ul>
-			<h3 class="text-muted">_pid_</h3>
+			<h3 class="text-muted">_stem_</h3>
 			<div ng-repeat="alert in alerts" class="alert alert-{{alert.type || 'alert'}} alert-dismissible">
 				{{alert.msg}}
 				<button type="button" ng-click='closeAlert($index)' class="close pull-right"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
