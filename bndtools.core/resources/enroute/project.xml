@@ -34,4 +34,8 @@
 		little
 		or no code but defines configuration, web pages, and dependencies.
 	</li>
+	<li>
+		<span font="fixed">*.webresource</span>
+		— Create a project that will hold a <span font="italic">web resource</span>. A web resource holds the resources for CSS, Javascript, etc.
+	</li>
 </form>
