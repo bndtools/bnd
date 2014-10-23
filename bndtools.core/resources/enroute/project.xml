@@ -1,6 +1,6 @@
 <form>
-	<p>Creates a project for developing with enRoute base profile, a profile
-	for basic OSGi applications. The profile is implemented in different
+	<p>Creates a project for developing with OSGi enRoute base profile, a profile
+	for basic OSGi (web)applications. The profile is implemented in different
 	<span font="italic">distros</span>.</p>
 	<p>The name of the project must be a Bundle Symbolic Name
 	(e.g. <span font="fixed">com.example.foo</span>). The last segment of this

@@ -9,7 +9,7 @@
 
 
 <extension point="bndtools.core.projectTemplates">
-	<template name="OSGi enRoute (alpha)" priority="400" category="AAA/Core"
+	<template name="OSGi enRoute (beta)" priority="400" category="AAA/Core"
 		class="org.bndtools.core.templates.enroute.ProjectTemplate" doc="enroute/project.xml"
 		icon="enroute/enroute-bw-16x16.png" />
 </extension>
