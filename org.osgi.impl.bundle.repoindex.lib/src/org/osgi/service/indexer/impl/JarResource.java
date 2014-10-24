@@ -34,7 +34,7 @@ public class JarResource implements Resource {
 	public JarResource(File file) throws IOException {
 		this.file = file;
 
-		this.location = file.getPath();
+		this.location = file.getPath().replace(File.separatorChar, '/');
 		this.jarFile = new JarFile(file);
 
 		properties.put(NAME, file.getName());
