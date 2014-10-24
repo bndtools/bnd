@@ -1,5 +1,6 @@
 package org.example.tests.utils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,19 +9,24 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 public class Utils {
+	/** the platform specific EOL */
+	static private String eol = String.format("%n");
 
 	public static final String readStream(InputStream stream) throws IOException {
-		InputStreamReader reader = new InputStreamReader(stream);
-		StringBuilder result = new StringBuilder();
-
-		char[] buf = new char[1024];
-		int charsRead = reader.read(buf, 0, buf.length);
-		while (charsRead > -1) {
-			result.append(buf, 0, charsRead);
-			charsRead = reader.read(buf, 0, buf.length);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+		try {
+			StringBuilder result = new StringBuilder();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				if (result.length() > 0) {
+					result.append(eol);
+				}
+				result.append(line);
+			}
+			return result.toString();
+		} finally {
+			reader.close();
 		}
-
-		return result.toString();
 	}
 
 	public static final void copyFully(InputStream input, OutputStream output) throws IOException {

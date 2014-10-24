@@ -1,5 +1,6 @@
 package org.osgi.service.indexer.impl;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,18 +16,24 @@ import org.osgi.service.indexer.Requirement;
 
 @Ignore
 public class Utils {
+	/** the platform specific EOL */
+	static private String eol = String.format("%n");
+
 	public static final String readStream(InputStream stream) throws IOException {
-		InputStreamReader reader = new InputStreamReader(stream, "UTF-8");
-		StringBuilder result = new StringBuilder();
-
-		char[] buf = new char[1024];
-		int charsRead = reader.read(buf, 0, buf.length);
-		while (charsRead > -1) {
-			result.append(buf, 0, charsRead);
-			charsRead = reader.read(buf, 0, buf.length);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+		try {
+			StringBuilder result = new StringBuilder();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				if (result.length() > 0) {
+					result.append(eol);
+				}
+				result.append(line);
+			}
+			return result.toString();
+		} finally {
+			reader.close();
 		}
-
-		return result.toString();
 	}
 
 	public static final String decompress(InputStream compressedStream) throws IOException {
