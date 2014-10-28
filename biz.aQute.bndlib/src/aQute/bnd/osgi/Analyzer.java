@@ -1675,7 +1675,8 @@ public class Analyzer extends Processor {
 			return false;
 
 		TypeRef pt = getTypeRefFromFQN(ProviderType.class.getName());
-		boolean result = c.annotations.contains(pt);
+		TypeRef r6pt = getTypeRefFromFQN("org.osgi.annotation.versioning.ProviderType");
+		boolean result = c.annotations.contains(pt) || c.annotations.contains(r6pt);
 		return result;
 	}
 
