@@ -126,6 +126,28 @@ public class VersionPolicyTest extends TestCase {
 		assertEquals("[1.2,1.3)", attrs.get("version"));
 
 	}
+	
+	/**
+	 * Test if the implementation of "AnnotatedProviderInterface", which is annotated with OSGi R6
+	 * @ProviderType, causes import of the api package to use the provider version policy
+	 */
+	public static void testProviderTypeR6() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setPrivatePackage("test.versionpolicy.implemented.osgi");
+		b.setProperty("build", "123");
+
+		Jar jar = b.build();
+		assertTrue(b.check());
+		Manifest m = jar.getManifest();
+		m.write(System.err);
+		
+		Domain d = Domain.domain(m);
+		Parameters params = d.getImportPackage();
+		Attrs attrs = params.get("test.version.annotations.osgi");
+		assertNotNull(attrs);
+		assertEquals("[1.2,1.3)", attrs.get("version"));
+	}
 
 	/**
 	 * Tests if the implementation of the EventHandler (which is marked as a
