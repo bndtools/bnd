@@ -7,6 +7,7 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 	private final String						separator;
 	private final Converter<String, ? super T>	itemFormatter;
 	private final String						emptyOutput;
+	private final boolean						leadingSpace;
 	private final String						initial;
 	private final String						suffix;
 
@@ -23,14 +24,33 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 	}
 
 	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput) {
-		this(separator, itemFormatter, emptyOutput, " \\\n\t", "");
+		this(separator, itemFormatter, emptyOutput, false, "\\\n\t", "");
 	}
 
-	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput,
-			String prefix, String suffix) {
+	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput, String prefix, String suffix) {
+		this(separator, itemFormatter, emptyOutput, false, prefix, suffix);
+	}
+
+	/**
+	 * @param separator
+	 *            Separator between items
+	 * @param itemFormatter
+	 *            Formatter for each item
+	 * @param emptyOutput
+	 *            Output to produce for empty inputs
+	 * @param leadingSpace
+	 *            Whether to lead with a space before the first item
+	 * @param prefix
+	 *            Prefix for the first item in lists containing more than one
+	 *            items.
+	 * @param suffix
+	 *            Suffix to add at the end of the list
+	 */
+	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput, boolean leadingSpace, String prefix, String suffix) {
 		this.separator = separator;
 		this.itemFormatter = itemFormatter;
 		this.emptyOutput = emptyOutput;
+		this.leadingSpace = leadingSpace;
 		this.initial = prefix;
 		this.suffix = suffix;
 	}
@@ -42,12 +62,21 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 				result = emptyOutput;
 			} else {
 				StringBuilder buffer = new StringBuilder();
-				String del  = initial == null ? "" : initial;
-				for (T item : input) {
-					buffer.append(del);
+				if (leadingSpace)
+					buffer.append(' ');
+
+				if (input.size() == 1) {
+					T item = input.iterator().next();
 					buffer.append(itemFormatter.convert(item));
-					del = separator;
+				} else {
+					String del  = initial == null ? "" : initial;
+					for (T item : input) {
+						buffer.append(del);
+						buffer.append(itemFormatter.convert(item));
+						del = separator;
+					}
 				}
+
 				if ( suffix != null)
 					buffer.append(suffix);
 				result = buffer.toString();
