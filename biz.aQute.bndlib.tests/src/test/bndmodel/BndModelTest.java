@@ -16,8 +16,7 @@ public class BndModelTest  extends TestCase {
 										"\torg.apache.felix.dependencymanager,\\\n" +
 										"\tosgi.core\n";
 
-	static final String BND_BUILDPATH_EXPECTED = "-buildpath:  \\\n" +
-												 "\tosgi.core\n";
+	static final String BND_BUILDPATH_EXPECTED = "-buildpath: osgi.core\n";
 
 	/**
 	 * 
