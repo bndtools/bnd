@@ -6,31 +6,33 @@
 
 import aQute.bnd.build.Workspace
 
-/* Add bnd as a script dependency */
+/* Add bnd gradle plugin as a script dependency */
 buildscript {
-  dependencies {
-    def bndURI = rootDir.toURI().resolve(bnd_jar)
-    if (bndURI.scheme != 'file') {
-      /* If not a local file, copy to a local file in cnf/cache */
-      def cnfCache = mkdir("${rootDir}/${bnd_cnf}/cache")
-      def bndJarFile = new File(cnfCache, 'biz.aQute.bnd.gradle.jar')
-      if (!bndJarFile.exists()) {
-        println "Downloading ${bndURI} to ${bndJarFile} ..."
-        bndURI.toURL().withInputStream { is ->
-          bndJarFile.withOutputStream { os ->
-            def bos = new BufferedOutputStream( os )
-            bos << is
-          }
-        }
+  repositories {
+    ivy { /* Configure the repository as an "ivy" repository */
+      url bnd_repourl
+      layout 'pattern', {
+            artifact '[module]/[artifact]-[revision].[ext]' /* OSGi repo pattern */
+            artifact '[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier])(.[ext])' /* maven pattern */
       }
-      bndURI = bndJarFile.toURI()
     }
-    classpath files(bndURI)
-
-    /* After the rootProject is created, pass URI to projects */
-    gradle.rootProject { rootProject ->
-      rootProject.ext.bndURI = bndURI
+  }
+  dependencies {
+    classpath bnd_plugin
+  }
+  /* Since the files in the repository change with each build, we need to recheck for changes */
+  configurations.classpath.resolutionStrategy.cacheChangingModulesFor 30, 'minutes'
+  dependencies {
+    components {
+      eachComponent { ComponentMetadataDetails details ->
+        details.changing = true
+      }
     }
+  }
+  /* Pass bnd gradle plugin classpath to rootProject once created */
+  def bndPlugin = files(configurations.classpath.files)
+  gradle.rootProject { rootProject ->
+    rootProject.ext.bndPlugin = bndPlugin
   }
 }
 
@@ -118,10 +120,4 @@ def getBndProject(Workspace workspace, String projectName) {
     throw new GradleException("Project ${rootDir}/${projectName} is invalid, ${str}")
   }
   throw new GradleException("Project ${rootDir}/${projectName} is not a valid bnd project")
-}
-
-/* After the rootProject is created, set up some properties. */
-gradle.rootProject { rootProject ->
-  rootProject.ext.bndWorkspace = workspace
-  rootProject.ext.cnf = rootProject.project(bnd_cnf)
 }
