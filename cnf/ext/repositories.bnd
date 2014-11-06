@@ -39,9 +39,9 @@ bndRepo: ${bnd-repo-cb-master}
 # Don't touch below
 #
 -plugin:\
-	aQute.bnd.deployer.repository.FixedIndexedRepo; name=bnd;     locations=${bndRepo},\
 	aQute.bnd.deployer.repository.LocalIndexedRepo; name=Release; local=${build}/releaserepo;pretty=true,\
 	aQute.lib.deployer.FileRepo;                    name=Build;   location=${build}/buildrepo;latest=false,\
+	aQute.bnd.deployer.repository.FixedIndexedRepo; name=bnd;     locations=${bndRepo};cache=${build}/cache,\
 	${eclipse-repo}
 
 -releaserepo: Release
