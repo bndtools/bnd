@@ -67,9 +67,6 @@ public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
         String baseDir = "templates/root/";
         copier.addOrRemoveDirectory(workspaceRoot, baseDir, "/", add);
 
-        baseDir = "templates/cnf/";
-        copier.addOrRemoveDirectory(projectDir, baseDir, "/", add);
-
         VersionControlIgnoresManager ignoresManager = versionControlIgnoresManager.get();
         if (ignoresManager != null) {
             List<String> ignoredEntries = new LinkedList<String>();
