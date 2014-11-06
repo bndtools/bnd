@@ -19,6 +19,14 @@ public class OCDDef {
 	String description;
 	
 	void prepare(Analyzer analyzer) {
+		Set<String> adIds = new HashSet<String>();
+		for (ADDef ad: attributes) {
+			if (!adIds.add(ad.id)) {
+				analyzer.error(
+						"OCD for %s.%s has duplicate AD id %s due to colliding munged element names",
+						id, name, ad.id);
+			}
+		}
 		
 	}
 	
