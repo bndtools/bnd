@@ -9,8 +9,8 @@
 	${bndlib},\
 	${junit}
 -includeresource: \
-	templates=resources/templates/unprocessed,\
-	templates/cnf/gradle/biz.aQute.bnd.gradle.jar=${repo;biz.aQute.bnd.gradle;[${bndlib-version-base},${bndlib-version-ceiling})}
+	templates=resources/templates/unprocessed, \
+	{templates=resources/templates/filter}
 
 # we really need this, otherwise Eclipse will not start our bundles
 Bundle-ActivationPolicy: lazy
