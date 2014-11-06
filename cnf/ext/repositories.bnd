@@ -12,28 +12,10 @@ eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo; name=Eclipse SDK 3
 
 
 #
-# Bnd Repositories
+# Bnd Repository. See ${workspace}/gradle.properties for the bnd_repourl property.
 #
 
-bnd-repo-cb-2-2-0-REL:       https://bndtools.ci.cloudbees.com/job/bnd.master/87/artifact/dist/bundles/index.xml
-bnd-repo-cb-2-3-0-REL:       https://bndtools.ci.cloudbees.com/job/bnd.next/552/artifact/dist/bundles/index.xml.gz
-bnd-repo-cb-next:            https://bndtools.ci.cloudbees.com/job/bnd.next/lastSuccessfulBuild/artifact/dist/bundles/index.xml.gz
-bnd-repo-cb-master:          https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/index.xml.gz
-bnd-repo-local:              file:///${workspace}/../bnd/dist/bundles/index.xml.gz
-
-
-
-
-#
-# REPOSITORY SELECTION
-#
-# Switch locations as required
-# WARNING: bnd-repo-local will break the build if pushed to GitHub... it is used for local testing only!!
-
-bndRepo: ${bnd-repo-cb-master}
-
-
-
+bndRepo: ${bnd_repourl}/index.xml.gz
 
 #
 # Don't touch below
