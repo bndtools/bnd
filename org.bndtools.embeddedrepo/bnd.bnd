@@ -1,4 +1,4 @@
-Fragment-Host: biz.aQute.bndlib;bundle-version="[${bndlib-version-base},${bndlib-version-ceiling})"
+Fragment-Host: biz.aQute.bndlib;bundle-version="[${bnd-version-base},${bnd-version-ceiling})"
 Include-Resource: embedded-repo.jar
 Bundle-Version: 2.3.1.${tstamp}
 Bundle-Vendor: Bndtools
