@@ -15,8 +15,6 @@
 
 -runtrace: true
 
-Bundle-Version:2.5.0.${tstamp}
-
 # This project is a test project. For historical reasons, the test code is in src
 # so we use the normal test folders for src in the offline build.
 testsrc: src

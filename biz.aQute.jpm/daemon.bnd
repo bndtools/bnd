@@ -4,5 +4,3 @@ Main-Class: aQute.daemon.Daemon
 JPM-Service: testd
 JPM-Command: 
 JPM-Embedded: 
-
-Bundle-Version: 1.1.0

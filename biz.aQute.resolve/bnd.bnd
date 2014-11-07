@@ -15,9 +15,6 @@
 	junit.osgi,\
 	org.mockito.mockito-all
 
-
-Bundle-Version: 0.2.0.${tstamp}
-
 Export-Package:  \
 	biz.aQute.resolve,\
 	org.osgi.service.log;-split-package:=first,\

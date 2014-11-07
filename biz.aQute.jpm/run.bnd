@@ -5,7 +5,6 @@ Include-Resource: images=images, service.jar, {release}, static=static
 Main-Class: 					aQute.jpm.main.Main
 JPM-Command:					jpm
 
-Bundle-Version: 1.0.0.${tstamp}
 Bundle-Icon: images/icon.png
 
 Bundle-Description: jpm4j is Just another Package Manager for Java. It stills the envy of all \
