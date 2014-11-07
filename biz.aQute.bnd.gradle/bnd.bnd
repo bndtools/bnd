@@ -1,7 +1,5 @@
 -dependson: biz.aQute.bnd
 
-Bundle-Version: 2.5.0.${tstamp}
-
 Private-Package: \
     aQute.bnd.gradle.*
 

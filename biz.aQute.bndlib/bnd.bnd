@@ -1,6 +1,5 @@
 -sourcepath:					../aQute.libg/src
 
-Bundle-Version:					2.5.0.${tstamp}
 Bundle-Name: 					bndlib
 Bundle-Description:				A Swiss Army Knife for OSGi
 

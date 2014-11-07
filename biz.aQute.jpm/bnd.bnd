@@ -21,7 +21,6 @@ Bundle-Vendor: 					jpm4j.org
 Bundle-Icon: 					images/icon.png;size=64
 						
 Conditional-Package: 			aQute.libg.*, aQute.lib.*
-Bundle-Version: 				1.0.2
 
 -buildpath: aQute.libg;version=project,\
 	ee.j2se;version=${javac.ee},\
