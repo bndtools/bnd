@@ -1,4 +1,4 @@
--dependson: demo
+-dependson: biz.aQute.launcher, biz.aQute.junit, demo
 -nobundles: true
 
 -buildpath: \
