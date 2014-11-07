@@ -56,6 +56,7 @@ public class LauncherTest extends TestCase {
 
 			Workspace ws = Workspace.getWorkspace(f);
 			Project p = ws.getProject("demo");
+			p.setTrace(true);
 			p.build();
 			try {
 				ProjectLauncher l = p.getProjectLauncher();
@@ -259,6 +260,7 @@ public class LauncherTest extends TestCase {
 		workspace = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile());
 		workspace.clear();
 		project = workspace.getProject("demo");
+		project.setTrace(true);
 		project.clear();
 		project.forceRefresh();
 		assertTrue(project.check());
