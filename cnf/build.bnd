@@ -63,6 +63,9 @@ javac.target:               1.6
 javac.ee:                 '[1.6,1.7)'
 java.req.ee:              JavaSE-1.6
 
+# Include the gradle.properties to get the value of bnd_repourl which is used
+# for the bnd build repository.
+-include ${workspace}/gradle.properties
 
 # Master Version Settings
 # base-version           = a valid major.minor.micro version
