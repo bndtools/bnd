@@ -2190,7 +2190,7 @@ public class Project extends Processor {
 		List<Container> withDefault = Create.list();
 		withDefault.addAll(containers);
 		withDefault.addAll(getBundles(Strategy.HIGHEST, defaultHandler, null));
-		trace("candidates for tester %s", withDefault);
+		trace("candidates for handler %s: %s", target, withDefault);
 
 		for (Container c : withDefault) {
 			Manifest manifest = c.getManifest();
