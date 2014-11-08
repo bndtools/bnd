@@ -9,7 +9,7 @@
 	${junit}
 -includeresource: \
 	templates=resources/templates/unprocessed,\
-	templates/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd.jar=${repo;biz.aQute.bnd;${bndlib-version-base}}
+	templates/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd.jar=${repo;biz.aQute.bnd;${bnd-version-base}}
 
 # we really need this, otherwise Eclipse will not start our bundles
 Bundle-ActivationPolicy: lazy

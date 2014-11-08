@@ -1,8 +1,8 @@
 # Only extra bundles that are needed for the main feature are mentioned here
 Include-Resource:\
-    ${repo;biz.aQute.bndlib;${bndlib-version-base}},\
-    ${repo;biz.aQute.repository;${aQute-repository-base}},\
-    ${repo;biz.aQute.resolve;${aQute-resolve-base}},\
+    ${repo;biz.aQute.bndlib;${bnd-version-base}},\
+    ${repo;biz.aQute.repository;${bnd-version-base}},\
+    ${repo;biz.aQute.resolve;${bnd-version-base}},\
     ${repo;javax.xml;latest},\
     ${repo;javax.xml.stream;latest}
 Bundle-Version: 1.0.0.${tstamp}
