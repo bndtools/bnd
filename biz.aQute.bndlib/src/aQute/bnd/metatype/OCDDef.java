@@ -6,8 +6,6 @@ import aQute.bnd.osgi.*;
 import aQute.lib.tag.*;
 
 public class OCDDef {
-	final static String NAMESPACE_STEM = "http://www.osgi.org/xmlns/metatype/v";
-	final static String VERSION = "1.3.0";
 	
 	final List<ADDef> attributes = new ArrayList<ADDef>();
 	final List<IconDef> icons = new ArrayList<IconDef>();
@@ -21,18 +19,17 @@ public class OCDDef {
 	void prepare(Analyzer analyzer) {
 		Set<String> adIds = new HashSet<String>();
 		for (ADDef ad: attributes) {
+			ad.prepare();
 			if (!adIds.add(ad.id)) {
 				analyzer.error(
 						"OCD for %s.%s has duplicate AD id %s due to colliding munged element names",
 						id, name, ad.id);
 			}
 		}
-		
 	}
-	
+		
 	Tag getTag() {
-		String namespace = NAMESPACE_STEM + VERSION;
-		Tag metadata = new Tag("metatype:MetaData").addAttribute("xmlns:metatype", namespace);
+		Tag metadata = new Tag("metatype:MetaData").addAttribute("xmlns:metatype", MetatypeVersion.VERSION_1_3.getNamespace());
 		
 		if (localization != null) {
 			metadata.addAttribute("localization", localization);
@@ -57,7 +54,7 @@ public class OCDDef {
 		}
 		
 		for (DesignateDef designate: designates) {
-			metadata.addContent(designate.getTag());
+			metadata.addContent(designate.getInnerTag());
 		}
 		
 		return metadata;

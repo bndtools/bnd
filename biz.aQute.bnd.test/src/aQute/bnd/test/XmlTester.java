@@ -56,6 +56,13 @@ public class XmlTester {
 		document = db.parse(in);
 	}
 
+	public void assertExactAttribute(String value, String expr) throws XPathExpressionException {
+		System.err.println(expr);
+		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
+		Assert.assertNotNull(o);
+		Assert.assertEquals(value, o);
+	}
+	
 	public void assertAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
@@ -75,5 +82,13 @@ public class XmlTester {
 		String xmlns = element.getNamespaceURI();
 		Assert.assertEquals(namespace, xmlns);
 	}
+
+	public void assertNumber(Double value, String expr) throws XPathExpressionException {
+		System.err.println(expr);
+		Double o = (Double) xpath.evaluate(expr, document, XPathConstants.NUMBER);
+		Assert.assertNotNull(o);
+		Assert.assertEquals(value, o);
+	}
+	
 
 }

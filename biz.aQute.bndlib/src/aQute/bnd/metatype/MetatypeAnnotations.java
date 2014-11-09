@@ -19,6 +19,14 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		if (header.size() == 0)
 			return false;
 		
+		String f = analyzer.getProperty("-metatypeannotations-flags");
+		Set<String> flags;
+		if (f != null) {
+			flags = new HashSet<String>(Arrays.asList(f.split(",")));
+		} else {
+			flags = Collections.emptySet();
+		}
+
 		Set<String> ocdIds = new HashSet<String>();
 		Set<String> pids = new HashSet<String>();
 
@@ -31,7 +39,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					OCDDef definition = OCDReader.getOCDDef(c, analyzer);
+					OCDDef definition = OCDReader.getOCDDef(c, analyzer, flags);
 					if (definition != null) {
 						definition.prepare(analyzer);
 						if (!ocdIds.add(definition.id)) {
@@ -67,7 +75,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 					if (designate != null) {
 						designate.prepare(analyzer);
 						String name = "OSGI-INF/metatype/" + analyzer.validResourcePath(c.getFQN(), "Invalid resource name") + ".xml";
-						analyzer.getJar().putResource(name, new TagResource(designate.getTag()));
+						analyzer.getJar().putResource(name, new TagResource(designate.getOuterTag()));
 					}
 				}
 			}

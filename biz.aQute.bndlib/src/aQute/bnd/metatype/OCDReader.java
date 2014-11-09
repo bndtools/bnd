@@ -32,14 +32,7 @@ public class OCDReader extends ClassDataCollector {
 	}
 
 
-	static OCDDef getOCDDef(Clazz c, Analyzer analyzer) throws Exception {
-		String f = analyzer.getProperty("-metatypeannotations-flags");
-		Set<String> flags;
-		if (f != null) {
-			flags = new HashSet<String>(Arrays.asList(f.split(",")));
-		} else {
-			flags = Collections.emptySet();
-		}
+	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, Set<String> flags) throws Exception {
 
 		OCDReader r = new OCDReader(analyzer, c, flags);
 		return r.getDef();
@@ -252,7 +245,7 @@ public class OCDReader extends ClassDataCollector {
 		}
 		ad.description = a.description();
 		if (a.type() != null) {
-			ad.type = a.type().toString();
+			ad.type = a.type();
 		}
 		if (annotation.get("cardinality") != null) {
 			ad.cardinality = a.cardinality();
@@ -299,30 +292,30 @@ public class OCDReader extends ClassDataCollector {
     	return Clazz.unCamel(name);
     }
 
-    String getType(String rtype) {
+    AttributeType getType(String rtype) {
     	if (rtype.endsWith("[]")) {
-			analyzer.warning("Can only handle array of depth one field , nested type %s", rtype);
+			analyzer.error("Can only handle array of depth one field , nested type %s", rtype);
     		return null;
     	}
 
     	if ("boolean".equals(rtype) || Boolean.class.getName().equals(rtype))
-    		return AttributeType.BOOLEAN.toString();
+    		return AttributeType.BOOLEAN;
     	else if ("byte".equals(rtype) || Byte.class.getName().equals(rtype))
-    		return AttributeType.BYTE.toString();
+    		return AttributeType.BYTE;
     	else if ("char".equals(rtype) || Character.class.getName().equals(rtype))
-    		return AttributeType.CHARACTER.toString();
+    		return AttributeType.CHARACTER;
     	else if ("short".equals(rtype) || Short.class.getName().equals(rtype))
-    		return AttributeType.SHORT.toString();
+    		return AttributeType.SHORT;
     	else if ("int".equals(rtype) || Integer.class.getName().equals(rtype))
-    		return AttributeType.INTEGER.toString();
+    		return AttributeType.INTEGER;
     	else if ("long".equals(rtype) || Long.class.getName().equals(rtype))
-    		return AttributeType.LONG.toString();
+    		return AttributeType.LONG;
     	else if ("float".equals(rtype) || Float.class.getName().equals(rtype))
-    		return AttributeType.FLOAT.toString();
+    		return AttributeType.FLOAT;
     	else if ("double".equals(rtype) || Double.class.getName().equals(rtype))
-    		return AttributeType.DOUBLE.toString();
+    		return AttributeType.DOUBLE;
     	else if (String.class.getName().equals(rtype) || Class.class.getName().equals(rtype) || acceptableType(rtype) ) 
-    		return AttributeType.STRING.toString();
+    		return AttributeType.STRING;
     	else {
     		return null;
 

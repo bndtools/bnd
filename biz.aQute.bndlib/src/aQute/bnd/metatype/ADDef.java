@@ -2,6 +2,8 @@ package aQute.bnd.metatype;
 
 import java.util.*;
 
+import org.osgi.service.metatype.annotations.*;
+
 import aQute.lib.tag.*;
 
 public class ADDef {
@@ -9,7 +11,8 @@ public class ADDef {
 	String id;
 	String name;
 	String description;
-	String type; //an enum?
+	AttributeType type; 
+	private String typeString;
 	int cardinality;
 	String min;
 	String max;
@@ -17,9 +20,12 @@ public class ADDef {
 	boolean required = true;
 	final List<OptionDef> options = new ArrayList<OptionDef>();
 	
+	public void prepare() {
+		typeString = (type == null)? "*INVALID*": type.toString();		
+	}
 	
 	Tag getTag() {
-		Tag ad = new Tag("AD").addAttribute("id", id).addAttribute("type", type);
+		Tag ad = new Tag("AD").addAttribute("id", id).addAttribute("type", typeString);
 
 		if (cardinality != 0) {
 			ad.addAttribute("cardinality", cardinality);

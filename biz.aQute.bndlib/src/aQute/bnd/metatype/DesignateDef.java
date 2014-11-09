@@ -15,7 +15,20 @@ class DesignateDef {
 		this.factory = factory;
 	}
 
-	Tag getTag() {
+	public void prepare(Analyzer analyzer) {
+		
+	}
+
+	Tag getOuterTag() {
+		Tag metadata = new Tag("metatype:MetaData").addAttribute("xmlns:metatype", MetatypeVersion.VERSION_1_3.getNamespace());
+		
+		metadata.addContent(getInnerTag());
+		
+		return metadata;
+		
+	}
+
+	Tag getInnerTag() {
 		Tag designate = new Tag("Designate");
 		if (factory) {
 			designate.addAttribute("factoryPid", pid);
@@ -23,13 +36,7 @@ class DesignateDef {
 			designate.addAttribute("pid", pid);
 		}
 		new Tag(designate, "Object").addAttribute("ocdref", ocdRef);
-		
 		return designate;
-		
-	}
-
-	public void prepare(Analyzer analyzer) {
-		
 	}
 
 }
