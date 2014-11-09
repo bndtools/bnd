@@ -19,6 +19,14 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		if (header.size() == 0)
 			return false;
 		
+		String f = analyzer.getProperty("-metatypeannotations-flags");
+		Set<String> flags;
+		if (f != null) {
+			flags = new HashSet<String>(Arrays.asList(f.split(",")));
+		} else {
+			flags = Collections.emptySet();
+		}
+
 		Set<String> ocdIds = new HashSet<String>();
 		Set<String> pids = new HashSet<String>();
 
@@ -31,9 +39,9 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					OCDDef definition = OCDReader.getOCDDef(c, analyzer);
+					OCDDef definition = OCDReader.getOCDDef(c, analyzer, flags);
 					if (definition != null) {
-						definition.prepare(analyzer);
+						definition.prepare(analyzer, flags);
 						if (!ocdIds.add(definition.id)) {
 							analyzer.error("Duplicate OCD id %s from class %s; known ids %s", definition.id, c.getFQN(), ocdIds);
 						}

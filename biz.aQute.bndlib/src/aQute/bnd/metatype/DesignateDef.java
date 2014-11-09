@@ -16,7 +16,9 @@ class DesignateDef {
 	}
 
 	Tag getTag() {
-		Tag designate = new Tag("Designate");
+		Tag metadata = new Tag("metatype:MetaData").addAttribute("xmlns:metatype", MetatypeVersion.VERSION_1_2.getNamespace());
+		
+		Tag designate = new Tag(metadata, "Designate");
 		if (factory) {
 			designate.addAttribute("factoryPid", pid);
 		} else {
@@ -24,7 +26,7 @@ class DesignateDef {
 		}
 		new Tag(designate, "Object").addAttribute("ocdref", ocdRef);
 		
-		return designate;
+		return metadata;
 		
 	}
 
