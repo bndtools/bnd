@@ -4,55 +4,21 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import javax.xml.namespace.*;
-import javax.xml.parsers.*;
 import javax.xml.xpath.*;
 
 import junit.framework.*;
 
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.*;
-import org.w3c.dom.*;
 
+import aQute.bnd.metatype.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.test.*;
 import aQute.lib.io.*;
 
 @SuppressWarnings("resource")
 public class SpecMetatypeTest extends TestCase {
-	static DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
-	static XPathFactory				xpathf	= XPathFactory.newInstance();
-	static XPath					xpath	= xpathf.newXPath();
-
-	static DocumentBuilder			db;
-	static {
-		try {
-			dbf.setNamespaceAware(true);
-			db = dbf.newDocumentBuilder();
-			xpath.setNamespaceContext(new NamespaceContext() {
-
-				@Override
-				public Iterator<String> getPrefixes(String namespaceURI) {
-					return Arrays.asList("md").iterator();
-				}
-
-				@Override
-				public String getPrefix(String namespaceURI) {
-					return "md";
-				}
-
-				@Override
-				public String getNamespaceURI(String prefix) {
-					return "http://www.osgi.org/xmlns/metatype/v1.3.0";
-				}
-			});
-		}
-		catch (ParserConfigurationException e) {
-			e.printStackTrace();
-			throw new ExceptionInInitializerError(e);
-		}
-	}
-
-
+	
 	/**
 	 * Test method naming options with '.' and reserved names
 	 */
@@ -150,8 +116,8 @@ public class SpecMetatypeTest extends TestCase {
 		String nullid();
 	}
 	
-	static void assertAD(Document d, String id, String name) throws XPathExpressionException {
-		assertAD(d, id, name, null, null, null, 0, "String", null, null, null);
+	static void assertAD(XmlTester xt, String id, String name) throws XPathExpressionException {
+		assertAD(xt, id, name, null, null, null, 0, "String", null, null, null);
 	}
 
 	public static void testNaming() throws Exception {
@@ -167,45 +133,44 @@ public class SpecMetatypeTest extends TestCase {
 
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Naming.xml");
 		IO.copy(r.openInputStream(), System.err);
-		Document d = db.parse(r.openInputStream(), "UTF-8");
-		assertEquals("http://www.osgi.org/xmlns/metatype/v1.3.0", d.getDocumentElement().getNamespaceURI());
+		XmlTester xt = xmlTester13(r);
 
-		assertAD(d, "secret", "Secret");
-		assertAD(d, ".secret", "Secret");
-		assertAD(d, "_secret", "Secret");
-		assertAD(d, "new", "New");
-		assertAD(d, "$new", "New");
-		assertAD(d, "a.b.c", "A b c");
-		assertAD(d, "a_b_c", "A b c");
-		assertAD(d, ".a_b", "A b");
-		assertAD(d, "$$$$a_b", "A b");
-		assertAD(d, "$$$$a.b", "A b");
-		assertAD(d, "a", "A ");
-		assertAD(d, "a$", "A ");
-		assertAD(d, "b$", "B ");
-		assertAD(d, "a$$", "A ");
-		assertAD(d, "a$.$", "A ");
-		assertAD(d, "a$_$", "A ");
-		assertAD(d, "a..", "A ");
-		assertAD(d, "xsecret", "secret");
-		assertAD(d, "x.secret", ".secret");
-		assertAD(d, "x_secret", "_secret");
-		assertAD(d, "xnew", "new");
-		assertAD(d, "x$new", "$new");
-		assertAD(d, "xa.b.c", "a.b.c");
-		assertAD(d, "xa_b_c", "a_b_c");
-		assertAD(d, "x.a_b", ".a_b");
-		assertAD(d, "x$$$$a_b", "$$$$a_b");
-		assertAD(d, "x$$$$a.b", "$$$$a.b");
-		assertAD(d, "xa", "a");
-		assertAD(d, "xa$", "a$");
-		assertAD(d, "xb$", "a$");
-		assertAD(d, "xa$$", "a$$");
-		assertAD(d, "xa$.$", "a$.$");
-		assertAD(d, "xa$_$", "a$_$");
-		assertAD(d, "xa..", "a..");
-		assertAD(d, "noid", "Noid");
-		assertAD(d, "nullid", "§NULL§");
+		assertAD(xt, "secret", "Secret");
+		assertAD(xt, ".secret", "Secret");
+		assertAD(xt, "_secret", "Secret");
+		assertAD(xt, "new", "New");
+		assertAD(xt, "$new", "New");
+		assertAD(xt, "a.b.c", "A b c");
+		assertAD(xt, "a_b_c", "A b c");
+		assertAD(xt, ".a_b", "A b");
+		assertAD(xt, "$$$$a_b", "A b");
+		assertAD(xt, "$$$$a.b", "A b");
+		assertAD(xt, "a", "A ");
+		assertAD(xt, "a$", "A ");
+		assertAD(xt, "b$", "B ");
+		assertAD(xt, "a$$", "A ");
+		assertAD(xt, "a$.$", "A ");
+		assertAD(xt, "a$_$", "A ");
+		assertAD(xt, "a..", "A ");
+		assertAD(xt, "xsecret", "secret");
+		assertAD(xt, "x.secret", ".secret");
+		assertAD(xt, "x_secret", "_secret");
+		assertAD(xt, "xnew", "new");
+		assertAD(xt, "x$new", "$new");
+		assertAD(xt, "xa.b.c", "a.b.c");
+		assertAD(xt, "xa_b_c", "a_b_c");
+		assertAD(xt, "x.a_b", ".a_b");
+		assertAD(xt, "x$$$$a_b", "$$$$a_b");
+		assertAD(xt, "x$$$$a.b", "$$$$a.b");
+		assertAD(xt, "xa", "a");
+		assertAD(xt, "xa$", "a$");
+		assertAD(xt, "xb$", "a$");
+		assertAD(xt, "xa$$", "a$$");
+		assertAD(xt, "xa$.$", "a$.$");
+		assertAD(xt, "xa$_$", "a$_$");
+		assertAD(xt, "xa..", "a..");
+		assertAD(xt, "noid", "Noid");
+		assertAD(xt, "nullid", "§NULL§");
 	}
 	
 	@ObjectClassDefinition
@@ -483,16 +448,16 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
         IO.copy(r.openInputStream(), System.err);
 
-		Document d = db.parse(r.openInputStream());
-		assertEquals("http://www.osgi.org/xmlns/metatype/v1.3.0", d.getDocumentElement().getNamespaceURI());
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='collection']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='list']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='set']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='arrayList']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='linkedList']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='linkedHashSet']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='myList']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='stringList']/@cardinality", d));
+		XmlTester xt = xmlTester13(r);
+
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='collection']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='list']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='set']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='arrayList']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='linkedList']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='linkedHashSet']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='myList']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='stringList']/@cardinality");
 	}
 
 	/**
@@ -514,8 +479,8 @@ public class SpecMetatypeTest extends TestCase {
 
 	private static final String[] optionLabels = {"requireConfiguration", "optionalConfiguration", "ignoreConfiguration"};
 	private static final String[] optionValues = optionLabels;
-	static void assertAD(Document d, String id, String name, String[] optionLabels, String[] optionValues) throws XPathExpressionException {
-		assertAD(d, id, name, null, null, null, 0, "String", null, optionLabels, optionValues);
+	static void assertAD(XmlTester xt, String id, String name, String[] optionLabels, String[] optionValues) throws XPathExpressionException {
+		assertAD(xt, id, name, null, null, null, 0, "String", null, optionLabels, optionValues);
 	}
 	public static void testEnum() throws Exception {
 		Builder b = new Builder();
@@ -530,12 +495,11 @@ public class SpecMetatypeTest extends TestCase {
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Enums.xml");
 		IO.copy(r.openInputStream(), System.err);
 
-		Document d = db.parse(r.openInputStream());
-		assertEquals("http://www.osgi.org/xmlns/metatype/v1.3.0", d.getDocumentElement().getNamespaceURI());
+		XmlTester xt = xmlTester13(r);
 
-		assertAD(d, "r", "R", optionLabels, optionValues);
-		assertAD(d, "i", "I", optionLabels, optionValues);
-		assertAD(d, "o", "O", optionLabels, optionValues);
+		assertAD(xt, "r", "R", optionLabels, optionValues);
+		assertAD(xt, "i", "I", optionLabels, optionValues);
+		assertAD(xt, "o", "O", optionLabels, optionValues);
 	}
 
 	/**
@@ -640,24 +604,23 @@ public class SpecMetatypeTest extends TestCase {
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/" + id + ".xml");
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
-		Document d = db.parse(r.openInputStream());
-		assertEquals(id, xpath.evaluate("//OCD/@id", d, XPathConstants.STRING));
-		assertEquals(name, xpath.evaluate("//OCD/@name", d, XPathConstants.STRING));
+		XmlTester xt = xmlTester13(r);
+		xt.assertExactAttribute(id, "metatype:MetaData/OCD/@id");
+		xt.assertExactAttribute(name, "metatype:MetaData/OCD/@name");
 		String expected = localization == null ? "OSGI-INF/I10n/" + cname : localization;
-		String actual = (String)xpath.evaluate("//@localization", d, XPathConstants.STRING);
-		assertEquals(localization == null ? "OSGI-INF/l10n/" + cname : localization,
-				xpath.evaluate("//@localization", d, XPathConstants.STRING));
-		assertEquals(description == null ? "" : description,
-				xpath.evaluate("//OCD/@description", d, XPathConstants.STRING));
+		xt.assertExactAttribute(localization == null ? "OSGI-INF/l10n/" + cname : localization,
+				"metatype:MetaData/@localization");
+		xt.assertExactAttribute(description == null ? "" : description,
+				"metatype:MetaData/OCD/@description");
 
 		if (designate != null) {
 			if (factory)
-				assertEquals(designate, xpath.evaluate("//Designate/@factoryPid", d, XPathConstants.STRING));
+				xt.assertExactAttribute(designate, "metatype:MetaData/Designate/@factoryPid");
 			else
-				assertEquals(designate, xpath.evaluate("//Designate/@pid", d, XPathConstants.STRING));
+				xt.assertExactAttribute(designate, "metatype:MetaData/Designate/@pid");
 		}
 
-		assertEquals(id, xpath.evaluate("//Object/@ocdref", d, XPathConstants.STRING));
+		xt.assertExactAttribute(id, "metatype:MetaData/Designate/Object/@ocdref");
 	}
 
 	/**
@@ -734,34 +697,44 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
-		Document d = db.parse(r.openInputStream());
+		XmlTester xt = xmlTester13(r);
 
-		assertAD(d, "noSettings", "No settings", null, null, null, 0, "String", null, null, null);
-		assertAD(d, "withId", "id", null, null, null, 0, "String", null, null, null);
-		assertAD(d, "withName", "name", null, null, null, 0, "String", null, null, null);
-		assertAD(d, "withMax", "With max", null, "1", null, 0, "String", null, null, null);
-		assertAD(d, "withMin", "With min", "-1", null, null, 0, "String", null, null, null);
-		assertAD(d, "withC1", "With c1", null, null, null, 1, "String", null, null, null);
-		assertAD(d, "withC0", "With c0", null, null, null, 0, "String", null, null, null);
-		assertAD(d, "withC.1", "With c 1", null, null, null, -1, "String", null, null, null);
-		assertAD(d, "withC.1ButArray", "With c 1 but array", null, null, null, -1, "String", null, null,
+		assertAD(xt, "noSettings", "No settings", null, null, null, 0, "String", null, null, null);
+		assertAD(xt, "withId", "id", null, null, null, 0, "String", null, null, null);
+		assertAD(xt, "withName", "name", null, null, null, 0, "String", null, null, null);
+		assertAD(xt, "withMax", "With max", null, "1", null, 0, "String", null, null, null);
+		assertAD(xt, "withMin", "With min", "-1", null, null, 0, "String", null, null, null);
+		assertAD(xt, "withC1", "With c1", null, null, null, 1, "String", null, null, null);
+		assertAD(xt, "withC0", "With c0", null, null, null, 0, "String", null, null, null);
+		assertAD(xt, "withC.1", "With c 1", null, null, null, -1, "String", null, null, null);
+		assertAD(xt, "withC.1ButArray", "With c 1 but array", null, null, null, -1, "String", null, null,
 				null);
-		assertAD(d, "withC1ButCollection", "With c1 but collection", null, null, null, 1, "String",
+		assertAD(xt, "withC1ButCollection", "With c1 but collection", null, null, null, 1, "String",
 				null, null, null);
-		assertAD(d, "withInt", "With int", null, null, null, 0, "String", null, null, null);
-		assertAD(d, "withString", "With string", null, null, null, 0, "Integer", null, null, null);
-		assertAD(d, "a", "A", null, null, null, 0, "String", "description_xxx\"xxx'xxx", null, null);
-		assertAD(d, "valuesOnly", "Values only", null, null, null, 0, "String", null, new String[] {
+		assertAD(xt, "withInt", "With int", null, null, null, 0, "String", null, null, null);
+		assertAD(xt, "withString", "With string", null, null, null, 0, "Integer", null, null, null);
+		assertAD(xt, "a", "A", null, null, null, 0, "String", "description_xxx\"xxx'xxx", null, null);
+		assertAD(xt, "valuesOnly", "Values only", null, null, null, 0, "String", null, new String[] {
 				"a", "b"
 		}, new String[] {
 				"a", "b"
 		});
-		assertAD(d, "labelsAndValues", "Labels and values", null, null, null, 0, "String", null, new String[] {
+		assertAD(xt, "labelsAndValues", "Labels and values", null, null, null, 0, "String", null, new String[] {
 				"a", "b"
 		},
 				new String[] {
 						"A", "B"
 				});
+	}
+
+	private static XmlTester xmlTester13(Resource r) throws Exception {
+		return xmlTester(r, MetatypeVersion.VERSION_1_3);
+	}
+
+	private static XmlTester xmlTester(Resource r, MetatypeVersion version) throws Exception {
+		XmlTester xt = new XmlTester(r.openInputStream(), "metatype", version.getNamespace());
+		xt.assertNamespace(version.getNamespace());
+		return xt;
 	}
 
 	/**
@@ -803,45 +776,45 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 		
-		Document d = db.parse(r.openInputStream());
+		XmlTester xt = xmlTester13(r);
 		
-		assertAD(d, "fromChild", "From child", null, null, null, 0, "String", null, null, null);
-		assertAD(d, "fromSuperOne", "From super one", null, null, null, 0, "String", null, null, null);
-		assertAD(d, "fromSuperTwo", "From super two", null, null, null, 0, "String", null, null, null);
+		assertAD(xt, "fromChild", "From child", null, null, null, 0, "String", null, null, null);
+		assertAD(xt, "fromSuperOne", "From super one", null, null, null, 0, "String", null, null, null);
+		assertAD(xt, "fromSuperTwo", "From super two", null, null, null, 0, "String", null, null, null);
 	}
 
 	@SuppressWarnings("null")
-	static void assertAD(Document d,
+	static void assertAD(XmlTester xt,
 	String id, String name, String min, String max, String deflt, int cardinality, String type, String description,
 			String[] optionLabels, 
 			String[] optionValues) throws XPathExpressionException {
-		assertEquals(name, xpath.evaluate("//OCD/AD[@id='" + id + "']/@name", d, XPathConstants.STRING));
-		assertEquals(id, xpath.evaluate("//OCD/AD[@id='" + id + "']/@id", d, XPathConstants.STRING));
-		assertEquals(min == null ? "" : min,
-				xpath.evaluate("//OCD/AD[@id='" + id + "']/@min", d, XPathConstants.STRING));
-		assertEquals(max == null ? "" : max,
-				xpath.evaluate("//OCD/AD[@id='" + id + "']/@max", d, XPathConstants.STRING));
-		assertEquals(deflt == null ? "" : deflt,
-				xpath.evaluate("//OCD/AD[@id='" + id + "']/@deflt", d, XPathConstants.STRING));
+		xt.assertExactAttribute(name, "metatype:MetaData/OCD/AD[@id='" + id + "']/@name");
+		xt.assertExactAttribute(id, "metatype:MetaData/OCD/AD[@id='" + id + "']/@id");
+		xt.assertExactAttribute(min == null ? "" : min,
+				"metatype:MetaData/OCD/AD[@id='" + id + "']/@min");
+		xt.assertExactAttribute(max == null ? "" : max,
+				"metatype:MetaData/OCD/AD[@id='" + id + "']/@max");
+		xt.assertExactAttribute(deflt == null ? "" : deflt,
+				"metatype:MetaData/OCD/AD[@id='" + id + "']/@deflt");
 		if (cardinality == 0) {
-			assertEquals("",
-					xpath.evaluate("//OCD/AD[@id='" + id + "']/@cardinality", d, XPathConstants.STRING));
+			xt.assertExactAttribute("",
+					"metatype:MetaData/OCD/AD[@id='" + id + "']/@cardinality");
 		} else {
-			assertEquals(cardinality + "",
-					xpath.evaluate("//OCD/AD[@id='" + id + "']/@cardinality", d, XPathConstants.STRING));
+			xt.assertExactAttribute(cardinality + "",
+					"metatype:MetaData/OCD/AD[@id='" + id + "']/@cardinality");
 		}
-		assertEquals(type, xpath.evaluate("//OCD/AD[@id='" + id + "']/@type", d, XPathConstants.STRING));
-		assertEquals(description == null ? "" : description,
-				xpath.evaluate("//OCD/AD[@id='" + id + "']/@description", d, XPathConstants.STRING));
+		xt.assertExactAttribute(type, "metatype:MetaData/OCD/AD[@id='" + id + "']/@type");
+		xt.assertExactAttribute(description == null ? "" : description,
+				"metatype:MetaData/OCD/AD[@id='" + id + "']/@description");
 		assertEquals(optionLabels == null, optionValues == null);
 		if (optionLabels != null) {
 			assertEquals(optionLabels.length, optionValues.length);
 			
 			//option count is correct
-			assertEquals(Double.valueOf(optionLabels.length), xpath.evaluate("count(//OCD/AD[@id='" + id + "']/Option)", d, XPathConstants.NUMBER));
+			xt.assertNumber(Double.valueOf(optionLabels.length), "count(metatype:MetaData/OCD/AD[@id='" + id + "']/Option)");
 			for (int i = 0; i < optionLabels.length; i++) {
-				String expr = "//OCD/AD[@id='" + id + "']/Option[@label='" + optionLabels[i] + "']/@value";
-				assertEquals(optionValues[i], xpath.evaluate(expr, d, XPathConstants.STRING));
+				String expr = "metatype:MetaData/OCD/AD[@id='" + id + "']/Option[@label='" + optionLabels[i] + "']/@value";
+				xt.assertExactAttribute(optionValues[i], expr);
 			}
 			
 		}
@@ -960,94 +933,94 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
-		Document d = db.parse(r.openInputStream());
-		assertEquals("http://www.osgi.org/xmlns/metatype/v1.3.0", d.getDocumentElement().getNamespaceURI());
+		XmlTester xt = xmlTester13(r);
 		// Primitives
-		assertEquals("Boolean", xpath.evaluate("//OCD/AD[@id='rpBoolean']/@type", d));
-		assertEquals("Byte", xpath.evaluate("//OCD/AD[@id='rpByte']/@type", d));
-		assertEquals("Character", xpath.evaluate("//OCD/AD[@id='rpCharacter']/@type", d));
-		assertEquals("Short", xpath.evaluate("//OCD/AD[@id='rpShort']/@type", d));
-		assertEquals("Integer", xpath.evaluate("//OCD/AD[@id='rpInt']/@type", d));
-		assertEquals("Long", xpath.evaluate("//OCD/AD[@id='rpLong']/@type", d));
-		assertEquals("Float", xpath.evaluate("//OCD/AD[@id='rpFloat']/@type", d));
-		assertEquals("Double", xpath.evaluate("//OCD/AD[@id='rpDouble']/@type", d));
+		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='rpBoolean']/@type");
+		xt.assertExactAttribute("Byte", "metatype:MetaData/OCD/AD[@id='rpByte']/@type");
+		xt.assertExactAttribute("Character", "metatype:MetaData/OCD/AD[@id='rpCharacter']/@type");
+		xt.assertExactAttribute("Short", "metatype:MetaData/OCD/AD[@id='rpShort']/@type");
+		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='rpInt']/@type");
+		xt.assertExactAttribute("Long", "metatype:MetaData/OCD/AD[@id='rpLong']/@type");
+		xt.assertExactAttribute("Float", "metatype:MetaData/OCD/AD[@id='rpFloat']/@type");
+		xt.assertExactAttribute("Double", "metatype:MetaData/OCD/AD[@id='rpDouble']/@type");
 
 		// Primitive Wrappers
-		assertEquals("Boolean", xpath.evaluate("//OCD/AD[@id='rBoolean']/@type", d));
-		assertEquals("Byte", xpath.evaluate("//OCD/AD[@id='rByte']/@type", d));
-		assertEquals("Character", xpath.evaluate("//OCD/AD[@id='rCharacter']/@type", d));
-		assertEquals("Short", xpath.evaluate("//OCD/AD[@id='rShort']/@type", d));
-		assertEquals("Integer", xpath.evaluate("//OCD/AD[@id='rInt']/@type", d));
-		assertEquals("Long", xpath.evaluate("//OCD/AD[@id='rLong']/@type", d));
-		assertEquals("Float", xpath.evaluate("//OCD/AD[@id='rFloat']/@type", d));
-		assertEquals("Double", xpath.evaluate("//OCD/AD[@id='rDouble']/@type", d));
+		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='rBoolean']/@type");
+		xt.assertExactAttribute("Byte", "metatype:MetaData/OCD/AD[@id='rByte']/@type");
+		xt.assertExactAttribute("Character", "metatype:MetaData/OCD/AD[@id='rCharacter']/@type");
+		xt.assertExactAttribute("Short", "metatype:MetaData/OCD/AD[@id='rShort']/@type");
+		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='rInt']/@type");
+		xt.assertExactAttribute("Long", "metatype:MetaData/OCD/AD[@id='rLong']/@type");
+		xt.assertExactAttribute("Float", "metatype:MetaData/OCD/AD[@id='rFloat']/@type");
+		xt.assertExactAttribute("Double", "metatype:MetaData/OCD/AD[@id='rDouble']/@type");
 
 		// Primitive Arrays
-		assertEquals("Boolean", xpath.evaluate("//OCD/AD[@id='rpaBoolean']/@type", d));
-		assertEquals("Byte", xpath.evaluate("//OCD/AD[@id='rpaByte']/@type", d));
-		assertEquals("Character", xpath.evaluate("//OCD/AD[@id='rpaCharacter']/@type", d));
-		assertEquals("Short", xpath.evaluate("//OCD/AD[@id='rpaShort']/@type", d));
-		assertEquals("Integer", xpath.evaluate("//OCD/AD[@id='rpaInt']/@type", d));
-		assertEquals("Long", xpath.evaluate("//OCD/AD[@id='rpaLong']/@type", d));
-		assertEquals("Float", xpath.evaluate("//OCD/AD[@id='rpaFloat']/@type", d));
-		assertEquals("Double", xpath.evaluate("//OCD/AD[@id='rpaDouble']/@type", d));
+		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='rpaBoolean']/@type");
+		xt.assertExactAttribute("Byte", "metatype:MetaData/OCD/AD[@id='rpaByte']/@type");
+		xt.assertExactAttribute("Character", "metatype:MetaData/OCD/AD[@id='rpaCharacter']/@type");
+		xt.assertExactAttribute("Short", "metatype:MetaData/OCD/AD[@id='rpaShort']/@type");
+		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='rpaInt']/@type");
+		xt.assertExactAttribute("Long", "metatype:MetaData/OCD/AD[@id='rpaLong']/@type");
+		xt.assertExactAttribute("Float", "metatype:MetaData/OCD/AD[@id='rpaFloat']/@type");
+		xt.assertExactAttribute("Double", "metatype:MetaData/OCD/AD[@id='rpaDouble']/@type");
 
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='rpaBoolean']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='rpaByte']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='rpaCharacter']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='rpaShort']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='rpaInt']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='rpaLong']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='rpaFloat']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='rpaDouble']/@cardinality", d));
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='rpaBoolean']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='rpaByte']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='rpaCharacter']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='rpaShort']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='rpaInt']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='rpaLong']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='rpaFloat']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='rpaDouble']/@cardinality");
 
 		// Wrapper + Object arrays
-		assertEquals("Boolean", xpath.evaluate("//OCD/AD[@id='raBoolean']/@type", d));
-		assertEquals("Byte", xpath.evaluate("//OCD/AD[@id='raByte']/@type", d));
-		assertEquals("Character", xpath.evaluate("//OCD/AD[@id='raCharacter']/@type", d));
-		assertEquals("Short", xpath.evaluate("//OCD/AD[@id='raShort']/@type", d));
-		assertEquals("Integer", xpath.evaluate("//OCD/AD[@id='raInt']/@type", d));
-		assertEquals("Long", xpath.evaluate("//OCD/AD[@id='raLong']/@type", d));
-		assertEquals("Float", xpath.evaluate("//OCD/AD[@id='raFloat']/@type", d));
-		assertEquals("Double", xpath.evaluate("//OCD/AD[@id='raDouble']/@type", d));
-		assertEquals("String", xpath.evaluate("//OCD/AD[@id='raString']/@type", d));
-		assertEquals("String", xpath.evaluate("//OCD/AD[@id='raURI']/@type", d));
+		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='raBoolean']/@type");
+		xt.assertExactAttribute("Byte", "metatype:MetaData/OCD/AD[@id='raByte']/@type");
+		xt.assertExactAttribute("Character", "metatype:MetaData/OCD/AD[@id='raCharacter']/@type");
+		xt.assertExactAttribute("Short", "metatype:MetaData/OCD/AD[@id='raShort']/@type");
+		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='raInt']/@type");
+		xt.assertExactAttribute("Long", "metatype:MetaData/OCD/AD[@id='raLong']/@type");
+		xt.assertExactAttribute("Float", "metatype:MetaData/OCD/AD[@id='raFloat']/@type");
+		xt.assertExactAttribute("Double", "metatype:MetaData/OCD/AD[@id='raDouble']/@type");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='raString']/@type");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='raURI']/@type");
 
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='raBoolean']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='raByte']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='raCharacter']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='raShort']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='raInt']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='raLong']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='raFloat']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='raDouble']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='raString']/@cardinality", d));
-		assertEquals("2147483647", xpath.evaluate("//OCD/AD[@id='raURI']/@cardinality", d));
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='raBoolean']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='raByte']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='raCharacter']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='raShort']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='raInt']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='raLong']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='raFloat']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='raDouble']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='raString']/@cardinality");
+		xt.assertExactAttribute("2147483647", "metatype:MetaData/OCD/AD[@id='raURI']/@cardinality");
 
 		// Wrapper + Object collections
-		assertEquals("Boolean", xpath.evaluate("//OCD/AD[@id='rBooleans']/@type", d));
-		assertEquals("Byte", xpath.evaluate("//OCD/AD[@id='rBytes']/@type", d));
-		assertEquals("Character", xpath.evaluate("//OCD/AD[@id='rCharacter']/@type", d));
-		assertEquals("Short", xpath.evaluate("//OCD/AD[@id='rShorts']/@type", d));
-		assertEquals("Integer", xpath.evaluate("//OCD/AD[@id='rInts']/@type", d));
-		assertEquals("Long", xpath.evaluate("//OCD/AD[@id='rLongs']/@type", d));
-		assertEquals("Float", xpath.evaluate("//OCD/AD[@id='rFloats']/@type", d));
-		assertEquals("Double", xpath.evaluate("//OCD/AD[@id='rDoubles']/@type", d));
-		assertEquals("String", xpath.evaluate("//OCD/AD[@id='rStrings']/@type", d));
-		assertEquals("String", xpath.evaluate("//OCD/AD[@id='rURIs']/@type", d));
+		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='rBooleans']/@type");
+		xt.assertExactAttribute("Byte", "metatype:MetaData/OCD/AD[@id='rBytes']/@type");
+		xt.assertExactAttribute("Character", "metatype:MetaData/OCD/AD[@id='rCharacter']/@type");
+		xt.assertExactAttribute("Short", "metatype:MetaData/OCD/AD[@id='rShorts']/@type");
+		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='rInts']/@type");
+		xt.assertExactAttribute("Long", "metatype:MetaData/OCD/AD[@id='rLongs']/@type");
+		xt.assertExactAttribute("Float", "metatype:MetaData/OCD/AD[@id='rFloats']/@type");
+		xt.assertExactAttribute("Double", "metatype:MetaData/OCD/AD[@id='rDoubles']/@type");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='rStrings']/@type");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='rURIs']/@type");
 
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='rBooleans']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='rBytes']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='rCharacters']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='rShorts']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='rInts']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='rLongs']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='rFloats']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='rDoubles']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='rStrings']/@cardinality", d));
-		assertEquals("-2147483648", xpath.evaluate("//OCD/AD[@id='rURIs']/@cardinality", d));
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rBooleans']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rBytes']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rCharacters']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rShorts']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rInts']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rLongs']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rFloats']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rDoubles']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rStrings']/@cardinality");
+		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rURIs']/@cardinality");
 		
 	}
+	
 
 	/**
 	 * Test simple
@@ -1068,6 +1041,7 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	public static void testSimple() throws Exception {
+		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -1080,20 +1054,19 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
-		Document d = db.parse(r.openInputStream());
+		XmlTester xt = xmlTester(r, version);
 
-		assertEquals("TestSimple", xpath.evaluate("//OCD/@name", d));
-		assertEquals("simple", xpath.evaluate("//OCD/@description", d));
-		assertEquals("test.metatype.SpecMetatypeTest$TestSimple", xpath.evaluate("//OCD/@id", d));
-		assertEquals("simplePid", xpath.evaluate("//Designate/@pid", d));
-		assertEquals("test.metatype.SpecMetatypeTest$TestSimple", xpath.evaluate("//Object/@ocdref", d));
-		assertEquals("simple", xpath.evaluate("//OCD/AD[@id='simple']/@id", d));
-		assertEquals("Simple", xpath.evaluate("//OCD/AD[@id='simple']/@name", d));
-		assertEquals("String", xpath.evaluate("//OCD/AD[@id='simple']/@type", d));
-		assertEquals("false", xpath.evaluate("//OCD/AD[@id='enabled']/@required", d));
-		assertEquals("true", xpath.evaluate("//OCD/AD[@id='enabled']/@default", d));
-		assertEquals(Integer.MAX_VALUE + "", xpath.evaluate("//OCD/AD[@id='notSoSimple']/@cardinality", d));
-
+		xt.assertExactAttribute("TestSimple", "metatype:MetaData/OCD/@name");
+		xt.assertExactAttribute("simple", "metatype:MetaData/OCD/@description");
+		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$TestSimple", "metatype:MetaData/OCD/@id");
+		xt.assertExactAttribute("simplePid", "metatype:MetaData/Designate/@pid");
+		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$TestSimple", "metatype:MetaData/Designate/Object/@ocdref");
+		xt.assertExactAttribute("simple", "metatype:MetaData/OCD/AD[@id='simple']/@id");
+		xt.assertExactAttribute("Simple", "metatype:MetaData/OCD/AD[@id='simple']/@name");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='simple']/@type");
+		xt.assertExactAttribute("false", "metatype:MetaData/OCD/AD[@id='enabled']/@required");
+		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='enabled']/@default");
+		xt.assertExactAttribute(Integer.MAX_VALUE + "", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@cardinality");
 	}
 	
 	@ObjectClassDefinition
@@ -1131,21 +1104,21 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
-		Document d = db.parse(r.openInputStream());
-		assertEquals("1", xpath.evaluate("//OCD/AD[@id='integer']/@default", d));
-		assertEquals("2,3", xpath.evaluate("//OCD/AD[@id='integers']/@default", d));
+		XmlTester xt = xmlTester13(r);
+		xt.assertExactAttribute("1", "metatype:MetaData/OCD/AD[@id='integer']/@default");
+		xt.assertExactAttribute("2,3", "metatype:MetaData/OCD/AD[@id='integers']/@default");
 		
-		assertEquals("true", xpath.evaluate("//OCD/AD[@id='bool']/@default", d));
-		assertEquals("true,false", xpath.evaluate("//OCD/AD[@id='bools']/@default", d));
+		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='bool']/@default");
+		xt.assertExactAttribute("true,false", "metatype:MetaData/OCD/AD[@id='bools']/@default");
 		
-		assertEquals(String.class.getName(), xpath.evaluate("//OCD/AD[@id='clazz']/@default", d));
-		assertEquals(Integer.class.getName() + "," + Double.class.getName(), xpath.evaluate("//OCD/AD[@id='clazzs']/@default", d));
+		xt.assertExactAttribute(String.class.getName(), "metatype:MetaData/OCD/AD[@id='clazz']/@default");
+		xt.assertExactAttribute(Integer.class.getName() + "," + Double.class.getName(), "metatype:MetaData/OCD/AD[@id='clazzs']/@default");
 		
-		assertEquals("A", xpath.evaluate("//OCD/AD[@id='l']/@default", d));
-		assertEquals("B,C", xpath.evaluate("//OCD/AD[@id='ls']/@default", d));
+		xt.assertExactAttribute("A", "metatype:MetaData/OCD/AD[@id='l']/@default");
+		xt.assertExactAttribute("B,C", "metatype:MetaData/OCD/AD[@id='ls']/@default");
 		
-		assertEquals("foo", xpath.evaluate("//OCD/AD[@id='string']/@default", d));
-		assertEquals("bar,baz", xpath.evaluate("//OCD/AD[@id='strings']/@default", d));
+		xt.assertExactAttribute("foo", "metatype:MetaData/OCD/AD[@id='string']/@default");
+		xt.assertExactAttribute("bar,baz", "metatype:MetaData/OCD/AD[@id='strings']/@default");
 		
 	}
 	
@@ -1199,8 +1172,8 @@ public class SpecMetatypeTest extends TestCase {
 			assertNotNull(r);
 			IO.copy(r.openInputStream(), System.err);
 
-			Document d = db.parse(r.openInputStream());
-			assertEquals("String", xpath.evaluate("//OCD/AD[@id='inner']/@type", d));
+			XmlTester xt = xmlTester13(r);
+			xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='inner']/@type");
 		}
 	}
 
@@ -1229,9 +1202,9 @@ public class SpecMetatypeTest extends TestCase {
 			assertNotNull(r);
 			IO.copy(r.openInputStream(), System.err);
 
-			Document d = db.parse(r.openInputStream());
-			assertEquals("Test metatype spec metatype test designate OCD", xpath.evaluate("//OCD/@name", d));
-			assertEquals("test.metatype.SpecMetatypeTest$DesignateOCD", xpath.evaluate("//OCD/@id", d));
+			XmlTester xt = xmlTester13(r);
+			xt.assertExactAttribute("Test metatype spec metatype test designate OCD", "metatype:MetaData/OCD/@name");
+			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD", "metatype:MetaData/OCD/@id");
 		}
 		{
 			Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$DesignateComponent.xml");
@@ -1241,9 +1214,10 @@ public class SpecMetatypeTest extends TestCase {
 			assertNotNull(r);
 			IO.copy(r.openInputStream(), System.err);
 
-			Document d = db.parse(r.openInputStream());
-			assertEquals("simplePid", xpath.evaluate("//Designate/@factoryPid", d));
-			assertEquals("test.metatype.SpecMetatypeTest$DesignateOCD", xpath.evaluate("//Object/@ocdref", d));
+			//TODO should all designates be at v 1.2?
+			XmlTester xt = xmlTester13(r);
+			xt.assertExactAttribute("simplePid", "metatype:MetaData/Designate/@factoryPid");
+			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD", "metatype:MetaData/Designate/Object/@ocdref");
 		}
 	}
 }
