@@ -47,7 +47,7 @@ public class MapHandler extends Handler {
 	}
 
 	private ParameterizedType findAncestor(Class< ? > start, Class<?> target) {
-		if ( start == Object.class)
+		if ( start == null || start == Object.class)
 			return null;
 		
 		for ( Type t : start.getGenericInterfaces()) {
