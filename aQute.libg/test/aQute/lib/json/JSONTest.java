@@ -789,4 +789,15 @@ public class JSONTest extends TestCase {
 		// Person u4 = codec.dec().from(s).get( Person.class );
 
 	}
+	
+	public static interface C {}
+	
+	public static class D extends LinkedHashMap<Object, Object> implements C {}
+	
+	public void testMapInheritance() throws Exception {
+		D d = new D();
+		d.put("foo", "bar");
+		String s = new JSONCodec().enc().put(d).toString();
+		assertEquals("{'foo':'bar'}".replace('\'', '"'), s);
+	}
 }
