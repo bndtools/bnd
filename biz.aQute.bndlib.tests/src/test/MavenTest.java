@@ -5,7 +5,14 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+import javax.xml.parsers.*;
+import javax.xml.xpath.*;
+
 import junit.framework.*;
+
+import org.w3c.dom.*;
+import org.xml.sax.*;
+
 import aQute.bnd.build.*;
 import aQute.bnd.header.*;
 import aQute.bnd.maven.*;
@@ -333,4 +340,35 @@ public class MavenTest extends TestCase {
 	// ;
 	// assertEquals(1, files.length);
 	// }
+	
+	
+	public void testPomResource() throws Exception {
+		
+		testPom( "pom.xml", "true", "uvw.xyz", "1.2.3", "uvw", "xyz", "1.2.3");
+		testPom( "pom.xml", "groupid=abc.def.ghi,artifactid=jkl", "uvw.xyz", "1.2.3", "abc.def.ghi", "jkl", "1.2.3");
+		testPom( "pom.xml", "groupid=abc.def.ghi", "uvw.xyz", "1.2.3", "abc.def.ghi", "uvw.xyz", "1.2.3");
+		testPom( "pom.xml", "groupid=abc.def.ghi,version=2.6.8", "uvw.xyz", "1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8");
+		testPom( "META-INF/maven/pom.xml", "groupid=abc.def.ghi,version=2.6.8,where=META-INF/maven/pom.xml", "uvw.xyz", "1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8");
+	}
+	
+	void testPom(String where, String pom, String bsn, String version, String groupId, String artifactId, String mversion)
+			throws IOException, SAXException, ParserConfigurationException, Exception {
+		Builder b = new Builder();
+		b.setProperty("-pom", pom);
+		b.setBundleSymbolicName(bsn);
+		b.setBundleVersion(version);
+		b.setProperty("-resourceonly", "true");
+		Jar jar = b.build();
+		assertTrue( b.check());
+		
+		Document d = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(jar.getResource(where).openInputStream());
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		String g = xpath.evaluate("/project/groupId", d);
+		assertEquals(groupId, g.trim());
+		String a = xpath.evaluate("/project/artifactId", d);
+		assertEquals(artifactId, a.trim());
+		
+		String v = xpath.evaluate("/project/version", d);
+		assertEquals(mversion,v.trim());
+	}
 }
