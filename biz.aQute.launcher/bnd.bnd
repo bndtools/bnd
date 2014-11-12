@@ -14,5 +14,6 @@ javac.ee = '[1.6,1.7)'
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 
 Private-Package: aQute.launcher.*
+Conditional-Package: aQute.lib*
 	
 Premain-Class: aQute.launcher.agent.LauncherAgent
