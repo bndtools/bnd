@@ -286,7 +286,8 @@ public class MavenTest extends TestCase {
 	// graph.addRepository( new URL("http://repo1.maven.org/maven2/"));
 	// graph.addRepository( new
 	// URL("http://repository.springsource.com/maven/bundles/external"));
-	// // graph.root.add( IO.getFile("testresources/poms/pom-1.xml").toURI().toURL());
+	// // graph.root.add(
+	// IO.getFile("testresources/poms/pom-1.xml").toURI().toURL());
 	//
 	// }
 
@@ -332,7 +333,8 @@ public class MavenTest extends TestCase {
 	// MavenRepository maven = new MavenRepository();
 	// maven.setReporter(processor);
 	// Map<String, String> map = new HashMap<String, String>();
-	// map.put("root", IO.getFile(cwd,"testresources/maven-repo").getAbsolutePath());
+	// map.put("root",
+	// IO.getFile(cwd,"testresources/maven-repo").getAbsolutePath());
 	// maven.setProperties(map);
 	//
 	// File files[] = maven.get("org.apache.felix.framework", null);
@@ -340,35 +342,56 @@ public class MavenTest extends TestCase {
 	// ;
 	// assertEquals(1, files.length);
 	// }
-	
-	
+
 	public void testPomResource() throws Exception {
-		
-		testPom( "pom.xml", "true", "uvw.xyz", "1.2.3", "uvw", "xyz", "1.2.3");
-		testPom( "pom.xml", "groupid=abc.def.ghi,artifactid=jkl", "uvw.xyz", "1.2.3", "abc.def.ghi", "jkl", "1.2.3");
-		testPom( "pom.xml", "groupid=abc.def.ghi", "uvw.xyz", "1.2.3", "abc.def.ghi", "uvw.xyz", "1.2.3");
-		testPom( "pom.xml", "groupid=abc.def.ghi,version=2.6.8", "uvw.xyz", "1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8");
-		testPom( "META-INF/maven/pom.xml", "groupid=abc.def.ghi,version=2.6.8,where=META-INF/maven/pom.xml", "uvw.xyz", "1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8");
+
+		testPom("pom.xml",
+				"true",
+				"com.example.foo",
+				"1.2.3.qualifier",
+				"com.example",
+				"foo",
+				"1.2.3.qualifier",
+				"url=http://github.com/bndtools,connection=scm:git:https://github.com/bndtools/bnd,developerConnection=scm:git:git@github.com/bndtools/bnd",
+				"Peter.Kriens@aQute.biz;name=\"Peter Kriens\";organization=aQute;roles=\"programmer,gopher\"");
+		testPom("pom.xml", "true", "com.example.foo", "1.2.3.qualifier", "com.example", "foo", "1.2.3.qualifier", null,
+				null);
+		testPom("pom.xml", "true", "uvw.xyz", "1.2.3", "uvw", "xyz", "1.2.3", null, null);
+		testPom("pom.xml", "groupid=abc.def.ghi,artifactid=jkl", "uvw.xyz", "1.2.3", "abc.def.ghi", "jkl", "1.2.3",
+				null, null);
+		testPom("pom.xml", "groupid=abc.def.ghi", "uvw.xyz", "1.2.3", "abc.def.ghi", "uvw.xyz", "1.2.3", null, null);
+		testPom("pom.xml", "groupid=abc.def.ghi,version=2.6.8", "uvw.xyz", "1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8",
+				null, null);
+		testPom("META-INF/maven/pom.xml", "groupid=abc.def.ghi,version=2.6.8,where=META-INF/maven/pom.xml", "uvw.xyz",
+				"1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8", null, null);
 	}
-	
-	void testPom(String where, String pom, String bsn, String version, String groupId, String artifactId, String mversion)
-			throws IOException, SAXException, ParserConfigurationException, Exception {
+
+	void testPom(String where, String pom, String bsn, String version, String groupId, String artifactId,
+			String mversion, String scm, String developers) throws IOException, SAXException,
+			ParserConfigurationException, Exception {
 		Builder b = new Builder();
 		b.setProperty("-pom", pom);
 		b.setBundleSymbolicName(bsn);
 		b.setBundleVersion(version);
 		b.setProperty("-resourceonly", "true");
+		if (developers != null)
+			b.setProperty("Bundle-Developer", developers);
+
+		if (scm != null)
+			b.setProperty("Bundle-SCM", scm);
+
 		Jar jar = b.build();
-		assertTrue( b.check());
-		
-		Document d = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(jar.getResource(where).openInputStream());
+		assertTrue(b.check());
+		Resource r = jar.getResource(where);
+		IO.copy(r.openInputStream(), System.out);
+		Document d = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(r.openInputStream());
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		String g = xpath.evaluate("/project/groupId", d);
 		assertEquals(groupId, g.trim());
 		String a = xpath.evaluate("/project/artifactId", d);
 		assertEquals(artifactId, a.trim());
-		
+
 		String v = xpath.evaluate("/project/version", d);
-		assertEquals(mversion,v.trim());
+		assertEquals(mversion, v.trim());
 	}
 }

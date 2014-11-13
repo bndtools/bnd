@@ -12,13 +12,13 @@ import aQute.lib.io.*;
 import aQute.lib.tag.*;
 
 public class PomResource extends WriteResource {
-	private static final String	VERSION	= "version";
+	private static final String	VERSION		= "version";
 	private static final String	ARTIFACTID	= "artifactid";
 	private static final String	GROUPID		= "groupid";
 	final Manifest				manifest;
 	private Map<String,String>	scm;
 	final Map<String,String>	processor;
-	final static Pattern		NAME_URL	= Pattern.compile("(.*)(http://.*)");
+	final static Pattern		NAME_URL	= Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE);
 
 	public PomResource(Manifest manifest) {
 		this(new HashMap<String,String>(), manifest);
@@ -52,7 +52,6 @@ public class PomResource extends WriteResource {
 			throw new RuntimeException("Cannot create POM unless bsn is set");
 		}
 
-
 		String groupId;
 		String artifactId;
 
@@ -76,12 +75,11 @@ public class PomResource extends WriteResource {
 		}
 
 		String version = processor.get(VERSION);
-		if ( version == null)
+		if (version == null)
 			version = domain.getBundleVersion();
 		if (version == null)
 			version = "0";
-		
-		
+
 		Tag project = new Tag("project");
 		project.addAttribute("xmlns", "http://maven.apache.org/POM/4.0.0");
 		project.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
@@ -157,6 +155,45 @@ public class PomResource extends WriteResource {
 				tagFromMap(l, values, "distribution", "distribution", "repo");
 			}
 		}
+
+		String scm = processor.get("Bundle-SCM");
+		if ( scm != null && scm.length() > 0 ) {
+			Attrs pscm = OSGiHeader.parseProperties(scm);
+			
+			Tag tscm = new Tag(project, "scm");
+			for (String s : pscm.keySet()) {
+				new Tag(tscm, s, pscm.get(s));
+			}
+		}
+
+		Parameters developers = new Parameters(processor.get("Bundle-Developer"));
+		if (developers.size() > 0) {
+			Tag tdevelopers = new Tag(project, "developers");
+
+			for (String id : developers.keySet()) {
+				Tag tdeveloper = new Tag(tdevelopers, "developer");
+				new Tag(tdeveloper, "id", id);
+
+				Attrs i = new Attrs(developers.get(id));
+				if (!i.containsKey("email"))
+					i.put("email", id);
+
+				i.remove("id");
+
+				for (String s : i.keySet()) {
+					if (s.equals("roles")) {
+						Tag troles = new Tag(tdeveloper,"roles");
+						
+						String[] roles = i.get(s).trim().split("\\s*,\\s*");
+						for ( String role : roles) {
+							new Tag(troles, "role", role);
+						}
+					} else
+						new Tag(tdeveloper, s, i.get(s));
+				}
+			}
+		}
+
 		project.print(0, ps);
 		ps.flush();
 	}
