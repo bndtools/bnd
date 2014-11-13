@@ -42,6 +42,7 @@ public class About {
 	public static Version				_3_0		= new Version(3, 0, 0);
 
 	public static String[]				CHANGES_3_0	= {
+		"-pom now accepts artifactid, groupid, where, and version properties	",
 		"Added a ${stem;<string>} macro that returns the stem (before the extension) of a file name",
 		"Added a ${thisfile} macro that returns the name of the properties file of the current processor if it exists."
 	};
