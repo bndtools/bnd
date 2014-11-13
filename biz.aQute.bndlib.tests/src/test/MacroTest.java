@@ -14,6 +14,25 @@ public class MacroTest extends TestCase {
 	
 	
 	/**
+	 * File name tests
+	 * @throws Exception 
+	 */
+	
+	public void testFileNameMacros() throws Exception {
+		Processor processor = new Processor();
+		File a= IO.getFile("testresources/testfilenamemacros.properties");
+		processor.setProperties(a);
+		
+		File b = IO.getFile(processor._thisfile(new String[0]));
+		assertEquals( a,b);
+		
+		assertEquals( "properties", processor.getReplacer()._extension(new String[]{"","testresources/testfilenamemacros.properties"}));
+		
+		assertEquals( "testfilenamemacros.properties", processor.getReplacer().process("${basename;testfilenamemacros.properties}"));
+		assertEquals( "testfilenamemacros", processor.getReplacer().process("${stem;testfilenamemacros.properties}"));
+	}
+	
+	/**
 	 * List functions
 	 */
 	public void testMacroLists() throws Exception {

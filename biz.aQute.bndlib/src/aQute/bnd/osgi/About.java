@@ -39,7 +39,13 @@ import aQute.bnd.version.*;
 public class About {
 	public static Version				_2_3		= new Version(2, 3, 0);
 	public static Version				_2_4		= new Version(2, 4, 0);
+	public static Version				_3_0		= new Version(3, 0, 0);
 
+	public static String[]				CHANGES_3_0	= {
+		"Added a ${stem;<string>} macro that returns the stem (before the extension) of a file name",
+		"Added a ${thisfile} macro that returns the name of the properties file of the current processor if it exists."
+	};
+	
 	public static String[]				CHANGES_2_4	= {
 			"Laucher moved to Java 6",
 			"Always read bnd files with UTF-8 with a fallback to ISO-8859-1",
