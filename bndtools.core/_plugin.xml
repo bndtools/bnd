@@ -818,7 +818,51 @@
 
    </extension>
 
+   <extension point="org.eclipse.ui.commands">
+      <command
+         id="bndtools.launch.runShortcut.run"
+         name="Run Bnd OSGi Run Launcher"
+         description="Run Bnd OSGi Run Launcher"
+         categoryId="org.eclipse.debug.ui.category.run"/>
+      <command
+         id="bndtools.launch.runShortcut.debug"
+         name="Debug Bnd OSGi Run Launcher"
+         description="Debug Bnd OSGi Run Launcher"
+         categoryId="org.eclipse.debug.ui.category.run"/>
+      <command
+         id="bndtools.launch.junitShortcut.run"
+         name="Run Bnd OSGi Run Launcher (JUnit)"
+         description="Run Bnd OSGi Run Launcher (JUnit)"
+         categoryId="org.eclipse.debug.ui.category.run"/>
+      <command
+         id="bndtools.launch.junitShortcut.debug"
+         name="Debug Bnd OSGi Run Launcher (JUnit)"
+         description="Debug Bnd OSGi Run Launcher (JUnit)"
+         categoryId="org.eclipse.debug.ui.category.run"/>
+   </extension>
 
+   <extension point="org.eclipse.ui.bindings">
+      <key
+         sequence="M3+M2+R O"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bndtools.launch.runShortcut.run"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+         sequence="M3+M2+D O"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bndtools.launch.runShortcut.debug"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+         sequence="M3+M2+R J"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bndtools.launch.junitShortcut.run"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+         sequence="M3+M2+D K"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bndtools.launch.junitShortcut.debug"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+   </extension>
 
 	${cat;resources/enroute/_plugin.xml}
 	
