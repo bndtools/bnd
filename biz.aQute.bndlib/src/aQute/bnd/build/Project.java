@@ -919,18 +919,19 @@ public class Project extends Processor {
 		List<RepositoryPlugin> plugins = workspace.getRepositories();
 
 		if (useStrategy == Strategy.EXACT) {
-			if (!Verifier.isVersion(range))
-				return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range
+			String exactRange = Analyzer.cleanupVersion(range);
+			if (!Verifier.isVersion(exactRange))
+				return new Container(this, bsn, exactRange, Container.TYPE.ERROR, null, bsn + ";version=" + exactRange
 						+ " Invalid version", null, null);
 
 			// For an exact range we just iterate over the repos
 			// and return the first we find.
-			Version version = new Version(range);
+			Version version = new Version(exactRange);
 			for (RepositoryPlugin plugin : plugins) {
 				DownloadBlocker blocker = new DownloadBlocker(this);
 				File result = plugin.get(bsn, version, attrs, blocker);
 				if (result != null)
-					return toContainer(bsn, range, attrs, result, blocker);
+					return toContainer(bsn, exactRange, attrs, result, blocker);
 			}
 		} else {
 			VersionRange versionRange = VERSION_ATTR_LATEST.equals(range) ? new VersionRange("0") : new VersionRange(
