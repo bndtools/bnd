@@ -136,14 +136,6 @@ task p2FeatureMain(type: Zip) {
   include          "feature.xml"
 }
 
-task p2FeatureJarViewer(type: Zip) {
-  dependsOn p2FeaturesTree
-  destinationDir = file("$buildDir/features/main")
-  archiveName    = "bndtools.jarviewer.feature.jar"
-  from             "$buildDir/features/main/jarviewer"
-  include          "feature.xml"
-}
-
 task p2FeatureDMPlugin(type: Zip) {
   dependsOn p2FeaturesTree
   destinationDir = file("$buildDir/features/extras")
@@ -161,7 +153,7 @@ task p2FeatureAmdatuPlugin(type: Zip) {
 }
 
 task p2Features {
-  dependsOn p2FeatureMain, p2FeatureJarViewer, p2FeatureDMPlugin, p2FeatureAmdatuPlugin
+  dependsOn p2FeatureMain, p2FeatureDMPlugin, p2FeatureAmdatuPlugin
 }
 
 

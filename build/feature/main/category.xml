@@ -3,8 +3,5 @@
    <feature url="features/bndtools.feature_@master-version@" id="bndtools.main.feature" version="@master-version@">
       <category name="bndtools.category"/>
    </feature>
-   <feature url="features/bndtools.jarviewer.feature_@master-version@" id="bndtools.jarviewer.feature" version="@master-version@">
-      <category name="bndtools.category"/>
-   </feature>
    <category-def name="bndtools.category" label="Bndtools"/>
 </site>
