@@ -227,7 +227,7 @@ public class Tag {
 					if (cdata) {
 						pw.print("<![CDATA[");
 						String s = (String) c;
-						s = s.replaceAll("]]>", "] ]>");
+						s = s.replaceAll("]]>", "]]]]><![CDATA[>");
 						pw.print(s);
 						pw.print("]]>");
 					} else
