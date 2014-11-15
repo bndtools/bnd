@@ -36,7 +36,7 @@ public class PomResource extends WriteResource {
 
 	@Override
 	public void write(OutputStream out) throws IOException {
-		PrintWriter ps = IO.writer(out);
+		PrintWriter pw = IO.writer(out);
 
 		Domain domain = Domain.domain(manifest);
 		String name = domain.get(Constants.BUNDLE_NAME);
@@ -193,8 +193,9 @@ public class PomResource extends WriteResource {
 			}
 		}
 
-		project.print(0, ps);
-		ps.flush();
+		pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		project.print(0, pw);
+		pw.flush();
 	}
 
 	/**
