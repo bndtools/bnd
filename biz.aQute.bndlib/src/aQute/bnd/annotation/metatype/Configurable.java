@@ -150,6 +150,12 @@ public class Configurable<T> {
 				if (resultType == Pattern.class) {
 					return Pattern.compile(input);
 				}
+			} else if (resultType.isAnnotation() && actualType == aQute.bnd.osgi.Annotation.class) {
+				java.lang.annotation.Annotation a = ((aQute.bnd.osgi.Annotation) o).getAnnotation();
+				if (resultType.isAssignableFrom(a.getClass())) {
+					return a;
+				}
+				throw new IllegalArgumentException("Annotation " + o + " is not of expected type " + resultType);
 			}
 
 			try {
