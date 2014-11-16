@@ -64,16 +64,27 @@ releaserepo:            ${workspace}/dist/bundles
 copyright:              Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
 copyright.html:         Copyright &copy; aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
 
-build.version:          3.0.0.${tstamp}
+base.version:           3.0.0
+build.version:          ${base.version}.${tstamp}
+groupid:                biz.aQute.bnd
 Bundle-Version:         ${build.version}
 Bundle-Vendor:          http://bndtools.org/
 Bundle-Copyright:       ${copyright}
 Bundle-License:         http://www.opensource.org/licenses/apache2.0.php; \
-                          description="Apache License, Version 2.0"; \
-                          link=http://www.apache.org/licenses/LICENSE-2.0.html
+                        description="Apache License, Version 2.0"; \
+                        link="http://www.apache.org/licenses/LICENSE-2.0"
 Bundle-DocURL:          http://bnd.bndtools.org/
-Bundle-SCM:             https://github.com/bndtools/bnd.git
-
+Bundle-SCM:             url=https://github.com/bndtools/bnd, \
+                        connection=scm:git:https://github.com/bndtools/bnd.git, \
+                        developerConnection=scm:git:git@github.com:bndtools/bnd.git
+Bundle-Developers: \
+    pkriens; \
+        email=Peter.Kriens@aQute.biz; \
+        name="Peter Kriens"; \
+        organization=bndtools; \
+        organizationUrl=http://bndtools.org; \
+        roles="architect,developer"; \
+        timezone=1
 
 # default version policies
 #   -provider-policy =  ${range;[==,=+)}
