@@ -202,10 +202,7 @@ public class Tag {
 	 * Print the tag formatted to a PrintWriter.
 	 */
 	public Tag print(int indent, PrintWriter pw) {
-		if (indent >= 0) {
-			pw.println();
-			spaces(pw, indent);
-		}
+		spaces(pw, indent);
 		pw.print('<');
 		pw.print(name);
 
@@ -222,69 +219,34 @@ public class Tag {
 			pw.print('/');
 		else {
 			pw.print('>');
+			Object last = null;
 			for (Object c : content) {
 				if (c instanceof String) {
 					if (cdata) {
 						pw.print("<![CDATA[");
 						String s = (String) c;
-						s = s.replaceAll("]]>", "] ]>");
+						s = s.replaceAll("]]>", "]]]]><![CDATA[>");
 						pw.print(s);
 						pw.print("]]>");
 					} else
-						formatted(pw, indent + 2, 60, escape((String) c));
+						pw.print(escape((String) c));
 				} else if (c instanceof Tag) {
+					if (last == null) {
+						pw.println();
+					}
 					Tag tag = (Tag) c;
 					tag.print(indent + 2, pw);
 				}
+				last = c;
 			}
-			if (indent >= 0) {
-				pw.println();
+			if (last instanceof Tag) {
 				spaces(pw, indent);
 			}
 			pw.print("</");
 			pw.print(name);
 		}
-		pw.print('>');
+		pw.println('>');
 		return this;
-	}
-
-	/**
-	 * Convenience method to print a string nicely and does character conversion
-	 * to entities.
-	 */
-	void formatted(PrintWriter pw, int left, int width, String s) {
-		int pos = width + 1;
-		s = s.trim();
-
-		for (int i = 0; i < s.length(); i++) {
-			char c = s.charAt(i);
-			if (i == 0 || (Character.isWhitespace(c) && pos > width - 3)) {
-				if (left >= 0 && width > 0) {
-					pw.println();
-					spaces(pw, left);
-				}
-				pos = 0;
-			}
-			switch (c) {
-				case '<' :
-					pw.print("&lt;");
-					pos += 4;
-					break;
-				case '>' :
-					pw.print("&gt;");
-					pos += 4;
-					break;
-				case '&' :
-					pw.print("&amp;");
-					pos += 5;
-					break;
-				default :
-					pw.print(c);
-					pos++;
-					break;
-			}
-
-		}
 	}
 
 	/**
