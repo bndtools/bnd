@@ -38,7 +38,7 @@ Conditional-Package: 			aQute.libg.*, aQute.lib.*
 
 Bundle-Developers: \
 	pkriens; \
-		email=Peter.Kriens@aQute.biz;
+		email=Peter.Kriens@aQute.biz; \
 		name="Peter Kriens"; \
 		organization=aQute; \
 		organizationUrl=http://www.jpm4j.org; \

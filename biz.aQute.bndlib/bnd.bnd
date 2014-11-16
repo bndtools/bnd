@@ -53,7 +53,6 @@ Import-Package: junit.framework;resolution:=optional,\
 Bundle-Icon: img/bnd-64.png;size=64
 Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
 Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com
-Bundle-SCM: git@github.com:bndtools/bnd.git
 
 -baselinerepo: Main
 -baseline: *
