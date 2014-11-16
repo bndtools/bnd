@@ -231,7 +231,7 @@ public class Tag {
 					} else
 						pw.print(escape((String) c));
 				} else if (c instanceof Tag) {
-					if (last == null) {
+					if ((last == null) && (indent >= 0)) {
 						pw.println();
 					}
 					Tag tag = (Tag) c;
@@ -245,7 +245,10 @@ public class Tag {
 			pw.print("</");
 			pw.print(name);
 		}
-		pw.println('>');
+		pw.print('>');
+		if (indent >= 0) {
+			pw.println();
+		}
 		return this;
 	}
 
