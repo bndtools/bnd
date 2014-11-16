@@ -155,7 +155,7 @@ public class PomResource extends WriteResource {
 			}
 		}
 
-		String scm = processor.get("Bundle-SCM");
+		String scm = processor.get(Constants.BUNDLE_SCM);
 		if ( scm != null && scm.length() > 0 ) {
 			Attrs pscm = OSGiHeader.parseProperties(scm);
 			
@@ -165,7 +165,7 @@ public class PomResource extends WriteResource {
 			}
 		}
 
-		Parameters developers = new Parameters(processor.get("Bundle-Developer"));
+		Parameters developers = new Parameters(processor.get(Constants.BUNDLE_DEVELOPERS));
 		if (developers.size() > 0) {
 			Tag tdevelopers = new Tag(project, "developers");
 
