@@ -118,8 +118,8 @@ public class Builder extends Analyzer {
 				if ( where == null)
 					where = "pom.xml";
 				
-				map.put("Bundle-SCM", getProperty("Bundle-SCM"));
-				map.put("Bundle-Developer", getProperty("Bundle-Developer"));
+				map.put(Constants.BUNDLE_SCM, getProperty(Constants.BUNDLE_SCM));
+				map.put(Constants.BUNDLE_DEVELOPERS, getProperty(Constants.BUNDLE_DEVELOPERS));
 				dot.putResource(where, new PomResource(map,dot.getManifest()));
 			}
 		}
