@@ -114,13 +114,10 @@ public class Builder extends Analyzer {
 		if ( pom != null) {
 			if ( !pom.equalsIgnoreCase("false")) {
 				Map<String,String> map = OSGiHeader.parseProperties(pom);
-				String where = map.get("where");
-				if ( where == null)
-					where = "pom.xml";
-				
 				map.put(Constants.BUNDLE_SCM, getProperty(Constants.BUNDLE_SCM));
 				map.put(Constants.BUNDLE_DEVELOPERS, getProperty(Constants.BUNDLE_DEVELOPERS));
-				dot.putResource(where, new PomResource(map,dot.getManifest()));
+				PomResource pomResource = new PomResource(map, dot.getManifest());
+				dot.putResource(pomResource.getWhere(), pomResource);
 			}
 		}
 
