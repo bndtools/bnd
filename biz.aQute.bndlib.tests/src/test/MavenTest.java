@@ -396,5 +396,8 @@ public class MavenTest extends TestCase {
 
 		String v = xpath.evaluate("/project/version", d);
 		assertEquals(mversion, v.trim());
+
+		assertEquals((developers == null) ? "0" : "1", xpath.evaluate("count(/project/developers)", d));
+		assertEquals((scm == null) ? "0" : "1", xpath.evaluate("count(/project/scm)", d));
 	}
 }
