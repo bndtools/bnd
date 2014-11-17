@@ -378,10 +378,10 @@ public class MavenTest extends TestCase {
 		b.setBundleVersion(version);
 		b.setProperty("-resourceonly", "true");
 		if (developers != null)
-			b.setProperty("Bundle-Developer", developers);
+			b.setProperty(Constants.BUNDLE_DEVELOPERS, developers);
 
 		if (scm != null)
-			b.setProperty("Bundle-SCM", scm);
+			b.setProperty(Constants.BUNDLE_SCM, scm);
 
 		Jar jar = b.build();
 		assertTrue(b.check());
