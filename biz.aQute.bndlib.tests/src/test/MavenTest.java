@@ -357,10 +357,13 @@ public class MavenTest extends TestCase {
 		testPom("pom.xml", "true", "com.example.foo", "1.2.3.qualifier", "com.example", "foo", "1.2.3.qualifier", null,
 				null);
 		testPom("pom.xml", "true", "uvw.xyz", "1.2.3", "uvw", "xyz", "1.2.3", null, null);
-		testPom("pom.xml", "groupid=abc.def.ghi,artifactid=jkl", "uvw.xyz", "1.2.3", "abc.def.ghi", "jkl", "1.2.3",
+		testPom("META-INF/maven/abc.def.ghi/jkl/pom.xml", "groupid=abc.def.ghi,artifactid=jkl", "uvw.xyz", "1.2.3",
+				"abc.def.ghi", "jkl", "1.2.3",
 				null, null);
-		testPom("pom.xml", "groupid=abc.def.ghi", "uvw.xyz", "1.2.3", "abc.def.ghi", "uvw.xyz", "1.2.3", null, null);
-		testPom("pom.xml", "groupid=abc.def.ghi,version=2.6.8", "uvw.xyz", "1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8",
+		testPom("META-INF/maven/abc.def.ghi/uvw.xyz/pom.xml", "groupid=abc.def.ghi", "uvw.xyz", "1.2.3", "abc.def.ghi",
+				"uvw.xyz", "1.2.3", null, null);
+		testPom("META-INF/maven/abc.def.ghi/uvw.xyz/pom.xml", "groupid=abc.def.ghi,version=2.6.8", "uvw.xyz", "1.2.3",
+				"abc.def.ghi", "uvw.xyz", "2.6.8",
 				null, null);
 		testPom("META-INF/maven/pom.xml", "groupid=abc.def.ghi,version=2.6.8,where=META-INF/maven/pom.xml", "uvw.xyz",
 				"1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8", null, null);

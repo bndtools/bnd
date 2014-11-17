@@ -15,10 +15,16 @@ public class PomResource extends WriteResource {
 	private static final String	VERSION		= "version";
 	private static final String	ARTIFACTID	= "artifactid";
 	private static final String	GROUPID		= "groupid";
+	private static final String	WHERE		= "where";
 	final Manifest				manifest;
 	private Map<String,String>	scm;
 	final Map<String,String>	processor;
 	final static Pattern		NAME_URL	= Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE);
+	private String				where;
+	private String				groupId;
+	private String				artifactId;
+	private String				version;
+	private String				name;
 
 	public PomResource(Manifest manifest) {
 		this(new HashMap<String,String>(), manifest);
@@ -27,6 +33,49 @@ public class PomResource extends WriteResource {
 	public PomResource(Map<String,String> b, Manifest manifest) {
 		this.manifest = manifest;
 		this.processor = b;
+
+		Domain domain = Domain.domain(manifest);
+		name = domain.get(Constants.BUNDLE_NAME);
+		String bsn = domain.getBundleSymbolicName().getKey();
+		if (bsn == null) {
+			throw new RuntimeException("Cannot create POM unless bsn is set");
+		}
+		where = processor.get(WHERE);
+
+		if (processor.containsKey(GROUPID)) {
+			groupId = processor.get(GROUPID);
+			artifactId = processor.get(ARTIFACTID);
+			if (artifactId == null)
+				artifactId = bsn;
+			if (where == null) {
+				where = String.format("META-INF/maven/%s/%s/pom.xml", groupId, artifactId);
+			}
+		} else {
+			int n = bsn.lastIndexOf('.');
+			if (n <= 0)
+				throw new RuntimeException("\"" + GROUPID + "\" not set and"
+						+ Constants.BUNDLE_SYMBOLICNAME
+						+ " does not contain a '.' to separate into a groupid and artifactid.");
+
+			artifactId = processor.get(ARTIFACTID);
+			if (artifactId == null)
+				artifactId = bsn.substring(n + 1);
+			groupId = bsn.substring(0, n);
+			if (where == null) {
+				where = "pom.xml";
+			}
+		}
+
+		version = processor.get(VERSION);
+		if (version == null)
+			version = domain.getBundleVersion();
+		if (version == null)
+			version = "0";
+
+	}
+
+	public String getWhere() {
+		return where;
 	}
 
 	@Override
@@ -38,47 +87,10 @@ public class PomResource extends WriteResource {
 	public void write(OutputStream out) throws IOException {
 		PrintWriter pw = IO.writer(out);
 
-		Domain domain = Domain.domain(manifest);
-		String name = domain.get(Constants.BUNDLE_NAME);
-
 		String description = manifest.getMainAttributes().getValue(Constants.BUNDLE_DESCRIPTION);
 		String docUrl = manifest.getMainAttributes().getValue(Constants.BUNDLE_DOCURL);
 		String bundleVendor = manifest.getMainAttributes().getValue(Constants.BUNDLE_VENDOR);
 		String licenses = manifest.getMainAttributes().getValue(Constants.BUNDLE_LICENSE);
-
-		String bsn = domain.getBundleSymbolicName().getKey();
-
-		if (bsn == null) {
-			throw new RuntimeException("Cannot create POM unless bsn is set");
-		}
-
-		String groupId;
-		String artifactId;
-
-		if (processor.containsKey(GROUPID)) {
-
-			groupId = processor.get(GROUPID);
-			artifactId = processor.get(ARTIFACTID);
-			if (artifactId == null)
-				artifactId = bsn;
-
-		} else {
-			int n = bsn.lastIndexOf('.');
-			if (n <= 0)
-				throw new RuntimeException("Can not create POM unless " + Constants.BUNDLE_SYMBOLICNAME
-						+ " contains a . to separate group and  artifact id");
-
-			artifactId = processor.get(ARTIFACTID);
-			if (artifactId == null)
-				artifactId = bsn.substring(n + 1);
-			groupId = bsn.substring(0, n);
-		}
-
-		String version = processor.get(VERSION);
-		if (version == null)
-			version = domain.getBundleVersion();
-		if (version == null)
-			version = "0";
 
 		Tag project = new Tag("project");
 		project.addAttribute("xmlns", "http://maven.apache.org/POM/4.0.0");
