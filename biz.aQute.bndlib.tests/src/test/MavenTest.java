@@ -378,10 +378,10 @@ public class MavenTest extends TestCase {
 		b.setBundleVersion(version);
 		b.setProperty("-resourceonly", "true");
 		if (developers != null)
-			b.setProperty("Bundle-Developer", developers);
+			b.setProperty(Constants.BUNDLE_DEVELOPERS, developers);
 
 		if (scm != null)
-			b.setProperty("Bundle-SCM", scm);
+			b.setProperty(Constants.BUNDLE_SCM, scm);
 
 		Jar jar = b.build();
 		assertTrue(b.check());
@@ -389,12 +389,11 @@ public class MavenTest extends TestCase {
 		IO.copy(r.openInputStream(), System.out);
 		Document d = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(r.openInputStream());
 		XPath xpath = XPathFactory.newInstance().newXPath();
-		String g = xpath.evaluate("/project/groupId", d);
-		assertEquals(groupId, g.trim());
-		String a = xpath.evaluate("/project/artifactId", d);
-		assertEquals(artifactId, a.trim());
+		assertEquals(groupId, xpath.evaluate("/project/groupId", d));
+		assertEquals(artifactId, xpath.evaluate("/project/artifactId", d));
+		assertEquals(mversion, xpath.evaluate("/project/version", d));
 
-		String v = xpath.evaluate("/project/version", d);
-		assertEquals(mversion, v.trim());
+		assertEquals((developers == null) ? "0" : "1", xpath.evaluate("count(/project/developers)", d));
+		assertEquals((scm == null) ? "0" : "1", xpath.evaluate("count(/project/scm)", d));
 	}
 }
