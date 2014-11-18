@@ -35,7 +35,7 @@ Import-Package: \
 
 -runee: JavaSE-1.6
 
-Bundle-Version: 1.1.0
+base.version:   1.1.0
 
 -nojunit: true
 -releaserepo:
