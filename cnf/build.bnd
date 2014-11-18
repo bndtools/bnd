@@ -85,6 +85,9 @@ Bundle-Developers: \
         organizationUrl=http://bndtools.org; \
         roles="architect,developer"; \
         timezone=1
+-pom = \
+ groupid=${groupid}, \
+ version=${base.version}
 
 # default version policies
 #   -provider-policy =  ${range;[==,=+)}
