@@ -9,6 +9,7 @@ import aQute.lib.base64.*;
 public class FileHandler extends Handler {
 
 	@Override
+	public
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		File f = (File) object;
 		if (!f.isFile())
@@ -26,6 +27,7 @@ public class FileHandler extends Handler {
 	}
 
 	@Override
+	public
 	Object decode(Decoder dec, String s) throws Exception {
 		File tmp = File.createTempFile("json", ".bin");
 		FileOutputStream fout = new FileOutputStream(tmp);

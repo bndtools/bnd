@@ -18,11 +18,13 @@ public class SpecialHandler extends Handler {
 	}
 
 	@Override
+	public
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		StringHandler.string(app, object.toString());
 	}
 
 	@Override
+	public
 	Object decode(Decoder dec, String s) throws Exception {
 		if (type == Pattern.class)
 			return Pattern.compile(s);

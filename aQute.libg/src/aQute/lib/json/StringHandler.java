@@ -7,6 +7,7 @@ import java.util.*;
 public class StringHandler extends Handler {
 
 	@Override
+	public
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException {
 		string(app, object.toString());
 	}
@@ -60,21 +61,25 @@ public class StringHandler extends Handler {
 	}
 
 	@Override
+	public
 	Object decode(Decoder dec, String s) throws Exception {
 		return s;
 	}
 
 	@Override
+	public
 	Object decode(Decoder dec, Number s) {
 		return s.toString();
 	}
 
 	@Override
+	public
 	Object decode(Decoder dec, boolean s) {
 		return Boolean.toString(s);
 	}
 
 	@Override
+	public
 	Object decode(Decoder dec ) {
 		return null;
 	}
@@ -84,6 +89,7 @@ public class StringHandler extends Handler {
 	 * interpreted as the object but stored in its complete in the string.
 	 */
 	@Override
+	public
 	Object decodeObject(Decoder r) throws Exception {
 		return collect(r, '}');
 	}
@@ -93,6 +99,7 @@ public class StringHandler extends Handler {
 	 * interpreted as the array but stored in its complete in the string.
 	 */
 	@Override
+	public
 	Object decodeArray(Decoder r) throws Exception {
 		return collect(r, ']');
 	}

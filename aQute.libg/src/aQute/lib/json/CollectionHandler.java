@@ -35,6 +35,7 @@ public class CollectionHandler extends Handler {
 	}
 
 	@Override
+	public
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		Iterable< ? > collection = (Iterable< ? >) object;
 
@@ -53,6 +54,7 @@ public class CollectionHandler extends Handler {
 	}
 
 	@Override
+	public
 	Object decodeArray(Decoder r) throws Exception {
 		@SuppressWarnings("unchecked")
 		Collection<Object> c = (Collection<Object>) rawClass.newInstance();
