@@ -68,7 +68,7 @@ base.version:           3.0.0
 build.version:          ${base.version}.${tstamp}
 groupid:                biz.aQute.bnd
 Bundle-Version:         ${build.version}
-Bundle-Vendor:          http://bndtools.org/
+Bundle-Vendor:          Bndtools http://bndtools.org/
 Bundle-Copyright:       ${copyright}
 Bundle-License:         http://www.opensource.org/licenses/apache2.0.php; \
                         description="Apache License, Version 2.0"; \
