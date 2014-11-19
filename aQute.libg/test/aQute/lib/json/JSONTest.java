@@ -17,10 +17,48 @@ public class JSONTest extends TestCase {
 
 	static abstract class Base<V> implements List<V> {}
 
+	public static class Version {
+
+		private String	string;
+
+		public Version(String string) {
+			this.string = string;
+		}
+
+		@Override
+		public int hashCode() {
+			return string.hashCode();
+		}
+
+		@Override
+		public String toString() {
+			return string;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Version other = (Version) obj;
+			if (string == null) {
+				if (other.string != null)
+					return false;
+			} else if (!string.equals(other.string))
+				return false;
+			return true;
+		}
+
+	}
+
 	static class VX {
 		public VX() throws Exception {}
-
-		public Version	v	= Version.parseVersion("1.2.3.foo");
+		public static Version DEFAULT_VERSION = new Version("1.2.3.static");
+		
+		public Version	v	= new Version("1.2.3.foo");
 	}
 
 	/**
@@ -36,30 +74,23 @@ public class JSONTest extends TestCase {
 			}
 
 			Object decode(Decoder dec, String s) throws Exception {
-				return Version.parseVersion(s);
+				return new Version(s);
 			}
 
 		});
 
-		assertEquals("\"1.2.3.bla\"", c.enc().put(new Version(1, 2, 3, "bla")).toString());
-		assertEquals(Version.parseVersion("1.2.3.bla"), c.dec().from("\"1.2.3.bla\"").get(Version.class));
+		assertEquals("\"1.2.3.bla\"", c.enc().put(new Version("1.2.3.bla")).toString());
+		assertEquals(new Version("1.2.3.bla"), c.dec().from("\"1.2.3.bla\"").get(Version.class));
 
 		VX vx = new VX();
 		String s = c.enc().put(vx).toString();
 		VX vxx = c.dec().from(s).get(VX.class);
 		assertEquals(vx.v, vxx.v);
 
-		assertEquals(Version.parseVersion("1.2.3.bla"), c.dec().from("\"1.2.3.bla\"").get(Version.class));
+		assertEquals(new Version("1.2.3.bla"), c.dec().from("\"1.2.3.bla\"").get(Version.class));
 
 	}
 
-	/**
-	 * Test static fields in a non-DTO objects
-	 */
-
-	public void testStaticFieldsNonDTO() throws Exception {
-		System.out.println(new JSONCodec().enc().put(Version.DEFAULT_VERSION).toString());
-	}
 
 	public void testGenericsVars() {
 		ParameterizedType type = (ParameterizedType) new TypeReference<Base<String>>() {}.getType();
@@ -840,7 +871,8 @@ public class JSONTest extends TestCase {
 
 	public static interface C {}
 
-	public static class D extends LinkedHashMap<Object,Object> implements C {}
+	public static class D extends LinkedHashMap<Object,Object> implements C {
+		private static final long	serialVersionUID	= 1L;}
 
 	public void testMapInheritance() throws Exception {
 		D d = new D();
