@@ -3,6 +3,7 @@ package aQute.lib.json;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.regex.*;
 
 /**
@@ -53,6 +54,7 @@ public class JSONCodec {
 	private static ByteArrayHandler					byteh				= new ByteArrayHandler();
 
 	boolean											ignorenull;
+	Map<Type,Handler>								localHandlers		= new ConcurrentHashMap<Type,Handler>();
 
 	/**
 	 * Create a new Encoder with the state and appropriate API.
@@ -131,12 +133,12 @@ public class JSONCodec {
 		if (File.class == type)
 			return fh;
 
-		if ( type instanceof GenericArrayType) {
+		if (type instanceof GenericArrayType) {
 			Type sub = ((GenericArrayType) type).getGenericComponentType();
-			if ( sub==byte.class)
+			if (sub == byte.class)
 				return byteh;
 		}
-		
+
 		Handler h;
 		synchronized (handlers) {
 			h = handlers.get(type);
@@ -145,6 +147,10 @@ public class JSONCodec {
 		if (h != null)
 			return h;
 
+		h = localHandlers.get(type);
+		if ( h != null)
+			return h;
+		
 		if (type instanceof Class) {
 
 			Class< ? > clazz = (Class< ? >) type;
@@ -301,7 +307,7 @@ public class JSONCodec {
 				return h.decodeArray(isr);
 
 			case '"' :
-				String string  =parseString(isr);
+				String string = parseString(isr);
 				return h.decode(isr, string);
 
 			case 'n' :
@@ -310,11 +316,11 @@ public class JSONCodec {
 
 			case 't' :
 				isr.expect("rue");
-				return h.decode(isr,Boolean.TRUE);
+				return h.decode(isr, Boolean.TRUE);
 
 			case 'f' :
 				isr.expect("alse");
-				return h.decode(isr,Boolean.FALSE);
+				return h.decode(isr, Boolean.FALSE);
 
 			case '0' :
 			case '1' :
@@ -327,7 +333,7 @@ public class JSONCodec {
 			case '8' :
 			case '9' :
 			case '-' :
-				return h.decode(isr,parseNumber(isr));
+				return h.decode(isr, parseNumber(isr));
 
 			default :
 				throw new IllegalArgumentException("Unexpected character in input stream: " + (char) c);
@@ -516,6 +522,15 @@ public class JSONCodec {
 
 	public boolean isIgnorenull() {
 		return ignorenull;
+	}
+
+	/**
+	 * Add a new local handler
+	 */
+
+	public JSONCodec addHandler(Type type, Handler handler) {
+		localHandlers.put(type, handler);
+		return this;
 	}
 
 }

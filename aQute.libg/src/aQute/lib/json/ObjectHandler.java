@@ -11,7 +11,7 @@ public class ObjectHandler extends Handler {
 	final Object	defaults[];
 	final Field		extra;
 
-	ObjectHandler(@SuppressWarnings("unused") JSONCodec codec, Class< ? > c) throws Exception {
+	ObjectHandler(JSONCodec codec, Class< ? > c) throws Exception {
 		rawClass = c;
 		
 		List<Field> fields = new ArrayList<Field>();

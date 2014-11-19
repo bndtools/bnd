@@ -15,87 +15,135 @@ import aQute.libg.map.*;
 public class JSONTest extends TestCase {
 	JSONCodec	codec	= new JSONCodec();
 
-	
-	
 	static abstract class Base<V> implements List<V> {}
-	
+
+	static class VX {
+		public VX() throws Exception {}
+
+		public Version	v	= Version.parseVersion("1.2.3.foo");
+	}
+
+	/**
+	 * Test hooks
+	 */
+	public void testHooks() throws Exception {
+		JSONCodec c = new JSONCodec();
+		c.addHandler(Version.class, new Handler() {
+
+			@Override
+			void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+				app.encode(object.toString(), String.class, visited);
+			}
+
+			Object decode(Decoder dec, String s) throws Exception {
+				return Version.parseVersion(s);
+			}
+
+		});
+
+		assertEquals("\"1.2.3.bla\"", c.enc().put(new Version(1, 2, 3, "bla")).toString());
+		assertEquals(Version.parseVersion("1.2.3.bla"), c.dec().from("\"1.2.3.bla\"").get(Version.class));
+
+		VX vx = new VX();
+		String s = c.enc().put(vx).toString();
+		VX vxx = c.dec().from(s).get(VX.class);
+		assertEquals(vx.v, vxx.v);
+
+		assertEquals(Version.parseVersion("1.2.3.bla"), c.dec().from("\"1.2.3.bla\"").get(Version.class));
+
+	}
+
+	/**
+	 * Test static fields in a non-DTO objects
+	 */
+
+	public void testStaticFieldsNonDTO() throws Exception {
+		System.out.println(new JSONCodec().enc().put(Version.DEFAULT_VERSION).toString());
+	}
+
 	public void testGenericsVars() {
-		ParameterizedType type = (ParameterizedType) new TypeReference<Base<String>>(){}.getType();
+		ParameterizedType type = (ParameterizedType) new TypeReference<Base<String>>() {}.getType();
 		System.out.println(type);
 
 		ParameterizedType list = (ParameterizedType) Base.class.getGenericInterfaces()[0];
-		System.out.println(	list );
-		
-		TypeVariable<?> tv = (TypeVariable<?>) list.getActualTypeArguments()[0];
-		System.out.println(	tv.getGenericDeclaration().getTypeParameters()[0] == tv );
-		System.out.println(	type.getRawType());
+		System.out.println(list);
+
+		TypeVariable< ? > tv = (TypeVariable< ? >) list.getActualTypeArguments()[0];
+		System.out.println(tv.getGenericDeclaration().getTypeParameters()[0] == tv);
+		System.out.println(type.getRawType());
 	}
+
 	/**
 	 * Test generics for non maps/lists
 	 */
-	
+
 	public static class Generics<T> {
-		public T field;
+		public T	field;
 	}
-	
+
 	public void testGenerics() throws Exception {
 		Generics<String> s = new Generics<String>();
 		s.field = "abc";
-		
+
 		String string = codec.enc().put(s).toString();
-		
-		Generics<String> b = codec.dec().from(string).get(new TypeReference<Generics<String>>(){});
-		
+
+		Generics<String> b = codec.dec().from(string).get(new TypeReference<Generics<String>>() {});
+
 		assertEquals(s.field, b.field);
 	}
+
 	static class A {
-		public MultiMap<String,B> mmap = new MultiMap<String,B>();
+		public MultiMap<String,B>	mmap	= new MultiMap<String,B>();
 	}
+
 	static class B {
-		public int b;
+		public int	b;
 	}
-	
-	
 
 	public void testMultiMap() throws Exception {
-//		A a = new A();
-//		B b = new B();
-//		b.b=3;
-//		a.mmap.add("x", b);
-//		String s = codec.enc().put(a).toString();
+		// A a = new A();
+		// B b = new B();
+		// b.b=3;
+		// a.mmap.add("x", b);
+		// String s = codec.enc().put(a).toString();
 	}
-	
+
 	/**
 	 * An List<byte[]> was translated to a js array :-(
 	 */
-	
+
 	public static class ListByteArray {
-		public List<byte[]> set;
+		public List<byte[]>	set;
 	}
+
 	public static class AnotherOne {
-		public byte[] _id;
-		public List<byte[]> content;
+		public byte[]		_id;
+		public List<byte[]>	content;
 	}
+
 	public void testListOfByteArray() throws Exception {
-		final List<byte[]> l = Arrays.asList( new byte[]{1}, new byte[]{2},new byte[]{3},new byte[]{4});
+		final List<byte[]> l = Arrays.asList(new byte[] {
+			1
+		}, new byte[] {
+			2
+		}, new byte[] {
+			3
+		}, new byte[] {
+			4
+		});
 		String s = codec.enc().put(l).toString();
-		assertEquals( "[\"01\",\"02\",\"03\",\"04\"]", s);
-		
+		assertEquals("[\"01\",\"02\",\"03\",\"04\"]", s);
+
 		ListByteArray x = new ListByteArray();
 		x.set = l;
 		s = codec.enc().put(x).toString();
-		assertEquals( "{\"set\":[\"01\",\"02\",\"03\",\"04\"]}", s);
-		
+		assertEquals("{\"set\":[\"01\",\"02\",\"03\",\"04\"]}", s);
+
 		String json = "{\"_id\":\"04DA\",\"content\":[\"AA\"]}";
 		AnotherOne result = codec.dec().from(json).get(AnotherOne.class);
-		
 
-		
 	}
-	
-	
-	
-	
+
 	/**
 	 * test the hex/base64 encoding
 	 * 
@@ -789,11 +837,11 @@ public class JSONTest extends TestCase {
 		// Person u4 = codec.dec().from(s).get( Person.class );
 
 	}
-	
+
 	public static interface C {}
-	
-	public static class D extends LinkedHashMap<Object, Object> implements C {}
-	
+
+	public static class D extends LinkedHashMap<Object,Object> implements C {}
+
 	public void testMapInheritance() throws Exception {
 		D d = new D();
 		d.put("foo", "bar");
