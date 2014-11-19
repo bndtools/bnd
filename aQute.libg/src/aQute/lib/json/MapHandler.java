@@ -66,6 +66,7 @@ public class MapHandler extends Handler {
 	}
 
 	@Override
+	public
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		Map< ? , ? > map = (Map< ? , ? >) object;
 
@@ -90,6 +91,7 @@ public class MapHandler extends Handler {
 	}
 
 	@Override
+	public
 	Object decodeObject(Decoder r) throws Exception {
 		assert r.current() == '{';
 

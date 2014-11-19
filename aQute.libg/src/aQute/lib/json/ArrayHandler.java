@@ -14,6 +14,7 @@ public class ArrayHandler extends Handler {
 	}
 
 	@Override
+	public
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		
 		// Byte arrays should not be treated as arrays. We treat them
@@ -39,6 +40,7 @@ public class ArrayHandler extends Handler {
 	}
 
 	@Override
+	public
 	Object decodeArray(Decoder r) throws Exception {
 		ArrayList<Object> list = new ArrayList<Object>();
 		r.codec.parseArray(list, componentType, r);

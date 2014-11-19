@@ -16,11 +16,13 @@ public class ByteArrayHandler extends Handler {
 								.compile("((:?[\\dA-Za-z][\\dA-Za-z])*)|((:?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/)+={1,3})");
 
 	@Override
+	public
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		StringHandler.string(app, Hex.toHexString((byte[]) object));
 	}
 
 	@Override
+	public
 	Object decodeArray(Decoder r) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -33,6 +35,7 @@ public class ByteArrayHandler extends Handler {
 	}
 
 	@Override
+	public
 	Object decode(Decoder dec, String s) throws Exception {
 		boolean hex = true;
 		StringBuilder sb = new StringBuilder(s);

@@ -9,6 +9,7 @@ public class DateHandler extends Handler {
 	final static SimpleDateFormat	sdf	= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 	@Override
+	public
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		String s;
 		synchronized (sdf) {
@@ -18,6 +19,7 @@ public class DateHandler extends Handler {
 	}
 
 	@Override
+	public
 	Object decode(Decoder dec, String s) throws Exception {
 		synchronized (sdf) {
 			return sdf.parse(s);
@@ -25,6 +27,7 @@ public class DateHandler extends Handler {
 	}
 
 	@Override
+	public
 	Object decode(Decoder dec, Number s) throws Exception {
 		return new Date(s.longValue());
 	}

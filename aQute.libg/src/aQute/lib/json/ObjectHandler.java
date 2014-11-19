@@ -57,6 +57,7 @@ public class ObjectHandler extends Handler {
 	}
 
 	@Override
+	public
 	void encode(Encoder app, Object object, Map<Object,Type> visited) throws Exception {
 		app.append("{");
 		app.indent();
@@ -87,6 +88,7 @@ public class ObjectHandler extends Handler {
 	}
 
 	@Override
+	public
 	Object decodeObject(Decoder r) throws Exception {
 		assert r.current() == '{';
 		Object targetObject = rawClass.newInstance();

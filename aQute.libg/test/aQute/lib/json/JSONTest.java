@@ -69,11 +69,12 @@ public class JSONTest extends TestCase {
 		c.addHandler(Version.class, new Handler() {
 
 			@Override
+			public
 			void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 				app.encode(object.toString(), String.class, visited);
 			}
 
-			Object decode(Decoder dec, String s) throws Exception {
+			public Object decode(Decoder dec, String s) throws Exception {
 				return new Version(s);
 			}
 
