@@ -463,6 +463,7 @@ public class Clazz {
 	boolean									deprecated;
 	Set<PackageRef>							api;
 	final Analyzer							analyzer;
+	String									classSignature;
 
 	private boolean							detectLdc;
 
@@ -1080,6 +1081,10 @@ public class Clazz {
 
 			if (cd != null)
 				cd.signature(signature);
+
+			if (member == ElementType.TYPE)
+				classSignature = signature;
+
 		}
 		catch (Exception e) {
 			new RuntimeException("Signature failed for" + signature, e);
@@ -2071,5 +2076,9 @@ public class Clazz {
 			}
 		}
 
+	}
+
+	public String getClassSignature() {
+		return classSignature;
 	}
 }
