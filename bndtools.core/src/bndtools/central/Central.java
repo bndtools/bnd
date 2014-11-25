@@ -1,6 +1,7 @@
 package bndtools.central;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -454,11 +455,50 @@ public class Central implements IStartupParticipant {
     }
 
     public static void refreshPlugins() throws Exception {
+        List<File> refreshedFiles = new ArrayList<File>();
         List<Refreshable> rps = getWorkspace().getPlugins(Refreshable.class);
+        boolean changed = false;
         for (Refreshable rp : rps) {
             if (rp.refresh()) {
-                File dir = rp.getRoot();
-                refreshFile(dir);
+                changed = true;
+                refreshedFiles.add(rp.getRoot());
+            }
+        }
+
+        //
+        // If repos were refreshed then
+        // we should also update the classpath
+        // containers. We can force this by setting the "bndtools.refresh" property.
+        //
+
+        if (changed) {
+            try {
+
+                for (File file : refreshedFiles) {
+                    refreshFile(file);
+                }
+
+                for (Project p : Central.getWorkspace().getAllProjects()) {
+                    p.setChanged();
+                    for (ModelListener l : getInstance().listeners)
+                        l.modelChanged(p);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+        }
+
+    }
+
+    public static void refreshPlugin(Refreshable plugin) throws Exception {
+        if (plugin.refresh()) {
+            refreshFile(plugin.getRoot());
+            for (Project p : Central.getWorkspace().getAllProjects()) {
+                p.setChanged();
+                for (ModelListener l : getInstance().listeners)
+                    l.modelChanged(p);
             }
         }
     }
@@ -479,7 +519,10 @@ public class Central implements IStartupParticipant {
 
     private static String toLocal(File f) throws Exception {
         String root = getWorkspace().getBase().getAbsolutePath();
-        String path = f.getAbsolutePath().substring(root.length());
+        String path = f.getAbsolutePath();
+        if (path.startsWith(root))
+            return f.getAbsolutePath().substring(root.length());
+
         return path;
     }
 
