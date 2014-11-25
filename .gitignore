@@ -1,10 +1,9 @@
 *.bak
-.metadata/
+/.metadata/
 Archive
 .DS_Store
 .*.swp
 buildfiles
-biz.aQute.jpm/global/
 /.gradle/
 /reports/
 /generated/

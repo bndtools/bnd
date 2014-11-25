@@ -8,12 +8,14 @@
 *.css crlf=input
 *.ddf crlf=input
 *.ee crlf=input
+*.gradle crlf=input
 *.groovy crlf=input
 *.h crlf=input ident
 *.html crlf=input ident
 *.java crlf=input ident
 *.js crlf=input
 *.lib crlf=input
+*.md crlf=input
 *.MF crlf=input
 *.mf crlf=input
 *.perm crlf=input
@@ -32,8 +34,10 @@
 *.xsd crlf=input ident
 *.xsl crlf=input
 *.xslt crlf=input
+*.yml crlf=input
 .classpath crlf=input
 .project crlf=input
+gradlew crlf=input
 packageinfo crlf=input
 Makefile crlf=input
 README crlf=input
