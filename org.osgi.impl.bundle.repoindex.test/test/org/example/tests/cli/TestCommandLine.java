@@ -83,7 +83,7 @@ public class TestCommandLine extends TestCase {
 		assertTrue(new File("generated/index.xml.gz").exists());
 
 		String formatted = Utils.readStream(getClass().getResourceAsStream("/testdata/expect.xml"));
-		String expected = formatted.replaceAll("[\\n\\t]*", "");
+		String expected = formatted.replaceAll("\\r?\\n|\\t", "");
 		String actual = Utils.readStream(new GZIPInputStream(new FileInputStream("generated/index.xml.gz")));
 		assertEquals(expected, actual);
 	}
@@ -98,7 +98,7 @@ public class TestCommandLine extends TestCase {
 		assertTrue(outputFile.exists());
 
 		String formatted = Utils.readStream(getClass().getResourceAsStream("/testdata/expect-workingdir.xml"));
-		String expected = formatted.replaceAll("[\\n\\t]*", "");
+		String expected = formatted.replaceAll("\\r?\\n|\\t", "");
 		String actual = Utils.readStream(new GZIPInputStream(new FileInputStream(outputFile)));
 		assertEquals(expected, actual);
 	}

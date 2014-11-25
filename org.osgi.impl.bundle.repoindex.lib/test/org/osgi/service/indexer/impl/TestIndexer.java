@@ -157,7 +157,7 @@ public class TestIndexer extends TestCase {
 		indexer.index(files, out, config);
 
 		String unpackedXML = Utils.readStream(new FileInputStream("testdata/unpacked.xml"));
-		String expected = unpackedXML.replaceAll("[\\n\\t]*", "");
+		String expected = unpackedXML.replaceAll("\\r?\\n|\\t", "");
 		assertEquals(expected, Utils.decompress(out.toByteArray()));
 	}
 
