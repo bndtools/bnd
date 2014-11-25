@@ -73,6 +73,7 @@ import org.osgi.framework.ServiceRegistration;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.Actionable;
+import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.converter.Converter;
@@ -451,8 +452,11 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                     manager.removeAll();
                     IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                     if (!selection.isEmpty()) {
-                        Object firstElement = selection.getFirstElement();
+                        final Object firstElement = selection.getFirstElement();
                         if (firstElement instanceof Actionable) {
+
+                            final RepositoryPlugin rp = getRepositoryPlugin(firstElement);
+
                             //
                             // Use the Actionable interface to fill the menu
                             // Should extend this to allow other menu entries
@@ -483,6 +487,8 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                                         public void run() {
                                             try {
                                                 e.getValue().run();
+                                                if (rp != null && rp instanceof Refreshable)
+                                                    Central.refreshPlugin((Refreshable) rp);
                                             } catch (Exception e) {
                                                 throw new RuntimeException(e);
                                             }
@@ -502,6 +508,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                     throw new RuntimeException(e);
                 }
             }
+
         });
     }
 
@@ -513,6 +520,12 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
             if (expandedElem instanceof RepositoryPlugin) {
                 expandedRepoNames.add(((RepositoryPlugin) expandedElem).getName());
             }
+        }
+
+        try {
+            Central.refreshPlugins();
+        } catch (Exception e) {
+            logger.logError("While refreshing plugins", e);
         }
 
         // Reload repositories
@@ -618,7 +631,12 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 return false;
 
             Method m = target.getClass().getMethod(DROP_TARGET, java.getClass());
-            return (Boolean) m.invoke(target, java);
+            Object invoke = m.invoke(target, java);
+
+            RepositoryPlugin repositoryPlugin = getRepositoryPlugin(target);
+            if (repositoryPlugin != null && repositoryPlugin instanceof Refreshable)
+                Central.refreshPlugin((Refreshable) repositoryPlugin);
+            return invoke == null || invoke == Boolean.FALSE ? false : true;
         } catch (Exception e) {
             return false;
         }
@@ -684,4 +702,14 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         return null;
     }
 
+    private RepositoryPlugin getRepositoryPlugin(Object element) {
+        if (element instanceof RepositoryPlugin)
+            return (RepositoryPlugin) element;
+        else if (element instanceof RepositoryBundle)
+            return ((RepositoryBundle) element).getRepo();
+        else if (element instanceof RepositoryBundleVersion)
+            return ((RepositoryBundleVersion) element).getBundle().getRepo();
+
+        return null;
+    }
 }
