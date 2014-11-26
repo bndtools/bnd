@@ -148,12 +148,26 @@ public class BaselineCommands {
 								"Suggest", "If Prov.");
 						hadHeader = true;
 					}
+					
+					String suggestedVersion;
+					if (info.suggestedVersion == null) { // e.g., removed package
+						suggestedVersion = "n/a";
+					}
+					else if (info.suggestedVersion.compareTo(info.newerVersion) <= 0)
+					{
+						suggestedVersion = "ok";
+					}
+					else 
+					{
+						suggestedVersion = info.suggestedVersion.toString();
+					}
+					
 					bnd.out.printf("%s %-50s %-10s %-10s %-10s %-10s %-10s%n", info.mismatch ? '*' : ' ',
 							info.packageName, //
 							info.packageDiff.getDelta(), //
 							info.newerVersion, //
 							info.olderVersion.equals(Version.LOWEST) ? "-": info.olderVersion,//
-							info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? "ok" : info.suggestedVersion, //
+							suggestedVersion, //
 							info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 				}
 			}
