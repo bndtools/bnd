@@ -77,7 +77,7 @@ public class Workspace extends Processor {
 		assert projectDir.isDirectory();
 
 		Workspace ws = getWorkspace(projectDir.getParentFile());
-		return ws.getProject(projectDir.getName());
+		return ws.getProjectByFile(projectDir);
 	}
 
 	static synchronized public Processor getDefaults() {
@@ -210,14 +210,29 @@ public class Workspace extends Processor {
 			if (project != null)
 				return project;
 
-			File projectDir = getFile(bsn);
-			project = new Project(this, projectDir);
-			if (!project.isValid())
-				return null;
-
-			models.put(bsn, project);
-			return project;
+			return addProject(getFile(bsn));
 		}
+	}
+	
+	public Project getProjectByFile(File projectDir) throws Exception
+	{
+		synchronized (models) {
+			Project project = models.get(projectDir.getName());
+			if (project != null)
+				return project;
+			
+			return addProject(projectDir);
+		}
+	}
+	
+	Project addProject(File projectDir) throws Exception
+	{
+		Project project = new Project(this, projectDir);
+		if (!project.isValid())
+			return null;
+
+		models.put(projectDir.getName(), project);
+		return project;
 	}
 
 	void removeProject(Project p) throws Exception {
@@ -712,6 +727,7 @@ public class Workspace extends Processor {
 	 * Report details of this workspace
 	 */
 
+	@Override
 	public void report(Map<String,Object> table) throws Exception {
 		super.report(table);
 		table.put("Workspace", toString());
@@ -760,6 +776,7 @@ public class Workspace extends Processor {
 		return null;
 	}
 
+	@Override
 	public void close() {
 		cache.remove(getPropertiesFile().getParentFile().getParentFile());
 	}
