@@ -152,8 +152,8 @@ public class BaselineCommands {
 							info.packageName, //
 							info.packageDiff.getDelta(), //
 							info.newerVersion, //
-							info.olderVersion.equals(Version.LOWEST) ? "-": info.olderVersion,//
-							info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? "ok" : info.suggestedVersion, //
+							info.olderVersion != null && info.olderVersion.equals(Version.LOWEST) ? "-": info.olderVersion,//
+							info.suggestedVersion != null && info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? "ok" : info.suggestedVersion, //
 							info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 				}
 			}
