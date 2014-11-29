@@ -310,8 +310,8 @@ public class Builder extends Analyzer {
 	 */
 	@Override
 	protected Jar getExtra() throws Exception {
-		Parameters conditionals = getParameters(CONDITIONAL_PACKAGE);
-		conditionals.putAll(getParameters(CONDITIONALPACKAGE));
+		Parameters conditionals = getMergedParameters(CONDITIONAL_PACKAGE);
+		conditionals.putAll(getMergedParameters(CONDITIONALPACKAGE));
 		if (conditionals.isEmpty())
 			return null;
 		trace("do Conditional Package %s", conditionals);
@@ -456,7 +456,7 @@ public class Builder extends Analyzer {
 	public Collection<File> getSourcePath() {
 		if (firstUse) {
 			firstUse = false;
-			String sp = getProperty(SOURCEPATH);
+			String sp = mergeProperties(SOURCEPATH);
 			if (sp != null) {
 				Parameters map = parseHeader(sp);
 				for (Iterator<String> i = map.keySet().iterator(); i.hasNext();) {
@@ -504,7 +504,7 @@ public class Builder extends Analyzer {
 
 		Parameters privatePackages = getPrivatePackage();
 		if (isTrue(getProperty(Constants.UNDERTEST))) {
-			String h = getProperty(Constants.TESTPACKAGES, "test;presence:=optional");
+			String h = mergeProperties(Constants.TESTPACKAGES, "test;presence:=optional");
 			privatePackages.putAll(parseHeader(h));
 		}
 
@@ -770,9 +770,9 @@ public class Builder extends Analyzer {
 	private void doIncludeResources(Jar jar) throws Exception {
 		String includes = getProperty("Bundle-Includes");
 		if (includes == null) {
-			includes = getProperty(INCLUDERESOURCE);
+			includes = mergeProperties(INCLUDERESOURCE);
 			if (includes == null || includes.length() == 0)
-				includes = getProperty(Constants.INCLUDE_RESOURCE);
+				includes = mergeProperties(Constants.INCLUDE_RESOURCE);
 		} else
 			warning("Please use -includeresource instead of Bundle-Includes");
 
@@ -859,8 +859,11 @@ public class Builder extends Analyzer {
 
 	private Instructions getPreProcessMatcher(Map<String,String> extra) {
 		if (defaultPreProcessMatcher == null) {
-			defaultPreProcessMatcher = new Instructions(getProperty(PREPROCESSMATCHERS,
-					Constants.DEFAULT_PREPROCESSS_MATCHERS));
+			String preprocessmatchers = mergeProperties(PREPROCESSMATCHERS);
+			if ( preprocessmatchers == null || preprocessmatchers.trim().length()==0)
+				preprocessmatchers=Constants.DEFAULT_PREPROCESSS_MATCHERS;
+			
+			defaultPreProcessMatcher = new Instructions(preprocessmatchers);
 		}
 		if (extra == null)
 			return defaultPreProcessMatcher;
@@ -1423,11 +1426,11 @@ public class Builder extends Analyzer {
 	 * @return
 	 */
 	public boolean isInScope(Collection<File> resources) throws Exception {
-		Parameters clauses = parseHeader(getProperty(Constants.EXPORT_PACKAGE));
-		clauses.putAll(parseHeader(getProperty(Constants.PRIVATE_PACKAGE)));
-		clauses.putAll(parseHeader(getProperty(Constants.PRIVATEPACKAGE)));
+		Parameters clauses = parseHeader(mergeProperties(Constants.EXPORT_PACKAGE));
+		clauses.putAll(parseHeader(mergeProperties(Constants.PRIVATE_PACKAGE)));
+		clauses.putAll(parseHeader(mergeProperties(Constants.PRIVATEPACKAGE)));
 		if (isTrue(getProperty(Constants.UNDERTEST))) {
-			clauses.putAll(parseHeader(getProperty(Constants.TESTPACKAGES, "test;presence:=optional")));
+			clauses.putAll(parseHeader(mergeProperties(Constants.TESTPACKAGES, "test;presence:=optional")));
 		}
 
 		Collection<String> ir = getIncludedResourcePrefixes();

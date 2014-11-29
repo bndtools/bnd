@@ -82,8 +82,7 @@ public class Make {
 			return make;
 		make = Processor.newMap();
 
-		String s = builder.getProperty(Builder.MAKE);
-		Parameters make = builder.parseHeader(s);
+		Parameters make = builder.getMergedParameters(Builder.MAKE);
 
 		for (Entry<String,Attrs> entry : make.entrySet()) {
 			String pattern = Processor.removeDuplicateMarker(entry.getKey());
