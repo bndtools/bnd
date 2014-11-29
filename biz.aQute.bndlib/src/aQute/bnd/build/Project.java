@@ -248,8 +248,7 @@ public class Project extends Processor {
 
 					// dependencies.add( getWorkspace().getProject("cnf"));
 
-					String dp = getProperty(Constants.DEPENDSON);
-					Set<String> requiredProjectNames = new LinkedHashSet<String>(new Parameters(dp).keySet());
+					Set<String> requiredProjectNames = new LinkedHashSet<String>(getMergedParameters(Constants.DEPENDSON).keySet());
 
 					// Allow DependencyConstributors to modify
 					// requiredProjectNames
@@ -2154,17 +2153,17 @@ public class Project extends Processor {
 	}
 
 	public Collection<String> getRunVM() {
-		Parameters hdr = getParameters(RUNVM);
+		Parameters hdr = getMergedParameters(RUNVM);
 		return hdr.keySet();
 	}
 
 	public Collection<String> getRunProgramArgs() {
-		Parameters hdr = getParameters(RUNPROGRAMARGS);
+		Parameters hdr = getMergedParameters(RUNPROGRAMARGS);
 		return hdr.keySet();
 	}
 
 	public Map<String,String> getRunProperties() {
-		return OSGiHeader.parseProperties(getProperty(RUNPROPERTIES));
+		return OSGiHeader.parseProperties(mergeProperties(RUNPROPERTIES));
 	}
 
 	/**

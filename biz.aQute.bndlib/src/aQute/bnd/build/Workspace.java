@@ -197,7 +197,7 @@ public class Workspace extends Processor {
 		// as early as possible
 		//
 
-		Attrs sysProps = OSGiHeader.parseProperties(getProperty(SYSTEMPROPERTIES));
+		Attrs sysProps = OSGiHeader.parseProperties(mergeProperties(SYSTEMPROPERTIES));
 		for (Entry<String,String> e : sysProps.entrySet()) {
 			System.setProperty(e.getKey(), e.getValue());
 		}
@@ -528,7 +528,7 @@ public class Workspace extends Processor {
 		//
 		// <bsn>; version=<range>
 		//
-		Parameters extensions = new Parameters(getProperty(EXTENSION));
+		Parameters extensions = getMergedParameters(EXTENSION);
 		Map<DownloadBlocker,Attrs> blockers = new HashMap<DownloadBlocker,Attrs>();
 
 		for (Entry<String,Attrs> i : extensions.entrySet()) {
@@ -845,7 +845,7 @@ public class Workspace extends Processor {
 	 */
 	public Parameters getGestalt() {
 		if (gestalt == null) {
-			gestalt = new Parameters(getProperty(Constants.GESTALT));
+			gestalt = getMergedParameters(Constants.GESTALT);
 			gestalt.mergeWith(overallGestalt, false);
 		}
 		return gestalt;

@@ -798,7 +798,7 @@ public class Analyzer extends Processor {
 				main.putValue(BUNDLE_VERSION, "0");
 
 			// Remove all the headers mentioned in -removeheaders
-			Instructions instructions = new Instructions(getProperty(REMOVEHEADERS));
+			Instructions instructions = new Instructions(mergeProperties(REMOVEHEADERS));
 			Collection<Object> result = instructions.select(main.keySet(), false);
 			main.keySet().removeAll(result);
 
