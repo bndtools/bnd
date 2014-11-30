@@ -1695,7 +1695,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (fixupMessages)
 			return;
 		fixupMessages = true;
-		Parameters fixup = new Parameters(getProperty(Constants.FIXUPMESSAGES));
+		Parameters fixup = getMergedParameters(Constants.FIXUPMESSAGES);
 		if (fixup.isEmpty())
 			return;
 
@@ -2495,6 +2495,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return getProperty(key);
 
 	}
+	
+	/**
+	 * Get a Parameters from merged properties
+	 */
+	
+	public Parameters getMergedParameters(String key) {
+		return new Parameters(mergeProperties(key));
+	}
 
 	/**
 	 * Add an element to an array, creating a new one if necessary
@@ -2575,4 +2583,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		
 		return propertiesFile.getAbsolutePath().replaceAll("\\\\", "/");
 	}
+
+
+
+
 }
