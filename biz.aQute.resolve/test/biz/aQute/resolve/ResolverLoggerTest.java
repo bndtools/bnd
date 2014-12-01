@@ -8,7 +8,7 @@ public class ResolverLoggerTest extends TestCase {
 		ResolverLogger rl = new ResolverLogger();
 
 		rl.log(ResolverLogger.LOG_ERROR, "test", null);
-		assertEquals("ERROR: test\n", rl.getLog());
+		assertEquals(String.format("ERROR: test%n"), rl.getLog());
 		
 		for ( int i=0; i < 100000; i++) {
 			rl.log(ResolverLogger.LOG_ERROR, "test " + i, null);
