@@ -15,6 +15,6 @@ public class ResolverLoggerTest extends TestCase {
 		}
 		
 		String s = rl.getLog();
-		assertTrue( s.endsWith("test 99999\n"));
+		assertTrue( s.endsWith(String.format("test 99999%n")));
 	}
 }
