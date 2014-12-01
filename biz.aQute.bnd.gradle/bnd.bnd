@@ -1,6 +1,6 @@
 -dependson: biz.aQute.bnd
 
-Bundle-Version: 2.4.0.${tstamp}
+Bundle-Version: 2.4.1.${tstamp}
 
 Private-Package: \
     aQute.bnd.gradle.*
