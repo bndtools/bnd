@@ -4,7 +4,7 @@
     com.springsource.junit
 
 Export-Package: aQute.lib.*, aQute.libg.*, aQute.configurable, aQute.service.*
-Bundle-Version: 2.9.0.${tstamp}
+Bundle-Version: 2.9.1.${tstamp}
 Bundle-Description: A library to be statically linked. Contains many small utilities. This bundle \
  should not be installed in a framework, it is compile only.
 

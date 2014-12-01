@@ -6,7 +6,7 @@ env:
   - TERM=dumb
 
 install:
-  - ./gradlew --version
+  - ./gradlew -Pbnd_repourl=https://bndtools.ci.cloudbees.com/job/bnd.next/lastSuccessfulBuild/artifact/dist/bundles --version
 
 script:
-  - ./gradlew --continue
+  - ./gradlew -Pbnd_repourl=https://bndtools.ci.cloudbees.com/job/bnd.next/lastSuccessfulBuild/artifact/dist/bundles --continue

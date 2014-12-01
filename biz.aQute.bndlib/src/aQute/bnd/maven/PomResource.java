@@ -12,12 +12,70 @@ import aQute.lib.io.*;
 import aQute.lib.tag.*;
 
 public class PomResource extends WriteResource {
+	private static final String	VERSION		= "version";
+	private static final String	ARTIFACTID	= "artifactid";
+	private static final String	GROUPID		= "groupid";
+	private static final String	WHERE		= "where";
 	final Manifest				manifest;
 	private Map<String,String>	scm;
-	final static Pattern		NAME_URL	= Pattern.compile("(.*)(http://.*)");
+	final Map<String,String>	processor;
+	final static Pattern		NAME_URL	= Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE);
+	private String				where;
+	private String				groupId;
+	private String				artifactId;
+	private String				version;
+	private String				name;
 
 	public PomResource(Manifest manifest) {
+		this(new HashMap<String,String>(), manifest);
+	}
+
+	public PomResource(Map<String,String> b, Manifest manifest) {
 		this.manifest = manifest;
+		this.processor = b;
+
+		Domain domain = Domain.domain(manifest);
+		name = domain.get(Constants.BUNDLE_NAME);
+		String bsn = domain.getBundleSymbolicName().getKey();
+		if (bsn == null) {
+			throw new RuntimeException("Cannot create POM unless bsn is set");
+		}
+		where = processor.get(WHERE);
+
+		if (processor.containsKey(GROUPID)) {
+			groupId = processor.get(GROUPID);
+			artifactId = processor.get(ARTIFACTID);
+			if (artifactId == null)
+				artifactId = bsn;
+			if (where == null) {
+				where = String.format("META-INF/maven/%s/%s/pom.xml", groupId, artifactId);
+			}
+		} else {
+			int n = bsn.lastIndexOf('.');
+			if (n <= 0)
+				throw new RuntimeException("\"" + GROUPID + "\" not set and"
+						+ Constants.BUNDLE_SYMBOLICNAME
+						+ " does not contain a '.' to separate into a groupid and artifactid.");
+
+			artifactId = processor.get(ARTIFACTID);
+			if (artifactId == null)
+				artifactId = bsn.substring(n + 1);
+			groupId = bsn.substring(0, n);
+			if (where == null) {
+				where = "pom.xml";
+			}
+		}
+
+		version = processor.get(VERSION);
+		if (version == null)
+			version = domain.getBundleVersion();
+		if (version == null)
+			version = "0";
+
+	}
+
+	public String getWhere() {
+		return where;
 	}
 
 	@Override
@@ -27,48 +85,23 @@ public class PomResource extends WriteResource {
 
 	@Override
 	public void write(OutputStream out) throws IOException {
-		PrintWriter ps = IO.writer(out);
-
-		String name = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_NAME);
+		PrintWriter pw = IO.writer(out);
 
 		String description = manifest.getMainAttributes().getValue(Constants.BUNDLE_DESCRIPTION);
 		String docUrl = manifest.getMainAttributes().getValue(Constants.BUNDLE_DOCURL);
-		String version = manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
 		String bundleVendor = manifest.getMainAttributes().getValue(Constants.BUNDLE_VENDOR);
-
-		String bsn = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
 		String licenses = manifest.getMainAttributes().getValue(Constants.BUNDLE_LICENSE);
-
-		if (bsn == null) {
-			throw new RuntimeException("Cannot create POM unless bsn is set");
-		}
-
-		bsn = bsn.trim();
-		int n = bsn.lastIndexOf('.');
-		if (n <= 0)
-			throw new RuntimeException(
-					"Can not create POM unless " + Constants.BUNDLE_SYMBOLICNAME + " contains a . to separate group and  artifact id");
-
-		if (version == null)
-			version = "0";
-
-		String groupId = bsn.substring(0, n);
-		String artifactId = bsn.substring(n + 1);
-		n = artifactId.indexOf(';');
-		if (n > 0)
-			artifactId = artifactId.substring(0, n).trim();
 
 		Tag project = new Tag("project");
 		project.addAttribute("xmlns", "http://maven.apache.org/POM/4.0.0");
 		project.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		project.addAttribute("xmlns:xsi", "");
 		project.addAttribute("xsi:schemaLocation",
 				"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd");
 
 		project.addContent(new Tag("modelVersion").addContent("4.0.0"));
 		project.addContent(new Tag("groupId").addContent(groupId));
 		project.addContent(new Tag("artifactId").addContent(artifactId));
-		project.addContent(new Tag("version").addContent(version));
+		project.addContent(new Tag(VERSION).addContent(version));
 
 		if (description != null) {
 			new Tag(project, "description").addContent(description);
@@ -133,8 +166,48 @@ public class PomResource extends WriteResource {
 				tagFromMap(l, values, "distribution", "distribution", "repo");
 			}
 		}
-		project.print(0, ps);
-		ps.flush();
+
+		String scm = processor.get(Constants.BUNDLE_SCM);
+		if ( scm != null && scm.length() > 0 ) {
+			Attrs pscm = OSGiHeader.parseProperties(scm);
+			
+			Tag tscm = new Tag(project, "scm");
+			for (String s : pscm.keySet()) {
+				new Tag(tscm, s, pscm.get(s));
+			}
+		}
+
+		Parameters developers = new Parameters(processor.get(Constants.BUNDLE_DEVELOPERS));
+		if (developers.size() > 0) {
+			Tag tdevelopers = new Tag(project, "developers");
+
+			for (String id : developers.keySet()) {
+				Tag tdeveloper = new Tag(tdevelopers, "developer");
+				new Tag(tdeveloper, "id", id);
+
+				Attrs i = new Attrs(developers.get(id));
+				if (!i.containsKey("email"))
+					i.put("email", id);
+
+				i.remove("id");
+
+				for (String s : i.keySet()) {
+					if (s.equals("roles")) {
+						Tag troles = new Tag(tdeveloper,"roles");
+						
+						String[] roles = i.get(s).trim().split("\\s*,\\s*");
+						for ( String role : roles) {
+							new Tag(troles, "role", role);
+						}
+					} else
+						new Tag(tdeveloper, s, i.get(s));
+				}
+			}
+		}
+
+		pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		project.print(0, pw);
+		pw.flush();
 	}
 
 	/**

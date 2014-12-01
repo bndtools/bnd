@@ -110,8 +110,16 @@ public class Builder extends Analyzer {
 		// we know what it is on the classpath
 		addSources(dot);
 
-		if (getProperty(POM) != null)
-			dot.putResource("pom.xml", new PomResource(dot.getManifest()));
+		String pom = getProperty(POM);
+		if ( pom != null) {
+			if ( !pom.equalsIgnoreCase("false")) {
+				Map<String,String> map = OSGiHeader.parseProperties(pom);
+				map.put(Constants.BUNDLE_SCM, getProperty(Constants.BUNDLE_SCM));
+				map.put(Constants.BUNDLE_DEVELOPERS, getProperty(Constants.BUNDLE_DEVELOPERS));
+				PomResource pomResource = new PomResource(map, dot.getManifest());
+				dot.putResource(pomResource.getWhere(), pomResource);
+			}
+		}
 
 		if (!isNoBundle())
 			doVerify(dot);
