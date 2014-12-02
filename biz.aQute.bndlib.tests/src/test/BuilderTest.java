@@ -18,6 +18,45 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/**
+	 * #708 if a bundle has a.b.c but imports a.b then bnd cannot find the version of
+	 * a.b because the scanning of a.b.c already has set the information for a.b
+	 * to "nothing". The learnPackage() method must be adapted so that "empty"
+	 * package do not occupy a position This was diagnosed by Balázs Zsoldos
+	 * balazs.zsoldos@everit.biz
+	 * @throws Exception 
+	 */
+	
+	public void testOverlappingPackageMissesImportVersions() throws Exception {
+		Builder exporter = new Builder();
+		exporter.setExportPackage("test._708.a.b");
+		exporter.addClasspath(new File("bin"));
+		exporter.build();
+		assertTrue( exporter.check());
+		
+		//
+		// We need to build a temp entry because if we include 'bin'
+		// on the final build then we see the a.b package there, and
+		// there it has information
+		//
+		
+		Builder temp = new Builder();
+		temp.setPrivatePackage("test._708.a.b.c");
+		temp.addClasspath(new File("bin"));
+		temp.build();
+		assertTrue( temp.check());
+		
+		Builder importer = new Builder();
+		importer.setPrivatePackage("test._708.a.b.c");
+		importer.addClasspath(temp.getJar());
+		importer.addClasspath(exporter.getJar());
+		importer.build();
+		assertTrue( importer.check());
+		
+		assertEquals( "test._708.a.b;version=\"1.2.3\"", exporter.getJar().getManifest().getMainAttributes().getValue("Export-Package"));
+		assertEquals( "test._708.a.b;version=\"[1.2,2)\"", importer.getJar().getManifest().getMainAttributes().getValue("Import-Package"));
+		
+	}
+	/**
 	 * Test if the Manifest gets the last modified date
 	 */
 
@@ -42,7 +81,7 @@ public class BuilderTest extends BndTestCase {
 					Date date = new Date(t);
 					System.out.println(date + " " + t);
 					// TODO we need to adapt the timestamp handling
-					assertTrue(date + " " + t, t ==1142555622000L);
+					assertTrue(date + " " + t, t == 1142555622000L);
 				}
 				finally {
 					ajr.close();
@@ -245,7 +284,9 @@ public class BuilderTest extends BndTestCase {
 			b.addClasspath(IO.getFile("jar/osgi-3.0.0.jar"));
 			b.setExportPackage("org.osgi.util.measurement;version=100, org.osgi.util.tracker;version=100, *");
 			Jar build = b.build();
-			assertTrue(b.check("Version for package org.osgi.util.measurement is set to different values in the source ", "Version for package org.osgi.util.tracker is set to different values in the source"));
+			assertTrue(b.check(
+					"Version for package org.osgi.util.measurement is set to different values in the source ",
+					"Version for package org.osgi.util.tracker is set to different values in the source"));
 		}
 		finally {
 			b.close();
