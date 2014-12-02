@@ -333,6 +333,15 @@ public class Analyzer extends Processor {
 			return;
 
 		//
+		// We should ignore empty directories/packages. Empty packages should 
+		// not take the package slot. See #708
+		//
+		
+		Map<String,Resource> dir = jar.getDirectories().get(packageRef.getBinary());
+		if ( dir == null || dir.size() == 0)
+			return;
+		
+		//
 		// Make sure we only do this once for each package
 		// in cp order (which is the calling order)
 		//
