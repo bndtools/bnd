@@ -81,4 +81,14 @@ public class Annotation {
 			return null;
 		return Configurable.createConfigurable(c, elements == null ? elements=new LinkedHashMap<String,Object>() : elements);
 	}
+
+	public void merge(Annotation annotation) {
+		if ( annotation.elements == null)
+			return;
+		
+		for ( Map.Entry<String,Object> e : annotation.elements.entrySet()) {
+			if ( !elements.containsKey(e.getKey()))
+				elements.put(e.getKey(), e.getValue());
+		}
+	}
 }

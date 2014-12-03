@@ -1,6 +1,7 @@
 package test.annotationheaders;
 
 import java.io.*;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.regex.*;
@@ -13,33 +14,67 @@ import aQute.bnd.osgi.*;
 
 public class AnnotationHeadersTest extends TestCase {
 
-	@RequireCapability(ns="osgi.webresource",filter="(&(osgi.webresource=/google/angular)${frange;${@version}})")
+	public void testWithAttrs() throws Exception {
+		Builder b = new Builder();
+		try {
+			b.addClasspath(new File("bin"));
+			b.setProperty("Private-Package", "test.annotationheaders.attrs");
+			b.build();
+			assertTrue(b.check());
+
+			Manifest m = b.getJar().getManifest();
+			m.write(System.out);
+
+			Parameters p = new Parameters(m.getMainAttributes().getValue("Provide-Capability"));
+			Attrs attrs = p.get("nsx");
+			assertNotNull(attrs);
+			assertEquals(new Long(3), attrs.getTyped("foo"));
+
+			p = new Parameters(m.getMainAttributes().getValue("Bundle-License"));
+			attrs = p.get("license");
+			assertNotNull(attrs);
+			assertEquals("abc", attrs.get("foo"));
+			
+			p = new Parameters(m.getMainAttributes().getValue("Require-Capability"));
+			attrs = p.get("nsx");
+			assertNotNull(attrs);
+			assertEquals(Arrays.asList("abc","def"), attrs.getTyped("foo"));
+			
+		}
+		finally {
+			b.close();
+		}
+	}
+
+	@RequireCapability(ns = "osgi.webresource", filter = "(&(osgi.webresource=/google/angular)${frange;${@version}})")
 	@interface Angular {
-		
+
 	}
-	
-	@RequireCapability(ns="not.there",filter="(a=3)")
+
+	@RequireCapability(ns = "not.there", filter = "(a=3)")
 	@interface Notused {
-		
+
 	}
+
 	@BundleDevelopers("Peter.Kriens@aQute.biz;name='Peter Kriens';organization=aQute")
 	@interface pkriens {}
-	
-	@BundleContributors(value="Mieke.Kriens@aQute.biz", name="Mieke Kriens", organization="aQute")
+
+	@BundleContributors(value = "Mieke.Kriens@aQute.biz", name = "Mieke Kriens", organization = "aQute")
 	@interface mkriens {}
-	@BundleContributors(value="Thomas.Kriens@aQute.biz", name="Thomas Kriens", organization="aQute")
+
+	@BundleContributors(value = "Thomas.Kriens@aQute.biz", name = "Thomas Kriens", organization = "aQute")
 	@interface tkriens {}
-	
-	@BundleContributors(value="Mischa.Kriens@aQute.biz", name="Mischa Kriens", organization="aQute")
+
+	@BundleContributors(value = "Mischa.Kriens@aQute.biz", name = "Mischa Kriens", organization = "aQute")
 	@interface mischakriens {}
-	
-	@RequireCapability(ns="abcdef", filter="(&(abcdef=xyz)${frange;${@version}})")
+
+	@RequireCapability(ns = "abcdef", filter = "(&(abcdef=xyz)${frange;${@version}})")
 	@ASL_2_0
 	@pkriens
 	@mkriens
 	@tkriens
 	class A {
-		
+
 	}
 
 	@BundleDocURL("http://www.aQute.biz")

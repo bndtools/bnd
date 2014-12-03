@@ -45,7 +45,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	final Analyzer					analyzer;
 	final Set<TypeRef>				interesting	= new HashSet<TypeRef>();
-	final Set<TypeRef>				used		= new HashSet<TypeRef>();
 	final MultiMap<String,String>	headers		= new MultiMap<String,String>();
 
 	//
@@ -90,38 +89,16 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	@Override
 	public boolean classStart(Clazz c) {
-		if (finalizing) {
-			//
-			// This is when we parse the annotations.
-			// so we should do add more used's annotations
-			// this does not work recursively
-			//
+
+		//
+		// Parse any classes except annotations
+		//
+		if (!c.isAnnotation() && c.annotations != null) {
+
 			current = c;
 			return true;
 		}
-
 		current = null;
-
-		//
-		// We do annotations at the end
-		//
-		if (!c.isAnnotation()) {
-			if (c.annotations != null)
-				//
-				// Remember which annotations were actually applied
-				// on a non-annotation type
-				//
-				used.addAll(c.annotations);
-
-			if (c.annotations != null && containsAny(interesting, c.annotations)) {
-				//
-				// If any of the used annotations is ours, then we want to parse
-				// and find what those annotations are
-				//
-				current = c;
-				return true;
-			}
-		}
 		return false;
 	}
 
@@ -129,47 +106,75 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 * Called when an annotation is found. Dispatch on the known types.
 	 */
 	public void annotation(Annotation annotation) throws Exception {
+		annotation = tryMerge(annotation);
+		if (annotation == null)
+			return;
+		
 		TypeRef name = annotation.getName();
-		if (interesting.contains(name)) {
-			if (name == bundleLicenseRef)
-				doLicense(annotation.getAnnotation(BundleLicense.class));
-			else if (name == requireCapabilityRef)
-				doRequireCapability(annotation.getAnnotation(RequireCapability.class));
-			else if (name == provideCapabilityRef)
-				doProvideCapability(annotation.getAnnotation(ProvideCapability.class));
-			else if (name == bundleCategoryRef)
-				doBundleCategory(annotation.getAnnotation(BundleCategory.class));
-			else if (name == bundleDocURLRef)
-				doBundleDocURL(annotation.getAnnotation(BundleDocURL.class));
-			else if (name == bundleDeveloperRef)
-				doBundleDevelopers(annotation.getAnnotation(BundleDevelopers.class));
-			else if (name == bundleContributorRef)
-				doBundleContributors(annotation.getAnnotation(BundleContributors.class));
-			else if (name == bundleCopyrightRef)
-				doBundeCopyright(annotation.getAnnotation(BundleCopyright.class));
-			else
-				analyzer.error("Unknon annotation %s on %s", name, current.getClassName());
-		}
+		
+		if (name == bundleLicenseRef)
+			doLicense(annotation);
+		else if (name == requireCapabilityRef)
+			doRequireCapability(annotation);
+		else if (name == provideCapabilityRef)
+			doProvideCapability(annotation);
+		else if (name == bundleCategoryRef)
+			doBundleCategory(annotation.getAnnotation(BundleCategory.class));
+		else if (name == bundleDocURLRef)
+			doBundleDocURL(annotation.getAnnotation(BundleDocURL.class));
+		else if (name == bundleDeveloperRef)
+			doBundleDevelopers(annotation.getAnnotation(BundleDevelopers.class));
+		else if (name == bundleContributorRef)
+			doBundleContributors(annotation.getAnnotation(BundleContributors.class));
+		else if (name == bundleCopyrightRef)
+			doBundeCopyright(annotation.getAnnotation(BundleCopyright.class));
+		else
+			analyzer.error("Unknon annotation %s on %s", name, current.getClassName());
+	}
+
+	/*
+	 * Since we can annotate the annotations we need to see if we can find an
+	 * annotation on our annotation that is a manifest annotation. In that case
+	 * we merge the properties of this annotation with the manifest annotation.
+	 */
+	private Annotation tryMerge(Annotation annotation) throws Exception {
+		if (interesting.contains(annotation.getName()))
+			return annotation;
+
+		Clazz c = analyzer.findClass(annotation.getName());
+		if (c == null || c.annotations == null)
+			return null;
+
+		if (!containsAny(interesting, c.annotations))
+			return null;
+
+		final List<Annotation> parent = new ArrayList<Annotation>();
+
+		c.parseClassFileWithCollector(new ClassDataCollector() {
+			@Override
+			public void annotation(Annotation a) {
+				if (parent.isEmpty() && interesting.contains(a.getName())) {
+					parent.add(a);
+				}
+			}
+		});
+
+		if (parent.isEmpty())
+			return null;
+
+		if (parent.size() > 1)
+			analyzer.error("Found that manifest annotated annotation %s has more than one parent", annotation.getName());
+
+		Annotation root = parent.get(0);
+		root.merge(annotation);
+		return root;
 	}
 
 	/*
 	 * Called after the class space has been parsed. We then continue to parse
 	 * the used annotations.
 	 */
-	public void close() throws IOException {
-		finalizing = true;
-		try {
-			for (TypeRef typeRef : used) {
-				Clazz c = analyzer.findClass(typeRef);
-				if ( c != null)
-					c.parseClassFileWithCollector(this);
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
-	}
+	public void close() throws IOException {}
 
 	/*
 	 * Bundle-Developers header
@@ -183,17 +188,17 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 		if (annotation.roles() != null) {
 			sb.append(";roles='");
-			escape(sb,annotation.roles());
+			escape(sb, annotation.roles());
 			sb.append("'");
 		}
 		if (annotation.organizationUrl() != null) {
 			sb.append(";organizationUrl='");
-			escape(sb,annotation.organizationUrl());
+			escape(sb, annotation.organizationUrl());
 			sb.append("'");
 		}
 		if (annotation.organization() != null) {
 			sb.append(";organization='");
-			escape(sb,annotation.organization());
+			escape(sb, annotation.organization());
 			sb.append("'");
 		}
 		if (annotation.timezone() != 0)
@@ -215,17 +220,17 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 		if (annotation.roles() != null) {
 			sb.append(";roles='");
-			escape(sb,annotation.roles());
+			escape(sb, annotation.roles());
 			sb.append("'");
 		}
 		if (annotation.organizationUrl() != null) {
 			sb.append(";organizationUrl='");
-			escape(sb,annotation.organizationUrl());
+			escape(sb, annotation.organizationUrl());
 			sb.append("'");
 		}
 		if (annotation.organization() != null) {
 			sb.append(";organization='");
-			escape(sb,annotation.organization());
+			escape(sb, annotation.organization());
 			sb.append("'");
 		}
 		if (annotation.timezone() != 0)
@@ -265,52 +270,75 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	/*
 	 * Provide-Capability header
 	 */
-	private void doProvideCapability(ProvideCapability annotation) {
-		StringBuilder sb = new StringBuilder(annotation.ns());
-		if (annotation.name() != null)
-			sb.append(";").append(annotation.ns()).append("='").append(annotation.name()).append("'");
-		if (annotation.uses() != null)
-			sb.append(";").append("uses:='").append(Strings.join(",", annotation.uses())).append("'");
-		if (annotation.mandatory() != null)
-			sb.append(";").append("mandatory:='").append(Strings.join(",", annotation.mandatory())).append("'");
-		if (annotation.version() != null)
-			sb.append(";").append("version:Version='").append(annotation.version()).append("'");
+	private void doProvideCapability(Annotation a) throws Exception {
+		ProvideCapability annotation = a.getAnnotation(ProvideCapability.class);
+		
+		Parameters p = new Parameters();
+		Attrs attrs = getAttributes(a, "ns");
+		directives(attrs, "uses", "mandatory", "effective");
+		p.put(annotation.ns(), attrs);
+		
+		String value = attrs.remove("name");
+		if ( value !=null)
+			attrs.put(annotation.ns(), value);
+		
+		String s = p.toString();
 		if (annotation.value() != null)
-			sb.append(";").append(annotation.value());
-		if (annotation.effective() != null)
-			sb.append(";effective:='").append(annotation.effective()).append("'");
+			s += ";" + annotation.value();
 
-		add(Constants.PROVIDE_CAPABILITY, sb.toString());
+		add(Constants.PROVIDE_CAPABILITY, s);
 	}
 
 	/*
 	 * Require-Capability header
 	 */
-	private void doRequireCapability(RequireCapability annotation) {
-		StringBuilder sb = new StringBuilder(annotation.ns());
-		if (annotation.filter() != null)
-			sb.append(";filter:='").append(annotation.filter()).append("'");
-		if (annotation.effective() != null)
-			sb.append(";effective:='").append(annotation.effective()).append("'");
-		if (annotation.resolution() != null)
-			sb.append(";resolution:='").append(annotation.resolution()).append("'");
+	private void doRequireCapability(Annotation a) throws Exception {
+		RequireCapability annotation = a.getAnnotation(RequireCapability.class);
+		Parameters p = new Parameters();
+		Attrs attrs = getAttributes(a, "ns");
+		directives(attrs, "filter", "effective", "resolution");
+		
+		p.put(annotation.ns(), attrs );
 
+		String s = p.toString();
+		
 		if (annotation.value() != null)
-			sb.append(";").append(annotation.value());
+			s += ";" + annotation.value();
 
-		add(Constants.REQUIRE_CAPABILITY, sb.toString());
+		add(Constants.REQUIRE_CAPABILITY, s);
 	}
 
 	/*
 	 * Bundle-License header
 	 */
-	private void doLicense(BundleLicense annotation) {
-		StringBuilder sb = new StringBuilder(annotation.name());
-		if (!annotation.description().equals(""))
-			sb.append(";description='").append(annotation.description().replaceAll("'", "\\'")).append("'");
-		if (!annotation.link().equals(""))
-			sb.append(";link='").append(annotation.link().replaceAll("'", "\\'")).append("'");
-		add(Constants.BUNDLE_LICENSE, sb.toString());
+	private void doLicense(Annotation a) throws Exception {
+		BundleLicense annotation = a.getAnnotation(BundleLicense.class);
+		Parameters p = new Parameters();
+		p.put(annotation.name(), getAttributes(a, "name"));
+		add(Constants.BUNDLE_LICENSE, p.toString());
+	}
+
+	private void directives(Attrs attrs, String ... directives) {
+		for ( String directive : directives ) {
+			String s = attrs.remove(directive);
+			if ( s != null) {
+				attrs.put(directive+":", s);
+			}
+		}
+	}
+
+	private Attrs getAttributes(Annotation a, String ... ignores) {
+		Attrs attrs = new Attrs();
+		outer: for ( String key : a.keySet()) {
+			
+			for ( String ignore:ignores  ) {
+				if ( key.equals(ignore))
+					continue outer;
+			}
+
+			attrs.putTyped(key, a.get(key));
+		}
+		return attrs;
 	}
 
 	/*
