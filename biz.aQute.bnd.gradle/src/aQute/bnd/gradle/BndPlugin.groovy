@@ -77,8 +77,12 @@ public class BndPlugin implements Plugin<Project> {
       /* Set up deliverables */
       bndProject.deliverables.each { deliverable ->
         artifacts {
-          runtime deliverable.file
-          archives deliverable.file
+          runtime(deliverable.file) {
+             builtBy jar
+          }
+          archives(deliverable.file) {
+             builtBy jar
+          }
         }
       }
       /* Set up dependencies */
@@ -235,10 +239,6 @@ public class BndPlugin implements Plugin<Project> {
             }
           }
         }
-      }
-
-      assemble {
-        dependsOn jar
       }
 
       task('release') {
