@@ -843,7 +843,7 @@
 
    <extension point="org.eclipse.ui.bindings">
       <key
-         sequence="M3+M2+R O"
+         sequence="M3+M2+X B"
          contextId="org.eclipse.ui.globalScope"
          commandId="bndtools.launch.runShortcut.run"
          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
@@ -853,7 +853,7 @@
          commandId="bndtools.launch.runShortcut.debug"
          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
-         sequence="M3+M2+R J"
+         sequence="M3+M2+X C"
          contextId="org.eclipse.ui.globalScope"
          commandId="bndtools.launch.junitShortcut.run"
          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
