@@ -394,7 +394,7 @@ public class Analyzer extends Processor {
 		//
 		map.put(packageRef);
 
-		trace("%s from %s has no package info (either manifest, packageinfo or package-info.class", packageRef, jar);
+		//trace("%s from %s has no package info (either manifest, packageinfo or package-info.class", packageRef, jar);
 	}
 
 	/*
