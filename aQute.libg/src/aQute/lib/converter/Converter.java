@@ -86,12 +86,32 @@ public class Converter {
 			return o.toString();
 		}
 
+		//
+		// In case we have a Dictionary that is not also a map
+		// this is kind of opportune in OSGi because of the silly
+		// dictionaries we're still having
+		//
+		
+		if ( o instanceof Dictionary && !(o instanceof Map)) {
+			Dictionary<?,?> dict = (Dictionary< ? , ? >) o;
+			Map<Object,Object> map = new HashMap<Object,Object>();
+			Enumeration<?> e = dict.keys();
+			while (e.hasMoreElements()) {
+				Object k = e.nextElement();
+				Object v = dict.get(k);
+				map.put(k, v);
+			}
+			o = map;
+		}
+		
 		if (Collection.class.isAssignableFrom(resultType))
 			return collection(type, resultType, o);
+
 
 		if (Map.class.isAssignableFrom(resultType))
 			return map(type, resultType, o);
 
+		
 		if (type instanceof GenericArrayType) {
 			GenericArrayType gType = (GenericArrayType) type;
 			return array(gType.getGenericComponentType(), o);
