@@ -272,6 +272,7 @@ public class BndPlugin implements Plugin<Project> {
       check {
         dependsOn assemble
         enabled !parseBoolean(bnd(Constants.NOJUNITOSGI, 'false')) && !bndUnprocessed(Constants.TESTCASES, '').empty
+        ext.ignoreFailures = false
         if (enabled) {
           doLast {
             try {
@@ -279,7 +280,13 @@ public class BndPlugin implements Plugin<Project> {
             } catch (Exception e) {
               throw new GradleException("Project ${bndProject.name} failed to test", e)
             }
-            checkErrors()
+            try {
+              checkErrors()
+            } catch (Exception e) {
+              if (!ignoreFailures) {
+                throw e
+              }
+            }
           }
         }
       }
