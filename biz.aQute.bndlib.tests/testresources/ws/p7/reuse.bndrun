@@ -1,0 +1,10 @@
+variable1: somethingsomething
+variable2: ${variable1} foo ${variable1}
+
+-runbundles: This is ${variable2}
+
+var: osgi.identity;filter:='(osgi.identity=variable)',\
+	osgi.identity;filter:='(osgi.identity=variable2)'
+-runrequires: ${var},\
+	osgi.identity;filter:='(osgi.identity=b)',\
+	osgi.identity;filter:='(osgi.identity=c)'

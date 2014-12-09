@@ -64,7 +64,7 @@ public class BndEditModel {
 
 	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
 																										this);
-	private final Properties										properties					= new UTF8Properties();
+	private Properties										properties					= new UTF8Properties();
 	private final Map<String,Object>								objectProperties			= new HashMap<String,Object>();
 	private final Map<String,String>								changesToSave				= new TreeMap<String,String>();
 	private Project													project;
@@ -212,6 +212,7 @@ public class BndEditModel {
 	private Converter<String,Collection< ? extends String>>			runReposFormatter			= new CollectionFormatter<String>(
 																										LIST_SEPARATOR,
 																										aQute.bnd.osgi.Constants.EMPTY_HEADER);
+	private Workspace	workspace;
 
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
@@ -306,6 +307,11 @@ public class BndEditModel {
 		this.changesToSave.putAll(model.changesToSave);
 	}
 
+	public BndEditModel(Workspace ws) {
+		this();
+		this.workspace=ws;
+	}
+
 	public void loadFrom(IDocument document) throws IOException {
 		InputStream in = toEscaped(document.get());
 		loadFrom(in);
@@ -340,7 +346,11 @@ public class BndEditModel {
 	public void loadFrom(InputStream inputStream) throws IOException {
 		try {
 			// Clear and load
-			properties.clear();
+			if (this.workspace != null) {
+				properties = (Properties) this.workspace.getProperties().clone();
+			} else {
+				properties.clear();
+			}
 			properties.load(inputStream);
 			objectProperties.clear();
 			changesToSave.clear();
