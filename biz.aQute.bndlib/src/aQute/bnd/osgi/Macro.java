@@ -775,6 +775,10 @@ public class Macro {
 			null, null, MASK, Verifier.VERSION
 												};
 
+	public String _versionmask(String args[]) {
+		return _version(args);
+	}	
+	
 	public String _version(String args[]) {
 		verifyCommand(args, _versionHelp, null, 2, 3);
 
