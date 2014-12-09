@@ -1,0 +1,1 @@
+-runvm: -XX:+UnlockCommercialFeatures, -XX:+FlightRecorder, "-XX:FlightRecorderOptions=defaultrecording=true,dumponexit=true"
