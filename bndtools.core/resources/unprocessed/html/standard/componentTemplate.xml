@@ -1,0 +1,5 @@
+<form>
+	<p>Creates a project for developing Components with Declarative Services. The following dependencies are added to the build path:</p>
+	<li>OSGi Core</li>
+	<li>OSGi Compendium 5.0</li>
+</form>

@@ -753,6 +753,19 @@
 			doc="html/standard/apiProjectTemplate.xml"
 		/>
 	</extension>
+	
+	<extension point="bndtools.core.projectTemplates">
+		<template
+			name="Component Development"
+			category="AA/OSGi Standard Templates"
+			priority="500"
+			class="org.bndtools.core.templates.project.standard.OSGiSpecComponentTemplate"
+			doc="html/standard/componentTemplate.xml"
+			icon="icons/cog.png"
+		/>
+	</extension>
+
+	
 
    <extension point="org.eclipse.ui.intro.configExtension">
       <configExtension configId="org.eclipse.ui.intro.universalConfig" content="/intro/whatsnewExtensionContent.xml" />
