@@ -17,6 +17,40 @@ import aQute.service.reporter.Report.Location;
 @SuppressWarnings("resource")
 public class BuilderTest extends BndTestCase {
 
+	/*
+	 * Warn about imports to private imports
+	 */
+	
+	public void testWarnAboutPrivateImports() throws Exception {
+		Builder p1 = new Builder();
+		p1.setProperty("Bundle-SymbolicName", "p1");
+		p1.setProperty("Bundle-Version", "1.2.3");
+		p1.setPrivatePackage("test.activator");
+		p1.addClasspath(new File("bin"));
+		p1.addClasspath(new File("jar/osgi.jar"));
+		p1.build();
+		assertTrue(p1.check());
+		
+		Builder p2 = new Builder();
+		p1.setProperty("Bundle-SymbolicName", "p2");
+		p2.setPrivatePackage("test.activator.inherits");
+		p2.addClasspath(new File("bin"));
+		p2.build();
+		assertTrue(p2.check());
+		
+		Builder p3 = new Builder();
+		p1.setProperty("Bundle-SymbolicName", "p3");
+		p3.setProperty("-check", "ALL");
+		p3.setExportPackage("test.activator.inherits;version=1, not.exist");
+		p3.addClasspath(p1.getJar());
+		p3.addClasspath(p2.getJar());
+		p3.build();
+		assertTrue(p3.check("'test.activator' is a private package import from p1-1.2.3", "Exporting an empty package 'not\\.exist'"));
+		
+		p3.getJar().getManifest().write(System.out);
+	}
+	
+	
 	/**
 	 * #708 if a bundle has a.b.c but imports a.b then bnd cannot find the version of
 	 * a.b because the scanning of a.b.c already has set the information for a.b
@@ -871,6 +905,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.check());
 
 			assertEquals("1.3", b.getExports().getByFQN("org.osgi.framework").get("version"));
+			assertEquals("osgi", b.getExports().getByFQN("org.osgi.framework").get(Constants.FROM_DIRECTIVE));
 		}
 		finally {
 			b.close();
