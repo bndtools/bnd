@@ -216,7 +216,7 @@ public class AnalyzerTest extends BndTestCase {
 			b.addClasspath(IO.getFile("jar/thinlet.jar"));
 			b.build();
 			assertTrue(b.check());
-			assertEquals("version=\"1.0\"", b.getExports().getByFQN("thinlet").toString());
+			assertEquals("1.0", b.getExports().getByFQN("thinlet").getVersion());
 			assertTrue(b.getJar().getDirectories().containsKey("thinlet"));
 			assertTrue(b.getJar().getResources().containsKey("thinlet/Thinlet.class"));
 		}

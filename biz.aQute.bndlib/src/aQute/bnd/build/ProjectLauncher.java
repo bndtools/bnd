@@ -119,6 +119,8 @@ public abstract class ProjectLauncher {
 		if (storageDir == null) {
 			storageDir = new File(project.getTarget(), "fw");
 		}
+		
+		setKeep( project.getRunKeep());
 	}
 
 	private int getRunframework(String property) {

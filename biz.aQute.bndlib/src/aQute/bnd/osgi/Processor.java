@@ -1299,7 +1299,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		for (Entry< ? , ? > entry : map.entrySet()) {
 			Object key = entry.getKey();
 			// Skip directives we do not recognize
-			if (key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE) || key.equals(SPLIT_PACKAGE_DIRECTIVE)
+			if (key.equals(INTERNAL_SOURCE_DIRECTIVE) ||key.equals(INTERNAL_EXPORTED_DIRECTIVE) ||key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE) || key.equals(SPLIT_PACKAGE_DIRECTIVE)
 					|| key.equals(FROM_DIRECTIVE))
 				continue;
 

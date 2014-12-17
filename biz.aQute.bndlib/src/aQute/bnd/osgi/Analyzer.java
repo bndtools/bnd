@@ -84,6 +84,11 @@ public class Analyzer extends Processor {
 																					AnalyzerMessages.class);
 	private AnnotationHeaders						annotationHeaders;
 	private Set<PackageRef>							packagesVisited			= new HashSet<PackageRef>();
+	private Set<Check>								checks;
+
+	public enum Check {
+		ALL, IMPORTS, EXPORTS;
+	}
 
 	public Analyzer(Processor parent) {
 		super(parent);
@@ -275,7 +280,7 @@ public class Analyzer extends Processor {
 			// Add the uses clause to the exports
 
 			boolean api = true; // brave,
-																	// lets see
+								// lets see
 
 			doUses(exports, api ? apiUses : uses, imports);
 
@@ -333,14 +338,14 @@ public class Analyzer extends Processor {
 			return;
 
 		//
-		// We should ignore empty directories/packages. Empty packages should 
+		// We should ignore empty directories/packages. Empty packages should
 		// not take the package slot. See #708
 		//
-		
+
 		Map<String,Resource> dir = jar.getDirectories().get(packageRef.getBinary());
-		if ( dir == null || dir.size() == 0)
+		if (dir == null || dir.size() == 0)
 			return;
-		
+
 		//
 		// Make sure we only do this once for each package
 		// in cp order (which is the calling order)
@@ -355,7 +360,7 @@ public class Analyzer extends Processor {
 		//
 
 		Attrs attrs = map.get(packageRef);
-		if (attrs != null && !attrs.isEmpty())
+		if (attrs != null && attrs.size() > 1)
 			return;
 
 		//
@@ -369,7 +374,8 @@ public class Analyzer extends Processor {
 			if (resource != null) {
 				Attrs info = parsePackageInfoClass(resource);
 				if (info != null && info.containsKey(VERSION_ATTRIBUTE)) {
-					info.put("from:", resource.toString());
+					info.put(FROM_DIRECTIVE, resource.toString());
+					info.put(INTERNAL_SOURCE_DIRECTIVE, getName(jar));
 					map.put(packageRef, info);
 					return;
 				}
@@ -381,7 +387,8 @@ public class Analyzer extends Processor {
 		if (resource != null) {
 			Attrs info = parsePackageinfo(packageRef, resource);
 			if (info != null) {
-				info.put("from:", resource.toString());
+				info.put(FROM_DIRECTIVE, resource.toString());
+				info.put(INTERNAL_SOURCE_DIRECTIVE, getName(jar));
 				fixupOldStyleVersions(info);
 				map.put(packageRef, info);
 				return;
@@ -392,9 +399,24 @@ public class Analyzer extends Processor {
 		// We need to set an attribute because this is how the set
 		// of available packages is remembered
 		//
-		map.put(packageRef);
+		map.put(packageRef).put(INTERNAL_SOURCE_DIRECTIVE, getName(jar));
 
-		//trace("%s from %s has no package info (either manifest, packageinfo or package-info.class", packageRef, jar);
+		// trace("%s from %s has no package info (either manifest, packageinfo or package-info.class",
+		// packageRef, jar);
+	}
+
+	protected String getName(Jar jar) throws Exception {
+		String name = jar.getBsn();
+		if (name == null) {
+			name = jar.getName();
+			if (name.equals("dot") && jar.getSource() != null)
+				name = jar.getSource().getName();
+		}
+		String version = jar.getVersion();
+		if (version == null)
+			version = "0.0.0";
+
+		return name + "-" + version;
 	}
 
 	/*
@@ -656,20 +678,20 @@ public class Analyzer extends Processor {
 
 			Packages temp = new Packages(contained);
 			temp.keySet().removeAll(exports.keySet());
-			
+
 			//
 			// This actually can contain file names if the look
 			// like packages. So remove anything that maps
 			// to a resource in the JAR
 			//
-			
-			for ( Iterator<PackageRef> i = temp.keySet().iterator(); i.hasNext(); ) {
+
+			for (Iterator<PackageRef> i = temp.keySet().iterator(); i.hasNext();) {
 				String binary = i.next().getBinary();
-				Resource r  = dot.getResource(binary);
-				if ( r != null)
+				Resource r = dot.getResource(binary);
+				if (r != null)
 					i.remove();
 			}
-			
+
 			if (!temp.isEmpty())
 				main.putValue(PRIVATE_PACKAGE, printClauses(temp));
 			else
@@ -1036,17 +1058,17 @@ public class Analyzer extends Processor {
 				value = projectName;
 			} else if (value.endsWith(".bnd")) {
 				value = value.substring(0, value.length() - 4);
-				
+
 				//
-				// This basically unknown feature allowed you to 
+				// This basically unknown feature allowed you to
 				// define a sub-bundle that specified a name that used the
 				// project name as a prefix, the project prefix would then
 				// be skipped. This caused several problems in practice
 				// and we actually did not take this into account in other
 				// places.
 				//
-				
-				//if (!value.startsWith(getBase().getName()))
+
+				// if (!value.startsWith(getBase().getName()))
 				value = projectName + "." + value;
 			}
 		}
@@ -1083,7 +1105,7 @@ public class Analyzer extends Processor {
 				continue;
 			if (directory.equals("/"))
 				continue;
-			Map<String, Resource> resources = map.get(directory);
+			Map<String,Resource> resources = map.get(directory);
 			if (resources == null || resources.isEmpty())
 				continue;
 
@@ -1513,8 +1535,7 @@ public class Analyzer extends Processor {
 				for (Entry<String,Attrs> e : exported.entrySet()) {
 					PackageRef ref = getPackageRef(e.getKey());
 					if (!classpathExports.containsKey(ref)) {
-						// TODO e.getValue().put(SOURCE_DIRECTIVE,
-						// jar.getBsn()+"-"+jar.getVersion());
+						e.getValue().put(Constants.INTERNAL_EXPORTED_DIRECTIVE, jar.getBsn() + "-" + jar.getVersion());
 						Attrs attrs = e.getValue();
 
 						//
@@ -1563,11 +1584,25 @@ public class Analyzer extends Processor {
 
 			setProperty(CURRENT_PACKAGE, packageName);
 			try {
+				Attrs defaultAttrs = new Attrs();
 				Attrs importAttributes = imports.get(packageRef);
-				Attrs exportAttributes = exports.get(packageRef, classpathExports.get(packageRef, new Attrs()));
+				Attrs exportAttributes = exports.get(packageRef, classpathExports.get(packageRef, defaultAttrs));
 
 				String exportVersion = exportAttributes.getVersion();
 				String importRange = importAttributes.getVersion();
+
+				if (check(Check.IMPORTS)) {
+					if (exportAttributes == defaultAttrs) {
+						warning("Import package %s not found in any bundle on the -buildpath. List explicitly in Import-Package: p,* to get rid of this warning if false",
+								packageRef);
+						continue;
+					}
+					if (!exportAttributes.containsKey(INTERNAL_EXPORTED_DIRECTIVE)) {
+						warning("'%s' is a private package import from %s", packageRef,
+								exportAttributes.get(INTERNAL_SOURCE_DIRECTIVE));
+						continue;
+					}
+				}
 
 				//
 				// Check if we have a contract. If we have a contract
@@ -1702,7 +1737,14 @@ public class Analyzer extends Processor {
 			Attrs attributes = exports.get(packageRef);
 			try {
 				Attrs exporterAttributes = classpathExports.get(packageRef);
-				if (exporterAttributes != null) {
+				if (exporterAttributes == null) {
+					if (check(Check.EXPORTS)) {
+						Map<String,Resource> map = dot.getDirectories().get(packageRef.getBinary());
+						if ((map == null || map.isEmpty())) {
+							error("Exporting an empty package '%s'", packageRef.getFQN());
+						}
+					}
+				} else {
 					for (Map.Entry<String,String> entry : exporterAttributes.entrySet()) {
 						String key = entry.getKey();
 
@@ -1764,7 +1806,7 @@ public class Analyzer extends Processor {
 				attributes.put(key, value);
 			}
 			if (!key.endsWith(":")) {
-				String from = attributes.get("from:");
+				String from = attributes.get(FROM_DIRECTIVE);
 				verifyAttribute(from, "package info for " + packageRef, key, value);
 			}
 		}
@@ -2098,6 +2140,12 @@ public class Analyzer extends Processor {
 	@Override
 	public void clear() {
 		classpath.clear();
+	}
+
+	@Override
+	public void forceRefresh() {
+		super.forceRefresh();
+		checks = null;
 	}
 
 	public Jar getTarget() {
@@ -2813,7 +2861,8 @@ public class Analyzer extends Processor {
 		if (getPropertiesFile() != null) {
 			String nm = getPropertiesFile().getName();
 			if (nm.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
-				nm = nm.substring(0, nm.length()-Constants.DEFAULT_BND_EXTENSION.length()) + Constants.DEFAULT_JAR_EXTENSION;
+				nm = nm.substring(0, nm.length() - Constants.DEFAULT_BND_EXTENSION.length())
+						+ Constants.DEFAULT_JAR_EXTENSION;
 				trace("name is " + nm);
 				return new File(outputDir, nm);
 			}
@@ -3078,25 +3127,53 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * 
 	 * @param name
 	 * @return
 	 */
 	public String validResourcePath(String name, String reportIfWrong) {
 		boolean changed = false;
 		StringBuilder sb = new StringBuilder(name);
-		for ( int i=0; i<sb.length(); i++) {
+		for (int i = 0; i < sb.length(); i++) {
 			char c = sb.charAt(i);
-			if ( c == '-' || c== '.' || c=='_' || c =='$' || Character.isLetterOrDigit(c))
+			if (c == '-' || c == '.' || c == '_' || c == '$' || Character.isLetterOrDigit(c))
 				continue;
-			sb.replace(i, i+1, "-");
+			sb.replace(i, i + 1, "-");
 			changed = true;
 		}
-		if ( changed ) {
-			if ( reportIfWrong != null)
+		if (changed) {
+			if (reportIfWrong != null)
 				warning("%s: %s", reportIfWrong, name);
 			return sb.toString();
 		}
 		return name;
 	}
+
+	/**
+	 * Check if we have an a check option
+	 */
+
+	public boolean check(Check key) {
+		if (checks == null) {
+			Parameters p = new Parameters(getProperty("-check"));
+			checks = new HashSet<Check>();
+			for (String k : p.keySet())
+				try {
+					if (k.equalsIgnoreCase("all")) {
+						checks = EnumSet.allOf(Check.class);
+						break;
+					}
+
+					Check c = Enum.valueOf(Check.class, k.toUpperCase().replace('-', '_'));
+					checks.add(c);
+
+				}
+				catch (Exception e) {
+					error("Invalid -check constant, allowed values are %s", Arrays.toString(Check.values()));
+				}
+			if (!checks.isEmpty())
+				checks = EnumSet.copyOf(checks);
+		}
+		return checks.contains(key) || checks.contains(Check.ALL);
+	}
+
 }

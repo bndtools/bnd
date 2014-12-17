@@ -489,7 +489,7 @@ public class Builder extends Analyzer {
 		getInfo(verifier);
 	}
 
-	private void doExpand(Jar dot) {
+	private void doExpand(Jar dot) throws Exception {
 
 		// Build an index of the class path that we can then
 		// use destructively
@@ -537,8 +537,9 @@ public class Builder extends Analyzer {
 	 * @param jar
 	 * @param name
 	 * @param instructions
+	 * @throws Exception 
 	 */
-	private Set<Instruction> doExpand(Jar jar, MultiMap<String,Jar> index, Instructions filter) {
+	private Set<Instruction> doExpand(Jar jar, MultiMap<String,Jar> index, Instructions filter) throws Exception {
 		Set<Instruction> unused = Create.set();
 
 		for (Entry<Instruction,Attrs> e : filter.entrySet()) {
@@ -584,7 +585,9 @@ public class Builder extends Analyzer {
 
 				int splitStrategy = getSplitStrategy(directives.get(SPLIT_PACKAGE_DIRECTIVE));
 				copyPackage(jar, providers, directory, splitStrategy);
-
+				Attrs contained = getContained().put(packageRef);
+				
+				contained.put(INTERNAL_SOURCE_DIRECTIVE, getName(providers.get(0)));
 				used = true;
 			}
 

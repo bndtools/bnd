@@ -763,7 +763,7 @@ public class Launcher implements ServiceListener {
 			});
 		}
 
-		trace("using working dir: %s", workingdir);
+		trace("using working dir: %s with keeping=%s", workingdir, parms.keep);
 
 		if (!parms.keep && workingdir.exists()) {
 			trace("deleting working dir %s because not kept", workingdir);

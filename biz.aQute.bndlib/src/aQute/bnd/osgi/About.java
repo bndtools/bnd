@@ -42,12 +42,18 @@ public class About {
 	public static Version				_3_0		= new Version(3, 0, 0);
 
 	public static String[]				CHANGES_3_0	= {
-		"-pom now accepts artifactid, groupid, where, and version properties	",
-		"Added a ${stem;<string>} macro that returns the stem (before the extension) of a file name",
-		"Added a ${thisfile} macro that returns the name of the properties file of the current processor if it exists."
-	};
-	
+			"-pom now accepts artifactid, groupid, where, and version properties	",
+			"Added a ${stem;<string>} macro that returns the stem (before the extension) of a file name",
+			"Added a ${thisfile} macro that returns the name of the properties file of the current processor if it exists."
+													};
+
 	public static String[]				CHANGES_2_4	= {
+			"Added checks for imports from private packages and exports of empty packages. These checks are enabled by -check ALL | (EXPORTS|IMPORTS)*. All is recommended but might break builds",
+			"Added -runkeep instruction. It turned out that it was impossible to keep the framework directory between restarts",
+			"Added ${versionmask} macro that is identical to ${version} but can be used when you want to use the version macro for yourself",
+			"Manifest Annotations use any defined methods as attributes from the annotation they are applied to",
+			"Made many more headers merged headers",
+			"Added several support methods so bnd can generate a pom",
 			"Laucher moved to Java 6",
 			"Always read bnd files with UTF-8 with a fallback to ISO-8859-1",
 			"Full Java 8 support",
