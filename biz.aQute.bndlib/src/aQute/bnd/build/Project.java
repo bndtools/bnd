@@ -2763,4 +2763,8 @@ public class Project extends Processor {
 		getWorkspace().removeProject(this);
 		IO.delete(getBase());
 	}
+
+	public boolean getRunKeep() {
+		return is(Constants.RUNKEEP);
+	}
 }

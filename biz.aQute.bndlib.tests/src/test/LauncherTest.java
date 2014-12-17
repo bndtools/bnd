@@ -31,6 +31,63 @@ public class LauncherTest extends TestCase {
 	// assertEquals(42, l.start(null));
 	// }
 
+	
+	/**
+	 * Test if we can keep the framework state.
+	 */
+	public static void testRunKeep() throws Exception {
+		
+		//
+		// First set persistence after clearing the storage
+		//
+		Project project = getProject();
+		project.setProperty("-runkeep", "false");
+		ProjectLauncher l = project.getProjectLauncher();
+
+		l.setTrace(true);
+		l.getRunProperties().put("test.cmd", "setpersistence");
+		assertEquals(55, l.launch());
+		
+		//
+		// Check that we really clear by clearing and checking state
+		// this must fail with -2
+		//
+		
+		project = getProject();
+		project.setProperty("-runkeep", "false");
+		l = project.getProjectLauncher();
+
+		l.setTrace(true);
+		l.getRunProperties().put("test.cmd", "getpersistence");
+		assertEquals(-2, l.launch());
+		
+		//
+		// We now try to set the state again with a cleared framework
+		//
+		project = getProject();
+		project.setProperty("-runkeep", "false");
+		l = project.getProjectLauncher();
+
+		l.setTrace(true);
+		l.getRunProperties().put("test.cmd", "setpersistence");
+		assertEquals(55, l.launch());
+		
+
+		//
+		// And now it should have been saved if we do not clear
+		// the framework
+		//
+		
+		project = getProject();
+		project.setProperty("-runkeep", "true");
+		l = project.getProjectLauncher();
+
+		l.setTrace(true);
+		l.getRunProperties().put("test.cmd", "getpersistence");
+		assertEquals(65, l.launch());
+		
+	}
+
 	public static void testNoReferences() throws Exception {
 		Project project = getProject();
 		project.setProperty("-runnoreferences", true + "");

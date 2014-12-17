@@ -176,6 +176,7 @@ public interface Constants {
 	String							RUNBLACKLIST								= "-runblacklist";
 	String							RUNREQUIRES									= "-runrequires";
 	String							RUNEE										= "-runee";
+	String							RUNKEEP										= "-runkeep";
 	String							RUNPATH										= "-runpath";
 	String							RUNSTORAGE									= "-runstorage";
 	String							RUNBUILDS									= "-runbuilds";
