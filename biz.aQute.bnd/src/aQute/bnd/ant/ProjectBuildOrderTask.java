@@ -24,6 +24,7 @@ public class ProjectBuildOrderTask extends BaseTask {
 
 	private File				projectLocation		= null;
 	private String				bndFile				= Project.BNDFILE;
+	private boolean				delayRunDependencies = true;
 
 	@Override
 	public void execute() throws BuildException {
@@ -48,6 +49,9 @@ public class ProjectBuildOrderTask extends BaseTask {
 			if (projectLocation == null) {
 				// all projects in workspace
 				try {
+					for(Project project : workspace.getAllProjects()) {
+						project.setDelayRunDependencies(this.delayRunDependencies);
+					}
 					projects = workspace.getBuildOrder();
 				}
 				catch (Exception e) {
@@ -55,6 +59,7 @@ public class ProjectBuildOrderTask extends BaseTask {
 				}
 			} else {
 				Project p = new Project(workspace, projectLocation, new File(projectLocation, bndFile));
+				p.setDelayRunDependencies(this.delayRunDependencies);
 				try {
 					projects = p.getDependson();
 				}
@@ -161,5 +166,13 @@ public class ProjectBuildOrderTask extends BaseTask {
 		} else {
 			throw new BuildException("Invalid property property!");
 		}
+	}
+	
+	/**
+	 * Set true to ignore runbundles dependencies. Set false to include runbundles dependencies in buildorder.
+	 * @param b true/false
+	 */
+	public void setDelayRunDependencies(boolean b) {
+		this.delayRunDependencies=b;
 	}
 }
