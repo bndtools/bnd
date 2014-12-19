@@ -63,6 +63,7 @@ public class BndPlugin implements Plugin<Project> {
       buildDir = relativePath(bndProject.targetDir)
       plugins.apply 'java'
       libsDirName = '.'
+      testResultsDirName = bnd('test-reports', 'test-reports')
 
       if (project.hasProperty('bnd_defaultTask')) {
         defaultTasks = bnd_defaultTask.trim().split(/\s*,\s*/)
