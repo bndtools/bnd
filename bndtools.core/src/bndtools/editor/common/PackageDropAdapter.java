@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -26,10 +29,18 @@ import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.ui.part.ResourceTransfer;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
 
-import bndtools.model.importanalysis.ImportPackage;
+import bndtools.model.resolution.RequirementWrapper;
 
 public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
+
+    private static final String PACKAGE_FILTER_PATTERN = "osgi.wiring.package=([^\\)]*)";
+
+    private final Pattern pkgFilterPattern = Pattern.compile(PACKAGE_FILTER_PATTERN);
 
     public PackageDropAdapter(Viewer viewer) {
         super(viewer);
@@ -78,13 +89,38 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
                 if (element instanceof IPackageFragment) {
                     IPackageFragment pkg = (IPackageFragment) element;
                     newEntries.add(createNewEntry(pkg.getElementName()));
-                } else if (element instanceof ImportPackage) {
-                    ImportPackage pkg = (ImportPackage) element;
-                    newEntries.add(createNewEntry(pkg.getName()));
+                } else if (element instanceof Capability) {
+                    Capability cap = (Capability) element;
+                    String namespace = cap.getNamespace();
+                    if (PackageNamespace.PACKAGE_NAMESPACE.equals(namespace)) {
+                        String pkgName = (String) cap.getAttributes().get(namespace);
+                        newEntries.add(createNewEntry(pkgName));
+                    }
+                } else if (element instanceof Requirement) {
+                    String pkgName = getPackageNameFromRequirement((Requirement) element);
+                    if (pkgName != null)
+                        newEntries.add(createNewEntry(pkgName));
+                } else if (element instanceof RequirementWrapper) {
+                    String pkgName = getPackageNameFromRequirement(((RequirementWrapper) element).requirement);
+                    if (pkgName != null)
+                        newEntries.add(createNewEntry(pkgName));
                 }
             }
         }
         addRows(insertionIndex, newEntries);
         return true;
+    }
+
+    private String getPackageNameFromRequirement(Requirement req) {
+        String ns = req.getNamespace();
+        if (!PackageNamespace.PACKAGE_NAMESPACE.equals(ns))
+            return null;
+
+        String filterStr = req.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+        Matcher matcher = pkgFilterPattern.matcher(filterStr);
+        if (!matcher.find())
+            return null;
+
+        return matcher.group(1);
     }
 }

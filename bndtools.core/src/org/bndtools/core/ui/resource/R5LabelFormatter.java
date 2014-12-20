@@ -1,6 +1,9 @@
 package org.bndtools.core.ui.resource;
 
+import java.io.IOException;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.viewers.StyledString;
@@ -28,7 +31,10 @@ import aQute.bnd.osgi.resource.FilterParser.WithRangeExpression;
 import bndtools.UIConstants;
 
 public class R5LabelFormatter {
+
     static FilterParser filterParser = new FilterParser();
+
+    static Pattern EE_PATTERN = Pattern.compile("osgi.ee=([^\\)]*).*version=([^\\)]*)");
 
     public static String getVersionAttributeName(String ns) {
         String r;
@@ -74,14 +80,35 @@ public class R5LabelFormatter {
         return r;
     }
 
-    public static void appendCapability(StyledString label, Capability cap) {
+    public static void appendNamespaceWithValue(StyledString label, String ns, String value, boolean shorten) {
+        String prefix = ns;
+        if (shorten) {
+            if (IdentityNamespace.IDENTITY_NAMESPACE.equals(ns))
+                prefix = "id";
+            else if (BundleNamespace.BUNDLE_NAMESPACE.equals(ns))
+                prefix = "";
+            else if (HostNamespace.HOST_NAMESPACE.equals(ns))
+                prefix = "host";
+            else if (ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE.equals(ns))
+                prefix = "";
+            else if (PackageNamespace.PACKAGE_NAMESPACE.equals(ns))
+                prefix = "";
+            else if (ServiceNamespace.SERVICE_NAMESPACE.equals(ns))
+                prefix = "";
+        }
+
+        if (prefix.length() > 0)
+            label.append(prefix + "=", StyledString.QUALIFIER_STYLER);
+        label.append(value, UIConstants.BOLD_STYLER);
+    }
+
+    public static void appendCapability(StyledString label, Capability cap, boolean shorten) {
         String ns = cap.getNamespace();
 
         Object nsValue = cap.getAttributes().get(ns);
         String versionAttributeName = getVersionAttributeName(ns);
         if (nsValue != null) {
-            label.append(ns + "=", StyledString.QUALIFIER_STYLER);
-            label.append(nsValue.toString(), UIConstants.BOLD_STYLER);
+            appendNamespaceWithValue(label, ns, nsValue.toString(), shorten);
 
             if (versionAttributeName != null) {
                 Object version = cap.getAttributes().get(versionAttributeName);
@@ -95,19 +122,34 @@ public class R5LabelFormatter {
         }
         label.append(" ", StyledString.QUALIFIER_STYLER);
 
-        label.append("[", StyledString.QUALIFIER_STYLER);
-        boolean first = true;
-        for (Entry<String,Object> entry : cap.getAttributes().entrySet()) {
-            String key = entry.getKey();
-            if (!key.equals(ns) && !key.equals(versionAttributeName)) {
+        if (!cap.getAttributes().isEmpty()) {
+            boolean first = true;
+            for (Entry<String,Object> entry : cap.getAttributes().entrySet()) {
+                String key = entry.getKey();
+                if (!key.equals(ns) && !key.equals(versionAttributeName)) {
+                    if (first)
+                        label.append("[", StyledString.QUALIFIER_STYLER);
+                    else
+                        label.append(", ", StyledString.QUALIFIER_STYLER);
+
+                    first = false;
+                    label.append(key + "=", StyledString.QUALIFIER_STYLER);
+                    label.append(entry.getValue() != null ? entry.getValue().toString() : "<null>", StyledString.QUALIFIER_STYLER);
+                }
+            }
+            if (!first)
+                label.append("]", StyledString.QUALIFIER_STYLER);
+        }
+
+        if (!cap.getDirectives().isEmpty()) {
+            label.append(" ");
+            boolean first = true;
+            for (Entry<String,String> directive : cap.getDirectives().entrySet()) {
+                label.append(directive.getKey() + ":=" + directive.getValue(), StyledString.QUALIFIER_STYLER);
                 if (!first)
                     label.append(", ", StyledString.QUALIFIER_STYLER);
-                first = false;
-                label.append(key + "=", StyledString.QUALIFIER_STYLER);
-                label.append(entry.getValue() != null ? entry.getValue().toString() : "<null>", StyledString.QUALIFIER_STYLER);
             }
         }
-        label.append("]", StyledString.QUALIFIER_STYLER);
 
     }
 
@@ -128,38 +170,57 @@ public class R5LabelFormatter {
             label.append(" " + version, StyledString.COUNTER_STYLER);
     }
 
-    public static void appendRequirementLabel(StyledString label, Requirement requirement) {
+    public static void appendRequirementLabel(StyledString label, Requirement requirement, boolean shorten) {
+        String namespace = requirement.getNamespace();
         String filter = requirement.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-        if (filter == null) {
-            // not a proper requirement... maybe a substitution?
-            label.append("[parse error]", StyledString.QUALIFIER_STYLER);
-        } else
-            try {
-                String namespace = requirement.getNamespace();
-                if (!IdentityNamespace.IDENTITY_NAMESPACE.equals(namespace)) {
-                    String category = FilterParser.namespaceToCategory(namespace);
-                    if (category != null && category.length() > 0)
-                        label.append(category + ": ", StyledString.QUALIFIER_STYLER);
-                }
 
-                FilterParser fp = new FilterParser();
-                String filterStr = requirement.getDirectives().get("filter");
-                if (filterStr == null) {
-                    label.append("<no filter>", UIConstants.ERROR_STYLER);
-                } else {
-                    Expression exp = fp.parse(filter);
-                    if (exp instanceof WithRangeExpression) {
-                        label.append(((WithRangeExpression) exp).printExcludingRange(), UIConstants.BOLD_STYLER);
-                        RangeExpression range = ((WithRangeExpression) exp).getRangeExpression();
-                        if (range != null)
-                            label.append(" ").append(formatRangeString(range), StyledString.COUNTER_STYLER);
+        boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
+
+        FilterParser fp = new FilterParser();
+        if (filter == null) {
+            label.append("<no filter>", UIConstants.ERROR_STYLER);
+        } else {
+            try {
+                Expression exp = fp.parse(filter);
+                if (exp instanceof WithRangeExpression) {
+                    appendNamespaceWithValue(label, namespace, ((WithRangeExpression) exp).printExcludingRange(), shorten);
+                    RangeExpression range = ((WithRangeExpression) exp).getRangeExpression();
+                    if (range != null)
+                        label.append(" ").append(formatRangeString(range), StyledString.COUNTER_STYLER);
+                } else if (ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE.equals(namespace)) {
+                    Matcher matcher = EE_PATTERN.matcher(filter);
+                    if (matcher.find()) {
+                        String eename = matcher.group(1);
+                        String version = matcher.group(2);
+                        appendNamespaceWithValue(label, namespace, eename, true);
+                        label.append(" ").append(version, StyledString.COUNTER_STYLER);
                     } else {
-                        label.append(exp.toString());
+                        appendNamespaceWithValue(label, namespace, filter, true);
                     }
+                } else {
+                    appendNamespaceWithValue(label, namespace, filter, true);
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (IOException e) {
+                label.append(namespace + ": ", StyledString.QUALIFIER_STYLER);
+                label.append("<parse error>", UIConstants.ERROR_STYLER);
             }
+        }
+
+        boolean first = true;
+        for (Entry<String,String> directive : requirement.getDirectives().entrySet()) {
+            if (Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE.equals(directive.getKey()) || Namespace.REQUIREMENT_FILTER_DIRECTIVE.equals(directive.getKey()))
+                continue; // deal with the filter: and resolution: directives separately
+            StringBuilder buf = new StringBuilder();
+            buf.append(first ? " " : ", ");
+            buf.append(directive.getKey()).append(":=").append(directive.getValue());
+            label.append(buf.toString(), StyledString.QUALIFIER_STYLER);
+            first = false;
+        }
+
+        if (optional) {
+            label.setStyle(0, label.length(), StyledString.QUALIFIER_STYLER);
+            label.append(" <optional>", UIConstants.ITALIC_STYLER);
+        }
     }
 
     public static String formatRangeString(RangeExpression range) {

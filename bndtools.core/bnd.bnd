@@ -98,4 +98,5 @@ eclipse.deps: \
 	org.bndtools.headless.build.manager;version=latest,\
 	org.bndtools.versioncontrol.ignores.manager;version=latest,\
 	bndtools.utils;version=project,\
-	bndtools.repository.base;version=latest
+	bndtools.repository.base;version=latest,\
+	junit.osgi; version=@3.8

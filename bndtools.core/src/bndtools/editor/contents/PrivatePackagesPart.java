@@ -111,6 +111,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 managedForm.fireSelectionChanged(PrivatePackagesPart.this, event.getSelection());
                 removeItem.setEnabled(!viewer.getSelection().isEmpty());
@@ -126,6 +127,8 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 
             @Override
             protected void addRows(int index, Collection<String> rows) {
+                if (rows.isEmpty())
+                    return; // skip marking dirty
                 if (index == -1) {
                     packages.addAll(rows);
                     viewer.add(rows.toArray());
@@ -186,6 +189,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
         // Create a filter from the exclusion list and packages matching
         // "java.*", which must not be included in a bundle
         IPackageFilter filter = new IPackageFilter() {
+            @Override
             public boolean select(String packageName) {
                 return !packageName.equals("java") && !packageName.startsWith("java.") && !packageNameSet.contains(packageName);
             }
@@ -278,6 +282,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
             this.model.removePropertyChangeListener(this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         IFormPage page = (IFormPage) getManagedForm().getContainer();
         if (page.isActive()) {

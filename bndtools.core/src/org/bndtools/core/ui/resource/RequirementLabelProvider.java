@@ -15,8 +15,15 @@ import bndtools.Plugin;
 
 public class RequirementLabelProvider extends ImageCachingLabelProvider {
 
+    protected final boolean shortenNamespaces;
+
     public RequirementLabelProvider() {
+        this(true);
+    }
+
+    public RequirementLabelProvider(boolean shortenNamespaces) {
         super(Plugin.PLUGIN_ID);
+        this.shortenNamespaces = shortenNamespaces;
     }
 
     @Override
@@ -42,7 +49,7 @@ public class RequirementLabelProvider extends ImageCachingLabelProvider {
     }
 
     protected StyledString getLabel(StyledString label, Requirement requirement) {
-        R5LabelFormatter.appendRequirementLabel(label, requirement);
+        R5LabelFormatter.appendRequirementLabel(label, requirement, shortenNamespaces);
         return label;
     }
 

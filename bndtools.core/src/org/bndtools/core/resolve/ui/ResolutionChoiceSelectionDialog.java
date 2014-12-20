@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.bndtools.core.ui.resource.R5LabelFormatter;
-import org.bndtools.utils.jface.ImageCachingLabelProvider;
 import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
@@ -12,7 +11,6 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.MouseAdapter;
@@ -30,8 +28,8 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
-import bndtools.Plugin;
 import bndtools.UIConstants;
+import bndtools.model.resolution.CapabilityLabelProvider;
 
 public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
 
@@ -82,7 +80,7 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
 
         viewer = new CheckboxTableViewer(tbl);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
-        viewer.setLabelProvider(new CapabilityResourceLabelProvider());
+        viewer.setLabelProvider(new CapabilityLabelProvider());
 
         btnUp = new Button(lowerPanel, SWT.PUSH);
         btnUp.setText("Move Up");
@@ -185,7 +183,7 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
         label.append(requirement.getNamespace() + "\n", UIConstants.BOLD_STYLER);
 
         label.append("Filter: ");
-        R5LabelFormatter.appendRequirementLabel(label, requirement);
+        R5LabelFormatter.appendRequirementLabel(label, requirement, false);
         label.append("\n");
 
         for (Entry<String,String> entry : requirement.getDirectives().entrySet()) {
@@ -206,28 +204,6 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.NEXT_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-    }
-
-    private static class CapabilityResourceLabelProvider extends ImageCachingLabelProvider {
-
-        public CapabilityResourceLabelProvider() {
-            super(Plugin.PLUGIN_ID);
-        }
-
-        @Override
-        public void update(ViewerCell cell) {
-            Capability capability = (Capability) cell.getElement();
-
-            StyledString label = new StyledString();
-            R5LabelFormatter.appendResourceLabel(label, capability.getResource());
-
-            label.append(" (provides ", StyledString.QUALIFIER_STYLER);
-            R5LabelFormatter.appendCapability(label, capability);
-            label.append(")", StyledString.QUALIFIER_STYLER);
-
-            cell.setText(label.getString());
-            cell.setStyleRanges(label.getStyleRanges());
-        }
     }
 
 }

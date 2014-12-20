@@ -16,7 +16,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -44,19 +48,25 @@ import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener;
@@ -66,35 +76,50 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
 
+import aQute.bnd.osgi.Clazz;
 import bndtools.Plugin;
-import bndtools.model.importanalysis.ExportPackage;
-import bndtools.model.importanalysis.ImportPackage;
-import bndtools.model.importanalysis.ImportsAndExportsViewerSorter;
-import bndtools.model.importanalysis.ImportsExportsAnalysisResult;
-import bndtools.model.importanalysis.ImportsExportsTreeContentProvider;
-import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ImportUsedByClass;
-import bndtools.model.importanalysis.ImportsExportsTreeLabelProvider;
-import bndtools.model.importanalysis.RequiredBundle;
+import bndtools.model.resolution.CapReqMapContentProvider;
+import bndtools.model.resolution.CapabilityLabelProvider;
+import bndtools.model.resolution.RequirementWrapper;
+import bndtools.model.resolution.RequirementWrapperLabelProvider;
 import bndtools.tasks.AnalyseBundleResolutionJob;
 import bndtools.utils.PartAdapter;
 import bndtools.utils.SelectionUtils;
 
-public class ImportsExportsView extends ViewPart implements ISelectionListener, IResourceChangeListener {
+public class ResolutionView extends ViewPart implements ISelectionListener, IResourceChangeListener {
+
+    private static String[] FILTERED_CAPABILITY_NAMESPACES = {
+            IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE
+    };
 
     private Display display = null;
-    private Tree tree = null;
-    private TreeViewer viewer;
+
+    private Tree reqsTree = null;
+    private Table capsTable = null;
+
+    private TreeViewer reqsViewer;
+    private TableViewer capsViewer;
+
     private ViewerFilter hideSelfImportsFilter;
 
     private boolean outOfDate = false;
     private File[] selectedFiles;
     private Job analysisJob;
 
+    private final Set<String> filteredCapabilityNamespaces;
+
+    public ResolutionView() {
+        filteredCapabilityNamespaces = new HashSet<String>(Arrays.asList(FILTERED_CAPABILITY_NAMESPACES));
+    }
+
     private final IPartListener partAdapter = new PartAdapter() {
         @Override
         public void partActivated(IWorkbenchPart part) {
-            if (part == ImportsExportsView.this) {
+            if (part == ResolutionView.this) {
                 if (outOfDate) {
                     executeAnalysis();
                 }
@@ -107,7 +132,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
                             file.getLocation().toFile()
                         };
 
-                        if (getSite().getPage().isPartVisible(ImportsExportsView.this)) {
+                        if (getSite().getPage().isPartVisible(ResolutionView.this)) {
                             executeAnalysis();
                         } else {
                             outOfDate = true;
@@ -122,62 +147,77 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
     public void createPartControl(Composite parent) {
         this.display = parent.getDisplay();
 
-        tree = new Tree(parent, SWT.FULL_SELECTION | SWT.MULTI);
-        tree.setHeaderVisible(true);
-        tree.setLinesVisible(true);
+        SashForm splitPanel = new SashForm(parent, SWT.HORIZONTAL);
+        splitPanel.setLayout(new FillLayout());
 
-        TreeColumn col;
-        col = new TreeColumn(tree, SWT.NONE);
-        col.setText("Package");
-        col.setWidth(400);
+        Composite reqsPanel = new Composite(splitPanel, SWT.NONE);
+        GridLayout reqsLayout = new GridLayout(1, false);
+        reqsLayout.marginWidth = 0;
+        reqsLayout.marginHeight = 0;
+        reqsLayout.verticalSpacing = 0;
+        reqsPanel.setLayout(reqsLayout);
+        new Label(reqsPanel, SWT.NONE).setText("Requirements:");
+        reqsTree = new Tree(reqsPanel, SWT.FULL_SELECTION | SWT.MULTI);
+        reqsTree.setHeaderVisible(false);
+        reqsTree.setLinesVisible(false);
+        reqsTree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        col = new TreeColumn(tree, SWT.NONE);
-        col.setText("Attribs");
-        col.setWidth(100);
+        reqsViewer = new TreeViewer(reqsTree);
+        reqsViewer.setLabelProvider(new RequirementWrapperLabelProvider(true));
+        reqsViewer.setContentProvider(new CapReqMapContentProvider());
 
-        viewer = new TreeViewer(tree);
-        viewer.setContentProvider(new ImportsExportsTreeContentProvider());
-        viewer.setSorter(new ImportsAndExportsViewerSorter());
-        viewer.setLabelProvider(new ImportsExportsTreeLabelProvider());
-        viewer.setAutoExpandLevel(2);
+        Composite capsPanel = new Composite(splitPanel, SWT.NONE);
+        GridLayout capsLayout = new GridLayout(1, false);
+        capsLayout.marginWidth = 0;
+        capsLayout.marginHeight = 0;
+        capsLayout.verticalSpacing = 0;
+        capsPanel.setLayout(capsLayout);
+        new Label(capsPanel, SWT.NONE).setText("Capabilities:");
+        capsTable = new Table(capsPanel, SWT.FULL_SELECTION | SWT.MULTI);
+        capsTable.setHeaderVisible(false);
+        capsTable.setLinesVisible(false);
+        capsTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        capsViewer = new TableViewer(capsTable);
+        capsViewer.setLabelProvider(new CapabilityLabelProvider(true));
+        capsViewer.setContentProvider(new CapReqMapContentProvider());
+        capsViewer.setFilters(new ViewerFilter[] {
+            new ViewerFilter() {
+                @Override
+                public boolean select(Viewer viewer, Object parent, Object element) {
+                    return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
+                }
+            }
+        });
 
         hideSelfImportsFilter = new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
-                if (element instanceof ImportPackage) {
-                    return !((ImportPackage) element).isSelfImport();
-                } else if (element instanceof RequiredBundle) {
-                    return !((RequiredBundle) element).isSatisfied();
-                }
-                return true;
+                RequirementWrapper rw = (RequirementWrapper) element;
+                return !rw.resolved;
             }
         };
-        viewer.setFilters(new ViewerFilter[] {
+        reqsViewer.setFilters(new ViewerFilter[] {
             hideSelfImportsFilter
         });
 
-        viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
+        reqsViewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
             LocalSelectionTransfer.getTransfer()
-        }, new DragSourceListener() {
-            public void dragStart(DragSourceEvent event) {}
+        }, new LocalTransferDragListener(reqsViewer));
 
-            public void dragSetData(DragSourceEvent event) {
-                LocalSelectionTransfer transfer = LocalSelectionTransfer.getTransfer();
-                if (transfer.isSupportedType(event.dataType))
-                    transfer.setSelection(viewer.getSelection());
-            }
+        capsViewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
+            LocalSelectionTransfer.getTransfer()
+        }, new LocalTransferDragListener(capsViewer));
 
-            public void dragFinished(DragSourceEvent event) {}
-        });
-
-        viewer.addOpenListener(new IOpenListener() {
+        reqsViewer.addOpenListener(new IOpenListener() {
+            @Override
             public void open(OpenEvent event) {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                 for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
                     Object item = iter.next();
-                    if (item instanceof ImportUsedByClass) {
-                        ImportUsedByClass importUsedBy = (ImportUsedByClass) item;
-                        String className = importUsedBy.getClazz().getFQN();
+                    if (item instanceof Clazz) {
+                        Clazz clazz = (Clazz) item;
+                        String className = clazz.getFQN();
                         IType type = null;
                         if (selectedFiles != null) {
                             IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
@@ -225,9 +265,9 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
             @Override
             public void runWithEvent(Event event) {
                 if (isChecked()) {
-                    viewer.removeFilter(hideSelfImportsFilter);
+                    reqsViewer.removeFilter(hideSelfImportsFilter);
                 } else {
-                    viewer.addFilter(hideSelfImportsFilter);
+                    reqsViewer.addFilter(hideSelfImportsFilter);
                 }
             }
         };
@@ -250,10 +290,11 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
         super.dispose();
     }
 
-    public void setInput(File[] sourceFiles, Collection< ? extends ImportPackage> imports, Collection< ? extends ExportPackage> exports, Collection< ? extends RequiredBundle> requiredBundles) {
+    public void setInput(File[] sourceFiles, Map<String,List<Capability>> capabilities, Map<String,List<RequirementWrapper>> requirements) {
         selectedFiles = sourceFiles;
-        if (tree != null && !tree.isDisposed()) {
-            viewer.setInput(new ImportsExportsAnalysisResult(imports, exports, requiredBundles));
+        if (reqsTree != null && !reqsTree.isDisposed() && capsTable != null && !capsTable.isDisposed()) {
+            reqsViewer.setInput(requirements);
+            capsViewer.setInput(capabilities);
 
             String label;
             if (sourceFiles != null) {
@@ -271,6 +312,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
         }
     }
 
+    @Override
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
         if (selection == null || selection.isEmpty())
             return;
@@ -349,9 +391,9 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
                         if (result != null && result.isOK()) {
                             if (display != null && !display.isDisposed())
                                 display.asyncExec(new Runnable() {
+                                    @Override
                                     public void run() {
-                                        if (!tree.isDisposed())
-                                            setInput(tmp.getResultFileArray(), tmp.getImportResults(), tmp.getExportResults(), tmp.getRequiredBundles());
+                                        setInput(tmp.getResultFileArray(), tmp.getCapabilities(), tmp.getRequirements());
                                     }
                                 });
                         }
@@ -366,6 +408,7 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
         }
     }
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event) {
         if (selectedFiles != null) {
             IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
@@ -380,4 +423,27 @@ public class ImportsExportsView extends ViewPart implements ISelectionListener, 
             }
         }
     }
+
+    static class LocalTransferDragListener implements DragSourceListener {
+
+        private final Viewer viewer;
+
+        public LocalTransferDragListener(Viewer viewer) {
+            this.viewer = viewer;
+        }
+
+        @Override
+        public void dragStart(DragSourceEvent event) {}
+
+        @Override
+        public void dragSetData(DragSourceEvent event) {
+            LocalSelectionTransfer transfer = LocalSelectionTransfer.getTransfer();
+            if (transfer.isSupportedType(event.dataType))
+                transfer.setSelection(viewer.getSelection());
+        }
+
+        @Override
+        public void dragFinished(DragSourceEvent event) {}
+    }
+
 }

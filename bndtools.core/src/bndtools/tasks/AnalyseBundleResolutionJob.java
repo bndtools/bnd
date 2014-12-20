@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,6 @@ import java.util.jar.Manifest;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.bndtools.utils.collections.CollectionUtils;
 import org.bndtools.utils.osgi.BundleUtils;
 import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
@@ -38,24 +36,33 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.JavaCore;
+import org.osgi.framework.Constants;
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
-import aQute.bnd.version.Version;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
+import aQute.libg.filters.AndFilter;
+import aQute.libg.filters.Filter;
+import aQute.libg.filters.NotFilter;
+import aQute.libg.filters.Operator;
+import aQute.libg.filters.SimpleFilter;
 import bndtools.Plugin;
 import bndtools.central.Central;
-import bndtools.model.importanalysis.ExportPackage;
-import bndtools.model.importanalysis.ImportPackage;
-import bndtools.model.importanalysis.RequiredBundle;
+import bndtools.model.resolution.RequirementWrapper;
 
 public class AnalyseBundleResolutionJob extends Job {
     private static final ILogger logger = Logger.getLogger(AnalyseBundleResolutionJob.class);
@@ -63,9 +70,8 @@ public class AnalyseBundleResolutionJob extends Job {
     private final File[] files;
 
     private File[] resultFileArray;
-    private ArrayList<ImportPackage> importResults;
-    private ArrayList<ExportPackage> exportResults;
-    private ArrayList<RequiredBundle> requiredBundleResults;
+    private Map<String,List<RequirementWrapper>> requirements;
+    private Map<String,List<Capability>> capabilities;
 
     public AnalyseBundleResolutionJob(String name, File[] files) {
         super(name);
@@ -76,10 +82,10 @@ public class AnalyseBundleResolutionJob extends Job {
     protected IStatus run(IProgressMonitor monitor) {
         Map<File,Builder> builderMap = new HashMap<File,Builder>();
 
-        // Setup builders and merge together all the capabilities
-        Map<String,List<ExportPackage>> exports = new HashMap<String,List<ExportPackage>>();
+        // Setup builders and load  all the capabilities
+        Map<String,List<Capability>> capabilities = new HashMap<String,List<Capability>>();
         MultiMap<String,String> usedBy = new MultiMap<String,String>();
-        Map<String,Set<Version>> bundleVersions = new HashMap<String,Set<Version>>();
+
         for (File inputFile : files) {
             if (inputFile.exists()) {
                 try {
@@ -92,7 +98,7 @@ public class AnalyseBundleResolutionJob extends Job {
                     if (builder == null)
                         continue;
                     builderMap.put(inputFile, builder);
-                    mergeCapabilities(exports, usedBy, bundleVersions, builder);
+                    loadCapabilities(capabilities, builder);
                 } catch (CoreException e) {
                     logger.logError("Error in bnd resolution analysis.", e);
                 } catch (Exception e) {
@@ -101,18 +107,36 @@ public class AnalyseBundleResolutionJob extends Job {
             }
         }
 
-        // Merge together all the requirements, with access to the available
-        // capabilities
-        Map<String,List<ImportPackage>> imports = new HashMap<String,List<ImportPackage>>();
-        Map<String,List<RequiredBundle>> requiredBundles = new HashMap<String,List<RequiredBundle>>();
+        // Load all the requirements
+        Map<String,List<RequirementWrapper>> requirements = new HashMap<String,List<RequirementWrapper>>();
         for (Entry<File,Builder> entry : builderMap.entrySet()) {
             Builder builder = entry.getValue();
-
             try {
-                mergeRequirements(imports, exports, usedBy, requiredBundles, bundleVersions, builder);
+                loadRequirements(requirements, builder);
             } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.logError("Error in bnd resolution analysis", e);
+            }
+        }
+
+        // Check for resolved requirements
+        for (String namespace : requirements.keySet()) {
+            List<RequirementWrapper> rws = requirements.get(namespace);
+            List<Capability> candidates = capabilities.get(namespace);
+
+            if (candidates == null)
+                continue;
+
+            for (RequirementWrapper rw : rws) {
+                String filterStr = rw.requirement.getDirectives().get("filter");
+                if (filterStr != null) {
+                    aQute.lib.filter.Filter filter = new aQute.lib.filter.Filter(filterStr);
+                    for (Capability cand : candidates) {
+                        if (filter.matchMap(cand.getAttributes())) {
+                            rw.resolved = true;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -120,18 +144,8 @@ public class AnalyseBundleResolutionJob extends Job {
         Set<File> resultFiles = builderMap.keySet();
         resultFileArray = resultFiles.toArray(new File[resultFiles.size()]);
 
-        importResults = new ArrayList<ImportPackage>();
-        for (List<ImportPackage> list : imports.values()) {
-            importResults.addAll(list);
-        }
-        exportResults = new ArrayList<ExportPackage>();
-        for (List<ExportPackage> list : exports.values()) {
-            exportResults.addAll(list);
-        }
-        requiredBundleResults = new ArrayList<RequiredBundle>();
-        for (List<RequiredBundle> list : requiredBundles.values()) {
-            requiredBundleResults.addAll(list);
-        }
+        this.requirements = requirements;
+        this.capabilities = capabilities;
 
         // Cleanup
         for (Builder builder : builderMap.values()) {
@@ -184,7 +198,67 @@ public class AnalyseBundleResolutionJob extends Job {
         }
     }
 
-    static void mergeCapabilities(Map<String,List<ExportPackage>> exports, MultiMap<String,String> usedBy, Map<String,Set<Version>> bundleVersions, Builder builder) throws Exception {
+    static void loadCapabilities(Map<String,List<Capability>> capMap, Builder builder) throws Exception {
+        Jar jar = builder.getJar();
+        if (jar == null)
+            return;
+
+        Manifest manifest = jar.getManifest();
+        if (manifest == null)
+            return;
+        Attributes attribs = manifest.getMainAttributes();
+
+        // Load export packages
+        String exportsPkgStr = attribs.getValue(Constants.EXPORT_PACKAGE);
+        Parameters exportsMap = new Parameters(exportsPkgStr);
+        for (Entry<String,Attrs> entry : exportsMap.entrySet()) {
+            String pkg = Processor.removeDuplicateMarker(entry.getKey());
+            org.osgi.framework.Version version = org.osgi.framework.Version.parseVersion(entry.getValue().getVersion());
+            CapReqBuilder cb = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addAttribute(PackageNamespace.PACKAGE_NAMESPACE, pkg).addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+            // TODO attributes and directives
+            addCapability(capMap, cb.buildSyntheticCapability());
+        }
+
+        // Load identity/bundle/host
+        String bsn = BundleUtils.getBundleSymbolicName(attribs);
+        if (bsn != null) { // Ignore if not a bundle
+            org.osgi.framework.Version version = org.osgi.framework.Version.parseVersion(attribs.getValue(Constants.BUNDLE_VERSION));
+            // TODO attributes and directives
+            addCapability(capMap, new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn).addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version)
+                    .buildSyntheticCapability());
+            addCapability(capMap, new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE).addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn).addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version).buildSyntheticCapability());
+            addCapability(capMap, new CapReqBuilder(HostNamespace.HOST_NAMESPACE).addAttribute(HostNamespace.HOST_NAMESPACE, bsn).addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version).buildSyntheticCapability());
+        }
+
+        // Generic capabilities
+        String providesStr = attribs.getValue(Constants.PROVIDE_CAPABILITY);
+        Parameters provides = new Parameters(providesStr);
+        for (Entry<String,Attrs> entry : provides.entrySet()) {
+            String ns = entry.getKey();
+            Attrs attrs = entry.getValue();
+
+            CapReqBuilder cb = new CapReqBuilder(ns);
+            for (String key : attrs.keySet()) {
+                if (key.endsWith(":"))
+                    cb.addDirective(key.substring(0, key.length() - 1), attrs.get(key));
+                else
+                    cb.addAttribute(key, attrs.getTyped(key));
+            }
+            addCapability(capMap, cb.buildSyntheticCapability());
+        }
+    }
+
+    private static void addCapability(Map<String,List<Capability>> capMap, Capability cap) {
+        List<Capability> capsForNs = capMap.get(cap.getNamespace());
+        if (capsForNs == null) {
+            capsForNs = new LinkedList<Capability>();
+            capMap.put(cap.getNamespace(), capsForNs);
+        }
+        capsForNs.add(cap);
+    }
+
+    /*
+    private static void mergeCapabilities(Map<String,List<ExportPackage>> exports, MultiMap<String,String> usedBy, Map<String,Set<Version>> bundleVersions, Builder builder) throws Exception {
         Jar jar = builder.getJar();
         if (jar == null)
             return;
@@ -245,6 +319,7 @@ public class AnalyseBundleResolutionJob extends Job {
             versions.add(version);
         }
     }
+    */
 
     private static List<String> getFQNList(Collection<PackageRef> pkgRefs) {
         List<String> result = new ArrayList<String>(pkgRefs.size());
@@ -254,8 +329,7 @@ public class AnalyseBundleResolutionJob extends Job {
         return result;
     }
 
-    static void mergeRequirements(Map<String,List<ImportPackage>> imports, Map<String,List<ExportPackage>> exports, MultiMap<String,String> usedBy, Map<String,List<RequiredBundle>> requiredBundles, Map<String,Set<Version>> bundleVersions,
-            Builder builder) throws Exception {
+    static void loadRequirements(Map<String,List<RequirementWrapper>> requirements, Builder builder) throws Exception {
         Jar jar = builder.getJar();
         if (jar == null)
             return;
@@ -268,108 +342,131 @@ public class AnalyseBundleResolutionJob extends Job {
         String importPkgStr = attribs.getValue(Constants.IMPORT_PACKAGE);
         Parameters importsMap = new Parameters(importPkgStr);
         for (Entry<String,Attrs> entry : importsMap.entrySet()) {
-            String pkgName = entry.getKey();
-            Attrs importAttribs = entry.getValue();
+            String pkgName = Processor.removeDuplicateMarker(entry.getKey());
+            Attrs attrs = entry.getValue();
 
-            // Calculate the importing classes for this import
-            Map<String,List<Clazz>> classMap = new HashMap<String,List<Clazz>>();
-            Collection<Clazz> classes = Collections.emptyList();
-            try {
-                classes = builder.getClasses("", "IMPORTING", pkgName);
-            } catch (Exception e) {
-                logger.logError("Error querying importing classes.", e);
-            }
-            for (Clazz clazz : classes) {
-                String fqn = clazz.getFQN();
-                int index = fqn.lastIndexOf('.');
-                if (index < 0)
-                    continue;
-                String pkg = fqn.substring(0, index);
+            CapReqBuilder rb = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
+            String filter = createVersionFilter(PackageNamespace.PACKAGE_NAMESPACE, pkgName, attrs.get(Constants.VERSION_ATTRIBUTE), PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+            rb.addDirective(PackageNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
+            if (Constants.RESOLUTION_OPTIONAL.equals(attrs.get(Constants.RESOLUTION_DIRECTIVE + ":")))
+                rb.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Namespace.RESOLUTION_OPTIONAL);
 
-                List<Clazz> list = classMap.get(pkg);
-                if (list == null) {
-                    list = new LinkedList<Clazz>();
-                    classMap.put(pkg, list);
-                }
-                list.add(clazz);
-            }
+            Collection<Clazz> importers = findImportingClasses(pkgName, builder);
 
-            // Check if this is a self-import
-            boolean selfImport = false;
-            List<ExportPackage> matchingExports = exports.get(pkgName);
-            if (matchingExports != null) {
-                String versionRangeStr = importAttribs.get(Constants.VERSION_ATTRIBUTE);
-                VersionRange versionRange = (versionRangeStr != null) ? new VersionRange(versionRangeStr) : new VersionRange("0");
-                for (ExportPackage export : matchingExports) {
-                    String versionStr = export.getAttribs().get(Constants.VERSION_ATTRIBUTE);
-                    Version version = (versionStr != null) ? new Version(versionStr) : new Version(0);
-                    if (versionRange.includes(version)) {
-                        selfImport = true;
-                        break;
-                    }
-                }
-            }
-            ImportPackage importPackage = new ImportPackage(pkgName, selfImport, importAttribs, usedBy.get(pkgName), classMap);
-            List<ImportPackage> importList = imports.get(pkgName);
-            if (importList == null) {
-                importList = new LinkedList<ImportPackage>();
-                imports.put(pkgName, importList);
-            }
-            importList.add(importPackage);
+            RequirementWrapper rw = new RequirementWrapper();
+            rw.requirement = rb.buildSyntheticRequirement();
+            rw.requirers = importers;
+
+            addRequirement(requirements, rw);
         }
 
-        // Process require-bundles
-        String requireBundlesStr = attribs.getValue(Constants.REQUIRE_BUNDLE);
-        final Parameters requiredBundleMap = new Parameters(requireBundlesStr);
-        for (Entry<String,Attrs> entry : requiredBundleMap.entrySet()) {
-            String name = entry.getKey();
-            Attrs rbAttribs = entry.getValue();
+        // Process require-bundle
+        String requireBundleStr = attribs.getValue(Constants.REQUIRE_BUNDLE);
+        Parameters requireBundles = new Parameters(requireBundleStr);
+        for (Entry<String,Attrs> entry : requireBundles.entrySet()) {
+            String bsn = Processor.removeDuplicateMarker(entry.getKey());
+            Attrs attrs = entry.getValue();
 
-            // Check if the required bundle is already included in the closure
-            boolean satisfied = false;
-            Set<Version> includedVersions = bundleVersions.get(name);
-            if (includedVersions != null) {
-                String versionRangeStr = rbAttribs.get(Constants.BUNDLE_VERSION_ATTRIBUTE);
-                VersionRange versionRange = (versionRangeStr != null) ? new VersionRange(versionRangeStr) : new VersionRange("0");
-                for (Version includedVersion : includedVersions) {
-                    if (versionRange.includes(includedVersion)) {
-                        satisfied = true;
-                        break;
-                    }
-                }
+            CapReqBuilder rb = new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE);
+            String filter = createVersionFilter(BundleNamespace.BUNDLE_NAMESPACE, bsn, attrs.get(Constants.BUNDLE_VERSION_ATTRIBUTE), BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+            rb.addDirective(BundleNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
+            if (Constants.RESOLUTION_OPTIONAL.equals(attrs.get(Constants.RESOLUTION_DIRECTIVE + ":")))
+                rb.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Namespace.RESOLUTION_OPTIONAL);
+
+            RequirementWrapper rw = new RequirementWrapper();
+            rw.requirement = rb.buildSyntheticRequirement();
+            addRequirement(requirements, rw);
+        }
+
+        // Process generic requires
+        String requiresStr = attribs.getValue(Constants.REQUIRE_CAPABILITY);
+        Parameters requires = new Parameters(requiresStr);
+        for (Entry<String,Attrs> entry : requires.entrySet()) {
+            String ns = Processor.removeDuplicateMarker(entry.getKey());
+            Attrs attrs = entry.getValue();
+
+            CapReqBuilder rb = new CapReqBuilder(ns);
+            for (String key : attrs.keySet()) {
+                if (key.endsWith(":"))
+                    rb.addDirective(key.substring(0, key.length() - 1), attrs.get(key));
+                else
+                    rb.addAttribute(key, attrs.getTyped(key));
             }
 
-            RequiredBundle rb = new RequiredBundle(name, rbAttribs, satisfied);
-            List<RequiredBundle> rbList = requiredBundles.get(name);
-            if (rbList == null) {
-                rbList = new LinkedList<RequiredBundle>();
-                requiredBundles.put(name, rbList);
-            }
-            rbList.add(rb);
+            RequirementWrapper rw = new RequirementWrapper();
+            rw.requirement = rb.buildSyntheticRequirement();
+            addRequirement(requirements, rw);
         }
     }
 
-    /*
-     * void showResults(final IFile[] files, final List<ImportPackage> imports, final List<ExportPackage> exports) {
-     * Display display = page.getWorkbenchWindow().getShell().getDisplay(); display.asyncExec(new Runnable() { public
-     * void run() { IViewReference viewRef = page.findViewReference(ImportsExportsView.VIEW_ID); if(viewRef != null) {
-     * ImportsExportsView view = (ImportsExportsView) viewRef.getView(false); if(view != null) { view.setInput(files,
-     * imports, exports); } } } }); }
-     */
+    private static final String createVersionFilter(String ns, String value, String rangeStr, String versionAttr) {
+        SimpleFilter pkgNameFilter = new SimpleFilter(ns, value);
+
+        Filter filter = pkgNameFilter;
+        if (rangeStr != null) {
+            VersionRange range = new VersionRange(rangeStr);
+
+            Filter left;
+            if (range.includeLow())
+                left = new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, range.getLow().toString());
+            else
+                left = new NotFilter(new SimpleFilter(versionAttr, Operator.LessThanOrEqual, range.getLow().toString()));
+
+            Filter right;
+            if (!range.isRange())
+                right = null;
+            else if (range.includeHigh())
+                right = new SimpleFilter(versionAttr, Operator.LessThanOrEqual, range.getHigh().toString());
+            else
+                right = new NotFilter(new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, range.getHigh().toString()));
+
+            AndFilter combined = new AndFilter().addChild(pkgNameFilter).addChild(left);
+            if (right != null)
+                combined.addChild(right);
+            filter = combined;
+        }
+        return filter.toString();
+    }
+
+    private static void addRequirement(Map<String,List<RequirementWrapper>> requirements, RequirementWrapper req) {
+        List<RequirementWrapper> listForNs = requirements.get(req.requirement.getNamespace());
+        if (listForNs == null) {
+            listForNs = new LinkedList<RequirementWrapper>();
+            requirements.put(req.requirement.getNamespace(), listForNs);
+        }
+        listForNs.add(req);
+    }
+
+    static List<Clazz> findImportingClasses(String pkgName, Builder builder) {
+        List<Clazz> classes = new LinkedList<Clazz>();
+        try {
+            Collection<Clazz> importers = builder.getClasses("", "IMPORTING", pkgName);
+
+            // Remove *this* package
+            for (Clazz clazz : importers) {
+                String fqn = clazz.getFQN();
+                int dot = fqn.lastIndexOf('.');
+                if (dot >= 0) {
+                    String pkg = fqn.substring(0, dot);
+                    if (!pkgName.equals(pkg))
+                        classes.add(clazz);
+                }
+            }
+        } catch (Exception e) {
+            logger.logError("Error querying importing classes.", e);
+        }
+        return classes;
+    }
 
     public File[] getResultFileArray() {
         return resultFileArray;
     }
 
-    public List<ImportPackage> getImportResults() {
-        return importResults;
+    public Map<String,List<RequirementWrapper>> getRequirements() {
+        return Collections.unmodifiableMap(requirements);
     }
 
-    public List<ExportPackage> getExportResults() {
-        return exportResults;
-    }
-
-    public List<RequiredBundle> getRequiredBundles() {
-        return requiredBundleResults;
+    public Map<String,List<Capability>> getCapabilities() {
+        return Collections.unmodifiableMap(capabilities);
     }
 }

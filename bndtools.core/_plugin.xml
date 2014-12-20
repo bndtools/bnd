@@ -174,10 +174,10 @@
       </category>
       <view
             category="bndtools.viewCategory"
-            class="bndtools.views.ImportsExportsView"
-            icon="icons/packages.gif"
+            class="bndtools.views.ResolutionView"
+            icon="icons/network.png"
             id="bndtools.impExpView"
-            name="Imports/Exports"
+            name="Resolution"
             restorable="true">
       </view>
       <view

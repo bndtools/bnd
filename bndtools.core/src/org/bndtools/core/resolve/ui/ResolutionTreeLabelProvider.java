@@ -15,8 +15,15 @@ import bndtools.Plugin;
 
 public class ResolutionTreeLabelProvider extends ImageCachingLabelProvider {
 
+    private final boolean shortenNamespaces;
+
     public ResolutionTreeLabelProvider() {
+        this(false);
+    }
+
+    public ResolutionTreeLabelProvider(boolean shortenNamespaces) {
         super(Plugin.PLUGIN_ID);
+        this.shortenNamespaces = shortenNamespaces;
     }
 
     @Override
@@ -28,7 +35,7 @@ public class ResolutionTreeLabelProvider extends ImageCachingLabelProvider {
 
         if (element instanceof ResolutionTreeItem) {
             ResolutionTreeItem item = (ResolutionTreeItem) element;
-            R5LabelFormatter.appendCapability(label, item.getCapability());
+            R5LabelFormatter.appendCapability(label, item.getCapability(), shortenNamespaces);
 
             // Get the icon from the capability namespace
             icon = getImage(R5LabelFormatter.getNamespaceImagePath(item.getCapability().getNamespace()), true);

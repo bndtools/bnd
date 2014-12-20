@@ -3,7 +3,6 @@ package bndtools.editor.contents;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Iterator;
-import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -53,13 +52,13 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.namespace.PackageNamespace;
 
+import aQute.bnd.osgi.Clazz;
 import bndtools.Plugin;
-import bndtools.model.importanalysis.ImportPackage;
-import bndtools.model.importanalysis.ImportTreeContentProvider;
-import bndtools.model.importanalysis.ImportsAndExportsViewerSorter;
-import bndtools.model.importanalysis.ImportsExportsTreeContentProvider.ImportUsedByClass;
-import bndtools.model.importanalysis.ImportsExportsTreeLabelProvider;
+import bndtools.model.resolution.CapReqMapContentProvider;
+import bndtools.model.resolution.RequirementWrapper;
+import bndtools.model.resolution.RequirementWrapperLabelProvider;
 import bndtools.tasks.AnalyseBundleResolutionJob;
 
 public class BundleCalculatedImportsPart extends SectionPart implements IResourceChangeListener {
@@ -71,6 +70,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
     private TreeViewer viewer;
 
     private ViewerFilter hideSelfImportsFilter;
+    private ViewerFilter nonPkgFilter;
 
     public BundleCalculatedImportsPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
@@ -96,24 +96,31 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         tree = toolkit.createTree(composite, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER);
 
         viewer = new TreeViewer(tree);
-        viewer.setContentProvider(new ImportTreeContentProvider());
-        viewer.setSorter(new ImportsAndExportsViewerSorter());
-        viewer.setLabelProvider(new ImportsExportsTreeLabelProvider());
+        viewer.setContentProvider(new CapReqMapContentProvider());
+        viewer.setLabelProvider(new RequirementWrapperLabelProvider(true));
 
+        nonPkgFilter = new ViewerFilter() {
+            @Override
+            public boolean select(Viewer viewer, Object parent, Object element) {
+                if (element instanceof RequirementWrapper)
+                    return PackageNamespace.PACKAGE_NAMESPACE.equals(((RequirementWrapper) element).requirement.getNamespace());
+                return true;
+            }
+        };
         hideSelfImportsFilter = new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
-                if (element instanceof ImportPackage) {
-                    return !((ImportPackage) element).isSelfImport();
-                }
+                if (element instanceof RequirementWrapper)
+                    return !((RequirementWrapper) element).resolved;
                 return true;
             }
         };
         viewer.setFilters(new ViewerFilter[] {
-            hideSelfImportsFilter
+                nonPkgFilter, hideSelfImportsFilter
         });
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 getManagedForm().fireSelectionChanged(BundleCalculatedImportsPart.this, event.getSelection());
             }
@@ -129,13 +136,14 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             }
         });
         viewer.addOpenListener(new IOpenListener() {
+            @Override
             public void open(OpenEvent event) {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                 for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
                     Object item = iter.next();
-                    if (item instanceof ImportUsedByClass) {
-                        ImportUsedByClass importUsedBy = (ImportUsedByClass) item;
-                        String className = importUsedBy.getClazz().getFQN();
+                    if (item instanceof Clazz) {
+                        Clazz importUsedBy = (Clazz) item;
+                        String className = importUsedBy.getFQN();
                         IType type = null;
 
                         IFile file = getEditorFile();
@@ -168,8 +176,10 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             @Override
             public void widgetSelected(SelectionEvent e) {
                 boolean showSelfImports = showSelfImportsItem.getSelection();
-                ViewerFilter[] filters = showSelfImports ? new ViewerFilter[0] : new ViewerFilter[] {
-                    hideSelfImportsFilter
+                ViewerFilter[] filters = showSelfImports ? new ViewerFilter[] {
+                    nonPkgFilter
+                } : new ViewerFilter[] {
+                        nonPkgFilter, hideSelfImportsFilter
                 };
                 viewer.setFilters(filters);
             }
@@ -214,11 +224,11 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             @Override
             public void done(IJobChangeEvent event) {
                 if (job.getResult().isOK()) {
-                    final List<ImportPackage> imports = job.getImportResults();
                     display.asyncExec(new Runnable() {
+                        @Override
                         public void run() {
                             if (tree != null && !tree.isDisposed())
-                                viewer.setInput(imports);
+                                viewer.setInput(job.getRequirements());
                         }
                     });
                 }
@@ -242,6 +252,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
 
     }
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event) {
         IFile file = getEditorFile();
         if (file != null) {
