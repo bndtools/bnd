@@ -509,8 +509,8 @@ public class Analyzer extends Processor {
 						// Verify this matches with packageinfo
 						String presentVersion = info.get(VERSION_ATTRIBUTE);
 						try {
-							Version av = new Version(presentVersion);
-							Version bv = new Version(version);
+							Version av = new Version(presentVersion).getWithoutQualifier();
+							Version bv = new Version(version).getWithoutQualifier();
 							if (!av.equals(bv)) {
 								error("Version from annotation for %s differs with packageinfo or Manifest", clazz
 										.getClassName().getFQN());
