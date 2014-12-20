@@ -81,7 +81,7 @@ public class VerifierTest extends TestCase {
 	}
 
 	/**
-	 * Create a require capality verification test
+	 * Create a require capality filter verification test
 	 * 
 	 * @throws Exception
 	 */
@@ -107,6 +107,30 @@ public class VerifierTest extends TestCase {
 		b.build();
 		assertTrue(b.check());
 	}
+    
+    /**
+     * Create a require capality directive test
+     *
+     * @throws Exception
+     */
+    
+    public void testValidDirectivesOnRequirement() throws Exception {
+        Builder b = new Builder();
+        b.addClasspath(IO.getFile("jar/osgi.jar"));
+        b.setExportPackage("org.osgi.framework");
+        b.setProperty(
+                      "Require-Capability",
+                      "test; resolution:=mandatory, "
+                      + " test; resolution:=optional, "
+                      + " test; cardinality:=single, "
+                      + " test; cardinality:=multiple, "
+                      + " test; effective:=foo, "
+                      + " test; filter:=\"(&(version>=1.1)(long.list=1)(long.list=2))\", "
+                      + " test; x-custom:=bar, ");
+        
+        b.build();
+        assertTrue(b.check());
+    }
 
 	/**
 	 * Test the strict flag
