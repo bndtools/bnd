@@ -151,13 +151,15 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         splitPanel.setLayout(new FillLayout());
 
         Composite reqsPanel = new Composite(splitPanel, SWT.NONE);
+        reqsPanel.setBackground(parent.getBackground());
+
         GridLayout reqsLayout = new GridLayout(1, false);
         reqsLayout.marginWidth = 0;
         reqsLayout.marginHeight = 0;
-        reqsLayout.verticalSpacing = 0;
+        reqsLayout.verticalSpacing = 2;
         reqsPanel.setLayout(reqsLayout);
         new Label(reqsPanel, SWT.NONE).setText("Requirements:");
-        reqsTree = new Tree(reqsPanel, SWT.FULL_SELECTION | SWT.MULTI);
+        reqsTree = new Tree(reqsPanel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
         reqsTree.setHeaderVisible(false);
         reqsTree.setLinesVisible(false);
         reqsTree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -167,13 +169,15 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         reqsViewer.setContentProvider(new CapReqMapContentProvider());
 
         Composite capsPanel = new Composite(splitPanel, SWT.NONE);
+        capsPanel.setBackground(parent.getBackground());
+
         GridLayout capsLayout = new GridLayout(1, false);
         capsLayout.marginWidth = 0;
         capsLayout.marginHeight = 0;
-        capsLayout.verticalSpacing = 0;
+        capsLayout.verticalSpacing = 2;
         capsPanel.setLayout(capsLayout);
         new Label(capsPanel, SWT.NONE).setText("Capabilities:");
-        capsTable = new Table(capsPanel, SWT.FULL_SELECTION | SWT.MULTI);
+        capsTable = new Table(capsPanel, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
         capsTable.setHeaderVisible(false);
         capsTable.setLinesVisible(false);
         capsTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -193,8 +197,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         hideSelfImportsFilter = new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
-                RequirementWrapper rw = (RequirementWrapper) element;
-                return !rw.resolved;
+                if (element instanceof RequirementWrapper) {
+                    RequirementWrapper rw = (RequirementWrapper) element;
+                    return !rw.resolved;
+                }
+                return true;
             }
         };
         reqsViewer.setFilters(new ViewerFilter[] {
