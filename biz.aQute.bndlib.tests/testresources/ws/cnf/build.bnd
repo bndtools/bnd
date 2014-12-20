@@ -7,3 +7,5 @@ build = sometime
                         aQute.lib.deployer.FileRepo; \
                                 location=${workspace}/cnf/repo; \
                                 readonly=true;name=Repo
+                                
+-runrepos: testing
