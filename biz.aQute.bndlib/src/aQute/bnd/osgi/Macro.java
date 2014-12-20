@@ -660,11 +660,15 @@ public class Macro {
 	}
 
 	public String _isdir(String args[]) {
-		if (args.length < 2) {
-			domain.warning("Need at least one file name for ${isdir;...}");
-			return null;
-		}
+//		if (args.length < 2) {
+//			domain.warning("Need at least one file name for ${isdir;...}");
+//			return null;
+//		}
 		boolean isdir = true;
+		// If no dirs provided, return false
+		if (args.length < 2) {
+			isdir = false;
+		}
 		for (int i = 1; i < args.length; i++) {
 			File f = new File(args[i]).getAbsoluteFile();
 			isdir &= f.isDirectory();
@@ -975,10 +979,11 @@ public class Macro {
 		verifyCommand(args, "${env;<name>}, get the environmet variable", null, 2, 2);
 
 		try {
-			return System.getenv(args[1]);
+			String ret = System.getenv(args[1]);
+			return ret != null ? ret : "";
 		}
 		catch (Throwable t) {
-			return null;
+			return "";
 		}
 	}
 
