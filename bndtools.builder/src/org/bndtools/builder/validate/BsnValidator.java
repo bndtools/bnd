@@ -24,7 +24,7 @@ public class BsnValidator implements IValidator {
             expected = projectName;
         } else if (expected.endsWith(".bnd")) {
             expected = expected.substring(0, expected.length() - ".bnd".length());
-            if (!expected.startsWith(builder.getBase().getName()))
+            if (!expected.startsWith(builder.getBase().getName() + "."))
                 expected = projectName + "." + expected;
         }
 
