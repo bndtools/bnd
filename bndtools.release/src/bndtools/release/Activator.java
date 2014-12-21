@@ -39,6 +39,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -53,7 +54,7 @@ import bndtools.release.ui.BundleTreeImages;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin {
+public class Activator extends AbstractUIPlugin implements BundleActivator {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "bndtools.release"; //$NON-NLS-1$
@@ -123,6 +124,7 @@ public class Activator extends AbstractUIPlugin {
 
     public static void message(final String msg) {
         async(new Runnable() {
+            @Override
             public void run() {
                 MessageDialog.openInformation(null, Messages.releaseDialogTitle1, msg);
             }
@@ -132,6 +134,7 @@ public class Activator extends AbstractUIPlugin {
     public static boolean confirmationMessage(final String msg) {
         final AtomicBoolean result = new AtomicBoolean();
         sync(new Runnable() {
+            @Override
             public void run() {
                 result.set(MessageDialog.openConfirm(null, Messages.releaseDialogTitle1, msg));
             }
@@ -293,6 +296,7 @@ public class Activator extends AbstractUIPlugin {
         }
 
         async(new Runnable() {
+            @Override
             public void run() {
                 Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null); //$NON-NLS-1$
                 ErrorDialog.openError(null, Messages.errorDialogTitle, sb.toString(), s);
