@@ -9,6 +9,7 @@ import aQute.bnd.osgi.Builder;
 
 public class BsnValidator implements IValidator {
 
+    @Override
     public IStatus validate(Builder builder) {
         IStatus status = Status.OK_STATUS;
 
@@ -30,8 +31,8 @@ public class BsnValidator implements IValidator {
 
         // Report error if not matching
         if (!actual.equals(expected))
-            status = new Status(IStatus.ERROR, NewBuilder.PLUGIN_ID, 0, String.format("Bundle-SymbolicName '%s' is not valid for builder: %s", actual, (builder.getPropertiesFile() == null ? builder.getBase().getName() : builder
-                    .getPropertiesFile().getName())), null);
+            status = new Status(IStatus.ERROR, NewBuilder.PLUGIN_ID, 0, String.format("Bundle-SymbolicName '%s' is not valid for builder: %s, expected: %s", actual, (builder.getPropertiesFile() == null ? builder.getBase().getName()
+                    : builder.getPropertiesFile().getName()), expected), null);
 
         return status;
     }
