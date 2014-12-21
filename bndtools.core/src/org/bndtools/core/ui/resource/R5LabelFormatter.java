@@ -76,6 +76,12 @@ public class R5LabelFormatter {
             r = "icons/package_obj.gif";
         else if (ServiceNamespace.SERVICE_NAMESPACE.equals(ns))
             r = "icons/service-tiny.png";
+        else if (ExtenderNamespace.EXTENDER_NAMESPACE.equals(ns))
+            r = "icons/wand.png";
+        else if (ns.startsWith("osgi.enroute"))
+            r = "enroute/enroute-color-16x16.png";
+        else if ("osgi.missing".equalsIgnoreCase(ns) || "donotresolve".equalsIgnoreCase(ns) || "compile-only".equalsIgnoreCase(ns))
+            r = "icons/prohibition.png";
 
         return r;
     }
@@ -178,7 +184,7 @@ public class R5LabelFormatter {
 
         FilterParser fp = new FilterParser();
         if (filter == null) {
-            label.append("<no filter>", UIConstants.ERROR_STYLER);
+            label.append(namespace + ": <no filter>", UIConstants.ERROR_STYLER);
         } else {
             try {
                 Expression exp = fp.parse(filter);
