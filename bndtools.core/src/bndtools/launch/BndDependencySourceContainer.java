@@ -51,10 +51,12 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
         return null;
     }
 
+    @Override
     public String getName() {
         return "Bnd Dependencies";
     }
 
+    @Override
     public ISourceContainerType getType() {
         return getSourceContainerType(TYPE_ID);
     }
@@ -78,9 +80,13 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                         }
                     } else if (runbundle.getType() == TYPE.REPO) {
                         IPath bundlePath = Central.toPath(runbundle.getFile());
-                        IFile bundleFile = ResourcesPlugin.getWorkspace().getRoot().getFile(bundlePath);
-                        ArchiveSourceContainer tempArchiveCont = new ArchiveSourceContainer(bundleFile, false);
-                        result.add(tempArchiveCont);
+                        if (bundlePath != null) {
+                            IFile bundleFile = ResourcesPlugin.getWorkspace().getRoot().getFile(bundlePath);
+                            if (bundleFile != null) {
+                                ArchiveSourceContainer tempArchiveCont = new ArchiveSourceContainer(bundleFile, false);
+                                result.add(tempArchiveCont);
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
