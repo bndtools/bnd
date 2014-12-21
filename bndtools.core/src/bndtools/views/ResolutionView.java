@@ -304,12 +304,17 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
             capsViewer.setInput(capabilities);
 
             String label;
-            if (sourceFiles != null) {
+            if (sourceFiles != null && sourceFiles.length > 0) {
                 StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < sourceFiles.length; i++) {
-                    if (i > 0)
-                        builder.append(", ");
-                    builder.append(sourceFiles[i].getAbsolutePath());
+
+                if (sourceFiles.length == 1)
+                    builder.append(sourceFiles[0].getName()).append(" - ").append(sourceFiles[0].getParentFile().getAbsolutePath());
+                else {
+                    for (int i = 0; i < sourceFiles.length; i++) {
+                        if (i > 0)
+                            builder.append(", ");
+                        builder.append(sourceFiles[i].getName());
+                    }
                 }
                 label = builder.toString();
             } else {
@@ -392,6 +397,22 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
                 tmp.setSystem(true);
 
                 tmp.addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void aboutToRun(IJobChangeEvent event) {
+                        if (display != null && !display.isDisposed()) {
+                            Runnable update = new Runnable() {
+                                @Override
+                                public void run() {
+                                    setContentDescription("Working...");
+                                }
+                            };
+                            if (display.getThread() == Thread.currentThread())
+                                update.run();
+                            else
+                                display.asyncExec(update);
+                        }
+                    }
+
                     @Override
                     public void done(IJobChangeEvent event) {
                         IStatus result = tmp.getResult();
