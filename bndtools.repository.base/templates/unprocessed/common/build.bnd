@@ -22,6 +22,7 @@
 #bin:                   bin
 #testsrc:               test
 #testbin:               bin_test
+#test-reports:          test-reports
 #target-dir:            generated
 #target:                ${project}/${target-dir}
 #build:                 ${workspace}/cnf

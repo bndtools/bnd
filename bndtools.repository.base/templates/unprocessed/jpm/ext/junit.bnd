@@ -1,3 +1,4 @@
 junit:\
 	junit__junit;version=latest,\
 	org.hamcrest__hamcrest-core;version=latest
+test-reports: test-results
