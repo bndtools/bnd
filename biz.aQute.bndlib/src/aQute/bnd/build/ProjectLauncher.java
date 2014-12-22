@@ -76,6 +76,8 @@ public abstract class ProjectLauncher {
 	 * @throws Exception
 	 */
 	protected void updateFromProject() throws Exception {
+		setCwd(project.getBase());
+
 		// pkr: could not use this because this is killing the runtests.
 		// project.refresh();
 		runbundles.clear();
