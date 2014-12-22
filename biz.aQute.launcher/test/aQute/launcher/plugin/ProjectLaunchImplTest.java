@@ -31,6 +31,7 @@ public class ProjectLaunchImplTest extends TestCase {
 	public static void testParseSystemCapabilities() throws Exception {
 		Workspace ws = Workspace.getWorkspace(IO.getFile("test/ws"));
 		Project project = ws.getProject("p1");
+		project.getTarget().mkdirs();
 		String systemCaps = null;
 
 		try {
@@ -46,5 +47,11 @@ public class ProjectLaunchImplTest extends TestCase {
 		assertEquals(
 				"osgi.native;osgi.native.osname:List<String>=\"Win7,Windows7,Windows 7\";osgi.native.osversion:Version=6.1",
 				systemCaps);
+	}
+
+	public void testCwdIsProjectBase() throws Exception {
+		Workspace ws = Workspace.getWorkspace(IO.getFile("test/ws"));
+		Project project = ws.getProject("p1");
+		assertEquals(project.getBase(), new ProjectLauncherImpl(project).getCwd());
 	}
 }
