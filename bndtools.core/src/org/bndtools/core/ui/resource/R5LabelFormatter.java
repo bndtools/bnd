@@ -74,9 +74,9 @@ public class R5LabelFormatter {
         else if (ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE.equals(ns))
             r = "icons/java.png";
         else if (PackageNamespace.PACKAGE_NAMESPACE.equals(ns))
-            r = "icons/package_obj.gif";
+            r = Icons.path("package");
         else if (ServiceNamespace.SERVICE_NAMESPACE.equals(ns))
-            r = "icons/service-tiny.png";
+            r = Icons.path("service");
         else if (ExtenderNamespace.EXTENDER_NAMESPACE.equals(ns))
             r = "icons/wand.png";
         else if (ns.startsWith("osgi.enroute"))

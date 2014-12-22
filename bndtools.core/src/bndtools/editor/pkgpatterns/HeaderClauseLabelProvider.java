@@ -10,21 +10,19 @@
  *******************************************************************************/
 package bndtools.editor.pkgpatterns;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
 import aQute.bnd.build.model.clauses.HeaderClause;
-import bndtools.Plugin;
 
 public abstract class HeaderClauseLabelProvider<C extends HeaderClause> extends StyledCellLabelProvider {
 
     private final Image packageImg;
 
     public HeaderClauseLabelProvider() {
-        packageImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_obj.gif").createImage();
+        packageImg = Icons.desc("package").createImage();
     }
 
     @Override

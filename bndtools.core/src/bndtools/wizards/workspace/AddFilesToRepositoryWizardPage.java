@@ -10,6 +10,7 @@ import java.util.jar.Attributes;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -53,7 +54,7 @@ import bndtools.utils.FileExtensionFilter;
 public class AddFilesToRepositoryWizardPage extends WizardPage {
     private static final ILogger logger = Logger.getLogger(AddFilesToRepositoryWizardPage.class);
 
-    private final Image jarImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/jar_obj.gif").createImage();
+    private final Image jarImg = Icons.desc("jar").createImage();
     private final Image warnImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/warning_obj.gif").createImage();
     private final Image errorImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/error.gif").createImage();
     private final Image okayImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tick.png").createImage();
@@ -101,6 +102,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
         }
     }
 
+    @Override
     @SuppressWarnings("unused")
     public void createControl(Composite parent) {
         setTitle("Add Files to Repository");
@@ -181,6 +183,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
 
         // LISTENERS
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 btnRemove.setEnabled(!viewer.getSelection().isEmpty());
             }
@@ -216,6 +219,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
     void doAdd() {
         ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(getShell(), new WorkbenchLabelProvider(), new WorkbenchContentProvider());
         dialog.setValidator(new ISelectionStatusValidator() {
+            @Override
             public IStatus validate(Object[] selection) {
                 if (selection.length > 0 && selection[0] instanceof IFile) {
                     return new Status(IStatus.OK, Plugin.PLUGIN_ID, IStatus.OK, "", null); //$NON-NLS-1$

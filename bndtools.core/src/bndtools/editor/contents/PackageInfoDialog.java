@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -39,10 +40,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Version;
-
-import bndtools.Plugin;
 
 public class PackageInfoDialog extends TitleAreaDialog {
 
@@ -56,7 +54,7 @@ public class PackageInfoDialog extends TitleAreaDialog {
 
     /**
      * Create the dialog.
-     * 
+     *
      * @param parentShell
      * @param packages
      */
@@ -71,7 +69,7 @@ public class PackageInfoDialog extends TitleAreaDialog {
 
     /**
      * Create contents of the dialog.
-     * 
+     *
      * @param parent
      */
     @SuppressWarnings("unused")
@@ -133,10 +131,10 @@ public class PackageInfoDialog extends TitleAreaDialog {
         btnAlwaysGenerate.setText(Messages.PackageInfoDialog_AlwaysGenerate);
 
         viewer = new CheckboxTableViewer(table);
-        
+
         TableViewerColumn tblViewerClmnPackage = new TableViewerColumn(viewer, tblclmnPackage);
         tblViewerClmnPackage.setLabelProvider(new PackageNameLabelProvider(table.getDisplay()));
-        
+
         TableViewerColumn tblViewerClmnVersion = new TableViewerColumn(viewer, tblclmnVersion);
         tblViewerClmnVersion.setLabelProvider(new PackageVersionLabelProvider());
         tblViewerClmnVersion.setEditingSupport(new VersionEditingSupport(viewer));
@@ -161,6 +159,7 @@ public class PackageInfoDialog extends TitleAreaDialog {
             }
         });
         viewer.addCheckStateListener(new ICheckStateListener() {
+            @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
                 FileVersionTuple pkg = (FileVersionTuple) event.getElement();
 
@@ -202,7 +201,7 @@ public class PackageInfoDialog extends TitleAreaDialog {
     public Collection<FileVersionTuple> getSelectedPackageDirs() {
         return new ArrayList<FileVersionTuple>(selection);
     }
-    
+
     private class VersionEditingSupport extends EditingSupport {
         private final CellEditor editor;
 
@@ -276,13 +275,13 @@ public class PackageInfoDialog extends TitleAreaDialog {
             getViewer().update(element, null);
         }
     }
-    
+
     private static class PackageNameLabelProvider extends StyledCellLabelProvider {
 
         private final Image image;
 
         public PackageNameLabelProvider(Device device) {
-            image = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_obj.gif").createImage(device); //$NON-NLS-1$
+            image = Icons.desc("package").createImage(device); //$NON-NLS-1$
         }
 
         @Override
@@ -311,7 +310,7 @@ public class PackageInfoDialog extends TitleAreaDialog {
             cell.setStyleRanges(label.getStyleRanges());
         }
     }
-    
+
     public static class FileVersionTuple implements Comparable<FileVersionTuple> {
         private final String name;
         private final File file;
@@ -320,7 +319,7 @@ public class PackageInfoDialog extends TitleAreaDialog {
         public FileVersionTuple(String pkgName, File file) {
             this.name = pkgName;
             this.file = file;
-            
+
             setVersion(new Version(1, 0, 0));
         }
 
@@ -339,7 +338,7 @@ public class PackageInfoDialog extends TitleAreaDialog {
         public synchronized void setVersion(Version version) {
             this.version = version;
         }
-        
+
         public String formatVersionSpec() {
             return "version " + getVersion().toString();
         }

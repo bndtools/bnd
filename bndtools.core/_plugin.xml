@@ -77,7 +77,7 @@
             class="bndtools.editor.BndEditor"
             default="false"
             extensions="bndrun"
-            icon="icons/brick_run.gif"
+            icon="${icons.bndrun}"
             id="bndtools.bndRunEditor"
             name="Bnd Run File Editor">
       </editor>
@@ -124,7 +124,7 @@
       </wizard>
       <wizard
             name="OSGi Declarative Services Component"
-            icon="icons/led.png"
+            icon="${icons.component}"
             category="bndtools.wizardCategory"
             id="bndtools.newDsComponentWizard">
          <class class="org.bndtools.core.ui.wizards.ds.NewDSComponentWizard">
@@ -140,7 +140,7 @@
             id="bndtools.bndrunWizard"
             category="bndtools.wizardCategory"
             class="bndtools.wizards.bndfile.BndRunFileWizard"
-            icon="icons/brick_run.gif"
+            icon="${icons.bndrun}"
             name="Run Descriptor">
       </wizard>
       <wizard
@@ -175,7 +175,7 @@
       <view
             category="bndtools.viewCategory"
             class="bndtools.views.ResolutionView"
-            icon="icons/network.png"
+            icon="${icons.capreq}"
             id="bndtools.impExpView"
             name="Resolution"
             restorable="true">

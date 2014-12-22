@@ -10,16 +10,14 @@
  *******************************************************************************/
 package bndtools.internal.pkgselection;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
-import bndtools.Plugin;
 
 public class PackageNameLabelProvider extends LabelProvider {
 
-    private Image packageImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/package_obj.gif").createImage();
+    private final Image packageImg = Icons.desc("package").createImage();
 
     @Override
     public String getText(Object element) {

@@ -10,17 +10,15 @@
  *******************************************************************************/
 package bndtools.utils;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
-import bndtools.Plugin;
 
 public class JavaContentProposalLabelProvider extends LabelProvider {
 
-    private Image classImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/class_obj.gif").createImage();
-    private Image interfaceImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/interface_obj.gif").createImage();
+    private final Image classImg = Icons.desc("class").createImage();
+    private final Image interfaceImg = Icons.desc("interface").createImage();
 
     @Override
     public Image getImage(Object element) {

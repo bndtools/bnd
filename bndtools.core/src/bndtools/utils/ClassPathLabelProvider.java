@@ -10,6 +10,7 @@
  *******************************************************************************/
 package bndtools.utils;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -20,7 +21,7 @@ import bndtools.Plugin;
 
 public class ClassPathLabelProvider extends StyledCellLabelProvider {
 
-    private final Image jarImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/jar_obj.gif").createImage();
+    private final Image jarImg = Icons.desc("jar").createImage();
     private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
 
     @Override

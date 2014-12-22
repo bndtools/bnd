@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -38,8 +39,6 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
@@ -55,7 +54,7 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
 
     /**
      * Create the SectionPart.
-     * 
+     *
      * @param parent
      * @param toolkit
      * @param style
@@ -83,6 +82,7 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
         viewer.setLabelProvider(new PluginPathLabelProvider());
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 boolean enable = !viewer.getSelection().isEmpty();
                 removeItem.setEnabled(enable);
@@ -162,6 +162,7 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
         model.setPluginPath(data);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         IFormPage page = (IFormPage) getManagedForm().getContainer();
         if (page.isActive())
@@ -230,7 +231,7 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
 
     private static final class PluginPathLabelProvider extends StyledCellLabelProvider {
 
-        private final Image jarImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/jar_obj.gif").createImage();
+        private final Image jarImg = Icons.desc("jar").createImage();
 
         @Override
         public void update(ViewerCell cell) {

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.resource.JFaceResources;
@@ -35,9 +36,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
-import bndtools.Plugin;
 import bndtools.central.Central;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.repository.SearchableRepository;
@@ -69,6 +67,7 @@ public class JpmDependencyWizardPage extends WizardPage {
         setTitle("Add Dependencies from JPM4J");
     }
 
+    @Override
     @SuppressWarnings("unused")
     public void createControl(Composite parent) {
         // CREATE CONTROLS
@@ -119,6 +118,7 @@ public class JpmDependencyWizardPage extends WizardPage {
             }
         });
         viewerIndirect.addCheckStateListener(new ICheckStateListener() {
+            @Override
             public void checkStateChanged(CheckStateChangedEvent ev) {
                 if (selectedIndirectResources == null)
                     selectedIndirectResources = new HashSet<ResourceDescriptor>();
@@ -146,6 +146,7 @@ public class JpmDependencyWizardPage extends WizardPage {
         });
 
         viewerDirect.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 ISelection sel = event.getSelection();
                 if (sel.isEmpty())
@@ -156,6 +157,7 @@ public class JpmDependencyWizardPage extends WizardPage {
             }
         });
         viewerIndirect.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 ISelection sel = event.getSelection();
                 if (sel.isEmpty())
@@ -299,7 +301,7 @@ public class JpmDependencyWizardPage extends WizardPage {
 
     private static class ResourceDescriptorLabelProvider extends StyledCellLabelProvider {
 
-        private final Image imgJar = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/jar_obj.gif").createImage();
+        private final Image imgJar = Icons.desc("jar").createImage();
 
         @Override
         public void update(ViewerCell cell) {

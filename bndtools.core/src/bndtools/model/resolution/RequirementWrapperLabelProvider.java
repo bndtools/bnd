@@ -1,5 +1,6 @@
 package bndtools.model.resolution;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.resource.R5LabelFormatter;
 import org.bndtools.core.ui.resource.RequirementLabelProvider;
 import org.bndtools.utils.jface.StrikeoutStyler;
@@ -35,7 +36,7 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
             cell.setText(label.getString());
             cell.setStyleRanges(label.getStyleRanges());
         } else if (element instanceof Clazz) {
-            cell.setImage(getImage("icons/class_obj.gif", false));
+            cell.setImage(getImage(Icons.path("class.gif"), false));
 
             String pkg;
             String className;

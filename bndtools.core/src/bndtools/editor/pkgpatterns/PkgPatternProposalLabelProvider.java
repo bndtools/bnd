@@ -10,16 +10,14 @@
  *******************************************************************************/
 package bndtools.editor.pkgpatterns;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
-import bndtools.Plugin;
 
 public class PkgPatternProposalLabelProvider extends LabelProvider {
 
-    private Image singleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_obj.gif").createImage();
-    private Image multiImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/packages.gif").createImage();
+    private final Image singleImg = Icons.desc("package").createImage();
+    private final Image multiImg = Icons.desc("packages").createImage();
 
     @Override
     public String getText(Object element) {
