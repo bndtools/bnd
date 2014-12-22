@@ -26,7 +26,12 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuListener;
@@ -106,6 +111,8 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     private Action addBundlesAction;
 
     private ServiceRegistration<RepositoryListenerPlugin> registration;
+
+    private Set<String> expandedRepoNames = null;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -513,8 +520,13 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     }
 
     private void doRefresh() {
+        // [cs] If a refresh is already happening, skip this one.
+        if (expandedRepoNames != null) {
+            return;
+        }
+
         // Remember names of expanded repositories
-        Set<String> expandedRepoNames = new HashSet<String>();
+        expandedRepoNames = new HashSet<String>();
         Object[] expandedElems = viewer.getExpandedElements();
         for (Object expandedElem : expandedElems) {
             if (expandedElem instanceof RepositoryPlugin) {
@@ -522,12 +534,38 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
             }
         }
 
-        try {
-            Central.refreshPlugins();
-        } catch (Exception e) {
-            logger.logError("While refreshing plugins", e);
-        }
+        // kick off background thread for part 2.
+        new DoRefresh2().schedule();
+    }
 
+    private class DoRefresh2 extends WorkspaceJob {
+
+		public DoRefresh2() {
+			super("Refresh repositories");
+		}
+		@Override
+		public IStatus runInWorkspace(IProgressMonitor arg0)
+				throws CoreException {
+			//[cs] The refreshPlugins portion of doRefresh, doRefresh2, doRefresh3
+			// was broken off to a background thread since this one executing on
+			// the UI thread and freezing eclipse during some remote repository
+			// downloads
+			try {
+	            Central.refreshPlugins();
+	        } catch (Exception e) {
+	            logger.logError("While refreshing plugins", e);
+	        }
+			SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+	            @Override
+	            public void run() {
+	                doRefresh3();
+	            }
+	        });
+			return Status.OK_STATUS;
+		}
+    }
+
+    private void doRefresh3() {
         // Reload repositories
         List<RepositoryPlugin> repos = RepositoryUtils.listRepositories(true);
         viewer.setInput(repos);
@@ -539,6 +577,9 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 viewer.setExpandedState(repo, true);
             }
         }
+
+        //[cs] Enable another refresh to happen
+        expandedRepoNames=null;
     }
 
     private void fillToolBar(IToolBarManager toolBar) {
@@ -583,7 +624,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
     @Override
     public void repositoriesRefreshed() {
-        if (viewer != null)
+        if (viewer != null && expandedRepoNames == null)
             SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
                 @Override
                 public void run() {
