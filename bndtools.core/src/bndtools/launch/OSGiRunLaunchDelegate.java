@@ -63,7 +63,10 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
     protected void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception {
         synchronized (model) {
             bndLauncher = model.getProjectLauncher();
+            if (bndLauncher == null)
+                throw new IllegalStateException(String.format("Failed to obtain launcher for project %s (%s)", model.getName(), model.getPropertiesFile()));
         }
+
         configureLauncher(configuration);
 
         bndLauncher.registerForNotifications(new NotificationListener() {
