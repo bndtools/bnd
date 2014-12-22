@@ -1,10 +1,9 @@
 package bndtools.launch.ui.internal;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import bndtools.Plugin;
 import bndtools.launch.LaunchConstants;
 import bndtools.launch.ui.GenericStackedLaunchTab;
 import bndtools.launch.ui.ILaunchTabPiece;
@@ -21,6 +20,7 @@ public class OSGiJUnitLaunchTab extends GenericStackedLaunchTab {
         };
     }
 
+    @Override
     public String getName() {
         return "OSGi Tests";
     }
@@ -35,7 +35,7 @@ public class OSGiJUnitLaunchTab extends GenericStackedLaunchTab {
     public Image getImage() {
         synchronized (this) {
             if (image == null) {
-                image = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
+                image = Icons.desc("bundle").createImage();
             }
             return image;
         }

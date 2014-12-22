@@ -2,21 +2,19 @@ package org.bndtools.core.resolve.ui;
 
 import java.net.URI;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 
-import bndtools.Plugin;
-
 public class ResourceLabelProvider extends StyledCellLabelProvider {
 
-    private final Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick.png").createImage();
+    private final Image bundleImg = Icons.desc("bundle").createImage();
 
     @Override
     public void update(ViewerCell cell) {

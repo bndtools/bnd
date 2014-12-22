@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.jface.HyperlinkStyler;
 import org.bndtools.utils.repos.RepoUtils;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -31,7 +32,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     final Image arrowImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_down.png").createImage();
     final Image localRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database.png").createImage();
     final Image remoteRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database_link.png").createImage();
-    final Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick.png").createImage();
+    final Image bundleImg = Icons.desc("bundle").createImage();
     final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
 
     private final boolean showRepoId;
@@ -95,7 +96,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             if (index == 0) {
                 RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) element;
                 String versionText = bundleVersion.getText();
-                
+
                 if (versionText.contains(" \u21E9")) {
                     versionText = versionText.replaceAll(" \u21E9", "");
                     cell.setImage(arrowImg);
@@ -154,6 +155,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         bundleImg.dispose();
     }
 
+    @Override
     public Image getImage(Object element) {
         Image img = null;
         if (element instanceof RepositoryPlugin) {
@@ -172,6 +174,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         return img;
     }
 
+    @Override
     public String getText(Object element) {
         try {
             if (element instanceof Actionable) {

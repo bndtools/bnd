@@ -61,7 +61,7 @@
             class="bndtools.editor.BndEditor"
             default="false"
             extensions="bnd"
-            icon="icons/brick.png"
+            icon="${icons.bundle}"
             id="bndtools.bndEditor"
             name="Bnd Bundle Editor">
       </editor>
@@ -108,7 +108,7 @@
             id="bndtools.newBndFile"
             category="bndtools.wizardCategory"
             class="bndtools.wizards.bndfile.EmptyBndFileWizard"
-            icon="icons/brick.png"
+            icon="${icons.bundle}"
             name="Bundle Descriptor"
             project="false">
       </wizard>
@@ -329,7 +329,7 @@
             id="bndtools.actions.newBundle"
             label="New Bundle Descriptor"
             toolbarPath="Normal/Bndtools"
-            icon="icons/brick_new.png"
+            icon="${icons.bundle.new}"
             tooltip="New Bundle Descriptor"
             class="bndtools.wizards.bndfile.NewBndFileActionDelegate"
          />

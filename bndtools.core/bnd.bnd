@@ -1,4 +1,5 @@
 -dependson: bndtools.bndplugins
+-include: icons.properties
 
 Bundle-SymbolicName: bndtools.core;singleton:=true
 Bundle-Version: 3.0.0.${tstamp}
@@ -40,6 +41,7 @@ Export-Package: \
 	bndtools.wizards.workspace
 
 Include-Resource: {plugin.xml=_plugin.xml},\
+	icons.properties,\
     /=resources/unprocessed,\
     {/=resources/processed},\
     enroute=resources/enroute

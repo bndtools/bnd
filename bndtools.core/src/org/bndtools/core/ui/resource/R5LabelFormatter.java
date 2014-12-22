@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.viewers.StyledString;
 import org.osgi.framework.Version;
@@ -69,7 +70,7 @@ public class R5LabelFormatter {
         String r = "icons/bullet_green.png"; // generic green dot
 
         if (BundleNamespace.BUNDLE_NAMESPACE.equals(ns) || HostNamespace.HOST_NAMESPACE.equals(ns))
-            r = "icons/brick.png";
+            r = Icons.path("bundle");
         else if (ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE.equals(ns))
             r = "icons/java.png";
         else if (PackageNamespace.PACKAGE_NAMESPACE.equals(ns))

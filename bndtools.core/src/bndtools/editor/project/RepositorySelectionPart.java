@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.Function;
 import org.bndtools.utils.collections.CollectionUtils;
 import org.bndtools.utils.jface.StrikeoutStyler;
@@ -56,7 +57,7 @@ import bndtools.editor.common.BndEditorPart;
 public class RepositorySelectionPart extends BndEditorPart {
 
     private final Image refreshImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png").createImage();
-    private final Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick.png").createImage();
+    private final Image bundleImg = Icons.desc("bundle").createImage();
 
     private final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
     private final Image repoImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);

@@ -1,16 +1,14 @@
 package bndtools.model.clauses;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
-import bndtools.Plugin;
 
 public class VersionedClauseLabelProvider extends StyledCellLabelProvider {
 
-    Image bundleImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick.png").createImage();
+    Image bundleImg = Icons.desc("bundle").createImage();
 
     @Override
     public void update(ViewerCell cell) {
