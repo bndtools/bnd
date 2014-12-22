@@ -98,7 +98,6 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     private List<Requirement> requires;
     private ResolveMode resolveMode;
 
-    private final Image addBundleIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/brick_add.png").createImage();
     private final Image resolveIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/wand.png").createImage();
 
     private ToolItem addBundleTool;
@@ -137,6 +136,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 removeTool.setEnabled(!viewer.getSelection().isEmpty());
             }
@@ -194,7 +194,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     private void fillToolBar(ToolBar toolbar) {
         // Add Bundle
         addBundleTool = new ToolItem(toolbar, SWT.PUSH);
-        addBundleTool.setImage(addBundleIcon);
+        addBundleTool.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
         addBundleTool.setToolTipText("Add Bundle Requirement");
         addBundleTool.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -329,6 +329,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         // Add the operation to perform at the end of the resolution job (i.e.,
         // showing the result)
         final Runnable showResult = new Runnable() {
+            @Override
             public void run() {
                 ResolutionWizard wizard = new ResolutionWizard(model, file, job.getResolutionResult());
                 WizardDialog dialog = new WizardDialog(parentShell, wizard);
@@ -367,7 +368,6 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
         super.dispose();
 
-        addBundleIcon.dispose();
         resolveIcon.dispose();
     }
 
@@ -454,6 +454,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         // btnResolveNow.setEnabled(resolveMode != ResolveMode.auto);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (!committing) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();

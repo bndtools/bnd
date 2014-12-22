@@ -66,9 +66,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
@@ -441,7 +443,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         addBundlesAction.setEnabled(false);
         addBundlesAction.setText("Add");
         addBundlesAction.setToolTipText("Add Bundles to Repository");
-        addBundlesAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/brick_add.png"));
+        addBundlesAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJ_ADD));
     }
 
     void createContextMenu() {
@@ -540,29 +542,29 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
     private class DoRefresh2 extends WorkspaceJob {
 
-		public DoRefresh2() {
-			super("Refresh repositories");
-		}
-		@Override
-		public IStatus runInWorkspace(IProgressMonitor arg0)
-				throws CoreException {
-			//[cs] The refreshPlugins portion of doRefresh, doRefresh2, doRefresh3
-			// was broken off to a background thread since this one executing on
-			// the UI thread and freezing eclipse during some remote repository
-			// downloads
-			try {
-	            Central.refreshPlugins();
-	        } catch (Exception e) {
-	            logger.logError("While refreshing plugins", e);
-	        }
-			SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
-	            @Override
-	            public void run() {
-	                doRefresh3();
-	            }
-	        });
-			return Status.OK_STATUS;
-		}
+        public DoRefresh2() {
+            super("Refresh repositories");
+        }
+
+        @Override
+        public IStatus runInWorkspace(IProgressMonitor arg0) throws CoreException {
+            //[cs] The refreshPlugins portion of doRefresh, doRefresh2, doRefresh3
+            // was broken off to a background thread since this one executing on
+            // the UI thread and freezing eclipse during some remote repository
+            // downloads
+            try {
+                Central.refreshPlugins();
+            } catch (Exception e) {
+                logger.logError("While refreshing plugins", e);
+            }
+            SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
+                @Override
+                public void run() {
+                    doRefresh3();
+                }
+            });
+            return Status.OK_STATUS;
+        }
     }
 
     private void doRefresh3() {
@@ -579,7 +581,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         }
 
         //[cs] Enable another refresh to happen
-        expandedRepoNames=null;
+        expandedRepoNames = null;
     }
 
     private void fillToolBar(IToolBarManager toolBar) {

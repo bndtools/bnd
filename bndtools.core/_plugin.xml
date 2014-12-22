@@ -321,7 +321,7 @@
             id="bndtools.actions.newRunDescriptor"
             label="New OSGi Run Descriptor"
             toolbarPath="Normal/Bndtools"
-            icon="icons/brick_run_new.gif"
+            icon="${icons.bndrun.new}"
             tooltip="New OSGi Run Descriptor"
             class="bndtools.wizards.bndfile.NewRunDescriptorActionDelegate"
          />
