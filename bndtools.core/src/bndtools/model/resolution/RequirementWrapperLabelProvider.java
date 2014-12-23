@@ -39,7 +39,7 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
             cell.setText(label.getString());
             cell.setStyleRanges(label.getStyleRanges());
         } else if (element instanceof Clazz) {
-            cell.setImage(getImage(Icons.path("class.gif"), false));
+            cell.setImage(getImage(Icons.path("class"), false));
 
             String pkg;
             String className;
