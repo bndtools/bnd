@@ -30,6 +30,8 @@
             <h2>Via Update Site</h2>
             <p>Use the update site if your Eclipse installation does not include the Marketplace client.</p>
             <p><a class="button primary" href="#update-site">View details &raquo;</a></p>
+            
+            <p>Install a <a href="#nonstandard_versions">Development Snapshot or an Older Version &raquo;</a></p>
         </div>
     </div>
 </div>
@@ -117,9 +119,9 @@
 
 <hr/>
 
-<section id="old_versions">
+<section id="nonstandard_versions">
     <div class="row">
-        <h1>Installing Milestones or Old Versions</h1>
+        <h1>Installing Development or Older Versions</h1>
     </div>
 
     <p>The Eclipse Marketplace can only be used to install the latest stable version of Bndtools
@@ -131,6 +133,10 @@
         <thead><th>Version</th><th>Update Site URL</th></thead>
 
         <tbody>
+            <tr>
+                <td>Latest Development Snapshot</td>
+                <td><strong>NB</strong>: This build tracks the very latest version of the code, and is likely to be unstable or contain experimental features. <br/> <code>https://bndtools.ci.cloudbees.com/job/bndtools.master/lastSuccessfulBuild/artifact/build/generated/p2/</code></td>
+            </tr>
             <tr>
                 <td>Release 2.3.0 (10 May 2014)</td>
                 <td><code>https://bndtools-updates.s3.amazonaws.com/2.3.0.REL/</code></td>
