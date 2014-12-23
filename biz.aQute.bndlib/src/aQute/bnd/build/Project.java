@@ -464,10 +464,12 @@ public class Project extends Processor {
 				Container found = null;
 
 				String versionRange = attrs.get("version");
+				boolean triedGetBundle = false;
 
 				if (versionRange != null) {
 					if (versionRange.equals(VERSION_ATTR_LATEST) || versionRange.equals(VERSION_ATTR_SNAPSHOT)) {
 						found = getBundle(bsn, versionRange, strategyx, attrs);
+						triedGetBundle = true;
 					}
 				}
 				if (found == null) {
@@ -501,7 +503,7 @@ public class Project extends Processor {
 						} else {
 							found = new Container(this, bsn, "file", Container.TYPE.EXTERNAL, f, error, attrs, null);
 						}
-					} else {
+					} else if (!triedGetBundle) {
 						found = getBundle(bsn, versionRange, strategyx, attrs);
 					}
 				}
@@ -1025,7 +1027,6 @@ public class Project extends Processor {
 		//
 
 		if (!range.equals(VERSION_ATTR_LATEST)) {
-			Container c = getBundleFromProject(bsn, attrs);
 			return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range
 					+ " Not found because latest was not specified."
 					+ " It is, however, present in the workspace. Add '" + bsn
