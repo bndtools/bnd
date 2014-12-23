@@ -15,32 +15,18 @@
  */
 package org.osgi.impl.bundle.bindex.cli;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.launch.Framework;
-import org.osgi.service.indexer.ResourceAnalyzer;
-import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
-import org.osgi.service.indexer.impl.RepoIndex;
-import org.osgi.util.tracker.ServiceTracker;
+import org.kohsuke.args4j.*;
+import org.osgi.framework.*;
+import org.osgi.framework.launch.*;
+import org.osgi.service.indexer.*;
+import org.osgi.service.indexer.impl.*;
+import org.osgi.util.tracker.*;
 
-import de.kalpatec.pojosr.framework.PojoServiceRegistryFactoryImpl;
-import de.kalpatec.pojosr.framework.launch.ClasspathScanner;
-import de.kalpatec.pojosr.framework.launch.PojoServiceRegistryFactory;
+import de.kalpatec.pojosr.framework.*;
+import de.kalpatec.pojosr.framework.launch.*;
 
 public class Index {
 
@@ -69,9 +55,10 @@ public class Index {
 			framework.start();
 
 			// Look for indexer and run index generation
-			ServiceTracker tracker = new ServiceTracker(framework.getBundleContext(), ResourceIndexer.class.getName(), null);
+			ServiceTracker<ResourceIndexer,ResourceIndexer> tracker = new ServiceTracker<ResourceIndexer,ResourceIndexer>(
+					framework.getBundleContext(), ResourceIndexer.class, null);
 			tracker.open();
-			ResourceIndexer index = (ResourceIndexer) tracker.waitForService(1000);
+			ResourceIndexer index = tracker.waitForService(1000);
 			if (index == null)
 				throw new IllegalStateException("Timed out waiting for ResourceIndexer service.");
 

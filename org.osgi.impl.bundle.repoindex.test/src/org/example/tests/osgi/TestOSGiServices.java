@@ -1,40 +1,19 @@
 package org.example.tests.osgi;
 
-import static org.example.tests.utils.Utils.copyToTempFile;
-import static org.example.tests.utils.Utils.createTempDir;
-import static org.example.tests.utils.Utils.deleteWithException;
-import static org.example.tests.utils.Utils.readStream;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.example.tests.utils.Utils.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
-import java.io.File;
-import java.io.StringWriter;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
-import org.example.tests.utils.WibbleAnalyzer;
-import org.mockito.ArgumentCaptor;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.indexer.Capability;
-import org.osgi.service.indexer.Requirement;
-import org.osgi.service.indexer.Resource;
-import org.osgi.service.indexer.ResourceAnalyzer;
-import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.log.LogService;
+import org.example.tests.utils.*;
+import org.mockito.*;
+import org.osgi.framework.*;
+import org.osgi.service.indexer.*;
+import org.osgi.service.log.*;
 
 public class TestOSGiServices extends TestCase {
 
@@ -53,8 +32,8 @@ public class TestOSGiServices extends TestCase {
 	}
 
 	public void testBasicServiceInvocation() throws Exception {
-		ServiceReference ref = context.getServiceReference(ResourceIndexer.class.getName());
-		ResourceIndexer indexer = (ResourceIndexer) context.getService(ref);
+		ServiceReference<ResourceIndexer> ref = context.getServiceReference(ResourceIndexer.class);
+		ResourceIndexer indexer = context.getService(ref);
 
 		StringWriter writer = new StringWriter();
 
@@ -69,10 +48,11 @@ public class TestOSGiServices extends TestCase {
 
 	// Test whiteboard registration of Resource Analyzers.
 	public void testWhiteboardAnalyzer() throws Exception {
-		ServiceRegistration reg = context.registerService(ResourceAnalyzer.class.getName(), new WibbleAnalyzer(), null);
+		ServiceRegistration<ResourceAnalyzer> reg = context.registerService(ResourceAnalyzer.class,
+				new WibbleAnalyzer(), null);
 
-		ServiceReference ref = context.getServiceReference(ResourceIndexer.class.getName());
-		ResourceIndexer indexer = (ResourceIndexer) context.getService(ref);
+		ServiceReference<ResourceIndexer> ref = context.getServiceReference(ResourceIndexer.class);
+		ResourceIndexer indexer = context.getService(ref);
 		StringWriter writer = new StringWriter();
 
 		Map<String, String> config = new HashMap<String, String>();
@@ -90,10 +70,11 @@ public class TestOSGiServices extends TestCase {
 	public void testWhiteboardAnalyzerWithFilter() throws Exception {
 		Dictionary<String, Object> analyzerProps = new Hashtable<String, Object>();
 		analyzerProps.put(ResourceAnalyzer.FILTER, "(location=*sion.jar)");
-		ServiceRegistration reg = context.registerService(ResourceAnalyzer.class.getName(), new WibbleAnalyzer(), analyzerProps);
+		ServiceRegistration<ResourceAnalyzer> reg = context.registerService(ResourceAnalyzer.class,
+				new WibbleAnalyzer(), analyzerProps);
 
-		ServiceReference ref = context.getServiceReference(ResourceIndexer.class.getName());
-		ResourceIndexer indexer = (ResourceIndexer) context.getService(ref);
+		ServiceReference<ResourceIndexer> ref = context.getServiceReference(ResourceIndexer.class);
+		ResourceIndexer indexer = context.getService(ref);
 		StringWriter writer = new StringWriter();
 
 		Set<File> files = new LinkedHashSet<File>();
@@ -115,7 +96,7 @@ public class TestOSGiServices extends TestCase {
 	public void testLogNotification() throws Exception {
 		// Register mock LogService, to receive notifications
 		LogService mockLog = mock(LogService.class);
-		ServiceRegistration mockLogReg = context.registerService(LogService.class.getName(), mockLog, null);
+		ServiceRegistration<LogService> mockLogReg = context.registerService(LogService.class, mockLog, null);
 
 		// Register a broken analyzer that throws exceptions
 		ResourceAnalyzer brokenAnalyzer = new ResourceAnalyzer() {
@@ -123,11 +104,12 @@ public class TestOSGiServices extends TestCase {
 				throw new Exception("Bang!");
 			}
 		};
-		ServiceRegistration mockAnalyzerReg = context.registerService(ResourceAnalyzer.class.getName(), brokenAnalyzer, null);
+		ServiceRegistration<ResourceAnalyzer> mockAnalyzerReg = context.registerService(ResourceAnalyzer.class,
+				brokenAnalyzer, null);
 
 		// Call the indexer
-		ServiceReference ref = context.getServiceReference(ResourceIndexer.class.getName());
-		ResourceIndexer indexer = (ResourceIndexer) context.getService(ref);
+		ServiceReference<ResourceIndexer> ref = context.getServiceReference(ResourceIndexer.class);
+		ResourceIndexer indexer = context.getService(ref);
 		StringWriter writer = new StringWriter();
 		Set<File> files = Collections.singleton(copyToTempFile(tempDir, "testdata/01-bsn+version.jar"));
 		Map<String, String> config = new HashMap<String, String>();

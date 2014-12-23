@@ -1,40 +1,37 @@
 package org.osgi.service.indexer.osgi;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.Filter;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.indexer.ResourceAnalyzer;
-import org.osgi.service.indexer.impl.RepoIndex;
-import org.osgi.service.log.LogService;
-import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.framework.*;
+import org.osgi.service.indexer.*;
+import org.osgi.service.indexer.impl.*;
+import org.osgi.service.indexer.osgi.AnalyzerTracker.TrackingStruct;
+import org.osgi.service.log.*;
+import org.osgi.util.tracker.*;
 
-class AnalyzerTracker extends ServiceTracker {
+class AnalyzerTracker extends ServiceTracker<ResourceAnalyzer,TrackingStruct> {
 
 	private final RepoIndex indexer;
 	private final LogService log;
 
 	public AnalyzerTracker(BundleContext context, RepoIndex indexer, LogService log) {
-		super(context, ResourceAnalyzer.class.getName(), null);
+		super(context, ResourceAnalyzer.class, null);
 		this.indexer = indexer;
 		this.log = log;
 	}
 
-	private static class TrackingStruct {
+	static class TrackingStruct {
 		ResourceAnalyzer analyzer;
 		Filter filter;
 		boolean valid;
 	}
 
 	@Override
-	public Object addingService(ServiceReference reference) {
+	public TrackingStruct addingService(ServiceReference<ResourceAnalyzer> reference) {
 		TrackingStruct struct = new TrackingStruct();
 		try {
 			String filterStr = (String) reference.getProperty(ResourceAnalyzer.FILTER);
 			Filter filter = (filterStr != null) ? FrameworkUtil.createFilter(filterStr) : null;
 
-			ResourceAnalyzer analyzer = (ResourceAnalyzer) context.getService(reference);
+			ResourceAnalyzer analyzer = context.getService(reference);
 			if (analyzer == null)
 				return null;
 
@@ -52,9 +49,7 @@ class AnalyzerTracker extends ServiceTracker {
 	}
 
 	@Override
-	public void modifiedService(ServiceReference reference, Object service) {
-		TrackingStruct struct = (TrackingStruct) service;
-
+	public void modifiedService(ServiceReference<ResourceAnalyzer> reference, TrackingStruct struct) {
 		if (struct.valid) {
 			indexer.removeAnalyzer(struct.analyzer, struct.filter);
 		}
@@ -76,8 +71,7 @@ class AnalyzerTracker extends ServiceTracker {
 	}
 
 	@Override
-	public void removedService(ServiceReference reference, Object service) {
-		TrackingStruct struct = (TrackingStruct) service;
+	public void removedService(ServiceReference<ResourceAnalyzer> reference, TrackingStruct struct) {
 		if (struct.valid)
 			indexer.removeAnalyzer(struct.analyzer, struct.filter);
 	}

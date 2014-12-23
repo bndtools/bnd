@@ -185,11 +185,11 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		throw new UnsupportedOperationException();
 	}
 
-	public ServiceReference[] getRegisteredServices() {
+	public ServiceReference< ? >[] getRegisteredServices() {
 		throw new UnsupportedOperationException();
 	}
 
-	public ServiceReference[] getServicesInUse() {
+	public ServiceReference< ? >[] getServicesInUse() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -229,16 +229,16 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return FrameworkUtil.createFilter(filter);
 	}
 
-	public ServiceReference[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+	public ServiceReference< ? >[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		throw new UnsupportedOperationException();
 	}
 
 
-	public ServiceReference getServiceReference(String clazz) {
+	public ServiceReference< ? > getServiceReference(String clazz) {
 		return null;
 	}
 
-	public ServiceReference[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+	public ServiceReference< ? >[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		return null;
 	}
 
