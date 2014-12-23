@@ -706,7 +706,7 @@
 
       <plugin
          class="aQute.bnd.deployer.http.HttpBasicAuthURLConnector"
-         icon="icons/lock.png"
+         icon="${icons.lock}"
          name="Authenticated HTTP(S) Connector">
          <property name="configs" type="string" description="List of config files (comma-separated paths)"/>
          <property name="disableServerVerify" type="boolean" description="Disable verification of server's X509 certificate (insecure, for testing only!)"/>

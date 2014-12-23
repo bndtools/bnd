@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -107,6 +108,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
     private ViewerFilter hideSelfImportsFilter;
 
+    private boolean inputLocked = false;
     private boolean outOfDate = false;
     private File[] selectedFiles;
     private Job analysisJob;
@@ -285,8 +287,22 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         toggleShowSelfImports.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif"));
         toggleShowSelfImports.setToolTipText("Show resolved requirements.\n\nInclude requirements that are resolved within the set of selected bundles.");
 
+        IAction toggleLockInput = new Action("lockInput", IAction.AS_CHECK_BOX) {
+            @Override
+            public void runWithEvent(Event event) {
+                inputLocked = isChecked();
+                if (!inputLocked) {
+                    executeAnalysis();
+                }
+            }
+        };
+        toggleLockInput.setChecked(false);
+        toggleLockInput.setImageDescriptor(Icons.desc("lock"));
+        toggleLockInput.setToolTipText("Lock to current selection");
+
         IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
         toolBarManager.add(toggleShowSelfImports);
+        toolBarManager.add(toggleLockInput);
     }
 
     @Override
@@ -389,6 +405,9 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
     }
 
     void executeAnalysis() {
+        if (inputLocked)
+            return;
+
         outOfDate = false;
         synchronized (this) {
             Job oldJob = analysisJob;
