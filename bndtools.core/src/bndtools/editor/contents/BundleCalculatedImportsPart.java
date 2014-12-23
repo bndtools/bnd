@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.util.LocalSelectionTransfer;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -98,6 +99,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         viewer = new TreeViewer(tree);
         viewer.setContentProvider(new CapReqMapContentProvider());
         viewer.setLabelProvider(new RequirementWrapperLabelProvider(true));
+        ColumnViewerToolTipSupport.enableFor(viewer);
 
         nonPkgFilter = new ViewerFilter() {
             @Override

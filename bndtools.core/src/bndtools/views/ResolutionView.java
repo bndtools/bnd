@@ -44,6 +44,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.util.LocalSelectionTransfer;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -165,6 +166,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         reqsTree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         reqsViewer = new TreeViewer(reqsTree);
+        ColumnViewerToolTipSupport.enableFor(reqsViewer);
         reqsViewer.setLabelProvider(new RequirementWrapperLabelProvider(true));
         reqsViewer.setContentProvider(new CapReqMapContentProvider());
 
@@ -183,6 +185,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         capsTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         capsViewer = new TableViewer(capsTable);
+        ColumnViewerToolTipSupport.enableFor(capsViewer);
         capsViewer.setLabelProvider(new CapabilityLabelProvider(true));
         capsViewer.setContentProvider(new CapReqMapContentProvider());
         capsViewer.setFilters(new ViewerFilter[] {
@@ -280,7 +283,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         };
         toggleShowSelfImports.setChecked(false);
         toggleShowSelfImports.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif"));
-        toggleShowSelfImports.setToolTipText("Show self-imported packages");
+        toggleShowSelfImports.setToolTipText("Show resolved requirements.\n\nInclude requirements that are resolved within the set of selected bundles.");
 
         IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
         toolBarManager.add(toggleShowSelfImports);
