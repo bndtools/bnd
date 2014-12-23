@@ -126,7 +126,9 @@ public class LauncherConstants {
 		embedded = s != null && Boolean.parseBoolean(s);
 		name = p.getProperty(LAUNCH_NAME);
 		notificationPort = Integer.valueOf(p.getProperty(LAUNCH_NOTIFICATION_PORT, "-1"));
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({
+				"unchecked", "rawtypes"
+		})
 		Map<String,String> map = (Map) p;
 		runProperties.putAll(map);
 	}

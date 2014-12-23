@@ -23,7 +23,9 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 		@Override
 		public Enumeration<String> elements() {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({
+					"unchecked", "rawtypes"
+			})
 			Enumeration<String> enumeration = (Enumeration) Collections.enumeration(manifest
 					.getMainAttributes().values());
 			return enumeration;
@@ -182,11 +184,11 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return paths;
 	}
 
-	public ServiceReference[] getRegisteredServices() {
+	public ServiceReference< ? >[] getRegisteredServices() {
 		return null;
 	}
 
-	public ServiceReference[] getServicesInUse() {
+	public ServiceReference< ? >[] getServicesInUse() {
 		return null;
 	}
 
@@ -261,7 +263,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		throw new UnsupportedOperationException();
 	}
 
-	public ServiceReference[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+	public ServiceReference< ? >[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		throw new UnsupportedOperationException();
 	}
 

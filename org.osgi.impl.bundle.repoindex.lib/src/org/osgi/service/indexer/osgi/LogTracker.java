@@ -1,17 +1,16 @@
 package org.osgi.service.indexer.osgi;
 
-import java.io.PrintStream;
-import java.util.Date;
+import java.io.*;
+import java.util.*;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.log.LogService;
-import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.framework.*;
+import org.osgi.service.log.*;
+import org.osgi.util.tracker.*;
 
-class LogTracker extends ServiceTracker implements LogService {
+class LogTracker extends ServiceTracker<LogService,LogService> implements LogService {
 
 	public LogTracker(BundleContext context) {
-		super(context, LogService.class.getName(), null);
+		super(context, LogService.class, null);
 	}
 
 	public void log(int level, String message) {
@@ -27,7 +26,7 @@ class LogTracker extends ServiceTracker implements LogService {
 	}
 
 	public void log(ServiceReference sr, int level, String message, Throwable exception) {
-		LogService log = (LogService) getService();
+		LogService log = getService();
 
 		if (log != null)
 			log.log(sr, level, message, exception);

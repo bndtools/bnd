@@ -1,33 +1,19 @@
 package org.osgi.service.indexer.impl;
 
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.text.*;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.StringTokenizer;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.*;
 
-import org.osgi.framework.Constants;
-import org.osgi.framework.Version;
-import org.osgi.service.component.ComponentConstants;
-import org.osgi.service.indexer.Builder;
-import org.osgi.service.indexer.Capability;
-import org.osgi.service.indexer.Namespaces;
-import org.osgi.service.indexer.Requirement;
-import org.osgi.service.indexer.Resource;
-import org.osgi.service.indexer.ResourceAnalyzer;
-import org.osgi.service.indexer.impl.types.VersionKey;
-import org.osgi.service.indexer.impl.types.VersionRange;
-import org.osgi.service.log.LogService;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import org.osgi.framework.*;
+import org.osgi.service.component.*;
+import org.osgi.service.indexer.*;
+import org.osgi.service.indexer.impl.types.*;
+import org.osgi.service.log.*;
+import org.xml.sax.*;
+import org.xml.sax.helpers.*;
 
 public class SCRAnalyzer implements ResourceAnalyzer {
 	public static final String NS_1_0 = Namespaces.NS_OSGI + "/scr/v1.0.0";
@@ -124,7 +110,7 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 		private List<Capability> caps;
 		private List<Requirement> reqs;
 
-		private Version highest = null;
+		Version						highest					= null;
 
 		private List<String> provides = null;
 		private List<Requirement> references = null;

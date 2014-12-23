@@ -1,27 +1,16 @@
 package org.osgi.impl.bundle.repoindex.ant;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Task;
-import org.apache.tools.ant.types.FileSet;
-import org.osgi.framework.launch.Framework;
-import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.util.tracker.ServiceTracker;
+import org.apache.tools.ant.*;
+import org.apache.tools.ant.types.*;
+import org.osgi.framework.launch.*;
+import org.osgi.service.indexer.*;
+import org.osgi.util.tracker.*;
 
-import de.kalpatec.pojosr.framework.PojoServiceRegistryFactoryImpl;
-import de.kalpatec.pojosr.framework.launch.ClasspathScanner;
-import de.kalpatec.pojosr.framework.launch.PojoServiceRegistryFactory;
+import de.kalpatec.pojosr.framework.*;
+import de.kalpatec.pojosr.framework.launch.*;
 
 public class RepoIndexTask extends Task {
 
@@ -77,9 +66,10 @@ public class RepoIndexTask extends Task {
 			framework.start();
 
 			// Look for indexer and run index generation
-			ServiceTracker tracker = new ServiceTracker(framework.getBundleContext(), ResourceIndexer.class.getName(), null);
+			ServiceTracker<ResourceIndexer,ResourceIndexer> tracker = new ServiceTracker<ResourceIndexer,ResourceIndexer>(
+					framework.getBundleContext(), ResourceIndexer.class, null);
 			tracker.open();
-			ResourceIndexer index = (ResourceIndexer) tracker.waitForService(1000);
+			ResourceIndexer index = tracker.waitForService(1000);
 			if (index == null)
 				throw new IllegalStateException("Timed out waiting for ResourceIndexer service.");
 

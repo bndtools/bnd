@@ -810,7 +810,9 @@ public class Launcher implements ServiceListener {
 			Class< ? > clazz = loader.loadClass(implementation);
 			FrameworkFactory factory = (FrameworkFactory) clazz.newInstance();
 			trace("Framework factory %s", factory);
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings({
+					"unchecked", "rawtypes"
+			})
 			Map<String,String> configuration = (Map) p;
 			systemBundle = factory.newFramework(configuration);
 			trace("framework instance %s", systemBundle);
