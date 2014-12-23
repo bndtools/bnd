@@ -291,8 +291,12 @@ public class Workspace extends Processor {
 	public Collection<Project> getAllProjects() throws Exception {
 		List<Project> projects = new ArrayList<Project>();
 		for (File file : getBase().listFiles()) {
-			if (new File(file, Project.BNDFILE).isFile())
-				projects.add(getProject(file.getAbsoluteFile().getName()));
+			if (new File(file, Project.BNDFILE).isFile()) {
+				Project p = getProject(file.getAbsoluteFile().getName());
+				if (p != null) {
+					projects.add(p);
+				}
+			}
 		}
 		return projects;
 	}
