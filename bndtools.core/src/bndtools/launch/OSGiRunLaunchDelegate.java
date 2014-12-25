@@ -43,7 +43,6 @@ import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectLauncher.NotificationListener;
 import aQute.bnd.build.ProjectLauncher.NotificationType;
 import aQute.bnd.osgi.Jar;
-import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.launch.util.LaunchUtils;
@@ -179,18 +178,17 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
         super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
     }
 
+    /**
+     * This was first always overriding -runkeep. Now it can only override it if -runkeep is set to false. However, I
+     * think this option should go away in bndtools. Anyway, removed the actual clearing since this was already done in
+     * the launcher.
+     */
     private void configureLauncher(ILaunchConfiguration configuration) throws CoreException {
-        boolean clean = configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
+        if (bndLauncher.isKeep() == false) {
+            boolean clean = configuration.getAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
 
-        if (clean) {
-            File storage = bndLauncher.getStorageDir();
-            if (storage.exists()) {
-                IO.delete(storage);
-            }
+            bndLauncher.setKeep(!clean);
         }
-
-        bndLauncher.setKeep(!clean);
-
         enableTraceOptionIfSetOnConfiguration(configuration, bndLauncher);
     }
 
