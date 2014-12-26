@@ -50,7 +50,7 @@
     <directive name="effective" value="active"/>
   </requirement>
   <requirement namespace="osgi.extender">
-    <directive name="filter" value="(&amp;(osgi.extender=osgi.ds)(version&gt;=1.1.0)(!(version&gt;=2.0.0)))"/>
+    <directive name="filter" value="(&amp;(osgi.extender=osgi.component)(version&gt;=1.1.0)(!(version&gt;=2.0.0)))"/>
     <directive name="effective" value="active"/>
   </requirement>
 </resource>
