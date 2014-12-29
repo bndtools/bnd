@@ -1655,6 +1655,20 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	public boolean dropTarget(URI uri) throws Exception {
 		try {
 			init();
+
+			//
+			// On Linux we seem to get some spurious text. One case it added the
+			// text of the version after the URI. So we remove anything after
+			// the new line
+			//
+
+			String t = uri.toString().trim();
+			int n = t.indexOf('\n');
+			if (n > 0) {
+				uri = new URI(t.substring(0, n));
+				reporter.trace("dropTarget cleaned up from " + t + " to " + uri);
+			}
+
 			reporter.trace("dropTarget " + uri);
 			Matcher m = JPM_REVISION_URL_PATTERN.matcher(uri.toString());
 			if (!m.matches()) {
