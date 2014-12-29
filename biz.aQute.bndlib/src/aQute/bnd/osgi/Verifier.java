@@ -712,7 +712,7 @@ public class Verifier extends Processor {
 				error("osgi.wiring.* namespaces must not be specified with generic requirements/capabilities");
 			}
 
-			verifyAttrs(attrs);
+			verifyAttrs(key, attrs);
 
 			if (attrs.containsKey("mandatory:"))
 				error("mandatory: directive is intended for Capabilities, not Requirement %s", key);
@@ -725,7 +725,7 @@ public class Verifier extends Processor {
 	/**
 	 * @param attrs
 	 */
-	void verifyAttrs(Attrs attrs) {
+	void verifyAttrs(String key, Attrs attrs) {
 		for (String a : attrs.keySet()) {
 			String v = attrs.get(a);
 
@@ -733,7 +733,8 @@ public class Verifier extends Processor {
 				Attrs.Type t = attrs.getType(a);
 				if ("version".equals(a)) {
 					if (t != Attrs.Type.VERSION)
-						error("Version attributes should always be of type version, it is %s", t);
+						error("Version attributes should always be of type version, it is version:%s=%s for %s", t, v,
+								key);
 				} else
 					verifyType(t, v);
 			}
@@ -768,7 +769,7 @@ public class Verifier extends Processor {
 				error("osgi.wiring.* namespaces must not be specified with generic requirements/capabilities");
 			}
 
-			verifyAttrs(attrs);
+			verifyAttrs(key, attrs);
 
 			if (attrs.containsKey("filter:"))
 				error("filter: directive is intended for Requirements, not Capability %s", key);
