@@ -1597,7 +1597,7 @@ public class Analyzer extends Processor {
 								packageRef);
 						continue;
 					}
-					if (!exportAttributes.containsKey(INTERNAL_EXPORTED_DIRECTIVE)) {
+					if (!exportAttributes.containsKey(INTERNAL_EXPORTED_DIRECTIVE) && !exports.containsKey(packageRef)) {
 						warning("'%s' is a private package import from %s", packageRef,
 								exportAttributes.get(INTERNAL_SOURCE_DIRECTIVE));
 						continue;

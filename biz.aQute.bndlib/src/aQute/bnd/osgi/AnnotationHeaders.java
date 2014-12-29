@@ -7,6 +7,7 @@ import aQute.bnd.annotation.headers.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 import aQute.lib.strings.*;
 
@@ -275,7 +276,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		
 		Parameters p = new Parameters();
 		Attrs attrs = getAttributes(a, "ns");
-		directives(attrs, "uses", "mandatory", "effective");
+		directivesAndVersion(attrs, "uses", "mandatory", "effective");
 		p.put(annotation.ns(), attrs);
 		
 		String value = attrs.remove("name");
@@ -296,7 +297,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		RequireCapability annotation = a.getAnnotation(RequireCapability.class);
 		Parameters p = new Parameters();
 		Attrs attrs = getAttributes(a, "ns");
-		directives(attrs, "filter", "effective", "resolution");
+		directivesAndVersion(attrs, "filter", "effective", "resolution");
 		
 		p.put(annotation.ns(), attrs );
 
@@ -318,12 +319,17 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		add(Constants.BUNDLE_LICENSE, p.toString());
 	}
 
-	private void directives(Attrs attrs, String ... directives) {
+	private void directivesAndVersion(Attrs attrs, String ... directives) {
 		for ( String directive : directives ) {
 			String s = attrs.remove(directive);
 			if ( s != null) {
 				attrs.put(directive+":", s);
 			}
+		}
+
+		String remove = attrs.remove(Constants.VERSION_ATTRIBUTE);
+		if (remove != null) {
+			attrs.putTyped("version", Version.parseVersion(remove));
 		}
 	}
 

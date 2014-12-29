@@ -21,7 +21,31 @@ public class BuilderTest extends BndTestCase {
 	 * Warn about imports to private imports
 	 */
 	
+	public void testWarnAboutPrivateImportsFromExport() throws Exception {
+		Builder p3 = setupP3();
+		p3.setExportPackage("test.activator;version=2");
+		p3.setPrivatePackage("test.activator.inherits");
+		p3.build();
+		assertTrue(p3.check("Import package org\\.osgi\\..* not found in any bundle "));
+		
+		p3.getJar().getManifest().write(System.out);
+	}
+	
+	/*
+	 * Warn about imports to private imports
+	 */
+	
 	public void testWarnAboutPrivateImports() throws Exception {
+		Builder p3 = setupP3();
+		p3.setExportPackage("test.activator.inherits;version=1");
+		p3.build();
+		assertTrue(p3.check("'test.activator' is a private package import from p1-1.2.3"));
+		
+		p3.getJar().getManifest().write(System.out);
+	}
+	
+	
+	private Builder setupP3() throws Exception {
 		Builder p1 = new Builder();
 		p1.setProperty("Bundle-SymbolicName", "p1");
 		p1.setProperty("Bundle-Version", "1.2.3");
@@ -37,20 +61,16 @@ public class BuilderTest extends BndTestCase {
 		p2.addClasspath(new File("bin"));
 		p2.build();
 		assertTrue(p2.check());
-		
+				
 		Builder p3 = new Builder();
-		p1.setProperty("Bundle-SymbolicName", "p3");
+		p3.setProperty("Bundle-SymbolicName", "p3");
 		p3.setProperty("-check", "ALL");
-		p3.setExportPackage("test.activator.inherits;version=1, not.exist");
 		p3.addClasspath(p1.getJar());
 		p3.addClasspath(p2.getJar());
-		p3.build();
-		assertTrue(p3.check("'test.activator' is a private package import from p1-1.2.3", "Exporting an empty package 'not\\.exist'"));
-		
-		p3.getJar().getManifest().write(System.out);
+		return p3;
 	}
-	
-	
+
+
 	/**
 	 * #708 if a bundle has a.b.c but imports a.b then bnd cannot find the version of
 	 * a.b because the scanning of a.b.c already has set the information for a.b

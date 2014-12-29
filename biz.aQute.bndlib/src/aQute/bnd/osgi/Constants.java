@@ -86,6 +86,7 @@ public interface Constants {
 	@Deprecated
 	String							BUILDPACKAGES								= "-buildpackages";
 	String							BUMPPOLICY									= "-bumppolicy";
+	String							CHECK										= "-check";
 	String							CONDUIT										= "-conduit";
 	String							CONTRACT									= "-contract";
 	@Deprecated
@@ -221,7 +222,8 @@ public interface Constants {
 			SNAPSHOT, NAMESECTION, DIGESTS, DSANNOTATIONS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES,
 			JAVAAGENT, STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI,
 			PREPROCESSMATCHERS, UPTO, INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE,
-			OUTPUTMASK, TESTUNRESOLVED, RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT, BNDDRIVER
+			OUTPUTMASK, TESTUNRESOLVED, RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT, BNDDRIVER,
+			CHECK
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make
