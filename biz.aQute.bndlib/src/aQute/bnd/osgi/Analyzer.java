@@ -3093,8 +3093,9 @@ public class Analyzer extends Processor {
 	 * to get provider compatibility.
 	 * 
 	 * <pre>
-	 * ${frange;1.2.3}             -> (&(version>=1.2.3)(!(version>=1.3.0))
-	 * ${frange;1.2.3, true}       -> (&(version>=1.2.3)(!(version>=2.0.0))
+	 * ${frange;1.2.3}             -> (&(version>=1.2.3)(!(version>=2.0.0))
+	 * ${frange;1.2.3, true}       -> (&(version>=1.2.3)(!(version>=1.3.0))
+	 * ${frange;[1.2.3,2.3.4)}       -> (&(version>=1.2.3)(!(version>=2.3.4))
 	 * </pre>
 	 */
 	public String _frange(String[] args) {
@@ -3104,26 +3105,22 @@ public class Analyzer extends Processor {
 		}
 
 		String v = args[1];
-		if (!Verifier.isVersion(v)) {
-			error("Invalid version arg %s", v);
+		boolean isProvider = args.length == 3 && isTrue(args[2]);
+		VersionRange vr;
+
+		if (Verifier.isVersion(v)) {
+			Version l = new Version(v);
+			Version h = isProvider ? new Version(l.getMajor(), l.getMinor() + 1, 0) : new Version(l.getMajor() + 1, 0,
+					0);
+			vr = new VersionRange(true, l, h, false);
+		} else if (Verifier.isVersionRange(v)) {
+			vr = new VersionRange(v);
+		} else {
+			error("The _frange parameter %s is neither a version nor a version range", v);
 			return null;
 		}
 
-		boolean isProvider = false;
-		if (args.length == 3)
-			isProvider = Processor.isTrue(args[2]);
-
-		Version low = new Version(v);
-		Version high;
-		if (isProvider)
-			high = new Version(low.getMajor(), low.getMinor() + 1, 0);
-		else
-			high = new Version(low.getMajor() + 1, 0, 0);
-
-		StringBuilder sb = new StringBuilder("(&(version>=").append(low.getWithoutQualifier()).append(")");
-		sb.append("(!(version>=").append(high.getWithoutQualifier()).append(")))");
-
-		return sb.toString();
+		return vr.toFilter();
 	}
 
 	/**
