@@ -5,6 +5,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -20,7 +21,14 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
+import bndtools.Plugin;
+
 public class ExecutableJarWizardPage extends WizardPage {
+
+    private static final String PREF_PREFIX = "lastExecExport.";
+    private static final String PREF_LAST_EXPORT_IS_FOLDER = PREF_PREFIX + "isFolder";
+    private static final String PREF_LAST_EXPORT_JAR_PATH = PREF_PREFIX + "jarPath";
+    private static final String PREF_LAST_EXPORT_FOLDER_PATH = PREF_PREFIX + "folderPath";
 
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
@@ -46,9 +54,10 @@ public class ExecutableJarWizardPage extends WizardPage {
 
     /**
      * Create contents of the wizard.
-     * 
+     *
      * @param parent
      */
+    @Override
     public void createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NULL);
 
@@ -94,10 +103,12 @@ public class ExecutableJarWizardPage extends WizardPage {
             }
         });
 
+        loadLastExport();
         updateEnablement();
         validate();
 
         Listener listener = new Listener() {
+            @Override
             public void handleEvent(Event event) {
                 jar = btnJar.getSelection();
                 jarPath = txtJarPath.getText();
@@ -132,6 +143,26 @@ public class ExecutableJarWizardPage extends WizardPage {
         });
     }
 
+    private void loadLastExport() {
+        IPreferenceStore prefs = Plugin.getDefault().getPreferenceStore();
+        folder = prefs.getBoolean(PREF_LAST_EXPORT_IS_FOLDER);
+
+        jarPath = prefs.getString(PREF_LAST_EXPORT_JAR_PATH);
+        if (jarPath != null)
+            txtJarPath.setText(jarPath);
+
+        folderPath = prefs.getString(PREF_LAST_EXPORT_FOLDER_PATH);
+        if (folderPath != null)
+            txtFolderPath.setText(folderPath);
+    }
+
+    void saveLastExport() {
+        IPreferenceStore prefs = Plugin.getDefault().getPreferenceStore();
+        prefs.setValue(PREF_LAST_EXPORT_IS_FOLDER, folder);
+        prefs.setValue(PREF_LAST_EXPORT_JAR_PATH, jarPath);
+        prefs.setValue(PREF_LAST_EXPORT_FOLDER_PATH, folderPath);
+    }
+
     private void updateEnablement() {
         txtFolderPath.setEnabled(folder);
         btnBrowseFolder.setEnabled(folder);
@@ -155,10 +186,10 @@ public class ExecutableJarWizardPage extends WizardPage {
         } else {
             File file = new File(path);
             if (file.exists()) {
-                if (folder && !file.isDirectory()) {
+                if (folder) {
                     valid = false;
-                    error = "Path already exists and is not a directory: " + path;
-                } else if (!folder && !file.isFile()) {
+                    error = "Path already exists, will not overwrite: " + path;
+                } else if (!file.isFile()) {
                     valid = false;
                     error = "Path already exists and is not a plain file: " + path;
                 } else {

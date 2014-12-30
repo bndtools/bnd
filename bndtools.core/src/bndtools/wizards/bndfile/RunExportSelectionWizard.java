@@ -13,6 +13,7 @@ public class RunExportSelectionWizard extends Wizard {
     public RunExportSelectionWizard(IConfigurationElement[] configElems, BndEditModel model, Project bndProject) {
         selectionPage = new RunExportSelectionPage("selection", configElems, model, bndProject);
         setForcePreviousAndNextButtons(true);
+        setNeedsProgressMonitor(true);
 
         addPage(selectionPage);
     }
