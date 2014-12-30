@@ -234,7 +234,7 @@ public class AnalyseBundleResolutionJob extends Job {
         String providesStr = attribs.getValue(Constants.PROVIDE_CAPABILITY);
         Parameters provides = new Parameters(providesStr);
         for (Entry<String,Attrs> entry : provides.entrySet()) {
-            String ns = entry.getKey();
+            String ns = Processor.removeDuplicateMarker(entry.getKey());
             Attrs attrs = entry.getValue();
 
             CapReqBuilder cb = new CapReqBuilder(ns);
