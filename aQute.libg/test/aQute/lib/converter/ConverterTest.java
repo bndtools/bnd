@@ -3,6 +3,7 @@ package aQute.lib.converter;
 import java.io.*;
 import java.lang.reflect.*;
 import java.math.*;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -443,5 +444,17 @@ public class ConverterTest extends TestCase {
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigDecimal[] {
 				new BigDecimal(1)
 			}));
+	}
+
+	public void testURIs() throws Exception {
+		URI expected = new URI("https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0");
+		assertEquals(expected,
+			Converter.cnv(URI.class,"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0"));
+		assertEquals(expected,
+			Converter.cnv(URI.class,"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\n"));
+		assertEquals(expected,
+			Converter.cnv(URI.class,"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\n1.3.1"));
+		assertEquals(expected,
+			Converter.cnv(URI.class,"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\r\n1.3.1"));
 	}
 }
