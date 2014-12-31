@@ -329,6 +329,8 @@ public class Launcher implements ServiceListener {
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
 				+ Callable.class.getName() + "))(main.thread=true))");
 
+		int result = LauncherConstants.OK;
+
 		// Start embedded activators
 		trace("start embedded activators");
 		if (parms.activators != null) {
@@ -337,6 +339,9 @@ public class Launcher implements ServiceListener {
 				try {
 					Class< ? > clazz = loader.loadClass((String) token);
 					BundleActivator activator = (BundleActivator) clazz.newInstance();
+					if (isImmediate(activator)) {
+						start(systemContext, result, activator);
+					}
 					embedded.add(activator);
 					trace("adding activator %s", activator);
 				}
@@ -352,17 +357,33 @@ public class Launcher implements ServiceListener {
 			report(out);
 		}
 
-		int result = LauncherConstants.OK;
 		for (BundleActivator activator : embedded)
-			try {
-				trace("starting activator %s", activator);
-				activator.start(systemContext);
-			}
-			catch (Exception e) {
-				error("Starting activator %s : %s", activator, e);
-				result = LauncherConstants.ERROR;
-			}
+			if (!isImmediate(activator))
+				result = start(systemContext, result, activator);
 
+		return result;
+	}
+
+	private boolean isImmediate(BundleActivator activator) {
+		try {
+			Field f = activator.getClass().getField("IMMEDIATE");
+
+			return f.getBoolean(activator);
+		}
+		catch (Exception e) {
+			return false;
+		}
+	}
+
+	private int start(BundleContext systemContext, int result, BundleActivator activator) {
+		try {
+			trace("starting activator %s", activator);
+			activator.start(systemContext);
+		}
+		catch (Exception e) {
+			error("Starting activator %s : %s", activator, e);
+			result = LauncherConstants.ERROR;
+		}
 		return result;
 	}
 
