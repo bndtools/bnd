@@ -12,8 +12,7 @@
 <title>_PROJECT_</title>
 
 <link rel="stylesheet" type="text/css"
-	href="/twitter/bootstrap/3/css/bootstrap.css">
-<link href="/_pid_/css/style.css" rel="stylesheet">
+	href="/osgi.enroute.webresource/${bsn}/${Bundle-Version}/*.css">
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
@@ -29,7 +28,7 @@
 		
 		<div class="header">
 			<ul class="nav nav-pills pull-right">
-				<li ng-class="{active: page() == '/'}"><a href="#">Home</a></li>
+				<li ng-class="{active: page() == '/'}"><a href="#/">Home</a></li>
 				<li ng-class="{active: page() == '/about'}"><a href="#/about">About</a></li>
 			</ul>
 			<h3 class="text-muted">_stem_</h3>
@@ -48,10 +47,7 @@
 
 	</div>
 
-	<script src="/google/angular/1/angular.js"></script>
-	<script src="/google/angular/1/angular-route.js"></script>
-	<script src="/google/angular/1/angular-resource.js"></script>
-	<script src="/_pid_/main/main.js"></script>
+	<script src="/osgi.enroute.webresource/${bsn}/${Bundle-Version}/*.js"></script>
 
 </body>
 </html>

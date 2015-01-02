@@ -16,9 +16,11 @@ Private-Package:  \
 -includeresource: \
 	{readme.md}, \
 	{configuration=configuration}, \
-	{static=static}
+	{static=static}, \
+	web=web
 
--buildpath:  \
+-buildpath: \
 	osgi.enroute.base.api,\
-	osgi.enroute.logger.simple.provider
+	osgi.enroute.logger.simple.provider,\
+	osgi.enroute.web.simple.provider;version=1.2
 	
