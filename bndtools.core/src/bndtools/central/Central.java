@@ -434,6 +434,17 @@ public class Central implements IStartupParticipant {
         return result;
     }
 
+    public static IPath toPathMustBeInEclipseWorkspace(File file) throws Exception {
+        IPath result = null;
+        File absolute = file.getCanonicalFile();
+        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+        IFile[] candidates = wsroot.findFilesForLocationURI(absolute.toURI());
+        if (candidates != null && candidates.length > 0) {
+            result = candidates[0].getFullPath();
+        }
+        return result;
+    }
+
     public static void refresh(IPath path) {
         try {
             IResource r = ResourcesPlugin.getWorkspace().getRoot().findMember(path);

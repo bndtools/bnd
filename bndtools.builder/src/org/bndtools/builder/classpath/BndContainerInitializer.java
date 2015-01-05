@@ -217,6 +217,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
         }
 
+        List<File> filesToRefresh = new ArrayList<File>();
+
         for (Container c : containers) {
             IClasspathEntry cpe;
 
@@ -246,6 +248,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 IPath p = null;
                 try {
                     p = fileToPath(file);
+                    filesToRefresh.add(file);
                 } catch (Exception e) {
                     errors.add(String.format("Failed to convert file %s to Eclipse path: %s: %s", file, e.getClass().getName(), e.getMessage()));
                 }
@@ -271,6 +274,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 errors.add(c.getError());
             }
         }
+
+        // Refresh once, instead of for each dependent project.
+        RefreshFileJob refreshJob = new RefreshFileJob(filesToRefresh, false, javaProject.getProject());
+        if (refreshJob.needsToSchedule())
+            refreshJob.schedule(100);
 
         errors.addAll(model.getErrors());
 
@@ -392,11 +400,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         IPath path = Central.toPath(file);
         if (path == null)
             path = Path.fromOSString(file.getAbsolutePath());
-
-        RefreshFileJob refreshJob = new RefreshFileJob(file, false);
-        if (refreshJob.needsToSchedule())
-            refreshJob.schedule(100);
-
         return path;
     }
 }
