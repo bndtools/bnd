@@ -1,5 +1,7 @@
 package aQute.bnd.indexer.analyzers;
 
+import java.util.regex.*;
+
 import javax.xml.parsers.*;
 
 import org.osgi.resource.*;
@@ -16,9 +18,12 @@ import aQute.bnd.version.*;
 import aQute.libg.glob.*;
 
 public class SCRAnalyzer implements ResourceAnalyzer {
-	public static final String	NS_1_0	= Namespaces.NS_OSGI + "/scr/v1.0.0";
-	public static final String	NS_1_1	= Namespaces.NS_OSGI + "/scr/v1.1.0";
-	public static final String	NS_1_2	= Namespaces.NS_OSGI + "/scr/v1.2.0";
+	static final Pattern		URI_VERSION_P	= Pattern.compile("/scr/v(.*)$");
+	public static final String	NS_1_0			= Namespaces.NS_OSGI + "/scr/v1.0.0";
+	public static final String	NS_1_1			= Namespaces.NS_OSGI + "/scr/v1.1.0";
+	public static final String	NS_1_2			= Namespaces.NS_OSGI + "/scr/v1.2.0";
+	public static final String	NS_1_2_1		= Namespaces.NS_OSGI + "/scr/v1.2.1";
+	public static final String	NS_1_3			= Namespaces.NS_OSGI + "/scr/v1.3.0";
 
 	public void analyzeResource(Jar resource, ResourceBuilder rb) throws Exception {
 		String header = resource.getManifest().getMainAttributes().getValue(ComponentConstants.SERVICE_COMPONENT);
@@ -93,12 +98,34 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 					setVersion(new Version(1, 0, 0));
 				}
 			} else {
-				if (NS_1_2.equals(uri))
+				if (NS_1_3.equals(uri))
+					setVersion(new Version(1, 3, 0));
+				else if (NS_1_2_1.equals(uri))
+					setVersion(new Version(1, 2, 1));
+				else if (NS_1_2.equals(uri))
 					setVersion(new Version(1, 2, 0));
 				else if (NS_1_1.equals(uri))
 					setVersion(new Version(1, 1, 0));
 				else if (NS_1_0.equals(uri))
 					setVersion(new Version(1, 0, 0));
+				else {
+
+					//
+					// Actually, we do not care that match
+					// since we just create a dependency on that
+					// version. So lets parse the version out of the
+					// URI assuming the URI will look similar in the future,
+					// which is a realistic expectation. If the syntax
+					// does not match, too bad.
+					//
+
+					Matcher m = URI_VERSION_P.matcher(uri);
+					if (m.find()) {
+						String v = m.group(1);
+						if (Verifier.VERSION_P.matcher(v).matches())
+							setVersion(new Version(v));
+					}
+				}
 			}
 		}
 

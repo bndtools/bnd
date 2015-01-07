@@ -2,6 +2,7 @@ package aQute.bnd.osgi;
 
 import java.util.*;
 
+import aQute.bnd.annotation.*;
 import aQute.libg.generics.*;
 
 public class Descriptors {
@@ -37,8 +38,11 @@ public class Descriptors {
 		packageCache.put("", DEFAULT_PACKAGE);
 	}
 
+	@ProviderType
 	public interface TypeRef extends Comparable<TypeRef> {
 		String getBinary();
+
+		String getShorterName();
 
 		String getFQN();
 
@@ -214,6 +218,16 @@ public class Descriptors {
 			return binaryName.substring(n + 1);
 		}
 
+		@Override
+		public String getShorterName() {
+			String name = getShortName();
+			int n = name.indexOf('$');
+			if (n <= 0)
+				return name;
+
+			return name.substring(n + 1);
+		}
+
 		public boolean isJava() {
 			return packageRef.isJava();
 		}
@@ -324,6 +338,16 @@ public class Descriptors {
 		@Override
 		public int hashCode() {
 			return super.hashCode();
+		}
+
+		@Override
+		public String getShorterName() {
+			String name = getShortName();
+			int n = name.indexOf('$');
+			if (n <= 0)
+				return name;
+
+			return name.substring(n + 1);
 		}
 
 	}
