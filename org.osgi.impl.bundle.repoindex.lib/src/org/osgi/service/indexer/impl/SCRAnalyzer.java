@@ -4,6 +4,7 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.regex.*;
 
 import javax.xml.parsers.*;
 
@@ -16,24 +17,27 @@ import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
 public class SCRAnalyzer implements ResourceAnalyzer {
-	public static final String NS_1_0 = Namespaces.NS_OSGI + "/scr/v1.0.0";
-	public static final String NS_1_1 = Namespaces.NS_OSGI + "/scr/v1.1.0";
-	public static final String NS_1_2 = Namespaces.NS_OSGI + "/scr/v1.2.0";
+	static final Pattern		URI_VERSION_P		= Pattern.compile("/scr/v(\\d+\\.\\d+\\.\\d+)$");
+	public static final String	NS_1_0				= Namespaces.NS_OSGI + "/scr/v1.0.0";
+	public static final String	NS_1_1				= Namespaces.NS_OSGI + "/scr/v1.1.0";
+	public static final String	NS_1_2				= Namespaces.NS_OSGI + "/scr/v1.2.0";
+	public static final String	NS_1_2_1			= Namespaces.NS_OSGI + "/scr/v1.2.1";
+	public static final String	NS_1_3				= Namespaces.NS_OSGI + "/scr/v1.3.0";
 
-	public static final String ELEMENT_COMPONENT = "component";
-	public static final String ELEMENT_SERVICE = "service";
-	public static final String ELEMENT_PROVIDE = "provide";
-	public static final String ELEMENT_REFERENCE = "reference";
-	public static final String ELEMENT_PROPERTY = "property";
+	public static final String	ELEMENT_COMPONENT	= "component";
+	public static final String	ELEMENT_SERVICE		= "service";
+	public static final String	ELEMENT_PROVIDE		= "provide";
+	public static final String	ELEMENT_REFERENCE	= "reference";
+	public static final String	ELEMENT_PROPERTY	= "property";
 
-	public static final String ATTRIB_INTERFACE = "interface";
-	public static final String ATTRIB_CARDINALITY = "cardinality";
-	public static final String ATTRIB_NAME = "name";
-	public static final String ATTRIB_TYPE = "type";
-	public static final String ATTRIB_VALUE = "value";
-	public static final String ATTRIB_TARGET = "target";
+	public static final String	ATTRIB_INTERFACE	= "interface";
+	public static final String	ATTRIB_CARDINALITY	= "cardinality";
+	public static final String	ATTRIB_NAME			= "name";
+	public static final String	ATTRIB_TYPE			= "type";
+	public static final String	ATTRIB_VALUE		= "value";
+	public static final String	ATTRIB_TARGET		= "target";
 
-	private LogService log;
+	private LogService			log;
 
 	public SCRAnalyzer(LogService log) {
 		this.log = log;
@@ -65,13 +69,15 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 		}
 	}
 
-	private Version processScrXml(Resource resource, String path, List<Capability> caps, List<Requirement> reqs) throws IOException {
+	private Version processScrXml(Resource resource, String path, List<Capability> caps, List<Requirement> reqs)
+			throws IOException {
 		Resource childResource = resource.getChild(path);
 		if (childResource == null) {
 			if (log != null)
 				log.log(LogService.LOG_WARNING,
-						MessageFormat.format("Cannot analyse SCR requirement version: resource {0} does not contain path {1} referred from Service-Component header.",
-								resource.getLocation(), path));
+						MessageFormat
+								.format("Cannot analyse SCR requirement version: resource {0} does not contain path {1} referred from Service-Component header.",
+										resource.getLocation(), path));
 			return null;
 		}
 
@@ -84,9 +90,12 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 			parser.parse(childResource.getStream(), handler);
 
 			return handler.highest;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			if (log != null)
-				log.log(LogService.LOG_ERROR, MessageFormat.format("Processing error: failed to parse child resource {0} in resource {1}.", path, resource.getLocation()), e);
+				log.log(LogService.LOG_ERROR, MessageFormat.format(
+						"Processing error: failed to parse child resource {0} in resource {1}.", path,
+						resource.getLocation()), e);
 			return null;
 		}
 	}
@@ -101,25 +110,26 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 		Util.addVersionFilter(filter, range, VersionKey.PackageVersion);
 		filter.append(')');
 
-		builder.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString()).addDirective(Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
+		builder.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString()).addDirective(
+				Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
 		Requirement requirement = builder.buildRequirement();
 		return requirement;
 	}
 
 	private static class SCRContentHandler extends DefaultHandler {
-		private List<Capability> caps;
-		private List<Requirement> reqs;
+		private List<Capability>	caps;
+		private List<Requirement>	reqs;
 
 		Version						highest					= null;
 
-		private List<String> provides = null;
-		private List<Requirement> references = null;
+		private List<String>		provides				= null;
+		private List<Requirement>	references				= null;
 
-		private Map<String, Object> properties = null;
-		private String currentPropertyName = null;
-		private String currentPropertyType = null;
-		private String currentPropertyAttrib = null;
-		private StringBuilder currentPropertyText = null;
+		private Map<String,Object>	properties				= null;
+		private String				currentPropertyName		= null;
+		private String				currentPropertyType		= null;
+		private String				currentPropertyAttrib	= null;
+		private StringBuilder		currentPropertyText		= null;
 
 		public SCRContentHandler(List<Capability> caps, List<Requirement> reqs) {
 			super();
@@ -134,19 +144,27 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 			String localNameLowerCase = localName.toLowerCase();
 			if (ELEMENT_COMPONENT.equals(localNameLowerCase)) {
 				provides = new LinkedList<String>();
-				properties = new LinkedHashMap<String, Object>();
+				properties = new LinkedHashMap<String,Object>();
 				references = new LinkedList<Requirement>();
 
 				if (uri == null || "".equals(uri)) {
 					setVersion(new Version(1, 0, 0));
 				} else {
-					if (NS_1_2.equals(uri))
-						setVersion(new Version(1, 2, 0));
-					else if (NS_1_1.equals(uri))
-						setVersion(new Version(1, 1, 0));
-					else if (NS_1_0.equals(uri))
-						setVersion(new Version(1, 0, 0));
-					else
+					//
+					// Actually, we do not care that match
+					// since we just create a dependency on that
+					// version. So lets parse the version out of the
+					// URI assuming the URI will look similar in the future,
+					// which is a realistic expectation. If the syntax
+					// does not match, too bad.
+					//
+
+					Matcher m = URI_VERSION_P.matcher(uri);
+
+					if (m.find()) {
+						String v = m.group(1);
+						setVersion(new Version(v));
+					} else
 						throw new SAXException("Unknown namespace " + uri);
 				}
 			}
@@ -211,7 +229,7 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 				if (provides != null && !provides.isEmpty()) {
 					Builder builder = new Builder().setNamespace(Namespaces.NS_SERVICE);
 					builder.addAttribute(Constants.OBJECTCLASS, provides);
-					for (Entry<String, Object> entry : properties.entrySet()) {
+					for (Entry<String,Object> entry : properties.entrySet()) {
 						builder.addAttribute(entry.getKey(), entry.getValue());
 					}
 
@@ -278,8 +296,8 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 		}
 
 		private static Object readTyped(String type, String string) {
-			if (Long.class.getSimpleName().equals(type) || Integer.class.getSimpleName().equals(type) || Short.class.getSimpleName().equals(type)
-					|| Byte.class.getSimpleName().equals(type))
+			if (Long.class.getSimpleName().equals(type) || Integer.class.getSimpleName().equals(type)
+					|| Short.class.getSimpleName().equals(type) || Byte.class.getSimpleName().equals(type))
 				return Long.parseLong(string);
 
 			if (Float.class.getSimpleName().equals(type) || Double.class.getSimpleName().equals(type))
