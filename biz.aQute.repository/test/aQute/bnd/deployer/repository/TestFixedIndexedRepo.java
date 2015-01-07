@@ -50,6 +50,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		repo.setReporter(reporter);
 
 		List<String> bsns = repo.list(null);
+		Collections.sort(bsns);
 		assertEquals(2, bsns.size());
 		assertEquals("org.example.c", bsns.get(0));
 		assertEquals("org.example.f", bsns.get(1));

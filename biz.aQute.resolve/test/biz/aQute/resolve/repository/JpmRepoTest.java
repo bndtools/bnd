@@ -63,7 +63,7 @@ public class JpmRepoTest extends TestCase {
 		model.setRunFw("org.apache.felix.framework");
 
 		List<Requirement> requires = new ArrayList<Requirement>();
-		CapReqBuilder capReq = CapReqBuilder.createSimpleRequirement("osgi.extender", "osgi.ds", "[1.1,2)");
+		CapReqBuilder capReq = CapReqBuilder.createSimpleRequirement("osgi.extender", "osgi.component", "[1.1,2)");
 		requires.add(capReq.buildSyntheticRequirement());
 
 		Map<Requirement,Collection<Capability>> shell = repo.findProviders(requires);

@@ -12,11 +12,8 @@ Bundle-Activator: org.osgi.service.indexer.osgi.Activator
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 
 # We embed org.osgi.framework so that our use of Filter resolves when running under plain Java...
-Private-Package:\
+Private-Package: \
 	org.osgi.framework,\
-	org.osgi.service.indexer.impl,\
-	org.osgi.service.indexer.impl.types,\
-	org.osgi.service.indexer.impl.util,\
 	org.osgi.service.indexer.osgi
 
 # ... but although org.osgi.framework is embedded, we must import it from the  actual framework
@@ -27,6 +24,9 @@ Import-Package:\
 	*
 
 # Export the indexer package. Also export the log service.
-Export-Package:\
+Export-Package: \
 	org.osgi.service.indexer,\
-	org.osgi.service.log
+	org.osgi.service.log,\
+	org.osgi.service.indexer.impl,\
+	org.osgi.service.indexer.impl.types,\
+	org.osgi.service.indexer.impl.util
