@@ -2,6 +2,7 @@ package test.component;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.*;
 
 import javax.xml.xpath.*;
 
@@ -13,12 +14,75 @@ import org.osgi.service.log.*;
 import aQute.bnd.component.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
+import aQute.lib.io.*;
+import aQute.service.reporter.Report.Location;
 
 /**
  * #118
  */
 @SuppressWarnings("resource")
 public class DSAnnotationTest extends BndTestCase {
+
+	/**
+	 * Property test
+	 */
+
+	@Component()
+	public static class ValidNSVersion {
+
+	}
+
+	public static void testValidNamespaceVersion() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.*ValidNSVersion");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+		b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+		Jar jar = b.build();
+
+		if (!b.check())
+			fail();
+
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ValidNSVersion.xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+	}
+
+	@Component()
+	public static class InvalidNSVersion {
+
+		@Reference
+		void setX(String s, ServiceReference< ? > ref) {}
+	}
+
+	public static void testInvalidNamespaceVersion() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.*InvalidNSVersion");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+		b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+		Jar jar = b.build();
+
+		String string = b.getErrors().get(0);
+		assertNotNull(string);
+		Location location = b.getLocation(string);
+		assertNotNull(location);
+		assertNotNull(location.file);
+
+		File f = IO.getFile(location.file);
+		assertTrue(f.isFile());
+
+		assertTrue(location.line > 20);
+		if (!b.check(Pattern
+				.quote("Generating XML for test.component.DSAnnotationTest$InvalidNSVersion in type test.component.DSAnnotationTest$InvalidNSVersion that uses a namespace version 1.3.0 while you are building against 1.0.0")))
+			fail();
+
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$InvalidNSVersion.xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+	}
 
 	/**
 	 * Property test

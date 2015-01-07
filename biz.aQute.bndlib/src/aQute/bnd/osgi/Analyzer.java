@@ -3173,4 +3173,54 @@ public class Analyzer extends Processor {
 		return checks.contains(key) || checks.contains(Check.ALL);
 	}
 
+	/**
+	 * Find the source file for this type
+	 * 
+	 * @param type
+	 * @return
+	 * @throws Exception
+	 */
+	public String getSourceFileFor(TypeRef type) throws Exception {
+		Clazz clazz = findClass(type);
+		if (clazz == null) {
+			Attrs attrs = classpathExports.get(type.getPackageRef());
+			String from = attrs.get(Constants.FROM_DIRECTIVE);
+			if (from != null) {
+				return from;
+			}
+			return null;
+		}
+
+
+		String path = getProperty("src", "src") + "/" + type.getPackageRef().getPath() + "/" + clazz.sourceFile;
+		if (getPropertiesFile() != null) {
+			path = getPropertiesFile().getParentFile().getAbsolutePath().replace(File.separatorChar, '/') + "/"
+					+ path;
+		}
+		return path;
+	}
+
+	/**
+	 * Set location information for a type.
+	 */
+
+	public void setTypeLocation(SetLocation location, TypeRef type) throws Exception {
+		String sf = getSourceFileFor(type);
+		if (sf != null) {
+			File sff = IO.getFile(sf);
+			if (sff != null) {
+				String names[] = {
+						type.getShorterName(), type.getFQN(), type.getShortName().replace('$', '.')
+				};
+				for (String name : names) {
+					FileLine fl = Processor.findHeader(sff,
+							Pattern.compile("(class|interface)\\s*" + name, Pattern.DOTALL));
+					if (fl != null)
+						fl.set(location);
+				}
+			}
+			location.file(sf);
+		}
+	}
+
 }
