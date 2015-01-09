@@ -1,35 +1,25 @@
 package aQute.launcher.plugin;
 
-import java.io.*;
-
 import junit.framework.*;
 import aQute.bnd.build.*;
 import aQute.lib.io.*;
 
 public class ProjectLaunchImplTest extends TestCase {
 
-	private static void reallyClean(Workspace ws) throws Exception {
+	private Workspace	ws;
+
+	protected void setUp() throws Exception {
+		ws = new Workspace(IO.getFile("test/ws"));
+	}
+
+	protected void tearDown() throws Exception {
 		for (Project project : ws.getAllProjects()) {
 			project.clean();
-
-			File target = project.getTargetDir();
-			if (target.isDirectory() && target.getParentFile() != null) {
-				IO.delete(target);
-			}
-			File output = project.getSrcOutput().getAbsoluteFile();
-			if (output.isDirectory() && output.getParentFile() != null) {
-				IO.delete(output);
-			}
 		}
 		IO.delete(ws.getFile("cnf/cache"));
 	}
 
-	public void tearDown() throws Exception {
-		reallyClean(new Workspace(IO.getFile("test/ws")));
-	}
-
-	public static void testParseSystemCapabilities() throws Exception {
-		Workspace ws = Workspace.getWorkspace(IO.getFile("test/ws"));
+	public void testParseSystemCapabilities() throws Exception {
 		Project project = ws.getProject("p1");
 		project.prepare();
 		String systemCaps = null;
@@ -50,7 +40,6 @@ public class ProjectLaunchImplTest extends TestCase {
 	}
 
 	public void testCwdIsProjectBase() throws Exception {
-		Workspace ws = Workspace.getWorkspace(IO.getFile("test/ws"));
 		Project project = ws.getProject("p1");
 		project.prepare();
 		assertEquals(project.getBase(), new ProjectLauncherImpl(project).getCwd());
