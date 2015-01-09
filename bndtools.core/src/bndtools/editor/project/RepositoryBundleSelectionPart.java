@@ -294,7 +294,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
             private boolean handleURLDrop(String urlStr) {
                 try {
-                    URI uri = new URI(urlStr);
+                    URI uri = new URI(sanitizeUrl(urlStr));
                     AddJpmDependenciesWizard wizard = new AddJpmDependenciesWizard(uri);
                     WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
                     if (dialog.open() == Window.OK) {
@@ -315,6 +315,13 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
                     MessageDialog.openError(getSection().getShell(), "Error", "The dropped URL was invalid: " + urlStr);
                     return false;
                 }
+            }
+
+            private String sanitizeUrl(String urlStr) {
+                int newline = urlStr.indexOf('\n');
+                if (newline > -1)
+                    return urlStr.substring(0, newline).trim();
+                return urlStr;
             }
 
             private void handleAdd(Collection<VersionedClause> newClauses) {
