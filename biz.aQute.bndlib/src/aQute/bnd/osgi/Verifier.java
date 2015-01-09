@@ -489,7 +489,7 @@ public class Verifier extends Processor {
 		verifyDirectives(Constants.REQUIRE_BUNDLE, "visibility:|resolution:", SYMBOLICNAME, "bsn");
 		verifyDirectives(Constants.FRAGMENT_HOST, "extension:", SYMBOLICNAME, "bsn");
 		verifyDirectives(Constants.PROVIDE_CAPABILITY, "effective:|uses:", null, null);
-		verifyDirectives(Constants.REQUIRE_CAPABILITY, "effective:|resolution:|filter:", null, null);
+		verifyDirectives(Constants.REQUIRE_CAPABILITY, "effective:|resolution:|filter:|cardinality:", null, null);
 		verifyDirectives(Constants.BUNDLE_SYMBOLICNAME, "singleton:|fragment-attachment:|mandatory:", SYMBOLICNAME, "bsn");
 
 		verifyManifestFirst();

@@ -1,6 +1,7 @@
 package aQute.lib.converter;
 
 import java.lang.reflect.*;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.*;
@@ -202,6 +203,9 @@ public class Converter {
 			if (resultType == Pattern.class) {
 				return Pattern.compile(input);
 			}
+			if (resultType == URI.class) {
+				return new URI(sanitizeInputForURI(input));
+			}
 
 			try {
 				Constructor< ? > c = resultType.getConstructor(String.class);
@@ -280,6 +284,13 @@ public class Converter {
 		}
 
 		return error("No conversion found for " + o.getClass() + " to " + type);
+	}
+
+	private String sanitizeInputForURI(String input) {
+		int newline = input.indexOf("\n");
+		if (newline > -1)
+			return input.substring(0, newline).trim();
+		return input;
 	}
 
 	private Number number(Object o) {
