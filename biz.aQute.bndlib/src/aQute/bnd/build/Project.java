@@ -2631,6 +2631,7 @@ public class Project extends Processor {
 		Command javac = new Command();
 		javac.add(getProperty("javac", "javac"));
 		String target = getProperty("javac.target", "1.6");
+		String profile = getProperty("javac.profile", "");
 		String source = getProperty("javac.source", "1.6");
 		String debug = getProperty("javac.debug");
 		if ("on".equalsIgnoreCase(debug) || "true".equalsIgnoreCase(debug))
@@ -2645,6 +2646,9 @@ public class Project extends Processor {
 		javac.add("-source", source);
 
 		javac.add("-target", target);
+
+		if (!profile.isEmpty())
+			javac.add("-profile", profile);
 
 		if (deprecation)
 			javac.add("-deprecation");
