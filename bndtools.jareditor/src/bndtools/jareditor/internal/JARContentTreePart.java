@@ -21,9 +21,12 @@ import java.util.zip.ZipInputStream;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreePath;
@@ -77,6 +80,18 @@ public class JARContentTreePart extends AbstractFormPart {
                 JARContentTreePart.this.managedForm.fireSelectionChanged(JARContentTreePart.this, event.getSelection());
             }
         });
+        viewer.addDoubleClickListener(new IDoubleClickListener() {
+			@Override
+			public void doubleClick(final DoubleClickEvent event) {
+				StructuredSelection selection = (StructuredSelection) event.getSelection();
+				
+				ZipTreeNode node = (ZipTreeNode) selection.getFirstElement();
+				
+				if (node.hasChildren()) {
+					viewer.setExpandedState(node, !viewer.getExpandedState(node));
+				}
+			}
+		});
 
         parent.setLayout(new GridLayout());
         section.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
