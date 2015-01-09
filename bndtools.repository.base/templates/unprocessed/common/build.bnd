@@ -35,6 +35,7 @@
 #javac:                 javac
 #javac.source:          1.5
 #javac.target:          1.5
+#javac.profile:
 #javac.debug:           on
 
 ## Bnd Options
