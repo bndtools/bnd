@@ -193,7 +193,18 @@ public class R5LabelFormatter {
 
         FilterParser fp = new FilterParser();
         if (filter == null) {
-            label.append(namespace + ": <no filter>", UIConstants.ERROR_STYLER);
+            if (namespace.contains("$")) {
+                Pattern pattern = Pattern.compile("\\{(.*?)\\}");
+                Matcher matcher = pattern.matcher(namespace);
+                label.append(namespace);
+                while (matcher.find()) {
+                    int begin = matcher.start(1);
+                    int end = matcher.end(1);
+                    label.setStyle(begin, end - begin, UIConstants.BOLD_STYLER);
+                }
+            } else {
+                label.append(namespace + ": <no filter>", UIConstants.ERROR_STYLER);
+            }
         } else {
             try {
                 Expression exp = fp.parse(filter);

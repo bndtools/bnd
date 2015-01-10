@@ -48,6 +48,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.Document;
 import bndtools.Plugin;
+import bndtools.central.Central;
 import bndtools.editor.model.BndProject;
 import bndtools.preferences.BndPreferences;
 
@@ -81,7 +82,12 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             "static-method", "unused"
     })
     protected BndEditModel generateBndModel(IProgressMonitor monitor) {
-        return new BndEditModel();
+        try {
+            return new BndEditModel(Central.getWorkspace());
+        } catch (Exception e) {
+            logger.logError("Unable to create BndEditModel with Workspace, defaulting to without Workspace", e);
+            return new BndEditModel();
+        }
     }
 
     /**

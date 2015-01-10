@@ -29,6 +29,7 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.properties.Document;
 import bndtools.Plugin;
+import bndtools.central.Central;
 
 public class EnableSubBundlesOperation implements IWorkspaceRunnable {
 
@@ -56,6 +57,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
         this.containerPath = containerPath;
     }
 
+    @Override
     public void run(final IProgressMonitor monitor) throws CoreException {
         IResource container = workspace.getRoot().findMember(containerPath);
 
@@ -63,8 +65,13 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
             throw newCoreException("Container path does not exist", null);
 
         // Create new project model
-        BndEditModel newBundleModel = new BndEditModel();
-
+        BndEditModel newBundleModel;
+        try {
+            newBundleModel = new BndEditModel(Central.getWorkspace());
+        } catch (Exception e) {
+            System.err.println("Unable to create BndEditModel with Workspace, defaulting to without Workspace");
+            newBundleModel = new BndEditModel();
+        }
         // Load project file and model
         IFile projectFile = container.getProject().getFile(Project.BNDFILE);
         BndEditModel projectModel;
@@ -76,7 +83,12 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
             } else {
                 projectDocument = new Document("");
             }
-            projectModel = new BndEditModel();
+            try {
+                projectModel = new BndEditModel(Central.getWorkspace());
+            } catch (Exception e) {
+                System.err.println("Unable to create BndEditModel with Workspace, defaulting to without Workspace");
+                projectModel = new BndEditModel();
+            }
             projectModel.loadFrom(projectDocument);
         } catch (IOException e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, e.getMessage(), e));

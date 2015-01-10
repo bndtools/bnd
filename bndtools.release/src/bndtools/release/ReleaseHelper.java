@@ -46,6 +46,7 @@ import aQute.bnd.properties.Document;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.service.reporter.Reporter;
+import bndtools.central.Central;
 import bndtools.release.api.IReleaseParticipant;
 import bndtools.release.api.ReleaseOption;
 import bndtools.release.api.IReleaseParticipant.Scope;
@@ -97,7 +98,15 @@ public class ReleaseHelper {
                 document = new Document(""); //$NON-NLS-1$
             }
 
-            final BndEditModel model = new BndEditModel();
+            final BndEditModel model;
+            BndEditModel model2;
+            try {
+                model2 = new BndEditModel(Central.getWorkspace());
+            } catch (Exception e) {
+                System.err.println("Unable to create BndEditModel with Workspace, defaulting to without Workspace");
+                model2 = new BndEditModel();
+            }
+            model = model2;
             model.loadFrom(document);
 
             String currentVersion = model.getBundleVersionString();
@@ -107,6 +116,7 @@ public class ReleaseHelper {
 
             final Document finalDoc = document;
             Runnable run = new Runnable() {
+                @Override
                 public void run() {
                     model.saveChangesTo(finalDoc);
 
@@ -230,6 +240,7 @@ public class ReleaseHelper {
         final List<Error> errors = context.getErrorHandler().getErrors();
         if (errors.size() > 0) {
             Runnable runnable = new Runnable() {
+                @Override
                 public void run() {
                     Shell shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
                     ErrorDialog error = new ErrorDialog(shell, name, errors);
