@@ -1,29 +1,34 @@
 package org.example.tests.cli;
 
-import static org.example.tests.utils.Utils.copyToTempFile;
-import static org.example.tests.utils.Utils.createTempDir;
-import static org.example.tests.utils.Utils.deleteWithException;
+import static org.example.tests.utils.Utils.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.zip.GZIPInputStream;
+import java.io.*;
+import java.util.*;
+import java.util.zip.*;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
-import org.example.tests.utils.Utils;
+import org.example.tests.utils.*;
+
+import aQute.bnd.build.*;
+import aQute.bnd.service.*;
+import aQute.lib.io.*;
 
 public class TestCommandLine extends TestCase {
 
-	private static final String BINDEX2_LIB_PATH = "../org.osgi.impl.bundle.repoindex.cli/generated/org.osgi.impl.bundle.repoindex.cli.jar";
+	private static final String	CLI	= "org.osgi.impl.bundle.repoindex.cli";
 
 	private File tempDir;
+	private Workspace			ws;
+	private File				jarFile;
+
 
 	@Override
 	protected void setUp() throws Exception {
+		ws = new Workspace(IO.getFile(".."));
+		Project cli = ws.getProject(CLI);
+		jarFile = cli.getBundle(CLI, "latest", Strategy.HIGHEST, null).getFile();
+
 		File index = new File("index.xml");
 		if (index.exists())
 			index.delete();
@@ -37,6 +42,7 @@ public class TestCommandLine extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
+		ws.close();
 		deleteWithException(tempDir);
 	}
 
@@ -45,8 +51,6 @@ public class TestCommandLine extends TestCase {
 	}
 
 	private void execute(String[] args, boolean runInTempDir) throws Exception {
-		File jarFile = new File(BINDEX2_LIB_PATH);
-
 		List<String> cmdLine = new LinkedList<String>();
 		cmdLine.add("java");
 		// cmdLine.add("-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=9001,suspend=y");
