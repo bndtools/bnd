@@ -79,6 +79,10 @@ public class R5LabelFormatter {
             r = Icons.path("service");
         else if (ExtenderNamespace.EXTENDER_NAMESPACE.equals(ns))
             r = "icons/wand.png";
+        else if (ContractNamespace.CONTRACT_NAMESPACE.equals(ns))
+            r = "icons/contract.png";
+        else if ("osgi.whiteboard".equals(ns))
+            r = "icons/whiteboard.png";
         else if (ns.startsWith("osgi.enroute"))
             r = "enroute/enroute-color-16x16.png";
         else if ("osgi.missing".equalsIgnoreCase(ns) || "donotresolve".equalsIgnoreCase(ns) || "compile-only".equalsIgnoreCase(ns))
@@ -101,6 +105,10 @@ public class R5LabelFormatter {
             else if (PackageNamespace.PACKAGE_NAMESPACE.equals(ns))
                 prefix = "";
             else if (ServiceNamespace.SERVICE_NAMESPACE.equals(ns))
+                prefix = "";
+            else if (ContractNamespace.CONTRACT_NAMESPACE.equals(ns))
+                prefix = "";
+            else if ("osgi.whiteboard".equals(ns))
                 prefix = "";
         }
 
