@@ -27,6 +27,8 @@ subprojects {
   def bndProject = bndWorkspace.getProject(name)
   if (bndProject != null) {
     plugins.apply 'biz.aQute.bnd'
+    group bnd('groupid')
+    version bnd('base.version')
   }
 }
 
