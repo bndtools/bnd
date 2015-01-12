@@ -25,3 +25,5 @@ Private-Package: org.example.tests.osgi,\
     testdata
 
 -releaserepo:
+
+Bundle-Version: 2.1.5.${tstamp}

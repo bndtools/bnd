@@ -31,4 +31,4 @@ Export-Package:\
 	org.osgi.service.indexer,\
 	org.osgi.service.log
 	
-Bundle-Version: 2.1.4.${tstamp}
+Bundle-Version: 2.1.5.${tstamp}
