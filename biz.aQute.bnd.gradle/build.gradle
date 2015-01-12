@@ -14,17 +14,9 @@ sourceSets {
     }
 }
 
-task groovydocJar(type: Jar) {
-  description 'Jar the groovydoc.'
-  group 'documentation'
+apply from: cnf.file('gradle/maven-artifacts.gradle')
+
+javadocJar {
   dependsOn groovydoc
   from groovydoc.destinationDir
-  classifier = 'javadoc'
-}
-
-task sourcesJar(type: Jar) {
-  description 'Jar the groovy sources.'
-  group 'documentation'
-  from sourceSets.main.allSource
-  classifier = 'sources'
 }
