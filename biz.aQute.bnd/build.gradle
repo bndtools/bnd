@@ -1,0 +1,1 @@
+apply from: cnf.file('gradle/maven-artifacts.gradle')

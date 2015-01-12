@@ -1,0 +1,59 @@
+task(type: Jar, 'sourcesJar') {
+  description 'Jar the sources.'
+  group 'documentation'
+  dependsOn jar
+  enabled !bnd.project.noBundles
+  if (enabled) {
+    inputs.file jar.archivePath
+    from zipTree(jar.archivePath).matching {
+      include 'OSGI-OPT/src/**'
+      include '*'
+    }
+    eachFile { FileCopyDetails fcp ->
+      fcp.path = fcp.path - 'OSGI-OPT/src/'
+    }
+    includeEmptyDirs = false
+    classifier = 'sources'
+  }
+}
+
+task('pom') {
+  description 'Generate the pom file.'
+  group 'documentation'
+  dependsOn jar
+  def pomname = "${archivesBaseName}-${version}.pom"
+  ext.pomfile = new File(buildDir, pomname)
+  enabled !bnd.project.noBundles
+  if (enabled) {
+    inputs.file jar.archivePath
+    outputs.file pomfile
+    doLast {
+      copy {
+        from zipTree(jar.archivePath).matching {
+          include "META-INF/maven/${project.group}/${archivesBaseName}/pom.xml"
+        }
+        eachFile { FileCopyDetails fcp ->
+          fcp.path = pomname
+        }
+        into buildDir
+        includeEmptyDirs = false
+      }
+    }
+  }
+}
+
+task(type: Jar, 'javadocJar') {
+  description 'Jar the javadoc.'
+  group 'documentation'
+  dependsOn javadoc
+  from javadoc.destinationDir
+  classifier 'javadoc'
+}
+
+artifacts {
+  archives sourcesJar
+  archives javadocJar
+  archives(pom.pomfile) {
+    builtBy pom
+  }
+}
