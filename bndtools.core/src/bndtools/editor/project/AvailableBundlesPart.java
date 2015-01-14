@@ -77,10 +77,12 @@ public class AvailableBundlesPart extends BndEditorPart {
     };
 
     private final Runnable updateFilterTask = new Runnable() {
+        @Override
         public void run() {
             Display display = viewer.getControl().getDisplay();
 
             Runnable update = new Runnable() {
+                @Override
                 public void run() {
                     updatedFilter(searchStr);
                 }
@@ -127,6 +129,7 @@ public class AvailableBundlesPart extends BndEditorPart {
         });
 
         txtSearch.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 if (scheduledFilterUpdate != null)
                     scheduledFilterUpdate.cancel(true);
@@ -164,13 +167,7 @@ public class AvailableBundlesPart extends BndEditorPart {
     }
 
     private void updatedFilter(String filterString) {
-        String newFilter;
-        if (filterString == null || filterString.length() == 0 || filterString.trim().equals("*"))
-            newFilter = null;
-        else
-            newFilter = "*" + filterString.trim() + "*";
-
-        contentProvider.setFilter(newFilter);
+        contentProvider.setFilter(filterString);
         viewer.refresh(true);
     }
 

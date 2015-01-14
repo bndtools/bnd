@@ -1,13 +1,8 @@
 package org.bndtools.core.views.jpm;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.URI;
 import java.util.Iterator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
@@ -42,17 +37,11 @@ import bndtools.preferences.JpmPreferences;
 
 public class JPMBrowserView extends ViewPart implements ISelectionListener {
 
-    private static final String HTTPS_URL = "https://www.jpm4j.org/";
-    private static final String HTTP_URL = "http://www.jpm4j.org/";
-    private static final String SEARCH_PREFIX = "https://www.jpm4j.org/#!/search?q=";
-
     private final ImageDescriptor backImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/back.png");
     private final ImageDescriptor forwardImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/forward.png");
 
-    private final Pattern stripWildcardsPattern = Pattern.compile("[\\*\\s]*([^\\*]*)");
-
     private boolean external = false;
-    private String externalUrl = null;
+    private URI externalUri = null;
 
     private Browser browser;
     private Action backAction;
@@ -102,16 +91,18 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
             browser.addLocationListener(new LocationAdapter() {
                 @Override
                 public void changing(LocationEvent event) {
+                    setContentDescription(event.location);
+                    /*
+                     *
                     if (event.location.startsWith(HTTPS_URL))
                         return;
                     if (event.location.startsWith(HTTP_URL))
                         event.location = event.location.replaceFirst(HTTP_URL, HTTP_URL);
                     else
                         event.doit = false;
+                     */
                 }
             });
-
-            browser.setUrl(HTTPS_URL);
         }
         selectionService = getViewSite().getWorkbenchWindow().getSelectionService();
         selectionService.addSelectionListener(this);
@@ -160,34 +151,33 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
                 Object obj = iter.next();
                 if (obj instanceof ContinueSearchElement) {
                     ContinueSearchElement cont = (ContinueSearchElement) obj;
-                    setSearchFilter(cont.getFilter());
+
+                    try {
+                        setSearchURI(cont.getRepository().browse(cont.getFilter()));
+                    } catch (Exception e) {
+                        Plugin.getDefault().error("Failed to get browse URL for repository", e);
+                    }
                     break;
                 }
             }
         }
     }
 
-    public void setSearchFilter(String filter) {
-        String strippedFilter = filter;
-        Matcher matcher = stripWildcardsPattern.matcher(strippedFilter);
-        boolean found = matcher.find();
-        if (found)
-            strippedFilter = matcher.group(1);
-
+    public void setSearchURI(URI uri) {
         try {
-            String url = SEARCH_PREFIX + URLEncoder.encode(strippedFilter, "UTF-8");
             if (external) {
-                if (!url.equals(externalUrl)) {
-                    externalUrl = url;
-                    getViewSite().getWorkbenchWindow().getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(url));
+                if (!uri.equals(externalUri)) {
+                    externalUri = uri;
+                    getViewSite().getWorkbenchWindow().getWorkbench().getBrowserSupport().getExternalBrowser().openURL(uri.toURL());
                 }
             } else {
                 String current = browser.getUrl();
-                if (!url.equals(current))
-                    browser.setUrl(url);
+                String urlStr = uri.toString();
+                if (!urlStr.equals(current)) {
+                    browser.setUrl(urlStr);
+                    setContentDescription(urlStr);
+                }
             }
-        } catch (UnsupportedEncodingException e) {
-            // stupid Java
         } catch (PartInitException e) {
             ErrorDialog.openError(getViewSite().getShell(), "Error", "Error", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to open URL in browser", e));
         } catch (MalformedURLException e) {

@@ -30,7 +30,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
     private final EnumSet<ResolutionPhase> phases;
 
-    private String filter = null;
+    private String rawFilter = null;
+    private String wildcardFilter = null;
     private boolean showRepos = true;
 
     public RepositoryTreeContentProvider() {
@@ -46,11 +47,15 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     }
 
     public String getFilter() {
-        return filter;
+        return rawFilter;
     }
 
     public void setFilter(String filter) {
-        this.filter = filter;
+        this.rawFilter = filter;
+        if (filter == null || filter.length() == 0 || filter.trim().equals("*"))
+            wildcardFilter = null;
+        else
+            wildcardFilter = "*" + filter.trim() + "*";
     }
 
     public void setShowRepos(boolean showRepos) {
@@ -61,6 +66,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return showRepos;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Object[] getElements(Object inputElement) {
         Collection<Object> result;
@@ -81,10 +87,13 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result.toArray(new Object[result.size()]);
     }
 
+    @Override
     public void dispose() {}
 
+    @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
+    @Override
     public Object[] getChildren(Object parentElement) {
         Object[] result = null;
 
@@ -102,6 +111,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result;
     }
 
+    @Override
     public Object getParent(Object element) {
         if (element instanceof RepositoryBundle) {
             return ((RepositoryBundle) element).getRepo();
@@ -112,6 +122,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return null;
     }
 
+    @Override
     public boolean hasChildren(Object element) {
         return element instanceof RepositoryPlugin || element instanceof RepositoryBundle || element instanceof Project;
     }
@@ -207,7 +218,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
         List<String> bsns = null;
         try {
-            bsns = repo.list(filter);
+            bsns = repo.list(wildcardFilter);
         } catch (Exception e) {
             logger.logError(MessageFormat.format("Error querying repository {0}.", repo.getName()), e);
         }

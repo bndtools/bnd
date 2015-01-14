@@ -4,7 +4,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -291,14 +290,15 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                         ContinueSearchElement searchElement = (ContinueSearchElement) element;
                         try {
                             JpmPreferences jpmPrefs = new JpmPreferences();
-                            if (jpmPrefs.getBrowserSelection() == JpmPreferences.PREF_BROWSER_EXTERNAL)
-                                getViewSite().getWorkbenchWindow().getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL("https://www.jpm4j.org/" + searchElement.getFilter()));
-                            else
+                            if (jpmPrefs.getBrowserSelection() == JpmPreferences.PREF_BROWSER_EXTERNAL) {
+                                URI browseUrl = searchElement.getRepository().browse(searchElement.getFilter());
+                                getViewSite().getWorkbenchWindow().getWorkbench().getBrowserSupport().getExternalBrowser().openURL(browseUrl.toURL());
+                            } else
                                 getViewSite().getPage().showView(Plugin.JPM_BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
                         } catch (PartInitException e) {
                             Plugin.getDefault().getLog().log(e.getStatus());
-                        } catch (MalformedURLException e) {
-                            // ignore
+                        } catch (Exception e) {
+                            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to load repository browser view", e));
                         }
                     }
 
@@ -390,15 +390,9 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     }
 
     private void updatedFilter(String filterString) {
-        String newFilter;
-        if (filterString == null || filterString.length() == 0 || filterString.trim().equals("*"))
-            newFilter = null;
-        else
-            newFilter = "*" + filterString.trim() + "*";
-
-        contentProvider.setFilter(newFilter);
+        contentProvider.setFilter(filterString);
         viewer.refresh();
-        if (newFilter != null)
+        if (filterString != null)
             viewer.expandToLevel(2);
     }
 
