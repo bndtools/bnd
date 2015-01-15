@@ -44,6 +44,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	public static final String						REPO_DEFAULT_URI			= "http://repo.jpm4j.org/";
 
 	private static final PutOptions					DEFAULT_OPTIONS				= new PutOptions();
+
+	private static final String						SEARCH_PREFIX				= "/#!/search?q=";
+	private static final String						UTF_8						= "UTF-8";
+
 	private final String							DOWN_ARROW					= " \u21E9";
 	protected final DownloadListener[]				EMPTY_LISTENER				= new DownloadListener[0];
 	private Pattern									SHA							= Pattern.compile(
@@ -1864,6 +1868,14 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		}
 		
 		return query(query);
+	}
+
+	@Override
+	public URI browse(String searchString) throws Exception {
+		if (searchString == null)
+			return url;
+
+		return url.resolve(SEARCH_PREFIX + URLEncoder.encode(searchString, UTF_8));
 	}
 
 	/**

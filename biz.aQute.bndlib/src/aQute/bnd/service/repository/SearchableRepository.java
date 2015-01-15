@@ -5,6 +5,7 @@ import java.util.*;
 
 import org.osgi.resource.*;
 
+import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.version.*;
 
 /**
@@ -13,6 +14,7 @@ import aQute.bnd.version.*;
  * backed by a database. This interface provides a query interface for text
  * search as well as a requirement based search.
  */
+@ProviderType
 public interface SearchableRepository {
 	/**
 	 * Describes a resource that is a member of the underlying remote
@@ -131,4 +133,17 @@ public interface SearchableRepository {
 	 * @throws Exception
 	 */
 	Set<ResourceDescriptor> findResources(Requirement requirement, boolean includeDependencies) throws Exception;
+
+	/**
+	 * Return the URL to a web page that allows browsing or searching of the
+	 * repository.
+	 * 
+	 * @param searchString
+	 *            A search string, or null for general browsing
+	 * @return A URL that may be opened in a web browser, or null if the
+	 *         repository does not support web browsing.
+	 * @throws Exception
+	 */
+	URI browse(String searchString) throws Exception;
+
 }
