@@ -6,6 +6,7 @@ import java.util.*;
 
 import junit.framework.*;
 
+import org.apache.felix.resolver.*;
 import org.osgi.framework.*;
 import org.osgi.framework.namespace.*;
 import org.osgi.resource.*;
@@ -14,6 +15,7 @@ import org.osgi.service.resolver.*;
 
 import test.lib.*;
 import aQute.bnd.build.model.*;
+import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.osgi.resource.*;
 import aQute.lib.io.*;
 import biz.aQute.resolve.*;
@@ -76,4 +78,52 @@ public class ResolveTest extends TestCase {
         }
         return null;
     }
+
+	/**
+	 * Simple test that resolves a requirement
+	 * 
+	 * @throws ResolutionException
+	 */
+	public static void testMultipleOptionsNotDuplicated() throws ResolutionException {
+
+		// Resolve against repo 5
+		MockRegistry registry = new MockRegistry();
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo5/index.xml"), "Test-5"));
+
+		// Set up a simple Java 7 Felix requirement as per Issue #971
+		BndEditModel runModel = new BndEditModel();
+		runModel.setRunFw("org.apache.felix.framework;version='4.2.1'");
+		runModel.setEE(EE.JavaSE_1_7);
+		runModel.setSystemPackages(Collections.singletonList(new ExportedPackage("org.w3c.dom.traversal", null)));
+		runModel.setGenericString("-resolve.effective", "active");
+
+		// Require the log service, GoGo shell and GoGo commands
+		List<Requirement> requirements = new ArrayList<Requirement>();
+
+		requirements.add(new CapReqBuilder("osgi.identity").addDirective("filter",
+				"(osgi.identity=org.apache.felix.log)").buildSyntheticRequirement());
+		requirements.add(new CapReqBuilder("osgi.identity").addDirective("filter",
+				"(osgi.identity=org.apache.felix.gogo.shell)").buildSyntheticRequirement());
+		requirements.add(new CapReqBuilder("osgi.identity").addDirective("filter",
+				"(osgi.identity=org.apache.felix.gogo.command)").buildSyntheticRequirement());
+
+		runModel.setRunRequires(requirements);
+
+		// Resolve the bndrun
+		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
+		Resolver resolver = new ResolverImpl(null);
+		Collection<Resource> resolvedResources = new ResolveProcess().resolveRequired(runModel, registry, resolver,
+				Collections.<ResolutionCallback> emptyList(), log).keySet();
+
+		Map<String,Resource> mandatoryResourcesBySymbolicName = new HashMap<String,Resource>();
+		for (Resource r : resolvedResources) {
+			Capability cap = r.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0);
+			// We shouldn't have more than one match for each symbolic name for
+			// this resolve
+			String symbolicName = (String) cap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+			assertNull("Multiple results for " + symbolicName, mandatoryResourcesBySymbolicName.put(symbolicName, r));
+		}
+		assertEquals(4, resolvedResources.size());
+	}
+
 }

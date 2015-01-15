@@ -364,29 +364,33 @@ public class GenericResolveContext extends ResolveContext {
 	}
 
 	private static CacheKey getCacheKey(Requirement requirement) {
-		return new CacheKey(requirement.getNamespace(), requirement.getDirectives(), requirement.getAttributes());
+		return new CacheKey(requirement.getNamespace(), requirement.getDirectives(), requirement.getAttributes(),
+				requirement.getResource());
 	}
 
 	private static class CacheKey {
 		final String				namespace;
 		final Map<String,String>	directives;
 		final Map<String,Object>	attributes;
+		final Resource				resource;
 		final int					hashcode;
 
-		CacheKey(String namespace, Map<String,String> directives, Map<String,Object> attributes) {
+		CacheKey(String namespace, Map<String,String> directives, Map<String,Object> attributes, Resource resource) {
 			this.namespace = namespace;
 			this.directives = directives;
 			this.attributes = attributes;
-			this.hashcode = calculateHashCode(namespace, directives, attributes);
+			this.resource = resource;
+			this.hashcode = calculateHashCode(namespace, directives, attributes, resource);
 		}
 
 		private static int calculateHashCode(String namespace, Map<String,String> directives,
-				Map<String,Object> attributes) {
+				Map<String,Object> attributes, Resource resource) {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
 			result = prime * result + ((directives == null) ? 0 : directives.hashCode());
 			result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+			result = prime * result + ((resource == null) ? 0 : resource.hashCode());
 			return result;
 		}
 
@@ -418,6 +422,11 @@ public class GenericResolveContext extends ResolveContext {
 				if (other.namespace != null)
 					return false;
 			} else if (!namespace.equals(other.namespace))
+				return false;
+			if (resource == null) {
+				if (other.resource != null)
+					return false;
+			} else if (!resourceIdentityEquals(resource, other.resource))
 				return false;
 			return true;
 		}
@@ -797,7 +806,7 @@ public class GenericResolveContext extends ResolveContext {
 		if (id1 != null && id1.equals(id2)) {
 			Version v1 = getResourceVersion(r1);
 			Version v2 = getResourceVersion(r2);
-			if (v1 == null && v2 == null || v1 != null && v1.equals(v2)) {
+			if ((v1 == null && v2 == null) || (v1 != null && v1.equals(v2))) {
 				return true;
 			}
 		}
