@@ -36,6 +36,7 @@ public class ResolveProcess {
 			for (Map.Entry<Resource,List<Wire>> wiring : wirings.entrySet()) {
 				if (rc.getInputResource() == wiring.getKey()) {
 					initialRequirement = new Pair<Resource,List<Wire>>(wiring.getKey(), wiring.getValue());
+					break;
 				}
 			}
 
