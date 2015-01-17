@@ -15,5 +15,5 @@ Bundle-Description: The bnd gradle plugin.
 -includeresource: \
   OSGI-OPT/src=src, \
   resources, \
-  @${repo;biz.aQute.bndlib;latest}!/!META-INF, \
+  @${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
   @${repo;biz.aQute.bnd;latest}!/embedded-repo.jar
