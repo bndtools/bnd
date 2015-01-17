@@ -35,10 +35,13 @@ public class PomResource extends WriteResource {
 		this.processor = b;
 
 		Domain domain = Domain.domain(manifest);
-		name = domain.get(Constants.BUNDLE_NAME);
 		String bsn = domain.getBundleSymbolicName().getKey();
 		if (bsn == null) {
 			throw new RuntimeException("Cannot create POM unless bsn is set");
+		}
+		name = domain.get(Constants.BUNDLE_NAME);
+		if (name == null) {
+			name = bsn;
 		}
 		where = processor.get(WHERE);
 
@@ -103,12 +106,12 @@ public class PomResource extends WriteResource {
 		project.addContent(new Tag("artifactId").addContent(artifactId));
 		project.addContent(new Tag(VERSION).addContent(version));
 
-		if (description != null) {
-			new Tag(project, "description").addContent(description);
+		if (description == null) {
+			description = name;
 		}
-		if (name != null) {
-			new Tag(project, "name").addContent(name);
-		}
+		new Tag(project, "description").addContent(description);
+		new Tag(project, "name").addContent(name);
+
 		if (docUrl != null) {
 			new Tag(project, "url").addContent(docUrl);
 		}
