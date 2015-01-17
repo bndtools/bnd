@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
@@ -47,6 +48,9 @@ import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Packages;
 import bndtools.central.Central;
 import bndtools.central.RefreshFileJob;
 
@@ -210,17 +214,31 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         ArrayList<IClasspathEntry> result = new ArrayList<IClasspathEntry>(containers.size());
-        LinkedHashMap<Project,List<IAccessRule>> projectAccessRules = new LinkedHashMap<Project,List<IAccessRule>>();
+        LinkedHashMap<Project,List<IAccessRule>> projectAccessRulesExports = new LinkedHashMap<Project,List<IAccessRule>>();
+        LinkedHashMap<Project,List<IAccessRule>> projectAccessRulesPrivates = new LinkedHashMap<Project,List<IAccessRule>>();
         for (Container c : containers) {
             if (c.getType() == TYPE.PROJECT && c.getError() == null) {
-                calculateWorkspaceBundleAccessRules(projectAccessRules, c);
+                calculateWorkspaceBundleAccessRules(projectAccessRulesExports, projectAccessRulesPrivates, c, model);
+            }
+        }
+        //[cs] Add ** NO access to end of rule sets that have rules.
+        for (Entry<Project,List<IAccessRule>> accessrules : projectAccessRulesExports.entrySet()) {
+            if (accessrules.getValue() != null && accessrules.getValue().size() > 0) {
+                accessrules.getValue().add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
+            }
+        }
+        for (Entry<Project,List<IAccessRule>> accessrules : projectAccessRulesPrivates.entrySet()) {
+            if (accessrules.getValue() != null && accessrules.getValue().size() > 0) {
+                accessrules.getValue().add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
             }
         }
 
         List<File> filesToRefresh = new ArrayList<File>();
 
+        List<IAccessRule> exports = new LinkedList<IAccessRule>();
         for (Container c : containers) {
-            IClasspathEntry cpe;
+            IClasspathEntry cpe = null;
+            exports.clear();
 
             if (c.getError() == null) {
                 File file = c.getFile();
@@ -255,24 +273,59 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 if (p != null) {
                     IClasspathAttribute[] extraAttrs = calculateExtraClasspathAttrs(c);
 
+                    /* [cs] Basically, to maintain the no-transitive dependencies philosophy of bnd,
+                    we shouldn't use transitive dependencies for the eclipse classpath if we can help it.
+
+                    However there are 2 cases where we must
+                    1) when a version=file reference has a package that will be exported by
+                    the current project. This package becomes an available transitive
+                    dependency for a user of the current project. All other packages are
+                    made available to the current project, but are not transitive.
+
+                    2) when a standard buildpath reference has a package that will be exported
+                    by the current project. This package becomes an available transitive
+                    dependency for a user of the current project. Not all other packages are
+                    made available to the current project, only exported packages from the
+                    referenced project, but they are not transitive dependencies.
+                    */
                     if (c.getType() == Container.TYPE.PROJECT) {
                         IResource resource = ResourcesPlugin.getWorkspace().getRoot().getFile(p);
-                        List<IAccessRule> rules = projectAccessRules.get(c.getProject());
-                        IAccessRule[] accessRules = null;
-                        if (rules != null) {
-                            rules.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
-                            accessRules = rules.toArray(new IAccessRule[rules.size()]);
+                        List<IAccessRule> rules = projectAccessRulesExports.get(c.getProject());
+                        if (rules != null && rules.size() > 0) {
+                            IAccessRule[] accessRules = rules.toArray(new IAccessRule[rules.size()]);
+                            cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, extraAttrs, true);
+                            result.add(cpe);
                         }
-                        cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, extraAttrs, true);
+                        rules = projectAccessRulesPrivates.get(c.getProject());
+                        if (rules != null && rules.size() > 0) {
+                            IAccessRule[] accessRules = rules.toArray(new IAccessRule[rules.size()]);
+                            cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, extraAttrs, false);
+                            result.add(cpe);
+                        }
                     } else {
-                        IAccessRule[] accessRules = calculateRepoBundleAccessRules(c);
-                        cpe = JavaCore.newLibraryEntry(p, null, null, accessRules, extraAttrs, false);
+                        calculateRepoBundleAccessRules(c, model, exports);
+                        if (exports.size() > 0) {
+                            IAccessRule[] accessRules = exports.toArray(new IAccessRule[exports.size()]);
+                            cpe = JavaCore.newLibraryEntry(p, null, null, accessRules, extraAttrs, true);
+                            result.add(cpe);
+                        }
+                        cpe = JavaCore.newLibraryEntry(p, null, null, null, extraAttrs, false);
+                        result.add(cpe);
                     }
-                    result.add(cpe);
                 }
             } else {
                 errors.add(c.getError());
             }
+        }
+
+        //[cs] set project variable: "debug: true" to enable some extra eclipse output for debugging.
+        if (Boolean.parseBoolean(model.getProperty("debug", "false"))) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("IClasspathEntrys: project = " + model.getName() + "\n");
+            for (IClasspathEntry f : result) {
+                sb.append("--- " + f + "\n");
+            }
+            logger.logInfo(sb.toString(), null);
         }
 
         // Refresh once, instead of for each dependent project.
@@ -303,23 +356,47 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         return attrs.toArray(new IClasspathAttribute[0]);
     }
 
-    static IAccessRule[] calculateRepoBundleAccessRules(Container c) {
+    static void calculateRepoBundleAccessRules(Container c, Project model, List<IAccessRule> exports) {
         String packageList = c.getAttributes().get("packages");
         if (packageList != null) {
-            List<IAccessRule> tmp = new LinkedList<IAccessRule>();
             StringTokenizer tokenizer = new StringTokenizer(packageList, ",");
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken();
                 String pathStr = token.replace('.', '/') + "/*";
-                tmp.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+                exports.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
             }
-            tmp.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
-            return tmp.toArray(new IAccessRule[tmp.size()]);
+        } else {
+            // [cs] If there are any exports from a version=file reference, provide access rules
+            // to allow these packages to be used/seen by users of the "this" project.
+            // e.g.
+            // Project A generates A.jar with java package A
+            // Project B has a buildpath version=file reference to A.jar and exports package A
+            // Project C has a buildpath version=snapshot|latest reference to B and uses package A.
+            // The access rules calculated by this section permit Project C to
+            // use packages from Project A in eclipse.
+            Packages exportPkgs = model.getExports();
+            Jar zip = null;
+            try {
+                zip = new Jar(c.getFile());
+                for (PackageRef exportPkg : exportPkgs.keySet()) {
+                    String zipDir = exportPkg.getBinary();
+                    if (zip.hasDirectory(zipDir)) {
+                        String pathStr = zipDir + "/*";
+                        exports.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+                    }
+                }
+            } catch (IOException e) {} finally {
+                if (zip != null) {
+                    zip.close();
+                }
+            }
         }
-        return null;
+        if (exports.size() > 0) {
+            exports.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
+        }
     }
 
-    static void calculateWorkspaceBundleAccessRules(Map<Project,List<IAccessRule>> projectAccessRules, Container c) {
+    static void calculateWorkspaceBundleAccessRules(Map<Project,List<IAccessRule>> projectAccessRulesExports, Map<Project,List<IAccessRule>> projectAccessRulesPrivates, Container c, Project model) {
         String packageList = c.getAttributes().get("packages");
         if (packageList != null) {
             List<IAccessRule> tmp = new LinkedList<IAccessRule>();
@@ -329,10 +406,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 String pathStr = token.replace('.', '/') + "/*";
                 tmp.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
             }
-            addAccessRules(projectAccessRules, c.getProject(), tmp);
+            addAccessRules(projectAccessRulesExports, c.getProject(), tmp);
         } else if (isProjectContainer(c)) {
             // No access rules please.
-            addAccessRules(projectAccessRules, c.getProject(), null);
         } else if (c.getType() == TYPE.PROJECT) {
             Manifest mf = null;
             try {
@@ -342,12 +418,26 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 return;
             }
             Parameters exportPkgs = new Parameters(mf.getMainAttributes().getValue(new Name(Constants.EXPORT_PACKAGE)));
-            List<IAccessRule> tmp = new LinkedList<IAccessRule>();
+            List<IAccessRule> exports = new LinkedList<IAccessRule>();
+            List<IAccessRule> privates = new LinkedList<IAccessRule>();
+            Packages contained = model.getContained();
             for (String exportPkg : exportPkgs.keySet()) {
-                String pathStr = exportPkg.replace('.', '/') + "/*";
-                tmp.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+                String exportDir = exportPkg.replace('.', '/');
+                String pathStr = exportDir + "/*";
+                privates.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+                for (PackageRef containedPackage : contained.keySet()) {
+                    String dir = containedPackage.getBinary();
+                    if (dir.equals(exportDir)) {
+                        exports.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+                    }
+                }
+                //TODO -- fix bnd bug.
+                //                if (contained.containsBinaryName(exportDir)) {
+                //                    exports.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+                //                }
             }
-            addAccessRules(projectAccessRules, c.getProject(), tmp);
+            addAccessRules(projectAccessRulesPrivates, c.getProject(), privates);
+            addAccessRules(projectAccessRulesExports, c.getProject(), exports);
         }
     }
 
