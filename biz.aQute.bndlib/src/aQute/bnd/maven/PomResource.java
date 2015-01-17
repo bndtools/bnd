@@ -40,9 +40,6 @@ public class PomResource extends WriteResource {
 			throw new RuntimeException("Cannot create POM unless bsn is set");
 		}
 		name = domain.get(Constants.BUNDLE_NAME);
-		if (name == null) {
-			name = bsn;
-		}
 		where = processor.get(WHERE);
 
 		if (processor.containsKey(GROUPID)) {
@@ -67,6 +64,9 @@ public class PomResource extends WriteResource {
 			if (where == null) {
 				where = "pom.xml";
 			}
+		}
+		if (name == null) {
+			name = groupId + ":" + artifactId;
 		}
 
 		version = processor.get(VERSION);
