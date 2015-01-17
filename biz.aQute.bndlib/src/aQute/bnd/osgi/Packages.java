@@ -166,7 +166,7 @@ public class Packages implements Map<PackageRef,Attrs> {
 
 		for (Map.Entry<PackageRef,Attrs> pr : map.entrySet()) {
 			if (pr.getKey().getBinary().equals(s))
-				pr.getValue();
+				return pr.getValue();
 		}
 		return null;
 	}
@@ -176,7 +176,7 @@ public class Packages implements Map<PackageRef,Attrs> {
 	}
 
 	public boolean containsBinaryName(String s) {
-		return getByFQN(s) != null;
+		return getByBinaryName(s) != null;
 	}
 
 	@Override
