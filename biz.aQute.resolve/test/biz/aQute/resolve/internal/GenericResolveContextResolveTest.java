@@ -15,6 +15,7 @@ import org.osgi.service.resolver.*;
 
 import test.lib.*;
 import aQute.bnd.build.model.*;
+import aQute.bnd.osgi.resource.*;
 import aQute.lib.io.*;
 import biz.aQute.resolve.*;
 
@@ -54,6 +55,86 @@ public class GenericResolveContextResolveTest extends TestCase {
 		catch (ResolutionException e) {
 			fail("Resolve failed");
 		}
+	}
+
+	public static void testResolveRequirementNoDirective() {
+
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"));
+		GenericResolveContext grc = new GenericResolveContext(log);
+
+		GenericResolveContext context = new GenericResolveContext(Collections.<Capability> emptyList(),
+				Collections.<Requirement> emptyList(), log);
+
+		context.addRepository(repository);
+
+		List<Capability> providers = context.findProviders(new CapReqBuilder("osgi.service").addDirective("filter",
+				"(objectClass=org.osgi.service.log.LogService)").buildSyntheticRequirement());
+
+		assertEquals(2, providers.size());
+
+		Set<String> resourceNames = new HashSet<String>();
+		for(Capability cap : providers) {
+			resourceNames.add(cap.getResource().getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE)
+					.get(0).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE).toString());
+		}
+		
+		Set<String> expectedResourceNames = new HashSet<String>(Arrays.asList("test.a", "test.b"));
+		
+		assertEquals(expectedResourceNames, resourceNames);
+	}
+
+	public static void testResolveRequirementResolveDirective() {
+
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"));
+		GenericResolveContext grc = new GenericResolveContext(log);
+
+		GenericResolveContext context = new GenericResolveContext(Collections.<Capability> emptyList(),
+				Collections.<Requirement> emptyList(), log);
+
+		context.addRepository(repository);
+
+		List<Capability> providers = context.findProviders(new CapReqBuilder("osgi.service")
+				.addDirective("filter", "(objectClass=org.osgi.service.log.LogService)")
+				.addDirective("effective", "resolve").buildSyntheticRequirement());
+
+		assertEquals(2, providers.size());
+
+		Set<String> resourceNames = new HashSet<String>();
+		for (Capability cap : providers) {
+			resourceNames.add(cap.getResource().getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0)
+					.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE).toString());
+		}
+
+		Set<String> expectedResourceNames = new HashSet<String>(Arrays.asList("test.a", "test.b"));
+
+		assertEquals(expectedResourceNames, resourceNames);
+	}
+
+	public static void testResolveRequirementActiveDirective() {
+
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"));
+		GenericResolveContext grc = new GenericResolveContext(log);
+
+		GenericResolveContext context = new GenericResolveContext(Collections.<Capability> emptyList(),
+				Collections.<Requirement> emptyList(), log);
+
+		context.addRepository(repository);
+
+		List<Capability> providers = context.findProviders(new CapReqBuilder("osgi.service")
+				.addDirective("filter", "(objectClass=org.osgi.service.log.LogService)")
+				.addDirective("effective", "active").buildSyntheticRequirement());
+
+		assertEquals(3, providers.size());
+
+		Set<String> resourceNames = new HashSet<String>();
+		for (Capability cap : providers) {
+			resourceNames.add(cap.getResource().getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0)
+					.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE).toString());
+		}
+
+		Set<String> expectedResourceNames = new HashSet<String>(Arrays.asList("test.a", "test.b", "test.c"));
+
+		assertEquals(expectedResourceNames, resourceNames);
 	}
 
 	private static Resource getResource(Set<Resource> resources, String bsn, String versionString) {
