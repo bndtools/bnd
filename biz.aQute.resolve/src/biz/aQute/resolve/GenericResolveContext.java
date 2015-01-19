@@ -178,7 +178,8 @@ public class GenericResolveContext extends ResolveContext {
 					if (capabilities != null && !capabilities.isEmpty()) {
 						repoCapabilities.ensureCapacity(capabilities.size());
 						for (Capability capability : capabilities) {
-							if (isPermitted(capability.getResource())) {
+							if (isPermitted(capability.getResource())
+									&& isCorrectEffectiveness(requirement, capability)) {
 								repoCapabilities.add(capability);
 								setResourcePriority(order, capability.getResource());
 							}
@@ -244,20 +245,42 @@ public class GenericResolveContext extends ResolveContext {
 
 	private boolean matches(Requirement requirement, Capability selfCap) {
 		boolean match = false;
-		try {
-			String filterStr = requirement.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-			org.osgi.framework.Filter filter = filterStr != null ? org.osgi.framework.FrameworkUtil
-					.createFilter(filterStr) : null;
+		if (isCorrectEffectiveness(requirement, selfCap)) {
+			try {
+				String filterStr = requirement.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+				org.osgi.framework.Filter filter = filterStr != null ? org.osgi.framework.FrameworkUtil
+						.createFilter(filterStr) : null;
 
-			if (filter == null)
-				match = true;
-			else
-				match = filter.match(new MapToDictionaryAdapter(selfCap.getAttributes()));
-		}
-		catch (InvalidSyntaxException e) {
-			log.log(LogService.LOG_ERROR, "Invalid filter directive on requirement: " + requirement, e);
+				if (filter == null)
+					match = true;
+				else
+					match = filter.match(new MapToDictionaryAdapter(selfCap.getAttributes()));
+			}
+			catch (InvalidSyntaxException e) {
+				log.log(LogService.LOG_ERROR, "Invalid filter directive on requirement: " + requirement, e);
+			}
 		}
 		return match;
+	}
+
+	private boolean isCorrectEffectiveness(Requirement requirement, Capability cap) {
+		boolean result = false;
+
+		String reqEffective = requirement.getDirectives().get(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
+
+		if (reqEffective == null || Namespace.EFFECTIVE_RESOLVE.equals(reqEffective)) {
+			// Resolve time effective requirements will be used by the runtime
+			// resolver in the OSGi framework, and will only be matched by
+			// resolve time capabilities!
+			String capEffective = cap.getDirectives().get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
+			result = capEffective == null || Namespace.EFFECTIVE_RESOLVE.equals(capEffective);
+		} else {
+			// If we're not a resolve time requirement then any capability
+			// effectiveness is ok
+			result = true;
+		}
+
+		return result;
 	}
 
 	@Override
