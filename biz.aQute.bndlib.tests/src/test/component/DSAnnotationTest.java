@@ -1160,6 +1160,86 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 	
+	@Component
+	public static class CheckBinds13 {
+
+		@Reference
+		private void bindService(LogService l) {}
+
+		protected void unbindService(LogService l) {}
+
+		void updatedService(LogService l) {}
+
+		@Reference
+		private void bindSR(ServiceReference<LogService> l) {}
+
+		protected void unbindSR(ServiceReference<LogService> l) {}
+
+		void updatedSR(ServiceReference<LogService> l) {}
+
+		@Reference(service = LogService.class)
+		private void bindProps(Map<String,Object> l) {}
+
+		protected void unbindProps(Map<String,Object> l) {}
+
+		void updatedProps(Map<String,Object> l) {}
+
+		// @Reference
+		// private void bindSO(ComponentServiceObjects<LogService> l) {}
+		//
+		// protected void unbindSO(ComponentServiceObjects<LogService> l) {}
+		//
+		// void updatedSO(ComponentServiceObjects<LogService> l) {}
+
+		@Reference
+		private void bindTuple(Map.Entry<Map<String,Object>,LogService> l) {}
+
+		protected void unbindTuple(Map.Entry<Map<String,Object>,LogService> l) {}
+
+		void updatedTuple(Map.Entry<Map<String,Object>,LogService> l) {}
+
+		@Reference
+		private void bindServiceSR(LogService l, ServiceReference<LogService> l2) {}
+
+		protected void unbindServiceSR(LogService l, ServiceReference<LogService> l2) {}
+
+		void updatedServiceSR(LogService l, ServiceReference<LogService> l2) {}
+
+		@Reference
+		private void bindPropsSR(Map<String,Object> l, ServiceReference<LogService> l2) {}
+
+		protected void unbindPropsSR(Map<String,Object> l, ServiceReference<LogService> l2) {}
+
+		void updatedPropsSR(Map<String,Object> l, ServiceReference<LogService> l2) {}
+
+		@Reference
+		private void bindPropsTuple(Map<String,Object> l, Map.Entry<Map<String,Object>,LogService> l2) {}
+
+		protected void unbindPropsTuple(Map<String,Object> l, Map.Entry<Map<String,Object>,LogService> l2) {}
+
+		void updatedPropsTuple(Map<String,Object> l, Map.Entry<Map<String,Object>,LogService> l2) {}
+
+	}
+
+	public static void testBinds13() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*CheckBinds13");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		Resource r = jar.getResource("OSGI-INF/" + CheckBinds13.class.getName() + ".xml");
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+
+		for (int i = 1; i <= 7; i++) {
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[" + i + "]/@interface");
+		}
+	}
+
 	@Component(name = "NoUnbindDynamic")
 	public static class NoUnbindDynamic {
 		@SuppressWarnings("unused")
@@ -1252,12 +1332,32 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 	
-	@Component(reference={@LookupReference(name="log", service=LogService.class, cardinality=ReferenceCardinality.AT_LEAST_ONE,
+	@Component(reference={@Reference(name="log", service=LogService.class, cardinality=ReferenceCardinality.AT_LEAST_ONE,
 			policy=ReferencePolicy.DYNAMIC,
 			policyOption=ReferencePolicyOption.GREEDY,
-			target="(service.id=1)")})
+			target="(service.id=1)"),
+			@Reference(name="logField", service=LogService.class, cardinality=ReferenceCardinality.AT_LEAST_ONE,
+			policy=ReferencePolicy.DYNAMIC,
+			policyOption=ReferencePolicyOption.GREEDY,
+			target="(service.id=1)",
+			field="logField",
+			fieldOption=FieldOption.REPLACE),
+			@Reference(name="logMethod", service=LogService.class, cardinality=ReferenceCardinality.MANDATORY,
+			policy=ReferencePolicy.DYNAMIC,
+			policyOption=ReferencePolicyOption.GREEDY,
+			target="(service.id=1)",
+			bind="setLogMethod",
+			unbind="unsetLogMethod",
+			updated="updatedLogMethod"),
+	})
 	public static class ref_on_comp implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
+		
+		private List<LogService> logField;
+		
+		protected void setLogMethod(LogService logService) {};
+		protected void updatedLogMethod(LogService logService) {};
+		protected void unsetLogMethod(LogService logService) {}
 
 		@Activate
 	    void activate(@SuppressWarnings("unused")ComponentContext cc) {}
@@ -1281,20 +1381,31 @@ public class DSAnnotationTest extends BndTestCase {
 		Jar jar = b.build();
 		assertOk(b);
 
-		{
-			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ref_on_comp.xml");
-			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
-			assertNotNull(r);
-			r.write(System.err);
-			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.2.0");
-			// Test the defaults
-			xt.assertAttribute("test.component.DSAnnotationTest$ref_on_comp", "scr:component/implementation/@class");
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ref_on_comp.xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+		// Test the defaults
+		xt.assertAttribute("test.component.DSAnnotationTest$ref_on_comp", "scr:component/implementation/@class");
 
-			xt.assertAttribute("log", "scr:component/reference[1]/@name");
-			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
-			xt.assertAttribute("1..n", "scr:component/reference[1]/@cardinality");
+		xt.assertAttribute("log", "scr:component/reference[1]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
+		xt.assertAttribute("1..n", "scr:component/reference[1]/@cardinality");
 
-		}
+		xt.assertAttribute("logField", "scr:component/reference[2]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
+		xt.assertAttribute("1..n", "scr:component/reference[2]/@cardinality");
+		xt.assertAttribute("replace", "scr:component/reference[2]/@field-option");
+		//TODO field-component-type
+
+		xt.assertAttribute("logMethod", "scr:component/reference[3]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
+		xt.assertAttribute("1..1", "scr:component/reference[3]/@cardinality");
+		xt.assertAttribute("setLogMethod", "scr:component/reference[3]/@bind");
+		xt.assertAttribute("unsetLogMethod", "scr:component/reference[3]/@unbind");
+		xt.assertAttribute("updatedLogMethod", "scr:component/reference[3]/@updated");
+
 	}
 
 	public @interface NoDefaults {
@@ -2034,5 +2145,114 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("String", "scr:component/property[@name='two']/@type");
 	}
 
+	@Component
+	public static class TestFieldInjection {
+		@Reference
+		private LogService									serviceField;
+
+		@Reference
+		private ServiceReference<LogService>				srField;
+
+		// @Reference
+		// private ComponentServiceObjects<LogService> so;
+
+		@Reference(service = LogService.class)
+		private Map<String,Object>							propsField;
+
+		@Reference
+		private Map.Entry<Map<String,Object>,LogService>	tupleField;
+
+	}
+
+	public static void testFieldInjection() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*TestFieldInjection");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		Resource r = jar.getResource("OSGI-INF/" + TestFieldInjection.class.getName() + ".xml");
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+		xt.assertNamespace("http://www.osgi.org/xmlns/scr/v1.3.0");
+
+		xt.assertAttribute("propsField", "scr:component/reference[1]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
+		xt.assertAttribute("propsField", "scr:component/reference[1]/@field");
+
+		xt.assertAttribute("serviceField", "scr:component/reference[2]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
+		xt.assertAttribute("serviceField", "scr:component/reference[2]/@field");
+
+		xt.assertAttribute("srField", "scr:component/reference[3]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
+		xt.assertAttribute("srField", "scr:component/reference[3]/@field");
+
+		xt.assertAttribute("tupleField", "scr:component/reference[4]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[4]/@interface");
+		xt.assertAttribute("tupleField", "scr:component/reference[4]/@field");
+	}
+
+	@Component
+	public static class TestFieldCollectionType {
+		
+		@Reference
+		// (service = LogService.class)
+		private Collection<ServiceReference<LogService>> srField;
+		
+		// @Reference//(service=LogService.class)
+		// private Collection<ComponentServiceObjects<LogService>> soField;
+		
+		@Reference(service = LogService.class)
+		private Collection<Map<String, Object>> propsField;
+		
+		@Reference
+		// (service=LogService.class)
+		private Collection<LogService> serviceField;
+		
+		@Reference
+		// (service = LogService.class)
+		private Collection<Map.Entry<Map<String, Object>, LogService>> tupleField;
+		
+	}
+	
+	public static void testFieldCollectionType() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*TestFieldCollectionType");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		Resource r = jar.getResource("OSGI-INF/" + TestFieldCollectionType.class.getName() + ".xml");
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+		xt.assertNamespace("http://www.osgi.org/xmlns/scr/v1.3.0");
+
+		xt.assertAttribute("propsField", "scr:component/reference[1]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
+		xt.assertAttribute("propsField", "scr:component/reference[1]/@field");
+		xt.assertAttribute("properties", "scr:component/reference[1]/@field-collection-type");
+
+		xt.assertAttribute("serviceField", "scr:component/reference[2]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
+		xt.assertAttribute("serviceField", "scr:component/reference[2]/@field");
+		xt.assertAttribute("service", "scr:component/reference[2]/@field-collection-type");
+
+		xt.assertAttribute("srField", "scr:component/reference[3]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
+		xt.assertAttribute("srField", "scr:component/reference[3]/@field");
+		xt.assertAttribute("reference", "scr:component/reference[3]/@field-collection-type");
+
+		xt.assertAttribute("tupleField", "scr:component/reference[4]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[4]/@interface");
+		xt.assertAttribute("tupleField", "scr:component/reference[4]/@field");
+		xt.assertAttribute("tuple", "scr:component/reference[4]/@field-collection-type");
+	}
 
 }
