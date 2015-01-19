@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
@@ -210,17 +211,30 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         ArrayList<IClasspathEntry> result = new ArrayList<IClasspathEntry>(containers.size());
-        LinkedHashMap<Project,List<IAccessRule>> projectAccessRules = new LinkedHashMap<Project,List<IAccessRule>>();
-        for (Container c : containers) {
-            if (c.getType() == TYPE.PROJECT && c.getError() == null) {
-                calculateWorkspaceBundleAccessRules(projectAccessRules, c);
+        LinkedHashMap<Project,List<IAccessRule>> projectAccessRulesExports = new LinkedHashMap<Project,List<IAccessRule>>();
+
+        boolean newaccessrules = Boolean.parseBoolean(model.getProperty("eclipse.newaccessrules", "false"));
+
+        if (!newaccessrules) {
+            for (Container c : containers) {
+                if (c.getType() == TYPE.PROJECT && c.getError() == null) {
+                    calculateWorkspaceBundleAccessRules(projectAccessRulesExports, c);
+                }
+            }
+            //[cs] Add ** NO access to end of rule sets that have rules.
+            for (Entry<Project,List<IAccessRule>> accessrules : projectAccessRulesExports.entrySet()) {
+                if (accessrules.getValue() != null && accessrules.getValue().size() > 0) {
+                    accessrules.getValue().add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
+                }
             }
         }
 
         List<File> filesToRefresh = new ArrayList<File>();
 
+        List<IAccessRule> exports = new LinkedList<IAccessRule>();
         for (Container c : containers) {
-            IClasspathEntry cpe;
+            IClasspathEntry cpe = null;
+            exports.clear();
 
             if (c.getError() == null) {
                 File file = c.getFile();
@@ -255,24 +269,49 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 if (p != null) {
                     IClasspathAttribute[] extraAttrs = calculateExtraClasspathAttrs(c);
 
-                    if (c.getType() == Container.TYPE.PROJECT) {
-                        IResource resource = ResourcesPlugin.getWorkspace().getRoot().getFile(p);
-                        List<IAccessRule> rules = projectAccessRules.get(c.getProject());
-                        IAccessRule[] accessRules = null;
-                        if (rules != null) {
-                            rules.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
-                            accessRules = rules.toArray(new IAccessRule[rules.size()]);
+                    if (!newaccessrules) {
+                        // oldaccessrules
+                        if (c.getType() == Container.TYPE.PROJECT) {
+                            IResource resource = ResourcesPlugin.getWorkspace().getRoot().getFile(p);
+                            List<IAccessRule> rules = projectAccessRulesExports.get(c.getProject());
+                            IAccessRule[] accessRules = null;
+                            if (rules != null) {
+                                rules.add(JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE));
+                                accessRules = rules.toArray(new IAccessRule[rules.size()]);
+                            }
+                            cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, extraAttrs, true);
+                        } else {
+                            IAccessRule[] accessRules = calculateRepoBundleAccessRules(c);
+                            cpe = JavaCore.newLibraryEntry(p, null, null, accessRules, extraAttrs, false);
                         }
-                        cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), accessRules, false, extraAttrs, true);
+                        result.add(cpe);
                     } else {
-                        IAccessRule[] accessRules = calculateRepoBundleAccessRules(c);
-                        cpe = JavaCore.newLibraryEntry(p, null, null, accessRules, extraAttrs, false);
+                        // newaccessrules
+                        if (c.getType() == Container.TYPE.PROJECT && c.getFile().isDirectory()) {
+                            IResource resource = ResourcesPlugin.getWorkspace().getRoot().getFile(p);
+                            cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), null, false, extraAttrs, false);
+                        } else if (c.getType() == Container.TYPE.PROJECT) {
+                            cpe = JavaCore.newLibraryEntry(p, null, null, null, extraAttrs, false);
+                        } else {
+                            cpe = JavaCore.newLibraryEntry(p, null, null, null, extraAttrs, false);
+                        }
+                        result.add(cpe);
                     }
-                    result.add(cpe);
                 }
             } else {
                 errors.add(c.getError());
             }
+        }
+
+        //[cs] set project variable: "eclipse.debug: true" to enable some extra eclipse output for debugging.
+        if (Boolean.parseBoolean(model.getProperty("eclipse.debug", "false"))) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("IClasspathEntrys: project = " + model.getName() + "\n");
+            for (IClasspathEntry f : result) {
+                sb.append("--- " + f + "\n");
+            }
+            //TODO - should/could be switched to logger (if logger goes to console in eclipse)
+            System.out.println(sb);
         }
 
         // Refresh once, instead of for each dependent project.
