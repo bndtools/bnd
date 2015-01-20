@@ -120,7 +120,11 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		}
 	}
 
-	protected final synchronized void init() throws Exception {
+	protected final void init() throws Exception {
+		init(false);
+	}
+
+	protected final synchronized void init(boolean ignoreCachedFile) throws Exception {
 		if (!initialised) {
 			clear();
 
@@ -186,8 +190,9 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					// If there is a cachedFile, then just use it IF
 					// 1) the cachedFile is within the timeout period
 					// OR 2) online is false
-					if (indexHandle.cachedFile != null &&
-							((System.currentTimeMillis() - indexHandle.cachedFile.lastModified() < this.cacheTimeoutSeconds * 1000)
+					if (indexHandle.cachedFile != null
+							&& !ignoreCachedFile
+							&& ((System.currentTimeMillis() - indexHandle.cachedFile.lastModified() < this.cacheTimeoutSeconds * 1000)
 							|| !this.online)) {
 						indexHandle.sha = indexHandle.getCachedSHA();
 						if (indexHandle.sha != null && !this.online) {
@@ -302,7 +307,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		List<Resource> resources = identityMap.getRange(bsn, rangeStr);
 		List<ResourceHandle> handles = mapResourcesToHandles(resources);
 
-		return (ResourceHandle[]) handles.toArray(new ResourceHandle[handles.size()]);
+		return handles.toArray(new ResourceHandle[handles.size()]);
 	}
 
 	public synchronized void setReporter(Reporter reporter) {
@@ -539,25 +544,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	}
 
 	public boolean refresh() throws Exception {
-		boolean ret = true;
-		if (indexLocations != null) {
-			final URLConnector connector = getConnector();
-			for (URI indexLocation : indexLocations) {
-				CachingUriResourceHandle indexHandle;
-				try {
-					File f = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null).cachedFile;
-					if (f != null && f.exists() && !f.delete()) {
-						error("Unable to delete cached repository index file %s", f.getAbsolutePath());
-					}
-				}
-				catch (IOException e) {
-					error("Exception during refresh of %s", indexLocation, e);
-					ret = false;
-				}
-			}
-		}
 		initialised = false;
-		init();
-		return ret;
+		init(true);
+		return true;
 	}
 }
