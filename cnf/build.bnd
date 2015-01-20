@@ -104,3 +104,8 @@ Bundle-Developers: \
 -runpath:\
 	org.eclipse.osgi;version=3.5,\
 	com.springsource.junit;export="junit.framework;version=3.8"
+
+# bndtools pull request #1003 and #999
+# we're vetting the new access rules for a while before adjusting
+# the fundamentals of bndtools out from under our users. heh.
+eclipse.newaccessrules: true
