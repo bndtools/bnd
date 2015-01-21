@@ -731,6 +731,26 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
     private IProject[] calculateDependsOn(Project model) throws Exception {
         Collection<Project> dependsOn = model.getDependson();
+
+        //System.out.println(model + " transitively dependsOn " + dependsOn);
+
+        //
+        // The model maintains the dependencies transitively. However,
+        // for Eclipse it seems better to keep them the direct level.
+        // However, we also have the case that we depend on B & C but B also depends
+        // on C. Than we should not depend on C since our dep on C will cause it to be build.
+        // So the following calculates the direct deps - the direct deps that are also
+        // deps of our transitive deps. Still here? It is actually simpler than
+        // it sounds. We just remove all the deps of our deps ...
+        //
+
+        for (Project p : new ArrayList<Project>(dependsOn)) {
+            Collection<Project> sub = p.getDependson();
+            dependsOn.removeAll(sub);
+        }
+
+        //System.out.println(model + " direct dependsOn " + dependsOn);
+
         List<IProject> result = new ArrayList<IProject>(dependsOn.size() + 1);
 
         IProject cnfProject = WorkspaceUtils.findCnfProject();
