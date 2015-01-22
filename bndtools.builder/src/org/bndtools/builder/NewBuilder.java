@@ -38,6 +38,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
@@ -131,6 +133,13 @@ public class NewBuilder extends IncrementalProjectBuilder {
             }
             if (model == null)
                 return null;
+
+            //
+            // Make sure we're building in the right order
+            //
+
+            setBuildOrder(model);
+
             this.model = model;
             model.setDelayRunDependencies(true);
 
@@ -215,6 +224,45 @@ public class NewBuilder extends IncrementalProjectBuilder {
             model = null;
             subBuilders = null;
         }
+    }
+
+    /**
+     * Calculate the order for the bnd workspace and set this as the build order for Eclise.
+     */
+    private void setBuildOrder(Project model) throws Exception, CoreException {
+        IWorkspace eclipseWs = getProject().getWorkspace();
+        IWorkspaceDescription description = eclipseWs.getDescription();
+        String[] older = description.getBuildOrder();
+
+        Workspace ws = model.getWorkspace();
+        Collection<Project> buildOrder = ws.getBuildOrder();
+        if (isSame(buildOrder, older))
+            return;
+
+        String[] newer = new String[buildOrder.size()];
+        int n = 0;
+
+        for (Project p : buildOrder) {
+            newer[n++] = p.getName();
+        }
+
+        description.setBuildOrder(newer);
+        eclipseWs.setDescription(description);
+        log(LOG_FULL, "Changed the build order to " + buildOrder);
+
+        super.needRebuild();
+    }
+
+    private boolean isSame(Collection<Project> buildOrder, String[] older) {
+        if (buildOrder.size() != older.length)
+            return false;
+
+        int n = 0;
+        for (Project p : buildOrder) {
+            if (!p.getName().equals(older[n++]))
+                return false;
+        }
+        return true;
     }
 
     /*
@@ -734,6 +782,8 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         //System.out.println(model + " transitively dependsOn " + dependsOn);
 
+        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+
         //
         // The model maintains the dependencies transitively. However,
         // for Eclipse it seems better to keep them the direct level.
@@ -745,6 +795,9 @@ public class NewBuilder extends IncrementalProjectBuilder {
         //
 
         for (Project p : new ArrayList<Project>(dependsOn)) {
+            if (p == model)
+                continue;
+
             Collection<Project> sub = p.getDependson();
             dependsOn.removeAll(sub);
         }
@@ -754,10 +807,10 @@ public class NewBuilder extends IncrementalProjectBuilder {
         List<IProject> result = new ArrayList<IProject>(dependsOn.size() + 1);
 
         IProject cnfProject = WorkspaceUtils.findCnfProject();
-        if (cnfProject != null)
+        if (cnfProject != null) {
             result.add(cnfProject);
+        }
 
-        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
         for (Project project : dependsOn) {
             IProject targetProj = WorkspaceUtils.findOpenProject(wsroot, project);
             if (targetProj == null)
