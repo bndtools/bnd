@@ -46,6 +46,7 @@ import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.osgi.Builder;
 import aQute.libg.glob.Glob;
 import bndtools.Plugin;
+import bndtools.central.Central;
 import bndtools.editor.BndEditor;
 import bndtools.editor.model.IDocumentWrapper;
 
@@ -195,7 +196,7 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
         if (editor instanceof BndEditor) {
             editModel = ((BndEditor) editor).getEditModel();
         } else {
-            editModel = new BndEditModel();
+            editModel = new BndEditModel(Central.getWorkspace());
             doc = FileUtils.readFully(bndFile);
             editModel.loadFrom(new IDocumentWrapper(doc));
         }
@@ -256,6 +257,7 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
         }
     }
 
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
         this.selection = selection;

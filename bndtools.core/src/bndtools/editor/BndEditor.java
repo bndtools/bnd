@@ -72,6 +72,7 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.BadLocationException;
 import bndtools.BndConstants;
 import bndtools.Plugin;
+import bndtools.central.Central;
 import bndtools.editor.common.IPriority;
 import bndtools.editor.model.IDocumentWrapper;
 import bndtools.editor.pages.BundleContentPage;
@@ -102,12 +103,23 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     private final Map<String,IFormPageFactory> pageFactories = new LinkedHashMap<String,IFormPageFactory>();
 
-    private final BndEditModel model = new BndEditModel();
-    private final BndSourceEditorPage sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
+    private final BndEditModel model;
+    private final BndSourceEditorPage sourcePage;
 
     private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
 
     public BndEditor() {
+        BndEditModel model2;
+        try {
+            model2 = new BndEditModel(Central.getWorkspace());
+        } catch (Exception e) {
+            System.err.println("Unable to create BndEditModel with Workspace, defaulting to without Workspace");
+            model2 = new BndEditModel();
+        }
+        model = model2;
+
+        sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
+
         pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
         pageFactories.put(WORKSPACE_EXT_PAGE, WorkspacePage.EXT_FACTORY);
         pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
@@ -468,12 +480,16 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
             String savedString = null;
 
+            @Override
             public void elementMoved(Object originalElement, Object movedElement) {}
 
+            @Override
             public void elementDirtyStateChanged(Object element, boolean isDirty) {}
 
+            @Override
             public void elementDeleted(Object element) {}
 
+            @Override
             public void elementContentReplaced(Object element) {
                 try {
                     IDocumentWrapper idoc = new IDocumentWrapper(docProvider.getDocument(element));
@@ -496,14 +512,15 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 }
             }
 
+            @Override
             public void elementContentAboutToBeReplaced(Object element) {
                 // [cs] This check is here to attempt to save content that would be thrown away by a (misbehaving?) version control plugin.
-                // Scenario: File is checked out by Perforce plugin. 
+                // Scenario: File is checked out by Perforce plugin.
                 // This causes elementContentAboutToBeReplaced and elementContentReplaced callbacks to be fired.
                 // However -- by the time that elementContentReplaced is called, the content inside of the IDocumentWrapper
                 // is already replaced with the contents of the perforce file being checked out.
                 // To avoid losing changes, we need to save the content here, then put that content BACK on to the document
-                // in elementContentReplaced 
+                // in elementContentReplaced
                 if (saving.get()) {
                     logger.logInfo("Content about to be replaced... Save it.", null);
                     savedString = new IDocumentWrapper(docProvider.getDocument(element)).get();
@@ -551,6 +568,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         return this.model;
     }
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event) {
         IResource myResource = ResourceUtil.getResource(getEditorInput());
 
@@ -579,6 +597,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 Display display = getEditorSite().getShell().getDisplay();
                 if (display != null) {
                     SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {
+                        @Override
                         public void run() {
                             setPartNameForInput(newInput);
                             sourcePage.setInput(newInput);
@@ -596,6 +615,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
                 final IDocument document = docProvider.getDocument(getEditorInput());
                 SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             model.loadFrom(new IDocumentWrapper(document));
