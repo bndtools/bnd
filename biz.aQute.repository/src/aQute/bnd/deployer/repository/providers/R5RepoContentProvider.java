@@ -263,6 +263,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		config.put(ResourceIndexer.REPOSITORY_NAME, repoName);
 		config.put(ResourceIndexer.ROOT_URL, baseUri.toString());
 		config.put(ResourceIndexer.PRETTY, Boolean.toString(pretty));
+		config.put(ResourceIndexer.COMPRESSED, Boolean.toString(!pretty));
 
 		indexer.index(files, output, config);
 	}

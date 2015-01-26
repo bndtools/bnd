@@ -2,6 +2,7 @@ package aQute.bnd.deployer.repository;
 
 import java.io.*;
 import java.util.*;
+import java.util.zip.*;
 
 import junit.framework.*;
 import test.lib.*;
@@ -141,6 +142,56 @@ public class TestLocalIndexGeneration extends TestCase {
 		assertTrue(reporter.getErrors().size() > 0);
 		assertEquals(0, reporter.getWarnings().size());
 		reporter.clear();
+	}
+
+	public static void testValidGZipFile() throws Exception {
+		PutResult r = repo.put(new BufferedInputStream(new FileInputStream(
+				"testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		File deployedFile = new File(r.artifact);
+
+		File indexFile = IO.getFile("generated/testoutput/index.xml.gz");
+		assertTrue(indexFile.exists());
+
+		try {
+			GZIPInputStream gzip = new GZIPInputStream(new FileInputStream(indexFile));
+			assertTrue(gzip.read() > -1);
+		}
+		finally {
+			IO.delete(new File(r.artifact));
+			IO.delete(indexFile);
+		}
+	}
+
+	public static void testUncompressedIndexFile() throws Exception {
+		repo = new LocalIndexedRepo();
+		config = new HashMap<String,String>();
+		config.put("local", outputDir.getAbsolutePath());
+		config.put("type", "R5");
+		config.put("pretty", "true");
+		config.put("compressed", "false");
+		repo.setProperties(config);
+		repo.setReporter(reporter);
+
+		PutResult r = repo.put(new BufferedInputStream(new FileInputStream(
+				"testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		File deployedFile = new File(r.artifact);
+
+		File compressedIndexFile = IO.getFile("generated/testoutput/index.xml.gz");
+		assertFalse(compressedIndexFile.exists());
+
+		File prettyIndexFile = IO.getFile("generated/testoutput/index.xml");
+		assertTrue(prettyIndexFile.exists());
+
+		try {
+			GZIPInputStream gzip = new GZIPInputStream(new FileInputStream(prettyIndexFile));
+			fail("expected opening gzip on index file would fail because it should be uncompressed");
+		}
+		catch (ZipException ze) {
+		}
+		finally {
+			IO.delete(new File(r.artifact));
+			IO.delete(prettyIndexFile);
+		}
 	}
 
 	// UTILS
