@@ -290,12 +290,19 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                         if (c.getType() == Container.TYPE.PROJECT && c.getFile().isDirectory()) {
                             IResource resource = ResourcesPlugin.getWorkspace().getRoot().getFile(p);
                             cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), null, false, extraAttrs, false);
-                        } else if (c.getType() == Container.TYPE.PROJECT) {
+                            result.add(cpe);
                             cpe = JavaCore.newLibraryEntry(p, null, null, null, extraAttrs, false);
+                            result.add(cpe);
+                        } else if (c.getType() == Container.TYPE.PROJECT) {
+                            IResource resource = ResourcesPlugin.getWorkspace().getRoot().getFile(p);
+                            cpe = JavaCore.newProjectEntry(resource.getProject().getFullPath(), null, false, extraAttrs, false);
+                            result.add(cpe);
+                            cpe = JavaCore.newLibraryEntry(p, null, null, null, extraAttrs, false);
+                            result.add(cpe);
                         } else {
                             cpe = JavaCore.newLibraryEntry(p, null, null, null, extraAttrs, false);
+                            result.add(cpe);
                         }
-                        result.add(cpe);
                     }
                 }
             } else {
