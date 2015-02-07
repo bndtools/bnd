@@ -315,23 +315,25 @@ public class BndPlugin implements Plugin<Project> {
       tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file to an executable jar.') { taskName ->
         if (taskName.startsWith('export.')) {
           def bndrun = taskName - 'export.'
-          task(taskName) {
-            description "Export the ${bndrun}.bndrun file to an executable jar."
-            dependsOn assemble
-            group 'export'
-            def runFile = file("${bndrun}.bndrun")
-            def executableJar = new File(distsDir, "executable/${bndrun}.jar")
-            doFirst {
-              project.mkdir(executableJar.parent)
-            }
-            doLast {
-              logger.info "Exporting ${runFile.absolutePath} to ${executableJar.absolutePath}"
-              try {
-                bndProject.export(relativePath(runFile), false, executableJar)
-              } catch (Exception e) {
-                throw new GradleException("Export of ${runFile.absolutePath} to an executable jar failed", e)
+          def runFile = file("${bndrun}.bndrun")
+          if (runFile.isFile()) {
+            task(taskName) {
+              description "Export the ${bndrun}.bndrun file to an executable jar."
+              dependsOn assemble
+              group 'export'
+              def executableJar = new File(distsDir, "executable/${bndrun}.jar")
+              doFirst {
+                project.mkdir(executableJar.parent)
               }
-              checkErrors()
+              doLast {
+                logger.info "Exporting ${runFile.absolutePath} to ${executableJar.absolutePath}"
+                try {
+                  bndProject.export(relativePath(runFile), false, executableJar)
+                } catch (Exception e) {
+                  throw new GradleException("Export of ${runFile.absolutePath} to an executable jar failed", e)
+                }
+                checkErrors()
+              }
             }
           }
         }
@@ -350,24 +352,26 @@ public class BndPlugin implements Plugin<Project> {
       tasks.addRule('Pattern: runbundles.<name>: Create a distribution of the runbundles in <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('runbundles.')) {
           def bndrun = taskName - 'runbundles.'
-          task(taskName) {
-            description "Create a distribution of the runbundles in the ${bndrun}.bndrun file."
-            dependsOn assemble
-            group 'export'
-            def runFile = file("${bndrun}.bndrun")
-            def runbundlesDir = new File(distsDir, "runbundles/${bndrun}")
-            doFirst {
-              project.delete(runbundlesDir)
-              project.mkdir(runbundlesDir)
-            }
-            doLast {
-              logger.info "Creating a distribution of the runbundles in ${runFile.absolutePath} in directory ${runbundlesDir.absolutePath}"
-              try {
-                  bndProject.exportRunbundles(relativePath(runFile), runbundlesDir)
-              } catch (Exception e) {
-                throw new GradleException("Creating a distribution of the runbundles in ${runFile.absolutePath} failed", e)
+          def runFile = file("${bndrun}.bndrun")
+          if (runFile.isFile()) {
+            task(taskName) {
+              description "Create a distribution of the runbundles in the ${bndrun}.bndrun file."
+              dependsOn assemble
+              group 'export'
+              def runbundlesDir = new File(distsDir, "runbundles/${bndrun}")
+              doFirst {
+                project.delete(runbundlesDir)
+                project.mkdir(runbundlesDir)
               }
-              checkErrors()
+              doLast {
+                logger.info "Creating a distribution of the runbundles in ${runFile.absolutePath} in directory ${runbundlesDir.absolutePath}"
+                try {
+                    bndProject.exportRunbundles(relativePath(runFile), runbundlesDir)
+                } catch (Exception e) {
+                  throw new GradleException("Creating a distribution of the runbundles in ${runFile.absolutePath} failed", e)
+                }
+                checkErrors()
+              }
             }
           }
         }
