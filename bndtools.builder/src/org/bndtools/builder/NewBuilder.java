@@ -76,7 +76,6 @@ import aQute.service.reporter.Report.Location;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
 import bndtools.preferences.CompileErrorAction;
-import bndtools.preferences.EclipseClasspathPreference;
 
 public class NewBuilder extends IncrementalProjectBuilder {
 
@@ -105,6 +104,7 @@ public class NewBuilder extends IncrementalProjectBuilder {
     @Override
     protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
         BndPreferences prefs = new BndPreferences();
+
         logLevel = prefs.getBuildLogging();
         projectPrefs = new ScopedPreferenceStore(new ProjectScope(getProject()), BndtoolsConstants.CORE_PLUGIN_ID);
 
@@ -688,15 +688,15 @@ public class NewBuilder extends IncrementalProjectBuilder {
 
         // Load Eclipse classpath containers
         model.clearClasspath();
-        EclipseClasspathPreference classpathPref = EclipseClasspathPreference.parse(projectPrefs.getString(EclipseClasspathPreference.PREFERENCE_KEY));
-        if (classpathPref == EclipseClasspathPreference.expose) {
-            List<File> classpathFiles = new ArrayList<File>(20);
-            accumulateClasspath(classpathFiles, JavaCore.create(getProject()), false, new ClasspathContainerFilter());
-            for (File file : classpathFiles) {
-                log(LOG_FULL, "Adding Eclipse classpath entry %s", file.getAbsolutePath());
-                model.addClasspath(file);
-            }
-        }
+        //        EclipseClasspathPreference classpathPref = EclipseClasspathPreference.parse(projectPrefs.getString(EclipseClasspathPreference.PREFERENCE_KEY));
+        //        if (classpathPref == EclipseClasspathPreference.expose) {
+        //            List<File> classpathFiles = new ArrayList<File>(20);
+        //            accumulateClasspath(classpathFiles, JavaCore.create(getProject()), false, new ClasspathContainerFilter());
+        //            for (File file : classpathFiles) {
+        //                log(LOG_FULL, "Adding Eclipse classpath entry %s", file.getAbsolutePath());
+        //                model.addClasspath(file);
+        //            }
+        //        }
 
         if (buildAction == Action.build) {
             // Build!
