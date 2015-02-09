@@ -1,5 +1,6 @@
 package org.bndtools.builder;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,8 @@ import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
+
+import bndtools.central.Central;
 
 public class BuildListeners {
     private static final ILogger logger = Logger.getLogger(BuildListeners.class);
@@ -43,6 +46,7 @@ public class BuildListeners {
 
     public void fireBuildStarting(final IProject project) {
         forEachListener(new Function<BuildListener,Object>() {
+            @Override
             public Object run(BuildListener listener) {
                 listener.buildStarting(project);
                 return null;
@@ -52,6 +56,7 @@ public class BuildListeners {
 
     public void fireBuiltBundles(final IProject project, final IPath[] paths) {
         forEachListener(new Function<BuildListener,Object>() {
+            @Override
             public Object run(BuildListener listener) {
                 listener.builtBundles(project, paths);
                 return null;
@@ -78,6 +83,16 @@ public class BuildListeners {
     public void release() {
         listeners.clear();
         listenerTracker.close();
+    }
+
+    public void updateListeners(File[] buildFiles, IProject project) throws Exception {
+        // Notify the build listeners
+        if (buildFiles.length > 0) {
+            IPath[] paths = new IPath[buildFiles.length];
+            for (int i = 0; i < buildFiles.length; i++)
+                paths[i] = Central.toPath(buildFiles[i]);
+            fireBuiltBundles(project, paths);
+        }
     }
 
 }

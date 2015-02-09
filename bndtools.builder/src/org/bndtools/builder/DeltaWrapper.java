@@ -1,81 +1,132 @@
 package org.bndtools.builder;
 
 import java.io.File;
-import java.util.Set;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.NavigableSet;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import bndtools.central.Central;
 
 class DeltaWrapper {
 
     private final Project model;
     private final IResourceDelta delta;
+    private final BuildLogger log;
 
-    public DeltaWrapper(Project model, IResourceDelta delta) {
+    DeltaWrapper(Project model, IResourceDelta delta, BuildLogger log) {
         this.model = model;
         this.delta = delta;
+        this.log = log;
     }
 
-    public boolean hasCnfChanged() {
-        if (delta == null)
+    boolean hasCnfChanged() throws Exception {
+        if (delta == null) {
+            log.basic("Full build because delta for cnf is null");
             return true;
+        }
 
-        if (havePropertiesChanged(model.getWorkspace()))
+        if (havePropertiesChanged(model.getWorkspace())) {
+            log.basic("cnf properties have changed");
             return true;
-
-        File files[] = model.getFile(Workspace.EXT).listFiles();
-        for (File f : files) {
-            if (has(f))
-                return true;
         }
 
         return false;
     }
 
-    public boolean hasProjectChanged() throws Exception {
+    boolean hasProjectChanged() throws Exception {
 
-        if (delta == null || havePropertiesChanged(model) || haveSubBuildersChanged()) {
+        if (delta == null) {
+            log.basic("Full build because delta is null");
+            return true;
+        }
+
+        if (havePropertiesChanged(model)) {
+            log.basic("Properties have changed (or or one of their includes %s)", model.getIncluded());
             model.refresh();
             return true;
         }
 
-        if (has(model.getOutput()))
+        if (haveSubBuildersChanged()) {
             return true;
+        }
 
-        Set<File> files = getFiles();
+        if (has(model.getOutput())) {
+            log.basic("The output directory has changed");
+            return true;
+        }
+
+        for (Project p : model.getDependson()) {
+            File f = new File(p.getTarget(), Project.BUILDFILES);
+            if (has(f)) {
+                log.basic("The upstream project %s has changed", p);
+                return true;
+            }
+        }
+
+        NavigableSet<String> files = getFiles();
+        if (files.isEmpty()) {
+            log.basic("No include resource files changed");
+            return false;
+        }
+
+        // Add a check for resource directories
+        // -resourcedependencies
 
         for (Builder pb : model.getSubBuilders()) {
-            if (pb.isInScope(files))
+            if (getInIncludeResource(pb, files)) {
+                log.basic("The sub builder %s has changed files %s in its scope", pb, files);
                 return true;
-
-            File f = model.getOutputFile(pb.getBsn(), pb.getVersion());
-            if (!f.isFile())
-                return true;
+            }
         }
 
         return false;
+    }
+
+    boolean hasBuildfile() throws Exception {
+        File f = new File(model.getTarget(), Project.BUILDFILES);
+        return has(f);
     }
 
     private boolean haveSubBuildersChanged() throws Exception {
         for (Builder pb : model.getSubBuilders()) {
             if (havePropertiesChanged(pb)) {
-                model.refresh();
+                log.basic("Sub builder %s has changed properties", pb);
+                return true;
+            }
+            File f = model.getOutputFile(pb.getBsn(), pb.getVersion());
+            if (!f.isFile()) {
+                log.basic("Sub builder %s has no output file %s", pb, f.getName());
                 return true;
             }
         }
         return false;
     }
 
-    private boolean havePropertiesChanged(Processor processor) {
+    private boolean havePropertiesChanged(Processor processor) throws Exception {
 
         if (has(processor.getPropertiesFile()))
             return true;
 
-        for (File incl : model.getIncluded()) {
+        List<File> included = processor.getIncluded();
+        if (included == null)
+            return false;
+
+        for (File incl : included) {
             if (has(incl))
                 return true;
         }
@@ -83,145 +134,88 @@ class DeltaWrapper {
         return false;
     }
 
-    private Set<File> getFiles() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    private boolean has(File f) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    /*
-     * Report the full delta in the log
-     */
-    void reportDelta(final NotYetDoneBuilder blder) throws CoreException {
-        if (delta == null) {
-            blder.log(NotYetDoneBuilder.LOG_FULL, "No delta, is null");
-            return;
-        }
-
+    private NavigableSet<String> getFiles() throws CoreException {
+        final NavigableSet<String> files = new TreeSet<String>();
         delta.accept(new IResourceDeltaVisitor() {
 
             @Override
             public boolean visit(IResourceDelta delta) throws CoreException {
-                blder.log(NotYetDoneBuilder.LOG_FULL, delta.toString() + " " + delta.getResource().getModificationStamp() + " " + delta.getKind());
-                return true;
+                if (IResourceDelta.MARKERS == delta.getFlags())
+                    return false;
+
+                if ((delta.getKind() & (IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED)) == 0)
+                    return false;
+
+                IResource resource = delta.getResource();
+                if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT)
+                    return true;
+
+                if (resource.getType() == IResource.FOLDER) {
+                    String path = resource.getProjectRelativePath().toString();
+                    if (path.startsWith(model.getProperty(Constants.DEFAULT_PROP_SRC_DIR)) || path.startsWith(model.getProperty(Constants.DEFAULT_PROP_BIN_DIR)))
+                        return false;
+
+                    if (path.startsWith(model.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR)) || path.startsWith(model.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR)))
+                        return false;
+
+                    if (path.startsWith(model.getProperty(Constants.DEFAULT_PROP_TARGET_DIR)))
+                        return false;
+
+                    return true;
+                }
+
+                if (resource.getType() == IResource.FILE) {
+                    File file = resource.getLocation().toFile();
+                    files.add(file.getAbsolutePath());
+                }
+                return false;
             }
         });
+        return files;
     }
 
-    //    private static boolean isChangeDelta(IResourceDelta delta) {
-    //        if (IResourceDelta.MARKERS == delta.getFlags())
-    //            return false;
-    //        if ((delta.getKind() & (IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED)) == 0)
-    //            return false;
-    //        return true;
-    //    }
-    //
-    //    private static File getFileForPath(IPath path) {
-    //        File file;
-    //        IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
-    //        if (resource != null && resource.exists())
-    //            file = resource.getLocation().toFile();
-    //        else
-    //            file = path.toFile();
-    //        return file;
-    //    }
-    //
-    //    private boolean isLocalBndFileChange() throws CoreException {
-    //        IResourceDelta myDelta = getDelta(getProject());
-    //        if (myDelta == null) {
-    //            log(LOG_BASIC, "local project delta is null, assuming changes exist", model.getName());
-    //            return true;
-    //        }
-    //
-    //        final AtomicBoolean result = new AtomicBoolean(false);
-    //        myDelta.accept(new IResourceDeltaVisitor() {
-    //            @Override
-    //            public boolean visit(IResourceDelta delta) throws CoreException {
-    //                if (!isChangeDelta(delta))
-    //                    return false;
-    //
-    //                IResource resource = delta.getResource();
-    //
-    //                if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT)
-    //                    return true;
-    //
-    //                if (resource.getType() == IResource.FOLDER)
-    //                    return true;
-    //
-    //                String extension = ((IFile) resource).getFileExtension();
-    //                if (resource.getType() == IResource.FILE && "bnd".equalsIgnoreCase(extension)) {
-    //                    log(LOG_FULL, "detected change due to resource %s, kind=0x%x, flags=0x%x", resource.getFullPath(), delta.getKind(), delta.getFlags());
-    //                    result.set(true);
-    //                    return false;
-    //                }
-    //
-    //                if (resource.getType() == IResource.FILE) {
-    //                    // Check files included by the -include directive in bnd.bnd
-    //                    List<File> includedFiles = model.getIncluded();
-    //                    if (includedFiles == null) {
-    //                        return false;
-    //                    }
-    //                    for (File includedFile : includedFiles) {
-    //                        IPath location = resource.getLocation();
-    //                        if (location != null && includedFile.equals(location.toFile())) {
-    //                            result.set(true);
-    //                            return false;
-    //                        }
-    //                    }
-    //                }
-    //
-    //                return false;
-    //            }
-    //
-    //        });
-    //
-    //        return result.get();
-    //    }
-    //
-    //    private Project getDependencyTargetChange() throws Exception {
-    //        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
-    //        Collection<Project> dependson = model.getDependson();
-    //        log(LOG_FULL, "project depends on: %s", dependson);
-    //
-    //        for (Project dep : dependson) {
-    //            File targetDir = dep.getTarget();
-    //            // Does not exist... was it deleted?
-    //            if (targetDir == null || !(targetDir.isDirectory()))
-    //                return dep;
-    //
-    //            IProject project = WorkspaceUtils.findOpenProject(wsroot, dep);
-    //            if (project == null) {
-    //                logger.logWarning(String.format("Dependency project '%s' from project '%s' is not in the Eclipse workspace.", dep.getName(), model.getName()), null);
-    //                return null;
-    //            }
-    //
-    //            IFile buildFile = project.getFolder(targetDir.getName()).getFile(Workspace.BUILDFILES);
-    //            IPath buildFilePath = buildFile.getProjectRelativePath();
-    //            IResourceDelta delta = getDelta(project);
-    //
-    //            if (delta == null) {
-    //                // May have changed
-    //                log(LOG_FULL, "null delta in dependency project %s", dep.getName());
-    //                return dep;
-    //            } else if (!isChangeDelta(delta)) {
-    //                continue;
-    //            } else {
-    //                IResourceDelta buildFileDelta = delta.findMember(buildFilePath);
-    //                if (buildFileDelta != null && isChangeDelta(buildFileDelta)) {
-    //                    log(LOG_FULL, "detected change due to file %s, kind=0x%x, flags=0x%x", buildFile, delta.getKind(), delta.getFlags());
-    //                    return dep;
-    //                }
-    //            }
-    //            // this dependency project did not change, move on to next
-    //        }
-    //
-    //        // no dependencies changed
-    //        return null;
-    //    }
-    //
+    private boolean has(File f) throws Exception {
+        if (f == null)
+            return false;
+
+        IPath path = Central.toPath(f);
+        IPath relativePath = path.makeRelativeTo(delta.getFullPath());
+        if (relativePath == null)
+            return false;
+
+        IResourceDelta delta = this.delta.findMember(relativePath);
+        if (delta == null)
+            return false;
+
+        if (delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.CHANGED || delta.getKind() == IResourceDelta.REMOVED)
+            return true;
+
+        return false;
+    }
+
+    static Pattern IR_PATTERN = Pattern.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
+
+    private boolean getInIncludeResource(Builder builder, NavigableSet<String> files) {
+        Parameters includeResource = builder.getIncludeResource();
+        for (Entry<String,Attrs> p : includeResource.entrySet()) {
+
+            if (p.getValue().containsKey("literal"))
+                continue;
+
+            Matcher m = IR_PATTERN.matcher(p.getKey());
+            if (m.matches()) {
+
+                String path = builder.getFile(m.group(1)).getAbsolutePath();
+                if (files.contains(path))
+                    return true;
+
+                String higher = files.higher(path);
+                if (higher != null && higher.startsWith(path))
+                    return true;
+
+            }
+        }
+        return false;
+    }
 
 }
