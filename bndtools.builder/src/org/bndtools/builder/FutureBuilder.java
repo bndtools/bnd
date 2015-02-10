@@ -274,7 +274,8 @@ public class FutureBuilder extends IncrementalProjectBuilder {
             List<String> tail = new ArrayList<String>();
             for (String old : older)
                 if (ws.getProject(old) == null)
-                    tail.add(old);
+                    if (!old.equals(Workspace.CNFDIR))
+                        tail.add(old);
 
             String[] newer = new String[1 + buildOrder.size() + tail.size()];
             int n = 1;
