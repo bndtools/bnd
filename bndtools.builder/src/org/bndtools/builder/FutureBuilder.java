@@ -114,7 +114,7 @@ public class FutureBuilder extends IncrementalProjectBuilder {
             IProject[] dependsOn = calculateDependsOn(model);
 
             if (setBuildOrder(model)) {
-                buildLog.basic("Build order changed, so we postpone building");
+                buildLog.basic("Build order changed");
             }
 
             markers.clearBuildMarkers();
@@ -170,10 +170,15 @@ public class FutureBuilder extends IncrementalProjectBuilder {
                 markers.addBuildMarkers(model, IMarker.SEVERITY_ERROR, "Will not build OSGi bundle(s) for project %s until  the compilation problems are fixed.", model.getName());
 
                 if (actionOnCompileError != CompileErrorAction.build) {
-                    if (actionOnCompileError == CompileErrorAction.delete)
+                    if (actionOnCompileError == CompileErrorAction.delete) {
+                        buildLog.basic("Blocking errors, delete build files, quit");
                         deleteBuildFiles(model);
+                    } else
+                        buildLog.basic("Blocking errors, quit leaving old files there");
+
                     return dependsOn;
                 }
+                buildLog.basic("Blocking errors, continuing anyway");
             }
 
             deleteBuildFiles(model);
