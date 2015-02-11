@@ -52,7 +52,7 @@ public class BuildLogger {
 
         String top = "BUILD " + model;
         if (files > 0)
-            top += " " + files + " file" + (files == 1 ? " was" : "s were") + " build\n";
+            top += " " + files + " file" + (files == 1 ? " was" : "s were") + " built";
         else
             top += " no build";
         top += "\n";
