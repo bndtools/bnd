@@ -21,14 +21,12 @@ import org.bndtools.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -41,7 +39,6 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.lib.collections.SortedList;
@@ -113,7 +110,7 @@ public class FutureBuilder extends IncrementalProjectBuilder {
 
             IProject[] dependsOn = calculateDependsOn(model);
 
-            if (setBuildOrder(model)) {
+            if (setBuildOrder(dependsOn)) {
                 buildLog.basic("Build order changed");
             }
 
@@ -267,37 +264,14 @@ public class FutureBuilder extends IncrementalProjectBuilder {
     /*
      * Calculate the order for the bnd workspace and set this as the build order for Eclipse.
      */
-    private boolean setBuildOrder(Project model) throws Exception {
+    private boolean setBuildOrder(IProject[] newer) throws Exception {
         try {
-            IWorkspace eclipseWs = getProject().getWorkspace();
-            IWorkspaceDescription description = eclipseWs.getDescription();
-            String[] older = description.getBuildOrder();
-
-            Workspace ws = model.getWorkspace();
-            Collection<Project> buildOrder = ws.getBuildOrder();
-
-            List<String> tail = new ArrayList<String>();
-            for (String old : older)
-                if (ws.getProject(old) == null)
-                    if (!old.equals(Workspace.CNFDIR))
-                        tail.add(old);
-
-            String[] newer = new String[1 + buildOrder.size() + tail.size()];
-            int n = 1;
-            newer[0] = "cnf";
-
-            for (Project p : buildOrder) {
-                newer[n++] = p.getName();
-            }
-            for (String s : tail) {
-                newer[n++] = s;
-            }
-
+            IProjectDescription projectDescription = getProject().getDescription();
+            IProject[] older = projectDescription.getDynamicReferences();
             if (Arrays.equals(newer, older))
                 return false;
-
-            description.setBuildOrder(newer);
-            eclipseWs.setDescription(description);
+            projectDescription.setDynamicReferences(newer);
+            getProject().setDescription(projectDescription, null);
             buildLog.full("Changed the build order to " + Arrays.toString(newer));
 
         } catch (Exception e) {
@@ -322,29 +296,7 @@ public class FutureBuilder extends IncrementalProjectBuilder {
     private IProject[] calculateDependsOn(Project model) throws Exception {
         Collection<Project> dependsOn = model.getDependson();
 
-        //System.out.println(model + " transitively dependsOn " + dependsOn);
-
-        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
-
-        //
-        // The model maintains the dependencies transitively. However,
-        // for Eclipse it seems better to keep them the direct level.
-        // However, we also have the case that we depend on B & C but B also depends
-        // on C. Than we should not depend on C since our dep on C will cause it to be build.
-        // So the following calculates the direct deps - the direct deps that are also
-        // deps of our transitive deps. Still here? It is actually simpler than
-        // it sounds. We just remove all the deps of our deps ...
-        //
-
-        for (Project p : new ArrayList<Project>(dependsOn)) {
-            if (p == model)
-                continue;
-
-            Collection<Project> sub = p.getDependson();
-            dependsOn.removeAll(sub);
-        }
-
-        //System.out.println(model + " direct dependsOn " + dependsOn);
+        IWorkspaceRoot wsroot = getProject().getWorkspace().getRoot();
 
         List<IProject> result = new ArrayList<IProject>(dependsOn.size() + 1);
 
