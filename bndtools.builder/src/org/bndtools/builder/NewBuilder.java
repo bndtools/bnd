@@ -230,27 +230,33 @@ public class NewBuilder extends IncrementalProjectBuilder {
      * Calculate the order for the bnd workspace and set this as the build order for Eclise.
      */
     private void setBuildOrder(Project model) throws Exception, CoreException {
-        IWorkspace eclipseWs = getProject().getWorkspace();
-        IWorkspaceDescription description = eclipseWs.getDescription();
-        String[] older = description.getBuildOrder();
 
-        Workspace ws = model.getWorkspace();
-        Collection<Project> buildOrder = ws.getBuildOrder();
-        if (isSame(buildOrder, older))
-            return;
+        try {
+            IWorkspace eclipseWs = getProject().getWorkspace();
+            IWorkspaceDescription description = eclipseWs.getDescription();
+            String[] older = description.getBuildOrder();
+            if (older == null)
+                older = new String[0];
 
-        String[] newer = new String[buildOrder.size()];
-        int n = 0;
+            Workspace ws = model.getWorkspace();
+            Collection<Project> buildOrder = ws.getBuildOrder();
+            if (isSame(buildOrder, older))
+                return;
 
-        for (Project p : buildOrder) {
-            newer[n++] = p.getName();
+            String[] newer = new String[buildOrder.size()];
+            int n = 0;
+
+            for (Project p : buildOrder) {
+                newer[n++] = p.getName();
+            }
+
+            description.setBuildOrder(newer);
+            eclipseWs.setDescription(description);
+            log(LOG_FULL, "Changed the build order to " + buildOrder);
+
+        } catch (Exception e) {
+            logger.logError("Failed to set the build order", e);
         }
-
-        description.setBuildOrder(newer);
-        eclipseWs.setDescription(description);
-        log(LOG_FULL, "Changed the build order to " + buildOrder);
-
-        super.needRebuild();
     }
 
     private boolean isSame(Collection<Project> buildOrder, String[] older) {
