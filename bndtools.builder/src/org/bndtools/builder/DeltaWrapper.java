@@ -179,6 +179,8 @@ class DeltaWrapper {
             return false;
 
         IPath path = Central.toPath(f);
+        if (delta == null)
+            return false;
         IPath relativePath = path.makeRelativeTo(delta.getFullPath());
         if (relativePath == null)
             return false;
