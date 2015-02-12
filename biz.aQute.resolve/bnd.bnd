@@ -6,6 +6,7 @@
 
 -buildpath: osgi.core;version=4.3.1,\
 	osgi.r5;version=1.0.1,\
+    aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
 	ee.j2se;version=${javac.ee},\
