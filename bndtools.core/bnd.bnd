@@ -53,7 +53,7 @@ eclipse.deps: \
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
 	org.eclipse.equinox.common,\
-	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.swt.cocoa.macosx.x86_64;packages=**,\
 	org.eclipse.swt,\
 	org.eclipse.text,\
 	org.eclipse.ui.workbench,\
@@ -99,6 +99,8 @@ eclipse.deps: \
 	bndtools.api;version=latest,\
 	org.bndtools.headless.build.manager;version=latest,\
 	org.bndtools.versioncontrol.ignores.manager;version=latest,\
-	bndtools.utils;version=project,\
-	bndtools.repository.base;version=latest,\
-	junit.osgi; version=@3.8
+	bndtools.utils;version=project;packages=**,\
+	bndtools.repository.base;version=latest
+	
+-testpath: \
+	${junit3}

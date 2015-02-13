@@ -15,7 +15,7 @@ Private-Package: \
 	bndtools.release,\
 	bndtools.release.nl,\
 	bndtools.release.ui,\
-	org.bndtools.utils.swt
+	org.bndtools.utils.swt;-split-package:=first
 
 Conditional-Package: aQute.lib.*,aQute.libg.*
 
@@ -26,6 +26,8 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	ee.j2se;version=${javac.ee},\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
+	${bndlib},\
+	bndtools.utils;version=project;packages=**,\
 	bndtools.core;version=latest, \
 	org.eclipse.core.runtime,\
 	org.eclipse.core.contenttype,\
@@ -33,7 +35,7 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
 	org.eclipse.equinox.common,\
-	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.swt.cocoa.macosx.x86_64;packages=**,\
 	org.eclipse.swt,\
 	org.eclipse.text,\
 	org.eclipse.ui.workbench,\
@@ -55,8 +57,9 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	org.eclipse.jdt.junit,\
 	org.eclipse.team.core,\
 	org.eclipse.core.filesystem, \
-	org.eclipse.equinox.preferences, \
-	${bndlib},\
+	org.eclipse.equinox.preferences
+	
+-testpath: \
 	${junit}
 
 Export-Package: bndtools.release.api
