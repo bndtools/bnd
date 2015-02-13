@@ -3,10 +3,13 @@
 	osgi.core;version=${osgi.core.version},\
 	bndtools.api;version=latest,\
 	org.bndtools.headless.build.manager;version=latest,\
-	bndtools.utils;version=project,\
+	bndtools.utils;version=project;packages=**,\
 	biz.aQute.bnd.annotation,\
-	${bndlib},\
+	${bndlib}
+
+-testpath: \
 	${junit}
+
 -includeresource: \
 	templates=resources/templates/unprocessed,\
 	templates/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd.jar=${repo;biz.aQute.bnd;${bnd-version-base}}
