@@ -46,6 +46,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Project;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import bndtools.central.Central;
 import bndtools.central.RefreshFileJob;
 
@@ -330,9 +331,13 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         attrs.add(JavaCore.newClasspathAttribute("project", c.getProject().getName()));
 
         String version = c.getAttributes().get("version");
-
         if (version != null) {
             attrs.add(JavaCore.newClasspathAttribute("version", version));
+        }
+
+        String packages = c.getAttributes().get("packages");
+        if (packages != null) {
+            attrs.add(JavaCore.newClasspathAttribute("packages", packages));
         }
 
         return attrs.toArray(new IClasspathAttribute[attrs.size()]);
@@ -387,50 +392,58 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     }
 
     private static List<IAccessRule> calculateContainerAccessRules(Container c) {
+        List<IAccessRule> accessRules = new ArrayList<IAccessRule>();
+
         String packageList = c.getAttributes().get("packages");
         if (packageList != null) {
-            List<IAccessRule> accessRules = new ArrayList<IAccessRule>();
+            // Use packages=** for full access
             for (String exportPkg : packageList.split("\\s*,\\s*")) {
                 String pathStr = exportPkg.replace('.', '/') + "/*";
                 accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
             }
-            if (!accessRules.isEmpty()) {
-                return accessRules;
-            }
+            return accessRules;
         }
+
+        File file = c.getFile();
         switch (c.getType()) {
         case PROJECT :
-            File file = c.getFile();
-            if (!file.isFile()) {
-                break;
+            if (!file.isFile()) { // not a file; so version=project
+                Project p = c.getProject();
+                if (p.getContained().isEmpty()) {
+                    break; // no builder information; so full access
+                }
+                for (PackageRef exportPkg : p.getExports().keySet()) {
+                    String pathStr = exportPkg.getBinary() + "/*";
+                    accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+                }
+                return accessRules;
             }
+            //$FALL-THROUGH$
+        case REPO :
+        case EXTERNAL :
             Manifest mf = null;
             try {
                 mf = JarUtils.loadJarManifest(new FileInputStream(file));
             } catch (IOException e) {
                 logger.logError("Unable to generate access rules from bundle " + file, e);
-                break;
             }
             if (mf == null) {
-                break;
+                break; // no manifest; so full access
             }
-            Parameters exportPkgs = new Parameters(mf.getMainAttributes().getValue(new Name(Constants.EXPORT_PACKAGE)));
-            if (exportPkgs.isEmpty()) {
-                break;
+            if (mf.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) == null) {
+                break; // not a bundle; so full access
             }
-            List<IAccessRule> accessRules = new ArrayList<IAccessRule>();
+            Parameters exportPkgs = new Parameters(mf.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
             for (String exportPkg : exportPkgs.keySet()) {
                 String pathStr = exportPkg.replace('.', '/') + "/*";
                 accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
             }
-            if (!accessRules.isEmpty()) {
-                return accessRules;
-            }
-            break;
+            return accessRules;
         default :
             break;
         }
-        return null;
+
+        return null; // full access
     }
 
     private static IAccessRule[] toAccessRulesArray(List<IAccessRule> rules) {
