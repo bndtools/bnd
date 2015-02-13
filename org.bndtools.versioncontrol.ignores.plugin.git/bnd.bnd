@@ -2,7 +2,9 @@
 	ee.j2se;version=${javac.ee},\
 	bndtools.api;version=latest,\
 	org.bndtools.versioncontrol.ignores.manager;version=latest,\
-	biz.aQute.bnd.annotation,\
+	biz.aQute.bnd.annotation
+
+-testpath: \
 	${junit}
 
 # we really need this, otherwise Eclipse will not start our bundles

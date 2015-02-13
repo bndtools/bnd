@@ -12,13 +12,15 @@
     org.eclipse.core.resources, \
     org.eclipse.core.jobs, \
     org.eclipse.jface, \
-    org.eclipse.swt.cocoa.macosx.x86_64, \
+    org.eclipse.swt.cocoa.macosx.x86_64;packages=**, \
     org.eclipse.swt, \
     org.eclipse.ui.ide, \
     org.eclipse.ui.workbench, \
     org.eclipse.jdt.core, \
     org.eclipse.text, \
-    bndtools.api; version=latest, \
+    bndtools.api; version=latest
+    
+-testpath: \
     ${junit}
 
 # No exports. This is bundle is not intended for runtime use.

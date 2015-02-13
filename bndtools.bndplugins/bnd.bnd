@@ -4,10 +4,11 @@
 	ee.j2se;version=${javac.ee},\
 	${bndlib},\
 	${aQute-repository},\
-	aQute.libg;version="[3,4)",\
 	com.jcraft.jsch,\
 	org.eclipse.jgit,\
-	org.osgi.impl.bundle.bindex,\
+	org.osgi.impl.bundle.bindex
+	
+-testpath: \
 	${junit}
 
 -sub: *.bnd
