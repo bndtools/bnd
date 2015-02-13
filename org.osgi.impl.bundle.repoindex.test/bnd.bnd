@@ -8,6 +8,7 @@
   com.springsource.org.junit;version=4.10.0
 
 -testpath:\
+  aQute.libg;version=latest, \
   biz.aQute.bndlib;version=latest
 
 # This is required to ensure the cli JAR is built before
