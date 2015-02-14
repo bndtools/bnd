@@ -5,4 +5,3 @@ Include-Resource:\
     ${repo;biz.aQute.resolve;${bnd-version-base}},\
     ${repo;javax.xml;latest},\
     ${repo;javax.xml.stream;latest}
-Bundle-Version: 1.0.0.${tstamp}

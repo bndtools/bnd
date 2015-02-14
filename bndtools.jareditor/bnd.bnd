@@ -1,6 +1,4 @@
 Bundle-SymbolicName: bndtools.jareditor;singleton:=true
-Bundle-Vendor: Bndtools
-Bundle-Version: 2.4.0.${tstamp}
 Bundle-RequiredExecutionEnvironment: ${java.req.ee}
 Include-Resource: resources
 
