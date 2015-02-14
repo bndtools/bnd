@@ -1,11 +1,9 @@
 Test: true
 Bundle-SymbolicName: bndtools.release;singleton:=true
-Bundle-Version: 2.3.1.${tstamp}
 Bundle-Activator: bndtools.release.Activator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: ${java.req.ee}
 Bundle-Localization: plugin
-Bundle-Vendor: Bndtools
 
 Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 	org.osgi.service.component.annotations;resolution:=optional,\

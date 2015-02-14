@@ -1,3 +1,2 @@
 Private-Package: bndtools.bndplugins.repo.*,com.jcraft.jsch*,org.eclipse.jgit*
 Export-Package: bndtools.bndplugins.repo
-Bundle-Version: 1.0.0.${tstamp}

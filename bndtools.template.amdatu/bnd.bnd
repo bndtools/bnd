@@ -9,8 +9,6 @@
 	${bndlib}
 
 Bundle-SymbolicName: bndtools.template.amdatu;singleton:=true
-Bundle-Vendor: Bndtools
-Bundle-Version: 2.3.1.${tstamp}
 
 Include-Resource:\
 	plugin.xml=_plugin.xml,\
