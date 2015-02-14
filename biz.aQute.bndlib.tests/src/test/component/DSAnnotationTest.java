@@ -2153,8 +2153,8 @@ public class DSAnnotationTest extends BndTestCase {
 		@Reference
 		private ServiceReference<LogService>				srField;
 
-		// @Reference
-		// private ComponentServiceObjects<LogService> so;
+		@Reference
+		private ComponentServiceObjects<LogService>			soField;
 
 		@Reference(service = LogService.class)
 		private Map<String,Object>							propsField;
@@ -2187,13 +2187,17 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
 		xt.assertAttribute("serviceField", "scr:component/reference[2]/@field");
 
-		xt.assertAttribute("srField", "scr:component/reference[3]/@name");
+		xt.assertAttribute("soField", "scr:component/reference[3]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
-		xt.assertAttribute("srField", "scr:component/reference[3]/@field");
+		xt.assertAttribute("soField", "scr:component/reference[3]/@field");
 
-		xt.assertAttribute("tupleField", "scr:component/reference[4]/@name");
+		xt.assertAttribute("srField", "scr:component/reference[4]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[4]/@interface");
-		xt.assertAttribute("tupleField", "scr:component/reference[4]/@field");
+		xt.assertAttribute("srField", "scr:component/reference[4]/@field");
+
+		xt.assertAttribute("tupleField", "scr:component/reference[5]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[5]/@interface");
+		xt.assertAttribute("tupleField", "scr:component/reference[5]/@field");
 	}
 
 	@Component
@@ -2203,8 +2207,9 @@ public class DSAnnotationTest extends BndTestCase {
 		// (service = LogService.class)
 		private Collection<ServiceReference<LogService>> srField;
 		
-		// @Reference//(service=LogService.class)
-		// private Collection<ComponentServiceObjects<LogService>> soField;
+		@Reference
+		// (service=LogService.class)
+		private Collection<ComponentServiceObjects<LogService>>			soField;
 		
 		@Reference(service = LogService.class)
 		private Collection<Map<String, Object>> propsField;
@@ -2244,15 +2249,20 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("serviceField", "scr:component/reference[2]/@field");
 		xt.assertAttribute("service", "scr:component/reference[2]/@field-collection-type");
 
-		xt.assertAttribute("srField", "scr:component/reference[3]/@name");
+		xt.assertAttribute("soField", "scr:component/reference[3]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
-		xt.assertAttribute("srField", "scr:component/reference[3]/@field");
-		xt.assertAttribute("reference", "scr:component/reference[3]/@field-collection-type");
+		xt.assertAttribute("soField", "scr:component/reference[3]/@field");
+		xt.assertAttribute("serviceobjects", "scr:component/reference[3]/@field-collection-type");
 
-		xt.assertAttribute("tupleField", "scr:component/reference[4]/@name");
+		xt.assertAttribute("srField", "scr:component/reference[4]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[4]/@interface");
-		xt.assertAttribute("tupleField", "scr:component/reference[4]/@field");
-		xt.assertAttribute("tuple", "scr:component/reference[4]/@field-collection-type");
+		xt.assertAttribute("srField", "scr:component/reference[4]/@field");
+		xt.assertAttribute("reference", "scr:component/reference[4]/@field-collection-type");
+
+		xt.assertAttribute("tupleField", "scr:component/reference[5]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[5]/@interface");
+		xt.assertAttribute("tupleField", "scr:component/reference[5]/@field");
+		xt.assertAttribute("tuple", "scr:component/reference[5]/@field-collection-type");
 	}
 
 }

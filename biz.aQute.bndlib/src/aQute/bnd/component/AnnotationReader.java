@@ -483,7 +483,7 @@ public class AnnotationReader extends ClassDataCollector {
 						if (sufficientGenerics(index++, sigLength, def, sig)) {
 							fieldCollectionType = FieldCollectionType.reference;
 						}
-					} else if ("Lorg/osgi/framework/ServiceObjects".equals(sigs[index])) {
+					} else if ("Lorg/osgi/service/component/ComponentServiceObjects".equals(sigs[index])) {
 						if (sufficientGenerics(index++, sigLength, def, sig)) {
 							fieldCollectionType = FieldCollectionType.serviceobjects;
 						}
@@ -580,7 +580,7 @@ public class AnnotationReader extends ClassDataCollector {
 					def.updateVersion(V1_3);
 					if (!ReferenceScope.PROTOTYPE.equals(def.scope) && m.group(3) != null) {
 						analyzer.error(
-								"In component %s, to use ServiceObjects the scope must be 'prototype'",
+"In component %s, to use ComponentServiceObjects the scope must be 'prototype'",
 								component.implementation, "");				
 					}
 					if (annoService == null)
