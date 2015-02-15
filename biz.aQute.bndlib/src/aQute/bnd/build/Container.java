@@ -41,8 +41,12 @@ public class Container {
 		this.db = db;
 	}
 
+	public Container(Project project, File file, Map<String,String> attributes) {
+		this(project, file.getName(), "project", TYPE.PROJECT, file, null, attributes, null);
+	}
+
 	public Container(Project project, File file) {
-		this(project, file.getName(), "project", TYPE.PROJECT, file, null, null, null);
+		this(project, file, null);
 	}
 
 	public Container(File file, DownloadBlocker db) {
