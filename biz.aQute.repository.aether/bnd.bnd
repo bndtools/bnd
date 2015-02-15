@@ -4,7 +4,7 @@ aether-version: 0.9.0.M3
 	ee.j2se; version=${javac.ee},\
 	aQute.libg; version=project,\
 	biz.aQute.bndlib; version=project,\
-	biz.aQute.repository; version=project,\
+	biz.aQute.repository; version=project;packages=**,\
 	lib/aether-api-${aether-version}.jar; version=file,\
 	lib/aether-spi-${aether-version}.jar; version=file,\
 	lib/aether-impl-${aether-version}.jar; version=file,\

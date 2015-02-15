@@ -10,14 +10,14 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	osgi.core;version=4.3.1,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-	org.osgi.impl.bundle.bindex,\
-	org.osgi.impl.bundle.repoindex.lib;version=2.1.2,\
+	org.osgi.impl.bundle.bindex;packages=**,\
+	org.osgi.impl.bundle.repoindex.lib;version=latest;packages=**,\
 	osgi.cmpn;version=4.3.1,\
 	osgi.r5;version=1.0.1,\
 	lib/javax.xml.stream-1.0.1.jar;version=file,\
 	ee.j2se;version=${javac.ee},\
 	${jetty.libs},\
-	aQute.jpm.bndrepo;version=1.0
+	aQute.jpm.bndrepo;version=1.0;packages=**
 -testpath: \
 	junit.osgi,\
 	org.mockito.mockito-all
