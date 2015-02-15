@@ -1,4 +1,4 @@
-package bndtools.views;
+package bndtools.views.repository;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;

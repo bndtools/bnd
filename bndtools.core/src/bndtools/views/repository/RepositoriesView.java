@@ -1,4 +1,4 @@
-package bndtools.views;
+package bndtools.views.repository;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.Function;
 import org.bndtools.utils.swt.FilterPanelPart;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
@@ -48,6 +49,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
@@ -65,16 +67,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
@@ -109,7 +110,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
     private Action collapseAllAction;
     private Action refreshAction;
-    private Action addBundlesAction;
+    private Action advancedSearchAction;
 
     private ServiceRegistration<RepositoryListenerPlugin> registration;
 
@@ -206,7 +207,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                         File tmp = File.createTempFile("dwnl", ".jar");
                         IO.copy(url, tmp);
                         copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), new File[] {
-                            tmp
+                                tmp
                         });
                     } catch (Exception e) {
                         return false;
@@ -240,7 +241,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 URLTransfer.getInstance(), FileTransfer.getInstance(), ResourceTransfer.getInstance(), LocalSelectionTransfer.getTransfer()
         }, dropAdapter);
         viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-            LocalSelectionTransfer.getTransfer()
+                LocalSelectionTransfer.getTransfer()
         }, new SelectionDragAdapter(viewer));
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -253,7 +254,6 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                     RepositoryPlugin repo = (RepositoryPlugin) element;
                     writableRepoSelected = repo.canWrite();
                 }
-                addBundlesAction.setEnabled(writableRepoSelected);
             }
         });
         tree.addMouseListener(new MouseAdapter() {
@@ -405,7 +405,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         };
         collapseAllAction.setText("Collapse All");
         collapseAllAction.setToolTipText("Collapse All");
-        collapseAllAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/collapseall.gif"));
+        collapseAllAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/collapseall.gif"));
 
         refreshAction = new Action() {
             @Override
@@ -415,29 +415,30 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         };
         refreshAction.setText("Refresh");
         refreshAction.setToolTipText("Refresh Repositories Tree");
-        refreshAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_refresh.png"));
+        refreshAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png"));
 
-        addBundlesAction = new Action() {
+        advancedSearchAction = new Action("Advanced Search", Action.AS_CHECK_BOX) {
             @Override
             public void run() {
-                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-                Object element = selection.getFirstElement();
-                if (element != null && element instanceof RepositoryPlugin) {
-                    RepositoryPlugin repo = (RepositoryPlugin) element;
-                    if (repo.canWrite()) {
-                        AddFilesToRepositoryWizard wizard = new AddFilesToRepositoryWizard(repo, new File[0]);
-                        WizardDialog dialog = new WizardDialog(getViewSite().getShell(), wizard);
-                        dialog.open();
-
-                        viewer.refresh(repo);
+                if (advancedSearchAction.isChecked()) {
+                    AdvancedSearchDialog dialog = new AdvancedSearchDialog(getSite().getShell());
+                    if (Window.OK == dialog.open()) {
+                        Requirement req = dialog.getRequirement();
+                        contentProvider.setRequirementFilter(req);
+                        viewer.refresh();
+                        viewer.expandToLevel(2);
+                    } else {
+                        advancedSearchAction.setChecked(false);
                     }
+                } else {
+                    contentProvider.setRequirementFilter(null);
+                    viewer.refresh();
                 }
             }
         };
-        addBundlesAction.setEnabled(false);
-        addBundlesAction.setText("Add");
-        addBundlesAction.setToolTipText("Add Bundles to Repository");
-        addBundlesAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJ_ADD));
+        advancedSearchAction.setText("Advanced Search");
+        advancedSearchAction.setToolTipText("Toggle Advanced Search");
+        advancedSearchAction.setImageDescriptor(Icons.desc("search"));
     }
 
     void createContextMenu() {
@@ -579,9 +580,9 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     }
 
     private void fillToolBar(IToolBarManager toolBar) {
+        toolBar.add(advancedSearchAction);
         toolBar.add(refreshAction);
         toolBar.add(collapseAllAction);
-        toolBar.add(addBundlesAction);
         toolBar.add(new Separator());
     }
 

@@ -6,7 +6,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -14,6 +17,9 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -21,6 +27,8 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
+import aQute.bnd.service.repository.SearchableRepository;
+import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 
 public class RepositoryTreeContentProvider implements ITreeContentProvider {
@@ -33,6 +41,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     private String rawFilter = null;
     private String wildcardFilter = null;
     private boolean showRepos = true;
+
+    private Requirement requirementFilter = null;
 
     public RepositoryTreeContentProvider() {
         this.phases = EnumSet.allOf(ResolutionPhase.class);
@@ -56,6 +66,10 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
             wildcardFilter = null;
         else
             wildcardFilter = "*" + filter.trim() + "*";
+    }
+
+    public void setRequirementFilter(Requirement requirement) {
+        this.requirementFilter = requirement;
     }
 
     public void setShowRepos(boolean showRepos) {
@@ -213,21 +227,52 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result;
     }
 
-    Object[] getRepositoryBundles(RepositoryPlugin repo) {
+    Object[] getRepositoryBundles(RepositoryPlugin repoPlugin) {
         Object[] result = null;
+
+        if (requirementFilter != null) {
+            if (repoPlugin instanceof SearchableRepository) {
+                SearchableRepository searchableRepo = (SearchableRepository) repoPlugin;
+                try {
+                    Set<ResourceDescriptor> resources = searchableRepo.findResources(requirementFilter, false);
+                    result = new RepositoryBundle[resources.size()];
+
+                    int i = 0;
+                    for (ResourceDescriptor desc : resources) {
+                        RepositoryBundle wrapper = new RepositoryBundle(repoPlugin, desc.bsn);
+                        result[i++] = wrapper;
+                    }
+                } catch (Exception e) {
+                    logger.logError(MessageFormat.format("Error querying repository {0}.", repoPlugin.getName()), e);
+                }
+            } else if (repoPlugin instanceof Repository) {
+                Set<RepositoryResourceElement> resultSet = new LinkedHashSet<RepositoryResourceElement>();
+
+                Repository osgiRepo = (Repository) repoPlugin;
+                Map<Requirement,Collection<Capability>> providers = osgiRepo.findProviders(Collections.singleton(requirementFilter));
+
+                for (Entry<Requirement,Collection<Capability>> providersEntry : providers.entrySet()) {
+                    for (Capability providerCap : providersEntry.getValue())
+                        resultSet.add(new RepositoryResourceElement(providerCap.getResource()));
+                }
+
+                result = resultSet.toArray(new Object[resultSet.size()]);
+            }
+            return result;
+        }
 
         List<String> bsns = null;
         try {
-            bsns = repo.list(wildcardFilter);
+            bsns = repoPlugin.list(wildcardFilter);
         } catch (Exception e) {
-            logger.logError(MessageFormat.format("Error querying repository {0}.", repo.getName()), e);
+            logger.logError(MessageFormat.format("Error querying repository {0}.", repoPlugin.getName()), e);
         }
         if (bsns != null) {
             Collections.sort(bsns);
             result = new RepositoryBundle[bsns.size()];
             int i = 0;
             for (String bsn : bsns) {
-                result[i++] = new RepositoryBundle(repo, bsn);
+                result[i++] = new RepositoryBundle(repoPlugin, bsn);
             }
         }
         return result;

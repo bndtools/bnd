@@ -33,6 +33,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     final Image localRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database.png").createImage();
     final Image remoteRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database_link.png").createImage();
     final Image bundleImg = Icons.desc("bundle").createImage();
+    final Image matchImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/star-small.png").createImage();
     final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
 
     private final boolean showRepoId;
@@ -63,6 +64,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             }
         } else if (element instanceof Project) {
             if (index == 0) {
+                @SuppressWarnings("resource")
                 Project project = (Project) element;
                 StyledString label = new StyledString(project.getName());
                 if (showRepoId)
@@ -106,6 +108,15 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 cell.setText(styledString.getString());
                 cell.setStyleRanges(styledString.getStyleRanges());
             }
+        } else if (element instanceof RepositoryResourceElement) {
+            RepositoryResourceElement resourceElem = (RepositoryResourceElement) element;
+            StyledString label = new StyledString();
+            label.append(resourceElem.getIdentity()).append(" ");
+            label.append(resourceElem.getVersionString(), StyledString.COUNTER_STYLER);
+
+            cell.setText(label.getString());
+            cell.setStyleRanges(label.getStyleRanges());
+            cell.setImage(matchImg);
         } else if (element instanceof ContinueSearchElement) {
             StyledString label = new StyledString("Continue Search on JPM4J.org...", new HyperlinkStyler());
             cell.setText(label.getString());
@@ -153,6 +164,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         localRepoImg.dispose();
         remoteRepoImg.dispose();
         bundleImg.dispose();
+        matchImg.dispose();
     }
 
     @Override

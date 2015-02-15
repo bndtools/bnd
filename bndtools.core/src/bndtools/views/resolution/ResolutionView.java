@@ -8,7 +8,7 @@
  * Contributors:
  *     Neil Bartlett - initial API and implementation
  *******************************************************************************/
-package bndtools.views;
+package bndtools.views.resolution;
 
 import java.io.File;
 import java.text.MessageFormat;

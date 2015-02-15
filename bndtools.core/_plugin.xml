@@ -174,7 +174,7 @@
       </category>
       <view
             category="bndtools.viewCategory"
-            class="bndtools.views.ResolutionView"
+            class="bndtools.views.resolution.ResolutionView"
             icon="${icons.capreq}"
             id="bndtools.impExpView"
             name="Resolution"
@@ -182,7 +182,7 @@
       </view>
       <view
             category="bndtools.viewCategory"
-            class="bndtools.views.RepositoriesView"
+            class="bndtools.views.repository.RepositoriesView"
             icon="icons/database.png"
             id="bndtools.repositoriesView"
             name="Repositories"

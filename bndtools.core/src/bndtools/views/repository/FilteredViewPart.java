@@ -1,4 +1,4 @@
-package bndtools.views;
+package bndtools.views.repository;
 
 import org.bndtools.utils.swt.FilterPanelPart;
 import org.eclipse.jface.action.Action;
