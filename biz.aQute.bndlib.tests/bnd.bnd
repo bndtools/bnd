@@ -2,7 +2,7 @@
 -nobundles: true
 
 -buildpath: \
-    biz.aQute.bndlib;version=project,\
+    biz.aQute.bndlib;version=project;packages=**,\
     biz.aQute.bnd.test;version=project,\
 	org.osgi.service.component.annotations;version=6.0.0,\
 	org.osgi.service.metatype.annotations;version=6.0.0,\

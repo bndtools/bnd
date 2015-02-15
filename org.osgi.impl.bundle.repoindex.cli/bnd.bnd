@@ -1,7 +1,7 @@
 # Build settings
 -buildpath: \
 	org.osgi.impl.bundle.repoindex.api;version=project,\
-	org.osgi.impl.bundle.repoindex.lib;version=project,\
+	org.osgi.impl.bundle.repoindex.lib;version=project;packages=**,\
 	ee.j2se;version=${javac.ee},\
 	osgi.core;version=4.3.1,\
 	osgi.cmpn;version=4.3.1,\

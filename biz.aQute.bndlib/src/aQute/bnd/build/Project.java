@@ -2115,12 +2115,11 @@ public class Project extends Processor {
 	 * @return null or the builder for a sub file.
 	 * @throws Exception
 	 */
-	public Container getDeliverable(String bsn, @SuppressWarnings("unused")
-	Map<String,String> attrs) throws Exception {
+	public Container getDeliverable(String bsn, Map<String,String> attrs) throws Exception {
 		Collection< ? extends Builder> builders = getSubBuilders();
 		for (Builder sub : builders) {
 			if (sub.getBsn().equals(bsn))
-				return new Container(this, getOutputFile(bsn, sub.getVersion()));
+				return new Container(this, getOutputFile(bsn, sub.getVersion()), attrs);
 		}
 		return null;
 	}
