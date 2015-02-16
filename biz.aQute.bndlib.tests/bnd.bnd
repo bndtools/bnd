@@ -4,10 +4,11 @@
 -buildpath: \
     biz.aQute.bndlib;version=project;packages=**,\
     biz.aQute.bnd.test;version=project,\
-	org.osgi.service.component.annotations;version=6.0.0,\
-	org.osgi.service.metatype.annotations;version=6.0.0,\
+	org.osgi.service.component;version=1.3.0,\
+	org.osgi.service.component.annotations;version=1.3.0,\
+	org.osgi.service.metatype.annotations;version=1.3.0,\
 	aQute.libg;version=project,\
-	osgi.core;version=@5,\
+	osgi.core;version=@6,\
 	osgi.cmpn;version=@4.3.1,\
 	junit.osgi;version=3.8.2,\
 	ee.j2se;version=${javac.ee},\

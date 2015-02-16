@@ -26,6 +26,9 @@ class ReferenceDef {
 	String					unbind;
 	String					updated;
 	ReferenceScope			scope;
+	String					field;
+	FieldOption				fieldOption;
+	FieldCollectionType		fieldCollectionType;
 
 	/**
 	 * Prepare the reference, will check for any errors.
@@ -49,6 +52,9 @@ class ReferenceDef {
 
 		if (service == null)
 			analyzer.error("No interface specified on %s", name);
+		
+		if (scope != null || field != null)
+			updateVersion(AnnotationReader.V1_3);
 
 	}
 
@@ -85,6 +91,17 @@ class ReferenceDef {
 		
 		if (scope != null)
 			ref.addAttribute("scope", scope.toString());
+		
+		if (field != null)
+			ref.addAttribute("field", field);
+		
+		if (fieldOption != null)
+			ref.addAttribute("field-option", fieldOption.toString());
+		
+		if (fieldCollectionType != null) 
+			ref.addAttribute("field-collection-type", fieldCollectionType.toString());
+			
+			
 
 		return ref;
 	}
