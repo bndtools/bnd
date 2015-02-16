@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Workspace;
@@ -50,27 +49,25 @@ public class BndContainerSourceManager {
     /**
      * Persist the attached sources for given {@link IClasspathEntry} instances.
      */
-    public static void saveAttachedSources(final IJavaProject project, final List<IClasspathEntry> classpathEntries) throws CoreException {
+    public static void saveAttachedSources(final IProject project, final IClasspathEntry[] classpathEntries) throws CoreException {
         final Properties props = new Properties();
 
-        if (classpathEntries != null) {
-            // Construct the Properties that represent the source attachment(s)
-            for (final IClasspathEntry entry : classpathEntries) {
-                if (IClasspathEntry.CPE_LIBRARY != entry.getEntryKind()) {
-                    continue;
-                }
-                final String path = entry.getPath().toPortableString();
-                if (entry.getSourceAttachmentPath() != null) {
-                    props.put(path + PROPERTY_SRC_PATH, entry.getSourceAttachmentPath().toPortableString());
-                }
-                if (entry.getSourceAttachmentRootPath() != null) {
-                    props.put(path + PROPERTY_SRC_ROOT, entry.getSourceAttachmentRootPath().toPortableString());
-                }
+        // Construct the Properties that represent the source attachment(s)
+        for (final IClasspathEntry entry : classpathEntries) {
+            if (IClasspathEntry.CPE_LIBRARY != entry.getEntryKind()) {
+                continue;
+            }
+            final String path = entry.getPath().toPortableString();
+            if (entry.getSourceAttachmentPath() != null) {
+                props.put(path + PROPERTY_SRC_PATH, entry.getSourceAttachmentPath().toPortableString());
+            }
+            if (entry.getSourceAttachmentRootPath() != null) {
+                props.put(path + PROPERTY_SRC_ROOT, entry.getSourceAttachmentRootPath().toPortableString());
             }
         }
 
         // Write the properties to a persistent storage area
-        final File propertiesFile = getSourceAttachmentPropertiesFile(project.getProject());
+        final File propertiesFile = getSourceAttachmentPropertiesFile(project);
         if (props.isEmpty()) {
             IO.delete(propertiesFile);
         } else {
@@ -90,8 +87,12 @@ public class BndContainerSourceManager {
      * Return (a potentially modified) list of {@link IClasspathEntry} instances that will have any previously persisted
      * attached sources added.
      */
-    public static List<IClasspathEntry> loadAttachedSources(final IJavaProject project, final List<IClasspathEntry> classPathEntries) throws CoreException {
-        final Properties props = loadSourceAttachmentProperties(project.getProject());
+    public static List<IClasspathEntry> loadAttachedSources(final IProject project, final List<IClasspathEntry> classPathEntries) throws CoreException {
+        if (classPathEntries.isEmpty()) {
+            return classPathEntries;
+        }
+
+        final Properties props = loadSourceAttachmentProperties(project);
 
         final List<IClasspathEntry> configuredClassPathEntries = new ArrayList<IClasspathEntry>(classPathEntries.size());
 
