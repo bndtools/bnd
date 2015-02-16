@@ -27,17 +27,17 @@ import aQute.bnd.osgi.Builder;
 import aQute.service.reporter.Report.Location;
 
 class MarkerSupport {
-    private static final ILogger logger = Logger.getLogger(FutureBuilder.class);
+    private static final ILogger logger = Logger.getLogger(BndtoolsBuilder.class);
     private final IProject project;
-    private final MultiStatus validationResults = new MultiStatus(FutureBuilder.PLUGIN_ID, 0, "Validation errors in bnd project", null);
+    private final MultiStatus validationResults = new MultiStatus(BndtoolsBuilder.PLUGIN_ID, 0, "Validation errors in bnd project", null);
 
-    MarkerSupport(FutureBuilder builder) {
+    MarkerSupport(BndtoolsBuilder builder) {
         this.project = builder.getProject();
     }
 
-    boolean hasBlockingErrors() {
+    boolean hasBlockingErrors(DeltaWrapper dw) {
         try {
-            if (containsError(project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE)))
+            if (containsError(dw, project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE)))
                 return true;
             return false;
         } catch (CoreException e) {
@@ -123,12 +123,24 @@ class MarkerSupport {
         return severity;
     }
 
-    private static boolean containsError(IMarker[] markers) {
+    private static boolean containsError(DeltaWrapper dw, IMarker[] markers) {
         if (markers != null)
             for (IMarker marker : markers) {
+
                 int severity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-                if (severity == IMarker.SEVERITY_ERROR)
+                if (severity == IMarker.SEVERITY_ERROR) {
+
+                    //
+                    // markers in the test folder don't count.
+                    // They should not rebuild nor stop building
+                    // the target
+                    //
+
+                    if (dw.isTestBin(marker.getResource()))
+                        continue;
+
                     return true;
+                }
             }
         return false;
     }
