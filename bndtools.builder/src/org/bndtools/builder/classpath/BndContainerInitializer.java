@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
@@ -391,15 +393,25 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
     }
 
-    private static List<IAccessRule> calculateContainerAccessRules(Container c) {
-        List<IAccessRule> accessRules = new ArrayList<IAccessRule>();
+    private static final Pattern packagePattern = Pattern.compile("\\.|\\*");
 
+    private static List<IAccessRule> calculateContainerAccessRules(Container c) {
         String packageList = c.getAttributes().get("packages");
         if (packageList != null) {
             // Use packages=** for full access
+            List<IAccessRule> accessRules = new ArrayList<IAccessRule>();
             for (String exportPkg : packageList.split("\\s*,\\s*")) {
-                String pathStr = exportPkg.replace('.', '/') + "/*";
-                accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+                Matcher m = packagePattern.matcher(exportPkg);
+                StringBuffer pathStr = new StringBuffer(exportPkg.length() + 1);
+                while (m.find()) {
+                    String matched = m.group();
+                    if (matched.equals("."))
+                        m.appendReplacement(pathStr, "/");
+                    else
+                        m.appendReplacement(pathStr, "**");
+                }
+                m.appendTail(pathStr).append("/*");
+                accessRules.add(JavaCore.newAccessRule(new Path(pathStr.toString()), IAccessRule.K_ACCESSIBLE));
             }
             return accessRules;
         }
@@ -412,6 +424,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 if (p.getContained().isEmpty()) {
                     break; // no builder information; so full access
                 }
+                List<IAccessRule> accessRules = new ArrayList<IAccessRule>();
                 for (PackageRef exportPkg : p.getExports().keySet()) {
                     String pathStr = exportPkg.getBinary() + "/*";
                     accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
@@ -433,6 +446,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             if (mf.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) == null) {
                 break; // not a bundle; so full access
             }
+            List<IAccessRule> accessRules = new ArrayList<IAccessRule>();
             Parameters exportPkgs = new Parameters(mf.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
             for (String exportPkg : exportPkgs.keySet()) {
                 String pathStr = exportPkg.replace('.', '/') + "/*";
