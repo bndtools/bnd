@@ -52,18 +52,18 @@ import bndtools.preferences.CompileErrorAction;
  * rewrite of the NewBuilder. Left out are the Eclipse classpath include in a build option and being able to continue
  * even when there are errors.
  */
-public class FutureBuilder extends IncrementalProjectBuilder {
-
+public class BndtoolsBuilder extends IncrementalProjectBuilder {
     public static final String PLUGIN_ID = "bndtools.builder";
     public static final String BUILDER_ID = BndtoolsConstants.BUILDER_ID;
 
-    private static final ILogger logger = Logger.getLogger(FutureBuilder.class);
-    private static final Set<Project> dirty = new HashSet<Project>();
-    private static CnfWatcher cnfWatcher = CnfWatcher.install();
+    private static final ILogger logger = Logger.getLogger(BndtoolsBuilder.class);
+    static final Set<Project> dirty = new HashSet<Project>();
+    static {
+        CnfWatcher.install();
+    }
 
     private Project model;
     private BuildLogger buildLog;
-    private int revision;
 
     /**
      * Called from Eclipse when it thinks this project should be build. We're proposed to figure out if we've changed
@@ -120,12 +120,6 @@ public class FutureBuilder extends IncrementalProjectBuilder {
 
             boolean force = false;
 
-            if (revision != cnfWatcher.getRevision()) {
-                buildLog.basic("Was out of date relative to cnf %s-%s", revision, cnfWatcher.getRevision());
-                this.revision = cnfWatcher.getRevision();
-                force = true;
-            }
-
             force |= resetClasspathContainer(myProject, model.getErrors());
 
             if (dirty.remove(model)) {
@@ -163,7 +157,7 @@ public class FutureBuilder extends IncrementalProjectBuilder {
 
             markers.validate(model);
 
-            if (markers.hasBlockingErrors()) {
+            if (markers.hasBlockingErrors(delta)) {
                 markers.addBuildMarkers(model, IMarker.SEVERITY_ERROR, "Will not build OSGi bundle(s) for project %s until  the compilation problems are fixed.", model.getName());
 
                 if (actionOnCompileError != CompileErrorAction.build) {

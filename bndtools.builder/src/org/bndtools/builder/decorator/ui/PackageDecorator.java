@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import org.bndtools.builder.NewBuilder;
+import org.bndtools.builder.BndtoolsBuilder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaProject;
@@ -27,8 +27,8 @@ import bndtools.central.Central;
  */
 public class PackageDecorator extends LabelProvider implements ILightweightLabelDecorator {
 
-    private final ImageDescriptor exportedIcon = AbstractUIPlugin.imageDescriptorFromPlugin(NewBuilder.PLUGIN_ID, "icons/plus-decorator.png");
-    private final ImageDescriptor excludedIcon = AbstractUIPlugin.imageDescriptorFromPlugin(NewBuilder.PLUGIN_ID, "icons/excluded_ovr.gif");
+    private final ImageDescriptor exportedIcon = AbstractUIPlugin.imageDescriptorFromPlugin(BndtoolsBuilder.PLUGIN_ID, "icons/plus-decorator.png");
+    private final ImageDescriptor excludedIcon = AbstractUIPlugin.imageDescriptorFromPlugin(BndtoolsBuilder.PLUGIN_ID, "icons/excluded_ovr.gif");
 
     @Override
     public void decorate(Object element, IDecoration decoration) {
