@@ -1353,6 +1353,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public static class ref_on_comp implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 		
+		@SuppressWarnings("unused")
 		private List<LogService> logField;
 		
 		protected void setLogMethod(LogService logService) {};
