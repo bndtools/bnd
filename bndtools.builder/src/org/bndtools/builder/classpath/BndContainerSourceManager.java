@@ -15,7 +15,7 @@ import java.util.Properties;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
-import org.bndtools.builder.NewBuilder;
+import org.bndtools.builder.BndtoolsBuilder;
 import org.bndtools.builder.BuilderPlugin;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -79,7 +79,7 @@ public class BndContainerSourceManager {
                 out = new FileOutputStream(propertiesFile);
                 props.store(out, new Date().toString());
             } catch (final IOException e) {
-                throw new CoreException(new Status(Status.ERROR, NewBuilder.PLUGIN_ID, "Failure to write container source attachments", e));
+                throw new CoreException(new Status(Status.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to write container source attachments", e));
             } finally {
                 IO.close(out);
             }
@@ -159,34 +159,38 @@ public class BndContainerSourceManager {
         JarInputStream jarStream = null;
         try {
             jarStream = new JarInputStream(new FileInputStream(bundlePath.toFile()), false);
-            Manifest manifest = jarStream.getManifest();
-            if (manifest == null) {
-                return null;
-            }
-
-            Domain domain = Domain.domain(manifest);
-            Entry<String, Attrs> bsnAttrs = domain.getBundleSymbolicName();
-            if (bsnAttrs == null) {
-                return null;
-            }
-            String bsn = bsnAttrs.getKey();
-            String version = domain.getBundleVersion();
-
-            if (version == null) {
-                version = props.get("version");
-            }
-
-            for (RepositoryPlugin repo : RepositoryUtils.listRepositories(true)) {
-                if (repo == null) {
-                    continue;
+            try {
+                Manifest manifest = jarStream.getManifest();
+                if (manifest == null) {
+                    return null;
                 }
-                if (repo instanceof WorkspaceRepository) {
-                    continue;
+
+                Domain domain = Domain.domain(manifest);
+                Entry<String,Attrs> bsnAttrs = domain.getBundleSymbolicName();
+                if (bsnAttrs == null) {
+                    return null;
                 }
-                File sourceBundle = repo.get(bsn + ".source", new Version(version), props);
-                if (sourceBundle != null) {
-                    return sourceBundle;
+                String bsn = bsnAttrs.getKey();
+                String version = domain.getBundleVersion();
+
+                if (version == null) {
+                    version = props.get("version");
                 }
+
+                for (RepositoryPlugin repo : RepositoryUtils.listRepositories(true)) {
+                    if (repo == null) {
+                        continue;
+                    }
+                    if (repo instanceof WorkspaceRepository) {
+                        continue;
+                    }
+                    File sourceBundle = repo.get(bsn + ".source", new Version(version), props);
+                    if (sourceBundle != null) {
+                        return sourceBundle;
+                    }
+                }
+            } finally {
+                jarStream.close();
             }
         } catch (final Exception e) {
             // Ignore, something went wrong, or we could not find the source bundle
@@ -207,7 +211,7 @@ public class BndContainerSourceManager {
                 in = new FileInputStream(propertiesFile);
                 props.load(in);
             } catch (final IOException e) {
-                throw new CoreException(new Status(Status.ERROR, NewBuilder.PLUGIN_ID, "Failure to read container source attachments", e));
+                throw new CoreException(new Status(Status.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to read container source attachments", e));
             } finally {
                 IO.close(in);
             }
@@ -216,8 +220,8 @@ public class BndContainerSourceManager {
         return props;
     }
 
-	private static File getSourceAttachmentPropertiesFile(final IProject project) {
-		return new File(BuilderPlugin.getInstance().getStateLocation().toFile(), project.getName() + ".sources"); //$NON-NLS-1$
-	}
+    private static File getSourceAttachmentPropertiesFile(final IProject project) {
+        return new File(BuilderPlugin.getInstance().getStateLocation().toFile(), project.getName() + ".sources"); //$NON-NLS-1$
+    }
 
 }

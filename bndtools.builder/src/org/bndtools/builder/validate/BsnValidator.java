@@ -1,7 +1,7 @@
 package org.bndtools.builder.validate;
 
 import org.bndtools.api.IValidator;
-import org.bndtools.builder.NewBuilder;
+import org.bndtools.builder.BndtoolsBuilder;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
@@ -31,7 +31,7 @@ public class BsnValidator implements IValidator {
 
         // Report error if not matching
         if (!actual.equals(expected))
-            status = new Status(IStatus.ERROR, NewBuilder.PLUGIN_ID, 0, String.format("Bundle-SymbolicName '%s' is not valid for builder: %s, expected: %s", actual, (builder.getPropertiesFile() == null ? builder.getBase().getName()
+            status = new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID, 0, String.format("Bundle-SymbolicName '%s' is not valid for builder: %s, expected: %s", actual, (builder.getPropertiesFile() == null ? builder.getBase().getName()
                     : builder.getPropertiesFile().getName()), expected), null);
 
         return status;
