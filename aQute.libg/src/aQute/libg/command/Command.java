@@ -21,6 +21,7 @@ public class Command {
 	Process				process;
 	volatile boolean	timedout;
 	String				fullCommand;
+	private boolean		useThreadForInput;
 
 	public Command(String fullCommand) {
 		this.fullCommand = fullCommand;
@@ -127,7 +128,7 @@ public class Command {
 				cerr.start();
 
 				if (in != null) {
-					if (in == System.in) {
+					if (in == System.in || useThreadForInput) {
 						rdInThread = new Thread("Read Input Thread") {
 							@Override
 							public void run() {
@@ -162,6 +163,7 @@ public class Command {
 						rdInThread.setDaemon(true);
 						rdInThread.start();
 					} else {
+						
 						IO.copy(in, stdin);
 						stdin.close();
 					}
@@ -308,5 +310,13 @@ public class Command {
 			del = " ";
 		}
 		return sb.toString();
+	}
+
+	public List<String> getArguments() {
+		return arguments;
+	}
+
+	public void setUseThreadForInput(boolean useThreadForInput) {
+		this.useThreadForInput = useThreadForInput;
 	}
 }
