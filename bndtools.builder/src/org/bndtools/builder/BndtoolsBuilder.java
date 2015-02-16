@@ -4,12 +4,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
@@ -57,7 +59,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     public static final String BUILDER_ID = BndtoolsConstants.BUILDER_ID;
 
     private static final ILogger logger = Logger.getLogger(BndtoolsBuilder.class);
-    static final Set<Project> dirty = new HashSet<Project>();
+    static final Set<Project> dirty = Collections.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
     static {
         CnfWatcher.install();
     }
