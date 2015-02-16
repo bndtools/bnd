@@ -25,7 +25,7 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\
-	bndtools.utils;version=project;packages=**,\
+	bndtools.utils;version=project;packages=*,\
 	bndtools.core;version=latest, \
 	org.eclipse.core.runtime,\
 	org.eclipse.core.contenttype,\
@@ -33,7 +33,7 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
 	org.eclipse.equinox.common,\
-	org.eclipse.swt.cocoa.macosx.x86_64;packages=**,\
+	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
 	org.eclipse.swt,\
 	org.eclipse.text,\
 	org.eclipse.ui.workbench,\
