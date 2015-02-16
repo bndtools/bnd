@@ -12,10 +12,23 @@ import aQute.lib.io.*;
 public class MacroTest extends TestCase {
 	
 	
-	
+	/**
+	 * Combine
+	 */
+
+	public void testFuntionMacrosAndReplace() throws Exception {
+		Processor processor = new Processor();
+		processor.setProperty("libs", "/lib/a.jar, /lib/b.jar");
+		processor.setProperty("foo", "--${1}--");
+		processor.setProperty("xlibs", "${replace;${libs};/lib/(.*).jar;$0=${foo;$1}}");
+
+		assertEquals("/lib/a.jar=--a--, /lib/b.jar=--b--", processor.getProperty("xlibs"));
+	}
+
 	/**
 	 * File name tests
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	
 	public void testFileNameMacros() throws Exception {
