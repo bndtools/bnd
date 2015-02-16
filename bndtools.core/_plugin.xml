@@ -391,6 +391,11 @@
             id="aQute.bnd.launch.junit.tabgroup"
             type="bndtools.launch.junit">
       </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="bndtools.launch.bnd.NativeLaunchTabGroup"
+            id="aQute.bnd.launch.native.tabgroup"
+            type="bnd.launch">
+      </launchConfigurationTabGroup>
    </extension>
 
    <!-- DEFINE LAUNCH CONFIGURATION TYPES -->
@@ -411,6 +416,15 @@
          sourceLocatorId="org.bndtools.core.launch.BndDependencySourceLookupDirector"
          sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer"
       />
+      <launchConfigurationType
+        delegate="bndtools.launch.bnd.NativeBndLaunchDelegate"
+        id="bnd.launch"
+        modes="run, debug"               
+        name="bnd Native"
+        sourceLocatorId="org.bndtools.core.launch.BndDependencySourceLookupDirector"
+        sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer"
+      >        
+      </launchConfigurationType>
    </extension>
 
    <!-- DEFINE THE "Bnd Dependencies" SOURCE CONTAINER TYPE -->
@@ -538,6 +552,41 @@
          </contextualLaunch>
       </shortcut>
 
+      <shortcut
+            class="bndtools.launch.bnd.RunShortcut"
+            icon="icons/bricks_run.png"
+            id="bnd.launch.runShortcut"
+            label="Bnd Native Launcher"
+            modes="run, debug"
+            path="bndtools.launch.core">
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <or>
+                        <!-- Java/Bnd Project -->
+                        <and>
+                           <test property="org.eclipse.jdt.launching.isContainer"/>
+                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
+                           <test property="org.eclipse.jdt.launching.hasProjectNature" args="bndtools.core.bndnature"/>
+                        </and>
+
+						<!-- bnd.bnd or *.bndrun file -->
+						<and>
+							<instanceof value="org.eclipse.core.resources.IResource" />
+							<or>
+								<test property="org.eclipse.core.resources.name" value="bnd.bnd" />
+								<test property="org.eclipse.core.resources.extension" value="bndrun" />
+							</or>
+						</and>
+                     </or>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+
    </extension>
 
     <extension
@@ -589,6 +638,11 @@
              configTypeID="bndtools.launch.junit"
              icon="icons/bricks_junit.png"
              id="bndtools.core.launchConfigImages.test">
+       </launchConfigurationTypeImage>
+       <launchConfigurationTypeImage
+             configTypeID="bnd.launch"
+             icon="icons/bricks_run.png"
+             id="bnd.launchConfigImages.run">
        </launchConfigurationTypeImage>
     </extension>
     <extension

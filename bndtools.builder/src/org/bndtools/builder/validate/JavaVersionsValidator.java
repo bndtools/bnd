@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.bndtools.api.IValidator;
 import org.bndtools.api.Logger;
-import org.bndtools.builder.NewBuilder;
+import org.bndtools.builder.BndtoolsBuilder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
@@ -42,7 +42,7 @@ public class JavaVersionsValidator implements IValidator {
 
     private IStatus getReport(JavaVersionsValidatorFlag flag, String javaVersionTitle, String bndValue, String eclipseValue, String property) {
         String s = String.format("Java %s inconsistency: bnd has '%s' while Eclipse has '%s'. Set the bnd '%s' property or change the Eclipse project setup.", javaVersionTitle, bndValue, eclipseValue, property);
-        return new Status(IStatus.WARNING, NewBuilder.PLUGIN_ID, flag.getValue(), s, null);
+        return new Status(IStatus.WARNING, BndtoolsBuilder.PLUGIN_ID, flag.getValue(), s, null);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class JavaVersionsValidator implements IValidator {
             if (!reports.isEmpty()) {
                 IStatus[] reportsArray = new IStatus[reports.size()];
                 reports.toArray(reportsArray);
-                status = new MultiStatus(NewBuilder.PLUGIN_ID, 0, reportsArray, "Project paths mismatch" + (reports.size() > 1 ? "es" : ""), null);
+                status = new MultiStatus(BndtoolsBuilder.PLUGIN_ID, 0, reportsArray, "Project paths mismatch" + (reports.size() > 1 ? "es" : ""), null);
             }
         } catch (Throwable e) {
             Logger.getLogger(this.getClass()).logError("Error during java versions validation", e);

@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.bndtools.build.api.AbstractBuildListener;
-import org.bndtools.builder.NewBuilder;
+import org.bndtools.builder.BndtoolsBuilder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -65,7 +65,7 @@ public class CnfSetupBuildListener extends AbstractBuildListener {
                 Workspace ws = Central.getWorkspace();
                 projects = ws.getBuildOrder();
             } catch (Exception e) {
-                throw new CoreException(new Status(IStatus.ERROR, NewBuilder.PLUGIN_ID, 0, "Error rebuilding bnd projects after creating workspace configuration.", e));
+                throw new CoreException(new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID, 0, "Error rebuilding bnd projects after creating workspace configuration.", e));
             }
             if (projects == null || projects.isEmpty())
                 return Status.OK_STATUS;

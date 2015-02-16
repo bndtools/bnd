@@ -21,10 +21,10 @@
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.launching,\
 	org.eclipse.jdt.ui,\
-	org.eclipse.swt.cocoa.macosx.x86_64;packages=**,\
+	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
 	org.eclipse.swt,\
 	bndtools.api;version=latest,\
-	bndtools.utils;version=project;packages=**,\
+	bndtools.utils;version=project;packages=*,\
 	bndtools.core;version=snapshot
 
 # Headers

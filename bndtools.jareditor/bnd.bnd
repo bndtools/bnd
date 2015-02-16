@@ -13,7 +13,7 @@ Include-Resource: resources
 	org.eclipse.ui.ide,\
 	org.eclipse.ui,\
 	org.eclipse.swt,\
-	org.eclipse.swt.cocoa.macosx.x86_64;packages=**,\
+	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
 	org.eclipse.jface,\
 	org.eclipse.ui.workbench,\
 	org.eclipse.ui.workbench.texteditor,\

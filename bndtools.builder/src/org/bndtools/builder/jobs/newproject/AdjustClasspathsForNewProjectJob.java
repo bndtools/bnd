@@ -51,7 +51,6 @@ class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
                 try {
                     project.propertiesChanged();
                     BndContainerInitializer.resetClasspaths(project, eclipseProject, errors);
-                    BndContainerInitializer.replaceClasspathProblemMarkers(eclipseProject, errors);
                 } catch (CoreException e) {
                     logger.logStatus(e.getStatus());
                     return Status.CANCEL_STATUS;

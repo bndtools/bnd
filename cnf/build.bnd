@@ -121,8 +121,3 @@ Bundle-SCM:               url=https://github.com/bndtools/bndtools, \
 -diffignore: Git-Descriptor,Git-SHA
 
 -removeheaders: Include-Resource, Private-Package
-
-# bndtools pull request #1003 and #999
-# we're vetting the new access rules for a while before adjusting
-# the fundamentals of bndtools out from under our users. heh.
-eclipse.newaccessrules: true

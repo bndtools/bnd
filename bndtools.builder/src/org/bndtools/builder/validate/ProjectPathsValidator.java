@@ -8,7 +8,7 @@ import org.bndtools.api.IValidator;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
-import org.bndtools.builder.NewBuilder;
+import org.bndtools.builder.BndtoolsBuilder;
 import org.bndtools.utils.javaproject.JavaProjectUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -42,7 +42,7 @@ public class ProjectPathsValidator implements IValidator {
 
     private IStatus getReport(ProjectPathsValidatorFlag flag, String sourceSetName, String bndValue, String eclipseValue, String property) {
         String s = String.format("%s inconsistency: bnd has '%s' while Eclipse has '%s'. Set the bnd '%s' property or change the Eclipse project setup.", sourceSetName, bndValue, eclipseValue, property);
-        return new Status(IStatus.ERROR, NewBuilder.PLUGIN_ID, flag.getValue(), s, null);
+        return new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID, flag.getValue(), s, null);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class ProjectPathsValidator implements IValidator {
             if (!reports.isEmpty()) {
                 IStatus[] reportsArray = new IStatus[reports.size()];
                 reports.toArray(reportsArray);
-                status = new MultiStatus(NewBuilder.PLUGIN_ID, 0, reportsArray, "Project paths mismatch" + (reports.size() > 1 ? "es" : ""), null);
+                status = new MultiStatus(BndtoolsBuilder.PLUGIN_ID, 0, reportsArray, "Project paths mismatch" + (reports.size() > 1 ? "es" : ""), null);
             }
         } catch (Throwable e) {
             Logger.getLogger(this.getClass()).logError("Error during project paths validation", e);

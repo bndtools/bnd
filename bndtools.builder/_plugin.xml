@@ -20,7 +20,7 @@
 		name="Bndtools Builder"
 		>
 		<builder callOnEmptyDelta="true" hasNature="true">
-			<run class="org.bndtools.builder.NewBuilder" />
+			<run class="org.bndtools.builder.BndtoolsBuilder" />
 		</builder>
 	</extension>
 
