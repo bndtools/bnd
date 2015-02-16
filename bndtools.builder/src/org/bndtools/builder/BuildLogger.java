@@ -5,9 +5,9 @@ import java.util.Formatter;
 import aQute.bnd.build.Project;
 
 public class BuildLogger {
-    static final int LOG_FULL = 2;
-    static final int LOG_BASIC = 1;
-    static final int LOG_NONE = 0;
+    public static final int LOG_FULL = 2;
+    public static final int LOG_BASIC = 1;
+    public static final int LOG_NONE = 0;
     private final int level;
     long start = System.currentTimeMillis();
     Formatter formatter = new Formatter();

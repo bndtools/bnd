@@ -21,6 +21,7 @@ import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ModelListener;
+import org.bndtools.builder.BuildLogger;
 import org.bndtools.utils.jar.JarUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -51,6 +52,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import bndtools.central.Central;
 import bndtools.central.RefreshFileJob;
+import bndtools.preferences.BndPreferences;
 
 /**
  * A bnd container reads the bnd.bnd file in the project directory and use the information in there to establish the
@@ -289,15 +291,14 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
         }
 
-        //[cs] set project variable: "eclipse.debug: true" to enable some extra eclipse output for debugging.
-        if (Boolean.parseBoolean(model.getProperty("eclipse.debug", "false"))) {
+        BndPreferences prefs = new BndPreferences();
+        if (prefs.getBuildLogging() == BuildLogger.LOG_FULL) {
             StringBuilder sb = new StringBuilder();
-            sb.append("IClasspathEntrys: project = " + model.getName() + "\n");
-            for (IClasspathEntry f : result) {
-                sb.append("--- " + f + "\n");
+            sb.append("IClasspathEntries ").append(model.getName());
+            for (IClasspathEntry cpe : result) {
+                sb.append("\n--- ").append(cpe);
             }
-            //TODO - should/could be switched to logger (if logger goes to console in eclipse)
-            System.out.println(sb);
+            logger.logInfo(sb.append("\n").toString(), null);
         }
 
         // Refresh once, instead of for each dependent project.
