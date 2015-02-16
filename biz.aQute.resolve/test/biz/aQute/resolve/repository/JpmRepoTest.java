@@ -22,6 +22,7 @@ import aQute.lib.io.*;
 import biz.aQute.resolve.*;
 import biz.aQute.resolve.internal.*;
 
+@SuppressWarnings("restriction")
 public class JpmRepoTest extends TestCase {
 	File							tmp	= new File("tmp");
 	private Workspace				ws;

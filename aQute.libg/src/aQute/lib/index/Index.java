@@ -21,7 +21,7 @@ public class Index implements Iterable<byte[]> {
 	final static int					MAGIC		= 0x494C4458;
 	final static int					KEYSIZE		= 4;
 
-	FileChannel					file;
+	FileChannel							file;
 	final int							pageSize	= 4096;
 	final int							keySize;
 	final int							valueSize	= 8;
@@ -286,30 +286,35 @@ public class Index implements Iterable<byte[]> {
 
 	public Index(File file, int keySize) throws IOException {
 		capacity = (pageSize - Page.START_OFFSET) / (keySize + valueSize);
-		@SuppressWarnings("resource")
+
 		RandomAccessFile raf = new RandomAccessFile(file, "rw");
-		this.file = raf.getChannel();
-		settings = this.file.map(MapMode.READ_WRITE, 0, pageSize);
-		if (this.file.size() == pageSize) {
-			this.keySize = keySize;
-			settings.putInt(SIGNATURE, MAGIC);
-			settings.putInt(KEYSIZE, keySize);
-			nextPage = 1;
-			root = allocate(true);
-			root.n = 1;
-			root.set(0, new byte[KEYSIZE], 0);
-			root.write();
-		} else {
-			if (settings.getInt(SIGNATURE) != MAGIC)
-				throw new IllegalStateException("No Index file, magic is not " + MAGIC);
+		try {
+			this.file = raf.getChannel();
+			settings = this.file.map(MapMode.READ_WRITE, 0, pageSize);
+			if (this.file.size() == pageSize) {
+				this.keySize = keySize;
+				settings.putInt(SIGNATURE, MAGIC);
+				settings.putInt(KEYSIZE, keySize);
+				nextPage = 1;
+				root = allocate(true);
+				root.n = 1;
+				root.set(0, new byte[KEYSIZE], 0);
+				root.write();
+			} else {
+				if (settings.getInt(SIGNATURE) != MAGIC)
+					throw new IllegalStateException("No Index file, magic is not " + MAGIC);
 
-			this.keySize = settings.getInt(KEYSIZE);
-			if (keySize != 0 && this.keySize != keySize)
-				throw new IllegalStateException("Invalid key size for Index file. The file is " + this.keySize
-						+ " and was expected to be " + this.keySize);
+				this.keySize = settings.getInt(KEYSIZE);
+				if (keySize != 0 && this.keySize != keySize)
+					throw new IllegalStateException("Invalid key size for Index file. The file is " + this.keySize
+							+ " and was expected to be " + this.keySize);
 
-			root = getPage(1);
-			nextPage = (int) (this.file.size() / pageSize);
+				root = getPage(1);
+				nextPage = (int) (this.file.size() / pageSize);
+			}
+		}
+		finally {
+			raf.close();
 		}
 	}
 

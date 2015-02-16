@@ -9,6 +9,7 @@ import aQute.bnd.osgi.*;
 
 @SuppressWarnings("resource")
 public class CalltreeTest extends TestCase {
+	@SuppressWarnings("restriction")
 	public static void testCalltree() throws Exception {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);

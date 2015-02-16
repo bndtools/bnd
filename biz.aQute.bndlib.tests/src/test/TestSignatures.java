@@ -7,6 +7,7 @@ import junit.framework.*;
 import test.signatures.*;
 import aQute.bnd.compatibility.*;
 
+@SuppressWarnings("restriction")
 public class TestSignatures extends TestCase {
 	static Signatures	s	= new Signatures();
 

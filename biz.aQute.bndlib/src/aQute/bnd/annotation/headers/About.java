@@ -1,5 +1,7 @@
 package aQute.bnd.annotation.headers;
 
+import aQute.bnd.annotation.licenses.*;
+
 
 /**
  * This package contains a number of annotations that create or append headers

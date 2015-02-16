@@ -5,6 +5,7 @@ import java.util.*;
 import junit.framework.*;
 import aQute.bnd.build.model.conversions.*;
 
+@SuppressWarnings("restriction")
 public class FormattersTest extends TestCase {
 
 	public void testCollectionFormatter() {

@@ -28,6 +28,7 @@ import org.osgi.util.tracker.*;
 import de.kalpatec.pojosr.framework.*;
 import de.kalpatec.pojosr.framework.launch.*;
 
+@SuppressWarnings("restriction")
 public class Index {
 
 	/** the program name */

@@ -20,7 +20,9 @@ import aQute.service.reporter.Report.Location;
 /**
  * #118
  */
-@SuppressWarnings("resource")
+@SuppressWarnings({
+		"resource", "restriction"
+})
 public class DSAnnotationTest extends BndTestCase {
 
 	/**

@@ -12,6 +12,7 @@ import org.osgi.util.tracker.*;
 import de.kalpatec.pojosr.framework.*;
 import de.kalpatec.pojosr.framework.launch.*;
 
+@SuppressWarnings("restriction")
 public class RepoIndexTask extends Task {
 
 	private final List<FileSet> fileSets = new LinkedList<FileSet>();

@@ -14,6 +14,7 @@ import aQute.bnd.build.*;
 import aQute.bnd.service.*;
 import aQute.lib.io.*;
 
+@SuppressWarnings("restriction")
 public class TestCommandLine extends TestCase {
 
 	private static final String	CLI	= "org.osgi.impl.bundle.repoindex.cli";

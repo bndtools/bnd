@@ -20,6 +20,7 @@ import aQute.bnd.osgi.resource.*;
 import aQute.lib.io.*;
 import biz.aQute.resolve.*;
 
+@SuppressWarnings("restriction")
 public class ResolveTest extends TestCase {
 
     private static final LogService log = new NullLogService();

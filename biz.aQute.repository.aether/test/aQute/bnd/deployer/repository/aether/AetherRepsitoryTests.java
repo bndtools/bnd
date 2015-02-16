@@ -1,17 +1,16 @@
 package aQute.bnd.deployer.repository.aether;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedSet;
+import java.io.*;
+import java.util.*;
 
-import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.RepositoryPlugin.DownloadListener;
-import aQute.bnd.version.Version;
-import aQute.lib.io.IO;
 import junit.framework.*;
 import test.lib.*;
+import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin.DownloadListener;
+import aQute.bnd.version.*;
+import aQute.lib.io.*;
 
+@SuppressWarnings("restriction")
 public class AetherRepsitoryTests extends TestCase {
 
 	private static NanoHTTPD httpd;

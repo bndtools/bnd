@@ -10,7 +10,9 @@ import aQute.bnd.signing.*;
 import aQute.lib.io.*;
 import aQute.libg.generics.*;
 
-@SuppressWarnings("resource")
+@SuppressWarnings({
+		"resource", "restriction"
+})
 public class JarSignerTest extends TestCase {
 
 	public static void testNoManifest() throws Exception {

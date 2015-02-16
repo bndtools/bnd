@@ -50,6 +50,7 @@ public class AnnotationsTest extends TestCase {
 		Analyzer analyzer = new Analyzer();
 		File f = IO.getFile("bin/test/AnnotationsTest$MyComponent.class");
 		Clazz c = new Clazz(analyzer, "test.AnnotationsTest.MyComponent", new FileResource(f));
+		@SuppressWarnings("restriction")
 		Map<String,String> map = ComponentAnnotationReader.getDefinition(c);
 		System.err.println(map);
 		assertEquals("mycomp", map.get("name:"));

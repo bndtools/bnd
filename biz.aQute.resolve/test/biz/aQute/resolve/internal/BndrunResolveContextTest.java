@@ -19,6 +19,7 @@ import aQute.bnd.osgi.resource.*;
 import aQute.bnd.service.resolve.hook.*;
 import aQute.lib.io.*;
 
+@SuppressWarnings("restriction")
 public class BndrunResolveContextTest extends TestCase {
 
     private static final LogService log = new NullLogService();
@@ -68,7 +69,7 @@ public class BndrunResolveContextTest extends TestCase {
     /**
      * See if we can reject the 4.0.2 framework, which should normally be selected because it is the highest (this is tested later).
      */
-    public static void testBlacklistFramework() {
+	public static void testBlacklistFramework() {
 
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(IO.getFile("testdata/org.apache.felix.framework-4.0.0.index.xml")));
