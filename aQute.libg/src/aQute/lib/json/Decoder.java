@@ -36,6 +36,9 @@ public class Decoder implements Closeable {
 		return from(new InputStreamReader(in, encoding));
 	}
 
+	public Decoder from(byte[] data) throws Exception {
+		return from(new ByteArrayInputStream(data));
+	}
 	public Decoder charset(String encoding) {
 		this.encoding = encoding;
 		return this;
