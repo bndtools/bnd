@@ -857,6 +857,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		this.properties.putAll(properties);
 	}
 
+	public void setProperties(File base, Properties properties) {
+		doIncludes(base, properties);
+		this.properties.putAll(properties);
+	}
+
 	public void addProperties(File file) throws Exception {
 		addIncluded(file);
 		Properties p = loadProperties(file);
