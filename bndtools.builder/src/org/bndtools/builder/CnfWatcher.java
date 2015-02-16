@@ -45,7 +45,7 @@ public class CnfWatcher implements IResourceChangeListener {
             DeltaWrapper dw = new DeltaWrapper(p, delta, new BuildLogger(0));
             if (dw.hasCnfChanged()) {
                 workspace.refresh();
-                revision++;
+                BndtoolsBuilder.dirty.addAll(workspace.getAllProjects());
             }
         } catch (Exception e) {
             logger.logError("Detecting changes in cnf failed, ignoring", e);
