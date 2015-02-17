@@ -47,7 +47,7 @@ public class RemoteSink implements Sink {
 	}
 
 	@Override
-	public boolean removeAra(String areaId) throws Exception {
+	public boolean removeArea(String areaId) throws Exception {
 		AreaImpl area = areas.remove(areaId);
 		if (area != null) {
 			IO.delete(area.root);
@@ -206,18 +206,11 @@ public class RemoteSink implements Sink {
 		return read(dir);
 	}
 
-	public void removeArea(String areaId) {
-		AreaImpl remove = areas.remove(areaId);
-		if (remove != null) {
-			IO.delete(remove.root);
-		}
-	}
-
 	public Collection< ? extends Area> getAreas() {
 		return areas.values();
 	}
 
-	private AreaImpl read(File areaDir) throws Exception {
+	protected AreaImpl read(File areaDir) throws Exception {
 		AreaImpl area = new AreaImpl();
 		area.id = areaDir.getName();
 		area.root = areaDir;

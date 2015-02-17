@@ -19,7 +19,7 @@ import aQute.lib.json.*;
  * @param <R>
  */
 public class Link<L, R> extends Thread {
-	private static final String[]	EMPTY	= new String[] {};
+	private static final String[]		EMPTY		= new String[] {};
 
 	static JSONCodec					codec		= new JSONCodec();
 
@@ -58,6 +58,9 @@ public class Link<L, R> extends Thread {
 	}
 
 	public void open() {
+		if (isAlive())
+			throw new IllegalStateException("Already running");
+
 		start();
 	}
 
@@ -75,14 +78,26 @@ public class Link<L, R> extends Thread {
 			}, new InvocationHandler() {
 
 				public Object invoke(Object target, Method method, Object[] args) throws Throwable {
+					try {
+						int msgId = send(id.getAndIncrement(), method, args);
+						if (method.getReturnType() == void.class) {
+							promises.remove(msgId);
+							return null;
+						}
 
-					int msgId = send(id.getAndIncrement(), method, args);
-					if (method.getReturnType() == void.class) {
-						promises.remove(msgId);
-						return null;
+						return waitForResult(msgId, method.getGenericReturnType());
 					}
-
-					return waitForResult(msgId, method.getGenericReturnType());
+					catch (InvocationTargetException e) {
+						Throwable t = e;
+						while (t instanceof InvocationTargetException)
+							t = ((InvocationTargetException) t).getTargetException();
+						t.printStackTrace();
+						throw t;
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+						throw e;
+					}
 				}
 			});
 		return remote;
@@ -91,11 +106,12 @@ public class Link<L, R> extends Thread {
 	public void run() {
 		while (true)
 			try {
-				String cmd = in.readUTF();
-				int id = in.readInt();
+				System.out.println("Starting receiver " + this);
+				final String cmd = in.readUTF();
+				final int id = in.readInt();
 
 				int count = in.readShort();
-				List<byte[]> args = new ArrayList<byte[]>(count);
+				final List<byte[]> args = new ArrayList<byte[]>(count);
 				for (int i = 0; i < count; i++) {
 					int length = in.readInt();
 					byte[] data = new byte[length];
@@ -103,42 +119,56 @@ public class Link<L, R> extends Thread {
 					args.add(data);
 				}
 
-				if (cmd.isEmpty())
-					response(id, args.get(0));
-				else {
+				Thread t = new Thread("link::" + cmd) {
+					public void run() {
+						try {
+							if (cmd.isEmpty())
+								response(id, args.get(0));
+							else {
 
-					Method m = getMethod(cmd, count);
-					if (m == null) {
-						System.err.println("Unknown message received " + cmd);
-						continue;
-					}
+								Method m = getMethod(cmd, args.size());
+								if (m == null) {
+									System.err.println("Unknown message received " + cmd);
+									return;
+								}
 
-					Object parameters[] = new Object[count];
-					for (int i = 0; i < count; i++) {
-						Class< ? > type = m.getParameterTypes()[i];
-						if (type == byte[].class)
-							parameters[i] = args.get(i);
-						else {
-							parameters[i] = codec.dec().from(args.get(i)).get(m.getParameterTypes()[i]);
+								Object parameters[] = new Object[args.size()];
+								for (int i = 0; i < args.size(); i++) {
+									Class< ? > type = m.getParameterTypes()[i];
+									if (type == byte[].class)
+										parameters[i] = args.get(i);
+									else {
+										parameters[i] = codec.dec().from(args.get(i))
+												.get(m.getGenericParameterTypes()[i]);
+									}
+								}
+
+								System.out.println("Received cmd " + m);
+								try {
+									Object result = m.invoke(local, parameters);
+
+									if (m.getReturnType() == void.class)
+										return;
+
+									send(id, null, new Object[] {
+										result
+									});
+								}
+								catch (Throwable t) {
+									while (t instanceof InvocationTargetException)
+										t = ((InvocationTargetException) t).getTargetException();
+									t.printStackTrace();
+									send(-id, null, new Object[] {
+										t.toString()
+									});
+								}
+							}
+						}
+						catch (Exception e) {
+							e.printStackTrace();
 						}
 					}
-
-					try {
-						Object result = m.invoke(local, parameters);
-
-						if (m.getReturnType() == void.class)
-							continue;
-
-						send(id, null, new Object[] {
-							result
-						});
-					}
-					catch (Throwable t) {
-						send(-id, null, new Object[] {
-							t.toString()
-						});
-					}
-				}
+				};
 			}
 			catch (EOFException e) {
 				// It is over and out
@@ -162,7 +192,7 @@ public class Link<L, R> extends Thread {
 			}
 	}
 
-	private Method getMethod(String cmd, int count) {
+	Method getMethod(String cmd, int count) {
 
 		for (Method m : local.getClass().getMethods()) {
 			if (m.getDeclaringClass() == Link.class)
@@ -206,6 +236,7 @@ public class Link<L, R> extends Thread {
 	}
 
 	void response(int msgId, byte[] data) {
+		System.out.println("Response " + msgId);
 
 		boolean exception = false;
 		if (msgId < 0) {

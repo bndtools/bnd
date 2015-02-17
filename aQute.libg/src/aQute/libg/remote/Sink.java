@@ -33,7 +33,7 @@ public interface Sink {
 	/**
 	 * Remove an area
 	 */
-	boolean removeAra(String areaId) throws Exception;
+	boolean removeArea(String areaId) throws Exception;
 
 	/**
 	 * Create a new area

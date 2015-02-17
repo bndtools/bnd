@@ -63,6 +63,7 @@ public class SinkFS {
 	}
 
 	private void copy(byte[] data, File file, String sha) throws Exception {
+		System.out.println("copy " + file + " " + sha);
 		file.getParentFile().mkdirs();
 		IO.copy(data, file);
 		shas.put(file, sha);

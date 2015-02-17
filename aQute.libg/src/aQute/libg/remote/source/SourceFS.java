@@ -145,7 +145,7 @@ class SourceFS {
 	public void sync() throws Exception {
 
 		Set<FileDescription> toBeDeleted = new HashSet<FileDescription>();
-		Set<Delta> deltas = new HashSet<Delta>();
+		List<Delta> deltas = new ArrayList<Delta>();
 
 		for (FileDescription fd : new HashSet<FileDescription>(files.values())) {
 			if (fd.transform) {
@@ -189,8 +189,7 @@ class SourceFS {
 		sync(deltas);
 	}
 
-	protected void sync(Set<Delta> deltas) throws Exception {
-		System.out.println("Delta " + deltas);
+	protected void sync(List<Delta> deltas) throws Exception {
 		sink.sync(areaId, deltas);
 	}
 
@@ -207,6 +206,7 @@ class SourceFS {
 	}
 
 	public byte[] getData(String sha) throws Exception {
+		System.out.println("Get data " + sha);
 		List<File> files = shas.get(sha);
 		if (files == null)
 			return null;
