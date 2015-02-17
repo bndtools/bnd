@@ -10,12 +10,15 @@ import org.apache.felix.resolver.*;
 import org.osgi.framework.*;
 import org.osgi.framework.namespace.*;
 import org.osgi.resource.*;
+import org.osgi.resource.Resource;
 import org.osgi.service.log.*;
 import org.osgi.service.resolver.*;
 
 import test.lib.*;
 import aQute.bnd.build.model.*;
 import aQute.bnd.build.model.clauses.*;
+import aQute.bnd.header.*;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.*;
 import aQute.lib.io.*;
 import biz.aQute.resolve.*;
@@ -23,62 +26,101 @@ import biz.aQute.resolve.*;
 @SuppressWarnings("restriction")
 public class ResolveTest extends TestCase {
 
-    private static final LogService log = new NullLogService();
+	private static final LogService	log	= new NullLogService();
 
-    public static void testSimpleResolve() {
+	/**
+	 * This is a basic test of resolving. This test is paired with
+	 * {@link #testResolveWithProfile()}. If you change the resources, make sure
+	 * this is done in the same way. The {@link #testResolveWithProfile()} has a
+	 * negative check while this one checks positive.
+	 */
+	public static void testSimpleResolve() {
 
-        MockRegistry registry = new MockRegistry();
-        registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
+		MockRegistry registry = new MockRegistry();
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
 
-        BndEditModel model = new BndEditModel();
+		BndEditModel model = new BndEditModel();
 
-        model.setRunFw("org.apache.felix.framework");
+		model.setRunFw("org.apache.felix.framework");
 
-        List<Requirement> requires = new ArrayList<Requirement>();
-        CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.gogo.shell", "[0,1)");
-        requires.add(capReq.buildSyntheticRequirement());
+		List<Requirement> requires = new ArrayList<Requirement>();
+		CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.gogo.shell", "[0,1)");
+		requires.add(capReq.buildSyntheticRequirement());
 
-        model.setRunRequires(requires);
-        BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+		model.setRunRequires(requires);
+		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
 
-        Resolver resolver = new BndResolver(new ResolverLogger(4));
+		Resolver resolver = new BndResolver(new ResolverLogger(4));
 
-        try {
-            Map<Resource,List<Wire>> resolved = resolver.resolve(context);
-            Set<Resource> resources = resolved.keySet();
-            Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.10");
-            assertNotNull(resource);
-        } catch (ResolutionException e) {
-            fail("Resolve failed");
-        }
-    }
+		try {
+			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+			Set<Resource> resources = resolved.keySet();
+			Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.10");
+			assertNotNull(resource);
+		}
+		catch (ResolutionException e) {
+			fail("Resolve failed");
+		}
+	}
 
-    private static Resource getResource(Set<Resource> resources, String bsn, String versionString) {
-        for (Resource resource : resources) {
-            List<Capability> identities = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
-            if (identities != null && identities.size() == 1) {
-                Capability idCap = identities.get(0);
-                Object id = idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
-                Object version = idCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-                if (bsn.equals(id)) {
-                    if (versionString == null) {
-                        return resource;
-                    }
-                    Version requested = Version.parseVersion(versionString);
-                    Version current;
-                    if (version instanceof Version) {
-                        current = (Version) version;
-                    } else {
-                        current = Version.parseVersion((String) version);
-                    }
-                    if (requested.equals(current)) {
-                        return resource;
-                    }
-                }
-            }
-        }
-        return null;
-    }
+	/**
+	 * Check if we can resolve against capabilities defined on the -provided
+	 */
+	public static void testResolveWithProfile() throws Exception {
+		Resolver resolver = new BndResolver(new ResolverLogger(4));
+		MockRegistry registry = new MockRegistry();
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
+		BndEditModel model = new BndEditModel();
+
+		//
+		// Provided capabilities
+		//
+
+		model.setRunFw("org.apache.felix.framework");
+		model.setGenericString(Constants.PROVIDED, "org.apache.felix.gogo.runtime");
+
+		//
+		// We require gogo, but now the gogo runtime is on the runpath
+		// so should be excluded
+		//
+
+		List<Requirement> requires = createBundleRequirements("org.apache.felix.gogo.shell;version='[0,1)'");
+		model.setRunRequires(requires);
+
+		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+
+		Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+		Set<Resource> resources = resolved.keySet();
+		Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.10");
+		assertNull(resource);
+	}
+
+	private static Resource getResource(Set<Resource> resources, String bsn, String versionString) {
+		for (Resource resource : resources) {
+			List<Capability> identities = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
+			if (identities != null && identities.size() == 1) {
+				Capability idCap = identities.get(0);
+				Object id = idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+				Object version = idCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+				if (bsn.equals(id)) {
+					if (versionString == null) {
+						return resource;
+					}
+					Version requested = Version.parseVersion(versionString);
+					Version current;
+					if (version instanceof Version) {
+						current = (Version) version;
+					} else {
+						current = Version.parseVersion((String) version);
+					}
+					if (requested.equals(current)) {
+						return resource;
+					}
+				}
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * Simple test that resolves a requirement
@@ -125,6 +167,16 @@ public class ResolveTest extends TestCase {
 			assertNull("Multiple results for " + symbolicName, mandatoryResourcesBySymbolicName.put(symbolicName, r));
 		}
 		assertEquals(4, resolvedResources.size());
+	}
+
+	private static List<Requirement> createBundleRequirements(String string) {
+		Parameters p = new Parameters(string);
+		List<Requirement> requirements = new ArrayList<Requirement>();
+		for (Map.Entry<String,Attrs> e : p.entrySet()) {
+			CapReqBuilder capReq = CapReqBuilder.createBundleRequirement(e.getKey(), e.getValue().getVersion());
+			requirements.add(capReq.buildSyntheticRequirement());
+		}
+		return requirements;
 	}
 
 }
