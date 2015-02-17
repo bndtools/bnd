@@ -287,6 +287,7 @@ public class Index implements Iterable<byte[]> {
 	public Index(File file, int keySize) throws IOException {
 		capacity = (pageSize - Page.START_OFFSET) / (keySize + valueSize);
 
+		@SuppressWarnings("resource")
 		RandomAccessFile raf = new RandomAccessFile(file, "rw");
 		try {
 			this.file = raf.getChannel();
@@ -314,7 +315,7 @@ public class Index implements Iterable<byte[]> {
 			}
 		}
 		finally {
-			raf.close();
+			// raf.close();
 		}
 	}
 
