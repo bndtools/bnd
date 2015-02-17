@@ -12,6 +12,7 @@
 	ee.j2se;version=${javac.ee},\
 	org.apache.felix.resolver;version=1.1;packages=*,\
 	osgi.cmpn;version=4.3.1
+	
 -testpath: \
 	junit.osgi,\
 	org.mockito.mockito-all
