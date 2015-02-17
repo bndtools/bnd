@@ -290,22 +290,26 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         return attrs.toArray(new IClasspathAttribute[attrs.size()]);
     }
 
-    private static final Pattern packagePattern = Pattern.compile("\\.|\\*");
+    private static final Pattern packagePattern = Pattern.compile("^\\*$|\\.\\*(?=\\.|$)|^\\*\\.|\\.");
 
     private static List<IAccessRule> calculateContainerAccessRules(Container c) {
         String packageList = c.getAttributes().get("packages");
         if (packageList != null) {
-            // Use packages=** for full access
+            // Use packages=* for full access
             List<IAccessRule> accessRules = new ArrayList<IAccessRule>();
-            for (String exportPkg : packageList.split("\\s*,\\s*")) {
+            for (String exportPkg : packageList.trim().split("\\s*,\\s*")) {
                 Matcher m = packagePattern.matcher(exportPkg);
                 StringBuffer pathStr = new StringBuffer(exportPkg.length() + 1);
                 while (m.find()) {
                     String matched = m.group();
-                    if (matched.equals("."))
-                        m.appendReplacement(pathStr, "/");
-                    else
+                    if (matched.equals("*"))
                         m.appendReplacement(pathStr, "**");
+                    else if (matched.equals("."))
+                        m.appendReplacement(pathStr, "/");
+                    else if (matched.equals(".*"))
+                        m.appendReplacement(pathStr, "/**");
+                    else if (matched.equals("*."))
+                        m.appendReplacement(pathStr, "**/");
                 }
                 m.appendTail(pathStr).append("/*");
                 accessRules.add(JavaCore.newAccessRule(new Path(pathStr.toString()), IAccessRule.K_ACCESSIBLE));
