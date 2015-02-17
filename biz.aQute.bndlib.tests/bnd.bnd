@@ -3,7 +3,7 @@
 
 -buildpath: \
 	aQute.libg;version=project,\
-    biz.aQute.bndlib;version=project;packages=*,\
+    biz.aQute.bndlib;version=project,\
     biz.aQute.bnd.test;version=project,\
 	org.osgi.service.component;version=1.3.0,\
 	org.osgi.service.component.annotations;version=1.3.0;packages=*,\
