@@ -46,6 +46,9 @@ public class IO {
 		copy(new ByteArrayInputStream(r), w, "UTF-8");
 	}
 
+	public static void copy(byte[] data, File file) throws FileNotFoundException, IOException {
+		copy(data, new FileOutputStream(file));
+	}
 	public static void copy(byte[] r, OutputStream w) throws IOException {
 		copy(new ByteArrayInputStream(r), w);
 	}

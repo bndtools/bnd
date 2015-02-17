@@ -381,4 +381,20 @@ public abstract class Domain implements Iterable<String> {
 		return getParameters(Constants.PROVIDE_CAPABILITY);
 	}
 
+	public static Domain domain(File file) throws IOException {
+		FileInputStream in = new FileInputStream(file);
+		try {
+			JarInputStream jin = new JarInputStream(in);
+			try {
+				Manifest m = jin.getManifest();
+				return domain(m);
+			}
+			finally {
+				jin.close();
+			}
+		}
+		finally {
+			in.close();
+		}
+	}
 }

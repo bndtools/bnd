@@ -16,7 +16,9 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
 import aQute.lib.io.*;
 
-@SuppressWarnings("resource")
+@SuppressWarnings({
+		"resource", "restriction"
+})
 public class SpecMetatypeTest extends TestCase {
 	
 	/**

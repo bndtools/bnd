@@ -3,6 +3,7 @@ package aQute.bnd.test;
 import junit.framework.*;
 import aQute.bnd.build.model.conversions.*;
 
+@SuppressWarnings("restriction")
 public class NewlineEscapedStringFormatterTestCase extends TestCase {
 	static public void testNewlines() {
 		NewlineEscapedStringFormatter formatter = new NewlineEscapedStringFormatter();

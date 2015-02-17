@@ -9,18 +9,21 @@ Private-Package: 				\
 	aQute.libg.*;-split-package:=first,\
     org.osgi.service.*.annotations.*;-split-package:=first
 
-Export-Package:  \
+Export-Package: \
 	aQute.bnd.annotation.*;-noimport:=true,\
 	aQute.bnd.osgi;-noimport:=true,\
 	aQute.bnd.service.lifecycle;-noimport:=true,\
 	aQute.bnd.osgi.resource;-noimport:=true,\
+	aQute.bnd.maven,\
 	aQute.bnd.build;-noimport:=true,\
+	aQute.bnd.osgi.eclipse,\
 	aQute.bnd.differ;-noimport:=true,\
 	aQute.bnd.service.*;-noimport:=true,\
 	aQute.bnd.help.*;-noimport:=true,\
 	aQute.bnd.header;-noimport:=true,\
 	aQute.bnd.version;-noimport:=true,\
 	aQute.bnd.filerepo;-noimport:=true,\
+	aQute.lib.deployer,\
 	aQute.bnd.properties;-noimport:=true,\
 	aQute.bnd.build.model;-noimport:=true,\
 	aQute.bnd.build.model.clauses;-noimport:=true,\

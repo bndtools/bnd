@@ -22,10 +22,11 @@ Bundle-Icon: 					images/icon.png;size=64
 						
 Conditional-Package: 			aQute.libg.*, aQute.lib.*
 
--buildpath: aQute.libg;version=project,\
+-buildpath: \
+	aQute.libg;version=project,\
 	ee.j2se;version=${javac.ee},\
 	biz.aQute.bndlib;version=latest,\
-	aQute.jpm.clnt;version=2.1, \
+	aQute.jpm.clnt;version=2.1,\
 	lib/WinRun4J.jar;version=file
 -testpath: \
 	com.springsource.junit,\

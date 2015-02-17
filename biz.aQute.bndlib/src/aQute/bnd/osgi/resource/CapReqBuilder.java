@@ -5,9 +5,10 @@ import java.util.Map.Entry;
 
 import org.osgi.framework.namespace.*;
 import org.osgi.resource.*;
+import org.osgi.resource.Resource;
 
 import aQute.bnd.header.*;
-import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.*;
 import aQute.bnd.version.*;
 import aQute.libg.filters.*;
 
@@ -133,8 +134,7 @@ public class CapReqBuilder {
 		else
 			filter = bsnFilter;
 
-		return new CapReqBuilder(ns).addDirective(
-				Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+		return new CapReqBuilder(ns).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 
 	}
 
@@ -203,5 +203,33 @@ public class CapReqBuilder {
 			}
 		}
 		return builder.buildSyntheticRequirement();
+	}
+
+	public CapReqBuilder from(Capability c) {
+		addAttributes(c.getAttributes());
+		addDirectives(c.getDirectives());
+		return this;
+	}
+
+	public CapReqBuilder from(Requirement r) {
+		addAttributes(r.getAttributes());
+		addDirectives(r.getDirectives());
+		return this;
+	}
+
+	public static Capability copy(Capability c, Resource r) {
+		CapReqBuilder from = new CapReqBuilder(c.getNamespace()).from(c);
+		if (r == null)
+			return from.buildSyntheticCapability();
+		else
+			return from.setResource(r).buildCapability();
+	}
+
+	public static Requirement copy(Requirement c, Resource r) {
+		CapReqBuilder from = new CapReqBuilder(c.getNamespace()).from(c);
+		if (r == null)
+			return from.buildSyntheticRequirement();
+		else
+			return from.setResource(r).buildRequirement();
 	}
 }

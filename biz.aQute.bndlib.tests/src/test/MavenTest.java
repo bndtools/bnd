@@ -254,6 +254,7 @@ public class MavenTest extends TestCase {
 	 * @throws Exception
 	 */
 
+	@SuppressWarnings("restriction")
 	public static void testPomParser() throws Exception {
 		PomParser parser = new PomParser();
 		Properties p = parser.getProperties(IO.getFile("testresources/ws/maven1/pom.xml"));

@@ -598,4 +598,18 @@ public class CommandLine {
 	public Object getResult() {
 		return result;
 	}
+
+	public String subCmd(Options opts, Object target) throws Exception {
+		List<String> arguments = opts._();
+
+		if (arguments.isEmpty()) {
+			Justif j = new Justif();
+			Formatter f = j.formatter();
+			help(f, target);
+			return j.wrap();
+		} else {
+			String cmd = arguments.remove(0);
+			return execute(target, cmd, arguments);
+		}
+	}
 }

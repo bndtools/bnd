@@ -1,5 +1,7 @@
 package biz.aQute.resolve.internal;
 
+import static aQute.bnd.osgi.resource.CapReqBuilder.*;
+
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
@@ -11,9 +13,9 @@ import org.osgi.resource.Resource;
 import org.osgi.service.log.*;
 import org.osgi.service.repository.*;
 
-import aQute.bnd.build.*;
 import aQute.bnd.build.model.*;
 import aQute.bnd.build.model.clauses.*;
+import aQute.bnd.deployer.repository.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Constants;
@@ -24,7 +26,17 @@ import aQute.libg.filters.*;
 import aQute.libg.filters.Filter;
 import biz.aQute.resolve.*;
 
+/**
+ * This class does the resolving for bundles.
+ */
 public class BndrunResolveContext extends GenericResolveContext {
+	static Set<String>					ignoreNamespaces			= new HashSet<String>();
+	static {
+		ignoreNamespaces.add(BundleNamespace.BUNDLE_NAMESPACE);
+		ignoreNamespaces.add(IdentityNamespace.IDENTITY_NAMESPACE);
+		ignoreNamespaces.add(ContentNamespace.CONTENT_NAMESPACE);
+		ignoreNamespaces.add(HostNamespace.HOST_NAMESPACE);
+	}
 
 	public static final String			RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
 	public static final String			PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
@@ -33,8 +45,8 @@ public class BndrunResolveContext extends GenericResolveContext {
 
 	private EE							ee;
 
-	private List<ExportedPackage>		sysPkgsExtra = new ArrayList<ExportedPackage>();
-	private Parameters					sysCapsExtraParams = new Parameters();
+	private List<ExportedPackage>		sysPkgsExtra				= new ArrayList<ExportedPackage>();
+	private Parameters					sysCapsExtraParams			= new Parameters();
 	private Parameters					resolvePrefs;
 
 	private Version						frameworkResourceVersion	= null;
@@ -61,11 +73,11 @@ public class BndrunResolveContext extends GenericResolveContext {
 			loadEE();
 			loadSystemPackagesExtra();
 			loadSystemCapabilitiesExtra();
-			loadpaths();
 			loadRepositories();
 			constructBlacklist();
 			loadEffectiveSet();
 			findFramework();
+			loadpaths(systemCapabilityIndex);
 			constructInputRequirements();
 			loadPreferences();
 		}
@@ -77,54 +89,61 @@ public class BndrunResolveContext extends GenericResolveContext {
 
 	/**
 	 * Load the capabilities and packages from the -testpath and -runpath since
-	 * we make those available. Testpath is only added whent he Test-Cases header
-	 * is set in the lowest properties file.
+	 * we make those available. Testpath is only added whent he Test-Cases
+	 * header is set in the lowest properties file.
 	 */
-	private void loadpaths() throws Exception {
-		loadpath(Constants.RUNPATH, "-runpath");
-		if ( properties.get(Constants.TESTCASES) != null && !properties.is(Constants.NOJUNITOSGI))
-			loadpath(Constants.TESTPATH, "-testpath");
+	private void loadpaths(CapabilityIndex capabilityIndex) throws Exception {
+		loadpath(capabilityIndex, Constants.PROVIDED, "-provided");
+		loadpath(capabilityIndex, Constants.RUNPATH, "-runpath");
+		if (properties.get(Constants.TESTCASES) != null && !properties.is(Constants.NOJUNITOSGI))
+			loadpath(capabilityIndex, Constants.TESTPATH, "-testpath");
 	}
 
 	/**
-	 * Read the bundles from a path (test/run) and copy their exported packages to the
-	 * packages extra list and their capabilities to the capabilities extra list just
-	 * like the launcher does. This only works when we have access to a project
-	 * or bndrun file parented by a project. 
+	 * Read the bundles from a path (test/run) and copy their exported packages
+	 * to the packages extra list and their capabilities to the capabilities
+	 * extra list just like the launcher does.
 	 */
-	private void loadpath(String path, String source ) throws Exception {
-		Processor parent = properties.getParent();
-		if ( parent == null || ! (parent instanceof Project))
-			return;
+	private void loadpath(CapabilityIndex capabilityIndex, String path, String source) throws Exception {
 
 		//
-		// Get the full contents of the path
+		// First gather all the resources on the buildpath
 		//
-		
-		Project p = (Project) parent;
-		String header = properties.mergeProperties(path);
-		
+
+		Parameters runpath = new Parameters(properties.mergeProperties(path));
+
+		Set<Resource> resources = new LinkedHashSet<Resource>();
+		for (Map.Entry<String,Attrs> e : runpath.entrySet()) {
+
+			CapReqBuilder capReq = CapReqBuilder.createBundleRequirement(e.getKey(), e.getValue().getVersion());
+			Requirement requirement = capReq.buildSyntheticRequirement();
+
+			for (Repository repository : getRepositories()) {
+
+				Map<Requirement,Collection<Capability>> bundles = findProviders(repository, requirement);
+
+				for (Collection<Capability> caps : bundles.values()) {
+					for (Capability cap : caps)
+						resources.add(cap.getResource());
+				}
+
+			}
+		}
+
 		//
-		// Now, from this path, get the bundles
+		// Now for each resource, get all its capabilities and
+		// add them to the capability index with the system as
+		// owner
 		//
-		
-		List<Container> bundles = p.getBundles(Strategy.HIGHEST, header, source);
-		for ( Container c : bundles ) {
-			
-			if ( c.getAttributes() != null && Processor.isTrue(c.getAttributes().get("-skip:")))
+
+		for (Resource r : resources) {
+			for (Capability c : r.getCapabilities(null)) {
+				if (ignoreNamespaces.contains(c.getNamespace()))
 					continue;
-			
-			//
-			// If the container is ok, we add the exported packages and the capabilities
-			// to the frameworks' extra packages/caps.
-			//
-			
-			if ( c.getError() == null) {
-				Domain domain = Domain.domain(c.getManifest());
-				this.sysCapsExtraParams.putAll(domain.getProvideCapability());
-				this.sysPkgsExtra.addAll( toExportedPackages( domain.getExportPackage()));
-			} else
-				p.warning("The %s contains an error %s for bundle %s", source, c.getError(), c.getBundleSymbolicName());
+
+				Capability copy = copy(c, systemResource);
+				capabilityIndex.addCapability(copy);
+			}
 		}
 	}
 
@@ -138,26 +157,26 @@ public class BndrunResolveContext extends GenericResolveContext {
 		if (effective == null)
 			effectiveSet = null;
 		else {
-			effectiveSet = new HashMap<String, Set<String>>();
+			effectiveSet = new HashMap<String,Set<String>>();
 			for (Entry<String,Attrs> entry : new Parameters(effective).entrySet()) {
 				String skip = entry.getValue().get("skip:");
-				Set<String> toSkip = skip == null ? new HashSet<String>() : 
-					new HashSet<String>(Arrays.asList(skip.split(",")));
+				Set<String> toSkip = skip == null ? new HashSet<String>() : new HashSet<String>(Arrays.asList(skip
+						.split(",")));
 				effectiveSet.put(entry.getKey(), toSkip);
 			}
 		}
 	}
 
 	private void loadSystemPackagesExtra() {
-		Parameters p = new Parameters( properties.mergeProperties(Constants.RUNSYSTEMPACKAGES));
+		Parameters p = new Parameters(properties.mergeProperties(Constants.RUNSYSTEMPACKAGES));
 
 		sysPkgsExtra = toExportedPackages(p); // runModel.getSystemPackages();
 	}
 
 	private List<ExportedPackage> toExportedPackages(Parameters p) {
 		List<ExportedPackage> list = new ArrayList<ExportedPackage>();
-		for ( Entry<String,Attrs> e : p.entrySet()) {
-			list.add( new ExportedPackage(Processor.removeDuplicateMarker(e.getKey()), e.getValue()));
+		for (Entry<String,Attrs> e : p.entrySet()) {
+			list.add(new ExportedPackage(Processor.removeDuplicateMarker(e.getKey()), e.getValue()));
 		}
 
 		return list;
@@ -165,7 +184,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 
 	private void loadSystemCapabilitiesExtra() {
 		String header = properties.mergeProperties(Constants.RUNSYSTEMCAPABILITIES);
-		sysCapsExtraParams.putAll( new Parameters(header));
+		sysCapsExtraParams.putAll(new Parameters(header));
 	}
 
 	private void loadRepositories() throws IOException {
@@ -179,7 +198,6 @@ public class BndrunResolveContext extends GenericResolveContext {
 		// ir.getName())));
 		// }
 		// }
-
 
 		// Reorder/filter if specified by the run model
 
@@ -310,7 +328,6 @@ public class BndrunResolveContext extends GenericResolveContext {
 			setBlackList(reject);
 		}
 	}
-
 
 	private void loadPreferences() {
 		resolvePrefs = new Parameters(properties.getProperty(PROP_RESOLVE_PREFERENCES));

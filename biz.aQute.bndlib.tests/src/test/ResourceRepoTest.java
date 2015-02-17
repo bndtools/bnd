@@ -18,6 +18,7 @@ import aQute.bnd.version.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
 
+@SuppressWarnings("restriction")
 public class ResourceRepoTest extends TestCase {
 	ResourceRepositoryImpl	repoImpl	= new ResourceRepositoryImpl();
 	File					tmp			= new File("tmp");

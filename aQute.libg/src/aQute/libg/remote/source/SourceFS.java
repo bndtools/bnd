@@ -1,0 +1,234 @@
+package aQute.libg.remote.source;
+
+import java.io.*;
+import java.security.*;
+import java.util.*;
+import java.util.regex.*;
+
+import aQute.lib.collections.*;
+import aQute.lib.io.*;
+import aQute.libg.cryptography.*;
+import aQute.libg.remote.*;
+
+class SourceFS {
+	static Pattern							WINDOWS_PREFIX	= Pattern
+																	.compile("([a-z]):/(.*)", Pattern.CASE_INSENSITIVE);
+	static Pattern							WINDOWS_FILE_P	= Pattern.compile(
+																	"([a-z]:|\\\\)(\\\\[\\w\\d-_+.~@$%&=]+)*",
+																	Pattern.CASE_INSENSITIVE);
+	static Pattern							UNIX_FILE_P		= Pattern.compile("(/[\\w\\d-_+.~@$%&=]+)+",
+																	Pattern.CASE_INSENSITIVE);
+	static Pattern							LOCAL_P			= File.separatorChar == '\\' ? WINDOWS_FILE_P : UNIX_FILE_P;
+
+	private MultiMap<String,File>			shas			= new MultiMap<String,File>();
+	private final Map<File,FileDescription>	files			= new HashMap<File,FileDescription>();
+	private final boolean					pathConversion;
+	private final String					cwd;
+	private final char						separatorChar;
+	private Sink							sink;
+	private String							areaId;
+
+	/*
+	 * The information we maintain per file that we sync remotely.
+	 */
+	static class FileDescription {
+		File			file;
+		String			path;
+		String			sha;
+		long			modified;
+		boolean			touched;
+		public boolean	transform;
+		public boolean	dir;
+	}
+
+	SourceFS(char separatorChar, File cwd, Sink sink, String areaId) {
+		this.separatorChar = separatorChar;
+		this.cwd = cwd.getAbsolutePath();
+		pathConversion = File.separatorChar != separatorChar;
+		this.sink = sink;
+		this.areaId = areaId;
+	}
+
+	public String transform(String s) throws Exception {
+
+		Matcher m = LOCAL_P.matcher(s);
+		StringBuffer sb = new StringBuffer();
+		boolean found = false;
+
+		while (m.find()) {
+			FileDescription fd = toRemote(m.group(0));
+			fd.touched = true;
+			m.appendReplacement(sb, fd.path);
+			found = true;
+		}
+
+		if (!found)
+			return s;
+
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
+	private FileDescription toRemote(String localPath) throws Exception {
+		File f = new File(localPath);
+		return toRemote(f);
+	}
+
+	private FileDescription toRemote(File f) throws NoSuchAlgorithmException, Exception {
+		FileDescription fd = files.get(f);
+
+		if (fd != null)
+			return fd;
+
+		String remotePath = toRemotePath(f);
+
+		fd = new FileDescription();
+		fd.file = f;
+		fd.path = remotePath;
+		fd.modified = f.lastModified();
+
+		if (f.isFile()) {
+			fd.sha = updateSha(null, f);
+			fd.touched = true;
+		} else if (f.isDirectory()) {
+			fd.dir = true;
+			for (File sub : f.listFiles()) {
+				toRemote(sub);
+			}
+		}
+		files.put(f, fd);
+
+		return fd;
+	}
+
+	private String toRemotePath(File f) {
+		String remotePath;
+		String abs = f.getAbsolutePath();
+		if (abs.startsWith(cwd)) {
+			remotePath = abs.substring(cwd.length());
+			while (remotePath.startsWith(File.separator))
+				remotePath = remotePath.substring(1);
+		}
+		else {
+			if (File.separatorChar == '\\') {
+
+				//
+				// Why is windows always 10x more complicated??
+				// Buffoons ...
+				//
+				// WE have
+				// Remote names: \\foo\zoo
+				// device names c:\foo
+				// absolute \zoo\zoo
+				//
+
+				if (abs.startsWith("\\\\")) { // remote file path, should be
+												// followed by remote name
+					remotePath = "_ABS\\REMOTE" + abs.substring(1);
+				} else {
+					Matcher m = WINDOWS_PREFIX.matcher(abs);
+					if (m.matches()) {
+						remotePath = "_ABS\\" + m.group(1) + "\\" + m.group(2);
+					} else
+						remotePath = "_ABS\\" + abs;
+				}
+			} else
+				remotePath = "_ABS" + abs;
+		}
+
+		if (pathConversion)
+			remotePath = remotePath.replace(File.separatorChar, separatorChar);
+
+		return remotePath;
+	}
+
+	public void sync() throws Exception {
+
+		Set<FileDescription> toBeDeleted = new HashSet<FileDescription>();
+		List<Delta> deltas = new ArrayList<Delta>();
+
+		for (FileDescription fd : new HashSet<FileDescription>(files.values())) {
+			if (fd.transform) {
+				Delta delta = new Delta();
+				delta.path = fd.path;
+				delta.content = transform(IO.collect(fd.file));
+				deltas.add(delta);
+			}
+		}
+
+		for (FileDescription fd : files.values()) {
+			if (fd.file.isDirectory())
+				continue;
+
+			if (fd.modified != fd.file.lastModified() || fd.touched) {
+				fd.touched = false;
+				Delta delta = new Delta();
+				delta.path = fd.path;
+
+				fd.modified = fd.file.lastModified();
+				fd.touched = true;
+
+				if (!fd.file.isFile()) {
+					delta.delete = true;
+					toBeDeleted.add(fd);
+					deltas.add(delta);
+					continue;
+				}
+
+				if (!fd.transform) {
+					String updateSha = updateSha(fd.sha, fd.file);
+
+					delta.sha = fd.sha = updateSha;
+					deltas.add(delta);
+				}
+			}
+		}
+
+		files.values().removeAll(toBeDeleted);
+
+		sync(deltas);
+	}
+
+	protected void sync(List<Delta> deltas) throws Exception {
+		sink.sync(areaId, deltas);
+	}
+
+	public String updateSha(String oldSha, File file) throws NoSuchAlgorithmException, Exception {
+		if (oldSha != null)
+			shas.remove(oldSha);
+
+		if (file != null && file.isFile()) {
+			String sha = SHA1.digest(file).asHex();
+			shas.add(sha, file);
+			return sha;
+		}
+		return null;
+	}
+
+	public byte[] getData(String sha) throws Exception {
+		System.out.println("Get data " + sha);
+		List<File> files = shas.get(sha);
+		if (files == null)
+			return null;
+
+		for (File f : files) {
+			if (f.isFile()) {
+
+				assert sha.equals(SHA1.digest(f).asHex());
+
+				return IO.read(f);
+			}
+		}
+		return null;
+	}
+
+	public void markTransform(File f) throws Exception {
+		FileDescription fd = toRemote(f);
+		fd.transform = true;
+	}
+
+	public String add(File file) throws Exception {
+		return toRemote(file).path;
+	}
+
+}

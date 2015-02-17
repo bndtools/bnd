@@ -13,6 +13,7 @@ import org.osgi.service.bindex.*;
 
 import aQute.bnd.deployer.repository.api.*;
 
+@SuppressWarnings("restriction")
 public class TestObrRecognition extends TestCase {
 
 	private static BundleIndexer indexer = new BundleIndexerImpl();

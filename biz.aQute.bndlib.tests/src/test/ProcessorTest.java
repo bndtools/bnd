@@ -10,6 +10,26 @@ public class ProcessorTest extends TestCase {
 
 	
 	
+	public void testFixupMerge() throws IOException {
+		Processor p = new Processor();
+		p.setProperty("-fixupmessages.foo", "foo");
+		p.setProperty("-fixupmessages.bar", "bar");
+		p.error("foo");
+		p.error("bar");
+		assertTrue(p.check());
+		p.close();
+	}
+
+	public void testFixupMacro() throws IOException {
+		Processor p = new Processor();
+		p.setProperty("skip", "foo");
+		p.setProperty("-fixupmessages", "${skip},bar");
+		p.error("foo");
+		p.error("bar");
+		assertTrue(p.check());
+		p.close();
+	}
+
 	public void testNative() {
 		Processor p = new Processor();
 		

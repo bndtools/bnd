@@ -14,6 +14,7 @@ import aQute.bnd.deployer.repository.*;
 import aQute.bnd.deployer.repository.api.*;
 import aQute.lib.io.*;
 
+@SuppressWarnings("restriction")
 public class TestObrCapReqParsing extends TestCase {
 
 	private static List<Resource> parseIndex(InputStream stream, URI baseUri) throws Exception {
