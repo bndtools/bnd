@@ -77,7 +77,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 			constructBlacklist();
 			loadEffectiveSet();
 			findFramework();
-			loadpaths(frameworkResourceRepo.getCapabilityIndex());
+			loadpaths(systemCapabilityIndex);
 			constructInputRequirements();
 			loadPreferences();
 		}
