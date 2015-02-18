@@ -44,6 +44,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 import bndtools.central.RefreshFileJob;
 import bndtools.preferences.BndPreferences;
@@ -60,7 +61,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     private static final ILogger logger = Logger.getLogger(BndContainerInitializer.class);
     private static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
     private static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED);
-    private static final IAccessRule IGNORE_IF_BETTER = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_NON_ACCESSIBLE | IAccessRule.IGNORE_IF_BETTER);
 
     public BndContainerInitializer() {
         Central.getInstance().addModelListener(this);
@@ -179,8 +179,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return Collections.emptyList();
         }
 
-        model.clear();
-
         List<Container> containers;
 
         try {
@@ -210,6 +208,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         List<File> filesToRefresh = new ArrayList<File>(containers.size());
         for (Container c : containers) {
             if (c.getError() != null) {
+                SetLocation location = model.error("%s-%s: %s", c.getBundleSymbolicName(), c.getVersion(), c.getError());
+                location.context(c.getBundleSymbolicName());
+                location.header(aQute.bnd.osgi.Constants.BUILDPATH);
+                location.file(model.getPropertiesFile().getAbsolutePath());
                 errors.add(c.getError());
                 continue;
             }
@@ -252,11 +254,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             switch (c.getType()) {
             case PROJECT :
                 IPath projectPath = root.getFile(path).getProject().getFullPath();
-                result.add(JavaCore.newProjectEntry(projectPath, toAccessRulesArray(IGNORE_IF_BETTER), false, extraAttrs, false));
-                result.add(JavaCore.newLibraryEntry(path, projectPath, null, accessRules, extraAttrs, false));
+                result.add(JavaCore.newProjectEntry(projectPath, accessRules, false, extraAttrs, false));
+                result.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
                 break;
             default :
-                result.add(JavaCore.newLibraryEntry(path, null, null, accessRules, extraAttrs, false));
+                result.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
                 break;
             }
         }
@@ -361,10 +363,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         IAccessRule[] accessRules = rules.toArray(new IAccessRule[size + 1]);
         accessRules[size] = DISCOURAGED;
         return accessRules;
-    }
-
-    private static IAccessRule[] toAccessRulesArray(IAccessRule... rules) {
-        return rules;
     }
 
     private static void replaceClasspathProblemMarkers(IProject project, Collection<String> errors) throws CoreException {
