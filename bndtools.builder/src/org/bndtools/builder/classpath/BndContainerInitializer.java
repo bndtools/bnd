@@ -332,7 +332,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             try {
                 mf = JarUtils.loadJarManifest(file);
             } catch (IOException e) {
-                logger.logError("Unable to generate access rules from bundle " + file, e);
+                break; // unable to open manifest; so full access
             }
             if (mf == null) {
                 break; // no manifest; so full access
