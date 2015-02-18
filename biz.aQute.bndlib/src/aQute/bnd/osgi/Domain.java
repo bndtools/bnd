@@ -387,6 +387,8 @@ public abstract class Domain implements Iterable<String> {
 			JarInputStream jin = new JarInputStream(in);
 			try {
 				Manifest m = jin.getManifest();
+				if (m == null)
+					return null;
 				return domain(m);
 			}
 			finally {
