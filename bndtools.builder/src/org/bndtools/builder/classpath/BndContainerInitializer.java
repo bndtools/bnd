@@ -1,7 +1,6 @@
 package org.bndtools.builder.classpath;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -331,7 +330,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         case EXTERNAL :
             Manifest mf = null;
             try {
-                mf = JarUtils.loadJarManifest(new FileInputStream(file));
+                mf = JarUtils.loadJarManifest(file);
             } catch (IOException e) {
                 logger.logError("Unable to generate access rules from bundle " + file, e);
             }
