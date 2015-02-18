@@ -118,19 +118,24 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
             markers.clearBuildMarkers();
 
-            DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
-
             boolean force = false;
-
-            force |= resetClasspathContainer(myProject, model.getErrors());
 
             if (dirty.remove(model)) {
                 buildLog.basic("project was dirty from a workspace refresh");
                 force = true;
             }
 
+            DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
+
             if (delta.hasProjectChanged()) { // side effect of refresh, not superfluous!
                 force = true;
+            }
+
+            List<String> errors = new ArrayList<String>();
+            if (resetClasspathContainer(myProject, errors) || !errors.isEmpty()) {
+                // likely causes a recompile
+                super.rememberLastBuiltState();
+                return calculateDependsOn(model);
             }
 
             if (model.isNoBundles()) {
