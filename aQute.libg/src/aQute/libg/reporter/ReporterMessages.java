@@ -3,9 +3,10 @@ package aQute.libg.reporter;
 import java.lang.reflect.*;
 import java.util.*;
 
-import aQute.service.reporter.*;
+import aQute.service.reporter.Messages.ERROR;
+import aQute.service.reporter.Messages.WARNING;
 import aQute.service.reporter.Report.Location;
-import aQute.service.reporter.Messages.*;
+import aQute.service.reporter.*;
 import aQute.service.reporter.Reporter.SetLocation;
 
 public class ReporterMessages {
@@ -73,11 +74,17 @@ public class ReporterMessages {
 					String name = method.getName();
 					StringBuilder sb = new StringBuilder();
 					sb.append(name.charAt(0));
+					int n = 0;
 					for (int i = 1; i < name.length(); i++) {
 						char c = name.charAt(i);
 						switch (c) {
 							case '_' :
 								sb.append(" %s, ");
+								n++;
+								break;
+
+							case '$' :
+								sb.append(" ");
 								break;
 
 							default :
@@ -87,6 +94,10 @@ public class ReporterMessages {
 								}
 								sb.append(c);
 						}
+					}
+					while (n < method.getParameterTypes().length) {
+						sb.append(": %s");
+						n++;
 					}
 					format = sb.toString();
 				} else
