@@ -36,12 +36,12 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.osgi.framework.Constants;
 
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
@@ -209,7 +209,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             if (c.getError() != null) {
                 SetLocation location = model.error("%s-%s: %s", c.getBundleSymbolicName(), c.getVersion(), c.getError());
                 location.context(c.getBundleSymbolicName());
-                location.header(aQute.bnd.osgi.Constants.BUILDPATH);
+                location.header(Constants.BUILDPATH);
                 location.file(model.getPropertiesFile().getAbsolutePath());
                 errors.add(c.getError());
                 continue;
@@ -278,9 +278,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         attrs.add(JavaCore.newClasspathAttribute("type", c.getType().name()));
         attrs.add(JavaCore.newClasspathAttribute("project", c.getProject().getName()));
 
-        String version = c.getAttributes().get("version");
+        String version = c.getAttributes().get(Constants.VERSION_ATTRIBUTE);
         if (version != null) {
-            attrs.add(JavaCore.newClasspathAttribute("version", version));
+            attrs.add(JavaCore.newClasspathAttribute(Constants.VERSION_ATTRIBUTE, version));
         }
 
         String packages = c.getAttributes().get("packages");
