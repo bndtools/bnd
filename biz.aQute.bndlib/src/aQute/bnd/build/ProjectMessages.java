@@ -3,10 +3,12 @@ package aQute.bnd.build;
 import java.io.*;
 import java.util.*;
 
+import aQute.bnd.annotation.*;
 import aQute.bnd.service.*;
-import aQute.bnd.version.*;
+import aQute.bnd.version.Version;
 import aQute.service.reporter.*;
 
+@ProviderType
 public interface ProjectMessages extends Messages {
 
 	ERROR InvalidStrategy(String help, String[] args);
