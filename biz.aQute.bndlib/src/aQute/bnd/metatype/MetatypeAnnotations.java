@@ -12,6 +12,10 @@ import aQute.bnd.service.*;
  */
 public class MetatypeAnnotations implements AnalyzerPlugin {
 	
+	enum Options {
+		nested
+	}
+
 	private final Map<String, OCDDef> classToOCDMap = new HashMap<String, OCDDef>();
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
@@ -19,12 +23,16 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		if (header.size() == 0)
 			return false;
 		
-		String f = analyzer.getProperty("-metatypeannotations-flags");
-		Set<String> flags;
-		if (f != null) {
-			flags = new HashSet<String>(Arrays.asList(f.split(",")));
-		} else {
-			flags = Collections.emptySet();
+		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS_OPTIONS));
+		EnumSet<Options> options = EnumSet.noneOf(Options.class);
+		for (String s : optionsHeader.keySet()) {
+			try {
+				options.add(Options.valueOf(s));
+			}
+			catch (IllegalArgumentException e) {
+				analyzer.error("Unrecognized %s value %s, expected values are %s",
+						Constants.METATYPE_ANNOTATIONS_OPTIONS, s, EnumSet.allOf(Options.class));
+			}
 		}
 
 		Set<String> ocdIds = new HashSet<String>();
@@ -39,7 +47,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					OCDDef definition = OCDReader.getOCDDef(c, analyzer, flags);
+					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options);
 					if (definition != null) {
 						definition.prepare(analyzer);
 						if (!ocdIds.add(definition.id)) {

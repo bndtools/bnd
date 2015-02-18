@@ -126,7 +126,7 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty("-metatypeannotations", Naming.class.getName());
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, Naming.class.getName());
 		b.build();
 		System.out.println(b.getErrors());
 		assertEquals(0, b.getErrors().size());
@@ -187,7 +187,7 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty("-metatypeannotations", ADCollision.class.getName());
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, ADCollision.class.getName());
 		b.build();
 		System.out.println(b.getErrors());
 		assertEquals(1, b.getErrors().size());
@@ -209,7 +209,7 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		String name = DupOCDId2.class.getName();
 		
-		b.setProperty("-metatypeannotations", name.substring(0, name.length() - "1".length()) + "*");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, name.substring(0, name.length() - "1".length()) + "*");
 		b.build();
 		assertEquals(1, b.getErrors().size());
 	}
@@ -249,7 +249,7 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		String name = DupPid2.class.getName();
 		
-		b.setProperty("-metatypeannotations", name.substring(0, name.length() - "1".length()) + "*");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, name.substring(0, name.length() - "1".length()) + "*");
 		b.build();
 		System.err.println(b.getErrors());
 		assertEquals(4, b.getErrors().size());
@@ -439,7 +439,7 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty("-metatypeannotations", CollectionsTest.class.getName());
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, CollectionsTest.class.getName());
 		b.build();
 		System.out.println(b.getErrors());
 		assertEquals(0, b.getErrors().size());
@@ -488,7 +488,7 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty("-metatypeannotations", Enums.class.getName()+ "*");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, Enums.class.getName() + "*");
 		b.build();
 		System.err.println(b.getErrors());
 		assertEquals(0, b.getErrors().size());
@@ -537,7 +537,7 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		String name = OCDEmpty.class.getName();
 		
-		b.setProperty("-metatypeannotations", name.substring(0, name.length() - "Empty".length()) + "*");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, name.substring(0, name.length() - "Empty".length()) + "*");
 		b.build();
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
@@ -690,7 +690,7 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty("-metatypeannotations", TestAD.class.getName());
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestAD.class.getName());
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestAD.xml");
 		assertEquals(0, b.getErrors().size());
@@ -766,7 +766,11 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty("-metatypeannotations", TestADWithInheritanceChild.class.getName().substring(0, TestADWithInheritanceChild.class.getName().length() - "Child".length()) + "*" );
+		b.setProperty(
+				Constants.METATYPE_ANNOTATIONS,
+				TestADWithInheritanceChild.class.getName().substring(0,
+						TestADWithInheritanceChild.class.getName().length() - "Child".length())
+						+ "*");
 //		b.setProperty("-metatypeannotations-inherit", "true");
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestADWithInheritanceChild.xml");
@@ -924,7 +928,7 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty("-metatypeannotations", TestReturnTypes.class.getName());
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestReturnTypes.class.getName());
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestReturnTypes.xml");
 		System.err.println(b.getErrors());
@@ -1047,7 +1051,7 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty("-metatypeannotations", TestSimple.class.getName());
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestSimple.class.getName());
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestSimple.xml");
 		assertEquals(0, b.getErrors().size());
@@ -1095,7 +1099,7 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty("-metatypeannotations", AnnotationDefaults.class.getName());
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, AnnotationDefaults.class.getName());
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$AnnotationDefaults.xml");
 		System.err.println(b.getErrors());
@@ -1133,7 +1137,7 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty("-metatypeannotations", Abstract.class.getName());
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, Abstract.class.getName());
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Abstract.xml");
 		assertEquals(1, b.getErrors().size());
@@ -1155,7 +1159,8 @@ public class SpecMetatypeTest extends TestCase {
 			Builder b = new Builder();
 			b.addClasspath(new File("bin"));
 			b.setProperty("Export-Package", "test.metatype");
-			b.setProperty("-metatypeannotations", NestedInner.class.getName() + "," + NestedOuter.class.getName());
+			b.setProperty(Constants.METATYPE_ANNOTATIONS,
+					NestedInner.class.getName() + "," + NestedOuter.class.getName());
 			b.build();
 			Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$NestedOuter.xml");
 			assertEquals(1, b.getErrors().size());
@@ -1164,8 +1169,9 @@ public class SpecMetatypeTest extends TestCase {
 			Builder b = new Builder();
 			b.addClasspath(new File("bin"));
 			b.setProperty("Export-Package", "test.metatype");
-			b.setProperty("-metatypeannotations", NestedInner.class.getName() + "," + NestedOuter.class.getName());
-			b.setProperty("-metatypeannotations-flags", "nested");
+			b.setProperty(Constants.METATYPE_ANNOTATIONS,
+					NestedInner.class.getName() + "," + NestedOuter.class.getName());
+			b.setProperty(Constants.METATYPE_ANNOTATIONS_OPTIONS, "nested");
 			b.build();
 			Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$NestedOuter.xml");
 			assertEquals(0, b.getErrors().size());
@@ -1193,8 +1199,8 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty("-metatypeannotations", DesignateOCD.class.getName());
-		b.setProperty("-dsannotations", DesignateComponent.class.getName());
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, DesignateOCD.class.getName());
+		b.setProperty(Constants.DSANNOTATIONS, DesignateComponent.class.getName());
 		b.build();
 		{
 			Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$DesignateOCD.xml");

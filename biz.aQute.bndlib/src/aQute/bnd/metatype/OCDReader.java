@@ -6,6 +6,7 @@ import java.util.regex.*;
 
 import org.osgi.service.metatype.annotations.*;
 
+import aQute.bnd.metatype.MetatypeAnnotations.Options;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -14,7 +15,7 @@ public class OCDReader extends ClassDataCollector {
 	
 	private Analyzer	analyzer;
 	private Clazz	clazz;
-	private boolean nested;
+	private EnumSet<Options>			options;
 	
 	private TypeRef name;
 	private boolean topLevel = true;
@@ -25,16 +26,16 @@ public class OCDReader extends ClassDataCollector {
 	private OCDDef ocd;
 
 
-	OCDReader(Analyzer analyzer, Clazz clazz, Set<String> flags) {
+	OCDReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
-    	nested = flags.contains("nested");
+		this.options = options;
 	}
 
 
-	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, Set<String> flags) throws Exception {
+	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, EnumSet<Options> options) throws Exception {
 
-		OCDReader r = new OCDReader(analyzer, c, flags);
+		OCDReader r = new OCDReader(analyzer, c, options);
 		return r.getDef();
 	}
 
@@ -329,13 +330,14 @@ public class OCDReader extends ClassDataCollector {
 			if (returnType.isEnum()) {
 				return true;
 			}
-			if (!returnType.isAbstract() || (returnType.isInterface() && nested)) {//TODO check this is true for interfaces and annotations
+			// TODO check this is true for interfaces and annotations
+			if (!returnType.isAbstract() || (returnType.isInterface() && options.contains(Options.nested))) {
 				return true;
 			}
 			if (!returnType.isInterface()) {
 				analyzer.error("Abstract classes not allowed as interface method return values: %s", rtype);				
 			} else {
-			    analyzer.error("Nested metatype only allowed with flag: nested type %s", rtype);
+				analyzer.error("Nested metatype only allowed with option: nested type %s", rtype);
 			}
 			return false;
 		}
