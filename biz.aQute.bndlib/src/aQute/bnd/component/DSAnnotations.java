@@ -7,6 +7,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.lib.strings.*;
 import aQute.service.reporter.Reporter.SetLocation;
 
 /**
@@ -26,6 +27,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 		if (sc != null && sc.trim().length() > 0)
 			names.add(sc);
 
+		TreeSet<String> provides = new TreeSet<String>();
+		TreeSet<String> requires = new TreeSet<String>();
+
 		for (Clazz c : list) {
 			for (Instruction instruction : instructions.keySet()) {
 
@@ -43,12 +47,29 @@ public class DSAnnotations implements AnalyzerPlugin {
 								+ analyzer.validResourcePath(definition.name, "Invalid component name") + ".xml";
 						names.add(name);
 						analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
+
+						if (definition.service != null) {
+							String[] objectClass = new String[definition.service.length];
+
+							for (int i = 0; i < definition.service.length; i++) {
+								Descriptors.TypeRef tr = definition.service[i];
+								objectClass[i] = tr.getFQN();
+							}
+							Arrays.sort(objectClass);
+							addProvidesHeader(objectClass, provides);
+						}
+						for (ReferenceDef ref : definition.references.values()) {
+							String objectClass = ref.service;
+							addRequireHeader(objectClass, requires);
+						}
 					}
 				}
 			}
 		}
 		sc = Processor.append(names.toArray(new String[names.size()]));
 		analyzer.setProperty(Constants.SERVICE_COMPONENT, sc);
+		updateHeader(analyzer, Constants.REQUIRE_CAPABILITY, requires);
+		updateHeader(analyzer, Constants.PROVIDE_CAPABILITY, provides);
 		return false;
 	}
 
@@ -74,6 +95,54 @@ public class DSAnnotations implements AnalyzerPlugin {
 			}
 		}
 	}
+
+	private void addProvidesHeader(String[] objectClass, Set<String> provides) {
+		if (objectClass.length > 0) {
+			Parameters p = new Parameters();
+			Attrs a = new Attrs();
+			StringBuilder sb = new StringBuilder();
+			String sep = "";
+			for (String oc : objectClass) {
+				sb.append(sep).append(oc);
+				sep = ",";
+			}
+			a.put("objectClass:List<String>", sb.toString());
+			p.put("osgi.service", a);
+			String s = p.toString();
+			provides.add(s);
+		}
+	}
+
+	private void addRequireHeader(String objectClass, Set<String> requires) {
+		Parameters p = new Parameters();
+		Attrs a = new Attrs();
+		a.put("filter:", "\"(objectClass=" + objectClass + ")\"");
+		a.put("effective:", "\"active\"");
+		p.put("osgi.service", a);
+		String s = p.toString();
+		requires.add(s);
+	}
+
+	/*
+	 * This method is a pass thru for the properties of the analyzer. If we have
+	 * such a header, we get the analyzer header and concatenate our values
+	 * after removing dups.
+	 */
+
+	public void updateHeader(Analyzer analyzer, String name, Set<String> set) {
+		String value = analyzer.getProperty(name);
+		if (!set.isEmpty()) {
+			//
+			// Remove duplicates and sort
+			//
+			String header = Strings.join(set);
+			if (value == null)
+				analyzer.setProperty(name, header);
+			else
+				analyzer.setProperty(name, value + "," + header);
+		}
+	}
+
 
 	@Override
 	public String toString() {
