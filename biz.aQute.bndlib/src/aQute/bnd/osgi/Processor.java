@@ -2590,6 +2590,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 
+	/**
+	 * Copy the settings of another processor
+	 */
+	public void getSettings(Processor p) {
+		this.trace = p.isTrace();
+		this.pedantic = p.isPedantic();
+		this.exceptions = p.isExceptions();
+	}
 
 
 }

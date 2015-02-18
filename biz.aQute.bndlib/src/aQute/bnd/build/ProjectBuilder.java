@@ -431,8 +431,13 @@ public class ProjectBuilder extends Builder {
 	 */
 	private boolean isMaster(InfoRepository repo, String bsn, Version v) throws Exception {
 		ResourceDescriptor descriptor = repo.getDescriptor(bsn, v);
+
+		//
+		// If not there, we assume that is master
+		//
+
 		if (descriptor == null)
-			return false;
+			return true;
 
 		return descriptor.phase == Phase.MASTER;
 	}

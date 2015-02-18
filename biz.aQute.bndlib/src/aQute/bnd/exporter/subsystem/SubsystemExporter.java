@@ -1,30 +1,92 @@
 package aQute.bnd.exporter.subsystem;
 
+import static aQute.bnd.osgi.Constants.*;
+
 import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
 import aQute.bnd.annotation.plugin.*;
 import aQute.bnd.build.*;
+import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.export.*;
 
 @BndPlugin(name = "subsystem")
 public class SubsystemExporter implements Exporter {
 
+	private static final String	OSGI_INF_SUBSYSTEM_MF		= "OSGI-INF/SUBSYSTEM.MF";
+	private static final String	SUBSYSTEM_SYMBOLIC_NAME		= "Subsystem-SymbolicName";
+	private static final String	OSGI_SUBSYSTEM_APPLICATION	= "osgi.subsystem.application";
+	private static final String	SUBSYSTEM_TYPE				= "Subsystem-Type";
+	private static final String	SUBSYSTEM_CONTENT			= "Subsystem-Content";
+
 	@Override
 	public String[] getTypes() {
-		return null;
+		return new String[] {
+			OSGI_SUBSYSTEM_APPLICATION
+		};
 	}
 
 	@Override
 	public Resource export(String type, final Project project, Map<String,String> options) throws Exception {
 		Jar jar = new Jar(".");
 
+		project.addClose(jar);
+
 		Manifest a = new Manifest();
 		Attributes application = a.getMainAttributes();
 
+		List<File> files = new ArrayList<File>();
+
+		for (Container c : project.getRunbundles()) {
+			c.contributeFiles(files, project);
+		}
+
+		Parameters subsysContent = new Parameters();
+		Instructions contentDecorators = new Instructions(project.getProperty(SUBSYSTEM_CONTENT, "*"));
+
+		for (File file : files) {
+
+			Domain domain = Domain.domain(file);
+			String bsn = domain.getBundleSymbolicName().getKey();
+			String version = domain.getBundleVersion();
+
+			Instruction decorator = contentDecorators.finder(bsn);
+			if (decorator == null || decorator.isNegated())
+				continue;
+
+			Attrs attrs = new Attrs(contentDecorators.get(decorator));
+			subsysContent.put(bsn, attrs);
+			attrs.put(Constants.BUNDLE_VERSION, version);
+
+		}
+
+		application.putValue(SUBSYSTEM_CONTENT, subsysContent.toString());
+
+		headers(project, application);
+		set(application, SUBSYSTEM_TYPE, type);
+
+		String ssn = project.getName();
+
+		Collection<String> bsns = project.getBsns();
+		if (bsns.size() > 0) {
+			ssn = bsns.iterator().next();
+		}
+
+		set(application, SUBSYSTEM_SYMBOLIC_NAME, ssn);
+
+		jar.putResource(OSGI_INF_SUBSYSTEM_MF, new ManifestResource(a));
+
+		return new JarResource(jar);
+	}
+
+	private void headers(final Project project, Attributes application) {
 		for (String key : project.getPropertyKeys(true)) {
+
+			if (application.getValue(key) != null)
+				continue;
+
 			String value = project.getProperty(key);
 			if (value == null)
 				continue;
@@ -34,34 +96,23 @@ public class SubsystemExporter implements Exporter {
 				continue;
 
 			char c = value.charAt(0);
-			if (Character.isUpperCase(c))
+			if (Character.isUpperCase(c) && Verifier.HEADER_PATTERN.matcher(key).matches())
 				application.putValue(key, value);
 		}
-
-		set(application, "Subsystem-Type", "osgi.subsystem.application");
-		set(application, "Subsystem-SymbolicName", project.getBsns().iterator().next());
-		Manifest d = new Manifest();
-		Attributes deployment = a.getMainAttributes();
-
-		List<File> files = new ArrayList<File>();
-
-		for (Container c : project.getRunbundles()) {
-			c.contributeFiles(files, project);
-		}
-
-		for (File file : files) {
-			Domain domain = Domain.domain(file);
-
-		}
-
-		jar.putResource("OSGI-INF/DEPLOYMENT.MF", new ManifestResource(d));
-		jar.putResource("OSGI-INF/SUBSYSTEM.MF", new ManifestResource(a));
-		
-		return new JarResource(jar);
+		Instructions instructions = new Instructions(project.mergeProperties(REMOVEHEADERS));
+		Collection<Object> result = instructions.select(application.keySet(), false);
+		application.keySet().removeAll(result);
 	}
 
-	private void set(Attributes application, String string, String string2) {
-		// TODO Auto-generated method stub
+	private void set(Attributes application, String key, String... values) {
+		if (application.getValue(key) != null)
+			return;
+
+		for (String value : values) {
+			if (value != null) {
+				application.putValue(key, value);
+			}
+		}
 
 	}
 

@@ -113,19 +113,13 @@ public class BndrunResolveContext extends GenericResolveContext {
 		Parameters runpath = new Parameters(properties.mergeProperties(path));
 
 		Set<Resource> resources = new LinkedHashSet<Resource>();
+
 		for (Map.Entry<String,Attrs> e : runpath.entrySet()) {
-
-			CapReqBuilder capReq = CapReqBuilder.createBundleRequirement(e.getKey(), e.getValue().getVersion());
-			Requirement requirement = capReq.buildSyntheticRequirement();
-
-			for (Repository repository : getRepositories()) {
-
-				Map<Requirement,Collection<Capability>> bundles = findProviders(repository, requirement);
-
-				for (Collection<Capability> caps : bundles.values()) {
-					for (Capability cap : caps)
-						resources.add(cap.getResource());
-				}
+			String bsn = e.getKey();
+			String version = e.getValue().getVersion();
+			if (!getResources(resources, bsn, version)) {
+				// fallback for non-indexed things
+				// need a more permanent solutions
 
 			}
 		}
@@ -145,6 +139,29 @@ public class BndrunResolveContext extends GenericResolveContext {
 				capabilityIndex.addCapability(copy);
 			}
 		}
+	}
+
+	/*
+	 * Try to find a resource from the existing repositories by its bsn and
+	 * version. This returns true if a single bundle was find, otherwise false
+	 */
+	private boolean getResources(Set<Resource> resources, String bsn, String version) {
+		CapReqBuilder capReq = CapReqBuilder.createBundleRequirement(bsn, version);
+		Requirement requirement = capReq.buildSyntheticRequirement();
+
+		for (Repository repository : getRepositories()) {
+
+			Map<Requirement,Collection<Capability>> bundles = findProviders(repository, requirement);
+			if (bundles.isEmpty())
+				continue;
+
+			for (Collection<Capability> caps : bundles.values()) {
+				for (Capability cap : caps)
+					resources.add(cap.getResource());
+			}
+			return true;
+		}
+		return false;
 	}
 
 	private void loadEE() {

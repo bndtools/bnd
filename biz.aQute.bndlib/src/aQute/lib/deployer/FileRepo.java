@@ -8,6 +8,7 @@ import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
@@ -48,7 +49,8 @@ import aQute.service.reporter.*;
  */
 
 @aQute.bnd.annotation.plugin.BndPlugin(name="filerepo", parameters=FileRepo.Config.class)
-public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
+public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable,
+		InfoRepository {
 
 	interface Config  {
 		String name();
@@ -401,7 +403,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			reporter.trace("updating %s ", file.getAbsolutePath());
 
 			if (hasIndex)
-				index.put(bsn + "-" + version, buildDescriptor(tmpFile, tmpJar, digest, bsn, version));
+				index.put(bsn + "-" + version.getWithoutQualifier(),
+						buildDescriptor(tmpFile, tmpJar, digest, bsn, version));
 
 			// An open jar on file will fail rename on windows
 			tmpJar.close();
@@ -935,7 +938,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public ResourceDescriptor getDescriptor(String bsn, Version version) throws Exception {
 		init();
 		if (hasIndex) {
-			return index.get(bsn + "-" + version);
+			ResourceDescriptor resourceDescriptor = index.get(bsn + "-" + version);
+			if (resourceDescriptor == null)
+				System.out.println("Keys " + index.keySet());
+			return resourceDescriptor;
 		}
 		return null;
 	}

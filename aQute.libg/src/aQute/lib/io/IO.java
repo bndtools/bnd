@@ -6,6 +6,8 @@ import java.nio.*;
 import java.security.*;
 import java.util.*;
 
+import aQute.libg.glob.*;
+
 public class IO {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
 
@@ -21,6 +23,28 @@ public class IO {
 			tmp = new File(System.getProperty("user.home"));
 		}
 		home = tmp;
+	}
+
+	public static Collection<File> tree(File current) {
+		Set<File> files = new LinkedHashSet<File>();
+		traverse(files, current, null);
+		return files;
+	}
+
+	public static Collection<File> tree(File current, String glob) {
+		Set<File> files = new LinkedHashSet<File>();
+		traverse(files, current, glob == null ? null : new Glob(glob));
+		return files;
+	}
+
+	private static void traverse(Collection<File> files, File current, Glob glob) {
+		if (current.isFile() && (glob == null || glob.matcher(current.getName()).matches())) {
+			files.add(current);
+		} else if (current.isDirectory()) {
+			for (File sub : current.listFiles()) {
+				traverse(files, sub, glob);
+			}
+		}
 	}
 
 	public static void copy(Reader r, Writer w) throws IOException {

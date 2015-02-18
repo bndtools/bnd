@@ -4064,4 +4064,23 @@ public class bnd extends Processor {
 		}
 	}
 
+	/**
+	 * Profiles subcmd
+	 */
+
+	@Description("Profile management. A profile is a JAR that only contains packages and capabilities")
+	@Arguments(arg = {
+			"create", "..."
+	})
+	public interface ProfileOptions extends Options {
+
+	}
+
+	@Description("Profile management. A profile is a JAR that only contains packages and capabilities")
+	public void _profile(ProfileOptions options) throws Exception {
+		Profiles profiles = new Profiles(this, options);
+		CommandLine cmd = options._command();
+		cmd.subCmd(options, profiles);
+		getInfo(profiles);
+	}
 }

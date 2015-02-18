@@ -490,7 +490,7 @@ public class Project extends Processor {
 							found = new Container(project, bsn, versionRange, Container.TYPE.PROJECT, f, null, attrs,
 									null);
 						} else {
-							msgs.NoSuchProject(bsn, spec);
+							msgs.NoSuchProject(bsn, spec).context(bsn).header(source);
 							continue;
 						}
 					} else if (versionRange != null && versionRange.equals("file")) {

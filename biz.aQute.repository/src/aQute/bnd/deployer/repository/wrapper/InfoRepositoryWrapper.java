@@ -194,7 +194,8 @@ public class InfoRepositoryWrapper implements Repository {
 		for (String bsn : repo.list(null)) {
 			for (Version version : repo.versions(bsn)) {
 				ResourceDescriptor rd = repo.getDescriptor(bsn, version);
-				map.put(Hex.toHexString(rd.id), rd);
+				if (rd != null)
+					map.put(Hex.toHexString(rd.id), rd);
 			}
 		}
 		return map;

@@ -10,7 +10,9 @@ import org.osgi.resource.*;
 import aQute.bnd.build.*;
 import aQute.bnd.jpm.*;
 import aQute.bnd.osgi.resource.*;
+import aQute.bnd.service.repository.*;
 import aQute.bnd.version.*;
+import aQute.lib.deployer.*;
 import aQute.lib.io.*;
 import aQute.lib.utf8properties.*;
 import aQute.libg.map.*;
@@ -53,13 +55,6 @@ public class TestWrapper extends TestCase {
 		assertEquals("osgi.logger.provider", identity.getAttributes().get("osgi.identity"));
 	}
 
-	private InfoRepositoryWrapper getRepo() throws Exception {
-		Repository repo = new Repository();
-		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "testdata/ws/cnf/jpm4j.json"));
-		InfoRepositoryWrapper iw = new InfoRepositoryWrapper(tmp, Collections.singleton(repo));
-		return iw;
-	}
-
 	/**
 	 * Attributes do not properly encode lists (they are encoded as "[a,b]",
 	 * e.g. there is a toString somewhere // This turned out to be caused by the
@@ -76,31 +71,50 @@ public class TestWrapper extends TestCase {
 		assertEquals(1, provider.size());
 	}
 
-	public void testbasic() throws Exception {
-		Repository repo = new Repository();
-		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "testdata/ws/cnf/jpm4j.json"));
-		assertNotNull(repo.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
+	public void testJPMRepoBasic() throws Exception {
+		Repository repo = getJpmRepo();
+		testRepo(1, repo);
+	}
 
-		InfoRepositoryWrapper iw = new InfoRepositoryWrapper(tmp, Collections.singleton(repo));
+	public void testFileRepoBasic() throws Exception {
+		FileRepo repo = getFileRepo(true);
+		testRepo(1, repo);
+	}
 
-		Requirement cr = new CapReqBuilder("osgi.identity").filter("(osgi.identity=biz.aQute.jpm.daemon)")
+	public void testFileRepoBasicWithoutIndex() throws Exception {
+		FileRepo repo = getFileRepo(false);
+		testRepo(0, repo);
+	}
+
+	private void testRepo(int count, InfoRepository... repo) throws Exception, FileNotFoundException, IOException {
+		List<InfoRepository> repos = Arrays.asList(repo);
+
+		for (InfoRepository r : repos) {
+			assertNotNull(r.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
+		}
+
+		InfoRepositoryWrapper iw = new InfoRepositoryWrapper(tmp, repos);
+
+		Requirement req = CapReqBuilder.createBundleRequirement("biz.aQute.jpm.daemon", null)
 				.buildSyntheticRequirement();
 
-		Map<Requirement,Collection<Capability>> result = iw.findProviders(Arrays.asList(cr));
+		Map<Requirement,Collection<Capability>> result = iw.findProviders(Arrays.asList(req));
 		assertNotNull(result);
-		assertEquals(1, result.size());
+		assertEquals(count, result.size());
 
 		iw.close();
 
-		cr = new CapReqBuilder("osgi.identity").filter("(osgi.identity=biz.aQute.jpm.daemon)")
-				.buildSyntheticRequirement();
-		iw = new InfoRepositoryWrapper(tmp, Collections.singleton(repo));
+		iw = new InfoRepositoryWrapper(tmp, repos);
 
-		result = iw.findProviders(Arrays.asList(cr));
+		result = iw.findProviders(Arrays.asList(req));
 		assertNotNull(result);
-		assertEquals(1, result.size());
+		assertEquals(count, result.size());
 
 		iw.close();
+		for (InfoRepository r : repos) {
+			if (r instanceof Closeable)
+				((Closeable) r).close();
+		}
 	}
 
 	/**
@@ -109,9 +123,17 @@ public class TestWrapper extends TestCase {
 	 */
 
 	public void testAugment() throws Exception {
-		Repository repo = new Repository();
-		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "testdata/ws/cnf/jpm4j.json"));
+		Repository repo = getJpmRepo();
 
+		augmentTest(repo);
+	}
+
+	public void testFileRepoAugment() throws Exception {
+		FileRepo repo = getFileRepo(true);
+		augmentTest(repo);
+	}
+
+	private void augmentTest(InfoRepository repo) throws Exception, IOException {
 		assertNotNull(repo.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
 
 		InfoRepositoryWrapper iw = new InfoRepositoryWrapper(tmp, Collections.singleton(repo));
@@ -153,25 +175,24 @@ public class TestWrapper extends TestCase {
 	 */
 
 	public void testAugment2() throws Exception {
-		
+
 		File cache = new File("cache");
 		IO.deleteWithException(cache);
-		
-		Workspace ws = Workspace.getWorkspace( IO.getFile("testdata/ws"));
-		
-		assertNotNull( ws );
-		
+
+		Workspace ws = Workspace.getWorkspace(IO.getFile("testdata/ws"));
+
+		assertNotNull(ws);
+
 		Repository repo = ws.getPlugin(Repository.class);
-		assertNotNull( repo );
-		
+		assertNotNull(repo);
+
 		assertNotNull(repo.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
 
 		org.osgi.service.repository.Repository osgi = ws.getPlugin(org.osgi.service.repository.Repository.class);
-		
+
 		//
 		// Get the test and identity capability
 		//
-		
 
 		Requirement testreq = new CapReqBuilder("test").filter("(test=1)").buildSyntheticRequirement();
 
@@ -193,6 +214,29 @@ public class TestWrapper extends TestCase {
 		assertNotNull(identitycap);
 		assertEquals(testcap.getResource(), identitycap.getResource());
 
+	}
+
+	private Repository getJpmRepo() {
+		Repository repo = new Repository();
+		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "testdata/ws/cnf/jpm4j.json"));
+		return repo;
+	}
+
+	private InfoRepositoryWrapper getRepo() throws Exception {
+		Repository repo = getJpmRepo();
+		InfoRepositoryWrapper iw = new InfoRepositoryWrapper(tmp, Collections.singleton(repo));
+		return iw;
+	}
+
+	private FileRepo getFileRepo(boolean info) throws Exception, FileNotFoundException {
+		FileRepo repo = new FileRepo();
+		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "" + info));
+
+		Collection<File> files = IO.tree(IO.getFile("testdata/ws/cnf/jar"), "*.jar");
+		for (File f : files) {
+			repo.put(new FileInputStream(f), null);
+		}
+		return repo;
 	}
 
 }
