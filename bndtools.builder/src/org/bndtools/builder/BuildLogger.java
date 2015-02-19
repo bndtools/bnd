@@ -9,12 +9,17 @@ public class BuildLogger {
     public static final int LOG_BASIC = 1;
     public static final int LOG_NONE = 0;
     private final int level;
-    long start = System.currentTimeMillis();
-    Formatter formatter = new Formatter();
-    boolean used = false;
+    private final long start = System.currentTimeMillis();
+    private final StringBuilder sb = new StringBuilder();
+    private final Formatter formatter = new Formatter(sb);
+    private boolean used = false;
 
     public BuildLogger(int level) {
         this.level = level;
+    }
+
+    public void basic(String string) {
+        basic(string, (Object[]) null);
     }
 
     public void basic(String string, Object... args) {
@@ -22,6 +27,10 @@ public class BuildLogger {
             return;
 
         message(string, args);
+    }
+
+    public void full(String string) {
+        full(string, (Object[]) null);
     }
 
     public void full(String string, Object... args) {
@@ -37,28 +46,31 @@ public class BuildLogger {
 
     @Override
     public String toString() {
-        return formatter.toString();
+        return sb.toString();
     }
 
-    private void message(String string, Object... args) {
+    private void message(String string, Object[] args) {
         used = true;
-        formatter.format(string, args);
-        formatter.format("\n");
+        if (args == null) {
+            sb.append(string);
+        } else {
+            formatter.format(string, args);
+        }
+        sb.append('\n');
     }
 
     public String toString(Project model, int files) {
         long end = System.currentTimeMillis();
         full("Duration %.2f sec", (end - start) / 1000f);
 
-        String top = "BUILD " + model;
+        StringBuilder top = new StringBuilder();
+        Formatter topper = new Formatter(top);
         if (files > 0)
-            top += " " + files + " file" + (files == 1 ? " was" : "s were") + " built";
+            topper.format("BUILD %s %d file%s built", model.getName(), files, files > 1 ? "s were" : " was");
         else
-            top += " no build";
-        top += "\n";
+            topper.format("BUILD %s no build", model.getName());
+        topper.close();
 
-        return top + formatter;
-
+        return top.append('\n').append(sb).toString();
     }
-
 }

@@ -252,7 +252,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
      */
     private boolean resetClasspathContainer(IProject myProject, List<String> errors) throws CoreException {
         if (BndContainerInitializer.resetClasspaths(model, myProject, errors)) {
-            buildLog.basic("classpaths were changed " + errors);
+            buildLog.basic("classpaths were changed %s", errors);
             return true;
         }
         return false;
@@ -269,7 +269,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 return false;
             projectDescription.setDynamicReferences(newer);
             getProject().setDescription(projectDescription, null);
-            buildLog.full("Changed the build order to " + Arrays.toString(newer));
+            buildLog.full("Changed the build order to %s", Arrays.toString(newer));
 
         } catch (Exception e) {
             logger.logError("Failed to set build order", e);
