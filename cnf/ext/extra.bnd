@@ -1,5 +1,5 @@
 -plugin.extra:  \
 \
         aQute.bnd.deployer.repository.wrapper.Plugin; \
-            location            =	"${build}/cache/wrapper"; \
+            location            =	"${workspace}/cnf/cache/wrapper"; \
             reindex				=	true
