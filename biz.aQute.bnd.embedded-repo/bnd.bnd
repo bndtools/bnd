@@ -5,4 +5,8 @@ Bundle-Description: Embedded Repo for bnd workspace.
 	biz.aQute.launcher/biz.aQute.launcher-latest.jar=${repo;biz.aQute.launcher;snapshot}, \
 	biz.aQute.junit/biz.aQute.junit-latest.jar=${repo;biz.aQute.junit;snapshot}
 
--removeheaders: Include-Resource, Private-Package, Conditional-Package, JPM-Command, Main-Class
+-dependson: \
+    biz.aQute.junit, \
+    biz.aQute.launcher
+
+-digests: MD5, SHA1
