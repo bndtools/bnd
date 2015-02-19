@@ -1,20 +1,36 @@
 package biz.aQute.resolve;
 
-import static org.osgi.framework.namespace.BundleNamespace.*;
+import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
-import org.osgi.framework.*;
-import org.osgi.resource.*;
-import org.osgi.service.log.*;
-import org.osgi.service.resolver.*;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
+import org.osgi.resource.Wire;
+import org.osgi.service.log.LogService;
+import org.osgi.service.resolver.ResolutionException;
+import org.osgi.service.resolver.ResolveContext;
+import org.osgi.service.resolver.Resolver;
 
-import aQute.bnd.build.model.*;
-import aQute.bnd.service.*;
-import aQute.libg.tuple.*;
-import biz.aQute.resolve.internal.*;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.Registry;
+import aQute.libg.tuple.Pair;
+import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class ResolveProcess {
 
@@ -25,9 +41,19 @@ public class ResolveProcess {
 
 	public Map<Resource,List<Wire>> resolveRequired(BndEditModel inputModel, Registry plugins, Resolver resolver,
 			Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
-		// 1. Resolve initial requirements
-		BndrunResolveContext rc = new BndrunResolveContext(inputModel, plugins, log);
+		try {
+			return resolveRequired(inputModel.getProperties(), plugins, resolver, callbacks, log);
+		}
+		catch (Exception e) {
+			throw new ResolutionException(e);
+		}
+	}
+
+	public Map<Resource,List<Wire>> resolveRequired(Processor properties, Registry plugins, Resolver resolver,
+			Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
+		BndrunResolveContext rc = new BndrunResolveContext(properties, plugins, log);
 		rc.addCallbacks(callbacks);
+		// 1. Resolve initial requirements
 		try {
 			Map<Resource,List<Wire>> wirings = resolver.resolve(rc);
 
@@ -74,7 +100,7 @@ public class ResolveProcess {
 			}
 
 			// 5. Resolve the rest
-			BndrunResolveContext rc2 = new BndrunResolveContext(inputModel, plugins, log) {
+			BndrunResolveContext rc2 = new BndrunResolveContext(properties, plugins, log) {
 
 				@Override
 				public Collection<Resource> getMandatoryResources() {
@@ -104,7 +130,7 @@ public class ResolveProcess {
 			return result;
 		}
 		catch (ResolutionException re) {
-			throw augment(new BndrunResolveContext(inputModel, plugins, log), re);
+			throw augment(new BndrunResolveContext(properties, plugins, log), re);
 		}
 	}
 

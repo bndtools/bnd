@@ -1,0 +1,3 @@
+-runrequires: osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)'
+-runfw: org.apache.felix.framework;version='[4.4.0,4.4.0]'
+-runee: JavaSE-1.8

@@ -1,0 +1,11 @@
+-plugin.jpm: \
+	aQute.bnd.jpm.Repository; \
+        name=JPM; \
+        location=${build}/cache/shas; \
+        index=${workspace}/cnf/jpm4j.json, \
+        
+-plugin.wrapper: \
+	aQute.bnd.deployer.repository.wrapper.Plugin; \
+		location="${build}/cache/wrapper"; \
+		reindex=true
+	

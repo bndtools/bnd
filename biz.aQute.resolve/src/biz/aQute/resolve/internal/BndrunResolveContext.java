@@ -64,6 +64,17 @@ public class BndrunResolveContext extends GenericResolveContext {
 		}
 	}
 
+	public BndrunResolveContext(Processor runModel, Registry registry, LogService log) {
+		super(log);
+		try {
+			this.registry = registry;
+			this.properties = runModel;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	@Override
 	protected synchronized void init() {
 		if (initialised)
@@ -93,7 +104,7 @@ public class BndrunResolveContext extends GenericResolveContext {
 	 * header is set in the lowest properties file.
 	 */
 	private void loadpaths(CapabilityIndex capabilityIndex) throws Exception {
-		loadpath(capabilityIndex, Constants.PROVIDED, "-provided");
+		loadpath(capabilityIndex, Constants.DISTRO, "-provided");
 		loadpath(capabilityIndex, Constants.RUNPATH, "-runpath");
 		if (properties.get(Constants.TESTCASES) != null && !properties.is(Constants.NOJUNITOSGI))
 			loadpath(capabilityIndex, Constants.TESTPATH, "-testpath");
