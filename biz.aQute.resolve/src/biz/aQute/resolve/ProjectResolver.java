@@ -104,7 +104,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	 * yet.
 	 */
 
-	public List<Container> getRunbundles() throws Exception {
+	public List<Container> getRunBundles() throws Exception {
 		if (resolution == null)
 			resolve();
 
@@ -167,6 +167,15 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 
 	public BndrunResolveContext getContext() {
 		return new BndrunResolveContext(project, project, log);
+	}
+
+	public IdentityCapability getResource(String bsn, String version) {
+		Requirement requirement = CapReqBuilder.createBundleRequirement(bsn, version).buildSyntheticRequirement();
+		List<Capability> result = getContext().findProviders(requirement);
+		if (result == null || result.isEmpty())
+			return null;
+
+		return ResourceUtils.getIdentityCapability(result.get(0).getResource());
 	}
 
 }

@@ -1,8 +1,10 @@
 Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
 -includeresource: \
  LICENSE, \
- embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
- templates=templates
+ embedded-repo.jar, \
+ templates=templates, \
+ @${repo;biz.aQute.repository;latest}, \
+ @${repo;biz.aQute.resolve;latest}, \
 
 Private-Package:  \
     aQute.bnd.*,\
@@ -29,6 +31,8 @@ Import-Package: org.apache.tools.ant.*;resolution:=optional,\
     junit.framework;resolution:=optional;version='[3.8,4)',\
     *
 
+
+
 Main-Class:                     aQute.bnd.main.bnd
 JPM-Command:                    bnd
 
@@ -39,7 +43,8 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 
 -dependson: biz.aQute.bnd.embedded-repo
 
--buildpath: aQute.libg;version=latest,\
+-buildpath: \
+	aQute.libg;version=latest,\
 	ee.j2se;version=${javac.ee},\
 	biz.aQute.bndlib;version=project,\
 	org.apache.tools.ant,\
@@ -48,7 +53,10 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	osgi.cmpn;version=4.3.1,\
 	osgi.core;version=4.3.1,\
 	org.osgi.impl.bundle.bindex,\
-	osgi.r5;version=1.0.1
+	osgi.r5;version=1.0.1,\
+	org.osgi.impl.bundle.repoindex.lib;version=latest,\
+	biz.aQute.repository;version=latest,\
+	biz.aQute.resolve;version=latest
 -testpath: \
 	junit.osgi
 

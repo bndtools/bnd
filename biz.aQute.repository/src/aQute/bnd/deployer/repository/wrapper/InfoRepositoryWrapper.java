@@ -202,7 +202,7 @@ public class InfoRepositoryWrapper implements Repository {
 	}
 
 	public String toString() {
-		return "InfoRepositoryWrapper[" + repos + "]";
+		return "InfoRepositoryWrapper[" + repos.size() + "]";
 	}
 
 	public void close() throws IOException {

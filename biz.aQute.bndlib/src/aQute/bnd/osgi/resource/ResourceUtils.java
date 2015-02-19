@@ -62,7 +62,7 @@ public class ResourceUtils {
 
 		String copyright();
 
-		String description();
+		String description(String string);
 
 		String documentation();
 
@@ -179,7 +179,7 @@ public class ResourceUtils {
 
 			@Override
 			public Object invoke(Object target, Method method, Object[] args) throws Throwable {
-				if (Requirement.class == method.getDeclaringClass())
+				if (Capability.class == method.getDeclaringClass())
 					return method.invoke(cap, args);
 
 				return get(method, cap.getAttributes(), cap.getDirectives(), args);
@@ -213,7 +213,7 @@ public class ResourceUtils {
 			value = directives.get(name.substring(1));
 		else
 			value = attrs.get(name);
-		if (value == null && args.length == 1)
+		if (value == null && args != null && args.length == 1)
 			value = args[0];
 
 		return (T) cnv.convert(method.getGenericReturnType(), value);

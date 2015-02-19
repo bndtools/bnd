@@ -49,7 +49,7 @@ public class ProjectResolverTest extends TestCase {
 		pr.setTrace(true);
 		pr.resolve();
 		assertTrue(pr.check());
-		List<Container> runbundles = pr.getRunbundles();
+		List<Container> runbundles = pr.getRunBundles();
 		assertEquals(2, runbundles.size());
 		System.out.println(Strings.join("\n", runbundles));
 		pr.close();
@@ -62,9 +62,9 @@ public class ProjectResolverTest extends TestCase {
 		pr.setTrace(true);
 		pr.resolve();
 		assertTrue(pr.check());
-		List<Container> runbundles = pr.getRunbundles();
+		List<Container> runbundles = pr.getRunBundles();
 		assertEquals(1, runbundles.size());
-		System.out.println(Strings.join("\n", pr.getRunbundles()));
+		System.out.println(Strings.join("\n", pr.getRunBundles()));
 		pr.close();
 	}
 
@@ -79,9 +79,9 @@ public class ProjectResolverTest extends TestCase {
 			pr.setTrace(true);
 			pr.resolve();
 			assertTrue(pr.check());
-			List<Container> runbundles = pr.getRunbundles();
+			List<Container> runbundles = pr.getRunBundles();
 			assertEquals(1, runbundles.size());
-			System.out.println(Strings.join("\n", pr.getRunbundles()));
+			System.out.println(Strings.join("\n", pr.getRunBundles()));
 			pr.close();
 		}
 		catch (Exception e) {
