@@ -38,6 +38,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.core.JavaModelManager;
 
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
@@ -102,7 +103,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
     public static boolean resetClasspaths(Project model, IProject project, Collection<String> errors) throws CoreException {
         IJavaProject javaProject = JavaCore.create(project);
-        IClasspathContainer container = JavaCore.getClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, javaProject);
+        IClasspathContainer container = JavaModelManager.getJavaModelManager().containerGet(javaProject, BndtoolsConstants.BND_CLASSPATH_ID);
+        if (container == null) {
+            return false; // project does not have a BndContainer
+        }
+        container = JavaCore.getClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, javaProject);
         List<IClasspathEntry> currentClasspath = Arrays.asList(container.getClasspathEntries());
 
         List<IClasspathEntry> newClasspath = calculateProjectClasspath(model, project, errors);
