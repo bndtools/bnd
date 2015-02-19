@@ -1042,4 +1042,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				tmpjar.close();
 		}
 	}
+
+	public void setIndex(boolean b) {
+		hasIndex = b;
+	}
 }
