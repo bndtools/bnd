@@ -81,7 +81,10 @@ class MarkerSupport {
 
     void addBuildMarkers(Project model, int severity, String message, Object... args) throws Exception {
         String formatted = String.format(message, args);
+        addBuildMarkers(model, severity, formatted);
+    }
 
+    void addBuildMarkers(Project model, int severity, String formatted) throws Exception {
         Location location = model != null ? model.getLocation(formatted) : null;
         if (location != null) {
             String type = location.details != null ? location.details.getClass().getName() : null;
