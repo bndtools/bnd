@@ -254,7 +254,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             case PROJECT :
                 IPath projectPath = root.getFile(path).getProject().getFullPath();
                 result.add(JavaCore.newProjectEntry(projectPath, accessRules, false, extraAttrs, false));
-                result.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
+                if (!isVersionProject(c)) { // if not version=project, add entry for generated jar
+                    result.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
+                }
                 break;
             default :
                 result.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
@@ -310,10 +312,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return accessRules;
         }
 
-        File file = c.getFile();
         switch (c.getType()) {
         case PROJECT :
-            if (!file.isFile()) { // not a file; so version=project
+            if (isVersionProject(c)) { // if version=project, try Project for exports
                 Project p = c.getProject();
                 if (p.getContained().isEmpty()) {
                     break; // no builder information; so full access
@@ -330,7 +331,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         case EXTERNAL :
             Manifest mf = null;
             try {
-                mf = JarUtils.loadJarManifest(file);
+                mf = JarUtils.loadJarManifest(c.getFile());
             } catch (IOException e) {
                 break; // unable to open manifest; so full access
             }
@@ -389,5 +390,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         if (path == null)
             path = Path.fromOSString(file.getAbsolutePath());
         return path;
+    }
+
+    private static boolean isVersionProject(Container c) {
+        return Constants.VERSION_ATTR_PROJECT.equals(c.getAttributes().get(Constants.VERSION_ATTRIBUTE));
     }
 }
