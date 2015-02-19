@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,6 +17,7 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ModelListener;
 import org.bndtools.builder.BuildLogger;
+import org.bndtools.builder.BuilderPlugin;
 import org.bndtools.utils.jar.JarUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -43,6 +45,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 import bndtools.central.RefreshFileJob;
@@ -315,16 +318,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         switch (c.getType()) {
         case PROJECT :
             if (isVersionProject(c)) { // if version=project, try Project for exports
-                Project p = c.getProject();
-                if (p.getContained().isEmpty()) {
-                    break; // no builder information; so full access
-                }
-                List<IAccessRule> accessRules = new ArrayList<IAccessRule>();
-                for (PackageRef exportPkg : p.getExports().keySet()) {
-                    String pathStr = exportPkg.getBinary() + "/*";
-                    accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
-                }
-                return accessRules;
+                return calculateProjectAccessRules(c.getProject());
             }
             //$FALL-THROUGH$
         case REPO :
@@ -353,6 +347,54 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         return null; // full access
+    }
+
+    private static List<IAccessRule> calculateProjectAccessRules(Project p) {
+        File accessPatternsFile = new File(BuilderPlugin.getInstance().getStateLocation().toFile(), p.getName() + ".accesspatterns");
+        String oldAccessPatterns = "";
+        boolean exists = accessPatternsFile.exists();
+        if (exists) { // read persisted access patterns
+            try {
+                oldAccessPatterns = IO.collect(accessPatternsFile);
+            } catch (final IOException e) {
+                logger.logError("Failed to read access patterns file for project " + p.getName(), e);
+            }
+        }
+
+        if (p.getContained().isEmpty()) { // project not recently built; use persisted access patterns
+            if (!exists) {
+                return null; // no persisted access patterns; full access
+            }
+            String[] patterns = oldAccessPatterns.split(",");
+            List<IAccessRule> accessRules = new ArrayList<IAccessRule>(patterns.length);
+            for (String pathStr : patterns) {
+                accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+            }
+            return accessRules;
+        }
+
+        Set<PackageRef> exportPkgs = p.getExports().keySet();
+        List<IAccessRule> accessRules = new ArrayList<IAccessRule>(exportPkgs.size());
+        StringBuilder sb = new StringBuilder(oldAccessPatterns.length());
+        for (PackageRef exportPkg : exportPkgs) {
+            String pathStr = exportPkg.getBinary() + "/*";
+            if (sb.length() > 0) {
+                sb.append(',');
+            }
+            sb.append(pathStr);
+            accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+        }
+
+        String newAccessPatterns = sb.toString();
+        if (!exists || !newAccessPatterns.equals(oldAccessPatterns)) { // if state changed; persist updated access patterns
+            try {
+                IO.store(newAccessPatterns, accessPatternsFile);
+            } catch (final IOException e) {
+                logger.logError("Failed to write access patterns file for project " + p.getName(), e);
+            }
+        }
+
+        return accessRules;
     }
 
     private static IAccessRule[] toAccessRulesArray(List<IAccessRule> rules) {
