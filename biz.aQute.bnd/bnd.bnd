@@ -1,7 +1,7 @@
 Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
 -includeresource: \
  LICENSE, \
- embedded-repo.jar, \
+ embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
  templates=templates
 
 Private-Package:  \
@@ -37,9 +37,7 @@ JPM-Command:                    bnd
 Bundle-Description: This command line utility is the Swiss army knife of OSGi. It provides you with a breadth \
  of tools to understand and manage OSGi based systems. This project basically uses bndlib.
 
--dependson: \
-    biz.aQute.junit, \
-    biz.aQute.launcher
+-dependson: biz.aQute.bnd.embedded-repo
 
 -buildpath: aQute.libg;version=latest,\
 	ee.j2se;version=${javac.ee},\
