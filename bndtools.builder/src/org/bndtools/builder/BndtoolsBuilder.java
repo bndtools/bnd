@@ -76,10 +76,10 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
      * @param kind
      * @param args
      * @param monitor
-     * @return List of projetcs we depend on
+     * @return List of projects we depend on
      */
     @Override
-    protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
+    protected IProject[] build(int kind, Map<String,String> args, IProgressMonitor monitor) throws CoreException {
 
         BndPreferences prefs = new BndPreferences();
         CompileErrorAction actionOnCompileError = getActionOnCompileError();
@@ -135,7 +135,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             if (resetClasspathContainer(myProject, errors) || !errors.isEmpty()) {
                 // likely causes a recompile
                 super.rememberLastBuiltState();
-                return calculateDependsOn(model);
+                return dependsOn;
             }
 
             if (model.isNoBundles()) {
