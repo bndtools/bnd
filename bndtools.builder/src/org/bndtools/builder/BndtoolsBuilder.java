@@ -51,8 +51,7 @@ import bndtools.preferences.CompileErrorAction;
 
 /**
  * This a Builder for bndtools.It will use the bnd project/workspace model to incrementally build bundles. This is a
- * rewrite of the NewBuilder. Left out are the Eclipse classpath include in a build option and being able to continue
- * even when there are errors.
+ * rewrite of the NewBuilder. Left out are the Eclipse classpath include in a build option.
  */
 public class BndtoolsBuilder extends IncrementalProjectBuilder {
     public static final String PLUGIN_ID = "bndtools.builder";
@@ -82,15 +81,14 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(int kind, Map<String,String> args, IProgressMonitor monitor) throws CoreException {
 
         BndPreferences prefs = new BndPreferences();
-        CompileErrorAction actionOnCompileError = getActionOnCompileError();
-
         buildLog = new BuildLogger(prefs.getBuildLogging());
+
+        CompileErrorAction actionOnCompileError = getActionOnCompileError();
 
         BuildListeners listeners = new BuildListeners();
         int files = -1;
 
         try {
-
             IProject myProject = getProject();
 
             MarkerSupport markers = new MarkerSupport(this);
@@ -110,31 +108,28 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
             listeners.fireBuildStarting(myProject);
 
+            DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
+
+            boolean force = false;
+            if (delta.hasProjectChanged()) { // side effect is refresh, not superfluous!
+                force = true;
+            }
+
             IProject[] dependsOn = calculateDependsOn(model);
 
             if (setBuildOrder(dependsOn)) {
                 buildLog.basic("Build order changed");
             }
 
-            markers.clearBuildMarkers();
-
-            boolean force = false;
-
             if (dirty.remove(model)) {
                 buildLog.basic("project was dirty from a workspace refresh");
-                force = true;
-            }
-
-            DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
-
-            if (delta.hasProjectChanged()) { // side effect of refresh, not superfluous!
                 force = true;
             }
 
             List<String> errors = new ArrayList<String>();
             if (resetClasspathContainer(myProject, errors) || !errors.isEmpty()) {
                 // likely causes a recompile
-                super.rememberLastBuiltState();
+                rememberLastBuiltState();
                 return dependsOn;
             }
 
@@ -162,10 +157,11 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 }
             }
 
+            markers.clearBuildMarkers();
             markers.validate(model);
 
             if (markers.hasBlockingErrors(delta)) {
-                markers.addBuildMarkers(model, IMarker.SEVERITY_ERROR, "Will not build OSGi bundle(s) for project %s until  the compilation problems are fixed.", model.getName());
+                markers.addBuildMarkers(model, IMarker.SEVERITY_ERROR, "Will not build OSGi bundle(s) for project %s until the compilation problems are fixed.", model.getName());
 
                 if (actionOnCompileError != CompileErrorAction.build) {
                     if (actionOnCompileError == CompileErrorAction.delete) {
@@ -194,7 +190,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             markers.createBuildMarkers(model);
 
             if (model.isCnf())
-                model.getWorkspace().refresh();
+                model.getWorkspace().refresh(); // this is for bnd plugins built in cnf
 
             return dependsOn;
 
@@ -263,7 +259,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     }
 
     /*
-     * Calculate the order for the bnd workspace and set this as the build order for Eclipse.
+     * Set the project's dependencies to influence the build order for Eclipse.
      */
     private boolean setBuildOrder(IProject[] newer) throws Exception {
         try {
