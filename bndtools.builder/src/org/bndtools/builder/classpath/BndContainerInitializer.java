@@ -1,13 +1,13 @@
 package org.bndtools.builder.classpath;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,6 +17,7 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ModelListener;
 import org.bndtools.builder.BuildLogger;
+import org.bndtools.builder.BuilderPlugin;
 import org.bndtools.utils.jar.JarUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -37,13 +38,14 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.osgi.framework.Constants;
 
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 import bndtools.central.RefreshFileJob;
@@ -210,7 +212,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             if (c.getError() != null) {
                 SetLocation location = model.error("%s-%s: %s", c.getBundleSymbolicName(), c.getVersion(), c.getError());
                 location.context(c.getBundleSymbolicName());
-                location.header(aQute.bnd.osgi.Constants.BUILDPATH);
+                location.header(Constants.BUILDPATH);
                 location.file(model.getPropertiesFile().getAbsolutePath());
                 errors.add(c.getError());
                 continue;
@@ -255,7 +257,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             case PROJECT :
                 IPath projectPath = root.getFile(path).getProject().getFullPath();
                 result.add(JavaCore.newProjectEntry(projectPath, accessRules, false, extraAttrs, false));
-                result.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
+                if (!isVersionProject(c)) { // if not version=project, add entry for generated jar
+                    result.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
+                }
                 break;
             default :
                 result.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
@@ -279,9 +283,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         attrs.add(JavaCore.newClasspathAttribute("type", c.getType().name()));
         attrs.add(JavaCore.newClasspathAttribute("project", c.getProject().getName()));
 
-        String version = c.getAttributes().get("version");
+        String version = c.getAttributes().get(Constants.VERSION_ATTRIBUTE);
         if (version != null) {
-            attrs.add(JavaCore.newClasspathAttribute("version", version));
+            attrs.add(JavaCore.newClasspathAttribute(Constants.VERSION_ATTRIBUTE, version));
         }
 
         String packages = c.getAttributes().get("packages");
@@ -311,29 +315,19 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return accessRules;
         }
 
-        File file = c.getFile();
         switch (c.getType()) {
         case PROJECT :
-            if (!file.isFile()) { // not a file; so version=project
-                Project p = c.getProject();
-                if (p.getContained().isEmpty()) {
-                    break; // no builder information; so full access
-                }
-                List<IAccessRule> accessRules = new ArrayList<IAccessRule>();
-                for (PackageRef exportPkg : p.getExports().keySet()) {
-                    String pathStr = exportPkg.getBinary() + "/*";
-                    accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
-                }
-                return accessRules;
+            if (isVersionProject(c)) { // if version=project, try Project for exports
+                return calculateProjectAccessRules(c.getProject());
             }
             //$FALL-THROUGH$
         case REPO :
         case EXTERNAL :
             Manifest mf = null;
             try {
-                mf = JarUtils.loadJarManifest(new FileInputStream(file));
+                mf = JarUtils.loadJarManifest(c.getFile());
             } catch (IOException e) {
-                logger.logError("Unable to generate access rules from bundle " + file, e);
+                break; // unable to open manifest; so full access
             }
             if (mf == null) {
                 break; // no manifest; so full access
@@ -353,6 +347,54 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         return null; // full access
+    }
+
+    private static List<IAccessRule> calculateProjectAccessRules(Project p) {
+        File accessPatternsFile = new File(BuilderPlugin.getInstance().getStateLocation().toFile(), p.getName() + ".accesspatterns");
+        String oldAccessPatterns = "";
+        boolean exists = accessPatternsFile.exists();
+        if (exists) { // read persisted access patterns
+            try {
+                oldAccessPatterns = IO.collect(accessPatternsFile);
+            } catch (final IOException e) {
+                logger.logError("Failed to read access patterns file for project " + p.getName(), e);
+            }
+        }
+
+        if (p.getContained().isEmpty()) { // project not recently built; use persisted access patterns
+            if (!exists) {
+                return null; // no persisted access patterns; full access
+            }
+            String[] patterns = oldAccessPatterns.split(",");
+            List<IAccessRule> accessRules = new ArrayList<IAccessRule>(patterns.length);
+            for (String pathStr : patterns) {
+                accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+            }
+            return accessRules;
+        }
+
+        Set<PackageRef> exportPkgs = p.getExports().keySet();
+        List<IAccessRule> accessRules = new ArrayList<IAccessRule>(exportPkgs.size());
+        StringBuilder sb = new StringBuilder(oldAccessPatterns.length());
+        for (PackageRef exportPkg : exportPkgs) {
+            String pathStr = exportPkg.getBinary() + "/*";
+            if (sb.length() > 0) {
+                sb.append(',');
+            }
+            sb.append(pathStr);
+            accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+        }
+
+        String newAccessPatterns = sb.toString();
+        if (!exists || !newAccessPatterns.equals(oldAccessPatterns)) { // if state changed; persist updated access patterns
+            try {
+                IO.store(newAccessPatterns, accessPatternsFile);
+            } catch (final IOException e) {
+                logger.logError("Failed to write access patterns file for project " + p.getName(), e);
+            }
+        }
+
+        return accessRules;
     }
 
     private static IAccessRule[] toAccessRulesArray(List<IAccessRule> rules) {
@@ -390,5 +432,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         if (path == null)
             path = Path.fromOSString(file.getAbsolutePath());
         return path;
+    }
+
+    private static boolean isVersionProject(Container c) {
+        return Constants.VERSION_ATTR_PROJECT.equals(c.getAttributes().get(Constants.VERSION_ATTRIBUTE));
     }
 }
