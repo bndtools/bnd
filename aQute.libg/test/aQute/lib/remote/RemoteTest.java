@@ -15,8 +15,8 @@ public class RemoteTest extends TestCase {
 	private RemoteSink		sink;
 
 	public void setUp() throws Exception {
-		sinkDir = create("sink", null);
-		sourceDir = create("source", "testresources/remote");
+		sinkDir = create("generated/sink", null);
+		sourceDir = create("generated/source", "testresources/remote");
 		source = new RemoteSource();
 		sink = new RemoteSink(sinkDir, source);
 		source.open(sink, sourceDir, "test");
