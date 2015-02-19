@@ -1,10 +1,12 @@
 Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
+-dependson: biz.aQute.repository, biz.aQute.resolve
+
 -includeresource: \
  LICENSE, \
  embedded-repo.jar, \
  templates=templates, \
  @${repo;biz.aQute.repository;latest}, \
- @${repo;biz.aQute.resolve;latest}, \
+ @${repo;biz.aQute.resolve;latest}
 
 Private-Package:  \
     aQute.bnd.*,\
