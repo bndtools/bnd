@@ -225,7 +225,7 @@ public class Macro {
 		if (value != null)
 			return value;
 		if (!flattening && !key.startsWith("@"))
-			domain.warning("No translation found for macro: %s, in %s", key, domain);
+			domain.warning("No translation found for macro: %s", key);
 		return "${" + key + "}";
 	}
 
