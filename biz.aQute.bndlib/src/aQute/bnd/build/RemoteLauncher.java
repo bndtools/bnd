@@ -9,6 +9,7 @@ import aQute.bnd.service.remotelaunch.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
 
+@SuppressWarnings("unused")
 public class RemoteLauncher extends Thread {
 	final int									REMOTE_PORT		= 17023;
 	static Pattern								WINDOWS_FILE_P	= Pattern.compile(
