@@ -77,7 +77,7 @@ public class ResolveTest extends TestCase {
 		//
 
 		model.setRunFw("org.apache.felix.framework");
-		model.setGenericString(Constants.PROVIDED, "org.apache.felix.gogo.runtime");
+		model.setGenericString(Constants.DISTRO, "org.apache.felix.gogo.runtime");
 
 		//
 		// We require gogo, but now the gogo runtime is on the runpath

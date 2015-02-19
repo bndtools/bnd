@@ -4083,4 +4083,20 @@ public class bnd extends Processor {
 		cmd.subCmd(options, profiles);
 		getInfo(profiles);
 	}
+
+	/**
+	 * Resolve command
+	 * 
+	 * @throws Exception
+	 */
+
+	public void _resolve(ResolveCommand.ResolveOptions options) throws Exception {
+		ResolveCommand rc = new ResolveCommand(this);
+		String help = options._command().subCmd(options, rc);
+		if (help != null)
+			out.println(help);
+		getInfo(rc);
+		rc.close();
+	}
+
 }

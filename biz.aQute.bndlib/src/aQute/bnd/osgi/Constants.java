@@ -153,7 +153,7 @@ public interface Constants {
 	String							PREPROCESSMATCHERS							= "-preprocessmatchers";
 	String							PRIVATEPACKAGE								= "-privatepackage";
 	String							RELEASEREPO									= "-releaserepo";
-	String							PROVIDED									= "-provided";
+	String							DISTRO										= "-distro";
 	String							REMOVEHEADERS								= "-removeheaders";
 	String							RESOURCEONLY								= "-resourceonly";
 	String							SIGNATURE_TEST								= "-signaturetest";
@@ -224,7 +224,7 @@ public interface Constants {
 			JAVAAGENT, STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI,
 			PREPROCESSMATCHERS, UPTO, INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE,
 			OUTPUTMASK, TESTUNRESOLVED, RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT, BNDDRIVER,
-			CHECK, PROVIDED
+			CHECK, DISTRO
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make

@@ -17,10 +17,18 @@ public class RemoteTest extends TestCase {
 	public void setUp() throws Exception {
 		sinkDir = create("generated/sink", null);
 		sourceDir = create("generated/source", "testresources/remote");
+		super.setUp();
 		source = new RemoteSource();
 		sink = new RemoteSink(sinkDir, source);
 		source.open(sink, sourceDir, "test");
 
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		IO.delete(sinkDir);
+		IO.delete(sourceDir);
+		super.tearDown();
 	}
 
 	private File create(String dir, String source) throws IOException {

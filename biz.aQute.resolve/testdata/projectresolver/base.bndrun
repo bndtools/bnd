@@ -1,0 +1,2 @@
+-runfw: org.apache.felix.framework;version='[4.4.0,4.4.0]'
+-runee: JavaSE-1.8

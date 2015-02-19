@@ -1,0 +1,3 @@
+Bundle-Version: 0.0.0.${tstamp}
+-buildpath: org.glassfish.javax.servlet;version=3.0
+Private-Package: biz.aQute.demo.subsys.provider

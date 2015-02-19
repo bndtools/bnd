@@ -2,7 +2,9 @@ Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
 -includeresource: \
  LICENSE, \
  embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
- templates=templates
+ templates=templates, \
+ @${repo;biz.aQute.repository}, \
+ @${repo;biz.aQute.resolve}
 
 Private-Package:  \
     aQute.bnd.*,\
@@ -48,7 +50,10 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	osgi.cmpn;version=4.3.1,\
 	osgi.core;version=4.3.1,\
 	org.osgi.impl.bundle.bindex,\
-	osgi.r5;version=1.0.1
+	osgi.r5;version=1.0.1, \
+	biz.aQute.repository;version=latest, \
+	biz.aQute.resolve;version=latest
+
 -testpath: \
 	junit.osgi
 
@@ -56,4 +61,3 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 # About the aQute.library.bndrepo dep. Needed to add them here
 # by hand even though they are in bndlib. However, they are added
 # and we can unfortunately not see those packages ...
-	
