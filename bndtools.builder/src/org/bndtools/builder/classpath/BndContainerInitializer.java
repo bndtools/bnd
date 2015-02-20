@@ -150,8 +150,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     public void modelChanged(Project model) throws Exception {
         IJavaProject javaProject = Central.getJavaProject(model);
         if (javaProject == null) {
-            logger.logError("Help! No IJavaProject for " + model, null);
-            return;
+            return; // bnd project is not loaded in the workspace
         }
         requestClasspathContainerUpdate(BndtoolsConstants.BND_CLASSPATH_ID, javaProject, null);
     }
