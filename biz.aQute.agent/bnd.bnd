@@ -1,0 +1,10 @@
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package: \
+	aQute.agent.server,\
+	org.osgi.dto,\
+	org.osgi.framework.dto
+Export-Package: aQute.service.agent
+
+-buildpath: \
+	osgi.core;version=6,\
+	aQute.libg;version=latest
