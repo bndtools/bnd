@@ -8,7 +8,6 @@ import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
-import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
@@ -49,8 +48,7 @@ import aQute.service.reporter.*;
  */
 
 @aQute.bnd.annotation.plugin.BndPlugin(name="filerepo", parameters=FileRepo.Config.class)
-public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable,
-		InfoRepository {
+public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
 
 	interface Config  {
 		String name();
