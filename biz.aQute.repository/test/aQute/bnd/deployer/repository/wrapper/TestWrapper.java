@@ -77,12 +77,12 @@ public class TestWrapper extends TestCase {
 	}
 
 	public void testFileRepoBasic() throws Exception {
-		FileRepo repo = getFileRepo(true);
+		InfoFileRepo repo = getFileRepo(true);
 		testRepo(1, repo);
 	}
 
 	public void testFileRepoBasicWithoutIndex() throws Exception {
-		FileRepo repo = getFileRepo(false);
+		InfoFileRepo repo = getFileRepo(false);
 		testRepo(0, repo);
 	}
 
@@ -129,7 +129,7 @@ public class TestWrapper extends TestCase {
 	}
 
 	public void testFileRepoAugment() throws Exception {
-		FileRepo repo = getFileRepo(true);
+		InfoFileRepo repo = getFileRepo(true);
 		augmentTest(repo);
 	}
 
@@ -228,8 +228,8 @@ public class TestWrapper extends TestCase {
 		return iw;
 	}
 
-	private FileRepo getFileRepo(boolean info) throws Exception, FileNotFoundException {
-		FileRepo repo = new FileRepo();
+	private InfoFileRepo getFileRepo(boolean info) throws Exception, FileNotFoundException {
+		InfoFileRepo repo = new InfoFileRepo();
 		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "" + info));
 
 		Collection<File> files = IO.tree(IO.getFile("testdata/ws/cnf/jar"), "*.jar");
