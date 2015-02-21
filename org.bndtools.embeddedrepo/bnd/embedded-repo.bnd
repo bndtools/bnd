@@ -1,4 +1,0 @@
--resourceonly: true
--includeresource: \
-	biz.aQute.launcher/biz.aQute.launcher-latest.jar=${repo;biz.aQute.launcher;[3,4)},\
-	biz.aQute.junit/biz.aQute.junit-latest.jar=${repo;biz.aQute.junit;[3,4)}
