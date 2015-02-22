@@ -29,6 +29,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 		TreeSet<String> provides = new TreeSet<String>();
 		TreeSet<String> requires = new TreeSet<String>();
+		Version packageVersion = getPackageVersion(analyzer);
+		Version maxVersion = AnnotationReader.V1_0;
 
 		for (Clazz c : list) {
 			for (Instruction instruction : instructions.keySet()) {
@@ -41,7 +43,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 						definition.sortReferences();
 						definition.prepare(analyzer);
-						verifyVersion(analyzer, definition);
+						verifyVersion(analyzer, definition, packageVersion);
 
 						String name = "OSGI-INF/"
 								+ analyzer.validResourcePath(definition.name, "Invalid component name") + ".xml";
@@ -62,9 +64,13 @@ public class DSAnnotations implements AnalyzerPlugin {
 							String objectClass = ref.service;
 							addRequireHeader(objectClass, requires);
 						}
+						maxVersion = definition.max(maxVersion, definition.version);
 					}
 				}
 			}
+		}
+		if (maxVersion.compareTo(AnnotationReader.V1_3) >= 0) {
+			addExtenRequireHeader(requires);
 		}
 		sc = Processor.append(names.toArray(new String[names.size()]));
 		analyzer.setProperty(Constants.SERVICE_COMPONENT, sc);
@@ -75,25 +81,36 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 	/**
 	 * Verify that the component definition has a version that is <= than the
-	 * version of the component package that we build against.
+	 * version of the component package that we build against. TODO this seems
+	 * useless, by experiment the packageVersion is 1.0.0 or null.
+	 * 
+	 * @param version
+	 *            TODO
 	 */
-	private void verifyVersion(Analyzer analyzer, ComponentDef definition) throws Exception {
-		PackageRef component = analyzer.getPackageRef("org.osgi.service.component");
+	private void verifyVersion(Analyzer analyzer, ComponentDef definition, Version v) throws Exception {
+		System.err.println("verifyVersion packageVersion: " + v + " def version: " + definition.version);
+		if (v != null) {
+			if (definition.version.compareTo(v) > 0) {
+				SetLocation error = analyzer
+						.error("Generating XML for %s in type %s that uses a namespace version %s while you are building against %s",
+								definition.name, definition.implementation, definition.version, v);
+
+				error.details(analyzer.getPackageRef("org/osgi/service/component"));
+				analyzer.setTypeLocation(error, definition.implementation);
+			}
+		}
+	}
+
+	private Version getPackageVersion(Analyzer analyzer) {
+		PackageRef component = analyzer.getPackageRef("org/osgi/service/component");
 		Attrs attrs = analyzer.getClasspathExports().get(component);
 		if (attrs != null) {
 			String version = attrs.getVersion();
 			if (version != null && Verifier.isVersion(version)) {
-				Version v = new Version(version);
-				if (definition.version.compareTo(v) > 0) {
-					SetLocation error = analyzer
-							.error("Generating XML for %s in type %s that uses a namespace version %s while you are building against %s",
-									definition.name, definition.implementation, definition.version, v);
-
-					error.details(component);
-					analyzer.setTypeLocation(error, definition.implementation);
-				}
+				return new Version(version);
 			}
 		}
+		return null;
 	}
 
 	private void addProvidesHeader(String[] objectClass, Set<String> provides) {
@@ -119,6 +136,15 @@ public class DSAnnotations implements AnalyzerPlugin {
 		a.put("filter:", "\"(objectClass=" + objectClass + ")\"");
 		a.put("effective:", "\"active\"");
 		p.put("osgi.service", a);
+		String s = p.toString();
+		requires.add(s);
+	}
+
+	private void addExtenRequireHeader(Set<String> requires) {
+		Parameters p = new Parameters();
+		Attrs a = new Attrs();
+		a.put("filter:", "\"(&(osgi.extender=osgi.component)(version>=1.3)(!(version>=2.0)))\"");
+		p.put("osgi.extender", a);
 		String s = p.toString();
 		requires.add(s);
 	}
