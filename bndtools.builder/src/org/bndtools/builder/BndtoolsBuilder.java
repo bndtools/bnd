@@ -35,6 +35,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IClasspathContainer;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
@@ -126,9 +129,9 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 force = true;
             }
 
-            List<String> errors = new ArrayList<String>();
-            if (resetClasspathContainer(myProject, errors) || !errors.isEmpty()) {
+            if (checkClasspathContainerUpdate(myProject)) {
                 // likely causes a recompile
+                buildLog.basic("classpaths were changed");
                 rememberLastBuiltState();
                 return dependsOn;
             }
@@ -250,12 +253,23 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     /*
      * Check if the classpath has changed for this project
      */
-    private boolean resetClasspathContainer(IProject myProject, List<String> errors) throws CoreException {
-        if (BndContainerInitializer.resetClasspaths(model, myProject, errors)) {
-            buildLog.basic("classpaths were changed %s", errors);
-            return true;
+    private boolean checkClasspathContainerUpdate(IProject project) throws CoreException {
+        IJavaProject javaProject = JavaCore.create(project);
+        if (javaProject == null) {
+            return false;
         }
-        return false;
+
+        IClasspathContainer oldContainer = BndContainerInitializer.getClasspathContainer(javaProject);
+        if (oldContainer == null) {
+            return false; // project does not have a BndContainer
+        }
+
+        BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
+        if (oldContainer != BndContainerInitializer.getClasspathContainer(javaProject)) {
+            return true; // if container was updated
+        }
+
+        return BndContainerInitializer.hasClasspathProblemMarkers(javaProject);
     }
 
     /*

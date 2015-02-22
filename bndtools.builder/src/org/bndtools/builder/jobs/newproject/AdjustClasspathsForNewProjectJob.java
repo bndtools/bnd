@@ -1,7 +1,6 @@
 package org.bndtools.builder.jobs.newproject;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.bndtools.api.ILogger;
@@ -17,6 +16,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
 import bndtools.central.Central;
@@ -47,10 +48,12 @@ class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
             Project project = projects.remove(0);
             IProject eclipseProject = WorkspaceUtils.findOpenProject(wsroot, project);
             if (eclipseProject != null && !eclipseProject.equals(addedProject)) {
-                List<String> errors = new LinkedList<String>();
                 try {
                     project.propertiesChanged();
-                    BndContainerInitializer.resetClasspaths(project, eclipseProject, errors);
+                    IJavaProject javaProject = JavaCore.create(eclipseProject);
+                    if (javaProject != null) {
+                        BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
+                    }
                 } catch (CoreException e) {
                     logger.logStatus(e.getStatus());
                     return Status.CANCEL_STATUS;
