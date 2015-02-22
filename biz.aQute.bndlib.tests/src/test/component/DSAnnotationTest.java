@@ -12,6 +12,7 @@ import org.osgi.framework.Constants;
 import org.osgi.service.component.*;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.log.*;
+import org.osgi.service.metatype.annotations.*;
 
 import aQute.bnd.component.*;
 import aQute.bnd.header.*;
@@ -2418,4 +2419,75 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 		return l;
 	}
+
+	@Component
+	public static class DesignateNone {
+		@Activate
+		void activate(Map<String,Object> props) {}
+	}
+
+	@interface config {}
+
+	@Component
+	@Designate(ocd = config.class)
+	public static class DesignateSingleton {
+		@Activate
+		void activate(Map<String,Object> props) {}
+	}
+
+	@Component
+	@Designate(ocd = config.class, factory = true)
+	public static class DesignateFactory {
+		@Activate
+		void activate(Map<String,Object> props) {}
+	}
+
+	@Component(configurationPolicy = ConfigurationPolicy.REQUIRE)
+	public static class DesignateNoneRequire {
+		@Activate
+		void activate(Map<String,Object> props) {}
+	}
+
+	@Component(configurationPolicy = ConfigurationPolicy.REQUIRE)
+	@Designate(ocd = config.class)
+	public static class DesignateSingletonRequire {
+		@Activate
+		void activate(Map<String,Object> props) {}
+	}
+
+	@Component(configurationPolicy = ConfigurationPolicy.OPTIONAL)
+	@Designate(ocd = config.class, factory = true)
+	public static class DesignateFactoryOptional {
+		@Activate
+		void activate(Map<String,Object> props) {}
+	}
+
+	public static void testDesignate() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Designate*");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		checkConfigurationPolicy(jar, DesignateNone.class, "");
+		checkConfigurationPolicy(jar, DesignateSingleton.class, "");
+		checkConfigurationPolicy(jar, DesignateFactory.class, "require");
+		checkConfigurationPolicy(jar, DesignateNoneRequire.class, "require");
+		checkConfigurationPolicy(jar, DesignateSingletonRequire.class, "require");
+		checkConfigurationPolicy(jar, DesignateFactoryOptional.class, "optional");
+	}
+
+	static void checkConfigurationPolicy(Jar jar, Class< ? > clazz, String option) throws Exception,
+			XPathExpressionException {
+		Resource r = jar.getResource("OSGI-INF/" + clazz.getName() + ".xml");
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0");
+		xt.assertNamespace("http://www.osgi.org/xmlns/scr/v1.1.0");
+
+		xt.assertAttribute(option, "scr:component/@configuration-policy");
+	}
+
 }

@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import org.osgi.service.component.annotations.*;
+import org.osgi.service.metatype.annotations.*;
 
 import aQute.bnd.component.DSAnnotations.Flag;
 import aQute.bnd.component.error.*;
@@ -179,11 +180,18 @@ public class AnnotationReader extends ClassDataCollector {
 				doModified();
 			else if (a instanceof Reference)
 				doReference((Reference) a, annotation);
+			else if (a instanceof Designate)
+				doDesignate((Designate) a);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
 		}
+	}
+
+	protected void doDesignate(Designate a) {
+		if (a.factory() && component.configurationPolicy == null)
+			component.configurationPolicy = ConfigurationPolicy.REQUIRE;
 	}
 
 	/**
