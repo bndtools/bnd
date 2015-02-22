@@ -1044,9 +1044,21 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	public static void testInheritance() throws Exception {
+		testInheritance("-dsannotations-inherit", "true", false);
+	}
+
+	public static void testInheritanceFlag() throws Exception {
+		testInheritance("-dsannotations-flags", "inherit", false);
+	}
+
+	public static void testInheritanceExtenderFlag() throws Exception {
+		testInheritance("-dsannotations-flags", "inherit,extender", true);
+	}
+
+	public static void testInheritance(String key, String value, boolean extender) throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Bottom");
-		b.setProperty("-dsannotations-inherit", "true");
+		b.setProperty(key, value);
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -1054,7 +1066,7 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b);
 		Attributes a = getAttr(jar);
 		checkProvides(a);
-		checkRequires(a, false, LogService.class.getName());
+		checkRequires(a, extender, LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/bottom.xml");
 		assertNotNull(r);
@@ -1069,12 +1081,21 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("PrivateLogService", "scr:component/reference[2]/@name");
 		xt.assertAttribute("setPrivateLogService", "scr:component/reference[2]/@bind");
 		xt.assertAttribute("unsetPrivateLogService", "scr:component/reference[2]/@unbind");
-		xt.assertAttribute("", "scr:component/reference[2]/@updated"); // is
-																		// private
-																		// in
-																		// super
-																		// class
+		// is private in super class
+		xt.assertAttribute("", "scr:component/reference[2]/@updated");
 
+	}
+	
+	public static void testBadFlag() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Bottom");
+		b.setProperty("-dsannotations-flags", "foo");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertEquals(1, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
 	}
 
 	/**
@@ -1174,8 +1195,18 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	public static void testBinds() throws Exception {
+		testBinds(false);
+	}
+
+	public static void testBindsExtender() throws Exception {
+		testBinds(true);
+	}
+
+	public static void testBinds(boolean extender) throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*CheckBinds");
+		if (extender)
+			b.setProperty("-dsannotations-flags", "extender");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -1183,7 +1214,7 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b);
 		Attributes a = getAttr(jar);
 		checkProvides(a);
-		checkRequires(a, false, LogService.class.getName());
+		checkRequires(a, extender, LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/prototypes.xml");
 		assertNotNull(r);
@@ -2335,14 +2366,11 @@ public class DSAnnotationTest extends BndTestCase {
 		String p = a.getValue(Constants.PROVIDE_CAPABILITY);
 		System.err.println(Constants.PROVIDE_CAPABILITY + ":" + p);
 		Parameters header = new Parameters(p);
-		System.err.println("Parameters:" + header);
 		List<Attrs> attrs = getAll(header, "osgi.service");
-		System.err.println("Attrs:" + attrs);
 		assertEquals(objectClass.length, attrs.size());
 		for (String[] o : objectClass) {
 			boolean found = false;
 			for (Attrs at : attrs) {
-				System.err.println(at.getTyped("objectClass"));
 				if (Arrays.asList(o).equals(at.getTyped("objectClass"))) {
 					assertEquals(1, at.size());
 					found = true;
@@ -2357,7 +2385,6 @@ public class DSAnnotationTest extends BndTestCase {
 		System.err.println(Constants.REQUIRE_CAPABILITY + ":" + p);
 		Parameters header = new Parameters(p);
 		List<Attrs> attrs = getAll(header, "osgi.service");
-		System.err.println("Attrs:" + attrs);
 		assertEquals(objectClass.length, attrs.size());
 		for (String o : objectClass) {
 			boolean found = false;

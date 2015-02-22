@@ -15,10 +15,33 @@ import aQute.service.reporter.Reporter.SetLocation;
  */
 public class DSAnnotations implements AnalyzerPlugin {
 
+	enum Flag {
+		inherit, felixExtensions, extender
+	};
+
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS));
 		if (header.size() == 0)
 			return false;
+
+		Parameters flagHeader = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS + "-flags"));
+		Set<Flag> flagSet = new HashSet<Flag>();
+		for (String s : flagHeader.keySet()) {
+			try {
+				flagSet.add(Enum.valueOf(Flag.class, s));
+			}
+			catch (IllegalArgumentException e) {
+				analyzer.error(
+						"Unrecognized -dsannotations-flags value %s, expected values are %s", s,
+						EnumSet.allOf(Flag.class));
+			}
+		}
+		if (Processor.isTrue(analyzer.getProperty("-dsannotations-inherit")))
+			flagSet.add(Flag.inherit);
+		if (Processor.isTrue(analyzer.getProperty("-ds-felix-extensions")))
+			flagSet.add(Flag.felixExtensions);
+
+		EnumSet<Flag> flags = flagSet.isEmpty() ? EnumSet.noneOf(Flag.class) : EnumSet.copyOf(flagSet);
 
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace().values();
@@ -38,7 +61,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer);
+					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, flags);
 					if (definition != null) {
 
 						definition.sortReferences();
@@ -69,7 +92,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 				}
 			}
 		}
-		if (maxVersion.compareTo(AnnotationReader.V1_3) >= 0) {
+		if (flags.contains(Flag.extender)
+				|| (packageVersion != null && packageVersion.compareTo(AnnotationReader.V1_3) >= 0)
+				|| maxVersion.compareTo(AnnotationReader.V1_3) >= 0) {
 			addExtenRequireHeader(requires);
 		}
 		sc = Processor.append(names.toArray(new String[names.size()]));
@@ -81,14 +106,13 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 	/**
 	 * Verify that the component definition has a version that is <= than the
-	 * version of the component package that we build against. TODO this seems
-	 * useless, by experiment the packageVersion is 1.0.0 or null.
+	 * version of the component package that we build against.
 	 * 
 	 * @param version
-	 *            TODO
+	 *            package version of org.osgi.service.component exported in
+	 *            build environment.
 	 */
 	private void verifyVersion(Analyzer analyzer, ComponentDef definition, Version v) throws Exception {
-		System.err.println("verifyVersion packageVersion: " + v + " def version: " + definition.version);
 		if (v != null) {
 			if (definition.version.compareTo(v) > 0) {
 				SetLocation error = analyzer
