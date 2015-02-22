@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,6 +64,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
     static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED);
     static final Pattern packagePattern = Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
+    static final ReentrantLock bndLock = new ReentrantLock();
 
     public BndContainerInitializer() {
         super();
@@ -192,7 +195,28 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 return;
             }
 
-            List<IClasspathEntry> newClasspath = calculateProjectClasspath();
+            List<IClasspathEntry> newClasspath = Collections.emptyList();
+            boolean interrupted = Thread.interrupted();
+            try {
+                if (bndLock.tryLock(5, TimeUnit.SECONDS)) {
+                    try {
+                        newClasspath = calculateProjectClasspath();
+                    } finally {
+                        bndLock.unlock();
+                    }
+                } else {
+                    errors.add("Unable to acquire lock to calculate classpath for project " + project.getName());
+                    logger.logError("Unable to acquire lock to calculate classpath for project " + project.getName(), null);
+                }
+            } catch (InterruptedException e) {
+                errors.add("Unable to acquire lock to calculate classpath for project " + project.getName());
+                logger.logError("Unable to acquire lock to calculate classpath for project " + project.getName(), e);
+                interrupted = true;
+            } finally {
+                if (interrupted) {
+                    Thread.currentThread().interrupt();
+                }
+            }
             newClasspath = BndContainerSourceManager.loadAttachedSources(project, newClasspath);
             if (init) {
                 setClasspathEntries(newClasspath.toArray(new IClasspathEntry[newClasspath.size()]));
