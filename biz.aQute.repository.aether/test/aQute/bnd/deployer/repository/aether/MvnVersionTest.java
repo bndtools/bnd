@@ -50,6 +50,12 @@ public class MvnVersionTest extends TestCase {
 		assertEquals(new Version(1, 2, 0, "beta-1"), mv.getOSGiVersion());
 		assertFalse(mv.isSnapshot());
 	}
+
+	public void testReleaseNumberOnly() {
+		MvnVersion mv = MvnVersion.parseString("r03");
+		assertEquals(new Version(0, 0, 3, null), mv.getOSGiVersion());
+		assertFalse(mv.isSnapshot());
+	}
 	
 	public void testInvalid() {
 		MvnVersion mv = MvnVersion.parseString("1.2.3.4.5");
