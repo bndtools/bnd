@@ -7,25 +7,25 @@ Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
  @${repo;biz.aQute.resolve}
 
 Private-Package:  \
-    aQute.bnd.*,\
-    aQute.configurable.*,\
+    aQute.bnd.*;-split-package:=first,\
+    aQute.configurable.*;-split-package:=first,\
     org.osgi.service.*.annotations.*;-split-package:=first,\
     aQute.lib.deployer.*;-split-package:=first,\
     aQute.lib.spring.*;-split-package:=first,\
-    org.osgi.service.coordinator
+    org.osgi.service.coordinator;-split-package:=first
 
-Export-Package: aQute.bnd.service.*,\
-        aQute.bnd.header, \
-        aQute.bnd.osgi, \
-        aQute.bnd.build, \
-        aQute.bnd.version, \
-        aQute.bnd.maven.support, \
-    org.osgi.service.bindex,\
-    aQute.service.reporter,\
-    aQute.bnd.osgi.resource,\
-    org.osgi.service.repository,\
-    org.osgi.resource, \
-    aQute.bnd.util.*
+Export-Package: aQute.bnd.service.*;-split-package:=first,\
+        aQute.bnd.header;-split-package:=first, \
+        aQute.bnd.osgi;-split-package:=first, \
+        aQute.bnd.build;-split-package:=first, \
+        aQute.bnd.version;-split-package:=first, \
+        aQute.bnd.maven.support;-split-package:=first, \
+    org.osgi.service.bindex;-split-package:=first,\
+    aQute.service.reporter;-split-package:=first,\
+    aQute.bnd.osgi.resource;-split-package:=first,\
+    org.osgi.service.repository;-split-package:=first,\
+    org.osgi.resource;-split-package:=first, \
+    aQute.bnd.util.*;-split-package:=first
 
 Import-Package: org.apache.tools.ant.*;resolution:=optional,\
     junit.framework;resolution:=optional;version='[3.8,4)',\
