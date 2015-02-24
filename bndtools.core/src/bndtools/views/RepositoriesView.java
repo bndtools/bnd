@@ -291,7 +291,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                         try {
                             JpmPreferences jpmPrefs = new JpmPreferences();
                             if (jpmPrefs.getBrowserSelection() == JpmPreferences.PREF_BROWSER_EXTERNAL) {
-                                URI browseUrl = searchElement.getRepository().browse(searchElement.getFilter());
+                                URI browseUrl = searchElement.browse();
                                 getViewSite().getWorkbenchWindow().getWorkbench().getBrowserSupport().getExternalBrowser().openURL(browseUrl.toURL());
                             } else
                                 getViewSite().getPage().showView(Plugin.JPM_BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);

@@ -153,7 +153,7 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
                     ContinueSearchElement cont = (ContinueSearchElement) obj;
 
                     try {
-                        setSearchURI(cont.getRepository().browse(cont.getFilter()));
+                        setSearchURI(cont.browse());
                     } catch (Exception e) {
                         Plugin.getDefault().error("Failed to get browse URL for repository", e);
                     }
