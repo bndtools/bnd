@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -138,6 +138,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     private class Updater {
         private final IProject project;
         private final IJavaProject javaProject;
+        private final IWorkspaceRoot root;
         private final Project model;
 
         Updater(IProject project, IJavaProject javaProject) {
@@ -145,6 +146,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             assert javaProject != null;
             this.project = project;
             this.javaProject = javaProject;
+            this.root = project.getWorkspace().getRoot();
+
             Project p = null;
             try {
                 p = Central.getProject(project.getLocation().toFile());
@@ -216,26 +219,23 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         private List<IClasspathEntry> calculateProjectClasspath() {
-            final IWorkspaceRoot root = project.getWorkspace().getRoot();
             if (!project.exists() || !project.isOpen())
                 return Collections.emptyList();
 
-            List<Container> containers;
+            List<IClasspathEntry> classpath = new ArrayList<IClasspathEntry>(20);
+            List<File> filesToRefresh = new ArrayList<File>(20);
             try {
-                Collection<Container> buildPath = model.getBuildpath();
-                Collection<Container> testPath = model.getTestpath();
-                Collection<Container> bootClasspath = model.getBootclasspath();
-
-                containers = new ArrayList<Container>(buildPath.size() + testPath.size() + bootClasspath.size());
-                containers.addAll(buildPath);
-
-                // The first file is always the project directory,
-                // Eclipse already includes that for us.
-                if (containers.size() > 0) {
-                    containers.remove(0);
+                Iterator<Container> containers = model.getBuildpath().iterator();
+                if (containers.hasNext()) { // The first container is always the project directory; it is not part of this container.
+                    containers.next();
                 }
-                containers.addAll(testPath);
-                containers.addAll(bootClasspath);
+                calculateContainersClasspath(Constants.BUILDPATH, containers, classpath, filesToRefresh);
+
+                containers = model.getTestpath().iterator();
+                calculateContainersClasspath(Constants.TESTPATH, containers, classpath, filesToRefresh);
+
+                containers = model.getBootclasspath().iterator();
+                calculateContainersClasspath(Constants.BUILDPATH, containers, classpath, filesToRefresh);
             } catch (CircularDependencyException e) {
                 error("Circular dependency during classpath calculation: %s", e, e.getMessage());
                 return Collections.emptyList();
@@ -244,9 +244,17 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 return Collections.emptyList();
             }
 
-            List<IClasspathEntry> result = new ArrayList<IClasspathEntry>(containers.size());
-            List<File> filesToRefresh = new ArrayList<File>(containers.size());
-            for (Container c : containers) {
+            // Refresh once, instead of for each dependent project.
+            RefreshFileJob refreshJob = new RefreshFileJob(filesToRefresh, false, project);
+            if (refreshJob.needsToSchedule())
+                refreshJob.schedule(100);
+
+            return classpath;
+        }
+
+        private void calculateContainersClasspath(String header, Iterator<Container> containers, List<IClasspathEntry> classpath, List<File> filesToRefresh) {
+            while (containers.hasNext()) {
+                Container c = containers.next();
                 if (c.getError() != null) {
                     error(c, "%s-%s: %s", c.getBundleSymbolicName(), c.getVersion(), c.getError());
                     continue;
@@ -258,16 +266,16 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 if (!file.exists()) {
                     switch (c.getType()) {
                     case REPO :
-                        error(c, "Repository file %s does not exist", file);
+                        error(c, header, "Repository file %s does not exist", file);
                         break;
                     case LIBRARY :
-                        error(c, "Library file %s does not exist", file);
+                        error(c, header, "Library file %s does not exist", file);
                         break;
                     case PROJECT :
-                        error(c, "Project bundle %s does not exist", file);
+                        error(c, header, "Project bundle %s does not exist", file);
                         break;
                     case EXTERNAL :
-                        error(c, "External file %s does not exist", file);
+                        error(c, header, "External file %s does not exist", file);
                         break;
                     default :
                         break;
@@ -279,7 +287,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     path = fileToPath(file);
                     filesToRefresh.add(file);
                 } catch (Exception e) {
-                    error(c, "Failed to convert file %s to Eclipse path: %s", e, file, e.getMessage());
+                    error(c, header, "Failed to convert file %s to Eclipse path: %s", e, file, e.getMessage());
                 }
                 if (path == null) {
                     continue;
@@ -290,23 +298,16 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 switch (c.getType()) {
                 case PROJECT :
                     IPath projectPath = root.getFile(path).getProject().getFullPath();
-                    result.add(JavaCore.newProjectEntry(projectPath, accessRules, false, extraAttrs, false));
+                    classpath.add(JavaCore.newProjectEntry(projectPath, accessRules, false, extraAttrs, false));
                     if (!isVersionProject(c)) { // if not version=project, add entry for generated jar
-                        result.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
+                        classpath.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
                     }
                     break;
                 default :
-                    result.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
+                    classpath.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
                     break;
                 }
             }
-
-            // Refresh once, instead of for each dependent project.
-            RefreshFileJob refreshJob = new RefreshFileJob(filesToRefresh, false, project);
-            if (refreshJob.needsToSchedule())
-                refreshJob.schedule(100);
-
-            return result;
         }
 
         private IClasspathAttribute[] calculateContainerAttributes(Container c) {
@@ -456,12 +457,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return model.error(message, t, args).context(model.getName()).header(Constants.BUILDPATH).file(model.getPropertiesFile().getAbsolutePath());
         }
 
-        private SetLocation error(Container c, String message, Object... args) {
-            return model.error(message, args).context(c.getBundleSymbolicName()).header(Constants.BUILDPATH).file(model.getPropertiesFile().getAbsolutePath());
+        private SetLocation error(Container c, String header, String message, Object... args) {
+            return model.error(message, args).context(c.getBundleSymbolicName()).header(header).file(model.getPropertiesFile().getAbsolutePath());
         }
 
-        private SetLocation error(Container c, String message, Throwable t, Object... args) {
-            return model.error(message, t, args).context(c.getBundleSymbolicName()).header(Constants.BUILDPATH).file(model.getPropertiesFile().getAbsolutePath());
+        private SetLocation error(Container c, String header, String message, Throwable t, Object... args) {
+            return model.error(message, t, args).context(c.getBundleSymbolicName()).header(header).file(model.getPropertiesFile().getAbsolutePath());
         }
     }
 }
