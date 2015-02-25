@@ -72,10 +72,12 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
     private final ExtendedFormEditor editor;
 
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
+        @Override
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new ProjectBuildPage(editor, model, id, "Build");
         }
 
+        @Override
         public boolean supportsMode(Mode mode) {
             return mode == Mode.project;
         }
@@ -160,8 +162,6 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
             try {
                 IMarker[] markers;
 
-                markers = resource.findMarkers(BndtoolsConstants.MARKER_BND_CLASSPATH_PROBLEM, true, 0);
-                loadMarkers(markers);
                 markers = resource.findMarkers(BndtoolsConstants.MARKER_BND_PROBLEM, true, 0);
                 loadMarkers(markers);
             } catch (CoreException e) {
@@ -246,6 +246,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         }
     }
 
+    @Override
     public int getPriority() {
         if (problemSeverity >= IMarker.SEVERITY_ERROR)
             return 10;
@@ -259,6 +260,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         return pageImage;
     }
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event) {
         IResource myResource = ResourceUtil.getResource(getEditorInput());
 
@@ -272,6 +274,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
 
         if ((delta.getKind() & IResourceDelta.CHANGED) != 0 && (delta.getFlags() & IResourceDelta.MARKERS) != 0) {
             getEditorSite().getShell().getDisplay().asyncExec(new Runnable() {
+                @Override
                 public void run() {
                     loadProblems();
                     reportProblemsInHeader();

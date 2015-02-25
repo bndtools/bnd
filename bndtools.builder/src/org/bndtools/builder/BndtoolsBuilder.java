@@ -135,6 +135,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 rememberLastBuiltState();
                 return dependsOn;
             }
+            // TODO checkClasspathContainerUpdate may have added errors to the model.
+            // We need to make sure markers are created for those classpath errors.
 
             if (model.isNoBundles()) {
                 buildLog.basic("-nobundles was set, so no build");
@@ -250,13 +252,21 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         return false;
     }
 
-    /*
-     * Check if the classpath has changed for this project
+    /**
+     * Check if the classpath has changed for this project.
+     * <p>
+     * The classpath container may have added errors to the model which the caller must check for.
+     *
+     * @param project
+     *            The IProject to check and update the classpath container.
+     * @return {@code true} if the specified project has a bnd classpath container and the classpath was changed.
+     *         {@code false} if the specified project does not have a bnd classpath container or the classpath was not
+     *         changed.
      */
     private boolean checkClasspathContainerUpdate(IProject project) throws CoreException {
         IJavaProject javaProject = JavaCore.create(project);
         if (javaProject == null) {
-            return false;
+            return false; // project is not a java project
         }
 
         IClasspathContainer oldContainer = BndContainerInitializer.getClasspathContainer(javaProject);
@@ -265,11 +275,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         }
 
         BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
-        if (oldContainer != BndContainerInitializer.getClasspathContainer(javaProject)) {
-            return true; // if container was updated
-        }
 
-        return BndContainerInitializer.hasClasspathProblemMarkers(javaProject);
+        return oldContainer != BndContainerInitializer.getClasspathContainer(javaProject);
     }
 
     /*

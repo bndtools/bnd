@@ -21,17 +21,11 @@ import org.bndtools.api.ModelListener;
 import org.bndtools.builder.BuildLogger;
 import org.bndtools.builder.BuilderPlugin;
 import org.bndtools.utils.jar.JarUtils;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.ClasspathContainerInitializer;
 import org.eclipse.jdt.core.IAccessRule;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -77,17 +71,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
         final Updater updater = new Updater(project, javaProject);
         updater.updateClasspathContainer(true);
-
-        WorkspaceJob replaceMarkersJob = new WorkspaceJob("Update bnd classpath markers") {
-            @Override
-            public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-                updater.replaceClasspathProblemMarkers();
-                return Status.OK_STATUS;
-            }
-        };
-
-        replaceMarkersJob.setRule(project);
-        replaceMarkersJob.schedule();
     }
 
     @Override
@@ -104,7 +87,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
         Updater updater = new Updater(project, javaProject);
         updater.updateClasspathContainer(false);
-        updater.replaceClasspathProblemMarkers();
     }
 
     @Override
@@ -153,32 +135,16 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
     }
 
-    /**
-     * Returns true if the specified project has bnd classpath problem markers.
-     *
-     * @param javaProject
-     *            The java project of interest. Must not be null.
-     * @return true if the specified project has bnd classpath problem markers. false otherwise.
-     * @throws CoreException
-     */
-    public static boolean hasClasspathProblemMarkers(IJavaProject javaProject) throws CoreException {
-        IMarker[] markers = javaProject.getProject().findMarkers(BndtoolsConstants.MARKER_BND_CLASSPATH_PROBLEM, true, IResource.DEPTH_INFINITE);
-        return markers.length > 0; // true if classpath problems
-    }
-
     private class Updater {
         private final IProject project;
         private final IJavaProject javaProject;
-        private final List<String> errors;
         private final Project model;
-        private boolean updated = false;
 
         Updater(IProject project, IJavaProject javaProject) {
             assert project != null;
             assert javaProject != null;
             this.project = project;
             this.javaProject = javaProject;
-            this.errors = new ArrayList<String>();
             Project p = null;
             try {
                 p = Central.getProject(project.getLocation().toFile());
@@ -190,7 +156,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
         void updateClasspathContainer(boolean init) throws CoreException {
             if (model == null) {
-                errors.add("Classpath container set to empty. Unable to get bnd project for project " + project.getName());
+                logger.logError("Classpath container set to empty. Unable to get bnd project for project " + project.getName(), null);
                 setClasspathEntries(EMPTY_ENTRIES);
                 return;
             }
@@ -205,29 +171,29 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                         bndLock.unlock();
                     }
                 } else {
-                    errors.add("Unable to acquire lock to calculate classpath for project " + project.getName());
-                    logger.logError("Unable to acquire lock to calculate classpath for project " + project.getName(), null);
+                    SetLocation error = error("Unable to acquire lock to calculate classpath for project %s", project.getName());
+                    logger.logError(error.location().message, null);
                 }
             } catch (InterruptedException e) {
-                errors.add("Unable to acquire lock to calculate classpath for project " + project.getName());
-                logger.logError("Unable to acquire lock to calculate classpath for project " + project.getName(), e);
+                SetLocation error = error("Unable to acquire lock to calculate classpath for project %s", e, project.getName());
+                logger.logError(error.location().message, e);
                 interrupted = true;
             } finally {
                 if (interrupted) {
                     Thread.currentThread().interrupt();
                 }
             }
+
             newClasspath = BndContainerSourceManager.loadAttachedSources(project, newClasspath);
-            if (init) {
-                setClasspathEntries(newClasspath.toArray(new IClasspathEntry[newClasspath.size()]));
-                return;
+
+            if (!init) {
+                IClasspathContainer container = JavaCore.getClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, javaProject);
+                List<IClasspathEntry> currentClasspath = Arrays.asList(container.getClasspathEntries());
+                if (newClasspath.equals(currentClasspath)) {
+                    return; // no change; so no need to set entries
+                }
             }
 
-            IClasspathContainer container = JavaCore.getClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, javaProject);
-            List<IClasspathEntry> currentClasspath = Arrays.asList(container.getClasspathEntries());
-            if (newClasspath.equals(currentClasspath)) {
-                return;
-            }
             setClasspathEntries(newClasspath.toArray(new IClasspathEntry[newClasspath.size()]));
         }
 
@@ -237,7 +203,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }, new IClasspathContainer[] {
                 new BndContainer(entries, getDescription(BndtoolsConstants.BND_CLASSPATH_ID, javaProject))
             }, null);
-            updated = true;
 
             BndPreferences prefs = new BndPreferences();
             if (prefs.getBuildLogging() == BuildLogger.LOG_FULL) {
@@ -272,22 +237,18 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 containers.addAll(testPath);
                 containers.addAll(bootClasspath);
             } catch (CircularDependencyException e) {
-                errors.add("Circular dependency: " + e.getMessage());
-                containers = Collections.emptyList();
+                error("Circular dependency during classpath calculation: %s", e, e.getMessage());
+                return Collections.emptyList();
             } catch (Exception e) {
-                errors.add("Unexpected error during classpath calculation: " + e);
-                containers = Collections.emptyList();
+                error("Unexpected error during classpath calculation: %s", e, e.getMessage());
+                return Collections.emptyList();
             }
 
             List<IClasspathEntry> result = new ArrayList<IClasspathEntry>(containers.size());
             List<File> filesToRefresh = new ArrayList<File>(containers.size());
             for (Container c : containers) {
                 if (c.getError() != null) {
-                    SetLocation location = model.error("%s-%s: %s", c.getBundleSymbolicName(), c.getVersion(), c.getError());
-                    location.context(c.getBundleSymbolicName());
-                    location.header(Constants.BUILDPATH);
-                    location.file(model.getPropertiesFile().getAbsolutePath());
-                    errors.add(c.getError());
+                    error(c, "%s-%s: %s", c.getBundleSymbolicName(), c.getVersion(), c.getError());
                     continue;
                 }
 
@@ -297,16 +258,16 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 if (!file.exists()) {
                     switch (c.getType()) {
                     case REPO :
-                        errors.add("Repository file " + file + " does not exist");
+                        error(c, "Repository file %s does not exist", file);
                         break;
                     case LIBRARY :
-                        errors.add("Library file " + file + " does not exist");
+                        error(c, "Library file %s does not exist", file);
                         break;
                     case PROJECT :
-                        errors.add("Project bundle " + file + " does not exist");
+                        error(c, "Project bundle %s does not exist", file);
                         break;
                     case EXTERNAL :
-                        errors.add("External file " + file + " does not exist");
+                        error(c, "External file %s does not exist", file);
                         break;
                     default :
                         break;
@@ -318,7 +279,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     path = fileToPath(file);
                     filesToRefresh.add(file);
                 } catch (Exception e) {
-                    errors.add(String.format("Failed to convert file %s to Eclipse path: %s: %s", file, e.getClass().getName(), e.getMessage()));
+                    error(c, "Failed to convert file %s to Eclipse path: %s", e, file, e.getMessage());
                 }
                 if (path == null) {
                     continue;
@@ -344,8 +305,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             RefreshFileJob refreshJob = new RefreshFileJob(filesToRefresh, false, project);
             if (refreshJob.needsToSchedule())
                 refreshJob.schedule(100);
-
-            errors.addAll(model.getErrors());
 
             return result;
         }
@@ -478,28 +437,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return accessRules;
         }
 
-        void replaceClasspathProblemMarkers() throws CoreException {
-            if (!project.exists() || !project.isOpen()) {
-                logger.logError(String.format("Cannot replace bnd classpath problem markers: project %s is not in the Eclipse workspace or is not open.", project.getName()), null);
-                return;
-            }
-
-            if (!updated && errors.isEmpty()) {
-                return;
-            }
-
-            IResource resource = project.getFile(Project.BNDFILE);
-            if (resource == null || !resource.exists())
-                resource = project;
-
-            project.deleteMarkers(BndtoolsConstants.MARKER_BND_CLASSPATH_PROBLEM, true, IResource.DEPTH_INFINITE);
-            for (String error : errors) {
-                IMarker marker = resource.createMarker(BndtoolsConstants.MARKER_BND_CLASSPATH_PROBLEM);
-                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                marker.setAttribute(IMarker.MESSAGE, error);
-            }
-        }
-
         private IPath fileToPath(File file) throws Exception {
             IPath path = Central.toPath(file);
             if (path == null)
@@ -509,6 +446,22 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
         private boolean isVersionProject(Container c) {
             return Constants.VERSION_ATTR_PROJECT.equals(c.getAttributes().get(Constants.VERSION_ATTRIBUTE));
+        }
+
+        private SetLocation error(String message, Object... args) {
+            return model.error(message, args).context(model.getName()).header(Constants.BUILDPATH).file(model.getPropertiesFile().getAbsolutePath());
+        }
+
+        private SetLocation error(String message, Throwable t, Object... args) {
+            return model.error(message, t, args).context(model.getName()).header(Constants.BUILDPATH).file(model.getPropertiesFile().getAbsolutePath());
+        }
+
+        private SetLocation error(Container c, String message, Object... args) {
+            return model.error(message, args).context(c.getBundleSymbolicName()).header(Constants.BUILDPATH).file(model.getPropertiesFile().getAbsolutePath());
+        }
+
+        private SetLocation error(Container c, String message, Throwable t, Object... args) {
+            return model.error(message, t, args).context(c.getBundleSymbolicName()).header(Constants.BUILDPATH).file(model.getPropertiesFile().getAbsolutePath());
         }
     }
 }
