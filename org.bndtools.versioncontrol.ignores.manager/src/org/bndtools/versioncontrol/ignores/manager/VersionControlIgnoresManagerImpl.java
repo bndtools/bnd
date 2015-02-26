@@ -56,6 +56,7 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
      * VersionControlIgnoresManager
      */
 
+    @Override
     public String sanitiseGitIgnoreGlob(boolean rooted, String ignoreGlob, boolean directory) {
         /* trim */
         String newPath = ignoreGlob.trim();
@@ -72,6 +73,7 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
         return String.format("%s%s%s", rooted ? "/" : "", newPath, directory ? "/" : "");
     }
 
+    @Override
     public void addIgnores(Set<String> plugins, File dstDir, String ignores) {
         List<String> ignoredEntries = null;
         if (ignores != null && ignores.trim() != null) {
@@ -88,6 +90,7 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
         addIgnores(plugins, dstDir, ignoredEntries);
     }
 
+    @Override
     public void addIgnores(Set<String> plugins, File dstDir, List<String> ignores) {
         if (plugins == null || plugins.isEmpty()) {
             return;
@@ -110,6 +113,7 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
         }
     }
 
+    @Override
     public Set<String> getPluginsForProjectRepositoryProviderId(String repositoryProviderId) {
         if (repositoryProviderId == null || repositoryProviderId.length() == 0) {
             return null;
@@ -136,12 +140,14 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
         return null;
     }
 
+    @Override
     public Collection<NamedPlugin> getAllPluginsInformation() {
         synchronized (plugins) {
             return Collections.unmodifiableCollection(pluginsInformation.values());
         }
     }
 
+    @Override
     public void createProjectIgnores(Set<String> plugins, File projectDir, Map<String,String> sourceOutputLocations, String targetDir) {
         if (projectDir == null || plugins == null || plugins.isEmpty()) {
             return;
@@ -158,31 +164,29 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
 
             List<String> projectIgnores = new LinkedList<String>();
 
-            if (sourceOutputLocations != null) {
-                List<String> emptyIgnores = new LinkedList<String>();
-                for (Map.Entry<String,String> sourceOutputLocation : sourceOutputLocations.entrySet()) {
-                    String srcDir = sourceOutputLocation.getKey();
-                    String binDir = sourceOutputLocation.getValue();
-                    assert (srcDir != null);
-                    assert (binDir != null);
+            List<String> emptyIgnores = new LinkedList<String>();
+            for (Map.Entry<String,String> sourceOutputLocation : sourceOutputLocations.entrySet()) {
+                String srcDir = sourceOutputLocation.getKey();
+                String binDir = sourceOutputLocation.getValue();
+                assert (srcDir != null);
+                assert (binDir != null);
 
-                    File srcDirFile = new File(projectDir, srcDir);
+                File srcDirFile = new File(projectDir, srcDir);
 
-                    /*
-                     * when the version control system can't store empty directories and
-                     * the source directory doesn't exist or is empty, then add empty ignores
-                     */
-                    if (!plugin.canStoreEmptyDirectories() && (!srcDirFile.exists() || (srcDirFile.list().length == 0))) {
-                        try {
-                            plugin.addIgnores(srcDirFile, emptyIgnores);
-                        } catch (Throwable e) {
-                            logger.logError(String.format("Unable to add empty %s ignores to the project in %s", plugin.getInformation().getName(), projectDir), e);
-                        }
+                /*
+                 * when the version control system can't store empty directories and
+                 * the source directory doesn't exist or is empty, then add empty ignores
+                 */
+                if (!plugin.canStoreEmptyDirectories() && (!srcDirFile.exists() || (srcDirFile.list().length == 0))) {
+                    try {
+                        plugin.addIgnores(srcDirFile, emptyIgnores);
+                    } catch (Throwable e) {
+                        logger.logError(String.format("Unable to add empty %s ignores to the project in %s", plugin.getInformation().getName(), projectDir), e);
                     }
-
-                    /* add the corresponding output location to the project ignores */
-                    projectIgnores.add(sanitiseGitIgnoreGlob(true, binDir, true));
                 }
+
+                /* add the corresponding output location to the project ignores */
+                projectIgnores.add(sanitiseGitIgnoreGlob(true, binDir, true));
             }
 
             if (targetDir != null && !targetDir.isEmpty()) {
