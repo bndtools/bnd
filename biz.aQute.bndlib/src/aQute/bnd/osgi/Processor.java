@@ -180,7 +180,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		try {
 			if (p.isFailOk())
 				return p.warning(string, args);
-			String s = formatArrays(string, args == null ? new Object[0] : args);
+			String s = formatArrays(string, args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 			return location(s);
@@ -217,7 +217,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return p.warning(string + ": " + t, args);
 			}
 			p.errors.add("Exception: " + t.getMessage());
-			String s = formatArrays(string, args == null ? new Object[0] : args);
+			String s = formatArrays(string, args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 			return location(s);
@@ -1902,12 +1902,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return
 	 */
 	public static String formatArrays(String string, Object... parms) {
-		Object[] parms2 = parms;
-		Object[] output = new Object[parms.length];
-		for (int i = 0; i < parms.length; i++) {
-			output[i] = makePrintable(parms[i]);
+		if (parms == null) {
+			parms = new Object[0];
 		}
-		return String.format(string, parms2);
+		return String.format(string, makePrintable(parms));
 	}
 
 	/**
@@ -1923,14 +1921,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return object;
 
 		if (object.getClass().isArray()) {
-			Object[] array = (Object[]) object;
-			Object[] output = new Object[array.length];
-			for (int i = 0; i < array.length; i++) {
-				output[i] = makePrintable(array[i]);
-			}
-			return Arrays.toString(output);
+			return Arrays.toString(makePrintable((Object[]) object));
 		}
 		return object;
+	}
+
+	private static Object[] makePrintable(Object[] objects) {
+		Object[] output = new Object[objects.length];
+		for (int i = 0; i < objects.length; i++) {
+			output[i] = makePrintable(objects[i]);
+		}
+		return output;
 	}
 
 	public static String append(String... strings) {
