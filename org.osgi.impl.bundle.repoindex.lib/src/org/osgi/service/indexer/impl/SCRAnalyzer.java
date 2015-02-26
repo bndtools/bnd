@@ -224,6 +224,7 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 				}
 				currentPropertyName = null;
 				currentPropertyType = null;
+				currentPropertyAttrib = null;
 				currentPropertyText = null;
 			}
 
