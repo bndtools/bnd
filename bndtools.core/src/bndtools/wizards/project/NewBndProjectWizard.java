@@ -76,36 +76,34 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         }
         try {
             Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(pageTwo.getJavaProject());
-            if (sourceOutputLocations != null) {
-                int nr = 1;
-                for (Map.Entry<String,String> entry : sourceOutputLocations.entrySet()) {
-                    String src = entry.getKey();
-                    String bin = entry.getValue();
+            int nr = 1;
+            for (Map.Entry<String,String> entry : sourceOutputLocations.entrySet()) {
+                String src = entry.getKey();
+                String bin = entry.getValue();
 
-                    if (nr == 1) {
-                        if (!bndPaths.getSrc().equals(src)) {
-                            model.genericSet(Constants.DEFAULT_PROP_SRC_DIR, src);
-                        }
-                        if (!bndPaths.getBin().equals(bin)) {
-                            model.genericSet(Constants.DEFAULT_PROP_BIN_DIR, bin);
-                        }
-                        nr = 2;
-                    } else if (nr == 2) {
-                        if (!bndPaths.getTestSrc().equals(src)) {
-                            model.genericSet(Constants.DEFAULT_PROP_TESTSRC_DIR, src);
-                        }
-                        if (!bndPaths.getTestBin().equals(bin)) {
-                            model.genericSet(Constants.DEFAULT_PROP_TESTBIN_DIR, bin);
-                        }
-                        nr = 2;
-                    } else {
-                        // if for some crazy reason we end up with more than 2 paths, we log them in
-                        // extension properties (we cannot write comments) but this should never happen
-                        // anyway since the second page will not complete if there are not exactly 2 paths
-                        // so this could only happen if someone adds another page (that changes them again)
-                        model.genericSet("X-WARN-" + nr, "Ignoring source path " + src + " -> " + bin);
-                        nr++;
+                if (nr == 1) {
+                    if (!bndPaths.getSrc().equals(src)) {
+                        model.genericSet(Constants.DEFAULT_PROP_SRC_DIR, src);
                     }
+                    if (!bndPaths.getBin().equals(bin)) {
+                        model.genericSet(Constants.DEFAULT_PROP_BIN_DIR, bin);
+                    }
+                    nr = 2;
+                } else if (nr == 2) {
+                    if (!bndPaths.getTestSrc().equals(src)) {
+                        model.genericSet(Constants.DEFAULT_PROP_TESTSRC_DIR, src);
+                    }
+                    if (!bndPaths.getTestBin().equals(bin)) {
+                        model.genericSet(Constants.DEFAULT_PROP_TESTBIN_DIR, bin);
+                    }
+                    nr = 2;
+                } else {
+                    // if for some crazy reason we end up with more than 2 paths, we log them in
+                    // extension properties (we cannot write comments) but this should never happen
+                    // anyway since the second page will not complete if there are not exactly 2 paths
+                    // so this could only happen if someone adds another page (that changes them again)
+                    model.genericSet("X-WARN-" + nr, "Ignoring source path " + src + " -> " + bin);
+                    nr++;
                 }
             }
 
