@@ -43,12 +43,11 @@ available.
 ## Building
 Gradle is used to build bnd. The workspace root has a `build.gradle` file that builds all projects in proper order.
 
-`gradle`              - Assembles, tests and releases the projects into dist/bundles  
-`gradle :dist:build`  - Assembles and tests the projects  
-`gradle :dist:index`  - Assembles and releases the projects into dist/bundles  
+`./gradlew`              - Assembles, tests and releases the projects into `dist/bundles`  
+`./gradlew :dist:build`  - Assembles and tests the projects  
+`./gradlew :dist:index`  - Assembles and releases the projects into `dist/bundles`  
 
-The workspace root also includes the gradle wrapper, `gradlew`, command if you do not have gradle installed
-on your system.
+The workspace root includes the gradle wrapper, `gradlew`, command.
 
 [![CloudBees Build Status](https://bndtools.ci.cloudbees.com/job/bnd.master/badge/icon)](https://bndtools.ci.cloudbees.com/job/bnd.master/)
 [![Travis CI Build Status](https://travis-ci.org/bndtools/bnd.svg?branch=master)](https://travis-ci.org/bndtools/bnd)

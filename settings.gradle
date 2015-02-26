@@ -24,7 +24,7 @@ buildscript {
   configurations.classpath.resolutionStrategy.cacheChangingModulesFor 30, 'minutes'
   dependencies {
     components {
-      eachComponent { ComponentMetadataDetails details ->
+      all { ComponentMetadataDetails details ->
         details.changing = true
       }
     }
