@@ -16,13 +16,13 @@ This information will help us review and fix your issue faster.
 ## Build Environment
 
 The only thing you need to build bnd is Java. We use Java 7 but most
-projects only require Java 6. We use Gradle to build and The repo 
-includes `gradlew` but you can use your system `gradle` but we require 
-at least version 2.0.
+projects only require Java 6. We use Gradle to build and the repo 
+includes `gradlew`. You can use your system `gradle` but we require 
+at least version 2.3.
 
-`gradle`              - Assembles, tests and releases the projects into dist/bundles  
-`gradle :dist:build`  - Assembles and tests the projects  
-`gradle :dist:index`  - Assembles and releases the projects into dist/bundles..
+`./gradlew`              - Assembles, tests and releases the projects into dist/bundles  
+`./gradlew :dist:build`  - Assembles and tests the projects  
+`./gradlew :dist:index`  - Assembles and releases the projects into dist/bundles..
 
 We use [Travis CI](https://travis-ci.org/bndtools/bnd) and the repo includes a
 `.travis.yml` file to build on Travis CI.
