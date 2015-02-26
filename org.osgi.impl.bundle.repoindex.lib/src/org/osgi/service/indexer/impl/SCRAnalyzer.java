@@ -56,6 +56,8 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 			if (paths != null)
 				for (String path : paths) {
 					Version version = processScrXml(resource, path, caps, reqs);
+					if (version == null)
+						continue;
 					if (highest == null || (version.compareTo(highest) > 0))
 						highest = version;
 				}
