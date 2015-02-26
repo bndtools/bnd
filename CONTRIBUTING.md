@@ -17,10 +17,10 @@ This information will help us review and fix your issue faster.
 
 The only thing you need to build bndtools is Java. We use Java 7 but most
 projects only require Java 6. We use Gradle to build and The repo 
-includes `gradlew` but you can use your system `gradle` but we require 
-at least version 2.0.
+includes `gradlew`. You can use your system `gradle` but we require 
+at least version 2.3.
 
-`gradle`              - Assembles, tests and releases the projects into build/generated  
+`./gradlew`              - Assembles, tests and releases the projects into `build/generated`
 
 We use [Travis CI](https://travis-ci.org/bndtools/bndtools) and the repo includes a
 `.travis.yml` file to build on Travis CI.

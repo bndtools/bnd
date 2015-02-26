@@ -23,10 +23,9 @@ BndTools is licensed under the [Eclipse Public License v1.0](http://www.eclipse.
 ## Building
 Gradle is used to build bndtools. The workspace root has a `build.gradle` file that builds all projects in proper order.
 
-`gradle`              - Assembles and packages the projects into build/generated  
+`./gradlew`              - Assembles and packages the projects into build/generated  
 
-The workspace root also includes the gradle wrapper, `gradlew`, command if you do not have gradle installed
-on your system.
+The workspace root also includes the gradle wrapper, `gradlew`, command.
 
 [![CloudBees Build Status](https://bndtools.ci.cloudbees.com/job/bndtools.master/badge/icon)](https://bndtools.ci.cloudbees.com/job/bndtools.master/)
 [![Travis CI Build Status](https://travis-ci.org/bndtools/bndtools.svg?branch=master)](https://travis-ci.org/bndtools/bndtools)
