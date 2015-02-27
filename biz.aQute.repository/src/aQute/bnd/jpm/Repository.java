@@ -53,7 +53,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		SearchableRepository, InfoRepository {
 	private static final DocumentBuilderFactory	dbf							= DocumentBuilderFactory.newInstance();
 	private static final XPathFactory			xpf							= XPathFactory.newInstance();
-	public static final String					REPO_DEFAULT_URI			= "http://repo.jpm4j.org/";
+	public static final String					REPO_DEFAULT_URI			= "http://repo.jpm4j.org";
 
 	private static final PutOptions				DEFAULT_OPTIONS				= new PutOptions();
 
