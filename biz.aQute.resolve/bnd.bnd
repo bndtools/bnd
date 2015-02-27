@@ -1,9 +1,4 @@
 
-#
-# The RepoIndex service seems to appear multiple times, had to move
-# the library up?
-#
-
 -buildpath: osgi.core;version=4.3.1,\
 	osgi.r5;version=1.0.1,\
     aQute.libg;version=latest,\
