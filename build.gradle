@@ -19,6 +19,8 @@ ext.bndWorkspace = Workspace.getWorkspace(rootDir, bnd_cnf)
 if (bndWorkspace == null) {
   throw new GradleException("Unable to load workspace ${rootDir}/${bnd_cnf}")
 }
+/* Set this property in the workspace. It may have been set on the command line with -P */
+bndWorkspace.setProperty('bnd_repourl', bnd_repourl)
 
 ext.cnf = rootProject.project(bnd_cnf)
 

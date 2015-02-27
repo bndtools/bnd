@@ -1,3 +1,2 @@
 -pluginpath: \
-	${workspace}/cnf/plugins/biz.aQute.repository.jar
-
+    ${workspace}/cnf/cache/biz.aQute.repository.jar; url=${bnd_repourl}/biz.aQute.repository/biz.aQute.repository-latest.jar
