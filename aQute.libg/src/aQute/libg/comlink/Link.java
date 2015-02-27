@@ -18,7 +18,7 @@ import aQute.lib.json.*;
  * 
  * @param <R>
  */
-public class Link<L, R> extends Thread {
+public class Link<L, R> extends Thread implements Closeable {
 	private static final String[]		EMPTY		= new String[] {};
 
 	static JSONCodec					codec		= new JSONCodec();
@@ -65,7 +65,14 @@ public class Link<L, R> extends Thread {
 	}
 
 	public void close() throws IOException {
+		if (quit)
+			return;
+
 		quit = true;
+
+		if (local instanceof Closeable)
+			((Closeable) local).close();
+
 		in.close();
 		out.close();
 	}
@@ -78,7 +85,12 @@ public class Link<L, R> extends Thread {
 			}, new InvocationHandler() {
 
 				public Object invoke(Object target, Method method, Object[] args) throws Throwable {
+					Object hash = new Object();
+
 					try {
+						if (method.getDeclaringClass() == Object.class)
+							return method.invoke(hash, args);
+
 						int msgId = send(id.getAndIncrement(), method, args);
 						if (method.getReturnType() == void.class) {
 							promises.remove(msgId);
@@ -106,7 +118,6 @@ public class Link<L, R> extends Thread {
 	public void run() {
 		while (true)
 			try {
-				System.out.println("Starting receiver " + this);
 				final String cmd = in.readUTF();
 				final int id = in.readInt();
 
@@ -169,6 +180,7 @@ public class Link<L, R> extends Thread {
 						}
 					}
 				};
+				t.start();
 			}
 			catch (EOFException e) {
 				// It is over and out
