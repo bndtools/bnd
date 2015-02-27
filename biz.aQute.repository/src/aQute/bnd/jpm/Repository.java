@@ -7,12 +7,21 @@ import java.awt.datatransfer.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.jar.*;
 import java.util.regex.*;
+
+import javax.xml.parsers.*;
+import javax.xml.xpath.*;
+
+import org.w3c.dom.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.build.Container;
+import aQute.bnd.header.*;
+import aQute.bnd.jpm.StoredRevisionCache.Download;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.resource.*;
@@ -40,57 +49,60 @@ import aQute.service.reporter.*;
 /**
  * A bnd repository based on the jpm4j server.
  */
-public class Repository implements Plugin, RepositoryPlugin, Closeable, Refreshable, Actionable, RegistryPlugin, SearchableRepository, InfoRepository {
-	public static final String				REPO_DEFAULT_URI			= "http://repo.jpm4j.org";
+public class Repository implements Plugin, RepositoryPlugin, Closeable, Refreshable, Actionable, RegistryPlugin,
+		SearchableRepository, InfoRepository {
+	private static final DocumentBuilderFactory	dbf							= DocumentBuilderFactory.newInstance();
+	private static final XPathFactory			xpf							= XPathFactory.newInstance();
+	public static final String					REPO_DEFAULT_URI			= "http://repo.jpm4j.org/";
 
-	private static final PutOptions					DEFAULT_OPTIONS				= new PutOptions();
+	private static final PutOptions				DEFAULT_OPTIONS				= new PutOptions();
 
-	private static final String						SEARCH_PREFIX				= "/#!/search?q=";
-	private static final String						UTF_8						= "UTF-8";
+	private static final String					SEARCH_PREFIX				= "/#!/search?q=";
+	private static final String					UTF_8						= "UTF-8";
 
-	private final String							DOWN_ARROW					= " \u21E9";
-	protected final DownloadListener[]				EMPTY_LISTENER				= new DownloadListener[0];
-	private Pattern									SHA							= Pattern.compile(
-																						"([A-F0-9][a-fA-F0-9]){20,20}",
-																						Pattern.CASE_INSENSITIVE);
-	private final Justif							j							= new Justif(80, new int[] {
+	private final String						DOWN_ARROW					= " \u21E9";
+	protected final DownloadListener[]			EMPTY_LISTENER				= new DownloadListener[0];
+	private Pattern								SHA							= Pattern.compile(
+																					"([A-F0-9][a-fA-F0-9]){20,20}",
+																					Pattern.CASE_INSENSITIVE);
+	private final Justif						j							= new Justif(80, new int[] {
 			20, 28, 36, 44
-																				});
-	private Settings								settings					= new Settings();
-	private boolean									canwrite;
-	final MultiMap<File,DownloadListener>	queues						= new MultiMap<File,RepositoryPlugin.DownloadListener>();
+																			});
+	private Settings							settings					= new Settings();
+	private boolean								canwrite;
+	final MultiMap<File,DownloadListener>		queues						= new MultiMap<File,RepositoryPlugin.DownloadListener>();
 
-	private final Pattern							JPM_REVISION_URL_PATTERN	= Pattern
-																						.compile("https?://.+#!?/p/([^/]+)/([^/]+)/([^/]*)/([^/]+)");
-	private Options									options;
-	Reporter								reporter					= new ReporterAdapter(System.out);
+	private final Pattern						JPM_REVISION_URL_PATTERN	= Pattern
+																					.compile("https?://.+#!?/p/([^/]+)/([^/]+)/([^/]*)/([^/]+)");
+	private Options								options;
+	Reporter									reporter					= new ReporterAdapter(System.out);
 
 	/**
 	 * Maintains the index of what we've downloaded so far.
 	 */
-	private File									indexFile;
-	private boolean									indexRecurse;
-	Index									index;
-	private boolean									offline;
-	private Registry								registry;
-	StoredRevisionCache						cache;
-	Set<File>								notfound					= new HashSet<File>();
-	private Set<String>								notfoundref					= new HashSet<String>();
-	final Semaphore							limitDownloads				= new Semaphore(12);
-	private JpmRepo									library;
+	private File								indexFile;
+	private boolean								indexRecurse;
+	Index										index;
+	private boolean								offline;
+	private Registry							registry;
+	StoredRevisionCache							cache;
+	Set<File>									notfound					= new HashSet<File>();
+	private Set<String>							notfoundref					= new HashSet<String>();
+	final Semaphore								limitDownloads				= new Semaphore(12);
+	private JpmRepo								library;
 
-	private String									depositoryGroup;
-	private String									depositoryName;
-	private URLClient								urlc;
-	private String									location;
+	private String								depositoryGroup;
+	private String								depositoryName;
+	private URLClient							urlc;
+	private String								location;
 
-	private URLClient								depository;
+	private URLClient							depository;
 
-	private String									email;
+	private String								email;
 
-	private String									name;
+	private String								name;
 
-	URI										url;
+	URI											url;
 
 	/**
 	 * Reports downloads but does never block on them. This is a best effort, if
@@ -172,7 +184,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		 * @return
 		 */
 		String name();
-		
+
 		/**
 		 * Fetch dependencies automatically
 		 */
@@ -530,7 +542,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			location = options.location();
 			if (location == null)
 				location = "~/.bnd/shacache";
-			
+
 			this.name = options.name();
 			if (options.settings() != null) {
 				settings = new Settings(options.settings());
@@ -561,7 +573,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			if (indexFile.isDirectory())
 				throw new IllegalArgumentException("Index file is a directory instead of a file "
 						+ indexFile.getAbsolutePath());
-			
+
 			indexRecurse = options.recurse();
 
 			cache = new StoredRevisionCache(cacheDir, settings);
@@ -1456,7 +1468,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		}
 	}
 
-
 	@Override
 	public String title(Object... target) throws Exception {
 		init();
@@ -1673,26 +1684,62 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				reporter.trace("dropTarget cleaned up from " + t + " to " + uri);
 			}
 
+			RevisionRef ref;
+
 			reporter.trace("dropTarget " + uri);
-			Matcher m = JPM_REVISION_URL_PATTERN.matcher(uri.toString());
+			String uriString = uri.toString();
+
+			Matcher m = JPM_REVISION_URL_PATTERN.matcher(uriString);
 			if (!m.matches()) {
-				reporter.trace("not a proper url to drop " + uri);
-				return false;
+
+				//
+				// If we're connected to a depository we should go through
+				// bndtools' import facility
+				//
+
+				if (depositoryGroup != null || depositoryName != null)
+					return false;
+
+				if (!Boolean.getBoolean("jpm4j.in.test") && uri.getScheme().equalsIgnoreCase("file"))
+					return false;
+
+				//
+				// See if it is a bundle
+				//
+
+				Download d = cache.doDownload(uri);
+				if (d == null) {
+					return false;
+				}
+
+				ref = analyze(d.tmp, uri);
+				if (ref == null) {
+					reporter.trace("not a proper url to drop " + uri);
+					d.tmp.delete();
+					return false;
+				}
+
+				cache.makePermanent(ref, d);
+
+			} else {
+
+				Revision revision = getRevision(new Coordinate(m.group(1), m.group(2), m.group(3), m.group(4)));
+				if (revision == null) {
+					reporter.error("no revision found for %s", uri);
+					return false;
+				}
+
+				ref = new RevisionRef(revision);
 			}
 
-			Revision revision = getRevision(new Coordinate(m.group(1), m.group(2), m.group(3), m.group(4)));
-			if (revision == null) {
-				reporter.error("no revision found for %s", uri);
-				return false;
-			}
-
-			Library.RevisionRef resource = index.getRevisionRef(revision._id);
+			Library.RevisionRef resource = index.getRevisionRef(ref.revision);
 			if (resource != null) {
+				resource.urls.add(uri);
+				index.save();
 				reporter.trace("resource already loaded " + uri);
 				return true;
 			}
 
-			RevisionRef ref = new RevisionRef(revision);
 			reporter.trace("adding revision " + ref);
 			add(ref);
 			return true;
@@ -1701,6 +1748,118 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			e.printStackTrace();
 			throw e;
 		}
+	}
+
+	/**
+	 * We have a URI that potentially could be a JAR. We download it and analyze
+	 * it. If it looks like a bndle or JAR, we try to guess the different parts
+	 * from it and return a ReveisionRef.
+	 * 
+	 * @param uri
+	 *            the potential URI to a bundle/jar
+	 * @return null or a RevisionRef describing the bundle/jar
+	 * @throws IOException
+	 * @throws IllegalArgumentException
+	 */
+	private RevisionRef analyze(File file, URI uri) throws IllegalArgumentException, IOException {
+
+		try {
+			Jar jar = new Jar(file);
+			try {
+				Manifest manifest = jar.getManifest();
+				if (manifest == null) {
+					reporter.trace("Jar %s has no manifest", uri);
+					return null;
+				}
+
+				Domain domain = Domain.domain(manifest);
+				RevisionRef ref = new RevisionRef();
+				ref.created = System.currentTimeMillis();
+				ref.md5 = MD5.digest(file).digest();
+				ref.revision = SHA1.digest(file).digest();
+				ref.phase = Library.Phase.MASTER;
+				ref.size = file.length();
+				ref.urls.add(uri);
+
+				Entry<String,Attrs> bsn = domain.getBundleSymbolicName();
+				if (bsn != null) {
+					ref.bsn = bsn.getKey();
+					ref.name = domain.get(Constants.BUNDLE_SYMBOLICNAME);
+					ref.version = domain.getBundleVersion();
+					ref.description = domain.get(Constants.BUNDLE_DESCRIPTION);
+					ref.groupId = "osgi";
+					ref.artifactId = ref.bsn;
+				}
+
+				// Try maven
+
+				try {
+
+					Map<String,Resource> map = jar.getDirectories().get("META-INF/maven");
+					if (map.size() != 1) {
+						return ref;
+					}
+
+					ref.groupId = map.keySet().iterator().next();
+					map = jar.getDirectories().get("META-INF/maven/" + ref.groupId);
+					if (map.size() != 1) {
+						return ref;
+					}
+					ref.artifactId = map.keySet().iterator().next();
+
+					if (ref.bsn == null) {
+						ref.bsn = ref.groupId + "__" + ref.artifactId;
+					}
+
+					Resource r = jar.getResource("META-INF/maven/" + ref.groupId + "/" + ref.artifactId + "/pom.xml");
+					if (r != null) {
+						DocumentBuilder db = dbf.newDocumentBuilder();
+						Document doc = db.parse(r.openInputStream());
+						XPath xp = xpf.newXPath();
+						if (ref.description == null) {
+							ref.description = xp.evaluate("//description", doc);
+						}
+						if (ref.version == null) {
+							ref.version = xp.evaluate("//version", doc);
+						}
+						if (ref.name == null) {
+							ref.name = xp.evaluate("//name", doc);
+						}
+						ref.packaging = xp.evaluate("//packaging", doc);
+						ref.classifier = xp.evaluate("//classifier", doc);
+					}
+				}
+				catch (Exception e) {
+					reporter.trace("parsing maven failed for %s: %s", uri, e);
+				}
+
+				if (ref.version == null)
+					ref.version = "0";
+
+				if (Verifier.isVersion(ref.version)) {
+					Version version = new Version(ref.version);
+					ref.baseline = version.getWithoutQualifier().toString();
+					ref.qualifier = version.getQualifier();
+				}
+
+				if (ref.bsn == null) {
+					Pattern JAR_URI_P = Pattern.compile(".*/([^/]+)(?:\\.jar)?", Pattern.CASE_INSENSITIVE);
+					Matcher m = JAR_URI_P.matcher(uri.toString());
+					if (m.matches()) {
+						ref.bsn = m.group(1);
+					} else
+						ref.bsn = "unknown";
+				}
+				return ref;
+			}
+			finally {
+				jar.close();
+			}
+		}
+		catch (Exception e) {
+			reporter.trace("Could not parse JAR %s: %s", uri, e);
+		}
+		return null;
 	}
 
 	/*
@@ -1797,6 +1956,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		rd.id = ref.revision;
 		rd.included = getIndex().getRevisionRef(rd.id) != null;
 		rd.phase = toPhase(ref.phase);
+		rd.url = ref.urls.isEmpty() ? null : ref.urls.iterator().next();
+
+		File f = get(rd.bsn, rd.version, null);
+		rd.sha256 = SHA256.digest(f).digest();
 		return rd;
 	}
 
@@ -1860,13 +2023,14 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	public Set<ResourceDescriptor> findResources(org.osgi.resource.Requirement requirement, boolean includeDependencies)
 			throws Exception {
 		FilterParser fp = new FilterParser();
-		aQute.bnd.osgi.resource.FilterParser.Expression expression = fp.parse(requirement.getDirectives().get("filter"));
+		aQute.bnd.osgi.resource.FilterParser.Expression expression = fp
+				.parse(requirement.getDirectives().get("filter"));
 		String query = expression.query();
-		
-		if ( query == null) {
+
+		if (query == null) {
 			return Collections.emptySet();
 		}
-		
+
 		return query(query);
 	}
 
@@ -2085,7 +2249,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		clpbrd.setContents(stringSelection, null);
 	}
 
-
 	@Override
 	public String toString() {
 		byte[] digest;
@@ -2095,14 +2258,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		return "JpmRepository [writable="
-				+ canWrite()
-				+ ", "
-				+ (getName() != null ? "name=" + getName() + ", " : "")
+		return "JpmRepository [writable=" + canWrite() + ", " + (getName() != null ? "name=" + getName() + ", " : "")
 				+ (getLocation() != null ? "location=" + getLocation() + ", " : "")
-				+ (digest != null ? "digest="
-						+ Hex.toHexString(digest) : "") + "]";
+				+ (digest != null ? "digest=" + Hex.toHexString(digest) : "") + "]";
 	}
-
 
 }

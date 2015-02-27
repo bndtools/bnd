@@ -78,6 +78,14 @@ public class StoredRevisionCache {
 		IO.delete(f);
 	}
 
+	static class Download {
+		File			tmp;
+		byte[]			md5;
+		byte[]			sha;
+		URI				uri;
+		URLConnection	connection;
+	}
+
 	/*
 	 * Actually download a file. First in a temp directory, then it is renamed
 	 */
@@ -88,35 +96,28 @@ public class StoredRevisionCache {
 		if (urls.isEmpty())
 			throw new Exception("No URLs to download " + file);
 
-		File tmp = IO.createTempFile(tmpdir, "tmp", ".tmp");
 		for (URI url : urls) {
 
 			// Fixup for older bug that put the file url in the urls :-(
-
+			Download d = null;
 			try {
-				URLConnection connection = getConnection(url);
+				d = doDownload(url);
 
-				MessageDigest digest = MessageDigest.getInstance("SHA1");
-				DigestInputStream din = new DigestInputStream(connection.getInputStream(), digest);
-				IO.copy(din, tmp);
-
-				byte[] receivedsha = digest.digest();
-
-				if (!Arrays.equals(sha, receivedsha))
-					throw new Exception("Shas did not match (expected)" + Hex.toHexString(sha) + " (downloaded)" + tmp
-							+ " (" + Hex.toHexString(receivedsha) + ")");
+				if (!Arrays.equals(sha, d.sha))
+					throw new Exception("Shas did not match (expected)" + Hex.toHexString(sha) + " (downloaded)"
+							+ d.tmp + " (" + Hex.toHexString(d.sha) + ")");
 
 				file.getParentFile().mkdirs();
-				if (!tmp.renameTo(file)) {
+				if (!d.tmp.renameTo(file)) {
 					// We must have had a race condition
 					// on a system where we have not destructive
 					// rename. Since we are in a SHA name dir
 					// the content must ALWAYS be the same. So if
 					// we have a name clash we can throw away the newly download
 					// one since we seem to have lost.
-					tmp.delete();
+					d.tmp.delete();
 				} else {
-					long modified = connection.getLastModified();
+					long modified = d.connection.getLastModified();
 					if (modified > 0)
 						file.setLastModified(modified);
 				}
@@ -127,9 +128,30 @@ public class StoredRevisionCache {
 				throw e;
 			}
 			finally {
-				tmp.delete();
+				if (d != null)
+					d.tmp.delete();
 			}
 		}
+	}
+
+	/*
+	 * Download an URI into a temporary file while calculating SHA & MD5. The
+	 * connection uses the normal protections
+	 */
+	Download doDownload(URI url) throws Exception {
+		Download d = new Download();
+		d.tmp = IO.createTempFile(tmpdir, "tmp", ".tmp");
+		d.connection = getConnection(url);
+
+		MessageDigest sha = MessageDigest.getInstance("SHA1");
+		MessageDigest md5 = MessageDigest.getInstance("MD5");
+		DigestInputStream shaIn = new DigestInputStream(d.connection.getInputStream(), sha);
+		DigestInputStream md5In = new DigestInputStream(shaIn, md5);
+		IO.copy(md5In, d.tmp);
+
+		d.sha = sha.digest();
+		d.md5 = md5.digest();
+		return d;
 	}
 
 	public void add(RevisionRef d, File file) throws IOException {
@@ -278,6 +300,15 @@ public class StoredRevisionCache {
 	 */
 	public void removeSources(String bsn, String version, byte[] sha) {
 		getPath(bsn, version, sha, true).delete();
+	}
+
+	/*
+	 * After we used download, we need to create the file in the cache area
+	 */
+	public void makePermanent(RevisionRef ref, Download d) {
+		File f = getPath(ref.bsn, ref.version, ref.revision);
+		f.getParentFile().mkdirs();
+		d.tmp.renameTo(f);
 	}
 
 }
