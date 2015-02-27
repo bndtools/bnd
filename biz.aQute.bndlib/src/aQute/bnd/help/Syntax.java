@@ -429,7 +429,7 @@ public class Syntax implements Constants {
 			new Syntax(PLUGINPATH, "Define the plugins load path.", PLUGINPATH
 					+ "=${workspace}/cnf/cache/plugins-2.2.0.jar", null, null, new Syntax(PLUGINPATH_URL_ATTR,
 					"Specify a URL to download this file from if it does not exist",
-					"url=url=http://example.com/download/plugins-2.2.0.jar", null, null)),
+					"url=http://example.com/download/plugins-2.2.0.jar", null, null)),
 
 			new Syntax(SERVICE_COMPONENT, "The header for Declarative Services.", SERVICE_COMPONENT
 					+ "=com.acme.Foo?;activate='start'", null, null),
