@@ -1,0 +1,11 @@
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package: \
+	org.osgi.dto,\
+	org.osgi.framework.dto,\
+	aQute.remote.agent.provider,\
+	aQute.remote.api
+
+Import-Package: org.osgi.framework;version=1.5, *
+
+Conditional-Package: aQute.lib*
+Bundle-Activator: aQute.remote.agent.provider.Activator
