@@ -1,35 +1,21 @@
+#
+# -bnd command line-
+# 
+# This is not a bundle ...
+#
+
+
+
 Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
 -includeresource: \
  LICENSE, \
  embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
  templates=templates, \
+ @${repo;biz.aQute.bndlib}, \
  @${repo;biz.aQute.repository}, \
  @${repo;biz.aQute.resolve}
 
-Private-Package:  \
-    aQute.bnd.*;-split-package:=first,\
-    aQute.configurable.*;-split-package:=first,\
-    org.osgi.service.*.annotations.*;-split-package:=first,\
-    aQute.lib.deployer.*;-split-package:=first,\
-    aQute.lib.spring.*;-split-package:=first,\
-    org.osgi.service.coordinator;-split-package:=first
-
-Export-Package: aQute.bnd.service.*;-split-package:=first,\
-        aQute.bnd.header;-split-package:=first, \
-        aQute.bnd.osgi;-split-package:=first, \
-        aQute.bnd.build;-split-package:=first, \
-        aQute.bnd.version;-split-package:=first, \
-        aQute.bnd.maven.support;-split-package:=first, \
-    org.osgi.service.bindex;-split-package:=first,\
-    aQute.service.reporter;-split-package:=first,\
-    aQute.bnd.osgi.resource;-split-package:=first,\
-    org.osgi.service.repository;-split-package:=first,\
-    org.osgi.resource;-split-package:=first, \
-    aQute.bnd.util.*;-split-package:=first
-
-Import-Package: org.apache.tools.ant.*;resolution:=optional,\
-    junit.framework;resolution:=optional;version='[3.8,4)',\
-    *
+Import-Package: 
 
 Main-Class:                     aQute.bnd.main.bnd
 JPM-Command:                    bnd
