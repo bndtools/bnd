@@ -386,7 +386,7 @@ public abstract class ProjectLauncher {
 		return this.timeout;
 	}
 
-	public void cancel() {
+	public void cancel() throws Exception {
 		java.cancel();
 	}
 
