@@ -107,7 +107,7 @@ public class WorkspaceRepositoryTest extends TestCase {
 
 	public void testGetExact() throws Exception {
 		File file = repo.get("p2", new Version("1.2.3"), new HashMap<String,String>());
-		assertTrue(workspace.check());
+		assertTrue(workspace.check("Couldn't find embedded-repo\\.jar in bundle"));
 		assertNotNull(file);
 	}
 }
