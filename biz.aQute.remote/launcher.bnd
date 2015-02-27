@@ -1,0 +1,11 @@
+
+Launcher-Plugin: aQute.remote.launcher.plugin.RemoteProjectLauncher
+
+Private-Package: \
+	aQute.remote.launcher.plugin,\
+	aQute.remote.supervisor.provider,\
+	aQute.remote.api,\
+	org.osgi.dto,\
+	org.osgi.framework.dto
+	
+Conditional-Package: aQute.lib*

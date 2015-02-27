@@ -1,4 +1,4 @@
-package aQute.agent.server;
+package aQute.remote.agent.provider;
 
 import java.io.File;
 import java.util.regex.Matcher;
@@ -7,9 +7,10 @@ import java.util.regex.Pattern;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
+import aQute.remote.api.Agent;
+
 public class Activator implements BundleActivator {
-	static Pattern PORT_P = Pattern.compile("([^:]+:)(\\d+)");
-	private static final String DEFAULT_PORT = "29999";
+	static Pattern PORT_P = Pattern.compile("(?:([^:]+):)?(\\d+)");
 	private Dispatcher dispatcher;
 	private File cache;
 
@@ -18,7 +19,7 @@ public class Activator implements BundleActivator {
 		String port = context.getProperty("aQute.agent.server.port");
 
 		if (port == null)
-			port = DEFAULT_PORT;
+			port = Agent.DEFAULT_PORT+"";
 
 		Matcher m = PORT_P.matcher(port);
 		if (!m.matches())

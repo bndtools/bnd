@@ -1,4 +1,4 @@
-package aQute.service.agent;
+package aQute.remote.api;
 
 public interface Supervisor {
 

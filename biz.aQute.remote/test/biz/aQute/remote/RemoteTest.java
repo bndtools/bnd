@@ -1,0 +1,169 @@
+package biz.aQute.remote;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+import junit.framework.TestCase;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
+import org.osgi.framework.launch.Framework;
+
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import aQute.remote.api.Agent;
+import aQute.remote.supervisor.provider.SupervisorClient;
+
+public class RemoteTest extends TestCase {
+	private int random;
+	private HashMap<String, Object> configuration;
+	private Framework framework;
+	private BundleContext context;
+	private Bundle agent;
+	private String location;
+	private File tmp;
+
+	@Override
+	protected void setUp() throws Exception {
+		try {
+			configuration = new HashMap<String, Object>();
+			configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
+					Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+
+			framework = new org.apache.felix.framework.FrameworkFactory()
+					.newFramework(configuration);
+			framework.init();
+			framework.start();
+			context = framework.getBundleContext();
+			location = "reference:"
+					+ IO.getFile("generated/biz.aQute.remote.agent-0.0.0.jar")
+							.toURI().toString();
+			agent = context.installBundle(location);
+			agent.start();
+
+			tmp = IO.getFile("generated/tmp");
+			super.setUp();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		framework.stop();
+		framework.waitForStop(10000);
+		IO.delete(tmp);
+		super.tearDown();
+	}
+	public void testSimple() throws Exception {
+		SupervisorClient supervisor = SupervisorClient.link("localhost",
+				Agent.DEFAULT_PORT);
+		assertNotNull(supervisor);
+
+		Agent agent = supervisor.getAgent();
+		assertNotNull(agent.getFramework());
+	}
+
+	public void testUpdate() throws Exception {
+
+		SupervisorClient supervisor = SupervisorClient.link("localhost",
+				Agent.DEFAULT_PORT);
+
+		File t1 = create("bsn-1", new Version(1, 0, 0));
+		File t2 = create("bsn-2", new Version(1, 0, 0));
+		assertTrue(t1.isFile());
+		assertTrue(t2.isFile());
+
+		String sha1 = supervisor.addFile(t1);
+		String sha2 = supervisor.addFile(t2);
+
+		Map<String, String> update = new HashMap<String, String>();
+		update.put(t1.getAbsolutePath(), sha1);
+
+		String errors = supervisor.getAgent().update(update);
+		assertNull(errors);
+
+		//
+		// Verify that t1 is installed and t2 not
+		//
+
+		Bundle b1 = context.getBundle(t1.getAbsolutePath());
+		assertNotNull(b1);
+		Bundle b2 = context.getBundle(t2.getAbsolutePath());
+		assertNull(b2);
+
+		//
+		// Now add a new one
+		//
+
+		update = new HashMap<String, String>();
+		update.put(t1.getAbsolutePath(), sha1);
+		update.put(t2.getAbsolutePath(), sha2);
+		errors = supervisor.getAgent().update(update);
+		assertNull(errors);
+		assertNotNull(context.getBundle(t1.getAbsolutePath()));
+		assertNotNull(context.getBundle(t2.getAbsolutePath()));
+
+		//
+		// Now change a bundle
+		//
+
+		t1 = create("bsn-1", new Version(2, 0, 0));
+		sha1 = supervisor.addFile(t1);
+		update = new HashMap<String, String>();
+		update.put(t1.getAbsolutePath(), sha1);
+		update.put(t2.getAbsolutePath(), sha2);
+		errors = supervisor.getAgent().update(update);
+		assertNull(errors);
+		b1 = context.getBundle(t1.getAbsolutePath());
+		assertNotNull(b1);
+		b2 = context.getBundle(t2.getAbsolutePath());
+		assertNotNull(b2);
+		assertEquals(new Version(2, 0, 0).toString(), b1.getVersion()
+				.toString());
+
+		assertEquals(Bundle.ACTIVE, b1.getState());
+		assertEquals(Bundle.ACTIVE, b2.getState());
+
+		//
+		// Now delete t1
+		//
+
+		update = new HashMap<String, String>();
+		update.put(t2.getAbsolutePath(), sha2);
+		errors = supervisor.getAgent().update(update);
+		assertNull(errors);
+		assertNull(context.getBundle(t1.getAbsolutePath()));
+		assertNotNull(context.getBundle(t2.getAbsolutePath()));
+
+		//
+		// Delete all
+		//
+		supervisor.getAgent().update(null);
+		assertNull(context.getBundle(t1.getAbsolutePath()));
+		assertNull(context.getBundle(t2.getAbsolutePath()));
+	}
+
+	private File create(String bsn, Version v) throws Exception {
+		String name = bsn + "-" + v;
+		Builder b = new Builder();
+		b.setBundleSymbolicName(bsn);
+		b.setBundleVersion(v);
+		b.setProperty("Random", random++ + "");
+		b.setProperty("-resourceonly", true + "");
+		b.setIncludeResource("foo;literal='foo'");
+		Jar jar = b.build();
+		assertTrue(b.check());
+
+		File file = IO.getFile(tmp, name + ".jar");
+		file.getParentFile().mkdirs();
+		jar.updateModified(System.currentTimeMillis(), "Force it to now");
+		jar.write(file);
+		b.close();
+		return file;
+	}
+}

@@ -1,0 +1,10 @@
+
+-buildpath: \
+	osgi.core;version=6,\
+	aQute.libg;version=latest,\
+	biz.aQute.bndlib;version=latest,\
+	biz.aQute.junit;version=latest,\
+	org.apache.felix.framework;version=latest;packages=*
+
+-sub: *.bnd
+

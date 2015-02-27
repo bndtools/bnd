@@ -1,8 +1,10 @@
-package aQute.agent.server;
+package aQute.remote.agent.provider;
 
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,10 +27,13 @@ import org.osgi.framework.dto.ServiceReferenceDTO;
 
 import aQute.libg.shacache.ShaCache;
 import aQute.libg.shacache.ShaSource;
-import aQute.service.agent.Agent;
-import aQute.service.agent.Supervisor;
+import aQute.remote.api.Agent;
+import aQute.remote.api.Event;
+import aQute.remote.api.Supervisor;
 
-public class AgentServer implements Agent {
+public class AgentServer implements Agent, Closeable {
+	private static final long[] EMPTY = new long[0];
+
 	@SuppressWarnings("deprecation")
 	static String keys[] = { Constants.FRAMEWORK_BEGINNING_STARTLEVEL,
 			Constants.FRAMEWORK_BOOTDELEGATION, Constants.FRAMEWORK_BSNVERSION,
@@ -54,6 +59,8 @@ public class AgentServer implements Agent {
 	private final ShaCache cache;
 	private final ShaSource source;
 	private final Map<String, String> installed = new HashMap<String, String>();
+
+	private boolean quit;
 
 	public AgentServer(BundleContext context, File cache) {
 		this.context = context;
@@ -146,6 +153,9 @@ public class AgentServer implements Agent {
 	@Override
 	public String update(Map<String, String> bundles) {
 		Formatter out = new Formatter();
+		if (bundles == null) {
+			bundles = Collections.emptyMap();
+		}
 
 		Set<String> toBeDeleted = new HashSet<String>(installed.keySet());
 		toBeDeleted.removeAll(bundles.keySet());
@@ -256,9 +266,9 @@ public class AgentServer implements Agent {
 
 		String result = out.toString();
 		out.close();
-		if ( result.length() == 0)
+		if (result.length() == 0)
 			return null;
-		
+
 		return result;
 	}
 
@@ -299,13 +309,16 @@ public class AgentServer implements Agent {
 		for (ServiceReference<?> r : refs) {
 			ServiceReferenceDTO ref = new ServiceReferenceDTO();
 			ref.bundle = r.getBundle().getBundleId();
-			ref.id = Long.parseLong((String) r
-					.getProperty(Constants.SERVICE_ID));
+			ref.id = (Long) r.getProperty(Constants.SERVICE_ID);
 			ref.properties = getProperties(r);
 			Bundle[] usingBundles = r.getUsingBundles();
-			ref.usingBundles = new long[usingBundles.length];
-			for (int i = 0; i < usingBundles.length; i++) {
-				ref.usingBundles[i] = usingBundles[i].getBundleId();
+			if (usingBundles == null)
+				ref.usingBundles = EMPTY;
+			else {
+				ref.usingBundles = new long[usingBundles.length];
+				for (int i = 0; i < usingBundles.length; i++) {
+					ref.usingBundles[i] = usingBundles[i].getBundleId();
+				}
 			}
 			list.add(ref);
 		}
@@ -351,4 +364,32 @@ public class AgentServer implements Agent {
 		return bd;
 	}
 
+	@Override
+	public void close() throws IOException {
+		if (quit)
+			return;
+
+		update(null);
+		quit = true;
+
+		sendEvent(-2);
+	}
+
+	private void sendEvent(int code) {
+		Event e = new Event();
+		e.type = Event.Type.exit;
+		e.code = code;
+		try {
+			remote.event(e);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	@Override
+	public void abort() {
+		quit = true;
+		update(null);
+		sendEvent(-3);
+	}
 }
