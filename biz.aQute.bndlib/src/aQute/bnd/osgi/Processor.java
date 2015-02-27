@@ -1905,7 +1905,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (parms == null) {
 			parms = new Object[0];
 		}
-		return String.format(string, makePrintable(parms));
+		return String.format(string, makePrintableArray(parms));
 	}
 
 	/**
@@ -1918,18 +1918,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public static Object makePrintable(Object object) {
 		if (object == null)
-			return object;
+			return null;
 
 		if (object.getClass().isArray()) {
-			return Arrays.toString(makePrintable((Object[]) object));
+			return Arrays.toString(makePrintableArray(object));
 		}
 		return object;
 	}
 
-	private static Object[] makePrintable(Object[] objects) {
-		Object[] output = new Object[objects.length];
-		for (int i = 0; i < objects.length; i++) {
-			output[i] = makePrintable(objects[i]);
+	private static Object[] makePrintableArray(Object array) {
+		final int length = Array.getLength(array);
+		Object[] output = new Object[length];
+		for (int i = 0; i < length; i++) {
+			output[i] = makePrintable(Array.get(array, i));
 		}
 		return output;
 	}
