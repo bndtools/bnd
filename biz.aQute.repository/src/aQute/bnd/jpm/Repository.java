@@ -41,7 +41,7 @@ import aQute.service.reporter.*;
  * A bnd repository based on the jpm4j server.
  */
 public class Repository implements Plugin, RepositoryPlugin, Closeable, Refreshable, Actionable, RegistryPlugin, SearchableRepository, InfoRepository {
-	public static final String						REPO_DEFAULT_URI			= "http://repo.jpm4j.org/";
+	public static final String				REPO_DEFAULT_URI			= "http://repo.jpm4j.org";
 
 	private static final PutOptions					DEFAULT_OPTIONS				= new PutOptions();
 
