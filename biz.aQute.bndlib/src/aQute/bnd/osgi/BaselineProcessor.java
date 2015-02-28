@@ -215,7 +215,7 @@ public class BaselineProcessor extends Analyzer {
 		return descriptor.phase == Phase.MASTER;
 	}
 
-	private RepositoryPlugin getReleaseRepo() {
+	public RepositoryPlugin getReleaseRepo() {
 		String repoName = getProperty(Constants.RELEASEREPO);
 
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
@@ -234,7 +234,7 @@ public class BaselineProcessor extends Analyzer {
 		return null;
 	}
 
-	private RepositoryPlugin getBaselineRepo() {
+	public RepositoryPlugin getBaselineRepo() {
 		String repoName = getProperty(Constants.BASELINEREPO);
 		if (repoName == null)
 			return getReleaseRepo();
