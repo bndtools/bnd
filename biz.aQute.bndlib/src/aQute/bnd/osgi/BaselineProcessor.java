@@ -248,4 +248,58 @@ public class BaselineProcessor extends Analyzer {
 		return null;
 	}
 
+	@Override
+	public SetLocation error(String string, Object... args) {
+		if (getParent() != null) {
+			return ((Analyzer) getParent()).error(string, args);
+		}
+
+		return super.error(string, args);
+	}
+
+	@Override
+	public SetLocation error(String string, Throwable t, Object... args) {
+		if (getParent() != null) {
+			return ((Analyzer) getParent()).error(string, t, args);
+		}
+
+		return super.error(string, t, args);
+	}
+
+	@Override
+	public String getBsn() {
+		if (getParent() != null) {
+			return ((Analyzer) getParent()).getBsn();
+		}
+
+		return super.getBsn();
+	}
+
+	@Override
+	public File getFile(String file) {
+		if (getParent() != null) {
+			return getParent().getFile(file);
+		}
+
+		return super.getFile(file);
+	}
+
+	@Override
+	public String getVersion() {
+		if (getParent() != null) {
+			return ((Analyzer) getParent()).getVersion();
+		}
+
+		return super.getVersion();
+	}
+
+	@Override
+	public SetLocation warning(String string, Object... args) {
+		if (getParent() != null) {
+			return ((Analyzer) getParent()).warning(string, args);
+		}
+
+		return super.warning(string, args);
+	}
+
 }
