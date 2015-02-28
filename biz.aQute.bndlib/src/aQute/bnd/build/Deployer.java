@@ -26,7 +26,7 @@ public class Deployer {
 	 *            bundle
 	 */
 	public void deploy(String name, File file) throws Exception {
-		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
+		List<RepositoryPlugin> plugins = processor.getPlugins(RepositoryPlugin.class);
 
 		RepositoryPlugin rp = null;
 		for (RepositoryPlugin plugin : plugins) {
@@ -52,7 +52,7 @@ public class Deployer {
 			}
 			return;
 		}
-		trace("No repo found " + file);
+		processor.trace("No repo found " + file);
 		throw new IllegalArgumentException("No repository found for " + file);
 	}
 
@@ -63,7 +63,7 @@ public class Deployer {
 	 *            bundle
 	 */
 	public void deploy(File file) throws Exception {
-		String name = getProperty(Constants.DEPLOYREPO);
+		String name = processor.getProperty(Constants.DEPLOYREPO);
 		deploy(name, file);
 	}
 
