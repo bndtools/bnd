@@ -6,6 +6,7 @@ import java.util.regex.*;
 
 import org.osgi.service.component.annotations.*;
 
+import aQute.bnd.component.DSAnnotations.Options;
 import aQute.bnd.component.error.*;
 import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
 import aQute.bnd.osgi.*;
@@ -76,22 +77,18 @@ public class AnnotationReader extends ClassDataCollector {
 	Analyzer					analyzer;
 	MultiMap<String,String>		methods					= new MultiMap<String,String>();
 	TypeRef						extendsClass;
-	final boolean						inherit;
 	boolean						baseclass				= true;
+	final EnumSet<Options>		options;
 	
-	final boolean						felixExtensions;
 
-	AnnotationReader(Analyzer analyzer, Clazz clazz, boolean inherit, boolean felixExtensions) {
+	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
-		this.inherit = inherit;
-		this.felixExtensions = felixExtensions;
+		this.options = options;
 	}
 
-	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer) throws Exception {
-		boolean inherit = Processor.isTrue(analyzer.getProperty("-dsannotations-inherit"));
-		boolean felixExtensions = Processor.isTrue(analyzer.getProperty("-ds-felix-extensions"));
-		AnnotationReader r = new AnnotationReader(analyzer, c, inherit, felixExtensions);
+	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options) throws Exception {
+		AnnotationReader r = new AnnotationReader(analyzer, c, options);
 		return r.getDef();
 	}
 
@@ -100,7 +97,7 @@ public class AnnotationReader extends ClassDataCollector {
 		if (component.implementation == null)
 			return null;
 
-		if (inherit) {
+		if (options.contains(Options.inherit)) {
 			baseclass = false;
 			while (extendsClass != null) {
 				if (extendsClass.isJava())
@@ -390,7 +387,7 @@ public class AnnotationReader extends ClassDataCollector {
 
 						});
 						component.property.putAll(props);
-					} else if (clazz.isInterface() && felixExtensions) {
+					} else if (clazz.isInterface() && options.contains(Options.felixExtensions)) {
 						//ok
 					} else {
 						analyzer.error("Non annotation argument to lifecycle method with descriptor %s,  type %s", methodDescriptor, type);
@@ -617,9 +614,9 @@ public class AnnotationReader extends ClassDataCollector {
 
 	private void checkMapReturnType(boolean hasMapReturnType) {
 		if (hasMapReturnType) {
-			if (!felixExtensions) {
+			if (!options.contains(Options.felixExtensions)) {
 				analyzer.error(
-						"In component %s, to use a return type of Map you must specify -ds-felix-extensions",
+						"In component %s, to use a return type of Map you must specify the -dsannotations-flags felixExtensions flag",
 						component.implementation, "");
 			}
 			//TODO rethink how this is signalled.
