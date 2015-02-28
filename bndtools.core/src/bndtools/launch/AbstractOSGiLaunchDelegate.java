@@ -31,6 +31,8 @@ import bndtools.launch.util.LaunchUtils;
 import bndtools.preferences.BndPreferences;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
+    @SuppressWarnings("deprecation")
+    private static final String ATTR_LOGLEVEL = LaunchConstants.ATTR_LOGLEVEL;
     private static final ILogger logger = Logger.getLogger(AbstractOSGiLaunchDelegate.class);
 
     protected Project model;
@@ -106,6 +108,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         // Register listener to clean up temp files on exit of launched JVM
         final ProjectLauncher launcher = getProjectLauncher();
         IDebugEventSetListener listener = new IDebugEventSetListener() {
+            @Override
             public void handleDebugEvents(DebugEvent[] events) {
                 for (DebugEvent event : events) {
                     if (event.getKind() == DebugEvent.TERMINATE) {
@@ -210,15 +213,13 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         return a;
     }
 
-    @SuppressWarnings("deprecation")
     protected static void enableTraceOptionIfSetOnConfiguration(ILaunchConfiguration configuration, ProjectLauncher launcher) throws CoreException {
         if (configuration.hasAttribute(LaunchConstants.ATTR_TRACE)) {
             launcher.setTrace(configuration.getAttribute(LaunchConstants.ATTR_TRACE, LaunchConstants.DEFAULT_TRACE));
         }
-        String logLevelStr = configuration.getAttribute(LaunchConstants.ATTR_LOGLEVEL, (String) null);
+        String logLevelStr = configuration.getAttribute(ATTR_LOGLEVEL, (String) null);
         if (logLevelStr != null) {
-            Plugin.getDefault().getLog()
-                    .log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, MessageFormat.format("The {0} attribute is no longer supported, use {1} instead.", LaunchConstants.ATTR_LOGLEVEL, LaunchConstants.ATTR_TRACE), null));
+            Plugin.getDefault().getLog().log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, MessageFormat.format("The {0} attribute is no longer supported, use {1} instead.", ATTR_LOGLEVEL, LaunchConstants.ATTR_TRACE), null));
             Level logLevel = Level.parse(logLevelStr);
             launcher.setTrace(launcher.getTrace() || logLevel.intValue() <= Level.FINE.intValue());
         }

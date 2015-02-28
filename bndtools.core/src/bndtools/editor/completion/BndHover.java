@@ -11,6 +11,7 @@ public class BndHover extends DefaultTextHover {
         super(sourceViewer);
     }
 
+    @Deprecated
     @Override
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
         String info = super.getHoverInfo(textViewer, hoverRegion);

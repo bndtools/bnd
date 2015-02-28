@@ -59,6 +59,7 @@ eclipse.deps: \
 	org.eclipse.core.jobs,\
 	org.eclipse.equinox.registry,\
 	org.eclipse.jdt.core,\
+	org.eclipse.jdt.core.manipulation,\
 	org.eclipse.jdt.ui,\
 	org.eclipse.osgi,\
 	org.eclipse.core.commands,\

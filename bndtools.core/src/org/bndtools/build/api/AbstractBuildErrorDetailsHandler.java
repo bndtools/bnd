@@ -68,7 +68,7 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
 
     /**
      * Obtain an AST for a source file in a project
-     * 
+     *
      * @param javaProject
      * @param className
      * @return An AST, or null if no source file exists for that class
@@ -92,7 +92,7 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
 
     /**
      * Create a marker on a Java Type
-     * 
+     *
      * @param javaProject
      * @param className
      *            - the fully qualified class name (e.g java.lang.String)
@@ -134,7 +134,7 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
 
     /**
      * Create a marker on a Java Method
-     * 
+     *
      * @param javaProject
      * @param className
      *            - the fully qualified class name (e.g java.lang.String)
@@ -240,7 +240,9 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
             private String getFullyQualifiedNameForSimpleName(CompilationUnit ast, Name typeName) {
                 String name = typeName.getFullyQualifiedName();
 
-                for (ImportDeclaration id : (List<ImportDeclaration>) ast.imports()) {
+                @SuppressWarnings("unchecked")
+                List<ImportDeclaration> ids = ast.imports();
+                for (ImportDeclaration id : ids) {
                     if (id.isStatic())
                         continue;
                     if (id.isOnDemand()) {
