@@ -20,15 +20,18 @@ public class ProjectBuilder extends Builder {
 	private final DiffPluginImpl	differ	= new DiffPluginImpl();
 	Project							project;
 	boolean							initialized;
+	private final BaselineProcessor	baselineProcessor;
 
 	public ProjectBuilder(Project project) {
 		super(project);
 		this.project = project;
+		this.baselineProcessor = new BaselineProcessor(this);
 	}
 
 	public ProjectBuilder(ProjectBuilder builder) {
 		super(builder);
 		this.project = builder.project;
+		this.baselineProcessor = new BaselineProcessor(this);
 	}
 
 	@Override
@@ -106,7 +109,7 @@ public class ProjectBuilder extends Builder {
 		trace("ignore headers & paths %s", diffignore);
 		differ.setIgnore(diffignore);
 
-		Jar fromRepo = getBaselineJar();
+		Jar fromRepo = baselineProcessor.getBaselineJar();
 		if (fromRepo == null) {
 			trace("No baseline jar %s", getProperty(Constants.BASELINE));
 			return;
@@ -126,7 +129,7 @@ public class ProjectBuilder extends Builder {
 		//
 
 		if (newer.getWithoutQualifier().equals(older.getWithoutQualifier())) {
-			RepositoryPlugin rr = getBaselineRepo();
+			RepositoryPlugin rr = baselineProcessor.getBaselineRepo();
 			if (rr instanceof InfoRepository) {
 				ResourceDescriptor descriptor = ((InfoRepository) rr).getDescriptor(getBsn(), older);
 				if (descriptor != null && descriptor.phase != Phase.STAGING) {
@@ -236,7 +239,7 @@ public class ProjectBuilder extends Builder {
 	}
 
 	public Jar getLastRevision() throws Exception {
-		RepositoryPlugin releaseRepo = getReleaseRepo();
+		RepositoryPlugin releaseRepo = baselineProcessor.getReleaseRepo();
 		SortedSet<Version> versions = releaseRepo.versions(getBsn());
 		if (versions.isEmpty())
 			return null;
@@ -282,8 +285,8 @@ public class ProjectBuilder extends Builder {
 
 	public void report(Map<String,Object> table) throws Exception {
 		super.report(table);
-		table.put("Baseline repo", getBaselineRepo());
-		table.put("Release repo", getReleaseRepo());
+		table.put("Baseline repo", baselineProcessor.getBaselineRepo());
+		table.put("Release repo", baselineProcessor.getReleaseRepo());
 	}
 
 	public String toString() {
