@@ -100,7 +100,7 @@ class LaunchThread extends Thread implements IResourceChangeListener {
         return delta.findMember(ipath) != null;
     }
 
-    void close() throws InterruptedException {
+    void close() throws Exception {
         launcher.cancel();
         join(5000);
     }
