@@ -109,7 +109,7 @@ public class BaselineProcessor extends Analyzer {
 					// Can be useful to specify a file
 					// for example when copying a bundle with a public api
 
-					File f = getProject().getFile(attrs.get("file"));
+					File f = getFile(attrs.get("file"));
 					if (f != null && f.isFile()) {
 						Jar jar = new Jar(f);
 						addClose(jar);
