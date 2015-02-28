@@ -88,6 +88,8 @@ import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public class RunRequirementsPart extends SectionPart implements PropertyChangeListener {
+    @SuppressWarnings("deprecation")
+    private static final String RUNREQUIRE = BndConstants.RUNREQUIRE;
     private static final ILogger logger = Logger.getLogger(RunRequirementsPart.class);
 
     private Table table;
@@ -355,14 +357,14 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
         model = (BndEditModel) form.getInput();
 
-        model.addPropertyChangeListener(BndConstants.RUNREQUIRE, this);
+        model.addPropertyChangeListener(RUNREQUIRE, this);
         model.addPropertyChangeListener(BndConstants.RUNREQUIRES, this);
         model.addPropertyChangeListener(BndConstants.RESOLVE_MODE, this);
     }
 
     @Override
     public void dispose() {
-        model.removePropertyChangeListener(BndConstants.RUNREQUIRE, this);
+        model.removePropertyChangeListener(RUNREQUIRE, this);
         model.removePropertyChangeListener(BndConstants.RUNREQUIRES, this);
         model.removePropertyChangeListener(BndConstants.RESOLVE_MODE, this);
 
@@ -377,7 +379,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         try {
             committing = true;
             model.setRunRequires(requires);
-            model.genericSet(Constants.RUNREQUIRE, null);
+            model.genericSet(RUNREQUIRE, null);
             setResolveMode();
         } finally {
             committing = false;
@@ -388,7 +390,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     public void refresh() {
         List<Requirement> tmp = model.getRunRequires();
         if (tmp == null) {
-            String legacyReqStr = (String) model.genericGet(Constants.RUNREQUIRE);
+            String legacyReqStr = (String) model.genericGet(RUNREQUIRE);
             if (legacyReqStr != null) {
                 tmp = convertLegacyRequireList(legacyReqStr);
             }

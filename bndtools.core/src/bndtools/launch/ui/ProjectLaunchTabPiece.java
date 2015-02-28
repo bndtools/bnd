@@ -49,6 +49,8 @@ import bndtools.launch.LaunchConstants;
 import bndtools.utils.FileExtensionFilter;
 
 public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
+    @SuppressWarnings("deprecation")
+    private static final String ATTR_LOGLEVEL = LaunchConstants.ATTR_LOGLEVEL;
     private static final ILogger logger = Logger.getLogger(ProjectLaunchTabPiece.class);
 
     private static final String PROP_LAUNCH_TARGET = "targetName";
@@ -62,6 +64,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
     private Text launchTargetTxt;
     private Button enableTraceBtn;
 
+    @Override
     @SuppressWarnings("unused")
     public Control createControl(Composite parent) {
         Group projectGroup = new Group(parent, SWT.NONE);
@@ -94,6 +97,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
             }
         });
         launchTargetTxt.addListener(SWT.Modify, new Listener() {
+            @Override
             public void handleEvent(Event event) {
                 String oldName = targetName;
                 targetName = launchTargetTxt.getText();
@@ -141,6 +145,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
     void doBrowseBndrun() {
         ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(launchTargetTxt.getShell(), new WorkbenchLabelProvider(), new WorkbenchContentProvider());
         dialog.setValidator(new ISelectionStatusValidator() {
+            @Override
             public IStatus validate(Object[] selection) {
                 if (selection.length > 0 && selection[0] instanceof IFile) {
                     return new Status(IStatus.OK, Plugin.PLUGIN_ID, IStatus.OK, "", null); //$NON-NLS-1$
@@ -185,6 +190,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
         return result;
     }
 
+    @Override
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
         configuration.setAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, launchTargetTxt.getText());
 
@@ -198,9 +204,10 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
         }
 
         configuration.setAttribute(LaunchConstants.ATTR_TRACE, enableTrace);
-        configuration.removeAttribute(LaunchConstants.ATTR_LOGLEVEL);
+        configuration.removeAttribute(ATTR_LOGLEVEL);
     }
 
+    @Override
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {
         targetName = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
         if (targetName == null)
@@ -244,6 +251,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
         return null;
     }
 
+    @Override
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
         configuration.setAttribute(LaunchConstants.ATTR_TRACE, LaunchConstants.DEFAULT_TRACE);
     }
