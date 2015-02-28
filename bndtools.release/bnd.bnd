@@ -26,6 +26,7 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\
 	bndtools.utils;version=project;packages=*,\
+	bndtools.api;version=latest, \
 	bndtools.core;version=latest, \
 	org.eclipse.core.runtime,\
 	org.eclipse.core.contenttype,\
