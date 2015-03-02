@@ -7,6 +7,7 @@ import aQute.bnd.version.*;
 public class MvnVersion implements Comparable<MvnVersion> {
 	
 	private static final Pattern QUALIFIER = Pattern.compile("[-.]?([^0-9.].*)$");
+	private static final Pattern RELEASE_ONLY_QUALIFIER = Pattern.compile("^[rR](0*[0-9]+)$");
 	
 	private static final String	QUALIFIER_SNAPSHOT	= "SNAPSHOT";
 
@@ -20,17 +21,27 @@ public class MvnVersion implements Comparable<MvnVersion> {
 		MvnVersion result;
 		
 		try {
-			Matcher m = QUALIFIER.matcher(versionStr);
-			if (!m.find()) {
-				result = new MvnVersion(Version.parseVersion(versionStr));
-			} else {
-				String qualifier = m.group(1);
-
-				Version v = Version.parseVersion(versionStr.substring(0,
-						m.start()));
-				Version osgiVersion = new Version(v.getMajor(), v.getMinor(),
-						v.getMicro(), qualifier);
+			// Special treatment for version strings consisting only
+			// of release numbers, e.g. Google Guava r03 release
+			// The release number will be parsed into the micro version number
+			final Matcher relM = RELEASE_ONLY_QUALIFIER.matcher(versionStr);
+			if (relM.find()) {
+				final String relNumber = relM.group(1);
+				final Version osgiVersion = new Version(0, 0, Integer.parseInt(relNumber));
 				result = new MvnVersion(osgiVersion);
+			} else {
+				Matcher m = QUALIFIER.matcher(versionStr);
+				if (!m.find()) {
+					result = new MvnVersion(Version.parseVersion(versionStr));
+				} else {
+					String qualifier = m.group(1);
+
+					Version v = Version.parseVersion(versionStr.substring(0,
+							m.start()));
+					Version osgiVersion = new Version(v.getMajor(), v.getMinor(),
+							v.getMicro(), qualifier);
+					result = new MvnVersion(osgiVersion);
+				}
 			}
 		} catch (IllegalArgumentException e) { // bad format
 			result = null;
