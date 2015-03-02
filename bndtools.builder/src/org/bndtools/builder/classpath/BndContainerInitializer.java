@@ -158,8 +158,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         void updateClasspathContainer(boolean init) throws CoreException {
-            if (model == null) {
-                logger.logError("Classpath container set to empty. Unable to get bnd project for project " + project.getName(), null);
+            if (model == null) { // this can happen during new project creation
                 setClasspathEntries(EMPTY_ENTRIES);
                 return;
             }
@@ -210,7 +209,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             BndPreferences prefs = new BndPreferences();
             if (prefs.getBuildLogging() == BuildLogger.LOG_FULL) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("ClasspathEntries ").append(model.getName());
+                sb.append("ClasspathEntries ").append(project.getName());
                 for (IClasspathEntry cpe : entries) {
                     sb.append("\n--- ").append(cpe);
                 }
