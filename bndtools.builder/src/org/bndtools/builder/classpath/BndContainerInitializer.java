@@ -158,8 +158,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         void updateClasspathContainer(boolean init) throws CoreException {
-            if (model == null) {
-                logger.logError("Classpath container set to empty. Unable to get bnd project for project " + project.getName(), null);
+            if (model == null) { // this can happen during new project creation
                 setClasspathEntries(EMPTY_ENTRIES);
                 return;
             }
@@ -210,7 +209,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             BndPreferences prefs = new BndPreferences();
             if (prefs.getBuildLogging() == BuildLogger.LOG_FULL) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("ClasspathEntries ").append(model.getName());
+                sb.append("ClasspathEntries ").append(project.getName());
                 for (IClasspathEntry cpe : entries) {
                     sb.append("\n--- ").append(cpe);
                 }
@@ -294,20 +293,55 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 }
 
                 IClasspathAttribute[] extraAttrs = calculateContainerAttributes(c);
-                IAccessRule[] accessRules = toAccessRulesArray(calculateContainerAccessRules(c));
+                List<IAccessRule> accessRules = calculateContainerAccessRules(c);
                 switch (c.getType()) {
                 case PROJECT :
                     IPath projectPath = root.getFile(path).getProject().getFullPath();
-                    classpath.add(JavaCore.newProjectEntry(projectPath, accessRules, false, extraAttrs, false));
+                    addProjectEntry(classpath, projectPath, accessRules, extraAttrs);
                     if (!isVersionProject(c)) { // if not version=project, add entry for generated jar
-                        classpath.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
+                        addLibraryEntry(classpath, path, accessRules, extraAttrs);
                     }
                     break;
                 default :
-                    classpath.add(JavaCore.newLibraryEntry(path, path, null, accessRules, extraAttrs, false));
+                    addLibraryEntry(classpath, path, accessRules, extraAttrs);
                     break;
                 }
             }
+        }
+
+        private void addProjectEntry(List<IClasspathEntry> classpath, IPath path, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs) {
+            for (int i = 0; i < classpath.size(); i++) {
+                IClasspathEntry entry = classpath.get(i);
+                if (entry.getEntryKind() != IClasspathEntry.CPE_PROJECT) {
+                    continue;
+                }
+                if (!entry.getPath().equals(path)) {
+                    continue;
+                }
+
+                // Found a project entry for the project
+                List<IAccessRule> oldAccessRules = Arrays.asList(entry.getAccessRules());
+                int last = oldAccessRules.size() - 1;
+                if (last < 0) {
+                    return; // project entry already has full access
+                }
+                List<IAccessRule> combinedAccessRules = null;
+                if (accessRules != null) { // if not full access request
+                    combinedAccessRules = new ArrayList<IAccessRule>(oldAccessRules);
+                    if (DISCOURAGED.equals(combinedAccessRules.get(last))) {
+                        combinedAccessRules.remove(last);
+                    }
+                    combinedAccessRules.addAll(accessRules);
+                }
+                classpath.set(i, JavaCore.newProjectEntry(path, toAccessRulesArray(combinedAccessRules), false, entry.getExtraAttributes(), false));
+                return;
+            }
+            // Add a new project entry for the project
+            classpath.add(JavaCore.newProjectEntry(path, toAccessRulesArray(accessRules), false, extraAttrs, false));
+        }
+
+        private void addLibraryEntry(List<IClasspathEntry> classpath, IPath path, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs) {
+            classpath.add(JavaCore.newLibraryEntry(path, path, null, toAccessRulesArray(accessRules), extraAttrs, false));
         }
 
         private IClasspathAttribute[] calculateContainerAttributes(Container c) {
