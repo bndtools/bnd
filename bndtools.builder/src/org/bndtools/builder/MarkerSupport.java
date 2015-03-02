@@ -1,6 +1,7 @@
 package org.bndtools.builder;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -23,7 +24,9 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaModelMarker;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Processor;
 import aQute.service.reporter.Report.Location;
 
 class MarkerSupport {
@@ -31,14 +34,18 @@ class MarkerSupport {
     private final IProject project;
     private final MultiStatus validationResults = new MultiStatus(BndtoolsBuilder.PLUGIN_ID, 0, "Validation errors in bnd project", null);
 
-    MarkerSupport(BndtoolsBuilder builder) {
-        this.project = builder.getProject();
+    MarkerSupport(IProject project) {
+        this.project = project;
     }
 
     boolean hasBlockingErrors(DeltaWrapper dw) {
         try {
             if (containsError(dw, project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE)))
                 return true;
+
+            if (containsError(dw, project.findMarkers(BndtoolsConstants.MARKER_BND_PATH_PROBLEM, true, IResource.DEPTH_INFINITE)))
+                return true;
+
             return false;
         } catch (CoreException e) {
             logger.logError("Error looking for project problem markers", e);
@@ -46,67 +53,77 @@ class MarkerSupport {
         }
     }
 
-    void createBuildMarkers(Project model) throws Exception {
-        List<String> errors = model.getErrors();
-        List<String> warnings = model.getWarnings();
+    void setMarkers(Processor model, String markerType) throws Exception {
+        deleteMarkers(markerType);
+        createMarkers(model, IMarker.SEVERITY_ERROR, model.getErrors(), markerType);
+        createMarkers(model, IMarker.SEVERITY_WARNING, model.getWarnings(), markerType);
+    }
 
-        for (String error : errors) {
-            addBuildMarkers(model, IMarker.SEVERITY_ERROR, error);
-        }
-        for (String warning : warnings) {
-            addBuildMarkers(model, IMarker.SEVERITY_WARNING, warning);
-        }
+    void deleteMarkers(String markerType) throws CoreException {
+        if (markerType.equals("*")) {
+            deleteMarkers(BndtoolsConstants.MARKER_BND_PROBLEM);
+            deleteMarkers(BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
+            deleteMarkers(BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM);
+        } else
+            project.deleteMarkers(markerType, true, IResource.DEPTH_INFINITE);
+    }
 
+    void createValidationResultMarkers(Processor model) throws Exception {
         if (!validationResults.isOK()) {
             for (IStatus status : validationResults.getChildren()) {
-                addBuildMarkers(model, status);
+                createMarkers(model, status);
             }
         }
     }
 
-    void clearBuildMarkers() throws CoreException {
-        project.deleteMarkers(BndtoolsConstants.MARKER_BND_PROBLEM, true, IResource.DEPTH_INFINITE);
+    private void createMarkers(Processor model, int severity, Collection<String> msgs, String markerType) throws Exception {
+        for (String msg : msgs) {
+            createMarker(model, severity, msg, markerType);
+        }
     }
 
-    private void addBuildMarkers(Project model, IStatus status) throws Exception {
+    private void createMarkers(Processor model, IStatus status) throws Exception {
         if (status.isMultiStatus()) {
             for (IStatus child : status.getChildren()) {
-                addBuildMarkers(model, child);
+                createMarkers(model, child);
             }
             return;
         }
 
-        addBuildMarkers(model, iStatusSeverityToIMarkerSeverity(status), status.getMessage());
+        createMarker(model, iStatusSeverityToIMarkerSeverity(status), status.getMessage(), BndtoolsConstants.MARKER_BND_PROBLEM);
     }
 
-    void addBuildMarkers(Project model, int severity, String message, Object... args) throws Exception {
-        String formatted = String.format(message, args);
-        addBuildMarkers(model, severity, formatted);
-    }
-
-    void addBuildMarkers(Project model, int severity, String formatted) throws Exception {
+    void createMarker(Processor model, int severity, String formatted, String markerType) throws Exception {
         Location location = model != null ? model.getLocation(formatted) : null;
         if (location != null) {
             String type = location.details != null ? location.details.getClass().getName() : null;
             BuildErrorDetailsHandler handler = BuildErrorDetailsHandlers.INSTANCE.findHandler(type);
 
-            List<MarkerData> markers = handler.generateMarkerData(project, model, location);
-            for (MarkerData markerData : markers) {
-                IResource resource = markerData.getResource();
-                if (resource != null) {
-                    IMarker marker = resource.createMarker(BndtoolsConstants.MARKER_BND_PROBLEM);
-                    marker.setAttribute(IMarker.SEVERITY, severity);
-                    marker.setAttribute("$bndType", type);
-                    marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
-                    for (Entry<String,Object> attrib : markerData.getAttribs().entrySet())
-                        marker.setAttribute(attrib.getKey(), attrib.getValue());
+            if (model instanceof Project) {
+                List<MarkerData> markers = handler.generateMarkerData(project, (Project) model, location);
+                for (MarkerData markerData : markers) {
+                    IResource resource = markerData.getResource();
+                    if (resource != null) {
+                        IMarker marker = resource.createMarker(markerType);
+                        marker.setAttribute(IMarker.SEVERITY, severity);
+                        marker.setAttribute("$bndType", type);
+                        marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
+                        for (Entry<String,Object> attrib : markerData.getAttribs().entrySet())
+                            marker.setAttribute(attrib.getKey(), attrib.getValue());
+                    }
                 }
+                return;
             }
-        } else {
-            IMarker marker = DefaultBuildErrorDetailsHandler.getDefaultResource(project).createMarker(BndtoolsConstants.MARKER_BND_PROBLEM);
-            marker.setAttribute(IMarker.SEVERITY, severity);
-            marker.setAttribute(IMarker.MESSAGE, formatted);
         }
+
+        String defaultResource = model instanceof Project ? Project.BNDFILE : model instanceof Workspace ? Workspace.BUILDFILE : "";
+
+        IMarker marker = DefaultBuildErrorDetailsHandler.getDefaultResource(project, defaultResource).createMarker(markerType);
+        marker.setAttribute(IMarker.SEVERITY, severity);
+        marker.setAttribute(IMarker.MESSAGE, formatted);
+        marker.setAttribute(IMarker.LINE_NUMBER, location == null ? 1 : location.line);
+        marker.setAttribute(IMarker.CHAR_START, 0);
+        marker.setAttribute(IMarker.CHAR_END, 100);
     }
 
     private int iStatusSeverityToIMarkerSeverity(IStatus status) {

@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.IPath;
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.lib.io.IO;
 import bndtools.central.Central;
 
 class DeltaWrapper {
@@ -45,12 +46,6 @@ class DeltaWrapper {
      * Any change other then src, test, test_bin, or generated is fair game.
      */
     boolean hasProjectChanged() throws Exception {
-
-        if (havePropertiesChanged(model)) {
-            log.basic("Properties changed");
-            model.refresh();
-            return true;
-        }
 
         if (delta == null) {
             log.basic("Full build because delta is null");
@@ -86,6 +81,9 @@ class DeltaWrapper {
                 if (IResourceDelta.MARKERS == delta.getFlags())
                     return false;
 
+                if (check(path, Project.BNDFILE))
+                    return false;
+
                 log.basic("%s changed", resource);
                 result.set(true);
                 return false;
@@ -101,7 +99,7 @@ class DeltaWrapper {
         return has(f);
     }
 
-    private boolean havePropertiesChanged(Processor processor) throws Exception {
+    boolean havePropertiesChanged(Processor processor) throws Exception {
 
         if (has(processor.getPropertiesFile()))
             return true;
@@ -130,7 +128,7 @@ class DeltaWrapper {
             return false;
 
         IResourceDelta delta = this.delta.findMember(relativePath);
-        if (delta == null)
+        if (delta == null || (delta.getFlags() & IResourceDelta.MARKERS) != 0)
             return false;
 
         if (delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.CHANGED || delta.getKind() == IResourceDelta.REMOVED)
@@ -156,5 +154,52 @@ class DeltaWrapper {
     public boolean isTestBin(IResource resource) {
         String path = resource.getProjectRelativePath().toString();
         return check(path, model.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR));
+    }
+
+    /**
+     * Check if the target JARs have gone. We look for the buildfiles and the listed jars. If anything is odd, we
+     * rebuild.
+     */
+    public boolean hasNoTarget(Project model) throws Exception {
+
+        //
+        // $/buildfiles must exists
+        //
+
+        File[] buildFiles = model.getBuildFiles(false);
+        if (buildFiles == null)
+            return true;
+
+        File file = IO.getFile(model.getTarget(), Project.BUILDFILES);
+        if (!file.isFile())
+            return true;
+
+        //
+        // buildfiles = line +
+        //
+
+        try {
+
+            String bf = IO.collect(file);
+            if (bf.isEmpty())
+                return true;
+
+            String[] split = bf.split("\r?\n");
+            for (String line : split) {
+
+                line = line.trim();
+                if (line.startsWith("#"))
+                    continue;
+
+                File f = IO.getFile(model.getTarget(), line);
+                if (!f.isFile())
+                    return true;
+            }
+
+        } catch (Exception e) {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -57,8 +57,12 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
     }
 
     public static final IResource getDefaultResource(IProject project) {
+        return getDefaultResource(project, Project.BNDFILE);
+    }
+
+    public static final IResource getDefaultResource(IProject project, String name) {
         IResource resource;
-        IFile bndFile = project.getFile(Project.BNDFILE);
+        IFile bndFile = project.getFile(name);
         if (bndFile == null || !bndFile.exists())
             resource = project;
         else

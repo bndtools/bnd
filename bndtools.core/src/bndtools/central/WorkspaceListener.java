@@ -26,6 +26,7 @@ public final class WorkspaceListener extends BndListener {
             final RefreshFileJob job = new RefreshFileJob(file, true);
             if (job.needsToSchedule()) {
                 Central.onWorkspaceInit(new Function<Workspace,Void>() {
+                    @Override
                     public Void run(final Workspace ws) {
                         job.schedule();
                         return null;
@@ -39,15 +40,15 @@ public final class WorkspaceListener extends BndListener {
 
     @Override
     public void signal(Reporter reporter) {
-        errorProcessor.clear();
-        errorProcessor.getInfo(workspace);
-
-        for (String warning : errorProcessor.getWarnings()) {
-            logger.logWarning(warning, null);
-        }
-        for (String error : errorProcessor.getErrors()) {
-            logger.logError(error, null);
-        }
+        //        errorProcessor.clear();
+        //        errorProcessor.getInfo(workspace);
+        //
+        //        for (String warning : errorProcessor.getWarnings()) {
+        //            logger.logWarning(warning, null);
+        //        }
+        //        for (String error : errorProcessor.getErrors()) {
+        //            logger.logError(error, null);
+        //        }
     }
 
 }
