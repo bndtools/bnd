@@ -1,0 +1,20 @@
+#
+#
+#
+-inproject: BAR, BAZ
+
+-include: bar.bnd
+
+
+-sub: sub.bnd
+
+-inprojectsep = \
+   FOO, \
+   BAR, \
+   BAZ, \
+   
+   
+-merged = PLAIN
+-merged.foo = FOO
+-merged.baz = BAZ
+-merged.bar = BAR

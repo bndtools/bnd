@@ -6,13 +6,14 @@ import java.util.regex.*;
 import junit.framework.*;
 import aQute.bnd.build.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Processor.FileLine;
 import aQute.lib.io.*;
 
 public class LocationTest extends TestCase {
 	Workspace	ws;
 
 	public void setUp() throws Exception {
-		File tmp = new File("tmp");
+		File tmp = IO.getFile("generated/tmp");
 		IO.copy(IO.getFile("testresources/ws-location"), tmp);
 		ws = new Workspace(tmp);
 
@@ -20,6 +21,52 @@ public class LocationTest extends TestCase {
 
 	public void tearDown() throws Exception {
 		IO.delete(new File("tmp"));
+	}
+
+	public void testMerged() throws Exception {
+		Project project = ws.getProject("locationtest");
+
+		FileLine fl = project.getHeader("-merged", "BAZ");
+		assertNotNull(fl);
+		assertEquals(project.getPropertiesFile().getAbsolutePath(), fl.file.getAbsolutePath());
+		assertEquals(18, fl.line);
+		assertEquals(167, fl.start);
+		assertEquals(170, fl.end);
+
+	}
+
+	public void testProjectHeaderClauses() throws Exception {
+		Project project = ws.getProject("locationtest");
+		assertNotNull(project);
+
+		FileLine fl = project.getHeader("-inprojectsep", "BAZ");
+		assertNotNull(fl);
+		assertEquals(project.getPropertiesFile().getAbsolutePath(), fl.file.getAbsolutePath());
+		assertEquals(9, fl.line);
+		assertEquals(104, fl.start);
+		assertEquals(107, fl.end);
+
+		fl = project.getHeader("-inproject", "BAZ");
+		assertNotNull(fl);
+		assertEquals(project.getPropertiesFile().getAbsolutePath(), fl.file.getAbsolutePath());
+		assertEquals(3, fl.line);
+		assertEquals(23, fl.start);
+		assertEquals(26, fl.end);
+
+	}
+
+	public void testHeaderInSub() throws Exception {
+		Project project = ws.getProject("locationtest");
+		Builder builder = project.getSubBuilders().iterator().next();
+		assertNotNull(builder);
+
+		FileLine fl = builder.getHeader("-inprojectsep", "BAZ");
+		assertNotNull(fl);
+		assertEquals(project.getPropertiesFile().getAbsolutePath(), fl.file.getAbsolutePath());
+		assertEquals(9, fl.line);
+		assertEquals(104, fl.start);
+		assertEquals(107, fl.end);
+
 	}
 
 	public void testBasic() throws Exception {
@@ -45,6 +92,7 @@ public class LocationTest extends TestCase {
 		assertTrue( find( project, "workspace", "cnf/build.bnd", 6));
 		assertTrue( find( project.getWorkspace(), "workspace", "cnf/build.bnd", 6));
 	}
+
 
 	private boolean find(Processor p, String what, String file, int line) throws Exception {
 		Pattern pattern = Pattern.compile("^"+what, Pattern.MULTILINE);

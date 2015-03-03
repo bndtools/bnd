@@ -378,7 +378,7 @@ public class Project extends Processor {
 			Collection<Container> bootclasspath, boolean noproject, String name) {
 		for (Container cpe : entries) {
 			if (cpe.getError() != null)
-				error(cpe.getError());
+				error(cpe.getError()).header(name).context(cpe.getBundleSymbolicName());
 			else {
 				if (cpe.getType() == Container.TYPE.PROJECT) {
 					projects.add(cpe.getProject());
@@ -392,7 +392,7 @@ public class Project extends Processor {
 						// -runbundles list
 						//
 						error("%s is specified with version=project on %s. This version uses the project's output directory, which is not allowed since it must be an actual JAR file for this list.",
-								cpe.getBundleSymbolicName(), name);
+								cpe.getBundleSymbolicName(), name).header(name).context(cpe.getBundleSymbolicName());
 					}
 				}
 				if (bootclasspath != null
@@ -516,7 +516,7 @@ public class Project extends Processor {
 								warning("Multiple bundles with the same final URL: %s, dropped duplicate", cc);
 						} else {
 							if (cc.getError() != null) {
-								error("Cannot find %s", cc);
+								error("Cannot find %s", cc).context(bsn).header(source);
 							}
 							result.add(cc);
 						}
@@ -526,7 +526,7 @@ public class Project extends Processor {
 					Container x = new Container(this, bsn, versionRange, Container.TYPE.ERROR, null, bsn + ";version="
 							+ versionRange + " not found", attrs, null);
 					result.add(x);
-					error("Can not find URL for bsn " + bsn);
+					error("Can not find URL for bsn " + bsn).context(bsn).header(source);
 				}
 			}
 		}
@@ -1022,16 +1022,6 @@ public class Project extends Processor {
 		//
 		// If we get this far we ran into an error somewhere
 		//
-		// Check if we try to find a BSN that is in the workspace but marked
-		// latest
-		//
-
-		if (!range.equals(VERSION_ATTR_LATEST)) {
-			return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range
-					+ " Not found because latest was not specified."
-					+ " It is, however, present in the workspace. Add '" + bsn
-					+ ";version=(latest|snapshot)' to see the bundle in the workspace.", null, null);
-		}
 
 		return new Container(this, bsn, range, Container.TYPE.ERROR, null, bsn + ";version=" + range + " Not found in "
 				+ plugins, null, null);
@@ -2417,7 +2407,7 @@ public class Project extends Processor {
 		Collection< ? extends Builder> subBuilders = getSubBuilders();
 
 		if (subBuilders.size() != 1) {
-			error("Project has multiple bnd files, please select one of the bnd files");
+			error("Project has multiple bnd files, please select one of the bnd files").header(EXPORT).context(profile);
 			return null;
 		}
 
