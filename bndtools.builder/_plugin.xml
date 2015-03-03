@@ -56,6 +56,7 @@
 		<persistent value="true"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
 		<super type="org.eclipse.core.resources.textmarker"/>
+		<super type="org.eclipse.jdt.core.buildpath_problem"/>
 	</extension>
 
 	<extension
@@ -66,17 +67,6 @@
 		<persistent value="true"/>
 		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
-	</extension>
-
-	<extension
-		point="org.eclipse.core.resources.markers"
-		id="bnd_classpath_problem"
-		name="Bnd Classpath Resolution Problem"
-		>
-		<super type="org.eclipse.jdt.core.buildpath_problem">
-		</super>
-		<persistent value="false">
-		</persistent>
 	</extension>
 
 	<extension point="org.eclipse.jdt.core.classpathContainerInitializer">

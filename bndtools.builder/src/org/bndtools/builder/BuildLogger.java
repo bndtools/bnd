@@ -2,8 +2,6 @@ package org.bndtools.builder;
 
 import java.util.Formatter;
 
-import aQute.bnd.build.Project;
-
 public class BuildLogger {
     public static final int LOG_FULL = 2;
     public static final int LOG_BASIC = 1;
@@ -59,16 +57,16 @@ public class BuildLogger {
         sb.append('\n');
     }
 
-    public String toString(Project model, int files) {
+    public String toString(String name, int files) {
         long end = System.currentTimeMillis();
         full("Duration %.2f sec", (end - start) / 1000f);
 
         StringBuilder top = new StringBuilder();
         Formatter topper = new Formatter(top);
         if (files > 0)
-            topper.format("BUILD %s %d file%s built", model.getName(), files, files > 1 ? "s were" : " was");
+            topper.format("BUILD %s %d file%s built", name, files, files > 1 ? "s were" : " was");
         else
-            topper.format("BUILD %s no build", model.getName());
+            topper.format("BUILD %s no build", name);
         topper.close();
 
         return top.append('\n').append(sb).toString();

@@ -210,7 +210,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             if (prefs.getBuildLogging() == BuildLogger.LOG_FULL) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("ClasspathEntries ").append(project.getName());
-                sb.append("ClasspathEntries ").append(model);
                 for (IClasspathEntry cpe : entries) {
                     sb.append("\n--- ").append(cpe);
                 }
@@ -255,11 +254,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         private void calculateContainersClasspath(String header, Iterator<Container> containers, List<IClasspathEntry> classpath, List<File> filesToRefresh) {
             while (containers.hasNext()) {
                 Container c = containers.next();
-                if (c.getError() != null) {
-                    error(c, "%s-%s: %s", c.getBundleSymbolicName(), c.getVersion(), c.getError());
-                    continue;
-                }
-
                 File file = c.getFile();
                 assert file.isAbsolute();
 
