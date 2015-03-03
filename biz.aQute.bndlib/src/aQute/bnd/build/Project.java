@@ -67,10 +67,12 @@ public class Project extends Processor {
 	final Packages				importedPackages		= new Packages();
 	final Packages				containedPackages		= new Packages();
 	final PackageInfo			packageInfo				= new PackageInfo(this);
+	final Deployer				deployer;
 
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
 		this.workspace = workspace;
+		this.deployer = new Deployer(this);
 		setFileMustExist(false);
 		setProperties(buildFile);
 		assert workspace != null;
@@ -1132,9 +1134,11 @@ public class Project extends Processor {
 	}
 
 	public void deploy(String name, File file) throws Exception {
+		deployer.deploy(name, file);
 	}
 
 	public void deploy(File file) throws Exception {
+		deployer.deploy(file);
 	}
 
 	/**
