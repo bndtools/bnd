@@ -69,7 +69,7 @@ import bndtools.preferences.CompileErrorAction;
  *  touch bar.bnd -> see if manifest is updated in JAR (Jar viewer does not refresh very well, so reopen)
  *  touch build.bnd -> verify rebuild
  *  touch bnd.bnd in test -> verify rebuild
- * 
+ *
  *  create project test.2, add -buildpath: test
  * </pre>
  */
@@ -317,16 +317,18 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     private boolean hasUpstreamChanges(IProject[] upstreams) throws Exception {
 
         for (IProject upstream : upstreams) {
+            if (!upstream.exists())
+                continue;
 
             Project up = Central.getProject(upstream);
-            if (up != null) {
+            if (up == null)
+                continue;
 
-                IResourceDelta delta = getDelta(upstream);
-                DeltaWrapper dw = new DeltaWrapper(up, delta, buildLog);
-                if (dw.hasBuildfile()) {
-                    buildLog.full("Upstream project %s changed", up);
-                    return true;
-                }
+            IResourceDelta delta = getDelta(upstream);
+            DeltaWrapper dw = new DeltaWrapper(up, delta, buildLog);
+            if (dw.hasBuildfile()) {
+                buildLog.full("Upstream project %s changed", up);
+                return true;
             }
         }
 
