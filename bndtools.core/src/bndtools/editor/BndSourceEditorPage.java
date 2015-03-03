@@ -48,6 +48,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
     private int index;
 
     private final PropertyChangeListener propChangeListener = new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             refresh();
             lastLoaded = getDocument().get();
@@ -71,26 +72,32 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
         icon.dispose();
     }
 
+    @Override
     public boolean canLeaveThePage() {
         return true;
     }
 
+    @Override
     public FormEditor getEditor() {
         return formEditor;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public void setIndex(int index) {
         this.index = index;
     }
 
+    @Override
     public int getIndex() {
         return index;
     }
 
+    @Override
     public IManagedForm getManagedForm() {
         return null;
     }
@@ -103,10 +110,12 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
         control = children[children.length - 1];
     }
 
+    @Override
     public Control getPartControl() {
         return control;
     }
 
+    @Override
     public void initialize(FormEditor formEditor) {}
 
     @Override
@@ -117,14 +126,17 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
         setSourceViewerConfiguration(new BndSourceViewerConfiguration(JavaUI.getColorManager()));
     }
 
+    @Override
     public boolean isActive() {
         return this.equals(formEditor.getActivePageInstance());
     }
 
+    @Override
     public boolean isEditor() {
         return true;
     }
 
+    @Override
     public boolean selectReveal(Object object) {
         if (object instanceof IMarker) {
             IDE.gotoMarker(this, (IMarker) object);
@@ -133,6 +145,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
         return false;
     }
 
+    @Override
     public void setActive(boolean active) {
         if (!active) {
             commit(false);

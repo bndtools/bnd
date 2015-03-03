@@ -172,13 +172,13 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
                 if (setBuildOrder(dependsOn)) {
                     buildLog.basic("Build order changed, postponing");
-                    return postpone(dependsOn, delta.hasProjectChanged());
+                    return postpone(dependsOn);
                 }
 
                 if (checkClasspathContainerUpdate(myProject)) {
                     // likely causes a recompile
                     buildLog.basic("classpaths were changed, postponing");
-                    return postpone(dependsOn, delta.hasProjectChanged());
+                    return postpone(dependsOn);
                 }
 
                 force = true;
@@ -196,7 +196,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 force = true;
             }
 
-            if (delta.hasNoTarget(model)) {
+            if (!force && delta.hasNoTarget(model)) {
                 buildLog.basic("project has no target files");
                 force = true;
             }
@@ -217,7 +217,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 return report(dependsOn, markers);
             }
 
-            if (!setupChanged && markers.hasBlockingErrors(delta)) {
+            if (markers.hasBlockingErrors(delta)) {
                 if (actionOnCompileError != CompileErrorAction.build) {
                     if (actionOnCompileError == CompileErrorAction.delete) {
                         buildLog.basic("Blocking errors, delete build files, quit");
@@ -265,8 +265,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         return dependsOn;
     }
 
-    private IProject[] postpone(IProject[] dependsOn, boolean remember) {
-        //        if (remember)
+    private IProject[] postpone(IProject[] dependsOn) {
         rememberLastBuiltState();
         return dependsOn;
     }

@@ -25,7 +25,6 @@ import bndtools.central.Central;
 public class CnfWatcher implements IResourceChangeListener {
     private static final ILogger logger = Logger.getLogger(CnfWatcher.class);
     private static final Path CNFPATH = new Path("/cnf");
-    volatile int revision = 1000;
 
     static CnfWatcher install() {
         CnfWatcher cnfw = new CnfWatcher();
@@ -82,9 +81,4 @@ public class CnfWatcher implements IResourceChangeListener {
             logger.logError("Detecting changes in cnf failed, ignoring", e);
         }
     }
-
-    int getRevision() {
-        return revision;
-    }
-
 }
