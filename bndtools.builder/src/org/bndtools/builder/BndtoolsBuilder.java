@@ -69,7 +69,7 @@ import bndtools.preferences.CompileErrorAction;
  *  touch bar.bnd -> see if manifest is updated in JAR (Jar viewer does not refresh very well, so reopen)
  *  touch build.bnd -> verify rebuild
  *  touch bnd.bnd in test -> verify rebuild
- *
+ * 
  *  create project test.2, add -buildpath: test
  * </pre>
  */
@@ -110,9 +110,9 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         BuildListeners listeners = new BuildListeners();
         int files = -1;
 
+        IProject myProject = getProject();
         try {
 
-            IProject myProject = getProject();
             MarkerSupport markers = new MarkerSupport(myProject);
 
             boolean force = kind == FULL_BUILD || kind == CLEAN_BUILD;
@@ -273,7 +273,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
         } finally {
             if (!buildLog.isEmpty())
-                logger.logInfo(buildLog.toString(model, files), null);
+                logger.logInfo(buildLog.toString(myProject.getName(), files), null);
             listeners.release();
         }
     }
