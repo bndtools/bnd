@@ -85,7 +85,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
     private Project model;
     private BuildLogger buildLog;
-    private IProject dependsOn[];
+    private IProject[] dependsOn;
     private boolean postponed;
 
     /**
@@ -105,14 +105,13 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         BndPreferences prefs = new BndPreferences();
         buildLog = new BuildLogger(prefs.getBuildLogging());
 
-        CompileErrorAction actionOnCompileError = getActionOnCompileError();
+        final CompileErrorAction actionOnCompileError = getActionOnCompileError();
 
-        BuildListeners listeners = new BuildListeners();
+        final BuildListeners listeners = new BuildListeners();
         int files = -1;
 
-        IProject myProject = getProject();
+        final IProject myProject = getProject();
         try {
-
             MarkerSupport markers = new MarkerSupport(myProject);
 
             boolean force = kind == FULL_BUILD || kind == CLEAN_BUILD;
@@ -122,20 +121,18 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             //
 
             if (dependsOn == null) {
-                dependsOn = getProject().getDescription().getDynamicReferences();
+                dependsOn = myProject.getDescription().getDynamicReferences();
             }
 
             if (model == null) {
                 try {
                     model = Central.getProject(myProject.getLocation().toFile());
-                    if (model == null)
-                        return dependsOn;
-
                 } catch (Exception e) {
                     markers.deleteMarkers("*");
                     markers.createMarker(null, IMarker.SEVERITY_ERROR, e.getMessage(), BndtoolsConstants.MARKER_BND_PROBLEM);
-                    return dependsOn;
                 }
+                if (model == null)
+                    return noreport();
             }
 
             model.clear();
@@ -161,18 +158,9 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             // If we already know we are going to build, we
             // must handle the path errors. We make sure
             // prepare() is called so we get any build errors.
-            // Since we do not want to do this every time in a auto
-            // build we store these errors in a field and remove them.
             //
 
             if (force || setupChanged) {
-
-                //
-                // Check if the last action postponed
-                // and this is less than a second ago. In that
-                // case we assume we already refreshed everything
-                //
-
                 model.setChanged();
                 model.setDelayRunDependencies(true);
                 model.prepare();
@@ -182,15 +170,15 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
                 dependsOn = calculateDependsOn(model);
 
-                if (setBuildOrder(dependsOn)) {
+                if (setBuildOrder(monitor)) {
                     buildLog.basic("Build order changed, postponing");
-                    return postpone(dependsOn);
+                    return postpone();
                 }
 
                 if (checkClasspathContainerUpdate(myProject)) {
                     // likely causes a recompile
                     buildLog.basic("classpaths were changed, postponing");
-                    return postpone(dependsOn);
+                    return postpone();
                 }
 
                 force = true;
@@ -209,7 +197,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 force = true;
             }
 
-            if (!force && hasUpstreamChanges(dependsOn)) {
+            if (!force && hasUpstreamChanges()) {
                 buildLog.basic("project had upstream changes");
                 force = true;
             }
@@ -221,18 +209,17 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
             //
             // If we're not forced to build at this point
-            // then we have an incremental builf and
-            // no reason to rebuild. We then just report
-            // any errors so far.
+            // then we have an incremental build and
+            // no reason to rebuild.
             //
 
             if (!force)
-                return dependsOn;
+                return noreport();
 
             if (model.isNoBundles()) {
                 buildLog.basic("-nobundles was set, so no build");
                 files = 0;
-                return report(dependsOn, markers);
+                return report(markers);
             }
 
             if (markers.hasBlockingErrors(delta)) {
@@ -240,15 +227,15 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                     if (actionOnCompileError == CompileErrorAction.delete) {
                         buildLog.basic("Blocking errors, delete build files, quit");
                         deleteBuildFiles(model);
-                        model.error("Will not build project %s until the compilation and/or path problems are fixed but deleted the output files.", model.getName());
+                        model.error("Will not build project %s until the compilation and/or path problems are fixed, output files are deleted.", myProject.getName());
                     } else {
-                        buildLog.basic("Blocking errors, quit leaving old files there");
-                        model.error("Will not build project %s until the compilation and/or path problems are fixed, output files are kept", model.getName());
+                        buildLog.basic("Blocking errors, leave old build files, quit");
+                        model.error("Will not build project %s until the compilation and/or path problems are fixed, output files are kept.", myProject.getName());
                     }
-                    return report(dependsOn, markers);
+                    return report(markers);
                 }
                 buildLog.basic("Blocking errors, continuing anyway");
-                model.warning("Project %s has blocking errors but requested to continue anyway", model.getName());
+                model.warning("Project %s has blocking errors but requested to continue anyway", myProject.getName());
             }
 
             deleteBuildFiles(model);
@@ -267,7 +254,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 model.getWorkspace().refresh(); // this is for bnd plugins built in cnf
             }
 
-            return report(dependsOn, markers);
+            return report(markers);
 
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
@@ -278,12 +265,16 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private IProject[] report(IProject[] dependsOn, MarkerSupport markers) throws Exception {
+    private IProject[] noreport() {
+        return dependsOn;
+    }
+
+    private IProject[] report(MarkerSupport markers) throws Exception {
         markers.setMarkers(model, BndtoolsConstants.MARKER_BND_PROBLEM);
         return dependsOn;
     }
 
-    private IProject[] postpone(IProject[] dependsOn) {
+    private IProject[] postpone() {
         postponed = true;
         rememberLastBuiltState();
         return dependsOn;
@@ -314,9 +305,9 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
      * Check if any of the projects of which we depend has changes.
      * We use the generated/buildfiles as the marker.
      */
-    private boolean hasUpstreamChanges(IProject[] upstreams) throws Exception {
+    private boolean hasUpstreamChanges() throws Exception {
 
-        for (IProject upstream : upstreams) {
+        for (IProject upstream : dependsOn) {
             if (!upstream.exists())
                 continue;
 
@@ -365,16 +356,15 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     /*
      * Set the project's dependencies to influence the build order for Eclipse.
      */
-    private boolean setBuildOrder(IProject[] newer) throws Exception {
+    private boolean setBuildOrder(IProgressMonitor monitor) throws Exception {
         try {
             IProjectDescription projectDescription = getProject().getDescription();
             IProject[] older = projectDescription.getDynamicReferences();
-            if (Arrays.equals(newer, older))
+            if (Arrays.equals(dependsOn, older))
                 return false;
-            projectDescription.setDynamicReferences(newer);
-            getProject().setDescription(projectDescription, null);
-            buildLog.full("Changed the build order to %s", Arrays.toString(newer));
-
+            projectDescription.setDynamicReferences(dependsOn);
+            getProject().setDescription(projectDescription, monitor);
+            buildLog.full("Changed the build order to %s", Arrays.toString(dependsOn));
         } catch (Exception e) {
             logger.logError("Failed to set build order", e);
         }
@@ -414,7 +404,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 result.add(targetProj);
         }
 
-        buildLog.full("Calculated depends-on list: %s", result);
+        buildLog.full("Calculated dependsOn list: %s", result);
         return result.toArray(new IProject[result.size()]);
     }
 
