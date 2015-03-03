@@ -11,16 +11,17 @@ import aQute.lib.io.*;
 
 public class LocationTest extends TestCase {
 	Workspace	ws;
+	private File	tmp;
 
 	public void setUp() throws Exception {
-		File tmp = IO.getFile("generated/tmp");
+		tmp = IO.getFile("generated/tmp");
 		IO.copy(IO.getFile("testresources/ws-location"), tmp);
 		ws = new Workspace(tmp);
 
 	}
 
 	public void tearDown() throws Exception {
-		IO.delete(new File("tmp"));
+		IO.delete(tmp);
 	}
 
 	public void testMerged() throws Exception {
