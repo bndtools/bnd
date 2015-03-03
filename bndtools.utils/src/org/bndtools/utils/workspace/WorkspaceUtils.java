@@ -2,10 +2,10 @@ package org.bndtools.utils.workspace;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 
 public class WorkspaceUtils {
 
@@ -26,8 +26,8 @@ public class WorkspaceUtils {
         return null;
     }
 
-    public static IProject findCnfProject() throws Exception {
-        return findOpenProject(ResourcesPlugin.getWorkspace().getRoot(), "cnf");
+    public static IProject findCnfProject(IWorkspaceRoot wsroot, Workspace ws) throws Exception {
+        return findOpenProject(wsroot, ws.getBuildDir().getName());
     }
 
     private static boolean checkProject(IProject project, String name) {

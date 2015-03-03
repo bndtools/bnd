@@ -401,7 +401,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
         List<IProject> result = new ArrayList<IProject>(dependsOn.size() + 1);
 
-        IProject cnfProject = WorkspaceUtils.findCnfProject();
+        IProject cnfProject = WorkspaceUtils.findCnfProject(wsroot, model.getWorkspace());
         if (cnfProject != null) {
             result.add(cnfProject);
         }
