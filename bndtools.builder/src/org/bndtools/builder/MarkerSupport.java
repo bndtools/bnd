@@ -99,31 +99,25 @@ class MarkerSupport {
             String type = location.details != null ? location.details.getClass().getName() : null;
             BuildErrorDetailsHandler handler = BuildErrorDetailsHandlers.INSTANCE.findHandler(type);
 
-            if (model instanceof Project) {
-                List<MarkerData> markers = handler.generateMarkerData(project, (Project) model, location);
-                for (MarkerData markerData : markers) {
-                    IResource resource = markerData.getResource();
-                    if (resource != null) {
-                        IMarker marker = resource.createMarker(markerType);
-                        marker.setAttribute(IMarker.SEVERITY, severity);
-                        marker.setAttribute("$bndType", type);
-                        marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
-                        for (Entry<String,Object> attrib : markerData.getAttribs().entrySet())
-                            marker.setAttribute(attrib.getKey(), attrib.getValue());
-                    }
+            List<MarkerData> markers = handler.generateMarkerData(project, model, location);
+            for (MarkerData markerData : markers) {
+                IResource resource = markerData.getResource();
+                if (resource != null) {
+                    IMarker marker = resource.createMarker(markerType);
+                    marker.setAttribute(IMarker.SEVERITY, severity);
+                    marker.setAttribute("$bndType", type);
+                    marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
+                    for (Entry<String,Object> attrib : markerData.getAttribs().entrySet())
+                        marker.setAttribute(attrib.getKey(), attrib.getValue());
                 }
-                return;
             }
+            return;
         }
 
         String defaultResource = model instanceof Project ? Project.BNDFILE : model instanceof Workspace ? Workspace.BUILDFILE : "";
-
         IMarker marker = DefaultBuildErrorDetailsHandler.getDefaultResource(project, defaultResource).createMarker(markerType);
         marker.setAttribute(IMarker.SEVERITY, severity);
         marker.setAttribute(IMarker.MESSAGE, formatted);
-        marker.setAttribute(IMarker.LINE_NUMBER, location == null ? 1 : location.line);
-        marker.setAttribute(IMarker.CHAR_START, 0);
-        marker.setAttribute(IMarker.CHAR_END, 100);
     }
 
     private int iStatusSeverityToIMarkerSeverity(IStatus status) {

@@ -117,18 +117,29 @@ class DeltaWrapper {
     }
 
     private boolean has(File f) throws Exception {
+
         if (f == null)
             return false;
 
-        IPath path = Central.toPath(f);
         if (delta == null)
             return false;
+
+        IPath path = Central.toPath(f);
+
         IPath relativePath = path.makeRelativeTo(delta.getFullPath());
         if (relativePath == null)
             return false;
 
         IResourceDelta delta = this.delta.findMember(relativePath);
-        if (delta == null || (delta.getFlags() & IResourceDelta.MARKERS) != 0)
+        if (delta == null)
+            return false;
+
+        //
+        // If ONLY the markers are changed we should ignore this delta
+        // or get an infinite loop
+        //
+
+        if ((delta.getFlags() == IResourceDelta.MARKERS))
             return false;
 
         if (delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.CHANGED || delta.getKind() == IResourceDelta.REMOVED)

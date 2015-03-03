@@ -35,6 +35,8 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Processor;
+import aQute.service.reporter.Report.Location;
 
 public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDetailsHandler {
 
@@ -204,25 +206,26 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                 for (int i = 0; i < extraDimensions; i++) {
                     signatureBuilder.append('[');
                 }
-                if (typeToAdd == null) {
+                Type rovingType = typeToAdd;
+                if (rovingType == null) {
                     //A special return type for constructors, nice one Eclipse...
                     signatureBuilder.append("V");
                 } else {
-                    if (typeToAdd.isArrayType()) {
-                        ArrayType type = (ArrayType) typeToAdd;
+                    if (rovingType.isArrayType()) {
+                        ArrayType type = (ArrayType) rovingType;
                         int depth = type.getDimensions();
                         for (int i = 0; i < depth; i++) {
                             signatureBuilder.append('[');
                         }
                         //We still need to add the array component type, which might be primitive or a reference
-                        typeToAdd = type.getElementType();
+                        rovingType = type.getElementType();
                     }
 
-                    if (typeToAdd.isPrimitiveType()) {
-                        PrimitiveType type = (PrimitiveType) typeToAdd;
+                    if (rovingType.isPrimitiveType()) {
+                        PrimitiveType type = (PrimitiveType) rovingType;
                         signatureBuilder.append(PRIMITIVES_TO_SIGNATURES.get(type.getPrimitiveTypeCode()));
-                    } else if (typeToAdd.isSimpleType()) {
-                        SimpleType type = (SimpleType) typeToAdd;
+                    } else if (rovingType.isSimpleType()) {
+                        SimpleType type = (SimpleType) rovingType;
                         String name;
                         if (type.getName().isQualifiedName()) {
                             name = type.getName().getFullyQualifiedName();
@@ -231,12 +234,12 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                         }
                         name = name.replace('.', '/');
                         signatureBuilder.append("L").append(name).append(";");
-                    } else if (typeToAdd.isQualifiedType()) {
-                        QualifiedType type = (QualifiedType) typeToAdd;
+                    } else if (rovingType.isQualifiedType()) {
+                        QualifiedType type = (QualifiedType) rovingType;
                         String name = type.getQualifier().toString().replace('.', '/') + '/' + type.getName().getFullyQualifiedName().replace('.', '/');
                         signatureBuilder.append("L").append(name).append(";");
                     } else {
-                        throw new IllegalArgumentException("We hit an unknown type " + typeToAdd);
+                        throw new IllegalArgumentException("We hit an unknown type " + rovingType);
                     }
                 }
             }
@@ -289,6 +292,23 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
 
     @Override
     public List<ICompletionProposal> getProposals(IMarker marker) {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Bridge method. The actual parameter should have been Processor since we can have Builder, Workspace, Project.
+     * etc. If it is a project, we defer to the old method. Otherwise we allow others to override this method.
+     */
+    @Override
+    public List<MarkerData> generateMarkerData(IProject project, Processor model, Location location) throws Exception {
+        if (model instanceof Project)
+            return generateMarkerData(project, (Project) model, location);
+
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<MarkerData> generateMarkerData(IProject project, Project model, Location location) throws Exception {
         return Collections.emptyList();
     }
 

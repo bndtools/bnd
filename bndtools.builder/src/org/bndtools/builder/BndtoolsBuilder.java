@@ -85,8 +85,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
     private Project model;
     private BuildLogger buildLog;
-    private List<String> pathErrors;
     private IProject dependsOn[];
+    private boolean postponed;
 
     /**
      * Called from Eclipse when it thinks this project should be build. We're proposed to figure out if we've changed
@@ -104,8 +104,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
         BndPreferences prefs = new BndPreferences();
         buildLog = new BuildLogger(prefs.getBuildLogging());
-        IProject myProject = getProject();
-        MarkerSupport markers = new MarkerSupport(myProject);
 
         CompileErrorAction actionOnCompileError = getActionOnCompileError();
 
@@ -114,16 +112,28 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
         try {
 
-            try {
-                model = Central.getProject(myProject.getLocation().toFile());
-            } catch (Exception e) {
-                markers.deleteMarkers("*");
-                markers.createMarker(null, IMarker.SEVERITY_ERROR, e.getMessage(), BndtoolsConstants.MARKER_BND_PROBLEM);
-                pathErrors = null;
+            IProject myProject = getProject();
+            MarkerSupport markers = new MarkerSupport(myProject);
+
+            boolean force = kind == FULL_BUILD || kind == CLEAN_BUILD;
+
+            //
+            // First time after a restart
+            //
+
+            if (dependsOn == null) {
+                dependsOn = getProject().getDescription().getDynamicReferences();
             }
 
-            if (model == null)
-                return null;
+            if (model == null) {
+                try {
+                    model = Central.getProject(myProject.getLocation().toFile());
+                } catch (Exception e) {
+                    markers.deleteMarkers("*");
+                    markers.createMarker(null, IMarker.SEVERITY_ERROR, e.getMessage(), BndtoolsConstants.MARKER_BND_PROBLEM);
+                    return null;
+                }
+            }
 
             model.clear();
 
@@ -131,18 +141,17 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
             DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
 
-            boolean force = kind == FULL_BUILD || kind == CLEAN_BUILD || pathErrors == null || dependsOn == null;
             boolean setupChanged = false;
 
-            if (delta.havePropertiesChanged(model)) {
-                buildLog.basic("project was dirty from changed bnd files");
+            if (!postponed && delta.havePropertiesChanged(model)) {
+                buildLog.basic("project was dirty from changed bnd files postponed = " + postponed);
                 model.forceRefresh();
                 setupChanged = true;
             }
 
             if (dirty.remove(model)) {
-                buildLog.basic("project was dirty from a workspace refresh");
-                setupChanged = true;
+                buildLog.basic("project was dirty from a workspace refresh postponed = " + postponed);
+                setupChanged = true && !postponed;
             }
 
             //
@@ -155,16 +164,16 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
             if (force || setupChanged) {
 
+                //
+                // Check if the last action postponed
+                // and this is less than a second ago. In that
+                // case we assume we already refreshed everything
+                //
+
                 model.setChanged();
                 model.setDelayRunDependencies(true);
                 model.prepare();
 
-                if (pathErrors == null)
-                    pathErrors = new ArrayList<String>();
-                else
-                    pathErrors.clear();
-
-                pathErrors.addAll(model.getErrors());
                 markers.setMarkers(model, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
                 model.clear();
 
@@ -183,6 +192,12 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
                 force = true;
             }
+
+            //
+            // We did not postpone, so reset the flag
+            //
+            force |= postponed;
+            postponed = false;
 
             markers.validate(model);
 
@@ -266,6 +281,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     }
 
     private IProject[] postpone(IProject[] dependsOn) {
+        postponed = true;
         rememberLastBuiltState();
         return dependsOn;
     }

@@ -584,4 +584,20 @@ public class Central implements IStartupParticipant {
     public static Project getProject(IProject p) throws Exception {
         return getProject(p.getLocation().toFile());
     }
+
+    /**
+     * Return the IResource associated with a file
+     * 
+     * @param file
+     * @return
+     */
+
+    public static IResource toResource(File file) {
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        IFile[] ifiles = root.findFilesForLocationURI(file.toURI());
+        if (ifiles == null || ifiles.length == 0)
+            return null;
+
+        return ifiles[0];
+    }
 }
