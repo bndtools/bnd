@@ -362,4 +362,62 @@ public class BaselineTest extends TestCase {
 		assertEquals("dummy.api", info.packageName);
 		assertEquals("2.0.0", info.suggestedVersion.toString());
 	}
+
+	public void testBaselineProcessor() throws Exception {
+		Jar v1_2_0_a = mock(Jar.class);
+		when(v1_2_0_a.getVersion()).thenReturn("1.2.0.b");
+		when(v1_2_0_a.getBsn()).thenReturn("p3");
+
+		BaselineProcessor processor = new BaselineProcessor();
+		processor.setBundleSymbolicName("p3");
+		RepositoryPlugin repo = mock(RepositoryPlugin.class);
+		processor.addBasicPlugin(repo);
+		@SuppressWarnings("unchecked")
+		Map<String,String> map = any(Map.class);
+		when(repo.get(anyString(), any(Version.class), map)).thenReturn(
+				IO.getFile("testresources/ws/cnf/releaserepo/p3/p3-1.2.0.jar"));
+		System.out.println(repo.get("p3", new Version("1.2.0.b"), new Attrs()));
+
+		when(repo.canWrite()).thenReturn(true);
+		when(repo.getName()).thenReturn("Baseline");
+		when(repo.versions("p3")).thenReturn(
+				new SortedList<Version>(new Version("1.1.0.a"), new Version("1.1.0.b"), new Version("1.2.0.a"),
+						new Version("1.2.0.b")));
+
+		processor.setBundleVersion("1.3.0");
+		processor.setProperty(Constants.BASELINE, "*");
+		processor.setProperty(Constants.BASELINEREPO, "Baseline");
+
+		// Nothing specified
+		Jar jar = processor.getBaselineJar();
+		assertEquals("1.2.0", new Version(jar.getVersion()).getWithoutQualifier().toString());
+
+		if (!processor.check())
+			fail();
+		{
+			// check for error when repository contains later versions
+			processor.setBundleVersion("1.1.3");
+			processor.setTrace(true);
+			processor.setProperty(Constants.BASELINE, "*");
+			processor.setProperty(Constants.BASELINEREPO, "Baseline");
+			jar = processor.getBaselineJar();
+			assertNull(jar);
+
+			if (!processor.check("The baseline version 1.2.0.b is higher than the current version 1.1.3 for p3"))
+				fail();
+		}
+		{
+			// check for no error when repository has the same version
+			processor.setBundleVersion("1.2.0.b");
+			processor.setTrace(true);
+			processor.setProperty(Constants.BASELINE, "*");
+			processor.setProperty(Constants.BASELINEREPO, "Baseline");
+			jar = processor.getBaselineJar();
+			assertNotNull(jar);
+
+			if (!processor.check())
+				fail();
+
+		}
+	}
 }
