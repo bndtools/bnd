@@ -64,9 +64,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
-		final public File				file;
-		final public int				line;
-		final public int				length;
+		public File						file;
+		public int						line;
+		public int						length;
+		public int						start;
+		public int						end;
+
+		public FileLine() {
+
+		}
 
 		public FileLine(File file, int line, int length) {
 			this.file = file;
@@ -2349,8 +2355,23 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				+ Pattern.CASE_INSENSITIVE));
 	}
 
+	public static Pattern toFullHeaderPattern(String header) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("^\\s*").append(Pattern.quote(header)).append("(\\.[^\\s:=]*)?\\s*[\\s|:|=]\\s*");
+		sb.append("[^\\\\\n\r]*(\\\\\n[^\\\\\n\r]*)*");
+		return Pattern.compile(sb.toString(), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE);
+	}
+
 	public FileLine getHeader(Pattern header) throws Exception {
-		FileLine fl = getHeader0(header);
+		return getHeader(header, null);
+	}
+
+	public FileLine getHeader(String header, String clause) throws Exception {
+		return getHeader(toFullHeaderPattern(header), clause == null ? null : Pattern.compile(Pattern.quote(clause)));
+	}
+
+	public FileLine getHeader(Pattern header, Pattern clause) throws Exception {
+		FileLine fl = getHeader0(header, clause);
 		if (fl != null)
 			return fl;
 
@@ -2365,13 +2386,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return new FileLine(rover.getPropertiesFile(), 0, 0);
 	}
 
-	private FileLine getHeader0(Pattern header) throws Exception {
+	private FileLine getHeader0(Pattern header, Pattern clause) throws Exception {
 		FileLine fl;
 
 		File f = getPropertiesFile();
 		if (f != null) {
 			// Find in "our" local file
-			fl = findHeader(f, header);
+			fl = findHeader(f, header, clause);
 			if (fl != null)
 				return fl;
 
@@ -2393,7 +2414,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 		// Ok, not on this level ...
 		if (getParent() != null) {
-			fl = getParent().getHeader(header);
+			fl = getParent().getHeader(header, clause);
 			if (fl != null)
 				return fl;
 		}
@@ -2415,12 +2436,40 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static FileLine findHeader(File f, Pattern header) throws IOException {
+		return findHeader(f, header, null);
+	}
+
+	public static FileLine findHeader(File f, Pattern header, Pattern clause) throws IOException {
 		String s = IO.collect(f);
 		Matcher matcher = header.matcher(s);
-		if (!matcher.find())
-			return null;
+		while (matcher.find()) {
 
-		return new FileLine(f, getLine(s, matcher.start(0)), matcher.group().length());
+			FileLine fl = new FileLine();
+			fl.file = f;
+			fl.start = matcher.start();
+			fl.end = matcher.end();
+			fl.length = fl.end - fl.start;
+			fl.line = getLine(s, fl.start);
+
+			if (clause != null) {
+
+				Matcher mclause = clause.matcher(s);
+				mclause.region(fl.start, fl.end);
+
+				if (mclause.find()) {
+					fl.start = mclause.start();
+					fl.end = mclause.end();
+				} else
+					//
+					// If no clause matches, maybe
+					// we have merged headers
+					//
+					continue;
+			}
+
+			return fl;
+		}
+		return null;
 	}
 
 	public static int getLine(String s, int index) {
