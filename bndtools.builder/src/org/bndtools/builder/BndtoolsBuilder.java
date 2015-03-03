@@ -69,7 +69,7 @@ import bndtools.preferences.CompileErrorAction;
  *  touch bar.bnd -> see if manifest is updated in JAR (Jar viewer does not refresh very well, so reopen)
  *  touch build.bnd -> verify rebuild
  *  touch bnd.bnd in test -> verify rebuild
- *
+ * 
  *  create project test.2, add -buildpath: test
  * </pre>
  */
@@ -128,10 +128,13 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             if (model == null) {
                 try {
                     model = Central.getProject(myProject.getLocation().toFile());
+                    if (model == null)
+                        return dependsOn;
+
                 } catch (Exception e) {
                     markers.deleteMarkers("*");
                     markers.createMarker(null, IMarker.SEVERITY_ERROR, e.getMessage(), BndtoolsConstants.MARKER_BND_PROBLEM);
-                    return null;
+                    return dependsOn;
                 }
             }
 
