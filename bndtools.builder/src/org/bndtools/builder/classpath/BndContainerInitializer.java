@@ -210,7 +210,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             if (prefs.getBuildLogging() == BuildLogger.LOG_FULL) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("ClasspathEntries ").append(project.getName());
-                sb.append("ClasspathEntries ").append(model);
                 for (IClasspathEntry cpe : entries) {
                     sb.append("\n--- ").append(cpe);
                 }
