@@ -12,4 +12,6 @@ public final class BndtoolsConstants {
     public static final IPath BND_CLASSPATH_ID = new Path("aQute.bnd.classpath.container");
 
     public static final String MARKER_BND_PROBLEM = "bndtools.builder.bndproblem";
+    public static final String MARKER_BND_PATH_PROBLEM = "bndtools.builder.bndpathproblem";
+    public static final String MARKER_BND_WORKSPACE_PROBLEM = "bndtools.builder.bndworkspaceproblem";
 }
