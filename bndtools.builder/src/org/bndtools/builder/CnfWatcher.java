@@ -67,6 +67,7 @@ public class CnfWatcher implements IResourceChangeListener {
                             IProject project = root.getProject(Workspace.CNFDIR);
                             if (project != null) {
                                 MarkerSupport ms = new MarkerSupport(project);
+                                ms.deleteMarkers("*");
                                 ms.setMarkers(workspace, BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM);
                             }
                             return Status.OK_STATUS;
