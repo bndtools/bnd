@@ -227,7 +227,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             //
 
             if (!force)
-                return report(dependsOn, markers);
+                return dependsOn;
 
             if (model.isNoBundles()) {
                 buildLog.basic("-nobundles was set, so no build");

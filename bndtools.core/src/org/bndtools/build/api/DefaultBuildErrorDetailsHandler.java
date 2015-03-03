@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -45,13 +43,15 @@ public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDet
         if (location.file != null)
             file = new File(location.file);
 
+        int start = -1, end = -1, line = location.line;
+
         if (location.header != null && location.line == 0) {
-            Pattern pattern = getPattern(location.header);
-            FileLine fl = model.getHeader(pattern);
+            FileLine fl = model.getHeader(location.header, location.context);
             if (fl.file.isFile()) {
                 file = fl.file;
-                location.line = fl.line;
-                location.length = fl.length;
+                line = fl.line;
+                start = fl.start;
+                end = fl.end;
             }
         }
 
@@ -61,16 +61,13 @@ public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDet
 
         Map<String,Object> attribs = new HashMap<String,Object>();
         attribs.put(IMarker.MESSAGE, location.message.trim());
-        attribs.put(IMarker.LINE_NUMBER, location.line + 1);
+        attribs.put(IMarker.LINE_NUMBER, line + 1);
+        if (end != -1 && start != -1) {
+            attribs.put(IMarker.CHAR_START, start);
+            attribs.put(IMarker.CHAR_END, end);
+        }
 
         return new MarkerData(resource, attribs, false);
-    }
-
-    private static Pattern getPattern(String header) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("^").append(Pattern.quote(header));
-        sb.append(HEADER_S);
-        return Pattern.compile(sb.toString(), Pattern.MULTILINE);
     }
 
 }
