@@ -45,6 +45,7 @@
 		>
 		<persistent value="true"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
 	</extension>
 
 	<extension
@@ -54,6 +55,7 @@
 		>
 		<persistent value="true"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
 	</extension>
 
 	<extension
@@ -62,6 +64,7 @@
 		name="Bndtools Workspace Problem Marker"
 		>
 		<persistent value="true"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
 	</extension>
 
