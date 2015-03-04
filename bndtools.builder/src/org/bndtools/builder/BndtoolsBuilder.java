@@ -200,6 +200,9 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             //
             // We did not postpone, so reset the flag
             //
+            if (postponed)
+                buildLog.full("Was postponed");
+
             force |= postponed;
             postponed = false;
 
@@ -226,8 +229,10 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             // no reason to rebuild.
             //
 
-            if (!force)
+            if (!force) {
+                buildLog.full("Auto/Incr. build, no changes detected");
                 return noreport();
+            }
 
             if (model.isNoBundles()) {
                 buildLog.basic("-nobundles was set, so no build");
@@ -272,7 +277,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
         } finally {
-            if (!buildLog.isEmpty())
+            if (buildLog.isActive())
                 logger.logInfo(buildLog.toString(myProject.getName(), files), null);
             listeners.release();
         }
@@ -389,6 +394,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         if (buildFiles != null)
             for (File f : buildFiles)
                 IO.delete(f);
+        IO.delete(new File(model.getTarget(), Project.BUILDFILES));
     }
 
     private static IPath calculateTargetDirPath(Project model) throws Exception {
