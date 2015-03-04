@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.IValidator;
 import org.bndtools.api.Logger;
@@ -28,6 +27,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Processor;
 import aQute.service.reporter.Report.Location;
+import static org.bndtools.api.BndtoolsConstants.*;
 
 class MarkerSupport {
     private static final ILogger logger = Logger.getLogger(BndtoolsBuilder.class);
@@ -43,7 +43,7 @@ class MarkerSupport {
             if (containsError(dw, project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE)))
                 return true;
 
-            if (containsError(dw, project.findMarkers(BndtoolsConstants.MARKER_BND_PATH_PROBLEM, true, IResource.DEPTH_INFINITE)))
+            if (containsError(dw, project.findMarkers(MARKER_BND_PATH_PROBLEM, true, IResource.DEPTH_INFINITE)))
                 return true;
 
             return false;
@@ -61,9 +61,9 @@ class MarkerSupport {
 
     void deleteMarkers(String markerType) throws CoreException {
         if (markerType.equals("*")) {
-            deleteMarkers(BndtoolsConstants.MARKER_BND_PROBLEM);
-            deleteMarkers(BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
-            deleteMarkers(BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM);
+            deleteMarkers(MARKER_BND_PROBLEM);
+            deleteMarkers(MARKER_BND_PATH_PROBLEM);
+            deleteMarkers(MARKER_BND_WORKSPACE_PROBLEM);
         } else
             project.deleteMarkers(markerType, true, IResource.DEPTH_INFINITE);
     }
@@ -90,7 +90,7 @@ class MarkerSupport {
             return;
         }
 
-        createMarker(model, iStatusSeverityToIMarkerSeverity(status), status.getMessage(), BndtoolsConstants.MARKER_BND_PROBLEM);
+        createMarker(model, iStatusSeverityToIMarkerSeverity(status), status.getMessage(), MARKER_BND_PROBLEM);
     }
 
     void createMarker(Processor model, int severity, String formatted, String markerType) throws Exception {
@@ -106,6 +106,18 @@ class MarkerSupport {
                     IMarker marker = resource.createMarker(markerType);
                     marker.setAttribute(IMarker.SEVERITY, severity);
                     marker.setAttribute("$bndType", type);
+
+                    //
+                    // Set location information
+                    if (location.header != null)
+                        marker.setAttribute(BNDTOOLS_MARKER_HEADER_ATTR, location.header);
+                    if (location.context != null)
+                        marker.setAttribute(BNDTOOLS_MARKER_CONTEXT_ATTR, location.context);
+                    if (location.file != null)
+                        marker.setAttribute(BNDTOOLS_MARKER_FILE_ATTR, location.file);
+                    if (location.reference != null)
+                        marker.setAttribute(BNDTOOLS_MARKER_REFERENCE_ATTR, location.reference);
+
                     marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
                     for (Entry<String,Object> attrib : markerData.getAttribs().entrySet())
                         marker.setAttribute(attrib.getKey(), attrib.getValue());
@@ -161,7 +173,7 @@ class MarkerSupport {
 
     static List<IValidator> loadValidators() {
         List<IValidator> validators = null;
-        IConfigurationElement[] validatorElems = Platform.getExtensionRegistry().getConfigurationElementsFor(BndtoolsConstants.CORE_PLUGIN_ID, "validators");
+        IConfigurationElement[] validatorElems = Platform.getExtensionRegistry().getConfigurationElementsFor(CORE_PLUGIN_ID, "validators");
         if (validatorElems != null && validatorElems.length > 0) {
             validators = new ArrayList<IValidator>(validatorElems.length);
             for (IConfigurationElement elem : validatorElems) {

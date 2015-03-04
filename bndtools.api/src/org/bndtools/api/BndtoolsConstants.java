@@ -3,6 +3,8 @@ package org.bndtools.api;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
+import aQute.service.reporter.Report.Location;
+
 public final class BndtoolsConstants {
 
     public static final String CORE_PLUGIN_ID = "bndtools.core";
@@ -14,4 +16,24 @@ public final class BndtoolsConstants {
     public static final String MARKER_BND_PROBLEM = "bndtools.builder.bndproblem";
     public static final String MARKER_BND_PATH_PROBLEM = "bndtools.builder.bndpathproblem";
     public static final String MARKER_BND_WORKSPACE_PROBLEM = "bndtools.builder.bndworkspaceproblem";
+
+    /**
+     * Marker attribute name for the bnd {@link Location#context}
+     */
+    public static final String BNDTOOLS_MARKER_CONTEXT_ATTR = "bndtools.marker.context";
+    /**
+     * Marker attribute name for the bnd {@link Location#header}
+     */
+    public static final String BNDTOOLS_MARKER_HEADER_ATTR = "bndtools.marker.header";
+
+    /**
+     * Marker attribute name for the bnd {@link Location#reference}
+     */
+    public static final String BNDTOOLS_MARKER_REFERENCE_ATTR = "bndtools.marker.reference";
+
+    /**
+     * Marker attribute name for the bnd {@link Location#file}
+     */
+    public static final String BNDTOOLS_MARKER_FILE_ATTR = "bndtools.marker.file";
+
 }
