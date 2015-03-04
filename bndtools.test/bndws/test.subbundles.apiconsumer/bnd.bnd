@@ -1,0 +1,6 @@
+-buildpath: \
+	test.subbundles.api.one;version=latest, \
+	test.subbundles.api.two;version=latest 
+	
+Bundle-Version: 1.0.0.${tstamp}
+Export-Package: example.project
