@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 import java.util.Stack;
 
 import org.bndtools.api.ILogger;
@@ -218,13 +219,16 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
         try {
             b.setBase(blueprintFile.getProject().getFullPath().toFile());
             StringBuilder sb = new StringBuilder();
-            for (String s : editModel.getIncludeResource()) {
-                sb.append(s).append(',');
+            List<String> includeResource = editModel.getIncludeResource();
+            if (includeResource != null) {
+                for (String s : includeResource) {
+                    sb.append(s).append(',');
+                }
+                if (sb.length() > 0) {
+                    sb.deleteCharAt(sb.length() - 1);
+                }
+                b.setIncludeResource(sb.toString());
             }
-            if (sb.length() > 0) {
-                sb.deleteCharAt(sb.length() - 1);
-            }
-            b.setIncludeResource(sb.toString());
             if (!b.isInScope(Collections.singleton(blueprintFile.getFullPath().toFile()))) {
                 editModel.addIncludeResource(blueprintrelativePath);
             }
@@ -235,20 +239,22 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
 
     private void updateBundleBlueprintIfNecessary(BndEditModel editModel, String blueprintrelativePath) {
         boolean alreadyMatched = false;
-        for (HeaderClause hc : editModel.getBundleBlueprint()) {
-            String clause = hc.getName();
-            if (clause.length() == 0) {
-                clause = OSGI_INF_BLUEPRINT_XML;
-            } else if (clause.endsWith("/")) {
-                clause += "*.xml";
-            }
-            //Match either absolute or Glob
-            if ((!clause.contains("*") && clause.equals(blueprintrelativePath)) || (Glob.toPattern(clause).matcher(blueprintrelativePath).matches())) {
-                alreadyMatched = true;
-                break;
+        List<HeaderClause> bundleBlueprint = editModel.getBundleBlueprint();
+        if (bundleBlueprint != null) {
+            for (HeaderClause hc : bundleBlueprint) {
+                String clause = hc.getName();
+                if (clause.length() == 0) {
+                    clause = OSGI_INF_BLUEPRINT_XML;
+                } else if (clause.endsWith("/")) {
+                    clause += "*.xml";
+                }
+                //Match either absolute or Glob
+                if ((!clause.contains("*") && clause.equals(blueprintrelativePath)) || (Glob.toPattern(clause).matcher(blueprintrelativePath).matches())) {
+                    alreadyMatched = true;
+                    break;
+                }
             }
         }
-
         if (!alreadyMatched) {
             if ((Glob.toPattern(OSGI_INF_BLUEPRINT_XML).matcher(blueprintrelativePath).matches()))
                 editModel.addBundleBlueprint(OSGI_INF_BLUEPRINT_XML);
