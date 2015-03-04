@@ -1,0 +1,7 @@
+Bundle-Version: 0.0.0.${tstamp}
+-buildpath: osgi.core
+Private-Package: hello
+-runfw: org.apache.felix.framework;version='[4.4.0,4.4.0]'
+-runee: JavaSE-1.7
+
+Bundle-Activator: hello.Hello
