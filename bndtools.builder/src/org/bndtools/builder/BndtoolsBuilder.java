@@ -69,7 +69,7 @@ import bndtools.preferences.CompileErrorAction;
  *  touch bar.bnd -> see if manifest is updated in JAR (Jar viewer does not refresh very well, so reopen)
  *  touch build.bnd -> verify rebuild
  *  touch bnd.bnd in test -> verify rebuild
- * 
+ *
  *  create project test.2, add -buildpath: test
  * </pre>
  */
@@ -170,14 +170,27 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
                 dependsOn = calculateDependsOn(model);
 
-                if (setBuildOrder(monitor)) {
-                    buildLog.basic("Build order changed, postponing");
-                    return postpone();
+                //
+                // We have a setup change so we MUST check both class path
+                // changes and build order changes. Careful not to use an OR
+                // operation (as I did) because they are shortcutted. Since it
+                // is also nice to see why we had a change, we just collect the
+                // reason of the change so we can report it to the log.
+                //
+
+                String changed = ""; // if empty, no change
+                String del = "";
+                if (checkClasspathContainerUpdate(myProject)) {
+                    changed += "Classpath container updated";
+                    del = " & ";
                 }
 
-                if (checkClasspathContainerUpdate(myProject)) {
-                    // likely causes a recompile
-                    buildLog.basic("classpaths were changed, postponing");
+                if (setBuildOrder(monitor)) {
+                    changed += del + "Build order changed";
+                }
+
+                if (!changed.equals("")) {
+                    buildLog.basic("Setup changed: " + changed);
                     return postpone();
                 }
 
