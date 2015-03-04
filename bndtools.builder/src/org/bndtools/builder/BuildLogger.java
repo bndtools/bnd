@@ -71,4 +71,8 @@ public class BuildLogger {
 
         return top.append('\n').append(sb).toString();
     }
+
+    public boolean isActive() {
+        return level != LOG_NONE;
+    }
 }
