@@ -28,7 +28,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	static Pattern					PACKAGES_IGNORED	= Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
 	static ThreadLocal<Processor>	current				= new ThreadLocal<Processor>();
-	static ScheduledExecutorService	executor			= Executors.newScheduledThreadPool(3);
+	static ExecutorService			executor			= Executors.newCachedThreadPool();
 	static Random					random				= new Random();
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
@@ -2158,7 +2158,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		current.set(previous);
 	}
 
-	public static ScheduledExecutorService getExecutor() {
+	public static Executor getExecutor() {
 		return executor;
 	}
 
