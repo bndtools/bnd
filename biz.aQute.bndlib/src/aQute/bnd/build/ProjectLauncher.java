@@ -23,45 +23,48 @@ import aQute.libg.generics.*;
  * project to run the code. Launchers must extend this class.
  */
 public abstract class ProjectLauncher {
-	private final Project		project;
-	private long				timeout				= 0;
-	private final List<String>	classpath			= new ArrayList<String>();
-	private List<String>		runbundles			= Create.list();
-	private final List<String>	runvm				= new ArrayList<String>();
-	private final List<String>	runprogramargs		= new ArrayList<String>();
-	private Map<String,String>	runproperties;
-	private Command				java;
-	private Parameters			runsystempackages;
-	private String				runsystemcapabilities;
-	private final List<String>	activators			= Create.list();
-	private File				storageDir;
-	private final List<String>	warnings			= Create.list();
-	private final List<String>	errors				= Create.list();
+	private final Project						project;
+	private long								timeout				= 0;
+	private final List<String>					classpath			= new ArrayList<String>();
+	private List<String>						runbundles			= Create.list();
+	private final List<String>					runvm				= new ArrayList<String>();
+	private final List<String>					runprogramargs		= new ArrayList<String>();
+	private Map<String,String>					runproperties;
+	private Command								java;
+	private Parameters							runsystempackages;
+	private String								runsystemcapabilities;
+	private final List<String>					activators			= Create.list();
+	private File								storageDir;
+	private final List<String>					warnings			= Create.list();
+	private final List<String>					errors				= Create.list();
 
-	private boolean				trace;
-	private boolean				keep;
-	private int					framework;
-	private File				cwd;
-	private Collection<String>	agents = new ArrayList<String>();
-	private Map<NotificationListener, Boolean> 
-								listeners = new IdentityHashMap<NotificationListener, Boolean>();
+	private boolean								trace;
+	private boolean								keep;
+	private int									framework;
+	private File								cwd;
+	private Collection<String>					agents				= new ArrayList<String>();
+	private Map<NotificationListener,Boolean>	listeners			= new IdentityHashMap<NotificationListener,Boolean>();
 
-	public final static int		SERVICES			= 10111;
-	public final static int		NONE				= 20123;
+	protected Appendable						out					= System.out;
+	protected Appendable						err					= System.err;
+	protected InputStream						in					= System.in;
+
+	public final static int						SERVICES			= 10111;
+	public final static int						NONE				= 20123;
 
 	// MUST BE ALIGNED WITH LAUNCHER
-	public final static int		OK					= 0;
-	public final static int		WARNING				= -1;
-	public final static int		ERROR				= -2;
-	public final static int		TIMEDOUT			= -3;
-	public final static int		UPDATE_NEEDED		= -4;
-	public final static int		CANCELED			= -5;
-	public final static int		DUPLICATE_BUNDLE	= -6;
-	public final static int		RESOLVE_ERROR		= -7;
-	public final static int		ACTIVATOR_ERROR		= -8;
-	public final static int		CUSTOM_LAUNCHER		= -128;
+	public final static int						OK					= 0;
+	public final static int						WARNING				= -1;
+	public final static int						ERROR				= -2;
+	public final static int						TIMEDOUT			= -3;
+	public final static int						UPDATE_NEEDED		= -4;
+	public final static int						CANCELED			= -5;
+	public final static int						DUPLICATE_BUNDLE	= -6;
+	public final static int						RESOLVE_ERROR		= -7;
+	public final static int						ACTIVATOR_ERROR		= -8;
+	public final static int						CUSTOM_LAUNCHER		= -128;
 
-	public final static String	EMBEDDED_ACTIVATOR	= "Embedded-Activator";
+	public final static String					EMBEDDED_ACTIVATOR	= "Embedded-Activator";
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
@@ -100,7 +103,7 @@ public abstract class ProjectLauncher {
 		}
 
 		Collection<Container> runpath = project.getRunpath();
-		runsystempackages = new Parameters( project.mergeProperties(Constants.RUNSYSTEMPACKAGES));
+		runsystempackages = new Parameters(project.mergeProperties(Constants.RUNSYSTEMPACKAGES));
 		runsystemcapabilities = project.mergeProperties(Constants.RUNSYSTEMCAPABILITIES);
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
 
@@ -121,8 +124,8 @@ public abstract class ProjectLauncher {
 		if (storageDir == null) {
 			storageDir = new File(project.getTarget(), "fw");
 		}
-		
-		setKeep( project.getRunKeep());
+
+		setKeep(project.getRunKeep());
 	}
 
 	private int getRunframework(String property) {
@@ -152,7 +155,7 @@ public abstract class ProjectLauncher {
 						String agentClassName = manifest.getMainAttributes().getValue("Premain-Class");
 						if (agentClassName != null) {
 							String agent = path;
-							if ( container.attributes != null && container.attributes.get("agent")!=null) {
+							if (container.attributes != null && container.attributes.get("agent") != null) {
 								agent += "=" + container.attributes.get("agent");
 							}
 							agents.add(path);
@@ -181,11 +184,10 @@ public abstract class ProjectLauncher {
 	}
 
 	protected void addClasspath(Collection<Container> path) throws Exception {
-		for ( Container c : Container.flatten(path)) {
+		for (Container c : Container.flatten(path)) {
 			addClasspath(c);
 		}
 	}
-
 
 	public void addRunBundle(String f) {
 		runbundles.add(f);
@@ -239,17 +241,16 @@ public abstract class ProjectLauncher {
 	public int launch() throws Exception {
 		prepare();
 		java = new Command();
-		
-		
+
 		//
 		// Handle the environment
 		//
-		
+
 		Map<String,String> env = getRunEnv();
-		for ( Map.Entry<String,String> e:env.entrySet()) {
+		for (Map.Entry<String,String> e : env.entrySet()) {
 			java.var(e.getKey(), e.getValue());
 		}
-		
+
 		java.add(project.getProperty("java", "java"));
 		String javaagent = project.getProperty(Constants.JAVAAGENT);
 		if (Processor.isTrue(javaagent)) {
@@ -271,7 +272,7 @@ public abstract class ProjectLauncher {
 
 			java.add("-Xrunjdwp:server=y,transport=dt_socket,address=" + Math.abs(port) + ",suspend=" + suspend);
 		}
-		
+
 		java.add("-cp");
 		java.add(Processor.join(getClasspath(), File.pathSeparator));
 		java.addAll(getRunVM());
@@ -286,7 +287,7 @@ public abstract class ProjectLauncher {
 
 		project.trace("cmd line %s", java);
 		try {
-			int result = java.execute(System.in, System.err, System.err);
+			int result = java.execute(in, out, err);
 			if (result == Integer.MIN_VALUE)
 				return TIMEDOUT;
 			reportResult(result);
@@ -308,41 +309,39 @@ public abstract class ProjectLauncher {
 	public int start(ClassLoader parent) throws Exception {
 
 		prepare();
-		
+
 		//
-		// Intermediate class loader to not load osgi framework packages 
+		// Intermediate class loader to not load osgi framework packages
 		// from bnd's loader. Unfortunately, bnd uses some osgi classes
 		// itself that would unnecessarily constrain the framework.
 		//
-		
+
 		ClassLoader fcl = new ClassLoader(parent) {
 			protected Class< ? > loadClass(String name, boolean resolve) throws ClassNotFoundException {
-				if ( IGNORE.matcher(name).matches())
+				if (IGNORE.matcher(name).matches())
 					throw new ClassNotFoundException();
 
 				return super.loadClass(name, resolve);
 			}
 		};
-		
+
 		//
 		// Load the class that would have gone to the class path
 		// i.e. the framework etc.
 		//
-		
+
 		List<URL> cp = new ArrayList<URL>();
 		for (String path : getClasspath()) {
 			cp.add(new File(path).toURI().toURL());
 		}
 		URLClassLoader cl = new URLClassLoader(cp.toArray(new URL[cp.size()]), fcl);
 
-		
 		String[] args = getRunProgramArgs().toArray(new String[0]);
-		
+
 		Class< ? > main = cl.loadClass(getMainTypeName());
 		return invoke(main, args);
 	}
-	
-	
+
 	protected int invoke(Class< ? > main, String args[]) throws Exception {
 		throw new UnsupportedOperationException();
 	}
@@ -510,25 +509,31 @@ public abstract class ProjectLauncher {
 
 	public Map<String,String> getRunEnv() {
 		String runenv = project.getProperty(Constants.RUNENV);
-		if ( runenv != null) {
+		if (runenv != null) {
 			return OSGiHeader.parseProperties(runenv);
-		}		
+		}
 		return Collections.emptyMap();
 	}
-	
+
 	public static interface NotificationListener {
 		void notify(NotificationType type, String notification);
 	}
-	
+
 	public static enum NotificationType {
 		ERROR, WARNING, INFO;
 	}
-	
+
 	public void registerForNotifications(NotificationListener listener) {
 		listeners.put(listener, Boolean.TRUE);
 	}
-	
+
 	public Set<NotificationListener> getNotificationListeners() {
 		return Collections.unmodifiableSet(listeners.keySet());
+	}
+
+	public void setStreams(InputStream in, Appendable out, Appendable err) {
+		this.in = in;
+		this.out = out;
+		this.err = err;
 	}
 }

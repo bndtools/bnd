@@ -97,7 +97,7 @@ public class Builder extends Analyzer {
 			}
 		}
 
-		if ( !isTrue(getProperty(NOMANIFEST))) {
+		if (!isTrue(getProperty(NOMANIFEST))) {
 			dot.setManifest(manifest);
 			String manifestName = getProperty(MANIFEST_NAME);
 			if (manifestName != null)
@@ -111,8 +111,8 @@ public class Builder extends Analyzer {
 		addSources(dot);
 
 		String pom = getProperty(POM);
-		if ( pom != null) {
-			if ( !pom.equalsIgnoreCase("false")) {
+		if (pom != null) {
+			if (!pom.equalsIgnoreCase("false")) {
 				Map<String,String> map = OSGiHeader.parseProperties(pom);
 				map.put(Constants.BUNDLE_SCM, getProperty(Constants.BUNDLE_SCM));
 				map.put(Constants.BUNDLE_DEVELOPERS, getProperty(Constants.BUNDLE_DEVELOPERS));
@@ -140,7 +140,7 @@ public class Builder extends Analyzer {
 		doBaseline(dot); // check for a baseline
 
 		String expand = getProperty("-expand");
-		if ( expand != null) {
+		if (expand != null) {
 			File out = getFile(expand);
 			out.mkdirs();
 			dot.expand(out);
@@ -173,8 +173,10 @@ public class Builder extends Analyzer {
 		// Check if we have sensible setup
 
 		if (getClasspath().size() == 0
-				&& (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null || getProperty(PRIVATE_PACKAGE) != null || getProperty(PRIVATEPACKAGE) != null))
-			warning("Classpath is empty. " + Constants.PRIVATE_PACKAGE + " (-privatepackage) and " + EXPORT_PACKAGE + " can only expand from the classpath when there is one");
+				&& (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null
+						|| getProperty(PRIVATE_PACKAGE) != null || getProperty(PRIVATEPACKAGE) != null))
+			warning("Classpath is empty. " + Constants.PRIVATE_PACKAGE + " (-privatepackage) and " + EXPORT_PACKAGE
+					+ " can only expand from the classpath when there is one");
 
 	}
 
@@ -232,8 +234,8 @@ public class Builder extends Analyzer {
 					for (String part : parts) {
 						File sub = getFile(f.getParentFile(), part);
 						if (!sub.exists() || !sub.getParentFile().equals(f.getParentFile())) {
-							warning("Invalid Class-Path entry %s in %s, must exist and must reside in same directory", sub,
-									f);
+							warning("Invalid Class-Path entry %s in %s, must exist and must reside in same directory",
+									sub, f);
 						} else {
 							addWabLib(dot, sub);
 						}
@@ -274,8 +276,7 @@ public class Builder extends Analyzer {
 		changedFile(f);
 	}
 
-	protected void changedFile(@SuppressWarnings("unused")
-	File f) {}
+	protected void changedFile(@SuppressWarnings("unused") File f) {}
 
 	/**
 	 * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
@@ -284,8 +285,7 @@ public class Builder extends Analyzer {
 	 * @return
 	 */
 
-	void sign(@SuppressWarnings("unused")
-	Jar jar) throws Exception {
+	void sign(@SuppressWarnings("unused") Jar jar) throws Exception {
 		String signing = getProperty(SIGN);
 		if (signing == null)
 			return;
@@ -464,7 +464,7 @@ public class Builder extends Analyzer {
 					if (!isDuplicate(file)) {
 						File f = getFile(file);
 						if (!f.isDirectory()) {
-							error("Adding a sourcepath that is not a directory: " + f);
+							error("Adding a sourcepath that is not a directory: " + f).header(SOURCEPATH).context(file);
 						} else {
 							sourcePath.add(f);
 						}
@@ -475,8 +475,7 @@ public class Builder extends Analyzer {
 		return sourcePath;
 	}
 
-	private void doVerify(@SuppressWarnings("unused")
-	Jar dot) throws Exception {
+	private void doVerify(@SuppressWarnings("unused") Jar dot) throws Exception {
 
 		// Give the verifier the benefit of our analysis
 		// prevents parsing the files twice
@@ -513,7 +512,10 @@ public class Builder extends Analyzer {
 			Set<Instruction> unused = doExpand(dot, packages, privateFilter);
 
 			if (!unused.isEmpty()) {
-				warning("Unused " + Constants.PRIVATE_PACKAGE + " instructions, no such package(s) on the class path: %s", unused);
+				warning(
+						"Unused " + Constants.PRIVATE_PACKAGE
+								+ " instructions, no such package(s) on the class path: %s", unused).header(
+						Constants.PRIVATE_PACKAGE).context(unused.iterator().next().input);
 			}
 		}
 
@@ -537,7 +539,7 @@ public class Builder extends Analyzer {
 	 * @param jar
 	 * @param name
 	 * @param instructions
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private Set<Instruction> doExpand(Jar jar, MultiMap<String,Jar> index, Instructions filter) throws Exception {
 		Set<Instruction> unused = Create.set();
@@ -586,7 +588,7 @@ public class Builder extends Analyzer {
 				int splitStrategy = getSplitStrategy(directives.get(SPLIT_PACKAGE_DIRECTIVE));
 				copyPackage(jar, providers, directory, splitStrategy);
 				Attrs contained = getContained().put(packageRef);
-				
+
 				contained.put(INTERNAL_SOURCE_DIRECTIVE, getName(providers.get(0)));
 				used = true;
 			}
@@ -863,9 +865,9 @@ public class Builder extends Analyzer {
 	private Instructions getPreProcessMatcher(Map<String,String> extra) {
 		if (defaultPreProcessMatcher == null) {
 			String preprocessmatchers = mergeProperties(PREPROCESSMATCHERS);
-			if ( preprocessmatchers == null || preprocessmatchers.trim().length()==0)
-				preprocessmatchers=Constants.DEFAULT_PREPROCESSS_MATCHERS;
-			
+			if (preprocessmatchers == null || preprocessmatchers.trim().length() == 0)
+				preprocessmatchers = Constants.DEFAULT_PREPROCESSS_MATCHERS;
+
 			defaultPreProcessMatcher = new Instructions(preprocessmatchers);
 		}
 		if (extra == null)
@@ -912,7 +914,7 @@ public class Builder extends Analyzer {
 			File file = getFile(required);
 			if (!file.exists()) {
 				error(Constants.INCLUDE_RESOURCE + ".cmd for %s, requires %s, but no such file %s", source, required,
-						file.getAbsoluteFile());
+						file.getAbsoluteFile()).header(INCLUDERESOURCE + "|" + INCLUDE_RESOURCE);
 			} else
 				lastModified = findLastModifiedWhileOlder(file, lastModified());
 		}
@@ -1074,8 +1076,8 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	private void noSuchFile(Jar jar, @SuppressWarnings("unused")
-	String clause, Map<String,String> extra, String source, String destinationPath) throws Exception {
+	private void noSuchFile(Jar jar, @SuppressWarnings("unused") String clause, Map<String,String> extra,
+			String source, String destinationPath) throws Exception {
 		Jar src = getJarFromName(source, Constants.INCLUDE_RESOURCE + " " + source);
 		if (src != null) {
 			// Do not touch the manifest so this also
@@ -1091,7 +1093,7 @@ public class Builder extends Analyzer {
 					lastChance.setExtra(x);
 				jar.putResource(destinationPath, lastChance);
 			} else
-				error("Input file does not exist: " + source);
+				error("Input file does not exist: " + source).header(source).context(clause);
 		}
 	}
 
@@ -1196,7 +1198,7 @@ public class Builder extends Analyzer {
 			} else if (from.getName().equals(Constants.EMPTY_HEADER)) {
 				jar.putResource(path, new EmbeddedResource(new byte[0], 0));
 			} else {
-				error("Input file does not exist: " + from);
+				error("Input file does not exist: " + from).header(INCLUDERESOURCE + "|" + INCLUDE_RESOURCE);
 			}
 		}
 	}
@@ -1256,13 +1258,12 @@ public class Builder extends Analyzer {
 				startBuild(builder);
 				Jar jar = builder.build();
 				jar.setName(builder.getBsn());
-				
+
 				result.add(jar);
 				doneBuild(builder);
 			}
 			catch (Exception e) {
-				e.printStackTrace();
-				error("Sub Building " + builder.getBsn(), e);
+				builder.error("Sub Building " + builder.getBsn(), e);
 			}
 			if (builder != this)
 				getInfo(builder, builder.getBsn() + ": ");
@@ -1270,20 +1271,19 @@ public class Builder extends Analyzer {
 		return result.toArray(new Jar[result.size()]);
 	}
 
-
 	/**
 	 * Called when we start to build a builder
 	 */
 	protected void startBuild(Builder builder) {
-		
+
 	}
-	
+
 	/**
 	 * Called when we 're done with a builder
 	 */
 	protected void doneBuild(Builder builder) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
@@ -1539,7 +1539,7 @@ public class Builder extends Analyzer {
 				xdoNotCopy = Pattern.compile(string);
 			}
 			catch (Exception e) {
-				error("Invalid value for %s, value is %s", DONOTCOPY, string);
+				error("Invalid value for %s, value is %s", DONOTCOPY, string).header(DONOTCOPY);
 				xdoNotCopy = Pattern.compile(DEFAULT_DO_NOT_COPY);
 			}
 		}
@@ -1549,12 +1549,12 @@ public class Builder extends Analyzer {
 	/**
 	 */
 
-	static MakeBnd			makeBnd				= new MakeBnd();
-	static MakeCopy			makeCopy			= new MakeCopy();
-	static ServiceComponent	serviceComponent	= new ServiceComponent();
-	static DSAnnotations	dsAnnotations		= new DSAnnotations();
-	static MetatypePlugin	metatypePlugin		= new MetatypePlugin();
-	static MetatypeAnnotations	metatypeAnnotations		= new MetatypeAnnotations();
+	static MakeBnd				makeBnd				= new MakeBnd();
+	static MakeCopy				makeCopy			= new MakeCopy();
+	static ServiceComponent		serviceComponent	= new ServiceComponent();
+	static DSAnnotations		dsAnnotations		= new DSAnnotations();
+	static MetatypePlugin		metatypePlugin		= new MetatypePlugin();
+	static MetatypeAnnotations	metatypeAnnotations	= new MetatypeAnnotations();
 
 	@Override
 	protected void setTypeSpecificPlugins(Set<Object> list) {
@@ -1573,8 +1573,7 @@ public class Builder extends Analyzer {
 	 * @throws Exception
 	 */
 
-	public void doDiff(@SuppressWarnings("unused")
-	Jar dot) throws Exception {
+	public void doDiff(@SuppressWarnings("unused") Jar dot) throws Exception {
 		Parameters diffs = parseHeader(getProperty("-diff"));
 		if (diffs.isEmpty())
 			return;
@@ -1588,7 +1587,7 @@ public class Builder extends Analyzer {
 			String path = entry.getKey();
 			File file = getFile(path);
 			if (!file.isFile()) {
-				error("Diffing against %s that is not a file", file);
+				error("Diffing against %s that is not a file", file).header("-diff").context(path);
 				continue;
 			}
 
@@ -1607,14 +1606,16 @@ public class Builder extends Analyzer {
 
 						if (!full)
 							if (warning)
-								warning("Differ %s", p);
+								warning("Differ %s", p).header("-diff").context(path);
 							else
-								error("Differ %s", p);
+								error("Differ %s", p).header("-diff").context(path);
 						else {
 							if (warning)
-								warning("Diff found a difference in %s for packages %s", file, instructions);
+								warning("Diff found a difference in %s for packages %s", file, instructions).header(
+										"-diff").context(path);
 							else
-								error("Diff found a difference in %s for packages %s", file, instructions);
+								error("Diff found a difference in %s for packages %s", file, instructions).header(
+										"-diff").context(path);
 							show(p, "", warning);
 						}
 					}
@@ -1635,9 +1636,9 @@ public class Builder extends Analyzer {
 			return;
 
 		if (warning)
-			warning("%s%s", indent, p);
+			warning("%s%s", indent, p).header("-diff");
 		else
-			error("%s%s", indent, p);
+			error("%s%s", indent, p).header("-diff");
 
 		indent = indent + " ";
 		switch (d) {
@@ -1670,13 +1671,13 @@ public class Builder extends Analyzer {
 	protected void doBaseline(Jar dot) throws Exception {}
 
 	/**
-	 * #388 Manifest header to get GIT head Get the head commit number. Look
-	 * for a .git/HEAD file, going up in the file hierarchy. Then get this file,
-	 * and resolve any symbolic reference.
+	 * #388 Manifest header to get GIT head Get the head commit number. Look for
+	 * a .git/HEAD file, going up in the file hierarchy. Then get this file, and
+	 * resolve any symbolic reference.
 	 *
 	 * @throws IOException
 	 */
-	static Pattern	GITREF	= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
+	static Pattern	GITREF			= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
 
 	static String	_githeadHelp	= "${githead}, provide the SHA for the current git head";
 
@@ -1688,11 +1689,12 @@ public class Builder extends Analyzer {
 		//
 
 		File rover = getBase();
-		while (rover !=null && rover.isDirectory()) {
+		while (rover != null && rover.isDirectory()) {
 			File headFile = IO.getFile(rover, ".git/HEAD");
 			if (headFile.isFile()) {
 				//
-				// The head is either a symref (ref: refs/(heads|tags|remotes)/<name>)
+				// The head is either a symref (ref:
+				// refs/(heads|tags|remotes)/<name>)
 				//
 				String head = IO.collect(headFile).trim();
 				if (!Hex.isHex(head)) {
@@ -1705,8 +1707,7 @@ public class Builder extends Analyzer {
 						// so the commit is in the following path
 
 						head = IO.collect(IO.getFile(rover, ".git/" + m.group(1)));
-					}
-					else {
+					} else {
 						error("Git repo seems corrupt. It exists, find the HEAD but the content is neither hex nor a sym-ref: %s",
 								head);
 					}
@@ -1719,9 +1720,9 @@ public class Builder extends Analyzer {
 		return "";
 	}
 
-
 	/**
 	 * Create a report of the settings
+	 * 
 	 * @throws Exception
 	 */
 
@@ -1729,8 +1730,9 @@ public class Builder extends Analyzer {
 		build();
 		super.report(table);
 		table.put("Do Not Copy", getDoNotCopy());
-		table.put("Git head", _githead( new String[]{"githead"}));
+		table.put("Git head", _githead(new String[] {
+			"githead"
+		}));
 	}
-
 
 }

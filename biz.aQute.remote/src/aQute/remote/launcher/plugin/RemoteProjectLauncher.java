@@ -12,11 +12,11 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.lib.converter.Converter;
 import aQute.remote.api.Agent;
-import aQute.remote.supervisor.provider.SupervisorClient;
+import aQute.remote.supervisor.provider.AgentSupervisor;
 
 public class RemoteProjectLauncher extends ProjectLauncher {
 
-	private SupervisorClient supervisor;
+	private AgentSupervisor supervisor;
 	private final Project project;
 
 	public RemoteProjectLauncher(Project project) throws Exception {
@@ -59,8 +59,9 @@ public class RemoteProjectLauncher extends ProjectLauncher {
 		int port = Converter.cnv(Integer.class, attrs.get("port"));
 		String host = Converter.cnv(String.class, attrs.get("host"));
 
-		supervisor = SupervisorClient.link(host, port);
 		
+		supervisor = AgentSupervisor.create(host, port);
+		supervisor.setStreams(in,out,err);
 	}
 
 	@Override
@@ -70,12 +71,12 @@ public class RemoteProjectLauncher extends ProjectLauncher {
 		return supervisor.join();
 	}
 
-	public void cancel() throws IOException {
-		supervisor.cancel();
-	}
-	
 	public void close() throws IOException {
 		supervisor.close();
+	}
+	
+	public void cancel() throws Exception {
+		supervisor.getAgent().abort();
 	}
 
 }

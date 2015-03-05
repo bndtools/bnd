@@ -26,6 +26,6 @@ public interface Agent {
 
 	String shell(String cmd) throws Exception;
 
-	void abort();
+	boolean abort();
 
 }

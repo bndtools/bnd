@@ -5,7 +5,9 @@ Private-Package: \
 	aQute.remote.agent.provider,\
 	aQute.remote.api
 
-Import-Package: org.osgi.framework;version=1.5, *
+Import-Package: org.osgi.framework;version=1.5,*
 
-Conditional-Package: aQute.lib*
+Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter
 Bundle-Activator: aQute.remote.agent.provider.Activator
+
+Main-Class: aQute.remote.agent.provider.Main

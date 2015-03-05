@@ -226,7 +226,8 @@ public class Analyzer extends Processor {
 				exports = filter(filter, contained, unused);
 
 				if (!unused.isEmpty()) {
-					warning("Unused " + Constants.EXPORT_PACKAGE + " instructions: %s ", unused);
+					warning("Unused " + Constants.EXPORT_PACKAGE + " instructions: %s ", unused).header(
+							Constants.EXPORT_PACKAGE).context(unused.iterator().next().input);
 				}
 
 				// See what information we can find to augment the
@@ -266,7 +267,8 @@ public class Analyzer extends Processor {
 				if (!unused.isEmpty()) {
 					// We ignore the end wildcard catch
 					if (!(unused.size() == 1 && unused.iterator().next().toString().equals("*")))
-						warning("Unused " + Constants.IMPORT_PACKAGE + " instructions: %s ", unused);
+						warning("Unused " + Constants.IMPORT_PACKAGE + " instructions: %s ", unused).header(
+								Constants.IMPORT_PACKAGE).context(unused.iterator().next().input);
 				}
 
 				// See what information we can find to augment the
@@ -3191,11 +3193,9 @@ public class Analyzer extends Processor {
 			return null;
 		}
 
-
 		String path = getProperty("src", "src") + "/" + type.getPackageRef().getPath() + "/" + clazz.sourceFile;
 		if (getPropertiesFile() != null) {
-			path = getPropertiesFile().getParentFile().getAbsolutePath().replace(File.separatorChar, '/') + "/"
-					+ path;
+			path = getPropertiesFile().getParentFile().getAbsolutePath().replace(File.separatorChar, '/') + "/" + path;
 		}
 		return path;
 	}

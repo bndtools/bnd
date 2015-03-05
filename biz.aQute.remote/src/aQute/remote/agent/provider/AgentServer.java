@@ -1,6 +1,5 @@
 package aQute.remote.agent.provider;
 
-import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,24 +13,33 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.dto.BundleDTO;
 import org.osgi.framework.dto.FrameworkDTO;
 import org.osgi.framework.dto.ServiceReferenceDTO;
+import org.osgi.framework.launch.Framework;
+import org.osgi.framework.launch.FrameworkFactory;
 
 import aQute.libg.shacache.ShaCache;
 import aQute.libg.shacache.ShaSource;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
+import aQute.remote.api.Event.Type;
 import aQute.remote.api.Supervisor;
 
-public class AgentServer implements Agent, Closeable {
+public class AgentServer implements Agent, Closeable, FrameworkListener,
+		Linkable<Agent,Supervisor> {
+
 	private static final long[] EMPTY = new long[0];
 
 	@SuppressWarnings("deprecation")
@@ -55,32 +63,19 @@ public class AgentServer implements Agent, Closeable {
 			Constants.FRAMEWORK_WINDOWSYSTEM, };
 
 	private Supervisor remote;
-	private final BundleContext context;
+	private BundleContext context;
 	private final ShaCache cache;
-	private final ShaSource source;
+	private ShaSource source;
 	private final Map<String, String> installed = new HashMap<String, String>();
 
 	private boolean quit;
 
 	public AgentServer(BundleContext context, File cache) {
 		this.context = context;
+		if (this.context != null)
+			this.context.addFrameworkListener(this);
+
 		this.cache = new ShaCache(cache);
-		source = new ShaSource() {
-
-			@Override
-			public boolean isFast() {
-				return false;
-			}
-
-			@Override
-			public InputStream get(String sha) throws Exception {
-				byte[] data = remote.getFile(sha);
-				if (data == null)
-					return null;
-
-				return new ByteArrayInputStream(data);
-			}
-		};
 	}
 
 	@Override
@@ -296,6 +291,7 @@ public class AgentServer implements Agent, Closeable {
 
 	public void setSupervisor(Supervisor remote) {
 		this.remote = remote;
+		source = new SupervisorSource(remote);
 	}
 
 	private List<ServiceReferenceDTO> getServiceReferences() throws Exception {
@@ -387,9 +383,62 @@ public class AgentServer implements Agent, Closeable {
 	}
 
 	@Override
-	public void abort() {
+	public boolean abort() {
 		quit = true;
 		update(null);
 		sendEvent(-3);
+		return true;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static int createFramework(String name, Map<String, Object> configuration, final File storage, final File shacache) throws Exception {
+
+		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(
+				FrameworkFactory.class);
+		FrameworkFactory ff = null;
+		for (FrameworkFactory fff : sl) {
+			ff = fff;
+			break;
+		}
+
+		if (ff == null)
+			throw new IllegalArgumentException("No framework on runpath");
+
+		Framework framework = ff.newFramework((Map) configuration);
+		framework.init();
+		final BundleContext context = framework.getBundleContext();
+
+		Dispatcher d = new Dispatcher<Agent, Supervisor>(Supervisor.class, new Callable<Linkable<Agent,Supervisor>>() {
+
+			@Override
+			public Linkable<Agent, Supervisor> call() throws Exception {
+				return new AgentServer(context, shacache);
+			}
+		}, "*", 0);
+		d.open();
+		return d.getPort();
+	}
+
+	@Override
+	public void frameworkEvent(FrameworkEvent event) {
+		try {
+			Event e = new Event();
+			e.type = Type.framework;
+			e.code = event.getType();
+			remote.event(e);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void setRemote(Supervisor supervisor) {
+		this.remote = supervisor;
+		this.source = new SupervisorSource(this.remote);
+	}
+
+	@Override
+	public Agent get() {
+		return this;
 	}
 }
