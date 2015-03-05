@@ -90,4 +90,8 @@ public class ShaCache {
 		IO.delete(root);
 		root.mkdirs();
 	}
+
+	public File getRoot() {
+		return root;
+	}
 }

@@ -6,7 +6,7 @@ import org.osgi.framework.dto.ServiceReferenceDTO;
 
 public class Event extends DTO {
 	public enum Type {
-		exit
+		exit, framework
 	}
 
 	public Type type;

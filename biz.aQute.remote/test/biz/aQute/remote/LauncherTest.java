@@ -62,7 +62,8 @@ public class LauncherTest extends TestCase {
 		configuration = new HashMap<String, Object>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
 				Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-
+		configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.osgi.framework.launch;version=1.2");
+		
 		framework = new org.apache.felix.framework.FrameworkFactory()
 				.newFramework(configuration);
 		framework.init();

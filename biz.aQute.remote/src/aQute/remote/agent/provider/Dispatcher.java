@@ -1,38 +1,35 @@
 package aQute.remote.agent.provider;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.osgi.framework.BundleContext;
-
 import aQute.libg.comlink.Link;
-import aQute.remote.api.Agent;
-import aQute.remote.api.Supervisor;
 
-public class Dispatcher extends Thread {
+public class Dispatcher<L,R> extends Thread {
 
 	private final String host;
 	private final int port;
-	private final BundleContext context;
+	private final Callable<Linkable<L, R>> factory;
 	private final List<Closeable> closeables = new CopyOnWriteArrayList<Closeable>();
-	private final File cache;
 	private ServerSocket server;
+	private Class<R> remoteClass;
 
-	public Dispatcher(File cache, BundleContext context, String host, int port) {
+	public Dispatcher(Class<R> remoteClass, Callable<Linkable<L,R>> factory, String host, int port) {
 		super("aQute.agent.server::" + (host == null ? "localhost" : host)
 				+ ":" + port);
-		this.cache = cache;
-		this.context = context;
+		this.remoteClass=remoteClass;
+		this.factory = factory;
 		this.host = host;
 		this.port = port;
 	}
+
 
 	public void run() {
 		while (!isInterrupted())
@@ -41,10 +38,11 @@ public class Dispatcher extends Thread {
 				while (!isInterrupted()) {
 					final Socket connection = server.accept();
 
-					AgentServer ma = new AgentServer(context, cache);
-					final Link<Agent, Supervisor> link = new Link<Agent, Supervisor>(
-							Supervisor.class, ma, connection);
-					ma.setSupervisor(link.getRemote());
+					
+					Linkable<L, R> local = factory.call();
+					final Link<L, R> link = new Link<L, R>(
+							remoteClass, local.get(), connection);
+					local.setRemote(link.getRemote());
 					closeables.add(link);
 					link.open();
 				}
@@ -74,4 +72,10 @@ public class Dispatcher extends Thread {
 			}
 		}
 	}
+
+
+	public int getPort() {
+		return server.getLocalPort();
+	}
+	
 }

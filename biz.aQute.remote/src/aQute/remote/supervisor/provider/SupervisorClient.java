@@ -2,6 +2,7 @@ package aQute.remote.supervisor.provider;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -18,34 +19,36 @@ import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.libg.comlink.Link;
 import aQute.libg.cryptography.SHA1;
-import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Supervisor;
 
-public class SupervisorClient implements Supervisor {
+public class SupervisorClient<A> implements Supervisor {
 	private Appendable stdout;
 	private Appendable stderr;
-	private Agent agent;
+	private A agent;
 	private static final Map<File, Info> fileInfo = new ConcurrentHashMap<File, SupervisorClient.Info>();
 	private static final MultiMap<String, String> shaInfo = new MultiMap<String, String>();
 	private static final byte[] EMPTY = new byte[0];
 	private CountDownLatch latch = new CountDownLatch(1);
 	private int exitCode;
-	private Link<Supervisor, Agent> link;
+	private Link<Supervisor, A> link;
+	private InputStream stdin;
+	private Thread stdinReader;
 
 	static class Info extends DTO {
 		public String sha;
 		public long lastModified;
 	}
 
-	public static SupervisorClient link(String host, int port)
-			throws UnknownHostException, IOException, InterruptedException {
+	public static <T> SupervisorClient<T> link(Class<T> clazz, String host,
+			int port) throws UnknownHostException, IOException,
+			InterruptedException {
 		while (true)
 			try {
 				Socket socket = new Socket(host, port);
-				SupervisorClient supervisor = new SupervisorClient();
-				Link<Supervisor, Agent> link = new Link<Supervisor, Agent>(
-						Agent.class, supervisor, socket);
+				SupervisorClient<T> supervisor = new SupervisorClient<T>();
+				Link<Supervisor, T> link = new Link<Supervisor, T>(clazz,
+						supervisor, socket);
 				supervisor.setAgent(link);
 				link.open();
 				return supervisor;
@@ -83,16 +86,16 @@ public class SupervisorClient implements Supervisor {
 	@Override
 	public byte[] getFile(String sha) throws Exception {
 		List<String> copy;
-		synchronized(shaInfo) {
+		synchronized (shaInfo) {
 			List<String> list = shaInfo.get(sha);
-			if ( list == null)
+			if (list == null)
 				return EMPTY;
-				
+
 			copy = new ArrayList<String>(list);
 		}
-		for ( String path : copy) {
+		for (String path : copy) {
 			File f = new File(path);
-			if ( f.isFile()) {
+			if (f.isFile()) {
 				byte[] data = IO.read(f);
 				return data;
 			}
@@ -100,7 +103,7 @@ public class SupervisorClient implements Supervisor {
 		return EMPTY;
 	}
 
-	public void setAgent(Link<Supervisor, Agent> link) {
+	public void setAgent(Link<Supervisor, A> link) {
 		this.agent = link.getRemote();
 		this.link = link;
 	}
@@ -108,6 +111,10 @@ public class SupervisorClient implements Supervisor {
 	public void close() throws IOException {
 		latch.countDown();
 		link.close();
+		if (stdin != null) {
+			stdinReader.interrupt();
+			stdin.close();
+		}
 	}
 
 	public int join() throws InterruptedException {
@@ -115,7 +122,7 @@ public class SupervisorClient implements Supervisor {
 		return exitCode;
 	}
 
-	public Agent getAgent() {
+	public A getAgent() {
 		return agent;
 	}
 
@@ -127,7 +134,7 @@ public class SupervisorClient implements Supervisor {
 			fileInfo.put(file, info);
 			info.lastModified = -1;
 		}
-		
+
 		synchronized (shaInfo) {
 			if (info.lastModified != file.lastModified()) {
 				String sha = SHA1.digest(file).asHex();
@@ -141,8 +148,12 @@ public class SupervisorClient implements Supervisor {
 		}
 	}
 
-	public void cancel() {
-		getAgent().abort();
+	public void setStdout(Appendable out) {
+		this.stdout = out;
+	}
+
+	public void setStderr(Appendable err) {
+		this.stderr = err;
 	}
 
 }
