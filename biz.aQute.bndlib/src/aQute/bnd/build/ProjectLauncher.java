@@ -531,9 +531,28 @@ public abstract class ProjectLauncher {
 		return Collections.unmodifiableSet(listeners.keySet());
 	}
 
-	public void setStreams(InputStream in, Appendable out, Appendable err) {
-		this.in = in;
+	/**
+	 * Set the stderr and stdout streams for the output process. The debugged
+	 * process must append its output (i.e. write operation in the process under
+	 * debug) to the given appendables.
+	 * 
+	 * @param out
+	 *            std out
+	 * @param err
+	 *            std err
+	 */
+	public void setStreams(Appendable out, Appendable err) {
 		this.out = out;
 		this.err = err;
+	}
+
+	/**
+	 * Write text to the debugged process as if it came from stdin.
+	 * 
+	 * @param text
+	 *            the text to write
+	 */
+	public void write(String text) {
+
 	}
 }

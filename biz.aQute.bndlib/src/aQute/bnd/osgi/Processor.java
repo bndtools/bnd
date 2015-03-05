@@ -28,7 +28,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	static Pattern					PACKAGES_IGNORED	= Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
 	static ThreadLocal<Processor>	current				= new ThreadLocal<Processor>();
-	static ExecutorService			executor			= Executors.newCachedThreadPool();
+	static ScheduledExecutorService	executor			= Executors.newScheduledThreadPool(3);
 	static Random					random				= new Random();
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
@@ -1310,8 +1310,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		for (Entry< ? , ? > entry : map.entrySet()) {
 			Object key = entry.getKey();
 			// Skip directives we do not recognize
-			if (key.equals(INTERNAL_SOURCE_DIRECTIVE) ||key.equals(INTERNAL_EXPORTED_DIRECTIVE) ||key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE) || key.equals(SPLIT_PACKAGE_DIRECTIVE)
-					|| key.equals(FROM_DIRECTIVE))
+			if (key.equals(INTERNAL_SOURCE_DIRECTIVE) || key.equals(INTERNAL_EXPORTED_DIRECTIVE)
+					|| key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE)
+					|| key.equals(SPLIT_PACKAGE_DIRECTIVE) || key.equals(FROM_DIRECTIVE))
 				continue;
 
 			String value = ((String) entry.getValue()).trim();
@@ -2157,7 +2158,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		current.set(previous);
 	}
 
-	public static Executor getExecutor() {
+	public static ScheduledExecutorService getExecutor() {
 		return executor;
 	}
 
@@ -2551,11 +2552,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return getProperty(key);
 
 	}
-	
+
 	/**
 	 * Get a Parameters from merged properties
 	 */
-	
+
 	public Parameters getMergedParameters(String key) {
 		return new Parameters(mergeProperties(key));
 	}
@@ -2630,16 +2631,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Return the name of the properties file
 	 */
-	
+
 	public String _thisfile(String[] args) {
-		if ( propertiesFile == null) {
+		if (propertiesFile == null) {
 			error("${thisfile} executed on a processor without a properties file");
 			return null;
 		}
-		
+
 		return propertiesFile.getAbsolutePath().replaceAll("\\\\", "/");
 	}
-
 
 	/**
 	 * Copy the settings of another processor
@@ -2649,6 +2649,5 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		this.pedantic = p.isPedantic();
 		this.exceptions = p.isExceptions();
 	}
-
 
 }
