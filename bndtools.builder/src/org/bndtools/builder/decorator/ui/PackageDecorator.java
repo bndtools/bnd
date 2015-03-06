@@ -101,9 +101,9 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
                 String pkgName = pkg.getElementName();
                 Attrs pkgAttrs = model.getExports().getByFQN(pkgName);
                 if (pkgAttrs != null) {
-                    String version = Version.parseVersion(pkgAttrs.getVersion()).toString();
+                    String version = " " + Version.parseVersion(pkgAttrs.getVersion()).toString();
                     if (!version.equals(text)) {
-                        pkgResource.setPersistentProperty(packageDecoratorKey, " " + version);
+                        pkgResource.setPersistentProperty(packageDecoratorKey, version);
                         changed = true;
                     }
                     continue;
