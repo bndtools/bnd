@@ -1,3 +1,1 @@
-Bundle-Version: 0.0.0.${tstamp}
-Private-Package: example.included.*
-Export-Package: example.exported.*
+-sub: *.bnd
