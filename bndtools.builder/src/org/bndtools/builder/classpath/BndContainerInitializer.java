@@ -20,7 +20,7 @@ import org.bndtools.api.Logger;
 import org.bndtools.api.ModelListener;
 import org.bndtools.builder.BuildLogger;
 import org.bndtools.builder.BuilderPlugin;
-import org.bndtools.utils.jar.JarUtils;
+import org.bndtools.utils.jar.PseudoJar;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
@@ -287,20 +287,27 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     continue;
                 }
 
-                IClasspathAttribute[] extraAttrs = calculateContainerAttributes(c);
-                List<IAccessRule> accessRules = calculateContainerAccessRules(c);
-                switch (c.getType()) {
-                case PROJECT :
-                    IPath projectPath = root.getFile(path).getProject().getFullPath();
-                    addProjectEntry(classpath, projectPath, accessRules, extraAttrs);
-                    if (!isVersionProject(c)) { // if not version=project, add entry for generated jar
-                        addLibraryEntry(classpath, path, accessRules, extraAttrs);
+                PseudoJar pseudoJar = new PseudoJar(file);
+                try {
+                    IClasspathAttribute[] extraAttrs = calculateContainerAttributes(c);
+                    List<IAccessRule> accessRules = calculateContainerAccessRules(c, pseudoJar);
+
+                    switch (c.getType()) {
+                    case PROJECT :
+                        IPath projectPath = root.getFile(path).getProject().getFullPath();
+                        addProjectEntry(classpath, projectPath, accessRules, extraAttrs);
+                        if (!isVersionProject(c)) { // if not version=project, add entry for generated jar
+                            addLibraryEntry(classpath, path, accessRules, extraAttrs, pseudoJar);
+                        }
+                        break;
+                    default :
+                        addLibraryEntry(classpath, path, accessRules, extraAttrs, pseudoJar);
+                        break;
                     }
-                    break;
-                default :
-                    addLibraryEntry(classpath, path, accessRules, extraAttrs);
-                    break;
+                } finally {
+                    IO.close(pseudoJar);
                 }
+
             }
         }
 
@@ -335,8 +342,25 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             classpath.add(JavaCore.newProjectEntry(path, toAccessRulesArray(accessRules), false, extraAttrs, false));
         }
 
-        private void addLibraryEntry(List<IClasspathEntry> classpath, IPath path, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs) {
-            classpath.add(JavaCore.newLibraryEntry(path, path, null, toAccessRulesArray(accessRules), extraAttrs, false));
+        private boolean containsSource(PseudoJar jar) throws IOException {
+            String entry = jar.nextEntry();
+            while (entry != null) {
+                if ("OSGI-INF/src/".equals(entry))
+                    return true;
+                entry = jar.nextEntry();
+            }
+            return false;
+        }
+
+        private void addLibraryEntry(List<IClasspathEntry> classpath, IPath path, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs, PseudoJar pseudoJar) {
+            IPath sourcePath;
+            try {
+                sourcePath = containsSource(pseudoJar) ? path : null;
+            } catch (IOException e) {
+                sourcePath = null;
+            }
+
+            classpath.add(JavaCore.newLibraryEntry(path, sourcePath, null, toAccessRulesArray(accessRules), extraAttrs, false));
         }
 
         private IClasspathAttribute[] calculateContainerAttributes(Container c) {
@@ -358,7 +382,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return attrs.toArray(new IClasspathAttribute[attrs.size()]);
         }
 
-        private List<IAccessRule> calculateContainerAccessRules(Container c) {
+        private List<IAccessRule> calculateContainerAccessRules(Container c, PseudoJar pseudoJar) {
             String packageList = c.getAttributes().get("packages");
             if (packageList != null) {
                 // Use packages=* for full access
@@ -385,7 +409,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             case EXTERNAL :
                 Manifest mf = null;
                 try {
-                    mf = JarUtils.loadJarManifest(c.getFile());
+                    mf = pseudoJar.readManifest();
                 } catch (IOException e) {
                     break; // unable to open manifest; so full access
                 }
