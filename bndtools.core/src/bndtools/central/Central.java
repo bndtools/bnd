@@ -2,16 +2,12 @@ package bndtools.central;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -38,8 +34,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.Version;
-
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
@@ -60,9 +54,6 @@ public class Central implements IStartupParticipant {
     static RepositoryPlugin workspaceRepo = null;
 
     static final AtomicBoolean indexValid = new AtomicBoolean(false);
-    static final ConcurrentMap<String,Map<String,SortedSet<Version>>> exportedPackageMap = new ConcurrentHashMap<String,Map<String,SortedSet<Version>>>();
-    static final ConcurrentMap<String,Collection<String>> containedPackageMap = new ConcurrentHashMap<String,Collection<String>>();
-    static final ConcurrentMap<String,Collection<IResource>> sourceFolderMap = new ConcurrentHashMap<String,Collection<IResource>>();
 
     private final BundleContext bundleContext;
     private final Map<IJavaProject,Project> javaProjectToModel = new HashMap<IJavaProject,Project>();
@@ -547,32 +538,6 @@ public class Central implements IStartupParticipant {
         return indexValid.compareAndSet(false, true);
     }
 
-    public static Map<String,SortedSet<Version>> getExportedPackageModel(IProject project) {
-        String key = project.getFullPath().toPortableString();
-        return exportedPackageMap.get(key);
-    }
-
-    public static Collection<String> getContainedPackageModel(IProject project) {
-        String key = project.getFullPath().toPortableString();
-        return containedPackageMap.get(key);
-    }
-
-    public static Collection<IResource> getSourceFolderModel(IProject project) {
-        String key = project.getFullPath().toPortableString();
-        return sourceFolderMap.get(key);
-    }
-
-    public static void setProjectPackageModel(IProject project, Map<String,SortedSet<Version>> exports, Collection<String> contained, Collection<IResource> sourceFolders) {
-        String key = project.getFullPath().toPortableString();
-        exportedPackageMap.put(key, exports);
-        containedPackageMap.put(key, contained);
-        if (sourceFolders == null) {
-            sourceFolderMap.remove(key);
-        } else {
-            sourceFolderMap.put(key, sourceFolders);
-        }
-    }
-
     public static Project getProject(File projectDir) throws Exception {
         File projectDirAbsolute = projectDir.getAbsoluteFile();
         assert projectDirAbsolute.isDirectory();
@@ -587,7 +552,7 @@ public class Central implements IStartupParticipant {
 
     /**
      * Return the IResource associated with a file
-     * 
+     *
      * @param file
      * @return
      */

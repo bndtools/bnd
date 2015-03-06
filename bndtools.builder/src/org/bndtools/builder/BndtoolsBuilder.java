@@ -5,20 +5,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.builder.classpath.BndContainerInitializer;
-import org.bndtools.utils.swt.SWTConcurrencyUtil;
-import org.bndtools.utils.workspace.FileUtils;
+import org.bndtools.builder.decorator.ui.PackageDecorator;
 import org.bndtools.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -38,15 +34,9 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
-import org.osgi.framework.Version;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.header.Attrs;
-import aQute.bnd.osgi.Descriptors.PackageRef;
-import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -76,7 +66,6 @@ import bndtools.preferences.CompileErrorAction;
 public class BndtoolsBuilder extends IncrementalProjectBuilder {
     public static final String PLUGIN_ID = "bndtools.builder";
     public static final String BUILDER_ID = BndtoolsConstants.BUILDER_ID;
-
     private static final ILogger logger = Logger.getLogger(BndtoolsBuilder.class);
     static final Set<Project> dirty = Collections.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
     static {
@@ -266,7 +255,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 files = buildFiles.length;
             }
 
-            decorate(model);
+            // We can now decorate based on the build we just did.
+            PackageDecorator.updateDecoration(myProject, model);
 
             if (model.isCnf()) {
                 model.getWorkspace().refresh(); // this is for bnd plugins built in cnf
@@ -425,63 +415,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
         buildLog.full("Calculated dependsOn list: %s", result);
         return result.toArray(new IProject[result.size()]);
-    }
-
-    /*
-     * We can now decorate based on the build we just did.
-     */
-    private void decorate(Project model) throws Exception {
-
-        //
-        // Calculate the source path resources
-        //
-
-        File projectBaseFile = getProject().getLocation().toFile().getAbsoluteFile();
-        Collection<File> modelSourcePaths = model.getSourcePath();
-        Collection<IResource> modelSourcePathsResources = null;
-        if (modelSourcePaths != null && !modelSourcePaths.isEmpty()) {
-            modelSourcePathsResources = new HashSet<IResource>();
-            for (File modelSourcePath : modelSourcePaths) {
-                if (projectBaseFile.equals(modelSourcePath.getAbsoluteFile())) {
-                    continue;
-                }
-                IResource modelSourcePathResource = FileUtils.toProjectResource(getProject(), modelSourcePath);
-                if (modelSourcePathResource != null) {
-                    modelSourcePathsResources.add(modelSourcePathResource);
-                }
-            }
-        }
-
-        //
-        // Gobble up the information for exports and contained
-        //
-
-        Map<String,SortedSet<Version>> allExports = new HashMap<String,SortedSet<Version>>();
-        Set<String> allContained = new HashSet<String>();
-
-        //
-        // First the exports
-        //
-
-        for (Map.Entry<PackageRef,Attrs> entry : model.getExports().entrySet()) {
-            String v = entry.getValue().getVersion();
-            Version version = v == null ? Version.emptyVersion : new Version(v);
-            allExports.put(entry.getKey().getFQN(), new SortedList<Version>(version));
-        }
-
-        for (Map.Entry<PackageRef,Attrs> entry : model.getContained().entrySet()) {
-            allContained.add(entry.getKey().getFQN());
-        }
-
-        Central.setProjectPackageModel(getProject(), allExports, allContained, modelSourcePathsResources);
-
-        Display display = PlatformUI.getWorkbench().getDisplay();
-        SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {
-            @Override
-            public void run() {
-                PlatformUI.getWorkbench().getDecoratorManager().update("bndtools.packageDecorator");
-            }
-        });
     }
 
     private CompileErrorAction getActionOnCompileError() {
