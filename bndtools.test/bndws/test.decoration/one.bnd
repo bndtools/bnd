@@ -1,0 +1,3 @@
+Private-Package: example.included.*
+Export-Package: example.exported, example.exported.one, example.unversioned.exported
+Import-Package: example.exported.one
