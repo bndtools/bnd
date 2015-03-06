@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -75,61 +76,68 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
             return; // project is not a java project
         }
         boolean changed = false;
-        for (IPackageFragmentRoot pkgRoot : javaProject.getPackageFragmentRoots()) {
-            if (pkgRoot.getKind() != IPackageFragmentRoot.K_SOURCE) {
+        for (IClasspathEntry cpe : javaProject.getRawClasspath()) {
+            if (cpe.getEntryKind() != IClasspathEntry.CPE_SOURCE) {
                 continue;
             }
-            IResource pkgRootResource = pkgRoot.getCorrespondingResource();
-            if (pkgRootResource == null) {
-                continue;
-            }
-            File pkgRootFile = pkgRootResource.getLocation().toFile();
-            if (!model.getSourcePath().contains(pkgRootFile)) {
-                continue;
-            }
-            IJavaElement[] pkgs = pkgRoot.getChildren();
-            for (IJavaElement e : pkgs) {
-                IPackageFragment pkg = (IPackageFragment) e;
-                if (pkg.getKind() != IPackageFragmentRoot.K_SOURCE) {
+            for (IPackageFragmentRoot pkgRoot : javaProject.findPackageFragmentRoots(cpe)) {
+                assert pkgRoot.getKind() == IPackageFragmentRoot.K_SOURCE;
+                IResource pkgRootResource = pkgRoot.getCorrespondingResource();
+                if (pkgRootResource == null) {
                     continue;
                 }
-                IResource pkgResource = pkg.getCorrespondingResource();
-                if (pkgResource == null) {
-                    continue;
-                }
-                String text = pkgResource.getPersistentProperty(packageDecoratorKey);
-                String pkgName = pkg.getElementName();
-                Attrs pkgAttrs = model.getExports().getByFQN(pkgName);
-                if (pkgAttrs != null) {
-                    StringBuilder sb = new StringBuilder(" ").append(Version.parseVersion(pkgAttrs.getVersion()));
-                    pkgAttrs = model.getImports().getByFQN(pkgName);
-                    if (pkgAttrs != null) {
-                        String versionRange = pkgAttrs.getVersion();
-                        if (versionRange != null) {
-                            sb.append('\u2194').append(versionRange);
+                File pkgRootFile = pkgRootResource.getLocation().toFile();
+                boolean pkgInSourcePath = model.getSourcePath().contains(pkgRootFile);
+                for (IJavaElement child : pkgRoot.getChildren()) {
+                    IPackageFragment pkg = (IPackageFragment) child;
+                    assert pkg.getKind() == IPackageFragmentRoot.K_SOURCE;
+                    IResource pkgResource = pkg.getCorrespondingResource();
+                    if (pkgResource == null) {
+                        continue;
+                    }
+                    String text = pkgResource.getPersistentProperty(packageDecoratorKey);
+                    if (pkgInSourcePath) {
+                        String pkgName = pkg.getElementName();
+
+                        // Decorate if exported package
+                        Attrs pkgAttrs = model.getExports().getByFQN(pkgName);
+                        if (pkgAttrs != null) {
+                            StringBuilder sb = new StringBuilder(" ").append(Version.parseVersion(pkgAttrs.getVersion()));
+                            pkgAttrs = model.getImports().getByFQN(pkgName);
+                            if (pkgAttrs != null) {
+                                String versionRange = pkgAttrs.getVersion();
+                                if (versionRange != null) {
+                                    sb.append('\u2194').append(versionRange);
+                                }
+                            }
+                            String version = sb.toString();
+                            if (!version.equals(text)) {
+                                pkgResource.setPersistentProperty(packageDecoratorKey, version);
+                                changed = true;
+                            }
+                            continue;
+                        }
+
+                        // Decorate if non-empty, non-contained package
+                        if (pkg.containsJavaResources() && !model.getContained().containsFQN(pkgName)) {
+                            if (!excluded.equals(text)) {
+                                pkgResource.setPersistentProperty(packageDecoratorKey, excluded);
+                                changed = true;
+                            }
+                            continue;
                         }
                     }
-                    String version = sb.toString();
-                    if (!version.equals(text)) {
-                        pkgResource.setPersistentProperty(packageDecoratorKey, version);
+
+                    // Clear decoration
+                    if (text != null) {
+                        pkgResource.setPersistentProperty(packageDecoratorKey, null);
                         changed = true;
                     }
-                    continue;
-                }
-                if (pkg.containsJavaResources() && !model.getContained().containsFQN(pkgName)) {
-                    if (!excluded.equals(text)) {
-                        pkgResource.setPersistentProperty(packageDecoratorKey, excluded);
-                        changed = true;
-                    }
-                    continue;
-                }
-                if (text != null) {
-                    pkgResource.setPersistentProperty(packageDecoratorKey, null);
-                    changed = true;
                 }
             }
         }
 
+        // If decoration change, update display
         if (changed) {
             Display display = PlatformUI.getWorkbench().getDisplay();
             SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {
