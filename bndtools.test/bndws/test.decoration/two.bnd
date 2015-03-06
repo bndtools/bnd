@@ -1,3 +1,2 @@
-Private-Package: example.included.*
-Export-Package: example.exported.two, example.secondsrc.exported
-Import-Package: example.exported.two
+Private-Package: example.extra.contained
+Export-Package: example.extra.exported
