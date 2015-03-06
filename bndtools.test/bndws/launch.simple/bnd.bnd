@@ -3,5 +3,7 @@ Bundle-Version: 0.0.0.${tstamp}
 Private-Package: hello
 -runfw: org.apache.felix.framework;version='[4.4.0,4.4.0]'
 -runee: JavaSE-1.7
-
+-runpath: /Ws/bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher-3.0.0.jar;version=file
+-runremote: \
+	test
 Bundle-Activator: hello.Hello
