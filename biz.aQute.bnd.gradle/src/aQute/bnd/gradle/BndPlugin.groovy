@@ -97,12 +97,12 @@ public class BndPlugin implements Plugin<Project> {
       sourceSets {
         /* bnd uses the same directory for java and resources. */
         main {
-          java.srcDirs = resources.srcDirs = files(relativePath(bndProject.src))
-          output.classesDir = output.resourcesDir = relativePath(bndProject.srcOutput)
+          java.srcDirs = resources.srcDirs = files(bndProject.sourcepath)
+          output.classesDir = output.resourcesDir = bndProject.srcOutput
         }
         test {
-          java.srcDirs = resources.srcDirs = files(relativePath(bndProject.testSrc))
-          output.classesDir = output.resourcesDir = relativePath(bndProject.testOutput)
+          java.srcDirs = resources.srcDirs = files(bndProject.testSrc)
+          output.classesDir = output.resourcesDir = bndProject.testOutput
         }
       }
       bnd.ext.allSrcDirs = files(bndProject.allsourcepath)
@@ -399,7 +399,7 @@ public class BndPlugin implements Plugin<Project> {
           println "project.dir:            ${projectDir}"
           println "project.name:           ${project.name}"
           println "project.dependson:      ${bndProject.dependson*.name}"
-          println "project.src:            ${files(sourceSets.main.java.srcDirs).asPath}"
+          println "project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}"
           println "project.output:         ${compileJava.destinationDir}"
           println "project.buildpath:      ${compileJava.classpath.asPath}"
           println "project.allsourcepath:  ${bnd.allSrcDirs.asPath}"
