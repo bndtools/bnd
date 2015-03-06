@@ -2,6 +2,7 @@ package org.bndtools.builder.decorator.ui;
 
 import java.io.File;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.builder.BndtoolsBuilder;
@@ -46,6 +47,9 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
         try {
             IPackageFragment pkg = (IPackageFragment) element;
             if (pkg.getKind() != IPackageFragmentRoot.K_SOURCE) {
+                return;
+            }
+            if (!pkg.getJavaProject().getProject().hasNature(BndtoolsConstants.NATURE_ID)) {
                 return;
             }
             IResource pkgResource = pkg.getCorrespondingResource();
