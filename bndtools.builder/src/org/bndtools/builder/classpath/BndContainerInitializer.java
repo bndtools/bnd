@@ -345,7 +345,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         private boolean containsSource(PseudoJar jar) throws IOException {
             String entry = jar.nextEntry();
             while (entry != null) {
-                if ("OSGI-INF/src/".equals(entry))
+                if ("OSGI-OPT/src/".equals(entry))
                     return true;
                 entry = jar.nextEntry();
             }
