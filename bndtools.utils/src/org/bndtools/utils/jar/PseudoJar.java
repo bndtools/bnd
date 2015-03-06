@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,6 +55,12 @@ public class PseudoJar implements Closeable {
 
     private static void index(String prefix, File dir, List<String> index) {
         File[] children = dir.listFiles();
+        Arrays.sort(children, new Comparator<File>() {
+            @Override
+            public int compare(File f1, File f2) {
+                return f1.getName().compareTo(f2.getName());
+            }
+        });
         if (children != null)
             for (File child : children) {
                 String path = prefix + child.getName();
