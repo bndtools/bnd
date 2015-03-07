@@ -7,7 +7,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.Manifest;
@@ -60,8 +62,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     static final Pattern packagePattern = Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
     static final ReentrantLock bndLock = new ReentrantLock();
 
+    final Map<File,JarInfo> jarInfo;
+
     public BndContainerInitializer() {
         super();
+        jarInfo = new WeakHashMap<File,JarInfo>();
         Central.getInstance().addModelListener(this);
     }
 
@@ -287,27 +292,21 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     continue;
                 }
 
-                PseudoJar pseudoJar = new PseudoJar(file);
-                try {
-                    IClasspathAttribute[] extraAttrs = calculateContainerAttributes(c);
-                    List<IAccessRule> accessRules = calculateContainerAccessRules(c, pseudoJar);
+                IClasspathAttribute[] extraAttrs = calculateContainerAttributes(c);
+                List<IAccessRule> accessRules = calculateContainerAccessRules(c);
 
-                    switch (c.getType()) {
-                    case PROJECT :
-                        IPath projectPath = root.getFile(path).getProject().getFullPath();
-                        addProjectEntry(classpath, projectPath, accessRules, extraAttrs);
-                        if (!isVersionProject(c)) { // if not version=project, add entry for generated jar
-                            addLibraryEntry(classpath, path, accessRules, extraAttrs, pseudoJar);
-                        }
-                        break;
-                    default :
-                        addLibraryEntry(classpath, path, accessRules, extraAttrs, pseudoJar);
-                        break;
+                switch (c.getType()) {
+                case PROJECT :
+                    IPath projectPath = root.getFile(path).getProject().getFullPath();
+                    addProjectEntry(classpath, projectPath, accessRules, extraAttrs);
+                    if (!isVersionProject(c)) { // if not version=project, add entry for generated jar
+                        addLibraryEntry(classpath, path, calculateSourceAttachmentPath(path, file), accessRules, extraAttrs);
                     }
-                } finally {
-                    IO.close(pseudoJar);
+                    break;
+                default :
+                    addLibraryEntry(classpath, path, calculateSourceAttachmentPath(path, file), accessRules, extraAttrs);
+                    break;
                 }
-
             }
         }
 
@@ -342,25 +341,43 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             classpath.add(JavaCore.newProjectEntry(path, toAccessRulesArray(accessRules), false, extraAttrs, false));
         }
 
-        private boolean containsSource(PseudoJar jar) throws IOException {
-            String entry = jar.nextEntry();
-            while (entry != null) {
-                if ("OSGI-OPT/src/".equals(entry))
-                    return true;
-                entry = jar.nextEntry();
-            }
-            return false;
+        private IPath calculateSourceAttachmentPath(IPath path, File file) {
+            JarInfo info = getJarInfo(file);
+            return info.hasSource ? path : null;
         }
 
-        private void addLibraryEntry(List<IClasspathEntry> classpath, IPath path, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs, PseudoJar pseudoJar) {
-            IPath sourcePath;
-            try {
-                sourcePath = containsSource(pseudoJar) ? path : null;
-            } catch (IOException e) {
-                sourcePath = null;
+        private JarInfo getJarInfo(File file) {
+            final long lastModified = file.lastModified();
+            JarInfo info = jarInfo.get(file);
+            if ((info != null) && (lastModified == info.lastModified)) {
+                return info;
             }
+            info = new JarInfo();
+            info.lastModified = lastModified;
+            PseudoJar jar = new PseudoJar(file);
+            try {
+                Manifest mf = jar.readManifest();
+                if ((mf != null) && (mf.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) != null)) {
+                    Parameters exportPkgs = new Parameters(mf.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+                    Set<String> exports = exportPkgs.keySet();
+                    info.exports = exports.toArray(new String[exports.size()]);
+                }
+                for (String entry = jar.nextEntry(); entry != null; entry = jar.nextEntry()) {
+                    if (entry.startsWith("OSGI-OPT/src/")) {
+                        info.hasSource = true; // use library path as source attachment path
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+            } finally {
+                IO.close(jar);
+            }
+            jarInfo.put(file, info);
+            return info;
+        }
 
-            classpath.add(JavaCore.newLibraryEntry(path, sourcePath, null, toAccessRulesArray(accessRules), extraAttrs, false));
+        private void addLibraryEntry(List<IClasspathEntry> classpath, IPath path, IPath sourceAttachementPath, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs) {
+            classpath.add(JavaCore.newLibraryEntry(path, sourceAttachementPath, null, toAccessRulesArray(accessRules), extraAttrs, false));
         }
 
         private IClasspathAttribute[] calculateContainerAttributes(Container c) {
@@ -382,7 +399,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return attrs.toArray(new IClasspathAttribute[attrs.size()]);
         }
 
-        private List<IAccessRule> calculateContainerAccessRules(Container c, PseudoJar pseudoJar) {
+        private List<IAccessRule> calculateContainerAccessRules(Container c) {
             String packageList = c.getAttributes().get("packages");
             if (packageList != null) {
                 // Use packages=* for full access
@@ -407,21 +424,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 //$FALL-THROUGH$
             case REPO :
             case EXTERNAL :
-                Manifest mf = null;
-                try {
-                    mf = pseudoJar.readManifest();
-                } catch (IOException e) {
-                    break; // unable to open manifest; so full access
-                }
-                if (mf == null) {
-                    break; // no manifest; so full access
-                }
-                if (mf.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) == null) {
-                    break; // not a bundle; so full access
+                JarInfo info = getJarInfo(c.getFile());
+                if (info.exports == null) {
+                    break; // no export; so full access
                 }
                 List<IAccessRule> accessRules = new ArrayList<IAccessRule>();
-                Parameters exportPkgs = new Parameters(mf.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
-                for (String exportPkg : exportPkgs.keySet()) {
+                for (String exportPkg : info.exports) {
                     String pathStr = exportPkg.replace('.', '/') + "/*";
                     accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
                 }
@@ -517,5 +525,13 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         private SetLocation error(Container c, String header, String message, Throwable t, Object... args) {
             return model.error(message, t, args).context(c.getBundleSymbolicName()).header(header).file(model.getPropertiesFile().getAbsolutePath());
         }
+    }
+
+    private class JarInfo {
+        boolean hasSource;
+        String[] exports;
+        long lastModified;
+
+        JarInfo() {}
     }
 }
