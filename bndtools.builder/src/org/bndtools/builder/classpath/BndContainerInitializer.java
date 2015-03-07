@@ -368,8 +368,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                         break;
                     }
                 }
-            } catch (IOException e) {
-            } finally {
+            } catch (IOException e) {} finally {
                 IO.close(jar);
             }
             jarInfo.put(file, info);
@@ -527,7 +526,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
     }
 
-    private class JarInfo {
+    private static class JarInfo {
         boolean hasSource;
         String[] exports;
         long lastModified;
