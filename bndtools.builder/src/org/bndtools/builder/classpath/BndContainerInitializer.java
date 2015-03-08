@@ -62,6 +62,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     static final Pattern packagePattern = Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
     static final ReentrantLock bndLock = new ReentrantLock();
 
+    /*
+     * @GuardedBy bndLock
+     */
     final Map<File,JarInfo> jarInfo;
 
     public BndContainerInitializer() {
@@ -223,7 +226,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         private List<IClasspathEntry> calculateProjectClasspath() {
-            if (!project.exists() || !project.isOpen())
+            if (!project.isOpen())
                 return Collections.emptyList();
 
             List<IClasspathEntry> classpath = new ArrayList<IClasspathEntry>(20);
@@ -353,6 +356,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 return info;
             }
             info = new JarInfo();
+            if (!file.exists()) {
+                return info;
+            }
             info.lastModified = lastModified;
             PseudoJar jar = new PseudoJar(file);
             try {
@@ -368,15 +374,17 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                         break;
                     }
                 }
-            } catch (IOException e) {} finally {
+            } catch (IOException e) {
+                logger.logInfo("Failed to read " + file, e);
+            } finally {
                 IO.close(jar);
             }
             jarInfo.put(file, info);
             return info;
         }
 
-        private void addLibraryEntry(List<IClasspathEntry> classpath, IPath path, IPath sourceAttachementPath, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs) {
-            classpath.add(JavaCore.newLibraryEntry(path, sourceAttachementPath, null, toAccessRulesArray(accessRules), extraAttrs, false));
+        private void addLibraryEntry(List<IClasspathEntry> classpath, IPath path, IPath sourceAttachmentPath, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs) {
+            classpath.add(JavaCore.newLibraryEntry(path, sourceAttachmentPath, null, toAccessRulesArray(accessRules), extraAttrs, false));
         }
 
         private IClasspathAttribute[] calculateContainerAttributes(Container c) {
