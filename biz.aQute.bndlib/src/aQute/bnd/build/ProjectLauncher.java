@@ -551,8 +551,9 @@ public abstract class ProjectLauncher {
 	 * 
 	 * @param text
 	 *            the text to write
+	 * @throws Exception
 	 */
-	public void write(String text) {
+	public void write(String text) throws Exception {
 
 	}
 }
