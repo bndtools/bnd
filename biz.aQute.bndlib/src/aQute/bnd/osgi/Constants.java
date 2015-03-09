@@ -149,6 +149,7 @@ public interface Constants {
 	String							PACKAGE										= "-package";
 	String							PACKAGE_JPM									= "jpm";
 	String							PEDANTIC									= "-pedantic";
+	String							PACKAGEINFOTYPE								= "-packageinfotype";
 	String							PLUGIN										= "-plugin";
 	String							PLUGINPATH									= "-pluginpath";
 	String							PLUGINPATH_URL_ATTR							= "url";
@@ -228,7 +229,7 @@ public interface Constants {
 			PACKAGE, RUNNOREFERENCES, JAVAAGENT, STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT,
 			NOJUNITOSGI, PREPROCESSMATCHERS, UPTO, INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE,
 			NOEE, OUTPUTMASK, TESTUNRESOLVED, RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT,
-			BNDDRIVER, CHECK, DISTRO, METATYPE_ANNOTATIONS, METATYPE_ANNOTATIONS_OPTIONS
+			BNDDRIVER, CHECK, DISTRO, METATYPE_ANNOTATIONS, METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE
 																				};
 
 	// Ignore bundle specific headers. These bundles do not make

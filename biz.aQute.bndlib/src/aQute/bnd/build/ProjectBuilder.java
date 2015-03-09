@@ -9,6 +9,7 @@ import aQute.bnd.differ.*;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
 import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
@@ -556,4 +557,17 @@ public class ProjectBuilder extends Builder {
 		project.importedPackages.putAll(builder.getImports());
 		project.containedPackages.putAll(builder.getContained());
 	}
+
+	/**
+	 * Find the source file for this type
+	 * 
+	 * @param type
+	 * @return
+	 * @throws Exception
+	 */
+	@Override
+	public String getSourceFileFor(TypeRef type) throws Exception {
+		return super.getSourceFileFor(type, getSourcePath());
+	}
+
 }

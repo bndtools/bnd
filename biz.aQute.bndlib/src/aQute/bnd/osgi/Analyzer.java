@@ -3183,6 +3183,11 @@ public class Analyzer extends Processor {
 	 * @throws Exception
 	 */
 	public String getSourceFileFor(TypeRef type) throws Exception {
+		Set<File> sp = Collections.singleton(getFile(getProperty(DEFAULT_PROP_SRC_DIR, "src")));
+		return getSourceFileFor(type, sp);
+	}
+
+	public String getSourceFileFor(TypeRef type, Collection<File> sourcePath) throws Exception {
 		Clazz clazz = findClass(type);
 		if (clazz == null) {
 			Attrs attrs = classpathExports.get(type.getPackageRef());
@@ -3193,11 +3198,23 @@ public class Analyzer extends Processor {
 			return null;
 		}
 
-		String path = getProperty("src", "src") + "/" + type.getPackageRef().getPath() + "/" + clazz.sourceFile;
-		if (getPropertiesFile() != null) {
-			path = getPropertiesFile().getParentFile().getAbsolutePath().replace(File.separatorChar, '/') + "/" + path;
+		String path = type.getPackageRef().getBinary() + "/" + clazz.sourceFile;
+
+		for (File srcDir : sourcePath) {
+			if (!srcDir.isFile())
+				continue;
+
+			File file = IO.getFile(srcDir, path);
+			if (file.isFile()) {
+				String abspath = file.getAbsolutePath();
+				if (File.separatorChar == '/')
+					return abspath;
+
+				return abspath.replace(File.separatorChar, '/');
+			}
+
 		}
-		return path;
+		return "";
 	}
 
 	/**

@@ -542,19 +542,109 @@ public class ProjectTest extends TestCase {
 		version = project.getPackageInfo("pkg1");
 		assertEquals(newVersion, version);
 		checkPackageInfoFiles(project, "pkg1", true, false);
+
 	}
 
-	private  void checkPackageInfoFiles(Project project, String packageName, boolean expectPackageInfo,
+	/*
+	 * Verify that this also works when you have multiple directories
+	 */
+	public void testMultidirsrc() throws Exception {
+		Workspace ws = getWorkspace("testresources/ws");
+		Project p = ws.getProject("pmuldirsrc");
+		Collection<File> sourcePath = p.getSourcePath();
+		assertEquals(2, sourcePath.size());
+		assertTrue(sourcePath.contains(p.getFile("a")));
+		assertTrue(sourcePath.contains(p.getFile("b")));
+
+		//
+		// pkgb = in b
+		//
+
+		Version version = new Version("2.0.0");
+		p.setPackageInfo("pkgb", version);
+		Version newer = p.getPackageInfo("pkgb");
+		assertEquals(version, newer);
+
+		assertFalse(p.getFile("a/pkgb/package-info.java").isFile());
+		assertFalse(p.getFile("a/pkgb/packageinfo").isFile());
+		assertFalse(p.getFile("b/pkgb/package-info.java").isFile());
+		assertTrue(p.getFile("b/pkgb/packageinfo").isFile());
+	}
+
+	/*
+	 * Verify that that -versionannotations works. We can be osgi, bnd,
+	 * packageinfo, or an annotation. When not set, we are packageinfo
+	 */
+	public void testPackageInfoType() throws Exception {
+		Workspace ws = getWorkspace("testresources/ws");
+		Project project = ws.getProject("p5");
+		project.setTrace(true);
+
+		Version newVersion = new Version(2, 0, 0);
+
+		project.setProperty(Constants.PACKAGEINFOTYPE, "bnd");
+		// Package with no package info
+
+		project.setPackageInfo("pkg1", newVersion);
+		Version version = project.getPackageInfo("pkg1");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg1", false, true);
+		String content = IO.collect(project.getFile("src/pkg1/package-info.java"));
+		assertTrue(content.contains("import aQute.bnd.annotation.Version"));
+
+		// Package with package-info.java containing @Version("1.0.0")
+		project.setPackageInfo("pkg2", newVersion);
+		version = project.getPackageInfo("pkg2");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg2", false, true);
+
+		// new packageinfo must now contain osgi ann.
+		project.setProperty(Constants.PACKAGEINFOTYPE, "osgi");
+
+		// Package with package-info.java containing version + packageinfo
+		project.setPackageInfo("pkg5", newVersion);
+		version = project.getPackageInfo("pkg5");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg5", true, true);
+		content = IO.collect(project.getFile("src/pkg5/package-info.java"));
+		assertTrue(content.contains("import aQute.bnd.annotation.Version"));
+
+		// Package with package-info.java NOT containing version +
+		// packageinfo
+		project.setPackageInfo("pkg6", newVersion);
+		version = project.getPackageInfo("pkg6");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg6", true, true);
+		content = IO.collect(project.getFile("src/pkg6/package-info.java"));
+		assertTrue(content.contains("import org.osgi.annotation.versioning.Version"));
+
+		// Package with package-info.java NOT containing version
+		project.setPackageInfo("pkg7", newVersion);
+		version = project.getPackageInfo("pkg7");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg7", false, true);
+
+		newVersion = new Version(2, 2, 0);
+
+		// Update packageinfo file
+		project.setPackageInfo("pkg1", newVersion);
+		version = project.getPackageInfo("pkg1");
+		assertEquals(newVersion, version);
+		checkPackageInfoFiles(project, "pkg1", false, true);
+	}
+
+	private void checkPackageInfoFiles(Project project, String packageName, boolean expectPackageInfo,
 			boolean expectPackageInfoJava) throws Exception {
-		File pkgInfo = IO.getFile(project.getSrc(), packageName + "/packageinfo");
-		File pkgInfoJava = IO.getFile(project.getSrc(), packageName + "/package-info.java");
+
+		File pkgInfo = project.getFile("src/" + packageName.replace('.', '/') + "/packageinfo");
+		File pkgInfoJava = project.getFile("src/" + packageName.replace('.', '/') + "/package-info.java");
 		assertEquals(expectPackageInfo, pkgInfo.exists());
 		assertEquals(expectPackageInfoJava, pkgInfoJava.exists());
 	}
 
-	public  void testBuildAll() throws Exception {
-		assertTrue(testBuildAll("*", 16).check()); // there are 14 projects
-		assertTrue(testBuildAll("p*", 10).check()); // 7 begin with p
+	public void testBuildAll() throws Exception {
+		assertTrue(testBuildAll("*", 17).check()); // there are 14 projects
+		assertTrue(testBuildAll("p*", 11).check()); // 7 begin with p
 		assertTrue(testBuildAll("!p*, *", 6).check()); // negation: 6 don't
 														// begin with p
 		assertTrue(testBuildAll("*-*", 6).check()); // more than one wildcard: 7
@@ -567,7 +657,7 @@ public class ProjectTest extends TestCase {
 																					// is
 																					// an
 																					// error
-		assertTrue(testBuildAll("p*, !*-*, *", 14).check()); // check that
+		assertTrue(testBuildAll("p*, !*-*, *", 15).check()); // check that
 																// negation
 																// works after
 																// some projects
