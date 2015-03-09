@@ -84,7 +84,7 @@ public class Workspace extends Processor {
 		if (defaults != null)
 			return defaults;
 
-		Properties props = new UTF8Properties();
+		UTF8Properties props = new UTF8Properties();
 		InputStream propStream = Workspace.class.getResourceAsStream("defaults.bnd");
 		if (propStream != null) {
 			try {
@@ -98,7 +98,7 @@ public class Workspace extends Processor {
 			}
 		} else
 			System.err.println("Cannot load defaults");
-		defaults = new Processor(props);
+		defaults = new Processor(props, false);
 
 		return defaults;
 	}

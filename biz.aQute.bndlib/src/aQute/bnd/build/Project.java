@@ -365,23 +365,19 @@ public class Project extends Processor {
 	}
 
 	public File getSrcOutput() {
-		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_BIN_DIR);
-		return getFile(getProperty(Constants.DEFAULT_PROP_BIN_DIR, deflt));
+		return getFile(getProperty(Constants.DEFAULT_PROP_BIN_DIR));
 	}
 
 	public File getTestSrc() {
-		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR);
-		return getFile(getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR, deflt));
+		return getFile(getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR));
 	}
 
 	public File getTestOutput() {
-		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR);
-		return getFile(getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR, deflt));
+		return getFile(getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR));
 	}
 
 	public File getTargetDir() {
-		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TARGET_DIR);
-		return getFile(getProperty(Constants.DEFAULT_PROP_TARGET_DIR, deflt));
+		return getFile(getProperty(Constants.DEFAULT_PROP_TARGET_DIR));
 	}
 
 	private void traverse(Collection<Project> dependencies, Set<Project> visited) throws Exception {

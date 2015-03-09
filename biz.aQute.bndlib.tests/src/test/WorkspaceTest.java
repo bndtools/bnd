@@ -103,6 +103,7 @@ public class WorkspaceTest extends TestCase {
 		assertEquals("defaults", p.getProperty("myprop1"));
 		assertEquals("workspace", p.getProperty("myprop2"));
 		assertEquals("project", p.getProperty("myprop3"));
+		assertEquals("src", p.mergeProperties("src"));
 	}
 
 }
