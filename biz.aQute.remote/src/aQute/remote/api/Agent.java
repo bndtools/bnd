@@ -1,5 +1,6 @@
 package aQute.remote.api;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.osgi.framework.dto.BundleDTO;
@@ -7,6 +8,12 @@ import org.osgi.framework.dto.FrameworkDTO;
 
 public interface Agent {
 	public static final int DEFAULT_PORT = 29998;
+
+	enum AgentType {
+		envoy, agent;
+	}
+
+	AgentType getType();
 
 	FrameworkDTO getFramework() throws Exception;
 
@@ -26,6 +33,10 @@ public interface Agent {
 
 	String shell(String cmd) throws Exception;
 
-	boolean abort();
+	Map<String, String> getSystemProperties() throws Exception;
 
+	int createFramework(String name, Collection<String> runpath,
+			Map<String, Object> properties) throws Exception;
+
+	boolean abort();
 }

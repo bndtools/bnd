@@ -1,10 +1,11 @@
 
-Launcher-Plugin: aQute.remote.launcher.plugin.RemoteProjectLauncher
+
+Launcher-Plugin: aQute.remote.plugin.RemoteProjectLauncherPlugin
 
 Private-Package: \
-	aQute.remote.launcher.plugin,\
-	aQute.remote.supervisor.provider,\
 	aQute.remote.api,\
+	aQute.remote.plugin,\
+	aQute.remote.util, \
 	org.osgi.dto,\
 	org.osgi.framework.dto
 	

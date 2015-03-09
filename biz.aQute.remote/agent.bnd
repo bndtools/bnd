@@ -1,13 +1,14 @@
 Bundle-Version: 0.0.0.${tstamp}
 Private-Package: \
+	aQute.remote.api,\
+	aQute.remote.agent,\
 	org.osgi.dto,\
 	org.osgi.framework.dto,\
-	aQute.remote.agent.provider,\
-	aQute.remote.api
+	aQute.remote.util,\
+	aQute.remote.main
 
 Import-Package: org.osgi.framework;version=1.5,*
 
-Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter
-Bundle-Activator: aQute.remote.agent.provider.Activator
+Bundle-Activator: aQute.remote.agent.Activator
 
-Main-Class: aQute.remote.agent.provider.Main
+Main-Class: aQute.remote.main.Main

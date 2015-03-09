@@ -1,8 +1,7 @@
-package aQute.remote.supervisor.provider;
+package aQute.remote.plugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -19,36 +18,35 @@ import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.libg.comlink.Link;
 import aQute.libg.cryptography.SHA1;
+import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Supervisor;
 
-public class SupervisorClient<A> implements Supervisor {
-	private Appendable stdout;
-	private Appendable stderr;
-	private A agent;
-	private static final Map<File, Info> fileInfo = new ConcurrentHashMap<File, SupervisorClient.Info>();
+public class AgentSupervisor implements Supervisor {
+	private static final Map<File, Info> fileInfo = new ConcurrentHashMap<File, AgentSupervisor.Info>();
 	private static final MultiMap<String, String> shaInfo = new MultiMap<String, String>();
 	private static final byte[] EMPTY = new byte[0];
+	
+	private Appendable stdout;
+	private Appendable stderr;
+	private Agent agent;
 	private CountDownLatch latch = new CountDownLatch(1);
 	private int exitCode;
-	private Link<Supervisor, A> link;
-	private InputStream stdin;
-	private Thread stdinReader;
+	private Link<Supervisor, Agent> link;
 
 	static class Info extends DTO {
 		public String sha;
 		public long lastModified;
 	}
 
-	public static <T> SupervisorClient<T> link(Class<T> clazz, String host,
-			int port) throws UnknownHostException, IOException,
-			InterruptedException {
+	public static AgentSupervisor create(String host, int port)
+			throws UnknownHostException, IOException, InterruptedException {
 		while (true)
 			try {
 				Socket socket = new Socket(host, port);
-				SupervisorClient<T> supervisor = new SupervisorClient<T>();
-				Link<Supervisor, T> link = new Link<Supervisor, T>(clazz,
-						supervisor, socket);
+				AgentSupervisor supervisor = new AgentSupervisor();
+				Link<Supervisor, Agent> link = new Link<Supervisor, Agent>(
+						Agent.class, supervisor, socket);
 				supervisor.setAgent(link);
 				link.open();
 				return supervisor;
@@ -103,7 +101,7 @@ public class SupervisorClient<A> implements Supervisor {
 		return EMPTY;
 	}
 
-	public void setAgent(Link<Supervisor, A> link) {
+	public void setAgent(Link<Supervisor, Agent> link) {
 		this.agent = link.getRemote();
 		this.link = link;
 	}
@@ -111,10 +109,6 @@ public class SupervisorClient<A> implements Supervisor {
 	public void close() throws IOException {
 		latch.countDown();
 		link.close();
-		if (stdin != null) {
-			stdinReader.interrupt();
-			stdin.close();
-		}
 	}
 
 	public int join() throws InterruptedException {
@@ -122,7 +116,7 @@ public class SupervisorClient<A> implements Supervisor {
 		return exitCode;
 	}
 
-	public A getAgent() {
+	public Agent getAgent() {
 		return agent;
 	}
 
@@ -156,4 +150,9 @@ public class SupervisorClient<A> implements Supervisor {
 		this.stderr = err;
 	}
 
+	public void setStreams(Appendable out, Appendable err) throws Exception {
+		setStdout(out);
+		setStderr(err);
+		getAgent().redirect(true);
+	}
 }

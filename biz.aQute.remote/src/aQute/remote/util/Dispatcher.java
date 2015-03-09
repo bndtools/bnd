@@ -1,4 +1,4 @@
-package aQute.remote.agent.provider;
+package aQute.remote.util;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -11,17 +11,20 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import aQute.libg.comlink.Link;
+import aQute.remote.api.Agent;
+import aQute.remote.api.Linkable;
+import aQute.remote.api.Supervisor;
 
-public class Dispatcher<L,R> extends Thread {
+public class Dispatcher extends Thread {
 
 	private final String host;
 	private final int port;
-	private final Callable<Linkable<L, R>> factory;
+	private final Callable<Linkable<Agent, Supervisor>> factory;
 	private final List<Closeable> closeables = new CopyOnWriteArrayList<Closeable>();
 	private ServerSocket server;
-	private Class<R> remoteClass;
+	private Class<Supervisor> remoteClass;
 
-	public Dispatcher(Class<R> remoteClass, Callable<Linkable<L,R>> factory, String host, int port) {
+	public Dispatcher(Class<Supervisor> remoteClass, Callable<Linkable<Agent,Supervisor>> factory, String host, int port) {
 		super("aQute.agent.server::" + (host == null ? "localhost" : host)
 				+ ":" + port);
 		this.remoteClass=remoteClass;
@@ -39,8 +42,8 @@ public class Dispatcher<L,R> extends Thread {
 					final Socket connection = server.accept();
 
 					
-					Linkable<L, R> local = factory.call();
-					final Link<L, R> link = new Link<L, R>(
+					Linkable<Agent, Supervisor> local = factory.call();
+					final Link<Agent, Supervisor> link = new Link<Agent, Supervisor>(
 							remoteClass, local.get(), connection);
 					local.setRemote(link.getRemote());
 					closeables.add(link);

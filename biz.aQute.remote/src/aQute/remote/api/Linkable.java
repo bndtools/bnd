@@ -1,4 +1,4 @@
-package aQute.remote.agent.provider;
+package aQute.remote.api;
 
 import java.io.Closeable;
 

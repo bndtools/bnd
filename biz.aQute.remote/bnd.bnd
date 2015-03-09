@@ -8,3 +8,4 @@
 
 -sub: *.bnd
 
+Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter

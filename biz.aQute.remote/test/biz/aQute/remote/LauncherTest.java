@@ -21,7 +21,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
-import aQute.remote.launcher.plugin.RemoteProjectLauncher;
+import aQute.remote.plugin.RemoteProjectLauncherPlugin;
 
 public class LauncherTest extends TestCase {
 	private int random;
@@ -91,8 +91,9 @@ public class LauncherTest extends TestCase {
 				project.getFile("one.bndrun"));
 		bndrun.setProperty("-runpath", "biz.aQute.remote.launcher");
 		bndrun.setProperty("-runbundles", "bsn-1,bsn-2");
+		bndrun.setProperty("-runremote", "test");
 
-		final RemoteProjectLauncher pl = (RemoteProjectLauncher) bndrun
+		final RemoteProjectLauncherPlugin pl = (RemoteProjectLauncherPlugin) bndrun
 				.getProjectLauncher();
 
 		final CountDownLatch latch = new CountDownLatch(1);

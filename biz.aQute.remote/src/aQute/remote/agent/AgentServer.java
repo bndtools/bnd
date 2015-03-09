@@ -1,4 +1,4 @@
-package aQute.remote.agent.provider;
+package aQute.remote.agent;
 
 import java.io.Closeable;
 import java.io.File;
@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -30,15 +32,22 @@ import org.osgi.framework.dto.ServiceReferenceDTO;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
+import aQute.lib.converter.Converter;
+import aQute.lib.converter.TypeReference;
 import aQute.libg.shacache.ShaCache;
 import aQute.libg.shacache.ShaSource;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Event.Type;
+import aQute.remote.api.Linkable;
 import aQute.remote.api.Supervisor;
+import aQute.remote.util.Dispatcher;
+import aQute.remote.util.SupervisorSource;
 
 public class AgentServer implements Agent, Closeable, FrameworkListener,
 		Linkable<Agent,Supervisor> {
+
+	private static final TypeReference<Map<String, String>> MAP_STRING_STRING_T = new TypeReference<Map<String,String>>(){};
 
 	private static final long[] EMPTY = new long[0];
 
@@ -69,6 +78,10 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 	private final Map<String, String> installed = new HashMap<String, String>();
 
 	private boolean quit;
+	private RedirectOutput stdout;
+	private RedirectOutput stderr;
+	private RedirectInput stdin;
+	private static AtomicBoolean redirected = new AtomicBoolean();
 
 	public AgentServer(BundleContext context, File cache) {
 		this.context = context;
@@ -272,15 +285,25 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 	}
 
 	@Override
-	public void redirect(boolean on) {
-		// TODO Auto-generated method stub
-
+	public void redirect(boolean on) throws IOException {
+		if (redirected.getAndSet(on) != on) {
+			if ( on ) {
+				System.setOut(stdout=new RedirectOutput(this, System.out, false));
+				System.setErr(stderr=new RedirectOutput(this, System.err, true));
+				System.setIn(stdin=new RedirectInput(System.in));
+			} else
+				System.setOut(stdout.getOut());
+				System.setErr(stderr.getOut());
+				System.setIn(stdin.getOrg());
+		}
 	}
 
 	@Override
-	public void stdin(String s) {
-		// TODO Auto-generated method stub
-
+	public void stdin(String s) throws IOException {
+		RedirectInput ri = stdin;
+		if ( ri != null) {
+			ri.add(s);
+		}
 	}
 
 	@Override
@@ -365,6 +388,8 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 		if (quit)
 			return;
 
+		redirect(false);
+		
 		update(null);
 		quit = true;
 
@@ -408,7 +433,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 		framework.init();
 		final BundleContext context = framework.getBundleContext();
 
-		Dispatcher d = new Dispatcher<Agent, Supervisor>(Supervisor.class, new Callable<Linkable<Agent,Supervisor>>() {
+		Dispatcher d = new Dispatcher(Supervisor.class, new Callable<Linkable<Agent,Supervisor>>() {
 
 			@Override
 			public Linkable<Agent, Supervisor> call() throws Exception {
@@ -440,5 +465,25 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 	@Override
 	public Agent get() {
 		return this;
+	}
+
+	@Override
+	public AgentType getType() {
+		return AgentType.agent;
+	}
+
+	@Override
+	public Map<String, String> getSystemProperties() throws Exception {
+		return Converter.cnv(MAP_STRING_STRING_T,System.getProperties());
+	}
+
+	@Override
+	public int createFramework(String name, Collection<String> runpath,
+			Map<String, Object> properties) throws Exception {
+		throw new UnsupportedOperationException("This is an agent, we can't create new frameworks (for now)");
+	}
+
+	public Supervisor getSupervisor() {
+		return remote;
 	}
 }

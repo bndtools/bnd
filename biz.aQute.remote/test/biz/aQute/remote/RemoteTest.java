@@ -16,7 +16,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.remote.api.Agent;
-import aQute.remote.supervisor.provider.SupervisorClient;
+import aQute.remote.plugin.AgentSupervisor;
 
 public class RemoteTest extends TestCase {
 	private int random;
@@ -33,7 +33,8 @@ public class RemoteTest extends TestCase {
 			configuration = new HashMap<String, Object>();
 			configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
 					Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-			configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.osgi.framework.launch;version=1.2");
+			configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA,
+					"org.osgi.framework.launch;version=1.2");
 
 			framework = new org.apache.felix.framework.FrameworkFactory()
 					.newFramework(configuration);
@@ -60,10 +61,9 @@ public class RemoteTest extends TestCase {
 		IO.delete(tmp);
 		super.tearDown();
 	}
-	
-	
+
 	public void testSimple() throws Exception {
-		SupervisorClient<Agent> supervisor = SupervisorClient.link(Agent.class,"localhost",
+		AgentSupervisor supervisor = AgentSupervisor.create("localhost",
 				Agent.DEFAULT_PORT);
 		assertNotNull(supervisor);
 
@@ -73,7 +73,7 @@ public class RemoteTest extends TestCase {
 
 	public void testUpdate() throws Exception {
 
-		SupervisorClient<Agent> supervisor = SupervisorClient.link(Agent.class,"localhost",
+		AgentSupervisor supervisor = AgentSupervisor.create("localhost",
 				Agent.DEFAULT_PORT);
 
 		File t1 = create("bsn-1", new Version(1, 0, 0));
