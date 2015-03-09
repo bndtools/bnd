@@ -43,7 +43,7 @@ public class LocationTest extends TestCase {
 		FileLine fl = project.getHeader("-inprojectsep", "BAZ");
 		assertNotNull(fl);
 		assertEquals(project.getPropertiesFile().getAbsolutePath(), fl.file.getAbsolutePath());
-		assertEquals(9, fl.line);
+		assertEquals(10, fl.line);
 		assertEquals(104, fl.start);
 		assertEquals(107, fl.end);
 
@@ -64,7 +64,7 @@ public class LocationTest extends TestCase {
 		FileLine fl = builder.getHeader("-inprojectsep", "BAZ");
 		assertNotNull(fl);
 		assertEquals(project.getPropertiesFile().getAbsolutePath(), fl.file.getAbsolutePath());
-		assertEquals(9, fl.line);
+		assertEquals(10, fl.line);
 		assertEquals(104, fl.start);
 		assertEquals(107, fl.end);
 
