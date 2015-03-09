@@ -912,7 +912,9 @@ public class Workspace extends Processor {
 		p.getTarget().mkdirs();
 		p.getOutput().mkdirs();
 		p.getTestOutput().mkdirs();
-		p.getSrc().mkdirs();
+		for (File dir : p.getSourcePath()) {
+			dir.mkdirs();
+		}
 		p.getTestSrc().mkdirs();
 
 		for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class))

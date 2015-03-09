@@ -7,7 +7,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.*;
 import java.util.jar.*;
-import java.util.regex.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.help.*;
@@ -35,8 +34,6 @@ import aQute.libg.sed.*;
 
 public class Project extends Processor {
 
-	final static Pattern		VERSION_ANNOTATION		= Pattern
-																.compile("@\\s*(:?aQute\\.bnd\\.annotation\\.)?Version\\s*\\(\\s*(:?value\\s*=\\s*)?\"(\\d+(:?\\.\\d+(:?\\.\\d+(:?\\.[\\d\\w-_]+)?)?)?)\"\\s*\\)");
 	final static String			DEFAULT_ACTIONS			= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
 	public final static String	BNDFILE					= "bnd.bnd";
 	public final static String	BNDCNF					= "cnf";
@@ -50,10 +47,10 @@ public class Project extends Processor {
 	final Collection<Container>	runbundles				= new LinkedHashSet<Container>();
 	final Collection<Container>	runfw					= new LinkedHashSet<Container>();
 	File						runstorage;
-	final Collection<File>		sourcepath				= new LinkedHashSet<File>();
+	final Map<File,Attrs>		sourcepath				= new LinkedHashMap<File,Attrs>();
 	final Collection<File>		allsourcepath			= new LinkedHashSet<File>();
 	final Collection<Container>	bootclasspath			= new LinkedHashSet<Container>();
-	final Map<String, Version>	versionMap				= new LinkedHashMap<String, Version>();
+	final Map<String,Version>	versionMap				= new LinkedHashMap<String,Version>();
 	final Lock					lock					= new ReentrantLock(true);
 	volatile String				lockingReason;
 	volatile Thread				lockingThread;
@@ -69,6 +66,7 @@ public class Project extends Processor {
 	final Packages				exportedPackages		= new Packages();
 	final Packages				importedPackages		= new Packages();
 	final Packages				containedPackages		= new Packages();
+	final PackageInfo			packageInfo				= new PackageInfo(this);
 
 	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
 		super(workspace);
@@ -182,6 +180,9 @@ public class Project extends Processor {
 		trail.add(this);
 		try {
 			if (!preparedPaths) {
+
+				String prefix = getBase().getAbsolutePath();
+
 				inPrepare = true;
 				try {
 					dependson.clear();
@@ -209,14 +210,34 @@ public class Project extends Processor {
 						doEclipseClasspath();
 					}
 
-					// Calculate our source directory
+					// Calculate our source directories
 
-					File src = getSrc();
-					if (src.isDirectory()) {
-						sourcepath.add(src);
-						allsourcepath.add(src);
-					} else
-						sourcepath.add(getBase());
+					Parameters srces = new Parameters(mergeProperties(Constants.DEFAULT_PROP_SRC_DIR));
+					if (srces.isEmpty())
+						srces.add(Constants.DEFAULT_PROP_SRC_DIR, new Attrs());
+
+					for (Entry<String,Attrs> e : srces.entrySet()) {
+
+						File dir = getFile(removeDuplicateMarker(e.getKey()));
+
+						if (!dir.getAbsolutePath().startsWith(prefix)) {
+							error("The source directory lies outside the project %s directory: %s", this, dir).header(
+									Constants.DEFAULT_PROP_SRC_DIR).context(e.getKey());
+							continue;
+						}
+
+						if (!dir.isDirectory()) {
+							dir.mkdirs();
+						}
+
+						if (dir.isDirectory()) {
+
+							sourcepath.put(dir, new Attrs(e.getValue()));
+							allsourcepath.add(dir);
+						} else
+							error("the src path (src property) contains an entry that is not a directory %s", dir)
+									.header(Constants.DEFAULT_PROP_SRC_DIR).context(e.getKey());
+					}
 
 					// Set default bin directory
 					output = getSrcOutput().getAbsoluteFile();
@@ -288,7 +309,6 @@ public class Project extends Processor {
 
 					Set<Project> done = new HashSet<Project>();
 					done.add(this);
-					allsourcepath.addAll(sourcepath);
 
 					for (Project project : dependencies)
 						project.traverse(dependson, done);
@@ -296,9 +316,11 @@ public class Project extends Processor {
 					for (Project project : dependson) {
 						allsourcepath.addAll(project.getSourcePath());
 					}
-					//[cs] Testing this commented out. If bad issues, never setting this to true means that
-					// TONS of extra preparing is done over and over again on the same projects.
-					//if (isOk())
+					// [cs] Testing this commented out. If bad issues, never
+					// setting this to true means that
+					// TONS of extra preparing is done over and over again on
+					// the same projects.
+					// if (isOk())
 					preparedPaths = true;
 				}
 				finally {
@@ -326,9 +348,20 @@ public class Project extends Processor {
 		return target;
 	}
 
-	public File getSrc() {
-		String deflt = Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_SRC_DIR);
-		return getFile(getProperty(Constants.DEFAULT_PROP_SRC_DIR, deflt));
+	/**
+	 * This method is deprecated because this can handle only one source dir.
+	 * Use getSourcePath. For backward compatibility we will return the first
+	 * entry on the source path.
+	 * 
+	 * @return first entry on the {@link #getSourcePath()}
+	 */
+	@Deprecated
+	public File getSrc() throws Exception {
+		prepare();
+		if (sourcepath.isEmpty())
+			return getFile("src");
+
+		return sourcepath.keySet().iterator().next();
 	}
 
 	public File getSrcOutput() {
@@ -391,7 +424,8 @@ public class Project extends Processor {
 						// we're trying to put a project's output directory on
 						// -runbundles list
 						//
-						error("%s is specified with version=project on %s. This version uses the project's output directory, which is not allowed since it must be an actual JAR file for this list.",
+						error(
+								"%s is specified with version=project on %s. This version uses the project's output directory, which is not allowed since it must be an actual JAR file for this list.",
 								cpe.getBundleSymbolicName(), name).header(name).context(cpe.getBundleSymbolicName());
 					}
 				}
@@ -679,7 +713,7 @@ public class Project extends Processor {
 
 	public Collection<File> getSourcePath() throws Exception {
 		prepare();
-		return sourcepath;
+		return sourcepath.keySet();
 	}
 
 	public Collection<File> getAllsourcepath() throws Exception {
@@ -713,7 +747,9 @@ public class Project extends Processor {
 		for (File f : eclipse.getBootclasspath()) {
 			bootclasspath.add(new Container(f, null));
 		}
-		sourcepath.addAll(eclipse.getSourcepath());
+		for (File f : eclipse.getSourcepath()) {
+			sourcepath.put(f, new Attrs());
+		}
 		allsourcepath.addAll(eclipse.getAllSources());
 		output = eclipse.getOutput();
 	}
@@ -1003,8 +1039,9 @@ public class Project extends Processor {
 				}
 				if (provider != null) {
 					RepositoryPlugin repo = versions.get(provider);
-					if ( repo == null) {
-						// A null provider indicates that we have a local project
+					if (repo == null) {
+						// A null provider indicates that we have a local
+						// project
 						return getBundleFromProject(bsn, attrs);
 					}
 
@@ -2215,168 +2252,6 @@ public class Project extends Processor {
 	}
 
 	/**
-	 * Sets the package version on an exported package
-	 *
-	 * @param packageName
-	 *            The package name
-	 * @param version
-	 *            The new package version
-	 */
-	public void setPackageInfo(String packageName, Version version) {
-		try {
-			Version current = getPackageInfoJavaVersion(packageName);
-			boolean packageInfoJava = false;
-			if (current != null) {
-				updatePackageInfoJavaFile(packageName, version);
-				packageInfoJava = true;
-			}
-			if (!packageInfoJava || getPackageInfoFile(packageName).exists()) {
-				updatePackageInfoFile(packageName, version);
-			}
-		}
-		catch (Exception e) {
-			msgs.SettingPackageInfoException_(e);
-		}
-	}
-
-	void updatePackageInfoJavaFile(String packageName, final Version newVersion) throws Exception {
-		File file = getPackageInfoJavaFile(packageName);
-
-		if (!file.exists()) {
-			return;
-		}
-
-		// If package/classes are copied into the bundle through Private-Package
-		// etc, there will be no source
-		if (!file.getParentFile().exists()) {
-			return;
-		}
-
-		Version oldVersion = getPackageInfo(packageName);
-
-		if (newVersion.compareTo(oldVersion) == 0) {
-			return;
-		}
-
-		Sed sed = new Sed(new Replacer() {
-			public String process(String line) {
-				Matcher m = VERSION_ANNOTATION.matcher(line);
-				if (m.find()) {
-					return line.substring(0, m.start(3)) + newVersion.toString() + line.substring(m.end(3));
-				}
-				return line;
-			}
-		}, file);
-
-		sed.replace(VERSION_ANNOTATION.pattern(), "$0");
-		sed.setBackup(false);
-		sed.doIt();
-	}
-
-	void updatePackageInfoFile(String packageName, Version newVersion) throws Exception {
-
-		File file = getPackageInfoFile(packageName);
-
-		// If package/classes are copied into the bundle through Private-Package
-		// etc, there will be no source
-		if (!file.getParentFile().exists()) {
-			return;
-		}
-
-		Version oldVersion = getPackageInfoVersion(packageName);
-		if (oldVersion == null) {
-			oldVersion = Version.emptyVersion;
-		}
-
-		if (newVersion.compareTo(oldVersion) == 0) {
-			return;
-		}
-		PrintWriter pw = IO.writer(file);
-		pw.println("version " + newVersion);
-		pw.flush();
-		pw.close();
-
-		String path = packageName.replace('.', '/') + "/packageinfo";
-		File binary = IO.getFile(getOutput(), path);
-		File bp = binary.getParentFile();
-		if (!bp.exists() && !bp.mkdirs()) {
-			throw new IOException("Could not create directory " + bp);
-		}
-		IO.copy(file, binary);
-	}
-
-	File getPackageInfoFile(String packageName) {
-		String path = packageName.replace('.', '/') + "/packageinfo";
-		return IO.getFile(getSrc(), path);
-
-	}
-
-	File getPackageInfoJavaFile(String packageName) {
-		String path = packageName.replace('.', '/') + "/package-info.java";
-		return IO.getFile(getSrc(), path);
-
-	}
-
-	public Version getPackageInfo(String packageName) throws IOException {
-
-		Version version = getPackageInfoJavaVersion(packageName);
-		if (version != null) {
-			return version;
-		}
-
-		version = getPackageInfoVersion(packageName);
-		if (version != null) {
-			return version;
-		}
-
-		return Version.emptyVersion;
-	}
-
-	Version getPackageInfoVersion(String packageName) throws IOException {
-		File packageInfoFile = getPackageInfoFile(packageName);
-		if (!packageInfoFile.exists()) {
-			return null;
-		}
-
-		BufferedReader reader = IO.reader(packageInfoFile);
-		try {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				line = line.trim();
-				if (line.startsWith("version ")) {
-					return Version.parseVersion(line.substring(8));
-				}
-			}
-		}
-		finally {
-			IO.close(reader);
-		}
-		return null;
-	}
-
-	Version getPackageInfoJavaVersion(String packageName) throws IOException {
-		File packageInfoJavaFile = getPackageInfoJavaFile(packageName);
-		if (!packageInfoJavaFile.exists()) {
-			return null;
-		}
-		BufferedReader reader = null;
-		reader = IO.reader(packageInfoJavaFile);
-		try {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				Matcher matcher = VERSION_ANNOTATION.matcher(line);
-				if (matcher.find()) {
-					return Version.parseVersion(matcher.group(3));
-				}
-			}
-		}
-		finally {
-			IO.close(reader);
-		}
-		return null;
-	}
-
-	/**
 	 * bnd maintains a class path that is set by the environment, i.e. bnd is
 	 * not in charge of it.
 	 */
@@ -2760,5 +2635,13 @@ public class Project extends Processor {
 
 	public boolean getRunKeep() {
 		return is(Constants.RUNKEEP);
+	}
+
+	public void setPackageInfo(String packageName, Version newVersion) throws Exception {
+		packageInfo.setPackageInfo(packageName, newVersion);
+	}
+
+	public Version getPackageInfo(String packageName) throws Exception {
+		return packageInfo.getPackageInfo(packageName);
 	}
 }

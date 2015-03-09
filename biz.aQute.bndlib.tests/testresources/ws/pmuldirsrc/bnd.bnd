@@ -1,0 +1,3 @@
+Export-Package: *
+
+src: a,b

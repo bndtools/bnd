@@ -1,4 +1,4 @@
-package aQute.remote.agent.provider;
+package aQute.remote.agent;
 
 import java.io.File;
 import java.util.concurrent.Callable;
@@ -9,12 +9,14 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 import aQute.remote.api.Agent;
+import aQute.remote.api.Linkable;
 import aQute.remote.api.Supervisor;
+import aQute.remote.util.Dispatcher;
 
 public class Activator implements BundleActivator,
 		Callable<Linkable<Agent, Supervisor>> {
 	static Pattern PORT_P = Pattern.compile("(?:([^:]+):)?(\\d+)");
-	private Dispatcher<Agent, Supervisor> dispatcher;
+	private Dispatcher dispatcher;
 	private File cache;
 	private BundleContext context;
 
@@ -37,7 +39,7 @@ public class Activator implements BundleActivator,
 			host = "localhost";
 
 		cache = context.getDataFile("shacache");
-		dispatcher = new Dispatcher<Agent, Supervisor>(Supervisor.class, this,
+		dispatcher = new Dispatcher(Supervisor.class, this,
 				host, Integer.parseInt(m.group(2)));
 		dispatcher.open();
 	}

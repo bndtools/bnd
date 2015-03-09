@@ -9,11 +9,13 @@ import junit.framework.TestCase;
 import org.osgi.framework.Constants;
 import org.osgi.framework.dto.FrameworkDTO;
 
-import aQute.remote.agent.provider.Main;
 import aQute.remote.api.Agent;
-import aQute.remote.api.Envoy;
-import aQute.remote.supervisor.provider.SupervisorClient;
+import aQute.remote.main.Main;
+import aQute.remote.plugin.AgentSupervisor;
 
+/**
+ * Start the main program which will wait for requests to create a framework.
+ */
 public class MainTest extends TestCase {
 
 	private Thread thread;
@@ -25,7 +27,8 @@ public class MainTest extends TestCase {
 			@Override
 			public void run() {
 				try {
-					Main.main(new String[] {"-s","generated/storage", "-c", "generated/cache"});
+					Main.main(new String[] { "-s", "generated/storage", "-c",
+							"generated/cache" });
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -37,36 +40,41 @@ public class MainTest extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
+		Main.stop();
 		super.tearDown();
 	}
 
 	public void testRemoteMain() throws Exception {
 
-		SupervisorClient<Envoy> supervisor = SupervisorClient.link(Envoy.class,
-				"localhost", Envoy.DEFAULT_PORT);
+		AgentSupervisor supervisor = AgentSupervisor.create("localhost",
+				Agent.DEFAULT_PORT);
 
 		HashMap<String, Object> configuration = new HashMap<String, Object>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
 				Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+		
 		List<String> emptyList = Collections.emptyList();
 
-		int n = supervisor.getAgent().createFramework("test",emptyList, configuration);
+		assertEquals( Agent.AgentType.envoy, supervisor.getAgent().getType());
+		
+		int n = supervisor.getAgent().createFramework("test", emptyList,
+				configuration);
 		System.out.println(n);
 		assertTrue(n > 1024);
-		
-		SupervisorClient<Agent> sv = SupervisorClient.link(Agent.class, "localhost", n);
-		
+
+		AgentSupervisor sv = AgentSupervisor.create("localhost", n);
+
 		FrameworkDTO framework = sv.getAgent().getFramework();
 		assertNotNull(framework);
-		
+
 		sv.getAgent().abort();
 		sv.close();
-		
-		sv = SupervisorClient.link(Agent.class, "localhost", n);
-		
+
+		sv = AgentSupervisor.create("localhost", n);
+
 		framework = sv.getAgent().getFramework();
 		assertNotNull(framework);
-		
+
 		sv.getAgent().abort();
 		sv.close();
 	}

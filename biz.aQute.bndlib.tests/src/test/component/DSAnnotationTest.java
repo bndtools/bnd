@@ -2277,7 +2277,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component
 	public static class TestFieldCollectionType implements Serializable, Runnable {
-		
+		private static final long										serialVersionUID	= 1L;
+
 		@Reference
 		// (service = LogService.class)
 		private Collection<ServiceReference<LogService>> srField;
