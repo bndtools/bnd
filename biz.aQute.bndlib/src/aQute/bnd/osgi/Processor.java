@@ -2358,9 +2358,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public static Pattern toFullHeaderPattern(String header) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("^\\s*(").append(header).append(")(\\.[^\\s:=]*)?\\s*[\\s|:|=]\\s*");
+		sb.append("^[ \t]*(").append(header).append(")(\\.[^\\s:=]*)?[ \t]*[ \t:=][ \t]*");
 		sb.append("[^\\\\\n\r]*(\\\\\n[^\\\\\n\r]*)*");
-		return Pattern.compile(sb.toString(), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE);
+		try {
+			return Pattern.compile(sb.toString(), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE);
+		}
+		catch (Exception e) {
+			return Pattern.compile("^[ \t]*" + Pattern.quote(header), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE);
+		}
 	}
 
 	public FileLine getHeader(Pattern header) throws Exception {
