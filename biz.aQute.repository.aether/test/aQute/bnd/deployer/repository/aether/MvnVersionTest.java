@@ -1,7 +1,6 @@
 package aQute.bnd.deployer.repository.aether;
 
 import junit.framework.*;
-
 import aQute.bnd.version.*;
 
 public class MvnVersionTest extends TestCase {
@@ -25,6 +24,11 @@ public class MvnVersionTest extends TestCase {
 		MvnVersion mv = MvnVersion.parseString("1.2.3-SNAPSHOT");
 		assertEquals(new Version(1, 2, 3, "SNAPSHOT"), mv.getOSGiVersion());
 		assertTrue(mv.isSnapshot());
+	}
+
+	public void testNumericQualifier() {
+		MvnVersion mv = MvnVersion.parseString("1.2.3-01");
+		assertEquals(new Version(1, 2, 3, "01"), mv.getOSGiVersion());
 	}
 
 	public void testQualifierWithDashSeparator() {

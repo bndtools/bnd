@@ -5,47 +5,50 @@ import java.util.regex.*;
 import aQute.bnd.version.*;
 
 public class MvnVersion implements Comparable<MvnVersion> {
-	
-	private static final Pattern QUALIFIER = Pattern.compile("[-.]?([^0-9.].*)$");
-	
-	private static final String	QUALIFIER_SNAPSHOT	= "SNAPSHOT";
 
-	private final Version osgiVersion;
+	private static final Pattern	QUALIFIER			= Pattern.compile("[-.]?([^0-9.].*)$");
+
+	private static final Pattern	NUM_QUALIFIER		= Pattern.compile("-[0-9]+");
+
+	private static final String		QUALIFIER_SNAPSHOT	= "SNAPSHOT";
+
+	private final Version			osgiVersion;
 
 	public MvnVersion(Version osgiVersion) {
 		this.osgiVersion = osgiVersion;
 	}
-	
+
 	public static final MvnVersion parseString(String versionStr) {
 		MvnVersion result;
-		
+
 		try {
 			Matcher m = QUALIFIER.matcher(versionStr);
 			if (!m.find()) {
 				result = new MvnVersion(Version.parseVersion(versionStr));
 			} else {
 				String qualifier = m.group(1);
-
-				Version v = Version.parseVersion(versionStr.substring(0,
-						m.start()));
-				Version osgiVersion = new Version(v.getMajor(), v.getMinor(),
-						v.getMicro(), qualifier);
+				if (NUM_QUALIFIER.matcher(qualifier).matches()) {
+					qualifier = qualifier.substring(1);
+				}
+				Version v = Version.parseVersion(versionStr.substring(0, m.start()));
+				Version osgiVersion = new Version(v.getMajor(), v.getMinor(), v.getMicro(), qualifier);
 				result = new MvnVersion(osgiVersion);
 			}
-		} catch (IllegalArgumentException e) { // bad format
+		}
+		catch (IllegalArgumentException e) { // bad format
 			result = null;
 		}
 		return result;
 	}
-	
+
 	public Version getOSGiVersion() {
 		return osgiVersion;
 	}
-	
+
 	public boolean isSnapshot() {
 		return QUALIFIER_SNAPSHOT.equals(osgiVersion.getQualifier());
 	}
-	
+
 	public int compareTo(MvnVersion other) {
 		return this.osgiVersion.compareTo(other.osgiVersion);
 	}
