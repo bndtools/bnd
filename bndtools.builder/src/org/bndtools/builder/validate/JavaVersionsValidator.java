@@ -11,6 +11,7 @@ import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import bndtools.central.Central;
 
 public class JavaVersionsValidator implements IValidator, IProjectValidator {
@@ -27,7 +28,7 @@ public class JavaVersionsValidator implements IValidator, IProjectValidator {
         @SuppressWarnings("unchecked")
         Map<String,String> options = javaProject.getOptions(true);
 
-        String javacSource = model.getProperty("javac.source"); // TODO added constants in bnd
+        String javacSource = model.getProperty(Constants.JAVAC_SOURCE);
         if (javacSource != null) {
             String eclipseSource = options.get(JavaCore.COMPILER_SOURCE);
             if (eclipseSource == null)
@@ -38,7 +39,7 @@ public class JavaVersionsValidator implements IValidator, IProjectValidator {
             }
         }
 
-        String javacTarget = model.getProperty("javac.target"); // TOOD added constant in bnd
+        String javacTarget = model.getProperty(Constants.JAVAC_TARGET);
         if (javacTarget != null) {
             String eclipseTarget = options.get(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM);
             if (!javacTarget.equals(eclipseTarget)) {

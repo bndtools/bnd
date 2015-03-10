@@ -17,6 +17,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -31,6 +32,7 @@ import bndtools.central.Central;
  * Verify that the build path setup for Eclipse matches the actual settings in bnd.
  */
 public class ProjectPathsValidator implements IValidator, IProjectValidator {
+    final static IPath JRE_CONTAINER = new Path("org.eclipse.jdt.launching.JRE_CONTAINER");
 
     /*
      * The parts of the test, needed to know what we missed
@@ -85,11 +87,6 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         File bin_test = model.getTestOutput();
         Set<File> sourcePath = new HashSet<File>(model.getSourcePath());
 
-        // TODO remove, as long as bnd does not support the multiple entries on sourcepath
-
-        if (sourcePath.size() == 1 && sourcePath.iterator().next().equals(model.getBase()))
-            return;
-
         //
         // All the things we should find when we have traversed the build path
         //
@@ -102,16 +99,45 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
             switch (kind) {
             case IClasspathEntry.CPE_VARIABLE :
                 warning(model, null, null, cpe, "Eclipse: Found a variable in the eclipse build path, this variable is not available during continuous integration", cpe).file(new File(model.getBase(), ".classpath").getAbsolutePath());
-                ;
+                break;
+
+            case IClasspathEntry.CPE_LIBRARY :
+                warning(model, null, null, cpe, "Eclipse: The .classpath containsa a library that will not be available during continuous integration: %s", cpe.getPath()).file(new File(model.getBase(), ".classpath").getAbsolutePath());
                 break;
 
             case IClasspathEntry.CPE_CONTAINER :
                 if (BndtoolsConstants.BND_CLASSPATH_ID.segment(0).equals(cpe.getPath().segment(0)))
                     found.remove(SetupTypes.bndcontainer);
                 else {
-                    // warning because default might vary <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-                    // check javac version <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-                    // warnig because local/machine specific <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 7 [1.7.0_71]"/>
+                    IPath path = cpe.getPath();
+                    if (JRE_CONTAINER.segment(0).equals(path.segment(0))) {
+                        if (path.segmentCount() == 1) {
+                            // warning because default might vary <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+                            warning(model, null, path.toString(), cpe,
+                                    "Eclipse: The .classpath contains a default JRE container: %s. This makes it undefined to what version you compile and this might differ between Continuous Integration and Eclipse", path).file(
+                                    new File(model.getBase(), ".classpath").getAbsolutePath());
+                        } else {
+                            String segment = path.segment(1);
+                            if ("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType".equals(segment) && path.segmentCount() == 3) {
+                                // check javac version <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+
+                                String javac = model.getProperty("javac.source", "1.5");
+                                if (!path.segment(2).endsWith(javac)) {
+                                    warning(model, null, path.toString(), cpe, "Eclipse: The .JRE container is set to %s but bnd is compiling against %s", path.segment(2), javac).file(
+                                            new File(model.getBase(), ".classpath").getAbsolutePath());
+                                }
+                            } else {
+                                // warning because local/machine specific <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 7 [1.7.0_71]"/>
+                                warning(model, null, path.toString(), cpe,
+                                        "Eclipse: The .classpath contains an non-portable JRE container: %s. This makes it undefined to what version you compile and this might differ between Continuous Integration and Eclipse", path).file(
+                                        new File(model.getBase(), ".classpath").getAbsolutePath());
+                            }
+                        }
+
+                    } else {
+                        warning(model, null, path.toString(), cpe, "Eclipse: The .classpath contains an unknown container: %s", path).file(new File(model.getBase(), ".classpath").getAbsolutePath());
+                    }
+
                 }
                 break;
 
@@ -156,10 +182,6 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
                         }
                     }
                 }
-                break;
-
-            case IClasspathEntry.CPE_LIBRARY :
-                warning(model, null, null, cpe, "Eclipse: The .classpath containsa direct library that will not be available during continuous integration: %s", cpe.getPath()).file(new File(model.getBase(), ".classpath").getAbsolutePath());
                 break;
 
             default :
