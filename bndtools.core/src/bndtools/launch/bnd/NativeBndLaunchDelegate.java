@@ -5,17 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.bndtools.api.ILogger;
-import org.bndtools.api.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.jdt.internal.launching.JavaRemoteApplicationLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMConnector;
@@ -23,7 +19,6 @@ import org.eclipse.jdt.launching.JavaRuntime;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
-import bndtools.launch.TerminationListener;
 import bndtools.launch.util.LaunchUtils;
 
 /**
@@ -35,62 +30,39 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
     private static final String DEFAULT_PORT = "17654";
     private static final String DEFAULT_HOST = "localhost";
 
-    private static final ILogger logger = Logger.getLogger(NativeBndLaunchDelegate.class);
+    //  private static final ILogger logger = Logger.getLogger(NativeBndLaunchDelegate.class);
 
     private static final Pattern NUMMERIC_P = Pattern.compile("(\\d+)");
-    private volatile LaunchThread launchThread;
-    private ILaunch launch;
 
     /*
      * The Eclipse launch interface.
      */
     @Override
-    public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor m) throws CoreException {
+    public void launch(ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor m) throws CoreException {
+        IProgressMonitor monitor = m == null ? new NullProgressMonitor() : m;
+        LaunchThread launchThread = null;
+
         try {
-
-            IProgressMonitor monitor = m == null ? new NullProgressMonitor() : m;
-            boolean debug = "debug".equals(mode);
-
-            //
-            // Keep so we can cancel it at any time
-            //
-
-            this.launch = launch;
-
-            if (monitor.isCanceled()) {
-                return;
-            }
-
             try {
-                monitor.beginTask("Launching bnd native mode", debug ? 4 : 1);
 
-                Project model = LaunchUtils.getBndProject(configuration);
+                final Project model = LaunchUtils.getBndProject(configuration);
                 if (model == null)
                     throw new LaunchException("Cannot locate model", IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
 
-                progress(monitor, "Getting project launcher");
+                ProjectLauncher projectLauncher = model.getProjectLauncher();
+                if ("debug".equals(mode))
+                    launchThread = doDebug(configuration, launch, monitor, model, projectLauncher);
+                else
+                    launchThread = launch(projectLauncher, launch);
 
-                final ProjectLauncher projectLauncher = model.getProjectLauncher();
-
-                if (debug) {
-                    doDebug(configuration, launch, monitor, model, projectLauncher);
-                } else {
-                    launchThread = launch(projectLauncher);
-                }
-
-                if (monitor.isCanceled()) {
-                    close();
-                    return;
-                }
+                launch.addProcess(launchThread);
 
             } catch (LaunchException ie) {
                 abort(ie.getMessage(), null, ie.getErr());
-            } finally {
-                monitor.done();
             }
         } catch (Exception e) {
-            close();
-            logger.logError("Failed to initialize launcg", e);
+            if (launchThread != null)
+                launchThread.terminate();
             IStatus status = new Status(Status.ERROR, "", "launching native bnd", e);
             throw new CoreException(status);
         }
@@ -99,28 +71,9 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
     /*
      * Setup a debug session
      */
-    private void doDebug(ILaunchConfiguration configuration, ILaunch launch, IProgressMonitor monitor, Project model, final ProjectLauncher projectLauncher) throws CoreException, LaunchException, InterruptedException {
-        progress(monitor, "Setting up debug launch for " + model);
-
-        //
-        // Make sure we die when the debugger dies
-        //
-
-        DebugPlugin.getDefault().addDebugEventListener(new TerminationListener(launch, new Runnable() {
-
-            @Override
-            public void run() {
-                close();
-            }
-
-        }));
-
-        progress(monitor, "Getting source locations for " + model);
+    @SuppressWarnings("unchecked")
+    private LaunchThread doDebug(ILaunchConfiguration configuration, ILaunch launch, IProgressMonitor monitor, Project model, final ProjectLauncher projectLauncher) throws CoreException, LaunchException, InterruptedException {
         setDefaultSourceLocator(launch, configuration);
-
-        progress(monitor, "Getting parameters for " + model);
-
-        @SuppressWarnings("unchecked")
         Map<String,String> argMap = configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_CONNECT_MAP, (Map<String,String>) null);
         @SuppressWarnings("deprecation")
         int connectTimeout = JavaRuntime.getPreferences().getInt(JavaRuntime.PREF_CONNECT_TIMEOUT);
@@ -128,8 +81,6 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
         IVMConnector connector = getConnector(configuration);
         String port = model.getProperty("-runjdb", DEFAULT_PORT);
         String host = model.getProperty("-runjdbhost", DEFAULT_HOST);
-
-        progress(monitor, "Validating parameters for " + model);
 
         if (argMap == null) {
             argMap = new HashMap<String,String>();
@@ -148,8 +99,6 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
             throw new LaunchException("Invalid hostname specified in -runjdbhost ", IJavaLaunchConfigurationConstants.ERR_INVALID_HOSTNAME);
         }
 
-        progress(monitor, "Setting parameters for " + model);
-
         argMap.put("port", port);
         argMap.put("hostname", host);
         argMap.put("timeout", Integer.toString(connectTimeout == 0 ? 30000 : connectTimeout)); //$NON-NLS-1$
@@ -161,17 +110,9 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
         projectLauncher.addRunVM("-Xdebug");
         projectLauncher.addRunVM(String.format("-Xrunjdwp:transport=dt_socket,server=y,address=%s", port));
 
-        progress(monitor, "Initiating launch " + model);
-        launchThread = launch(projectLauncher);
-
-        progress(monitor, "Attaching debugger to " + host + ":" + port);
-
+        LaunchThread launchThread = launch(projectLauncher, launch);
         tryConnect(launch, monitor, connector, argMap);
-    }
-
-    private void progress(IProgressMonitor monitor, String string) {
-        monitor.worked(1);
-        monitor.subTask(string);
+        return launchThread;
     }
 
     private IVMConnector getConnector(ILaunchConfiguration configuration) throws CoreException, LaunchException {
@@ -205,27 +146,9 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
         } while (System.currentTimeMillis() < deadline);
     }
 
-    private void close() {
-        try {
-            if (launchThread != null)
-                launchThread.close();
-
-            IDebugTarget[] debugTargets = launch.getDebugTargets();
-            for (int i = 0; i < debugTargets.length; i++) {
-                IDebugTarget target = debugTargets[i];
-                if (target.canDisconnect()) {
-                    target.disconnect();
-                }
-            }
-        } catch (Exception e) {
-            // ignore
-        }
-    }
-
-    private LaunchThread launch(ProjectLauncher projectLauncher) {
-        LaunchThread lt = new LaunchThread(projectLauncher);
+    private LaunchThread launch(ProjectLauncher projectLauncher, ILaunch launch) {
+        LaunchThread lt = new LaunchThread(projectLauncher, launch);
         lt.start();
         return lt;
     }
-
 }
