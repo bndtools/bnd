@@ -6,12 +6,11 @@ import static aQute.bnd.osgi.Constants.DEFAULT_PROP_TESTBIN_DIR;
 import static aQute.bnd.osgi.Constants.DEFAULT_PROP_TESTSRC_DIR;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.IProjectValidator;
 import org.bndtools.api.IValidator;
 import org.eclipse.core.resources.IFile;
@@ -102,12 +101,18 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
             int kind = cpe.getEntryKind();
             switch (kind) {
             case IClasspathEntry.CPE_VARIABLE :
-                warning(model, null, null, cpe, "Eclipse: Found a variable in the eclipse build path, this variable is not available during continuous integration", cpe);
+                warning(model, null, null, cpe, "Eclipse: Found a variable in the eclipse build path, this variable is not available during continuous integration", cpe).file(new File(model.getBase(), ".classpath").getAbsolutePath());
+                ;
                 break;
 
             case IClasspathEntry.CPE_CONTAINER :
-                if ("aQute.bnd.classpath.container".equals(cpe.getPath().toString()))
+                if (BndtoolsConstants.BND_CLASSPATH_ID.segment(0).equals(cpe.getPath().segment(0)))
                     found.remove(SetupTypes.bndcontainer);
+                else {
+                    // warning because default might vary <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+                    // check javac version <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+                    // warnig because local/machine specific <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 7 [1.7.0_71]"/>
+                }
                 break;
 
             case IClasspathEntry.CPE_SOURCE :
@@ -140,19 +145,21 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
                         // later if we had all of them
                         //
 
-                        if (sourcePath.remove(file.getAbsoluteFile())) {
+                        if (sourcePath.remove(file)) {
 
-                            if (!bin.equals(output)) {
+                            if (bin.equals(output)) {
+                                found.remove(SetupTypes.bin);
+                            } else
                                 warning(model, DEFAULT_PROP_BIN_DIR, bin, cpe, "Eclipse: Source folder %s has output set to %s, \n" + "which does not match bnd's bin folder %s", file, output, bin_test);
-                            }
-
-                            found.remove(SetupTypes.bin);
-
                         } else {
                             warning(model, DEFAULT_PROP_SRC_DIR, null, cpe, "Eclipse: Found source folder %s that is not on the source path %s", file, model.getSourcePath());
                         }
                     }
                 }
+                break;
+
+            case IClasspathEntry.CPE_LIBRARY :
+                warning(model, null, null, cpe, "Eclipse: The .classpath containsa direct library that will not be available during continuous integration: %s", cpe.getPath()).file(new File(model.getBase(), ".classpath").getAbsolutePath());
                 break;
 
             default :
@@ -199,14 +206,6 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         }
     }
 
-    private Object relative(Project model, Set<File> sourcePath) {
-        String prefix = model.getBase().getAbsolutePath();
-        List<String> rel = new ArrayList<String>();
-        for (File f : sourcePath)
-            rel.add(relative(prefix, f).toString());
-        return rel;
-    }
-
     private SetLocation warning(Project model, String header, Object context, IClasspathEntry cpe, String format, Object... args) {
         String prefix = model.getBase().getAbsolutePath();
         for (int i = 0; i < args.length; i++) {
@@ -242,7 +241,7 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 
         IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
         if (file != null)
-            return file.getLocation().toFile();
+            return file.getLocation().toFile().getAbsoluteFile();
         return null;
     }
 }
