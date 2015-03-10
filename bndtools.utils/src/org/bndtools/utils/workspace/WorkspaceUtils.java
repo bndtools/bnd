@@ -31,7 +31,7 @@ public class WorkspaceUtils {
     }
 
     private static boolean checkProject(IProject project, String name) {
-        if ((project != null) && project.exists() && project.isOpen()) {
+        if ((project != null) && project.isOpen()) {
             IPath path = project.getLocation();
             if ((path != null) && name.equals(path.lastSegment())) {
                 return true;
