@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="nested/bin" path="src"/>
+	<classpathentry kind="src" output="bin_test" path="test"/>
+	<classpathentry kind="src" path="srcb"/>
+	<classpathentry kind="src" path="srcc"/>
+	<classpathentry kind="src" path="nested/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="aQute.bnd.classpath.container"/>
+	<classpathentry kind="output" path="nested/bin"/>
+</classpath>

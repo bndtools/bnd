@@ -1,1 +1,3 @@
 -sub: *.bnd
+
+src=src,extrasrc
