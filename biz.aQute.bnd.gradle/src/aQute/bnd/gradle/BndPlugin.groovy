@@ -97,7 +97,7 @@ public class BndPlugin implements Plugin<Project> {
       sourceSets {
         /* bnd uses the same directory for java and resources. */
         main {
-          java.srcDirs = resources.srcDirs = files(bndProject.sourcepath)
+          java.srcDirs = resources.srcDirs = files(bndProject.sourcePath)
           output.classesDir = output.resourcesDir = bndProject.srcOutput
         }
         test {
@@ -105,7 +105,7 @@ public class BndPlugin implements Plugin<Project> {
           output.classesDir = output.resourcesDir = bndProject.testOutput
         }
       }
-      bnd.ext.allSrcDirs = files(bndProject.allsourcepath)
+      bnd.ext.allSrcDirs = files(bndProject.allSourcePath)
       /* Set up compile tasks */
       sourceCompatibility = bnd('javac.source', sourceCompatibility)
       def javacTarget = bnd('javac.target', targetCompatibility)
@@ -399,10 +399,10 @@ public class BndPlugin implements Plugin<Project> {
           println "project.dir:            ${projectDir}"
           println "project.name:           ${project.name}"
           println "project.dependson:      ${bndProject.dependson*.name}"
-          println "project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}"
+          println "project.sourcePath:     ${files(sourceSets.main.java.srcDirs).asPath}"
           println "project.output:         ${compileJava.destinationDir}"
           println "project.buildpath:      ${compileJava.classpath.asPath}"
-          println "project.allsourcepath:  ${bnd.allSrcDirs.asPath}"
+          println "project.allSourcePath:  ${bnd.allSrcDirs.asPath}"
           println "project.testsrc:        ${files(sourceSets.test.java.srcDirs).asPath}"
           println "project.testoutput:     ${compileTestJava.destinationDir}"
           println "project.testpath:       ${compileTestJava.classpath.asPath}"
