@@ -2,7 +2,7 @@ task(type: Jar, 'sourcesJar') {
   description 'Jar the sources.'
   group 'documentation'
   dependsOn jar
-  enabled !bnd.project.noBundles
+  enabled !bnd.project.isNoBundles()
   if (enabled) {
     inputs.file jar.archivePath
     from zipTree(jar.archivePath).matching {
@@ -23,7 +23,7 @@ task('pom') {
   dependsOn jar
   def pomname = "${archivesBaseName}-${version}.pom"
   ext.pomfile = new File(buildDir, pomname)
-  enabled !bnd.project.noBundles
+  enabled !bnd.project.isNoBundles()
   if (enabled) {
     inputs.file jar.archivePath
     outputs.file pomfile
