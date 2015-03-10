@@ -25,19 +25,19 @@ import org.apache.tools.ant.filters.ReplaceTokens
  * Copy the bundle outputs of the specified projects into a directory
  */
 void copyProjectBundles(String[] projs, String dstDir) {
+  def targetDir = file(dstDir)
+  if ((!targetDir.exists() && !targetDir.mkdirs()) || !targetDir.isDirectory()) {
+    throw new GradleException("Could not create directory $targetDir")
+  }
   projs.each {
     def proj = rootProject.findProject(it)
     if (proj == null) {
       throw new GradleException("Could not find project " + it)
     }
 
-    proj.bnd.project.subBuilders.each { subBuilder ->
-      def targetDir = file(dstDir)
-      if ((!targetDir.exists() && !targetDir.mkdirs()) || !targetDir.isDirectory()) {
-        throw new GradleException("Could not create directory $targetDir")
-      }
+    proj.bnd.project.getSubBuilders()*.getBsn().each { bsn ->
       copy {
-        from project.relativePath(proj.bnd.project.getOutputFile(subBuilder.bsn))
+        from project.relativePath(proj.bnd.project.getOutputFile(bsn))
         into targetDir
       }
     }
@@ -213,7 +213,7 @@ task('index') {
   group 'release'
 
   /* indexer */
-  def repoindexJar = bnd.project.getBundle('org.osgi.impl.bundle.repoindex.cli', 'latest', null, ['strategy':'highest']).file
+  def repoindexJar = bnd.project.getBundle('org.osgi.impl.bundle.repoindex.cli', 'latest', null, ['strategy':'highest']).getFile()
 
   /* Bundles to index. */
   def p2_index_main_bundles = fileTree("$buildDir/p2/plugins") {
@@ -233,7 +233,7 @@ task('index') {
 
   doLast {
     /* p2 main */
-    def bundlesToIndex = p2_index_main_bundles.collect { it.absolutePath }
+    def bundlesToIndex = p2_index_main_bundles*.absolutePath
     javaexec {
       main = '-jar' // first arg must be the jar
       args repoindexJar
@@ -245,7 +245,7 @@ task('index') {
     logger.info "Generated index ${p2_index_main}."
 
     /* p2 extras */
-    bundlesToIndex = p2_index_extras_bundles.collect { it.absolutePath }
+    bundlesToIndex = p2_index_extras_bundles*.absolutePath
     javaexec {
       main = '-jar' // first arg must be the jar
       args repoindexJar
@@ -291,4 +291,3 @@ task dist {
   group       'release'
   dependsOn index, distZipMain, distZipExtras
 }
-
