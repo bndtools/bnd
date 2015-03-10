@@ -1,6 +1,8 @@
 package org.bndtools.builder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -9,9 +11,11 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
@@ -212,5 +216,55 @@ class DeltaWrapper {
         }
 
         return false;
+    }
+
+    public boolean hasChangedSubbundles() throws CoreException {
+        if (delta == null)
+            return true;
+
+        final List<String> files = toFiles(false);
+        Instructions instr = new Instructions(model.getProperty(Constants.SUB));
+        Collection<String> selected = instr.select(files, false);
+        return !selected.isEmpty();
+    }
+
+    private List<String> toFiles(final boolean dirsAlso) throws CoreException {
+        if (delta == null)
+            return null;
+
+        final List<String> files = new ArrayList<String>();
+
+        delta.accept(new IResourceDeltaVisitor() {
+
+            @Override
+            public boolean visit(IResourceDelta d) throws CoreException {
+                IResource r = d.getResource();
+                if (r != null) {
+                    if (r.getType() == IResource.PROJECT) {
+                        return true;
+                    }
+
+                    if (r.getType() == IResource.FILE) {
+                        files.add(d.getProjectRelativePath().toString());
+                        return false;
+                    }
+                    if (r.getType() == IResource.FOLDER) {
+                        if (dirsAlso)
+                            files.add(d.getProjectRelativePath().toString());
+
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+        return files;
+    }
+
+    public boolean hasEclipseChanged() {
+        if (delta == null)
+            return true;
+        IPath path = new Path(".classpath");
+        return delta.findMember(path) != null;
     }
 }

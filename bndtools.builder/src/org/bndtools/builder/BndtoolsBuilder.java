@@ -132,7 +132,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
             boolean setupChanged = false;
 
-            if (!postponed && delta.havePropertiesChanged(model)) {
+            if (!postponed && (delta.havePropertiesChanged(model) || delta.hasChangedSubbundles())) {
                 buildLog.basic("project was dirty from changed bnd files postponed = " + postponed);
                 model.forceRefresh();
                 setupChanged = true;
@@ -141,6 +141,11 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             if (dirty.remove(model)) {
                 buildLog.basic("project was dirty from a workspace refresh postponed = " + postponed);
                 setupChanged = true && !postponed;
+            }
+
+            if (!force && delta.hasEclipseChanged()) {
+                buildLog.basic("Eclipse project had a buildpath change");
+                setupChanged = true;
             }
 
             //
@@ -154,6 +159,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 model.setDelayRunDependencies(true);
                 model.prepare();
 
+                markers.validate(model);
                 markers.setMarkers(model, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
                 model.clear();
 
@@ -194,8 +200,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
             force |= postponed;
             postponed = false;
-
-            markers.validate(model);
 
             if (!force && delta.hasProjectChanged()) {
                 buildLog.basic("project had changed files");
