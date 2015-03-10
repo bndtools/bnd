@@ -35,7 +35,14 @@ public class CnfWatcher implements IResourceChangeListener {
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
         try {
-            final Workspace workspace = Central.getWorkspace();
+            final Workspace workspace;
+            try {
+                workspace = Central.getWorkspace();
+            } catch (Exception e1) {
+                // this can happen during first project creation in an empty workspace
+                logger.logInfo("Unable to get workspace", e1);
+                return;
+            }
             final IProject cnfProject = WorkspaceUtils.findCnfProject(ResourcesPlugin.getWorkspace().getRoot(), workspace);
             if (cnfProject == null)
                 return;
