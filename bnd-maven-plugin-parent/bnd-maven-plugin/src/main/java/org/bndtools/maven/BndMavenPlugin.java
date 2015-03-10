@@ -134,22 +134,4 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 	}
 
-	static String replaceString(String string, String match, String replacement) {
-		if (string == null)
-			return null;
-
-		if (match == null || match.length() == 0)
-			throw new IllegalArgumentException("match string cannot be null or empty");
-
-		int index = string.indexOf(match);
-		if (index < 0)
-			return string; // not found, return original
-
-		return new StringBuilder()
-			.append(string.substring(0, index))
-			.append(replacement)
-			.append(string.substring(index + match.length()))
-			.toString();
-	}
-
 }
