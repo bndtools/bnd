@@ -37,7 +37,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
       if (!rootProject.hasProperty('bndWorkspaceInitialized')) {
-        bndWorkspace.driver = Constants.BNDDRIVER_GRADLE
+        Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
         bndWorkspace.addGestalt(Constants.GESTALT_BATCH, null)
         if (rootProject.hasProperty('bnd_gestalt')) {
           rootProject.bnd_gestalt.trim().split(/\s*,\s*/).each {
@@ -53,14 +53,14 @@ public class BndPlugin implements Plugin<Project> {
       bndProject.prepare();
       if (!bndProject.isValid()) {
         checkErrors()
-        throw new GradleException("Project ${bndProject.name} is not a valid bnd project")
+        throw new GradleException("Project ${bndProject.getName()} is not a valid bnd project")
       }
       this.preCompileRefresh = project.hasProperty('bnd_preCompileRefresh') ? parseBoolean(bnd_preCompileRefresh) : false
       extensions.create('bnd', BndProperties, bndProject)
       bnd.ext.project = bndProject
       convention.plugins.bnd = new BndPluginConvention(this)
 
-      buildDir = relativePath(bndProject.targetDir)
+      buildDir = relativePath(bndProject.getTargetDir())
       plugins.apply 'java'
       libsDirName = '.'
       testResultsDirName = bnd('test-reports', 'test-reports')
@@ -76,12 +76,12 @@ public class BndPlugin implements Plugin<Project> {
         archives.artifacts.clear()
       }
       /* Set up deliverables */
-      bndProject.deliverables.each { deliverable ->
+      bndProject.getDeliverables()*.getFile().each { deliverable ->
         artifacts {
-          runtime(deliverable.file) {
+          runtime(deliverable) {
              builtBy jar
           }
-          archives(deliverable.file) {
+          archives(deliverable) {
              builtBy jar
           }
         }
@@ -97,22 +97,22 @@ public class BndPlugin implements Plugin<Project> {
       sourceSets {
         /* bnd uses the same directory for java and resources. */
         main {
-          java.srcDirs = resources.srcDirs = files(bndProject.sourcepath)
-          output.classesDir = output.resourcesDir = bndProject.srcOutput
+          java.srcDirs = resources.srcDirs = files(bndProject.getSourcePath())
+          output.classesDir = output.resourcesDir = bndProject.getSrcOutput()
         }
         test {
-          java.srcDirs = resources.srcDirs = files(bndProject.testSrc)
-          output.classesDir = output.resourcesDir = bndProject.testOutput
+          java.srcDirs = resources.srcDirs = files(bndProject.getTestSrc())
+          output.classesDir = output.resourcesDir = bndProject.getTestOutput()
         }
       }
-      bnd.ext.allSrcDirs = files(bndProject.allsourcepath)
+      bnd.ext.allSrcDirs = files(bndProject.getAllsourcepath())
       /* Set up compile tasks */
       sourceCompatibility = bnd('javac.source', sourceCompatibility)
       def javacTarget = bnd('javac.target', targetCompatibility)
-      def bootclasspath = files(bndProject.bootclasspath*.file)
+      def bootclasspath = files(bndProject.getBootclasspath()*.getFile())
       if (javacTarget == 'jsr14') {
         javacTarget = '1.5'
-        bootclasspath = files(bndProject.getBundle('ee.j2se', '1.5', null, ['strategy':'lowest']).file)
+        bootclasspath = files(bndProject.getBundle('ee.j2se', '1.5', null, ['strategy':'lowest']).getFile())
       }
       targetCompatibility = javacTarget
       def javac = bnd('javac')
@@ -210,7 +210,7 @@ public class BndPlugin implements Plugin<Project> {
       jar {
         description 'Assemble the project bundles.'
         deleteAllActions() /* Replace the standard task actions */
-        enabled !bndProject.noBundles
+        enabled !bndProject.isNoBundles()
         if (enabled) {
           /* bnd can include any class on the buildpath */
           inputs.files compilePath().collect {
@@ -229,7 +229,7 @@ public class BndPlugin implements Plugin<Project> {
             try {
               built = bndProject.build()
             } catch (Exception e) {
-              throw new GradleException("Project ${bndProject.name} failed to build", e)
+              throw new GradleException("Project ${bndProject.getName()} failed to build", e)
             }
             checkErrors()
             if (built != null) {
@@ -246,14 +246,14 @@ public class BndPlugin implements Plugin<Project> {
         description 'Release the project to the release repository.'
         dependsOn assemble
         group 'release'
-        enabled !bndProject.noBundles && !bnd(Constants.RELEASEREPO, 'unset').empty
+        enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
         if (enabled) {
           inputs.files configurations.archives.artifacts.files
           doLast {
             try {
               bndProject.release()
             } catch (Exception e) {
-              throw new GradleException("Project ${bndProject.name} failed to release", e)
+              throw new GradleException("Project ${bndProject.getName()} failed to release", e)
             }
             checkErrors()
           }
@@ -279,7 +279,7 @@ public class BndPlugin implements Plugin<Project> {
             try {
               bndProject.test()
             } catch (Exception e) {
-              throw new GradleException("Project ${bndProject.name} failed to test", e)
+              throw new GradleException("Project ${bndProject.getName()} failed to test", e)
             }
             try {
               checkErrors()
@@ -398,7 +398,7 @@ public class BndPlugin implements Plugin<Project> {
           println "project.workspace:      ${rootDir}"
           println "project.dir:            ${projectDir}"
           println "project.name:           ${project.name}"
-          println "project.dependson:      ${bndProject.dependson*.name}"
+          println "project.dependson:      ${bndProject.getDependson()*.getName()}"
           println "project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}"
           println "project.output:         ${compileJava.destinationDir}"
           println "project.buildpath:      ${compileJava.classpath.asPath}"
@@ -437,47 +437,47 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       /* Set up dependencies */
-      bndProject.dependson.each { dependency ->
+      bndProject.getDependson()*.getName().each { dependency ->
         dependencies { handler ->
-          compile handler.project('path': ":${dependency.name}", 'configuration': 'dependson')
+          compile handler.project('path': ":${dependency}", 'configuration': 'dependson')
         }
-        compileJava.dependsOn(":${dependency.name}:assemble")
-        checkNeeded.dependsOn(":${dependency.name}:checkNeeded")
-        releaseNeeded.dependsOn(":${dependency.name}:releaseNeeded")
-        cleanNeeded.dependsOn(":${dependency.name}:cleanNeeded")
+        compileJava.dependsOn(":${dependency}:assemble")
+        checkNeeded.dependsOn(":${dependency}:checkNeeded")
+        releaseNeeded.dependsOn(":${dependency}:releaseNeeded")
+        cleanNeeded.dependsOn(":${dependency}:cleanNeeded")
       }
     }
   }
 
   private FileCollection compilePath() {
-    return project.files(bndProject.buildpath*.file - bndProject.srcOutput)
+    return project.files(bndProject.getBuildpath()*.getFile() - bndProject.getSrcOutput())
   }
 
   private FileCollection testCompilePath() {
-    return project.files(bndProject.testpath*.file - bndProject.testOutput)
+    return project.files(bndProject.getTestpath()*.getFile() - bndProject.getTestOutput())
   }
 
   private FileCollection runtimePath() {
-    return project.files(bndProject.srcOutput)
+    return project.files(bndProject.getSrcOutput())
   }
 
   private FileCollection testRuntimePath() {
-    return project.files(bndProject.testOutput)
+    return project.files(bndProject.getTestOutput())
   }
 
   private void checkErrors() {
-    bndProject.getInfo(bndProject.workspace, "${bndProject.workspace.base.name} :")
+    bndProject.getInfo(bndProject.getWorkspace(), "${bndProject.getWorkspace().getBase().name} :")
     def boolean failed = !bndProject.isOk()
     def int errorCount = 0
-    bndProject.warnings.each {
+    bndProject.getWarnings().each {
       project.logger.warn "Warning: ${it}"
     }
-    bndProject.warnings.clear()
-    bndProject.errors.each {
+    bndProject.getWarnings().clear()
+    bndProject.getErrors().each {
       project.logger.error "Error  : ${it}"
       errorCount++
     }
-    bndProject.errors.clear()
+    bndProject.getErrors().clear()
     if (failed) {
       def str = 'even though no errors were reported'
       if (errorCount == 1) {
@@ -485,7 +485,7 @@ public class BndPlugin implements Plugin<Project> {
       } else if (errorCount > 1) {
         str = "${errorCount} errors were reported"
       }
-      throw new GradleException("Project ${bndProject.name} is invalid, ${str}")
+      throw new GradleException("Project ${bndProject.getName()} is invalid, ${str}")
     }
   }
 
