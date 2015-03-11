@@ -54,12 +54,18 @@ public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDet
                     rover.setProperties(props);
                 }
             }
-            FileLine fl = rover.getHeader(location.header, location.context);
-            if (fl != null) {
-                file = fl.file;
-                line = fl.line;
-                start = fl.start;
-                end = fl.end;
+
+            try {
+                FileLine fl = rover.getHeader(location.header, location.context);
+                if (fl != null) {
+                    file = fl.file;
+                    line = fl.line;
+                    start = fl.start;
+                    end = fl.end;
+                }
+            } catch (Exception e) {
+                // ignore, this was a bug in bnd. It could not handle if certain
+                // files were not there during starting
             }
         }
 

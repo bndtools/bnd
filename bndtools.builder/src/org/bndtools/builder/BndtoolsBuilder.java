@@ -101,6 +101,9 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
         final IProject myProject = getProject();
         try {
+
+            listeners.fireBuildStarting(myProject);
+
             MarkerSupport markers = new MarkerSupport(myProject);
 
             boolean force = kind == FULL_BUILD || kind == CLEAN_BUILD;
@@ -118,15 +121,15 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                     model = Central.getProject(myProject.getLocation().toFile());
                 } catch (Exception e) {
                     markers.deleteMarkers("*");
-                    markers.createMarker(null, IMarker.SEVERITY_ERROR, e.getMessage(), BndtoolsConstants.MARKER_BND_PROBLEM);
+                    IMarker marker = myProject.createMarker(BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
+                    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                    marker.setAttribute(IMarker.MESSAGE, "Cannot find bnd project");
                 }
                 if (model == null)
                     return noreport();
             }
 
             model.clear();
-
-            listeners.fireBuildStarting(myProject);
 
             DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
 

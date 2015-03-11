@@ -83,7 +83,7 @@ class MarkerSupport {
             List<MarkerData> markers = handler.generateMarkerData(project, model, location);
             for (MarkerData markerData : markers) {
                 IResource resource = markerData.getResource();
-                if (resource != null) {
+                if (resource != null && resource.exists()) {
                     IMarker marker = resource.createMarker(markerType);
                     marker.setAttribute(IMarker.SEVERITY, severity);
                     marker.setAttribute("$bndType", type);
@@ -107,10 +107,12 @@ class MarkerSupport {
             return;
         }
 
-        String defaultResource = model instanceof Project ? Project.BNDFILE : model instanceof Workspace ? Workspace.BUILDFILE : "";
-        IMarker marker = DefaultBuildErrorDetailsHandler.getDefaultResource(project, defaultResource).createMarker(markerType);
-        marker.setAttribute(IMarker.SEVERITY, severity);
-        marker.setAttribute(IMarker.MESSAGE, formatted);
+        String defaultResource = model instanceof Project ? Project.BNDFILE : model instanceof Workspace ? Workspace.BUILDFILE : null;
+        if (defaultResource != null) {
+            IMarker marker = DefaultBuildErrorDetailsHandler.getDefaultResource(project, defaultResource).createMarker(markerType);
+            marker.setAttribute(IMarker.SEVERITY, severity);
+            marker.setAttribute(IMarker.MESSAGE, formatted);
+        }
     }
 
     private static boolean containsError(DeltaWrapper dw, IMarker[] markers) {
