@@ -2453,34 +2453,36 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static FileLine findHeader(File f, Pattern header, Pattern clause) throws IOException {
-		String s = IO.collect(f);
-		Matcher matcher = header.matcher(s);
-		while (matcher.find()) {
+		if (f.isFile()) {
+			String s = IO.collect(f);
+			Matcher matcher = header.matcher(s);
+			while (matcher.find()) {
 
-			FileLine fl = new FileLine();
-			fl.file = f;
-			fl.start = matcher.start();
-			fl.end = matcher.end();
-			fl.length = fl.end - fl.start;
-			fl.line = getLine(s, fl.start);
+				FileLine fl = new FileLine();
+				fl.file = f;
+				fl.start = matcher.start();
+				fl.end = matcher.end();
+				fl.length = fl.end - fl.start;
+				fl.line = getLine(s, fl.start);
 
-			if (clause != null) {
+				if (clause != null) {
 
-				Matcher mclause = clause.matcher(s);
-				mclause.region(fl.start, fl.end);
+					Matcher mclause = clause.matcher(s);
+					mclause.region(fl.start, fl.end);
 
-				if (mclause.find()) {
-					fl.start = mclause.start();
-					fl.end = mclause.end();
-				} else
-					//
-					// If no clause matches, maybe
-					// we have merged headers
-					//
-					continue;
+					if (mclause.find()) {
+						fl.start = mclause.start();
+						fl.end = mclause.end();
+					} else
+						//
+						// If no clause matches, maybe
+						// we have merged headers
+						//
+						continue;
+				}
+
+				return fl;
 			}
-
-			return fl;
 		}
 		return null;
 	}
