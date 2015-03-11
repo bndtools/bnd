@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
 
@@ -91,7 +92,7 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         // All the things we should find when we have traversed the build path
         //
 
-        Set<SetupTypes> found = new HashSet<SetupTypes>(EnumSet.allOf(SetupTypes.class));
+        Set<SetupTypes> found = EnumSet.allOf(SetupTypes.class);
 
         for (IClasspathEntry cpe : javaProject.getRawClasspath()) {
 
@@ -121,7 +122,7 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
                             if ("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType".equals(segment) && path.segmentCount() == 3) {
                                 // check javac version <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 
-                                String javac = model.getProperty("javac.source", "1.5");
+                                String javac = model.getProperty(Constants.JAVAC_SOURCE, "1.5");
                                 if (!path.segment(2).endsWith(javac)) {
                                     warning(model, null, path.toString(), cpe, "Eclipse: The .JRE container is set to %s but bnd is compiling against %s", path.segment(2), javac).file(
                                             new File(model.getBase(), ".classpath").getAbsolutePath());
