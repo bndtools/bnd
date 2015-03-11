@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-maven-plugin-parent</artifactId>
+        <version>2.5.0-SNAPSHOT</version>
+    </parent>
+    
+    <artifactId>bnd-maven-plugin-dependencies</artifactId>
+    <packaging>pom</packaging>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <target>
+                                <!-- Install the bnd.jar built locally into the local maven repo under the version defined in ${bnd.version} -->
+                                <property name="bnd.jar" value="${basedir}/../../biz.aQute.bnd/generated/biz.aQute.bnd-3.0.0.jar"/>
+                                <available file="${bnd.jar}" property="bnd.jar.present"/>
+                                <fail unless="bnd.jar.present">The bnd.jar file ${bnd.jar} does not exist. Please build it first.</fail>
+                                
+                                <echo message="Installing ${bnd.jar} into ${settings.localRepository} as ${bnd.version}"/>
+                                <exec executable="mvn">
+                                    <arg line='-Dmaven.repo.local="${settings.localRepository}" install:install-file --batch-mode -Dfile="${bnd.jar}" -DgroupId=biz.aQute.bnd -DartifactId=bnd -Dversion=${bnd.version} -Dpackaging=jar'/>
+                                </exec>
+                            </target>
+                        </configuration>
+                        <goals>
+                          <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>      
+        </plugins>
+    </build>
+</project>
