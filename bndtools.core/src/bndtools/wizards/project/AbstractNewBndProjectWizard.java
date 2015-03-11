@@ -85,7 +85,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         try {
             return new BndEditModel(Central.getWorkspace());
         } catch (Exception e) {
-            logger.logError("Unable to create BndEditModel with Workspace, defaulting to without Workspace", e);
+            logger.logInfo("Unable to create BndEditModel with Workspace, defaulting to without Workspace", e);
             return new BndEditModel();
         }
     }

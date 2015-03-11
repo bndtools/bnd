@@ -59,7 +59,7 @@ import bndtools.preferences.CompileErrorAction;
  *  touch bar.bnd -> see if manifest is updated in JAR (Jar viewer does not refresh very well, so reopen)
  *  touch build.bnd -> verify rebuild
  *  touch bnd.bnd in test -> verify rebuild
- *
+ * 
  *  create project test.2, add -buildpath: test
  * </pre>
  */
@@ -121,9 +121,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                     model = Central.getProject(myProject.getLocation().toFile());
                 } catch (Exception e) {
                     markers.deleteMarkers("*");
-                    IMarker marker = myProject.createMarker(BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
-                    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                    marker.setAttribute(IMarker.MESSAGE, "Cannot find bnd project");
+                    markers.createMarker(null, IMarker.SEVERITY_ERROR, "Cannot find bnd project", BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
                 }
                 if (model == null)
                     return noreport();
@@ -302,7 +300,14 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     protected void clean(IProgressMonitor monitor) throws CoreException {
         try {
             IProject myProject = getProject();
-            Project model = Central.getProject(myProject.getLocation().toFile());
+            Project model = null;
+            try {
+                model = Central.getProject(myProject.getLocation().toFile());
+            } catch (Exception e) {
+                MarkerSupport markers = new MarkerSupport(myProject);
+                markers.deleteMarkers("*");
+                markers.createMarker(null, IMarker.SEVERITY_ERROR, "Cannot find bnd project", BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
+            }
             if (model == null)
                 return;
 

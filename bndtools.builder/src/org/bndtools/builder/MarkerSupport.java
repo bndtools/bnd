@@ -108,13 +108,11 @@ class MarkerSupport {
         }
 
         String defaultResource = model instanceof Project ? Project.BNDFILE : model instanceof Workspace ? Workspace.BUILDFILE : null;
-        if (defaultResource != null) {
-            IResource resource = DefaultBuildErrorDetailsHandler.getDefaultResource(project, defaultResource);
-            if (resource != null && resource.exists()) {
-                IMarker marker = resource.createMarker(markerType);
-                marker.setAttribute(IMarker.SEVERITY, severity);
-                marker.setAttribute(IMarker.MESSAGE, formatted);
-            }
+        IResource resource = DefaultBuildErrorDetailsHandler.getDefaultResource(project, defaultResource);
+        if (resource.exists()) {
+            IMarker marker = resource.createMarker(markerType);
+            marker.setAttribute(IMarker.SEVERITY, severity);
+            marker.setAttribute(IMarker.MESSAGE, formatted);
         }
     }
 
@@ -172,7 +170,7 @@ class MarkerSupport {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.logError("Validator error", e);
                 }
             }
         }

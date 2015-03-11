@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -63,13 +62,12 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
     }
 
     public static final IResource getDefaultResource(IProject project, String name) {
-        IResource resource;
-        IFile bndFile = project.getFile(name);
-        if (bndFile == null || !bndFile.exists())
-            resource = project;
-        else
-            resource = bndFile;
-        return resource;
+        if ((name == null) || name.isEmpty())
+            return project;
+        IResource bndFile = project.getFile(name);
+        if (bndFile.exists())
+            return bndFile;
+        return project;
     }
 
     /**
