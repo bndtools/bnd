@@ -46,12 +46,26 @@ public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDet
         int start = -1, end = -1, line = location.line;
 
         if (location.header != null && location.line == 0) {
-            FileLine fl = model.getHeader(location.header, location.context);
-            if (fl.file.isFile()) {
-                file = fl.file;
-                line = fl.line;
-                start = fl.start;
-                end = fl.end;
+            Processor rover = model;
+            if (location.file != null && !model.getPropertiesFile().equals(location.file)) {
+                File props = new File(location.file);
+                if (props.isFile()) {
+                    rover = new Processor(model);
+                    rover.setProperties(props);
+                }
+            }
+
+            try {
+                FileLine fl = rover.getHeader(location.header, location.context);
+                if (fl != null) {
+                    file = fl.file;
+                    line = fl.line;
+                    start = fl.start;
+                    end = fl.end;
+                }
+            } catch (Exception e) {
+                // ignore, this was a bug in bnd. It could not handle if certain
+                // files were not there during starting
             }
         }
 

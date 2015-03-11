@@ -1,0 +1,2 @@
+Bundle-SymbolicName: validators.sub.one;singleton=true
+Bundle-Version: 0.0.0.${tstamp}

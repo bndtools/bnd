@@ -1,0 +1,13 @@
+
+javac.source = 1.7
+javac.target = 1.7
+
+-includeresource: a;literal="x"
+
+src=src, \
+	srcb, \
+	srcc, \
+	nested/src
+bin=nested/bin
+
+-sub: *.bnd
