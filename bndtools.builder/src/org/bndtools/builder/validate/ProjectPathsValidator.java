@@ -73,7 +73,12 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         // Verify if we have the right relation to the cnf folder ...
         //
 
-        Project w = Workspace.getProject(model.getBase());
+        Project w;
+        try {
+            w = Workspace.getProject(model.getBase());
+        } catch (Exception e) {
+            w = null;
+        }
         if (w == null || w != model) {
             model.error("Eclipse: Error in setup, likely the cnf folder is not ../cnf relative from the project folder %s. The workspace is in %s", model.getBase(), model.getWorkspace().getBase());
             return;

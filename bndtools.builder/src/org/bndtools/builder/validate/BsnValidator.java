@@ -5,8 +5,8 @@ import java.io.File;
 import org.bndtools.api.IValidator;
 import org.eclipse.core.runtime.IStatus;
 
+import bndtools.central.Central;
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
@@ -16,7 +16,12 @@ public class BsnValidator implements IValidator {
 
     @Override
     public IStatus validate(Builder builder) throws Exception {
-        Project project = Workspace.getProject(builder.getBase());
+        Project project;
+        try {
+            project = Central.getProject(builder.getBase());
+        } catch (Exception e) {
+            project = null;
+        }
         if (project == null) {
             builder.error("Eclipse: Cannot find associated project for %s", builder);
             return null;

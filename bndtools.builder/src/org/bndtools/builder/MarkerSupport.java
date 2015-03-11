@@ -170,7 +170,7 @@ class MarkerSupport {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.logError("Validator error", e);
                 }
             }
         }
