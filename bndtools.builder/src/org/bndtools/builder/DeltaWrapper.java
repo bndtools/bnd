@@ -22,6 +22,7 @@ import bndtools.central.Central;
 
 class DeltaWrapper {
 
+    private static final Path EXT = new Path("/cnf/ext");
     private final Project model;
     private final IResourceDelta delta;
     private final BuildLogger log;
@@ -42,6 +43,9 @@ class DeltaWrapper {
             log.basic("cnf properties have changed");
             return true;
         }
+
+        if (delta.findMember(EXT) != null)
+            return true;
 
         return false;
     }
