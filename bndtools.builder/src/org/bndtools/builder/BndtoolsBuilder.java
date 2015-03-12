@@ -144,7 +144,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 setupChanged = true && !postponed;
             }
 
-            if (!force && delta.hasEclipseChanged()) {
+            if (!force && !setupChanged && delta.hasEclipseChanged()) {
                 buildLog.basic("Eclipse project had a buildpath change");
                 setupChanged = true;
             }
