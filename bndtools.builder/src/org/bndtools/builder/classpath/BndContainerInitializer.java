@@ -60,7 +60,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
     static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED);
     static final Pattern packagePattern = Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
-    static final ReentrantLock bndLock = new ReentrantLock();
 
     /*
      * @GuardedBy bndLock
@@ -175,6 +174,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             List<IClasspathEntry> newClasspath = Collections.emptyList();
             boolean interrupted = Thread.interrupted();
             try {
+                final ReentrantLock bndLock = Central.getBndLock();
                 if (bndLock.tryLock(5, TimeUnit.SECONDS)) {
                     try {
                         newClasspath = calculateProjectClasspath();
