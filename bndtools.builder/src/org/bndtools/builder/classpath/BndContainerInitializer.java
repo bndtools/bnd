@@ -98,7 +98,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
     @Override
     public String getDescription(IPath containerPath, IJavaProject project) {
-        return "Bnd Bundle Path";
+        return BndContainer.DESCRIPTION;
     }
 
     /**
@@ -212,7 +212,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             JavaCore.setClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, new IJavaProject[] {
                 javaProject
             }, new IClasspathContainer[] {
-                new BndContainer(entries, getDescription(BndtoolsConstants.BND_CLASSPATH_ID, javaProject))
+                new BndContainer(entries)
             }, null);
 
             BndPreferences prefs = new BndPreferences();
