@@ -2260,7 +2260,6 @@ public class Analyzer extends Processor {
 					}
 					catch (Throwable e) {
 						error("Invalid class file %s (%s)", e, relativePath, e);
-						e.printStackTrace();
 						continue next;
 					}
 
