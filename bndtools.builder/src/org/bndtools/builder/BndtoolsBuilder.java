@@ -59,7 +59,7 @@ import bndtools.preferences.CompileErrorAction;
  *  touch bar.bnd -> see if manifest is updated in JAR (Jar viewer does not refresh very well, so reopen)
  *  touch build.bnd -> verify rebuild
  *  touch bnd.bnd in test -> verify rebuild
- * 
+ *
  *  create project test.2, add -buildpath: test
  * </pre>
  */
@@ -144,8 +144,13 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 setupChanged = true && !postponed;
             }
 
-            if (!force && delta.hasEclipseChanged()) {
+            if (!force && !setupChanged && delta.hasEclipseChanged()) {
                 buildLog.basic("Eclipse project had a buildpath change");
+                setupChanged = true;
+            }
+
+            if (!force && !setupChanged && suggestClasspathContainerUpdate()) {
+                buildLog.basic("Project classpath may need to be updated");
                 setupChanged = true;
             }
 
@@ -176,7 +181,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
                 String changed = ""; // if empty, no change
                 String del = "";
-                if (checkClasspathContainerUpdate(myProject)) {
+                if (requestClasspathContainerUpdate()) {
                     changed += "Classpath container updated";
                     del = " & ";
                 }
@@ -347,18 +352,31 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * Check if the classpath has changed for this project.
+     * Check if the classpath container this project needs to be updated.
+     *
+     * @return {@code true} if this project has a bnd classpath container and a classpath update should be requested.
+     *         {@code false} if this project does not have a bnd classpath container or a classpath update does not need
+     *         to be requested.
+     */
+    private boolean suggestClasspathContainerUpdate() throws CoreException {
+        IJavaProject javaProject = JavaCore.create(getProject());
+        if (javaProject == null) {
+            return false; // project is not a java project
+        }
+
+        return BndContainerInitializer.suggestClasspathContainerUpdate(javaProject);
+    }
+
+    /**
+     * Request the classpath container be updated for this project.
      * <p>
      * The classpath container may have added errors to the model which the caller must check for.
      *
-     * @param project
-     *            The IProject to check and update the classpath container.
-     * @return {@code true} if the specified project has a bnd classpath container and the classpath was changed.
-     *         {@code false} if the specified project does not have a bnd classpath container or the classpath was not
-     *         changed.
+     * @return {@code true} if this project has a bnd classpath container and the classpath was changed. {@code false}
+     *         if this project does not have a bnd classpath container or the classpath was not changed.
      */
-    private boolean checkClasspathContainerUpdate(IProject project) throws CoreException {
-        IJavaProject javaProject = JavaCore.create(project);
+    private boolean requestClasspathContainerUpdate() throws CoreException {
+        IJavaProject javaProject = JavaCore.create(getProject());
         if (javaProject == null) {
             return false; // project is not a java project
         }

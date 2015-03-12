@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
@@ -564,5 +565,14 @@ public class Central implements IStartupParticipant {
             return null;
 
         return ifiles[0];
+    }
+
+    /**
+     * Used to serialize access to bnd code which is not thread safe
+     */
+    private static final ReentrantLock bndLock = new ReentrantLock();
+
+    public static ReentrantLock getBndLock() {
+        return bndLock;
     }
 }

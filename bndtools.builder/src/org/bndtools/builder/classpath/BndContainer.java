@@ -6,12 +6,11 @@ import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 
 public class BndContainer implements IClasspathContainer {
+    public static final String DESCRIPTION = "Bnd Bundle Path";
     private final IClasspathEntry[] entries;
-    private final String description;
 
-    public BndContainer(IClasspathEntry[] entries, String description) {
+    BndContainer(IClasspathEntry[] entries) {
         this.entries = entries;
-        this.description = description;
     }
 
     @Override
@@ -21,7 +20,7 @@ public class BndContainer implements IClasspathContainer {
 
     @Override
     public String getDescription() {
-        return description;
+        return DESCRIPTION;
     }
 
     @Override
