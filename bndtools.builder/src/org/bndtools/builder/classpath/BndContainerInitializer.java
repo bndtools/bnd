@@ -57,18 +57,9 @@ import bndtools.preferences.BndPreferences;
  */
 public class BndContainerInitializer extends ClasspathContainerInitializer implements ModelListener {
     static final ILogger logger = Logger.getLogger(BndContainerInitializer.class);
-    static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
-    static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED);
-    static final Pattern packagePattern = Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
-
-    /*
-     * @GuardedBy bndLock
-     */
-    final Map<File,JarInfo> jarInfo;
 
     public BndContainerInitializer() {
         super();
-        jarInfo = new WeakHashMap<File,JarInfo>();
         Central.getInstance().addModelListener(this);
     }
 
@@ -76,7 +67,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     public void initialize(IPath containerPath, IJavaProject javaProject) throws CoreException {
         IProject project = javaProject.getProject();
 
-        final Updater updater = new Updater(project, javaProject);
+        Updater updater = new Updater(project, javaProject);
         updater.updateClasspathContainer(true);
     }
 
@@ -142,7 +133,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
     }
 
-    private class Updater {
+    private static class Updater {
+        private static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
+        private static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED);
+        private static final Pattern packagePattern = Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
+        private static final Map<File,JarInfo> jarInfo = Collections.synchronizedMap(new WeakHashMap<File,JarInfo>());
+
         private final IProject project;
         private final IJavaProject javaProject;
         private final IWorkspaceRoot root;
