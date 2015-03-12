@@ -149,6 +149,11 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 setupChanged = true;
             }
 
+            if (!force && !setupChanged && suggestClasspathContainerUpdate()) {
+                buildLog.basic("Project classpath may need to be updated");
+                setupChanged = true;
+            }
+
             //
             // If we already know we are going to build, we
             // must handle the path errors. We make sure
@@ -344,6 +349,22 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         }
 
         return false;
+    }
+
+    /**
+     * Check if the classpath container this project needs to be updated.
+     *
+     * @return {@code true} if this project has a bnd classpath container and a classpath update should be requested.
+     *         {@code false} if this project does not have a bnd classpath container or a classpath update does not need
+     *         to be requested.
+     */
+    private boolean suggestClasspathContainerUpdate() throws CoreException {
+        IJavaProject javaProject = JavaCore.create(getProject());
+        if (javaProject == null) {
+            return false; // project is not a java project
+        }
+
+        return BndContainerInitializer.suggestClasspathContainerUpdate(javaProject);
     }
 
     /**

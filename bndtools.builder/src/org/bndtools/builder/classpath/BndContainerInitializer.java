@@ -23,6 +23,7 @@ import org.bndtools.api.ModelListener;
 import org.bndtools.builder.BuildLogger;
 import org.bndtools.builder.BuilderPlugin;
 import org.bndtools.utils.jar.PseudoJar;
+import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
@@ -133,6 +134,26 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
     }
 
+    /**
+     * Suggests whether an update request on the classpath container, if there is one, should be made.
+     *
+     * @param javaProject
+     *            The java project of interest. Must not be null.
+     * @throws CoreException
+     */
+    public static boolean suggestClasspathContainerUpdate(IJavaProject javaProject) throws CoreException {
+        if (getClasspathContainer(javaProject) == null) {
+            return false; // project does not have a BndContainer
+        }
+        ClasspathContainerInitializer initializer = JavaCore.getClasspathContainerInitializer(BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
+        if (initializer == null) {
+            return false;
+        }
+        IProject project = javaProject.getProject();
+        Updater updater = new Updater(project, javaProject);
+        return updater.suggestClasspathContainerUpdate();
+    }
+
     private static class Updater {
         private static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
         private static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED);
@@ -202,6 +223,28 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
 
             setClasspathEntries(newClasspath.toArray(new IClasspathEntry[newClasspath.size()]));
+        }
+
+        boolean suggestClasspathContainerUpdate() throws CoreException {
+            if (model == null) {
+                return false;
+            }
+            IClasspathContainer container = JavaCore.getClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, javaProject);
+            for (IClasspathEntry cpe : container.getClasspathEntries()) {
+                if (cpe.getEntryKind() != IClasspathEntry.CPE_LIBRARY) {
+                    continue;
+                }
+
+                File file = FileUtils.toFile(root, cpe.getPath());
+                JarInfo info = jarInfo.get(file);
+                if (info == null) {
+                    return true;
+                }
+                if (info.lastModified != file.lastModified()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void setClasspathEntries(IClasspathEntry[] entries) throws JavaModelException {
