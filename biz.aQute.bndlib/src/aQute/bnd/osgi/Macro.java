@@ -697,7 +697,14 @@ public class Macro {
 
 		SimpleDateFormat sdf = new SimpleDateFormat(format);
 		sdf.setTimeZone(tz);
-
+		String tstamp = domain.getProperty(Constants.TSTAMP);
+		if (tstamp != null)
+			try {
+			now = Long.parseLong(tstamp);
+			}
+			catch (NumberFormatException e) {
+				// ignore, just use current time
+		}
 		return sdf.format(new Date(now));
 	}
 

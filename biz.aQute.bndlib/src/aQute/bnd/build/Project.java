@@ -1429,6 +1429,18 @@ public class Project extends Processor {
 		if (isNoBundles())
 			return null;
 
+		//
+		// #761 tstamp can vary between invocations in one build
+		// Macro can handle a @tstamp time so we freeze the time at
+		// the start of the build. We do this carefully so someone higher
+		// up the chain can actually freeze the time longer
+		//
+		boolean tstamp = false;
+		if (getProperty(TSTAMP) == null) {
+			setProperty(TSTAMP, Long.toString(System.currentTimeMillis()));
+			tstamp = true;
+		}
+
 		File bfs = new File(getTarget(), BUILDFILES);
 		bfs.delete();
 
@@ -1475,6 +1487,8 @@ public class Project extends Processor {
 		}
 		finally {
 			builder.close();
+			if (tstamp)
+				unsetProperty(TSTAMP);
 		}
 	}
 
