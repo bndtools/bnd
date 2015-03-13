@@ -5,47 +5,41 @@ import java.util.regex.*;
 import aQute.bnd.version.*;
 
 public class MvnVersion implements Comparable<MvnVersion> {
-	
-	private static final Pattern QUALIFIER = Pattern.compile("[-.]?([^0-9.].*)$");
-	
-	private static final String	QUALIFIER_SNAPSHOT	= "SNAPSHOT";
 
-	private final Version osgiVersion;
+	public static final String		VERSION_STRING		= "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
+
+	private static final Pattern	VERSION				= Pattern.compile(VERSION_STRING);
+
+	private static final String		QUALIFIER_SNAPSHOT	= "SNAPSHOT";
+
+	private final Version			osgiVersion;
 
 	public MvnVersion(Version osgiVersion) {
 		this.osgiVersion = osgiVersion;
 	}
-	
-	public static final MvnVersion parseString(String versionStr) {
-		MvnVersion result;
-		
-		try {
-			Matcher m = QUALIFIER.matcher(versionStr);
-			if (!m.find()) {
-				result = new MvnVersion(Version.parseVersion(versionStr));
-			} else {
-				String qualifier = m.group(1);
 
-				Version v = Version.parseVersion(versionStr.substring(0,
-						m.start()));
-				Version osgiVersion = new Version(v.getMajor(), v.getMinor(),
-						v.getMicro(), qualifier);
-				result = new MvnVersion(osgiVersion);
-			}
-		} catch (IllegalArgumentException e) { // bad format
-			result = null;
-		}
-		return result;
+	public static final MvnVersion parseString(String versionStr) {
+		versionStr = versionStr.trim();
+		Matcher m = VERSION.matcher(versionStr);
+		if (!m.matches())
+			throw new IllegalArgumentException("Invalid syntax for version: " + versionStr);
+
+		int major = Integer.parseInt(m.group(1));
+		int minor = (m.group(3) != null) ? Integer.parseInt(m.group(3)) : 0;
+		int micro = (m.group(5) != null) ? Integer.parseInt(m.group(5)) : 0;
+		String qualifier = m.group(7);
+		Version version = new Version(major, minor, micro, qualifier);
+		return new MvnVersion(version);
 	}
-	
+
 	public Version getOSGiVersion() {
 		return osgiVersion;
 	}
-	
+
 	public boolean isSnapshot() {
 		return QUALIFIER_SNAPSHOT.equals(osgiVersion.getQualifier());
 	}
-	
+
 	public int compareTo(MvnVersion other) {
 		return this.osgiVersion.compareTo(other.osgiVersion);
 	}
