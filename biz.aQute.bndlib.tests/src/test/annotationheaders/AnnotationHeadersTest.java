@@ -112,6 +112,11 @@ public class AnnotationHeadersTest extends TestCase {
 	class XImpl {
 	}
 		
+	
+	@ProvideCapability(ns = "extrattrs", name = "extrattrs", value="extra=YES")
+	interface ExtraAttrs {
+		
+	}
 	public void testBasic() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
@@ -119,6 +124,14 @@ public class AnnotationHeadersTest extends TestCase {
 		b.build();
 		assertTrue(b.check());
 		Manifest manifest = b.getJar().getManifest();
+		manifest.write(System.out);
+		Parameters provideWithExtraAttrs = new Parameters(manifest.getMainAttributes().getValue(
+				Constants.PROVIDE_CAPABILITY));
+		Attrs attrs = provideWithExtraAttrs.get("extrattrs");
+		assertNotNull(attrs);
+		assertEquals("extrattrs=extrattrs;extra=YES",
+ attrs.toString());
+
 		String rc = manifest.getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY);
 		assertNotNull(rc);
 		System.out.println(rc);
