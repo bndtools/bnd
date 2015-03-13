@@ -276,11 +276,20 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 			Builder builder = new Builder().setNamespace(Namespaces.NS_SERVICE);
 
 			String filter;
-			String target = attribs.getValue(ATTRIB_TARGET);
-			if (target != null)
-				filter = String.format("(&(%s=%s)%s)", Constants.OBJECTCLASS, interfaceClass, target);
-			else
-				filter = String.format("(%s=%s)", Constants.OBJECTCLASS, interfaceClass);
+
+			// #770 https://github.com/bndtools/bnd/issues/770 
+			//
+			// We should not include any target properties since this is more a runtime 
+			// filter that is often overridden by config admin. Since this is handled in
+			// runtime anyway, we should be able to ignore it easily.
+			// @formatter:off
+			//			String target = attribs.getValue(ATTRIB_TARGET);
+			//			if (target != null)
+			//				filter = String.format("(&(%s=%s)%s)", Constants.OBJECTCLASS, interfaceClass, target);
+			//			else
+			// @formatter:on
+			
+			filter = String.format("(%s=%s)", Constants.OBJECTCLASS, interfaceClass);
 			builder.addDirective(Namespaces.DIRECTIVE_FILTER, filter);
 
 			String cardinality = attribs.getValue(ATTRIB_CARDINALITY);

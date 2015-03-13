@@ -428,6 +428,12 @@ public interface Constants {
 	String							DEFAULT_PROP_TESTBIN_DIR					= "testbin";
 	String							DEFAULT_PROP_TARGET_DIR						= "target-dir";
 
+	/**
+	 * If set to a long (from epoch time), overrides the real time in the macro
+	 * processor for tstamp
+	 */
+	String							TSTAMP										= "_@tstamp";
+
 	/*
 	 * Deprecated Section
 	 */

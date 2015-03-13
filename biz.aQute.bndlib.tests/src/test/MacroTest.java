@@ -12,6 +12,29 @@ import aQute.lib.io.*;
 public class MacroTest extends TestCase {
 	
 	
+	/*
+	 * #761 Tstamp consistent
+	 */
+
+	public void testTstampConsistent() throws Exception {
+		Processor top = new Processor();
+		Processor base = new Processor(top);
+
+		base.setProperty("time", "${tstamp;S}");
+		String start = base.getProperty("time");
+		Thread.sleep(10);
+		String end = base.getProperty("time");
+		assertFalse(start.equals(end));
+
+		top.setProperty("_@tstamp", end);
+
+		start = base.getProperty("time");
+		assertTrue(start.equals(end));
+		Thread.sleep(10);
+		end = base.getProperty("time");
+		assertTrue(start.equals(end));
+	}
+
 	/**
 	 * Combine
 	 */
