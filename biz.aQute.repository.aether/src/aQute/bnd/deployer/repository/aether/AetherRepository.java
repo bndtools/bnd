@@ -308,10 +308,12 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 		// Add to the result
 		SortedSet<Version> versions = new TreeSet<Version>();
 		for (org.eclipse.aether.version.Version version : rangeResult.getVersions()) {
-			MvnVersion parsed = MvnVersion.parseString(version.toString());
-
-			if (parsed != null)
-				versions.add(parsed.getOSGiVersion());
+			try {
+				versions.add(MvnVersion.parseString(version.toString()).getOSGiVersion());
+			}
+			catch (IllegalArgumentException e) {
+				// ignore version
+			}
 		}
 		return versions;
 	}
