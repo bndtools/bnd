@@ -18,6 +18,20 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/*
+	 * Warn about missing packages in export
+	 */
+
+	public void testWarnAboutMissingExports() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.STRICT, "true");
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
+		b.setIncludeResource("foo;literal='bla'"); // get rid of warningt
+		b.setExportPackage("bar");
+		b.build();
+		assertTrue(b.check("\\QExport-Package or -exportcontents refers to missing package 'bar'\\E"));
+	}
+
+	/*
 	 * Warn about imports to private imports
 	 */
 	
