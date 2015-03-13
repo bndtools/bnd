@@ -46,7 +46,7 @@
     <directive name="effective" value="active"/>
   </requirement>
   <requirement namespace="osgi.service">
-    <directive name="filter" value="(&amp;(objectClass=javax.sql.DataSource)(&amp;(foo=bar)(!(bar=foo))))"/>
+    <directive name="filter" value="(objectClass=javax.sql.DataSource)"/>
     <directive name="effective" value="active"/>
   </requirement>
   <requirement namespace="osgi.extender">
