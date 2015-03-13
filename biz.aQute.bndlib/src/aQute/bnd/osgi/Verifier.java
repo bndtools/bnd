@@ -635,6 +635,13 @@ public class Verifier extends Processor {
 
 			for (Entry<String,Attrs> e : map.entrySet()) {
 
+				if (!analyzer.getContained().containsFQN(e.getKey())) {
+					SetLocation warning = warning("Export-Package or -exportcontents refers to missing package '%s'",
+							e.getKey());
+					warning.header(Constants.EXPORT_PACKAGE + "|" + Constants.EXPORT_CONTENTS);
+					warning.context(e.getKey());
+				}
+
 				String version = e.getValue().get(Constants.VERSION_ATTRIBUTE);
 				if (version == null) {
 					noexports.add(e.getKey());
