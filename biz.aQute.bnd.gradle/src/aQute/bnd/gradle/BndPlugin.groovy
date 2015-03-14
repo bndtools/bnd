@@ -1,8 +1,6 @@
 /*
  * BndPlugin for Gradle.
  *
- * The bnd classes must be available on the classpath for this script.
- *
  * If the bndWorkspace property is set, it will be used for the bnd Workspace.
  *
  * If the bnd_defaultTask property is set, it will be used for the the default
