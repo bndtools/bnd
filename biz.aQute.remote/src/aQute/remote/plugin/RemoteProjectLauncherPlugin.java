@@ -2,8 +2,10 @@ package aQute.remote.plugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -17,7 +19,7 @@ import aQute.remote.api.Agent;
 
 public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 
-	private AgentSupervisor supervisor;
+	private LauncherSupervisor supervisor;
 
 	public RemoteProjectLauncherPlugin(Project project) throws Exception {
 		super(project);
@@ -54,19 +56,16 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			if (dto.host == null)
 				dto.host = "localhost";
 
-			supervisor = AgentSupervisor.create(dto.host, dto.port);
+			supervisor = new LauncherSupervisor();
+			supervisor.connect(dto.host,dto.port);
+			
 			Agent agent = supervisor.getAgent();
 
-			switch (agent.getType()) {
-			default:
-			case agent:
-				break;
-
-			case envoy:
+			if (agent.isEnvoy()) {
 				int secondaryPort = installFramework(agent, dto, entry.getValue());
 				supervisor.close();
-				supervisor = AgentSupervisor.create(dto.host, secondaryPort);
-				break;
+				supervisor = new LauncherSupervisor();
+				supervisor.connect(dto.host,secondaryPort);
 			}
 
 			supervisor.setStreams(out, err);
@@ -77,7 +76,9 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 
 	private int installFramework(Agent agent, RunRemoteDTO dto,
 			Attrs attrs) throws Exception {
-		Map<String, String> runpath = getBundles(getRunpath(), Constants.RUNPATH);
+		List<String> onpath = new ArrayList<String>(getRunpath());
+		
+		Map<String, String> runpath = getBundles(onpath, Constants.RUNPATH);
 		
 		Map<String,Object> properties = new HashMap<String, Object>(getRunProperties());
 		calculatedProperties(properties);

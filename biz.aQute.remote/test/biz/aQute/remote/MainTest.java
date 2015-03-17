@@ -9,9 +9,9 @@ import junit.framework.TestCase;
 import org.osgi.framework.Constants;
 import org.osgi.framework.dto.FrameworkDTO;
 
-import aQute.remote.api.Agent;
+import aQute.remote.main.Envoy;
 import aQute.remote.main.Main;
-import aQute.remote.plugin.AgentSupervisor;
+import aQute.remote.plugin.LauncherSupervisor;
 
 /**
  * Start the main program which will wait for requests to create a framework.
@@ -45,9 +45,11 @@ public class MainTest extends TestCase {
 	}
 
 	public void testRemoteMain() throws Exception {
-
-		AgentSupervisor supervisor = AgentSupervisor.create("localhost",
-				Agent.DEFAULT_PORT);
+		
+		LauncherSupervisor supervisor = new LauncherSupervisor();
+		
+		supervisor.connect("localhost",
+				Envoy.DEFAULT_PORT);
 
 		HashMap<String, Object> configuration = new HashMap<String, Object>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
@@ -55,14 +57,15 @@ public class MainTest extends TestCase {
 		
 		List<String> emptyList = Collections.emptyList();
 
-		assertEquals( Agent.AgentType.envoy, supervisor.getAgent().getType());
+		assertEquals( true, supervisor.getAgent().isEnvoy());
 		
 		int n = supervisor.getAgent().createFramework("test", emptyList,
 				configuration);
 		System.out.println(n);
 		assertTrue(n > 1024);
 
-		AgentSupervisor sv = AgentSupervisor.create("localhost", n);
+		LauncherSupervisor sv = new LauncherSupervisor();
+		sv.connect("localhost", n);
 
 		FrameworkDTO framework = sv.getAgent().getFramework();
 		assertNotNull(framework);
@@ -70,7 +73,8 @@ public class MainTest extends TestCase {
 		sv.getAgent().abort();
 		sv.close();
 
-		sv = AgentSupervisor.create("localhost", n);
+		sv = new LauncherSupervisor();
+		sv.connect("localhost", n);
 
 		framework = sv.getAgent().getFramework();
 		assertNotNull(framework);

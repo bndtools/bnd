@@ -9,14 +9,14 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 import aQute.remote.api.Agent;
-import aQute.remote.api.Linkable;
 import aQute.remote.api.Supervisor;
 import aQute.remote.util.Dispatcher;
+import aQute.remote.util.Linkable;
 
 public class Activator implements BundleActivator,
 		Callable<Linkable<Agent, Supervisor>> {
 	static Pattern PORT_P = Pattern.compile("(?:([^:]+):)?(\\d+)");
-	private Dispatcher dispatcher;
+	private Dispatcher<Agent, Supervisor> dispatcher;
 	private File cache;
 	private BundleContext context;
 
@@ -39,7 +39,7 @@ public class Activator implements BundleActivator,
 			host = "localhost";
 
 		cache = context.getDataFile("shacache");
-		dispatcher = new Dispatcher(Supervisor.class, this,
+		dispatcher = new Dispatcher<Agent,Supervisor>(Supervisor.class, this,
 				host, Integer.parseInt(m.group(2)));
 		dispatcher.open();
 	}

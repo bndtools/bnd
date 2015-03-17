@@ -11,20 +11,17 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import aQute.libg.comlink.Link;
-import aQute.remote.api.Agent;
-import aQute.remote.api.Linkable;
-import aQute.remote.api.Supervisor;
 
-public class Dispatcher extends Thread {
+public class Dispatcher<Local,Remote> extends Thread {
 
 	private final String host;
 	private final int port;
-	private final Callable<Linkable<Agent, Supervisor>> factory;
+	private final Callable<Linkable<Local, Remote>> factory;
 	private final List<Closeable> closeables = new CopyOnWriteArrayList<Closeable>();
 	private ServerSocket server;
-	private Class<Supervisor> remoteClass;
+	private Class<Remote> remoteClass;
 
-	public Dispatcher(Class<Supervisor> remoteClass, Callable<Linkable<Agent,Supervisor>> factory, String host, int port) {
+	public Dispatcher(Class<Remote> remoteClass, Callable<Linkable<Local,Remote>> factory, String host, int port) {
 		super("aQute.agent.server::" + (host == null ? "localhost" : host)
 				+ ":" + port);
 		this.remoteClass=remoteClass;
@@ -42,8 +39,8 @@ public class Dispatcher extends Thread {
 					final Socket connection = server.accept();
 
 					
-					Linkable<Agent, Supervisor> local = factory.call();
-					final Link<Agent, Supervisor> link = new Link<Agent, Supervisor>(
+					Linkable<Local, Remote> local = factory.call();
+					final Link<Local, Remote> link = new Link<Local, Remote>(
 							remoteClass, local.get(), connection);
 					local.setRemote(link.getRemote());
 					closeables.add(link);

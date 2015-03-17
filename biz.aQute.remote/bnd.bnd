@@ -8,4 +8,6 @@
 
 -sub: *.bnd
 
-Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter
+Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter, aQute.bnd.util.*
+
+Import-Package: org.osgi.framework;version=1.5

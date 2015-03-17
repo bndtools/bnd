@@ -1,5 +1,6 @@
 package aQute.remote.agent;
 
+import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,7 +18,7 @@ import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -39,15 +40,15 @@ import aQute.libg.shacache.ShaSource;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Event.Type;
-import aQute.remote.api.Linkable;
 import aQute.remote.api.Supervisor;
 import aQute.remote.util.Dispatcher;
-import aQute.remote.util.SupervisorSource;
+import aQute.remote.util.Linkable;
 
 public class AgentServer implements Agent, Closeable, FrameworkListener,
-		Linkable<Agent,Supervisor> {
+		Linkable<Agent, Supervisor> {
 
-	private static final TypeReference<Map<String, String>> MAP_STRING_STRING_T = new TypeReference<Map<String,String>>(){};
+	private static final TypeReference<Map<String, String>> MAP_STRING_STRING_T = new TypeReference<Map<String, String>>() {
+	};
 
 	private static final long[] EMPTY = new long[0];
 
@@ -78,10 +79,10 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 	private final Map<String, String> installed = new HashMap<String, String>();
 
 	private boolean quit;
-	private RedirectOutput stdout;
-	private RedirectOutput stderr;
-	private RedirectInput stdin;
-	private static AtomicBoolean redirected = new AtomicBoolean();
+	private static RedirectOutput stdout;
+	private static RedirectOutput stderr;
+	private static RedirectInput stdin;
+	private static CopyOnWriteArrayList<AgentServer> agents = new CopyOnWriteArrayList<AgentServer>();
 
 	public AgentServer(BundleContext context, File cache) {
 		this.context = context;
@@ -160,6 +161,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 
 	@Override
 	public String update(Map<String, String> bundles) {
+
 		Formatter out = new Formatter();
 		if (bundles == null) {
 			bundles = Collections.emptyMap();
@@ -188,12 +190,12 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 			}
 
 			try {
-				if (!isActive(b))
+				if (isActive(b))
 					toBeStarted.add(b);
 
 				b.stop();
 			} catch (BundleException e) {
-				e.printStackTrace();
+				printStack(e);
 				out.format("Trying to stop bundle %s : %s", b, e);
 			}
 
@@ -210,7 +212,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 				installed.remove(location);
 				toBeStarted.remove(b);
 			} catch (BundleException e) {
-				e.printStackTrace();
+				printStack(e);
 				out.format("Trying to uninstall %s: %s", location, e);
 			}
 		}
@@ -231,7 +233,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 				toBeStarted.add(b);
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				printStack(e);
 				out.format("Trying to install %s: %s", location, e);
 			}
 		}
@@ -258,7 +260,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 
 				bundle.update(in);
 			} catch (Exception e1) {
-				e1.printStackTrace();
+				printStack(e1);
 				out.format("Trying to update %s: %s", location, e);
 			}
 		}
@@ -267,7 +269,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 			try {
 				b.start();
 			} catch (BundleException e1) {
-				e1.printStackTrace();
+				printStack(e1);
 				out.format("Trying to start %s: %s", b, e1);
 			}
 		}
@@ -285,25 +287,39 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 	}
 
 	@Override
-	public void redirect(boolean on) throws IOException {
-		if (redirected.getAndSet(on) != on) {
+	public boolean redirect(boolean on) throws IOException {
+
+		synchronized (agents) {
 			if ( on ) {
-				System.setOut(stdout=new RedirectOutput(this, System.out, false));
-				System.setErr(stderr=new RedirectOutput(this, System.err, true));
-				System.setIn(stdin=new RedirectInput(System.in));
-			} else
-				System.setOut(stdout.getOut());
-				System.setErr(stderr.getOut());
-				System.setIn(stdin.getOrg());
+				if ( !agents.contains(this)) {
+					agents.add(this);
+					if (agents.size() == 1) {
+						System.setOut(stdout = new RedirectOutput(agents, System.out,
+								false));
+						System.setErr(stderr = new RedirectOutput(agents, System.err,
+								true));
+						System.setIn(stdin = new RedirectInput(System.in));
+						return true;
+					}
+				}
+			} else {
+				if ( agents.remove(this)) {
+					if (agents.size() == 0) {
+						System.setOut(stdout.getOut());
+						System.setErr(stderr.getOut());
+						System.setIn(stdin.getOrg());
+						return true;
+					}
+				}
+			}
 		}
+		return false;
 	}
 
 	@Override
-	public void stdin(String s) throws IOException {
-		RedirectInput ri = stdin;
-		if ( ri != null) {
-			ri.add(s);
-		}
+	public boolean stdin(String s) throws IOException {
+		stdin.add(s);
+		return true;
 	}
 
 	@Override
@@ -313,8 +329,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 	}
 
 	public void setSupervisor(Supervisor remote) {
-		this.remote = remote;
-		source = new SupervisorSource(remote);
+		setRemote(remote);
 	}
 
 	private List<ServiceReferenceDTO> getServiceReferences() throws Exception {
@@ -383,17 +398,25 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 		return bd;
 	}
 
-	@Override
-	public void close() throws IOException {
+	void cleanup(int event) throws IOException {
 		if (quit)
 			return;
-
-		redirect(false);
-		
-		update(null);
 		quit = true;
+		update(null);
+		redirect(false);
+		sendEvent(event);
+	}
 
-		sendEvent(-2);
+	@Override
+	public void close() throws IOException {
+		cleanup(-2);
+
+	}
+
+	@Override
+	public boolean abort() throws IOException {
+		cleanup(-3);
+		return true;
 	}
 
 	private void sendEvent(int code) {
@@ -403,27 +426,21 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 		try {
 			remote.event(e);
 		} catch (Exception e1) {
-			e1.printStackTrace();
+			printStack(e1);
 		}
 	}
 
-	@Override
-	public boolean abort() {
-		quit = true;
-		update(null);
-		sendEvent(-3);
-		return true;
-	}
-
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static int createFramework(String name, Map<String, Object> configuration, final File storage, final File shacache) throws Exception {
+	public static int createFramework(String name,
+			Map<String, Object> configuration, final File storage,
+			final File shacache) throws Exception {
 
-		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(
-				FrameworkFactory.class);
+		ServiceLoader<FrameworkFactory> sl = ServiceLoader
+				.load(FrameworkFactory.class, AgentServer.class.getClassLoader());
 		FrameworkFactory ff = null;
 		for (FrameworkFactory fff : sl) {
 			ff = fff;
-			break;
+			//break;
 		}
 
 		if (ff == null)
@@ -431,15 +448,24 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 
 		Framework framework = ff.newFramework((Map) configuration);
 		framework.init();
-		final BundleContext context = framework.getBundleContext();
-
-		Dispatcher d = new Dispatcher(Supervisor.class, new Callable<Linkable<Agent,Supervisor>>() {
+		framework.getBundleContext().addFrameworkListener(new FrameworkListener() {
 
 			@Override
-			public Linkable<Agent, Supervisor> call() throws Exception {
-				return new AgentServer(context, shacache);
-			}
-		}, "*", 0);
+			public void frameworkEvent(FrameworkEvent event) {
+				System.err.println("FW Event " + event);
+			}});
+		
+		framework.start();
+		final BundleContext context = framework.getBundleContext();
+
+		Dispatcher d = new Dispatcher(Supervisor.class,
+				new Callable<Linkable<Agent, Supervisor>>() {
+
+					@Override
+					public Linkable<Agent, Supervisor> call() throws Exception {
+						return new AgentServer(context, shacache);
+					}
+				}, "*", 0);
 		d.open();
 		return d.getPort();
 	}
@@ -452,14 +478,33 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 			e.code = event.getType();
 			remote.event(e);
 		} catch (Exception e1) {
-			e1.printStackTrace();
+			printStack(e1);
 		}
 	}
-	
+
+	private void printStack(Exception e1) {
+		e1.printStackTrace(stdout == null ? System.out : stdout.getOut());
+	}
+
 	@Override
 	public void setRemote(Supervisor supervisor) {
 		this.remote = supervisor;
-		this.source = new SupervisorSource(this.remote);
+		this.source = new ShaSource() {
+
+			@Override
+			public boolean isFast() {
+				return false;
+			}
+
+			@Override
+			public InputStream get(String sha) throws Exception {
+				byte[] data = remote.getFile(sha);
+				if (data == null)
+					return null;
+
+				return new ByteArrayInputStream(data);
+			}};
+		
 	}
 
 	@Override
@@ -468,19 +513,20 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 	}
 
 	@Override
-	public AgentType getType() {
-		return AgentType.agent;
+	public boolean isEnvoy() {
+		return false;
 	}
 
 	@Override
 	public Map<String, String> getSystemProperties() throws Exception {
-		return Converter.cnv(MAP_STRING_STRING_T,System.getProperties());
+		return Converter.cnv(MAP_STRING_STRING_T, System.getProperties());
 	}
 
 	@Override
 	public int createFramework(String name, Collection<String> runpath,
 			Map<String, Object> properties) throws Exception {
-		throw new UnsupportedOperationException("This is an agent, we can't create new frameworks (for now)");
+		throw new UnsupportedOperationException(
+				"This is an agent, we can't create new frameworks (for now)");
 	}
 
 	public Supervisor getSupervisor() {

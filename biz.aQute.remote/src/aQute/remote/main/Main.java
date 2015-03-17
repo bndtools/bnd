@@ -10,18 +10,16 @@ import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.libg.shacache.ShaCache;
-import aQute.remote.api.Agent;
-import aQute.remote.api.Linkable;
-import aQute.remote.api.Supervisor;
 import aQute.remote.util.Dispatcher;
+import aQute.remote.util.Linkable;
 
-public class Main extends ReporterAdapter implements Callable<Linkable<Agent,Supervisor>> {
+public class Main extends ReporterAdapter implements Callable<Linkable<Envoy,EnvoySupervisor>> {
 
 	private static ShaCache shacache;
 	private static Main main;
 	private CommandLine commandLine;
 	private File storage;
-	private Dispatcher dispatcher;
+	private Dispatcher<Envoy,EnvoySupervisor> dispatcher;
 
 	public Main() throws Exception {
 		super(System.out);
@@ -54,7 +52,7 @@ public class Main extends ReporterAdapter implements Callable<Linkable<Agent,Sup
 		setTrace(options.trace());
 		setExceptions(options.exceptions());
 
-		int port = options.port(Agent.DEFAULT_PORT);
+		int port = options.port(Envoy.DEFAULT_PORT);
 		File cache = IO.getFile(options.cache() == null ? "~/.bnd/remote/cache" : options.cache());
 		storage = IO.getFile(options.storage() == null ? "storage" : options.cache());
 		String network = options.network() == null ? "localhost" : options.network();
@@ -73,14 +71,14 @@ public class Main extends ReporterAdapter implements Callable<Linkable<Agent,Sup
 			throw new IllegalArgumentException("Cannot create storage dir "
 					+ storage);
 
-		dispatcher = new Dispatcher(
-				Supervisor.class,this, network, port);
+		dispatcher = new Dispatcher<Envoy, EnvoySupervisor>(
+				EnvoySupervisor.class,this, network, port);
 		dispatcher.open();
 		dispatcher.join();
 	}
 
 	@Override
-	public Linkable<Agent, Supervisor> call() throws Exception {
+	public Linkable<Envoy, EnvoySupervisor> call() throws Exception {
 		return new EnvoyImpl(this,shacache,storage);
 	}
 	

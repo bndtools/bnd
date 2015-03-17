@@ -1,4 +1,5 @@
--runbundles: demo;version=latest
--runfw: org.apache.felix.framework;version='[4.4.0,4.4.0]'
+-runbundles: biz.aQute.remote.agent;version=latest
+
 -runee: JavaSE-1.7
 -runpath: biz.aQute.remote.launcher
+-exporttype: subsystem

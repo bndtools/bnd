@@ -1,5 +1,6 @@
 package biz.aQute.remote;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +10,7 @@ import junit.framework.TestCase;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.framework.dto.BundleDTO;
 import org.osgi.framework.launch.Framework;
 
 import aQute.bnd.osgi.Builder;
@@ -16,7 +18,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.remote.api.Agent;
-import aQute.remote.plugin.AgentSupervisor;
+import aQute.remote.plugin.LauncherSupervisor;
 
 public class RemoteTest extends TestCase {
 	private int random;
@@ -63,18 +65,54 @@ public class RemoteTest extends TestCase {
 	}
 
 	public void testSimple() throws Exception {
-		AgentSupervisor supervisor = AgentSupervisor.create("localhost",
-				Agent.DEFAULT_PORT);
+		LauncherSupervisor supervisor = new LauncherSupervisor();
+		supervisor.connect("localhost", Agent.DEFAULT_PORT);
 		assertNotNull(supervisor);
 
 		Agent agent = supervisor.getAgent();
 		assertNotNull(agent.getFramework());
+
+		// Create stdin/stderr buffers
+		// and redirect output
+
+		StringBuffer stderr = new StringBuffer();
+		StringBuffer stdout = new StringBuffer();
+		supervisor.setStderr(stderr);
+		supervisor.setStdout(stdout);
+		supervisor.getAgent().redirect(true);
+
+		//
+		// Install the bundle systemio
+		//
+		File f = IO
+				.getFile("generated/biz.aQute.remote.test.systemio-3.0.0.jar");
+		String sha = supervisor.addFile(f);
+		BundleDTO bundle = agent.install(f.getAbsolutePath(), sha);
+
+		//
+		// Start the bundle and capture the output
+		//
+
+		String result = agent.start(bundle.id);
+		assertNull(result, result);
+		assertEquals("Hello World", stdout.toString().trim());
+		stdout.setLength(0);
+
+		// Send input (will be consumed by the Activator.stop
+		ByteArrayInputStream bin = new ByteArrayInputStream(new String(
+				"Input\n").getBytes());
+		supervisor.setStdin(bin);
+
+		// stop the bundle (will return input as uppercase)
+		result = agent.stop(bundle.id);
+		assertNull(result, result);
+		assertEquals("INPUT", stdout.toString().trim());
+
 	}
 
 	public void testUpdate() throws Exception {
-
-		AgentSupervisor supervisor = AgentSupervisor.create("localhost",
-				Agent.DEFAULT_PORT);
+		LauncherSupervisor supervisor = new LauncherSupervisor();
+		supervisor.connect("localhost", Agent.DEFAULT_PORT);
 
 		File t1 = create("bsn-1", new Version(1, 0, 0));
 		File t2 = create("bsn-2", new Version(1, 0, 0));

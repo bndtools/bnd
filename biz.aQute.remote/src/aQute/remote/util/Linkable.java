@@ -1,4 +1,4 @@
-package aQute.remote.api;
+package aQute.remote.util;
 
 import java.io.Closeable;
 

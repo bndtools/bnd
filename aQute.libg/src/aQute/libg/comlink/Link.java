@@ -20,7 +20,6 @@ import aQute.lib.json.*;
  */
 public class Link<L, R> extends Thread implements Closeable {
 	private static final String[]		EMPTY		= new String[] {};
-
 	static JSONCodec					codec		= new JSONCodec();
 
 	final DataInputStream				in;
@@ -32,6 +31,7 @@ public class Link<L, R> extends Thread implements Closeable {
 	R									remote;
 	L									local;
 	volatile boolean					quit;
+	ExecutorService						executor	= Executors.newFixedThreadPool(4);
 
 	static class Result {
 		boolean			resolved;
@@ -75,6 +75,7 @@ public class Link<L, R> extends Thread implements Closeable {
 
 		in.close();
 		out.close();
+		executor.shutdownNow();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -103,8 +104,11 @@ public class Link<L, R> extends Thread implements Closeable {
 						Throwable t = e;
 						while (t instanceof InvocationTargetException)
 							t = ((InvocationTargetException) t).getTargetException();
-						t.printStackTrace();
 						throw t;
+					}
+					catch (InterruptedException e) {
+						interrupt();
+						throw e;
 					}
 					catch (Exception e) {
 						e.printStackTrace();
@@ -130,78 +134,31 @@ public class Link<L, R> extends Thread implements Closeable {
 					args.add(data);
 				}
 
-				Thread t = new Thread("link::" + cmd) {
+				Runnable r = new Runnable() {
 					public void run() {
 						try {
-							if (cmd.isEmpty())
-								response(id, args.get(0));
-							else {
-
-								Method m = getMethod(cmd, args.size());
-								if (m == null) {
-									System.err.println("Unknown message received " + cmd);
-									return;
-								}
-
-								Object parameters[] = new Object[args.size()];
-								for (int i = 0; i < args.size(); i++) {
-									Class< ? > type = m.getParameterTypes()[i];
-									if (type == byte[].class)
-										parameters[i] = args.get(i);
-									else {
-										parameters[i] = codec.dec().from(args.get(i))
-												.get(m.getGenericParameterTypes()[i]);
-									}
-								}
-
-								System.out.println("Received cmd " + m);
-								try {
-									Object result = m.invoke(local, parameters);
-
-									if (m.getReturnType() == void.class)
-										return;
-
-									send(id, null, new Object[] {
-										result
-									});
-								}
-								catch (Throwable t) {
-									while (t instanceof InvocationTargetException)
-										t = ((InvocationTargetException) t).getTargetException();
-									t.printStackTrace();
-									send(-id, null, new Object[] {
-										t.toString()
-									});
-								}
-							}
+							executeCommand(cmd, id, args);
 						}
 						catch (Exception e) {
 							e.printStackTrace();
 						}
 					}
+
 				};
-				t.start();
-			}
-			catch (EOFException e) {
-				// It is over and out
-				return;
-			}
-			catch (IOException e) {
-				if (quit)
-					return;
-
-				e.printStackTrace();
-
-				try {
-					Thread.sleep(500);
-				}
-				catch (InterruptedException e1) {}
+				executor.execute(r);
 			}
 			catch (Exception ee) {
-				if (quit)
-					return;
-				ee.printStackTrace();
+				terminate(ee);
+				return;
 			}
+	}
+
+	/*
+	 * Signalling function /
+	 */
+
+	protected void terminate(Exception t) {
+
 	}
 
 	Method getMethod(String cmd, int count) {
@@ -248,8 +205,6 @@ public class Link<L, R> extends Thread implements Closeable {
 	}
 
 	void response(int msgId, byte[] data) {
-		System.out.println("Response " + msgId);
-
 		boolean exception = false;
 		if (msgId < 0) {
 			msgId = -msgId;
@@ -275,7 +230,6 @@ public class Link<L, R> extends Thread implements Closeable {
 		try {
 			do {
 				synchronized (result) {
-
 					if (result.resolved) {
 
 						if (result.value == null)
@@ -293,7 +247,6 @@ public class Link<L, R> extends Thread implements Closeable {
 
 					long delay = deadline - System.currentTimeMillis();
 					if (delay <= 0) {
-						System.err.println("Timeout");
 						return null;
 					}
 					result.wait(delay);
@@ -305,4 +258,49 @@ public class Link<L, R> extends Thread implements Closeable {
 		}
 	}
 
+	/*
+	 * Execute a command in a background thread
+	 */
+
+	void executeCommand(final String cmd, final int id, final List<byte[]> args) throws Exception {
+		if (cmd.isEmpty())
+			response(id, args.get(0));
+		else {
+
+			Method m = getMethod(cmd, args.size());
+			if (m == null) {
+				return;
+			}
+
+			Object parameters[] = new Object[args.size()];
+			for (int i = 0; i < args.size(); i++) {
+				Class< ? > type = m.getParameterTypes()[i];
+				if (type == byte[].class)
+					parameters[i] = args.get(i);
+				else {
+					parameters[i] = codec.dec().from(args.get(i)).get(m.getGenericParameterTypes()[i]);
+				}
+			}
+
+			try {
+				Object result = m.invoke(local, parameters);
+
+				if (m.getReturnType() == void.class)
+					return;
+
+				send(id, null, new Object[] {
+					result
+				});
+			}
+			catch (Throwable t) {
+				while (t instanceof InvocationTargetException
+						&& ((InvocationTargetException) t).getTargetException() != null)
+					t = ((InvocationTargetException) t).getTargetException();
+				t.printStackTrace();
+				send(-id, null, new Object[] {
+					t + ""
+				});
+			}
+		}
+	}
 }
