@@ -29,7 +29,8 @@ public class SubsystemExporter implements Exporter {
 	}
 
 	@Override
-	public Resource export(String type, final Project project, Map<String,String> options) throws Exception {
+	public Map.Entry<String,Resource> export(String type, final Project project, Map<String,String> options)
+			throws Exception {
 		Jar jar = new Jar(".");
 
 		project.addClose(jar);
@@ -57,9 +58,11 @@ public class SubsystemExporter implements Exporter {
 				continue;
 
 			Attrs attrs = new Attrs(contentDecorators.get(decorator));
+			attrs.put(Constants.VERSION_ATTRIBUTE, version);
 			subsysContent.put(bsn, attrs);
-			attrs.put(Constants.BUNDLE_VERSION, version);
 
+			String path = bsn + "-" + version + ".jar";
+			jar.putResource(path, new FileResource(file));
 		}
 
 		application.putValue(SUBSYSTEM_CONTENT, subsysContent.toString());
@@ -76,9 +79,31 @@ public class SubsystemExporter implements Exporter {
 
 		set(application, SUBSYSTEM_SYMBOLIC_NAME, ssn);
 
-		jar.putResource(OSGI_INF_SUBSYSTEM_MF, new ManifestResource(a));
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		a.write(bout);
 
-		return new JarResource(jar);
+		jar.putResource(OSGI_INF_SUBSYSTEM_MF, new EmbeddedResource(bout.toByteArray(), 0));
+
+		final JarResource jarResource = new JarResource(jar);
+		final String name = ssn + ".esa";
+
+		return new Map.Entry<String,Resource>() {
+
+			@Override
+			public String getKey() {
+				return name;
+			}
+
+			@Override
+			public Resource getValue() {
+				return jarResource;
+			}
+
+			@Override
+			public Resource setValue(Resource arg0) {
+				throw new UnsupportedOperationException();
+			}
+		};
 	}
 
 	private void headers(final Project project, Attributes application) {

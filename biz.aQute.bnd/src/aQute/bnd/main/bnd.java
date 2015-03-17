@@ -39,6 +39,7 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.action.*;
+import aQute.bnd.service.export.*;
 import aQute.bnd.service.repository.*;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.*;
@@ -70,23 +71,23 @@ import aQute.service.reporter.*;
  * @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
-	static Pattern					ASSIGNMENT	= Pattern.compile( //
-														"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
-	Settings						settings	= new Settings();
-	final PrintStream				err			= System.err;
-	final public PrintStream		out			= System.out;
-	Justif							justif		= new Justif(80, 40, 42, 70);
-	BndMessages						messages	= ReporterMessages.base(this, BndMessages.class);
-	private Workspace				ws;
-	private char[]					password;
+	static Pattern				ASSIGNMENT	= Pattern.compile( //
+													"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
+	Settings					settings	= new Settings();
+	final PrintStream			err			= System.err;
+	final public PrintStream	out			= System.out;
+	Justif						justif		= new Justif(80, 40, 42, 70);
+	BndMessages					messages	= ReporterMessages.base(this, BndMessages.class);
+	private Workspace			ws;
+	private char[]				password;
 
-	static Pattern					JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
+	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
-	static Pattern					COMMAND		= Pattern.compile("\\w[\\w\\d]+");
-	static Pattern					EMAIL_P		= Pattern
-														.compile(
-																"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
-																Pattern.CASE_INSENSITIVE);
+	static Pattern				COMMAND		= Pattern.compile("\\w[\\w\\d]+");
+	static Pattern				EMAIL_P		= Pattern
+													.compile(
+															"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
+															Pattern.CASE_INSENSITIVE);
 
 	@Description("OSGi Bundle Tool")
 	interface bndOptions extends Options {
@@ -4099,4 +4100,75 @@ public class bnd extends Processor {
 		rc.close();
 	}
 
+	/**
+	 * Export a bndrun file
+	 */
+
+	interface ExportOptions extends projectOptions {
+		List<String> exporter();
+
+		String output();
+	}
+
+	public void _export(ExportOptions opts) throws Exception {
+		Project project = getProject(opts.project());
+		if (project == null) {
+			error("No project");
+			return;
+		}
+
+		List<Exporter> exporters = project.getPlugins(Exporter.class);
+		Exporter exporter = null;
+
+		for (Exporter e : exporters) {
+			String[] types = e.getTypes();
+			for (String type : types) {
+				if (type.equals(opts.exporter()))
+					;
+			}
+		}
+
+		for (String bndrun : opts._()) {
+			File f = getFile(bndrun);
+			if (!f.isFile()) {
+				error("No such file: %s", f);
+				continue;
+			}
+
+			Run run = new Run(project.getWorkspace(), getBase(), f);
+			run.getSettings(this);
+
+			Parameters exports = new Parameters();
+
+			List<String> types = opts.exporter();
+			if (types != null) {
+				for (String type : types) {
+					exports.putAll(new Parameters(type));
+				}
+			} else {
+				String exportTypes = run.getProperty(Constants.EXPORTTYPE);
+				exports.putAll(new Parameters(exportTypes));
+			}
+
+			for (Entry<String,Attrs> e : exports.entrySet()) {
+
+				trace("exporting %s to %s with %s", run, e.getKey(), e.getValue());
+
+				Map.Entry<String,Resource> result = run.export(e.getKey(), e.getValue());
+				getInfo(run);
+
+				if (result != null && isOk()) {
+
+					String name = result.getKey();
+
+					File output = new File(project.getTarget(), opts.output() == null ? name : opts.output());
+					if (output.isDirectory())
+						output = new File(output, name);
+					output.getParentFile().mkdirs();
+					trace("Got a result for %s, store in %s", e.getKey(), output);
+					IO.copy(result.getValue().openInputStream(), output);
+				}
+			}
+		}
+	}
 }

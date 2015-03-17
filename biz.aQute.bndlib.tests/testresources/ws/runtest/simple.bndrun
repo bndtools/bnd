@@ -1,0 +1,3 @@
+-runbundles: \
+	org.apache.felix.configadmin, \
+	osgi.core;version=latest

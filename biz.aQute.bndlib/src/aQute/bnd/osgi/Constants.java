@@ -109,6 +109,7 @@ public interface Constants {
 	String							EXTENSION									= "-extension";
 	String							EEPROFILE									= "-eeprofile";
 	String							EXPORT										= "-export";
+	String							EXPORTTYPE									= "-exporttype";
 	String							FAIL_OK										= "-failok";
 	String							FIXUPMESSAGES								= "-fixupmessages";
 
@@ -236,7 +237,7 @@ public interface Constants {
 			NOJUNITOSGI, PREPROCESSMATCHERS, UPTO, INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE,
 			NOEE, OUTPUTMASK, TESTUNRESOLVED, RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT,
 			BNDDRIVER, CHECK, DISTRO, METATYPE_ANNOTATIONS, METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE,
-			JAVAC_SOURCE, JAVAC_TARGET, JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG
+			JAVAC_SOURCE, JAVAC_TARGET, JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE
 
 																				};
 

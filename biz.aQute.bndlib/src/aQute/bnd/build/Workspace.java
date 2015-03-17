@@ -13,6 +13,7 @@ import java.util.regex.*;
 import javax.naming.*;
 
 import aQute.bnd.annotation.plugin.*;
+import aQute.bnd.exporter.subsystem.*;
 import aQute.bnd.header.*;
 import aQute.bnd.maven.support.*;
 import aQute.bnd.osgi.*;
@@ -511,6 +512,11 @@ public class Workspace extends Processor {
 			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));
 			customize(resourceRepositoryImpl, null);
 			list.add(resourceRepositoryImpl);
+
+			//
+			// Exporters
+			//
+			list.add(new SubsystemExporter());
 
 		}
 		catch (RuntimeException e) {
