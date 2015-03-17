@@ -556,4 +556,13 @@ public abstract class ProjectLauncher {
 	public void write(String text) throws Exception {
 
 	}
+
+	/**
+	 * Get the run sessions. If this return null, then launch on this object
+	 * should be used, otherwise each returned object provides a remote session.
+	 */
+
+	List<RunSession> getRunSessions() {
+		return null;
+	}
 }
