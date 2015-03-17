@@ -17,7 +17,6 @@ import aQute.jpm.lib.*;
 import aQute.jpm.lib.JustAnotherPackageManager.UpdateMemo;
 import aQute.jpm.lib.Service;
 import aQute.jpm.platform.*;
-import aQute.jpm.remote.lib.*;
 import aQute.lib.base64.*;
 import aQute.lib.collections.*;
 import aQute.lib.data.*;
@@ -1976,17 +1975,4 @@ public class Main extends ReporterAdapter {
 		jpm.doPostInstall();
 	}
 
-	/**
-	 * Remote Options
-	 */
-	@Description("Manage a remote system")
-	public void _remote(RemoteOptions opts) throws Exception {
-		RemoteAccess ra = new RemoteAccess(opts, out);
-		ra.setTrace(isTrace());
-		ra.setPedantic(isPedantic());
-		ra.setExceptions(isExceptions());
-		String s = opts._command().subCmd(opts, ra);
-		if (s != null)
-			err.println(s);
-	}
 }
