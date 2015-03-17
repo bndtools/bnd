@@ -39,7 +39,7 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
      * The parts of the test, needed to know what we missed
      */
     enum SetupTypes {
-        bin, bin_test, test, bndcontainer;
+        testsrc, bndcontainer;
     }
 
     /*
@@ -55,7 +55,6 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
      */
     @Override
     public void validateProject(Project model) throws Exception {
-
         //
         // We must have, a project and assume this is already reported
         //
@@ -72,7 +71,6 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         //
         // Verify if we have the right relation to the cnf folder ...
         //
-
         Project w;
         try {
             w = Workspace.getProject(model.getBase());
@@ -80,27 +78,24 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
             w = null;
         }
         if (w == null || w != model) {
-            model.error("Eclipse: Error in setup, likely the cnf folder is not ../cnf relative from the project folder %s. The workspace is in %s", model.getBase(), model.getWorkspace().getBase());
+            model.error("Eclipse: Error in setup, likely the cnf folder is not ../cnf relative to the project folder '%s'. The workspace is in '%s'.", model.getBase(), model.getWorkspace().getBase());
             return;
         }
 
         //
         // Get the different bnd directories ...
         //
-
         File bin = model.getOutput();
-        File test = model.getTestSrc();
-        File bin_test = model.getTestOutput();
+        File testsrc = model.getTestSrc();
+        File testbin = model.getTestOutput();
         Set<File> sourcePath = new HashSet<File>(model.getSourcePath());
 
         //
         // All the things we should find when we have traversed the build path
         //
-
         Set<SetupTypes> found = EnumSet.allOf(SetupTypes.class);
 
         for (IClasspathEntry cpe : javaProject.getRawClasspath()) {
-
             int kind = cpe.getEntryKind();
             switch (kind) {
             case IClasspathEntry.CPE_VARIABLE :
@@ -139,52 +134,43 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
                                         new File(model.getBase(), ".classpath").getAbsolutePath());
                             }
                         }
-
                     } else {
                         warning(model, null, path.toString(), cpe, "Eclipse: The .classpath contains an unknown container: %s", path).file(new File(model.getBase(), ".classpath").getAbsolutePath());
                     }
-
                 }
                 break;
 
             case IClasspathEntry.CPE_SOURCE :
                 File file = toFile(cpe.getPath());
                 if (file == null) {
-                    model.warning("Eclipse: Found virtual file for %s", cpe).details(cpe);
+                    model.warning("Eclipse: Found virtual file for '%s'", cpe.getPath()).details(cpe);
                 } else {
                     File output = toFile(cpe.getOutputLocation());
                     if (output == null)
                         output = toFile(javaProject.getOutputLocation());
 
-                    if (file.equals(test)) {
+                    if (file.equals(testsrc)) {
                         //
                         // We're talking about the test source directory
-                        // This should be linked to bin_test
+                        // This should be linked to testbin
                         //
-
-                        found.remove(SetupTypes.test);
-
-                        if (bin_test.equals(output)) {
-                            found.remove(SetupTypes.bin_test);
-                        } else
-                            warning(model, DEFAULT_PROP_TESTBIN_DIR, bin_test, cpe, "Eclipse: Source test folder %s has output set to %s, which does not match bnd's bin_test folder %s", file, output, bin_test);
+                        found.remove(SetupTypes.testsrc);
+                        if (!testbin.equals(output)) {
+                            warning(model, DEFAULT_PROP_TESTBIN_DIR, testbin, cpe, "Eclipse: testsrc folder '%s' has output folder set to '%s', which does not match bnd's testbin folder '%s'", file, output, testbin);
+                        }
                     } else {
-
                         //
                         // We must have a source directory. They must be linked to the bin
                         // folder and on the bnd source path. Since the source path has
                         // potentially multiple entries, we remove this one so we can check
                         // later if we had all of them
                         //
-
                         if (sourcePath.remove(file)) {
-
-                            if (bin.equals(output)) {
-                                found.remove(SetupTypes.bin);
-                            } else
-                                warning(model, DEFAULT_PROP_BIN_DIR, bin, cpe, "Eclipse: Source folder %s has output set to %s, \n" + "which does not match bnd's bin folder %s", file, output, bin_test);
+                            if (!bin.equals(output)) {
+                                warning(model, DEFAULT_PROP_BIN_DIR, bin, cpe, "Eclipse: src folder '%s' has output folder set to '%s', which does not match bnd's bin folder '%s'", file, output, bin);
+                            }
                         } else {
-                            warning(model, DEFAULT_PROP_SRC_DIR, null, cpe, "Eclipse: Found source folder %s that is not on the source path %s", file, model.getSourcePath());
+                            warning(model, DEFAULT_PROP_SRC_DIR, null, cpe, "Eclipse: Found source folder '%s' that is not on bnd's source path '%s'", file, model.getProperty(Constants.DEFAULT_PROP_SRC_DIR));
                         }
                     }
                 }
@@ -200,36 +186,26 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         // If we had not see all source entries, then we should
         // have something in sourcePath
         //
-
-        for (File f : sourcePath) {
-            warning(model, DEFAULT_PROP_SRC_DIR, f, null, "Eclipse: Source directory '%s' defined in bnd and not on the Eclipse build path", f);
+        for (File file : sourcePath) {
+            warning(model, DEFAULT_PROP_SRC_DIR, file, null, "Eclipse: bnd's src folder '%s' is not in the Eclipse build path", file);
         }
 
         //
         // Check if we had all the different things we needed to check
         //
-
         for (SetupTypes t : found) {
             switch (t) {
-            case bin :
-                warning(model, DEFAULT_PROP_BIN_DIR, null, null, "Eclipse: No entry on the build path uses the bnd bin directory %s", bin);
-                break;
-
-            case bin_test :
-                warning(model, DEFAULT_PROP_TESTBIN_DIR, null, null, "Eclipse: No entry on the build path uses the bnd bin_test directory %s", bin_test);
+            case testsrc :
+                if (testsrc.isDirectory()) // if the testsrc directory does not exist, then don't warn
+                    warning(model, DEFAULT_PROP_TESTSRC_DIR, null, null, "Eclipse: bnd's testsrc folder '%s' is not in the Eclipse build path", testsrc);
                 break;
 
             case bndcontainer :
-                warning(model, null, null, null, "Eclipse: The build path does not refer to a bnd container");
-                break;
-
-            case test :
-                warning(model, DEFAULT_PROP_TESTSRC_DIR, null, null, "Eclipse: No test folder %s found", test);
+                warning(model, null, null, null, "Eclipse: The build path does not refer to the bnd container '%s'", BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
                 break;
 
             default :
                 break;
-
             }
         }
     }
