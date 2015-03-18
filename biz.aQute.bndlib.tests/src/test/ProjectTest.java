@@ -643,13 +643,13 @@ public class ProjectTest extends TestCase {
 	}
 
 	public void testBuildAll() throws Exception {
-		assertTrue(testBuildAll("*", 17).check()); // there are 14 projects
+		assertTrue(testBuildAll("*", 18).check()); // there are 14 projects
 		assertTrue(testBuildAll("p*", 11).check()); // 7 begin with p
-		assertTrue(testBuildAll("!p*, *", 6).check()); // negation: 6 don't
+		assertTrue(testBuildAll("!p*, *", 7).check()); // negation: 6 don't
 														// begin with p
 		assertTrue(testBuildAll("*-*", 6).check()); // more than one wildcard: 7
 													// have a dash
-		assertTrue(testBuildAll("!p*, p1, *", 6).check("Missing dependson p1")); // check
+		assertTrue(testBuildAll("!p*, p1, *", 7).check("Missing dependson p1")); // check
 																					// that
 																					// an
 																					// unused
@@ -657,7 +657,7 @@ public class ProjectTest extends TestCase {
 																					// is
 																					// an
 																					// error
-		assertTrue(testBuildAll("p*, !*-*, *", 15).check()); // check that
+		assertTrue(testBuildAll("p*, !*-*, *", 16).check()); // check that
 																// negation
 																// works after
 																// some projects

@@ -29,7 +29,7 @@ public class RunTest extends TestCase {
 		super.tearDown();
 	}
 
-	public void simpleTest() throws Exception {
+	public void testSimple() throws Exception {
 		Project p = ws.getProject("runtest");
 		assertNotNull(p);
 
@@ -42,6 +42,7 @@ public class RunTest extends TestCase {
 		Jar jar = new Jar(export.getKey(), export.getValue().openInputStream());
 		IO.copy(jar.getResource("OSGI-INF/SUBSYSTEM.MF").openInputStream(), System.out);
 		IO.copy(export.getValue().openInputStream(), new File(tmp, "lookhere.esa"));
+		jar.close();
 		run.close();
 	}
 }

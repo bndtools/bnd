@@ -45,6 +45,7 @@ public class LauncherTest extends TestCase {
 		tmp.mkdirs();
 		IO.copy(IO.getFile("testdata/ws"), tmp);
 		workspace = Workspace.getWorkspace(tmp);
+		workspace.refresh();
 
 		InfoRepository repo = workspace.getPlugin(InfoRepository.class);
 		t1 = create("bsn-1", new Version(1, 0, 0));
@@ -109,6 +110,7 @@ public class LauncherTest extends TestCase {
 		Main.stop();
 		IO.delete(IO.getFile("generated/cache"));
 		IO.delete(IO.getFile("generated/storage"));
+		framework.waitForStop(100000);
 		super.tearDown();
 	}
 
