@@ -2,6 +2,7 @@ package aQute.remote.main;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.concurrent.Callable;
 
 import aQute.lib.collections.ExtList;
@@ -53,6 +54,7 @@ public class Main extends ReporterAdapter implements Callable<Linkable<Envoy,Env
 		setExceptions(options.exceptions());
 
 		int port = options.port(Envoy.DEFAULT_PORT);
+		trace("Listening on " + InetAddress.getLocalHost() + ":"+port);
 		File cache = IO.getFile(options.cache() == null ? "~/.bnd/remote/cache" : options.cache());
 		storage = IO.getFile(options.storage() == null ? "storage" : options.cache());
 		String network = options.network() == null ? "localhost" : options.network();
@@ -75,14 +77,17 @@ public class Main extends ReporterAdapter implements Callable<Linkable<Envoy,Env
 				EnvoySupervisor.class,this, network, port);
 		dispatcher.open();
 		dispatcher.join();
+		trace("Dispatcher returned for " + InetAddress.getLocalHost() + ":"+port);
 	}
 
 	@Override
 	public Linkable<Envoy, EnvoySupervisor> call() throws Exception {
+		trace("New agent");
 		return new EnvoyImpl(this,shacache,storage);
 	}
 	
 	private void close() throws IOException {
+		trace("done");
 		dispatcher.close();
 	}
 	

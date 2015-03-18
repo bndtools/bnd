@@ -2,7 +2,6 @@ package aQute.remote.plugin;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.concurrent.CountDownLatch;
 
 import org.osgi.dto.DTO;
 
@@ -11,11 +10,12 @@ import aQute.remote.api.Event;
 import aQute.remote.api.Supervisor;
 import aQute.remote.util.AgentSupervisor;
 
-public class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implements Supervisor {
+public class LauncherSupervisor extends AgentSupervisor<Supervisor, Agent>
+		implements Supervisor {
 	private Appendable stdout;
 	private Appendable stderr;
-	private CountDownLatch latch = new CountDownLatch(1);
 	private Thread stdin;
+	private boolean redirected=false;
 
 	static class Info extends DTO {
 		public String sha;
@@ -27,8 +27,7 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implem
 		System.out.println(e);
 		switch (e.type) {
 		case exit:
-			exitCode = e.code;
-			latch.countDown();
+			exit(e.code);
 			break;
 		default:
 			break;
@@ -54,15 +53,22 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implem
 		return false;
 	}
 
-	public void setStdout(Appendable out) {
+	public void setStdout(Appendable out) throws Exception {
+		if ( !redirected)
+			getAgent().redirect(redirected=true);
 		this.stdout = out;
 	}
 
-	public void setStderr(Appendable err) {
+	public void setStderr(Appendable err) throws Exception {
+		if ( !redirected)
+			getAgent().redirect(redirected=true);
 		this.stderr = err;
 	}
 
-	public void setStdin(final InputStream in) {
+	public void setStdin(final InputStream in) throws Exception {
+		if ( !redirected)
+			getAgent().redirect(redirected=true);
+		
 		final InputStreamReader isr = new InputStreamReader(in);
 		this.stdin = new Thread("stdin") {
 			@Override
@@ -101,6 +107,10 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implem
 	}
 
 	public void connect(String host, int port) throws Exception {
-		super.connect(Agent.class,this,host,port);
+		super.connect(Agent.class, this, host, port);
+	}
+
+	public int getExitCode() {
+		return exitCode;
 	}
 }

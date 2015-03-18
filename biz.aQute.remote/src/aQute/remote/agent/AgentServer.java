@@ -290,20 +290,20 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 	public boolean redirect(boolean on) throws IOException {
 
 		synchronized (agents) {
-			if ( on ) {
-				if ( !agents.contains(this)) {
+			if (on) {
+				if (!agents.contains(this)) {
 					agents.add(this);
 					if (agents.size() == 1) {
-						System.setOut(stdout = new RedirectOutput(agents, System.out,
-								false));
-						System.setErr(stderr = new RedirectOutput(agents, System.err,
-								true));
+						System.setOut(stdout = new RedirectOutput(agents,
+								System.out, false));
+						System.setErr(stderr = new RedirectOutput(agents,
+								System.err, true));
 						System.setIn(stdin = new RedirectInput(System.in));
 						return true;
 					}
 				}
 			} else {
-				if ( agents.remove(this)) {
+				if (agents.remove(this)) {
 					if (agents.size() == 0) {
 						System.setOut(stdout.getOut());
 						System.setErr(stderr.getOut());
@@ -318,8 +318,11 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 
 	@Override
 	public boolean stdin(String s) throws IOException {
-		stdin.add(s);
-		return true;
+		if (stdin != null) {
+			stdin.add(s);
+			return true;
+		} else
+			return false;
 	}
 
 	@Override
@@ -435,12 +438,12 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 			Map<String, Object> configuration, final File storage,
 			final File shacache) throws Exception {
 
-		ServiceLoader<FrameworkFactory> sl = ServiceLoader
-				.load(FrameworkFactory.class, AgentServer.class.getClassLoader());
+		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(
+				FrameworkFactory.class, AgentServer.class.getClassLoader());
 		FrameworkFactory ff = null;
 		for (FrameworkFactory fff : sl) {
 			ff = fff;
-			//break;
+			// break;
 		}
 
 		if (ff == null)
@@ -448,13 +451,15 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 
 		Framework framework = ff.newFramework((Map) configuration);
 		framework.init();
-		framework.getBundleContext().addFrameworkListener(new FrameworkListener() {
+		framework.getBundleContext().addFrameworkListener(
+				new FrameworkListener() {
 
-			@Override
-			public void frameworkEvent(FrameworkEvent event) {
-				System.err.println("FW Event " + event);
-			}});
-		
+					@Override
+					public void frameworkEvent(FrameworkEvent event) {
+						System.err.println("FW Event " + event);
+					}
+				});
+
 		framework.start();
 		final BundleContext context = framework.getBundleContext();
 
@@ -503,8 +508,9 @@ public class AgentServer implements Agent, Closeable, FrameworkListener,
 					return null;
 
 				return new ByteArrayInputStream(data);
-			}};
-		
+			}
+		};
+
 	}
 
 	@Override

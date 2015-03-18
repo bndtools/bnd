@@ -1806,6 +1806,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public void junit() throws Exception {
+		@SuppressWarnings("resource")
 		JUnitLauncher launcher = new JUnitLauncher(this);
 		launcher.launch();
 	}

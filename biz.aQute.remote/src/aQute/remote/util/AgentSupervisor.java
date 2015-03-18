@@ -23,9 +23,8 @@ public class AgentSupervisor<Supervisor, Agent> {
 	private static byte[] EMPTY = new byte[0];
 	private Agent agent;
 	private CountDownLatch latch = new CountDownLatch(1);
-	protected int exitCode;
+	protected volatile int exitCode;
 	private Link<Supervisor, Agent> link;
-	private Thread stdin;
 
 	static class Info extends DTO {
 		public String sha;
@@ -37,13 +36,12 @@ public class AgentSupervisor<Supervisor, Agent> {
 		while (true)
 			try {
 				Socket socket = new Socket(host, port);
-				link = new Link<Supervisor, Agent>(
-						agent, supervisor, socket) {
+				link = new Link<Supervisor, Agent>(agent, supervisor, socket) {
 					@Override
 					protected void terminate(Exception e) {
-						exitCode=-5;
-						latch.countDown();
+						exit(-3);
 					}
+
 				};
 				this.setAgent(link);
 				link.open();
@@ -80,8 +78,6 @@ public class AgentSupervisor<Supervisor, Agent> {
 	public void close() throws IOException {
 		latch.countDown();
 		link.close();
-		if (stdin != null)
-			stdin.interrupt();
 	}
 
 	public int join() throws InterruptedException {
@@ -89,6 +85,15 @@ public class AgentSupervisor<Supervisor, Agent> {
 		return exitCode;
 	}
 
+	protected void exit(int exitCode) {
+		this.exitCode = exitCode;
+		try {
+			close();
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+	
 	public Agent getAgent() {
 		return agent;
 	}

@@ -2,22 +2,33 @@ package aQute.bnd.build;
 
 import java.util.*;
 
-
 public interface RunSession {
 
 	String getName();
 
-	int getJdbPort();
+	String getLabel();
 
-	void stdin(Appendable app);
+	int getJdb();
 
-	void stdout(Appendable app);
+	void stderr(Appendable app) throws Exception;
 
-	void stdin(String input);
+	void stdout(Appendable app) throws Exception;
+
+	void stdin(String input) throws Exception;
 
 	int launch() throws Exception;
 
-	void cancel();
+	void cancel() throws Exception;
 
-	Map<String,String> getAttrs();
+	Map<String,Object> getProperties();
+
+	int getExitCode();
+
+	String getHost();
+
+	int getAgent();
+
+	void waitTillStarted(long ms) throws InterruptedException;
+
+	long getTimeout();
 }

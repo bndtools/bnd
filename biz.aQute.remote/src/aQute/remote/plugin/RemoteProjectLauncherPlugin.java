@@ -1,9 +1,6 @@
 package aQute.remote.plugin;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,18 +8,22 @@ import java.util.Map.Entry;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.RunSession;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.lib.converter.Converter;
-import aQute.remote.api.Agent;
 
 public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 
-	private LauncherSupervisor supervisor;
+	private Parameters runremote;
+	private List<RunSessionImpl> sessions = new ArrayList<RunSessionImpl>();
+	private boolean prepared;
 
 	public RemoteProjectLauncherPlugin(Project project) throws Exception {
 		super(project);
+		runremote = new Parameters(getProject()
+				.getProperty(Constants.RUNREMOTE));
 	}
 
 	@Override
@@ -33,115 +34,74 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	@Override
 	public void update() throws Exception {
 		updateFromProject();
-		Map<String, String> newer = getBundles(getRunBundles(), Constants.RUNBUNDLES);
-		supervisor.getAgent().update(newer);
+		for (RunSessionImpl session : sessions)
+			try {
+				session.update();
+			} catch (Exception e) {
+				getProject().exception(e, "Failed to update session %s", session.getName());
+			}
 	}
 
 	@Override
 	public void prepare() throws Exception {
+		if ( prepared)
+			return;
+		
+		prepared = true;
 		
 		updateFromProject();
-		
-		Parameters runremote = new Parameters(getProject().getProperty(
-				"-runremote"));
+
+		Map<String, Object> properties = new HashMap<String, Object>(
+				getRunProperties());
+		calculatedProperties(properties);
 
 		for (Entry<String, Attrs> entry : runremote.entrySet()) {
 			RunRemoteDTO dto = Converter.cnv(RunRemoteDTO.class,
 					entry.getValue());
-
 			dto.name = entry.getKey();
-			if (dto.port <= 0)
-				dto.port = Agent.DEFAULT_PORT;
 
-			if (dto.host == null)
-				dto.host = "localhost";
-
-			supervisor = new LauncherSupervisor();
-			supervisor.connect(dto.host,dto.port);
-			
-			Agent agent = supervisor.getAgent();
-
-			if (agent.isEnvoy()) {
-				int secondaryPort = installFramework(agent, dto, entry.getValue());
-				supervisor.close();
-				supervisor = new LauncherSupervisor();
-				supervisor.connect(dto.host,secondaryPort);
-			}
-
-			supervisor.setStreams(out, err);
-			break;
+			Map<String, Object> sessionProperties = new HashMap<String, Object>(
+					properties);
+			sessionProperties.putAll(entry.getValue());
+			sessionProperties.put("session.name", dto.name);
+			RunSessionImpl session = new RunSessionImpl(this, dto, properties);
+			sessions.add(session);
 		}
 
-	}
-
-	private int installFramework(Agent agent, RunRemoteDTO dto,
-			Attrs attrs) throws Exception {
-		List<String> onpath = new ArrayList<String>(getRunpath());
-		
-		Map<String, String> runpath = getBundles(onpath, Constants.RUNPATH);
-		
-		Map<String,Object> properties = new HashMap<String, Object>(getRunProperties());
-		calculatedProperties(properties);
-		for ( Entry<String, String> entry : attrs.entrySet()) {
-			properties.put(entry.getKey(), entry.getValue());
-		}
-		
-		return agent.createFramework(dto.name, runpath.values(), properties);
-	}
-
-	/**
-	 * This method should go to the ProjectLauncher
-	 * @throws Exception 
-	 */
-	
-	private void calculatedProperties(Map<String, Object> properties) throws Exception {
-		boolean runKeep = getProject().getRunKeep();
-		Parameters capabilities = new Parameters(getProject().mergeProperties(Constants.RUNSYSTEMCAPABILITIES));
-		Parameters packages = new Parameters(getProject().mergeProperties(Constants.RUNSYSTEMPACKAGES));
-		
-		if ( !runKeep )
-			properties.put(org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN, org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-
-		if ( !capabilities.isEmpty())
-			properties.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, capabilities.toString());
-		
-		if ( !packages.isEmpty())
-			properties.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, packages.toString());
-		
 	}
 
 	@Override
 	public int launch() throws Exception {
-		prepare();
-		update();
-		return supervisor.join();
+		throw new UnsupportedOperationException("This launcher only understands run sessions");
 	}
 
-	public void close() throws IOException {
-		supervisor.close();
+	public void close() {
+		for (RunSessionImpl session : sessions)
+			try {
+				session.close();
+			} catch (Exception e) {
+				// ignore
+			}
 	}
 
 	public void cancel() throws Exception {
-		supervisor.getAgent().abort();
+		for (RunSessionImpl session : sessions)
+			try {
+				session.cancel();
+			} catch (Exception e) {
+				// ignore
+			}
 	}
 
 	@Override
 	public void write(String text) throws Exception {
-		supervisor.getAgent().stdin(text);
+		throw new UnsupportedOperationException("This launcher only understands run sessions");
 	}
 
-	private Map<String, String> getBundles(Collection<String> collection, String header)
-			throws Exception {
-		Map<String, String> newer = new HashMap<String, String>();
-
-		for (String c : collection) {
-			File f = new File(c);
-			String sha = supervisor.addFile(f);
-			newer.put(c, sha);
-		}
-		return newer;
+	@Override
+	public List<? extends RunSession> getRunSessions() throws Exception {
+		prepare();
+		return sessions;
 	}
 
-	
-	
 }

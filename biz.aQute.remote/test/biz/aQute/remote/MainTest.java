@@ -9,6 +9,7 @@ import junit.framework.TestCase;
 import org.osgi.framework.Constants;
 import org.osgi.framework.dto.FrameworkDTO;
 
+import aQute.lib.io.IO;
 import aQute.remote.main.Envoy;
 import aQute.remote.main.Main;
 import aQute.remote.plugin.LauncherSupervisor;
@@ -36,11 +37,14 @@ public class MainTest extends TestCase {
 		};
 		thread.setDaemon(true);
 		thread.start();
+		
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		Main.stop();
+		IO.delete(IO.getFile("generated/cache"));
+		IO.delete(IO.getFile("generated/storage"));
 		super.tearDown();
 	}
 
@@ -82,5 +86,5 @@ public class MainTest extends TestCase {
 		sv.getAgent().abort();
 		sv.close();
 	}
-
+	
 }
