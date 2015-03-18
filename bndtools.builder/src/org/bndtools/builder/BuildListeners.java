@@ -64,6 +64,16 @@ public class BuildListeners {
         });
     }
 
+    public void fireReleased(final IProject project) {
+        forEachListener(new Function<BuildListener,Object>() {
+            @Override
+            public Object run(BuildListener listener) {
+                listener.released(project);
+                return null;
+            }
+        });
+    }
+
     private void forEachListener(Function<BuildListener, ? extends Object> function) {
         for (BuildListener listener : listeners)
             function.run(listener);
@@ -80,7 +90,8 @@ public class BuildListeners {
     /**
      * Call this to make sure that any references to the listeners are no longer held.
      */
-    public void release() {
+    public void release(IProject project) {
+        fireReleased(project);
         listeners.clear();
         listenerTracker.close();
     }

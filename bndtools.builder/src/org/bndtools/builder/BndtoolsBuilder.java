@@ -59,7 +59,7 @@ import bndtools.preferences.CompileErrorAction;
  *  touch bar.bnd -> see if manifest is updated in JAR (Jar viewer does not refresh very well, so reopen)
  *  touch build.bnd -> verify rebuild
  *  touch bnd.bnd in test -> verify rebuild
- *
+ * 
  *  create project test.2, add -buildpath: test
  * </pre>
  */
@@ -279,7 +279,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         } finally {
             if (buildLog.isActive())
                 logger.logInfo(buildLog.toString(myProject.getName(), files), null);
-            listeners.release();
+            listeners.release(myProject);
         }
     }
 
