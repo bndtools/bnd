@@ -1,10 +1,24 @@
 Bundle-Version: 0.0.0.${tstamp}
--buildpath: osgi.core,../cnf/cache/biz.aQute.launcher/biz.aQute.launcher-latest.jar;version=file
+-buildpath: \
+	osgi.core, \
+	../cnf/cache/biz.aQute.launcher/biz.aQute.launcher-latest.jar;version=file, \
+	/Ws/bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher-3.0.0.jar;version=file, \
+	/Ws/bnd/biz.aQute.remote/generated/biz.aQute.remote.agent-0.0.0.jar;version=file
+	
 Private-Package: hello
--runfw: org.apache.felix.framework;version='[4.4.0,4.4.0]'
+-runfw: org.eclipse.osgi;version='[3.10.1,3.10.1]'
 -runee: JavaSE-1.7
--runpath: /Ws/bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher-3.0.0.jar;version=file
+-runpath: /Ws/bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher-3.0.0.jar;version=file, org.eclipse.osgi;version='[3.10.1,3.10.1]'
+
 -runremote: \
-	test
--runbundles: launch.simple
+	alpha;host=localhost;jdb=4000;agent=4001, \
+	beta;host=localhost;jdb=4002;agent=4003
+	
+-runbundles: \
+	launch.simple, \
+	org.apache.felix.gogo.command,\
+	org.apache.felix.gogo.runtime,\
+	org.apache.felix.gogo.shell
 Bundle-Activator: hello.Hello
+
+-runproperties: osgi.console=
