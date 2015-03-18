@@ -29,19 +29,22 @@ public class ProjectLaunchImplTest extends TestCase {
 			launcher.prepare();
 
 			systemCaps = launcher.getSystemCapabilities();
+			launcher.close();
 		}
 		finally {
 			project.close();
 			ws.close();
 		}
 		assertEquals(
-				"osgi.native;osgi.native.osname:List<String>=\"Win7,Windows7,Windows 7\";osgi.native.osversion:Version=6.1",
+				"osgi.native;osgi.native.osname:List<String>=\"Win7,Windows7,Windows 7\";osgi.native.osversion:Version=\"6.1\"",
 				systemCaps);
 	}
 
 	public void testCwdIsProjectBase() throws Exception {
 		Project project = ws.getProject("p1");
 		project.prepare();
-		assertEquals(project.getBase(), new ProjectLauncherImpl(project).getCwd());
+		ProjectLauncherImpl projectLauncherImpl = new ProjectLauncherImpl(project);
+		assertEquals(project.getBase(), projectLauncherImpl.getCwd());
+		projectLauncherImpl.close();
 	}
 }

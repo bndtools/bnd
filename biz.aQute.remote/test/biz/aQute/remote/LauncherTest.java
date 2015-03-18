@@ -3,6 +3,7 @@ package biz.aQute.remote;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,19 +16,20 @@ import org.osgi.framework.launch.Framework;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
+import aQute.bnd.build.RunSession;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
+import aQute.remote.main.Main;
 import aQute.remote.plugin.RemoteProjectLauncherPlugin;
 
 public class LauncherTest extends TestCase {
 	private int random;
 	private File tmp;
 	private Workspace workspace;
-	private Project project;
 	private HashMap<String, Object> configuration;
 	private Framework framework;
 	private String location;
@@ -35,6 +37,7 @@ public class LauncherTest extends TestCase {
 	private Bundle agent;
 	private File t1;
 	private File t2;
+	private Thread thread;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -42,6 +45,7 @@ public class LauncherTest extends TestCase {
 		tmp.mkdirs();
 		IO.copy(IO.getFile("testdata/ws"), tmp);
 		workspace = Workspace.getWorkspace(tmp);
+		workspace.refresh();
 
 		InfoRepository repo = workspace.getPlugin(InfoRepository.class);
 		t1 = create("bsn-1", new Version(1, 0, 0));
@@ -57,11 +61,16 @@ public class LauncherTest extends TestCase {
 				null);
 
 		workspace.getPlugins().add(repo);
-		project = workspace.getProject("p1");
 
+		File storage = IO.getFile("generated/storage-1");
+		storage.mkdirs();
+		
 		configuration = new HashMap<String, Object>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
 				Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+		configuration.put(Constants.FRAMEWORK_STORAGE,
+				storage.getAbsolutePath());
+		
 		configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.osgi.framework.launch;version=1.2");
 		
 		framework = new org.apache.felix.framework.FrameworkFactory()
@@ -75,6 +84,20 @@ public class LauncherTest extends TestCase {
 		agent = context.installBundle(location);
 		agent.start();
 
+		thread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					Main.main(new String[] { "-s", "generated/storage", "-c",
+							"generated/cache", "-p", "1090", "-et" });
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		thread.setDaemon(true);
+		thread.start();
+
 		super.setUp();
 	}
 
@@ -84,49 +107,125 @@ public class LauncherTest extends TestCase {
 		agent.stop();
 		framework.stop();
 		IO.delete(tmp);
+		Main.stop();
+		IO.delete(IO.getFile("generated/cache"));
+		IO.delete(IO.getFile("generated/storage"));
+		framework.waitForStop(100000);
+		super.tearDown();
 	}
 
+	/*
+	 * Launches against the agent
+	 */
 	public void testSimpleLauncher() throws Exception {
-//		Run bndrun = new Run(workspace, project.getBase(),
-//				project.getFile("one.bndrun"));
-//		bndrun.setProperty("-runpath", "biz.aQute.remote.launcher");
-//		bndrun.setProperty("-runbundles", "bsn-1,bsn-2");
-//		bndrun.setProperty("-runremote", "test");
-//
-//		final RemoteProjectLauncherPlugin pl = (RemoteProjectLauncherPlugin) bndrun
-//				.getProjectLauncher();
-//
-//		final CountDownLatch latch = new CountDownLatch(1);
-//		final AtomicInteger exitCode = new AtomicInteger(-1);
-//
-//		Thread t = new Thread("test-launch") {
-//			public void run() {
-//				try {
-//					exitCode.set(pl.launch());
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				} finally {
-//					latch.countDown();
-//				}
-//			}
-//		};
-//		t.start();
-//		Thread.sleep(500);
-//		for ( Bundle b : context.getBundles()) {
-//			System.out.println(b.getLocation());
-//		}
-//		String p1 = t1.getAbsolutePath();
-//		System.out.println(p1);
-//		
-//		assertNotNull(context.getBundle(p1));
-//		assertNotNull(context.getBundle(t2.getAbsolutePath()));
-//		
-//		pl.cancel();
-//		latch.await();
-//		
-//		assertEquals(-3, exitCode.get());
-//		
-//		bndrun.close();
+		Project project = workspace.getProject("p1");
+		Run bndrun = new Run(workspace, project.getBase(),
+				project.getFile("one.bndrun"));
+		bndrun.setProperty("-runpath", "biz.aQute.remote.launcher");
+		bndrun.setProperty("-runbundles", "bsn-1,bsn-2");
+		bndrun.setProperty("-runremote", "test");
+
+		final RemoteProjectLauncherPlugin pl = (RemoteProjectLauncherPlugin) bndrun
+				.getProjectLauncher();
+		pl.prepare();
+		final CountDownLatch latch = new CountDownLatch(1);
+		final AtomicInteger exitCode = new AtomicInteger(-1);
+
+		List<? extends RunSession> sessions = pl.getRunSessions();
+		assertEquals(1, sessions.size());
+		
+		final RunSession session = sessions.get(0);
+		
+		Thread t = new Thread("test-launch") {
+			public void run() {
+				try {
+					exitCode.set(session.launch());
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					latch.countDown();
+				}
+			}
+		};
+		t.start();
+		Thread.sleep(500);
+		
+		
+		for ( Bundle b : context.getBundles()) {
+			System.out.println(b.getLocation());
+		}
+		assertEquals( 4, context.getBundles().length);
+		String p1 = t1.getAbsolutePath();
+		System.out.println(p1);
+		
+		assertNotNull(context.getBundle(p1));
+		assertNotNull(context.getBundle(t2.getAbsolutePath()));
+		
+		pl.cancel();
+		latch.await();
+		
+		assertEquals(-3, exitCode.get());
+		
+		bndrun.close();
+	}
+	
+	/*
+	 * Launches against the agent& main
+	 */
+	public void testAgentAndMain() throws Exception {
+		Project project = workspace.getProject("p1");
+		Run bndrun = new Run(workspace, project.getBase(),
+				project.getFile("one.bndrun"));
+		bndrun.setProperty("-runpath", "biz.aQute.remote.launcher");
+		bndrun.setProperty("-runbundles", "bsn-1,bsn-2");
+		bndrun.setProperty("-runremote", "agent,main;agent=1090");
+
+		final RemoteProjectLauncherPlugin pl = (RemoteProjectLauncherPlugin) bndrun
+				.getProjectLauncher();
+		pl.prepare();
+		
+
+		List<? extends RunSession> sessions = pl.getRunSessions();
+		assertEquals(2, sessions.size());
+	
+		RunSession	agent = sessions.get(0);
+		RunSession	main = sessions.get(1);
+
+		CountDownLatch agentLatch = launch(agent);
+		CountDownLatch mainLatch = launch(main);
+
+		agent.waitTillStarted(1000);
+		main.waitTillStarted(1000);
+		Thread.sleep(500);
+
+		agent.cancel();
+		main.cancel();
+		
+		agentLatch.await();
+		mainLatch.await();
+		assertEquals(-3, agent.getExitCode());
+		assertEquals(-3, main.getExitCode());
+		
+		bndrun.close();
+	}
+
+	private CountDownLatch launch(final RunSession session) {
+		final CountDownLatch latch = new CountDownLatch(1);
+
+		
+		Thread t = new Thread("test-launch") {
+			public void run() {
+				try {
+					session.launch();
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					latch.countDown();
+				}
+			}
+		};
+		t.start();
+		return latch;
 	}
 
 	private File create(String bsn, Version v) throws Exception {

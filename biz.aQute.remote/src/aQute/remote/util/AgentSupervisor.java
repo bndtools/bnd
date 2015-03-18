@@ -1,10 +1,9 @@
-package aQute.remote.plugin;
+package aQute.remote.util;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,26 +11,19 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
-import org.osgi.dto.DTO;
-
+import aQute.bnd.util.dto.DTO;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.libg.comlink.Link;
 import aQute.libg.cryptography.SHA1;
-import aQute.remote.api.Agent;
-import aQute.remote.api.Event;
-import aQute.remote.api.Supervisor;
 
-public class AgentSupervisor implements Supervisor {
+public class AgentSupervisor<Supervisor, Agent> {
 	private static final Map<File, Info> fileInfo = new ConcurrentHashMap<File, AgentSupervisor.Info>();
 	private static final MultiMap<String, String> shaInfo = new MultiMap<String, String>();
-	private static final byte[] EMPTY = new byte[0];
-	
-	private Appendable stdout;
-	private Appendable stderr;
+	private static byte[] EMPTY = new byte[0];
 	private Agent agent;
 	private CountDownLatch latch = new CountDownLatch(1);
-	private int exitCode;
+	protected volatile int exitCode;
 	private Link<Supervisor, Agent> link;
 
 	static class Info extends DTO {
@@ -39,49 +31,26 @@ public class AgentSupervisor implements Supervisor {
 		public long lastModified;
 	}
 
-	public static AgentSupervisor create(String host, int port)
-			throws UnknownHostException, IOException, InterruptedException {
+	protected void connect(Class<Agent> agent, Supervisor supervisor,
+			String host, int port) throws Exception {
 		while (true)
 			try {
 				Socket socket = new Socket(host, port);
-				AgentSupervisor supervisor = new AgentSupervisor();
-				Link<Supervisor, Agent> link = new Link<Supervisor, Agent>(
-						Agent.class, supervisor, socket);
-				supervisor.setAgent(link);
+				link = new Link<Supervisor, Agent>(agent, supervisor, socket) {
+					@Override
+					protected void terminate(Exception e) {
+						exit(-3);
+					}
+
+				};
+				this.setAgent(link);
 				link.open();
-				return supervisor;
+				return;
 			} catch (ConnectException e) {
 				Thread.sleep(200);
 			}
 	}
 
-	@Override
-	public void event(Event e) throws Exception {
-		System.out.println(e);
-		switch (e.type) {
-		case exit:
-			exitCode = e.code;
-			latch.countDown();
-			break;
-		default:
-			break;
-		}
-
-	}
-
-	@Override
-	public void stdout(String out) throws Exception {
-		if (stdout != null)
-			stdout.append(out);
-	}
-
-	@Override
-	public void stderr(String out) throws Exception {
-		if (stderr != null)
-			stderr.append(out);
-	}
-
-	@Override
 	public byte[] getFile(String sha) throws Exception {
 		List<String> copy;
 		synchronized (shaInfo) {
@@ -116,6 +85,15 @@ public class AgentSupervisor implements Supervisor {
 		return exitCode;
 	}
 
+	protected void exit(int exitCode) {
+		this.exitCode = exitCode;
+		try {
+			close();
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+	
 	public Agent getAgent() {
 		return agent;
 	}
@@ -142,17 +120,4 @@ public class AgentSupervisor implements Supervisor {
 		}
 	}
 
-	public void setStdout(Appendable out) {
-		this.stdout = out;
-	}
-
-	public void setStderr(Appendable err) {
-		this.stderr = err;
-	}
-
-	public void setStreams(Appendable out, Appendable err) throws Exception {
-		setStdout(out);
-		setStderr(err);
-		getAgent().redirect(true);
-	}
 }

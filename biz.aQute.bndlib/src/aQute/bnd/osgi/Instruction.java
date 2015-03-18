@@ -159,10 +159,11 @@ public class Instruction {
 
 	public Matcher getMatcher(String value) {
 		if (pattern == null) {
+			String m = match == null ? ".*" : match;
 			if ( !caseInsensitive)
-				pattern = Pattern.compile(match);
+				pattern = Pattern.compile(m);
 			else
-				pattern = Pattern.compile(match, Pattern.CASE_INSENSITIVE);
+				pattern = Pattern.compile(m, Pattern.CASE_INSENSITIVE);
 		}
 		return pattern.matcher(value);
 	}

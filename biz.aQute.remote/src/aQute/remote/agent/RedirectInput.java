@@ -1,24 +1,15 @@
 package aQute.remote.agent;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 
-public class RedirectInput extends FilterInputStream {
+public class RedirectInput extends InputStream {
 	
-	private PipedOutputStream out;
-	private PipedInputStream in;
-	private OutputStreamWriter writer;
 	private InputStream org;
-
+	private byte[] ring = new byte[65536];
+	private int in, out;
+	
 	public RedirectInput(InputStream in) throws IOException {
-		super(new PipedInputStream());
-		this.in = (PipedInputStream) super.in;
-		this.out = new PipedOutputStream(this.in);
-		this.writer = new OutputStreamWriter(out);
 		this.org = in;
 	}
 
@@ -27,8 +18,57 @@ public class RedirectInput extends FilterInputStream {
 	}
 
 	public synchronized void add(String s) throws IOException {
-		writer.write(s);
-		writer.flush();
+		byte[] bytes = s.getBytes();
+		for ( int i=0; i<bytes.length; i++) {
+			write(bytes[i]);
+		}
 	}
 
+	private void write(byte b) {
+		synchronized(ring){
+			ring[in]= b;
+			
+			in = (in + 1 ) % ring.length;
+			if ( in == out) {
+				// skip oldest output
+				out = (out + 1) % ring.length;
+			}
+			ring.notifyAll();
+		}
+	}
+
+	public void close() {
+		// ignore
+	}
+
+	@Override
+	public int read() throws IOException {
+		synchronized(ring) {
+			while ( in == out) {
+				try {
+					ring.wait(400);
+				} catch (InterruptedException e) {
+					return -1;
+				}
+			}
+			int c = 0xFF & ring[out];
+			out = (out + 1) % ring.length;
+			return c;
+		}
+	}
+	@Override
+	public int read(byte[] buffer, int offset, int length) throws IOException {
+		int n = 0;
+		for ( int i=offset; i<length; i++) {
+			int c = read();
+			if ( c < 0)
+				break;
+			buffer[i] = (byte) (0xFF & c);
+			n++;
+			
+			if ( c == '\n')
+				break;
+		}
+		return n;
+	}
 }

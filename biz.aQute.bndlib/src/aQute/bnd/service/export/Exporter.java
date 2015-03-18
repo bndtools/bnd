@@ -8,5 +8,5 @@ import aQute.bnd.osgi.*;
 public interface Exporter {
 	String[] getTypes();
 
-	Resource export(String type, Project project, Map<String,String> options) throws Exception;
+	Map.Entry<String,Resource> export(String type, Project project, Map<String,String> options) throws Exception;
 }

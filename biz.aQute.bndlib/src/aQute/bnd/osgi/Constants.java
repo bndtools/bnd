@@ -109,6 +109,7 @@ public interface Constants {
 	String							EXTENSION									= "-extension";
 	String							EEPROFILE									= "-eeprofile";
 	String							EXPORT										= "-export";
+	String							EXPORTTYPE									= "-exporttype";
 	String							FAIL_OK										= "-failok";
 	String							FIXUPMESSAGES								= "-fixupmessages";
 
@@ -201,6 +202,7 @@ public interface Constants {
 	String							RUNTIMEOUT									= "-runtimeout";
 	String							RUNJDB										= "-runjdb";
 	String							RUNENV										= "-runenv";
+	String							RUNREMOTE									= "-runremote";
 	String							SYSTEMPROPERTIES							= "-systemproperties";
 	String							SNAPSHOT									= "-snapshot";
 	String							RUNFRAMEWORK_SERVICES						= "services";
@@ -236,7 +238,7 @@ public interface Constants {
 			NOJUNITOSGI, PREPROCESSMATCHERS, UPTO, INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE,
 			NOEE, OUTPUTMASK, TESTUNRESOLVED, RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT,
 			BNDDRIVER, CHECK, DISTRO, METATYPE_ANNOTATIONS, METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE,
-			JAVAC_SOURCE, JAVAC_TARGET, JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG
+			JAVAC_SOURCE, JAVAC_TARGET, JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE, RUNREMOTE
 
 																				};
 

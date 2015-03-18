@@ -1,0 +1,8 @@
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package: \
+	aQute.remote.util,\
+	aQute.remote.main
+
+Import-Package: org.osgi.framework;version=1.5,*
+
+Main-Class: aQute.remote.main.Main

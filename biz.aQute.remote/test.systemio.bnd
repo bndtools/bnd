@@ -1,0 +1,2 @@
+Private-Package: aQute.remote.test
+Bundle-Activator: aQute.remote.test.SystemIO

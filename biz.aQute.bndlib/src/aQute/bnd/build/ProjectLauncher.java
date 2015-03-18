@@ -22,7 +22,7 @@ import aQute.libg.generics.*;
  * asked to provide a ProjectLauncher. This project launcher is then used by the
  * project to run the code. Launchers must extend this class.
  */
-public abstract class ProjectLauncher {
+public abstract class ProjectLauncher extends Processor {
 	private final Project						project;
 	private long								timeout				= 0;
 	private final List<String>					classpath			= new ArrayList<String>();
@@ -32,11 +32,9 @@ public abstract class ProjectLauncher {
 	private Map<String,String>					runproperties;
 	private Command								java;
 	private Parameters							runsystempackages;
-	private String								runsystemcapabilities;
+	private Parameters							runsystemcapabilities;
 	private final List<String>					activators			= Create.list();
 	private File								storageDir;
-	private final List<String>					warnings			= Create.list();
-	private final List<String>					errors				= Create.list();
 
 	private boolean								trace;
 	private boolean								keep;
@@ -104,7 +102,7 @@ public abstract class ProjectLauncher {
 
 		Collection<Container> runpath = project.getRunpath();
 		runsystempackages = new Parameters(project.mergeProperties(Constants.RUNSYSTEMPACKAGES));
-		runsystemcapabilities = project.mergeProperties(Constants.RUNSYSTEMCAPABILITIES);
+		runsystemcapabilities = new Parameters(project.mergeProperties(Constants.RUNSYSTEMCAPABILITIES));
 		framework = getRunframework(project.getProperty(Constants.RUNFRAMEWORK));
 
 		timeout = Processor.getDuration(project.getProperty(Constants.RUNTIMEOUT), 0);
@@ -394,6 +392,10 @@ public abstract class ProjectLauncher {
 	}
 
 	public String getSystemCapabilities() {
+		return runsystemcapabilities.isEmpty() ? null : runsystemcapabilities.toString();
+	}
+
+	public Parameters getSystemCapabilitiesParameters() {
 		return runsystemcapabilities;
 	}
 
@@ -472,29 +474,6 @@ public abstract class ProjectLauncher {
 		throw new UnsupportedOperationException();
 	}
 
-	public void clear() {
-		errors.clear();
-		warnings.clear();
-	}
-
-	public List<String> getErrors() {
-		return Collections.unmodifiableList(errors);
-	}
-
-	public List<String> getWarnings() {
-		return Collections.unmodifiableList(warnings);
-	}
-
-	protected void error(String message, Object... args) {
-		String formatted = String.format(message, args);
-		errors.add(formatted);
-	}
-
-	protected void warning(String message, Object... args) {
-		String formatted = String.format(message, args);
-		warnings.add(formatted);
-	}
-
 	public File getCwd() {
 		return cwd;
 	}
@@ -556,4 +535,40 @@ public abstract class ProjectLauncher {
 	public void write(String text) throws Exception {
 
 	}
+
+	/**
+	 * Get the run sessions. If this return null, then launch on this object
+	 * should be used, otherwise each returned object provides a remote session.
+	 * 
+	 * @throws Exception
+	 */
+
+	public List< ? extends RunSession> getRunSessions() throws Exception {
+		return null;
+	}
+
+	/**
+	 * Utility to calculate the final framework properties from settings
+	 */
+	/**
+	 * This method should go to the ProjectLauncher
+	 * 
+	 * @throws Exception
+	 */
+
+	public void calculatedProperties(Map<String,Object> properties) throws Exception {
+
+		if (!keep)
+			properties.put(org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN,
+					org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+
+		if (!runsystemcapabilities.isEmpty())
+			properties.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA,
+					runsystemcapabilities.toString());
+
+		if (!runsystempackages.isEmpty())
+			properties.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, runsystempackages.toString());
+
+	}
+
 }

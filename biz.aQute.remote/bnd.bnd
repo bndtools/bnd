@@ -1,6 +1,7 @@
 
 -buildpath: \
 	osgi.core;version=6,\
+	ee.j2se;version=${javac.ee}, \
 	aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.junit;version=latest,\
@@ -8,4 +9,6 @@
 
 -sub: *.bnd
 
-Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter
+Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter, aQute.bnd.util.*
+
+Import-Package: org.osgi.framework;version=1.5

@@ -8,7 +8,6 @@ import java.util.jar.*;
 
 import aQute.bnd.annotation.plugin.*;
 import aQute.bnd.build.*;
-import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.export.*;
 
@@ -19,6 +18,7 @@ public class SubsystemExporter implements Exporter {
 	private static final String	SUBSYSTEM_SYMBOLIC_NAME		= "Subsystem-SymbolicName";
 	private static final String	OSGI_SUBSYSTEM_APPLICATION	= "osgi.subsystem.application";
 	private static final String	SUBSYSTEM_TYPE				= "Subsystem-Type";
+	@SuppressWarnings("unused")
 	private static final String	SUBSYSTEM_CONTENT			= "Subsystem-Content";
 
 	@Override
@@ -29,7 +29,8 @@ public class SubsystemExporter implements Exporter {
 	}
 
 	@Override
-	public Resource export(String type, final Project project, Map<String,String> options) throws Exception {
+	public Map.Entry<String,Resource> export(String type, final Project project, Map<String,String> options)
+			throws Exception {
 		Jar jar = new Jar(".");
 
 		project.addClose(jar);
@@ -43,26 +44,15 @@ public class SubsystemExporter implements Exporter {
 			c.contributeFiles(files, project);
 		}
 
-		Parameters subsysContent = new Parameters();
-		Instructions contentDecorators = new Instructions(project.getProperty(SUBSYSTEM_CONTENT, "*"));
-
 		for (File file : files) {
 
 			Domain domain = Domain.domain(file);
 			String bsn = domain.getBundleSymbolicName().getKey();
 			String version = domain.getBundleVersion();
 
-			Instruction decorator = contentDecorators.finder(bsn);
-			if (decorator == null || decorator.isNegated())
-				continue;
-
-			Attrs attrs = new Attrs(contentDecorators.get(decorator));
-			subsysContent.put(bsn, attrs);
-			attrs.put(Constants.BUNDLE_VERSION, version);
-
+			String path = bsn + "-" + version + ".jar";
+			jar.putResource(path, new FileResource(file));
 		}
-
-		application.putValue(SUBSYSTEM_CONTENT, subsysContent.toString());
 
 		headers(project, application);
 		set(application, SUBSYSTEM_TYPE, type);
@@ -76,9 +66,31 @@ public class SubsystemExporter implements Exporter {
 
 		set(application, SUBSYSTEM_SYMBOLIC_NAME, ssn);
 
-		jar.putResource(OSGI_INF_SUBSYSTEM_MF, new ManifestResource(a));
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		a.write(bout);
 
-		return new JarResource(jar);
+		jar.putResource(OSGI_INF_SUBSYSTEM_MF, new EmbeddedResource(bout.toByteArray(), 0));
+
+		final JarResource jarResource = new JarResource(jar);
+		final String name = ssn + ".esa";
+
+		return new Map.Entry<String,Resource>() {
+
+			@Override
+			public String getKey() {
+				return name;
+			}
+
+			@Override
+			public Resource getValue() {
+				return jarResource;
+			}
+
+			@Override
+			public Resource setValue(Resource arg0) {
+				throw new UnsupportedOperationException();
+			}
+		};
 	}
 
 	private void headers(final Project project, Attributes application) {

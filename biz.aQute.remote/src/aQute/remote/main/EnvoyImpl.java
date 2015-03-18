@@ -1,7 +1,9 @@
 package aQute.remote.main;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -9,30 +11,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.osgi.framework.Constants;
-import org.osgi.framework.dto.BundleDTO;
-import org.osgi.framework.dto.FrameworkDTO;
 
-import aQute.lib.converter.Converter;
-import aQute.lib.converter.TypeReference;
 import aQute.libg.shacache.ShaCache;
-import aQute.remote.api.Agent;
-import aQute.remote.api.Linkable;
-import aQute.remote.api.Supervisor;
-import aQute.remote.util.SupervisorSource;
+import aQute.libg.shacache.ShaSource;
+import aQute.remote.util.Linkable;
 import aQute.service.reporter.Reporter;
 
 /**
  * Creates a framework and through that framework's class loader it will create
  * an AgentServer.
  */
-public class EnvoyImpl implements Agent, Linkable<Agent, Supervisor> {
-
-	private Supervisor remote;
+public class EnvoyImpl implements Envoy, Linkable<Envoy, EnvoySupervisor> {
 	private ShaCache cache;
-	private SupervisorSource source;
+	private ShaSource source;
 	private Reporter main;
 	private File storage;
 
@@ -56,18 +49,17 @@ public class EnvoyImpl implements Agent, Linkable<Agent, Supervisor> {
 			files.add(cache.getFile(sha, source).toURI().toURL());
 		}
 
-		String[] jcp = System.getProperty("java.class.path").split(
-				Pattern.quote(File.pathSeparator));
-		for (String path : jcp) {
-			File f = new File(path);
-			files.add(f.toURI().toURL());
-		}
+//		String[] jcp = System.getProperty("java.class.path").split(
+//				Pattern.quote(File.pathSeparator));
+//		for (String path : jcp) {
+//			File f = new File(path);
+//			files.add(f.toURI().toURL());
+//		}
 		main.trace("runpath %s", files);
 
 		try {
-			URL[] classpath = files.toArray(new URL[files.size()]);
-			@SuppressWarnings("resource")
-			URLClassLoader cl = new URLClassLoader(classpath);
+			
+			URLClassLoader cl = new URLClassLoader(files.toArray(new URL[files.size()]));
 			Class<?> c = cl.loadClass("aQute.remote.agent.AgentServer");
 			
 			File storage = new File(this.storage, name);
@@ -88,16 +80,24 @@ public class EnvoyImpl implements Agent, Linkable<Agent, Supervisor> {
 	}
 
 	@Override
-	public Map<String, String> getSystemProperties() throws Exception {
-		main.trace("get system properties");
-		return Converter.cnv(new TypeReference<Map<String, String>>() {
-		}, System.getProperties());
-	}
+	public void setRemote(final EnvoySupervisor remote) {
+		this.source = new ShaSource() {
 
-	@Override
-	public void setRemote(Supervisor remote) {
-		this.remote = remote;
-		this.source = new SupervisorSource(this.remote);
+			@Override
+			public boolean isFast() {
+				return false;
+			}
+
+			@Override
+			public InputStream get(String sha) throws Exception {
+				byte[] data = remote.getFile(sha);
+				if (data == null)
+					return null;
+
+				return new ByteArrayInputStream(data);
+			}
+			
+		};
 	}
 
 	@Override
@@ -105,74 +105,12 @@ public class EnvoyImpl implements Agent, Linkable<Agent, Supervisor> {
 	}
 
 	@Override
-	public AgentType getType() {
-		return AgentType.envoy;
+	public boolean isEnvoy() {
+		return true;
 	}
 
 	@Override
-	public Agent get() {
+	public Envoy get() {
 		return this;
 	}
-
-
-	@Override
-	public FrameworkDTO getFramework() throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public BundleDTO install(String location, String sha) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String start(long... id) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String stop(long... id) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String uninstall(long... id) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String update(Map<String, String> bundles) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void redirect(boolean on) throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void stdin(String s) throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public String shell(String cmd) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean abort() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 }

@@ -1,16 +1,18 @@
 package aQute.remote.agent;
 
 import java.io.PrintStream;
+import java.util.List;
 
 public class RedirectOutput extends PrintStream {
 
-	private final AgentServer agent;
+	private final List<AgentServer> agents;
 	private final PrintStream out;
 	private boolean err;
+	private static ThreadLocal<Boolean> onStack = new ThreadLocal<Boolean>();
 
-	public RedirectOutput(AgentServer agent, PrintStream out, boolean err) {
+	public RedirectOutput(List<AgentServer> agents, PrintStream out, boolean err) {
 		super(out);
-		this.agent = agent;
+		this.agents = agents;
 		this.out = out;
 		this.err = err;
 	}
@@ -27,15 +29,24 @@ public class RedirectOutput extends PrintStream {
 		if ((off | len | (b.length - (len + off)) | (off + len)) < 0)
 			throw new IndexOutOfBoundsException();
 
-		try {
-			out.write(b, off, len);
-			String s = new String(b, off, len); // default encoding!
-			if (err)
-				this.agent.getSupervisor().stderr(s);
-			else
-				this.agent.getSupervisor().stdout(s);
-		} catch (Exception e) {
-			e.printStackTrace();
+		out.write(b, off, len);
+		if (onStack.get()==null) {
+			onStack.set(true);
+			try {
+				String s = new String(b, off, len); // default encoding!
+				for (AgentServer agent : agents) {
+					if (err)
+						agent.getSupervisor().stderr(s);
+					else
+						agent.getSupervisor().stdout(s);
+				}
+			} catch (Exception e) {
+				//e.printStackTrace();
+			} finally {
+				onStack.remove();
+			}
+		} else {
+			out.println("oops");
 		}
 	}
 

@@ -1,1 +1,1 @@
--plugin= aQute.lib.deployer.InfoFileRepo;location=${workspace}/repo
+-plugin= aQute.lib.deployer.InfoFileRepo;location=${workspace}/cnf/repo
