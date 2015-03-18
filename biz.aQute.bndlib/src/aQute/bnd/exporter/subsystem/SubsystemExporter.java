@@ -8,7 +8,6 @@ import java.util.jar.*;
 
 import aQute.bnd.annotation.plugin.*;
 import aQute.bnd.build.*;
-import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.export.*;
 
@@ -19,6 +18,7 @@ public class SubsystemExporter implements Exporter {
 	private static final String	SUBSYSTEM_SYMBOLIC_NAME		= "Subsystem-SymbolicName";
 	private static final String	OSGI_SUBSYSTEM_APPLICATION	= "osgi.subsystem.application";
 	private static final String	SUBSYSTEM_TYPE				= "Subsystem-Type";
+	@SuppressWarnings("unused")
 	private static final String	SUBSYSTEM_CONTENT			= "Subsystem-Content";
 
 	@Override
@@ -44,28 +44,15 @@ public class SubsystemExporter implements Exporter {
 			c.contributeFiles(files, project);
 		}
 
-		Parameters subsysContent = new Parameters();
-		Instructions contentDecorators = new Instructions(project.getProperty(SUBSYSTEM_CONTENT, "*"));
-
 		for (File file : files) {
 
 			Domain domain = Domain.domain(file);
 			String bsn = domain.getBundleSymbolicName().getKey();
 			String version = domain.getBundleVersion();
 
-			Instruction decorator = contentDecorators.finder(bsn);
-			if (decorator == null || decorator.isNegated())
-				continue;
-
-			Attrs attrs = new Attrs(contentDecorators.get(decorator));
-			attrs.put(Constants.VERSION_ATTRIBUTE, version);
-			subsysContent.put(bsn, attrs);
-
 			String path = bsn + "-" + version + ".jar";
 			jar.putResource(path, new FileResource(file));
 		}
-
-		application.putValue(SUBSYSTEM_CONTENT, subsysContent.toString());
 
 		headers(project, application);
 		set(application, SUBSYSTEM_TYPE, type);
