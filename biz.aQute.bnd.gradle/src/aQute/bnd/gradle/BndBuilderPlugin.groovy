@@ -27,7 +27,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
         description 'Assembles a bundle containing the main classes.'
         convention.plugins.bundle = new BundleTaskConvention(jar)
         doLast {
-          Bundle.build(jar)
+          buildBundle()
         }
       }
     }
