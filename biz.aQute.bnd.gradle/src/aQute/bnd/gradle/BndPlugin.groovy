@@ -24,7 +24,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.GradleException
 import org.gradle.api.file.FileCollection
-import org.gradle.api.logging.LogLevel
 
 public class BndPlugin implements Plugin<Project> {
   private Project project
@@ -131,8 +130,8 @@ public class BndPlugin implements Plugin<Project> {
         if (javacDebug) {
           options.debugOptions.debugLevel = 'source,lines,vars'
         }
-        options.verbose = logger.isEnabled(LogLevel.DEBUG)
-        options.listFiles = logger.isEnabled(LogLevel.INFO)
+        options.verbose = logger.isDebugEnabled()
+        options.listFiles = logger.isInfoEnabled()
         options.deprecation = javacDeprecation
         options.encoding = javacEncoding
         if (javac != 'javac') {
@@ -150,17 +149,17 @@ public class BndPlugin implements Plugin<Project> {
 
       compileJava {
         configure compileOptions
-        if (logger.isEnabled(LogLevel.INFO)) {
+        if (logger.isInfoEnabled()) {
           doFirst {
-            logger.info "Compile ${sourceSets.main.java.srcDirs} to ${destinationDir}"
+            logger.info 'Compile {} to {}', sourceSets.main.java.srcDirs, destinationDir
             if (javacProfile.empty) {
-              logger.info "-source ${sourceCompatibility} -target ${targetCompatibility}"
+              logger.info '-source {} -target {}', sourceCompatibility, targetCompatibility
             } else {
-              logger.info "-source ${sourceCompatibility} -target ${targetCompatibility} -profile ${javacProfile}"
+              logger.info '-source {} -target {} -profile {}', sourceCompatibility, targetCompatibility, javacProfile
             }
-            logger.info "-classpath ${classpath.asPath}"
+            logger.info '-classpath {}', classpath.asPath
             if (options.bootClasspath != null) {
-              logger.info "-bootclasspath ${options.bootClasspath}"
+              logger.info '-bootclasspath {}', options.bootClasspath
             }
           }
         }
@@ -240,10 +239,7 @@ public class BndPlugin implements Plugin<Project> {
             }
             checkErrors()
             if (built != null) {
-              logger.info 'Generated bundles:'
-              built.each {
-                logger.info "${it}"
-              }
+              logger.info 'Generated bundles: {}', built
             }
           }
         }
@@ -333,7 +329,7 @@ public class BndPlugin implements Plugin<Project> {
                 project.mkdir(executableJar.parent)
               }
               doLast {
-                logger.info "Exporting ${runFile.absolutePath} to ${executableJar.absolutePath}"
+                logger.info 'Exporting {} to {}', runFile.absolutePath, executableJar.absolutePath
                 try {
                   bndProject.export(relativePath(runFile), false, executableJar)
                 } catch (Exception e) {
@@ -371,7 +367,7 @@ public class BndPlugin implements Plugin<Project> {
                 project.mkdir(runbundlesDir)
               }
               doLast {
-                logger.info "Creating a distribution of the runbundles in ${runFile.absolutePath} in directory ${runbundlesDir.absolutePath}"
+                logger.info 'Creating a distribution of the runbundles in {} in directory {}', runFile.absolutePath, runbundlesDir.absolutePath
                 try {
                     bndProject.exportRunbundles(relativePath(runFile), runbundlesDir)
                 } catch (Exception e) {
@@ -477,11 +473,11 @@ public class BndPlugin implements Plugin<Project> {
     def boolean failed = !bndProject.isOk()
     def int errorCount = 0
     bndProject.getWarnings().each {
-      project.logger.warn "Warning: ${it}"
+      project.logger.warn 'Warning: {}', it
     }
     bndProject.getWarnings().clear()
     bndProject.getErrors().each {
-      project.logger.error "Error  : ${it}"
+      project.logger.error 'Error  : {}', it
       errorCount++
     }
     bndProject.getErrors().clear()
