@@ -1,4 +1,4 @@
-/*
+/**
  * Bundle task type for Gradle.
  *
  * <p>
@@ -35,11 +35,24 @@ import org.gradle.api.tasks.SourceSet
 
 public class Bundle extends org.gradle.api.tasks.bundling.Jar {
 
+  /**
+   * Create a Bundle task.
+   *
+   * <p>
+   * Also adds the BundleTaskConvention to this task.
+   */
   public Bundle() {
     super()
     convention.plugins.bundle = new BundleTaskConvention(this)
   }
 
+  /**
+   * Build the bundle.
+   *
+   * <p>
+   * This method calls super.copy() and then uses the Bnd Builder
+   * to transform the Jar task built jar into a bundle.
+   */
   @TaskAction
   protected void copy() {
     super.copy()

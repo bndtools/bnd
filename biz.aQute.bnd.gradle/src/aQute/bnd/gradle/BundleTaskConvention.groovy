@@ -1,6 +1,7 @@
-/*
+/**
  * BundleTaskConvention for Gradle.
  *
+ * <p>
  * Adds properties to bundle builder tasks.
  *
  * <p>
@@ -29,6 +30,13 @@ class BundleTaskConvention {
   private SourceSet sourceSet
 
   BundleTaskConvention(Task task) {
+  /**
+   * Create a BundleTaskConvention for the specified Jar task.
+   *
+   * <p>
+   * This also sets the default values for the added properties
+   * and adds the bnd file to the task inputs.
+   */
     def Project project = task.project
     // Set default property values
     setBndfile(project.file('bnd.bnd'))
@@ -41,23 +49,41 @@ class BundleTaskConvention {
   }
 
   File getBndfile() {
+  /**
+   * Get the bndfile property.
+   */
     return bndfile
   }
   void setBndfile(File bndfile) {
+  /**
+   * Set the bndfile property.
+   */
     this.bndfile = bndfile
   }
 
   Configuration getConfiguration() {
+  /**
+   * Get the configuration property.
+   */
     return configuration
   }
   void setConfiguration(Configuration configuration) {
+  /**
+   * Set the configuration property.
+   */
     this.configuration = configuration
   }
 
   SourceSet getSourceSet() {
+  /**
+   * Get the sourceSet property.
+   */
     return sourceSet
   }
   void setSourceSet(SourceSet sourceSet) {
+  /**
+   * Set the sourceSet property.
+   */
     this.sourceSet = sourceSet
   }
 }

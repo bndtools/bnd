@@ -1,11 +1,17 @@
-/*
+/**
  * BndPlugin for Gradle.
  *
+ * <p>
+ * The plugin name is {@code biz.aQute.bnd}.
+ *
+ * <p>
  * If the bndWorkspace property is set, it will be used for the bnd Workspace.
  *
+ * <p>
  * If the bnd_defaultTask property is set, it will be used for the the default
  * task.
  *
+ * <p>
  * If the bnd_preCompileRefresh property is set to 'true', the project
  * properties will be refreshed just before compiling the project.
  */
@@ -25,6 +31,9 @@ public class BndPlugin implements Plugin<Project> {
   private bndProject
   private boolean preCompileRefresh
 
+  /**
+   * Apply the {@code biz.aQute.bnd} plugin to the specified project.
+   */
   void apply(Project p) {
     p.configure(p) { project ->
       this.project = project
