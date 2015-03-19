@@ -1,7 +1,6 @@
 package bndtools.launch.bnd;
 
 import java.io.File;
-import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -65,20 +64,11 @@ class LaunchThread extends Thread implements IProcess {
         attributes.put(IProcess.ATTR_PROCESS_LABEL, session.getLabel());
         attributes.put(IProcess.ATTR_CMDLINE, session.getLabel());
 
-        validate();
-    }
-
-    private int validate() {
-        try {
-            Socket s = new Socket(session.getHost(), session.getAgent());
-            s.close();
-        } catch (Exception e) {
-            launcher.error("Cannot reach agent at %s:%s", session.getHost(), session.getAgent());
-        }
-        return 0;
     }
 
     void doDebug(IProgressMonitor monitor) throws InterruptedException {
+        monitor.setTaskName("Connecting debugger " + session.getName() + " to " + session.getHost() + ":" + session.getJdb());
+
         Map<String,String> parameters = new HashMap<String,String>();
         parameters.put("hostname", session.getHost());
         parameters.put("port", session.getJdb() + "");
