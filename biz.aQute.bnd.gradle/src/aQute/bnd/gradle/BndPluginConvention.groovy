@@ -1,8 +1,9 @@
-/*
+/**
  * BndPluginConvention for Gradle.
  *
+ * <p>
  * Adds bnd and bndUnprocessed methods to projects that apply
- * the bnd plugin.
+ * the {@code biz.aQute.bnd} plugin.
  */
 
 package aQute.bnd.gradle

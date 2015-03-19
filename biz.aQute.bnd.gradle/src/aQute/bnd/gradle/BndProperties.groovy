@@ -1,8 +1,9 @@
-/*
+/**
  * BndProperties for Gradle.
  *
+ * <p>
  * Add property access for bnd properties to projects that apply
- * the bnd plugin.
+ * the {@code biz.aQute.bnd} plugin.
  */
 
 package aQute.bnd.gradle

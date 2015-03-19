@@ -1,5 +1,8 @@
-/*
+/**
  * BndBuilderPlugin for Gradle.
+ *
+ * <p>
+ * The plugin name is {@code biz.aQute.bnd.builder}.
  *
  * <p>
  * This plugin applies the java plugin to a project and modifies the jar
@@ -13,6 +16,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 public class BndBuilderPlugin implements Plugin<Project> {
+  /**
+   * Apply the {@code biz.aQute.bnd.builder} plugin to the specified project.
+   */
   void apply(Project p) {
     p.configure(p) { project ->
       plugins.apply 'java'
@@ -21,7 +27,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
         description 'Assembles a bundle containing the main classes.'
         convention.plugins.bundle = new BundleTaskConvention(jar)
         doLast {
-          Bundle.build(jar)
+          buildBundle()
         }
       }
     }
