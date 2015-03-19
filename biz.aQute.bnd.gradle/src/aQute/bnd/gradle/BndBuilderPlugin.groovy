@@ -12,15 +12,21 @@
 
 package aQute.bnd.gradle
 
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 public class BndBuilderPlugin implements Plugin<Project> {
+  public static final String PLUGINID = 'biz.aQute.bnd.builder'
+
   /**
    * Apply the {@code biz.aQute.bnd.builder} plugin to the specified project.
    */
   void apply(Project p) {
     p.configure(p) { project ->
+      if (plugins.hasPlugin(BndPlugin.PLUGINID)) {
+          throw new GradleException("Project already has '${BndPlugin.PLUGINID}' plugin applied.")
+      }
       plugins.apply 'java'
 
       jar {

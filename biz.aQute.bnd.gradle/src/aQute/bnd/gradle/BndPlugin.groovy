@@ -20,12 +20,13 @@ package aQute.bnd.gradle
 
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.GradleException
 import org.gradle.api.file.FileCollection
 
 public class BndPlugin implements Plugin<Project> {
+  public static final String PLUGINID = 'biz.aQute.bnd'
   private Project project
   private bndProject
   private boolean preCompileRefresh
@@ -36,6 +37,9 @@ public class BndPlugin implements Plugin<Project> {
   void apply(Project p) {
     p.configure(p) { project ->
       this.project = project
+      if (plugins.hasPlugin(BndBuilderPlugin.PLUGINID)) {
+          throw new GradleException("Project already has '${BndBuilderPlugin.PLUGINID}' plugin applied.")
+      }
       if (!rootProject.hasProperty('bndWorkspace')) {
         rootProject.ext.bndWorkspace = Workspace.getWorkspace(rootDir)
         if (bndWorkspace == null) {
