@@ -12,7 +12,7 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.util.dto.*;
 import aQute.bnd.version.*;
-import aQute.lib.base64.*;
+import aQute.lib.base64.Base64;
 import aQute.lib.filter.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;

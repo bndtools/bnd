@@ -9,7 +9,8 @@ import java.util.*;
 import javax.net.ssl.*;
 
 import aQute.bnd.build.*;
-import aQute.lib.base64.*;
+import aQute.bnd.service.url.*;
+import aQute.lib.base64.Base64;
 import aQute.lib.hex.*;
 import aQute.lib.settings.*;
 

@@ -11,7 +11,7 @@ import java.util.regex.*;
 import java.util.zip.*;
 
 import aQute.bnd.version.*;
-import aQute.lib.base64.*;
+import aQute.lib.base64.Base64;
 import aQute.lib.io.*;
 import aQute.lib.zip.*;
 import aQute.service.reporter.*;
