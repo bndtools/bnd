@@ -1,0 +1,9 @@
+#
+#	A subsystem with the remote agent
+#
+
+Subsystem-ManifestVersion: 	1
+Subsystem-SymbolicName:		biz.aQute.remote.subsystem.agent
+Subsystem-Type: 			osgi.subsystem.feature
+
+-runbundles: biz.aQute.remote.agent;version=latest

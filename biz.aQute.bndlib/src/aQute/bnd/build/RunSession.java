@@ -1,6 +1,7 @@
 package aQute.bnd.build;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 public interface RunSession {
 
@@ -31,4 +32,6 @@ public interface RunSession {
 	void waitTillStarted(long ms) throws InterruptedException;
 
 	long getTimeout();
+
+	boolean validate(Callable<Boolean> isCancelled) throws Exception;
 }

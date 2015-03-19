@@ -8,7 +8,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 import aQute.bnd.osgi.*;
-import aQute.lib.base64.*;
+import aQute.lib.base64.Base64;
 import aQute.lib.io.*;
 
 /**

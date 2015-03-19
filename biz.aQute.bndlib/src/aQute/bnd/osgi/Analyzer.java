@@ -42,7 +42,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.classparser.*;
 import aQute.bnd.version.*;
 import aQute.bnd.version.Version;
-import aQute.lib.base64.*;
+import aQute.lib.base64.Base64;
 import aQute.lib.collections.*;
 import aQute.lib.filter.*;
 import aQute.lib.hex.*;

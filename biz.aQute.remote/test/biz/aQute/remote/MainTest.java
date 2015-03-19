@@ -29,7 +29,7 @@ public class MainTest extends TestCase {
 			public void run() {
 				try {
 					Main.main(new String[] { "-s", "generated/storage", "-c",
-							"generated/cache" });
+							"generated/cache", "-n", "*", "-et" });
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

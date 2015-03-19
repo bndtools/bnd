@@ -17,6 +17,8 @@ public class SubsystemExporter implements Exporter {
 	private static final String	OSGI_INF_SUBSYSTEM_MF		= "OSGI-INF/SUBSYSTEM.MF";
 	private static final String	SUBSYSTEM_SYMBOLIC_NAME		= "Subsystem-SymbolicName";
 	private static final String	OSGI_SUBSYSTEM_APPLICATION	= "osgi.subsystem.application";
+	private static final String	OSGI_SUBSYSTEM_FEATURE		= "osgi.subsystem.feature";
+	private static final String	OSGI_SUBSYSTEM_COMPOSITE	= "osgi.subsystem.composite";
 	private static final String	SUBSYSTEM_TYPE				= "Subsystem-Type";
 	@SuppressWarnings("unused")
 	private static final String	SUBSYSTEM_CONTENT			= "Subsystem-Content";
@@ -24,7 +26,7 @@ public class SubsystemExporter implements Exporter {
 	@Override
 	public String[] getTypes() {
 		return new String[] {
-			OSGI_SUBSYSTEM_APPLICATION
+				OSGI_SUBSYSTEM_APPLICATION, OSGI_SUBSYSTEM_FEATURE, OSGI_SUBSYSTEM_COMPOSITE
 		};
 	}
 
@@ -35,16 +37,31 @@ public class SubsystemExporter implements Exporter {
 
 		project.addClose(jar);
 
-		Manifest a = new Manifest();
-		Attributes application = a.getMainAttributes();
+		Manifest manifest = new Manifest();
+		manifest.getMainAttributes().putValue("Manifest-Version", "1.0");
+		manifest.getMainAttributes().putValue("Subsystem-ManifestVersion", "1");
 
 		List<File> files = new ArrayList<File>();
 
 		for (Container c : project.getRunbundles()) {
-			c.contributeFiles(files, project);
+			switch (c.getType()) {
+				case ERROR :
+					// skip, already reported
+					break;
+
+				case PROJECT :
+				case EXTERNAL :
+				case REPO :
+					files.add(c.getFile());
+					break;
+				case LIBRARY :
+					c.contributeFiles(files, project);
+					break;
+			}
 		}
 
 		for (File file : files) {
+			System.out.println("File " + file);
 
 			Domain domain = Domain.domain(file);
 			String bsn = domain.getBundleSymbolicName().getKey();
@@ -54,8 +71,9 @@ public class SubsystemExporter implements Exporter {
 			jar.putResource(path, new FileResource(file));
 		}
 
-		headers(project, application);
-		set(application, SUBSYSTEM_TYPE, type);
+		headers(project, manifest.getMainAttributes());
+
+		set(manifest.getMainAttributes(), SUBSYSTEM_TYPE, OSGI_SUBSYSTEM_FEATURE);
 
 		String ssn = project.getName();
 
@@ -63,11 +81,10 @@ public class SubsystemExporter implements Exporter {
 		if (bsns.size() > 0) {
 			ssn = bsns.iterator().next();
 		}
-
-		set(application, SUBSYSTEM_SYMBOLIC_NAME, ssn);
+		set(manifest.getMainAttributes(), SUBSYSTEM_SYMBOLIC_NAME, ssn);
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		a.write(bout);
+		manifest.write(bout);
 
 		jar.putResource(OSGI_INF_SUBSYSTEM_MF, new EmbeddedResource(bout.toByteArray(), 0));
 
@@ -95,6 +112,8 @@ public class SubsystemExporter implements Exporter {
 
 	private void headers(final Project project, Attributes application) {
 		for (String key : project.getPropertyKeys(true)) {
+			if (!Verifier.HEADER_PATTERN.matcher(key).matches())
+				continue;
 
 			if (application.getValue(key) != null)
 				continue;
@@ -108,7 +127,7 @@ public class SubsystemExporter implements Exporter {
 				continue;
 
 			char c = value.charAt(0);
-			if (Character.isUpperCase(c) && Verifier.HEADER_PATTERN.matcher(key).matches())
+			if (Character.isUpperCase(c))
 				application.putValue(key, value);
 		}
 		Instructions instructions = new Instructions(project.mergeProperties(REMOVEHEADERS));
@@ -123,6 +142,7 @@ public class SubsystemExporter implements Exporter {
 		for (String value : values) {
 			if (value != null) {
 				application.putValue(key, value);
+				return;
 			}
 		}
 

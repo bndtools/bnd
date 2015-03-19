@@ -2,11 +2,14 @@ package aQute.remote.plugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -187,4 +190,43 @@ public class RunSessionImpl implements RunSession {
 		return dto.agent;
 	}
 
+	@Override
+    public boolean validate(Callable<Boolean> isCancelled) throws Exception {
+		boolean result = true;
+		
+		if ( getAgent() <= 0 || getAgent() > 65535 ) {
+			launcher.error("Agent port %s not in a valid IP range (0-65535)",  getAgent());
+			result = false;
+		}
+		
+		InetAddress in;
+		try {
+			in = InetAddress.getByName(getHost());
+		} catch( Exception e) {
+			launcher.exception(e,"Cannot find host %s",  getHost());
+			return false; // no use to continue from here
+		}
+		
+		if ( isCancelled.call())
+			return false;
+		
+		if (!in.isReachable(5000)) {
+			launcher.error("Host not reachable %s",  getHost());
+			return false;
+		}
+		
+        while (!isCancelled.call())
+            try {
+                Socket s = new Socket(getHost(), getAgent());
+                s.close();
+                break;
+            } catch (Exception e) {
+                // Ignore
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e1) {
+                }
+            }
+        return result;
+    }
 }

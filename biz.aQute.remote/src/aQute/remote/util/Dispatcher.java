@@ -56,8 +56,10 @@ public class Dispatcher<Local,Remote> extends Thread {
 	}
 
 	public void open() throws Exception {
-		server = host.equals("*") ? new ServerSocket(port) : new ServerSocket(
-				port, 3, InetAddress.getByName(host));
+//		server = host.equals("*") ? new ServerSocket(port) : new ServerSocket(
+//				port, 3, InetAddress.getByName(host));
+		server = new ServerSocket(port);
+		System.out.println("Server " + server.getInetAddress() + ":"+server.getLocalPort());
 		start();
 	}
 
