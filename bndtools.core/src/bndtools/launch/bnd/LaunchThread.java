@@ -80,7 +80,7 @@ class LaunchThread extends Thread implements IProcess {
 
     void doDebug(IProgressMonitor monitor) throws InterruptedException {
         Map<String,String> parameters = new HashMap<String,String>();
-        parameters.put("hostname", "localhost");
+        parameters.put("hostname", session.getHost());
         parameters.put("port", session.getJdb() + "");
         parameters.put("timeout", session.getTimeout() + "");
         IVMConnector connector = JavaRuntime.getDefaultVMConnector();
@@ -158,8 +158,16 @@ class LaunchThread extends Thread implements IProcess {
         } catch (Exception e) {
             logger.logWarning("Exception from launcher", e);
         } finally {
-            buildListener.unregister();
-            repositoryListener.unregister();
+            try {
+                buildListener.unregister();
+            } catch (Exception e) {
+                // ignore
+            }
+            try {
+                repositoryListener.unregister();
+            } catch (Exception e) {
+                // ignore
+            }
             terminate();
         }
     }
