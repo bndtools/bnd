@@ -7,18 +7,25 @@ import org.apache.tools.ant.*;
 import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
 
-public class RunBundlesTask extends Task {
+public class RunBundlesTask extends BaseTask {
 
 	private File			rootDir;
-	private File			buildProject;
 	private String			outputDir;
-	private File			bndFile;
+	private File	bndFile	= new File(Project.BNDFILE);
 
 	@Override
 	public void execute() throws BuildException {
 		try {
 			createReleaseDir();
-			Project bndProject = new Project(new Workspace(rootDir), buildProject, bndFile);
+			Workspace workspace;
+			if (rootDir != null) {
+				workspace = new Workspace(rootDir);
+			} else {
+				workspace = Workspace.findWorkspace(bndFile);
+				log("Workspace not specified, using " + workspace.getBase().getAbsolutePath());
+			}
+			// 2nd arg is not used, so no use trying to set it
+			Project bndProject = new Project(workspace, null, bndFile);
 			
 			bndProject.exportRunbundles(bndFile.getName(), new File(outputDir));
 
@@ -49,10 +56,6 @@ public class RunBundlesTask extends Task {
 
 	public void setRootDir(File rootDir) {
 		this.rootDir = rootDir;
-	}
-
-	public void setBuildProject(File buildProject) {
-		this.buildProject = buildProject;
 	}
 
 	public void setOutputDir(String outputDir) {
