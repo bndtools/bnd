@@ -6,7 +6,6 @@ import org.apache.tools.ant.*;
 
 import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
-import aQute.bnd.build.model.*;
 
 public class RunBundlesTask extends Task {
 
@@ -19,8 +18,6 @@ public class RunBundlesTask extends Task {
 	public void execute() throws BuildException {
 		try {
 			createReleaseDir();
-			BndEditModel model = new BndEditModel();
-			model.loadFrom(bndFile);
 			Project bndProject = new Project(new Workspace(rootDir), buildProject, bndFile);
 			
 			bndProject.exportRunbundles(bndFile.getName(), new File(outputDir));
@@ -29,6 +26,7 @@ public class RunBundlesTask extends Task {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			throw new BuildException(e);
 		}
 	}
 
