@@ -24,7 +24,6 @@ import aQute.bnd.osgi.Constants
 import aQute.bnd.osgi.Jar
 import aQute.bnd.version.Version
 import org.gradle.api.GradleException
-import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.SourceSet
 
@@ -43,13 +42,7 @@ class BundleTaskConvention {
    */
   BundleTaskConvention(org.gradle.api.tasks.bundling.Jar task) {
     this.task = task
-    def Project project = task.project
-    // Set default property values
-    setBndfile(project.file('bnd.bnd'))
-    setConfiguration(project.configurations.compile)
-    setSourceSet(project.sourceSets.main)
-    // Add bndfile to task inputs
-    task.inputs.file {
+    task.inputs.file { // Add bndfile to task inputs
       getBndfile()
     }
   }
@@ -58,6 +51,9 @@ class BundleTaskConvention {
    * Get the bndfile property.
    */
   public File getBndfile() {
+    if (bndfile == null) {
+      setBndfile(task.project.file('bnd.bnd'))
+    }
     return bndfile
   }
   /**
@@ -71,6 +67,9 @@ class BundleTaskConvention {
    * Get the configuration property.
    */
   public Configuration getConfiguration() {
+    if (configuration == null) {
+      setConfiguration(task.project.configurations.compile)
+    }
     return configuration
   }
   /**
@@ -84,6 +83,9 @@ class BundleTaskConvention {
    * Get the sourceSet property.
    */
   public SourceSet getSourceSet() {
+    if (sourceSet == null) {
+      setSourceSet(task.project.sourceSets.main)
+    }
     return sourceSet
   }
   /**
