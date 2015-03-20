@@ -134,10 +134,12 @@ class BundleTaskConvention {
         builder.setClasspath(artifacts.toArray(new File[artifacts.size()]))
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
-        // set builder sourcepath
-        def Set<File> srcDirs = new LinkedHashSet<File>(sourceSet.java.srcDirs)
-        builder.setSourcepath(srcDirs.toArray(new File[srcDirs.size()]))
-        logger.debug 'builder sourcepath: {}', builder.getSourcePath()
+        // set builder sourcepath if -sources=true
+        if (builder.hasSources()) {
+          def Set<File> srcDirs = new LinkedHashSet<File>(sourceSet.java.srcDirs)
+          builder.setSourcepath(srcDirs.toArray(new File[srcDirs.size()]))
+          logger.debug 'builder sourcepath: {}', builder.getSourcePath()
+        }
 
         // Include entire contents of Jar task generated jar except the manifest
         def String includes = builder.getProperty(Constants.INCLUDERESOURCE)
