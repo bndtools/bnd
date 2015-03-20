@@ -10,12 +10,38 @@ public class OCDDef {
 	final List<ADDef> attributes = new ArrayList<ADDef>();
 	final List<IconDef> icons = new ArrayList<IconDef>();
 	final List<DesignateDef> designates = new ArrayList<DesignateDef>();
+	final Map<String, String>		extensionAttributes		= new HashMap<String, String>();
+	final Map<String, String>		namespaces		= new HashMap<String, String>();
 	
 	String id;
 	String name;
 	String localization;
 	String description;
 	
+	public String registerNamespace(final String prefix, String namespace) {
+		if (namespaces.containsValue(namespace)) {
+			for (Map.Entry<String, String> entry: namespaces.entrySet()) {
+				if (entry.getValue().equals(namespace)) {
+					return entry.getKey();
+				}
+			}
+		}
+		String prefix2 = prefix;
+		int i = 1;
+		while (namespaces.containsKey(prefix2)) {
+			if (namespaces.get(prefix2).equals(namespace)) {
+				return prefix2;
+			}
+			prefix2 = prefix + i++;
+		}
+		namespaces.put(prefix2, namespace);
+		return prefix2;
+	}
+	
+	public void addExtensionAttribute(String prefix, String key, String value) {
+		extensionAttributes.put(prefix + ":" + key, value);
+	}
+
 	void prepare(Analyzer analyzer) {
 		Set<String> adIds = new HashSet<String>();
 		for (ADDef ad: attributes) {
@@ -35,12 +61,20 @@ public class OCDDef {
 			metadata.addAttribute("localization", localization);
 		}
 		
+		for (Map.Entry<String, String> a: namespaces.entrySet()) {
+			metadata.addAttribute("xmlns:" + a.getKey(), a.getValue());
+		}
+		
 		Tag ocd = new Tag(metadata, "OCD").addAttribute("id", id);
 		
 		if (name != null) {
 			ocd.addAttribute("name", name);
 		}
 		
+		for (Map.Entry<String, String> a: extensionAttributes.entrySet()) {
+			ocd.addAttribute(a.getKey(), a.getValue());
+		}
+
 		if (description != null) {
 			ocd.addAttribute("description", description);
 		}

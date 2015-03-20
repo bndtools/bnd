@@ -21,21 +21,24 @@ public class OCDReader extends ClassDataCollector {
 	private boolean topLevel = true;
 	private Set<TypeRef> analyzed;
 
-	private final Map<MethodDef, Pair> methods = new LinkedHashMap<MethodDef, Pair>();
+	private final Map<MethodDef, List<Pair>> methods = new LinkedHashMap<MethodDef, List<Pair>>();
 	private MethodDef	method;
 	private OCDDef ocd;
 
+	private final List<ExtensionReader> extensions;
 
-	OCDReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options) {
+	OCDReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, List<ExtensionReader> extensions) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.options = options;
+    	this.extensions = extensions;
 	}
 
 
-	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, EnumSet<Options> options) throws Exception {
+	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, EnumSet<Options> options, List<ExtensionReader> extensions)
+			throws Exception {
 
-		OCDReader r = new OCDReader(analyzer, c, options);
+		OCDReader r = new OCDReader(analyzer, c, options, extensions);
 		return r.getDef();
 	}
 
@@ -88,11 +91,23 @@ public class OCDReader extends ClassDataCollector {
 	public void classBegin(int access, TypeRef name) {
 		this.name = name;
 	}
+	
+	@Override
+	public void classEnd() {
+		method = null;
+	}
 
 	@Override
 	public void method(MethodDef defined) {
 		methods.put(defined, null);
 		method = defined;
+	}
+	
+	
+
+	@Override
+	public void memberEnd() {
+		method = null;
 	}
 
 	//TODO what about Queue|Stack|Deque?
@@ -101,7 +116,7 @@ public class OCDReader extends ClassDataCollector {
 			List.class.getName() + "|" +
 			Iterable.class.getName() + ")|(.*))<(L.+;)>");
 	private void doMethods() throws Exception {
-		for (Map.Entry<MethodDef,Pair> entry: methods.entrySet()) {
+		for (Map.Entry<MethodDef,List<Pair>> entry: methods.entrySet()) {
 			MethodDef defined = entry.getKey();
 			if (defined.isConstructor()) {
 				analyzer.error(
@@ -237,33 +252,39 @@ public class OCDReader extends ClassDataCollector {
 		return value.toString();
 	}
 	
-	private void doAD(ADDef ad, Pair pair) throws Exception {
-		AttributeDefinition a = pair.getAd();
-		Annotation annotation = pair.getA(); 
-
-		if (a.name() != null) {
-			ad.name = a.name();
-		}
-		ad.description = a.description();
-		if (a.type() != null) {
-			ad.type = a.type();
-		}
-		if (annotation.get("cardinality") != null) {
-			ad.cardinality = a.cardinality();
-		}
-		ad.max = a.max();
-		ad.min = a.min();
-		if (a.defaultValue() != null) {
-			ad.defaults = a.defaultValue();
-		}
-		if (annotation.get("required") != null) {
-			ad.required = a.required();
-		}
-		if (annotation.get("options") != null) {
-			ad.options.clear();
-			for (Object o : (Object[])annotation.get("options")) {
-				Option opt = ((Annotation)o).getAnnotation();
-				ad.options.add(new OptionDef(opt.label(), opt.value()));
+	private void doAD(ADDef ad, List<Pair> pairs) throws Exception {
+		for (Pair pair: pairs) {
+			if (pair.getAd() instanceof AttributeDefinition) {
+				AttributeDefinition a = (AttributeDefinition)pair.getAd();
+				Annotation annotation = pair.getA();
+				if (a.name() != null) {
+					ad.name = a.name();
+				}
+				ad.description = a.description();
+				if (a.type() != null) {
+					ad.type = a.type();
+				}
+				if (annotation.get("cardinality") != null) {
+					ad.cardinality = a.cardinality();
+				}
+				ad.max = a.max();
+				ad.min = a.min();
+				if (a.defaultValue() != null) {
+					ad.defaults = a.defaultValue();
+				}
+				if (annotation.get("required") != null) {
+					ad.required = a.required();
+				}
+				if (annotation.get("options") != null) {
+					ad.options.clear();
+					for (Option opt : a.options()) {
+						ad.options.add(new OptionDef(opt.label(), opt.value()));
+					}
+				}
+			} else {
+				for (ExtensionReader extension: extensions) {
+					extension.doMethodAnnotation(method, pair.getAd(), pair.getA(), ocd, ad, analyzer);
+				}
 			}
 		}
 
@@ -362,15 +383,15 @@ public class OCDReader extends ClassDataCollector {
 	}
 
 	private final static class Pair {
-		private final AttributeDefinition ad;
+		private final java.lang.annotation.Annotation ad;
 		private final Annotation a;
 		
-		public Pair(AttributeDefinition ad, Annotation a) {
+		public Pair(java.lang.annotation.Annotation ad, Annotation a) {
 			this.ad = ad;
 			this.a = a;
 		}
 
-		AttributeDefinition getAd() {
+		java.lang.annotation.Annotation getAd() {
 			return ad;
 		}
 
@@ -386,8 +407,18 @@ public class OCDReader extends ClassDataCollector {
 			java.lang.annotation.Annotation a = annotation.getAnnotation();
 			if (a instanceof ObjectClassDefinition)
 				doOCD((ObjectClassDefinition) a, annotation);
-			else if (a instanceof AttributeDefinition)
-				methods.put(method, new Pair((AttributeDefinition)a, annotation));
+			else if (method != null) {
+				List<Pair> pairs = methods.get(method);
+				if (pairs == null) {
+					pairs = new ArrayList<Pair>();
+					methods.put(method, pairs);
+				}
+				pairs.add(new Pair(a, annotation));
+			} else {
+				for (ExtensionReader extension: extensions) {
+					extension.doAnnotation(a, annotation, ocd, analyzer);
+				}
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();

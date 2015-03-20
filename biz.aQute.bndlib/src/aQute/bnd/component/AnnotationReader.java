@@ -17,18 +17,6 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 
-/**
- * fixup any unbind methods To declare no unbind method, the value "-" must be
- * used. If not specified, the name of the unbind method is derived from the
- * name of the annotated bind method. If the annotated method name begins with
- * set, that is replaced with unset to derive the unbind method name. If the
- * annotated method name begins with add, that is replaced with remove to derive
- * the unbind method name. Otherwise, un is prefixed to the annotated method
- * name to derive the unbind method name.
- * 
- * @return
- * @throws Exception
- */
 public class AnnotationReader extends ClassDataCollector {
 	final static TypeRef[]		EMPTY					= new TypeRef[0];
 	final static Pattern		PROPERTY_PATTERN		= Pattern
@@ -80,16 +68,19 @@ public class AnnotationReader extends ClassDataCollector {
 	TypeRef						extendsClass;
 	boolean						baseclass				= true;
 	final EnumSet<Options>		options;
+	List<ExtensionReader>		extensions;
 	
 
-	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options) {
+	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, List<ExtensionReader> extensions) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.options = options;
+		this.extensions = extensions;
 	}
 
-	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options) throws Exception {
-		AnnotationReader r = new AnnotationReader(analyzer, c, options);
+	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options,
+			List<ExtensionReader> extensions) throws Exception {
+		AnnotationReader r = new AnnotationReader(analyzer, c, options, extensions);
 		return r.getDef();
 	}
 
@@ -182,6 +173,11 @@ public class AnnotationReader extends ClassDataCollector {
 				doReference((Reference) a, annotation);
 			else if (a instanceof Designate)
 				doDesignate((Designate) a);
+			else {
+				for (ExtensionReader extensionReader: extensions) {
+					extensionReader.doAnnotation(a, annotation, component, analyzer);
+				}
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();

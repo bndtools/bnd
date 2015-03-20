@@ -98,6 +98,7 @@ public interface Constants {
 	String							DEPLOYREPO									= "-deployrepo";
 	String							DIGESTS										= "-digests";
 	String							DSANNOTATIONS								= "-dsannotations";
+	String							DSANNOTATIONS_EXTENSIONS					= "-dsannotations-extensions";
 	String							DSANNOTATIONS_OPTIONS						= "-dsannotations-options";
 
 	String							DONOTCOPY									= "-donotcopy";
@@ -134,6 +135,7 @@ public interface Constants {
 	String							MAKE										= "-make";
 	String							METATYPE									= "-metatype";
 	String							METATYPE_ANNOTATIONS						= "-metatypeannotations";
+	String							METAYTPE_ANNOTATIONS_EXTENSIONS				= "-metatypeannotations-extensions";
 	String							METATYPE_ANNOTATIONS_OPTIONS				= "-metatypeannotations-options";
 
 	String							MANIFEST									= "-manifest";
