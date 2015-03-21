@@ -6,6 +6,7 @@ import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
+import aQute.bnd.xmlattribute.*;
 import aQute.lib.strings.*;
 
 /**
@@ -51,13 +52,14 @@ public class DSAnnotations implements AnalyzerPlugin {
 		TreeSet<String> requires = new TreeSet<String>();
 		Version maxVersion = AnnotationReader.V1_0;
 
+		XMLAttributeFinder finder = new XMLAttributeFinder();
 		for (Clazz c : list) {
 			for (Instruction instruction : instructions.keySet()) {
 
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, options);
+					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, options, finder);
 					if (definition != null) {
 
 						definition.sortReferences();

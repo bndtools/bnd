@@ -3,9 +3,10 @@ package aQute.bnd.metatype;
 import java.util.*;
 
 import aQute.bnd.osgi.*;
+import aQute.bnd.xmlattribute.*;
 import aQute.lib.tag.*;
 
-public class OCDDef {
+public class OCDDef extends ExtensionDef {
 	
 	final List<ADDef> attributes = new ArrayList<ADDef>();
 	final List<IconDef> icons = new ArrayList<IconDef>();
@@ -29,7 +30,21 @@ public class OCDDef {
 	}
 		
 	Tag getTag() {
-		Tag metadata = new Tag("metatype:MetaData").addAttribute("xmlns:metatype", MetatypeVersion.VERSION_1_3.getNamespace());
+
+		Tag metadata = new Tag("metatype:MetaData");
+		// .addAttribute("xmlns:metatype",
+		// MetatypeVersion.VERSION_1_3.getNamespace());
+		Namespaces namespaces = new Namespaces();
+		String xmlns = MetatypeVersion.VERSION_1_3.getNamespace();
+		namespaces.registerNamespace("metatype", xmlns);
+		addNamespaces(namespaces, xmlns);
+		for (ADDef ad : attributes)
+			ad.addNamespaces(namespaces, xmlns);
+
+		for (DesignateDef dd : designates)
+			dd.addNamespaces(namespaces, xmlns);
+
+		namespaces.addNamespaces(metadata);
 		
 		if (localization != null) {
 			metadata.addAttribute("localization", localization);
@@ -45,8 +60,10 @@ public class OCDDef {
 			ocd.addAttribute("description", description);
 		}
 		
+		addAttributes(ocd, namespaces);
+
 		for (ADDef ad: attributes) {
-			ocd.addContent(ad.getTag());
+			ocd.addContent(ad.getTag(namespaces));
 		}
 		
 		for (IconDef icon: icons) {
@@ -54,7 +71,7 @@ public class OCDDef {
 		}
 		
 		for (DesignateDef designate: designates) {
-			metadata.addContent(designate.getInnerTag());
+			metadata.addContent(designate.getInnerTag(namespaces));
 		}
 		
 		return metadata;

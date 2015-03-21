@@ -6,6 +6,7 @@ import aQute.bnd.component.TagResource;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
+import aQute.bnd.xmlattribute.*;
 
 /**
  * Analyze the class space for any classes that have an OSGi annotation for DS.
@@ -41,13 +42,14 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace().values();
 
+		XMLAttributeFinder finder = new XMLAttributeFinder();
 		for (Clazz c: list) {
 			for (Instruction instruction : instructions.keySet()) {
 
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options);
+					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder);
 					if (definition != null) {
 						definition.prepare(analyzer);
 						if (!ocdIds.add(definition.id)) {
@@ -79,7 +81,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					DesignateDef designate = DesignateReader.getDesignate(c, analyzer, classToOCDMap);
+					DesignateDef designate = DesignateReader.getDesignate(c, analyzer, classToOCDMap, finder);
 					if (designate != null) {
 						designate.prepare(analyzer);
 						String name = "OSGI-INF/metatype/" + analyzer.validResourcePath(c.getFQN(), "Invalid resource name") + ".xml";

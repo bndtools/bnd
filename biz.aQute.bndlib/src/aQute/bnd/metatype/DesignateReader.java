@@ -5,7 +5,9 @@ import java.util.*;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.*;
 
+import aQute.bnd.annotation.xml.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.xmlattribute.*;
 
 public class DesignateReader extends ClassDataCollector {
 	
@@ -15,15 +17,18 @@ public class DesignateReader extends ClassDataCollector {
 	
 	private String[] pids;
 	private Annotation designate;
+	private final XMLAttributeFinder	finder;
+	private DesignateDef				def;
 
-	DesignateReader(Analyzer analyzer, Clazz clazz, Map<String, OCDDef> classToOCDMap) {
+	DesignateReader(Analyzer analyzer, Clazz clazz, Map<String, OCDDef> classToOCDMap, XMLAttributeFinder finder) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.classToOCDMap = classToOCDMap;
+		this.finder = finder;
 	}
 
-	static DesignateDef getDesignate(Clazz c, Analyzer analyzer, Map<String, OCDDef> classToOCDMap) throws Exception {
-	 		DesignateReader r = new DesignateReader(analyzer, c, classToOCDMap);
+	static DesignateDef getDesignate(Clazz c, Analyzer analyzer, Map<String, OCDDef> classToOCDMap, XMLAttributeFinder finder) throws Exception {
+	 		DesignateReader r = new DesignateReader(analyzer, c, classToOCDMap, finder);
 	 		return r.getDef();
 	}
 
@@ -48,7 +53,13 @@ public class DesignateReader extends ClassDataCollector {
 			}
 			String id = ocd.id;
 			boolean factoryPid = Boolean.TRUE == designate.get("factory");
+			if (def == null)
+
 			return new DesignateDef(id, pid, factoryPid);
+			def.ocdRef = id;
+			def.pid = pid;
+			def.factory = factoryPid;
+			return def;
 		}
 		return null;
 	}
@@ -62,11 +73,23 @@ public class DesignateReader extends ClassDataCollector {
 				designate = annotation;
 			else if (a instanceof Component)
 				pids = ((Component)a).configurationPid();
+			else {
+				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation, analyzer);
+				if (xmlAttr != null) {
+					doXmlAttribute(annotation, xmlAttr);
+				}
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
 		}
+	}
+
+	private void doXmlAttribute(Annotation annotation, XMLAttribute xmlAttr) {
+		if (def == null)
+			def = new DesignateDef();
+		def.addExtensionAttribute(xmlAttr, annotation);
 	}
 
 

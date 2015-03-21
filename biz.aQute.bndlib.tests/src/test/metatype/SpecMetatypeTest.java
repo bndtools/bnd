@@ -1,6 +1,7 @@
 package test.metatype;
 
 import java.io.*;
+import java.lang.annotation.*;
 import java.net.*;
 import java.util.*;
 
@@ -11,6 +12,7 @@ import junit.framework.*;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.*;
 
+import aQute.bnd.annotation.xml.*;
 import aQute.bnd.metatype.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.test.*;
@@ -20,7 +22,12 @@ import aQute.lib.io.*;
 		"resource", "restriction"
 })
 public class SpecMetatypeTest extends TestCase {
+
+	public enum Foo {
+		A, B
+	}
 	
+
 	/**
 	 * Test method naming options with '.' and reserved names
 	 */
@@ -1228,4 +1235,88 @@ public class SpecMetatypeTest extends TestCase {
 			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD", "metatype:MetaData/Designate/Object/@ocdref");
 		}
 	}
+
+	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*")
+	@Retention(RetentionPolicy.CLASS)
+	@Target(ElementType.TYPE)
+	@interface OCDTestExtensions {
+		boolean booleanAttr() default true;
+
+		String stringAttr();
+
+		Foo fooAttr();
+	}
+
+	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*")
+	@Retention(RetentionPolicy.CLASS)
+	@Target(ElementType.METHOD)
+	@interface ADTestExtensions {
+		boolean booleanAttr2() default true;
+
+		String stringAttr2();
+
+		Foo fooAttr2();
+	}
+
+	@ObjectClassDefinition
+	@OCDTestExtensions(stringAttr = "ocd", fooAttr = Foo.A)
+	public static interface TestExtensions {
+		@AttributeDefinition
+		String simple();
+
+		@ADTestExtensions(stringAttr2 = "ad", fooAttr2 = Foo.B)
+		String[] notSoSimple();
+
+		Collection<String> stringCollection();
+
+		@ADTestExtensions(stringAttr2 = "ad2", fooAttr2 = Foo.A)
+		@AttributeDefinition(defaultValue = {
+			"true"
+		}, required = false)
+		boolean enabled();
+	}
+
+	public static void testExtensions() throws Exception {
+		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestExtensions.class.getName());
+		b.build();
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestExtensions.xml");
+		assertEquals(0, b.getErrors().size());
+		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings().size());
+
+		System.err.println(b.getJar().getResources().keySet());
+		assertNotNull(r);
+		IO.copy(r.openInputStream(), System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "metatype", version.getNamespace(), "foo",
+				"org.foo.extensions.v1");
+		xt.assertNamespace(version.getNamespace());
+		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$TestExtensions", "metatype:MetaData/OCD/@id");
+		xt.assertExactAttribute("simple", "metatype:MetaData/OCD/AD[@id='simple']/@id");
+		xt.assertExactAttribute("Simple", "metatype:MetaData/OCD/AD[@id='simple']/@name");
+		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='simple']/@type");
+		xt.assertExactAttribute("false", "metatype:MetaData/OCD/AD[@id='enabled']/@required");
+		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='enabled']/@default");
+		xt.assertExactAttribute(Integer.MAX_VALUE + "", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@cardinality");
+
+		xt.assertCount(5, "metatype:MetaData/OCD/@*");
+		xt.assertExactAttribute("ocd", "metatype:MetaData/OCD/@foo:stringAttr");
+		xt.assertExactAttribute("A", "metatype:MetaData/OCD/@foo:fooAttr");
+
+		xt.assertCount(3, "metatype:MetaData/OCD/AD[@id='simple']/@*");
+
+		xt.assertCount(6, "metatype:MetaData/OCD/AD[@id='notSoSimple']/@*");
+		xt.assertExactAttribute("ad", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@foo:stringAttr2");
+		xt.assertExactAttribute("B", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@foo:fooAttr2");
+
+		xt.assertCount(4, "metatype:MetaData/OCD/AD[@id='stringCollection']/@*");
+
+		xt.assertCount(7, "metatype:MetaData/OCD/AD[@id='enabled']/@*");
+		xt.assertExactAttribute("ad2", "metatype:MetaData/OCD/AD[@id='enabled']/@foo:stringAttr2");
+		xt.assertExactAttribute("A", "metatype:MetaData/OCD/AD[@id='enabled']/@foo:fooAttr2");
+
+	}
+
 }

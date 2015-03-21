@@ -8,6 +8,7 @@ import org.osgi.service.component.annotations.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.version.*;
+import aQute.bnd.xmlattribute.*;
 import aQute.lib.collections.*;
 import aQute.lib.tag.*;
 
@@ -18,14 +19,13 @@ import aQute.lib.tag.*;
  * method returns without any errors. The class uses {@link ReferenceDef} to
  * hold the references.
  */
-class ComponentDef {
+class ComponentDef extends ExtensionDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
 	final static String 			MARKER 			= new String("|marker");
 	final List<String>				properties		= new ArrayList<String>();
 	final MultiMap<String,String>	property		= new MultiMap<String,String>(); //key is property name
 	final Map<String, String>		propertyType	= new HashMap<String, String>();
 	final Map<String,ReferenceDef>	references		= new LinkedHashMap<String,ReferenceDef>();
-
 	Version							version			= AnnotationReader.V1_0;
 	String							name;
 	String							factory;
@@ -134,9 +134,18 @@ class ComponentDef {
 		if (xmlns == null && version != AnnotationReader.V1_0)
 			xmlns = NAMESPACE_STEM + "/v" + version;
 		Tag component = new Tag(xmlns == null? "component": "scr:component");
-		if (xmlns != null)
-			component.addAttribute("xmlns:scr", xmlns);
+		Namespaces namespaces = null;
+		if (xmlns != null) {
 
+			namespaces = new Namespaces();
+			namespaces.registerNamespace("scr", xmlns);
+			addNamespaces(namespaces, xmlns);
+			for (ReferenceDef ref : references.values())
+				ref.addNamespaces(namespaces, xmlns);
+
+			namespaces.addNamespaces(component);
+
+		}
 		component.addAttribute("name", name);
 
 		if (configurationPolicy != null)
@@ -171,6 +180,9 @@ class ComponentDef {
 			}
 			component.addAttribute("configuration-pid", b.toString());
 		}
+
+		addAttributes(component, namespaces);
+
 		Tag impl = new Tag(component, "implementation");
 		impl.addAttribute("class", implementation.getFQN());
 
@@ -194,7 +206,7 @@ class ComponentDef {
 		}
 
 		for (ReferenceDef ref : references.values()) {
-			Tag refTag = ref.getTag();
+			Tag refTag = ref.getTag(namespaces);
 			component.addContent(refTag);
 		}
 

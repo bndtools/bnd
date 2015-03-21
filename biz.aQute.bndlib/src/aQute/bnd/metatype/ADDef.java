@@ -4,10 +4,14 @@ import java.util.*;
 
 import org.osgi.service.metatype.annotations.*;
 
+import aQute.bnd.osgi.*;
+import aQute.bnd.xmlattribute.*;
 import aQute.lib.tag.*;
 
-public class ADDef {
-	
+public class ADDef extends ExtensionDef {
+	AttributeDefinition		ad;
+	Annotation				a;
+
 	String id;
 	String name;
 	String description;
@@ -24,7 +28,7 @@ public class ADDef {
 		typeString = (type == null)? "*INVALID*": type.toString();		
 	}
 	
-	Tag getTag() {
+	Tag getTag(Namespaces namespaces) {
 		Tag ad = new Tag("AD").addAttribute("id", id).addAttribute("type", typeString);
 
 		if (cardinality != 0) {
@@ -64,6 +68,8 @@ public class ADDef {
 		for (OptionDef option: options) {
 			ad.addContent(option.getTag());
 		}
+
+		addAttributes(ad, namespaces);
 
 		return ad;
 	}

@@ -1,6 +1,7 @@
 package test.component;
 
 import java.io.*;
+import java.lang.annotation.*;
 import java.util.*;
 import java.util.jar.*;
 
@@ -12,6 +13,7 @@ import org.osgi.service.component.annotations.*;
 import org.osgi.service.log.*;
 import org.osgi.service.metatype.annotations.*;
 
+import aQute.bnd.annotation.xml.*;
 import aQute.bnd.component.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
@@ -1858,7 +1860,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkRequires(a, true, LogService.class.getName());
 	}
 
-	public enum foo {A, B}
+	public enum Foo {A, B}
 	
 	public @interface ConfigTypes {
 		String myString() default "foo";
@@ -1867,8 +1869,8 @@ public class DSAnnotationTest extends BndTestCase {
 		int[] myIntArray() default {2, 3};
 		Class<?> myClass() default ConfigTypes.class;
 		Class<?>[] myClassArray() default {ConfigTypes.class, ConfigTypes.class};
-		foo myEnum() default foo.A;
-		foo[] myEnumArray() default {foo.A, foo.B};
+		Foo myEnum() default Foo.A;
+		Foo[] myEnumArray() default {Foo.A, Foo.B};
 		float myFloat() default 1.0f;
 		char myChar() default 'a';
 	}
@@ -2469,6 +2471,265 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertNamespace("http://www.osgi.org/xmlns/scr/v1.1.0");
 
 		xt.assertAttribute(option, "scr:component/@configuration-policy");
+	}
+
+	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*")
+	@Retention(RetentionPolicy.CLASS)
+	@Target({
+		ElementType.TYPE
+	})
+	@interface TestExtensions {
+		boolean booleanAttr() default true;
+
+		String stringAttr();
+
+		Foo fooAttr();
+	}
+
+	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "http://www.osgi.org/xmlns/scr/*")
+	@Retention(RetentionPolicy.CLASS)
+	@Target({
+			ElementType.FIELD, ElementType.METHOD
+	})
+	@interface TestRefExtensions {
+		boolean booleanAttr2() default true;
+
+		String stringAttr2();
+
+		Foo fooAttr2();
+	}
+
+	@TestExtensions(stringAttr = "bar", fooAttr = Foo.A)
+	@Component
+	public static class ExtraAttrbutes implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a,
+				@SuppressWarnings("unused") ConfigB b) {}
+
+		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@TestRefExtensions(stringAttr2 = "baz", fooAttr2 = Foo.B, booleanAttr2 = false)
+		@Reference
+		protected LogService	lsa;
+
+		@TestRefExtensions(stringAttr2 = "bax", fooAttr2 = Foo.A)
+		@Reference
+		protected void setLogServiceB(LogService ls) {};
+
+		@Reference
+		protected void setLogServicec(LogService ls) {};
+
+		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
+		@Override
+		public void run() {}
+	}
+
+	public static void testExtraAttrbutes() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ExtraAttrbutes*");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		String name = ExtraAttrbutes.class.getName();
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0", "foo",
+				"org.foo.extensions.v1");
+		// Test the defaults
+		xt.assertAttribute(name, "scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute(name, "scr:component/@name");
+
+		xt.assertCount(6, "scr:component/@*");
+		xt.assertAttribute("bar", "scr:component/@foo:stringAttr");
+		xt.assertAttribute("A", "scr:component/@foo:fooAttr");
+
+		xt.assertCount(3, "scr:component/reference");
+		xt.assertCount(5, "scr:component/reference[1]/@*");
+		xt.assertAttribute("bax", "scr:component/reference[1]/@foo:stringAttr2");
+		xt.assertAttribute("A", "scr:component/reference[1]/@foo:fooAttr2");
+
+		xt.assertCount(3, "scr:component/reference[2]/@*");
+		xt.assertCount(6, "scr:component/reference[3]/@*");
+		xt.assertAttribute("baz", "scr:component/reference[3]/@foo:stringAttr2");
+		xt.assertAttribute("B", "scr:component/reference[3]/@foo:fooAttr2");
+		xt.assertAttribute("false", "scr:component/reference[3]/@foo:booleanAttr2");
+	}
+
+	@XMLAttribute(namespace = "org.foo.extensions.v2", prefix = "foo")
+	@Retention(RetentionPolicy.CLASS)
+	@Target({
+		ElementType.TYPE
+	})
+	@interface TestExtensions3 {
+		boolean booleanAttr3() default true;
+
+		String stringAttr3();
+
+		Foo fooAttr3();
+	}
+
+	@TestExtensions(stringAttr = "bar", fooAttr = Foo.A)
+	@TestExtensions3(stringAttr3 = "bar3", fooAttr3 = Foo.B)
+	@Component
+	public static class PrefixCollisionExtraAttrbutes implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a,
+				@SuppressWarnings("unused") ConfigB b) {}
+
+		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@TestRefExtensions(stringAttr2 = "baz", fooAttr2 = Foo.B, booleanAttr2 = false)
+		@Reference
+		protected LogService	lsa;
+
+		@TestRefExtensions(stringAttr2 = "bax", fooAttr2 = Foo.A)
+		@Reference
+		protected void setLogServiceB(LogService ls) {};
+
+		@Reference
+		protected void setLogServicec(LogService ls) {};
+
+		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
+		@Override
+		public void run() {}
+	}
+
+	public static void testPrefixCollisionExtraAttrbutes() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$PrefixCollisionExtraAttrbutes*");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		String name = PrefixCollisionExtraAttrbutes.class.getName();
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0", "foo",
+				"org.foo.extensions.v1", "foo1", "org.foo.extensions.v2");
+		// Test the defaults
+		xt.assertAttribute(name, "scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute(name, "scr:component/@name");
+
+		xt.assertCount(8, "scr:component/@*");
+		xt.assertAttribute("bar", "scr:component/@foo:stringAttr");
+		xt.assertAttribute("A", "scr:component/@foo:fooAttr");
+		xt.assertAttribute("bar3", "scr:component/@foo1:stringAttr3");
+		xt.assertAttribute("B", "scr:component/@foo1:fooAttr3");
+
+		xt.assertCount(3, "scr:component/reference");
+		xt.assertCount(5, "scr:component/reference[1]/@*");
+		xt.assertAttribute("bax", "scr:component/reference[1]/@foo:stringAttr2");
+		xt.assertAttribute("A", "scr:component/reference[1]/@foo:fooAttr2");
+
+		xt.assertCount(3, "scr:component/reference[2]/@*");
+		xt.assertCount(6, "scr:component/reference[3]/@*");
+		xt.assertAttribute("baz", "scr:component/reference[3]/@foo:stringAttr2");
+		xt.assertAttribute("B", "scr:component/reference[3]/@foo:fooAttr2");
+		xt.assertAttribute("false", "scr:component/reference[3]/@foo:booleanAttr2");
+	}
+
+	@XMLAttribute(namespace = "org.foo.extensions.v4")
+	@Retention(RetentionPolicy.CLASS)
+	@Target({
+		ElementType.TYPE
+	})
+	@interface TestExtensions4 {
+		boolean booleanAttr4() default true;
+
+		String stringAttr4();
+
+		Foo fooAttr4();
+	}
+
+	@XMLAttribute(namespace = "org.foo.extensions.v5")
+	@Retention(RetentionPolicy.CLASS)
+	@Target({
+		ElementType.TYPE
+	})
+	@interface TestExtensions5 {
+		boolean booleanAttr5() default true;
+
+		String stringAttr5();
+
+		Foo fooAttr5();
+	}
+
+	@TestExtensions4(stringAttr4 = "bar", fooAttr4 = Foo.A)
+	@TestExtensions5(stringAttr5 = "bar3", fooAttr5 = Foo.B)
+	@Component
+	public static class DefaultPrefixCollisionExtraAttrbutes implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a,
+				@SuppressWarnings("unused") ConfigB b) {}
+
+		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Modified
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Override
+		public void run() {}
+	}
+
+	public static void testPrefixCollisionExtraAttrbutesDefaultPrefix() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DefaultPrefixCollisionExtraAttrbutes*");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		String name = DefaultPrefixCollisionExtraAttrbutes.class.getName();
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0", "ns",
+				"org.foo.extensions.v4", "ns1", "org.foo.extensions.v5");
+		// Test the defaults
+		xt.assertAttribute(name, "scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute(name, "scr:component/@name");
+
+		xt.assertCount(8, "scr:component/@*");
+		xt.assertAttribute("bar", "scr:component/@ns:stringAttr4");
+		xt.assertAttribute("A", "scr:component/@ns:fooAttr4");
+		xt.assertAttribute("bar3", "scr:component/@ns1:stringAttr5");
+		xt.assertAttribute("B", "scr:component/@ns1:fooAttr5");
+
 	}
 
 }
