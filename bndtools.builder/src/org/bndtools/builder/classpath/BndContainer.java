@@ -8,9 +8,11 @@ import org.eclipse.jdt.core.IClasspathEntry;
 public class BndContainer implements IClasspathContainer {
     public static final String DESCRIPTION = "Bnd Bundle Path";
     private final IClasspathEntry[] entries;
+    private volatile long lastModified;
 
-    BndContainer(IClasspathEntry[] entries) {
+    BndContainer(IClasspathEntry[] entries, long lastModified) {
         this.entries = entries;
+        this.lastModified = lastModified;
     }
 
     @Override
@@ -36,5 +38,15 @@ public class BndContainer implements IClasspathContainer {
     @Override
     public String toString() {
         return getDescription();
+    }
+
+    public long lastModified() {
+        return lastModified;
+    }
+
+    public synchronized void updateLastModified(long time) {
+        if (time > lastModified) {
+            lastModified = time;
+        }
     }
 }

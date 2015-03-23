@@ -358,7 +358,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
      *         {@code false} if this project does not have a bnd classpath container or a classpath update does not need
      *         to be requested.
      */
-    private boolean suggestClasspathContainerUpdate() throws CoreException {
+    private boolean suggestClasspathContainerUpdate() throws Exception {
         IJavaProject javaProject = JavaCore.create(getProject());
         if (javaProject == null) {
             return false; // project is not a java project
