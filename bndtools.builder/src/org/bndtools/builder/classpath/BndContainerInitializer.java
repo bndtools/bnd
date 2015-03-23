@@ -23,8 +23,8 @@ import org.bndtools.api.ModelListener;
 import org.bndtools.builder.BuildLogger;
 import org.bndtools.builder.BuilderPlugin;
 import org.bndtools.utils.jar.PseudoJar;
-import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -141,7 +141,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
      *            The java project of interest. Must not be null.
      * @throws CoreException
      */
-    public static boolean suggestClasspathContainerUpdate(IJavaProject javaProject) throws CoreException {
+    public static boolean suggestClasspathContainerUpdate(IJavaProject javaProject) throws Exception {
         if (getClasspathContainer(javaProject) == null) {
             return false; // project does not have a BndContainer
         }
@@ -164,6 +164,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         private final IJavaProject javaProject;
         private final IWorkspaceRoot root;
         private final Project model;
+        private long lastModified;
 
         Updater(IProject project, IJavaProject javaProject) {
             assert project != null;
@@ -215,9 +216,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             newClasspath = BndContainerSourceManager.loadAttachedSources(project, newClasspath);
 
             if (!init) {
-                IClasspathContainer container = JavaCore.getClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, javaProject);
+                BndContainer container = (BndContainer) JavaCore.getClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, javaProject);
                 List<IClasspathEntry> currentClasspath = Arrays.asList(container.getClasspathEntries());
                 if (newClasspath.equals(currentClasspath)) {
+                    container.updateLastModified(lastModified);
                     return; // no change; so no need to set entries
                 }
             }
@@ -225,23 +227,37 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             setClasspathEntries(newClasspath.toArray(new IClasspathEntry[newClasspath.size()]));
         }
 
-        boolean suggestClasspathContainerUpdate() throws CoreException {
+        boolean suggestClasspathContainerUpdate() throws Exception {
             if (model == null) {
                 return false;
             }
-            IClasspathContainer container = JavaCore.getClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, javaProject);
+            BndContainer container = (BndContainer) JavaCore.getClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, javaProject);
+            long containerLastModified = container.lastModified();
             for (IClasspathEntry cpe : container.getClasspathEntries()) {
-                if (cpe.getEntryKind() != IClasspathEntry.CPE_LIBRARY) {
-                    continue;
-                }
-
-                File file = FileUtils.toFile(root, cpe.getPath());
-                JarInfo info = jarInfo.get(file);
-                if (info == null) {
-                    return true;
-                }
-                if (info.lastModified != file.lastModified()) {
-                    return true;
+                IPath path = cpe.getPath();
+                IResource resource = root.findMember(path);
+                switch (cpe.getEntryKind()) {
+                case IClasspathEntry.CPE_LIBRARY :
+                    File library = resource != null ? resource.getLocation().toFile() : path.toFile();
+                    if (library.lastModified() > containerLastModified) {
+                        return true;
+                    }
+                    break;
+                case IClasspathEntry.CPE_PROJECT :
+                    if (!isVersionProject(cpe)) {
+                        break; // only proceed if project's library not in container
+                    }
+                    Project p = Central.getProject((IProject) resource);
+                    if (p == null) {
+                        break;
+                    }
+                    File accessPatternsFile = getAccessPatternsFile(p);
+                    if (accessPatternsFile.lastModified() > containerLastModified) {
+                        return true;
+                    }
+                    break;
+                default :
+                    break;
                 }
             }
             return false;
@@ -251,7 +267,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             JavaCore.setClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, new IJavaProject[] {
                 javaProject
             }, new IClasspathContainer[] {
-                new BndContainer(entries)
+                new BndContainer(entries, lastModified)
             }, null);
 
             BndPreferences prefs = new BndPreferences();
@@ -343,11 +359,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     IPath projectPath = root.getFile(path).getProject().getFullPath();
                     addProjectEntry(classpath, projectPath, accessRules, extraAttrs);
                     if (!isVersionProject(c)) { // if not version=project, add entry for generated jar
-                        addLibraryEntry(classpath, path, calculateSourceAttachmentPath(path, file), accessRules, extraAttrs);
+                        addLibraryEntry(classpath, path, file, accessRules, extraAttrs);
                     }
                     break;
                 default :
-                    addLibraryEntry(classpath, path, calculateSourceAttachmentPath(path, file), accessRules, extraAttrs);
+                    addLibraryEntry(classpath, path, file, accessRules, extraAttrs);
                     break;
                 }
             }
@@ -423,8 +439,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return info;
         }
 
-        private void addLibraryEntry(List<IClasspathEntry> classpath, IPath path, IPath sourceAttachmentPath, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs) {
+        private void addLibraryEntry(List<IClasspathEntry> classpath, IPath path, File file, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs) {
+            IPath sourceAttachmentPath = calculateSourceAttachmentPath(path, file);
             classpath.add(JavaCore.newLibraryEntry(path, sourceAttachmentPath, null, toAccessRulesArray(accessRules), extraAttrs, false));
+            updateLastModified(file.lastModified());
         }
 
         private IClasspathAttribute[] calculateContainerAttributes(Container c) {
@@ -489,12 +507,13 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         private List<IAccessRule> calculateProjectAccessRules(Project p) {
-            File accessPatternsFile = new File(BuilderPlugin.getInstance().getStateLocation().toFile(), p.getName() + ".accesspatterns");
+            File accessPatternsFile = getAccessPatternsFile(p);
             String oldAccessPatterns = "";
             boolean exists = accessPatternsFile.exists();
             if (exists) { // read persisted access patterns
                 try {
                     oldAccessPatterns = IO.collect(accessPatternsFile);
+                    updateLastModified(accessPatternsFile.lastModified());
                 } catch (final IOException e) {
                     logger.logError("Failed to read access patterns file for project " + p.getName(), e);
                 }
@@ -528,12 +547,17 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             if (!exists || !newAccessPatterns.equals(oldAccessPatterns)) { // if state changed; persist updated access patterns
                 try {
                     IO.store(newAccessPatterns, accessPatternsFile);
+                    updateLastModified(accessPatternsFile.lastModified());
                 } catch (final IOException e) {
                     logger.logError("Failed to write access patterns file for project " + p.getName(), e);
                 }
             }
 
             return accessRules;
+        }
+
+        private File getAccessPatternsFile(Project p) {
+            return new File(BuilderPlugin.getInstance().getStateLocation().toFile(), p.getName() + ".accesspatterns");
         }
 
         private IAccessRule[] toAccessRulesArray(List<IAccessRule> rules) {
@@ -557,6 +581,15 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return Constants.VERSION_ATTR_PROJECT.equals(c.getAttributes().get(Constants.VERSION_ATTRIBUTE));
         }
 
+        private boolean isVersionProject(IClasspathEntry cpe) {
+            for (IClasspathAttribute extraAttr : cpe.getExtraAttributes()) {
+                if (Constants.VERSION_ATTRIBUTE.equals(extraAttr.getName())) {
+                    return Constants.VERSION_ATTR_PROJECT.equals(extraAttr.getValue());
+                }
+            }
+            return false;
+        }
+
         private SetLocation error(String message, Object... args) {
             return model.error(message, args).context(model.getName()).header(Constants.BUILDPATH).file(model.getPropertiesFile().getAbsolutePath());
         }
@@ -571,6 +604,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
         private SetLocation error(Container c, String header, String message, Throwable t, Object... args) {
             return model.error(message, t, args).context(c.getBundleSymbolicName()).header(header).file(model.getPropertiesFile().getAbsolutePath());
+        }
+
+        private void updateLastModified(long time) {
+            if (time > lastModified) {
+                lastModified = time;
+            }
         }
     }
 
