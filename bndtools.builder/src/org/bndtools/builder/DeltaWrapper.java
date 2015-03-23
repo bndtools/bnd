@@ -64,12 +64,12 @@ class DeltaWrapper {
         delta.accept(new IResourceDeltaVisitor() {
 
             @Override
-            public boolean visit(IResourceDelta arg0) throws CoreException {
+            public boolean visit(IResourceDelta visitDelta) throws CoreException {
 
                 if ((delta.getKind() & (IResourceDelta.ADDED | IResourceDelta.CHANGED | IResourceDelta.REMOVED)) == 0)
                     return false;
 
-                IResource resource = arg0.getResource();
+                IResource resource = visitDelta.getResource();
                 if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT)
                     return true;
 
