@@ -109,23 +109,7 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Build bnd Jar (in memory)
 			Jar bndJar = builder.build();
-			
-			// Generate errors and warnings
-			List<String> warnings = builder.getWarnings();
-			if (warnings != null) for (String warning : warnings) {
-				log.warn(warning);
-			}
-			List<String> errors = builder.getErrors();
-			if (errors != null && !errors.isEmpty()) {
-				for (String error : errors) {
-					log.error(error);
-				}
-
-				if (errors.size() == 1)
-					throw new MojoExecutionException(errors.get(0));
-				else
-					throw new MojoExecutionException("Errors in bnd processing, see log for details.");
-			}
+			checkErrors(builder);
 
 			// Output manifest to <classes>/META-INF/MANIFEST.MF
 			Files.createDirectories(manifestPath.toPath().getParent());
@@ -138,11 +122,35 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Expand Jar into target/classes
 			expandJar(bndJar, classesDir);
+			
+			// Check errors again since something might have gone wrong
+			// while writing manifest or JAR content
+			checkErrors(builder);
 
 		} catch (Exception e) {
 			throw new MojoExecutionException("bnd error", e);
 		} finally {
 			builder.close();
+		}
+	}
+
+	private void checkErrors(Builder builder) throws MojoExecutionException {
+		Log log = getLog();
+
+		List<String> warnings = builder.getWarnings();
+		if (warnings != null) for (String warning : warnings) {
+			log.warn(warning);
+		}
+		List<String> errors = builder.getErrors();
+		if (errors != null && !errors.isEmpty()) {
+			for (String error : errors) {
+				log.error(error);
+			}
+
+			if (errors.size() == 1)
+				throw new MojoExecutionException(errors.get(0));
+			else
+				throw new MojoExecutionException("Errors in bnd processing, see log for details.");
 		}
 	}
 	
