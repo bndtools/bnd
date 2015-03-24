@@ -96,7 +96,7 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Include local project packages automatically
 			String includes = builder.getProperty(Constants.INCLUDERESOURCE);
-			StringBuilder newIncludes = new StringBuilder().append(classesDir.getPath());
+			StringBuilder newIncludes = new StringBuilder().append('"').append(classesDir.getPath()).append('"');
 			if (includes == null || includes.trim().length() == 0)
 				includes = newIncludes.toString();
 			else
