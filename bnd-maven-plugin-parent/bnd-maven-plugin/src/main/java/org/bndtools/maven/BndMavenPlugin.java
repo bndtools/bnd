@@ -31,6 +31,7 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -60,14 +61,13 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
 	private MavenProject project;
 	
-	@Parameter(property = "bnd.trace", defaultValue = "false", readonly = true)
-	private boolean trace;
-
 	public void execute() throws MojoExecutionException {
+		Log log = getLog();
+
 		File bndFile = new File(project.getBasedir(), Project.BNDFILE);
-		
+
 		Builder builder = new Builder();
-		builder.setTrace(trace);
+		builder.setTrace(log.isDebugEnabled());
 		try {
 			if (bndFile.isFile())
 				builder.setProperties(bndFile);
@@ -111,12 +111,12 @@ public class BndMavenPlugin extends AbstractMojo {
 			// Generate errors and warnings
 			List<String> warnings = builder.getWarnings();
 			if (warnings != null) for (String warning : warnings) {
-				getLog().warn(warning);
+				log.warn(warning);
 			}
 			List<String> errors = builder.getErrors();
 			if (errors != null && !errors.isEmpty()) {
 				for (String error : errors) {
-					getLog().error(error);
+					log.error(error);
 				}
 
 				if (errors.size() == 1)
