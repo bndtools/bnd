@@ -70,7 +70,9 @@ public class BndMavenPlugin extends AbstractMojo {
 		builder.setTrace(log.isDebugEnabled());
 		try {
 			if (bndFile.isFile())
-				builder.setProperties(bndFile);
+				builder.setProperties(bndFile, project.getBasedir());
+			else
+				builder.setBase(project.getBasedir());
 			
 			// Reject sub-bundle projects
 			Collection<? extends Builder> subs = builder.getSubBuilders();
