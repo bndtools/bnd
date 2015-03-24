@@ -142,11 +142,12 @@ class BundleTaskConvention {
         }
 
         // Include entire contents of Jar task generated jar except the manifest
+        def String jarInclude = "\"@${jar.absolutePath.replaceAll(/"/, /\\"/)}!/!META-INF/MANIFEST.MF\""
         def String includes = builder.getProperty(Constants.INCLUDERESOURCE)
         if (isEmpty(includes)) {
-          includes = "\"@${jar}!/!META-INF/MANIFEST.MF\""
+          includes = jarInclude
         } else {
-          includes = "\"@${jar}!/!META-INF/MANIFEST.MF\",${includes}"
+          includes = "${jarInclude},${includes}"
         }
         builder.setProperty(Constants.INCLUDERESOURCE, includes)
 
