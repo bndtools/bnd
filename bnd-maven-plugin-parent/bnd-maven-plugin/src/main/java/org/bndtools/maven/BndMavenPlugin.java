@@ -93,6 +93,11 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 			classpath.add(classesDir);
 			builder.setClasspath(classpath.toArray(new File[classpath.size()]));
+			
+			// Set bnd sourcepath
+			if (builder.hasSources()) {
+				
+			}
 
 			// Include local project packages automatically
 			String includes = builder.getProperty(Constants.INCLUDERESOURCE);
@@ -109,7 +114,6 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Build bnd Jar (in memory)
 			Jar bndJar = builder.build();
-			checkErrors(builder);
 
 			// Output manifest to <classes>/META-INF/MANIFEST.MF
 			Files.createDirectories(manifestPath.toPath().getParent());
@@ -122,10 +126,9 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Expand Jar into target/classes
 			expandJar(bndJar, classesDir);
-			
-			// Check errors again since something might have gone wrong
-			// while writing manifest or JAR content
-			checkErrors(builder);
+
+			// Finally, report
+			reportErrorsAndWarnings(builder);
 
 		} catch (Exception e) {
 			throw new MojoExecutionException("bnd error", e);
@@ -134,7 +137,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 	}
 
-	private void checkErrors(Builder builder) throws MojoExecutionException {
+	private void reportErrorsAndWarnings(Builder builder) throws MojoExecutionException {
 		Log log = getLog();
 
 		List<String> warnings = builder.getWarnings();
