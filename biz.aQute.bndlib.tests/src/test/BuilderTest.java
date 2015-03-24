@@ -1,6 +1,7 @@
 package test;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
@@ -2259,6 +2260,134 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(analyzer.check());
 			assertFalse(analyzer.getExports().getByFQN("META-INF") != null);
 			assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm") != null);
+		}
+		finally {
+			analyzer.close();
+		}
+	}
+
+	/**
+	 * Check if we imported the package with the correct version range when
+	 * there's an empty package in front of it in the classpath. First form.
+	 */
+
+	public static void testImportRangeCalculatedFromClasspath_1() throws Exception {
+		Properties base = new Properties();
+		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
+
+		Builder analyzer = new Builder();
+		try {
+			analyzer.addClasspath(new File("bin"));
+			analyzer.setPrivatePackage("test");
+			analyzer.setClasspath(new File[] {
+					IO.getFile("jar/jsp-api.jar"), IO.getFile("jar/servlet-api.jar")
+			});
+			analyzer.setProperties(base);
+			analyzer.build();
+			assertTrue(analyzer.check());
+
+			Packages imports = analyzer.getImports();
+			Attrs attrs = imports.getByFQN("javax.servlet.http");
+			assertEquals("[3.0,4)", attrs.getVersion());
+			attrs = imports.getByFQN("javax.servlet");
+			assertEquals("[3.0,4)", attrs.getVersion());
+		}
+		finally {
+			analyzer.close();
+		}
+	}
+
+	/**
+	 * Check if we imported the package with the correct version range when
+	 * there's an empty package in front of it in the classpath. Second form.
+	 */
+
+	public static void testImportRangeCalculatedFromClasspath_2() throws Exception {
+		Properties base = new Properties();
+		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
+
+		String pwd = System.getProperty("user.dir");
+		base.put("pwd", URI.create(pwd).toString());
+		base.put("-classpath", "${pwd}/jar/jsp-api.jar,${pwd}/jar/servlet-api.jar");
+
+		Builder analyzer = new Builder();
+		try {
+			analyzer.addClasspath(new File("bin"));
+			analyzer.setPrivatePackage("test");
+			analyzer.setProperties(base);
+			analyzer.build();
+			assertTrue(analyzer.check());
+
+			Packages imports = analyzer.getImports();
+			Attrs attrs = imports.getByFQN("javax.servlet.http");
+			assertEquals("[3.0,4)", attrs.getVersion());
+			attrs = imports.getByFQN("javax.servlet");
+			assertEquals("[3.0,4)", attrs.getVersion());
+		}
+		finally {
+			analyzer.close();
+		}
+	}
+
+	/**
+	 * Check if we imported the package with the correct version range when
+	 * there's an empty package in front of it in the classpath. First form
+	 * calling builds().
+	 */
+
+	public static void testImportRangeCalculatedFromClasspath_3() throws Exception {
+		Properties base = new Properties();
+		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
+
+		Builder analyzer = new Builder();
+		try {
+			analyzer.addClasspath(new File("bin"));
+			analyzer.setPrivatePackage("test");
+			analyzer.setClasspath(new File[] {
+					IO.getFile("jar/jsp-api.jar"), IO.getFile("jar/servlet-api.jar")
+			});
+			analyzer.setProperties(base);
+			analyzer.builds();
+			assertTrue(analyzer.check());
+
+			Packages imports = analyzer.getImports();
+			Attrs attrs = imports.getByFQN("javax.servlet.http");
+			assertEquals("[3.0,4)", attrs.getVersion());
+			attrs = imports.getByFQN("javax.servlet");
+			assertEquals("[3.0,4)", attrs.getVersion());
+		}
+		finally {
+			analyzer.close();
+		}
+	}
+
+	/**
+	 * Check if we imported the package with the correct version range when
+	 * there's an empty package in front of it in the classpath. Second form
+	 * calling builds().
+	 */
+
+	public static void testImportRangeCalculatedFromClasspath_4() throws Exception {
+		Properties base = new Properties();
+		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
+
+		String pwd = System.getProperty("user.dir");
+		base.put("pwd", URI.create(pwd).toString());
+		base.put("-classpath", "${pwd}/jar/jsp-api.jar,${pwd}/jar/servlet-api.jar");
+
+		Builder analyzer = new Builder();
+		try {
+			analyzer.addClasspath(new File("bin"));
+			analyzer.setPrivatePackage("test");
+			analyzer.setProperties(base);
+			analyzer.builds();
+			assertTrue(analyzer.check());
+
+			Packages imports = analyzer.getImports();
+			Attrs attrs = imports.getByFQN("javax.servlet.http");
+			assertEquals("[3.0,4)", attrs.getVersion());
+			attrs = imports.getByFQN("javax.servlet");
+			assertEquals("[3.0,4)", attrs.getVersion());
 		}
 		finally {
 			analyzer.close();
