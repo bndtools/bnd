@@ -51,7 +51,10 @@ public class BndMavenPlugin extends AbstractMojo {
 	
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File targetDir;
-	
+
+	@Parameter(defaultValue = "${project.build.sourceDirectory}", readonly = true)
+	private File sourceDir;
+
 	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
 	private File classesDir;
 	
@@ -95,9 +98,8 @@ public class BndMavenPlugin extends AbstractMojo {
 			builder.setClasspath(classpath.toArray(new File[classpath.size()]));
 			
 			// Set bnd sourcepath
-			if (builder.hasSources()) {
-				
-			}
+			if (builder.hasSources())
+				builder.setSourcepath(new File[] { sourceDir });
 
 			// Include local project packages automatically
 			String includes = builder.getProperty(Constants.INCLUDERESOURCE);
