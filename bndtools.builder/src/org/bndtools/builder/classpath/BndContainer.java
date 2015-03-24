@@ -1,5 +1,7 @@
 package org.bndtools.builder.classpath;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -8,11 +10,11 @@ import org.eclipse.jdt.core.IClasspathEntry;
 public class BndContainer implements IClasspathContainer {
     public static final String DESCRIPTION = "Bnd Bundle Path";
     private final IClasspathEntry[] entries;
-    private volatile long lastModified;
+    private final AtomicLong lastModified;
 
     BndContainer(IClasspathEntry[] entries, long lastModified) {
         this.entries = entries;
-        this.lastModified = lastModified;
+        this.lastModified = new AtomicLong(lastModified);
     }
 
     @Override
@@ -40,13 +42,15 @@ public class BndContainer implements IClasspathContainer {
         return getDescription();
     }
 
-    public long lastModified() {
-        return lastModified;
+    long lastModified() {
+        return lastModified.get();
     }
 
-    public synchronized void updateLastModified(long time) {
-        if (time > lastModified) {
-            lastModified = time;
+    void updateLastModified(long time) {
+        for (long current = lastModified.get(); time > current; current = lastModified.get()) {
+            if (lastModified.compareAndSet(current, time)) {
+                return;
+            }
         }
     }
 }
