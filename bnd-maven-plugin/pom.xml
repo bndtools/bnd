@@ -2,14 +2,37 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>biz.aQute.bnd</groupId>
-		<artifactId>bnd-maven-plugin-parent</artifactId>
-		<version>2.5.0</version>
-	</parent>
+
+	<groupId>biz.aQute.bnd</groupId>
 	<artifactId>bnd-maven-plugin</artifactId>
+	<version>2.5.0</version>
+
 	<packaging>maven-plugin</packaging>
-	<name>bnd-maven-plugin</name>
+
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>This maven plugin is used to build OSGi bundles using the bnd tool for generating MANIFEST.MF and other OSGi-specific artifacts.</description>
+
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Neil Bartlett</name>
+			<email>neil.bartlett@paremus.com</email>
+			<organization>Paremus Ltd.</organization>
+			<organizationUrl>http://www.paremus.com/</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git@github.com:bndtools/bnd.git</connection>
+		<developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
+		<url>git@github.com:bndtools/bnd.git</url>
+	</scm>
 
 	<dependencies>
 		<dependency>
