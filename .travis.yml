@@ -7,6 +7,8 @@ env:
 
 install:
   - ./gradlew -Pbnd_repourl=https://bndtools.ci.cloudbees.com/job/bnd.next/lastSuccessfulBuild/artifact/dist/bundles --version
+  - mvn --version
 
 script:
   - ./gradlew -Pbnd_repourl=https://bndtools.ci.cloudbees.com/job/bnd.next/lastSuccessfulBuild/artifact/dist/bundles --continue
+  - mvn -f bnd-maven-plugin-parent -Dmaven.repo.local=bnd-maven-plugin-parent/target/m2 --batch-mode --quiet install
