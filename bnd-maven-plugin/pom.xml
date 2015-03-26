@@ -8,6 +8,8 @@
 	<version>2.4.1</version>
 
 	<packaging>maven-plugin</packaging>
+	
+	<url>http://bnd.bndtools.org/</url>
 
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>This maven plugin is used to build OSGi bundles using the bnd tool for generating MANIFEST.MF and other OSGi-specific artifacts.</description>
