@@ -1,0 +1,4 @@
+-exportcontents: \
+	org.example.api,\
+	org.example.types
+-sources: true
