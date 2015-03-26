@@ -29,7 +29,7 @@
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>@project.version@</version>
 				<configuration>
 				</configuration>
 
