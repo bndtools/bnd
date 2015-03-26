@@ -400,9 +400,8 @@ public class AnnotationReader extends ClassDataCollector {
 							}
 
 							private void valueToProperty(String name, Object value, boolean isClass, boolean isCharacter) {
-								if (isClass) {
-									value = Clazz.objectDescriptorToFQN((String) value);
-								}
+								if (isClass)
+									value = ((TypeRef) value).getFQN();
 								Class<?> typeClass = isCharacter? Character.class: value.getClass();
 								//enums already come out as the enum name, no processing needed.
 								String type = typeClass.getSimpleName();
@@ -480,9 +479,10 @@ public class AnnotationReader extends ClassDataCollector {
 								ErrorType.INVALID_TARGET_FILTER));
 		}
 
-		String annoService = raw.get("service");
-		if (annoService != null) 
-			annoService = Clazz.objectDescriptorToFQN(annoService);
+		String annoService = null;
+		TypeRef annoServiceTR = raw.get("service");
+		if (annoServiceTR != null)
+			annoService = annoServiceTR.getFQN();
 
 		if (member != null) {
 			if (member instanceof MethodDef) {
@@ -764,9 +764,7 @@ public class AnnotationReader extends ClassDataCollector {
 			// We have explicit interfaces set
 			component.service = new TypeRef[x.length];
 			for (int i = 0; i < x.length; i++) {
-				String s = (String) x[i];
-				TypeRef ref = analyzer.getTypeRefFromFQN(s);
-				component.service[i] = ref;
+				component.service[i] = (TypeRef) x[i];
 			}
 		}
 		

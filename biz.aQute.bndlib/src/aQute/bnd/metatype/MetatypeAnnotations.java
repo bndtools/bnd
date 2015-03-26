@@ -5,6 +5,7 @@ import java.util.*;
 import aQute.bnd.component.TagResource;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
 import aQute.bnd.xmlattribute.*;
 
@@ -17,7 +18,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		nested
 	}
 
-	private final Map<String, OCDDef> classToOCDMap = new HashMap<String, OCDDef>();
+	private final Map<TypeRef,OCDDef>	classToOCDMap	= new HashMap<TypeRef,OCDDef>();
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS));
@@ -60,7 +61,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 								analyzer.error("Duplicate pid %s from class %s", dDef.pid, c.getFQN());
 							}
 						}
-						classToOCDMap.put(c.getClassName().getBinary(), definition);
+						classToOCDMap.put(c.getClassName(), definition);
 						String name = "OSGI-INF/metatype/" + analyzer.validResourcePath(definition.id, "Invalid resource name") + ".xml";
 						analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
 					}

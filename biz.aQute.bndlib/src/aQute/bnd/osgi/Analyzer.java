@@ -42,7 +42,7 @@ import aQute.bnd.service.*;
 import aQute.bnd.service.classparser.*;
 import aQute.bnd.version.*;
 import aQute.bnd.version.Version;
-import aQute.lib.base64.Base64;
+import aQute.lib.base64.*;
 import aQute.lib.collections.*;
 import aQute.lib.filter.*;
 import aQute.lib.hex.*;
@@ -484,7 +484,7 @@ public class Analyzer extends Processor {
 	/*
 	 * Parse the package-info.java class
 	 */
-	static Pattern	OBJECT_REFERENCE	= Pattern.compile("L([^/]+/)*([^;]+);");
+	static Pattern	OBJECT_REFERENCE	= Pattern.compile("([^\\.]+\\.)*([^\\.]+)");
 
 	private Attrs parsePackageInfoClass(Resource r) throws Exception {
 		final Attrs info = new Attrs();
@@ -543,7 +543,7 @@ public class Analyzer extends Processor {
 						StringBuilder sb = new StringBuilder();
 						String del = "";
 						for (Object i : included) {
-							Matcher m = OBJECT_REFERENCE.matcher((String) i);
+							Matcher m = OBJECT_REFERENCE.matcher(((TypeRef) i).getFQN());
 							if (m.matches()) {
 								sb.append(del);
 								sb.append(m.group(2));
@@ -559,7 +559,7 @@ public class Analyzer extends Processor {
 						StringBuilder sb = new StringBuilder();
 						String del = "";
 						for (Object i : excluded) {
-							Matcher m = OBJECT_REFERENCE.matcher((String) i);
+							Matcher m = OBJECT_REFERENCE.matcher(((TypeRef) i).getFQN());
 							if (m.matches()) {
 								sb.append(del);
 								sb.append(m.group(2));

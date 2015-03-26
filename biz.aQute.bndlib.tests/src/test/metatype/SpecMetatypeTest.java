@@ -1256,6 +1256,9 @@ public class SpecMetatypeTest extends TestCase {
 		String stringAttr2();
 
 		Foo fooAttr2();
+
+		Class< ? > classAttr2() default Object.class;
+
 	}
 
 	@ObjectClassDefinition
@@ -1264,7 +1267,7 @@ public class SpecMetatypeTest extends TestCase {
 		@AttributeDefinition
 		String simple();
 
-		@ADTestExtensions(stringAttr2 = "ad", fooAttr2 = Foo.B)
+		@ADTestExtensions(stringAttr2 = "ad", fooAttr2 = Foo.B, classAttr2 = String.class)
 		String[] notSoSimple();
 
 		Collection<String> stringCollection();
@@ -1307,9 +1310,10 @@ public class SpecMetatypeTest extends TestCase {
 
 		xt.assertCount(3, "metatype:MetaData/OCD/AD[@id='simple']/@*");
 
-		xt.assertCount(6, "metatype:MetaData/OCD/AD[@id='notSoSimple']/@*");
+		xt.assertCount(7, "metatype:MetaData/OCD/AD[@id='notSoSimple']/@*");
 		xt.assertExactAttribute("ad", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@foo:stringAttr2");
 		xt.assertExactAttribute("B", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@foo:fooAttr2");
+		xt.assertExactAttribute(String.class.getName(), "metatype:MetaData/OCD/AD[@id='notSoSimple']/@foo:classAttr2");
 
 		xt.assertCount(4, "metatype:MetaData/OCD/AD[@id='stringCollection']/@*");
 

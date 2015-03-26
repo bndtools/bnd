@@ -7,27 +7,29 @@ import org.osgi.service.metatype.annotations.*;
 
 import aQute.bnd.annotation.xml.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.xmlattribute.*;
 
 public class DesignateReader extends ClassDataCollector {
 	
 	private Analyzer	analyzer;
 	private Clazz	clazz;
-	private Map<String, OCDDef> classToOCDMap;
+	private Map<TypeRef,OCDDef>			classToOCDMap;
 	
 	private String[] pids;
 	private Annotation designate;
 	private final XMLAttributeFinder	finder;
 	private DesignateDef				def;
 
-	DesignateReader(Analyzer analyzer, Clazz clazz, Map<String, OCDDef> classToOCDMap, XMLAttributeFinder finder) {
+	DesignateReader(Analyzer analyzer, Clazz clazz, Map<TypeRef,OCDDef> classToOCDMap, XMLAttributeFinder finder) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.classToOCDMap = classToOCDMap;
 		this.finder = finder;
 	}
 
-	static DesignateDef getDesignate(Clazz c, Analyzer analyzer, Map<String, OCDDef> classToOCDMap, XMLAttributeFinder finder) throws Exception {
+	static DesignateDef getDesignate(Clazz c, Analyzer analyzer, Map<TypeRef,OCDDef> classToOCDMap,
+			XMLAttributeFinder finder) throws Exception {
 	 		DesignateReader r = new DesignateReader(analyzer, c, classToOCDMap, finder);
 	 		return r.getDef();
 	}
@@ -42,8 +44,8 @@ public class DesignateReader extends ClassDataCollector {
 				return null;				
 			}
 			String pid = pids[0];
-			String ocdClass = ((String) designate.get("ocd"));
-			ocdClass = ocdClass.substring(1, ocdClass.length() - 1);
+			TypeRef ocdClass = designate.get("ocd");
+			// ocdClass = ocdClass.substring(1, ocdClass.length() - 1);
 			OCDDef ocd = classToOCDMap.get(ocdClass);
 			if (ocd == null) {
 				analyzer.error(
