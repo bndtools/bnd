@@ -68,13 +68,6 @@
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.maven.plugin-testing</groupId>
-			<artifactId>maven-plugin-testing-harness</artifactId>
-			<version>3.3.0</version>
-			<scope>test</scope>
-			<type>jar</type>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -137,6 +130,28 @@
 						<id>attach-javadocs</id>
 						<goals>
 							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-invoker-plugin</artifactId>
+				<version>1.9</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+					<cloneProjectsTo>${project.build.directory}/test-projects</cloneProjectsTo>
+					<projectsDirectory>src/test/resources/unit</projectsDirectory>
+					<localRepositoryPath>${project.build.directory}/test-repo</localRepositoryPath>
+					<goals>
+						<goal>install</goal>
+					</goals>
+				</configuration>
+				<executions>
+					<execution>
+						<id>integration-test</id>
+						<goals>
+							<goal>install</goal>
+							<goal>run</goal>
 						</goals>
 					</execution>
 				</executions>
