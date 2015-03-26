@@ -65,7 +65,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
+			<version>3.8.2</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -139,12 +139,13 @@
 				<version>1.9</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
-					<cloneProjectsTo>${project.build.directory}/test-projects</cloneProjectsTo>
-					<projectsDirectory>src/test/resources/unit</projectsDirectory>
-					<settingsFile>src/test/resources/unit/settings.xml</settingsFile>
-					<localRepositoryPath>${project.build.directory}/test-repo</localRepositoryPath>
+					<cloneProjectsTo>${project.build.directory}/integration-test/projects</cloneProjectsTo>
+					<cloneClean>true</cloneClean>
+					<projectsDirectory>src/test/resources/integration-test</projectsDirectory>
+					<settingsFile>src/test/resources/integration-test/settings.xml</settingsFile>
+					<localRepositoryPath>${project.build.directory}/integration-test/repo</localRepositoryPath>
 					<goals>
-						<goal>install</goal>
+						<goal>package</goal>
 					</goals>
 					<debug>true</debug>
 				</configuration>
