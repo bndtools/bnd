@@ -141,10 +141,12 @@
 					<encoding>UTF-8</encoding>
 					<cloneProjectsTo>${project.build.directory}/test-projects</cloneProjectsTo>
 					<projectsDirectory>src/test/resources/unit</projectsDirectory>
+					<settingsFile>src/test/resources/unit/settings.xml</settingsFile>
 					<localRepositoryPath>${project.build.directory}/test-repo</localRepositoryPath>
 					<goals>
 						<goal>install</goal>
 					</goals>
+					<debug>true</debug>
 				</configuration>
 				<executions>
 					<execution>
