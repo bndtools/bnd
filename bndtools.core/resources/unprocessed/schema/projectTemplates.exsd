@@ -86,6 +86,23 @@
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  Optional icon to display for this template.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="resource"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="category" type="string">
+            <annotation>
+               <documentation>
+                  Optional category name to display for this template.
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
