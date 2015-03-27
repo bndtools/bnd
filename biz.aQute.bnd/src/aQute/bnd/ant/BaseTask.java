@@ -112,7 +112,9 @@ public class BaseTask extends Task implements Reporter {
 	}
 
 	public void trace(String s, Object... args) {
-		System.err.printf("# " + s + "%n", args);
+		if (trace) {
+			System.err.printf("# " + s + "%n", args);
+		}
 	}
 
 	public void addProperty(Property property) {
