@@ -11,9 +11,9 @@ Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
  LICENSE, \
  embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
  templates=templates, \
- @${repo;biz.aQute.bndlib}, \
- @${repo;biz.aQute.repository}, \
- @${repo;biz.aQute.resolve}
+ @${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
+ @${repo;biz.aQute.repository;latest}!/!META-INF/*, \
+ @${repo;biz.aQute.resolve;latest}!/!META-INF/*
 
 Import-Package: 
 

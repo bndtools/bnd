@@ -10,3 +10,5 @@ Bundle-Description: Embedded Repo for bnd workspace.
     biz.aQute.launcher
 
 -digests: MD5, SHA1
+
+-pom: false
