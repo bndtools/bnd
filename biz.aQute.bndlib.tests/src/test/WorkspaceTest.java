@@ -106,4 +106,17 @@ public class WorkspaceTest extends TestCase {
 		assertEquals("src", p.mergeProperties("src"));
 	}
 
+	public static void testIsValid() throws Exception {
+		Workspace ws = Workspace.getWorkspace(IO.getFile("testresources/ws"));
+		assertEquals(true, ws.isValid());
+
+		Workspace invalidWs = new Workspace(IO.getFile("testresource/not a workspace"));
+		try
+		{
+			assertEquals(false, invalidWs.isValid());
+		}
+		finally {
+			invalidWs.close();
+		}
+	}
 }

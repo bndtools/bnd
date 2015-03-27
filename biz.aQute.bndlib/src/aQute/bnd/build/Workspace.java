@@ -746,9 +746,9 @@ public class Workspace extends Processor {
 		if (!buildDir.isDirectory())
 			error("No directory for cnf %s", buildDir);
 		else {
-			File build = IO.getFile(buildDir, "build.bnd");
+			File build = IO.getFile(buildDir, BUILDFILE);
 			if (build.isFile()) {
-				error("No build.bnd file in %s", buildDir);
+				error("No %s file in %s", BUILDFILE, buildDir);
 			}
 		}
 	}
@@ -758,7 +758,7 @@ public class Workspace extends Processor {
 	}
 
 	public boolean isValid() {
-		return getFile(BUILDFILE).isFile();
+		return IO.getFile(buildDir, BUILDFILE).isFile();
 	}
 
 	public RepositoryPlugin getRepository(String repo) {
