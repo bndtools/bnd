@@ -156,7 +156,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
     private static class Updater {
         private static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
-        private static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED);
+        private static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED | IAccessRule.IGNORE_IF_BETTER);
         private static final Pattern packagePattern = Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
         private static final Map<File,JarInfo> jarInfo = Collections.synchronizedMap(new WeakHashMap<File,JarInfo>());
 
