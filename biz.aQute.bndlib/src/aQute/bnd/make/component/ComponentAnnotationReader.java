@@ -94,16 +94,16 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			setBoolean(COMPONENT_SERVICEFACTORY, annotation.get(Component.SERVICEFACTORY), false);
 
 			if (annotation.get(Component.DESIGNATE) != null) {
-				String configs = annotation.get(Component.DESIGNATE);
+				TypeRef configs = annotation.get(Component.DESIGNATE);
 				if (configs != null) {
-					set(COMPONENT_DESIGNATE, Clazz.objectDescriptorToFQN(configs), "");
+					set(COMPONENT_DESIGNATE, configs.getFQN(), "");
 				}
 			}
 
 			if (annotation.get(Component.DESIGNATE_FACTORY) != null) {
-				String configs = annotation.get(Component.DESIGNATE_FACTORY);
+				TypeRef configs = annotation.get(Component.DESIGNATE_FACTORY);
 				if (configs != null) {
-					set(COMPONENT_DESIGNATEFACTORY, Clazz.objectDescriptorToFQN(configs), "");
+					set(COMPONENT_DESIGNATEFACTORY, configs.getFQN(), "");
 				}
 			}
 
@@ -133,7 +133,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				// We have explicit interfaces set
 				p = new String[provides.length];
 				for (int i = 0; i < provides.length; i++) {
-					p[i] = descriptorToFQN(provides[i].toString());
+					p[i] = ((TypeRef) provides[i]).getFQN();
 				}
 			}
 			if (p.length > 0) {
@@ -211,11 +211,12 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				if (unbind != null)
 					name = name + "/" + unbind;
 			}
-			String service = annotation.get(Reference.SERVICE);
+			String service = null;
+			TypeRef serviceTR = annotation.get(Reference.SERVICE);
+			if (serviceTR != null)
+				service = serviceTR.getFQN();
 
-			if (service != null) {
-				service = Clazz.objectDescriptorToFQN(service);
-			} else {
+			if (service == null) {
 				// We have to find the type of the current method to
 				// link it to the referenced service.
 				Matcher m = BINDDESCRIPTOR.matcher(method.getDescriptor().toString());

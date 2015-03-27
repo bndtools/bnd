@@ -5,7 +5,9 @@ import java.util.*;
 import aQute.bnd.component.TagResource;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.*;
+import aQute.bnd.xmlattribute.*;
 
 /**
  * Analyze the class space for any classes that have an OSGi annotation for DS.
@@ -16,7 +18,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		nested
 	}
 
-	private final Map<String, OCDDef> classToOCDMap = new HashMap<String, OCDDef>();
+	private final Map<TypeRef,OCDDef>	classToOCDMap	= new HashMap<TypeRef,OCDDef>();
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS));
@@ -41,13 +43,14 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace().values();
 
+		XMLAttributeFinder finder = new XMLAttributeFinder();
 		for (Clazz c: list) {
 			for (Instruction instruction : instructions.keySet()) {
 
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options);
+					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder);
 					if (definition != null) {
 						definition.prepare(analyzer);
 						if (!ocdIds.add(definition.id)) {
@@ -58,7 +61,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 								analyzer.error("Duplicate pid %s from class %s", dDef.pid, c.getFQN());
 							}
 						}
-						classToOCDMap.put(c.getClassName().getBinary(), definition);
+						classToOCDMap.put(c.getClassName(), definition);
 						String name = "OSGI-INF/metatype/" + analyzer.validResourcePath(definition.id, "Invalid resource name") + ".xml";
 						analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
 					}
@@ -79,7 +82,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					DesignateDef designate = DesignateReader.getDesignate(c, analyzer, classToOCDMap);
+					DesignateDef designate = DesignateReader.getDesignate(c, analyzer, classToOCDMap, finder);
 					if (designate != null) {
 						designate.prepare(analyzer);
 						String name = "OSGI-INF/metatype/" + analyzer.validResourcePath(c.getFQN(), "Invalid resource name") + ".xml";

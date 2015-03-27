@@ -1553,14 +1553,14 @@ public class Clazz {
 
 			case 'c' : // Class
 				int class_info_index = in.readUnsignedShort();
+				TypeRef name = analyzer.getTypeRef((String) pool[class_info_index]);
 				if (policy == RetentionPolicy.RUNTIME) {
 					referTo(class_info_index, 0);
 					if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
-						TypeRef name = analyzer.getTypeRef((String) pool[class_info_index]);
 						api.add(name.getPackageRef());
 					}
 				}
-				return pool[class_info_index];
+				return name;
 
 			case '@' : // Annotation type
 				return doAnnotation(in, member, policy, collect, access_flags);

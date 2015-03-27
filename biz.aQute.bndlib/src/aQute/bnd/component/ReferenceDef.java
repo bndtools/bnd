@@ -4,13 +4,14 @@ import org.osgi.service.component.annotations.*;
 
 import aQute.bnd.osgi.*;
 import aQute.bnd.version.*;
+import aQute.bnd.xmlattribute.*;
 import aQute.lib.tag.*;
 
 /**
  * Holds the information in the reference element.
  */
 
-class ReferenceDef {
+class ReferenceDef extends ExtensionDef {
 	
 	String					className;
 	String					bindDescriptor;
@@ -61,10 +62,12 @@ class ReferenceDef {
 	/**
 	 * Calculate the tag.
 	 * 
+	 * @param namespaces
 	 * @return a tag for the reference element.
 	 */
-	public Tag getTag() {
+	public Tag getTag(Namespaces namespaces) {
 		Tag ref = new Tag("reference");
+
 		ref.addAttribute("name", name);
 		if (cardinality != null)
 			ref.addAttribute("cardinality", cardinality.toString());
@@ -101,7 +104,7 @@ class ReferenceDef {
 		if (fieldCollectionType != null) 
 			ref.addAttribute("field-collection-type", fieldCollectionType.toString());
 			
-			
+		addAttributes(ref, namespaces);
 
 		return ref;
 	}

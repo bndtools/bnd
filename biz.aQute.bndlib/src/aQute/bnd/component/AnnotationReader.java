@@ -7,6 +7,7 @@ import java.util.regex.*;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.*;
 
+import aQute.bnd.annotation.xml.*;
 import aQute.bnd.component.DSAnnotations.Options;
 import aQute.bnd.component.error.*;
 import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
@@ -15,6 +16,7 @@ import aQute.bnd.osgi.Clazz.FieldDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.version.*;
+import aQute.bnd.xmlattribute.*;
 import aQute.lib.collections.*;
 
 /**
@@ -81,15 +83,19 @@ public class AnnotationReader extends ClassDataCollector {
 	boolean						baseclass				= true;
 	final EnumSet<Options>		options;
 	
+	final Map<FieldDef,ReferenceDef>	referencesByMember			= new HashMap<FieldDef,ReferenceDef>();
 
-	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options) {
+	final XMLAttributeFinder			finder;
+
+	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder			finder) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.options = options;
+		this.finder = finder;
 	}
 
-	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options) throws Exception {
-		AnnotationReader r = new AnnotationReader(analyzer, c, options);
+	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options, XMLAttributeFinder finder) throws Exception {
+		AnnotationReader r = new AnnotationReader(analyzer, c, options, finder);
 		return r.getDef();
 	}
 
@@ -167,6 +173,16 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	@Override
+	public void classEnd() throws Exception {
+		member = null;
+	}
+
+	@Override
+	public void memberEnd() {
+		member = null;
+	}
+
+	@Override
 	public void annotation(Annotation annotation) {
 		try {
 			java.lang.annotation.Annotation a = annotation.getAnnotation();
@@ -182,10 +198,29 @@ public class AnnotationReader extends ClassDataCollector {
 				doReference((Reference) a, annotation);
 			else if (a instanceof Designate)
 				doDesignate((Designate) a);
+			else {
+				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation, analyzer);
+				if (xmlAttr != null) {
+					doXmlAttribute(annotation, xmlAttr);
+				}
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
+		}
+	}
+
+	private void doXmlAttribute(Annotation annotation, XMLAttribute xmlAttr) {
+		if (member == null)
+			component.addExtensionAttribute(xmlAttr, annotation);
+		else {
+			ReferenceDef ref = referencesByMember.get(member);
+			if (ref == null) {
+				ref = new ReferenceDef();
+				referencesByMember.put(member, ref);
+			}
+			ref.addExtensionAttribute(xmlAttr, annotation);
 		}
 	}
 
@@ -365,9 +400,8 @@ public class AnnotationReader extends ClassDataCollector {
 							}
 
 							private void valueToProperty(String name, Object value, boolean isClass, boolean isCharacter) {
-								if (isClass) {
-									value = Clazz.objectDescriptorToFQN((String) value);
-								}
+								if (isClass)
+									value = ((TypeRef) value).getFQN();
 								Class<?> typeClass = isCharacter? Character.class: value.getClass();
 								//enums already come out as the enum name, no processing needed.
 								String type = typeClass.getSimpleName();
@@ -413,7 +447,15 @@ public class AnnotationReader extends ClassDataCollector {
 	 * @throws Exception
 	 */
 	protected void doReference(Reference reference, Annotation raw) throws Exception {
-		ReferenceDef def = new ReferenceDef();
+		ReferenceDef def;
+		if (member == null)
+			def = new ReferenceDef();
+		else if (referencesByMember.containsKey(member))
+			def = referencesByMember.get(member);
+		else {
+			def = new ReferenceDef();
+			referencesByMember.put(member, def);
+		}
 		def.className = className.getFQN();
 		def.name = reference.name();
 		def.bind = reference.bind();
@@ -437,9 +479,10 @@ public class AnnotationReader extends ClassDataCollector {
 								ErrorType.INVALID_TARGET_FILTER));
 		}
 
-		String annoService = raw.get("service");
-		if (annoService != null) 
-			annoService = Clazz.objectDescriptorToFQN(annoService);
+		String annoService = null;
+		TypeRef annoServiceTR = raw.get("service");
+		if (annoServiceTR != null)
+			annoService = annoServiceTR.getFQN();
 
 		if (member != null) {
 			if (member instanceof MethodDef) {
@@ -721,9 +764,7 @@ public class AnnotationReader extends ClassDataCollector {
 			// We have explicit interfaces set
 			component.service = new TypeRef[x.length];
 			for (int i = 0; i < x.length; i++) {
-				String s = (String) x[i];
-				TypeRef ref = analyzer.getTypeRefFromFQN(s);
-				component.service[i] = ref;
+				component.service[i] = (TypeRef) x[i];
 			}
 		}
 		

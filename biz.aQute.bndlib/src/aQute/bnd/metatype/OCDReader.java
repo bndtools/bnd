@@ -6,10 +6,12 @@ import java.util.regex.*;
 
 import org.osgi.service.metatype.annotations.*;
 
+import aQute.bnd.annotation.xml.*;
 import aQute.bnd.metatype.MetatypeAnnotations.Options;
 import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.xmlattribute.*;
 
 public class OCDReader extends ClassDataCollector {
 	
@@ -21,21 +23,24 @@ public class OCDReader extends ClassDataCollector {
 	private boolean topLevel = true;
 	private Set<TypeRef> analyzed;
 
-	private final Map<MethodDef, Pair> methods = new LinkedHashMap<MethodDef, Pair>();
-	private MethodDef	method;
+	private final Map<MethodDef,ADDef>	methods		= new LinkedHashMap<MethodDef,ADDef>();
+	private ADDef						current;
 	private OCDDef ocd;
 
+	private final XMLAttributeFinder	finder;
 
-	OCDReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options) {
+
+	OCDReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.options = options;
+		this.finder = finder;
 	}
 
 
-	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, EnumSet<Options> options) throws Exception {
+	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, EnumSet<Options> options, XMLAttributeFinder finder) throws Exception {
 
-		OCDReader r = new OCDReader(analyzer, c, options);
+		OCDReader r = new OCDReader(analyzer, c, options, finder);
 		return r.getDef();
 	}
 
@@ -91,8 +96,18 @@ public class OCDReader extends ClassDataCollector {
 
 	@Override
 	public void method(MethodDef defined) {
-		methods.put(defined, null);
-		method = defined;
+		current = new ADDef();
+		methods.put(defined, current);
+	}
+
+	@Override
+	public void classEnd() throws Exception {
+		current = null;
+	}
+
+	@Override
+	public void memberEnd() {
+		current = null;
 	}
 
 	//TODO what about Queue|Stack|Deque?
@@ -101,7 +116,7 @@ public class OCDReader extends ClassDataCollector {
 			List.class.getName() + "|" +
 			Iterable.class.getName() + ")|(.*))<(L.+;)>");
 	private void doMethods() throws Exception {
-		for (Map.Entry<MethodDef,Pair> entry: methods.entrySet()) {
+		for (Map.Entry<MethodDef,ADDef> entry : methods.entrySet()) {
 			MethodDef defined = entry.getKey();
 			if (defined.isConstructor()) {
 				analyzer.error(
@@ -115,11 +130,10 @@ public class OCDReader extends ClassDataCollector {
 						defined.getName(), clazz.getClassName().getFQN(), defined.getName());	
 				continue;
 			}
-			ADDef ad = new ADDef();
+			ADDef ad = entry.getValue();
 			ocd.attributes.add(ad);
 			ad.id = fixup(defined.getName());
 			ad.name = space(defined.getName());
-			ad.description = "";
 			String rtype = defined.getGenericReturnType();
 			if (rtype.endsWith("[]")) {
 				ad.cardinality = Integer.MAX_VALUE;
@@ -156,8 +170,8 @@ public class OCDReader extends ClassDataCollector {
 						"AD for %s.%s Can not parse option values from type (%s), %s",
 						clazz.getClassName().getFQN(), defined.getName(), defined.getType().getFQN(), e.getMessage());
 			}
-			if (entry.getValue() != null) {
-				doAD(ad, entry.getValue());
+			if (ad.ad != null) {
+				doAD(ad);
 			}
 			if (ad.defaults == null && clazz.isAnnotation() && defined.getConstant() != null) {
 				//defaults from annotation default
@@ -179,18 +193,20 @@ public class OCDReader extends ClassDataCollector {
 						}
 					}
 				}
-					if (value != null) {
-						if (value.getClass().isArray()) {
-							//add element individually
-							ad.defaults = new String[Array.getLength(value)];
-							for (int i = 0; i< Array.getLength(value); i++) {
-								Object element = Array.get(value, i);
-								ad.defaults[i] = valueToProperty(element, isClass);
-							}
-						} else {
-							ad.defaults = new String[] {valueToProperty(value, isClass)};
+				if (value != null) {
+					if (value.getClass().isArray()) {
+						// add element individually
+						ad.defaults = new String[Array.getLength(value)];
+						for (int i = 0; i < Array.getLength(value); i++) {
+							Object element = Array.get(value, i);
+							ad.defaults[i] = valueToProperty(element, isClass);
 						}
+					} else {
+						ad.defaults = new String[] {
+							valueToProperty(value, isClass)
+						};
 					}
+				}
 			}
 		}
 	}
@@ -231,39 +247,38 @@ public class OCDReader extends ClassDataCollector {
 
 
 	private String valueToProperty(Object value, boolean isClass) {
-		if (isClass) {
-			value = Clazz.objectDescriptorToFQN((String) value);
-		}
+		if (isClass)
+			return ((TypeRef) value).getFQN();
 		return value.toString();
 	}
 	
-	private void doAD(ADDef ad, Pair pair) throws Exception {
-		AttributeDefinition a = pair.getAd();
-		Annotation annotation = pair.getA(); 
+	private void doAD(ADDef adDef) throws Exception {
+		AttributeDefinition ad = adDef.ad;
+		Annotation a = adDef.a;
 
-		if (a.name() != null) {
-			ad.name = a.name();
+		if (ad.name() != null) {
+			adDef.name = ad.name();
 		}
-		ad.description = a.description();
-		if (a.type() != null) {
-			ad.type = a.type();
+		adDef.description = a.get("description");
+		if (a.get("type") != null) {
+			adDef.type = ad.type();
 		}
-		if (annotation.get("cardinality") != null) {
-			ad.cardinality = a.cardinality();
+		if (a.get("cardinality") != null) {
+			adDef.cardinality = ad.cardinality();
 		}
-		ad.max = a.max();
-		ad.min = a.min();
-		if (a.defaultValue() != null) {
-			ad.defaults = a.defaultValue();
+		adDef.max = ad.max();
+		adDef.min = ad.min();
+		if (a.get("defaultValue") != null) {
+			adDef.defaults = ad.defaultValue();
 		}
-		if (annotation.get("required") != null) {
-			ad.required = a.required();
+		if (a.get("required") != null) {
+			adDef.required = ad.required();
 		}
-		if (annotation.get("options") != null) {
-			ad.options.clear();
-			for (Object o : (Object[])annotation.get("options")) {
+		if (a.get("options") != null) {
+			adDef.options.clear();
+			for (Object o : (Object[]) a.get("options")) {
 				Option opt = ((Annotation)o).getAnnotation();
-				ad.options.add(new OptionDef(opt.label(), opt.value()));
+				adDef.options.add(new OptionDef(opt.label(), opt.value()));
 			}
 		}
 
@@ -361,24 +376,6 @@ public class OCDReader extends ClassDataCollector {
 		});
 	}
 
-	private final static class Pair {
-		private final AttributeDefinition ad;
-		private final Annotation a;
-		
-		public Pair(AttributeDefinition ad, Annotation a) {
-			this.ad = ad;
-			this.a = a;
-		}
-
-		AttributeDefinition getAd() {
-			return ad;
-		}
-
-		Annotation getA() {
-			return a;
-		}
-				
-	}
 	
     @Override
 	public void annotation(Annotation annotation) throws Exception {
@@ -386,8 +383,15 @@ public class OCDReader extends ClassDataCollector {
 			java.lang.annotation.Annotation a = annotation.getAnnotation();
 			if (a instanceof ObjectClassDefinition)
 				doOCD((ObjectClassDefinition) a, annotation);
-			else if (a instanceof AttributeDefinition)
-				methods.put(method, new Pair((AttributeDefinition)a, annotation));
+			else if (a instanceof AttributeDefinition) {
+				current.ad = (AttributeDefinition) a;
+				current.a = annotation;
+			} else {
+				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation, analyzer);
+				if (xmlAttr != null) {
+					doXmlAttribute(annotation, xmlAttr);
+				}
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -395,10 +399,23 @@ public class OCDReader extends ClassDataCollector {
 		}
 	}
 
-    private void doOCD(ObjectClassDefinition o, Annotation annotation) {
+	private void doXmlAttribute(Annotation annotation, XMLAttribute xmlAttr) {
+		if (current == null) {
+			if (clazz.isInterface()) {
+				if (ocd == null)
+					ocd = new OCDDef();
+				ocd.addExtensionAttribute(xmlAttr, annotation);
+			}
+		} else {
+			current.addExtensionAttribute(xmlAttr, annotation);
+		}
+	}
+
+	private void doOCD(ObjectClassDefinition o, Annotation annotation) {
     	if (topLevel) {
 			if (clazz.isInterface()) {
-				ocd = new OCDDef();
+				if (ocd == null)
+					ocd = new OCDDef();
 				ocd.id = o.id() == null ? name.getFQN() : o.id();
 				ocd.name = o.name() == null ? space(ocd.id) : o.name();
 				ocd.description = o.description() == null ? "" : o.description();
