@@ -14,7 +14,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.version.*;
 
-public class RunconfigToDistributionTask extends Task {
+public class RunconfigToDistributionTask extends BaseTask {
 
 	private File			rootDir;
 	private File			buildProject;
@@ -96,6 +96,7 @@ public class RunconfigToDistributionTask extends Task {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			throw new BuildException(e);
 		}
 	}
 
