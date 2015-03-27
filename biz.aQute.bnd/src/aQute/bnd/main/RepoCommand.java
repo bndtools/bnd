@@ -356,7 +356,7 @@ public class RepoCommand {
 
 				if (!opts.force()) {
 					Verifier v = new Verifier(jar);
-					v.setTrace(true);
+					v.setTrace(false);
 					v.setExceptions(true);
 					v.verify();
 					bnd.getInfo(v);
