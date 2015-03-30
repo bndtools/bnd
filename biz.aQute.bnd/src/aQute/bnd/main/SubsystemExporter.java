@@ -1,15 +1,20 @@
-package aQute.bnd.exporter.subsystem;
+package aQute.bnd.main;
 
 import static aQute.bnd.osgi.Constants.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 
 import aQute.bnd.annotation.plugin.*;
 import aQute.bnd.build.*;
+import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.service.*;
 import aQute.bnd.service.export.*;
+import aQute.bnd.version.*;
+import aQute.lib.collections.*;
 
 @BndPlugin(name = "subsystem")
 public class SubsystemExporter implements Exporter {
@@ -26,8 +31,7 @@ public class SubsystemExporter implements Exporter {
 	@Override
 	public String[] getTypes() {
 		return new String[] {
-		// OSGI_SUBSYSTEM_APPLICATION, OSGI_SUBSYSTEM_FEATURE,
-		// OSGI_SUBSYSTEM_COMPOSITE
+				OSGI_SUBSYSTEM_APPLICATION, OSGI_SUBSYSTEM_FEATURE, OSGI_SUBSYSTEM_COMPOSITE
 		};
 	}
 
@@ -42,31 +46,28 @@ public class SubsystemExporter implements Exporter {
 		manifest.getMainAttributes().putValue("Manifest-Version", "1.0");
 		manifest.getMainAttributes().putValue("Subsystem-ManifestVersion", "1");
 
-		List<File> files = new ArrayList<File>();
+		List<Container> distro = project.getBundles(Strategy.LOWEST, project.getProperty(Constants.DISTRO),
+				Constants.DISTRO);
+		List<File> distroFiles = getBundles(distro, project);
+		List<File> files = getBundles(project.getRunbundles(), project);
 
-		for (Container c : project.getRunbundles()) {
-			switch (c.getType()) {
-				case ERROR :
-					// skip, already reported
-					break;
-
-				case PROJECT :
-				case EXTERNAL :
-				case REPO :
-					files.add(c.getFile());
-					break;
-				case LIBRARY :
-					c.contributeFiles(files, project);
-					break;
-			}
-		}
+		MultiMap<String,Attrs> imports = new MultiMap<String,Attrs>();
+		MultiMap<String,Attrs> exports = new MultiMap<String,Attrs>();
+		Parameters requirements = new Parameters();
+		Parameters capabilities = new Parameters();
 
 		for (File file : files) {
-			System.out.println("File " + file);
-
 			Domain domain = Domain.domain(file);
 			String bsn = domain.getBundleSymbolicName().getKey();
 			String version = domain.getBundleVersion();
+
+			for (Entry<String,Attrs> e : domain.getImportPackage().entrySet()) {
+				imports.add(e.getKey(), e.getValue());
+			}
+
+			for (Entry<String,Attrs> e : domain.getExportPackage().entrySet()) {
+				exports.add(e.getKey(), e.getValue());
+			}
 
 			String path = bsn + "-" + version + ".jar";
 			jar.putResource(path, new FileResource(file));
@@ -109,6 +110,41 @@ public class SubsystemExporter implements Exporter {
 				throw new UnsupportedOperationException();
 			}
 		};
+	}
+
+	private List<File> getBundles(Collection<Container> bundles, Processor reporter) throws Exception {
+		List<File> files = new ArrayList<File>();
+
+		for (Container c : bundles) {
+			switch (c.getType()) {
+				case ERROR :
+					// skip, already reported
+					break;
+
+				case PROJECT :
+				case EXTERNAL :
+				case REPO :
+					files.add(c.getFile());
+					break;
+				case LIBRARY :
+					c.contributeFiles(files, reporter);
+					break;
+			}
+		}
+		return files;
+	}
+
+	private void merge(Parameters imports, Parameters importPackage) {
+		for (Map.Entry<String,Attrs> e : importPackage.entrySet()) {
+			Attrs imp = imports.get(e.getKey());
+			if (imp != null) {
+				VersionRange prev = VersionRange.parseVersionRange(imp.getVersion());
+				VersionRange next = VersionRange.parseVersionRange(e.getValue().getVersion());
+				VersionRange subRange = prev.intersect(next);
+				imp.put("version", subRange.toString());
+			} else
+				imports.put(e.getKey(), e.getValue());
+		}
 	}
 
 	private void headers(final Project project, Attributes application) {
