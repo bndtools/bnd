@@ -1,0 +1,2 @@
+Private-Package: servlet.hello
+Bundle-Activator: servlet.hello.Hello

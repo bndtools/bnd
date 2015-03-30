@@ -1,4 +1,4 @@
-package hello;
+package simple.hello;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
