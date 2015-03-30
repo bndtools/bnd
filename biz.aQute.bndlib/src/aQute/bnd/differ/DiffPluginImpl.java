@@ -9,6 +9,8 @@ import java.util.regex.*;
 
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.diff.*;
 import aQute.bnd.service.diff.Tree.Data;
 import aQute.bnd.version.*;
@@ -60,7 +62,7 @@ public class DiffPluginImpl implements Differ {
 		ORDERED_HEADERS.add(Constants.TESTCASES);
 	}
 
-	Instructions localIgnore = null;
+	Instructions				localIgnore		= null;
 
 	/**
 	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.resource.Jar,
@@ -114,7 +116,7 @@ public class DiffPluginImpl implements Differ {
 			result.add(JavaElement.getAPI(analyzer));
 			result.add(manifestElement(manifest));
 		}
-		result.add(resourcesElement(analyzer.getJar()));
+		result.add(resourcesElement(analyzer));
 		return new Element(Type.BUNDLE, analyzer.getJar().getName(), result, CHANGED, CHANGED, null);
 	}
 
@@ -125,30 +127,63 @@ public class DiffPluginImpl implements Differ {
 	 * @return
 	 * @throws Exception
 	 */
-	static Pattern META_INF_P = Pattern.compile("META-INF/([^/]+\\.(MF|SF|DSA|RSA))|(SIG-.*)");
-	
-	private Element resourcesElement(Jar jar) throws Exception {
+	static Pattern	META_INF_P	= Pattern.compile("META-INF/([^/]+\\.(MF|SF|DSA|RSA))|(SIG-.*)");
+
+	private Element resourcesElement(Analyzer analyzer) throws Exception {
+		Jar jar = analyzer.getJar();
+
 		List<Element> resources = new ArrayList<Element>();
 		for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
-			
+
 			//
 			// The manifest and other (signer) files are ignored
 			// since they are extremely sensitive to time
 			//
-			
-			if ( META_INF_P.matcher(entry.getKey()).matches())
+
+			if (META_INF_P.matcher(entry.getKey()).matches())
 				continue;
-			
-			if ( localIgnore != null && localIgnore.matches(entry.getKey()))
+
+			if (localIgnore != null && localIgnore.matches(entry.getKey()))
 				continue;
+
+			//
+			// #794 Use sources for shas of classes in baselining
+			// Since the compilers generate different bytecodes the
+			// resource comparison by sha is very awkward for classes.
+			// This code will not create an element for classes if a
+			// directory with source code can be found.
+			//
+
+			String path = entry.getKey();
+			Resource resource = null;
+			String comment = null;
+
+			if (analyzer.since(About._3_0)) {
+
+				if (path.endsWith(".class")) {
+					TypeRef type = analyzer.getTypeRefFromPath(path);
+					PackageRef packageRef = type.getPackageRef();
+					Clazz clazz = analyzer.findClass(type);
+					if (clazz != null) {
+						String sourceFile = clazz.getSourceFile();
+						String source = "OSGI-OPT/src/" + packageRef.getBinary() + "/" + sourceFile;
+						resource = jar.getResources().get(source);
+						comment = "Σ" + sourceFile;
+					}
+				}
+
+			}
 			
-			InputStream in = entry.getValue().openInputStream();
+			if (resource == null)
+				resource = entry.getValue();
+
+			InputStream in = resource.openInputStream();
 			try {
 				Digester<SHA1> digester = SHA1.getDigester();
 				IO.copy(in, digester);
 				String value = Hex.toHexString(digester.digest().digest());
 				resources.add(new Element(Type.RESOURCE, entry.getKey(), Arrays.asList(new Element(Type.SHA, value)),
-						CHANGED, CHANGED, null));
+						CHANGED, CHANGED, comment));
 			}
 			finally {
 				in.close();
