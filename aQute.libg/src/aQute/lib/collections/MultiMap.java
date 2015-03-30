@@ -12,7 +12,11 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 	final Set<V>				EMPTY				= Collections.emptySet();
 
 	public MultiMap() {
-		noduplicates = false;
+		this(false);
+	}
+
+	public MultiMap(boolean noduplicates) {
+		this.noduplicates = false;
 		keyClass = Object.class;
 		valueClass = Object.class;
 	}
