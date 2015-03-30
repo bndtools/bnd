@@ -109,7 +109,7 @@ public class PomRepository implements RepositoryPlugin, Plugin, RegistryPlugin, 
 	@Override
 	public List<String> list(String pattern) throws Exception {
 		Instructions instrs = new Instructions(pattern);
-		return instrs.select(index.keySet(), true);
+		return new ArrayList<String>(instrs.select(index.keySet(), true));
 	}
 
 	@Override
