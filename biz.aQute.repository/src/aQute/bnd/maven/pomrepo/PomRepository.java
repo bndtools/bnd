@@ -22,8 +22,10 @@ public class PomRepository implements RepositoryPlugin, Plugin, RegistryPlugin, 
 	}
 
 	Config				config;
+	@SuppressWarnings("unused")
 	private Registry	registry;
 	private Workspace	workspace;
+	@SuppressWarnings("unused")
 	private Reporter	processor;
 	private Maven		maven;
 	private boolean		inited;
