@@ -577,8 +577,10 @@ public class Builder extends Analyzer {
 
 				// ! effectively removes it from consideration by others (this
 				// includes exports)
-				if (instruction.isNegated())
+				if (instruction.isNegated()) {
+					used = true;
 					continue;
+				}
 
 				// Do the from: directive, filters on the JAR type
 				List<Jar> providers = filterFrom(from, p.getValue());
