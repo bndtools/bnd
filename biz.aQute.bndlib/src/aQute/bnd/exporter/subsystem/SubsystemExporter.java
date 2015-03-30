@@ -16,8 +16,10 @@ public class SubsystemExporter implements Exporter {
 
 	private static final String	OSGI_INF_SUBSYSTEM_MF		= "OSGI-INF/SUBSYSTEM.MF";
 	private static final String	SUBSYSTEM_SYMBOLIC_NAME		= "Subsystem-SymbolicName";
+	@SuppressWarnings("unused")
 	private static final String	OSGI_SUBSYSTEM_APPLICATION	= "osgi.subsystem.application";
 	private static final String	OSGI_SUBSYSTEM_FEATURE		= "osgi.subsystem.feature";
+	@SuppressWarnings("unused")
 	private static final String	OSGI_SUBSYSTEM_COMPOSITE	= "osgi.subsystem.composite";
 	private static final String	SUBSYSTEM_TYPE				= "Subsystem-Type";
 	@SuppressWarnings("unused")

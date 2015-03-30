@@ -13,7 +13,6 @@ import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.bnd.service.export.*;
-import aQute.bnd.version.*;
 import aQute.lib.collections.*;
 
 @BndPlugin(name = "subsystem")
@@ -134,18 +133,6 @@ public class SubsystemExporter implements Exporter {
 		return files;
 	}
 
-	private void merge(Parameters imports, Parameters importPackage) {
-		for (Map.Entry<String,Attrs> e : importPackage.entrySet()) {
-			Attrs imp = imports.get(e.getKey());
-			if (imp != null) {
-				VersionRange prev = VersionRange.parseVersionRange(imp.getVersion());
-				VersionRange next = VersionRange.parseVersionRange(e.getValue().getVersion());
-				VersionRange subRange = prev.intersect(next);
-				imp.put("version", subRange.toString());
-			} else
-				imports.put(e.getKey(), e.getValue());
-		}
-	}
 
 	private void headers(final Project project, Attributes application) {
 		for (String key : project.getPropertyKeys(true)) {
