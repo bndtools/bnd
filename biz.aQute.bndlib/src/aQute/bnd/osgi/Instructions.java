@@ -159,11 +159,11 @@ public class Instructions implements Map<Instruction,Attrs> {
 		}
 	}
 
-	public <T> Collection<T> select(Collection<T> set, boolean emptyIsAll) {
+	public <T> List<T> select(Collection<T> set, boolean emptyIsAll) {
 		return select(set, null, emptyIsAll);
 	}
 
-	public <T> Collection<T> select(Collection<T> set, Set<Instruction> unused, boolean emptyIsAll) {
+	public <T> List<T> select(Collection<T> set, Set<Instruction> unused, boolean emptyIsAll) {
 		List<T> input = new ArrayList<T>(set);
 		if (emptyIsAll && isEmpty())
 			return input;
