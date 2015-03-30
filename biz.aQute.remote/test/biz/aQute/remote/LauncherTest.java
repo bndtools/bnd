@@ -12,6 +12,7 @@ import junit.framework.TestCase;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.launch.Framework;
 
 import aQute.bnd.build.Project;
@@ -25,6 +26,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.remote.main.Main;
 import aQute.remote.plugin.RemoteProjectLauncherPlugin;
+import aQute.remote.plugin.RunSessionImpl;
 
 public class LauncherTest extends TestCase {
 	private int random;
@@ -64,15 +66,16 @@ public class LauncherTest extends TestCase {
 
 		File storage = IO.getFile("generated/storage-1");
 		storage.mkdirs();
-		
+
 		configuration = new HashMap<String, Object>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
 				Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 		configuration.put(Constants.FRAMEWORK_STORAGE,
 				storage.getAbsolutePath());
-		
-		configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.osgi.framework.launch;version=1.2");
-		
+
+		configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA,
+				"org.osgi.framework.launch;version=1.2");
+
 		framework = new org.apache.felix.framework.FrameworkFactory()
 				.newFramework(configuration);
 		framework.init();
@@ -104,13 +107,12 @@ public class LauncherTest extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		agent.stop();
 		framework.stop();
 		IO.delete(tmp);
 		Main.stop();
 		IO.delete(IO.getFile("generated/cache"));
 		IO.delete(IO.getFile("generated/storage"));
-		framework.waitForStop(100000);
+		FrameworkEvent event = framework.waitForStop(100000);
 		super.tearDown();
 	}
 
@@ -169,6 +171,45 @@ public class LauncherTest extends TestCase {
 		bndrun.close();
 	}
 	
+	/**
+	 * Launches against main
+	*/
+	/*
+	 * Launches against the agent& main
+	 */
+	public void testMain() throws Exception {
+		Project project = workspace.getProject("p1");
+		Run bndrun = new Run(workspace, project.getBase(),
+				project.getFile("one.bndrun"));
+		bndrun.setProperty("-runpath", "biz.aQute.remote.launcher");
+		bndrun.setProperty("-runbundles", "bsn-1,bsn-2");
+		bndrun.setProperty("-runremote", "main;agent=1090");
+
+		final RemoteProjectLauncherPlugin pl = (RemoteProjectLauncherPlugin) bndrun
+				.getProjectLauncher();
+		pl.prepare();
+		
+
+		List<? extends RunSession> sessions = pl.getRunSessions();
+		assertEquals(1, sessions.size());
+	
+		RunSessionImpl	main = (RunSessionImpl) sessions.get(0);
+
+		CountDownLatch mainLatch = launch(main);
+
+		main.waitTillStarted(1000);
+		
+		assertEquals( 0,main.started.getCount());
+		Thread.sleep(500);
+
+		main.cancel();
+		
+		mainLatch.await();
+		assertEquals(-3, main.getExitCode());
+		
+		bndrun.close();
+	}
+
 	/*
 	 * Launches against the agent& main
 	 */

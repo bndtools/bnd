@@ -2,25 +2,18 @@ package aQute.remote.main;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.util.concurrent.Callable;
 
 import aQute.lib.collections.ExtList;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
-import aQute.libg.shacache.ShaCache;
-import aQute.remote.util.Dispatcher;
-import aQute.remote.util.Linkable;
 
-public class Main extends ReporterAdapter implements Callable<Linkable<Envoy,EnvoySupervisor>> {
+public class Main extends ReporterAdapter {
 
-	private static ShaCache shacache;
 	private static Main main;
 	private CommandLine commandLine;
-	private File storage;
-	private Dispatcher<Envoy,EnvoySupervisor> dispatcher;
+	private EnvoyDispatcher dispatcher;
 
 	public Main() throws Exception {
 		super(System.out);
@@ -39,65 +32,37 @@ public class Main extends ReporterAdapter implements Callable<Linkable<Envoy,Env
 
 		boolean trace();
 
-		String cache();
-		
-		String storage();
+		String cache(String deflt);
+
+		String storage(String deflt);
 
 		int port(int deflt);
 
-		String network();
+		String network(String deflt);
 	}
 
 	public void _run(RunOptions options) throws Exception {
-		
+
 		setTrace(options.trace());
 		setExceptions(options.exceptions());
 
 		int port = options.port(Envoy.DEFAULT_PORT);
-		trace("Listening on " + InetAddress.getLocalHost() + ":"+port);
-		File cache = IO.getFile(options.cache() == null ? "~/.bnd/remote/cache" : options.cache());
-		storage = IO.getFile(options.storage() == null ? "storage" : options.cache());
-		String network = options.network() == null ? "localhost" : options.network();
+		String network = options.network("localhost");
 
-		cache.mkdirs();
+		File cache = IO.getFile(options.cache("~/.bnd/remote/cache"));
+		File storage = IO.getFile(options.storage("storage"));
 
-		if (!cache.isDirectory())
-			throw new IllegalArgumentException("Cannot create cache dir "
-					+ cache);
-
-		shacache = new ShaCache(cache);
-		
-		storage.mkdirs();
-
-		if (!storage.isDirectory())
-			throw new IllegalArgumentException("Cannot create storage dir "
-					+ storage);
-
-		dispatcher = new Dispatcher<Envoy, EnvoySupervisor>(
-				EnvoySupervisor.class,this, network, port);
-		dispatcher.open();
-		dispatcher.join();
-		trace("Dispatcher returned for " + InetAddress.getLocalHost() + ":"+port);
+		dispatcher = new EnvoyDispatcher(this, cache, storage, network, port);
+		dispatcher.run();
 	}
 
-	@Override
-	public Linkable<Envoy, EnvoySupervisor> call() throws Exception {
-		trace("New agent");
-		return new EnvoyImpl(this,shacache,storage);
-	}
-	
-	private void close() throws IOException {
-		trace("done");
-		dispatcher.close();
-	}
-	
 	public static void main(String[] args) throws Exception {
 		main = new Main();
 		main.run(args);
 	}
 
 	public static void stop() throws IOException {
-		main.close();
+		main.dispatcher.close();
 	}
 
 }

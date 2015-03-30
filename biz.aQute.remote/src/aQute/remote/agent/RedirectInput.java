@@ -13,6 +13,9 @@ public class RedirectInput extends InputStream {
 		this.org = in;
 	}
 
+	public RedirectInput() {
+	}
+
 	public InputStream getOrg() {
 		return org;
 	}

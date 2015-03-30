@@ -79,7 +79,7 @@ public class RemoteTest extends TestCase {
 		StringBuffer stdout = new StringBuffer();
 		supervisor.setStderr(stderr);
 		supervisor.setStdout(stdout);
-		supervisor.getAgent().redirect(true);
+		supervisor.redirect(1);
 
 		//
 		// Install the bundle systemio

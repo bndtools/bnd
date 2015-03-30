@@ -1,5 +1,6 @@
 package aQute.remote.plugin;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -15,7 +16,7 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor, Agent>
 	private Appendable stdout;
 	private Appendable stderr;
 	private Thread stdin;
-	private boolean redirected=false;
+	private int shell = -100; // console
 
 	static class Info extends DTO {
 		public String sha;
@@ -54,21 +55,14 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor, Agent>
 	}
 
 	public void setStdout(Appendable out) throws Exception {
-		if ( !redirected)
-			getAgent().redirect(redirected=true);
 		this.stdout = out;
 	}
 
 	public void setStderr(Appendable err) throws Exception {
-		if ( !redirected)
-			getAgent().redirect(redirected=true);
 		this.stderr = err;
 	}
 
 	public void setStdin(final InputStream in) throws Exception {
-		if ( !redirected)
-			getAgent().redirect(redirected=true);
-		
 		final InputStreamReader isr = new InputStreamReader(in);
 		this.stdin = new Thread("stdin") {
 			@Override
@@ -103,14 +97,41 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor, Agent>
 	public void setStreams(Appendable out, Appendable err) throws Exception {
 		setStdout(out);
 		setStderr(err);
-		getAgent().redirect(true);
+		getAgent().redirect(shell);
 	}
 
 	public void connect(String host, int port) throws Exception {
 		super.connect(Agent.class, this, host, port);
 	}
 
+	/**
+	 * The shell port to use.
+	 * <ul>
+	 * <li>&lt;0 – Attach to a local Gogo CommandSession
+	 * <li>0 – Use the standard console
+	 * <li>else – Open a stream to that port
+	 * </ul>
+	 * 
+	 * @param shellPort
+	 */
+	public void setShell(int shellPort) {
+		this.shell = shellPort;
+	}
+
 	public int getExitCode() {
 		return exitCode;
+	}
+
+	public void abort() throws IOException {
+		if (isOpen()) {
+			getAgent().abort();
+		}
+	}
+	
+	public void redirect(int shell) throws Exception {
+		if ( this.shell != shell && isOpen() ) {
+			getAgent().redirect(shell);
+			this.shell = shell;
+		}
 	}
 }

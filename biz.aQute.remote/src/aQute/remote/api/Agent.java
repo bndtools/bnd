@@ -24,7 +24,7 @@ public interface Agent {
 
 	String update(Map<String, String> bundles) throws Exception;
 
-	boolean redirect(boolean on) throws Exception;
+	boolean redirect(int port) throws Exception;
 
 	boolean stdin(String s) throws Exception;
 

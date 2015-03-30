@@ -1,7 +1,9 @@
 package aQute.remote.agent;
 
 import java.io.File;
-import java.util.concurrent.Callable;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,16 +12,15 @@ import org.osgi.framework.BundleContext;
 
 import aQute.remote.api.Agent;
 import aQute.remote.api.Supervisor;
-import aQute.remote.util.Dispatcher;
-import aQute.remote.util.Linkable;
+import aQute.remote.util.Link;
 
-public class Activator implements BundleActivator,
-		Callable<Linkable<Agent, Supervisor>> {
+public class Activator extends Thread implements BundleActivator {
 	static Pattern PORT_P = Pattern.compile("(?:([^:]+):)?(\\d+)");
-	private Dispatcher<Agent, Supervisor> dispatcher;
 	private File cache;
+	private ServerSocket server;
 	private BundleContext context;
-
+	private Link<Agent, Supervisor> link;
+	
 	@Override
 	public void start(final BundleContext context) throws Exception {
 		this.context = context;
@@ -38,20 +39,29 @@ public class Activator implements BundleActivator,
 		if (host == null)
 			host = "localhost";
 
+		start();
 		cache = context.getDataFile("shacache");
-		dispatcher = new Dispatcher<Agent,Supervisor>(Supervisor.class, this,
-				host, Integer.parseInt(m.group(2)));
-		dispatcher.open();
+		
+		int p = Integer.parseInt(port);
+		server = "*".equals(host) ? new ServerSocket(p) : new ServerSocket(p, 3, InetAddress.getByName(host));
+		
 	}
 
+	public void run() {
+		while ( !isInterrupted()) try {
+			Socket socket = server.accept();
+			AgentServer sa = new AgentServer("<>",context,cache);
+			link = new Link<Agent, Supervisor>(Supervisor.class, sa, socket);
+			sa.setRemote(link.getRemote());
+			link.run();
+		} catch( Exception e) {
+			e.printStackTrace();
+		}
+	}
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		dispatcher.close();
-	}
-
-	@Override
-	public Linkable<Agent, Supervisor> call() throws Exception {
-		return new AgentServer(context, cache);
+		interrupt();
+		link.close();
 	}
 
 }

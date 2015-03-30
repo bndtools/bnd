@@ -87,4 +87,32 @@ public class MainTest extends TestCase {
 		sv.close();
 	}
 	
+	public void testShutdown() throws Exception {
+		LauncherSupervisor supervisor = new LauncherSupervisor();
+		
+		supervisor.connect("localhost",
+				Envoy.DEFAULT_PORT);
+		
+		
+		HashMap<String, Object> configuration = new HashMap<String, Object>();
+		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
+				Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+		
+		List<String> emptyList = Collections.emptyList();
+
+		assertEquals( true, supervisor.getAgent().isEnvoy());
+		
+		int n = supervisor.getAgent().createFramework("test", emptyList,
+				configuration);
+		System.out.println(n);
+		assertTrue(n > 1024);
+
+		LauncherSupervisor sv = new LauncherSupervisor();
+		sv.connect("localhost", n);
+		
+		Main.stop();
+		sv.join();
+		assertFalse(sv.isOpen());
+	}
+	
 }

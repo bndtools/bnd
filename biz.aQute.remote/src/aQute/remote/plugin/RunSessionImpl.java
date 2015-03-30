@@ -25,7 +25,10 @@ public class RunSessionImpl implements RunSession {
 	public CountDownLatch started = new CountDownLatch(1);
 	private Appendable stderr;
 	private Appendable stdout;
+	private int shell = -4711;
 	public static int jdb = 16043;
+	
+	
 	public RunSessionImpl(RemoteProjectLauncherPlugin launcher,
 			RunRemoteDTO dto, Map<String, Object> properties) throws Exception {
 		this.launcher = launcher;
@@ -105,7 +108,7 @@ public class RunSessionImpl implements RunSession {
 
 			started.countDown();
 
-			update();
+			update(dto);
 			int exitCode = supervisor.join();
 			System.out.println("Exiting " + dto.name + " " + exitCode);
 			return exitCode;
@@ -117,7 +120,7 @@ public class RunSessionImpl implements RunSession {
 
 	@Override
 	public void cancel() throws IOException {
-		supervisor.getAgent().abort();
+		supervisor.abort();
 	}
 
 	@Override
@@ -158,10 +161,13 @@ public class RunSessionImpl implements RunSession {
 		return newer;
 	}
 
-	void update() throws Exception {
+	void update(RunRemoteDTO dto) throws Exception {
 		Map<String, String> newer = getBundles(launcher.getRunBundles(),
 				Constants.RUNBUNDLES);
-
+		if ( shell != dto.shell) {
+			supervisor.getAgent().redirect(dto.shell);
+			shell = dto.shell;
+		}
 		supervisor.getAgent().update(newer);
 	}
 
@@ -229,4 +235,5 @@ public class RunSessionImpl implements RunSession {
             }
         return result;
     }
+
 }
