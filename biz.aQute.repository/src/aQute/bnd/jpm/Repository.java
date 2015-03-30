@@ -1123,6 +1123,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					sb.format("%s\n", p.last.description);
 				else
 					sb.format("No description\n");
+				if (bsn.indexOf("__") >= 0) {
+					sb.format("\nThis artifact has no OSGi metadata. Its coordinates are %s:%s\n", p.groupId,
+							p.artifactId);
+				}
 				j.wrap((StringBuilder) sb.out());
 				return sb.toString().trim();
 			}
@@ -1164,6 +1168,11 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				sb.format("Cached %s\n", f);
 			else
 				sb.format("Not downloaded\n");
+
+			if (bsn.indexOf("__") >= 0) {
+				sb.format("\nThis artifact has no OSGi metadata. Its coordinates are %s:%s@%s\n", r.groupId,
+						r.artifactId, r.version);
+			}
 
 			Program p = getProgram(bsn, false);
 			if (p != null) {
@@ -1477,6 +1486,8 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		if (target.length == 1 && target[0] instanceof String) {
 			String bsn = (String) target[0];
 			String title = bsn;
+			if (bsn.indexOf("__") > 0)
+				title += " [!]";
 			return title;
 		}
 
