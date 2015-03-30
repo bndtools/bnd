@@ -1,14 +1,29 @@
 package aQute.remote.util;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.lang.reflect.Type;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import aQute.lib.json.*;
+import aQute.lib.json.JSONCodec;
 
 /**
  * This is a simple RPC module that has a R and L interface. The R interface is
@@ -28,7 +43,8 @@ public class Link<L, R> extends Thread implements Closeable {
 	final AtomicInteger id = new AtomicInteger(10000);
 	final ConcurrentMap<Integer, Result> promises = new ConcurrentHashMap<Integer, Result>();
 	final AtomicBoolean quit = new AtomicBoolean(false);
-	volatile boolean transfer=false;
+	volatile boolean transfer = false;
+	private ThreadLocal<Integer> msgid = new ThreadLocal<Integer>();
 
 	R remote;
 	L local;
@@ -161,10 +177,12 @@ public class Link<L, R> extends Thread implements Closeable {
 				Runnable r = new Runnable() {
 					public void run() {
 						try {
+							msgid.set(id);
 							executeCommand(cmd, id, args);
 						} catch (Exception e) {
 							// e.printStackTrace();
 						}
+						msgid.set(-1);
 					}
 
 				};
@@ -327,7 +345,7 @@ public class Link<L, R> extends Thread implements Closeable {
 			try {
 				Object result = m.invoke(local, parameters);
 
-				if (m.getReturnType() == void.class)
+				if (transfer || m.getReturnType() == void.class)
 					return;
 
 				try {
@@ -370,12 +388,14 @@ public class Link<L, R> extends Thread implements Closeable {
 		this.remote = (R) remote;
 	}
 
-	public void transfer() throws Exception {
+	public void transfer(Object result) throws Exception {
 		transfer = true;
 		quit.set(true);
 		interrupt();
-		close();
 		join();
+		if ( result != null)
+			send(msgid.get(), null, new Object[] { result });
+		close();
 	}
 
 }

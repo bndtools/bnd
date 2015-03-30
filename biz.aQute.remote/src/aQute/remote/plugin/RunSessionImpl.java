@@ -91,14 +91,8 @@ public class RunSessionImpl implements RunSession {
 
 			Agent agent = supervisor.getAgent();
 
-			if (agent.isEnvoy()) {
-				int secondaryPort = installFramework(agent, dto, properties);
-				supervisor.close();
-				System.out.println("Installed framework, changing port "
-						+ secondaryPort);
-				supervisor = new LauncherSupervisor();
-				supervisor.connect(dto.host, secondaryPort);
-			}
+			if (agent.isEnvoy())
+				installFramework(agent, dto, properties);
 
 			if ( stdout != null)
 				supervisor.setStdout(stdout);
@@ -128,7 +122,7 @@ public class RunSessionImpl implements RunSession {
 		return properties;
 	}
 
-	private int installFramework(Agent agent, RunRemoteDTO dto,
+	private boolean installFramework(Agent agent, RunRemoteDTO dto,
 			Map<String, Object> properties) throws Exception {
 		List<String> onpath = new ArrayList<String>(launcher.getRunpath());
 

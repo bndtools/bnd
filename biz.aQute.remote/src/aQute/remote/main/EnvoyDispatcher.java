@@ -61,27 +61,37 @@ public class EnvoyDispatcher implements Closeable {
 				main.exception(e, "Closing framework for %s", this);
 			}
 		}
-		
+
 		public String toString() {
-			return name + "(" + framework + ") ["+port+"]";
+			return name + "(" + framework + ") [" + port + "]";
 		}
 	}
 
-	class EnvoyImpl implements Envoy {
+	public class EnvoyImpl implements Envoy {
 
 		private Link<Envoy, EnvoySupervisor> link;
 
 		EnvoyImpl(Socket socket) throws IOException {
 			envoys.add(this);
+			socket.setSoTimeout(500);
 			this.link = new Link<Envoy, EnvoySupervisor>(EnvoySupervisor.class,
 					this, socket.getInputStream(), socket.getOutputStream());
 			setRemote(this.link.getRemote());
 		}
-		
+
 		void open() {
 			link.open();
 		}
 
+		/*
+		 * If the supervisor gets a true on isEnvoy() then it should first
+		 * create a framework and then an agent.
+		 * 
+		 * A supervisor should first try to create a framework. If this
+		 * framework already exists or has a different runpath/properties, we
+		 * return true. Otherwise, we close a previous framework under this name
+		 * and create a new one with the given props.
+		 */
 		@Override
 		public boolean createFramework(String name, Collection<String> runpath,
 				Map<String, Object> properties) throws Exception {
@@ -97,7 +107,7 @@ public class EnvoyDispatcher implements Closeable {
 				if (existing != null) {
 					if (existing.runpath.equals(runpath)
 							&& existing.properties.equals(properties)) {
-						createAgent(existing);
+						createAgent(existing, false);
 						return false;
 					} else {
 						existing.close();
@@ -105,25 +115,26 @@ public class EnvoyDispatcher implements Closeable {
 					}
 				}
 
-				DispatcherInfo info = create(name,runpath,properties);
-				frameworks.put(name,info);
-				createAgent(info);
+				DispatcherInfo info = create(name, runpath, properties);
+				frameworks.put(name, info);
+				createAgent(info, true);
 
 				return true;
 			} catch (Exception e) {
-				main.trace("creating framework %s", e);
+				main.trace("creating framework %s: %s", name, e);
 				main.exception(e, "creating framework");
 				throw e;
 			}
 		}
 
-		private void createAgent(DispatcherInfo info) throws Exception {
-			main.trace("Adding an agent for %s (%s)", info);
-			link.transfer();
-			Method newAgent = info.dispatcher.getMethod("createAgent",
-					DataInputStream.class, DataOutputStream.class);
-			
-			newAgent.invoke(info.framework, link.getInput(), link.getOutput());
+		private void createAgent(DispatcherInfo info, boolean state) throws Exception {
+			main.trace("Adding an agent for %s", info.name);
+			link.transfer(state);
+			Method toAgent = info.dispatcher.getMethod("toAgent",
+					info.framework.getClass(), DataInputStream.class,
+					DataOutputStream.class);
+
+			toAgent.invoke(null, info.framework, link.getInput(), link.getOutput());
 			close();
 		}
 
@@ -139,9 +150,8 @@ public class EnvoyDispatcher implements Closeable {
 
 			DispatcherInfo info = new DispatcherInfo();
 			info.name = name;
-			info.cl = new URLClassLoader(
-					files.toArray(new URL[files.size()]));
-			info.properties = properties;
+			info.cl = new URLClassLoader(files.toArray(new URL[files.size()]));
+			info.properties = new HashMap<String,Object>(properties);
 			info.runpath = runpath;
 			info.storage = new File(storage, name);
 			info.dispatcher = info.cl
@@ -159,9 +169,9 @@ public class EnvoyDispatcher implements Closeable {
 			Method newFw = info.dispatcher.getMethod("createFramework",
 					String.class, Map.class, File.class, File.class);
 
-			info.framework = (Closeable) newFw.invoke(null, name, properties, storage,
-					cache.getRoot());
-			
+			info.framework = (Closeable) newFw.invoke(null, name, properties,
+					storage, cache.getRoot());
+
 			return info;
 		}
 
@@ -171,7 +181,7 @@ public class EnvoyDispatcher implements Closeable {
 		}
 
 		public void close() throws IOException {
-			if (envoys.remove(this) && link!=null)
+			if (envoys.remove(this) && link != null)
 				link.close();
 			link = null;
 		}
@@ -225,18 +235,32 @@ public class EnvoyDispatcher implements Closeable {
 						InetAddress.getByName(network));
 				main.trace("Will wait  for %s:%s to finish",
 						InetAddress.getLocalHost(), port);
-				Socket socket = server.accept();
-				main.trace("Got a request on %s", socket);
-				EnvoyImpl envoyImpl = new EnvoyImpl(socket);
-				envoyImpl.open();
+
+				while (!Thread.currentThread().isInterrupted())
+					try {
+						Socket socket = server.accept();
+						main.trace("Got a request on %s", socket);
+						EnvoyImpl envoyImpl = new EnvoyImpl(socket);
+						envoyImpl.open();
+					} catch (Exception e) {
+						main.exception(
+								e,
+								"while listening for incoming requests on %s:%s",
+								network, port);
+						break;
+					}
+				
+				server.close();
 			} catch (Exception e) {
-				main.exception(e,
-						"while listening for incoming requests on %s:%s",
-						network, port);
 				try {
-					Thread.sleep(500);
+					Thread.sleep(2000);
 				} catch (InterruptedException e1) {
 				}
 			}
+		try {
+			close();
+		} catch (IOException e) {
+			//
+		}
 	}
 }

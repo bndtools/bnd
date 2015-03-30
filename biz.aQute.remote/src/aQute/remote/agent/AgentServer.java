@@ -429,9 +429,8 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
-	public boolean abort() throws IOException {
+	public void abort() throws IOException {
 		cleanup(-3);
-		return true;
 	}
 
 	private void sendEvent(int code) {
@@ -497,7 +496,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
-	public int createFramework(String name, Collection<String> runpath,
+	public boolean createFramework(String name, Collection<String> runpath,
 			Map<String, Object> properties) throws Exception {
 		throw new UnsupportedOperationException(
 				"This is an agent, we can't create new frameworks (for now)");
@@ -512,4 +511,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		this.link = link;
 	}
 
+	public boolean ping() {
+		return true;
+	}
 }

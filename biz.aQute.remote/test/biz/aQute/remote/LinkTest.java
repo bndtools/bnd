@@ -108,8 +108,7 @@ public class LinkTest extends TestCase {
 		remoteImpl.link.open();
 		
 		assertEquals( -42, localImpl.link.getRemote().foo());
-		localImpl.link.transfer();
-		localImpl.link.close();
+		localImpl.link.transfer(null);
 		
 		LocalImpl newer = new LocalImpl(Remote.class, localImpl.link.getInput(), localImpl.link.getOutput());
 		newer.link.open();
@@ -119,6 +118,8 @@ public class LinkTest extends TestCase {
 		Thread.sleep(100);
 		assertEquals( 1, remoteClosed.get());
 		assertEquals( 1, localClosed.get());
+		
+		newer.close();
 	}
 	
 	

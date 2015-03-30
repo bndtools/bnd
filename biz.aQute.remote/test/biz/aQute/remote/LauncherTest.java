@@ -12,7 +12,6 @@ import junit.framework.TestCase;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.launch.Framework;
 
 import aQute.bnd.build.Project;
@@ -28,6 +27,9 @@ import aQute.remote.main.Main;
 import aQute.remote.plugin.RemoteProjectLauncherPlugin;
 import aQute.remote.plugin.RunSessionImpl;
 
+/**
+ * Creates a workspace and then launches a main remote. 
+ */
 public class LauncherTest extends TestCase {
 	private int random;
 	private File tmp;
@@ -112,7 +114,7 @@ public class LauncherTest extends TestCase {
 		Main.stop();
 		IO.delete(IO.getFile("generated/cache"));
 		IO.delete(IO.getFile("generated/storage"));
-		FrameworkEvent event = framework.waitForStop(100000);
+		framework.waitForStop(100000);
 		super.tearDown();
 	}
 

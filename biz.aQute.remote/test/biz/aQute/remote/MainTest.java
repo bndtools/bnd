@@ -37,7 +37,7 @@ public class MainTest extends TestCase {
 		};
 		thread.setDaemon(true);
 		thread.start();
-		
+
 	}
 
 	@Override
@@ -49,70 +49,59 @@ public class MainTest extends TestCase {
 	}
 
 	public void testRemoteMain() throws Exception {
+
+		//
+		// Create a framework & start an agent
+		//
 		
 		LauncherSupervisor supervisor = new LauncherSupervisor();
-		
-		supervisor.connect("localhost",
-				Envoy.DEFAULT_PORT);
+		supervisor.connect("localhost", Envoy.DEFAULT_PORT);
+
+		assertEquals("not talking to an envoy", true, supervisor.getAgent().isEnvoy());
 
 		HashMap<String, Object> configuration = new HashMap<String, Object>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
 				Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-		
 		List<String> emptyList = Collections.emptyList();
+		boolean created = supervisor.getAgent().createFramework("test",
+				emptyList, configuration);
+		assertTrue("there already was a framework, funny, since we created the main in setUp?", created);
 
-		assertEquals( true, supervisor.getAgent().isEnvoy());
+		FrameworkDTO framework = supervisor.getAgent().getFramework();
+		assertNotNull("just created it, so we should have a framework", framework);
 		
-		int n = supervisor.getAgent().createFramework("test", emptyList,
-				configuration);
-		System.out.println(n);
-		assertTrue(n > 1024);
+		//
+		// Create a second supervisor and ensure we do not
+		// kill the primary
+		//
+		
+		LauncherSupervisor sv2 = new LauncherSupervisor();
+		sv2.connect("localhost", Envoy.DEFAULT_PORT);
+		
+		assertTrue("no second framework", supervisor.getAgent().ping());
+		
+		assertEquals("must be an envoy", true, sv2.getAgent().isEnvoy());
+		assertFalse("the framework should already exist", sv2.getAgent().createFramework("test",
+				emptyList, configuration));
+		
+		assertTrue("first framework is gone", supervisor.getAgent().ping());
+		
+		FrameworkDTO fw2 = sv2.getAgent().getFramework();
+		assertEquals("we should not have created a new framework", framework.properties.get("org.osgi.framework.uuid"), fw2.properties.get("org.osgi.framework.uuid"));
+		
+		//
+		// Kill the second framework
+		//
+		
+		supervisor.getAgent().abort();
+		Thread.sleep(500);
+		assertFalse( supervisor.isOpen());
 
-		LauncherSupervisor sv = new LauncherSupervisor();
-		sv.connect("localhost", n);
-
-		FrameworkDTO framework = sv.getAgent().getFramework();
-		assertNotNull(framework);
-
-		sv.getAgent().abort();
-		sv.close();
-
-		sv = new LauncherSupervisor();
-		sv.connect("localhost", n);
-
-		framework = sv.getAgent().getFramework();
-		assertNotNull(framework);
-
-		sv.getAgent().abort();
-		sv.close();
+		assertTrue( "should not have killed sv2", sv2.getAgent().ping());
+		
+		sv2.abort();
+		Thread.sleep(500);
+		assertFalse( sv2.isOpen());
 	}
-	
-	public void testShutdown() throws Exception {
-		LauncherSupervisor supervisor = new LauncherSupervisor();
-		
-		supervisor.connect("localhost",
-				Envoy.DEFAULT_PORT);
-		
-		
-		HashMap<String, Object> configuration = new HashMap<String, Object>();
-		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
-				Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-		
-		List<String> emptyList = Collections.emptyList();
 
-		assertEquals( true, supervisor.getAgent().isEnvoy());
-		
-		int n = supervisor.getAgent().createFramework("test", emptyList,
-				configuration);
-		System.out.println(n);
-		assertTrue(n > 1024);
-
-		LauncherSupervisor sv = new LauncherSupervisor();
-		sv.connect("localhost", n);
-		
-		Main.stop();
-		sv.join();
-		assertFalse(sv.isOpen());
-	}
-	
 }

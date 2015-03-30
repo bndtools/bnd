@@ -32,8 +32,10 @@ public interface Agent {
 
 	Map<String, String> getSystemProperties() throws Exception;
 
-	int createFramework(String name, Collection<String> runpath,
+	boolean createFramework(String name, Collection<String> runpath,
 			Map<String, Object> properties) throws Exception;
 
-	boolean abort() throws IOException;
+	void abort() throws IOException;
+
+	boolean ping();
 }
