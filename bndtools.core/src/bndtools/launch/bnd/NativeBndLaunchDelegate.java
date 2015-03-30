@@ -1,9 +1,11 @@
 package bndtools.launch.bnd;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -21,6 +23,7 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.Run;
 import aQute.bnd.build.RunSession;
 import aQute.bnd.osgi.Processor;
 import bndtools.Plugin;
@@ -73,10 +76,30 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
                 return;
             }
 
-            Project model = LaunchUtils.getBndProject(targetResource);
-            if (model == null) {
-                p.error("Cannot locate bnd model for " + targetResource);
+            IProject parent = targetResource.getProject();
+            if (parent == null) {
+                p.error("Not part of a project " + targetResource);
                 return;
+            }
+
+            Project parentModel = Central.getProject(parent);
+            if (parentModel == null) {
+                p.error("Cannot locate bnd project for " + targetResource);
+                return;
+            }
+
+            Project model;
+            if (targetResource.getName().equals(Project.BNDFILE)) {
+                model = parentModel;
+            } else {
+
+                File file = targetResource.getLocation().toFile();
+                if (file == null || !file.isFile()) {
+                    p.error("No file associated with the entry " + targetResource);
+                    return;
+                }
+
+                model = new Run(parentModel.getWorkspace(), parentModel.getBase(), file);
             }
 
             monitor.setTaskName("Target is " + model);
@@ -141,6 +164,8 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
                 launch.terminate();
                 abort("Internal error", e, IJavaLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
             }
+        } catch (Exception e) {
+            p.exception(e, "While starting a launch %s", configuration);
         } finally {
             if (!p.isOk()) {
                 IStatus status = Central.toStatus(p, "Errors detected during the launch");

@@ -31,6 +31,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.Run;
 import aQute.bnd.build.RunSession;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
@@ -147,6 +148,7 @@ class LaunchThread extends Thread implements IProcess {
             exitValue = session.launch();
         } catch (Exception e) {
             logger.logWarning("Exception from launcher", e);
+            e.printStackTrace();
         } finally {
             try {
                 buildListener.unregister();
@@ -167,6 +169,13 @@ class LaunchThread extends Thread implements IProcess {
             return;
 
         try {
+            //
+            // TODO Should use listener
+            //
+
+            if (launcher.getProject() instanceof Run)
+                launcher.getProject().refresh();
+
             launcher.update();
         } catch (Exception e) {
             logger.logWarning("Exception from update", e);

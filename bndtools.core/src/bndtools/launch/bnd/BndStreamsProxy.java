@@ -96,7 +96,7 @@ public class BndStreamsProxy implements IStreamsProxy2 {
                 }
             };
         }
-        job.schedule(100);
+        job.schedule(200);
     }
 
     void flush() {
