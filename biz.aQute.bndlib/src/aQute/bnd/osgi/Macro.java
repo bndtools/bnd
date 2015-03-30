@@ -1006,7 +1006,7 @@ public class Macro {
 		verifyCommand(args, "${cat;<in>}, get the content of a file", null, 2, 2);
 		File f = domain.getFile(args[1]);
 		if (f.isFile()) {
-			return IO.collect(f);
+			return IO.collect(f).replaceAll("\\\\", "\\\\\\\\");
 		} else if (f.isDirectory()) {
 			return Arrays.toString(f.list());
 		} else {

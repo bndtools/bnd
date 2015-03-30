@@ -13,6 +13,17 @@ public class MacroTest extends TestCase {
 	
 	
 	/*
+	 * #722 ${cat;<file>} removes \ before a $
+	 */
+
+	public void testCat() {
+		Processor b = new Processor();
+		b.setProperty("tst", "${cat;testresources/macro/cat-test.txt}");
+		String tst = b.getProperty("tst");
+		assertEquals("This is a \\$ backslashed dollar\n", tst);
+	}
+
+	/*
 	 * #761 Tstamp consistent
 	 */
 
