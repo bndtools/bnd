@@ -48,7 +48,7 @@ public class GogoRedirector implements Redirector {
 				if (service == processor) {
 					closeSession(service);
 					CommandProcessor replacement = getService();
-					if (replacement == null) {
+					if (replacement != null) {
 						openSession(replacement);
 					}
 				}

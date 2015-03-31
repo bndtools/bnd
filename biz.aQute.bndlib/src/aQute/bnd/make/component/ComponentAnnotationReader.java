@@ -331,16 +331,16 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	 * @return
 	 */
 
-	private String descriptorToFQN(String string) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 1; i < string.length() - 1; i++) {
-			char c = string.charAt(i);
-			if (c == '/')
-				c = '.';
-			sb.append(c);
-		}
-		return sb.toString();
-	}
+	// private String descriptorToFQN(String string) {
+	// StringBuilder sb = new StringBuilder();
+	// for (int i = 1; i < string.length() - 1; i++) {
+	// char c = string.charAt(i);
+	// if (c == '/')
+	// c = '.';
+	// sb.append(c);
+	// }
+	// return sb.toString();
+	// }
 
 	@Override
 	public void classBegin(int access, TypeRef name) {

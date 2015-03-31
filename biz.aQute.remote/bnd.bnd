@@ -12,3 +12,4 @@
 
 Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter, aQute.bnd.util.*
 
+no.junit=true

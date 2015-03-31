@@ -9,6 +9,7 @@
              biz.aQute.jpm, \
              biz.aQute.junit, \
              biz.aQute.launcher, \
+             biz.aQute.remote, \
              biz.aQute.repository, \
              biz.aQute.repository.aether, \
              biz.aQute.resolve, \
