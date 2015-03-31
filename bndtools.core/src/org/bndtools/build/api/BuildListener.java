@@ -13,6 +13,10 @@ import aQute.bnd.annotation.ProviderType;
 @ProviderType
 public interface BuildListener {
 
+    enum BuildState {
+        starting, built, released;
+    }
+
     /**
      * Bndtools is starting to build the specified project. The corresponding bnd project model in the bnd workspace has
      * yet been created, and may not exist.

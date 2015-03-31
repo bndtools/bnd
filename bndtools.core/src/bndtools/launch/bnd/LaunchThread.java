@@ -1,18 +1,12 @@
 package bndtools.launch.bnd;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.bndtools.build.api.BuildListener;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -28,22 +22,15 @@ import org.eclipse.jdt.launching.IVMConnector;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceRegistration;
-
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.RunSession;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.service.RepositoryListenerPlugin;
-import aQute.bnd.service.RepositoryPlugin;
 import bndtools.launch.OSGiRunLaunchDelegate;
+import bndtools.launch.UpdateGuard;
 
 class LaunchThread extends Thread implements IProcess {
-    private static final int GRACE_PERIOD = 500;
     private static final ILogger logger = Logger.getLogger(OSGiRunLaunchDelegate.class);
     private final ProjectLauncher launcher;
-    private final static Timer timer = new Timer(true);
-    private TimerTask trigger;
     private final AtomicBoolean terminated = new AtomicBoolean(false);
     private final BundleContext context = FrameworkUtil.getBundle(LaunchThread.class).getBundleContext();
     private final ILaunch launch;
@@ -94,55 +81,20 @@ class LaunchThread extends Thread implements IProcess {
     @Override
     public void run() {
         fireCreationEvent();
+
         //
         // We wait for build changes. We never update during a build
         // and we will wait a bit after a build ends.
         //
 
-        ServiceRegistration<BuildListener> buildListener = context.registerService(BuildListener.class, new BuildListener() {
-
+        UpdateGuard guard = new UpdateGuard(context) {
             @Override
-            public void buildStarting(IProject project) {
-                System.out.println("off " + project);
-
-                off();
+            protected void update() {
+                LaunchThread.this.update();
             }
+        };
 
-            @Override
-            public void builtBundles(IProject project, IPath[] paths) {}
-
-            @Override
-            public void released(IProject project) {
-                System.out.println("on released " + project);
-                on();
-            }
-        }, null);
-
-        //
-        // We also wait for repository changes, though they will generally cause a rebuild as well.
-        //
-        ServiceRegistration<RepositoryListenerPlugin> repositoryListener = context.registerService(RepositoryListenerPlugin.class, new RepositoryListenerPlugin() {
-
-            @Override
-            public void repositoryRefreshed(RepositoryPlugin repository) {
-                on();
-            }
-
-            @Override
-            public void repositoriesRefreshed() {
-                on();
-            }
-
-            @Override
-            public void bundleRemoved(RepositoryPlugin repository, Jar jar, File file) {
-                on();
-            }
-
-            @Override
-            public void bundleAdded(RepositoryPlugin repository, Jar jar, File file) {
-                on();
-            }
-        }, null);
+        guard.open();
 
         try {
             exitValue = session.launch();
@@ -150,16 +102,7 @@ class LaunchThread extends Thread implements IProcess {
             logger.logWarning("Exception from launcher", e);
             e.printStackTrace();
         } finally {
-            try {
-                buildListener.unregister();
-            } catch (Exception e) {
-                // ignore
-            }
-            try {
-                repositoryListener.unregister();
-            } catch (Exception e) {
-                // ignore
-            }
+            guard.close();
             terminate();
         }
     }
@@ -187,11 +130,6 @@ class LaunchThread extends Thread implements IProcess {
     public void terminate() {
         if (terminated.getAndSet(true))
             return;
-
-        if (trigger != null) {
-            trigger.cancel();
-            trigger = null;
-        }
 
         if (sproxy != null)
             sproxy.close();
@@ -284,39 +222,6 @@ class LaunchThread extends Thread implements IProcess {
         if (!terminated.get())
             throw new DebugException(new Status(IStatus.ERROR, BndtoolsConstants.CORE_PLUGIN_ID, ""));
         return exitValue;
-    }
-
-    private void off() {
-        if (isTerminated())
-            return;
-
-        synchronized (timer) {
-            System.out.println("off");
-            if (trigger != null)
-                trigger.cancel();
-            trigger = null;
-        }
-    }
-
-    private void on() {
-        if (isTerminated())
-            return;
-
-        synchronized (timer) {
-            System.out.println("on");
-            if (trigger != null)
-                trigger.cancel();
-            trigger = new TimerTask() {
-
-                @Override
-                public void run() {
-                    if (isTerminated())
-                        return;
-                    update();
-                }
-            };
-            timer.schedule(trigger, GRACE_PERIOD);
-        }
     }
 
     /**
