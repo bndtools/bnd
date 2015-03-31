@@ -72,9 +72,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	private final Map<String, String> installed = new HashMap<String, String>();
 	volatile boolean quit;
 	private static Map<String,AgentDispatcher> instances=new HashMap<String,AgentDispatcher>();
-	
 	private Redirector redirector = new NullRedirector();
-
 	private Link<Agent, Supervisor> link;
 
 	public AgentServer(String name, BundleContext context, File cache) {
@@ -295,7 +293,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
-	public boolean redirect(int port) throws IOException {
+	public boolean redirect(int port) throws Exception {
 		if (redirector != null) {
 			if (redirector.getPort() == port)
 				return false;
@@ -411,7 +409,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		return bd;
 	}
 
-	void cleanup(int event) throws IOException {
+	void cleanup(int event) throws Exception {
 		if (quit)
 			return;
 		
@@ -425,11 +423,15 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 	@Override
 	public void close() throws IOException {
-		cleanup(-2);
+		try {
+			cleanup(-2);
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 	@Override
-	public void abort() throws IOException {
+	public void abort() throws Exception {
 		cleanup(-3);
 	}
 
@@ -513,5 +515,10 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 	public boolean ping() {
 		return true;
+	}
+	
+	
+	public BundleContext getContext() {
+		return context;
 	}
 }

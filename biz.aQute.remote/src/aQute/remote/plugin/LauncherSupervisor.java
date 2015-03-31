@@ -1,6 +1,5 @@
 package aQute.remote.plugin;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -122,7 +121,7 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor, Agent>
 		return exitCode;
 	}
 
-	public void abort() throws IOException {
+	public void abort() throws Exception {
 		if (isOpen()) {
 			getAgent().abort();
 		}

@@ -35,7 +35,7 @@ public interface Agent {
 	boolean createFramework(String name, Collection<String> runpath,
 			Map<String, Object> properties) throws Exception;
 
-	void abort() throws IOException;
+	void abort() throws IOException, Exception;
 
 	boolean ping();
 }

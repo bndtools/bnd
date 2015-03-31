@@ -1,5 +1,7 @@
 package aQute.remote.agent;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
 
@@ -10,11 +12,21 @@ public class RedirectOutput extends PrintStream {
 	private boolean err;
 	private static ThreadLocal<Boolean> onStack = new ThreadLocal<Boolean>();
 
+	static class NullOutputStream extends OutputStream {
+		@Override
+		public void write(int arg0) throws IOException {
+		}
+	}
+	
 	public RedirectOutput(List<AgentServer> agents, PrintStream out, boolean err) {
-		super(out);
+		super(out == null ? out=nullOutputStream() : out);
 		this.agents = agents;
 		this.out = out;
 		this.err = err;
+	}
+
+	private static PrintStream nullOutputStream() {
+		return new PrintStream( new NullOutputStream());
 	}
 
 	public void write(int b) {

@@ -8,6 +8,8 @@ Private-Package: \
 	aQute.remote.plugin,\
 	aQute.remote.util,\
 	org.osgi.dto,\
-	org.osgi.framework.dto
-	
+	org.osgi.framework.dto, \
+	org.apache.felix.service.command.*
+
 Conditional-Package: aQute.lib*
+Import-Package: 

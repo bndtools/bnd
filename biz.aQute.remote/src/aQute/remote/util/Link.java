@@ -285,9 +285,12 @@ public class Link<L, R> extends Thread implements Closeable {
 						if (result.value == null)
 							return null;
 
-						if (result.exception)
-							throw new RuntimeException(codec.dec()
-									.from(result.value).get(String.class));
+						if (result.exception) {
+							String msg = codec.dec().from(result.value)
+									.get(String.class);
+							System.out.println("Exception " + msg);
+							throw new RuntimeException(msg);
+						}
 
 						if (type == byte[].class)
 							return (T) result.value;
@@ -393,7 +396,7 @@ public class Link<L, R> extends Thread implements Closeable {
 		quit.set(true);
 		interrupt();
 		join();
-		if ( result != null)
+		if (result != null)
 			send(msgid.get(), null, new Object[] { result });
 		close();
 	}

@@ -44,6 +44,7 @@ public class AgentDispatcher {
 				as.close();
 			}
 			try {
+				System.out.println("Framework stopping " + name);
 				framework.stop();
 			} catch (BundleException e) {
 				// ignore
@@ -59,6 +60,7 @@ public class AgentDispatcher {
 			Map<String, Object> configuration, final File storage,
 			final File shacache) throws Exception {
 
+		System.out.println("Create framework for " + name);
 		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(
 				FrameworkFactory.class, AgentServer.class.getClassLoader());
 		FrameworkFactory ff = null;
@@ -100,7 +102,11 @@ public class AgentDispatcher {
 	
 	
 	public static void toAgent(final Descriptor descriptor, DataInputStream in, DataOutputStream out) {
-		assert descriptor.framework.getState() == Bundle.ACTIVE;
+		if ( descriptor.framework.getState() != Bundle.ACTIVE ) {
+			System.out.println("The framework is no longer active");
+			return;
+		}
+			
 		
 		BundleContext context= descriptor.framework.getBundleContext();
 		AgentServer as = new AgentServer(descriptor.name, context, descriptor.shaCache) {
@@ -112,6 +118,7 @@ public class AgentDispatcher {
 		Link<Agent,Supervisor> link = new Link<Agent, Supervisor>(Supervisor.class, as, in,out);
 		as.setLink(link);
 		link.open();
+		System.out.println("Create agent for " + descriptor.name + " "  + context);
 	}
 	
 	/**

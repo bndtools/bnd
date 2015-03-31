@@ -230,11 +230,12 @@ public class EnvoyDispatcher implements Closeable {
 	public void run() {
 		while (!Thread.currentThread().isInterrupted())
 			try {
-				ServerSocket server = network.equals("*") ? new ServerSocket(
-						port) : new ServerSocket(port, 3,
-						InetAddress.getByName(network));
+				InetAddress address = network.equals("*")  ? null : InetAddress.getByName(network);
+				
+				ServerSocket server = address == null ? new ServerSocket(
+						port) : new ServerSocket(port, 3, address);
 				main.trace("Will wait  for %s:%s to finish",
-						InetAddress.getLocalHost(), port);
+						address, port);
 
 				while (!Thread.currentThread().isInterrupted())
 					try {

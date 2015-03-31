@@ -113,7 +113,7 @@ public class RunSessionImpl implements RunSession {
 	}
 
 	@Override
-	public void cancel() throws IOException {
+	public void cancel() throws Exception {
 		supervisor.abort();
 	}
 
