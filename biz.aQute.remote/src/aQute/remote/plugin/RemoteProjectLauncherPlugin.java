@@ -15,7 +15,10 @@ import aQute.bnd.osgi.Constants;
 import aQute.lib.converter.Converter;
 
 public class RemoteProjectLauncherPlugin extends ProjectLauncher {
-
+	private static Converter converter = new Converter();
+	static {
+		converter.setFatalIsException(false);
+	}
 	private Parameters runremote;
 	private List<RunSessionImpl> sessions = new ArrayList<RunSessionImpl>();
 	private boolean prepared;
@@ -34,9 +37,14 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	@Override
 	public void update() throws Exception {
 		updateFromProject();
+		
+		Parameters runremote = new Parameters(getProject().getProperty(Constants.RUNREMOTE));
+		
 		for (RunSessionImpl session : sessions)
 			try {
-				session.update();
+				Attrs attrs = runremote.get(session.getName());
+				RunRemoteDTO dto = Converter.cnv(RunRemoteDTO.class,attrs);
+				session.update(dto);
 			} catch (Exception e) {
 				getProject().exception(e, "Failed to update session %s", session.getName());
 			}
@@ -56,7 +64,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		calculatedProperties(properties);
 
 		for (Entry<String, Attrs> entry : runremote.entrySet()) {
-			RunRemoteDTO dto = Converter.cnv(RunRemoteDTO.class,
+			RunRemoteDTO dto = converter.convert(RunRemoteDTO.class,
 					entry.getValue());
 			dto.name = entry.getKey();
 

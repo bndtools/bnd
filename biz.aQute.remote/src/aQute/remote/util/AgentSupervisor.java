@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import aQute.bnd.util.dto.DTO;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
-import aQute.libg.comlink.Link;
 import aQute.libg.cryptography.SHA1;
 
 public class AgentSupervisor<Supervisor, Agent> {
@@ -25,7 +25,8 @@ public class AgentSupervisor<Supervisor, Agent> {
 	private CountDownLatch latch = new CountDownLatch(1);
 	protected volatile int exitCode;
 	private Link<Supervisor, Agent> link;
-
+	private AtomicBoolean quit = new AtomicBoolean(false);
+	
 	static class Info extends DTO {
 		public String sha;
 		public long lastModified;
@@ -36,13 +37,7 @@ public class AgentSupervisor<Supervisor, Agent> {
 		while (true)
 			try {
 				Socket socket = new Socket(host, port);
-				link = new Link<Supervisor, Agent>(agent, supervisor, socket) {
-					@Override
-					protected void terminate(Exception e) {
-						exit(-3);
-					}
-
-				};
+				link = new Link<Supervisor, Agent>(agent, supervisor, socket);
 				this.setAgent(link);
 				link.open();
 				return;
@@ -76,8 +71,13 @@ public class AgentSupervisor<Supervisor, Agent> {
 	}
 
 	public void close() throws IOException {
+		if ( quit.getAndSet(true))
+			return;
+
+		if (link.isOpen())
+			link.close();
+		
 		latch.countDown();
-		link.close();
 	}
 
 	public int join() throws InterruptedException {
@@ -120,4 +120,9 @@ public class AgentSupervisor<Supervisor, Agent> {
 		}
 	}
 
+	public boolean isOpen() {
+		return link.isOpen();
+	}
+	
+	
 }

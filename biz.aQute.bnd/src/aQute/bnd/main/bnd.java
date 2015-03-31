@@ -4111,11 +4111,15 @@ public class bnd extends Processor {
 	}
 
 	public void _export(ExportOptions opts) throws Exception {
+
 		Project project = getProject(opts.project());
 		if (project == null) {
 			error("No project");
 			return;
 		}
+
+		// temporary
+		project.getWorkspace().addBasicPlugin(new SubsystemExporter());
 
 		List<Exporter> exporters = project.getPlugins(Exporter.class);
 		Exporter exporter = null;

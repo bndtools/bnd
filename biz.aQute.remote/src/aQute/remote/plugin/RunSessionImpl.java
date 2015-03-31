@@ -25,7 +25,10 @@ public class RunSessionImpl implements RunSession {
 	public CountDownLatch started = new CountDownLatch(1);
 	private Appendable stderr;
 	private Appendable stdout;
+	private int shell = -4711;
 	public static int jdb = 16043;
+	
+	
 	public RunSessionImpl(RemoteProjectLauncherPlugin launcher,
 			RunRemoteDTO dto, Map<String, Object> properties) throws Exception {
 		this.launcher = launcher;
@@ -88,14 +91,8 @@ public class RunSessionImpl implements RunSession {
 
 			Agent agent = supervisor.getAgent();
 
-			if (agent.isEnvoy()) {
-				int secondaryPort = installFramework(agent, dto, properties);
-				supervisor.close();
-				System.out.println("Installed framework, changing port "
-						+ secondaryPort);
-				supervisor = new LauncherSupervisor();
-				supervisor.connect(dto.host, secondaryPort);
-			}
+			if (agent.isEnvoy())
+				installFramework(agent, dto, properties);
 
 			if ( stdout != null)
 				supervisor.setStdout(stdout);
@@ -105,7 +102,7 @@ public class RunSessionImpl implements RunSession {
 
 			started.countDown();
 
-			update();
+			update(dto);
 			int exitCode = supervisor.join();
 			System.out.println("Exiting " + dto.name + " " + exitCode);
 			return exitCode;
@@ -116,8 +113,8 @@ public class RunSessionImpl implements RunSession {
 	}
 
 	@Override
-	public void cancel() throws IOException {
-		supervisor.getAgent().abort();
+	public void cancel() throws Exception {
+		supervisor.abort();
 	}
 
 	@Override
@@ -125,7 +122,7 @@ public class RunSessionImpl implements RunSession {
 		return properties;
 	}
 
-	private int installFramework(Agent agent, RunRemoteDTO dto,
+	private boolean installFramework(Agent agent, RunRemoteDTO dto,
 			Map<String, Object> properties) throws Exception {
 		List<String> onpath = new ArrayList<String>(launcher.getRunpath());
 
@@ -158,10 +155,13 @@ public class RunSessionImpl implements RunSession {
 		return newer;
 	}
 
-	void update() throws Exception {
+	void update(RunRemoteDTO dto) throws Exception {
 		Map<String, String> newer = getBundles(launcher.getRunBundles(),
 				Constants.RUNBUNDLES);
-
+		if ( shell != dto.shell) {
+			supervisor.getAgent().redirect(dto.shell);
+			shell = dto.shell;
+		}
 		supervisor.getAgent().update(newer);
 	}
 
@@ -229,4 +229,5 @@ public class RunSessionImpl implements RunSession {
             }
         return result;
     }
+
 }

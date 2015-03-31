@@ -19,6 +19,19 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/*
+	 * Private package header doesn't allow the use of negation (!) #840
+	 */
+
+	public void testNegationInPrivatePackage_840() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.STRICT, "true");
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
+		b.setPrivatePackage("!org.osgi.service.event,org.osgi.service.*");
+		b.build();
+		assertTrue(b.check());
+	}
+
+	/*
 	 * Warn about missing packages in export
 	 */
 

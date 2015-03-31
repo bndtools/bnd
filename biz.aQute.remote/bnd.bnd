@@ -1,14 +1,14 @@
 
 -buildpath: \
 	osgi.core;version=6,\
-	ee.j2se;version=${javac.ee}, \
+	ee.j2se;version=${javac.ee},\
 	aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.junit;version=latest,\
-	org.apache.felix.framework;version=latest;packages=*
+	org.apache.felix.framework;version=latest;packages=*,\
+	org.apache.felix.gogo.runtime;version=0.12.0
 
 -sub: *.bnd
 
 Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter, aQute.bnd.util.*
 
-Import-Package: org.osgi.framework;version=1.5

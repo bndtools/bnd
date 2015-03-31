@@ -577,8 +577,10 @@ public class Builder extends Analyzer {
 
 				// ! effectively removes it from consideration by others (this
 				// includes exports)
-				if (instruction.isNegated())
+				if (instruction.isNegated()) {
+					used = true;
 					continue;
+				}
 
 				// Do the from: directive, filters on the JAR type
 				List<Jar> providers = filterFrom(from, p.getValue());
@@ -1677,7 +1679,7 @@ public class Builder extends Analyzer {
 	 *
 	 * @throws IOException
 	 */
-	static Pattern	GITREF			= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
+	static Pattern	GITREF_P		= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
 
 	static String	_githeadHelp	= "${githead}, provide the SHA for the current git head";
 
@@ -1701,12 +1703,27 @@ public class Builder extends Analyzer {
 					//
 					// Should be a symref
 					//
-					Matcher m = GITREF.matcher(head);
+					Matcher m = GITREF_P.matcher(head);
 					if (m.matches()) {
-
+						String reference = m.group(1);
 						// so the commit is in the following path
-
-						head = IO.collect(IO.getFile(rover, ".git/" + m.group(1)));
+						File file = IO.getFile(rover, ".git/" + reference);
+						if (!file.isFile()) {
+							// sigh, gc'd. Is in .git/packed-refs
+							file = IO.getFile(rover, ".git/packed-refs");
+							if (file.isFile()) {
+								String refs = IO.collect(file);
+								Pattern packedReferenceLinePattern = Pattern.compile("([a-fA-F0-9]{40,40})\\s+" + reference + "\\s*\n");
+								Matcher packedReferenceMatcher = packedReferenceLinePattern.matcher(refs);
+								if (packedReferenceMatcher.find()) {
+									head = packedReferenceMatcher.group(1);
+								} else
+									return ""; // give up
+							} else
+								return ""; // give up
+						} else {
+							head = IO.collect(file);
+						}
 					} else {
 						error("Git repo seems corrupt. It exists, find the HEAD but the content is neither hex nor a sym-ref: %s",
 								head);

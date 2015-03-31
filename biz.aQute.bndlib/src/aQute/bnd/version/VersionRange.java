@@ -171,4 +171,43 @@ public class VersionRange {
 	public static boolean isVersionRange(String stringRange) {
 		return RANGE.matcher(stringRange).matches();
 	}
+
+	/**
+	 * Intersect two version ranges
+	 */
+
+	public VersionRange intersect(VersionRange other) {
+		Version lower;
+		char start = this.start;
+
+		int lowc = this.low.compareTo(other.low);
+		if (lowc <= 0) {
+			lower = other.low;
+			if (lowc != 0 || start == '[') {
+				start = other.start;
+			}
+		} else {
+			lower = this.low;
+		}
+		Version upper;
+		char end = this.end;
+
+		int highc = this.high.compareTo(other.high);
+		if (highc >= 0) {
+			upper = other.high;
+			if (highc != 0 || end == ']') {
+				end = other.end;
+			}
+		} else {
+			upper = this.high;
+		}
+		return new VersionRange(start == '[', lower, upper, end == ']');
+	}
+
+	public static VersionRange parseVersionRange(String version) {
+		if (!isVersionRange(version))
+			return null;
+
+		return new VersionRange(version);
+	}
 }

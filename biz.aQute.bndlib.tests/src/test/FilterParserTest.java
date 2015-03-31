@@ -9,6 +9,12 @@ import aQute.bnd.osgi.resource.FilterParser.Expression;
 public class FilterParserTest extends TestCase {
 	FilterParser fp = new FilterParser();
 
+	public void testNestedAnd() throws IOException {
+		aQute.bnd.osgi.resource.FilterParser.Expression exp = fp
+				.parse("(&(osgi.wiring.package=osgi.enroute.webserver)(&(version>=1.0.0)(!(version>=2.0.0))))");
+		System.out.println(exp);
+	}
+
 	public void testSimple() throws IOException {
 		aQute.bnd.osgi.resource.FilterParser.Expression exp = fp
 				.parse("(&(osgi.wiring.package=package)(|(|(c=4)))(!(version>=2.0.0))(!(a=3))(version>=1.0.0))");

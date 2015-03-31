@@ -40,35 +40,70 @@ public class BaselineTest extends TestCase {
 		workspace = null;
 	}
 
+	/**
+	 * Test skipping classes when there is source
+	 */
+	public void testClassesDiffWithSource() throws Exception {
+		DiffPluginImpl diff = new DiffPluginImpl();
+		File file = IO.getFile("jar/osgi.jar");
+		Jar jar = new Jar(file);
+
+		Jar out = new Jar(".");
+		out.putResource("OSGI-OPT/src/org/osgi/application/ApplicationContext.java",
+				jar.getResource("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
+		out.putResource("org/osgi/application/ApplicationContext.class",
+				jar.getResource("org/osgi/application/ApplicationContext.class"));
+		Tree tree = diff.tree(out);
+
+		Tree src = tree.get("<resources>").get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java")
+				.getChildren()[0];
+		Tree clazz = tree.get("<resources>").get("org/osgi/application/ApplicationContext.class").getChildren()[0];
+		System.out.println("src & clazz " + src + " " + clazz);
+		assertEquals(src, clazz);
+	}
+
+	public void testClassesDiffWithoutSource() throws Exception {
+		DiffPluginImpl diff = new DiffPluginImpl();
+		File file = IO.getFile("jar/osgi.jar");
+		Jar jar = new Jar(file);
+		Jar out = new Jar(".");
+
+		for (String path : jar.getResources().keySet()) {
+			if (!path.startsWith("OSGI-OPT/src/"))
+				out.putResource(path, jar.getResource(path));
+		}
+
+		Tree tree = diff.tree(out);
+		assertNull(tree.get("<resources>").get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
+		assertNotNull(tree.get("<resources>").get("org/osgi/application/ApplicationContext.class"));
+	}
+
 	public void testJava8DefaultMethods() throws Exception {
 		Builder older = new Builder();
-		older.addClasspath( IO.getFile("java8/older/bin"));
+		older.addClasspath(IO.getFile("java8/older/bin"));
 		older.setExportPackage("*");
 		Jar o = older.build();
 		assertTrue(older.check());
-		
+
 		Builder newer = new Builder();
-		newer.addClasspath( IO.getFile("java8/newer/bin"));
+		newer.addClasspath(IO.getFile("java8/newer/bin"));
 		newer.setExportPackage("*");
 		Jar n = newer.build();
 		assertTrue(newer.check());
-		
+
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(older, differ);
 
-		Set<Info> infoSet = baseline.baseline(n,o, null);
+		Set<Info> infoSet = baseline.baseline(n, o, null);
 		assertEquals(1, infoSet.size());
-		for ( Info info : infoSet ) {
+		for (Info info : infoSet) {
 			assertTrue(info.mismatch);
-			assertEquals( new Version(0,1,0), info.suggestedVersion);
+			assertEquals(new Version(0, 1, 0), info.suggestedVersion);
 			assertEquals(info.packageName, "api_default_methods");
 		}
-		
+
 	}
-	
-	
-	
-	
+
 	/**
 	 * Check if we can ignore resources in the baseline. First build two jars
 	 * that are identical except for the b/b resource. Then do baseline on them.

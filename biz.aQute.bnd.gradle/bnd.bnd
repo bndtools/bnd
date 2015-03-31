@@ -17,3 +17,9 @@ Bundle-Description: The bnd gradle plugin.
   resources, \
   @${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
   embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}
+
+#
+# The groovy compiler should handle the compilation ...
+#
+
+ -fixupmessages: "Unused Private*aQute.bnd.gradle" 
