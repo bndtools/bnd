@@ -2,6 +2,7 @@ package aQute.bnd.osgi;
 
 import java.util.*;
 
+import aQute.bnd.header.*;
 import aQute.bnd.version.*;
 
 /**
@@ -42,7 +43,42 @@ public class About {
 	public static Version				_3_0		= new Version(3, 0, 0);
 
 	public static String[]				CHANGES_3_0	= {
-			"-pom now accepts artifactid, groupid, where, and version properties	",
+			"Use source file for SHA when a class has corresponding source in OSGI-OPT/src. This ignores differences in compilers",
+			"new maven plugin",
+			"${tstamp} is now consistent for a project build",
+			"target attribute is removed in bindex from a DS component",
+			"Support multiple source folders",
+			"Launcher changes to support multiple remote launchers",
+			"Better support for error locations on errors",
+			"Drop generale JAR urls on JPM repo will analyze the JAR and cerate an entry (though it will of course not be on JPM itself)",
+			"-runpath.* adds any provided capabilities to the frameworks (as it already did for packages)",
+			"Support for access rules as used in Eclipse",
+			"Publish all artifacts on bintray",
+			"Performance improvements",
+			"SearchableRepo now provides the browse URL",
+			"Bindex now supports DS > 1.2",
+			"Allowing embedded activators to start before the bundles are started (they normally started after all bundles were started)",
+			"Dropping URLs to JPM from Linux failed due to mucky URLs (newlines!!)",
+			"No longer a warning when you import from yourself and there is no export metadata (we’re building it!)",
+			"Additional conversions in converter; Dictionary, URI/L cleanup",
+			"Force the current working directory to be the project base during launching",
+
+			"Version mismatch between pacakge(-)info(.java) and manifest are now not taking qualifier into account ",
+			"Missing bundles on -runbundles are now errors",
+
+			"${isdir} and ${env} now return empty (false) if no value",
+
+			"Additional checks for non-existent imports or empty imports",
+			"-runkeep does now work",
+			"${versionmask} macro to use when ${version} is used for other purposes",
+
+			"Added annotation attributes by treating manifest annotations as meta annotations",
+			"Fixed #708, versionless import when having split packages where earlier packages have no content",
+			"-runproperties is now a merged header",
+			"Added JSONCodec hook",
+			"Gradle plugin supports non-bnd builds better",
+			"OSGi Enterprise DS & Metatype annotations",
+			"-pom now accepts artifactid, groupid, where, and version properties. General better support for generating POMs",
 			"Added a ${stem;<string>} macro that returns the stem (before the extension) of a file name",
 			"Added a ${thisfile} macro that returns the name of the properties file of the current processor if it exists."
 													};
