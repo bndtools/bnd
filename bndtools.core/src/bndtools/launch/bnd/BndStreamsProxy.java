@@ -13,18 +13,24 @@ import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.debug.core.model.IStreamsProxy2;
 
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.RunSession;
 
 public class BndStreamsProxy implements IStreamsProxy2 {
-    final ProjectLauncher pl;
+    final ProjectLauncher projectLauncher;
+    final RunSession session;
     Job job;
     StreamMonitor stdout;
     StreamMonitor stderr;
 
-    public BndStreamsProxy(ProjectLauncher pl) {
-        this.pl = pl;
+    public BndStreamsProxy(ProjectLauncher pl, RunSession session) {
+        this.projectLauncher = pl;
+        this.session = session;
+
         try {
-            pl.setStreams(stdout = new StreamMonitor(), stderr = new StreamMonitor());
+            session.stdout(stdout = new StreamMonitor());
+            session.stderr(stderr = new StreamMonitor());
         } catch (Exception e) {
+            e.printStackTrace();
             // ignore
         }
     }
@@ -90,13 +96,15 @@ public class BndStreamsProxy implements IStreamsProxy2 {
                 }
             };
         }
-        job.schedule(100);
+        job.schedule(200);
     }
 
     void flush() {
         job = null;
-        stdout.flush();
-        stderr.flush();
+        if (stdout != null) {
+            stdout.flush();
+            stderr.flush();
+        }
     }
 
     @Override
@@ -112,7 +120,7 @@ public class BndStreamsProxy implements IStreamsProxy2 {
     @Override
     public void write(String input) throws IOException {
         try {
-            pl.write(input);
+            session.stdin(input);
         } catch (Exception e) {
             // ignore
         }
@@ -121,6 +129,11 @@ public class BndStreamsProxy implements IStreamsProxy2 {
     @Override
     public void closeInputStream() throws IOException {
         // ignore
+    }
+
+    public void close() {
+        stdout = null;
+        stderr = null;
     }
 
 }

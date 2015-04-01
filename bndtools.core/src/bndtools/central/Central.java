@@ -29,16 +29,20 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
 
@@ -575,4 +579,30 @@ public class Central implements IStartupParticipant {
     public static ReentrantLock getBndLock() {
         return bndLock;
     }
+
+    /**
+     * Convert a processor to a status object
+     */
+
+    public static IStatus toStatus(Processor processor, String message) {
+        int severity = IStatus.INFO;
+        List<IStatus> statuses = new ArrayList<IStatus>();
+        for (String error : processor.getErrors()) {
+            Status status = new Status(IStatus.ERROR, BndtoolsConstants.CORE_PLUGIN_ID, error);
+            statuses.add(status);
+            severity = IStatus.ERROR;
+        }
+        for (String warning : processor.getWarnings()) {
+            Status status = new Status(IStatus.WARNING, BndtoolsConstants.CORE_PLUGIN_ID, warning);
+            statuses.add(status);
+            severity = IStatus.WARNING;
+        }
+
+        IStatus[] array = statuses.toArray(new IStatus[statuses.size()]);
+        return new MultiStatus(//
+                BndtoolsConstants.CORE_PLUGIN_ID, //
+                severity, //
+                array, message, null);
+    }
+
 }

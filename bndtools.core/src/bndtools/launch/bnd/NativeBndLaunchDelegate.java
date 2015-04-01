@@ -1,25 +1,37 @@
 package bndtools.launch.bnd;
 
-import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.IStatusHandler;
+import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.jdt.internal.launching.JavaRemoteApplicationLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
-import org.eclipse.jdt.launching.IVMConnector;
-import org.eclipse.jdt.launching.JavaRuntime;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.Run;
+import aQute.bnd.build.RunSession;
+import aQute.bnd.osgi.Processor;
+import bndtools.Plugin;
+import bndtools.central.Central;
+import bndtools.launch.LaunchConstants;
+import bndtools.launch.ui.internal.LaunchStatusHandler;
 import bndtools.launch.util.LaunchUtils;
+import bndtools.preferences.BndPreferences;
 
 /**
  * The link between the Eclipse launching subsystem and the bnd launcher. We bypass the standard Eclipse launching and
@@ -27,128 +39,185 @@ import bndtools.launch.util.LaunchUtils;
  * features in bnd and we are sure fidelity is maintained.
  */
 public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigurationDelegate {
-    private static final String DEFAULT_PORT = "17654";
-    private static final String DEFAULT_HOST = "localhost";
-
-    //  private static final ILogger logger = Logger.getLogger(NativeBndLaunchDelegate.class);
-
-    private static final Pattern NUMMERIC_P = Pattern.compile("(\\d+)");
+    volatile boolean canceled = false;
 
     /*
      * The Eclipse launch interface.
      */
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, final ILaunch launch, IProgressMonitor m) throws CoreException {
-        IProgressMonitor monitor = m == null ? new NullProgressMonitor() : m;
-        LaunchThread launchThread = null;
+        final IProgressMonitor monitor = m == null ? new NullProgressMonitor() : m;
+
+        Callable<Boolean> isCancelled = new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return canceled || monitor.isCanceled();
+            }
+        };
+
+        Processor p = new Processor();
 
         try {
+
+            monitor.setTaskName("Detecting if configuration is already launched");
+            if (isAlreadyRunning(configuration)) {
+                return;
+            }
+
+            String target = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
+            if (target == null || target.length() == 0) {
+                p.error("No target specified in the launch configuration");
+                return;
+            }
+
+            IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(target);
+            if (targetResource == null) {
+                p.error("No actual resource found for " + target);
+                return;
+            }
+
+            IProject parent = targetResource.getProject();
+            if (parent == null) {
+                p.error("Not part of a project " + targetResource);
+                return;
+            }
+
+            Project parentModel = Central.getProject(parent);
+            if (parentModel == null) {
+                p.error("Cannot locate bnd project for " + targetResource);
+                return;
+            }
+
+            Project model;
+            if (targetResource.getName().equals(Project.BNDFILE)) {
+                model = parentModel;
+            } else {
+
+                File file = targetResource.getLocation().toFile();
+                if (file == null || !file.isFile()) {
+                    p.error("No file associated with the entry " + targetResource);
+                    return;
+                }
+
+                model = new Run(parentModel.getWorkspace(), parentModel.getBase(), file);
+            }
+
+            monitor.setTaskName("Target is " + model);
+
+            boolean debug = "debug".equals(mode);
             try {
-
-                final Project model = LaunchUtils.getBndProject(configuration);
-                if (model == null)
-                    throw new LaunchException("Cannot locate model", IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
-
+                List<LaunchThread> lts = new ArrayList<LaunchThread>();
                 ProjectLauncher projectLauncher = model.getProjectLauncher();
-                if ("debug".equals(mode))
-                    launchThread = doDebug(configuration, launch, monitor, model, projectLauncher);
-                else
-                    launchThread = launch(projectLauncher, launch);
+                try {
 
-                launch.addProcess(launchThread);
+                    List< ? extends RunSession> sessions = projectLauncher.getRunSessions();
+                    if (sessions == null) {
+                        projectLauncher.error("This launcher for %s cannot handle the new style", target);
+                        return;
+                    }
 
-            } catch (LaunchException ie) {
-                abort(ie.getMessage(), null, ie.getErr());
-            }
-        } catch (Exception e) {
-            if (launchThread != null)
-                launchThread.terminate();
-            IStatus status = new Status(Status.ERROR, "", "launching native bnd", e);
-            throw new CoreException(status);
-        }
-    }
+                    for (RunSession session : sessions)
+                        try {
 
-    /*
-     * Setup a debug session
-     */
-    @SuppressWarnings("unchecked")
-    private LaunchThread doDebug(ILaunchConfiguration configuration, ILaunch launch, IProgressMonitor monitor, Project model, final ProjectLauncher projectLauncher) throws CoreException, LaunchException, InterruptedException {
-        setDefaultSourceLocator(launch, configuration);
-        Map<String,String> argMap = configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_CONNECT_MAP, (Map<String,String>) null);
-        @SuppressWarnings("deprecation")
-        int connectTimeout = JavaRuntime.getPreferences().getInt(JavaRuntime.PREF_CONNECT_TIMEOUT);
+                            monitor.setTaskName("validating session " + session.getLabel());
+                            if (!session.validate(isCancelled)) {
+                                continue;
+                            }
 
-        IVMConnector connector = getConnector(configuration);
-        String port = model.getProperty("-runjdb", DEFAULT_PORT);
-        String host = model.getProperty("-runjdbhost", DEFAULT_HOST);
+                            LaunchThread lt = new LaunchThread(projectLauncher, session, launch);
 
-        if (argMap == null) {
-            argMap = new HashMap<String,String>();
-        }
+                            if (debug) {
+                                lt.doDebug(monitor);
+                            }
 
-        if (connectTimeout < 5000)
-            connectTimeout = 5000;
+                            if (monitor.isCanceled())
+                                return;
 
-        if (!NUMMERIC_P.matcher(port).matches()) {
-            throw new LaunchException("-runjdb is set but not to an integer " + port, IJavaLaunchConfigurationConstants.ERR_INVALID_PORT);
-        }
+                            launch.addProcess(lt);
+                            lts.add(lt);
 
-        try {
-            InetAddress.getByName(host);
-        } catch (Exception e) {
-            throw new LaunchException("Invalid hostname specified in -runjdbhost ", IJavaLaunchConfigurationConstants.ERR_INVALID_HOSTNAME);
-        }
+                        } catch (Exception e) {
+                            projectLauncher.exception(e, "Starting session %s in project %s", session.getName(), model);
+                        }
 
-        argMap.put("port", port);
-        argMap.put("hostname", host);
-        argMap.put("timeout", Integer.toString(connectTimeout == 0 ? 30000 : connectTimeout)); //$NON-NLS-1$
+                } catch (Exception e) {
+                    projectLauncher.exception(e, "starting processes");
+                } finally {
+                    p.getInfo(projectLauncher);
+                }
 
-        //
-        // Make sure Java allows us to attach
-        //
+                if (!p.isOk()) {
+                    IStatus status = Central.toStatus(projectLauncher, "Errors detected during the launch");
+                    IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(status);
+                    Boolean cont = (Boolean) prompter.handleStatus(status, null);
+                    if (cont == null || !cont || monitor.isCanceled()) {
+                        launch.terminate();
+                        return;
+                    }
+                }
 
-        projectLauncher.addRunVM("-Xdebug");
-        projectLauncher.addRunVM(String.format("-Xrunjdwp:transport=dt_socket,server=y,address=%s", port));
+                for (LaunchThread lt : lts) {
+                    lt.start();
+                }
 
-        LaunchThread launchThread = launch(projectLauncher, launch);
-        tryConnect(launch, monitor, connector, argMap);
-        return launchThread;
-    }
-
-    private IVMConnector getConnector(ILaunchConfiguration configuration) throws CoreException, LaunchException {
-        String connectorId = getVMConnectorId(configuration);
-        IVMConnector connector = null;
-        if (connectorId == null) {
-            connector = JavaRuntime.getDefaultVMConnector();
-        } else {
-            connector = JavaRuntime.getVMConnector(connectorId);
-        }
-        if (connector == null)
-            throw new LaunchException("Cannot locate connector for connectorId " + connectorId, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
-
-        return connector;
-    }
-
-    private void tryConnect(ILaunch launch, IProgressMonitor monitor, IVMConnector connector, Map<String,String> argMap) throws InterruptedException {
-        long deadline = System.currentTimeMillis() + 10000;
-
-        do {
-
-            if (monitor.isCanceled())
-                break;
-
-            try {
-                connector.connect(argMap, monitor, launch);
             } catch (Exception e) {
-                Thread.sleep(500);
+                launch.terminate();
+                abort("Internal error", e, IJavaLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
+            }
+        } catch (Exception e) {
+            p.exception(e, "While starting a launch %s", configuration);
+        } finally {
+            if (!p.isOk()) {
+                IStatus status = Central.toStatus(p, "Errors detected during the launch");
+                IStatusHandler prompter = new LaunchStatusHandler();
+                prompter.handleStatus(status, null);
+                launch.terminate();
             }
 
-        } while (System.currentTimeMillis() < deadline);
+            monitor.done();
+            p.close();
+        }
     }
 
-    private LaunchThread launch(ProjectLauncher projectLauncher, ILaunch launch) {
-        LaunchThread lt = new LaunchThread(projectLauncher, launch);
-        lt.start();
-        return lt;
+    /**
+     * Check if we already have a configuration running
+     */
+
+    public boolean isAlreadyRunning(ILaunchConfiguration configuration) throws CoreException {
+        // Check for existing launches of same resource
+        BndPreferences prefs = new BndPreferences();
+        if (prefs.getWarnExistingLaunches()) {
+            IResource launchResource = LaunchUtils.getTargetResource(configuration);
+            if (launchResource == null)
+                return false;
+
+            int processCount = 0;
+            for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
+                // ... is it the same launch resource?
+                ILaunchConfiguration launchConfig = l.getLaunchConfiguration();
+                if (launchConfig == null) {
+                    continue;
+                }
+                if (launchResource.equals(LaunchUtils.getTargetResource(launchConfig))) {
+                    // Iterate existing processes
+                    for (IProcess process : l.getProcesses()) {
+                        if (!process.isTerminated())
+                            processCount++;
+                    }
+                }
+            }
+
+            // Warn if existing processes running
+            if (processCount > 0) {
+                Status status = new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0,
+                        "One or more OSGi Frameworks have already been launched for this configuration. Additional framework instances may interfere with each other due to the shared storage directory.", null);
+                IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(status);
+                if (prompter != null) {
+                    boolean okay = (Boolean) prompter.handleStatus(status, launchResource);
+                    return !okay;
+                }
+            }
+        }
+        return false;
     }
 }
