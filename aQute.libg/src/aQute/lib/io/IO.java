@@ -1,6 +1,7 @@
 package aQute.lib.io;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.nio.*;
 import java.security.*;
@@ -9,9 +10,9 @@ import java.util.*;
 import aQute.libg.glob.*;
 
 public class IO {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+	static final int			BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
 
-	static final public File	work	= new File(System.getProperty("user.dir"));
+	static final public File	work		= new File(System.getProperty("user.dir"));
 	static final public File	home;
 	static {
 		File tmp = null;
@@ -73,6 +74,7 @@ public class IO {
 	public static void copy(byte[] data, File file) throws FileNotFoundException, IOException {
 		copy(data, new FileOutputStream(file));
 	}
+
 	public static void copy(byte[] r, OutputStream w) throws IOException {
 		copy(new ByteArrayInputStream(r), w);
 	}
@@ -239,10 +241,10 @@ public class IO {
 
 	public static byte[] read(InputStream in) throws IOException {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		copy( in, bout);
+		copy(in, bout);
 		return bout.toByteArray();
 	}
-	
+
 	public static void write(byte[] data, OutputStream out) throws Exception {
 		copy(new ByteArrayInputStream(data), out);
 	}
@@ -395,8 +397,13 @@ public class IO {
 	 */
 	public static void deleteWithException(File f) throws IOException {
 		f = f.getAbsoluteFile();
-		if (!f.exists())
+
+		if (!f.exists()) {
+			if (isSymbolicLink(f)) {
+				f.delete();
+			}
 			return;
+		}
 		if (f.getParentFile() == null)
 			throw new IllegalArgumentException("Cannot recursively delete root for safety reasons");
 
@@ -578,6 +585,40 @@ public class IO {
 
 	public static PrintWriter writer(OutputStream out) throws IOException {
 		return writer(out, "UTF-8");
+	}
+
+	/**
+	 * Reflective way to create a link. This assumes Java 7+
+	 */
+	public static boolean createSymbolicLink(File link, File target) throws Exception {
+		try {
+			Method toPath = link.getClass().getMethod("toPath");
+			Class< ? > Files = Class.forName("java.nio.file.Files");
+			for (Method m : Files.getMethods()) {
+				if (m.getName().equals("createSymbolicLink") && m.getParameterTypes().length == 3) {
+					Object attrs = Array.newInstance(m.getParameterTypes()[2].getComponentType(), 0);
+					m.invoke(null, toPath.invoke(link), toPath.invoke(target), attrs);
+					return true;
+				}
+			}
+		}
+		catch (Exception e) {
+			// ignore
+		}
+		return false;
+	}
+
+	public static boolean isSymbolicLink(File link) {
+		try {
+			Method toPath = link.getClass().getMethod("toPath");
+			Class< ? > Files = Class.forName("java.nio.file.Files");
+			Method method = Files.getMethod("isSymbolicLink", toPath.getReturnType());
+			return (Boolean) method.invoke(null, toPath.invoke(link));
+		}
+		catch (Exception e) {
+			// ignore
+		}
+		return false;
 	}
 
 	static public OutputStream	nullStream	= new OutputStream() {
