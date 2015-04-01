@@ -1,5 +1,10 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
+#
+# REMOTE LAUNCHING
+#
+
+aQute.agent.server.port = 29998
 
 -buildpath: \
 	osgi.core;version=6,\
@@ -11,6 +16,15 @@
 
 -sub: *.bnd
 
+#
+# Make sure we do not create depson aQute.lib
+#
+
 Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter, aQute.bnd.util.*
+
+#
+# TODO Some tests were hanging on Travis. They ran fine on the mac
+# likely network issues.
+#
 
 no.junit=true

@@ -15,6 +15,7 @@ import aQute.remote.api.Supervisor;
 import aQute.remote.util.Link;
 
 public class Activator extends Thread implements BundleActivator {
+	private static final String A_QUTE_AGENT_SERVER_PORT = "aQute.agent.server.port";
 	static Pattern PORT_P = Pattern.compile("(?:([^:]+):)?(\\d+)");
 	private File cache;
 	private ServerSocket server;
@@ -23,7 +24,7 @@ public class Activator extends Thread implements BundleActivator {
 	@Override
 	public void start(final BundleContext context) throws Exception {
 		this.context = context;
-		String port = context.getProperty("aQute.agent.server.port");
+		String port = context.getProperty(A_QUTE_AGENT_SERVER_PORT);
 
 		if (port == null)
 			port = Agent.DEFAULT_PORT + "";
