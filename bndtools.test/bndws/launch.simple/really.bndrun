@@ -4,8 +4,9 @@
 #
 pi = pi2;host=192.168.67.110;jdb=4000;agent=4001;shell=1
 wlp = wlp;jdb=7777;shell=-22
+liferay=liferay;shell=11311;jdb=8000
 
--runremote: ${pi}
+-runremote: ${liferay}
 
 -runfw: org.apache.felix.framework;version='[4,5)'
 -runee: JavaSE-1.7
