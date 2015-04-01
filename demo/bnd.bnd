@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 Private-Package: \
 	com.example.demo,\
 	test
@@ -25,7 +28,6 @@ Import-Package: \
 
 -buildpath: \
 	osgi.core;version=4.3.1,\
-	ee.j2se;version=1.5.0,\
 	biz.aQute.bnd.annotation;version=latest,\
 	com.springsource.org.junit
 	

@@ -1,7 +1,5 @@
--include: .settings/org.eclipse.jdt.core.prefs
-
-javac.source 			= ${org.eclipse.jdt.core.compiler.compliance}
-javac.target 			= ${org.eclipse.jdt.core.compiler.codegen.targetPlatform}
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -sources: false
 
@@ -24,7 +22,6 @@ Conditional-Package: 			aQute.libg.*, aQute.lib.*
 
 -buildpath: \
 	aQute.libg;version=project,\
-	ee.j2se;version=${javac.ee},\
 	biz.aQute.bndlib;version=latest,\
 	aQute.jpm.clnt;version=2.1,\
 	lib/WinRun4J.jar;version=file

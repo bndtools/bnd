@@ -1,7 +1,8 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
 	osgi.core;version=6,\
-	ee.j2se;version=${javac.ee},\
 	aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.junit;version=latest,\

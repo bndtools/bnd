@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	lib/jetty-continuation-7.6.3.v20120416.jar;version=file,\
 	lib/jetty-http-7.6.3.v20120416.jar;version=file,\
@@ -15,7 +18,6 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	osgi.cmpn;version=4.3.1,\
 	osgi.r5;version=1.0.1,\
 	lib/javax.xml.stream-1.0.1.jar;version=file,\
-	ee.j2se;version=${javac.ee},\
 	${jetty.libs},\
 	aQute.jpm.bndrepo;version=1.0;packages=*
 -testpath: \

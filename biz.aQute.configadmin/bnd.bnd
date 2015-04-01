@@ -1,5 +1,7 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 -buildpath: \
-    ee.j2se;version=${javac.ee}, \
 	osgi.core; version=4.2, \
 	osgi.cmpn; version=4.2
 -testpath: \

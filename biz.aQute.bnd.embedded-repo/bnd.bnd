@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 -resourceonly: true
 
 Bundle-Description: Embedded Repo for bnd workspace.

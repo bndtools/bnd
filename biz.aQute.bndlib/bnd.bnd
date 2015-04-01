@@ -1,4 +1,5 @@
--sourcepath:					../aQute.libg/src
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
 
 Bundle-Name: 					bndlib
 Bundle-Description:				A Swiss Army Knife for OSGi
@@ -45,8 +46,7 @@ Conditional-Package:	        aQute.service.*, aQute.configurable
 	osgi.cmpn;version=4.3.1,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.3.1,\
-	osgi.r5;version=1.0.1,\
-	ee.j2se;version=${javac.ee}
+	osgi.r5;version=1.0.1
 
 Import-Package: junit.framework;resolution:=optional,\
 	org.osgi.resource;resolution:=optional,\

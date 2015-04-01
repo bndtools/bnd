@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 -dependson: biz.aQute.bnd.embedded-repo
 
 Private-Package: \
@@ -8,7 +11,6 @@ Private-Package: \
 Bundle-Description: The bnd gradle plugin.
 
 -buildpath: \
-  ee.j2se;version=${javac.ee}, \
   aQute.libg;version=latest, \
   biz.aQute.bndlib;version=latest
 

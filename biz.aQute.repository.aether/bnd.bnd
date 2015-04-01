@@ -1,7 +1,9 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 aether-version: 0.9.0.M3
 
 -buildpath:\
-	ee.j2se; version=${javac.ee},\
 	aQute.libg; version=project,\
 	biz.aQute.bndlib; version=project,\
 	biz.aQute.repository; version=project;packages=*,\

@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 -dependson: biz.aQute.launcher, biz.aQute.junit, demo
 -nobundles: true
 
@@ -11,7 +14,6 @@
 	osgi.core;version=@6,\
 	osgi.cmpn;version=@4.3.1,\
 	junit.osgi;version=3.8.2,\
-	ee.j2se;version=${javac.ee},\
 	org.mockito.mockito-all;version=1.9.0
 
 -runtrace: true

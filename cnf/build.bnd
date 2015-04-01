@@ -30,10 +30,10 @@
 ## Java Compiler Options
 #java:                  java
 #javac:                 javac
-javac.source:           1.6
-javac.target:           1.6
+javac.source:           1.7
+javac.target:           1.7
+javac.compliance:       1.7
 javac.debug:            on
-javac.ee:               '[1.6,1.7)'
 
 ## Bnd Options
 #-sources:              true

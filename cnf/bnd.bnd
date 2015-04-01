@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 -nobundles = true
 
 -runfw: org.apache.felix.framework;version=@4.0.0

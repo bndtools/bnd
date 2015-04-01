@@ -1,13 +1,12 @@
-javac.source = 1.5
-javac.target = 1.5
-javac.ee = '[1.5,1.6)'
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: com.springsource.org.junit;version='[4.11,5)',\
 	osgi.cmpn;version=4.3.1,\
 	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.3.1,\
-	ee.j2se;version=${javac.ee}
+	ee.j2se;version=${javac.compliance}
 	
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 

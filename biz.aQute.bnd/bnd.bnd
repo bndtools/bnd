@@ -4,6 +4,8 @@
 # This is not a bundle ...
 #
 
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
 
 
 Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
@@ -28,7 +30,6 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 -dependson: biz.aQute.bnd.embedded-repo
 
 -buildpath: aQute.libg;version=latest,\
-	ee.j2se;version=${javac.ee},\
 	biz.aQute.bndlib;version=project,\
 	org.apache.tools.ant,\
 	org.osgi.service.component.annotations;version=1.3.0,\
