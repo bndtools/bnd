@@ -3,5 +3,4 @@
 
 Export-Package: org.osgi.service.indexer
 -buildpath: \
-	ee.j2se;version=${javac.ee},\
 	biz.aQute.bnd.annotation;version=latest
