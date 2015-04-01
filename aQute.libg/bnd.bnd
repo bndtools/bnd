@@ -1,5 +1,8 @@
 -buildpath: \
     ee.j2se;version=${javac.ee}
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 -testpath: \
     com.springsource.junit
 

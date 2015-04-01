@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 Export-Package: org.osgi.service.indexer
 -buildpath: \
 	ee.j2se;version=${javac.ee},\

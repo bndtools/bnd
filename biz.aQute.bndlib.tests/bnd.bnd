@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 -dependson: biz.aQute.launcher, biz.aQute.junit, demo
 -nobundles: true
 

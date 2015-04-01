@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 -buildpath: \
 	org.osgi.impl.bundle.repoindex.api;version=project,\
 	org.osgi.impl.bundle.repoindex.lib;version=project,\

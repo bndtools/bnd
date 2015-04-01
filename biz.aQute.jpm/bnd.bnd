@@ -1,7 +1,5 @@
--include: .settings/org.eclipse.jdt.core.prefs
-
-javac.source 			= ${org.eclipse.jdt.core.compiler.compliance}
-javac.target 			= ${org.eclipse.jdt.core.compiler.codegen.targetPlatform}
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -sources: false
 

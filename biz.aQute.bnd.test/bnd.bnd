@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 Bundle-Name:            bnd Test Library
 Bundle-Description:     Contains only the test functions for bnd.
 Export-Package:         aQute.bnd.test.*

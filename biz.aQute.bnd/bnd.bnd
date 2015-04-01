@@ -4,6 +4,8 @@
 # This is not a bundle ...
 #
 
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
 
 
 Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable

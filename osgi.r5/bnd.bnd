@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 -buildpath: osgi.core-5.0.0.jar;version=file,\
 	osgi.enterprise-5.0.0.jar;version=file
 

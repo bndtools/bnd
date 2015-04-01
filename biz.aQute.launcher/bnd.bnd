@@ -1,12 +1,11 @@
-javac.source = 1.6
-javac.target = 1.6
-javac.ee = '[1.6,1.7)'
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.3.1,\
-	ee.j2se;version=${javac.ee}
-#	ee.minimum;version=1.2.1
+	ee.j2se;version=${javac.compliance}
+
 -testpath: \
 	junit.osgi;version=3.8.2
 	
