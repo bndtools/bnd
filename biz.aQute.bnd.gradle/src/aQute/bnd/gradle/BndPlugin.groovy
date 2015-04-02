@@ -24,6 +24,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
+import org.gradle.api.logging.Logger
 
 public class BndPlugin implements Plugin<Project> {
   public static final String PLUGINID = 'biz.aQute.bnd'
@@ -62,7 +63,7 @@ public class BndPlugin implements Plugin<Project> {
       }
       bndProject.prepare();
       if (!bndProject.isValid()) {
-        checkErrors()
+        checkErrors(logger)
         throw new GradleException("Project ${bndProject.getName()} is not a valid bnd project")
       }
       this.preCompileRefresh = project.hasProperty('bnd_preCompileRefresh') ? parseBoolean(bnd_preCompileRefresh) : false
@@ -167,6 +168,9 @@ public class BndPlugin implements Plugin<Project> {
             }
           }
         }
+        doFirst {
+            checkErrors(logger)
+        }
         if (preCompileRefresh) {
           doFirst {
             logger.info 'Refreshing the bnd Project before compilation.'
@@ -181,6 +185,9 @@ public class BndPlugin implements Plugin<Project> {
 
       compileTestJava {
         configure compileOptions
+        doFirst {
+            checkErrors(logger)
+        }
         if (preCompileRefresh) {
           doFirst {
             logger.info 'Refreshing the bnd Project before compilation.'
@@ -241,7 +248,7 @@ public class BndPlugin implements Plugin<Project> {
             } catch (Exception e) {
               throw new GradleException("Project ${bndProject.getName()} failed to build", e)
             }
-            checkErrors()
+            checkErrors(logger)
             if (built != null) {
               logger.info 'Generated bundles: {}', built
             }
@@ -262,7 +269,7 @@ public class BndPlugin implements Plugin<Project> {
             } catch (Exception e) {
               throw new GradleException("Project ${bndProject.getName()} failed to release", e)
             }
-            checkErrors()
+            checkErrors(logger)
           }
         }
       }
@@ -275,6 +282,15 @@ public class BndPlugin implements Plugin<Project> {
 
       test {
         enabled !parseBoolean(bnd(Constants.NOJUNIT, 'false')) && !parseBoolean(bnd('no.junit', 'false'))
+        doFirst {
+          try {
+            checkErrors(logger)
+          } catch (Exception e) {
+            if (!ignoreFailures) {
+              throw e
+            }
+          }
+        }
       }
 
       check {
@@ -289,7 +305,7 @@ public class BndPlugin implements Plugin<Project> {
               throw new GradleException("Project ${bndProject.getName()} failed to test", e)
             }
             try {
-              checkErrors()
+              checkErrors(logger)
             } catch (Exception e) {
               if (!ignoreFailures) {
                 throw e
@@ -339,7 +355,7 @@ public class BndPlugin implements Plugin<Project> {
                 } catch (Exception e) {
                   throw new GradleException("Export of ${runFile.absolutePath} to an executable jar failed", e)
                 }
-                checkErrors()
+                checkErrors(logger)
               }
             }
           }
@@ -377,7 +393,7 @@ public class BndPlugin implements Plugin<Project> {
                 } catch (Exception e) {
                   throw new GradleException("Creating a distribution of the runbundles in ${runFile.absolutePath} failed", e)
                 }
-                checkErrors()
+                checkErrors(logger)
               }
             }
           }
@@ -423,6 +439,7 @@ public class BndPlugin implements Plugin<Project> {
           }
           println "target:                 ${buildDir}"
           println()
+          checkErrors(logger)
         }
       }
 
@@ -440,6 +457,7 @@ public class BndPlugin implements Plugin<Project> {
             println "${it}: ${bnd(it, '')}"
           }
           println()
+          checkErrors(logger)
         }
       }
 
@@ -472,27 +490,26 @@ public class BndPlugin implements Plugin<Project> {
     return project.files(bndProject.getTestOutput())
   }
 
-  private void checkErrors() {
+  private void checkErrors(Logger logger) {
     bndProject.getInfo(bndProject.getWorkspace(), "${bndProject.getWorkspace().getBase().name} :")
     def boolean failed = !bndProject.isOk()
-    def int errorCount = 0
+    def int errorCount = bndProject.getErrors().size()
     bndProject.getWarnings().each {
-      project.logger.warn 'Warning: {}', it
+      logger.warn 'Warning: {}', it
     }
     bndProject.getWarnings().clear()
     bndProject.getErrors().each {
-      project.logger.error 'Error  : {}', it
-      errorCount++
+      logger.error 'Error  : {}', it
     }
     bndProject.getErrors().clear()
     if (failed) {
-      def str = 'even though no errors were reported'
+      def str = ' even though no errors were reported'
       if (errorCount == 1) {
-        str = 'one error was reported'
+        str = ', one error was reported'
       } else if (errorCount > 1) {
-        str = "${errorCount} errors were reported"
+        str = ", ${errorCount} errors were reported"
       }
-      throw new GradleException("Project ${bndProject.getName()} is invalid, ${str}")
+      throw new GradleException("Project ${bndProject.getName()} has errors${str}")
     }
   }
 
