@@ -168,7 +168,7 @@ class BundleTaskConvention {
         // Build bundle
         def Jar bundleJar = builder.build()
         bundleJar.updateModified(jar.lastModified(), 'time of Jar task generated jar')
-        if (!builder.getErrors().isEmpty()) {
+        if (!builder.isOk()) {
           // if we already have an error; fail now
           builder.getWarnings().each {
             logger.warn 'Warning: {}', it
@@ -194,7 +194,7 @@ class BundleTaskConvention {
         builder.getErrors().each {
           logger.error 'Error  : {}', it
         }
-        if (!builder.getErrors().isEmpty()) {
+        if (!builder.isOk()) {
           failBuild("Bundle ${archiveName} has errors")
         }
       } finally {
