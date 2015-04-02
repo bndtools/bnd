@@ -4,6 +4,7 @@ import java.util.*;
 
 public class Logic {
 
+	@SafeVarargs
 	public static <T> Collection<T> retain(Collection<T> first, Collection<T>... sets) {
 		Set<T> result = new HashSet<T>(first);
 		for (Collection<T> set : sets) {
@@ -12,6 +13,7 @@ public class Logic {
 		return result;
 	}
 
+	@SafeVarargs
 	public static <T> Collection<T> remove(Collection<T> first, Collection<T>... sets) {
 		Set<T> result = new HashSet<T>(first);
 		for (Collection<T> set : sets) {
