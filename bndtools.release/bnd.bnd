@@ -1,8 +1,10 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 Test: true
 Bundle-SymbolicName: bndtools.release;singleton:=true
 Bundle-Activator: bndtools.release.Activator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: ${java.req.ee}
 Bundle-Localization: plugin
 
 Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
@@ -21,7 +23,6 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 					/=resources
 
 -buildpath:\
-	ee.j2se;version=${javac.ee},\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\

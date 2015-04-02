@@ -1,10 +1,11 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd, icons.properties
+
 -dependson: bndtools.bndplugins
--include: icons.properties
 
 Bundle-SymbolicName: bndtools.core;singleton:=true
 Bundle-Activator: bndtools.Plugin
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: ${java.req.ee}
 Bundle-Localization: plugin
 
 # 1. JUNit and Felix Shell are optional dependencies.
@@ -83,7 +84,6 @@ eclipse.deps: \
 	org.eclipse.core.contenttype
 
 -buildpath: \
-	ee.j2se;version=${javac.ee},\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\

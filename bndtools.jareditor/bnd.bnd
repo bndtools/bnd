@@ -1,9 +1,10 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 Bundle-SymbolicName: bndtools.jareditor;singleton:=true
-Bundle-RequiredExecutionEnvironment: ${java.req.ee}
 Include-Resource: resources
 
 -buildpath:  \
-	ee.j2se;version=${javac.ee},\
 	osgi.core;version=${osgi.core.version},\
 	${bndlib},\
 	org.eclipse.jface.text,\
