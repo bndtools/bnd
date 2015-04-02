@@ -30,6 +30,46 @@ public class ProjectTest extends TestCase {
 
 	
 	/**
+	 * Test linked canonical name
+	 */
+	public void testCanonicalName() throws Exception {
+
+		Workspace ws = getWorkspace("testresources/ws");
+		Project project = ws.getProject("p6");
+		project.setProperty("-outputmask", "blabla");
+
+		project.clean();
+		// Now we build it.
+		File[] files = project.build();
+		assertTrue(project.check());
+		assertNotNull(files);
+		assertEquals(1, files.length);
+		assertEquals("blabla", files[0].getName());
+		File f = new File(project.getTarget(), "p6.jar");
+		assertTrue(f.isFile());
+	}
+	
+	/**
+	 * Test linked canonical name
+	 */
+	public void testNoCanonicalName() throws Exception {
+
+		Workspace ws = getWorkspace("testresources/ws");
+		Project project = ws.getProject("p6");
+
+		project.clean();
+		// Now we build it.
+		File[] files = project.build();
+		assertTrue(project.check());
+		assertNotNull(files);
+		assertEquals(1, files.length);
+		assertEquals("p6.jar", files[0].getName());
+		File f = new File(project.getTarget(), "p6.jar");
+		assertTrue(f.isFile());
+		assertFalse(IO.isSymbolicLink(f));
+	}
+
+	/**
 	 * Test the multi-key support on runbundles/runpath/testpath and buildpath
 	 */
 	

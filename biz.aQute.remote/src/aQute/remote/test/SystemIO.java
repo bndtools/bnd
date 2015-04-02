@@ -1,12 +1,10 @@
 package aQute.remote.test;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import org.osgi.framework.*;
 
-public class SystemIO implements BundleActivator{
+public class SystemIO implements BundleActivator {
 
 	@Override
 	public void start(BundleContext context) throws Exception {
@@ -17,7 +15,7 @@ public class SystemIO implements BundleActivator{
 	public void stop(BundleContext context) throws Exception {
 		InputStreamReader isr = new InputStreamReader(System.in);
 		BufferedReader br = new BufferedReader(isr);
-		
+
 		System.out.println(br.readLine().trim().toUpperCase());
 	}
 

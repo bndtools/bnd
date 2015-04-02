@@ -1,40 +1,31 @@
 package aQute.remote.plugin;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
 
-import aQute.bnd.build.RunSession;
-import aQute.bnd.osgi.Constants;
-import aQute.remote.api.Agent;
+import aQute.bnd.build.*;
+import aQute.bnd.osgi.*;
+import aQute.remote.api.*;
 
 public class RunSessionImpl implements RunSession {
-	private LauncherSupervisor supervisor;
-	private RemoteProjectLauncherPlugin launcher;
-	private RunRemoteDTO dto;
-	private Map<String, Object> properties;
-	public CountDownLatch started = new CountDownLatch(1);
-	private Appendable stderr;
-	private Appendable stdout;
-	private int shell = -4711;
-	public static int jdb = 16043;
-	
-	
-	public RunSessionImpl(RemoteProjectLauncherPlugin launcher,
-			RunRemoteDTO dto, Map<String, Object> properties) throws Exception {
+	private LauncherSupervisor			supervisor;
+	private RemoteProjectLauncherPlugin	launcher;
+	private RunRemoteDTO				dto;
+	private Map<String,Object>			properties;
+	public CountDownLatch				started	= new CountDownLatch(1);
+	private Appendable					stderr;
+	private Appendable					stdout;
+	private int							shell	= -4711;
+	public static int					jdb		= 16043;
+
+	public RunSessionImpl(RemoteProjectLauncherPlugin launcher, RunRemoteDTO dto, Map<String,Object> properties)
+			throws Exception {
 		this.launcher = launcher;
 		this.properties = properties;
 		this.dto = dto;
-		
+
 		if (dto.agent <= 0)
 			dto.agent = Agent.DEFAULT_PORT;
 
@@ -66,20 +57,20 @@ public class RunSessionImpl implements RunSession {
 	@Override
 	public void stderr(Appendable app) throws Exception {
 		stderr = app;
-		if ( supervisor!=null)
+		if (supervisor != null)
 			supervisor.setStderr(app);
 	}
 
 	@Override
 	public void stdout(Appendable app) throws Exception {
 		stdout = app;
-		if ( supervisor != null)
+		if (supervisor != null)
 			supervisor.setStdout(app);
 	}
 
 	@Override
 	public void stdin(String input) throws Exception {
-		if ( supervisor != null)
+		if (supervisor != null)
 			supervisor.getAgent().stdin(input);
 	}
 
@@ -94,10 +85,10 @@ public class RunSessionImpl implements RunSession {
 			if (agent.isEnvoy())
 				installFramework(agent, dto, properties);
 
-			if ( stdout != null)
+			if (stdout != null)
 				supervisor.setStdout(stdout);
 
-			if ( stderr != null)
+			if (stderr != null)
 				supervisor.setStderr(stderr);
 
 			started.countDown();
@@ -106,7 +97,8 @@ public class RunSessionImpl implements RunSession {
 			int exitCode = supervisor.join();
 			System.out.println("Exiting " + dto.name + " " + exitCode);
 			return exitCode;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			started.countDown();
 			throw e;
 		}
@@ -118,20 +110,19 @@ public class RunSessionImpl implements RunSession {
 	}
 
 	@Override
-	public Map<String, Object> getProperties() {
+	public Map<String,Object> getProperties() {
 		return properties;
 	}
 
-	private boolean installFramework(Agent agent, RunRemoteDTO dto,
-			Map<String, Object> properties) throws Exception {
+	private boolean installFramework(Agent agent, RunRemoteDTO dto, Map<String,Object> properties) throws Exception {
 		List<String> onpath = new ArrayList<String>(launcher.getRunpath());
 
-		Map<String, String> runpath = getBundles(onpath, Constants.RUNPATH);
+		Map<String,String> runpath = getBundles(onpath, Constants.RUNPATH);
 
 		return agent.createFramework(dto.name, runpath.values(), properties);
 	}
 
-	void update(Map<String, String> newer) throws Exception {
+	void update(Map<String,String> newer) throws Exception {
 		supervisor.getAgent().update(newer);
 	}
 
@@ -143,9 +134,8 @@ public class RunSessionImpl implements RunSession {
 		supervisor.close();
 	}
 
-	Map<String, String> getBundles(Collection<String> collection, String header)
-			throws Exception {
-		Map<String, String> newer = new HashMap<String, String>();
+	Map<String,String> getBundles(Collection<String> collection, String header) throws Exception {
+		Map<String,String> newer = new HashMap<String,String>();
 
 		for (String c : collection) {
 			File f = new File(c);
@@ -156,9 +146,8 @@ public class RunSessionImpl implements RunSession {
 	}
 
 	void update(RunRemoteDTO dto) throws Exception {
-		Map<String, String> newer = getBundles(launcher.getRunBundles(),
-				Constants.RUNBUNDLES);
-		if ( shell != dto.shell) {
+		Map<String,String> newer = getBundles(launcher.getRunBundles(), Constants.RUNBUNDLES);
+		if (shell != dto.shell) {
 			supervisor.getAgent().redirect(dto.shell);
 			shell = dto.shell;
 		}
@@ -191,43 +180,45 @@ public class RunSessionImpl implements RunSession {
 	}
 
 	@Override
-    public boolean validate(Callable<Boolean> isCancelled) throws Exception {
+	public boolean validate(Callable<Boolean> isCancelled) throws Exception {
 		boolean result = true;
-		
-		if ( getAgent() <= 0 || getAgent() > 65535 ) {
-			launcher.error("Agent port %s not in a valid IP range (0-65535)",  getAgent());
+
+		if (getAgent() <= 0 || getAgent() > 65535) {
+			launcher.error("Agent port %s not in a valid IP range (0-65535)", getAgent());
 			result = false;
 		}
-		
+
 		InetAddress in;
 		try {
 			in = InetAddress.getByName(getHost());
-		} catch( Exception e) {
-			launcher.exception(e,"Cannot find host %s",  getHost());
+		}
+		catch (Exception e) {
+			launcher.exception(e, "Cannot find host %s", getHost());
 			return false; // no use to continue from here
 		}
-		
-		if ( isCancelled.call())
+
+		if (isCancelled.call())
 			return false;
-		
+
 		if (!in.isReachable(5000)) {
-			launcher.error("Host not reachable %s",  getHost());
+			launcher.error("Host not reachable %s", getHost());
 			return false;
 		}
-		
-        while (!isCancelled.call())
-            try {
-                Socket s = new Socket(getHost(), getAgent());
-                s.close();
-                break;
-            } catch (Exception e) {
-                // Ignore
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e1) {
-                }
-            }
-        return result;
-    }
+
+		while (!isCancelled.call())
+			try {
+				Socket s = new Socket(getHost(), getAgent());
+				s.close();
+				break;
+			}
+			catch (Exception e) {
+				// Ignore
+				try {
+					Thread.sleep(500);
+				}
+				catch (InterruptedException e1) {}
+			}
+		return result;
+	}
 
 }

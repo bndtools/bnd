@@ -1,27 +1,22 @@
 package aQute.libg.shacache;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.regex.Pattern;
+import java.io.*;
+import java.util.regex.*;
 
-import aQute.lib.io.IO;
-import aQute.libg.cryptography.SHA1;
+import aQute.lib.io.*;
+import aQute.libg.cryptography.*;
 
 public class ShaCache {
-	static Pattern SHA_P = Pattern.compile("[A-F0-9]{40,40}",
-			Pattern.CASE_INSENSITIVE);
+	static Pattern		SHA_P	= Pattern.compile("[A-F0-9]{40,40}", Pattern.CASE_INSENSITIVE);
 
-	private final File root;
+	private final File	root;
 
 	public ShaCache(File root) {
 		this.root = root;
 		this.root.mkdirs();
 	}
 
-	public InputStream getStream(String sha, ShaSource... sources)
-			throws FileNotFoundException {
+	public InputStream getStream(String sha, ShaSource... sources) throws FileNotFoundException {
 		if (!SHA_P.matcher(sha).matches())
 			throw new IllegalArgumentException("Not a SHA");
 
@@ -34,8 +29,7 @@ public class ShaCache {
 						return in;
 
 					if (in != null) {
-						File tmp = IO.createTempFile(root, sha.toLowerCase(),
-								".shacache");
+						File tmp = IO.createTempFile(root, sha.toLowerCase(), ".shacache");
 						IO.copy(in, tmp);
 						String digest = SHA1.digest(tmp).asHex();
 						if (digest.equalsIgnoreCase(sha)) {
@@ -43,7 +37,8 @@ public class ShaCache {
 							break;
 						}
 					}
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -54,8 +49,7 @@ public class ShaCache {
 		return new FileInputStream(f);
 	}
 
-	public File getFile(String sha, ShaSource... sources)
-			throws FileNotFoundException {
+	public File getFile(String sha, ShaSource... sources) throws FileNotFoundException {
 		if (!SHA_P.matcher(sha).matches())
 			throw new IllegalArgumentException("Not a SHA");
 
@@ -67,8 +61,7 @@ public class ShaCache {
 			try {
 				InputStream in = s.get(sha);
 				if (in != null) {
-					File tmp = IO.createTempFile(root, sha.toLowerCase(),
-							".shacache");
+					File tmp = IO.createTempFile(root, sha.toLowerCase(), ".shacache");
 					IO.copy(in, tmp);
 					String digest = SHA1.digest(tmp).asHex();
 					if (digest.equalsIgnoreCase(sha)) {
@@ -76,7 +69,8 @@ public class ShaCache {
 						break;
 					}
 				}
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 			}
 		}

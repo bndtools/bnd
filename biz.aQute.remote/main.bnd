@@ -1,8 +1,25 @@
-Bundle-Version: 0.0.0.${tstamp}
+#
+# REMOTE MAIN
+#
+
+Bundle-Description: \
+	A main program (executable JAR) that will listen to port ${aQute.agent.server.port}. At first, \
+	it can only answer that it is an Envoy (a limited agent). The only function it supports \
+	is installing a -runpath. It will then create a framework + agent and transfer the connection
+	to the just installed agent who will then install the bundles. This JAR is a main command \
+	for JPM called bndremote. In JPM, it will start up with debug enabled. This JAR does some highly complicated \
+	class loading wizardy to ensure that it does not enforce any constraints on the -runpath.
+
 Private-Package: \
 	aQute.remote.util,\
 	aQute.remote.main
 
-Import-Package: org.osgi.framework;version=1.5,*
+#
+# A JPM Command, we start it always up in debug
+#
+JPM-Command: bndremote;jvmargs="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"
 
+#
+# And the main class
+#
 Main-Class: aQute.remote.main.Main

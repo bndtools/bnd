@@ -5,6 +5,7 @@ import java.util.*;
 public class ExtList<T> extends ArrayList<T> {
 	private static final long	serialVersionUID	= 1L;
 
+	@SafeVarargs
 	public ExtList(T... ts) {
 		super(ts.length);
 		for (T t : ts) {

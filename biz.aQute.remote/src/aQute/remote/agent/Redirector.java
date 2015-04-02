@@ -1,12 +1,11 @@
 package aQute.remote.agent;
 
-import java.io.Closeable;
-import java.io.PrintStream;
+import java.io.*;
 
 public interface Redirector extends Closeable {
-	int COMMAND_SESSION = -1;
-	int NONE = 0;
-	int CONSOLE = 1;
+	int	COMMAND_SESSION	= -1;
+	int	NONE			= 0;
+	int	CONSOLE			= 1;
 
 	int getPort();
 

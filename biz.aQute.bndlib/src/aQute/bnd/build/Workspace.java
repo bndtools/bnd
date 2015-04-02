@@ -580,6 +580,7 @@ public class Workspace extends Processor {
 					continue;
 				}
 
+				@SuppressWarnings("resource")
 				URLClassLoader cl = new URLClassLoader(new URL[] {
 					blocker.getKey().getFile().toURI().toURL()
 				}, getClass().getClassLoader());

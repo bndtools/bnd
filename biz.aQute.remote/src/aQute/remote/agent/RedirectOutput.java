@@ -1,36 +1,35 @@
 package aQute.remote.agent;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 public class RedirectOutput extends PrintStream {
 
-	private final List<AgentServer> agents;
-	private final PrintStream out;
-	private boolean err;
-	private static ThreadLocal<Boolean> onStack = new ThreadLocal<Boolean>();
+	private final List<AgentServer>		agents;
+	private final PrintStream			out;
+	private boolean						err;
+	private static ThreadLocal<Boolean>	onStack	= new ThreadLocal<Boolean>();
 
 	static class NullOutputStream extends OutputStream {
 		@Override
-		public void write(int arg0) throws IOException {
-		}
+		public void write(int arg0) throws IOException {}
 	}
-	
+
 	public RedirectOutput(List<AgentServer> agents, PrintStream out, boolean err) {
-		super(out == null ? out=nullOutputStream() : out);
+		super(out == null ? out = nullOutputStream() : out);
 		this.agents = agents;
 		this.out = out;
 		this.err = err;
 	}
 
 	private static PrintStream nullOutputStream() {
-		return new PrintStream( new NullOutputStream());
+		return new PrintStream(new NullOutputStream());
 	}
 
 	public void write(int b) {
-		this.write(new byte[] { (byte) b }, 0, 1);
+		this.write(new byte[] {
+			(byte) b
+		}, 0, 1);
 	}
 
 	public void write(byte b[]) {
@@ -47,27 +46,31 @@ public class RedirectOutput extends PrintStream {
 			try {
 				String s = new String(b, off, len); // default encoding!
 				for (AgentServer agent : agents) {
-					if ( agent.quit)
+					if (agent.quit)
 						continue;
-					
+
 					try {
 						if (err)
 							agent.getSupervisor().stderr(s);
 						else
 							agent.getSupervisor().stdout(s);
-					} catch (InterruptedException ie) {
-						return; 
-					} catch (Exception ie) {
+					}
+					catch (InterruptedException ie) {
+						return;
+					}
+					catch (Exception ie) {
 						agent.close();
 					}
 				}
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				// e.printStackTrace();
-			} finally {
+			}
+			finally {
 				onStack.remove();
 			}
 		} else {
-			out.println("[recursive output] " + new String(b,off,len));
+			out.println("[recursive output] " + new String(b, off, len));
 		}
 	}
 

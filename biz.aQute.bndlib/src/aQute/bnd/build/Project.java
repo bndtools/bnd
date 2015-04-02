@@ -269,7 +269,8 @@ public class Project extends Processor {
 
 					// dependencies.add( getWorkspace().getProject("cnf"));
 
-					Set<String> requiredProjectNames = new LinkedHashSet<String>(getMergedParameters(Constants.DEPENDSON).keySet());
+					Set<String> requiredProjectNames = new LinkedHashSet<String>(getMergedParameters(
+							Constants.DEPENDSON).keySet());
 
 					// Allow DependencyConstributors to modify
 					// requiredProjectNames
@@ -453,7 +454,7 @@ public class Project extends Processor {
 	}
 
 	private List<Container> parseRunbundles() throws Exception {
-		
+
 		return getBundles(Strategy.HIGHEST, mergeProperties(Constants.RUNBUNDLES), Constants.RUNBUNDLES);
 	}
 
@@ -464,7 +465,6 @@ public class Project extends Processor {
 	private List<Container> parseTestpath() throws Exception {
 		return getBundles(Strategy.HIGHEST, mergeProperties(Constants.TESTPATH), Constants.TESTPATH);
 	}
-
 
 	/**
 	 * Analyze the header and return a list of files that should be on the
@@ -1516,6 +1516,30 @@ public class Project extends Processor {
 				}
 				jar.write(f);
 
+				//
+				// For maven we've got the shitty situation that the
+				// files in the generated directories have an ever changing
+				// version number so it is hard to refer to them in test cases
+				// and from for example bndtools if you want to refer to the
+				// latest so the following code attempts to create a link to the
+				// output file if this is using some other naming scheme,
+				// creating a constant name. Would probably be more logical to
+				// always output in the canonical name and then create a link to
+				// the desired name but not sure how much that would break BJ's
+				// maven handling that caused these versioned JARs
+				//
+
+				File canonical = new File(getTarget(), jar.getBsn() + ".jar");
+				if (!canonical.equals(f)) {
+					IO.delete(canonical);
+					if (!IO.createSymbolicLink(canonical, f)) {
+						//
+						// As alternative, we copy the file
+						//
+						IO.copy(f, canonical);
+					}
+				}
+
 				getWorkspace().changedFile(f);
 			} else {
 				msg = "(not modified since " + new Date(f.lastModified()) + ")";
@@ -1676,7 +1700,7 @@ public class Project extends Processor {
 			IO.close(outStream);
 		}
 	}
-	
+
 	/**
 	 * @since 2.4
 	 */
@@ -1723,23 +1747,23 @@ public class Project extends Processor {
 	}
 
 	void clean(File dir, String type) throws IOException {
-		if ( !dir.exists())
+		if (!dir.exists())
 			return;
 
 		String basePath = getBase().getCanonicalPath();
 		String dirPath = dir.getCanonicalPath();
-		if ( ! dirPath.startsWith(basePath)) {
+		if (!dirPath.startsWith(basePath)) {
 			trace("path outside the project dir %s", type);
 			return;
 		}
 
-		if ( dirPath.length() == basePath.length())  {
+		if (dirPath.length() == basePath.length()) {
 			error("Trying to delete the project directory for %s", type);
 			return;
 		}
 
 		IO.delete(dir);
-		if ( dir.exists()) {
+		if (dir.exists()) {
 			error("Trying to delete %s (%s), but failed", dir, type);
 			return;
 		}
@@ -1777,9 +1801,9 @@ public class Project extends Processor {
 		clear();
 
 		ProjectTester tester = getProjectTester();
-		if ( tests != null) {
+		if (tests != null) {
 			trace("Adding tests %s", tests);
-			for ( String test : tests) {
+			for (String test : tests) {
 				tester.addTest(test);
 			}
 		}
@@ -1803,6 +1827,7 @@ public class Project extends Processor {
 
 	/**
 	 * Run JUnit
+	 * 
 	 * @throws Exception
 	 */
 	public void junit() throws Exception {
@@ -1869,8 +1894,7 @@ public class Project extends Processor {
 		return jar;
 	}
 
-	public String _project(@SuppressWarnings("unused")
-	String args[]) {
+	public String _project(@SuppressWarnings("unused") String args[]) {
 		return getBase().getAbsolutePath();
 	}
 
@@ -1957,7 +1981,7 @@ public class Project extends Processor {
 
 		before(this, command);
 		try {
-			if ( args.length == 0)
+			if (args.length == 0)
 				a.execute(this, command);
 			else
 				a.execute(this, args);
@@ -1971,8 +1995,7 @@ public class Project extends Processor {
 	/**
 	 * Run all before command plugins
 	 */
-	void before(@SuppressWarnings("unused")
-	Project p, String a) {
+	void before(@SuppressWarnings("unused") Project p, String a) {
 		List<CommandPlugin> testPlugins = getPlugins(CommandPlugin.class);
 		for (CommandPlugin testPlugin : testPlugins) {
 			testPlugin.before(this, a);
@@ -1982,8 +2005,7 @@ public class Project extends Processor {
 	/**
 	 * Run all after command plugins
 	 */
-	void after(@SuppressWarnings("unused")
-	Project p, String a, Throwable t) {
+	void after(@SuppressWarnings("unused") Project p, String a, Throwable t) {
 		List<CommandPlugin> testPlugins = getPlugins(CommandPlugin.class);
 		for (int i = testPlugins.size() - 1; i >= 0; i--) {
 			testPlugins.get(i).after(this, a, t);
@@ -2020,8 +2042,7 @@ public class Project extends Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void script(@SuppressWarnings("unused")
-	String type, String script) throws Exception {
+	public void script(@SuppressWarnings("unused") String type, String script) throws Exception {
 		script(type, script, new Object[0]);
 	}
 
@@ -2043,8 +2064,7 @@ public class Project extends Processor {
 		scripters.get(0).eval((Map) p, new StringReader(script));
 	}
 
-	public String _repos(@SuppressWarnings("unused")
-	String args[]) throws Exception {
+	public String _repos(@SuppressWarnings("unused") String args[]) throws Exception {
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
 		List<String> names = new ArrayList<String>();
 		for (RepositoryPlugin rp : repos)
@@ -2568,7 +2588,7 @@ public class Project extends Processor {
 			FileInputStream in = new FileInputStream(file);
 			ide.load(in);
 		}
-		
+
 		String deflt = args.length > 2 ? args[2] : null;
 		if ("javac.target".equals(args[1])) {
 			return ide.getProperty("org.eclipse.jdt.core.compiler.codegen.targetPlatform", deflt);
@@ -2579,7 +2599,7 @@ public class Project extends Processor {
 		return null;
 	}
 
-	public Map<String, Version> getVersions() throws Exception {
+	public Map<String,Version> getVersions() throws Exception {
 		synchronized (versionMap) {
 			if (versionMap.isEmpty()) {
 				for (Builder builder : getSubBuilders()) {
@@ -2596,7 +2616,7 @@ public class Project extends Processor {
 					versionMap.put(builder.getBsn(), version);
 				}
 			}
-			return new LinkedHashMap<String, Version>(versionMap);
+			return new LinkedHashMap<String,Version>(versionMap);
 		}
 	}
 

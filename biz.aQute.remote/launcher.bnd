@@ -1,4 +1,14 @@
+#
+# REMOTE LAUNCHER
+#
 
+Bundle-Description: \
+	A launcher for the bnd launch architecture. This JAR contains a Launcher-Plugin. This plugin \
+	is found when you put this JAR on the -runpath of a launch specification in either a bndrun \
+	or bnd file. This launcher will read the -runremote header and contact a remote agent. The \
+	remote agent can be either a biz.aQute.remote.main, which will run as main, or a biz.aQute.remote.agent, \
+	which will run as a bundle. This JAR contains the agent so if the remote agent is a main \
+	then it will install the agent in this JAR.
 
 Launcher-Plugin: aQute.remote.plugin.RemoteProjectLauncherPlugin
 
@@ -11,5 +21,7 @@ Private-Package: \
 	org.osgi.framework.dto, \
 	org.apache.felix.service.command.*
 
-Conditional-Package: aQute.lib*
+#
+# This is NOT a bundle so we should have no imports
+#
 Import-Package: 
