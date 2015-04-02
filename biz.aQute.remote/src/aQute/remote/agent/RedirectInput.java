@@ -1,20 +1,18 @@
 package aQute.remote.agent;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 public class RedirectInput extends InputStream {
-	
-	private InputStream org;
-	private byte[] ring = new byte[65536];
-	private int in, out;
-	
+
+	private InputStream	org;
+	private byte[]		ring	= new byte[65536];
+	private int			in, out;
+
 	public RedirectInput(InputStream in) throws IOException {
 		this.org = in;
 	}
 
-	public RedirectInput() {
-	}
+	public RedirectInput() {}
 
 	public InputStream getOrg() {
 		return org;
@@ -22,17 +20,17 @@ public class RedirectInput extends InputStream {
 
 	public synchronized void add(String s) throws IOException {
 		byte[] bytes = s.getBytes();
-		for ( int i=0; i<bytes.length; i++) {
+		for (int i = 0; i < bytes.length; i++) {
 			write(bytes[i]);
 		}
 	}
 
 	private void write(byte b) {
-		synchronized(ring){
-			ring[in]= b;
-			
-			in = (in + 1 ) % ring.length;
-			if ( in == out) {
+		synchronized (ring) {
+			ring[in] = b;
+
+			in = (in + 1) % ring.length;
+			if (in == out) {
 				// skip oldest output
 				out = (out + 1) % ring.length;
 			}
@@ -46,11 +44,12 @@ public class RedirectInput extends InputStream {
 
 	@Override
 	public int read() throws IOException {
-		synchronized(ring) {
-			while ( in == out) {
+		synchronized (ring) {
+			while (in == out) {
 				try {
 					ring.wait(400);
-				} catch (InterruptedException e) {
+				}
+				catch (InterruptedException e) {
 					return -1;
 				}
 			}
@@ -59,17 +58,18 @@ public class RedirectInput extends InputStream {
 			return c;
 		}
 	}
+
 	@Override
 	public int read(byte[] buffer, int offset, int length) throws IOException {
 		int n = 0;
-		for ( int i=offset; i<length; i++) {
+		for (int i = offset; i < length; i++) {
 			int c = read();
-			if ( c < 0)
+			if (c < 0)
 				break;
 			buffer[i] = (byte) (0xFF & c);
 			n++;
-			
-			if ( c == '\n')
+
+			if (c == '\n')
 				break;
 		}
 		return n;

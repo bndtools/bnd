@@ -1,47 +1,42 @@
 package aQute.remote.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.Socket;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.*;
+import java.net.*;
+import java.security.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 
-import aQute.bnd.util.dto.DTO;
-import aQute.lib.collections.MultiMap;
-import aQute.lib.io.IO;
-import aQute.libg.cryptography.SHA1;
+import aQute.bnd.util.dto.*;
+import aQute.lib.collections.*;
+import aQute.lib.io.*;
+import aQute.libg.cryptography.*;
 
 public class AgentSupervisor<Supervisor, Agent> {
-	private static final Map<File, Info> fileInfo = new ConcurrentHashMap<File, AgentSupervisor.Info>();
-	private static final MultiMap<String, String> shaInfo = new MultiMap<String, String>();
-	private static byte[] EMPTY = new byte[0];
-	private Agent agent;
-	private CountDownLatch latch = new CountDownLatch(1);
-	protected volatile int exitCode;
-	private Link<Supervisor, Agent> link;
-	private AtomicBoolean quit = new AtomicBoolean(false);
-	
+	private static final Map<File,Info>				fileInfo	= new ConcurrentHashMap<File,AgentSupervisor.Info>();
+	private static final MultiMap<String,String>	shaInfo		= new MultiMap<String,String>();
+	private static byte[]							EMPTY		= new byte[0];
+	private Agent									agent;
+	private CountDownLatch							latch		= new CountDownLatch(1);
+	protected volatile int							exitCode;
+	private Link<Supervisor,Agent>					link;
+	private AtomicBoolean							quit		= new AtomicBoolean(false);
+
 	static class Info extends DTO {
-		public String sha;
-		public long lastModified;
+		public String	sha;
+		public long		lastModified;
 	}
 
-	protected void connect(Class<Agent> agent, Supervisor supervisor,
-			String host, int port) throws Exception {
+	protected void connect(Class<Agent> agent, Supervisor supervisor, String host, int port) throws Exception {
 		while (true)
 			try {
 				Socket socket = new Socket(host, port);
-				link = new Link<Supervisor, Agent>(agent, supervisor, socket);
+				link = new Link<Supervisor,Agent>(agent, supervisor, socket);
 				this.setAgent(link);
 				link.open();
 				return;
-			} catch (ConnectException e) {
+			}
+			catch (ConnectException e) {
 				Thread.sleep(200);
 			}
 	}
@@ -65,18 +60,18 @@ public class AgentSupervisor<Supervisor, Agent> {
 		return EMPTY;
 	}
 
-	public void setAgent(Link<Supervisor, Agent> link) {
+	public void setAgent(Link<Supervisor,Agent> link) {
 		this.agent = link.getRemote();
 		this.link = link;
 	}
 
 	public void close() throws IOException {
-		if ( quit.getAndSet(true))
+		if (quit.getAndSet(true))
 			return;
 
 		if (link.isOpen())
 			link.close();
-		
+
 		latch.countDown();
 	}
 
@@ -89,11 +84,12 @@ public class AgentSupervisor<Supervisor, Agent> {
 		this.exitCode = exitCode;
 		try {
 			close();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// ignore
 		}
 	}
-	
+
 	public Agent getAgent() {
 		return agent;
 	}
@@ -123,6 +119,5 @@ public class AgentSupervisor<Supervisor, Agent> {
 	public boolean isOpen() {
 		return link.isOpen();
 	}
-	
-	
+
 }

@@ -4,14 +4,13 @@ import java.io.*;
 import java.net.*;
 
 public class SocketRedirector implements Redirector {
-	private static final String OSGI_SHELL_TELNET_IP = "osgi.shell.telnet.ip";
-	private Socket socket;
-	private PrintStream in;
-	private Thread out;
+	private static final String	OSGI_SHELL_TELNET_IP	= "osgi.shell.telnet.ip";
+	private Socket				socket;
+	private PrintStream			in;
+	private Thread				out;
 	boolean						quit;
 
-	public SocketRedirector(final AgentServer agentServer, final int port)
-			throws Exception {
+	public SocketRedirector(final AgentServer agentServer, final int port) throws Exception {
 
 		this.out = new Thread() {
 			@Override
@@ -26,25 +25,28 @@ public class SocketRedirector implements Redirector {
 						Thread.sleep(1000);
 					}
 
-					SocketRedirector.this.in = new PrintStream(
-							socket.getOutputStream());
+					SocketRedirector.this.in = new PrintStream(socket.getOutputStream());
 					InputStream out = socket.getInputStream();
 
 					byte[] buffer = new byte[1000];
 					while (!isInterrupted() && !quit)
 						try {
 							int size = out.read(buffer);
-							agentServer.getSupervisor().stdout( new String(buffer,0, size));
-						} catch (Exception e) {
+							agentServer.getSupervisor().stdout(new String(buffer, 0, size));
+						}
+						catch (Exception e) {
 							break;
 						}
-				} catch (Exception e1) {
+				}
+				catch (Exception e1) {
 					// ignore, we just exit
-				} finally {
+				}
+				finally {
 					try {
-						if ( socket != null && !quit)
+						if (socket != null && !quit)
 							socket.close();
-					} catch (IOException e) {
+					}
+					catch (IOException e) {
 						// ignore
 					}
 				}
@@ -54,15 +56,15 @@ public class SocketRedirector implements Redirector {
 		this.out.start();
 	}
 
-	Socket findSocket(AgentServer agent, int port)
-			throws UnknownHostException {
+	Socket findSocket(AgentServer agent, int port) throws UnknownHostException {
 		try {
 			String ip = agent.getContext().getProperty(OSGI_SHELL_TELNET_IP);
 			if (ip != null) {
 				InetAddress gogoHost = InetAddress.getByName(ip);
 				return new Socket(gogoHost, port);
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// ignore
 		}
 
@@ -75,7 +77,8 @@ public class SocketRedirector implements Redirector {
 
 			InetAddress oldStyle = InetAddress.getByName("127.0.0.1");
 			return new Socket(oldStyle, port);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// ignore
 		}
 
@@ -86,7 +89,8 @@ public class SocketRedirector implements Redirector {
 		try {
 			InetAddress localhost = InetAddress.getLocalHost();
 			return new Socket(localhost, port);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// ignore
 		}
 
@@ -100,7 +104,8 @@ public class SocketRedirector implements Redirector {
 		socket.close();
 		try {
 			out.join(500);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			// ignore, best effort
 		}
 	}

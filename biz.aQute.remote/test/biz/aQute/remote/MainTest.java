@@ -1,25 +1,22 @@
 package biz.aQute.remote;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
-import org.osgi.framework.Constants;
-import org.osgi.framework.dto.FrameworkDTO;
+import org.osgi.framework.*;
+import org.osgi.framework.dto.*;
 
-import aQute.lib.io.IO;
-import aQute.remote.main.Envoy;
-import aQute.remote.main.Main;
-import aQute.remote.plugin.LauncherSupervisor;
+import aQute.lib.io.*;
+import aQute.remote.main.*;
+import aQute.remote.plugin.*;
 
 /**
  * Start the main program which will wait for requests to create a framework.
  */
 public class MainTest extends TestCase {
 
-	private Thread thread;
+	private Thread	thread;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -28,9 +25,11 @@ public class MainTest extends TestCase {
 			@Override
 			public void run() {
 				try {
-					Main.main(new String[] { "-s", "generated/storage", "-c",
-							"generated/cache", "-n", "*", "-et" });
-				} catch (Exception e) {
+					Main.main(new String[] {
+							"-s", "generated/storage", "-c", "generated/cache", "-n", "*", "-et"
+					});
+				}
+				catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -53,57 +52,55 @@ public class MainTest extends TestCase {
 		//
 		// Create a framework & start an agent
 		//
-		
+
 		LauncherSupervisor supervisor = new LauncherSupervisor();
 		supervisor.connect("localhost", Envoy.DEFAULT_PORT);
 
 		assertEquals("not talking to an envoy", true, supervisor.getAgent().isEnvoy());
 
-		HashMap<String, Object> configuration = new HashMap<String, Object>();
-		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
-				Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-		configuration.put(Constants.FRAMEWORK_STORAGE,
-				"generated/storage");
+		HashMap<String,Object> configuration = new HashMap<String,Object>();
+		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+		configuration.put(Constants.FRAMEWORK_STORAGE, "generated/storage");
 		List<String> emptyList = Collections.emptyList();
-		boolean created = supervisor.getAgent().createFramework("test",
-				emptyList, configuration);
+		boolean created = supervisor.getAgent().createFramework("test", emptyList, configuration);
 		assertTrue("there already was a framework, funny, since we created the main in setUp?", created);
 
 		FrameworkDTO framework = supervisor.getAgent().getFramework();
 		assertNotNull("just created it, so we should have a framework", framework);
-		
+
 		//
 		// Create a second supervisor and ensure we do not
 		// kill the primary
 		//
-		
+
 		LauncherSupervisor sv2 = new LauncherSupervisor();
 		sv2.connect("localhost", Envoy.DEFAULT_PORT);
-		
+
 		assertTrue("no second framework", supervisor.getAgent().ping());
-		
+
 		assertEquals("must be an envoy", true, sv2.getAgent().isEnvoy());
-		assertFalse("the framework should already exist", sv2.getAgent().createFramework("test",
-				emptyList, configuration));
-		
+		assertFalse("the framework should already exist",
+				sv2.getAgent().createFramework("test", emptyList, configuration));
+
 		assertTrue("first framework is gone", supervisor.getAgent().ping());
-		
+
 		FrameworkDTO fw2 = sv2.getAgent().getFramework();
-		assertEquals("we should not have created a new framework", framework.properties.get("org.osgi.framework.uuid"), fw2.properties.get("org.osgi.framework.uuid"));
-		
+		assertEquals("we should not have created a new framework", framework.properties.get("org.osgi.framework.uuid"),
+				fw2.properties.get("org.osgi.framework.uuid"));
+
 		//
 		// Kill the second framework
 		//
-		
+
 		supervisor.getAgent().abort();
 		Thread.sleep(500);
-		assertFalse( supervisor.isOpen());
+		assertFalse(supervisor.isOpen());
 
-		assertTrue( "should not have killed sv2", sv2.getAgent().ping());
-		
+		assertTrue("should not have killed sv2", sv2.getAgent().ping());
+
 		sv2.abort();
 		Thread.sleep(500);
-		assertFalse( sv2.isOpen());
+		assertFalse(sv2.isOpen());
 	}
 
 }

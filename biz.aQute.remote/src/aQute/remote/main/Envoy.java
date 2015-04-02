@@ -1,13 +1,12 @@
 package aQute.remote.main;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 public interface Envoy {
-	public static final int DEFAULT_PORT = 29998;
+	public static final int	DEFAULT_PORT	= 29998;
+
 	boolean isEnvoy();
 
-	boolean createFramework(String name, Collection<String> runpath,
-			Map<String, Object> properties) throws Exception;
+	boolean createFramework(String name, Collection<String> runpath, Map<String,Object> properties) throws Exception;
 
 }

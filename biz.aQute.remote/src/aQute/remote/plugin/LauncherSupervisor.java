@@ -1,36 +1,32 @@
 package aQute.remote.plugin;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
-import org.osgi.dto.DTO;
+import org.osgi.dto.*;
 
-import aQute.remote.api.Agent;
-import aQute.remote.api.Event;
-import aQute.remote.api.Supervisor;
-import aQute.remote.util.AgentSupervisor;
+import aQute.remote.api.*;
+import aQute.remote.util.*;
 
-public class LauncherSupervisor extends AgentSupervisor<Supervisor, Agent>
-		implements Supervisor {
-	private Appendable stdout;
-	private Appendable stderr;
-	private Thread stdin;
-	private int shell = -100; // console
+public class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implements Supervisor {
+	private Appendable	stdout;
+	private Appendable	stderr;
+	private Thread		stdin;
+	private int			shell	= -100; // console
 
 	static class Info extends DTO {
-		public String sha;
-		public long lastModified;
+		public String	sha;
+		public long		lastModified;
 	}
 
 	@Override
 	public void event(Event e) throws Exception {
 		System.out.println(e);
 		switch (e.type) {
-		case exit:
-			exit(e.code);
-			break;
-		default:
-			break;
+			case exit :
+				exit(e.code);
+				break;
+			default :
+				break;
 		}
 
 	}
@@ -85,7 +81,8 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor, Agent>
 								sb.setLength(0);
 							}
 						}
-					} catch (Exception e) {
+					}
+					catch (Exception e) {
 						e.printStackTrace();
 					}
 			}
@@ -126,9 +123,9 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor, Agent>
 			getAgent().abort();
 		}
 	}
-	
+
 	public void redirect(int shell) throws Exception {
-		if ( this.shell != shell && isOpen() ) {
+		if (this.shell != shell && isOpen()) {
 			getAgent().redirect(shell);
 			this.shell = shell;
 		}

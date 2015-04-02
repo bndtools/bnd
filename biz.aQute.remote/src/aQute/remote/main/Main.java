@@ -1,19 +1,17 @@
 package aQute.remote.main;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
-import aQute.lib.collections.ExtList;
-import aQute.lib.getopt.CommandLine;
-import aQute.lib.getopt.Options;
-import aQute.lib.io.IO;
-import aQute.libg.reporter.ReporterAdapter;
+import aQute.lib.collections.*;
+import aQute.lib.getopt.*;
+import aQute.lib.io.*;
+import aQute.libg.reporter.*;
 
 public class Main extends ReporterAdapter {
 
-	private static Main main;
-	private CommandLine commandLine;
-	private EnvoyDispatcher dispatcher;
+	private static Main		main;
+	private CommandLine		commandLine;
+	private EnvoyDispatcher	dispatcher;
 
 	public Main() throws Exception {
 		super(System.out);
@@ -21,8 +19,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	private void run(String[] args) throws Exception {
-		String execute = commandLine.execute(this, "run", new ExtList<String>(
-				args));
+		String execute = commandLine.execute(this, "run", new ExtList<String>(args));
 		if (execute != null)
 			getOut().format("%s\n", execute);
 	}

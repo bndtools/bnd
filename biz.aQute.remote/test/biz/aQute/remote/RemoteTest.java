@@ -17,38 +17,34 @@ import aQute.remote.api.*;
 import aQute.remote.plugin.*;
 
 public class RemoteTest extends TestCase {
-	private int random;
-	private HashMap<String, Object> configuration;
-	private Framework framework;
-	private BundleContext context;
-	private Bundle agent;
-	private String location;
-	private File tmp;
+	private int						random;
+	private HashMap<String,Object>	configuration;
+	private Framework				framework;
+	private BundleContext			context;
+	private Bundle					agent;
+	private String					location;
+	private File					tmp;
 
 	@Override
 	protected void setUp() throws Exception {
 		try {
 			tmp = IO.getFile("generated/tmp");
-			configuration = new HashMap<String, Object>();
-			configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
-					Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+			configuration = new HashMap<String,Object>();
+			configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 			configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage"));
-			configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA,
-					"org.osgi.framework.launch;version=1.2");
+			configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.osgi.framework.launch;version=1.2");
 
-			framework = new org.apache.felix.framework.FrameworkFactory()
-					.newFramework(configuration);
+			framework = new org.apache.felix.framework.FrameworkFactory().newFramework(configuration);
 			framework.init();
 			framework.start();
 			context = framework.getBundleContext();
-			location = "reference:"
-					+ IO.getFile("generated/biz.aQute.remote.agent-3.0.0.jar")
-							.toURI().toString();
+			location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent-3.0.0.jar").toURI().toString();
 			agent = context.installBundle(location);
 			agent.start();
 
 			super.setUp();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -81,8 +77,7 @@ public class RemoteTest extends TestCase {
 		//
 		// Install the bundle systemio
 		//
-		File f = IO
-				.getFile("generated/biz.aQute.remote.test.systemio-3.0.0.jar");
+		File f = IO.getFile("generated/biz.aQute.remote.test.systemio-3.0.0.jar");
 		String sha = supervisor.addFile(f);
 		BundleDTO bundle = agent.install(f.getAbsolutePath(), sha);
 
@@ -96,8 +91,7 @@ public class RemoteTest extends TestCase {
 		stdout.setLength(0);
 
 		// Send input (will be consumed by the Activator.stop
-		ByteArrayInputStream bin = new ByteArrayInputStream(new String(
-				"Input\n").getBytes());
+		ByteArrayInputStream bin = new ByteArrayInputStream(new String("Input\n").getBytes());
 		supervisor.setStdin(bin);
 
 		// stop the bundle (will return input as uppercase)
@@ -119,7 +113,7 @@ public class RemoteTest extends TestCase {
 		String sha1 = supervisor.addFile(t1);
 		String sha2 = supervisor.addFile(t2);
 
-		Map<String, String> update = new HashMap<String, String>();
+		Map<String,String> update = new HashMap<String,String>();
 		update.put(t1.getAbsolutePath(), sha1);
 
 		String errors = supervisor.getAgent().update(update);
@@ -138,7 +132,7 @@ public class RemoteTest extends TestCase {
 		// Now add a new one
 		//
 
-		update = new HashMap<String, String>();
+		update = new HashMap<String,String>();
 		update.put(t1.getAbsolutePath(), sha1);
 		update.put(t2.getAbsolutePath(), sha2);
 		errors = supervisor.getAgent().update(update);
@@ -152,7 +146,7 @@ public class RemoteTest extends TestCase {
 
 		t1 = create("bsn-1", new Version(2, 0, 0));
 		sha1 = supervisor.addFile(t1);
-		update = new HashMap<String, String>();
+		update = new HashMap<String,String>();
 		update.put(t1.getAbsolutePath(), sha1);
 		update.put(t2.getAbsolutePath(), sha2);
 		errors = supervisor.getAgent().update(update);
@@ -161,8 +155,7 @@ public class RemoteTest extends TestCase {
 		assertNotNull(b1);
 		b2 = context.getBundle(t2.getAbsolutePath());
 		assertNotNull(b2);
-		assertEquals(new Version(2, 0, 0).toString(), b1.getVersion()
-				.toString());
+		assertEquals(new Version(2, 0, 0).toString(), b1.getVersion().toString());
 
 		assertEquals(Bundle.ACTIVE, b1.getState());
 		assertEquals(Bundle.ACTIVE, b2.getState());
@@ -171,7 +164,7 @@ public class RemoteTest extends TestCase {
 		// Now delete t1
 		//
 
-		update = new HashMap<String, String>();
+		update = new HashMap<String,String>();
 		update.put(t2.getAbsolutePath(), sha2);
 		errors = supervisor.getAgent().update(update);
 		assertNull(errors);

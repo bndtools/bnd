@@ -8,13 +8,13 @@ import junit.framework.*;
 import aQute.remote.util.*;
 
 public class LinkTest extends TestCase {
-	private ServerSocket server;
-	private LocalImpl localImpl;
-	private RemoteImpl remoteImpl;
+	private ServerSocket	server;
+	private LocalImpl		localImpl;
+	private RemoteImpl		remoteImpl;
 	AtomicInteger			localClosed		= new AtomicInteger();
 	AtomicInteger			remoteClosed	= new AtomicInteger();
-	private Socket localSocket;
-	private Socket remoteSocket;
+	private Socket			localSocket;
+	private Socket			remoteSocket;
 
 	public void setUp() throws IOException {
 		server = new ServerSocket(4567);
@@ -25,8 +25,8 @@ public class LinkTest extends TestCase {
 		localImpl = new LocalImpl(Remote.class, localSocket.getInputStream(), localSocket.getOutputStream());
 		remoteImpl = new RemoteImpl(Local.class, remoteSocket.getInputStream(), remoteSocket.getOutputStream());
 	}
-	
-	public void tearDown() throws IOException{
+
+	public void tearDown() throws IOException {
 		server.close();
 		localSocket.close();
 		remoteSocket.close();
@@ -45,10 +45,10 @@ public class LinkTest extends TestCase {
 	}
 
 	public class LocalImpl implements Local, Closeable {
-		Link<Local, Remote> link;
+		Link<Local,Remote>	link;
 
 		public LocalImpl(Class<Remote> type, InputStream in, OutputStream out) {
-			link = new Link<Local, Remote>(type, this, in, out);
+			link = new Link<Local,Remote>(type, this, in, out);
 		}
 
 		public int bar() {
@@ -70,10 +70,10 @@ public class LinkTest extends TestCase {
 	}
 
 	public class RemoteImpl implements Remote, Closeable {
-		Link<Remote, Local> link;
+		Link<Remote,Local>	link;
 
 		public RemoteImpl(Class<Local> type, InputStream in, OutputStream out) {
-			link = new Link<Remote, Local>(type, this, in, out);
+			link = new Link<Remote,Local>(type, this, in, out);
 		}
 
 		public int foo() {
@@ -95,29 +95,29 @@ public class LinkTest extends TestCase {
 
 	/**
 	 * Test transfer
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
-	
+
 	public void testTransfer() throws Exception {
 		localImpl.link.open();
 		remoteImpl.link.open();
-		
-		assertEquals( -42, localImpl.link.getRemote().foo());
+
+		assertEquals(-42, localImpl.link.getRemote().foo());
 		localImpl.link.transfer(null);
-		
+
 		LocalImpl newer = new LocalImpl(Remote.class, localImpl.link.getInput(), localImpl.link.getOutput());
 		newer.link.open();
-		assertEquals( -42, newer.link.getRemote().foo());
+		assertEquals(-42, newer.link.getRemote().foo());
 		newer.link.close();
 
 		Thread.sleep(100);
-		assertEquals( 1, remoteClosed.get());
-		assertEquals( 1, localClosed.get());
-		
+		assertEquals(1, remoteClosed.get());
+		assertEquals(1, localClosed.get());
+
 		newer.close();
 	}
-	
-	
+
 	/**
 	 * Test simple
 	 * 

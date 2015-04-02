@@ -1,13 +1,11 @@
 package aQute.remote.agent;
 
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 
 public class NullRedirector implements Redirector {
 
 	@Override
-	public void close() throws IOException {
-	}
+	public void close() throws IOException {}
 
 	@Override
 	public int getPort() {
@@ -15,8 +13,7 @@ public class NullRedirector implements Redirector {
 	}
 
 	@Override
-	public void stdin(String s) {
-	}
+	public void stdin(String s) {}
 
 	@Override
 	public PrintStream getOut() throws Exception {

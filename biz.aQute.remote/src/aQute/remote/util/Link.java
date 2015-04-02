@@ -1,29 +1,14 @@
 package aQute.remote.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.*;
+import java.lang.reflect.*;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 
-import aQute.lib.json.JSONCodec;
+import aQute.lib.json.*;
 
 /**
  * This is a simple RPC module that has a R and L interface. The R interface is
@@ -34,36 +19,34 @@ import aQute.lib.json.JSONCodec;
  * @param <R>
  */
 public class Link<L, R> extends Thread implements Closeable {
-	private static final String[] EMPTY = new String[] {};
-	static JSONCodec codec = new JSONCodec();
+	private static final String[]		EMPTY		= new String[] {};
+	static JSONCodec					codec		= new JSONCodec();
 
-	final DataInputStream in;
-	final DataOutputStream out;
-	final Class<R> remoteClass;
-	final AtomicInteger id = new AtomicInteger(10000);
-	final ConcurrentMap<Integer, Result> promises = new ConcurrentHashMap<Integer, Result>();
-	final AtomicBoolean quit = new AtomicBoolean(false);
-	volatile boolean transfer = false;
-	private ThreadLocal<Integer> msgid = new ThreadLocal<Integer>();
+	final DataInputStream				in;
+	final DataOutputStream				out;
+	final Class<R>						remoteClass;
+	final AtomicInteger					id			= new AtomicInteger(10000);
+	final ConcurrentMap<Integer,Result>	promises	= new ConcurrentHashMap<Integer,Result>();
+	final AtomicBoolean					quit		= new AtomicBoolean(false);
+	volatile boolean					transfer	= false;
+	private ThreadLocal<Integer>		msgid		= new ThreadLocal<Integer>();
 
-	R remote;
-	L local;
-	ExecutorService executor = Executors.newFixedThreadPool(4);
+	R									remote;
+	L									local;
+	ExecutorService						executor	= Executors.newFixedThreadPool(4);
 
 	static class Result {
-		boolean resolved;
-		byte[] value;
-		public boolean exception;
+		boolean			resolved;
+		byte[]			value;
+		public boolean	exception;
 	}
 
 	public Link(Class<R> remoteType, L local, InputStream in, OutputStream out) {
-		this(remoteType, local, new DataInputStream(in), new DataOutputStream(
-				out));
+		this(remoteType, local, new DataInputStream(in), new DataOutputStream(out));
 	}
 
 	@SuppressWarnings("unchecked")
-	public Link(Class<R> remoteType, L local, DataInputStream in,
-			DataOutputStream out) {
+	public Link(Class<R> remoteType, L local, DataInputStream in, DataOutputStream out) {
 		super("link::" + remoteType.getName());
 		setDaemon(true);
 		this.remoteClass = remoteType;
@@ -91,20 +74,20 @@ public class Link<L, R> extends Thread implements Closeable {
 		if (local instanceof Closeable)
 			try {
 				((Closeable) local).close();
-			} catch (Exception e) {
 			}
+			catch (Exception e) {}
 
 		if (!transfer) {
 			if (in != null)
 				try {
 					in.close();
-				} catch (Exception e) {
 				}
+				catch (Exception e) {}
 			if (out != null)
 				try {
 					out.close();
-				} catch (Exception e) {
 				}
+				catch (Exception e) {}
 		}
 		executor.shutdownNow();
 	}
@@ -115,46 +98,47 @@ public class Link<L, R> extends Thread implements Closeable {
 			return null;
 
 		if (remote == null)
-			remote = (R) Proxy.newProxyInstance(remoteClass.getClassLoader(),
-					new Class<?>[] { remoteClass }, new InvocationHandler() {
+			remote = (R) Proxy.newProxyInstance(remoteClass.getClassLoader(), new Class< ? >[] {
+				remoteClass
+			}, new InvocationHandler() {
 
-						public Object invoke(Object target, Method method,
-								Object[] args) throws Throwable {
-							Object hash = new Object();
+				public Object invoke(Object target, Method method, Object[] args) throws Throwable {
+					Object hash = new Object();
 
-							try {
-								if (method.getDeclaringClass() == Object.class)
-									return method.invoke(hash, args);
+					try {
+						if (method.getDeclaringClass() == Object.class)
+							return method.invoke(hash, args);
 
-								int msgId;
-								try {
-									msgId = send(id.getAndIncrement(), method,
-											args);
-									if (method.getReturnType() == void.class) {
-										promises.remove(msgId);
-										return null;
-									}
-								} catch (Exception e) {
-									terminate(e);
-									return null;
-								}
-
-								return waitForResult(msgId,
-										method.getGenericReturnType());
-							} catch (InvocationTargetException e) {
-								Throwable t = e;
-								while (t instanceof InvocationTargetException)
-									t = ((InvocationTargetException) t)
-											.getTargetException();
-								throw t;
-							} catch (InterruptedException e) {
-								interrupt();
-								throw e;
-							} catch (Exception e) {
-								throw e;
+						int msgId;
+						try {
+							msgId = send(id.getAndIncrement(), method, args);
+							if (method.getReturnType() == void.class) {
+								promises.remove(msgId);
+								return null;
 							}
 						}
-					});
+						catch (Exception e) {
+							terminate(e);
+							return null;
+						}
+
+						return waitForResult(msgId, method.getGenericReturnType());
+					}
+					catch (InvocationTargetException e) {
+						Throwable t = e;
+						while (t instanceof InvocationTargetException)
+							t = ((InvocationTargetException) t).getTargetException();
+						throw t;
+					}
+					catch (InterruptedException e) {
+						interrupt();
+						throw e;
+					}
+					catch (Exception e) {
+						throw e;
+					}
+				}
+			});
 		return remote;
 	}
 
@@ -179,7 +163,8 @@ public class Link<L, R> extends Thread implements Closeable {
 						try {
 							msgid.set(id);
 							executeCommand(cmd, id, args);
-						} catch (Exception e) {
+						}
+						catch (Exception e) {
 							// e.printStackTrace();
 						}
 						msgid.set(-1);
@@ -187,9 +172,11 @@ public class Link<L, R> extends Thread implements Closeable {
 
 				};
 				executor.execute(r);
-			} catch (SocketTimeoutException ee) {
+			}
+			catch (SocketTimeoutException ee) {
 				// Ignore, just to allow polling the actors again
-			} catch (Exception ee) {
+			}
+			catch (Exception ee) {
 
 				terminate(ee);
 				return;
@@ -203,8 +190,8 @@ public class Link<L, R> extends Thread implements Closeable {
 	protected void terminate(Exception t) {
 		try {
 			close();
-		} catch (IOException e) {
 		}
+		catch (IOException e) {}
 	}
 
 	Method getMethod(String cmd, int count) {
@@ -213,8 +200,7 @@ public class Link<L, R> extends Thread implements Closeable {
 			if (m.getDeclaringClass() == Link.class)
 				continue;
 
-			if (m.getName().equals(cmd)
-					&& m.getParameterTypes().length == count) {
+			if (m.getName().equals(cmd) && m.getParameterTypes().length == count) {
 				return m;
 			}
 		}
@@ -286,8 +272,7 @@ public class Link<L, R> extends Thread implements Closeable {
 							return null;
 
 						if (result.exception) {
-							String msg = codec.dec().from(result.value)
-									.get(String.class);
+							String msg = codec.dec().from(result.value).get(String.class);
 							System.out.println("Exception " + msg);
 							throw new RuntimeException(msg);
 						}
@@ -305,11 +290,11 @@ public class Link<L, R> extends Thread implements Closeable {
 					}
 					trace("start delay " + delay);
 					result.wait(delay);
-					trace("end delay "
-							+ (delay - (deadline - System.currentTimeMillis())));
+					trace("end delay " + (delay - (deadline - System.currentTimeMillis())));
 				}
 			} while (true);
-		} finally {
+		}
+		finally {
 			promises.remove(id);
 		}
 	}
@@ -323,8 +308,7 @@ public class Link<L, R> extends Thread implements Closeable {
 	 * Execute a command in a background thread
 	 */
 
-	void executeCommand(final String cmd, final int id, final List<byte[]> args)
-			throws Exception {
+	void executeCommand(final String cmd, final int id, final List<byte[]> args) throws Exception {
 		if (cmd.isEmpty())
 			response(id, args.get(0));
 		else {
@@ -336,12 +320,11 @@ public class Link<L, R> extends Thread implements Closeable {
 
 			Object parameters[] = new Object[args.size()];
 			for (int i = 0; i < args.size(); i++) {
-				Class<?> type = m.getParameterTypes()[i];
+				Class< ? > type = m.getParameterTypes()[i];
 				if (type == byte[].class)
 					parameters[i] = args.get(i);
 				else {
-					parameters[i] = codec.dec().from(args.get(i))
-							.get(m.getGenericParameterTypes()[i]);
+					parameters[i] = codec.dec().from(args.get(i)).get(m.getGenericParameterTypes()[i]);
 				}
 			}
 
@@ -352,19 +335,26 @@ public class Link<L, R> extends Thread implements Closeable {
 					return;
 
 				try {
-					send(id, null, new Object[] { result });
-				} catch (Exception e) {
+					send(id, null, new Object[] {
+						result
+					});
+				}
+				catch (Exception e) {
 					terminate(e);
 					return;
 				}
-			} catch (Throwable t) {
+			}
+			catch (Throwable t) {
 				while (t instanceof InvocationTargetException
 						&& ((InvocationTargetException) t).getTargetException() != null)
 					t = ((InvocationTargetException) t).getTargetException();
 				// t.printStackTrace();
 				try {
-					send(-id, null, new Object[] { t + "" });
-				} catch (Exception e) {
+					send(-id, null, new Object[] {
+						t + ""
+					});
+				}
+				catch (Exception e) {
 					terminate(e);
 					return;
 				}
@@ -397,7 +387,9 @@ public class Link<L, R> extends Thread implements Closeable {
 		interrupt();
 		join();
 		if (result != null)
-			send(msgid.get(), null, new Object[] { result });
+			send(msgid.get(), null, new Object[] {
+				result
+			});
 		close();
 	}
 
