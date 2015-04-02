@@ -283,7 +283,13 @@ public class BndPlugin implements Plugin<Project> {
       test {
         enabled !parseBoolean(bnd(Constants.NOJUNIT, 'false')) && !parseBoolean(bnd('no.junit', 'false'))
         doFirst {
-          checkErrors(logger)
+          try {
+            checkErrors(logger)
+          } catch (Exception e) {
+            if (!ignoreFailures) {
+              throw e
+            }
+          }
         }
       }
 
