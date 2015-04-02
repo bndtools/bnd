@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 Bundle-SymbolicName: bndtools.repository.amdatu;singleton:=true
 
 amdatu-template: templates/cnfs/amdatu

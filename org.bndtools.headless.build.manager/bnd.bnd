@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 -buildpath:  \
     ee.j2se;version='[1.6,1.7)',\
     bndtools.api;version=latest,\
