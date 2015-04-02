@@ -42,11 +42,13 @@ public interface Constants {
 	String							FRAGMENT_HOST								= "Fragment-Host";
 	String							IMPORT_PACKAGE								= "Import-Package";
 	String							IMPORT_SERVICE								= "Import-Service";
+	String							LAUNCHER_PLUGIN								= "Launcher-Plugin";
 	String							META_PERSISTENCE							= "Meta-Persistence";
 	String							PROVIDE_CAPABILITY							= "Provide-Capability";
 	String							REQUIRE_BUNDLE								= "Require-Bundle";
 	String							REQUIRE_CAPABILITY							= "Require-Capability";
 	String							SERVICE_COMPONENT							= "Service-Component";
+	String							TESTER_PLUGIN								= "Tester-Plugin";
 
 	String							PRIVATE_PACKAGE								= "Private-Package";
 	String							IGNORE_PACKAGE								= "Ignore-Package";
@@ -58,6 +60,7 @@ public interface Constants {
 	String							TESTCASES									= "Test-Cases";
 	String							REPOSITORIES								= "Repositories";
 
+
 	String							headers[]									= {
 			BUNDLE_ACTIVATOR, BUNDLE_CONTACTADDRESS, BUNDLE_COPYRIGHT, BUNDLE_DESCRIPTION, BUNDLE_DOCURL,
 			BUNDLE_LOCALIZATION, BUNDLE_NATIVECODE, BUNDLE_VENDOR, BUNDLE_VERSION, BUNDLE_LICENSE, BUNDLE_CLASSPATH,
@@ -65,7 +68,8 @@ public interface Constants {
 			BUNDLE_NAME, BUNDLE_NATIVECODE, BUNDLE_REQUIREDEXECUTIONENVIRONMENT, BUNDLE_SYMBOLICNAME, BUNDLE_VERSION,
 			FRAGMENT_HOST, PRIVATE_PACKAGE, IGNORE_PACKAGE, INCLUDE_RESOURCE, REQUIRE_BUNDLE, IMPORT_SERVICE,
 			EXPORT_SERVICE, CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY,
-			BUNDLE_ICON, REPOSITORIES, META_PERSISTENCE, BUNDLE_DEVELOPERS, BUNDLE_CONTRIBUTORS, BUNDLE_SCM
+			BUNDLE_ICON, REPOSITORIES, META_PERSISTENCE, BUNDLE_DEVELOPERS, BUNDLE_CONTRIBUTORS, BUNDLE_SCM,
+			LAUNCHER_PLUGIN, TESTER_PLUGIN
 																				};
 
 	String							BASELINE									= "-baseline";
@@ -346,8 +350,6 @@ public interface Constants {
 	String							EMPTY_HEADER								= "<<EMPTY>>";
 
 	String							EMBEDDED_REPO								= "/embedded-repo.jar";
-	String							LAUNCHER_PLUGIN								= "Launcher-Plugin";
-	String							TESTER_PLUGIN								= "Tester-Plugin";
 
 	String							DEFAULT_LAUNCHER_BSN						= "biz.aQute.launcher";
 	String							DEFAULT_TESTER_BSN							= "biz.aQute.junit";
